@@ -49,27 +49,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <summary>
         /// Get Security Settings (PasswordPolicy and ActivityConfiguration)
         /// </summary>
-        /// <param name="bookMasterId">Book MasterId</param>
+        /// <param name="booksCustomerMasterId">Books Customer MasterId</param>
         /// <param name="bookMasterTypeId">Type of Book MasterId (e.g. 1 = Black, 2 = Blue)</param>
         /// <returns>Security Settings List objects (KeyValue pairs)</returns>
-        public IList<Setting> GetSecuritySettings(long bookMasterId, int bookMasterTypeId = (int)BookMasterType.CompanyMasterId)
+        public IList<Setting> GetSecuritySettings(long booksCustomerMasterId, int bookMasterTypeId = (int)BookMasterType.CompanyMasterId)
         {
             IList<Setting> securitySettingList = new List<Setting>();
             Guid correlationId = Guid.NewGuid();
             Dictionary<string, object> logData = new Dictionary<string, object>
             {
-                { "Get SecuritySettings", $"Organization Book MasterId: {bookMasterId}, Book Master TypeId: {bookMasterTypeId}" }
+                { "Get SecuritySettings", $"Organization Books Customer MasterId: {booksCustomerMasterId}, Book Master TypeId: {bookMasterTypeId}" }
             };
             WriteToLog(LogEventLevel.Debug, "GetSecuritySettings: Begin", correlationId, logData, null);
 
-            if (bookMasterId == 0)
+            if (booksCustomerMasterId == 0)
             {
-                throw new Exception("Missing Book Master Id.");
+                throw new Exception("Missing Books Customer Master Id.");
             }
 
             try
             {
-                securitySettingList = _securitySettingsRepository.GetSecuritySettings(bookMasterId, bookMasterTypeId);
+                securitySettingList = _securitySettingsRepository.GetSecuritySettings(booksCustomerMasterId, bookMasterTypeId);
             }
             catch (Exception exception)
             {

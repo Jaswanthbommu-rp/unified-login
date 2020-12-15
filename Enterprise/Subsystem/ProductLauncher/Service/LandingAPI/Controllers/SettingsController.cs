@@ -40,7 +40,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		/// Get Settings Details
 		/// </summary>
 		/// <param name="category">Setting category (e.g. Security, CustomFields)</param>
-		/// <param name="bookMasterId">Book Master Id</param>
+		/// <param name="booksCustomerMasterId">Books Customer Master Id</param>
 		/// <param name="bookMasterTypeId">Type of Book MasterId (e.g. 1 = Black, 2 = Blue)</param>
 		/// <returns>A Settings Details based on category</returns>
 		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when  object have invalid entries / when Information is out of sync with the server)")]
@@ -48,9 +48,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
 		[SwaggerResponse(HttpStatusCode.OK, Description = "Get information about the Settings based on category", Type = typeof(IList<Setting>))]
 		[SwaggerResponseExamples(typeof(IList<Setting>), typeof(SettingsExample))]
-		[Route("settings/company/{bookMasterId}")]
+		[Route("settings/company/{booksCustomerMasterId}")]
 		[HttpGet]
-		public HttpResponseMessage GetSettings(string category, long bookMasterId, int bookMasterTypeId = (int)BookMasterType.CompanyMasterId)
+		public HttpResponseMessage GetSettings(string category, long booksCustomerMasterId, int bookMasterTypeId = (int)BookMasterType.CompanyMasterId)
 		{
 			IApiError apiError;
 			Organization organization = new Organization();
@@ -63,7 +63,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				case 2:
 					//BlueBookId
 					//organization = manageOrganization.GetOrganization(Guid.Empty, null, bookMasterId, null);
-                    UnifiedLoginCompany ufl = orgList.FirstOrDefault(c => c.Domain.Equals("Primary") && (c.CompanyId == bookMasterId || c.BooksCustomerMasterId == bookMasterId));
+                    UnifiedLoginCompany ufl = orgList.FirstOrDefault(c => c.Domain.Equals("Primary") && (c.BooksCustomerMasterId == booksCustomerMasterId));
                     if (ufl != null)
                     {
                         organization = manageOrganization.GetOrganization(new Guid(ufl.CompanyRealPageId), null);
@@ -95,7 +95,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 					Id = Guid.NewGuid().ToString(),
 					Status = (short)HttpStatusCode.BadRequest,
 					Title = "Company not found.",
-					Detail = $"Company not found for {bookMasterType}Book MasterId: {bookMasterId}",
+					Detail = $"Company not found for {bookMasterType}Books Customer MasterId: {booksCustomerMasterId}",
 					Links = string.Empty,
 					Code = "Settings.GetSettings.2",
 					Source = new ApiErrorSource()
@@ -132,7 +132,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			{
 				case "SECURITY":
 					IManageSecuritySettings manageSecuritySettings = new ManageSecuritySettings(_userClaims);
-					settingList = manageSecuritySettings.GetSecuritySettings(bookMasterId, bookMasterTypeId);
+					settingList = manageSecuritySettings.GetSecuritySettings(booksCustomerMasterId, bookMasterTypeId);
 
 					if (settingList == null)
 					{
@@ -160,7 +160,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 					datafilter.Pages.ResultsPerPage = 0;
 					IDictionary<object, object> globals = new Dictionary<object, object>();
 					globals.Add(BaseType.RequestParameter, datafilter);
-					settingList = manageCustomFields.GetCustomFields(globals, bookMasterId, bookMasterTypeId);
+					settingList = manageCustomFields.GetCustomFields(globals, booksCustomerMasterId, bookMasterTypeId);
 
 					if (settingList == null)
 					{
