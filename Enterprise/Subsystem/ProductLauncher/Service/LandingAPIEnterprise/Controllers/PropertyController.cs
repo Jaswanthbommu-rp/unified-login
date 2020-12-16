@@ -207,8 +207,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 {
                     var properties = new Properties()
                     {
-                        InstanceId = ((ProductProperty)product).ID,
-                        Id = ((ProductProperty)product).CustomerPropertyId,
+                        Id = ((ProductProperty)product).ID,
+                        InstanceId = ((ProductProperty)product).InstanceId,
                         PropertyName = ((ProductProperty)product).Name
                     };
                     companyProperties.Add(properties);
