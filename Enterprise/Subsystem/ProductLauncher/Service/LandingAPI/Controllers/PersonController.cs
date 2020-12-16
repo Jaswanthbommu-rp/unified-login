@@ -343,7 +343,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 					CFglobals.Add(BaseType.RequestParameter, customFieldsDataFilter);
 
 					ManageCustomFields manageCustomFields = new ManageCustomFields(_userClaims);
-					IList<CustomField> customFieldList = manageCustomFields.GetCustomField(globals: CFglobals, bookMasterId: _userClaims.CustomerMasterId, bookMasterTypeId: (int)BookMasterType.CustomerMasterId);
+					IList<CustomField> customFieldList = manageCustomFields.GetCustomField(globals: CFglobals, booksCustomerMasterId: _userClaims.CustomerMasterId, bookMasterTypeId: (int)BookMasterType.CustomerMasterId);
 					bool customFieldsEnabled = ((customFieldList != null) && (customFieldList.Count > 0));
 					if (customFieldsEnabled)
 					{

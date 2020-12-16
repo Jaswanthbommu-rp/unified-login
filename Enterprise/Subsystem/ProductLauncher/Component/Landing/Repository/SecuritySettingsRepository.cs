@@ -31,14 +31,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		/// <summary>
 		/// Get Security Settings (Password and Activity Configuration Security Settings)
 		/// </summary>
-		/// <param name="bookMasterId">Book MasterId</param>
+		/// <param name="booksCustomerMasterId">Books Customer MasterId</param>
 		/// <param name="bookMasterTypeId">Type of Book MasterId (e.g. 1 = Black, 2 = Blue)</param>
 		/// <returns>Security Settings List objects (KeyValue pairs)</returns>
-		public IList<Setting> GetSecuritySettings(long bookMasterId, int bookMasterTypeId = (int)BookMasterType.CompanyMasterId)
+		public IList<Setting> GetSecuritySettings(long booksCustomerMasterId, int bookMasterTypeId = (int)BookMasterType.CustomerMasterId)
 		{
 			dynamic param = new
 			{
-				SourceId = bookMasterId,
+				SourceId = booksCustomerMasterId,
 				DataImportApplicationId = bookMasterTypeId
 			};
 
@@ -52,10 +52,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		/// Update Security Settings (Password and Activity Configuration Security Settings)
 		/// </summary>
 		/// <param name="settings">Security Settings (Password and Activity Configuration Security Settings) object of the parameter values</param>
-		/// <param name="bookMasterId">BlackBookId MasterBook Id</param>
+		/// <param name="booksCustomerMasterId">Books Customer MasterId</param>
 		/// <param name="bookMasterTypeId">Type of Book MasterId (e.g. 1 = Black, 2 = Blue)</param>
 		/// <returns>Repository response object</returns>
-		public RepositoryResponse UpdateSecuritySettings(IList<Setting> settings, long bookMasterId, int bookMasterTypeId = (int)BookMasterType.CompanyMasterId)
+		public RepositoryResponse UpdateSecuritySettings(IList<Setting> settings, long booksCustomerMasterId, int bookMasterTypeId = (int)BookMasterType.CustomerMasterId)
 		{
 			RepositoryResponse repositoryResponse = new RepositoryResponse();
 			repositoryResponse.Id = 0;
@@ -71,7 +71,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 							string jsonSecuritySettings = Newtonsoft.Json.JsonConvert.SerializeObject(settings);
 							param = new
 							{
-								SourceId = bookMasterId,
+								SourceId = booksCustomerMasterId,
 								DataImportApplicationId = bookMasterTypeId,
 								JsonSecuritySettings = jsonSecuritySettings
 							};
