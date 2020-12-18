@@ -12,11 +12,15 @@ BEGIN
 		ert.Name,
 		ULP.PrimaryOrganization,
 		edim.MasterId AS 'BooksMasterId',
-		Edim.CompanyMasterId AS 'BooksCustomerMasterId'
+		Edim.CompanyMasterId AS 'BooksCustomerMasterId',
+		P.PersonaId,  
+		O.[Name] OrganizationName
 	FROM		
 		Enterprise.Party ep
 		INNER JOIN Ident.UserLoginPersona ULP ON ULP.OrganizationPartyId = ep.PartyId
 		INNER JOIN Ident.UserLogin iul ON (ULP.UserLoginId = iul.UserId)
+		INNER JOIN Person.Persona P ON P.UserLoginPersonaId = ULP.UserLoginPersonaId  
+		INNER JOIN Enterprise.Organization O ON O.PartyId = ULP.OrganizationPartyId 
 		INNER JOIN Enterprise.PartyRelationship epr ON (iul.PersonPartyId = epr.PartyIdFrom) and ULP.OrganizationPartyId = epr.PartyIdTo
 		INNER JOIN Enterprise.RoleType ert ON (epr.RoleTypeIdFrom = ert.PartyRoleTypeId)
 		INNER JOIN Enterprise.RoleType eprt ON (ert.ParentPartyRoleTypeId = eprt.PartyRoleTypeId)
