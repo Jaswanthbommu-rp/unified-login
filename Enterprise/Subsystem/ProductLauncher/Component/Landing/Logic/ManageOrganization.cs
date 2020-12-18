@@ -695,7 +695,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 
         #region Audit Property data
-        public void AuditCompanyProductPropertiesToUPFM(Guid companyInstanceId, int productId)
+        public List<PropertyAudit> AuditCompanyProductPropertiesToUPFM(Guid companyInstanceId, int productId)
         {
             List<Guid> propertyInstanceIds = new List<Guid>();
             List<PropertyAudit> propertyAuditResult = new List<PropertyAudit>();
@@ -720,30 +720,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                 var translatedData = _manageBlueBook.GetTranslatePropertiesFromUPFMToProductv3(upfmProperties, booksProductDetail.BooksProductCode);
 
-                foreach (var property in productResult.Records)
+                foreach (var property in productResult.Records.Cast<ProductProperty>())
                 {
-                    //PropertyAudit pa = new PropertyAudit()
-                    //{
-                    //    Name = property.
-                    //};
-                    
+                    PropertyAudit pa = new PropertyAudit()
+                    {
+                        Name = property.Name,
+                        ProductInstanceId = property.ID
+                    };
+
+                    var instanceExists = translatedData.Data.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.ID));
+                    if (instanceExists != null)
+                    {
+                        pa.UPFMInstanceId = instanceExists.PropertyInstanceSourceId;
+                        pa.Status = instanceids.All(p => p != instanceExists.PropertyInstanceSourceId) ? "Missing 1" : "";
+                    }
+
+                    propertyAuditResult.Add(pa);
                 }
             }
 
-
-
-            //List<PropertySetup> propertyDetails =  _propertyRepository.GetPropertiesForCompany(propertyInstanceIds, propertyName, blueId,  dataFilter);
-            //propertyDetails = AddContractedNameToPropertyList(booksPropertyInstance, propertyDetails);
-            //List<CompanyPropertySetup> companyPropertySetup = new List<CompanyPropertySetup>()
-            //{
-            //    new CompanyPropertySetup()
-            //    {
-            //        Domain = booksPropertyInstance?.Select(p => p.attributes.domain).Distinct().ToList(),
-            //        Property = propertyDetails
-            //    }
-            //};
-
-            //return companyPropertySetup;
+            return propertyAuditResult;
         }
 
 

@@ -154,6 +154,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <returns>RepositoryResponse object</returns>
 		RepositoryResponse UpdateProperty(Guid propertyInstanceId, string propertyName);
 
-        void AuditCompanyProductPropertiesToUPFM(Guid companyInstanceId, int product);
+        List<PropertyAudit> AuditCompanyProductPropertiesToUPFM(Guid companyInstanceId, int product);
     }
 }

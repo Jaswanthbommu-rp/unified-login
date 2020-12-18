@@ -1086,12 +1086,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Company Instance Id not supplied");
             }
-            IDictionary<object, object> globals = new Dictionary<object, object>();
-            ObjectListOutput<CompanyPropertySetup, IErrorData> output = new ObjectListOutput<CompanyPropertySetup, IErrorData>();
-            Status<IErrorData> errorStatus = new Status<IErrorData>();
+            //IDictionary<object, object> globals = new Dictionary<object, object>();
+            //ObjectListOutput<CompanyPropertySetup, IErrorData> output = new ObjectListOutput<CompanyPropertySetup, IErrorData>();
+            //Status<IErrorData> errorStatus = new Status<IErrorData>();
 
             //List<CompanyPropertySetup> companyPropertySetup = 
-                _manageOrganization.AuditCompanyProductPropertiesToUPFM(companyInstanceId, productId);
+            var result = _manageOrganization.AuditCompanyProductPropertiesToUPFM(companyInstanceId, productId);
 
             //int totalRecords = 0;
             //if (companyPropertySetup.Count > 0)
@@ -1105,9 +1105,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             //    TotalRecords = totalRecords,
             //    TotalPages = (resultsPerPage == 0) ? 0 : (int)Math.Ceiling(totalRecords / resultsPerPage)
             //};
-            output = new ObjectListOutput<CompanyPropertySetup, IErrorData>() { list = null, Status = errorStatus };
+            //output = new ObjectListOutput<CompanyPropertySetup, IErrorData>() { list = null, Status = errorStatus };
             //output.pagingSummary = pagingSummary;
-            return Request.CreateResponse(HttpStatusCode.OK, output);
+            return Request.CreateResponse(HttpStatusCode.OK, result);
         }
 
 
