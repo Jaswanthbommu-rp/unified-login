@@ -14,6 +14,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Un
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using System.Net.Http;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
@@ -33,9 +34,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private IProductRepository _productRepository;
         private IPropertyRepository _propertyRepository;
         private IManageBlueBook _manageBlueBook;
+        private IManageProductPanel _manageProductPanel;
+
         private DefaultUserClaim _defaultUserClaim;
         #endregion
-
+        
         #region Constructors
         /// <summary>
         /// Constructor
@@ -51,6 +54,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _productRepository = new ProductRepository(repository);
             _defaultUserClaim = userClaim;
             _manageBlueBook = new ManageBlueBook(_defaultUserClaim, _productInternalSettingRepository, messageHandler);
+            _manageProductPanel = new ManageProductPanel(_defaultUserClaim);
             _propertyRepository = new PropertyRepository(repository);
         }
 
@@ -68,22 +72,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _productRepository = new ProductRepository();
             _propertyRepository = new PropertyRepository();
             _manageBlueBook = new ManageBlueBook(userClaim);
+            _manageProductPanel = new ManageProductPanel(userClaim);
             _defaultUserClaim = userClaim;
-        }
-
-        /// <summary>
-        /// Create a basic instance of the ManageOrganization Controller class
-        /// </summary>
-        public ManageOrganization()
-        {
-            _organizationRepository = new OrganizationRepository();
-            _credentialRepository = new CredentialRepository();
-            _userLoginRepository = new UserLoginRepository();
-            _personaRepository = new PersonaRepository();
-            _organizationProductRepository = new OrganizationProductRepository();
-            _productInternalSettingRepository = new ProductInternalSettingRepository();
-            _productRepository = new ProductRepository();
-            _manageBlueBook = new ManageBlueBook();
         }
 
         #endregion
@@ -702,6 +692,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
         #endregion
         #endregion
+
+
+        #region Audit Property data
+        public void AuditCompanyProductPropertiesToUPFM(Guid companyInstanceId, int productId)
+        {
+            List<Guid> propertyInstanceIds = new List<Guid>();
+            List<BooksPropertyInstance> booksPropertyInstance = GetPropertyInstanceFromBooks(companyInstanceId);
+            
+            var productResult = _manageProductPanel.GetProductProperties(_defaultUserClaim.PersonaId, _defaultUserClaim.PersonaId, productId, null);
+            
+            //List<PropertySetup> propertyDetails =  _propertyRepository.GetPropertiesForCompany(propertyInstanceIds, propertyName, blueId,  dataFilter);
+            //propertyDetails = AddContractedNameToPropertyList(booksPropertyInstance, propertyDetails);
+            //List<CompanyPropertySetup> companyPropertySetup = new List<CompanyPropertySetup>()
+            //{
+            //    new CompanyPropertySetup()
+            //    {
+            //        Domain = booksPropertyInstance?.Select(p => p.attributes.domain).Distinct().ToList(),
+            //        Property = propertyDetails
+            //    }
+            //};
+
+            //return companyPropertySetup;
+        }
+
+
+        #endregion
+
 
         #region Private Methods
 

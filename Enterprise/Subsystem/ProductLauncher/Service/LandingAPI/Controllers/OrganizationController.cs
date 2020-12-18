@@ -1067,6 +1067,50 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         }
         #endregion
 
+        /// <summary>
+        /// Audit the given product properties to UPFM properties
+        /// </summary>
+        /// <param name="companyInstanceId"></param>
+        /// <param name="productId"></param>
+        /// <returns></returns>
+        //[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        //[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        //[SwaggerResponse(HttpStatusCode.OK, Description = "Get information about a list of Properties for an Organization", Type = typeof(CompanyPropertySetup))]
+        //[SwaggerResponseExamples(typeof(CompanyPropertySetup), typeof(PropertyListExample))]
+        [Route("CompanySetup/{companyInstanceId}/product/{productId}/audit")]
+        [AuthorizeScope("companyfunctions", "rplandingapi")]
+        [HttpGet]
+        public HttpResponseMessage AuditCompanyProductPropertiesToUPFM(Guid companyInstanceId, int productId)
+        {
+            if (companyInstanceId == Guid.Empty)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Company Instance Id not supplied");
+            }
+            IDictionary<object, object> globals = new Dictionary<object, object>();
+            ObjectListOutput<CompanyPropertySetup, IErrorData> output = new ObjectListOutput<CompanyPropertySetup, IErrorData>();
+            Status<IErrorData> errorStatus = new Status<IErrorData>();
+
+            //List<CompanyPropertySetup> companyPropertySetup = 
+                _manageOrganization.AuditCompanyProductPropertiesToUPFM(companyInstanceId, productId);
+
+            //int totalRecords = 0;
+            //if (companyPropertySetup.Count > 0)
+            //{
+            //    totalRecords = companyPropertySetup[0]?.Property.Count > 0 ? companyPropertySetup[0].Property[0].TotalRecords : 0;
+            //};
+            //decimal resultsPerPage = ((datafilter.Pages.ResultsPerPage == 100) && (totalRecords > 0)) ? totalRecords : datafilter.Pages.ResultsPerPage;
+            //resultsPerPage = (resultsPerPage == 0) ? totalRecords : resultsPerPage;
+            //PagingSummary pagingSummary = new PagingSummary()
+            //{
+            //    TotalRecords = totalRecords,
+            //    TotalPages = (resultsPerPage == 0) ? 0 : (int)Math.Ceiling(totalRecords / resultsPerPage)
+            //};
+            output = new ObjectListOutput<CompanyPropertySetup, IErrorData>() { list = null, Status = errorStatus };
+            //output.pagingSummary = pagingSummary;
+            return Request.CreateResponse(HttpStatusCode.OK, output);
+        }
+
+
         #region Update Property
         /// <summary>
         ///Update Properties for a Organization

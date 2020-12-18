@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
@@ -152,5 +153,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="propertyName">propertyName</param>
 		/// <returns>RepositoryResponse object</returns>
 		RepositoryResponse UpdateProperty(Guid propertyInstanceId, string propertyName);
-	}
+
+        void AuditCompanyProductPropertiesToUPFM(Guid companyInstanceId, int product);
+    }
 }
