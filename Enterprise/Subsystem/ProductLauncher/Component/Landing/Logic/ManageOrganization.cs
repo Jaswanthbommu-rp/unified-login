@@ -702,7 +702,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             
             var productResult = _manageProductPanel.GetProductProperties(_defaultUserClaim.PersonaId, _defaultUserClaim.PersonaId, productId, null);
             
-            if (productResult.Records.Count > 0)
+            if (productResult.Records != null && productResult.Records.Count > 0)
             {
                 UPFMProperty upfmProperties = new UPFMProperty();
                 List<string> instanceids = new List<string>();
@@ -728,7 +728,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         ProductInstanceId = property.ID
                     };
 
-                    var instanceExists = translatedData.Data.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.ID));
+                    var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.ID));
                     if (instanceExists != null)
                     {
                         pa.UPFMInstanceId = instanceExists.PropertyInstanceSourceId;
