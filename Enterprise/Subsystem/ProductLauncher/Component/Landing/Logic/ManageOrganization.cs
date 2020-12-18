@@ -698,10 +698,40 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         public void AuditCompanyProductPropertiesToUPFM(Guid companyInstanceId, int productId)
         {
             List<Guid> propertyInstanceIds = new List<Guid>();
-            List<BooksPropertyInstance> booksPropertyInstance = GetPropertyInstanceFromBooks(companyInstanceId);
+            List<PropertyAudit> propertyAuditResult = new List<PropertyAudit>();
             
             var productResult = _manageProductPanel.GetProductProperties(_defaultUserClaim.PersonaId, _defaultUserClaim.PersonaId, productId, null);
             
+            if (productResult.Records.Count > 0)
+            {
+                UPFMProperty upfmProperties = new UPFMProperty();
+                List<string> instanceids = new List<string>();
+                //var booksProductDetail = _productRepository.GetBooksMasterProductDetail(upfmProductId);
+                List<BooksPropertyInstance> booksPropertyInstance = GetPropertyInstanceFromBooks(companyInstanceId);
+
+                foreach (var property in booksPropertyInstance)
+                {
+                    instanceids.Add(property.attributes.propertyInstanceSourceId.ToLower());
+                }
+
+                upfmProperties.id = instanceids;
+
+                var booksProductDetail = _productRepository.GetBooksMasterProductDetail(productId);
+
+                var translatedData = _manageBlueBook.GetTranslatePropertiesFromUPFMToProductv3(upfmProperties, booksProductDetail.BooksProductCode);
+
+                foreach (var property in productResult.Records)
+                {
+                    //PropertyAudit pa = new PropertyAudit()
+                    //{
+                    //    Name = property.
+                    //};
+                    
+                }
+            }
+
+
+
             //List<PropertySetup> propertyDetails =  _propertyRepository.GetPropertiesForCompany(propertyInstanceIds, propertyName, blueId,  dataFilter);
             //propertyDetails = AddContractedNameToPropertyList(booksPropertyInstance, propertyDetails);
             //List<CompanyPropertySetup> companyPropertySetup = new List<CompanyPropertySetup>()
