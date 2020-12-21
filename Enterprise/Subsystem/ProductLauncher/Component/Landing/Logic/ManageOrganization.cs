@@ -8,14 +8,20 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using System.Net.Http;
+using System.Reflection;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Accounting;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ops;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Rum;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -632,7 +638,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 dataFilter = globals[BaseType.RequestParameter] as RequestParameter;
             }
-            List<Guid> propertyInstanceIds = new List<Guid>();
+            
+            List<Guid> propertyInstanceIds;
             List<BooksPropertyInstance> booksPropertyInstance = GetPropertyInstanceFromBooks(companyInstanceId);
             if (domain != null)
             {
@@ -697,51 +704,111 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         #region Audit Property data
         public List<PropertyAudit> AuditCompanyProductPropertiesToUPFM(Guid companyInstanceId, int productId)
         {
-            List<Guid> propertyInstanceIds = new List<Guid>();
-            List<PropertyAudit> propertyAuditResult = new List<PropertyAudit>();
+            var propertyAuditResult = new List<PropertyAudit>();
+            var upfmPropertyDetails = new List<UPFMPropertyInstance>();
             
             var productResult = _manageProductPanel.GetProductProperties(_defaultUserClaim.PersonaId, _defaultUserClaim.PersonaId, productId, null);
             
+            // add sorting on name
+            // add different message if upfm property list is null
+            
             if (productResult.Records != null && productResult.Records.Count > 0)
             {
-                UPFMProperty upfmProperties = new UPFMProperty();
-                List<string> instanceids = new List<string>();
-                //var booksProductDetail = _productRepository.GetBooksMasterProductDetail(upfmProductId);
-                List<BooksPropertyInstance> booksPropertyInstance = GetPropertyInstanceFromBooks(companyInstanceId);
+                var upfmProperties = new UPFMProperty();
+                var instanceids = new List<string>();
+                var instanceGuids = new List<Guid>();
+                var booksPropertyInstance = GetPropertyInstanceFromBooks(companyInstanceId);
 
                 foreach (var property in booksPropertyInstance)
                 {
                     instanceids.Add(property.attributes.propertyInstanceSourceId.ToLower());
+                    instanceGuids.Add(new Guid(property.attributes.propertyInstanceSourceId));
                 }
 
+                if (instanceGuids.Count > 0)
+                {
+                    upfmPropertyDetails = _propertyRepository.ListUPFMPropertyInstanceIdByInstanceIds(instanceGuids);
+                }
+                
                 upfmProperties.id = instanceids;
 
                 var booksProductDetail = _productRepository.GetBooksMasterProductDetail(productId);
 
                 var translatedData = _manageBlueBook.GetTranslatePropertiesFromUPFMToProductv3(upfmProperties, booksProductDetail.BooksProductCode);
+                var productPropertyType = productResult.Records[0].GetType();
 
-                foreach (var property in productResult.Records.Cast<ProductProperty>())
+                if (productPropertyType == typeof(ProductProperty))
                 {
-                    PropertyAudit pa = new PropertyAudit()
+                    foreach (var property in productResult.Records.Cast<ProductProperty>())
                     {
-                        Name = property.Name,
-                        ProductInstanceId = property.ID
-                    };
-
-                    var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.ID));
-                    if (instanceExists != null)
-                    {
-                        pa.UPFMInstanceId = instanceExists.PropertyInstanceSourceId;
-                        pa.Status = instanceids.All(p => p != instanceExists.PropertyInstanceSourceId) ? "Missing 1" : "";
+                        AuditPropertyCompare(property.ID, property.Name, translatedData, instanceids, upfmPropertyDetails, propertyAuditResult);
                     }
-
-                    propertyAuditResult.Add(pa);
                 }
+                else if (productPropertyType == typeof(ACProperty))
+                {
+                    foreach (var property in productResult.Records.Cast<ACProperty>())
+                    {
+                        AuditPropertyCompare(property.Id, property.PropertyName, translatedData, instanceids, upfmPropertyDetails, propertyAuditResult);
+                    }
+                }
+                else if (productPropertyType == typeof(AssetGroup))
+                {
+                    foreach (var property in productResult.Records.Cast<AssetGroup>())
+                    {
+                        AuditPropertyCompare(property.ID, property.Name, translatedData, instanceids, upfmPropertyDetails, propertyAuditResult);
+                    }
+                }
+                else if (productPropertyType == typeof(OnSiteProperty))
+                {
+                    foreach (var property in productResult.Records.Cast<OnSiteProperty>())
+                    {
+                        AuditPropertyCompare(property.GetPropertyId.ToString(), property.GetName, translatedData, instanceids, upfmPropertyDetails, propertyAuditResult);
+                    }
+                }
+                else if (productPropertyType == typeof(RumPropertyGroup))
+                {
+                    foreach (var property in productResult.Records.Cast<RumPropertyGroup>())
+                    {
+                        AuditPropertyCompare(property.Id.ToString(), property.Name, translatedData, instanceids, upfmPropertyDetails, propertyAuditResult);
+                    }
+                }
+                else if (productPropertyType == typeof(ProductProperties))
+                {
+                    foreach (var property in productResult.Records.Cast<ProductProperties>())
+                    {
+                        AuditPropertyCompare(property.GetPropertyId.ToString(), property.GetName, translatedData, instanceids, upfmPropertyDetails, propertyAuditResult);
+                    }
+                }
+
+                propertyAuditResult = propertyAuditResult.OrderBy(p => p.Name).ToList();
             }
 
             return propertyAuditResult;
         }
 
+        private static void AuditPropertyCompare(string propertyId, string propertyName, TranslatePropertyInstance translatedData, List<string> instanceids, List<UPFMPropertyInstance> upfmPropertyDetails, List<PropertyAudit> propertyAuditResult)
+        {
+            PropertyAudit pa = new PropertyAudit()
+            {
+                Name = propertyName,
+                ProductInstanceId = propertyId
+            };
+
+            var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == propertyId));
+            if (instanceExists != null)
+            {
+                pa.UPFMInstanceId = instanceExists.PropertyInstanceSourceId;
+                pa.Status = instanceids.All(p => p != instanceExists.PropertyInstanceSourceId) ? "Missing 1" : "";
+
+                var upfmProperty = upfmPropertyDetails.FirstOrDefault(p => p.InstanceId == new Guid(instanceExists.PropertyInstanceSourceId));
+                if (upfmProperty != null)
+                {
+                    pa.UPFMName = upfmProperty.Name;
+                }
+            }
+
+            propertyAuditResult.Add(pa);
+        }
 
         #endregion
 

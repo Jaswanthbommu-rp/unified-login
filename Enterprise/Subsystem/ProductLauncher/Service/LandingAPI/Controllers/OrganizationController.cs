@@ -1086,28 +1086,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Company Instance Id not supplied");
             }
-            //IDictionary<object, object> globals = new Dictionary<object, object>();
-            //ObjectListOutput<CompanyPropertySetup, IErrorData> output = new ObjectListOutput<CompanyPropertySetup, IErrorData>();
-            //Status<IErrorData> errorStatus = new Status<IErrorData>();
+            Status<IErrorData> errorStatus = new Status<IErrorData>();
 
-            //List<CompanyPropertySetup> companyPropertySetup = 
-            var result = _manageOrganization.AuditCompanyProductPropertiesToUPFM(companyInstanceId, productId);
-
-            //int totalRecords = 0;
-            //if (companyPropertySetup.Count > 0)
-            //{
-            //    totalRecords = companyPropertySetup[0]?.Property.Count > 0 ? companyPropertySetup[0].Property[0].TotalRecords : 0;
-            //};
-            //decimal resultsPerPage = ((datafilter.Pages.ResultsPerPage == 100) && (totalRecords > 0)) ? totalRecords : datafilter.Pages.ResultsPerPage;
-            //resultsPerPage = (resultsPerPage == 0) ? totalRecords : resultsPerPage;
-            //PagingSummary pagingSummary = new PagingSummary()
-            //{
-            //    TotalRecords = totalRecords,
-            //    TotalPages = (resultsPerPage == 0) ? 0 : (int)Math.Ceiling(totalRecords / resultsPerPage)
-            //};
-            //output = new ObjectListOutput<CompanyPropertySetup, IErrorData>() { list = null, Status = errorStatus };
-            //output.pagingSummary = pagingSummary;
-            return Request.CreateResponse(HttpStatusCode.OK, result);
+            var auditResult = _manageOrganization.AuditCompanyProductPropertiesToUPFM(companyInstanceId, productId);
+            
+            ObjectListOutput<PropertyAudit, IErrorData> output = new ObjectListOutput<PropertyAudit, IErrorData>() { list = auditResult, Status = errorStatus };
+            output.pagingSummary = new PagingSummary()
+            {
+                TotalRecords = auditResult.Count,
+                TotalPages = 1
+            };;
+            return Request.CreateResponse(HttpStatusCode.OK, output);
         }
 
 
