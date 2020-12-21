@@ -1,4 +1,5 @@
-﻿using RP.Enterprise.Foundation.DataAccess.Component;
+﻿using Aspose.Cells;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Attributes;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
@@ -11,6 +12,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.Export;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Concurrent;
@@ -20,12 +22,8 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Runtime.Caching;
-using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Controllers;
-using Microsoft.Ajax.Utilities;
-using Aspose.Cells;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.Export;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -1087,15 +1085,48 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Company Instance Id not supplied");
             }
             Status<IErrorData> errorStatus = new Status<IErrorData>();
-
-            var auditResult = _manageOrganization.AuditCompanyProductPropertiesToUPFM(companyInstanceId, productId);
             
-            ObjectListOutput<PropertyAudit, IErrorData> output = new ObjectListOutput<PropertyAudit, IErrorData>() { list = auditResult, Status = errorStatus };
-            output.pagingSummary = new PagingSummary()
+            // need to alter the user being used to match the company or the product calls will not have the correct context
+
+            if (_userClaims.OrganizationRealPageGuid != EmployeeCompanyRealPageId)
             {
-                TotalRecords = auditResult.Count,
-                TotalPages = 1
-            };;
+                //return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid company context");
+            }
+            var orgDetails = _manageOrganization.GetOrganization(companyInstanceId);
+
+            if (orgDetails != null)
+            {
+                _userClaims.CustomerMasterId = orgDetails.BooksCustomerMasterId;
+                _userClaims.OrganizationMasterId = orgDetails.BooksMasterId;
+                _userClaims.OrganizationName = orgDetails.Name;
+                _userClaims.OrganizationPartyId = orgDetails.PartyId;
+                _userClaims.OrganizationRealPageGuid = orgDetails.RealPageId;
+                
+                IDictionary<object, object> globals = new Dictionary<object, object>();
+                var companyList = _manageOrganization.GetCompanyList(null, 0, 0, Convert.ToInt32(orgDetails.PartyId), globals);
+                
+            }
+            /*
+            CustomerMasterId: 1308
+            OrganizationMasterId: 9895
+            OrganizationName: "RealPage Demo Company"
+            OrganizationPartyId: 3
+            OrganizationRealPageGuid: {9e9410ae-2c41-47d2-81d1-109c08cd151c}
+          
+            FirstName: "Michael"
+            LastName: "Hart"
+            LoginName: "demo062018@test.com"
+            PersonaId: 8139
+            UserId: 7074
+            UserRealPageGuid: {8492a1b4-2be5-4197-b361-97d375865f01}
+            */
+            
+            _manageOrganization = new ManageOrganization(_userClaims);
+            _manageBlueBook = new ManageBlueBook(_userClaims);
+            
+            var auditResult = _manageOrganization.AuditCompanyProductPropertiesToUPFM(companyInstanceId, productId);
+
+            ObjectListOutput<PropertyAudit, IErrorData> output = new ObjectListOutput<PropertyAudit, IErrorData> {list = auditResult, Status = errorStatus, pagingSummary = new PagingSummary() {TotalRecords = auditResult.Count, TotalPages = 1}};
             return Request.CreateResponse(HttpStatusCode.OK, output);
         }
 

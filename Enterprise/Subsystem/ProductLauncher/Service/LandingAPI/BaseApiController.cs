@@ -24,6 +24,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI
     [AllowCors("LandingAPICORSAllowedOrigins"), AuthorizeScope("rplandingapi")]
     public class BaseApiController : ApiController
     {
+        public static readonly Guid EmployeeCompanyRealPageId = new Guid("0D018E46-C20E-477D-ADED-4E5A35FB8F99");
+        
         /// <summary>
         /// Enterprise UserId
         /// </summary>

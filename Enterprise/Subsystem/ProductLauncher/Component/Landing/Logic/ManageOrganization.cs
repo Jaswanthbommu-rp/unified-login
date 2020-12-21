@@ -1,27 +1,25 @@
 ﻿using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
-using System;
-using System.CodeDom;
-using System.Collections.Generic;
-using System.Linq;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
-using System.Net.Http;
-using System.Reflection;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Accounting;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ops;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Rum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -707,7 +705,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var propertyAuditResult = new List<PropertyAudit>();
             var upfmPropertyDetails = new List<UPFMPropertyInstance>();
             
-            var productResult = _manageProductPanel.GetProductProperties(_defaultUserClaim.PersonaId, _defaultUserClaim.PersonaId, productId, null);
+            var productResult = _manageProductPanel.GetProductProperties(_defaultUserClaim.PersonaId, 0, productId, null);
             
             // add sorting on name
             // add different message if upfm property list is null
@@ -734,7 +732,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                 var booksProductDetail = _productRepository.GetBooksMasterProductDetail(productId);
 
-                var translatedData = _manageBlueBook.GetTranslatePropertiesFromUPFMToProductv3(upfmProperties, booksProductDetail.BooksProductCode);
+                TranslatePropertyInstance translatedData;
+
+                if (booksProductDetail.ProductId != (int) ProductEnum.UnifiedPlatform)
+                {
+                    translatedData = _manageBlueBook.GetTranslatePropertiesFromUPFMToProductv3(upfmProperties, booksProductDetail.BooksProductCode);
+                }
+                else
+                {
+                    translatedData = new TranslatePropertyInstance() {Data = new TranslatePropertyInstanceData() { Attributes = new List<TranslatePropertyInstanceAttribute>()}};
+                    
+                    foreach (var instance in booksPropertyInstance)
+                    {
+                        var tpi = new List<TranslatedPropertyInstanceData>();
+                        tpi.Add(new TranslatedPropertyInstanceData(){ PropertyName = instance.attributes.propertyName, PropertyInstanceSourceId = instance.attributes.propertyInstanceSourceId, Source = instance.attributes.source});
+
+                        translatedData.Data.Attributes.Add(new TranslatePropertyInstanceAttribute() {PropertyInstanceSourceId = instance.attributes.propertyInstanceSourceId, Source = booksProductDetail.BooksProductCode, TranslatedPropertyInstances = tpi});
+                    }
+                }
+
                 var productPropertyType = productResult.Records[0].GetType();
 
                 if (productPropertyType == typeof(ProductProperty))
@@ -779,6 +795,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         AuditPropertyCompare(property.GetPropertyId.ToString(), property.GetName, translatedData, instanceids, upfmPropertyDetails, propertyAuditResult);
                     }
                 }
+                else if (productPropertyType == typeof(Portfolio))
+                {
+                    foreach (var property in productResult.Records.Cast<Portfolio>())
+                    {
+                        AuditPropertyCompare(property.ID, property.Name, translatedData, instanceids, upfmPropertyDetails, propertyAuditResult);
+                    }
+                }
 
                 propertyAuditResult = propertyAuditResult.OrderBy(p => p.Name).ToList();
             }
@@ -807,6 +830,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
             }
 
+            if (translatedData.Data == null)
+            {
+                pa.Status = "Nothing to translate";
+            }
             propertyAuditResult.Add(pa);
         }
 
