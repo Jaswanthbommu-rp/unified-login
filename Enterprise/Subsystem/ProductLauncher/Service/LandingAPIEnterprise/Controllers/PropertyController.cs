@@ -168,9 +168,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
         /// <summary>
         /// Get a list of companies and its properties for the given user
-        /// </summary>
-        /// <param name="userLoginName">The userLoginName for the company being requested</param>
-        /// <param name="productCode">The productid is to get the product properties</param>
+        /// </summary>        
+        /// <param name="productCode">The productCode is to get the product properties</param>
         /// <returns>http Response</returns>
         [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
@@ -180,7 +179,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [Route("user/getusercompanyproperties")]
         [AuthorizeScope("enterpriseapi")]
         [HttpGet]
-        public HttpResponseMessage GetUserCompanyProperties(string userLoginName, string productCode)
+        public HttpResponseMessage GetUserCompanyProperties(string productCode)
         {
             var propertyResponse = new ListResponse();
             ErrorResponse error = new ErrorResponse()
@@ -193,7 +192,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             UserCompaniesProperties userCompaniesProperties = new UserCompaniesProperties();
             List<Properties> companyProperties = new List<Properties>();
 
-            var companyResponse = manageUserLogin.GetUserPersonaOrganization(userLoginName);
+            var companyResponse = manageUserLogin.GetUserPersonaOrganization(_userClaims.LoginName);
             var upfmProduct = ProductEnumHelper.GetUPFMProductEnum(productId);
 
             foreach (var company in companyResponse)
