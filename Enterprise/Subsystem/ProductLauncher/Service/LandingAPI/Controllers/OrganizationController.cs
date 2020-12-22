@@ -1133,8 +1133,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 _userClaims.LastName = "XX";
             }
 
-
-
             if (_messageHandler == null)
             {
                 _manageOrganization = new ManageOrganization(_userClaims);

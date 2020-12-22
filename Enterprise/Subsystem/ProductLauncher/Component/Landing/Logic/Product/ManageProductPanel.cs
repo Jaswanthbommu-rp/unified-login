@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Caching;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
@@ -23,7 +24,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private DefaultUserClaim _userClaims;
         readonly IProductInternalSettingRepository _productInternalSettingRepository;
         readonly IList<ProductInternalSetting> _productInternalSettingList;
-
+        readonly IManageUnifiedLogin _manageUnifiedLogin;
+        
         #endregion
 
         #region Constructors
@@ -41,15 +43,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // load from database
                 return _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform).ToList();
             });
+            _manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
         }
         
         /// <summary>
-        /// Manages Product panel constructor
+        /// Unit Test Product panel constructor
         /// </summary>
-        public ManageProductPanel(DefaultUserClaim userClaims, IProductInternalSettingRepository productInternalSettingRepository)
+        /// <param name="userClaims"></param>
+        /// <param name="repository"></param>
+        /// <param name="manageBlueBook"></param>
+        public ManageProductPanel(DefaultUserClaim userClaims, IRepository repository, IManageBlueBook manageBlueBook)
         {
             _userClaims = userClaims;
-            _productInternalSettingRepository = productInternalSettingRepository;
+            _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
             var rpcache = new RPObjectCache();
             var cacheKey = $"productInternalSettingPanel_{(int)ProductEnum.UnifiedPlatform}";
             _productInternalSettingList = rpcache.GetFromCache<IList<ProductInternalSetting>>(cacheKey, 60, () =>
@@ -57,6 +63,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // load from database
                 return _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform).ToList();
             });
+            ProductRepository productRepository = new ProductRepository(repository);
+            _manageUnifiedLogin = new ManageUnifiedLogin(_userClaims, _productInternalSettingRepository, productRepository, manageBlueBook);
         }
 
         #endregion
@@ -67,8 +75,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             ListResponse result = new ListResponse();
             try
             {
-                IManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
-
                 //IProduct product;
                 string productName = Enum.GetName(typeof(ProductEnum), productId);
                 string productcode = ProductEnumHelper.StringValueOf((ProductEnum)productId);
@@ -166,11 +172,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                         if (!usePropertyInstanceUnifiedLogin)
                         {
-                            result = manageUnifiedLogin.GetProperties(editorPersonaId, userPersonaId, false, datafilter);
+                            result = _manageUnifiedLogin.GetProperties(editorPersonaId, userPersonaId, false, datafilter);
                         }
                         else
                         {
-                            result = manageUnifiedLogin.GetUPFMProperties(editorPersonaId, userPersonaId, false, ProductEnum.UnifiedPlatform, datafilter);
+                            result = _manageUnifiedLogin.GetUPFMProperties(editorPersonaId, userPersonaId, false, ProductEnum.UnifiedPlatform, datafilter);
                         }
 
                         break;
