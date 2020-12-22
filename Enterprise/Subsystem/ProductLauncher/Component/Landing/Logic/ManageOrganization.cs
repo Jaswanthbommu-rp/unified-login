@@ -58,7 +58,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _productRepository = new ProductRepository(repository);
             _defaultUserClaim = userClaim;
             _manageBlueBook = new ManageBlueBook(_defaultUserClaim, _productInternalSettingRepository, messageHandler);
-            _manageProductPanel = new ManageProductPanel(_defaultUserClaim);
+            _manageProductPanel = new ManageProductPanel(_defaultUserClaim, _productInternalSettingRepository);
             _propertyRepository = new PropertyRepository(repository);
         }
 
@@ -832,7 +832,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             if (translatedData.Data == null)
             {
-                pa.Status = "Nothing to translate";
+                pa.Status = "No product data translated";
             }
             propertyAuditResult.Add(pa);
         }

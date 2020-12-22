@@ -42,6 +42,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 return _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform).ToList();
             });
         }
+        
+        /// <summary>
+        /// Manages Product panel constructor
+        /// </summary>
+        public ManageProductPanel(DefaultUserClaim userClaims, IProductInternalSettingRepository productInternalSettingRepository)
+        {
+            _userClaims = userClaims;
+            _productInternalSettingRepository = productInternalSettingRepository;
+            var rpcache = new RPObjectCache();
+            var cacheKey = $"productInternalSettingPanel_{(int)ProductEnum.UnifiedPlatform}";
+            _productInternalSettingList = rpcache.GetFromCache<IList<ProductInternalSetting>>(cacheKey, 60, () =>
+            {
+                // load from database
+                return _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform).ToList();
+            });
+        }
 
         #endregion
 

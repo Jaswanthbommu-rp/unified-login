@@ -34,7 +34,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
     public class OrganizationTests
     {
         #region Private Variables
-
+        public static readonly Guid EmployeeCompanyRealPageId = new Guid("0D018E46-C20E-477D-ADED-4E5A35FB8F99");
+        
         Mock<IRepository> _mockRepository = new Mock<IRepository>();
         Mock<IUnitOfWork> _mockUnitofWork = new Mock<IUnitOfWork>();
         Mock<IRepositoryResponse> _mockRepositoryResponse = new Mock<IRepositoryResponse>();
@@ -1763,6 +1764,152 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             Assert.True(propertyOutput.list[0].Property[0].InstanceId == setup[0].Property[0].InstanceId);
             Assert.True(propertyOutput.list[0].Domain[0] == setup[0].Domain[0]);
         }
+        #endregion
+        
+        #region Audit property Tests
+        
+        [Fact]
+        public void AuditCompanyProductPropertiesToUPFM_InvalidUserCompany()
+        {
+            DefaultUserClaim invalidDefaultUserClaim = new DefaultUserClaim()
+            {
+                CorrelationId = new Guid(), CustomerMasterId = _BooksCompanyMasterId, OrganizationRealPageGuid = Guid.NewGuid()
+            };
+            
+            //Arrange
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , invalidDefaultUserClaim
+            )
+            {
+                Request = new HttpRequestMessage(),
+                Configuration = new HttpConfiguration()
+            };
+
+            //Act           
+            HttpResponseMessage response = organizationController.AuditCompanyProductPropertiesToUPFM(Guid.NewGuid(), (int)ProductEnum.OneSite);
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
+        }
+
+        [Fact]
+        public void AuditCompanyProductPropertiesToUPFM_EmptyUnknownCompany()
+        {
+            //Arrange
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            )
+            {
+                Request = new HttpRequestMessage(),
+                Configuration = new HttpConfiguration()
+            };
+
+            //Act           
+            HttpResponseMessage response = organizationController.AuditCompanyProductPropertiesToUPFM(Guid.Empty, (int)ProductEnum.OneSite);
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
+
+            //Act           
+            response = organizationController.AuditCompanyProductPropertiesToUPFM(new Guid("00000000-0000-0000-0000-000000000000"), (int)ProductEnum.OneSite);
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
+
+        }
+
+        
+        [Fact]
+        public void AuditCompanyProductPropertiesToUPFM_AuditOneSite()
+        {
+            DefaultUserClaim defaultUserClaim = new DefaultUserClaim()
+            {
+                CorrelationId = new Guid(), CustomerMasterId = _BooksCompanyMasterId, OrganizationRealPageGuid = EmployeeCompanyRealPageId
+            };
+            
+            var userLogin = new UserLogin() { UserId = 1234, LoginName = "admin@test.com", RealPageId = new Guid("99999999-9999-9999-9999-999999999999") };
+            
+            var organizationList = new List<Organization>()
+            {
+                new Organization()
+                {
+                    RealPageId = new Guid("11111111-1111-1111-1111-111111111111"),
+                    CreateDate = _CreateDate,
+                    Name = "Onesite Test Company",
+                    PartyId = 12345,
+                    BooksMasterId = 123456,
+                    BooksCustomerMasterId = 1234567,
+                    organizationType = new OrganizationType()
+                    {
+                        OrganizationTypeId = _organizationTypeId,
+                        Name = "Multifamily",
+                        CreateDate = new DateTime()
+                    },
+                    OrganizationTypeId = _organizationTypeId,
+                    OrganizationDomainId = 1,
+                    OrganizationDomain = new OrganizationDomain()
+                    {
+                        OrganizationDomainId = 1,
+                        Name = "Primary",
+                        CreateDate = new DateTime()
+                    },
+                }
+            };
+            
+            List<dynamic> companyList = new List<dynamic>();
+            string _mockJsonCompanyList = "{\r\n\t\t\"PartyId\": \""+organizationList[0].PartyId+"\",\r\n\t\t\"Name\": \""+organizationList[0].Name+"\",\r\n\t\t\"OrganizationRealPageId\": \""+organizationList[0].RealPageId+"\",\r\n\t\t\"BooksMasterId\": \""+organizationList[0].BooksMasterId+"\",\r\n\t\t\"BooksCustomerMasterId\": \""+organizationList[0].BooksCustomerMasterId+"\",\r\n\t\t\"SettingName\": \"RealPageEmployeeAccessID\",\r\n\t\t\"PersonRealPageId\": \""+userLogin.RealPageId+"\",\r\n\t\t\"LoginName\": \""+userLogin.LoginName+"\",\r\n\t}";
+            companyList.Add(JsonConvert.DeserializeObject<dynamic>(_mockJsonCompanyList));
+            
+            _mockRepository
+                .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization,
+                    It.Is<object>(
+                        d => testIsRealPageId(d, organizationList[0].RealPageId))))
+                .Returns(organizationList[0]);
+            
+            
+            _mockRepository
+                .Setup(m => m.GetMany<dynamic>(StoredProcNameConstants.SP_ListOrganizations, 
+                    It.Is<object>(
+                        d => testIsRealPageId(d, organizationList[0].RealPageId))))
+                .Returns(companyList);
+            
+            
+            //SP_GetUserLogin
+            _mockRepository.Setup(m => m.GetOne<UserLogin>(StoredProcNameConstants.SP_GetUserLogin, 
+                    It.Is<object>(
+                        d => testIsRealPageId(d, userLogin.RealPageId))))
+                .Returns(userLogin);
+            
+            
+            //Arrange
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , defaultUserClaim
+            )
+            {
+                Request = new HttpRequestMessage(),
+                Configuration = new HttpConfiguration()
+            };
+
+           
+            //Act
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
+            HttpResponseMessage response = organizationController.AuditCompanyProductPropertiesToUPFM(organizationList[0].RealPageId, (int)ProductEnum.OneSite);
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
+        }
+
         #endregion
     }
 }
