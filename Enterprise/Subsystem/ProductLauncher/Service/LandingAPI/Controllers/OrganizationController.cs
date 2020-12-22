@@ -1101,25 +1101,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 _userClaims.OrganizationName = orgDetails.Name;
                 _userClaims.OrganizationPartyId = orgDetails.PartyId;
                 _userClaims.OrganizationRealPageGuid = orgDetails.RealPageId;
-                
-                IDictionary<object, object> globals = new Dictionary<object, object>();
-                var companyList = _manageOrganization.GetCompanyList(null, 0, 0, Convert.ToInt32(orgDetails.PartyId), globals);
-                
+
+                var adminUserGuid = _manageOrganization.GetOrganizationAdminUserRealPageId(orgDetails.RealPageId);
+                if (adminUserGuid != Guid.Empty)
+                {
+                    _userClaims.UserRealPageGuid = adminUserGuid;
+                    var userLogin = _manageUserLogin.GetUserLogin(adminUserGuid, orgDetails.PartyId);
+                    
+                    if (userLogin != null)
+                    {
+                        _userClaims.LoginName = userLogin.LoginName;
+                        _userClaims.UserId = Convert.ToInt32(userLogin.UserId);
+                        
+                        var userPersonas = _manageUserLogin.GetUserPersonaOrganization(userLogin.LoginName);
+                        if (userPersonas != null && userPersonas.Any(p => p.OrganizationPartyId == orgDetails.PartyId))
+                        {
+                            _userClaims.PersonaId = userPersonas.First(p => p.OrganizationPartyId == orgDetails.PartyId).PersonaId;
+                        }
+                        _userClaims.FirstName = "XX";
+                        _userClaims.LastName = "XX";
+                    }
+                }
             }
-            /*
-            CustomerMasterId: 1308
-            OrganizationMasterId: 9895
-            OrganizationName: "RealPage Demo Company"
-            OrganizationPartyId: 3
-            OrganizationRealPageGuid: {9e9410ae-2c41-47d2-81d1-109c08cd151c}
-          
-            FirstName: "Michael"
-            LastName: "Hart"
-            LoginName: "demo062018@test.com"
-            PersonaId: 8139
-            UserId: 7074
-            UserRealPageGuid: {8492a1b4-2be5-4197-b361-97d375865f01}
-            */
             
             _manageOrganization = new ManageOrganization(_userClaims);
             _manageBlueBook = new ManageBlueBook(_userClaims);
