@@ -14,18 +14,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         /// User PersonaId
         /// </summary>
         public long PersonaId { get; set; }
+
         /// <summary>
         /// Organization Name
         /// </summary>
         public string OrganizationName { get; set; }
+
         /// <summary>
         /// CompanyMasterId
         /// </summary>        
         public long Id { get; set; }
+
         /// <summary>
         /// Company InstanceId
         /// </summary>
-        public Guid InstanceId { get; set; }
+        public Guid InstanceId { get; set; }        
+
         /// <summary>
         /// Properties
         /// </summary>

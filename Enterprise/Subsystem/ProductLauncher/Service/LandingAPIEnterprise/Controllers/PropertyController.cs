@@ -198,7 +198,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             foreach (var company in companyResponse)
             {
                 propertyResponse = upfmProductIntegration.GetUPFMProperties(company.PersonaId, upfmProduct, null);
-                if (propertyResponse.Records == null) return Request.CreateResponse(HttpStatusCode.ExpectationFailed, "no properties mapped");
+                if (propertyResponse.Records.Count == 0) return Request.CreateResponse(HttpStatusCode.ExpectationFailed, $"Properties are not loading due to {propertyResponse.ErrorReason}");
 
                 userCompaniesProperties.Id = company.BooksCustomerMasterId;
                 userCompaniesProperties.OrganizationName = company.OrganizationName;
@@ -207,8 +207,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 {
                     var properties = new Properties()
                     {
-                        InstanceId = ((ProductProperty)product).ID,
-                        Id = ((ProductProperty)product).InstanceId,
+                        InstanceId = ((ProductProperty)product).InstanceId,
+                        Id = ((ProductProperty)product).ID,
                         PropertyName = ((ProductProperty)product).Name
                     };
                     companyProperties.Add(properties);
