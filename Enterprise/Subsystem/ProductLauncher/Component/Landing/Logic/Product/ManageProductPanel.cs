@@ -25,6 +25,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         readonly IProductInternalSettingRepository _productInternalSettingRepository;
         readonly IList<ProductInternalSetting> _productInternalSettingList;
         readonly IManageUnifiedLogin _manageUnifiedLogin;
+        private readonly IManageProductOneSite _manageProductOneSite;
         
         #endregion
 
@@ -44,6 +45,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 return _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform).ToList();
             });
             _manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
+            _manageProductOneSite = new ManageProductOneSite(_userClaims);
         }
         
         /// <summary>
@@ -52,7 +54,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="userClaims"></param>
         /// <param name="repository"></param>
         /// <param name="manageBlueBook"></param>
-        public ManageProductPanel(DefaultUserClaim userClaims, IRepository repository, IManageBlueBook manageBlueBook)
+        /// <param name="manageProductOneSite"></param>
+        public ManageProductPanel(DefaultUserClaim userClaims, IRepository repository, IManageBlueBook manageBlueBook, IManageProductOneSite manageProductOneSite)
         {
             _userClaims = userClaims;
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
@@ -65,6 +68,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             });
             ProductRepository productRepository = new ProductRepository(repository);
             _manageUnifiedLogin = new ManageUnifiedLogin(_userClaims, _productInternalSettingRepository, productRepository, manageBlueBook);
+            _manageProductOneSite = manageProductOneSite;
         }
 
         #endregion
@@ -81,7 +85,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 switch (productId)
                 {
                     case (int)ProductEnum.OneSite:
-                        IManageProductOneSite _manageProductOneSite = new ManageProductOneSite(_userClaims);
                         result = _manageProductOneSite.GetOneSitePropertyList(editorPersonaId, userPersonaId, assignedOnly, datafilter);
                         break;
                     case (int)ProductEnum.MarketingCenter:
@@ -268,7 +271,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 switch (productId)
                 {
                     case (int)ProductEnum.OneSite:
-                        IManageProductOneSite _manageProductOneSite = new ManageProductOneSite(_userClaims);
                         if (userPersonaId > 0)
                         {
                             result = _manageProductOneSite.GetOneSiteRoleList(editorPersonaId, userPersonaId, assignedOnly, datafilter);
@@ -366,8 +368,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         result = productDALogic.GetProductRoles(datafilter);
                         break;
                     case (int)ProductEnum.UnifiedPlatform:
-                        IManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
-                        result = manageUnifiedLogin.GetUserRolesWithRights(editorPersonaId, userPersonaId, partyId);
+                        result = _manageUnifiedLogin.GetUserRolesWithRights(editorPersonaId, userPersonaId, partyId);
                         break;
                     case (int)ProductEnum.RenovationManager:
                         var productRMLogic = ManageProductFactory.GetProductLogic(ProductEnum.RenovationManager, editorPersonaId, userPersonaId, _userClaims);
@@ -480,12 +481,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             switch (productId)
             {
                 case (int)ProductEnum.OneSite:
-                    IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_userClaims);
-                    result = manageProductOneSite.GetOneSiteRights(editorPersonaId, datafilter, roleId, assignedToRoleOnly);
+                    result = _manageProductOneSite.GetOneSiteRights(editorPersonaId, datafilter, roleId, assignedToRoleOnly);
                     break;
                 case (int)ProductEnum.UnifiedPlatform:
-                    IManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
-                    result = manageUnifiedLogin.GetRightsByRole(editorPersonaId, partyId, roleId);
+                    result = _manageUnifiedLogin.GetRightsByRole(editorPersonaId, partyId, roleId);
                     break;
                 case (int)ProductEnum.UnifiedAmenities:
                     IManageUnifiedAmenities manageUnifiedAmenities = new ManageUnifiedAmenities(_userClaims);

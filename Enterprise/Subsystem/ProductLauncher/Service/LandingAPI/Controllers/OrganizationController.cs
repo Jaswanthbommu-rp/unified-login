@@ -24,6 +24,7 @@ using System.Net.Http;
 using System.Runtime.Caching;
 using System.Web.Http;
 using System.Web.Http.Controllers;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -67,6 +68,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         }
 
         /// <summary>
+        /// Audit Unit test constructor
+        /// </summary>
+        /// <param name="repository"></param>
+        /// <param name="repositoryResponse"></param>
+        /// <param name="messageHandler"></param>
+        /// <param name="manageProductOneSite"></param>
+        /// <param name="userClaims"></param>
+        public OrganizationController(IRepository repository, IRepositoryResponse repositoryResponse, HttpMessageHandler messageHandler, IManageProductOneSite manageProductOneSite, DefaultUserClaim userClaims)
+        {
+            _repository = repository;
+            _repositoryResponse = repositoryResponse;
+            _organizationProductRepository = new OrganizationProductRepository(repository);
+            _manageOrganizationProduct = new ManageOrganizationProduct(new OrganizationProductRepository(repository));
+            _manageCustomFields = new ManageCustomFields(new CustomFieldsRepository(repository), userClaims);
+            _manageUserLogin = new ManageUserLogin(repository, userClaims, messageHandler);
+            _managePartyRelationship = new ManagePartyRelationship(new PartyRelationshipRepository(repository));
+            _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
+            _manageBlueBook = new ManageBlueBook(userClaims, _productInternalSettingRepository, messageHandler);
+            _manageOrganization = new ManageOrganization(repository, userClaims, messageHandler); 
+            _messageHandler = messageHandler;
+            _userClaims = userClaims;
+            _propertyRepository = new PropertyRepository(repository);
+            _manageProductOneSite = manageProductOneSite;
+        }
+        
+        /// <summary>
         /// Used to initialize DI classes with userclaim
         /// </summary>
         /// <param name="controllerContext"></param>
@@ -99,6 +126,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         private HttpMessageHandler _messageHandler;
         private IPropertyRepository _propertyRepository;
         private IRepository _repository;
+        private IManageProductOneSite _manageProductOneSite;
         #endregion
 
         #region Public Organization Methods
@@ -1141,7 +1169,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             else
             {
                 _manageBlueBook = new ManageBlueBook(_userClaims, _productInternalSettingRepository, _messageHandler);
-                _manageOrganization = new ManageOrganization(_repository, _userClaims, _messageHandler);
+                _manageOrganization = new ManageOrganization(_repository, _userClaims, _messageHandler, _manageProductOneSite);
             }
 
             var auditResult = _manageOrganization.AuditCompanyProductPropertiesToUPFM(companyInstanceId, productId);

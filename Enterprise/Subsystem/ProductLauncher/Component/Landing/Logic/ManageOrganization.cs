@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -45,7 +46,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         
         #region Constructors
         /// <summary>
-        /// Constructor
+        /// Unit Test Constructor
         /// </summary>
         public ManageOrganization(IRepository repository, DefaultUserClaim userClaim, HttpMessageHandler messageHandler)
         {
@@ -58,7 +59,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _productRepository = new ProductRepository(repository);
             _defaultUserClaim = userClaim;
             _manageBlueBook = new ManageBlueBook(_defaultUserClaim, _productInternalSettingRepository, messageHandler);
-            _manageProductPanel = new ManageProductPanel(_defaultUserClaim, repository, _manageBlueBook);
+            _manageProductPanel = new ManageProductPanel(_defaultUserClaim, repository, _manageBlueBook, null);
+            _propertyRepository = new PropertyRepository(repository);
+        }
+
+        /// <summary>
+        /// Audit Unit Test Constructor
+        /// </summary>
+        public ManageOrganization(IRepository repository, DefaultUserClaim userClaim, HttpMessageHandler messageHandler, IManageProductOneSite manageProductOneSite)
+        {
+            _organizationRepository = new OrganizationRepository(repository);
+            _credentialRepository = new CredentialRepository(repository);
+            _userLoginRepository = new UserLoginRepository(repository);
+            _personaRepository = new PersonaRepository(repository);
+            _organizationProductRepository = new OrganizationProductRepository(repository);
+            _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
+            _productRepository = new ProductRepository(repository);
+            _defaultUserClaim = userClaim;
+            _manageBlueBook = new ManageBlueBook(_defaultUserClaim, _productInternalSettingRepository, messageHandler);
+            _manageProductPanel = new ManageProductPanel(_defaultUserClaim, repository, _manageBlueBook, manageProductOneSite);
             _propertyRepository = new PropertyRepository(repository);
         }
 
@@ -745,7 +764,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     foreach (var instance in booksPropertyInstance)
                     {
                         var tpi = new List<TranslatedPropertyInstanceData>();
-                        tpi.Add(new TranslatedPropertyInstanceData(){ PropertyName = instance.attributes.propertyName, PropertyInstanceSourceId = instance.attributes.propertyInstanceSourceId, Source = instance.attributes.source});
+                        tpi.Add(new TranslatedPropertyInstanceData(){ PropertyInstanceSourceId = instance.attributes.propertyInstanceSourceId, Source = instance.attributes.source});
 
                         translatedData.Data.Attributes.Add(new TranslatePropertyInstanceAttribute() {PropertyInstanceSourceId = instance.attributes.propertyInstanceSourceId, Source = booksProductDetail.BooksProductCode, TranslatedPropertyInstances = tpi});
                     }
