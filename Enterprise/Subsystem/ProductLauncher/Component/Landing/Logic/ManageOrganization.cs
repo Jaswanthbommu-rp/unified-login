@@ -732,14 +732,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             if (productResult.Records != null && productResult.Records.Count > 0)
             {
                 var upfmProperties = new UPFMProperty();
-                var instanceids = new List<string>();
+                var instanceIds = new List<string>();
                 var instanceGuids = new List<Guid>();
                 var booksPropertyInstance = GetPropertyInstanceFromBooks(companyInstanceId);
 
-                foreach (var property in booksPropertyInstance)
+                if (booksPropertyInstance != null)
                 {
-                    instanceids.Add(property.attributes.propertyInstanceSourceId.ToLower());
-                    instanceGuids.Add(new Guid(property.attributes.propertyInstanceSourceId));
+                    foreach (var property in booksPropertyInstance)
+                    {
+                        instanceIds.Add(property.attributes.propertyInstanceSourceId.ToLower());
+                        instanceGuids.Add(new Guid(property.attributes.propertyInstanceSourceId));
+                    }
                 }
 
                 if (instanceGuids.Count > 0)
@@ -747,7 +750,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     upfmPropertyDetails = _propertyRepository.ListUPFMPropertyInstanceIdByInstanceIds(instanceGuids);
                 }
                 
-                upfmProperties.id = instanceids;
+                upfmProperties.id = instanceIds;
 
                 var booksProductDetail = _productRepository.GetBooksMasterProductDetail(productId);
 
@@ -776,49 +779,49 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     foreach (var property in productResult.Records.Cast<ProductProperty>())
                     {
-                        AuditPropertyCompare(property.ID, property.Name, translatedData, instanceids, upfmPropertyDetails, propertyAuditResult);
+                        AuditPropertyCompare(property.ID, property.Name, translatedData, instanceIds, upfmPropertyDetails, propertyAuditResult);
                     }
                 }
                 else if (productPropertyType == typeof(ACProperty))
                 {
                     foreach (var property in productResult.Records.Cast<ACProperty>())
                     {
-                        AuditPropertyCompare(property.Id, property.PropertyName, translatedData, instanceids, upfmPropertyDetails, propertyAuditResult);
+                        AuditPropertyCompare(property.Id, property.PropertyName, translatedData, instanceIds, upfmPropertyDetails, propertyAuditResult);
                     }
                 }
                 else if (productPropertyType == typeof(AssetGroup))
                 {
                     foreach (var property in productResult.Records.Cast<AssetGroup>())
                     {
-                        AuditPropertyCompare(property.ID, property.Name, translatedData, instanceids, upfmPropertyDetails, propertyAuditResult);
+                        AuditPropertyCompare(property.ID, property.Name, translatedData, instanceIds, upfmPropertyDetails, propertyAuditResult);
                     }
                 }
                 else if (productPropertyType == typeof(OnSiteProperty))
                 {
                     foreach (var property in productResult.Records.Cast<OnSiteProperty>())
                     {
-                        AuditPropertyCompare(property.GetPropertyId.ToString(), property.GetName, translatedData, instanceids, upfmPropertyDetails, propertyAuditResult);
+                        AuditPropertyCompare(property.GetPropertyId.ToString(), property.GetName, translatedData, instanceIds, upfmPropertyDetails, propertyAuditResult);
                     }
                 }
                 else if (productPropertyType == typeof(RumPropertyGroup))
                 {
                     foreach (var property in productResult.Records.Cast<RumPropertyGroup>())
                     {
-                        AuditPropertyCompare(property.Id.ToString(), property.Name, translatedData, instanceids, upfmPropertyDetails, propertyAuditResult);
+                        AuditPropertyCompare(property.Id.ToString(), property.Name, translatedData, instanceIds, upfmPropertyDetails, propertyAuditResult);
                     }
                 }
                 else if (productPropertyType == typeof(ProductProperties))
                 {
                     foreach (var property in productResult.Records.Cast<ProductProperties>())
                     {
-                        AuditPropertyCompare(property.GetPropertyId.ToString(), property.GetName, translatedData, instanceids, upfmPropertyDetails, propertyAuditResult);
+                        AuditPropertyCompare(property.GetPropertyId.ToString(), property.GetName, translatedData, instanceIds, upfmPropertyDetails, propertyAuditResult);
                     }
                 }
                 else if (productPropertyType == typeof(Portfolio))
                 {
                     foreach (var property in productResult.Records.Cast<Portfolio>())
                     {
-                        AuditPropertyCompare(property.ID, property.Name, translatedData, instanceids, upfmPropertyDetails, propertyAuditResult);
+                        AuditPropertyCompare(property.ID, property.Name, translatedData, instanceIds, upfmPropertyDetails, propertyAuditResult);
                     }
                 }
 
@@ -840,7 +843,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             if (instanceExists != null)
             {
                 pa.UPFMInstanceId = instanceExists.PropertyInstanceSourceId;
-                pa.Status = instanceids.All(p => p != instanceExists.PropertyInstanceSourceId) ? "Missing 1" : "";
+                pa.Status = instanceids.All(p => p != instanceExists.PropertyInstanceSourceId) ? "Missing UPFM Instances" : "";
 
                 var upfmProperty = upfmPropertyDetails.FirstOrDefault(p => p.InstanceId == new Guid(instanceExists.PropertyInstanceSourceId));
                 if (upfmProperty != null)
