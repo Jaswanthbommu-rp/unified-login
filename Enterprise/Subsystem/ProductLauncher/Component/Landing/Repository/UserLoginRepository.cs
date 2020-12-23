@@ -74,7 +74,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <returns>User object</returns>
         public UserLogin GetUserLogin(Guid realPageId, long orgPartyId)
         {
-            UserLogin userLogin = new UserLogin();
+            UserLogin userLogin;
             using (var repository = GetRepository())
             {
                 userLogin = repository.GetOne<UserLogin>(StoredProcNameConstants.SP_GetUserLogin, new { realPageId });

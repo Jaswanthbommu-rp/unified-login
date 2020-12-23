@@ -317,7 +317,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <summary>
         /// Get all instances related to the given UPFM instance source. Filters domain automatically
         /// </summary>
-        /// <param name="companyRealPageId"></param>
+        /// <param name="upfmProperties"></param>
         /// <param name="productSource"></param>
         /// <returns></returns>
         public TranslatePropertyInstance GetTranslatePropertiesFromUPFMToProductv3(UPFMProperty upfmProperties, string productSource)

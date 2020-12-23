@@ -57,7 +57,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 			{
 				OrganizationRealPageGuid = organizationRealPageId;
 			}
-			RealPageEmployee = OrganizationName?.ToUpper() == "REALPAGE EMPLOYEE";
+			RealPageEmployee = organizationRealPageId == EmployeeCompanyRealPageId;
 
 	        Guid impersonatedBy;
 	        if (Guid.TryParse((from nvp in claimsPrincipal.Claims where nvp.Type.Equals("IMPERSONATEDBY", StringComparison.OrdinalIgnoreCase) select nvp.Value).FirstOrDefault(), out impersonatedBy))

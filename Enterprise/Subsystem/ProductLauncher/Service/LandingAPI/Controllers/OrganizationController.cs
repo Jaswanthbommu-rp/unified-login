@@ -1,4 +1,5 @@
-﻿using RP.Enterprise.Foundation.DataAccess.Component;
+﻿using Aspose.Cells;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Attributes;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
@@ -11,6 +12,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.Export;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Concurrent;
@@ -20,12 +22,9 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Runtime.Caching;
-using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Controllers;
-using Microsoft.Ajax.Utilities;
-using Aspose.Cells;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.Export;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -53,6 +52,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// <param name="userClaims"></param>
         public OrganizationController(IRepository repository, IRepositoryResponse repositoryResponse, HttpMessageHandler messageHandler, DefaultUserClaim userClaims)
         {
+            _repository = repository;
             _repositoryResponse = repositoryResponse;
             _organizationProductRepository = new OrganizationProductRepository(repository);
             _manageOrganizationProduct = new ManageOrganizationProduct(new OrganizationProductRepository(repository));
@@ -67,6 +67,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _propertyRepository = new PropertyRepository(repository);
         }
 
+        /// <summary>
+        /// Audit Unit test constructor
+        /// </summary>
+        /// <param name="repository"></param>
+        /// <param name="repositoryResponse"></param>
+        /// <param name="messageHandler"></param>
+        /// <param name="manageProductOneSite"></param>
+        /// <param name="userClaims"></param>
+        public OrganizationController(IRepository repository, IRepositoryResponse repositoryResponse, HttpMessageHandler messageHandler, IManageProductOneSite manageProductOneSite, DefaultUserClaim userClaims)
+        {
+            _repository = repository;
+            _repositoryResponse = repositoryResponse;
+            _organizationProductRepository = new OrganizationProductRepository(repository);
+            _manageOrganizationProduct = new ManageOrganizationProduct(new OrganizationProductRepository(repository));
+            _manageCustomFields = new ManageCustomFields(new CustomFieldsRepository(repository), userClaims);
+            _manageUserLogin = new ManageUserLogin(repository, userClaims, messageHandler);
+            _managePartyRelationship = new ManagePartyRelationship(new PartyRelationshipRepository(repository));
+            _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
+            _manageBlueBook = new ManageBlueBook(userClaims, _productInternalSettingRepository, messageHandler);
+            _manageOrganization = new ManageOrganization(repository, userClaims, messageHandler); 
+            _messageHandler = messageHandler;
+            _userClaims = userClaims;
+            _propertyRepository = new PropertyRepository(repository);
+            _manageProductOneSite = manageProductOneSite;
+        }
+        
         /// <summary>
         /// Used to initialize DI classes with userclaim
         /// </summary>
@@ -88,17 +114,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
         #region Private variables
 
-        IRepositoryResponse _repositoryResponse;
-        IOrganizationProductRepository _organizationProductRepository;
-        IManageOrganizationProduct _manageOrganizationProduct;
-        IManageCustomFields _manageCustomFields;
-        IManageUserLogin _manageUserLogin;
-        IManagePartyRelationship _managePartyRelationship;
+        private IRepositoryResponse _repositoryResponse;
+        private IOrganizationProductRepository _organizationProductRepository;
+        private IManageOrganizationProduct _manageOrganizationProduct;
+        private IManageCustomFields _manageCustomFields;
+        private IManageUserLogin _manageUserLogin;
+        private IManagePartyRelationship _managePartyRelationship;
         private IManageOrganization _manageOrganization;
         private IManageBlueBook _manageBlueBook;
         private IProductInternalSettingRepository _productInternalSettingRepository;
         private HttpMessageHandler _messageHandler;
         private IPropertyRepository _propertyRepository;
+        private IRepository _repository;
+        private IManageProductOneSite _manageProductOneSite;
         #endregion
 
         #region Public Organization Methods
@@ -1066,6 +1094,90 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             return Request.CreateResponse(HttpStatusCode.OK, output);
         }
         #endregion
+
+        /// <summary>
+        /// Audit the given product properties to UPFM properties
+        /// </summary>
+        /// <param name="companyInstanceId"></param>
+        /// <param name="productId"></param>
+        /// <returns></returns>
+        //[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        //[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        //[SwaggerResponse(HttpStatusCode.OK, Description = "Get information about a list of Properties for an Organization", Type = typeof(CompanyPropertySetup))]
+        //[SwaggerResponseExamples(typeof(CompanyPropertySetup), typeof(PropertyListExample))]
+        [Route("CompanySetup/{companyInstanceId}/product/{productId}/audit")]
+        [AuthorizeScope("companyfunctions", "rplandingapi")]
+        [HttpGet]
+        public HttpResponseMessage AuditCompanyProductPropertiesToUPFM(Guid companyInstanceId, int productId)
+        {
+            if (companyInstanceId == Guid.Empty)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Company Instance Id not supplied");
+            }
+
+            Status<IErrorData> errorStatus = new Status<IErrorData>();
+
+            // need to alter the user being used to match the company or the product calls will not have the correct context
+
+            if (_userClaims.OrganizationRealPageGuid != EmployeeCompanyRealPageId)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid company context");
+            }
+
+            var orgDetails = _manageOrganization.GetOrganization(companyInstanceId);
+
+            if (orgDetails == null)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid company");
+            }
+
+            _userClaims.CustomerMasterId = orgDetails.BooksCustomerMasterId;
+            _userClaims.OrganizationMasterId = orgDetails.BooksMasterId;
+            _userClaims.OrganizationName = orgDetails.Name;
+            _userClaims.OrganizationPartyId = orgDetails.PartyId;
+            _userClaims.OrganizationRealPageGuid = orgDetails.RealPageId;
+
+            var adminUserGuid = _manageOrganization.GetOrganizationAdminUserRealPageId(orgDetails.RealPageId);
+            if (adminUserGuid == Guid.Empty)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Unable to locate company user");
+            }
+
+            _userClaims.UserRealPageGuid = adminUserGuid;
+            var userLogin = _manageUserLogin.GetUserLogin(adminUserGuid, orgDetails.PartyId);
+
+            if (userLogin != null)
+            {
+                _userClaims.LoginName = userLogin.LoginName;
+                _userClaims.UserId = Convert.ToInt32(userLogin.UserId);
+
+                var userPersonas = _manageUserLogin.GetUserPersonaOrganization(userLogin.LoginName);
+                if (userPersonas != null && userPersonas.Any(p => p.OrganizationPartyId == orgDetails.PartyId))
+                {
+                    _userClaims.PersonaId = userPersonas.First(p => p.OrganizationPartyId == orgDetails.PartyId).PersonaId;
+                }
+
+                _userClaims.FirstName = "XX";
+                _userClaims.LastName = "XX";
+            }
+
+            if (_messageHandler == null)
+            {
+                _manageOrganization = new ManageOrganization(_userClaims);
+                _manageBlueBook = new ManageBlueBook(_userClaims);
+            }
+            else
+            {
+                _manageBlueBook = new ManageBlueBook(_userClaims, _productInternalSettingRepository, _messageHandler);
+                _manageOrganization = new ManageOrganization(_repository, _userClaims, _messageHandler, _manageProductOneSite);
+            }
+
+            var auditResult = _manageOrganization.AuditCompanyProductPropertiesToUPFM(companyInstanceId, productId);
+
+            ObjectListOutput<PropertyAudit, IErrorData> output = new ObjectListOutput<PropertyAudit, IErrorData> {list = auditResult, Status = errorStatus, pagingSummary = new PagingSummary() {TotalRecords = auditResult.Count, TotalPages = 1}};
+            return Request.CreateResponse(HttpStatusCode.OK, output);
+        }
+
 
         #region Update Property
         /// <summary>
