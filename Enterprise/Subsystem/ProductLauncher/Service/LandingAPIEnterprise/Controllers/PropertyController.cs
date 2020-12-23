@@ -189,8 +189,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             int productId = (int)ProductEnumHelper.GetProductEnumByProductCode(productCode);
             ManageUPFMProductsIntegration upfmProductIntegration = new ManageUPFMProductsIntegration(productId, _userClaims);
             IManageUserLogin manageUserLogin = new ManageUserLogin(_userClaims);
-            UserCompaniesProperties userCompaniesProperties = new UserCompaniesProperties();
-            List<Properties> companyProperties = new List<Properties>();
+            List<UserCompaniesProperties> userCompaniesProperties = new List<UserCompaniesProperties>();
 
             var companyResponse = manageUserLogin.GetUserPersonaOrganization(_userClaims.LoginName);
             var upfmProduct = ProductEnumHelper.GetUPFMProductEnum(productId);
@@ -200,9 +199,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 propertyResponse = upfmProductIntegration.GetUPFMProperties(company.PersonaId, upfmProduct, null);
                 if (propertyResponse.Records.Count == 0) return Request.CreateResponse(HttpStatusCode.ExpectationFailed, $"Properties are not loaded from Blue Book {propertyResponse.ErrorReason}");
 
-                userCompaniesProperties.Id = company.BooksCustomerMasterId;
-                userCompaniesProperties.OrganizationName = company.OrganizationName;
-                userCompaniesProperties.InstanceId = company.OrganizationRealPageId;
+                var userCompanyProperties = new UserCompaniesProperties()
+                {
+                    Id = company.BooksCustomerMasterId,
+                    OrganizationName = company.OrganizationName,
+                    InstanceId = company.OrganizationRealPageId,
+                    Properties = new List<Properties>()
+                };
                 foreach (var product in propertyResponse.Records.ToList())
                 {
                     var properties = new Properties()
@@ -211,9 +214,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                         InstanceId = ((ProductProperty)product).InstanceId,
                         PropertyName = ((ProductProperty)product).Name
                     };
-                    companyProperties.Add(properties);
+                    userCompanyProperties.Properties.Add(properties);
                 }
-                userCompaniesProperties.Properties = companyProperties;
+                userCompaniesProperties.Add(userCompanyProperties);
             }
             if (!propertyResponse.IsError)
             {
