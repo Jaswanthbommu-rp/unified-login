@@ -345,8 +345,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 								{
 									translatedProductProperty.ID = propertyData.PropertyInstanceSourceId;
 									translatedProductProperty.Alias = null;
-									translatedProductProperty.CustomerPropertyId = propertyData.CustomerPropertyId;
-									translatedProductProperty.Name = propertyData.PropertyName;
+									translatedProductProperty.CustomerPropertyId = propertyData.CustomerPropertyId;									
 									translatedUserPropertyList.Add(translatedProductProperty);
 								}
 							}
