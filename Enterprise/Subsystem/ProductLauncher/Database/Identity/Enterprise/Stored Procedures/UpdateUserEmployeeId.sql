@@ -1,7 +1,7 @@
 ﻿CREATE PROCEDURE [Enterprise].[UpdateUserEmployeeId](
 	 @UserEmployeeId INT,
 	 @UserLoginPersonaId BIGINT = NULL,
-	 @EmployeeId NVARCHAR(40) = NULL
+	 @EmployeeId NVARCHAR(200) = NULL
 	) 
 AS
 BEGIN
