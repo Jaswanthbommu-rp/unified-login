@@ -1101,10 +1101,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// <param name="companyInstanceId"></param>
         /// <param name="productId"></param>
         /// <returns></returns>
-        //[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
-        //[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
-        //[SwaggerResponse(HttpStatusCode.OK, Description = "Get information about a list of Properties for an Organization", Type = typeof(CompanyPropertySetup))]
-        //[SwaggerResponseExamples(typeof(CompanyPropertySetup), typeof(PropertyListExample))]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about the properties for the given company and their mapping to UPFM instances", Type = typeof(PropertyAudit))]
+        [SwaggerResponseExamples(typeof(PropertyAudit), typeof(PropertyAuditExample))]
         [Route("CompanySetup/{companyInstanceId}/product/{productId}/audit")]
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         [HttpGet]
@@ -1605,6 +1605,55 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 ObjectOutput<CompanyPropertySetup, IErrorData> output = new ObjectOutput<CompanyPropertySetup, IErrorData>()
                 {
                     obj = company,
+                    Status = errorStatus
+                };
+
+                return output;
+            }
+        }
+        
+        [ExcludeFromCodeCoverage]
+        public class PropertyAuditExample : IProvideExamples
+        {
+            /// <summary>
+            /// Example object data used by Swagger to document the output of the webapi method
+            /// </summary>
+            /// <returns>List of Companies example</returns>
+            public object GetExamples()
+            {
+                List<PropertyAudit> propertyAuditExample = new List<PropertyAudit>()
+                {
+                    new PropertyAudit()
+                    {
+                        Name = "Property 1",
+                        ProductInstanceId = "1234567",
+                        UPFMInstanceId = "11111111-1111-2222-3333-3C0F434AE62D".ToLower(),
+                        UPFMName = "Property 1",
+                        Status = ""
+                    },
+                    new PropertyAudit()
+                    {
+                        Name = "Property 2",
+                        ProductInstanceId = "7654321",
+                        UPFMInstanceId = null,
+                        UPFMName = null,
+                        Status = "Missing"
+                    },
+                    new PropertyAudit()
+                    {
+                        Name = "Property 3",
+                        ProductInstanceId = "4444444",
+                        UPFMInstanceId = null,
+                        UPFMName = null,
+                        Status = "Missing UPFM Instances"
+                    },                    
+                };
+            
+                
+                Status<IErrorData> errorStatus = new Status<IErrorData>();
+                ObjectOutput<List<PropertyAudit>, IErrorData> output = new ObjectOutput<List<PropertyAudit>, IErrorData>()
+                {
+                    obj = propertyAuditExample,
                     Status = errorStatus
                 };
 
