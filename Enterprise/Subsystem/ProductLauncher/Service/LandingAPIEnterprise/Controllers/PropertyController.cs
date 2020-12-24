@@ -196,7 +196,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
             foreach (var company in companyResponse)
             {
-                propertyResponse = upfmProductIntegration.GetUPFMProperties(company.PersonaId, upfmProduct, null);
+                propertyResponse = upfmProductIntegration.GetUPFMProperties(company.PersonaId, upfmProduct, null, "haas", company.OrganizationRealPageId.ToString());
                 if (propertyResponse.Records.Count == 0) return Request.CreateResponse(HttpStatusCode.ExpectationFailed, $"Properties are not loaded from Blue Book {propertyResponse.ErrorReason}");
 
                 var userCompanyProperties = new UserCompaniesProperties()
