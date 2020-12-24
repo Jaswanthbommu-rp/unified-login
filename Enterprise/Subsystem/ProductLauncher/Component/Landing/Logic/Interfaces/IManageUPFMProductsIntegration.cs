@@ -46,10 +46,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <summary>
 		/// Used to get the list of properties for the company or for the given user
 		/// </summary>		
-		/// <param name="userPersonaId"></param>		
+		/// <param name="userPersonaId"></param>
+		/// <param name="product"></param>
 		/// <param name="include"></param>
+		/// <param name="flag"></param>
+		/// <param name="multiCompanyRealPageId"></param>
 		/// <returns></returns>
-		ListResponse GetUPFMProperties(long userPersonaId, ProductEnum product, string include = null);
+		ListResponse GetUPFMProperties(long userPersonaId, ProductEnum product, string include = null, string flag = null, string multiCompanyRealPageId = null);
 
 		/// <summary>
 		/// Get a list of UPFM property instances for the give user
