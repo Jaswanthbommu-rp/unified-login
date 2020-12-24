@@ -482,9 +482,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             mockProductRepository
              .Setup(m => m.GetBooksMasterProductDetail(
-                 It.IsAny<int>()
+                 It.Is<int>(l => l == (int)ProductEnum.Lead2Lease)
              ))
              .Returns(_gbProductMap);
+            
+            mockProductRepository
+                .Setup(m => m.GetProductSettingsByPersona(
+                    It.IsAny<long>()
+                ))
+                .Returns(_userProductSettings);
+            
             //Act
             IManageProductLead2Lease mpL2L = new ManageProductLead2Lease(
                 editorRealPageId: _editorRealPageId,

@@ -1749,7 +1749,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 var cachePolicy = new CacheItemPolicy
                 {
-                    AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(60)// Expier cache every after 60 minutes 
+                    AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(10)// Expire cache every after 60 minutes 
                 };
 
                 productCache.Set("GB-BB-ProductMap", products, cachePolicy);
