@@ -284,9 +284,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// Get the list of property instances for the given user to be used by external systems
 		/// </summary>
 		/// <param name="userPersonaId"></param>
+		/// <param name="product"></param>
 		/// <param name="include"></param>
+		/// <param name="flagValue"></param>
 		/// <returns></returns>
-		public ListResponse GetUPFMProperties(long userPersonaId, ProductEnum product, string include = null)
+		public ListResponse GetUPFMProperties(long userPersonaId, ProductEnum product, string include = null, string flagValue = null)
 		{
 			ListResponse response = new ListResponse();
 			var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, _upfmProductId);
@@ -297,7 +299,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			if (userPropertyIdList != null)
 			{
-				var booksPropertyList = _blueBook.GetUPFMPropertyInstances(_userClaims.OrganizationRealPageGuid.ToString());
+				var organizationRealPageId = flagValue != "" ? flagValue : _userClaims.OrganizationRealPageGuid.ToString();
+				var booksPropertyList = _blueBook.GetUPFMPropertyInstances(organizationRealPageId);				
 				if (booksPropertyList != null)
 				{
 					customerPropertyList = ListUPFMPropertyInstanceIdByInstanceIds(booksPropertyList);
