@@ -286,9 +286,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="userPersonaId"></param>
 		/// <param name="product"></param>
 		/// <param name="include"></param>
-		/// <param name="flagValue"></param>
+		/// <param name="flag"></param>
+		/// <param name="multiCompanyRealPageId"></param>
 		/// <returns></returns>
-		public ListResponse GetUPFMProperties(long userPersonaId, ProductEnum product, string include = null, string flagValue = null)
+		public ListResponse GetUPFMProperties(long userPersonaId, ProductEnum product, string include = null, string flag = null, string multiCompanyRealPageId = null)
 		{
 			ListResponse response = new ListResponse();
 			var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, _upfmProductId);
@@ -299,7 +300,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			if (userPropertyIdList != null)
 			{
-				var organizationRealPageId = flagValue != "" ? flagValue : _userClaims.OrganizationRealPageGuid.ToString();
+				var organizationRealPageId = flag == "haas" ? multiCompanyRealPageId : _userClaims.OrganizationRealPageGuid.ToString();
 				var booksPropertyList = _blueBook.GetUPFMPropertyInstances(organizationRealPageId);				
 				if (booksPropertyList != null)
 				{
