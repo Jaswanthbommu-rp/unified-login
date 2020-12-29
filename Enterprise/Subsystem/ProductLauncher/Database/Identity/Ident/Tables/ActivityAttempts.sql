@@ -1,7 +1,7 @@
 ﻿CREATE TABLE [Ident].[ActivityAttempts](
 	[ActivityAttemptsId] [int] IDENTITY(1,1) NOT NULL,
 	[ActivityConfigurationId] [int] NOT NULL,
-	[EnterpriseUserName] [nvarchar](50) NOT NULL,
+	[EnterpriseUserName] [nvarchar](200) NOT NULL,
 	[AuthenticationServiceId] [nvarchar](50) NULL,
 	[AttemptCount] [tinyint] NOT NULL,
 	[IpAddress] [nvarchar](50) NULL,
