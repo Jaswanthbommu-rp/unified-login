@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Caching;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using UL = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
@@ -35,6 +36,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _productId = (int) ProductEnum.UnifiedPlatform;
             _editorRealPageId = userClaims.UserRealPageGuid;
             _blueBook = new ManageBlueBook(userClaims);
+            _userClaims = userClaims;
+        }
+
+        /// <summary>
+        /// Unit test constructor
+        /// </summary>
+        /// <param name="userClaims"></param>
+        /// <param name="productInternalSettingRepository"></param>
+        /// <param name="productRepository"></param>
+        /// <param name="manageBlueBook"></param>
+        public ManageUnifiedLogin(DefaultUserClaim userClaims, IProductInternalSettingRepository productInternalSettingRepository, ProductRepository productRepository, IManageBlueBook manageBlueBook) : base((int) ProductEnum.UnifiedPlatform, userClaims, productInternalSettingRepository, productRepository)
+        {
+            WriteToDiagnosticLog("UnifiedLogin - ManageUnifiedLogin.Ctor - Getting Product settings.");
+            _productId = (int) ProductEnum.UnifiedPlatform;
+            _editorRealPageId = userClaims.UserRealPageGuid;
+            _blueBook = manageBlueBook;
             _userClaims = userClaims;
         }
 
