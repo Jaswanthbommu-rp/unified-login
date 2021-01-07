@@ -2172,12 +2172,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             var responseResult = response.Content.ReadAsAsync<ObjectListOutput<PropertyAudit, IErrorData>>().Result;
             
             //Assert
-            Assert.True(string.IsNullOrEmpty(responseResult.list[0].Status)
-                && responseResult.list[0].Name.Equals("OneSite property 1", StringComparison.OrdinalIgnoreCase)
-                && responseResult.list[0].ProductInstanceId.Equals("1234567", StringComparison.OrdinalIgnoreCase)
-                && responseResult.list[0].UPFMInstanceId.Equals("a5192995-aaaa-bbbb-8df2-f30f1b8dc752", StringComparison.OrdinalIgnoreCase)
-                && responseResult.list[0].UPFMName.Equals("test property 1", StringComparison.OrdinalIgnoreCase)
-                && response.StatusCode.Equals(HttpStatusCode.OK));
+            Assert.True(responseResult.list[0].Status.Equals("OK", StringComparison.OrdinalIgnoreCase)
+                        && responseResult.list[0].Name.Equals("OneSite property 1", StringComparison.OrdinalIgnoreCase)
+                        && responseResult.list[0].ProductInstanceId.Equals("1234567", StringComparison.OrdinalIgnoreCase)
+                        && responseResult.list[0].UPFMInstanceId.Equals("a5192995-aaaa-bbbb-8df2-f30f1b8dc752", StringComparison.OrdinalIgnoreCase)
+                        && responseResult.list[0].UPFMName.Equals("test property 1", StringComparison.OrdinalIgnoreCase)
+                        && response.StatusCode.Equals(HttpStatusCode.OK));
 
             rPObjectCache.BustCache();
 
@@ -2202,7 +2202,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             response = organizationController.AuditCompanyProductPropertiesToUPFM(new Guid("22222222-2222-2222-2222-222222222222"), (int)ProductEnum.OneSite);
 
             responseResult = response.Content.ReadAsAsync<ObjectListOutput<PropertyAudit, IErrorData>>().Result;
-            Assert.True(responseResult.list[0].Status.Equals("Missing UPFM Instances", StringComparison.OrdinalIgnoreCase)
+            Assert.True(responseResult.list[0].Status.Equals("No ID", StringComparison.OrdinalIgnoreCase)
                         && responseResult.list[0].Name.Equals("OneSite property 1", StringComparison.OrdinalIgnoreCase)
                         && responseResult.list[0].ProductInstanceId.Equals("1234567", StringComparison.OrdinalIgnoreCase)
                         && responseResult.list[0].UPFMInstanceId.Equals("a5192995-aaaa-bbbb-8df2-f30f1b8dc752", StringComparison.OrdinalIgnoreCase)

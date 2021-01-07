@@ -843,7 +843,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             if (instanceExists != null)
             {
                 pa.UPFMInstanceId = instanceExists.PropertyInstanceSourceId;
-                pa.Status = instanceids.All(p => p != instanceExists.PropertyInstanceSourceId) ? "Missing UPFM Instances" : "";
+                pa.Status = instanceids.All(p => p != instanceExists.PropertyInstanceSourceId) ? "No ID" : "OK"; // Missing UPFM Instances
 
                 var upfmProperty = upfmPropertyDetails.FirstOrDefault(p => p.InstanceId == new Guid(instanceExists.PropertyInstanceSourceId));
                 if (upfmProperty != null)
@@ -854,7 +854,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             if (translatedData.Data == null)
             {
-                pa.Status = "No product data translated";
+                pa.Status = "No ID"; // ""No product data translated";
             }
             propertyAuditResult.Add(pa);
         }
