@@ -1,4 +1,5 @@
-﻿using RP.Enterprise.Foundation.DataAccess.Component;
+﻿using Aspose.Cells;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Attributes;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
@@ -11,6 +12,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.Export;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Concurrent;
@@ -20,12 +22,9 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Runtime.Caching;
-using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Controllers;
-using Microsoft.Ajax.Utilities;
-using Aspose.Cells;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.Export;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -53,19 +52,47 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// <param name="userClaims"></param>
         public OrganizationController(IRepository repository, IRepositoryResponse repositoryResponse, HttpMessageHandler messageHandler, DefaultUserClaim userClaims)
         {
+            _repository = repository;
             _repositoryResponse = repositoryResponse;
             _organizationProductRepository = new OrganizationProductRepository(repository);
             _manageOrganizationProduct = new ManageOrganizationProduct(new OrganizationProductRepository(repository));
             _manageCustomFields = new ManageCustomFields(new CustomFieldsRepository(repository), userClaims);
-            _manageUserLogin = new ManageUserLogin(repository, userClaims);
+            _manageUserLogin = new ManageUserLogin(repository, userClaims, messageHandler);
             _managePartyRelationship = new ManagePartyRelationship(new PartyRelationshipRepository(repository));
-            _manageOrganization = new ManageOrganization(repository, userClaims);
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
             _manageBlueBook = new ManageBlueBook(userClaims, _productInternalSettingRepository, messageHandler);
+            _manageOrganization = new ManageOrganization(repository, userClaims, messageHandler); 
             _messageHandler = messageHandler;
             _userClaims = userClaims;
+            _propertyRepository = new PropertyRepository(repository);
         }
 
+        /// <summary>
+        /// Audit Unit test constructor
+        /// </summary>
+        /// <param name="repository"></param>
+        /// <param name="repositoryResponse"></param>
+        /// <param name="messageHandler"></param>
+        /// <param name="manageProductOneSite"></param>
+        /// <param name="userClaims"></param>
+        public OrganizationController(IRepository repository, IRepositoryResponse repositoryResponse, HttpMessageHandler messageHandler, IManageProductOneSite manageProductOneSite, DefaultUserClaim userClaims)
+        {
+            _repository = repository;
+            _repositoryResponse = repositoryResponse;
+            _organizationProductRepository = new OrganizationProductRepository(repository);
+            _manageOrganizationProduct = new ManageOrganizationProduct(new OrganizationProductRepository(repository));
+            _manageCustomFields = new ManageCustomFields(new CustomFieldsRepository(repository), userClaims);
+            _manageUserLogin = new ManageUserLogin(repository, userClaims, messageHandler);
+            _managePartyRelationship = new ManagePartyRelationship(new PartyRelationshipRepository(repository));
+            _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
+            _manageBlueBook = new ManageBlueBook(userClaims, _productInternalSettingRepository, messageHandler);
+            _manageOrganization = new ManageOrganization(repository, userClaims, messageHandler); 
+            _messageHandler = messageHandler;
+            _userClaims = userClaims;
+            _propertyRepository = new PropertyRepository(repository);
+            _manageProductOneSite = manageProductOneSite;
+        }
+        
         /// <summary>
         /// Used to initialize DI classes with userclaim
         /// </summary>
@@ -87,17 +114,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
         #region Private variables
 
-        IRepositoryResponse _repositoryResponse;
-        IOrganizationProductRepository _organizationProductRepository;
-        IManageOrganizationProduct _manageOrganizationProduct;
-        IManageCustomFields _manageCustomFields;
-        IManageUserLogin _manageUserLogin;
-        IManagePartyRelationship _managePartyRelationship;
+        private IRepositoryResponse _repositoryResponse;
+        private IOrganizationProductRepository _organizationProductRepository;
+        private IManageOrganizationProduct _manageOrganizationProduct;
+        private IManageCustomFields _manageCustomFields;
+        private IManageUserLogin _manageUserLogin;
+        private IManagePartyRelationship _managePartyRelationship;
         private IManageOrganization _manageOrganization;
         private IManageBlueBook _manageBlueBook;
         private IProductInternalSettingRepository _productInternalSettingRepository;
         private HttpMessageHandler _messageHandler;
-
+        private IPropertyRepository _propertyRepository;
+        private IRepository _repository;
+        private IManageProductOneSite _manageProductOneSite;
         #endregion
 
         #region Public Organization Methods
@@ -131,7 +160,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             globals.Add(BaseType.RequestParameter, datafilter);
 
-            IList<CustomField> customFieldList = _manageCustomFields.GetCustomField(globals: globals, bookMasterId: _userClaims.CustomerMasterId, bookMasterTypeId: (int)BookMasterType.CustomerMasterId);
+            IList<CustomField> customFieldList = _manageCustomFields.GetCustomField(globals: globals, booksCustomerMasterId: _userClaims.CustomerMasterId, bookMasterTypeId: (int)BookMasterType.CustomerMasterId);
 
             ListResponse response = new ListResponse()
             {
@@ -1012,6 +1041,268 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         }
         #endregion
 
+        #region Get Properties for a Organization
+        /// <summary>
+        /// Get Properties for a Organization
+        /// </summary>
+        /// <param name="companyInstanceId">companyInstanceId</param>
+        /// <param name="propertyName">PropertyName</param>
+        /// <param name="domain">Domain</param>
+        /// <param name="blueId">blueId</param>
+        /// <param name="datafilter">datafilter</param>
+        /// <returns>List of Properties for a company </returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about a list of Properties for an Organization", Type = typeof(CompanyPropertySetup))]
+        [SwaggerResponseExamples(typeof(CompanyPropertySetup), typeof(PropertyListExample))]
+        [Route("CompanySetup/CompanyPropertyList")]
+        [AuthorizeScope("companyfunctions", "rplandingapi")]
+        [HttpGet]
+        public HttpResponseMessage GetPropertiesForCompany(Guid companyInstanceId, string domain = null, string propertyName = null, int? blueId = null, [FromUri] RequestParameter datafilter = null)
+        {
+            if (companyInstanceId == Guid.Empty)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Company Instance Id not supplied");
+            }
+            IDictionary<object, object> globals = new Dictionary<object, object>();
+            ObjectListOutput<CompanyPropertySetup, IErrorData> output = new ObjectListOutput<CompanyPropertySetup, IErrorData>();
+            Status<IErrorData> errorStatus = new Status<IErrorData>();
+
+            if (datafilter == null)
+            {
+                datafilter = new RequestParameter();
+            }
+
+            globals.Add(BaseType.RequestParameter, datafilter);
+
+            List<CompanyPropertySetup> companyPropertySetup = _manageOrganization.GetPropertiesForCompany(companyInstanceId, propertyName, domain, blueId, globals);
+
+            int totalRecords = 0;
+            if (companyPropertySetup.Count > 0)
+            {
+                totalRecords = companyPropertySetup[0]?.Property.Count > 0 ? companyPropertySetup[0].Property[0].TotalRecords : 0;
+            };
+            decimal resultsPerPage = ((datafilter.Pages.ResultsPerPage == 100) && (totalRecords > 0)) ? totalRecords : datafilter.Pages.ResultsPerPage;
+            resultsPerPage = (resultsPerPage == 0) ? totalRecords : resultsPerPage;
+            PagingSummary pagingSummary = new PagingSummary()
+            {
+                TotalRecords = totalRecords,
+                TotalPages = (resultsPerPage == 0) ? 0 : (int)Math.Ceiling(totalRecords / resultsPerPage)
+            };
+            output = new ObjectListOutput<CompanyPropertySetup, IErrorData>() { list = companyPropertySetup, Status = errorStatus };
+            output.pagingSummary = pagingSummary;
+            return Request.CreateResponse(HttpStatusCode.OK, output);
+        }
+        #endregion
+
+        /// <summary>
+        /// Audit the given product properties to UPFM properties
+        /// </summary>
+        /// <param name="companyInstanceId"></param>
+        /// <param name="productId"></param>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about the properties for the given company and their mapping to UPFM instances", Type = typeof(PropertyAudit))]
+        [SwaggerResponseExamples(typeof(PropertyAudit), typeof(PropertyAuditExample))]
+        [Route("CompanySetup/{companyInstanceId}/product/{productId}/audit")]
+        [AuthorizeScope("companyfunctions", "rplandingapi")]
+        [HttpGet]
+        public HttpResponseMessage AuditCompanyProductPropertiesToUPFM(Guid companyInstanceId, int productId)
+        {
+            if (companyInstanceId == Guid.Empty)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Company Instance Id not supplied");
+            }
+
+            Status<IErrorData> errorStatus = new Status<IErrorData>();
+
+            // need to alter the user being used to match the company or the product calls will not have the correct context
+
+            if (_userClaims.OrganizationRealPageGuid != EmployeeCompanyRealPageId)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid company context");
+            }
+
+            var orgDetails = _manageOrganization.GetOrganization(companyInstanceId);
+
+            if (orgDetails == null)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid company");
+            }
+
+            _userClaims.CustomerMasterId = orgDetails.BooksCustomerMasterId;
+            _userClaims.OrganizationMasterId = orgDetails.BooksMasterId;
+            _userClaims.OrganizationName = orgDetails.Name;
+            _userClaims.OrganizationPartyId = orgDetails.PartyId;
+            _userClaims.OrganizationRealPageGuid = orgDetails.RealPageId;
+
+            var adminUserGuid = _manageOrganization.GetOrganizationAdminUserRealPageId(orgDetails.RealPageId);
+            if (adminUserGuid == Guid.Empty)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Unable to locate company user");
+            }
+
+            _userClaims.UserRealPageGuid = adminUserGuid;
+            var userLogin = _manageUserLogin.GetUserLogin(adminUserGuid, orgDetails.PartyId);
+
+            if (userLogin != null)
+            {
+                _userClaims.LoginName = userLogin.LoginName;
+                _userClaims.UserId = Convert.ToInt32(userLogin.UserId);
+
+                var userPersonas = _manageUserLogin.GetUserPersonaOrganization(userLogin.LoginName);
+                if (userPersonas != null && userPersonas.Any(p => p.OrganizationPartyId == orgDetails.PartyId))
+                {
+                    _userClaims.PersonaId = userPersonas.First(p => p.OrganizationPartyId == orgDetails.PartyId).PersonaId;
+                }
+
+                _userClaims.FirstName = "XX";
+                _userClaims.LastName = "XX";
+            }
+
+            if (_messageHandler == null)
+            {
+                _manageOrganization = new ManageOrganization(_userClaims);
+                _manageBlueBook = new ManageBlueBook(_userClaims);
+            }
+            else
+            {
+                _manageBlueBook = new ManageBlueBook(_userClaims, _productInternalSettingRepository, _messageHandler);
+                _manageOrganization = new ManageOrganization(_repository, _userClaims, _messageHandler, _manageProductOneSite);
+            }
+
+            var auditResult = _manageOrganization.AuditCompanyProductPropertiesToUPFM(companyInstanceId, productId);
+
+            ObjectListOutput<PropertyAudit, IErrorData> output = new ObjectListOutput<PropertyAudit, IErrorData> {list = auditResult, Status = errorStatus, pagingSummary = new PagingSummary() {TotalRecords = auditResult.Count, TotalPages = 1}};
+            return Request.CreateResponse(HttpStatusCode.OK, output);
+        }
+
+
+        #region Update Property
+        /// <summary>
+        ///Update Properties for a Organization
+        /// </summary>
+        /// <param name="propertyInstanceId">propertyInstanceId</param>
+        /// <param name="propertyName">PropertyName</param>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [Route("CompanySetup/CompanyPropertyList")]
+        [AuthorizeScope("companyfunctions", "rplandingapi")]
+        [HttpPut]
+        public HttpResponseMessage UpdatePropertyForOrganization(Guid propertyInstanceId, string propertyName)
+        {            
+            if ((propertyInstanceId == Guid.Empty) || (propertyInstanceId == null))
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: propertyInstanceId");
+            }
+
+            if (String.IsNullOrEmpty(propertyName))
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Null parameter: propertyName");
+            }
+            var currentProperty = _manageOrganization.GetPropertyByInstanceId(propertyInstanceId);
+
+            if(currentProperty != null && currentProperty.FirstOrDefault().Name.ToLower() != propertyName.ToLower())
+			{
+                _repositoryResponse = _manageOrganization.UpdateProperty(propertyInstanceId, propertyName);
+
+                if (_repositoryResponse.Id == 0)
+                {
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, _repositoryResponse.ErrorMessage);
+                }
+                if (_repositoryResponse.Id > 0)
+                {
+                    PropertyInstanceAck ack = new PropertyInstanceAck
+                    {                        
+                        PropertyInstanceSourceId = propertyInstanceId.ToString(),
+                        Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
+                        PropertyName = propertyName,
+                        ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)
+                        
+                    };
+                    _manageBlueBook.AcknowledgePropertyUpdate(ack);
+                }
+            }            
+            return Request.CreateResponse(HttpStatusCode.OK, propertyInstanceId);
+        }
+
+        /// <summary>
+        /// Export Properties
+        /// </summary>
+        /// <param name="companyInstanceId">companyInstanceId</param>
+        /// <param name="propertyName">propertyName</param>
+        /// <param name="domain">domain</param>
+        /// <param name="blueId">blueId</param>
+        /// <param name="datafilter">Filter, Sort, Paginate</param>
+        /// <param name="dataFormat">Retrun data in this format (default = CSV)</param>
+        /// <returns>List of Properties object</returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about a list of Properties", Type = typeof(PropertySetup))]
+        [SwaggerResponseExamples(typeof(PropertySetup), typeof(PropertyListExample))]
+        [Route("CompanySetup/CompanyPropertyList/export")]
+        [AuthorizeScope("companyfunctions", "rplandingapi")]
+        [HttpGet]
+        public HttpResponseMessage ListPropertyExport(Guid companyInstanceId, string propertyName = null, string domain = null, int? blueId = null, [FromUri] RequestParameter datafilter = null, SaveFormat dataFormat = SaveFormat.CSV)
+        {
+            byte[] plainBytes;
+            IDictionary<object, object> globals = new Dictionary<object, object>();
+            ObjectOutput<string, IErrorData> output = new ObjectOutput<string, IErrorData>();
+
+            Status<IErrorData> errorStatus = new Status<IErrorData>();
+            if (companyInstanceId == Guid.Empty)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Company Instance Id not supplied");
+            }
+            if (datafilter == null)
+            {
+                datafilter = new RequestParameter();
+            }
+            globals.Add(BaseType.RequestParameter, datafilter);
+
+            List<CompanyPropertySetup> propertyList = _manageOrganization.GetPropertiesForCompany(companyInstanceId, propertyName, domain, blueId, globals);
+
+            if (propertyList != null && propertyList.Count > 0)
+            {
+                errorStatus = DataExport.SetAsposeLicense();
+                if (errorStatus.Success)
+                {
+                    List<ExportDataFileConfiguration> exportConfigurations = new List<ExportDataFileConfiguration>
+                    {
+                        new ExportDataFileConfiguration { Header = "Property", MappedField = "Name", PDFColumnWidth = "2.85", Preference = 1 },
+                        new ExportDataFileConfiguration { Header = "Contracted Name", MappedField = "ContractedName", PDFColumnWidth = "2.85", Preference = 2 },
+                        new ExportDataFileConfiguration { Header = "Blue Id", MappedField = "customerPropertyId", PDFColumnWidth = "0.70", Preference = 3 },
+                        new ExportDataFileConfiguration { Header = "Domain", MappedField = "Domain", PDFColumnWidth = "0.85", Preference = 4 },
+                        new ExportDataFileConfiguration { Header = "Address", MappedField = "PropertyAddress", PDFColumnWidth = "3.25", Preference = 5 }
+                    };
+                    plainBytes = DataExport.ExportDataToFile<PropertySetup>(exportConfigurations.OrderBy(p => p.Preference).ToList(), propertyList[0]?.Property, dataFormat);
+                    output = new ObjectOutput<string, IErrorData>()
+                    {
+                        obj = Convert.ToBase64String(plainBytes),
+                        Status = errorStatus
+                    };
+                    return Request.CreateResponse(HttpStatusCode.OK, output);
+                }
+                else
+                {
+                    output.Status = errorStatus;
+                    return Request.CreateResponse(HttpStatusCode.OK, output);
+                }
+            }
+            else
+            {
+                errorStatus.Success = false;
+                errorStatus.ErrorCode = "CompanySetup.ListPropertyExport.1";
+                errorStatus.ErrorMsg = "List Proeprty Export: No data";
+                output.Status = errorStatus;
+                return Request.CreateResponse(HttpStatusCode.OK, output);
+            }
+        }
+        #endregion
+
+
+
         #region Private functions
 
         /// <summary>
@@ -1260,6 +1551,109 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 ObjectOutput<CompanySetup, IErrorData> output = new ObjectOutput<CompanySetup, IErrorData>()
                 {
                     obj = example,
+                    Status = errorStatus
+                };
+
+                return output;
+            }
+        }
+
+        /// <summary>
+        /// Used to document examples of the Companysetup Model webapi result
+        /// </summary>
+        [ExcludeFromCodeCoverage]
+        public class PropertyListExample : IProvideExamples
+        {
+            /// <summary>
+            /// Example object data used by Swagger to document the output of the webapi method
+            /// </summary>
+            /// <returns>List of Companies example</returns>
+            public object GetExamples()
+            {
+                List<PropertySetup> propertySetupExample = new List<PropertySetup>()
+                {
+                    new PropertySetup()
+                {
+                    PropertyInstanceId = 105294,
+                    Name = "WOODVILLE VILLAGE",
+                    ContractedName = "WOODVILLE VILLAGE",
+                    Address = "151 CO. RD. 63",
+                    City = "WOODVILLE",
+                    State = "AL",
+                    PostalCode = "35776",
+                    Country = "UNITED STATES",
+                    County = null,
+                    InstanceId = Guid.Parse("1e38a88a-b986-416e-b0cf-5944935a92be"),
+                    CustomerPropertyId = "1409051",
+                    Domain = "Primary",
+                    TotalRecords = 573
+                    }
+                };
+            
+                
+                List<string> domain = new List<string>()
+                {
+                    "Primary",
+                    "UAT"
+                };
+                CompanyPropertySetup company = new CompanyPropertySetup()
+                {
+                    Property = propertySetupExample,
+                    Domain = domain
+                };
+                Status<IErrorData> errorStatus = new Status<IErrorData>();
+                ObjectOutput<CompanyPropertySetup, IErrorData> output = new ObjectOutput<CompanyPropertySetup, IErrorData>()
+                {
+                    obj = company,
+                    Status = errorStatus
+                };
+
+                return output;
+            }
+        }
+        
+        [ExcludeFromCodeCoverage]
+        public class PropertyAuditExample : IProvideExamples
+        {
+            /// <summary>
+            /// Example object data used by Swagger to document the output of the webapi method
+            /// </summary>
+            /// <returns>List of Companies example</returns>
+            public object GetExamples()
+            {
+                List<PropertyAudit> propertyAuditExample = new List<PropertyAudit>()
+                {
+                    new PropertyAudit()
+                    {
+                        Name = "Property 1",
+                        ProductInstanceId = "1234567",
+                        UPFMInstanceId = "11111111-1111-2222-3333-3C0F434AE62D".ToLower(),
+                        UPFMName = "Property 1",
+                        Status = ""
+                    },
+                    new PropertyAudit()
+                    {
+                        Name = "Property 2",
+                        ProductInstanceId = "7654321",
+                        UPFMInstanceId = null,
+                        UPFMName = null,
+                        Status = "Missing"
+                    },
+                    new PropertyAudit()
+                    {
+                        Name = "Property 3",
+                        ProductInstanceId = "4444444",
+                        UPFMInstanceId = null,
+                        UPFMName = null,
+                        Status = "Missing UPFM Instances"
+                    },                    
+                };
+            
+                
+                Status<IErrorData> errorStatus = new Status<IErrorData>();
+                ObjectOutput<List<PropertyAudit>, IErrorData> output = new ObjectOutput<List<PropertyAudit>, IErrorData>()
+                {
+                    obj = propertyAuditExample,
                     Status = errorStatus
                 };
 

@@ -1,17 +1,26 @@
 ﻿using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Accounting;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ops;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Rum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using System.Net.Http;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -28,15 +37,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private IOrganizationProductRepository _organizationProductRepository;
         private IProductInternalSettingRepository _productInternalSettingRepository;
         private IProductRepository _productRepository;
+        private IPropertyRepository _propertyRepository;
+        private IManageBlueBook _manageBlueBook;
+        private IManageProductPanel _manageProductPanel;
 
         private DefaultUserClaim _defaultUserClaim;
         #endregion
-
+        
         #region Constructors
         /// <summary>
-        /// Constructor
+        /// Unit Test Constructor
         /// </summary>
-        public ManageOrganization(IRepository repository, DefaultUserClaim userClaim)
+        public ManageOrganization(IRepository repository, DefaultUserClaim userClaim, HttpMessageHandler messageHandler)
         {
             _organizationRepository = new OrganizationRepository(repository);
             _credentialRepository = new CredentialRepository(repository);
@@ -46,6 +58,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
             _productRepository = new ProductRepository(repository);
             _defaultUserClaim = userClaim;
+            _manageBlueBook = new ManageBlueBook(_defaultUserClaim, _productInternalSettingRepository, messageHandler);
+            _manageProductPanel = new ManageProductPanel(_defaultUserClaim, repository, _manageBlueBook, null);
+            _propertyRepository = new PropertyRepository(repository);
+        }
+
+        /// <summary>
+        /// Audit Unit Test Constructor
+        /// </summary>
+        public ManageOrganization(IRepository repository, DefaultUserClaim userClaim, HttpMessageHandler messageHandler, IManageProductOneSite manageProductOneSite)
+        {
+            _organizationRepository = new OrganizationRepository(repository);
+            _credentialRepository = new CredentialRepository(repository);
+            _userLoginRepository = new UserLoginRepository(repository);
+            _personaRepository = new PersonaRepository(repository);
+            _organizationProductRepository = new OrganizationProductRepository(repository);
+            _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
+            _productRepository = new ProductRepository(repository);
+            _defaultUserClaim = userClaim;
+            _manageBlueBook = new ManageBlueBook(_defaultUserClaim, _productInternalSettingRepository, messageHandler);
+            _manageProductPanel = new ManageProductPanel(_defaultUserClaim, repository, _manageBlueBook, manageProductOneSite);
+            _propertyRepository = new PropertyRepository(repository);
         }
 
         /// <summary>
@@ -60,21 +93,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _organizationProductRepository = new OrganizationProductRepository();
             _productInternalSettingRepository = new ProductInternalSettingRepository();
             _productRepository = new ProductRepository();
+            _propertyRepository = new PropertyRepository();
+            _manageBlueBook = new ManageBlueBook(userClaim);
+            _manageProductPanel = new ManageProductPanel(userClaim);
             _defaultUserClaim = userClaim;
-        }
-
-        /// <summary>
-        /// Create a basic instance of the ManageOrganization Controller class
-        /// </summary>
-        public ManageOrganization()
-        {
-            _organizationRepository = new OrganizationRepository();
-            _credentialRepository = new CredentialRepository();
-            _userLoginRepository = new UserLoginRepository();
-            _personaRepository = new PersonaRepository();
-            _organizationProductRepository = new OrganizationProductRepository();
-            _productInternalSettingRepository = new ProductInternalSettingRepository();
-            _productRepository = new ProductRepository();
         }
 
         #endregion
@@ -619,7 +641,274 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 dataFilter = globals[BaseType.RequestParameter] as RequestParameter;
             }
-            return _organizationRepository.GetCompanyList(_defaultUserClaim, organizationName, domain, blueId, organizationId, dataFilter);
+            var company =  _organizationRepository.GetCompanyList(organizationName, domain, blueId, organizationId, dataFilter);
+            return GetCompanyAdressFromBooks(company);
+        }
+        #endregion
+
+        #region GetPropertiesForCompany
+        public List<CompanyPropertySetup> GetPropertiesForCompany(Guid companyInstanceId, string propertyName = null, string domain = null, int? blueId = null, IDictionary<object, object> globals=null)
+        {
+            RequestParameter dataFilter = new RequestParameter();
+           
+            if (globals.ContainsKey(BaseType.RequestParameter))
+            {
+                dataFilter = globals[BaseType.RequestParameter] as RequestParameter;
+            }
+            
+            List<Guid> propertyInstanceIds;
+            List<BooksPropertyInstance> booksPropertyInstance = GetPropertyInstanceFromBooks(companyInstanceId);
+            if (domain != null)
+            {
+                string[] domainFilter = domain.Split(',');
+                propertyInstanceIds = booksPropertyInstance?.Where(p => domainFilter.Contains(p.attributes.domain)).Select(p => p.attributes.propertyInstanceSourceId)?.Select(Guid.Parse).ToList();
+            }
+            else
+            {
+                propertyInstanceIds = booksPropertyInstance?.Select(p => p.attributes.propertyInstanceSourceId)?.Select(Guid.Parse).ToList();
+            }
+            
+            List<PropertySetup> propertyDetails =  _propertyRepository.GetPropertiesForCompany(propertyInstanceIds, propertyName, blueId,  dataFilter);
+            propertyDetails = AddContractedNameToPropertyList(booksPropertyInstance, propertyDetails);
+            List<CompanyPropertySetup> companyPropertySetup = new List<CompanyPropertySetup>()
+            {
+                new CompanyPropertySetup()
+				{
+                    Domain = booksPropertyInstance?.Select(p => p.attributes.domain).Distinct().ToList(),
+                    Property = propertyDetails
+                }
+            };
+
+            return companyPropertySetup;
+        }
+		#endregion
+
+		#region Edit Property
+		#region GetPropertyForCompany
+		public List<UPFMPropertyInstance> GetPropertyByInstanceId(Guid propertyInstanceId)
+        {
+			List<Guid> propGuidList = new List<Guid>
+			{
+				propertyInstanceId
+			};
+			return _propertyRepository.ListUPFMPropertyInstanceIdByInstanceIds(propGuidList);
+        }
+        #endregion
+
+        #region UpdateProperty
+        /// <summary>
+        /// Update existing Property
+        /// </summary>
+        /// <param name="propertyInstanceId">property Instance Id</param>
+        /// <param name="propertyName">propertyName</param>
+        /// <returns>RepositoryResponse object</returns>
+        public RepositoryResponse UpdateProperty(Guid propertyInstanceId, string propertyName)
+        {
+            if (propertyInstanceId == Guid.Empty)
+            {
+                throw new Exception("Invalid parameter propertyInstanceId.");
+            }
+            if (string.IsNullOrEmpty(propertyName))
+            {
+                throw new Exception("Invalid parameter propertyName.");
+            }
+            return _propertyRepository.UpdateProperty(propertyInstanceId, propertyName);
+        }
+        #endregion
+        #endregion
+
+
+        #region Audit Property data
+        public List<PropertyAudit> AuditCompanyProductPropertiesToUPFM(Guid companyInstanceId, int productId)
+        {
+            var propertyAuditResult = new List<PropertyAudit>();
+            var upfmPropertyDetails = new List<UPFMPropertyInstance>();
+            
+            var productResult = _manageProductPanel.GetProductProperties(_defaultUserClaim.PersonaId, 0, productId, null);
+            
+            // add sorting on name
+            // add different message if upfm property list is null
+            
+            if (productResult.Records != null && productResult.Records.Count > 0)
+            {
+                var upfmProperties = new UPFMProperty();
+                var instanceIds = new List<string>();
+                var instanceGuids = new List<Guid>();
+                var booksPropertyInstance = GetPropertyInstanceFromBooks(companyInstanceId);
+
+                if (booksPropertyInstance != null)
+                {
+                    foreach (var property in booksPropertyInstance)
+                    {
+                        instanceIds.Add(property.attributes.propertyInstanceSourceId.ToLower());
+                        instanceGuids.Add(new Guid(property.attributes.propertyInstanceSourceId));
+                    }
+                }
+
+                if (instanceGuids.Count > 0)
+                {
+                    upfmPropertyDetails = _propertyRepository.ListUPFMPropertyInstanceIdByInstanceIds(instanceGuids);
+                }
+                
+                upfmProperties.id = instanceIds;
+
+                var booksProductDetail = _productRepository.GetBooksMasterProductDetail(productId);
+
+                TranslatePropertyInstance translatedData;
+
+                if (booksProductDetail.ProductId != (int) ProductEnum.UnifiedPlatform)
+                {
+                    translatedData = _manageBlueBook.GetTranslatePropertiesFromUPFMToProductv3(upfmProperties, booksProductDetail.BooksProductCode);
+                }
+                else
+                {
+                    translatedData = new TranslatePropertyInstance() {Data = new TranslatePropertyInstanceData() { Attributes = new List<TranslatePropertyInstanceAttribute>()}};
+                    
+                    foreach (var instance in booksPropertyInstance)
+                    {
+                        var tpi = new List<TranslatedPropertyInstanceData>();
+                        tpi.Add(new TranslatedPropertyInstanceData(){ PropertyInstanceSourceId = instance.attributes.propertyInstanceSourceId, Source = instance.attributes.source});
+
+                        translatedData.Data.Attributes.Add(new TranslatePropertyInstanceAttribute() {PropertyInstanceSourceId = instance.attributes.propertyInstanceSourceId, Source = booksProductDetail.BooksProductCode, TranslatedPropertyInstances = tpi});
+                    }
+                }
+
+                var productPropertyType = productResult.Records[0].GetType();
+
+                if (productPropertyType == typeof(ProductProperty))
+                {
+                    foreach (var property in productResult.Records.Cast<ProductProperty>())
+                    {
+                        AuditPropertyCompare(property.ID, property.Name, translatedData, instanceIds, upfmPropertyDetails, propertyAuditResult);
+                    }
+                }
+                else if (productPropertyType == typeof(ACProperty))
+                {
+                    foreach (var property in productResult.Records.Cast<ACProperty>())
+                    {
+                        AuditPropertyCompare(property.Id, property.PropertyName, translatedData, instanceIds, upfmPropertyDetails, propertyAuditResult);
+                    }
+                }
+                else if (productPropertyType == typeof(AssetGroup))
+                {
+                    foreach (var property in productResult.Records.Cast<AssetGroup>())
+                    {
+                        AuditPropertyCompare(property.ID, property.Name, translatedData, instanceIds, upfmPropertyDetails, propertyAuditResult);
+                    }
+                }
+                else if (productPropertyType == typeof(OnSiteProperty))
+                {
+                    foreach (var property in productResult.Records.Cast<OnSiteProperty>())
+                    {
+                        AuditPropertyCompare(property.GetPropertyId.ToString(), property.GetName, translatedData, instanceIds, upfmPropertyDetails, propertyAuditResult);
+                    }
+                }
+                else if (productPropertyType == typeof(RumPropertyGroup))
+                {
+                    foreach (var property in productResult.Records.Cast<RumPropertyGroup>())
+                    {
+                        AuditPropertyCompare(property.Id.ToString(), property.Name, translatedData, instanceIds, upfmPropertyDetails, propertyAuditResult);
+                    }
+                }
+                else if (productPropertyType == typeof(ProductProperties))
+                {
+                    foreach (var property in productResult.Records.Cast<ProductProperties>())
+                    {
+                        AuditPropertyCompare(property.GetPropertyId.ToString(), property.GetName, translatedData, instanceIds, upfmPropertyDetails, propertyAuditResult);
+                    }
+                }
+                else if (productPropertyType == typeof(Portfolio))
+                {
+                    foreach (var property in productResult.Records.Cast<Portfolio>())
+                    {
+                        AuditPropertyCompare(property.ID, property.Name, translatedData, instanceIds, upfmPropertyDetails, propertyAuditResult);
+                    }
+                }
+
+                propertyAuditResult = propertyAuditResult.OrderBy(p => p.Name).ToList();
+            }
+
+            return propertyAuditResult;
+        }
+
+        private static void AuditPropertyCompare(string propertyId, string propertyName, TranslatePropertyInstance translatedData, List<string> instanceids, List<UPFMPropertyInstance> upfmPropertyDetails, List<PropertyAudit> propertyAuditResult)
+        {
+            PropertyAudit pa = new PropertyAudit()
+            {
+                Name = propertyName,
+                ProductInstanceId = propertyId
+            };
+
+            var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == propertyId));
+            if (instanceExists != null)
+            {
+                pa.UPFMInstanceId = instanceExists.PropertyInstanceSourceId;
+                pa.Status = instanceids.All(p => p != instanceExists.PropertyInstanceSourceId) ? "Missing UPFM Instances" : "";
+
+                var upfmProperty = upfmPropertyDetails.FirstOrDefault(p => p.InstanceId == new Guid(instanceExists.PropertyInstanceSourceId));
+                if (upfmProperty != null)
+                {
+                    pa.UPFMName = upfmProperty.Name;
+                }
+            }
+
+            if (translatedData.Data == null)
+            {
+                pa.Status = "No product data translated";
+            }
+            propertyAuditResult.Add(pa);
+        }
+
+        #endregion
+
+
+        #region Private Methods
+
+
+        private List<CompanySetup> GetCompanyAdressFromBooks(List<CompanySetup> companyDetails)
+        {
+            List<UnifiedLoginCompany> compList = new List<UnifiedLoginCompany>();
+            // ManageBlueBook _blueBook = new ManageBlueBook(_userClaim);
+            foreach (var item in companyDetails)
+            {
+                compList.Add(new UnifiedLoginCompany
+                {
+                    CompanyId = long.Parse(item.BooksMasterId.ToString()),
+                    BooksCustomerMasterId = long.Parse(item.BooksCustomerMasterId.ToString() == string.Empty ? "0" : item.BooksCustomerMasterId.ToString())
+                });
+            }
+            IList<Company> booksCompanyDetails = _manageBlueBook.GetCompanyListByCompIds(compList);
+            foreach (var items in companyDetails)
+            {
+                var address = booksCompanyDetails.Where(add => add.Id == items.BooksCustomerMasterId).FirstOrDefault()?.CustomerCompanyLocation;
+                if (address != null && address.Length > 0)
+                {
+                    items.ContractedName = booksCompanyDetails.Where(add => add.Id == items.BooksCustomerMasterId).FirstOrDefault()?.CompanyName;
+                    items.CompanyLocation = address[0];
+                    items.Address = address[0]?.Address + "," + address[0]?.City + "," + address[0]?.State + "," + address[0]?.PostalCode;
+                }
+            }
+            return companyDetails;
+        }
+
+        private List<BooksPropertyInstance> GetPropertyInstanceFromBooks(Guid companyInstanceId)
+        {                    
+            return _manageBlueBook.GetPropertyInstanceForCompany(companyInstanceId);
+        }
+
+        private List<PropertySetup> AddContractedNameToPropertyList(List<BooksPropertyInstance> booksPropertyInstance, List<PropertySetup> propertySetup)
+        {
+            foreach (var property in propertySetup)
+            {
+                property.ContractedName = booksPropertyInstance?
+										.Where(pi => pi.attributes.propertyInstanceSourceId.ToString() == property.InstanceId.ToString())
+										.FirstOrDefault()?.attributes.customerPropertyMap?.FirstOrDefault()?.customerProperty.FirstOrDefault()?.propertyName;
+                property.Domain = booksPropertyInstance?
+                                        .Where(pi => pi.attributes.propertyInstanceSourceId.ToString() == property.InstanceId.ToString())
+                                        .FirstOrDefault()?.attributes.domain;				
+				property.PropertyAddress = property?.Address + "," + property?.City + "," + property?.State + "," + property?.PostalCode;
+            }
+            return propertySetup;
         }
         #endregion
     }

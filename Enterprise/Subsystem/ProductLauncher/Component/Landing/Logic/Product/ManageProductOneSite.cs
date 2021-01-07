@@ -198,8 +198,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 PropertyList propertyList = new PropertyList();
                 Dictionary<string, object> logData = new Dictionary<string, object>();
                 OneSiteUser onesiteuser = new OneSiteUser();
-
-
+                
                 if (!string.IsNullOrEmpty(_systemIdentifier))
                 {
                     onesiteuser = GetOneSiteUserInfo(_systemIdentifier);

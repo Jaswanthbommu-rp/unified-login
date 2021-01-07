@@ -14,10 +14,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// Add/Update Custom Fields
 		/// </summary>
 		/// <param name="settings">A list of one Setting object where the Value is a JSON of the Custom Fields to Add/Update</param>
-		/// <param name="bookMasterId">BlackBookId MasterBook Id</param>
+		/// <param name="booksCustomerMasterId">Books Customer MasterId</param>
 		/// <param name="bookMasterTypeId">Type of Book MasterId (e.g. 1 = Black, 2 = Blue)</param>
 		/// <returns>RepositoryResponse object</returns>
-		RepositoryResponse AddUpdateCustomFields(IList<Setting> settings, long bookMasterId, int bookMasterTypeId = (int)BookMasterType.CompanyMasterId);
+		RepositoryResponse AddUpdateCustomFields(IList<Setting> settings, long booksCustomerMasterId, int bookMasterTypeId = (int)BookMasterType.CustomerMasterId);
 
 		/// <summary>
 		/// Add/Update Custom Fields values for a user
@@ -31,19 +31,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// Get Custom Fields
 		/// </summary>
 		/// <param name="globals">Parameter for filter and sort</param>
-		/// <param name="bookMasterId">Book MasterId</param>
+		/// <param name="booksCustomerMasterId">Books Customer MasterId</param>
 		/// <param name="bookMasterTypeId">Type of Book MasterId (e.g. 1 = Black, 2 = Blue)</param>
 		/// <returns>Custom Fields (KeyValue pairs)</returns>
-		IList<Setting> GetCustomFields(IDictionary<object, object> globals, long bookMasterId, int bookMasterTypeId = (int)BookMasterType.CompanyMasterId);
+		IList<Setting> GetCustomFields(IDictionary<object, object> globals, long booksCustomerMasterId, int bookMasterTypeId = (int)BookMasterType.CustomerMasterId);
 
 		/// <summary>
 		/// Get Custom Fields
 		/// </summary>
 		/// <param name="globals">Parameter for filter and sort</param>
-		/// <param name="bookMasterId">Book MasterId</param>
+		/// <param name="booksCustomerMasterId">Books Customer MasterId</param>
 		/// <param name="bookMasterTypeId">Type of Book MasterId (e.g. 1 = Black, 2 = Blue)</param>
 		/// <returns>List of Custom Fields objects</returns>
-		IList<CustomField> GetCustomField(IDictionary<object, object> globals, long bookMasterId, int bookMasterTypeId = (int)BookMasterType.CompanyMasterId);
+		IList<CustomField> GetCustomField(IDictionary<object, object> globals, long booksCustomerMasterId, int bookMasterTypeId = (int)BookMasterType.CustomerMasterId);
 
 		/// <summary>
 		/// Get Custom Fields Values for a User

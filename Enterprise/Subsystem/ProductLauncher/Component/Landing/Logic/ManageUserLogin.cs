@@ -15,6 +15,7 @@ using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Web;
@@ -42,11 +43,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <summary>
         /// ManageUserLogin Constructor
         /// </summary>
-        public ManageUserLogin(IRepository repository, DefaultUserClaim userClaim)
+        public ManageUserLogin(IRepository repository, DefaultUserClaim userClaim, HttpMessageHandler messageHandler)
         {
             _userLoginRepository = new UserLoginRepository(repository);
             _credentialRepository = new CredentialRepository(repository);
-            _userRepository = new UserRepository(repository, userClaim);
+            _userRepository = new UserRepository(repository, userClaim, messageHandler);
             _productRepository = new ProductRepository(repository);
             _personRepository = new PersonRepository(repository);
             _roleTypeRepository = new RoleTypeRepository(repository);

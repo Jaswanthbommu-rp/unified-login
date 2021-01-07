@@ -62,5 +62,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.
         /// </summary>
         [AuditLog("Active Access", LogActivityTypeConstants.UPDATE_USER, "", "{'True':'{2} {3} Activated user {0} {1}.','False':'{2} {3} Deactivated user {0} {1}.'}")]
         public bool? IsActive { get; set; }
+
+        /// <summary>
+        /// User Employee Id
+        /// </summary>
+        [AuditLog("Employee Id", LogActivityTypeConstants.UPDATE_USER)]
+        public string EmployeeId { get; set; }
     }
 }

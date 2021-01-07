@@ -106,7 +106,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Manage Organization Business logic
         /// </summary>
-        protected IManageOrganization _manageOrganization = new ManageOrganization();
+        //protected IManageOrganization _manageOrganization = new ManageOrganization();
 
         /// <summary>
         /// Manage Electronic Address Business logic
@@ -245,7 +245,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (productRepository != null) { _productRepository = productRepository; }
             _productInternalSettingList = GetProductSetting(_productId);
             _productDetails = GetBooksMasterProductDetail(_productId);
-            _udmSourceCode = _productDetails.UDMSourceCode?.Length > 0 ? _productDetails.UDMSourceCode : _productDetails.BooksProductCode;          
+            if (_productDetails != null)
+            {
+                _udmSourceCode = _productDetails.UDMSourceCode?.Length > 0 ? _productDetails.UDMSourceCode : _productDetails.BooksProductCode;
+            }
         }
 
         /// <summary>

@@ -49,27 +49,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <summary>
         /// Get Security Settings (PasswordPolicy and ActivityConfiguration)
         /// </summary>
-        /// <param name="bookMasterId">Book MasterId</param>
+        /// <param name="booksCustomerMasterId">Books Customer MasterId</param>
         /// <param name="bookMasterTypeId">Type of Book MasterId (e.g. 1 = Black, 2 = Blue)</param>
         /// <returns>Security Settings List objects (KeyValue pairs)</returns>
-        public IList<Setting> GetSecuritySettings(long bookMasterId, int bookMasterTypeId = (int)BookMasterType.CompanyMasterId)
+        public IList<Setting> GetSecuritySettings(long booksCustomerMasterId, int bookMasterTypeId = (int)BookMasterType.CustomerMasterId)
         {
             IList<Setting> securitySettingList = new List<Setting>();
             Guid correlationId = Guid.NewGuid();
             Dictionary<string, object> logData = new Dictionary<string, object>
             {
-                { "Get SecuritySettings", $"Organization Book MasterId: {bookMasterId}, Book Master TypeId: {bookMasterTypeId}" }
+                { "Get SecuritySettings", $"Organization Books Customer MasterId: {booksCustomerMasterId}, Book Master TypeId: {bookMasterTypeId}" }
             };
             WriteToLog(LogEventLevel.Debug, "GetSecuritySettings: Begin", correlationId, logData, null);
 
-            if (bookMasterId == 0)
+            if (booksCustomerMasterId == 0)
             {
-                throw new Exception("Missing Book Master Id.");
+                throw new Exception("Missing Books Customer Master Id.");
             }
 
             try
             {
-                securitySettingList = _securitySettingsRepository.GetSecuritySettings(bookMasterId, bookMasterTypeId);
+                securitySettingList = _securitySettingsRepository.GetSecuritySettings(booksCustomerMasterId, bookMasterTypeId);
             }
             catch (Exception exception)
             {
@@ -93,16 +93,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// Update an existing Security Settings (Password and Activity Configuration Security Settings)
         /// </summary>
         /// <param name="settings">Security Settings (Password and Activity Configuration Security Settings) object of the parameter values</param>
-        /// <param name="bookMasterId">BlackBookId MasterBook Id</param>
+        /// <param name="booksCustomerMasterId">Books Customer MasterId</param>
         /// <param name="bookMasterTypeId">Type of Book MasterId (e.g. 1 = Black, 2 = Blue)</param>
         /// <returns>RepositoryResponse object</returns>
-        public RepositoryResponse UpdateSecuritySettings(IList<Setting> settings, long bookMasterId, int bookMasterTypeId = (int)BookMasterType.CompanyMasterId)
+        public RepositoryResponse UpdateSecuritySettings(IList<Setting> settings, long booksCustomerMasterId, int bookMasterTypeId = (int)BookMasterType.CustomerMasterId)
         {
             RepositoryResponse repositoryResponse = new RepositoryResponse();
             Guid correlationId = Guid.NewGuid();
             Dictionary<string, object> logData = new Dictionary<string, object>
             {
-                { "Update SecuritySettings", $"Organization Book MasterId: {bookMasterId}, dataImportApplicationId: {bookMasterTypeId}, securitySettings: {settings}" }
+                { "Update SecuritySettings", $"Organization Book MasterId: {booksCustomerMasterId}, dataImportApplicationId: {bookMasterTypeId}, securitySettings: {settings}" }
             };
             WriteToLog(LogEventLevel.Debug, "UpdateSecuritySettings: Begin", correlationId, logData, null);
             if (settings == null)
@@ -112,7 +112,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             try
             {
-                repositoryResponse = _securitySettingsRepository.UpdateSecuritySettings(settings, bookMasterId, bookMasterTypeId);
+                repositoryResponse = _securitySettingsRepository.UpdateSecuritySettings(settings, booksCustomerMasterId, bookMasterTypeId);
             }
             catch (Exception exception)
             {

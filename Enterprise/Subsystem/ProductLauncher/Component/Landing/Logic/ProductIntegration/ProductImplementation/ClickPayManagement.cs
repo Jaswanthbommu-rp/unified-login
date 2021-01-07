@@ -244,7 +244,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		}
 		protected override IntegrationProductUser GenerateProductUserObject(ProductUserRolePropertiesGroups changedUserRolePropertiesRegion)
 		{
-			List<OrganizationRole> productUserOrgRoleList = new List<OrganizationRole>(); ;
+			List<OrganizationRole> productUserOrgRoleList = new List<OrganizationRole>();
+			if (changedUserRolePropertiesRegion.OrganizationRoleList != null)
+			{
+				foreach (var changedUserOrgRoles in changedUserRolePropertiesRegion.OrganizationRoleList)
+				{
+					if (changedUserOrgRoles.IsAssigned)
+					{
+						if (changedUserOrgRoles.RoleType.ToString().ToLower().Equals("company"))
+						{
+							changedUserOrgRoles.OrganizationId = CompanyInstanceSourceId;
+						}
+					}
+				}
+			}
+
 			if (!string.IsNullOrEmpty(SubjectUserDetails.ProductUserName))
 			{
 				var user = GetProductUser();

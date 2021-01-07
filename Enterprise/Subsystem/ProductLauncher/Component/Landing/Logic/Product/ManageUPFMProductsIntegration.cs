@@ -284,9 +284,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// Get the list of property instances for the given user to be used by external systems
 		/// </summary>
 		/// <param name="userPersonaId"></param>
+		/// <param name="product"></param>
 		/// <param name="include"></param>
+		/// <param name="flag"></param>
+		/// <param name="multiCompanyRealPageId"></param>
 		/// <returns></returns>
-		public ListResponse GetUPFMProperties(long userPersonaId, ProductEnum product, string include = null)
+		public ListResponse GetUPFMProperties(long userPersonaId, ProductEnum product, string include = null, string flag = null, string multiCompanyRealPageId = null)
 		{
 			ListResponse response = new ListResponse();
 			var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, _upfmProductId);
@@ -297,7 +300,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			if (userPropertyIdList != null)
 			{
-				var booksPropertyList = _blueBook.GetUPFMPropertyInstances(_userClaims.OrganizationRealPageGuid.ToString());
+				var organizationRealPageId = flag == "haas" ? multiCompanyRealPageId : _userClaims.OrganizationRealPageGuid.ToString();
+				var booksPropertyList = _blueBook.GetUPFMPropertyInstances(organizationRealPageId);				
 				if (booksPropertyList != null)
 				{
 					customerPropertyList = ListUPFMPropertyInstanceIdByInstanceIds(booksPropertyList);
@@ -331,7 +335,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				upfmProperties.id = instanceids;
 
 				var translatedData = _blueBook.GetTranslatePropertiesFromUPFMToProductv3(upfmProperties, _udmSourceCode);
-				if (translatedData != null)
+				if (translatedData?.Data != null)
 				{
 					var productCode = booksProductDetail.UDMSourceCode == null ? booksProductDetail.BooksProductCode : booksProductDetail.UDMSourceCode;
 					foreach (var attributs in translatedData.Data.Attributes)
@@ -345,6 +349,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 								{
 									translatedProductProperty.ID = propertyData.PropertyInstanceSourceId;
 									translatedProductProperty.Alias = null;
+									translatedProductProperty.CustomerPropertyId = propertyData.CustomerPropertyId;									
 									translatedUserPropertyList.Add(translatedProductProperty);
 								}
 							}
@@ -563,6 +568,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					if (_productId == (int)ProductEnum.HospitalityService)
 					{
 						superUserRoleId = gbAllRoles.First(a => a.Name.Equals("Property Admin", StringComparison.OrdinalIgnoreCase)).ID;
+					}
+					else if(_productId == (int)ProductEnum.HOTS)
+                    {
+						superUserRoleId = gbAllRoles.First(a => a.Name.Equals("Creator", StringComparison.OrdinalIgnoreCase)).ID;
 					}
 					else
 					{

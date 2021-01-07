@@ -1749,7 +1749,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 var cachePolicy = new CacheItemPolicy
                 {
-                    AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(60)// Expier cache every after 60 minutes 
+                    AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(10)// Expire cache every after 60 minutes 
                 };
 
                 productCache.Set("GB-BB-ProductMap", products, cachePolicy);
@@ -1962,6 +1962,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         break;
                     case (int)ProductRightEnum.ManageHomeSharingProductAccess:
                         s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageHomeSharingProductAccess.ToString());
+                        break;
+                    case (int)ProductRightEnum.ManageHOTSProductAccess:
+                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageHOTSProductAccess.ToString());
                         break;
                     default:
                         break;
