@@ -2211,5 +2211,65 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         }
 
         #endregion
+
+        #region AuditPropertyExport
+        [Fact]
+        public void AuditCompanyProductPropertiesToUPFMExport_InvalidUserCompany()
+        {
+            DefaultUserClaim invalidDefaultUserClaim = new DefaultUserClaim()
+            {
+                CorrelationId = new Guid(),
+                CustomerMasterId = _BooksCompanyMasterId,
+                OrganizationRealPageGuid = Guid.NewGuid()
+            };
+
+            //Arrange
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , invalidDefaultUserClaim
+            )
+            {
+                Request = new HttpRequestMessage(),
+                Configuration = new HttpConfiguration()
+            };
+
+            //Act           
+            HttpResponseMessage response = organizationController.AuditCompanyProductPropertiesToUPFMExport(Guid.NewGuid(), (int)ProductEnum.OneSite);
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
+        }
+
+        [Fact]
+        public void AuditCompanyProductPropertiesToUPFMExport_EmptyUnknownCompany()
+        {
+            //Arrange
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            )
+            {
+                Request = new HttpRequestMessage(),
+                Configuration = new HttpConfiguration()
+            };
+
+            //Act           
+            HttpResponseMessage response = organizationController.AuditCompanyProductPropertiesToUPFMExport(Guid.Empty, (int)ProductEnum.OneSite);
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
+
+            //Act           
+            response = organizationController.AuditCompanyProductPropertiesToUPFMExport(new Guid("00000000-0000-0000-0000-000000000000"), (int)ProductEnum.OneSite);
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
+
+        }
+        #endregion
     }
 }
