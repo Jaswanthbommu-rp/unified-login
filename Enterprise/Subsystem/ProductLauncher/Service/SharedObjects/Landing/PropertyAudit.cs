@@ -16,7 +16,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 
         public string UPFMName { get; set; }
 
-        public string Status { get; set; } = "Missing";
+        public string Status { get; set; } = "No ID";
     
     }
 }

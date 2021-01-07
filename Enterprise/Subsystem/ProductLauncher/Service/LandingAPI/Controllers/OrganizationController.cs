@@ -1629,7 +1629,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         ProductInstanceId = "1234567",
                         UPFMInstanceId = "11111111-1111-2222-3333-3C0F434AE62D".ToLower(),
                         UPFMName = "Property 1",
-                        Status = ""
+                        Status = "OK"
                     },
                     new PropertyAudit()
                     {
@@ -1637,7 +1637,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         ProductInstanceId = "7654321",
                         UPFMInstanceId = null,
                         UPFMName = null,
-                        Status = "Missing"
+                        Status = "No ID"
                     },
                     new PropertyAudit()
                     {
@@ -1645,7 +1645,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         ProductInstanceId = "4444444",
                         UPFMInstanceId = null,
                         UPFMName = null,
-                        Status = "Missing UPFM Instances"
+                        Status = "No ID"
                     },                    
                 };
             
