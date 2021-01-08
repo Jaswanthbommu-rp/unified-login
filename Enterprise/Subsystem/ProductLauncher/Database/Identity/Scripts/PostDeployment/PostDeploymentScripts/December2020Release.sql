@@ -2349,3 +2349,188 @@ DECLARE @RightValue nvarchar(200),
 
 		END
 GO
+
+--Self-Guided Tour
+/*This script is a sample script to create new prodcut in the system.*/
+
+DECLARE @ProductId INT, 
+		@LoginURI NVARCHAR(100), 
+		@SigningCertificateThumbprint NVARCHAR(50), 
+		@ParentProductTypeId INT, 
+		@ProductName NVARCHAR(100)= 'Self-Guided Tour',  -- Produact Name
+		@LoginURL NVARCHAR(500), 
+		@ProductUrl NVARCHAR(256), 
+		@apiendpoint NVARCHAR(1000), 
+		@tokenEndPoint NVARCHAR(1000), 
+		@apisecret NVARCHAR(1000),
+		@ServerName SYSNAME = @@SERVERNAME,
+		@ProductDescription NVARCHAR(MAX) =''
+
+DECLARE @ProductConfiguration AS PRODUCTCONFIGURATIONTYPE;
+
+/*Validate what product type ths new product belongs to. 'Administration' in the following block 
+need to be chnanged to desired prodcut type. You can query Enterprise.ProductType table for more details.
+*/
+
+SELECT @ParentProductTypeId = ProductTypeId
+FROM Enterprise.ProductType
+WHERE Name = 'Lease Management'
+      AND ParentProductTypeId IS NULL;
+IF NOT EXISTS
+(
+    SELECT TOP 1 1
+    FROM enterprise.ProductType
+    WHERE Name = 'Self-Guided Tour'
+)
+    BEGIN
+        EXEC [Enterprise].[CreateProductType] 
+             @ProductTypeId = 313, -- This value may change based on the root prodcut type
+             @ParentProductTypeId = @ParentProductTypeId, 
+             @Name = @ProductName, 
+             @Description = @ProductName, 
+             @ProductTypeGUID = '95A92E81-CED7-4204-9102-E8CEED681B09'; -- Use select newid() to generate new uniqueidentifier.
+END;
+SET @ProductId = 65; -- Assign new product Id
+
+--Following block will create the new prodcut in the database
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM Enterprise.Product
+    WHERE Name = @ProductName
+)
+    BEGIN
+        EXEC Enterprise.CreateProduct 
+             @ProductId = @ProductId, 
+             @ProductGUID = '523118C1-5894-4C02-B708-2D9837AC8DB3', -- Use newid() to generate new uniqueidentifier.
+             @Name = @ProductName, 
+             @Description = @ProductDescription, 
+             @ProductTypeId = 313;
+        
+		UPDATE Enterprise.Product
+          SET 
+              BooksProductCode = 'SGT'
+        WHERE ProductId = @ProductId;
+END;
+
+--The following block picks up all the detail frm Enterprise.ProductSettingType table
+--To set up the product, bunch of these settings are required.
+SET @apiendpoint = '';
+Set @tokenEndPoint = '';
+SET @apisecret = '';
+IF @ServerName IN ('RCDUSODBSQL001')
+BEGIN
+	SET @apiendpoint = '';
+	SET @tokenEndPoint = '';
+	SET @apisecret = '';
+END
+IF @ServerName IN ('rctusodbsql001')
+BEGIN
+	SET @apiendpoint = '';
+	SET @tokenEndPoint = '';
+	SET @apisecret = '';
+END
+--IF @ServerName IN ('RCQUSODBSQL001')
+--BEGIN
+--	SET @apiendpoint = '';
+--END
+IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B')
+BEGIN
+	SET @apiendpoint = '';
+	SET @tokenEndPoint = '';
+	SET @apisecret = '';
+END
+set nocount on
+INSERT INTO @ProductConfiguration
+(SettingName, 
+ SettingDescription, 
+ SettingValue
+)
+VALUES
+ ('ClassName','','sgt')
+,('ProductUrl','','/product/sgt')
+,('TitleId','','SGT')
+,('TitleUniqueId','','9D5435AC-4AA1-4A6C-A2E1-E55ADC4A519B')
+,('IsNewTab','','1')
+,('MetatagUniqueId','','SGT')
+,('IsResource','','0')
+,('IsFavorite','','1')
+,('LearnMore','','')
+,('ApiEndPoint','',@apiendpoint)
+,('ProductStatus','Show if the external application was configured for the dashboard user.','8')
+,('ProductStatus','Show if the external application was configured for the dashboard user.','7')
+,('ProductStatus','Show if the external application was configured for the dashboard user.','10')
+,('ProductStatus','Show if the external application was configured for the dashboard user.','19')
+,('ShowInUserDetails','Should the product show in the New/Edit user pages','1')
+,('ShowInRolesAndRights','Should the product show in the Role/Rights page','0')
+,('ShowInAppSwitcher','Should the product show in the application switcher','1')
+,('ShowInUserListFilter','Should the product show in the user list product pick list','1')
+,('ProductAPIRequiresUser','Does the product require a user for api calls','0')
+,('LockOnProductAccess', '', '0')
+,('ProductNotAvailableForRegularUserNoEmail','Product Attribute for Product Not Available for Regular User No Email.','0')
+,('CLIENTID','','bosswasteapi') -- For DEV Environment
+,('TOKENENDPOINT','', '') -- For DEV Environment
+,('APISECRET','', '')
+,('AuthenticationType','Used to determine how to log into the product','Redirect')
+
+
+
+SELECT * FROM @ProductConfiguration
+
+SET @LoginURL = '';
+IF @ServerName IN ('RCDUSODBSQL001')
+BEGIN
+	SET @LoginURL = '';
+END
+IF @ServerName IN ('rctusodbsql001')
+BEGIN
+	SET @LoginURL = '';
+END
+IF @ServerName IN ('RCQUSODBSQL001')
+BEGIN
+	SET @LoginURL = '';
+END
+IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B')
+BEGIN
+	SET @LoginURL = '';
+END
+
+SET @LoginURI = @LoginURL;
+SET @SigningCertificateThumbprint = NULL;
+
+--Setup the product configurations.
+if not exists (select top 1 1 from Enterprise.ProductSetting where ProductId = @ProductId)
+begin
+
+	EXEC Enterprise.ProductConfigurationSetup 
+		 @ProductId, 
+		 @LoginURI, 
+		 @SigningCertificateThumbprint, 
+		 @ProductConfiguration;
+end;
+
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM ident.SamlProductSettings
+    WHERE ProductId = @ProductId
+          AND LoginUri = @LoginURL
+)
+    BEGIN
+        INSERT INTO ident.SamlProductSettings
+        (
+        --SamlProductSettingsId - column value is auto-generated
+        ProductId, 
+        LoginUri, 
+        SigningCertificateThumbprint, 
+        SubjectIdSamlAttribute
+        )
+        VALUES
+        (
+        -- SamlProductSettingsId - int
+        @ProductId, -- ProductId - int
+        @LoginURL, -- LoginUri - nvarchar
+        N'NA', -- SigningCertificateThumbprint - nvarchar
+        N'productUserName' -- SubjectIdSamlAttribute - nvarchar
+        );
+END;
