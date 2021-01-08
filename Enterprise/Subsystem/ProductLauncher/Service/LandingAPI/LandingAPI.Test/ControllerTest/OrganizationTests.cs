@@ -220,7 +220,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             HttpResponseMessage booksEmptyPropertyResponse = new HttpResponseMessage(HttpStatusCode.NotFound);
 
-            var booksTranslateOneSiteJson = "{\n\t\"data\": {\n\t\t\"type\": \"propertyinstancetranslations\",\n\t\t\"attributes\": [\n\t\t\t{\n\t\t\t\t\"propertyInstanceSourceId\": \"a5192995-aaaa-bbbb-8df2-f30f1b8dc752\",\n\t\t\t\t\"source\": \"UPFM\",\n\t\t\t\t\"translatedPropertyInstances\": [\n\t\t\t\t\t{\n\t\t\t\t\t\t\"source\": \"OS\",\n\t\t\t\t\t\t\"propertyInstanceSourceId\": \"1234567\"\n\t\t\t\t\t}\n\t\t\t\t]\n\t\t\t},\n\t\t\t{\n\t\t\t\t\"propertyInstanceSourceId\": \"be76573d-25fc-421b-9188-973d3c959248\",\n\t\t\t\t\"source\": \"UPFM\",\n\t\t\t\t\"translatedPropertyInstances\": [\n\t\t\t\t\t{\n\t\t\t\t\t\t\"source\": \"AB\",\n\t\t\t\t\t\t\"propertyInstanceSourceId\": \"7654321\"\n\t\t\t\t\t}\n\t\t\t\t]\n\t\t\t}\n\t\t]\n\t}\n}";
+            var booksTranslateOneSiteJson = "{\n\t\"data\": {\n\t\t\"type\": \"propertyinstancetranslations\",\n\t\t\"attributes\": [\n\t\t\t{\n\t\t\t\t\"propertyInstanceSourceId\": \"a5192995-aaaa-bbbb-8df2-f30f1b8dc752\",\n\t\t\t\t\"source\": \"UPFM\",\n\t\t\t\t\"translatedPropertyInstances\": [\n\t\t\t\t\t{\n\t\t\t\t\t\t\"source\": \"OS\",\n\t\t\t\t\t\t\"propertyInstanceSourceId\": \"1234567\"\n\t\t\t\t\t}\n\t\t\t\t]\n\t\t\t},\n\t\t\t{\n\t\t\t\t\"propertyInstanceSourceId\": \"a5192995-aaaa-bbbb-8df2-f30f1b8dc752\",\n\t\t\t\t\"source\": \"UPFM\",\n\t\t\t\t\"translatedPropertyInstances\": [\n\t\t\t\t\t{\n\t\t\t\t\t\t\"source\": \"AB\",\n\t\t\t\t\t\t\"propertyInstanceSourceId\": \"7654321\"\n\t\t\t\t\t}\n\t\t\t\t]\n\t\t\t}\n\t\t]\n\t}\n}";
             HttpResponseMessage booksTranslateOneSiteResponse = new HttpResponseMessage(HttpStatusCode.OK);
             booksTranslateOneSiteResponse.Content = new StringContent(booksTranslateOneSiteJson);
             
@@ -2170,13 +2170,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             HttpResponseMessage response = organizationController.AuditCompanyProductPropertiesToUPFM(new Guid("11111111-1111-1111-1111-111111111111"), (int)ProductEnum.OneSite);
 
             var responseResult = response.Content.ReadAsAsync<ObjectListOutput<PropertyAudit, IErrorData>>().Result;
-            
+
+            var missingProductResponse = responseResult.list.FirstOrDefault(p => p.ProductInstanceId == "7654321");
+            var validProductResponse = responseResult.list.FirstOrDefault(p => p.ProductInstanceId == "1234567");
+
             //Assert
-            Assert.True(responseResult.list[0].Status.Equals("OK", StringComparison.OrdinalIgnoreCase)
-                        && responseResult.list[0].Name.Equals("OneSite property 1", StringComparison.OrdinalIgnoreCase)
-                        && responseResult.list[0].ProductInstanceId.Equals("1234567", StringComparison.OrdinalIgnoreCase)
-                        && responseResult.list[0].UPFMInstanceId.Equals("a5192995-aaaa-bbbb-8df2-f30f1b8dc752", StringComparison.OrdinalIgnoreCase)
-                        && responseResult.list[0].UPFMName.Equals("test property 1", StringComparison.OrdinalIgnoreCase)
+            Assert.True(missingProductResponse != null 
+                        && missingProductResponse.Status.Equals("No Product", StringComparison.OrdinalIgnoreCase) 
+                        && string.IsNullOrEmpty(missingProductResponse.Name) 
+                        && string.IsNullOrEmpty(missingProductResponse.Domain) 
+                        && missingProductResponse.ProductInstanceId.Equals("7654321", StringComparison.OrdinalIgnoreCase) 
+                        && missingProductResponse.UPFMInstanceId.Equals("a5192995-aaaa-bbbb-8df2-f30f1b8dc752", StringComparison.OrdinalIgnoreCase) 
+                        && missingProductResponse.UPFMName.Equals("test property 1", StringComparison.OrdinalIgnoreCase) 
+                        && response.StatusCode.Equals(HttpStatusCode.OK));
+
+            Assert.True(validProductResponse != null 
+                        && validProductResponse.Status.Equals("OK", StringComparison.OrdinalIgnoreCase)
+                        && validProductResponse.Name.Equals("OneSite property 1", StringComparison.OrdinalIgnoreCase)
+                        && validProductResponse.Domain.Equals("Primary", StringComparison.OrdinalIgnoreCase)
+                        && validProductResponse.ProductInstanceId.Equals("1234567", StringComparison.OrdinalIgnoreCase)
+                        && validProductResponse.UPFMInstanceId.Equals("a5192995-aaaa-bbbb-8df2-f30f1b8dc752", StringComparison.OrdinalIgnoreCase)
+                        && validProductResponse.UPFMName.Equals("test property 1", StringComparison.OrdinalIgnoreCase)
                         && response.StatusCode.Equals(HttpStatusCode.OK));
 
             rPObjectCache.BustCache();

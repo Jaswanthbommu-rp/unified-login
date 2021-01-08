@@ -1629,7 +1629,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         ProductInstanceId = "1234567",
                         UPFMInstanceId = "11111111-1111-2222-3333-3C0F434AE62D".ToLower(),
                         UPFMName = "Property 1",
-                        Status = "OK"
+                        Status = "OK",
+                        Domain = "Primary",
+                        ContractedName = "Property 1"
                     },
                     new PropertyAudit()
                     {
@@ -1637,15 +1639,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         ProductInstanceId = "7654321",
                         UPFMInstanceId = null,
                         UPFMName = null,
-                        Status = "No ID"
+                        Status = "No ID",
+                        Domain = "Primary",
+                        ContractedName = "Property 2"
                     },
                     new PropertyAudit()
                     {
-                        Name = "Property 3",
-                        ProductInstanceId = "4444444",
-                        UPFMInstanceId = null,
-                        UPFMName = null,
-                        Status = "No ID"
+                        Name = "",
+                        ProductInstanceId = "66557788",
+                        UPFMInstanceId = "44444444-4444-2222-3333-3C0F434AE62D".ToLower(),
+                        UPFMName = "Property 3",
+                        Status = "No Product",
+                        Domain = "Primary",
+                        ContractedName = "Property 3 UAT"
                     },                    
                 };
             
