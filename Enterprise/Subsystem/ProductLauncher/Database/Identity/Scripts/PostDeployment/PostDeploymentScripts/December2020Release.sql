@@ -1857,3 +1857,679 @@ BEGIN
 END
 
 GO
+
+--HOTS
+/*This script is a sample script to create new prodcut in the system.*/
+
+DECLARE @ProductId INT, 
+		@LoginURI NVARCHAR(100), 
+		@SigningCertificateThumbprint NVARCHAR(50), 
+		@ParentProductTypeId INT, 
+		@ProductName NVARCHAR(100)= 'HOTS',  -- Produact Name
+		@LoginURL NVARCHAR(500), 
+		@ProductUrl NVARCHAR(256), 
+		@apiendpoint NVARCHAR(1000), 
+		@tokenEndPoint NVARCHAR(1000), 
+		@apisecret NVARCHAR(1000),
+		@ServerName SYSNAME = @@SERVERNAME,
+		@ProductDescription NVARCHAR(MAX) ='Use the Hands-On Training System to learn RealPage products by accessing applications in an environment
+											 separate from your live environment. You can use the Hands-On Training System in a classroom environment
+											  or individually to provide hands-on experience while learning new skills or products. Each course available
+											  in the system has staged scenarios and downloadable companion learning guides suitable for classroom or
+											   self-guided use.'
+
+DECLARE @ProductConfiguration AS PRODUCTCONFIGURATIONTYPE;
+
+/*Validate what product type ths new product belongs to. 'Administration' in the following block 
+need to be chnanged to desired prodcut type. You can query Enterprise.ProductType table for more details.
+*/
+
+SELECT @ParentProductTypeId = ProductTypeId
+FROM Enterprise.ProductType
+WHERE Name = 'Property Management'
+      AND ParentProductTypeId IS NULL;
+IF NOT EXISTS
+(
+    SELECT TOP 1 1
+    FROM enterprise.ProductType
+    WHERE Name = 'HOTS'
+)
+    BEGIN
+        EXEC [Enterprise].[CreateProductType] 
+             @ProductTypeId = 117, -- Thsi value may change based on the root prodcut type
+             @ParentProductTypeId = @ParentProductTypeId, 
+             @Name = @ProductName, 
+             @Description = @ProductName, 
+             @ProductTypeGUID = '9855666E-9748-4195-9354-5ED037181D33'; -- Use newid() to generate new uniqueidentifier.
+END;
+SET @ProductId = 63; -- Assign new product Id
+
+--Following block will create the new prodcut in the database
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM Enterprise.Product
+    WHERE Name = @ProductName
+)
+    BEGIN
+        EXEC Enterprise.CreateProduct 
+             @ProductId = @ProductId, 
+             @ProductGUID = '7C13F1EF-D3E0-4379-8ED7-8E461FF2447C', -- Use newid() to generate new uniqueidentifier.
+             @Name = @ProductName, 
+             @Description = @ProductDescription, 
+             @ProductTypeId = 113;
+        
+		UPDATE Enterprise.Product
+          SET 
+              BooksProductCode = 'HOTS'
+        WHERE ProductId = @ProductId;
+END;
+
+--The following block picks up all the detail frm Enterprise.ProductSettingType table
+--To set up the product, bunch of these settings are required.
+SET @apiendpoint = '';
+Set @tokenEndPoint = '';
+SET @apisecret = '';
+IF @ServerName IN ('RCDUSODBSQL001')
+BEGIN
+	SET @apiendpoint = '';
+	SET @tokenEndPoint = '';
+	SET @apisecret = '';
+END
+IF @ServerName IN ('rctusodbsql001')
+BEGIN
+	SET @apiendpoint = '';
+	SET @tokenEndPoint = '';
+	SET @apisecret = '';
+END
+--IF @ServerName IN ('RCQUSODBSQL001')
+--BEGIN
+--	SET @apiendpoint = '';
+--END
+IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B')
+BEGIN
+	SET @apiendpoint = '';
+	SET @tokenEndPoint = '';
+	SET @apisecret = '';
+END
+set nocount on
+INSERT INTO @ProductConfiguration
+(SettingName, 
+ SettingDescription, 
+ SettingValue
+)
+VALUES
+ ('ClassName','','hots')
+,('ProductUrl','','/product/hots')
+,('TitleId','','HOTS')
+,('TitleUniqueId','','742A8A36-C6DA-4EF1-9566-44073E89499A')
+,('IsNewTab','','1')
+,('MetatagUniqueId','','HOTS')
+,('IsResource','','0')
+,('IsFavorite','','1')
+,('LearnMore','','')
+,('ApiEndPoint','',@apiendpoint)
+,('ProductStatus','Show if the external application was configured for the dashboard user.','8')
+,('ProductStatus','Show if the external application was configured for the dashboard user.','7')
+,('ProductStatus','Show if the external application was configured for the dashboard user.','10')
+,('ProductStatus','Show if the external application was configured for the dashboard user.','19')
+,('ShowInUserDetails','Should the product show in the New/Edit user pages','1')
+,('ShowInRolesAndRights','Should the product show in the Role/Rights page','0')
+,('ShowInAppSwitcher','Should the product show in the application switcher','1')
+,('ShowInUserListFilter','Should the product show in the user list product pick list','1')
+,('ProductAPIRequiresUser','Does the product require a user for api calls','0')
+,('LockOnProductAccess', '', '0')
+,('ProductNotAvailableForRegularUserNoEmail','Product Attribute for Product Not Available for Regular User No Email.','0')
+,('CLIENTID','','bosswasteapi') -- For DEV Environment
+,('TOKENENDPOINT','', '') -- For DEV Environment
+,('APISECRET','', '')
+,('AuthenticationType','Used to determine how to log into the product','Redirect')
+,('NotificationEmailRequiredForUserWithNoEmail', '', '0')
+
+
+
+SELECT * FROM @ProductConfiguration
+
+SET @LoginURL = '';
+IF @ServerName IN ('RCDUSODBSQL001')
+BEGIN
+	SET @LoginURL = 'https://training-dev.realpage.com/';
+END
+IF @ServerName IN ('rctusodbsql001')
+BEGIN
+	SET @LoginURL = 'https://training-qa.realpage.com/';
+END
+IF @ServerName IN ('RCQUSODBSQL001')
+BEGIN
+	SET @LoginURL = 'https://training-sat.realpage.com/';
+END
+IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B')
+BEGIN
+	SET @LoginURL = '';
+END
+
+SET @LoginURI = @LoginURL;
+SET @SigningCertificateThumbprint = NULL;
+
+--Setup the product configurations.
+if not exists (select top 1 1 from Enterprise.ProductSetting where ProductId = @ProductId)
+begin
+
+	EXEC Enterprise.ProductConfigurationSetup 
+		 @ProductId, 
+		 @LoginURI, 
+		 @SigningCertificateThumbprint, 
+		 @ProductConfiguration;
+end;
+
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM ident.SamlProductSettings
+    WHERE ProductId = @ProductId
+          AND LoginUri = @LoginURL
+)
+    BEGIN
+        INSERT INTO ident.SamlProductSettings
+        (
+        --SamlProductSettingsId - column value is auto-generated
+        ProductId, 
+        LoginUri, 
+        SigningCertificateThumbprint, 
+        SubjectIdSamlAttribute
+        )
+        VALUES
+        (
+        -- SamlProductSettingsId - int
+        @ProductId, -- ProductId - int
+        @LoginURL, -- LoginUri - nvarchar
+        N'NA', -- SigningCertificateThumbprint - nvarchar
+        N'productUserName' -- SubjectIdSamlAttribute - nvarchar
+        );
+END;
+GO
+
+--HOTS Product Panel Script
+DECLARE @MaxControlId INT, 
+		@UserId bigint,
+		@Now datetime = GETDATE(), 
+		@MaxControlAttributeId INT, 
+		@ProductId INT = 63;
+
+SELECT	@UserId = UserId
+FROM	Ident.UserLogin
+WHERE	LoginName LIKE 'realpagead@%'
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId)
+BEGIN
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+
+	SELECT @MaxControlId = max(ControlId) from UserManagement.Control
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (@MaxControlId+1, NULL, 8, N'HOTSProductAccessTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+	
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (@MaxControlId+2, @MaxControlId+1, 9, N'HOTSProductAccessRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)
+	
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (@MaxControlId+3, @MaxControlId+2, 2, N'HOTSProductAccessRolesSelectGridUIId', NULL, NULL, 2, @UserId, @Now)
+	
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (@MaxControlId+4, @MaxControlId+3, 7, N'HOTSProductAccessRadioUIId', NULL, N'isAssigned', 1, @UserId, @Now)
+	
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (@MaxControlId+5, @MaxControlId+3, 5, N'HOTSProductAccessRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)
+	
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (@MaxControlId+6, @MaxControlId+3, 5, N'HOTSProductAccessRoleTypeLabelUIId', N'Role Type', N'roletype', 3, @UserId, @Now)
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON
+	 
+	SELECT @MaxControlAttributeId = max(ControlAttributeId) from [UserManagement].[ControlAttribute]
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+	VALUES (@MaxControlAttributeId + 1, @MaxControlId + 2, N'Default', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+	VALUES (@MaxControlAttributeId + 2, @MaxControlId + 3, N'ShowSelectAll', N'False', @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+
+	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName], [CreatedBy], [CreatedDate], [IsActive], [ProductPageTypeId]) VALUES 
+	(41, 63, N'HOTS Product Access', @UserId, @Now, 1, 1)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate]) 
+	VALUES (51, 41, @MaxControlId + 1, @UserId, @Now)
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+End
+GO
+
+--HOTS Roles and Right for Customer access
+DECLARE @RightValue nvarchar(200),
+		 @UserId bigint,
+		 @Now datetime = GETDATE(),
+		 @RightId int,
+		 @RoleId INT,
+		 @OrgPartyId int,
+		 @RoleTypeId int,
+		 @ProductId int =63,
+		 @RoleName nvarchar(100),
+		 @OrgVisibilityStatusId INT = 9,
+		 @RightVisibilityStatusId INT = 9,
+		 @StatusTypeId int=13,
+		 @ServerName SYSNAME = @@SERVERNAME;
+		
+
+		DECLARE @TargetRoleValue TABLE (RoleName nvarchar(100))
+
+		INSERT INTO @TargetRoleValue VALUES ('Creator'),('Training Manager'),
+										     ('Trainer'),('Student');
+	
+			--UserId
+			SELECT	@UserId = UserId
+			FROM	Ident.UserLogin
+			WHERE	LoginName LIKE 'realpagead@%'
+        SELECT @OrgPartyId=PartyId FROM Enterprise.Organization WHERE [Name]='CF Real Estate Services'
+		
+
+				SELECT @RoleTypeId=RoleTypeId from [Security].RoleType WHERE [Value]='Product'
+ 
+					--Cursor Mapping Role with Right
+						DECLARE curCreateNewRole CURSOR FOR
+						SELECT RoleName
+						FROM @TargetRoleValue
+
+						OPEN curCreateNewRole
+						FETCH NEXT FROM curCreateNewRole INTO @RoleName
+
+						WHILE @@FETCH_STATUS = 0
+						BEGIN
+							IF NOT EXISTS (SELECT TOP 1 1 FROM [Security].[Role] WHERE RoleName = @RoleName and OrgPartyID = @OrgPartyId)
+							BEGIN
+								INSERT INTO [Security].[Role]
+								(	RoleName,
+									Shortname, 
+									Description,
+									RoleTypeID,
+									OrgPartyID,
+									ProductId,
+									CreatedBy,
+									createdDate
+								)
+								VALUES ( 
+										@RoleName,
+										@RoleName,
+										@RoleName,
+										@RoleTypeId,
+										@OrgPartyId,
+										@ProductId,
+										@UserId,
+										@Now
+								)
+							END
+							IF NOT EXISTS (SELECT TOP 1 1 FROM [Security].[Right] WHERE [Value] = @RoleName and VisibilityStatusId = 9)
+							BEGIN	
+								INSERT INTO [Security].[Right]
+											(	RightName,
+												Description, 
+												Value,
+												StatusTypeId,
+												VisibilityStatusId,
+												ProductId,
+												TargetProductId,
+												CreatedBy,
+												CreatedDate
+											)
+											VALUES ( 
+													REPLACE(@RoleName, ' ', ''),
+													@RoleName,
+													@RoleName,
+													@StatusTypeId, 
+													@RightVisibilityStatusId,
+													@ProductId,
+													@ProductId,
+													@UserId,
+													@Now
+								)
+							END
+
+							SELECT @RoleId = RoleId FROM [Security].[Role] WHERE RoleName=@RoleName and OrgPartyID = @OrgPartyId
+							SELECT @RightId = RightId FROM [Security].[Right] WHERE [Value]=@RoleName and VisibilityStatusId = 9
+							
+ 							IF NOT EXISTS (SELECT TOP 1 1 FROM [Security].[RoleRight] WHERE RoleId = @RoleId AND RightId=@RightId)
+							BEGIN
+									INSERT INTO [Security].[RoleRight]
+									(	RoleId,
+										RightId, 
+										CreatedBy,
+										CreatedDate
+									)
+									VALUES ( 
+											@RoleId,
+											@RightId,
+											@UserId,
+											@Now
+										   )
+								END
+										
+							
+							FETCH NEXT FROM curCreateNewRole INTO @RoleName
+						END
+						CLOSE curCreateNewRole
+						DEALLOCATE curCreateNewRole
+				
+GO
+
+--HOTS Roles and Right for Employee Access 
+DECLARE @RightValue nvarchar(200),
+		 @UserId bigint,
+		 @Now datetime = GETDATE(),
+		 @RightId int,
+		 @RoleId INT,
+		 @OrgPartyId int,
+		 @RoleTypeId int,
+		 @ProductId int =63,
+		 @RoleName nvarchar(100),
+		 @OrgVisibilityStatusId INT = 9,
+		 @RightVisibilityStatusId INT = 9,
+		 @StatusTypeId int=13,
+		 @ServerName SYSNAME = @@SERVERNAME;		
+
+		DECLARE @TargetRoleValue TABLE (RoleName nvarchar(100))
+
+		INSERT INTO @TargetRoleValue VALUES ('Internal Administrator'),('Creator'),('Training Manager'),
+										('Trainer'),('Student');;
+
+	
+			--UserId
+			SELECT	@UserId = UserId
+			FROM	Ident.UserLogin
+			WHERE	LoginName LIKE 'realpagead@%'
+        SELECT @OrgPartyId=PartyId FROM Enterprise.Organization WHERE [Name]='Realpage Employee'
+		IF NOT EXISTS
+		(
+			SELECT TOP 1 1 FROM [Security].[Role]
+			WHERE OrgPartyId = @OrgPartyId AND [RoleName] IN (SELECT RoleName FROM @TargetRoleValue)
+		)
+		BEGIN
+
+				SELECT @RoleTypeId=RoleTypeId from [Security].RoleType WHERE [Value]='Product'
+ 
+					--Cursor Mapping Role with Right
+						DECLARE curCreateNewRole CURSOR FOR
+						SELECT RoleName
+						FROM @TargetRoleValue
+
+						OPEN curCreateNewRole
+						FETCH NEXT FROM curCreateNewRole INTO @RoleName
+
+						WHILE @@FETCH_STATUS = 0
+						BEGIN
+							IF NOT EXISTS (SELECT TOP 1 1 FROM [Security].[Role] WHERE RoleName = @RoleName and OrgPartyID = @OrgPartyId)
+							BEGIN
+								INSERT INTO [Security].[Role]
+								(	RoleName,
+									Shortname, 
+									Description,
+									RoleTypeID,
+									OrgPartyID,
+									ProductId,
+									CreatedBy,
+									createdDate
+								)
+								VALUES ( 
+										@RoleName,
+										@RoleName,
+										@RoleName,
+										@RoleTypeId,
+										@OrgPartyId,
+										@ProductId,
+										@UserId,
+										@Now
+								)
+							END
+							IF NOT EXISTS (SELECT TOP 1 1 FROM [Security].[Right] WHERE [Value] = @RoleName and VisibilityStatusId = 9)
+							BEGIN	
+								INSERT INTO [Security].[Right]
+											(	RightName,
+												Description, 
+												Value,
+												StatusTypeId,
+												VisibilityStatusId,
+												ProductId,
+												TargetProductId,
+												CreatedBy,
+												CreatedDate
+											)
+											VALUES ( 
+													REPLACE(@RoleName, ' ', ''),
+													@RoleName,
+													@RoleName,
+													@StatusTypeId, 
+													@RightVisibilityStatusId,
+													@ProductId,
+													@ProductId,
+													@UserId,
+													@Now
+								)
+							END
+								 
+							SELECT @RoleId = RoleId FROM [Security].[Role] WHERE RoleName=@RoleName and OrgPartyID = @OrgPartyId
+							SELECT @RightId = RightId FROM [Security].[Right] WHERE [Value]=@RoleName and VisibilityStatusId = 9
+							
+ 							IF NOT EXISTS (SELECT TOP 1 1 FROM [Security].[RoleRight] WHERE RoleId = @RoleId AND RightId=@RightId)
+							BEGIN
+									INSERT INTO [Security].[RoleRight]
+									(	RoleId,
+										RightId, 
+										CreatedBy,
+										CreatedDate
+									)
+									VALUES ( 
+											@RoleId,
+											@RightId,
+											@UserId,
+											@Now
+										   )
+								END
+										
+							
+							FETCH NEXT FROM curCreateNewRole INTO @RoleName
+						END
+						CLOSE curCreateNewRole
+						DEALLOCATE curCreateNewRole
+
+		END
+GO
+--Self-Guided Tour
+/*This script is a sample script to create new prodcut in the system.*/
+
+DECLARE @ProductId INT, 
+		@LoginURI NVARCHAR(100), 
+		@SigningCertificateThumbprint NVARCHAR(50), 
+		@ParentProductTypeId INT, 
+		@ProductName NVARCHAR(100)= 'Self-Guided Tour',  -- Produact Name
+		@LoginURL NVARCHAR(500), 
+		@ProductUrl NVARCHAR(256), 
+		@apiendpoint NVARCHAR(1000), 
+		@tokenEndPoint NVARCHAR(1000), 
+		@apisecret NVARCHAR(1000),
+		@ServerName SYSNAME = @@SERVERNAME,
+		@ProductDescription NVARCHAR(MAX) =''
+
+DECLARE @ProductConfiguration AS PRODUCTCONFIGURATIONTYPE;
+
+/*Validate what product type ths new product belongs to. 'Administration' in the following block 
+need to be chnanged to desired prodcut type. You can query Enterprise.ProductType table for more details.
+*/
+
+SELECT @ParentProductTypeId = ProductTypeId
+FROM Enterprise.ProductType
+WHERE Name = 'Lease Management'
+      AND ParentProductTypeId IS NULL;
+IF NOT EXISTS
+(
+    SELECT TOP 1 1
+    FROM enterprise.ProductType
+    WHERE Name = 'Self-Guided Tour'
+)
+    BEGIN
+        EXEC [Enterprise].[CreateProductType] 
+             @ProductTypeId = 313, -- This value may change based on the root prodcut type
+             @ParentProductTypeId = @ParentProductTypeId, 
+             @Name = @ProductName, 
+             @Description = @ProductName, 
+             @ProductTypeGUID = '95A92E81-CED7-4204-9102-E8CEED681B09'; -- Use select newid() to generate new uniqueidentifier.
+END;
+SET @ProductId = 65; -- Assign new product Id
+
+--Following block will create the new prodcut in the database
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM Enterprise.Product
+    WHERE Name = @ProductName
+)
+    BEGIN
+        EXEC Enterprise.CreateProduct 
+             @ProductId = @ProductId, 
+             @ProductGUID = '523118C1-5894-4C02-B708-2D9837AC8DB3', -- Use newid() to generate new uniqueidentifier.
+             @Name = @ProductName, 
+             @Description = @ProductDescription, 
+             @ProductTypeId = 313;
+        
+		UPDATE Enterprise.Product
+          SET 
+              BooksProductCode = 'SGT'
+        WHERE ProductId = @ProductId;
+END;
+
+--The following block picks up all the detail frm Enterprise.ProductSettingType table
+--To set up the product, bunch of these settings are required.
+SET @apiendpoint = '';
+Set @tokenEndPoint = '';
+SET @apisecret = '';
+IF @ServerName IN ('RCDUSODBSQL001')
+BEGIN
+	SET @apiendpoint = '';
+	SET @tokenEndPoint = '';
+	SET @apisecret = '';
+END
+IF @ServerName IN ('rctusodbsql001')
+BEGIN
+	SET @apiendpoint = '';
+	SET @tokenEndPoint = '';
+	SET @apisecret = '';
+END
+--IF @ServerName IN ('RCQUSODBSQL001')
+--BEGIN
+--	SET @apiendpoint = '';
+--END
+IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B')
+BEGIN
+	SET @apiendpoint = '';
+	SET @tokenEndPoint = '';
+	SET @apisecret = '';
+END
+set nocount on
+INSERT INTO @ProductConfiguration
+(SettingName, 
+ SettingDescription, 
+ SettingValue
+)
+VALUES
+ ('ClassName','','sgt')
+,('ProductUrl','','/product/sgt')
+,('TitleId','','SGT')
+,('TitleUniqueId','','9D5435AC-4AA1-4A6C-A2E1-E55ADC4A519B')
+,('IsNewTab','','1')
+,('MetatagUniqueId','','SGT')
+,('IsResource','','0')
+,('IsFavorite','','1')
+,('LearnMore','','')
+,('ApiEndPoint','',@apiendpoint)
+,('ProductStatus','Show if the external application was configured for the dashboard user.','8')
+,('ProductStatus','Show if the external application was configured for the dashboard user.','7')
+,('ProductStatus','Show if the external application was configured for the dashboard user.','10')
+,('ProductStatus','Show if the external application was configured for the dashboard user.','19')
+,('ShowInUserDetails','Should the product show in the New/Edit user pages','1')
+,('ShowInRolesAndRights','Should the product show in the Role/Rights page','0')
+,('ShowInAppSwitcher','Should the product show in the application switcher','1')
+,('ShowInUserListFilter','Should the product show in the user list product pick list','1')
+,('ProductAPIRequiresUser','Does the product require a user for api calls','0')
+,('LockOnProductAccess', '', '0')
+,('ProductNotAvailableForRegularUserNoEmail','Product Attribute for Product Not Available for Regular User No Email.','0')
+,('CLIENTID','','bosswasteapi') -- For DEV Environment
+,('TOKENENDPOINT','', '') -- For DEV Environment
+,('APISECRET','', '')
+,('AuthenticationType','Used to determine how to log into the product','Redirect')
+
+
+
+SELECT * FROM @ProductConfiguration
+
+SET @LoginURL = '';
+IF @ServerName IN ('RCDUSODBSQL001')
+BEGIN
+	SET @LoginURL = '';
+END
+IF @ServerName IN ('rctusodbsql001')
+BEGIN
+	SET @LoginURL = '';
+END
+IF @ServerName IN ('RCQUSODBSQL001')
+BEGIN
+	SET @LoginURL = '';
+END
+IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B')
+BEGIN
+	SET @LoginURL = '';
+END
+
+SET @LoginURI = @LoginURL;
+SET @SigningCertificateThumbprint = NULL;
+
+--Setup the product configurations.
+if not exists (select top 1 1 from Enterprise.ProductSetting where ProductId = @ProductId)
+begin
+
+	EXEC Enterprise.ProductConfigurationSetup 
+		 @ProductId, 
+		 @LoginURI, 
+		 @SigningCertificateThumbprint, 
+		 @ProductConfiguration;
+end;
+
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM ident.SamlProductSettings
+    WHERE ProductId = @ProductId
+          AND LoginUri = @LoginURL
+)
+    BEGIN
+        INSERT INTO ident.SamlProductSettings
+        (
+        --SamlProductSettingsId - column value is auto-generated
+        ProductId, 
+        LoginUri, 
+        SigningCertificateThumbprint, 
+        SubjectIdSamlAttribute
+        )
+        VALUES
+        (
+        -- SamlProductSettingsId - int
+        @ProductId, -- ProductId - int
+        @LoginURL, -- LoginUri - nvarchar
+        N'NA', -- SigningCertificateThumbprint - nvarchar
+        N'productUserName' -- SubjectIdSamlAttribute - nvarchar
+        );
+END;
+
