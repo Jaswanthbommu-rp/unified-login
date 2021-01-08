@@ -285,6 +285,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             || r.ProductId == (int)ProductEnum.VendorMarketplace
                             || r.ProductId == (int)ProductEnum.HelpCenter
                             || r.ProductId == (int)ProductEnum.PMEDasboard
+                            || r.ProductId == (int)ProductEnum.RenterEngagement
                         )
                         {
                             userProducts.Add(new PersonaProductUserDetails
@@ -325,6 +326,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     if (userProducts.Any(a => a.ProductId == (int)ProductEnum.PMEDasboard))
                     {
                         userProducts.Remove(userProducts.First(a => a.ProductId == (int)ProductEnum.PMEDasboard));
+                    }
+                }
+                if (_userClaim.Rights.All(rght => rght != null && !rght.Equals("AccessRenterEngagement", StringComparison.OrdinalIgnoreCase)))
+                {
+                    if (userProducts.Any(a => a.ProductId == (int)ProductEnum.RenterEngagement))
+                    {
+                        userProducts.Remove(userProducts.First(a => a.ProductId == (int)ProductEnum.RenterEngagement));
                     }
                 }
                 if (_userClaim.Rights.All(rght => rght != null && !rght.Equals("MigrationTool", StringComparison.OrdinalIgnoreCase)) || _userClaim.RealPageEmployee)
