@@ -1,6 +1,6 @@
 ﻿CREATE PROCEDURE [Enterprise].[CreateUserEmployeeId]
 	 @UserLoginPersonaId BIGINT = NULL,
-	 @EmployeeId NVARCHAR(40) = NULL
+	 @EmployeeId NVARCHAR(200) = NULL
 AS
     BEGIN
         BEGIN TRY
