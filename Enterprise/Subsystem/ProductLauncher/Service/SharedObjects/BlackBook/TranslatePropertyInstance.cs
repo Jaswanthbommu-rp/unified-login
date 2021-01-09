@@ -40,9 +40,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackB
         public string Source { get; set; }
 
         [JsonProperty("propertyInstanceSourceId")]
-        public string PropertyInstanceSourceId { get; set; }
-
-        [JsonProperty("customerPropertyId")]
-        public string CustomerPropertyId { get; set; }        
+        public string PropertyInstanceSourceId { get; set; }     
     }
 }

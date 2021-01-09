@@ -1,7 +1,6 @@
 ﻿using Newtonsoft.Json;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ops;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -100,13 +99,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         /// The geo longitude of the property
         /// </summary>
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public decimal? Longitude { get; set; }
-
-        /// <summary>
-        /// Customer property Id
-        /// </summary>
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public string CustomerPropertyId { get; set; }
+        public decimal? Longitude { get; set; }        
 
         #region Examples
 
@@ -176,43 +169,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
                 return output;
             }
         }
-
-        /// <summary>
-        /// Used to document examples of the Property Model webapi result
-        /// </summary>
-        [ExcludeFromCodeCoverage]
-        public class CompanyPropertiesSimpleExample : IProvideExamples
-        {
-            /// <summary>
-            /// Example object data used by Swagger to document the output of the webapi method
-            /// </summary>
-            /// <returns>Property example</returns>
-            public object GetExamples()
-            {
-                List<UserCompaniesProperties> userCompaniesProperties = new List<UserCompaniesProperties>
-                {
-                    new UserCompaniesProperties{
-                    Id = 123,
-                    OrganizationName = "Test PMC",
-                    InstanceId = new Guid("a1463003-9a65-4e21-8897-dc4c826fab31"),
-                    Properties = new List<Properties> {
-                    new Properties{ InstanceId = "e1463003-9a65-4e21-8897-dc4c826fab32",Id = "1234",PropertyName = "Test Property1"},
-                    new Properties{ InstanceId = "f1463003-9a65-4e21-8897-dc4c826fab33",Id = "5678",PropertyName = "Test Property2"},
-                    }
-                    },
-                    new UserCompaniesProperties{
-                    Id = 456,
-                    OrganizationName = "Test PMC2",
-                    InstanceId = new Guid("e1463003-9a65-4e21-8897-dc4c826fab34"),
-                    Properties = new List<Properties> {
-                    new Properties{ InstanceId = "e1463003-9a65-4e21-8897-dc4c826fab35",Id = "4321",PropertyName = "Test Property3"},
-                    new Properties{ InstanceId = "f1463003-9a65-4e21-8897-dc4c826fab36",Id = "8765",PropertyName = "Test Property4"},
-                    }
-                    }
-                };
-                return userCompaniesProperties;
-            }
-        }
+        
         /// <summary>
         /// Used to document examples of the Property Model webapi result
         /// </summary>
