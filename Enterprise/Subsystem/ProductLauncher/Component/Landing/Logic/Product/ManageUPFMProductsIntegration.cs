@@ -348,8 +348,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 								if (translatedProductProperty != null)
 								{
 									translatedProductProperty.ID = propertyData.PropertyInstanceSourceId;
-									translatedProductProperty.Alias = null;
-									translatedProductProperty.CustomerPropertyId = propertyData.CustomerPropertyId;									
+									translatedProductProperty.Alias = null;																
 									translatedUserPropertyList.Add(translatedProductProperty);
 								}
 							}
