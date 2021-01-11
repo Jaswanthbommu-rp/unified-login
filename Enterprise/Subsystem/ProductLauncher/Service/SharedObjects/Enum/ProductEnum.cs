@@ -95,7 +95,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 				case ProductEnum.HospitalityService: return "resident-services"; // Temp image until product has defined their final production
 				case ProductEnum.PMEDasboard: return "product-updates";
 				case ProductEnum.HOTS: return "hots";
-				case ProductEnum.RenterEngagement: return "video-call-laptop";
+				case ProductEnum.P2EngagementQueue: return "video-call-laptop";
 			}
 			return null;
 		}
@@ -627,10 +627,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		[Description("HOTS")]
 		HOTS = 63,
 		/// <summary>
-		/// Renter Engagement
+		/// P2EngagementQueue
 		/// </summary>
-		[Description("RE")]
-		RenterEngagement = 64
+		[Description("PEQ")]
+		P2EngagementQueue = 64
 	}
 
 	/// <summary>

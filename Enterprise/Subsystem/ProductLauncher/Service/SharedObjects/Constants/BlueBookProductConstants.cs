@@ -289,6 +289,6 @@
 		/// <summary>
 		/// Renter Engagement
 		/// </summary>
-		public const string RenterEngagement = "RE";
+		public const string P2EngagementQueue = "PEQ";
 	}
 }

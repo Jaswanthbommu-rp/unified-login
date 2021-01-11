@@ -4,7 +4,7 @@ DECLARE @ProductId INT,
 		@LoginURI NVARCHAR(100), 
 		@SigningCertificateThumbprint NVARCHAR(50), 
 		@ParentProductTypeId INT, 
-		@ProductName NVARCHAR(100)= 'Renter Engagement', 
+		@ProductName NVARCHAR(100)= 'P2 Engagement Queue', 
 		@LoginURL NVARCHAR(500), 
 		@ProductUrl NVARCHAR(256), 
 		@ServerName SYSNAME = @@SERVERNAME;
@@ -19,14 +19,14 @@ IF NOT EXISTS
 (
     SELECT TOP 1 1
     FROM enterprise.ProductType
-    WHERE Name = 'Renter Engagement'
+    WHERE Name = 'P2 Engagement Queue'
 )
     BEGIN
         EXEC [Enterprise].[CreateProductType] 
              @ProductTypeId = 509, 
              @ParentProductTypeId = @ParentProductTypeId, 
              @Name = @ProductName, 
-             @Description = 'Renter Engagement', 
+             @Description = 'P2 Engagement Queue', 
              @ProductTypeGUID = '876FB21D-8810-45AD-9572-9EEA2746EA2C';
 END;
 SET @ProductId = 64;
@@ -72,12 +72,12 @@ INSERT INTO @ProductConfiguration
  SettingValue
 )
 VALUES
-('ClassName',  '',  'renterengagement'),
+('ClassName',  '',  'p2engagementqueue'),
 ('ProductUrl',  '',  @ProductUrl),
-('TitleId',  '',  'Renter Engagement'),
+('TitleId',  '',  'P2 Engagement Queue'),
 ('TitleUniqueId',  '',  '69F7A6D7-CA8B-4E7B-BD46-340AE45BCF11'),
 ('IsNewTab',  '', '1'),
-('MetatagUniqueId',  '',  'Renter Engagement'),
+('MetatagUniqueId',  '',  'P2 Engagement Queue'),
 ('IsResource',  '',  '1'),
 ('IsFavorite',  '',  '0'),
 ('LearnMore',  '',  'https://www.realpage.com/'),
@@ -168,9 +168,9 @@ DECLARE @HoldRoleId TABLE (RoleId int)
 DECLARE @HoldOrgPartyId TABLE (PartyId INT)
 DECLARE @HoldRouteId TABLE (RouteId INT)
 
-       SET @RightName = 'AccessRenterEngagement'; 
-       SET @RightDescription = 'Access to Renter Engagement';
-       SET @RightValue = 'Access to Renter Engagement';
+       SET @RightName = 'AccessP2EngagementQueue'; 
+       SET @RightDescription = 'Access to P2 Engagement Queue';
+       SET @RightValue = 'Access to P2 Engagement Queue';
        SET @StatusTypeId = 13;
        SET @RightVisibilityStatusId = 9;
        SET @ProductId =3;
@@ -187,7 +187,7 @@ DECLARE @HoldRouteId TABLE (RouteId INT)
     END
        
     Select @SuperUserRoleId = RoleId from Security.Role Where ShortName = 'SuperUser'
-    Select @RightId = RightId From [Security].[Right] Where RightName = 'AccessRenterEngagement'
+    Select @RightId = RightId From [Security].[Right] Where RightName = 'AccessP2EngagementQueue'
 
     IF NOT EXISTS (Select 1 From [Security].[RoleRight] Where RoleId = @SuperUserRoleId AND RightId = @RightId)
     BEGIN
@@ -200,7 +200,7 @@ GO
 	IF NOT EXISTS (Select 1 From Enterprise.ProductRight Where ProductId = 64)
 	BEGIN
 		Insert into Enterprise.ProductRight(ProductId,RightShortName,DependantProductId)
-		Select 64,'AccessRenterEngagement',NULL
+		Select 64,'AccessP2EngagementQueue',NULL
 	END
 --End Script
 GO
