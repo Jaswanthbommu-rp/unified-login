@@ -196,8 +196,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
             foreach (var company in companyResponse)
             {
-                var compnayInstanceSourceId = upfmProductIntegration.GetProductCompanyInstanceId(company.OrganizationRealPageId, company.BooksCustomerMasterId, "HAAS", "Primary");
-                propertyResponse = upfmProductIntegration.GetUPFMProperties(company.PersonaId, upfmProduct, null, "haas", company.OrganizationRealPageId.ToString());
+                var compnayInstanceSourceId = upfmProductIntegration.GetProductCompanyInstanceId(company.OrganizationRealPageId, company.BooksCustomerMasterId, productCode, "Primary");
+                propertyResponse = upfmProductIntegration.GetUPFMProperties(company.PersonaId, upfmProduct, null, productCode.ToLower(), company.OrganizationRealPageId.ToString());
                 if (propertyResponse.Records == null || propertyResponse.Records.Count == 0) return Request.CreateResponse(HttpStatusCode.ExpectationFailed, $"Properties are not loaded from Blue Book {propertyResponse.ErrorReason}");
 
                 var userCompanyProperties = new UserCompaniesProperties()
