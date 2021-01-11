@@ -23,7 +23,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         /// <summary>
         /// CompanyMasterId
         /// </summary>        
-        public long Id { get; set; }
+        public string Id { get; set; }
 
         /// <summary>
         /// Company InstanceId

@@ -191,17 +191,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             IManageUserLogin manageUserLogin = new ManageUserLogin(_userClaims);
             List<UserCompaniesProperties> userCompaniesProperties = new List<UserCompaniesProperties>();
 
-            var companyResponse = manageUserLogin.GetUserPersonaOrganization(_userClaims.LoginName);
+            var companyResponse = manageUserLogin.GetUserPersonaOrganization(_userClaims.LoginName);            
             var upfmProduct = ProductEnumHelper.GetUPFMProductEnum(productId);
 
             foreach (var company in companyResponse)
             {
-                propertyResponse = upfmProductIntegration.GetUPFMProperties(company.PersonaId, upfmProduct, null, "haas", company.OrganizationRealPageId.ToString());
-                if (propertyResponse.Records.Count == 0) return Request.CreateResponse(HttpStatusCode.ExpectationFailed, $"Properties are not loaded from Blue Book {propertyResponse.ErrorReason}");
+                var compnayInstanceSourceId = upfmProductIntegration.GetProductCompanyInstanceId(company.OrganizationRealPageId, company.BooksCustomerMasterId, productCode, "Primary");
+                propertyResponse = upfmProductIntegration.GetUPFMProperties(company.PersonaId, upfmProduct, null, productCode.ToLower(), company.OrganizationRealPageId.ToString());
+                if (propertyResponse.Records == null || propertyResponse.Records.Count == 0) return Request.CreateResponse(HttpStatusCode.ExpectationFailed, $"Properties are not loaded from Blue Book {propertyResponse.ErrorReason}");
 
                 var userCompanyProperties = new UserCompaniesProperties()
                 {
-                    Id = company.BooksCustomerMasterId,
+                    Id = compnayInstanceSourceId,
                     OrganizationName = company.OrganizationName,
                     InstanceId = company.OrganizationRealPageId,
                     Properties = new List<Properties>()

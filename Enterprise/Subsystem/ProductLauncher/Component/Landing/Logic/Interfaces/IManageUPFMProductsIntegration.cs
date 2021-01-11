@@ -2,6 +2,7 @@
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UPFMProduct;
+using System;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
 {
@@ -64,5 +65,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="datafilter"></param>
 		/// <returns></returns>
 		ListResponse GetUPFMProperties(long editorPersonaId, long userPersonaId, bool assignedOnly, ProductEnum product, RequestParameter datafilter);
+
+		/// <summary>
+		/// Get a companyinstanceSourceId of a product
+		/// </summary>
+		/// <param name="orgRealPageId"></param>
+		/// <param name="booksCustmerMasterId"></param>
+		/// <param name="blueBookProductName"></param>
+		/// <param name="domain"></param>
+		/// <param name="includeExtra"></param>
+		/// <param name="useTranslate"></param>
+		/// <returns></returns>
+		string GetProductCompanyInstanceId(Guid orgRealPageId, long booksCustmerMasterId, string blueBookProductName, string domain, string includeExtra = "", bool useTranslate = true);		
 	}
 }
