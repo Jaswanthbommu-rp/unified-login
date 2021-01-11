@@ -416,7 +416,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 			var employeeId = this.GetUserEmployeeId(userLoginPersonaList[0].UserLoginPersonaId, profile.Persona.First().OrganizationPartyId);
 
-			oldProfile.EmployeeId = (employeeId != null && !string.IsNullOrEmpty(employeeId.EmployeeId)) ? employeeId.EmployeeId : null;
+			oldProfile.EmployeeId = (employeeId != null && !string.IsNullOrEmpty(employeeId.EmployeeId)) ? employeeId.EmployeeId : "";
 			oldProfile.UserEmployeeId = (employeeId != null  && employeeId.UserEmployeeId > 0) ? employeeId.UserEmployeeId : 0;
 
 			repositoryResponse = _userRepository.UpdateUser(loggedInUserRealPageId, profile, oldProfile);
