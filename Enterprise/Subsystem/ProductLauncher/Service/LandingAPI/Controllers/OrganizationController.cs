@@ -1093,15 +1093,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             output.pagingSummary = pagingSummary;
             return Request.CreateResponse(HttpStatusCode.OK, output);
         }
-        #endregion
+		#endregion
 
-        /// <summary>
-        /// Audit the given product properties to UPFM properties
-        /// </summary>
-        /// <param name="companyInstanceId"></param>
-        /// <param name="productId"></param>
-        /// <returns></returns>
-        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		#region AuditCompanyProperties
+		/// <summary>
+		/// Audit the given product properties to UPFM properties
+		/// </summary>
+		/// <param name="companyInstanceId"></param>
+		/// <param name="productId"></param>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about the properties for the given company and their mapping to UPFM instances", Type = typeof(PropertyAudit))]
         [SwaggerResponseExamples(typeof(PropertyAudit), typeof(PropertyAuditExample))]
@@ -1143,41 +1144,101 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Unable to locate company user");
             }
 
-            _userClaims.UserRealPageGuid = adminUserGuid;
-            var userLogin = _manageUserLogin.GetUserLogin(adminUserGuid, orgDetails.PartyId);
-
-            if (userLogin != null)
-            {
-                _userClaims.LoginName = userLogin.LoginName;
-                _userClaims.UserId = Convert.ToInt32(userLogin.UserId);
-
-                var userPersonas = _manageUserLogin.GetUserPersonaOrganization(userLogin.LoginName);
-                if (userPersonas != null && userPersonas.Any(p => p.OrganizationPartyId == orgDetails.PartyId))
-                {
-                    _userClaims.PersonaId = userPersonas.First(p => p.OrganizationPartyId == orgDetails.PartyId).PersonaId;
-                }
-
-                _userClaims.FirstName = "XX";
-                _userClaims.LastName = "XX";
-            }
-
-            if (_messageHandler == null)
-            {
-                _manageOrganization = new ManageOrganization(_userClaims);
-                _manageBlueBook = new ManageBlueBook(_userClaims);
-            }
-            else
-            {
-                _manageBlueBook = new ManageBlueBook(_userClaims, _productInternalSettingRepository, _messageHandler);
-                _manageOrganization = new ManageOrganization(_repository, _userClaims, _messageHandler, _manageProductOneSite);
-            }
-
-            var auditResult = _manageOrganization.AuditCompanyProductPropertiesToUPFM(companyInstanceId, productId);
-
+            _userClaims.UserRealPageGuid = adminUserGuid;            
+            var auditResult = GetAuditProductProperties(companyInstanceId, productId, adminUserGuid, orgDetails.PartyId);
             ObjectListOutput<PropertyAudit, IErrorData> output = new ObjectListOutput<PropertyAudit, IErrorData> {list = auditResult, Status = errorStatus, pagingSummary = new PagingSummary() {TotalRecords = auditResult.Count, TotalPages = 1}};
             return Request.CreateResponse(HttpStatusCode.OK, output);
         }
 
+        /// <summary>
+		/// Audit the given product properties to UPFM properties to export
+		/// </summary>
+		/// <param name="companyInstanceId"></param>
+		/// <param name="productId"></param>
+        /// <param name="dataFormat">Retrun data in this format (default = CSV)</param>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about the properties for the given company and their mapping to UPFM instances", Type = typeof(PropertyAudit))]
+        [SwaggerResponseExamples(typeof(PropertyAudit), typeof(PropertyAuditExample))]
+        [Route("CompanySetup/{companyInstanceId}/product/{productId}/audit/export")]
+        [AuthorizeScope("companyfunctions", "rplandingapi")]
+        [HttpGet]
+        public HttpResponseMessage AuditCompanyProductPropertiesToUPFMExport(Guid companyInstanceId, int productId, SaveFormat dataFormat = SaveFormat.CSV)
+        {
+            byte[] plainBytes;
+            ObjectOutput<string, IErrorData> output = new ObjectOutput<string, IErrorData>();
+
+            Status<IErrorData> errorStatus = new Status<IErrorData>();
+            if (companyInstanceId == Guid.Empty)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Company Instance Id not supplied");
+            }
+
+            // need to alter the user being used to match the company or the product calls will not have the correct context
+            if (_userClaims.OrganizationRealPageGuid != EmployeeCompanyRealPageId)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid company context");
+            }
+
+            var orgDetails = _manageOrganization.GetOrganization(companyInstanceId);
+
+            if (orgDetails == null)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid company");
+            }
+
+            _userClaims.CustomerMasterId = orgDetails.BooksCustomerMasterId;
+            _userClaims.OrganizationMasterId = orgDetails.BooksMasterId;
+            _userClaims.OrganizationName = orgDetails.Name;
+            _userClaims.OrganizationPartyId = orgDetails.PartyId;
+            _userClaims.OrganizationRealPageGuid = orgDetails.RealPageId;
+
+            var adminUserGuid = _manageOrganization.GetOrganizationAdminUserRealPageId(orgDetails.RealPageId);
+            if (adminUserGuid == Guid.Empty)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Unable to locate company user");
+            }
+
+            _userClaims.UserRealPageGuid = adminUserGuid;
+            List<PropertyAudit> propertyAudit = GetAuditProductProperties(companyInstanceId, productId, adminUserGuid, orgDetails.PartyId);
+
+            if (propertyAudit != null)
+            {
+                errorStatus = DataExport.SetAsposeLicense();
+                if (errorStatus.Success)
+                {
+                    List<ExportDataFileConfiguration> exportConfigurations = new List<ExportDataFileConfiguration>
+                    {
+                        new ExportDataFileConfiguration { Header = "Property", MappedField = "Name", PDFColumnWidth = "3.85", Preference = 1 },
+                        new ExportDataFileConfiguration { Header = "Instance ID", MappedField = "ProductInstanceId", PDFColumnWidth = "2.85", Preference = 2 },
+                        new ExportDataFileConfiguration { Header = "Platform Property name", MappedField = "UPFMName", PDFColumnWidth = "3.25", Preference = 3 },
+                        new ExportDataFileConfiguration { Header = "Status", MappedField = "Status", PDFColumnWidth = "1.25", Preference = 4 }
+                    };
+                    plainBytes = DataExport.ExportDataToFile<PropertyAudit>(exportConfigurations.OrderBy(p => p.Preference).ToList(), propertyAudit, dataFormat);
+                    output = new ObjectOutput<string, IErrorData>()
+                    {
+                        obj = Convert.ToBase64String(plainBytes),
+                        Status = errorStatus
+                    };
+                    return Request.CreateResponse(HttpStatusCode.OK, output);
+                }
+                else
+                {
+                    output.Status = errorStatus;
+                    return Request.CreateResponse(HttpStatusCode.OK, output);
+                }
+            }
+            else
+            {
+                errorStatus.Success = false;
+                errorStatus.ErrorCode = "Company.ListPropertyAuditExport.1";
+                errorStatus.ErrorMsg = "List Property Audit Export: No data";
+                output.Status = errorStatus;
+                return Request.CreateResponse(HttpStatusCode.OK, output);
+            }
+        }
+        #endregion
 
         #region Update Property
         /// <summary>
@@ -1324,6 +1385,39 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
 
             return response;
+        }
+
+        private List<PropertyAudit> GetAuditProductProperties(Guid companyInstanceId, int productId, Guid adminUserGuid, long partyId)
+        {
+            var userLogin = _manageUserLogin.GetUserLogin(adminUserGuid, partyId);
+
+            if (userLogin != null)
+            {
+                _userClaims.LoginName = userLogin.LoginName;
+                _userClaims.UserId = Convert.ToInt32(userLogin.UserId);
+
+                var userPersonas = _manageUserLogin.GetUserPersonaOrganization(userLogin.LoginName);
+                if (userPersonas != null && userPersonas.Any(p => p.OrganizationPartyId == partyId))
+                {
+                    _userClaims.PersonaId = userPersonas.First(p => p.OrganizationPartyId == partyId).PersonaId;
+                }
+
+                _userClaims.FirstName = "XX";
+                _userClaims.LastName = "XX";
+            }
+
+            if (_messageHandler == null)
+            {
+                _manageOrganization = new ManageOrganization(_userClaims);
+                _manageBlueBook = new ManageBlueBook(_userClaims);
+            }
+            else
+            {
+                _manageBlueBook = new ManageBlueBook(_userClaims, _productInternalSettingRepository, _messageHandler);
+                _manageOrganization = new ManageOrganization(_repository, _userClaims, _messageHandler, _manageProductOneSite);
+            }
+
+            return _manageOrganization.AuditCompanyProductPropertiesToUPFM(companyInstanceId, productId);
         }
 
         #endregion
