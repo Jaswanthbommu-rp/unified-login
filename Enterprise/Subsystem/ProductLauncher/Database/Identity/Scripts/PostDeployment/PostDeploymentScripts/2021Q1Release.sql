@@ -204,3 +204,112 @@ GO
 	END
 --End Script
 GO
+
+
+--Begin Sql scripts for ticket numbeer 668019 and 668119
+
+DECLARE @RightId INT,
+		@RouteId INT,
+        @BasicEndUserRoleId INT,
+        @UserAdminRoleId INT,
+        @UPRoleId INT,
+        @UserId bigint,
+        @Now datetime = GETDATE(),
+		@partyId INT
+		
+
+SELECT    @UserId = UserId
+            FROM    Ident.UserLogin
+            WHERE    LoginName LIKE 'realpagead@%'
+
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Security.[Right] where  RightName = 'AccessUnifiedReporting')
+BEGIN
+    --insert into right table
+	Insert into [Security].[right](RightName, [Description], [Value], [StatusTypeId], [VisibilityStatusId], [ProductId], [TargetProductId], CreatedDate, CreatedBy)
+	values ('AccessUnifiedReporting', 'Access to Unified Reporting', 'Access to Unified Reporting', 13, 9, 3, 3, @Now, @UserId)
+    
+	--get newly inserted right's ID
+	select @RightId = RightId from Security.[Right] where  RightName = 'AccessUnifiedReporting'
+	print(@RightId)
+
+	--get route id
+	select @RouteId = RouteId from [Security].Route where RouteValue = 'sidemenu'
+	print(@RouteId)
+
+    --insert into rightroute
+    Insert into Security.[RightRoute] (RightId, RouteId, RightName, CreatedBy, CreatedDate)
+	values (@RightId, @RouteId, 'Access to Unified Reporting', @UserId, @Now)
+
+    select @UserAdminRoleId = RoleId from security.role where rolename = 'User Administrator' and OrgPartyID IS NULL
+    
+	select @partyId=  PartyId 	from Enterprise.[Organization]	where Name = 'RealPage Employee'
+
+    IF NOT EXISTS (SELECT TOP 1 1 FROM Security.RoleRight WHERE RoleId = @UserAdminRoleId AND @RightId = RightId)
+    BEGIN
+         INSERT INTO SECURITY.[RoleRight] (RoleId,RightId,CreatedBy,CreatedDate) 
+         VALUES(@UserAdminRoleId,@RightId,@UserId,@Now)
+    END
+
+	IF NOT EXISTS (SELECT TOP 1 1 FROM Security.[OrganizationOverRideRight] WHERE RightId = @RightId)
+    BEGIN
+         INSERT INTO SECURITY.[OrganizationOverRideRight] (RightId, OrgPartyId, VisibilityStatusId,CreatedBy,CreatedDate) 
+         VALUES(@RightId, @partyId, 10,@UserId,@Now)
+    END
+END
+
+GO
+
+
+DECLARE @RightId INT,
+		@RouteId INT,
+        @BasicEndUserRoleId INT,
+        @UserAdminRoleId INT,
+        @UPRoleId INT,
+        @UserId bigint,
+        @Now datetime = GETDATE(),
+		@partyId INT
+		
+
+SELECT    @UserId = UserId
+            FROM    Ident.UserLogin
+            WHERE    LoginName LIKE 'realpagead@%'
+
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Security.[Right] where  RightName = 'EmployeeAccessUnifiedReportingAdminConsole')
+BEGIN
+    --insert into right table
+	Insert into [Security].[right](RightName, [Description], [Value], [StatusTypeId], [VisibilityStatusId], [ProductId], [TargetProductId], CreatedDate, CreatedBy)
+	values ('EmployeeAccessUnifiedReportingAdminConsole', 'Employee Access to Unified Reporting Admin Console', 'Employee Access to Unified Reporting Admin Console', 13, 10, 3, 3, @Now, @UserId)
+    
+	--get newly inserted right's ID
+	select @RightId = RightId from Security.[Right] where  RightName = 'EmployeeAccessUnifiedReportingAdminConsole'
+	print(@RightId)
+
+	--get route id
+	select @RouteId = RouteId from [Security].Route where RouteValue = 'sidemenu'
+	print(@RouteId)
+
+    --insert into rightroute
+    Insert into Security.[RightRoute] (RightId, RouteId, RightName, CreatedBy, CreatedDate)
+	values (@RightId, @RouteId, 'Employee Access to Unified Reporting Admin Console', @UserId, @Now)
+
+    select @UserAdminRoleId = RoleId from security.role where rolename = 'User Administrator' and OrgPartyID IS NULL
+
+	select @partyId=  PartyId from Enterprise.[Organization] where Name = 'RealPage Employee'
+    
+    IF NOT EXISTS (SELECT TOP 1 1 FROM Security.RoleRight WHERE RoleId = @UserAdminRoleId AND @RightId = RightId)
+    BEGIN
+         INSERT INTO SECURITY.[RoleRight] (RoleId,RightId,CreatedBy,CreatedDate) 
+         VALUES(@UserAdminRoleId,@RightId,@UserId,@Now)
+    END
+
+	IF NOT EXISTS (SELECT TOP 1 1 FROM Security.[OrganizationOverRideRight] WHERE RightId = @RightId)
+    BEGIN
+         INSERT INTO SECURITY.[OrganizationOverRideRight] (RightId, OrgPartyId, VisibilityStatusId,CreatedBy,CreatedDate) 
+         VALUES(@RightId, @partyId, 9,@UserId,@Now)
+    END
+END
+
+-- End Sql scripts for ticket numbeer 668019 and 668119
+GO
