@@ -160,7 +160,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 		/// EmployeeId
 		/// </summary>
 		[JsonProperty("EmployeeId", NullValueHandling = NullValueHandling.Ignore)]
-		public string EmployeeId { get; set; }
+		public string EmployeeId { get; set; } = "";
 
 		/// <summary>
 		/// EmployeeId

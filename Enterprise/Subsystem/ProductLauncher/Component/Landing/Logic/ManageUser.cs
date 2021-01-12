@@ -710,7 +710,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				profileDetail.CustomFields = customFieldValueList;
 
 				var employeeId = this.GetUserEmployeeId(userLoginPersonaList[0].UserLoginPersonaId, orgPartyId);
-				profileDetail.EmployeeId = (employeeId != null && !string.IsNullOrEmpty(employeeId.EmployeeId)) ? employeeId.EmployeeId : null;
+				profileDetail.EmployeeId = (employeeId != null && !string.IsNullOrEmpty(employeeId.EmployeeId)) ? employeeId.EmployeeId : "";
 
 				IManagePartyRelationship managePartyRelationship = new ManagePartyRelationship();
 				PartyRelationship partyRelationship = managePartyRelationship.GetPartyRelationship(realPageId, _userClaim.OrganizationRealPageGuid, "", "", "User Type");
