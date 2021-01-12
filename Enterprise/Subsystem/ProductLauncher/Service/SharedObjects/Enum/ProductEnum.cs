@@ -95,6 +95,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 				case ProductEnum.HospitalityService: return "resident-services"; // Temp image until product has defined their final production
 				case ProductEnum.PMEDasboard: return "product-updates";
 				case ProductEnum.HOTS: return "hots";
+				case ProductEnum.P2EngagementQueue: return "video-call-laptop";
 			}
 			return null;
 		}
@@ -624,7 +625,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// HOTS
 		/// </summary>
 		[Description("HOTS")]
-		HOTS = 63
+		HOTS = 63,
+		/// <summary>
+		/// P2EngagementQueue
+		/// </summary>
+		[Description("PEQ")]
+		P2EngagementQueue = 64
 	}
 
 	/// <summary>
@@ -873,7 +879,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// HOTS
 		/// </summary>
 		[Description("HOTS")]
-		ManageHOTSProductAccess = 63
+		ManageHOTSProductAccess = 63		
 
 	}
 	public enum ProductProcVersion

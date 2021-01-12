@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing
+﻿namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing
 {
     public class PropertyAudit
     {
@@ -15,6 +9,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         public string UPFMInstanceId { get; set; }
 
         public string UPFMName { get; set; }
+
+        public string ContractedName { get;set; }
+
+        public string Domain { get; set; }
 
         public string Status { get; set; } = "No ID";
     

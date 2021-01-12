@@ -4,7 +4,7 @@
     [ElectronicAddressType] VARCHAR(20) NOT NULL DEFAULT 'E-Mail', 
     CONSTRAINT [PK_ElectronicAddress] PRIMARY KEY CLUSTERED ([ContactMechanismID] ASC),
     CONSTRAINT [FK_ElectronicAddress_ContactMechanism] FOREIGN KEY ([ContactMechanismID]) REFERENCES [Enterprise].[ContactMechanism] ([ContactMechanismID]) ON DELETE CASCADE ON UPDATE CASCADE
-);
+)
 GO
 
 EXECUTE sp_addextendedproperty
@@ -36,4 +36,9 @@ EXECUTE sp_addextendedproperty
 	@level1name = N'ElectronicAddress',
 	@level2type = N'COLUMN',
 	@level2name = N'ContactMechanismID';
+GO
+
+CREATE NONCLUSTERED INDEX [IX_ElectronicAddress_ElectronicAddressString]
+ON [Enterprise].[ElectronicAddress] ([ElectronicAddressString])
+INCLUDE ([ContactMechanismID]);
 GO
