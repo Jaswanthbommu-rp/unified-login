@@ -776,5 +776,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			return string.Empty;
 		}
+
+		/// <summary>
+		/// Get Company Product Company InstanceId
+		/// </summary>
+		/// <param name="organizationRealPageId"></param>
+		/// <param name="booksCustmerMasterId"></param>
+		/// <param name="blueBookProductName"></param>
+		/// <param name="domain"></param>
+		/// <param name="includeExtra"></param>
+		/// <param name="useTranslate"></param>
+		/// <returns></returns>
+		public string GetProductCompanyInstanceId(Guid organizationRealPageId, long booksCustmerMasterId, string blueBookProductName, string domain, string includeExtra = "", bool useTranslate = true)
+		{			
+			IList<CustomerCompanyMap> companyProductList = _blueBook.GetCompanyMap(organizationRealPageId, booksCustmerMasterId, source: blueBookProductName.ToUpper(), domain: domain, includeExtra: includeExtra, useTranslate: useTranslate);			
+			if (companyProductList == null) { companyProductList = new List<CustomerCompanyMap>(); }
+			CustomerCompanyMap company = new CustomerCompanyMap();
+			if (companyProductList.Any(a => a.Source.Equals(blueBookProductName, StringComparison.OrdinalIgnoreCase)))
+			{
+				company = (from a in companyProductList where a.Source.Equals(blueBookProductName, StringComparison.OrdinalIgnoreCase) select a).FirstOrDefault();
+			}
+			return company.CompanyInstanceSourceId;
+		}
 	}
 }
