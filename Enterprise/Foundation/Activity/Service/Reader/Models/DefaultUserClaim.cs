@@ -10,57 +10,38 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Models
     public class DefaultUserClaim
     {
         /// <summary>
-        /// Default constructor
-        /// </summary>
-        public DefaultUserClaim()
-        {
-        }
-
-        /// <summary>
         /// Use the passed claim to set the values
         /// </summary>
         /// <param name="claimsPrincipal"></param>
         public DefaultUserClaim(ClaimsPrincipal claimsPrincipal)
         {
 
-            UserId =
-                Convert.ToInt32(
-                    (from nvp in claimsPrincipal.Claims where nvp.Type == "sub" select nvp.Value).FirstOrDefault());
-            OrganizationPartyId =
-                Convert.ToInt32(
-                    (from nvp in claimsPrincipal.Claims where nvp.Type == "orgPartyId" select nvp.Value)
-                        .FirstOrDefault());
-            LoginName =
-                (from nvp in claimsPrincipal.Claims where nvp.Type.ToUpper() == "LOGINNAME" select nvp.Value)
-                    .FirstOrDefault();
-            OrganizationMasterId =
-                Convert.ToInt64(
-                    (from nvp in claimsPrincipal.Claims where nvp.Type.ToUpper() == "ORGMASTERID" select nvp.Value)
-                        .FirstOrDefault());
-            OrganizationName =
-                (from nvp in claimsPrincipal.Claims where nvp.Type.ToUpper() == "ORGNAME" select nvp.Value)
-                    .FirstOrDefault();
+            UserId = Convert.ToInt32((from nvp in claimsPrincipal.Claims where(nvp.Type.Equals("sub", StringComparison.OrdinalIgnoreCase) || nvp.Type.Equals("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier", StringComparison.OrdinalIgnoreCase)) select nvp.Value).FirstOrDefault()); 
+			OrganizationPartyId = Convert.ToInt32((from nvp in claimsPrincipal.Claims where nvp.Type.Equals("orgPartyId", StringComparison.OrdinalIgnoreCase) select nvp.Value).FirstOrDefault());
+			LoginName = (from nvp in claimsPrincipal.Claims where nvp.Type.Equals("LOGINNAME", StringComparison.OrdinalIgnoreCase) select nvp.Value).FirstOrDefault();
+			OrganizationMasterId = Convert.ToInt64((from nvp in claimsPrincipal.Claims where nvp.Type.Equals("ORGMASTERID", StringComparison.OrdinalIgnoreCase) select nvp.Value).FirstOrDefault());
+			CustomerMasterId = Convert.ToInt64((from nvp in claimsPrincipal.Claims where nvp.Type.Equals("orgCompanyMasterId", StringComparison.OrdinalIgnoreCase) select nvp.Value).FirstOrDefault());
+			OrganizationName = (from nvp in claimsPrincipal.Claims where nvp.Type.Equals("ORGNAME", StringComparison.OrdinalIgnoreCase) select nvp.Value).FirstOrDefault();
 
             Guid realGuid;
-            if (
-                Guid.TryParse(
-                    (from nvp in claimsPrincipal.Claims where nvp.Type == "realPageId" select nvp.Value)
-                        .FirstOrDefault(), out realGuid))
-                UserRealPageGuid = realGuid;
+            if (Guid.TryParse((from nvp in claimsPrincipal.Claims where nvp.Type.Equals("realPageId", StringComparison.OrdinalIgnoreCase) select nvp.Value).FirstOrDefault(), out realGuid))
+			{
+				UserRealPageGuid = realGuid;
+			}
 
-            Guid correlationId;
-            if (
-                Guid.TryParse(
-                    (from nvp in claimsPrincipal.Claims where nvp.Type.ToUpper() == "CORRELATIONID" select nvp.Value)
-                        .FirstOrDefault(), out correlationId))
-                CorrelationId = correlationId;
+			Guid correlationId;
+            if (Guid.TryParse((from nvp in claimsPrincipal.Claims where nvp.Type.Equals("CORRELATIONID", StringComparison.OrdinalIgnoreCase) select nvp.Value).FirstOrDefault(), out correlationId))
+            {    CorrelationId = correlationId;}
+	        else
+	        {
+		        CorrelationId = Guid.NewGuid();
+	        }
 
-            Guid organizationRealPageId;
-            if (
-                Guid.TryParse(
-                    (from nvp in claimsPrincipal.Claims where nvp.Type.ToUpper() == "ORGID" select nvp.Value)
-                        .FirstOrDefault(), out organizationRealPageId))
-                OrganizationRealPageGuid = organizationRealPageId;
+	        Guid organizationRealPageId;
+            if (Guid.TryParse((from nvp in claimsPrincipal.Claims where nvp.Type.Equals("ORGID", StringComparison.OrdinalIgnoreCase) select nvp.Value).FirstOrDefault(), out organizationRealPageId))
+			{
+				OrganizationRealPageGuid = organizationRealPageId;
+			}
         }
 
         /// <summary>
@@ -96,11 +77,16 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Models
         /// <summary>
         /// The name of the users organization
         /// </summary>
-        public string OrganizationName { get; set; }
+        public string OrganizationName { get; set; } = "";
 
         /// <summary>
         /// The books id of the users organization
         /// </summary>
         public long OrganizationMasterId { get; set; }
+
+        /// <summary>
+        /// The Bluebook id of the users organization
+        /// </summary>
+        public long CustomerMasterId { get; set; }
     }
 }
