@@ -313,3 +313,155 @@ END
 
 -- End Sql scripts for ticket numbeer 668019 and 668119
 GO
+
+-- ShowInAuditProductPage, ShowInNewCompanySetup
+
+if not exists ( select top 1 1 from Enterprise.ProductSettingType where name = 'ShowInAuditProductPage' )
+begin
+	insert into enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'ShowInAuditProductPage', 'Should the product be shown in the UPFM property audit page', 0)
+end
+
+if not exists ( select top 1 1 from Enterprise.ProductSettingType where name = 'ShowInNewCompanySetup' )
+begin
+	insert into enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'ShowInNewCompanySetup', 'Should the product be shown in the company product setup page', 0)
+end
+
+DECLARE @NOW DATETIME = GETUTCDATE(); 
+declare @productlist table ( entid int identity, productid int, productsettingtype varchar(500), productsettingvalue varchar(2000))
+insert into @productlist values 
+	(1, 'ShowInNewCompanySetup', '1' ),
+	(4, 'ShowInNewCompanySetup', '1' ),
+	(6, 'ShowInNewCompanySetup', '1' ),
+	(8, 'ShowInNewCompanySetup', '1' ),
+	(9, 'ShowInNewCompanySetup', '1' ),
+	(10, 'ShowInNewCompanySetup', '1' ),
+	(13, 'ShowInNewCompanySetup', '1' ),
+	(14, 'ShowInNewCompanySetup', '1' ),
+	(15, 'ShowInNewCompanySetup', '1' ),
+	(16, 'ShowInNewCompanySetup', '1' ),
+	(17, 'ShowInNewCompanySetup', '1' ),
+	(18, 'ShowInNewCompanySetup', '1' ),
+	(20, 'ShowInNewCompanySetup', '1' ),
+	(21, 'ShowInNewCompanySetup', '1' ),
+	(23, 'ShowInNewCompanySetup', '1' ),
+	(26, 'ShowInNewCompanySetup', '1' ),
+	(27, 'ShowInNewCompanySetup', '1' ),
+	(36, 'ShowInNewCompanySetup', '1' ),
+	(37, 'ShowInNewCompanySetup', '1' ),
+	(38, 'ShowInNewCompanySetup', '1' ),
+	(39, 'ShowInNewCompanySetup', '1' ),
+	(40, 'ShowInNewCompanySetup', '1' ),
+	(41, 'ShowInNewCompanySetup', '1' ),
+	(44, 'ShowInNewCompanySetup', '1' ),
+	(45, 'ShowInNewCompanySetup', '1' ),
+	(46, 'ShowInNewCompanySetup', '1' ),
+	(47, 'ShowInNewCompanySetup', '1' ),
+	(48, 'ShowInNewCompanySetup', '1' ),
+	(49, 'ShowInNewCompanySetup', '1' ),
+	(50, 'ShowInNewCompanySetup', '1' ),
+	(55, 'ShowInNewCompanySetup', '1' ),
+	(56, 'ShowInNewCompanySetup', '1' ),
+	(57, 'ShowInNewCompanySetup', '1' ),
+	(58, 'ShowInNewCompanySetup', '1' ),
+	(59, 'ShowInNewCompanySetup', '1' ),
+	(60, 'ShowInNewCompanySetup', '1' ),
+	(63, 'ShowInNewCompanySetup', '1' ),
+
+	(1, 'ShowInAuditProductPage', '1' ),
+	(3, 'ShowInAuditProductPage', '1' ),
+	(4, 'ShowInAuditProductPage', '0' ),
+	(6, 'ShowInAuditProductPage', '1' ),
+	(8, 'ShowInAuditProductPage', '0' ),
+	(9, 'ShowInAuditProductPage', '1' ),
+	(10, 'ShowInAuditProductPage', '0' ),
+	(13, 'ShowInAuditProductPage', '0' ),
+	(14, 'ShowInAuditProductPage', '0' ),
+	(15, 'ShowInAuditProductPage', '0' ),
+	(16, 'ShowInAuditProductPage', '0' ),
+	(17, 'ShowInAuditProductPage', '0' ),
+	(18, 'ShowInAuditProductPage', '0' ),
+	(20, 'ShowInAuditProductPage', '0' ),
+	(21, 'ShowInAuditProductPage', '0' ),
+	(23, 'ShowInAuditProductPage', '0' ),
+	(26, 'ShowInAuditProductPage', '0' ),
+	(27, 'ShowInAuditProductPage', '0' ),
+	(36, 'ShowInAuditProductPage', '0' ),
+	(37, 'ShowInAuditProductPage', '0' ),
+	(38, 'ShowInAuditProductPage', '0' ),
+	(39, 'ShowInAuditProductPage', '0' ),
+	(40, 'ShowInAuditProductPage', '0' ),
+	(41, 'ShowInAuditProductPage', '0' ),
+	(44, 'ShowInAuditProductPage', '0' ),
+	(45, 'ShowInAuditProductPage', '0' ),
+	(46, 'ShowInAuditProductPage', '0' ),
+	(47, 'ShowInAuditProductPage', '0' ),
+	(48, 'ShowInAuditProductPage', '0' ),
+	(49, 'ShowInAuditProductPage', '0' ),
+	(50, 'ShowInAuditProductPage', '0' ),
+	(55, 'ShowInAuditProductPage', '0' ),
+	(56, 'ShowInAuditProductPage', '0' ),
+	(57, 'ShowInAuditProductPage', '0' ),
+	(58, 'ShowInAuditProductPage', '0' ),
+	(59, 'ShowInAuditProductPage', '0' ),
+	(60, 'ShowInAuditProductPage', '0' ),
+	(63, 'ShowInAuditProductPage', '0' )
+	
+--select * from @productlist
+
+declare @MAX_ID INT
+declare @Current_ID INT = 1
+declare @CurrentProductId INT = 1
+
+select @MAX_ID = max(entid) from @productlist
+
+while @Current_ID <= @MAX_ID
+begin
+	declare @currentSettingType varchar(500)
+	declare @currentsettingValue varchar(2000)
+
+	select @CurrentProductId = productid , @currentSettingType = productsettingtype, @currentSettingValue = productsettingvalue
+		from @productlist where entid = @Current_ID
+
+	--print 'productid = ' + convert(varchar,@currentproductid)
+
+	if not exists (
+	select top 1 1 
+		FROM Enterprise.GlobalProductConfiguration gpc  
+		JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId  
+		JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId  
+		JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId  
+			WHERE  gpc.ProductId = @CurrentProductId  
+		AND ((@NOW BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@NOW >= gpc.FromDate AND gpc.ThruDate IS NULL))  
+		AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))  
+		AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))  
+		AND pst.Name = @currentSettingType
+		AND ps.Value = @currentsettingValue
+	)
+	begin
+		declare @currentproductconfigurationid INT
+		select distinct top 1 @currentproductconfigurationid = pc.configurationid
+			FROM Enterprise.GlobalProductConfiguration gpc  
+			JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId  
+			JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId  
+			JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId  
+				WHERE  gpc.ProductId = @CurrentProductId
+			AND ((@NOW BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@NOW >= gpc.FromDate AND gpc.ThruDate IS NULL))  
+			AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))  
+			AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))  
+		order by pc.ConfigurationId desc
+
+		if (@currentproductconfigurationid is not null)
+		begin
+			insert into enterprise.ProductSetting ( productid, ProductSettingTypeId, value, FromDate )
+				select @CurrentProductId, productsettingtypeid, @currentSettingValue, GETUTCDATE()
+					from enterprise.ProductSettingType where name = @currentSettingType
+			insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate, ThruDate )
+				values ( @currentproductconfigurationid, @@IDENTITY, GETUTCDATE(), null )
+		end
+	end
+	
+	set @Current_ID = @Current_ID + 1
+end
+
+GO
+

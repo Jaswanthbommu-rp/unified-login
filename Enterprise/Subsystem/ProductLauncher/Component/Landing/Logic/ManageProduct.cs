@@ -452,28 +452,37 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 	    /// <returns>The list of settings</returns>
 	    public IList<ProductInternalSetting> GetProductInternalSettings(int productId)
 	    {
-		    IList<ProductInternalSetting> productInternalSettingList = new List<ProductInternalSetting>();
-		    //   ObjectCache productInternalSettingCache = MemoryCache.Default;
-
-		    //   productInternalSettingList = productInternalSettingCache["productInternalSetting_" + productId.ToString()] as List<ProductInternalSetting>;
-		    //   if (productInternalSettingList == null)
-		    //   {
-		    //       _productInternalSettingRepository = new ProductInternalSettingRepository();
-		    //       productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings(productId);
-		    //       CacheItemPolicy policy = new CacheItemPolicy();
-		    //       policy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(600);
-		    //       productInternalSettingCache.Set("productInternalSetting_" + productId.ToString(), productInternalSettingList, policy);
-		    //   }
 		    RPObjectCache rpcache = new RPObjectCache();
 		    var cacheKey = "productInternalSetting_" + productId;
-		    productInternalSettingList = rpcache.GetFromCache<IList<ProductInternalSetting>>(cacheKey, 180, () =>
+		    var productInternalSettingList = rpcache.GetFromCache<IList<ProductInternalSetting>>(cacheKey, 60, () =>
 		    {
 			    // load from database
-			    _productInternalSettingRepository = new ProductInternalSettingRepository();
 			    return _productInternalSettingRepository.GetProductInternalSettings(productId);
 		    });
 		    return productInternalSettingList;
 	    }
+
+        /// <summary>
+        /// Used to get all internal settings by product setting type
+        /// </summary>
+        /// <param name="productSettingType">The type of the product type to get the settings for</param>
+        /// <returns>The list of settings</returns>
+        public IList<ProductInternalSettingByType> GetProductSettingByType(string productSettingType)
+        {
+            if (!ListProductSettingType().Any(pst => pst.Name.Equals(productSettingType, StringComparison.OrdinalIgnoreCase)))
+            {
+                return new List<ProductInternalSettingByType>();
+            }
+
+            RPObjectCache rpcache = new RPObjectCache();
+            var cacheKey = "productInternalSettingByType_" + productSettingType;
+            var productInternalSettingByTypeList = rpcache.GetFromCache<IList<ProductInternalSettingByType>>(cacheKey, 60, () =>
+            {
+                // load from database
+                return _productInternalSettingRepository.GetProductSettingByType(productSettingType);
+            });
+            return productInternalSettingByTypeList;
+        }
 
         /// <summary>
         /// Used to add or update a product setting for the given configuration
