@@ -123,8 +123,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 		    };
             ManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
             int productId = (int)ProductEnumHelper.GetProductEnumByProductCode(productCode);
-            ListResponse productResponse;
-            List<UserCompaniesProperties> userCompaniesProperties = new List<UserCompaniesProperties>();
+            ListResponse productResponse;            
             switch (ProductEnumHelper.GetProductEnumByProductCode(productCode))
             {
                 case ProductEnum.OpsBuyer:
@@ -158,7 +157,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 response.Meta.CurrentPage = 1;
                 response.Meta.TotalRows = productResponse.TotalRows;
                 response.Meta.RowsPerPage = productResponse.TotalRows;
-                return Request.CreateResponse(HttpStatusCode.OK, userCompaniesProperties);
+                return Request.CreateResponse(HttpStatusCode.OK, response);
             }
             else
             {
