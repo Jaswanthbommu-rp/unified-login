@@ -134,13 +134,11 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
                 var orgFilter = filterCriteria.ActivitySearchCriteria.Where(x => x.Value.ToUpper() == "BOOKSMASTERORGANIZATIONID");
                 if (!orgFilter.Any()) // If booksMasterOrganizationId passed then bypass adding from claim
                 {
-                    var booksMasterOrganizationId = _userClaims.OrganizationMasterId.ToString();
-
                     filterCriteria.ActivitySearchCriteria.Add(
                         new ActivitySearchCriteria
                         {
                             Name = "BooksMasterOrganizationId",
-                            Value = booksMasterOrganizationId //e.g. orgMasterId: 4638
+                            Value = _userClaims.OrganizationMasterId.ToString() //e.g. orgMasterId: 4638
                         });
                 };
 
@@ -284,17 +282,13 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
                 var orgFilter = filterCriteria.ActivitySearchCriteria.Where(x => x.Value.Equals("BooksMasterOrganizationId", StringComparison.OrdinalIgnoreCase));
                 if (!orgFilter.Any()) // If OrganizationPartyId passed then bypass adding from claim
                 {
-                    var booksMasterOrganizationId = _userClaims.OrganizationMasterId.ToString();
-
                     filterCriteria.ActivitySearchCriteria.Add(
                         new ActivitySearchCriteria
                         {
                             Name = "BooksMasterOrganizationId",
-                            Value = booksMasterOrganizationId //e.g. orgMasterId: 4638
+                            Value = _userClaims.OrganizationMasterId.ToString() //e.g. orgMasterId: 4638
                         });
                 }
-
-                ;
 
                 var readerRepository = new ReaderRepository();
                 result = readerRepository.ListActivityLogDetails(filterCriteria);
