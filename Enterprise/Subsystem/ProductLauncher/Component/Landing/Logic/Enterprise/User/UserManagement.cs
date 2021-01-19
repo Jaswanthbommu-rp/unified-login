@@ -661,6 +661,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 					LogCategoryName = logActivityCategoryType.ToString(),
 					CorrelationId = _userClaims.CorrelationId.ToString(),
 					BooksMasterOrganizationId = _userClaims.OrganizationMasterId,
+                    OrganizationPartyId = _userClaims.OrganizationPartyId,
 					Message = string.Format(message, userDetails.FirstName, userDetails.LastName, _userClaims.FirstName,
 						_userClaims.LastName),
 
