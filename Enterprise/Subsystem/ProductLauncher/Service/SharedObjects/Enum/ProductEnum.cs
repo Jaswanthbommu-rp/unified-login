@@ -95,6 +95,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 				case ProductEnum.HospitalityService: return "resident-services"; // Temp image until product has defined their final production
 				case ProductEnum.PMEDasboard: return "product-updates";
 				case ProductEnum.HOTS: return "hots";
+				case ProductEnum.AoMarketAnalytics: return "marketing-analytics";
 			}
 			return null;
 		}
@@ -117,6 +118,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 					ProductEnum.AoAIRevenueManagement,
 					ProductEnum.AoAmenityOptimization,
 					ProductEnum.AoRentControl,
+					ProductEnum.AoMarketAnalytics,
 			};
 		}
 
@@ -147,6 +149,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 
 				case ProductEnum.AoInvestmentAnalytics: return "MPF";
 				case ProductEnum.AoAxiometrics: return "MPF";
+				case ProductEnum.AoMarketAnalytics: return "MPF";
 
 				case ProductEnum.AoPerformanceAnalytics: return "YIELDSTAR";
 				case ProductEnum.AoRevenueManagement: return "YIELDSTAR";
@@ -181,6 +184,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 					case ProductEnum.AoAmenityOptimization: return "AA";
 					case ProductEnum.AoAIRevenueManagement: return "AIRM";
 					case ProductEnum.AoRentControl: return "RC";
+					case ProductEnum.AoMarketAnalytics: return "RMA";
 				}
 			}
 
@@ -203,6 +207,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 				case "AA": return ProductEnum.AoAmenityOptimization;
 				case "AIRM": return ProductEnum.AoAIRevenueManagement;
 				case "RC": return ProductEnum.AoRentControl;
+				case "RMA": return ProductEnum.AoMarketAnalytics;
 
 			}
 
@@ -624,7 +629,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// HOTS
 		/// </summary>
 		[Description("HOTS")]
-		HOTS = 63
+		HOTS = 63,
+		/// <summary>
+		/// AO Market Analytics
+		/// </summary>
+		[Description("RMA")]
+		AoMarketAnalytics = 66
 	}
 
 	/// <summary>
@@ -873,7 +883,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// HOTS
 		/// </summary>
 		[Description("HOTS")]
-		ManageHOTSProductAccess = 63
+		ManageHOTSProductAccess = 63,
+
+		/// <summary>
+		/// AO Market Analytic
+		/// </summary>
+		[Description("RMA")]
+		AoMarketAnalytics = 66,
 
 	}
 	public enum ProductProcVersion
