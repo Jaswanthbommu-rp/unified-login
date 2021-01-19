@@ -245,6 +245,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		protected override IntegrationProductUser GenerateProductUserObject(ProductUserRolePropertiesGroups changedUserRolePropertiesRegion)
 		{
 			List<OrganizationRole> productUserOrgRoleList = new List<OrganizationRole>();
+			IntegrationProductUser user = new IntegrationProductUser();
 			if (changedUserRolePropertiesRegion.OrganizationRoleList != null)
 			{
 				foreach (var changedUserOrgRoles in changedUserRolePropertiesRegion.OrganizationRoleList)
@@ -261,7 +262,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			if (!string.IsNullOrEmpty(SubjectUserDetails.ProductUserName))
 			{
-				var user = GetProductUser();
+				user = GetProductUser();
 				if(changedUserRolePropertiesRegion.OrganizationRoleList != null)
 				{
 					foreach (var changedUserOrgRoles in changedUserRolePropertiesRegion.OrganizationRoleList)
@@ -298,7 +299,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				PropertyRoles = changedUserRolePropertiesRegion.PropertyRoleList,
 				OrganizationRoles = productUserOrgRoleList,//changedUserRolePropertiesRegion.OrganizationRoleList,
 				CanReceiveMonthlyReport = changedUserRolePropertiesRegion.CanReceiveMonthlyReport,
-                IsMigratedUser = true
+				IsMigratedUser = true,
+				UserId = user?.UserId
             };
 
 			if (SubjectUserDetails.UserRoleTypeId == (int)UserRoleType.SuperUser)
@@ -475,54 +477,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		public override string CreateUpdateProductUser(ProductUserRolePropertiesGroups userRolePropertiesRegion, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser)
 		{
 			string result;
-
-			WriteToDiagnosticLog(
-				$"ClickPayManagement.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of method.");
+			WriteToDiagnosticLog($"ClickPayManagement.CreateUpdateProductUser - editorPersona id - {EditorUserDetails.PersonaId}. At beginning of method.");
 
 			// Get product user object 
 			var newProductUser = GenerateProductUserObject(userRolePropertiesRegion);
 
 			if (string.IsNullOrEmpty(SubjectUserDetails.ProductUserName))
 			{
-				WriteToDiagnosticLog(
-					$"ClickPayManagement.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling CreateUser.");
-
-				//Handle MultiCompany User
-				// get a login name that isn't in use for the new user
-				bool foundUserName = false;
-				int incrementor = 0;
-				string loginNameToCheck = newProductUser.LoginName;
-
-				// give up after 10 tries
-				while (!foundUserName)
+				WriteToDiagnosticLog($"ClickPayManagement.CreateUpdateProductUser - editorPersona id - {EditorUserDetails.PersonaId}. Calling CreateUser.");
+				if (CheckUserExistInProduct(newProductUser.LoginName))
 				{
-					if (CheckUserExistInProduct(loginNameToCheck))
+					//Multi Company user. Get the user from product and combine old new and old company roles
+					string baseUrlAndQuery = string.Format(GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserEndpoint), newProductUser.LoginName, CompanyInstanceSourceId);
+					var productUser = GetProductUser(baseUrlAndQuery, false);
+					if (productUser.OrganizationRoles != null && productUser.OrganizationRoles.Count > 0)
 					{
-						incrementor++;
-						string[] loginNameSubStrings = loginNameToCheck.Split('@');
-						loginNameToCheck = loginNameSubStrings.Length == 2 ?
-											 string.Concat(loginNameSubStrings[0], incrementor.ToString(), "@", loginNameSubStrings[1]) :
-											 string.Concat(loginNameSubStrings[0], incrementor.ToString());
+						newProductUser.OrganizationRoles.AddRange(productUser.OrganizationRoles);
 					}
-					else
-					{
-						foundUserName = true;
-						newProductUser.LoginName = loginNameToCheck;
-
-						WriteToDiagnosticLog($"ClickPayManagement - generated loginName = {loginNameToCheck}");
-					}
-
-					if (incrementor == 10)
-					{
-						// after 10 tries something might be wrong, so bail out.
-						WriteToErrorLog($"ClickPayManagement - Error checking for username in use {loginNameToCheck}");
-						return "An error occurred. Unable to get username.";
-					}
+					result = UpdateUser(newProductUser, batchProcessType);
 				}
-
-				// Create User
-				result = CreateUser(newProductUser);
-
+				else
+				{
+					// Create User
+					result = CreateUser(newProductUser);
+				}
 			}
 			else
 			{
@@ -534,7 +512,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				result = UpdateUser(newProductUser, batchProcessType);
 			}
-
 			return result;
 		}
 	}
