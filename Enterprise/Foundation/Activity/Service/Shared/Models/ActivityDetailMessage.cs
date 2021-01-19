@@ -59,6 +59,9 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Shared.Models
         public Guid ToUserRealpageId { get; set; }
 
         [DataMember]
+        public long OrganizationPartyId { get; set; }
+        
+        [DataMember]
         public long BooksMasterOrganizationId { get; set; }
 
         [DataMember]

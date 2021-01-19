@@ -91,6 +91,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         LogCategoryName = LogActivityCategoryType.Security.ToString(),
                         CorrelationId = _userClaims.CorrelationId.ToString(),
                         BooksMasterOrganizationId = _userClaims.OrganizationMasterId,
+                        OrganizationPartyId = _userClaims.OrganizationPartyId,
                         Message = $"User {_userClaims.FirstName} {_userClaims.LastName} signout successfully.",
                         FromUserLoginName = _userClaims.LoginName,
                         FromUserLoginId = _userClaims.UserId,
