@@ -667,7 +667,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         public IList<int> GetProductIdsByCompany(Guid organizationRealPageId)
         {
             RPObjectCache rpCache = new RPObjectCache();
-            var cacheKey = $"getProductIdsByCompanyGuid_{organizationRealPageId}";
+            var cacheKey = $"getProductIdListByCompanyGuid_{organizationRealPageId}";
 
             IList<int> products = rpCache.GetFromCache<IList<int>>(cacheKey, 180, () =>
             {
@@ -1751,7 +1751,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             ObjectCache productCache = MemoryCache.Default;
             var products = productCache["GB-BB-ProductMap"] as IList<GbProductMap>;
 
-            if (products == null)
+           if (products == null)
             {
                 products = ListProducts(null, null, null, null);
 
@@ -1888,6 +1888,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     case (int)ProductRightEnum.AoRevenueManagement:
                     case (int)ProductRightEnum.AoAxiometrics:
                     case (int)ProductRightEnum.AoBenchmarking:
+                    case (int)ProductRightEnum.AoMarketAnalytics:
                         s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageAssetOptimizationProductAccess.ToString());
                         break;
                     case (int)ProductRightEnum.ManageClientPortalProductAccess:
