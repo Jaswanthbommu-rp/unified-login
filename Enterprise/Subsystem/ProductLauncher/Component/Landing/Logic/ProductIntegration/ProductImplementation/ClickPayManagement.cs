@@ -245,7 +245,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		protected override IntegrationProductUser GenerateProductUserObject(ProductUserRolePropertiesGroups changedUserRolePropertiesRegion)
 		{
 			List<OrganizationRole> productUserOrgRoleList = new List<OrganizationRole>();
-			IntegrationProductUser user = new IntegrationProductUser();
 			if (changedUserRolePropertiesRegion.OrganizationRoleList != null)
 			{
 				foreach (var changedUserOrgRoles in changedUserRolePropertiesRegion.OrganizationRoleList)
@@ -262,7 +261,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			if (!string.IsNullOrEmpty(SubjectUserDetails.ProductUserName))
 			{
-				user = GetProductUser();
 				if(changedUserRolePropertiesRegion.OrganizationRoleList != null)
 				{
 					foreach (var changedUserOrgRoles in changedUserRolePropertiesRegion.OrganizationRoleList)
@@ -299,8 +297,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				PropertyRoles = changedUserRolePropertiesRegion.PropertyRoleList,
 				OrganizationRoles = productUserOrgRoleList,//changedUserRolePropertiesRegion.OrganizationRoleList,
 				CanReceiveMonthlyReport = changedUserRolePropertiesRegion.CanReceiveMonthlyReport,
-				IsMigratedUser = true,
-				UserId = user?.UserId
+				IsMigratedUser = true
             };
 
 			if (SubjectUserDetails.UserRoleTypeId == (int)UserRoleType.SuperUser)
@@ -490,8 +487,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					//Multi Company user. Get the user from product and combine old new and old company roles
 					string baseUrlAndQuery = string.Format(GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserEndpoint), newProductUser.LoginName, CompanyInstanceSourceId);
 					var productUser = GetProductUser(baseUrlAndQuery, false);
-					if (productUser.OrganizationRoles != null && productUser.OrganizationRoles.Count > 0)
+					if (productUser != null && productUser.OrganizationRoles != null && productUser.OrganizationRoles.Count > 0)
 					{
+						newProductUser.UserId = productUser.UserId;
 						newProductUser.OrganizationRoles.AddRange(productUser.OrganizationRoles);
 					}
 					result = UpdateUser(newProductUser, batchProcessType);
