@@ -224,7 +224,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
 
             IList<ProductUI> productList = _productRepository.GetProducts(organizationRealPageId: realPageId, personaId:personaId, allProducts:allProducts);
-            IList<PersonaProductUserDetails> personaProducts = new List<PersonaProductUserDetails>();
 
             if (personaId > 0)
             {
@@ -235,7 +234,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     throw new ArgumentNullException(nameof(persona), "Null persona.");
                 }
 
-                personaProducts = _productRepository.GetAssignedProductsByPersona(persona);
+                var personaProducts = _productRepository.GetAssignedProductsByPersona(persona);
 
                 // remove any deleted or inactive products from the tile page
                 //productList = productList.Where(p => (!(p.ProductStatus == (int)ProductBatchStatusType.Deleted || p.ProductStatus == (int)ProductBatchStatusType.Inactive))).ToList();
@@ -319,20 +318,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return productList;
         }
 
-        /// <summary>
-        /// Used to return a list of productfamilies
-        /// </summary>
-        /// <param name="personRealPageId">Populates when updating user</param>
-        /// <param name="accessFilter">Filter Products</param>
-        /// <returns>List of Product Families</returns>
-        //public IList<ProductFamily> GetProductFamilies(Guid? personRealPageId, string accessFilter = null)
-        //{
-        //    var productFamilyList = _productRepository.GetProductFamilies(personRealPageId, accessFilter);
-        //
-        //    return productFamilyList;
-        //}
-
-        /// <summary>
+ /// <summary>
         /// Used to return a list of productfamilies
         /// </summary>
         /// <param name="organizationRealPageId">The unique identitifier for the organization</param>

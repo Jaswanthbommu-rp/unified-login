@@ -756,6 +756,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             IList<ProductSettingList> personaProductSettings = GetProductSettingsByPersona(personaId);
             products.ToList().ForEach(p =>
             {
+                p.ProductCode = ProductEnumHelper.StringValueOf((ProductEnum) p.ProductId);
+
                 var personaSetting = personaProductSettings.Where(i => i.ProductId == p.ProductId);
 
                 personaSetting.ToList().ForEach(s =>
