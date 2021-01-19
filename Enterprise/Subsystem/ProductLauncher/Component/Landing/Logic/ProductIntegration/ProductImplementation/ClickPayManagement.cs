@@ -245,7 +245,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		protected override IntegrationProductUser GenerateProductUserObject(ProductUserRolePropertiesGroups changedUserRolePropertiesRegion)
 		{
 			List<OrganizationRole> productUserOrgRoleList = new List<OrganizationRole>();
-			IntegrationProductUser user = GetProductUser();
+			IntegrationProductUser user = new IntegrationProductUser();
 			if (changedUserRolePropertiesRegion.OrganizationRoleList != null)
 			{
 				foreach (var changedUserOrgRoles in changedUserRolePropertiesRegion.OrganizationRoleList)
