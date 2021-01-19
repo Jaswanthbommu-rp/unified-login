@@ -632,6 +632,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		[Description("HOTS")]
 		HOTS = 63,
 		/// <summary>
+		/// P2EngagementQueue
+		/// </summary>
+		[Description("PEQ")]
+		P2EngagementQueue = 64,
+		/// <summary>
 		/// AO Market Analytics
 		/// </summary>
 		[Description("RMA")]
