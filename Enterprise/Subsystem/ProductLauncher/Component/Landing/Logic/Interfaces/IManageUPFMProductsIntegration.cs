@@ -3,6 +3,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UPFMProduct;
 using System;
+using System.Collections.Generic;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
 {
@@ -76,6 +77,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="includeExtra"></param>
 		/// <param name="useTranslate"></param>
 		/// <returns></returns>
-		string GetProductCompanyInstanceId(Guid orgRealPageId, long booksCustmerMasterId, string blueBookProductName, string domain, string includeExtra = "", bool useTranslate = true);		
+		string GetProductCompanyInstanceId(Guid orgRealPageId, long booksCustmerMasterId, string blueBookProductName, string domain, string includeExtra = "", bool useTranslate = true);
+
+		List<UserCompaniesProperties> GetUPFMMultiCompanyProperties(string productCode);
 	}
 }

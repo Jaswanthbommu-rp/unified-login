@@ -30,6 +30,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         /// </summary>
         public Guid InstanceId { get; set; }
 
+        [JsonIgnore]
+        /// <summary>
+        /// ErrorReason for failed calls
+        /// </summary>
+        public string ErrorReason { get; set; }
+
         /// <summary>
         /// Properties
         /// </summary>

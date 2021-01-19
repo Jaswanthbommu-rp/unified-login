@@ -798,5 +798,39 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			return company.CompanyInstanceSourceId;
 		}
+
+		public List<UserCompaniesProperties> GetUPFMMultiCompanyProperties(string productCode)
+		{			
+			IManageUserLogin manageUserLogin = new ManageUserLogin(_userClaims);
+			int productId = (int)ProductEnumHelper.GetProductEnumByProductCode(productCode);
+			List<UserCompaniesProperties> userCompaniesProperties = new List<UserCompaniesProperties>();
+			var companyResponse = manageUserLogin.GetUserPersonaOrganization("haasregeight@test.com");
+			var upfmProduct = ProductEnumHelper.GetUPFMProductEnum(productId);
+			var userCompanyProperties = new UserCompaniesProperties();			
+			foreach (var company in companyResponse)
+			{
+				var compnayInstanceSourceId = GetProductCompanyInstanceId(company.OrganizationRealPageId, company.BooksCustomerMasterId, productCode, "Primary");
+				var propertyResponse = GetUPFMProperties(company.PersonaId, upfmProduct, null, productCode.ToLower(), company.OrganizationRealPageId.ToString());
+				if (propertyResponse.Records == null || propertyResponse.Records.Count == 0) userCompanyProperties.ErrorReason = "Properties are not loaded from Blue Book";
+				
+				userCompanyProperties.Id = compnayInstanceSourceId;
+				userCompanyProperties.OrganizationName = company.OrganizationName;
+				userCompanyProperties.InstanceId = company.OrganizationRealPageId;				
+				userCompanyProperties.Properties = new List<Properties>();
+
+				foreach (var product in propertyResponse.Records.ToList())
+				{
+					var properties = new Properties()
+					{
+						Id = ((ProductProperty)product).ID,
+						InstanceId = ((ProductProperty)product).InstanceId,
+						PropertyName = ((ProductProperty)product).Name
+					};
+					userCompanyProperties.Properties.Add(properties);
+				}
+				userCompaniesProperties.Add(userCompanyProperties);
+			}
+			return userCompaniesProperties;
+		}
 	}
 }
