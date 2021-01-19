@@ -285,6 +285,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             || r.ProductId == (int)ProductEnum.VendorMarketplace
                             || r.ProductId == (int)ProductEnum.HelpCenter
                             || r.ProductId == (int)ProductEnum.PMEDasboard
+                            || r.ProductId == (int)ProductEnum.P2EngagementQueue
                         )
                         {
                             userProducts.Add(new PersonaProductUserDetails
@@ -325,6 +326,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     if (userProducts.Any(a => a.ProductId == (int)ProductEnum.PMEDasboard))
                     {
                         userProducts.Remove(userProducts.First(a => a.ProductId == (int)ProductEnum.PMEDasboard));
+                    }
+                }
+                if (_userClaim.Rights.All(rght => rght != null && !rght.Equals("AccessP2EngagementQueue", StringComparison.OrdinalIgnoreCase)))
+                {
+                    if (userProducts.Any(a => a.ProductId == (int)ProductEnum.P2EngagementQueue))
+                    {
+                        userProducts.Remove(userProducts.First(a => a.ProductId == (int)ProductEnum.P2EngagementQueue));
                     }
                 }
                 if (_userClaim.Rights.All(rght => rght != null && !rght.Equals("MigrationTool", StringComparison.OrdinalIgnoreCase)) || _userClaim.RealPageEmployee)
@@ -659,7 +667,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         public IList<int> GetProductIdsByCompany(Guid organizationRealPageId)
         {
             RPObjectCache rpCache = new RPObjectCache();
-            var cacheKey = $"getProductIdsByCompanyGuid_{organizationRealPageId}";
+            var cacheKey = $"getProductIdListByCompanyGuid_{organizationRealPageId}";
 
             IList<int> products = rpCache.GetFromCache<IList<int>>(cacheKey, 180, () =>
             {
