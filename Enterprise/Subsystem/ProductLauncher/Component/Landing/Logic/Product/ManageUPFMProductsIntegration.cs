@@ -300,7 +300,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			if (userPropertyIdList != null)
 			{
-				var organizationRealPageId = flag == "haas" ? multiCompanyRealPageId : _userClaims.OrganizationRealPageGuid.ToString();
+				var organizationRealPageId = flag == "multi" ? multiCompanyRealPageId : _userClaims.OrganizationRealPageGuid.ToString();
 				var booksPropertyList = _blueBook.GetUPFMPropertyInstances(organizationRealPageId);				
 				if (booksPropertyList != null)
 				{
@@ -775,6 +775,62 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			WriteUnassignActivityLog(editorPersonaId, userPersonaId);
 
 			return string.Empty;
+		}
+
+		/// <summary>
+		/// Get Company Product Company InstanceId
+		/// </summary>
+		/// <param name="organizationRealPageId"></param>
+		/// <param name="booksCustmerMasterId"></param>
+		/// <param name="blueBookProductName"></param>
+		/// <param name="domain"></param>
+		/// <param name="includeExtra"></param>
+		/// <param name="useTranslate"></param>
+		/// <returns></returns>
+		public string GetProductCompanyInstanceId(Guid organizationRealPageId, long booksCustmerMasterId, string blueBookProductName, string domain, string includeExtra = "", bool useTranslate = true)
+		{			
+			IList<CustomerCompanyMap> companyProductList = _blueBook.GetCompanyMap(organizationRealPageId, booksCustmerMasterId, source: blueBookProductName.ToUpper(), domain: domain, includeExtra: includeExtra, useTranslate: useTranslate);			
+			if (companyProductList == null) { companyProductList = new List<CustomerCompanyMap>(); }
+			CustomerCompanyMap company = new CustomerCompanyMap();
+			if (companyProductList.Any(a => a.Source.Equals(blueBookProductName, StringComparison.OrdinalIgnoreCase)))
+			{
+				company = (from a in companyProductList where a.Source.Equals(blueBookProductName, StringComparison.OrdinalIgnoreCase) select a).FirstOrDefault();
+			}
+			return company.CompanyInstanceSourceId;
+		}
+
+		public List<UserCompaniesProperties> GetUPFMMultiCompanyProperties(string productCode)
+		{			
+			IManageUserLogin manageUserLogin = new ManageUserLogin(_userClaims);
+			int productId = (int)ProductEnumHelper.GetProductEnumByProductCode(productCode);
+			List<UserCompaniesProperties> userCompaniesProperties = new List<UserCompaniesProperties>();
+			var companyResponse = manageUserLogin.GetUserPersonaOrganization(_userClaims.LoginName);			
+			var upfmProduct = ProductEnumHelper.GetUPFMProductEnum(productId);
+			var userCompanyProperties = new UserCompaniesProperties();			
+			foreach (var company in companyResponse)
+			{
+				var compnayInstanceSourceId = GetProductCompanyInstanceId(company.OrganizationRealPageId, company.BooksCustomerMasterId, productCode, "Primary");
+				var propertyResponse = GetUPFMProperties(company.PersonaId, upfmProduct, null, companyResponse.Count > 1 ? "multi" : "single", company.OrganizationRealPageId.ToString());
+				if (propertyResponse.Records == null || propertyResponse.Records.Count == 0) userCompanyProperties.ErrorReason = "Properties are not loaded from Blue Book";
+				
+				userCompanyProperties.Id = compnayInstanceSourceId;
+				userCompanyProperties.OrganizationName = company.OrganizationName;
+				userCompanyProperties.InstanceId = company.OrganizationRealPageId;				
+				userCompanyProperties.Properties = new List<Properties>();
+
+				foreach (var product in propertyResponse.Records.ToList())
+				{
+					var properties = new Properties()
+					{
+						Id = ((ProductProperty)product).ID,
+						InstanceId = ((ProductProperty)product).InstanceId,
+						PropertyName = ((ProductProperty)product).Name
+					};
+					userCompanyProperties.Properties.Add(properties);
+				}
+				userCompaniesProperties.Add(userCompanyProperties);
+			}
+			return userCompaniesProperties;
 		}
 	}
 }
