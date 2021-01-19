@@ -985,6 +985,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 RealPageId = userLogin.RealPageId,
                 LoginName = userLogin.LoginName,
                 BooksOrganizationMasterId = persona.Organization.BooksMasterId,
+                OrganizationPartyId = persona.OrganizationPartyId,
                 UserId = userLogin.UserId
             };
         }
@@ -1000,6 +1001,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     LogCategoryName = LogActivityCategoryType.ProductAccess.ToString(),
                     CorrelationId = Guid.NewGuid().ToString(),
                     BooksMasterOrganizationId = toUserLogInfo.BooksOrganizationMasterId,
+                    OrganizationPartyId = toUserLogInfo.OrganizationPartyId,
                     Message = message,
 
                     FromUserLoginName = fromUserLogInfo.LoginName,
