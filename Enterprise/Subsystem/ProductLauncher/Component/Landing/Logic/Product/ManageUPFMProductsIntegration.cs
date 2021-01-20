@@ -286,10 +286,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="userPersonaId"></param>
 		/// <param name="product"></param>
 		/// <param name="include"></param>
-		/// <param name="flag"></param>
+		/// <param name="isMultiCompany"></param>
 		/// <param name="multiCompanyRealPageId"></param>
 		/// <returns></returns>
-		public ListResponse GetUPFMProperties(long userPersonaId, ProductEnum product, string include = null, bool flag = false, string multiCompanyRealPageId = null)
+		public ListResponse GetUPFMProperties(long userPersonaId, ProductEnum product, string include = null, bool isMultiCompany = false, string multiCompanyRealPageId = null)
 		{
 			ListResponse response = new ListResponse();
 			var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, _upfmProductId);
@@ -300,7 +300,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			if (userPropertyIdList != null)
 			{
-				var organizationRealPageId = flag == true ? multiCompanyRealPageId : _userClaims.OrganizationRealPageGuid.ToString();
+				var organizationRealPageId = isMultiCompany ? multiCompanyRealPageId : _userClaims.OrganizationRealPageGuid.ToString();
 				var booksPropertyList = _blueBook.GetUPFMPropertyInstances(organizationRealPageId);				
 				if (booksPropertyList != null)
 				{
@@ -798,13 +798,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			return company.CompanyInstanceSourceId;
 		}
-
+		/// <summary>
+		/// Get multi company propeties of product
+		/// </summary>
+		/// <param name="productCode"></param>
+		/// <returns></returns>
 		public List<UserCompaniesProperties> GetUPFMMultiCompanyProperties(string productCode)
 		{			
 			IManageUserLogin manageUserLogin = new ManageUserLogin(_userClaims);
 			int productId = (int)ProductEnumHelper.GetProductEnumByProductCode(productCode);
 			List<UserCompaniesProperties> userCompaniesProperties = new List<UserCompaniesProperties>();
-			var companyResponse = manageUserLogin.GetUserPersonaOrganization(_userClaims.LoginName);			
+			var companyResponse = manageUserLogin.GetUserPersonaOrganization(_userClaims.LoginName);
 			var upfmProduct = ProductEnumHelper.GetUPFMProductEnum(productId);
 			var userCompanyProperties = new UserCompaniesProperties();			
 			foreach (var company in companyResponse)

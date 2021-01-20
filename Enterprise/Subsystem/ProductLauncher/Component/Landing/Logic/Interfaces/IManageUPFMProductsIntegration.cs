@@ -51,10 +51,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="userPersonaId"></param>	
 		/// <param name="product"></param>	
 		/// <param name="include"></param>
-		/// <param name="flag"></param>
+		/// <param name="isMultiCompany"></param>
 		/// <param name="multiCompanyRealPageId"></param>
 		/// <returns></returns>
-		ListResponse GetUPFMProperties(long userPersonaId, ProductEnum product, string include = null, bool flag = false,string multiCompanyRealPageId = null);
+		ListResponse GetUPFMProperties(long userPersonaId, ProductEnum product, string include = null, bool isMultiCompany = false,string multiCompanyRealPageId = null);
 
 		/// <summary>
 		/// Get a list of UPFM property instances for the give user
@@ -79,6 +79,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <returns></returns>
 		string GetProductCompanyInstanceId(Guid orgRealPageId, long booksCustmerMasterId, string blueBookProductName, string domain, string includeExtra = "", bool useTranslate = true);
 
+		/// <summary>
+		/// Get multi company propeties of product
+		/// </summary>
+		/// <param name="productCode"></param>
+		/// <returns></returns>
 		List<UserCompaniesProperties> GetUPFMMultiCompanyProperties(string productCode);
 	}
 }
