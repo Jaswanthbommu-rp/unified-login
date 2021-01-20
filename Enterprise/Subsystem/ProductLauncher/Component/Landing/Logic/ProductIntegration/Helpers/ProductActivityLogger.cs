@@ -80,8 +80,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					LogCategoryName = LogActivityCategoryType.ProductAccess.ToString(),
 					CorrelationId = correlationId.ToString(),
 					BooksMasterOrganizationId = subjectUserDetails.BooksMasterId,
-					/*** We need to decide BooksMasterId or BooksCustomerMasterId for logging ****/
-					//BooksMasterOrganizationId = subjectUserDetails.BooksCustomerMasterId,
+                    OrganizationPartyId = subjectUserDetails.OrganizationPartyId,
 					Message = message,
 
 					FromUserLoginName = editorUserDetails.LoginName,

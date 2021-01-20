@@ -642,6 +642,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     LogCategoryName = LogActivityCategoryType.ProductAccess.ToString(),
                     CorrelationId = _userClaims.CorrelationId.ToString(),
                     BooksMasterOrganizationId = _userClaims.OrganizationMasterId,
+                    OrganizationPartyId = _userClaims.OrganizationPartyId,
                     Message = message,
 
                     FromUserLoginName = _userClaims.LoginName,

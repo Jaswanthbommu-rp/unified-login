@@ -15,6 +15,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.
             LogActivityTypeName = activityDetails.LogActivityTypeName;
             LogCategoryName = activityDetails.LogCategoryName;
             Message = activityDetails.Message;
+            OrganizationPartyId = activityDetails.OrganizationPartyId;
             BooksMasterOrganizationId = activityDetails.BooksMasterOrganizationId;
             CorrelationId = activityDetails.CorrelationId;
             BooksProductCode = activityDetails.BooksProductCode;
@@ -53,6 +54,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.
         public string ToUserLastName { get; set; }
         public string ToUserRealpageId { get; set; }
 
+        public long OrganizationPartyId { get; set; }
         public long BooksMasterOrganizationId { get; set; }
         public string BooksProductCode { get; set; }
         public List<AdditionalParameters> AdditionalInformation { get; set; }
