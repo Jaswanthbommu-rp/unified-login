@@ -289,7 +289,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="flag"></param>
 		/// <param name="multiCompanyRealPageId"></param>
 		/// <returns></returns>
-		public ListResponse GetUPFMProperties(long userPersonaId, ProductEnum product, string include = null, string flag = null, string multiCompanyRealPageId = null)
+		public ListResponse GetUPFMProperties(long userPersonaId, ProductEnum product, string include = null, bool flag = false, string multiCompanyRealPageId = null)
 		{
 			ListResponse response = new ListResponse();
 			var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, _upfmProductId);
@@ -300,7 +300,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			if (userPropertyIdList != null)
 			{
-				var organizationRealPageId = flag == "multi" ? multiCompanyRealPageId : _userClaims.OrganizationRealPageGuid.ToString();
+				var organizationRealPageId = flag == true ? multiCompanyRealPageId : _userClaims.OrganizationRealPageGuid.ToString();
 				var booksPropertyList = _blueBook.GetUPFMPropertyInstances(organizationRealPageId);				
 				if (booksPropertyList != null)
 				{
@@ -810,7 +810,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			foreach (var company in companyResponse)
 			{
 				var compnayInstanceSourceId = GetProductCompanyInstanceId(company.OrganizationRealPageId, company.BooksCustomerMasterId, productCode, "Primary");
-				var propertyResponse = GetUPFMProperties(company.PersonaId, upfmProduct, null, companyResponse.Count > 1 ? "multi" : "single", company.OrganizationRealPageId.ToString());
+				var propertyResponse = GetUPFMProperties(company.PersonaId, upfmProduct, null, companyResponse.Count > 1 ? true : false, company.OrganizationRealPageId.ToString());
 				if (propertyResponse.Records == null || propertyResponse.Records.Count == 0) userCompanyProperties.ErrorReason = "Properties are not loaded from Blue Book";
 				
 				userCompanyProperties.Id = compnayInstanceSourceId;
