@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+using System.Collections.Generic;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces
 {
@@ -13,9 +12,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <summary>
         /// Get the product settings by product id
         /// </summary>
-        /// <param name="ProductId">ProductId</param>
+        /// <param name="productId">ProductId</param>
         /// <returns>list product settings</returns>
-        IList<ProductInternalSetting> GetProductInternalSettings(int ProductId);
+        IList<ProductInternalSetting> GetProductInternalSettings(int productId);
+
+        /// <summary>
+        /// Used to get all internal settings by product setting type
+        /// </summary>
+        /// <param name="productSettingType"></param>
+        /// <returns></returns>
+        IList<ProductInternalSettingByType> GetProductSettingByType(string productSettingType);
 
         /// <summary>
         /// Used to link a product setting to a given configuration
