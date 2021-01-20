@@ -1487,6 +1487,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             ProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository(mockRepository.Object);
 
+
             //Act
             IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, mockService.Object, samlRepository, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, productInternalSettingRepository,
                 mockHttpMessageHandler.Object);
@@ -4678,6 +4679,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             var username = "testuser";
             var isActive = false;
+
+            new RPObjectCache().BustCache();
 
             //Act
             var actual = manageProductOneSite.ChangeUserStatus(editorPersonaId, username, isActive);
