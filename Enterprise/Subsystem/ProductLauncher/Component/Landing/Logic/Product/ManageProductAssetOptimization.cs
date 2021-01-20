@@ -640,7 +640,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				var person = _managePerson.GetPerson(realPageId);
 				var productUserGbLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
 
-                IList<Persona> personaList = _managePersona.ListActivePersona(persona.RealPageId, false);
+				//Bug 677720: PME-204114/ATLANTIC PACIFIC PROPERTY MANAGEMENT LLC/New AO email address getting created when a Unified Login user is updated.
+				var productUserName = GetSamlProductUserName(productUserPersonaId, "");
+				productUserGbLogin.LoginName = !string.IsNullOrEmpty(productUserName) ? productUserName : productUserGbLogin.LoginName;
+
+				IList<Persona> personaList = _managePersona.ListActivePersona(persona.RealPageId, false);
 				IList<Organization> organizationList = _userLoginRepository.ListOrganizationByEnterpriseUserId(realPageId, null);
 				var personaOrganization = organizationList.FirstOrDefault(i => i.PartyId == persona.OrganizationPartyId);
                 bool hasMultiCompany = personaList.Count(p => p.OrganizationPartyId != persona.OrganizationPartyId && p.Organization.RealPageId != DefaultUserClaim.ExternalCompanyRealPageId) > 0;
