@@ -1074,6 +1074,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                      FirstName = toPerson.FirstName,
                      LastName = toPerson.LastName,
                      BooksOrganizationMasterId = fromUserLogDetail.BooksOrganizationMasterId,
+                     OrganizationPartyId = fromUserLogDetail.OrganizationPartyId,
                      LoginName = toUserGbLogin.LoginName,
                      UserId = toUserGbLogin.UserId,
                      RealPageId = toUserGbLogin.RealPageId
@@ -1097,6 +1098,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 RealPageId = userLogin.RealPageId,
                 LoginName = userLogin.LoginName,
                 BooksOrganizationMasterId = persona.Organization.BooksMasterId,
+                OrganizationPartyId = persona.OrganizationPartyId,
                 UserId = userLogin.UserId
             };
         }
@@ -1112,6 +1114,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     LogCategoryName = LogActivityCategoryType.ProductAccess.ToString(),
                     CorrelationId = _correlationId,
                     BooksMasterOrganizationId = toUserLogInfo.BooksOrganizationMasterId,
+                    OrganizationPartyId = toUserLogInfo.OrganizationPartyId,
                     Message = message,
 
                     FromUserLoginName = fromUserLogInfo.LoginName,
@@ -1165,6 +1168,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public Guid RealPageId { get; set; }
         public string LoginName { get; set; }
         public long BooksOrganizationMasterId { get; set; }
+        public long OrganizationPartyId { get; set; }
+
         public long UserId { get; set; }
     }
 

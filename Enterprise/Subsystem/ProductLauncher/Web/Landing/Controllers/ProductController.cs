@@ -622,6 +622,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Controllers
 						LogCategoryName = LogActivityCategoryType.User.ToString(),
 						CorrelationId = defaultUserClaim.CorrelationId.ToString(),
 						BooksMasterOrganizationId = defaultUserClaim.OrganizationMasterId,
+						OrganizationPartyId = defaultUserClaim.OrganizationPartyId,
 						Message = $"{defaultUserClaim.FirstName} {defaultUserClaim.LastName} accessed Migration Tool.",
 
 						FromUserLoginName = defaultUserClaim.LoginName,
@@ -886,6 +887,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Controllers
 				LogCategoryName = LogActivityCategoryType.User.ToString(),
 				CorrelationId = defaultUserClaim.CorrelationId.ToString(),
 				BooksMasterOrganizationId = defaultUserClaim.OrganizationMasterId,
+				OrganizationPartyId = defaultUserClaim.OrganizationPartyId,
 				Message = $"{defaultUserClaim.FirstName} {defaultUserClaim.LastName} accessed Unified Settings via Support Tool for {companyName}.",
 
 				FromUserLoginName = defaultUserClaim.LoginName,
@@ -1159,6 +1161,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Controllers
 					LogCategoryName = LogActivityCategoryType.ProductAccess.ToString(),
 					CorrelationId = _userClaims.CorrelationId.ToString(),
 					BooksMasterOrganizationId = _userClaims.OrganizationMasterId,
+					OrganizationPartyId = _userClaims.OrganizationPartyId,
 					Message = message,
 
 					FromUserLoginName = _userClaims.LoginName,

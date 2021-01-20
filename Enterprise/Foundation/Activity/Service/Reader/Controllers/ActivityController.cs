@@ -67,6 +67,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
                     return Request.CreateResponse(HttpStatusCode.BadRequest, "No filterCriteria received.");
                 }
 
+                // TODO REPLACE THIS WITH OrganizationPartyId
                 // Add booksMaster id from claims
                 ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
                 if (currentClaimPrincipal.Identity.IsAuthenticated)
@@ -128,23 +129,18 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
                     return Request.CreateResponse(HttpStatusCode.BadRequest, "No filterCriteria received.");
                 }
 
+                // TODO REPLACE THIS WITH OrganizationPartyId
                 // Add booksMaster id from claims
-                ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
-                if (currentClaimPrincipal.Identity.IsAuthenticated)
+                var orgFilter = filterCriteria.ActivitySearchCriteria.Where(x => x.Value.ToUpper() == "BOOKSMASTERORGANIZATIONID");
+                if (!orgFilter.Any()) // If booksMasterOrganizationId passed then bypass adding from claim
                 {
-                    var orgFilter = filterCriteria.ActivitySearchCriteria.Where(x => x.Value.ToUpper() == "BOOKSMASTERORGANIZATIONID");
-                    if (!orgFilter.Any()) // If booksMasterOrganizationId passed then bypass adding from claim
-                    {
-                        var booksMasterOrganizationId = ((from nvp in currentClaimPrincipal.Claims where nvp.Type.ToUpper() == "ORGMASTERID" select nvp.Value).FirstOrDefault());
-
-                        filterCriteria.ActivitySearchCriteria.Add(
-                            new ActivitySearchCriteria
-                            {
-                                Name = "BooksMasterOrganizationId",
-                                Value = booksMasterOrganizationId //e.g. orgMasterId: 4638
-                            });
-                    };
-                }
+                    filterCriteria.ActivitySearchCriteria.Add(
+                        new ActivitySearchCriteria
+                        {
+                            Name = "BooksMasterOrganizationId",
+                            Value = _userClaims.OrganizationMasterId.ToString() //e.g. orgMasterId: 4638
+                        });
+                };
 
                 ReaderRepository readerRepository = new ReaderRepository();
                 IList<ActivityDetailMessage> listActivityDetailMessage = readerRepository.ListActivityLog(filterCriteria);
@@ -204,22 +200,11 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
                     return Request.CreateResponse(HttpStatusCode.BadRequest, "No activityDetailMessage received.");
                 }
 
-                // Add booksMaster id from claims if not exists
-                ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
-                if (currentClaimPrincipal.Identity.IsAuthenticated)
-                {
-                    if (activityDetailMessage.BooksMasterOrganizationId == 0)
-                    // If booksMasterOrganizationId passed then bypass adding from claim
-                    {
-                        var booksMasterOrganizationId =
-                        ((from nvp in currentClaimPrincipal.Claims
-                          where nvp.Type.ToUpper() == "ORGMASTERID"
-                          select nvp.Value).FirstOrDefault());
-                        activityDetailMessage.BooksMasterOrganizationId = Convert.ToInt64(booksMasterOrganizationId);
-                    }
-                }
-
+                // IF THIS HAS ISSUES, WE NEED TO FIND WHAT IS SETTING BOOKSMASTERORGID AND ADD PARTY ID AS WELL
+                activityDetailMessage.BooksMasterOrganizationId = _userClaims.OrganizationMasterId;
+                activityDetailMessage.OrganizationPartyId = _userClaims.OrganizationPartyId;
                 activityDetailMessage.ApplicationTimestamp = DateTime.UtcNow;
+                
                 if (string.IsNullOrEmpty(ConfigReader.ActivityMQName))
                 {
                     throw new Exception($"ActivityMQName is missing check config file.");
@@ -233,7 +218,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
             }
             catch (Exception ex)
             {
-                // log exceptin in elastic
+                // log exception in elastic
                 Log.Error(ex, "Exception in Activity Logging");
 
                 return Request.CreateResponse(HttpStatusCode.InternalServerError, HttpStatusCode.InternalServerError);
@@ -293,22 +278,16 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
                     return Request.CreateResponse(HttpStatusCode.BadRequest, result);
                 }
 
-                // Add booksMaster id from claims
-                ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
-                if (currentClaimPrincipal.Identity.IsAuthenticated)
+                // TODO REPLACE THIS WITH OrganizationPartyId
+                var orgFilter = filterCriteria.ActivitySearchCriteria.Where(x => x.Value.Equals("BooksMasterOrganizationId", StringComparison.OrdinalIgnoreCase));
+                if (!orgFilter.Any()) // If OrganizationPartyId passed then bypass adding from claim
                 {
-                    var orgFilter = filterCriteria.ActivitySearchCriteria.Where(x => x.Value.ToUpper() == "BOOKSMASTERORGANIZATIONID");
-                    if (!orgFilter.Any()) // If booksMasterOrganizationId passed then bypass adding from claim
-                    {
-                        var booksMasterOrganizationId = ((from nvp in currentClaimPrincipal.Claims where nvp.Type.ToUpper() == "ORGMASTERID" select nvp.Value).FirstOrDefault());
-
-                        filterCriteria.ActivitySearchCriteria.Add(
-                            new ActivitySearchCriteria
-                            {
-                                Name = "BooksMasterOrganizationId",
-                                Value = booksMasterOrganizationId //e.g. orgMasterId: 4638
-                            });
-                    };
+                    filterCriteria.ActivitySearchCriteria.Add(
+                        new ActivitySearchCriteria
+                        {
+                            Name = "BooksMasterOrganizationId",
+                            Value = _userClaims.OrganizationMasterId.ToString() //e.g. orgMasterId: 4638
+                        });
                 }
 
                 var readerRepository = new ReaderRepository();
