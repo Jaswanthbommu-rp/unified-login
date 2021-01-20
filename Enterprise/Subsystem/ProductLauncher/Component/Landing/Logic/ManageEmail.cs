@@ -293,7 +293,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 };
                 WriteToLog(LogEventLevel.Information, "ManageEmail.SendGridEmail: Email details.", logData, null);
 
-                IList<ProductInternalSetting> productSettingList = _productInternalSettingRepository.GetProductInternalSettings(ProductId: (int)ProductEnum.UnifiedPlatform);
+                IList<ProductInternalSetting> productSettingList = _productInternalSettingRepository.GetProductInternalSettings(productId: (int)ProductEnum.UnifiedPlatform);
                 if (productSettingList.Count > 0)
                 {
                     bool IsSendGridEnabled = false;
