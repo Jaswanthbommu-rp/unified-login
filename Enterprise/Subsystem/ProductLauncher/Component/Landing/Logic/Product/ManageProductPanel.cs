@@ -697,9 +697,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             ListResponse result = new ListResponse();
            
-            IProduct product;
-            string productName = Enum.GetName(typeof(ProductEnum), productId);
-            string productcode = ProductEnumHelper.StringValueOf((ProductEnum)productId);
             switch (productId)
             {
                 case (int)ProductEnum.FinancialSuite:

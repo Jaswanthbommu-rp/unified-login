@@ -279,15 +279,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					}
 				}
 
-				//Dictionary<string, bool> allProperties = new Dictionary<string, bool>();
-				//if (list.Any(a => a.IsAssigned == true))
-				//{
-				//	allProperties.Add("allProperties", false);
-				//}
-				//else
-				//{
-				//	allProperties.Add("allProperties", true);
-				//}
 				response = new ListResponse()
 				{
 					Records = list.Cast<object>().ToList(),
