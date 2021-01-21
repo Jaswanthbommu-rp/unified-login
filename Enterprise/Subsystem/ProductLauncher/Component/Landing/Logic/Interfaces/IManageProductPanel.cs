@@ -92,5 +92,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="organizationType"></param>			
 		/// <returns>String.empty if success else error</returns>
 		ListResponse GetProductOrganizations(long editorPersonaId, long userPersonaId, int productId, string organizationRoleId, string organizationType);
+
+		/// <summary>
+		/// Get Product Location Groups
+		/// </summary> 
+		/// <param name="editorPersonaId">editorPersonaId</param>		
+		/// <param name="productId"></param>
+		/// <param name="userPersonaId"></param>
+		/// <param name="assignedOnly"></param>
+		/// <param name="datafilter"></param>
+		/// <param name="userLoginName"></param>
+		/// <returns>String.empty if success else error</returns>
+		ListResponse GetProductLocationGroups(long editorPersonaId, long userPersonaId, int productId, RequestParameter datafilter, bool assignedOnly = false, string userLoginName = "");
 	}
 }
