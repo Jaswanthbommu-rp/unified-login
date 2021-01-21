@@ -546,6 +546,7 @@
     <Compile Include="Product\PersonaProduct.cs" />
     <Compile Include="Product\ProductEasyLMS.cs" />
     <Compile Include="Product\Ops\SessionRequest.cs" />
+    <Compile Include="Product\ProductPropertyGroup.cs" />
     <Compile Include="Product\ProductPropertyMap.cs" />
     <Compile Include="Product\ProductRoleAttribute.cs" />
     <Compile Include="Product\RentersInsurance\IInsuranceService.cs" />
