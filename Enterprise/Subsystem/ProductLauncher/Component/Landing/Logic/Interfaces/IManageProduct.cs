@@ -60,6 +60,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         IList<ProductInternalSetting> GetProductInternalSettings(int productId);
 
         /// <summary>
+        /// Used to get all internal settings by product setting type
+        /// </summary>
+        /// <param name="productSettingType">The type of the product type to get the settings for</param>
+        /// <returns>The list of settings</returns>
+        IList<ProductInternalSettingByType> GetProductSettingByType(string productSettingType);
+
+        /// <summary>
         /// Used to return a list of productTypes
         /// </summary>
         /// <returns></returns>

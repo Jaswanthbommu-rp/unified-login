@@ -38,14 +38,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <summary>
         /// Get the product settings by product id
         /// </summary>
-        /// <param name="ProductId">ProductId</param>
+        /// <param name="productId">ProductId</param>
         /// <returns>list product settings</returns>
-        public IList<ProductInternalSetting> GetProductInternalSettings(int ProductId)
+        public IList<ProductInternalSetting> GetProductInternalSettings(int productId)
         {
             using (var repo = GetRepository())
             {
-                dynamic param = new { ProductId = ProductId };
+                dynamic param = new { ProductId = productId };
                 return repo.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, param);
+            }
+        }
+
+        /// <summary>
+        /// Used to get all internal settings by product setting type
+        /// </summary>
+        /// <param name="productSettingType"></param>
+        /// <returns></returns>
+        public IList<ProductInternalSettingByType> GetProductSettingByType(string productSettingType)
+        {
+            using (var repo = GetRepository())
+            {
+                dynamic param = new { ProductSettingType = productSettingType };
+                return repo.GetMany<ProductInternalSettingByType>(StoredProcNameConstants.SP_ListProductGlobalSettingsBySettingType, param);
             }
         }
 

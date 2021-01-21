@@ -2164,8 +2164,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
            
             //Act
-            RPObjectCache rPObjectCache = new RPObjectCache();
-            rPObjectCache.BustCache();
+            new RPObjectCache().BustCache();
+            //rPObjectCache.BustCache();
 
             HttpResponseMessage response = organizationController.AuditCompanyProductPropertiesToUPFM(new Guid("11111111-1111-1111-1111-111111111111"), (int)ProductEnum.OneSite);
 
@@ -2193,8 +2193,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                         && validProductResponse.UPFMName.Equals("test property 1", StringComparison.OrdinalIgnoreCase)
                         && response.StatusCode.Equals(HttpStatusCode.OK));
 
-            rPObjectCache.BustCache();
-
             defaultUserClaim = new DefaultUserClaim()
             {
                 CorrelationId = new Guid(), CustomerMasterId = _BooksCompanyMasterId, OrganizationRealPageGuid = EmployeeCompanyRealPageId
@@ -2212,6 +2210,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 Configuration = new HttpConfiguration()
             };
             
+            new RPObjectCache().BustCache();
+
             // OneSite data exists but no UPFM property instances can be found
             response = organizationController.AuditCompanyProductPropertiesToUPFM(new Guid("22222222-2222-2222-2222-222222222222"), (int)ProductEnum.OneSite);
 
