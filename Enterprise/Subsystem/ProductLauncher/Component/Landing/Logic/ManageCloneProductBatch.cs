@@ -59,9 +59,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					{
 						ManageProductOneSiteAccounting accounting = new ManageProductOneSiteAccounting(userClaim);
 						propertiesResponse = accounting.GetUserProperties(createUserPersonaId, personaId, null);
+						propertyGroupResponse = accounting.GetUserPropertyGroups(createUserPersonaId, personaId, null);
 						rolesResponse = accounting.GetUserRoles(createUserPersonaId, personaId, null);
 						ListResponse companiesResponse = accounting.GetUserCompanies(createUserPersonaId, personaId, null);
-						productListToCreate.Add(CreateFinancialSuiteProductBatchRecord(propertiesResponse, rolesResponse, product.ProductId, companiesResponse));
+						productListToCreate.Add(CreateFinancialSuiteProductBatchRecord(propertiesResponse, rolesResponse, product.ProductId, companiesResponse, propertyGroupResponse));
 					}
 					else if (product.ProductId == (int)ProductEnum.MarketingCenter)
 					{
@@ -630,15 +631,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return pb;
         }
 
-		private ProductBatch CreateFinancialSuiteProductBatchRecord(ListResponse propertiesResponse, ListResponse rolesResponse, int productID, ListResponse companiesResponse)
+		private ProductBatch CreateFinancialSuiteProductBatchRecord(ListResponse propertiesResponse, ListResponse rolesResponse, int productID, ListResponse companiesResponse, ListResponse propertyGroupResponse)
 		{
 			List<string> PropertyList = new List<string>();
+			List<string> PropertyGroupList = new List<string>();
 			List<string> RoleList = new List<string>();
 			List<string> companiesList = new List<string>();
 			bool hasAccessToSiteSpendManagementOnly = false;
 			bool isAccountingAdmin = false;
 			bool hasAccessToAllCurrentFutureProperties = false;
 			IEnumerable<object> propertiesCollection;
+			IEnumerable<object> propertyGroupsCollection;
 
 			if (propertiesResponse.Records != null)
 			{
@@ -647,6 +650,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			else
 			{
 				propertiesCollection = new List<object>();
+			}
+
+			if (propertyGroupResponse.Records != null)
+			{
+				propertyGroupsCollection = (IEnumerable<object>)propertyGroupResponse.Records;
+			}
+			else
+			{
+				propertyGroupsCollection = new List<object>();
 			}
 
 			if (companiesResponse.Additional != null)
@@ -682,6 +694,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			}
 
 			foreach (object item in propertiesCollection)
+			{
+				if (((ProductProperty)item).IsAssigned.Value)
+				{
+					PropertyList.Add(((ProductProperty)item).ID);
+				}
+			}
+
+			foreach(object item in propertyGroupsCollection)
 			{
 				if (((ProductProperty)item).IsAssigned.Value)
 				{
