@@ -569,7 +569,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					{
 						superUserRoleId = gbAllRoles.First(a => a.Name.Equals("Property Admin", StringComparison.OrdinalIgnoreCase)).ID;
 					}
-					else if(_productId == (int)ProductEnum.HOTS)
+					else if(_productId == (int)ProductEnum.HandsOnTrainingSystem)
                     {
 						superUserRoleId = gbAllRoles.First(a => a.Name.Equals("Creator", StringComparison.OrdinalIgnoreCase)).ID;
 					}
