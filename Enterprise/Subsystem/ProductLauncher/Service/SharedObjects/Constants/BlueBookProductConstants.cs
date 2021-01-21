@@ -279,9 +279,9 @@
 		/// </summary>
 		public const string HospitalityService = "HAAS";
 		/// <summary>
-		/// Hospitality as a Service
+		/// Hands-On Training System
 		/// </summary>
-		public const string HOTS = "HOTS";
+		public const string HandsOnTrainingSystem = "HOTS";
 		/// <summary>
 		///PMEDashboard
 		/// </summary>
