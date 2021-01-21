@@ -647,6 +647,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     var productPMLogic = ManageProductFactory.GetProductLogic(ProductEnum.PortfolioManagement, editorPersonaId, userPersonaId, _userClaims);
                     result = productPMLogic.GetProductPropertiesByGroup(propertyGroupId.ToString(), datafilter);
                     break;
+                case (int)ProductEnum.FinancialSuite:
+                    var manageProductOneSiteAccounting = new ManageProductOneSiteAccounting(_userClaims);
+                    result = manageProductOneSiteAccounting.GetUserPropertyGroups(editorPersonaId, userPersonaId, datafilter);
+                    break;
                 default:
                     break;
             }
@@ -686,6 +690,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 default:
                     break;
             }
+            return result;
+        }
+
+        public ListResponse GetProductLocationGroups(long editorPersonaId, long userPersonaId, int productId, RequestParameter datafilter, bool assignedOnly = false, string userLoginName = "")
+        {
+            ListResponse result = new ListResponse();
+           
+            switch (productId)
+            {
+                case (int)ProductEnum.FinancialSuite:
+                    var manageProductOneSiteAccounting = new ManageProductOneSiteAccounting(_userClaims);
+                    result = manageProductOneSiteAccounting.GetUserPropertyGroups(editorPersonaId, userPersonaId, datafilter);
+                    break;
+                default:
+                    break;
+            }
+            if (result.IsError)
+            {
+                throw new Exception(result.ErrorReason);
+            }           
+           
             return result;
         }
 
