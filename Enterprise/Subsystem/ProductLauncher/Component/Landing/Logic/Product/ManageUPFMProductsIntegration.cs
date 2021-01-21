@@ -810,18 +810,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			List<UserCompaniesProperties> userCompaniesProperties = new List<UserCompaniesProperties>();
 			var companyResponse = manageUserLogin.GetUserPersonaOrganization(_userClaims.LoginName);
 			var upfmProduct = ProductEnumHelper.GetUPFMProductEnum(productId);
-			var userCompanyProperties = new UserCompaniesProperties();			
+			string errorReason = string.Empty;
 			foreach (var company in companyResponse)
 			{
 				var compnayInstanceSourceId = GetProductCompanyInstanceId(company.OrganizationRealPageId, company.BooksCustomerMasterId, productCode, "Primary");
 				var propertyResponse = GetUPFMProperties(company.PersonaId, upfmProduct, null, companyResponse.Count > 1 ? true : false, company.OrganizationRealPageId.ToString());
-				if (propertyResponse.Records == null || propertyResponse.Records.Count == 0) userCompanyProperties.ErrorReason = "Properties are not loaded from Blue Book";
-				
-				userCompanyProperties.Id = compnayInstanceSourceId;
-				userCompanyProperties.OrganizationName = company.OrganizationName;
-				userCompanyProperties.InstanceId = company.OrganizationRealPageId;				
-				userCompanyProperties.Properties = new List<Properties>();
+				if (propertyResponse.Records == null || propertyResponse.Records.Count == 0) errorReason = "Properties are not loaded from Blue Book";
 
+				var userCompanyProperties = new UserCompaniesProperties()
+				{
+					Id = compnayInstanceSourceId,
+					OrganizationName = company.OrganizationName,
+					InstanceId = company.OrganizationRealPageId,
+					ErrorReason = errorReason,
+					Properties = new List<Properties>()
+				};
 				foreach (var product in propertyResponse.Records.ToList())
 				{
 					var properties = new Properties()
