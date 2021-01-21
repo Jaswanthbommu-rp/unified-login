@@ -198,7 +198,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 #endif
                     if (string.IsNullOrEmpty(emailStatus))
                     {
-                        IList<ProductInternalSetting> productSettingList = _productInternalSettingRepository.GetProductInternalSettings(ProductId: (int)ProductEnum.UnifiedPlatform);
+                        IList<ProductInternalSetting> productSettingList = _productInternalSettingRepository.GetProductInternalSettings(productId: (int)ProductEnum.UnifiedPlatform);
                         if ((productSettingList.Count > 0) && (productSettingList.ToList().Any(s => s.Name.Equals("IsSendGridEnabled", StringComparison.OrdinalIgnoreCase))))
                         {
                             IsSendGridEnabled = productSettingList.ToList().FirstOrDefault(s => s.Name.Equals("IsSendGridEnabled", StringComparison.OrdinalIgnoreCase)).Value.Equals("1");

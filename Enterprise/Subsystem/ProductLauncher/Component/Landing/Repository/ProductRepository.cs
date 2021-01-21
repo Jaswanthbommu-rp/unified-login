@@ -756,6 +756,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             IList<ProductSettingList> personaProductSettings = GetProductSettingsByPersona(personaId);
             products.ToList().ForEach(p =>
             {
+                p.ProductCode = ProductEnumHelper.StringValueOf((ProductEnum) p.ProductId);
+
                 var personaSetting = personaProductSettings.Where(i => i.ProductId == p.ProductId);
 
                 personaSetting.ToList().ForEach(s =>
@@ -1972,8 +1974,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     case (int)ProductRightEnum.ManageHomeSharingProductAccess:
                         s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageHomeSharingProductAccess.ToString());
                         break;
-                    case (int)ProductRightEnum.ManageHOTSProductAccess:
-                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageHOTSProductAccess.ToString());
+                    case (int)ProductRightEnum.ManageHandsOnTrainingSystemProductAccess:
+                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageHandsOnTrainingSystemProductAccess.ToString());
                         break;
                     default:
                         break;
