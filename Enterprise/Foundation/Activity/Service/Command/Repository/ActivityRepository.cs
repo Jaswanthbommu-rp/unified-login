@@ -38,7 +38,8 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Command.Repository
             dparm.Add("ToUserFirstName", activityLog.ToUserFirstName, DbType.String);
             dparm.Add("ToUserLastName", activityLog.ToUserLastName, DbType.String);
             dparm.Add("ToUserRealpageId", activityLog.ToUserRealpageId, DbType.Guid);
-
+            
+            dparm.Add("OrganizationPartyId", activityLog.OrganizationPartyId, DbType.Int64);
             dparm.Add("BooksMasterOrganizationId", activityLog.BooksMasterOrganizationId, DbType.Int64);
             dparm.Add("BooksProductCode", activityLog.BooksProductCode, DbType.String);
 

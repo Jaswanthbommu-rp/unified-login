@@ -2167,6 +2167,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             LogCategoryName = LogActivityCategoryType.ProductAccess.ToString(),
                             CorrelationId = _userClaim.CorrelationId.ToString(),
                             BooksMasterOrganizationId = _userClaim.OrganizationMasterId,
+                            OrganizationPartyId = _userClaim.OrganizationPartyId,
                             Message = string.Format(logMessage, _userClaim.FirstName, _userClaim.LastName),
                             FromUserLoginName = _userClaim.LoginName,
                             FromUserLoginId = _userClaim.UserId,
@@ -4353,6 +4354,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 LogCategoryName = logActivityCategoryType.ToString(),
                 CorrelationId = _userClaim.CorrelationId.ToString(),
                 BooksMasterOrganizationId = _userClaim.OrganizationMasterId,
+                OrganizationPartyId = _userClaim.OrganizationPartyId,
                 Message = string.Format(message, profile.FirstName, profile.LastName, _userClaim.FirstName, _userClaim.LastName, profile.CreateUserSourceType.ToString()),
 
                 FromUserLoginName = _userClaim.LoginName,

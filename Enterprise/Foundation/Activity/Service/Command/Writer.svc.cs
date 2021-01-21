@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ServiceModel.MsmqIntegration;
 using RP.Enterprise.Foundation.Activity.Service.Logging.Command.Repository;
 using Serilog;
@@ -20,7 +21,14 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Command
 
                 if (activity.BooksMasterOrganizationId == 0)
                 {
-                    Log.Error( $"Activity Message with no organization. Message -{activity?.Message}");
+                    var  logData = new Dictionary<string, object>() { { "ActivityDetailMessage", mqMessage.Body } };
+                    Log.Error( $"Activity Message with no organization. Message -{activity?.Message}", logData);
+                }
+
+                if (activity.OrganizationPartyId == 0)
+                {
+                    var  logData = new Dictionary<string, object>() { { "ActivityDetailMessage", mqMessage.Body } };
+                    Log.Error( $"Activity Message with no organization party id. Message -{activity?.Message}", logData);
                 }
 
                 var repo = new ActivityRepository();
