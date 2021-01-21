@@ -181,6 +181,7 @@
         public const string SP_ListProductSettingsByPersona = "Enterprise.ListProductSettingsByPersona";
         public const string SP_ListProductSettingsByPersonaId = "Enterprise.ListProductSettingsByPersonaId";
         public const string SP_ListGlobalSettingsForProduct = "Enterprise.ListGlobalSettingsForProduct";
+        public const string SP_ListProductGlobalSettingsBySettingType = "Enterprise.ListProductGlobalSettingsBySettingType";
         public const string SP_CreateProductSetting = "Enterprise.CreateProductSetting";
         public const string SP_CreateProductSettingType = "Enterprise.CreateProductSettingType";
         public const string SP_LinkProductSettingToConfiguration = "Enterprise.LinkProductSettingToConfiguration";

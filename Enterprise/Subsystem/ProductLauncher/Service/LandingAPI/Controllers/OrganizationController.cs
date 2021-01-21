@@ -632,13 +632,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest, output);
             }
 
-            Persona persona = null;
-            IManagePersona managePersona = new ManagePersona();
             long personaId = 0;
 
             if (mergePersonaAccess.HasValue && mergePersonaAccess.Value == true)
             {
-                persona = managePersona.GetPersona(_userClaims.PersonaId);
+                IManagePersona managePersona = new ManagePersona();
+                var persona = managePersona.GetPersona(_userClaims.PersonaId);
 
                 if (persona == null)
                 {
@@ -654,7 +653,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             IManageCredential manageCredential = new ManageCredential(_userClaims);
             CheckPasswordExpirationResponse checkPasswordExpirationResponse = manageCredential.CheckPasswordExpiration(_userClaims.UserId, _userClaims.UserRealPageGuid);
-            if ((checkPasswordExpirationResponse != null) && (!checkPasswordExpirationResponse.IsPasswordExpired))
+            if (checkPasswordExpirationResponse != null && !checkPasswordExpirationResponse.IsPasswordExpired)
             {
                 var manageProduct = new ManageProduct(_userClaims);
                 var cacheKey = $"getListProductsByOrganization_{org.RealPageId}";
