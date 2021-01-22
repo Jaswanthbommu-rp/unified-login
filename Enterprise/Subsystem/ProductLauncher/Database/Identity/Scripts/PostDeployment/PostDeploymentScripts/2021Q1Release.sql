@@ -791,3 +791,40 @@ END
 			
             SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
 GO
+
+--CREATE new product called Reporting
+exec [Enterprise].CreateNewProduct 
+	@ProductId = 67,
+	@LoginURI = '', @SigningCertificateThumbprint = '', 	
+	@PropertyManagementName = 'Administration',
+	@ProductName = 'Reporting',
+    @LoginURL ='',
+	@apiendpoint ='',
+	@tokenEndPoint ='',	
+	@apisecret ='',
+	@LearnMoreSettingValue ='',	
+	@BooksProductCode ='RPT',
+	@ClassNameSettingValue ='reporting',
+	@ProductUrlSettingValue ='',
+	@TitleIdSettingValue ='Reporting',
+	@IsNewTabSettingValue ='0',
+	@IsResourceSettingValue ='0',
+	@ProductStatus1SettingValue ='',
+	@ProductStatus2SettingValue ='',
+	@ProductStatus3SettingValue ='',
+	@ProductStatus4SettingValue ='',
+	@ShowInUserDetailsSettingValue ='0',
+	@ShowInRolesAndRightsSettingValue ='0',
+	@ShowInAppSwitcherSettingValue ='0',
+	@ShowInUserListFilterSettingValue ='0',
+	@ProductAPIRequiresUserSettingValue ='0',
+	@LockOnProductAccessSettingValue ='0',
+	@ProductNotAvailableForRegularUserNoEmailSettingValue ='0',
+	@CLIENTIDSettingValue ='',
+	@TOKENENDPOINTSettingValue ='',
+	@APISECRETSensitiveData = 1,
+	@ClientScopeSettingValue ='',
+	@AuthenticationTypeSettingValue ='',
+	@SubjectIdSamlAttribute =''
+
+GO
