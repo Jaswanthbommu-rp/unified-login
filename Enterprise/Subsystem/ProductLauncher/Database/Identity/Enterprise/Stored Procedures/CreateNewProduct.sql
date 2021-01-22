@@ -1,4 +1,5 @@
-﻿CREATE Procedure [Enterprise].CreateNewProduct  
+﻿CREATE Procedure [Enterprise].CreateNewProduct 
+ @ProductId INT,  
  @LoginURI NVARCHAR(100),   
  @SigningCertificateThumbprint NVARCHAR(50),   
  @PropertyManagementName Nvarchar(50),  
@@ -38,7 +39,7 @@ DECLARE
  @prdTypeGUID NVARCHAR(50),    
  @prdGUID NVARCHAR(50),  
  @ProductConfiguration AS PRODUCTCONFIGURATIONTYPE,  
- @ProductId INT,  
+ 
  @ProductTypeId INT,  
  @TitleUniqueIdSettingValue NVARCHAR(2000),  
  @ParentProductTypeId INT;  
@@ -49,7 +50,7 @@ SELECT @TitleUniqueIdSettingValue = NEWID();
 SELECT @ParentProductTypeId = ProductTypeId FROM Enterprise.ProductType WHERE Name = @PropertyManagementName AND ParentProductTypeId IS NULL;  
   
 SET @ProductTypeId = (SELECT MAX(productTypeid) + 1 'ProductTypeId'  FROM [Enterprise].[ProductType]  WHERE ParentProductTypeId = @ParentProductTypeId)  
-SET @ProductId = (SELECT MAX(pr.ProductId)+1 FROM Enterprise.Product pr)  
+
   
 IF NOT EXISTS(SELECT TOP 1 1 FROM enterprise.ProductType WHERE Name = @ProductName)  
 BEGIN  

@@ -793,7 +793,8 @@ END
 GO
 
 --CREATE new product called Reporting
-exec [Enterprise].CreateNewProduct  
+exec [Enterprise].CreateNewProduct 
+	@ProductId = 67,
 	@LoginURI = '', @SigningCertificateThumbprint = '', 	
 	@PropertyManagementName = 'Administration',
 	@ProductName = 'Reporting',
