@@ -1,4 +1,4 @@
-﻿CREATE Procedure [Enterprise].CreateNewProduct 
+﻿CREATE Procedure [Enterprise].CreateNewProduct  
  @ProductId INT,  
  @LoginURI NVARCHAR(100),   
  @SigningCertificateThumbprint NVARCHAR(50),   
