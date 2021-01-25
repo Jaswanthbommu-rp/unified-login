@@ -94,7 +94,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 				case ProductEnum.IntelligentBuildingWater: return "intelligent-building-water";
 				case ProductEnum.HospitalityService: return "resident-services"; // Temp image until product has defined their final production
 				case ProductEnum.PMEDasboard: return "product-updates";
-				case ProductEnum.HOTS: return "hots";
+				case ProductEnum.HandsOnTrainingSystem: return "hots";
 				case ProductEnum.P2EngagementQueue: return "video-call-laptop";
 				case ProductEnum.AoMarketAnalytics: return "marketing-analytics";
 			}
@@ -223,7 +223,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 				case 58 : return ProductEnum.IntelligentBuildingEnergy;
 				case 59 : return ProductEnum.IntelligentBuildingWater;
 				case 60 : return ProductEnum.HospitalityService;
-				case 63: return ProductEnum.HOTS;
+				case 63: return ProductEnum.HandsOnTrainingSystem;
 			}
 
 			throw new Exception($"UPFM product with Id - {productID} is not supported in green book.");
@@ -630,7 +630,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// HOTS
 		/// </summary>
 		[Description("HOTS")]
-		HOTS = 63,
+		HandsOnTrainingSystem = 63,
 		/// <summary>
 		/// P2EngagementQueue
 		/// </summary>
@@ -889,7 +889,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// HOTS
 		/// </summary>
 		[Description("HOTS")]
-		ManageHOTSProductAccess = 63,
+		ManageHandsOnTrainingSystemProductAccess = 63,		
 
 		/// <summary>
 		/// AO Market Analytic

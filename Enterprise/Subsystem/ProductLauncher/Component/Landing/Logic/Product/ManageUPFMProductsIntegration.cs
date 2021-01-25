@@ -569,7 +569,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					{
 						superUserRoleId = gbAllRoles.First(a => a.Name.Equals("Property Admin", StringComparison.OrdinalIgnoreCase)).ID;
 					}
-					else if(_productId == (int)ProductEnum.HOTS)
+					else if(_productId == (int)ProductEnum.HandsOnTrainingSystem)
                     {
 						superUserRoleId = gbAllRoles.First(a => a.Name.Equals("Creator", StringComparison.OrdinalIgnoreCase)).ID;
 					}
@@ -809,7 +809,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			int productId = (int)ProductEnumHelper.GetProductEnumByProductCode(productCode);
 			List<UserCompaniesProperties> userCompaniesProperties = new List<UserCompaniesProperties>();
 			var companyResponse = manageUserLogin.GetUserPersonaOrganization(_userClaims.LoginName);
-			var upfmProduct = ProductEnumHelper.GetUPFMProductEnum(productId);			
+			var upfmProduct = ProductEnumHelper.GetUPFMProductEnum(productId);
 			string errorReason = string.Empty;
 			foreach (var company in companyResponse)
 			{
@@ -824,7 +824,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					InstanceId = company.OrganizationRealPageId,
 					ErrorReason = errorReason,
 					Properties = new List<Properties>()
-				};				
+				};
 				foreach (var product in propertyResponse.Records.ToList())
 				{
 					var properties = new Properties()
