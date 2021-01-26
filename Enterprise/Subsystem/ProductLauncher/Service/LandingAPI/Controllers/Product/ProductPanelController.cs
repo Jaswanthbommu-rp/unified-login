@@ -2,10 +2,12 @@
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using Swashbuckle.Swagger.Annotations;
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
@@ -128,13 +130,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		/// <param name="userPersonaId">Author user persona id who is creating or editing user</param> 
 		/// <param name="productId">Author user persona id who is creating or editing user</param>
 		/// <param name="datafilter">A datafilter used to filter the properties.</param>
+		/// <param name="upfmProperty">upfmProperty</param>
 		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
 		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
 		[SwaggerResponse(HttpStatusCode.OK, Description = "Update successful", Type = typeof(HttpResponseMessage))]
 		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
 		[Route("product/properties")]
-		[HttpGet]
-		public HttpResponseMessage GetProperties(long editorPersonaId, long userPersonaId, int productId, [FromUri]RequestParameter datafilter)
+		[HttpPost]
+		public HttpResponseMessage GetProperties(long editorPersonaId, long userPersonaId, int productId, [FromUri]RequestParameter datafilter, [FromBody] UPFMProperty upfmProperty)
 		{
 			var completeRoute = this.ControllerContext.RouteData.Route;
 			string method = completeRoute.RouteTemplate.Substring(completeRoute.RouteTemplate.IndexOf("/"));
@@ -148,7 +151,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			ListResponse result = new ListResponse();
 
 			result = _manageProductPanel.GetProductProperties(editorPersonaId, userPersonaId, productId, datafilter);
-
+			//TODO: compare result and send it back to UI
+			if (!result.IsError)
+			{
+				result = _manageProductPanel.CompareProductAndPrimaryProperties(upfmProperty, productId, result);
+			}
+				
 			if (result.IsError)
 				Request.CreateResponse(HttpStatusCode.Forbidden, result);
 
