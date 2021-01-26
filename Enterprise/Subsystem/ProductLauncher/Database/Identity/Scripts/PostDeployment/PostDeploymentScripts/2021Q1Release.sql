@@ -790,6 +790,7 @@ END
 			END
 			
             SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
 GO
 
 --CREATE new product called Reporting
@@ -826,5 +827,170 @@ exec [Enterprise].CreateNewProduct
 	@ClientScopeSettingValue ='',
 	@AuthenticationTypeSettingValue ='',
 	@SubjectIdSamlAttribute =''
+
+GO
+/***********************************
+Add UsePrimaryProperties ORG Level
+***********************************/
+DECLARE @ProductSettingTypeId INT
+DECLARE @ProductSettingId INT
+DECLARE @PRoductId INT
+DECLARE @COnfigurationId INT
+DECLARE @MasterConFigurationTypeId VARCHAR(100);
+
+
+
+SELECT @MasterConFigurationTypeId = MasterConfigurationTypeId
+FROM Enterprise.MasterConfigurationType
+WHERE Name = 'Organization';
+
+IF NOT EXISTS(SELECT 1 FROM Enterprise.MasterSettingType WHERE Name = 'UsePrimaryProperties' AND MasterConfigurationTypeId = @MasterConFigurationTypeId)
+BEGIN
+INSERT INTO Enterprise.MasterSettingType
+(Name,
+ MasterConfigurationTypeId
+)
+VALUES
+('UsePrimaryProperties',
+ @MasterConFigurationTypeId
+);
+END
+
+GO
+if not exists ( select top 1 1 from Enterprise.ProductSettingType where name = 'UsePrimaryProperties' )
+begin
+	insert into enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'UsePrimaryProperties', 'Should the product consume UPFM property', 0)
+end
+
+
+DECLARE @NOW DATETIME = GETUTCDATE(); 
+declare @productlist table ( entid int identity, productid int, productsettingtype varchar(500), productsettingvalue varchar(2000))
+insert into @productlist (productid, productsettingtype,productsettingvalue)
+Select productid,'UsePrimaryProperties','0' From enterprise.product
+	
+--select * from @productlist
+
+declare @MAX_ID INT
+declare @Current_ID INT = 1
+declare @CurrentProductId INT = 1
+
+select @MAX_ID = max(entid) from @productlist
+
+while @Current_ID <= @MAX_ID
+begin
+	declare @currentSettingType varchar(500)
+	declare @currentsettingValue varchar(2000)
+
+	select @CurrentProductId = productid , @currentSettingType = productsettingtype, @currentSettingValue = productsettingvalue
+		from @productlist where entid = @Current_ID
+
+	--print 'productid = ' + convert(varchar,@currentproductid)
+
+	if not exists (
+	select top 1 1 
+		FROM Enterprise.GlobalProductConfiguration gpc  
+		JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId  
+		JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId  
+		JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId  
+			WHERE  gpc.ProductId = @CurrentProductId  
+		AND ((@NOW BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@NOW >= gpc.FromDate AND gpc.ThruDate IS NULL))  
+		AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))  
+		AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))  
+		AND pst.Name = @currentSettingType
+		AND ps.Value = @currentsettingValue
+	)
+	begin
+		declare @currentproductconfigurationid INT
+		select distinct top 1 @currentproductconfigurationid = pc.configurationid
+			FROM Enterprise.GlobalProductConfiguration gpc  
+			JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId  
+			JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId  
+			JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId  
+				WHERE  gpc.ProductId = @CurrentProductId
+			AND ((@NOW BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@NOW >= gpc.FromDate AND gpc.ThruDate IS NULL))  
+			AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))  
+			AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))  
+		order by pc.ConfigurationId desc
+
+		if (@currentproductconfigurationid is not null)
+		begin
+			insert into enterprise.ProductSetting ( productid, ProductSettingTypeId, value, FromDate )
+				select @CurrentProductId, productsettingtypeid, @currentSettingValue, GETUTCDATE()
+					from enterprise.ProductSettingType where name = @currentSettingType
+			insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate, ThruDate )
+				values ( @currentproductconfigurationid, @@IDENTITY, GETUTCDATE(), null )
+		end
+	end
+	
+	set @Current_ID = @Current_ID + 1
+end
+
+GO
+--insert userprimaryproperties data for orgs
+DECLARE @MasterConfigurationId BIGINT;
+DECLARE @MasterConfigurationTypeId BIGINT;
+DECLARE @MasterSettingId INT;
+
+ SELECT @MasterConfigurationTypeId = MasterConfigurationTypeId
+ FROM Enterprise.MasterConfigurationType
+ WHERE Name = 'Organization';
+
+ SELECT @MasterSettingId = MasterSettingId
+ FROM Enterprise.MasterSetting AS MS
+ INNER JOIN Enterprise.MasterSettingType AS MST ON MST.MasterSettingTypeId = MS.MasterSettingTypeId
+ WHERE MST.MasterConfigurationTypeId = @MasterConfigurationTypeId
+ AND MST.Name = 'UsePrimaryProperties'
+
+ DECLARE @NOW DATETIME = GETUTCDATE(); 
+declare @orglist table ( entid int identity, partyid int)
+insert into @orglist (partyid)
+Select PartyId From enterprise.Organization
+	
+--select * from @productlist
+
+declare @MAX_ID INT
+declare @Current_ID INT = 1
+declare @Currentpartyid INT = 1
+
+select @MAX_ID = max(entid) from @orglist
+
+while @Current_ID <= @MAX_ID
+begin
+	select @Currentpartyid = partyid
+		from @orglist where entid = @Current_ID
+
+	IF NOT EXISTS ( SELECT 1 FROM Enterprise.MasterConfiguration
+					WHERE MasterConfigurationTypeId = @MasterConfigurationTypeId
+					AND AttributeId = @Currentpartyid)
+                 BEGIN
+                     INSERT INTO Enterprise.MasterConfiguration
+						(MasterConfigurationTypeId,
+						 AttributeId
+						)
+                     VALUES
+						(@MasterConfigurationTypeId,
+						 @Currentpartyid
+						);
+                     SELECT @MasterConfigurationId = SCOPE_IDENTITY();
+                 END;
+             IF NOT EXISTS
+				(
+					SELECT 1
+					FROM Enterprise.MasterConfigurationSetting
+					WHERE MasterConfigurationId = @MasterConfigurationId
+						  AND MasterSettingId = @MasterSettingId
+				)
+                 BEGIN
+                     INSERT INTO Enterprise.MasterConfigurationSetting
+						(MasterConfigurationId,
+						 MasterSettingId
+						)
+                     VALUES
+						(@MasterConfigurationId,
+						 @MasterSettingId
+						);
+                 END;
+	set @Current_ID = @Current_ID + 1
+end
 
 GO
