@@ -1,8 +1,7 @@
 ﻿CREATE PROCEDURE [Enterprise].[UpdatePersonaConfiguration]
 	@PersonaId BIGINT,
 	@ProductId INT,
-	@ProductSettingID INT,
-	@UsePrimaryProperties BIT = 0
+	@ProductSettingID INT
 AS
 BEGIN
 	SET NOCOUNT ON
@@ -17,14 +16,7 @@ BEGIN
 		ProductSettingId = @ProductSettingID
 
 	BEGIN TRY
-			UPDATE 
-				Enterprise.PersonaConfiguration
-				SET UsePrimaryProperties = @UsePrimaryProperties
-			WHERE
-				PersonaId = @PersonaId
-				AND
-				ProductId = @ProductId
-
+			
 		IF EXISTS ( SELECT TOP 1 1 FROM Enterprise.ProductSetting PS INNER JOIN Enterprise.ProductSettingType PST on PS.ProductSettingTypeId = PST.ProductSettingTypeId
 			WHERE PS.ProductSettingId = @ProductSettingID AND PST.Name = 'ProductStatus' )
 		BEGIN
