@@ -221,9 +221,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         /// </summary>
         public bool hasManageHospitalityServiceAccess { get; set; } = true;
         // <summary>
-        /// Persona Has HOTS User Access
+        /// Persona Has Hands-On Training System User Access
         /// </summary>
-        public bool hasManageHOTSAccess { get; set; } = true;
+        public bool hasManageHandsOnTrainingSystemAccess { get; set; } = true;
 
         /// <summary>
         /// Persona Has Platform Alerts Access
