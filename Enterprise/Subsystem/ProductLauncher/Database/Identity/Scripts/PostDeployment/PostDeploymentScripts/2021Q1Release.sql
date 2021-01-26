@@ -866,7 +866,7 @@ end
 DECLARE @NOW DATETIME = GETUTCDATE(); 
 declare @productlist table ( entid int identity, productid int, productsettingtype varchar(500), productsettingvalue varchar(2000))
 insert into @productlist (productid, productsettingtype,productsettingvalue)
-Select productid,'UsePrimaryProperties','0' From enterprise.product
+Select productid,'UsePrimaryProperties','1' From enterprise.product
 	
 --select * from @productlist
 

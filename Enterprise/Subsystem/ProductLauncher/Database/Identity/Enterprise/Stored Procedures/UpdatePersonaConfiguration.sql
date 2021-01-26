@@ -62,6 +62,26 @@ BEGIN
 			SELECT	@PersonaId AS Id ,
                 '' AS ErrorMessage
 		END
+
+		IF EXISTS ( SELECT TOP 1 1 FROM Enterprise.ProductSetting PS INNER JOIN Enterprise.ProductSettingType PST on PS.ProductSettingTypeId = PST.ProductSettingTypeId
+			WHERE PS.ProductSettingId = @ProductSettingID AND PST.Name = 'UsePrimaryProperties' )
+		BEGIN
+			BEGIN TRANSACTION;
+			UPDATE 
+				Enterprise.PersonaConfiguration
+				SET UsePrimaryProperties = @SettingValue
+			WHERE
+				PersonaId = @PersonaId
+				AND
+				ProductId = @ProductId
+				AND
+				ThruDate IS NULL
+			
+			COMMIT;
+			SELECT	@PersonaId AS Id ,
+                '' AS ErrorMessage
+		END
+
 	END TRY
 	BEGIN CATCH
 		ROLLBACK;

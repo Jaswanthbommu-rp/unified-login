@@ -3,7 +3,6 @@
 	,@ProductId int
 	,@FromDate datetime = NULL
 	,@ThruDate datetime = NULL
-	,@UsePrimaryProperties BIT = 0
 )
 
 AS
@@ -34,9 +33,9 @@ BEGIN
 
 					SELECT @ConfigurationId = SCOPE_IDENTITY();
 
-					INSERT INTO PersonaConfiguration (PersonaId,ConfigurationId, ProductId, FromDate, ThruDate,UsePrimaryProperties)
+					INSERT INTO PersonaConfiguration (PersonaId,ConfigurationId, ProductId, FromDate, ThruDate)
 					OUTPUT Inserted.ConfigurationId AS Id, '' AS ErrorMessage
-					VALUES(@PersonaId,@ConfigurationId,@ProductId, @FromDate,@ThruDate,@UsePrimaryProperties);
+					VALUES(@PersonaId,@ConfigurationId,@ProductId, @FromDate,@ThruDate);
 				END
 				ELSE
 				BEGIN
