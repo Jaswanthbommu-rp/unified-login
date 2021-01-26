@@ -3,6 +3,7 @@
     [PersonaId]              BIGINT   NOT NULL,
     [ConfigurationId]        INT      NOT NULL,
     [ProductId]              INT      NOT NULL,
+    [UsePrimaryProperties] TINYINT NOT NULL DEFAULT 0, 
     [FromDate]               DATETIME DEFAULT (getutcdate()) NOT NULL,
     [ThruDate]               DATETIME NULL,
     [StatusTypeId] INT NOT NULL DEFAULT 0, 

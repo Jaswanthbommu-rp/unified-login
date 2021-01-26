@@ -2,7 +2,8 @@
                                                   @OrganizationName NVARCHAR(150),
                                                   @TimeZone         NVARCHAR(200) NULL = 'Central Standard Time',
 												  @OrganizationTypeId INT,
-                                                  @OrganizationDomainId INT = 1
+                                                  @OrganizationDomainId INT = 1,
+                                                  @UsePrimaryProperties tinyint = 0
 AS
      BEGIN
          DECLARE @IdentityProviderId INT;
@@ -41,14 +42,14 @@ AS
 				 IdentityProviderTypeId,
 				 OrganizationTypeId,
                  OrganizationDomainId,
-				 CreateDate
+                 CreateDate
 				)
              VALUES
 				(@PartyId,
 				 @OrganizationName,
 				 @IdentityProviderId,
 				 @OrganizationTypeId,
-                 @OrganizationDomainId,
+                 @OrganizationDomainId,                 
 				 GETUTCDATE()
 				);
 
@@ -123,6 +124,49 @@ AS
              WHERE MST.MasterConfigurationTypeId = @MasterConfigurationTypeId
                    AND MST.Name = 'ThemeColor'
                    AND MS.Value = 'Light';
+             IF NOT EXISTS
+				(
+					SELECT 1
+					FROM Enterprise.MasterConfigurationSetting
+					WHERE MasterConfigurationId = @MasterConfigurationId
+						  AND MasterSettingId = @MasterSettingId
+				)
+                 BEGIN
+                     INSERT INTO Enterprise.MasterConfigurationSetting
+						(MasterConfigurationId,
+						 MasterSettingId
+						)
+                     VALUES
+						(@MasterConfigurationId,
+						 @MasterSettingId
+						);
+                 END;
+
+             --Setup UsePrimaryProperties
+             SELECT @MasterSettingId = MasterSettingId
+             FROM Enterprise.MasterSetting AS MS
+                  INNER JOIN Enterprise.MasterSettingType AS MST ON MST.MasterSettingTypeId = MS.MasterSettingTypeId
+             WHERE MST.MasterConfigurationTypeId = @MasterConfigurationTypeId
+                   AND MST.Name = 'UsePrimaryProperties'
+                  -- AND MS.Value = @UsePrimaryProperties;
+             IF NOT EXISTS
+				(
+					SELECT 1
+					FROM Enterprise.MasterConfiguration
+					WHERE MasterConfigurationTypeId = @MasterConfigurationTypeId
+						  AND AttributeId = @PartyId
+				)
+                 BEGIN
+                     INSERT INTO Enterprise.MasterConfiguration
+						(MasterConfigurationTypeId,
+						 AttributeId
+						)
+                     VALUES
+						(@MasterConfigurationTypeId,
+						 @PartyId
+						);
+                     SELECT @MasterConfigurationId = SCOPE_IDENTITY();
+                 END;
              IF NOT EXISTS
 				(
 					SELECT 1

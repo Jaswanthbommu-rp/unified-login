@@ -2,21 +2,26 @@
 	 @PartyId BIGINT
 	,@ConfigurationID INT = NULL
 	,@ProductId INT
+	,@UsePrimaryProperties tinyint = 0
 	,@FromDate DATETIME = NULL
 	,@ThruDate DATETIME = NULL)
 AS
 BEGIN
-	DECLARE @SchemaName varchar(25);
-	SELECT	@SchemaName = ps.Value				
-	FROM	Enterprise.GlobalProductConfiguration gpc
-			JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId
-			JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId
-			JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId
-	WHERE  gpc.ProductId = 3
-	AND (gpc.ThruDate IS NULL)
-	AND ( pc.ThruDate IS NULL)
-	AND ( ps.ThruDate IS NULL)
-	And PST.Name = 'RolesRightsSchemaName'
+	
+	DECLARE @UsePrimaryPropertiesTypeId INT
+	DECLARE @UPPConfigurationId INT
+	DECLARE @UPPProductSettingId INT
+
+	SELECT @UsePrimaryPropertiesTypeId = ProductSettingTypeId FROM Enterprise.ProductSettingType 
+	WHERE Name = 'UsePrimaryProperties'
+
+	SELECT @UPPConfigurationId = PC.ConfigurationId, @UPPProductSettingId=PC.ProductSettingId
+	FROM Enterprise.ProductSetting PS 
+	INNER JOIN Enterprise.ProductConfiguration PC on PS.ProductSettingId = PC.ProductSettingId
+	INNER JOIN Enterprise.OrganizationProduct OP on OP.ConfigurationId = PC.ConfigurationId 
+		AND OP.PartyId = @PartyId
+	INNER JOIN Enterprise.ProductSettingType PST on PS.ProductSettingTypeId = PST.ProductSettingTypeId 
+	AND PST.Name = 'UsePrimaryProperties'
 
 	IF @FromDate IS NULL
 		SET @FromDate = GETUTCDATE();
@@ -24,30 +29,34 @@ BEGIN
 	IF @ConfigurationID IS NULL
 		SELECT @ConfigurationID = ConfigurationID FROM GlobalProductConfiguration WHERE ProductId = @ProductId AND ((GETUTCDATE() BETWEEN FromDate AND ThruDate) OR (ThruDate IS NULL));
 
-	IF EXISTS(SELECT 1 FROM Enterprise.OrganizationProduct WHERE PartyId = @PartyId AND ProductId = @ProductId)
-		UPDATE Enterprise.OrganizationProduct SET ThruDate = GETUTCDATE() WHERE PartyId = @PartyId AND ProductId = @ProductId;
 	
 	BEGIN TRY
 		INSERT INTO Enterprise.OrganizationProduct ([PartyId],[ConfigurationId],[ProductId],[FromDate],[ThruDate])
-		VALUES (@PartyId,@ConfigurationID,@ProductId,@FromDate,@ThruDate);
+		VALUES (@PartyId,@ConfigurationID,@ProductId,@UsePrimaryProperties,@FromDate,@ThruDate);
 
 		SELECT	SCOPE_IDENTITY() AS Id, '' AS ErrorMessage;
+		
+		--Link Use Primary Properties setting to org product
+		DECLARE @ProductSettingIDTable TABLE (ID INT)
+
+		INSERT INTO Enterprise.ProductSetting (ProductId, ProductSettingTypeId, Value, FromDate )
+				OUTPUT inserted.ProductSettingId into @ProductSettingIDTable
+		VALUES ( @ProductId, @UsePrimaryPropertiesTypeId, @UsePrimaryProperties, GETUTCDATE() )
+
+		INSERT INTO Enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate ) 
+		SELECT @ConfigurationId, ID, GETUTCDATE() FROM @ProductSettingIDTable
 
 		IF @ProductId = 26
 		BEGIN
-			IF (@SchemaName = 'Security')
-			BEGIN
+			
 				DECLARE @UserId bigint,@UARoleId Int
 				SELECT	@UserId = UserId FROM	Ident.UserLogin WHERE	LoginName LIKE 'realpagead@%'
 				Select @UARoleId = RoleId from [Security].Role where ShortName = 'View.Amenities'
 
 				INSERT INTO Security.OrganizationDefaultRole(OrgPartyId,RoleId,CreatedBy,CreatedDate)
 				SELECT @PartyId,@UARoleId,@UserId,GETDATE()
-			END
-			ELSE
-			BEGIN
-				EXECUTE Enterprise.SetupUnifiedAmenities @PartyId;
-			END			
+			
+					
 		END
 
 	END TRY
