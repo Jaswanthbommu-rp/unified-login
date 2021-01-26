@@ -1,6 +1,7 @@
-﻿CREATE PROCEDURE [Enterprise].[DeleteOrganizationProduct] (
+﻿CREATE PROCEDURE [Enterprise].[UpdateOrganizationProduct] (
 	 @PartyId BIGINT
 	,@ProductId INT
+	,@UsePrimaryProperties tinyint = 0
 )
 AS
 BEGIN
@@ -21,11 +22,7 @@ BEGIN
 	INNER JOIN Enterprise.ProductSettingType PST on PS.ProductSettingTypeId = PST.ProductSettingTypeId 
 	AND PST.Name = 'UsePrimaryProperties'
 
-		UPDATE Enterprise.OrganizationProduct 
-		SET ThruDate = GETUTCDATE() 
-		OUTPUT INSERTED.OrganizationProductId AS Id, '' AS ErrorMessage
-		WHERE PartyId = @PartyId AND ProductId = @ProductId AND ((GETUTCDATE() BETWEEN FromDate AND ThruDate) OR (ThruDate IS NULL));
-
+	
 		IF EXISTS (
 			SELECT TOP 1 1 FROM Enterprise.ProductSetting PS 
 			WHERE PS.ProductSettingId = @UPPProductSettingId
@@ -36,7 +33,7 @@ BEGIN
 		BEGIN
 		
 			UPDATE PS 
-			SET Value = 0,ThruDate = GETUTCDATE() 
+			SET Value = @UsePrimaryProperties
 				FROM Enterprise.ProductSetting PS 
 			WHERE PS.ProductSettingId = @UPPProductSettingId
 			AND PS.ProductSettingTypeId = @UsePrimaryPropertiesTypeId

@@ -1016,6 +1016,7 @@
     <Build Include="RoleRightsManagement\Stored Procedures\ListSecurityStatus.sql" />
     <Build Include="Enterprise\Stored Procedures\ListProductGlobalSettingsBySettingType.sql" />
     <Build Include="Enterprise\Stored Procedures\CreateNewProduct.sql" />
+    <Build Include="Enterprise\Stored Procedures\UpdateOrganizationProduct.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
