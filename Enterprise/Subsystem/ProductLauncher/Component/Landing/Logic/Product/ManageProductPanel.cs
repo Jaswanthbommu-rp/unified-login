@@ -623,7 +623,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return result;
         }
 
-        public ListResponse GetProductGroupProperties(long editorPersonaId, long userPersonaId, int productId, int propertyGroupId, RequestParameter datafilter)
+        public ListResponse GetProductGroupProperties(long editorPersonaId, long userPersonaId, int productId, string propertyGroupId, RequestParameter datafilter)
         {
             ListResponse result = new ListResponse();
             IProduct product;
@@ -641,15 +641,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.AoAIRevenueManagement:
                 case (int)ProductEnum.AoRentControl:
                     var manageProductAo = new ManageProductAssetOptimization(_userClaims);
-                    result = manageProductAo.GetGroupProperties(editorPersonaId, userPersonaId, propertyGroupId);
+                    result = manageProductAo.GetGroupProperties(editorPersonaId, userPersonaId, Convert.ToInt32(propertyGroupId));
                     break;
                 case (int)ProductEnum.PortfolioManagement:
                     var productPMLogic = ManageProductFactory.GetProductLogic(ProductEnum.PortfolioManagement, editorPersonaId, userPersonaId, _userClaims);
-                    result = productPMLogic.GetProductPropertiesByGroup(propertyGroupId.ToString(), datafilter);
+                    result = productPMLogic.GetProductPropertiesByGroup(propertyGroupId, datafilter);
                     break;
                 case (int)ProductEnum.FinancialSuite:
                     var manageProductOneSiteAccounting = new ManageProductOneSiteAccounting(_userClaims);
-                    result = manageProductOneSiteAccounting.GetUserPropertyGroups(editorPersonaId, userPersonaId, datafilter);
+                    result = manageProductOneSiteAccounting.GetPropertyGroupEntities(editorPersonaId, userPersonaId, propertyGroupId, datafilter);
                     break;
                 default:
                     break;
