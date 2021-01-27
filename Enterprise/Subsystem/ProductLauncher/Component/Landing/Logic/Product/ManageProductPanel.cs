@@ -32,7 +32,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         readonly IList<ProductInternalSetting> _productInternalSettingList;
         readonly IManageUnifiedLogin _manageUnifiedLogin;
         private readonly IManageProductOneSite _manageProductOneSite;
-        
+        protected IPropertyRepository _propertyRepository;
+
         #endregion
 
         #region Constructors
@@ -52,6 +53,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             });
             _manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
             _manageProductOneSite = new ManageProductOneSite(_userClaims);
+            _propertyRepository = new PropertyRepository();
         }
         
         /// <summary>
@@ -728,155 +730,157 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="productResult"></param>
         /// <returns></returns>
         public ListResponse CompareProductAndPrimaryProperties(UPFMProperty upfmProperty, int productId, ListResponse productResult)
-		{
-            TranslatePropertyInstance translatedData;
+        {
+            if (productResult == null || productResult.Records.Count == 0)
+            {
+                return productResult;
+            }
+            TranslatePropertyInstance translatedData = new TranslatePropertyInstance();
             IManageBlueBook _manageBlueBook = new ManageBlueBook(_userClaims);
+            List<UPFMPropertyInstance> _upfmPropertyInstance = new List<UPFMPropertyInstance>();
             string productcode = ProductEnumHelper.StringValueOf((ProductEnum)productId);
-			UPFMProperty primaryPropertyIds = new UPFMProperty
-			{
-				id = upfmProperty.id.ConvertAll(d => d.ToLower())
-			};
-			//if (productId != (int)ProductEnum.UnifiedPlatform)
-   //         {
-                translatedData = _manageBlueBook.GetTranslatePropertiesFromUPFMToProductv3(primaryPropertyIds, productcode);
-            //}
-
-           
-            var productPropertyType = productResult.Records[0].GetType();
-            var foundProductPropertyIdList = new List<string>();
-
-            if (productPropertyType == typeof(ProductProperty))
-            {
-                var productList = productResult.Records.Cast<ProductProperty>();
-                foreach (var property in productList)
-                {
-                    string booksPropertyTranslation = translatedData.Data.Attributes.Select(p => p.TranslatedPropertyInstances.Where(tp => tp.PropertyInstanceSourceId == property.ID)?.FirstOrDefault())?.FirstOrDefault()?.PropertyInstanceSourceId?.ToString();
-                    if (booksPropertyTranslation != null && property.ID == booksPropertyTranslation)
-                    {
-                        property.IsAssigned = true;
-                    }
-                    else
-					{
-                        property.IsAssigned = false;
-                    }
-                       
-                }
-            }
-            else if (productPropertyType == typeof(ACProperty))
-            {
-                foreach (var property in productResult.Records.Cast<ACProperty>())
-                {
-                    string booksPropertyTranslation = translatedData.Data.Attributes.Select(p => p.TranslatedPropertyInstances.Where(tp => tp.PropertyInstanceSourceId == property.Id)?.FirstOrDefault())?.FirstOrDefault()?.PropertyInstanceSourceId?.ToString();
-                    if (booksPropertyTranslation != null && property.Id == booksPropertyTranslation)
-                    {
-                        property.IsAssigned = true;
-                    }
-                    else
-                    {
-                        property.IsAssigned = false;
-                    }
-                }
-            }
-            else if (productPropertyType == typeof(AssetGroup))
-            {
-                foreach (var property in productResult.Records.Cast<AssetGroup>())
-                {
-                    string booksPropertyTranslation = translatedData.Data.Attributes.Select(p => p.TranslatedPropertyInstances.Where(tp => tp.PropertyInstanceSourceId == property.ID)?.FirstOrDefault())?.FirstOrDefault()?.PropertyInstanceSourceId?.ToString();
-                    if (booksPropertyTranslation != null && property.ID == booksPropertyTranslation)
-                    {
-                        property.IsAssigned = true;
-                    }
-                    else
-                    {
-                        property.IsAssigned = false;
-                    }
-                }
-            }
-            else if (productPropertyType == typeof(OnSiteProperty))
-            {
-                foreach (var property in productResult.Records.Cast<OnSiteProperty>())
-                {
-                    string booksPropertyTranslation = translatedData.Data.Attributes.Select(p => p.TranslatedPropertyInstances.Where(tp => tp.PropertyInstanceSourceId == property.GetPropertyId.ToString())?.FirstOrDefault())?.FirstOrDefault()?.PropertyInstanceSourceId?.ToString();
-                    if (booksPropertyTranslation != null && property.GetPropertyId.ToString() == booksPropertyTranslation)
-                    {
-                        property.IsAssigned = true;
-                    }
-                    else
-                    {
-                        property.IsAssigned = false;
-                    }
-                }
-            }
-            else if (productPropertyType == typeof(RumPropertyGroup))
-            {
-                foreach (var property in productResult.Records.Cast<RumPropertyGroup>())
-                {
-                    string booksPropertyTranslation = translatedData.Data.Attributes.Select(p => p.TranslatedPropertyInstances.Where(tp => tp.PropertyInstanceSourceId == property.Id.ToString())?.FirstOrDefault())?.FirstOrDefault()?.PropertyInstanceSourceId?.ToString();
-                    if (booksPropertyTranslation != null && property.Id.ToString() == booksPropertyTranslation)
-                    {
-                        property.IsAssigned = true;
-                    }
-                    else
-                    {
-                        property.IsAssigned = false;
-                    }
-                }
-            }
-            else if (productPropertyType == typeof(ProductProperties))
-            {
-                foreach (var property in productResult.Records.Cast<ProductProperties>())
-                {
-                    string booksPropertyTranslation = translatedData.Data.Attributes.Select(p => p.TranslatedPropertyInstances.Where(tp => tp.PropertyInstanceSourceId == property.GetPropertyId.ToString())?.FirstOrDefault())?.FirstOrDefault()?.PropertyInstanceSourceId?.ToString();
-                    if (booksPropertyTranslation != null && property.GetPropertyId.ToString() == booksPropertyTranslation)
-                    {
-                        property.IsAssigned = true;
-                    }
-                    else
-                    {
-                        property.IsAssigned = false;
-                    }
-                }
-            }
-            else if (productPropertyType == typeof(Portfolio))
-            {
-                foreach (var property in productResult.Records.Cast<Portfolio>())
-                {
-                    string booksPropertyTranslation = translatedData.Data.Attributes.Select(p => p.TranslatedPropertyInstances.Where(tp => tp.PropertyInstanceSourceId == property.ID)?.FirstOrDefault())?.FirstOrDefault()?.PropertyInstanceSourceId?.ToString();
-                    if (booksPropertyTranslation != null && property.ID == booksPropertyTranslation)
-                    {
-                        property.IsAssigned = true;
-                    }
-                    else
-                    {
-                        property.IsAssigned = false;
-                    }
-                }
-            }
             /*
-            switch (productId)
+             * If All property selection is true, then upfmProperty == -1
+             */
+            if (upfmProperty.id[0] == "-1")
             {
-                case (int)ProductEnum.IntelligentBuildingTrash:
-                case (int)ProductEnum.IntelligentBuildingEnergy:
-                case (int)ProductEnum.IntelligentBuildingWater:
-                case (int)ProductEnum.HospitalityService:
-                case (int)ProductEnum.UnifiedPlatform:
-                case (int)ProductEnum.UnifiedAmenities:
-                    //For these products don't need to get properties from books, becuase by default these products get properties from books
-                 //   result = _manageProductOneSite.GetOneSitePropertyList(editorPersonaId, userPersonaId, assignedOnly, datafilter);
-                    break;
-                default:
-                    //For all other products, we have to call books to translate and then compare with upfmProperty and then we have to send it back
-                    /*
-                     * Get UPFMPropertyIds from product Properties
-                     * To get UPFMIDs from product PropertyIds, we have to call books to get upfmIDs 
-                     *  based on productPropertyId or all properties from company(DOUBT, TODO)
-                     *  once we get all propertyIds from books have to compare upfmProperty and productProperties list 
-                     *  assign  = true in productProperties for matching list and send back productProperties to UI
-                     * 
-                    break;
+                var booksPropertyList = _manageBlueBook.GetUPFMPropertyInstances(_userClaims.OrganizationRealPageGuid.ToString());
+                if (booksPropertyList != null)
+                {
+                    _upfmPropertyInstance = _propertyRepository.ListUPFMPropertyInstanceIdByInstanceIds(booksPropertyList);
+                    upfmProperty.id = _upfmPropertyInstance.Select(p => p.InstanceId.ToString()).ToList<string>();
+                }
             }
-        */
-                    return productResult;
+
+            UPFMProperty primaryPropertyIds = new UPFMProperty
+            {
+                id = upfmProperty.id.ConvertAll(d => d.ToLower())
+            };
+
+            if (productId == (int)ProductEnum.UnifiedPlatform)
+            {
+                var upfmProeprtiesType = productResult.Records[0].GetType();                
+                if (upfmProeprtiesType == typeof(ProductProperty))
+                {
+                    var upfmPropertyList = productResult.Records.Cast<ProductProperty>();
+                    upfmPropertyList.Where(p => primaryPropertyIds.id.Contains(p.ID)).ToList().ForEach(c => c.IsAssigned = true);
+                    upfmPropertyList.Where(p => !primaryPropertyIds.id.Contains(p.ID)).ToList().ForEach(c => c.IsAssigned = false);
+                }
+            }
+            else
+            {
+                translatedData = _manageBlueBook.GetTranslatePropertiesFromUPFMToProductv3(primaryPropertyIds, productcode);
+                var productPropertyType = productResult.Records[0].GetType();
+                var foundProductPropertyIdList = new List<string>();
+
+                if (productPropertyType == typeof(ProductProperty))
+                {
+                    var productList = productResult.Records.Cast<ProductProperty>();
+                    foreach (var property in productList)
+                    {
+                        string booksPropertyTranslation = translatedData?.Data?.Attributes?.Select(p => p.TranslatedPropertyInstances.Where(tp => tp.PropertyInstanceSourceId == property.ID)?.FirstOrDefault())?.FirstOrDefault()?.PropertyInstanceSourceId?.ToString();
+                        if (booksPropertyTranslation != null && property.ID == booksPropertyTranslation)
+                        {
+                            property.IsAssigned = true;
+                        }
+                        else
+                        {
+                            property.IsAssigned = false;
+                        }
+                    }
+                }
+                else if (productPropertyType == typeof(ACProperty))
+                {
+                    foreach (var property in productResult.Records.Cast<ACProperty>())
+                    {
+                        string booksPropertyTranslation = translatedData?.Data?.Attributes?.Select(p => p.TranslatedPropertyInstances.Where(tp => tp.PropertyInstanceSourceId == property.Id)?.FirstOrDefault())?.FirstOrDefault()?.PropertyInstanceSourceId?.ToString();
+                        if (booksPropertyTranslation != null && property.Id == booksPropertyTranslation)
+                        {
+                            property.IsAssigned = true;
+                        }
+                        else
+                        {
+                            property.IsAssigned = false;
+                        }
+                    }
+                }
+                else if (productPropertyType == typeof(AssetGroup))
+                {
+                    foreach (var property in productResult.Records.Cast<AssetGroup>())
+                    {
+                        string booksPropertyTranslation = translatedData?.Data?.Attributes?.Select(p => p.TranslatedPropertyInstances.Where(tp => tp.PropertyInstanceSourceId == property.ID)?.FirstOrDefault())?.FirstOrDefault()?.PropertyInstanceSourceId?.ToString();
+                        if (booksPropertyTranslation != null && property.ID == booksPropertyTranslation)
+                        {
+                            property.IsAssigned = true;
+                        }
+                        else
+                        {
+                            property.IsAssigned = false;
+                        }
+                    }
+                }
+                else if (productPropertyType == typeof(OnSiteProperty))
+                {
+                    foreach (var property in productResult.Records.Cast<OnSiteProperty>())
+                    {
+                        string booksPropertyTranslation = translatedData?.Data?.Attributes?.Select(p => p.TranslatedPropertyInstances.Where(tp => tp.PropertyInstanceSourceId == property.GetPropertyId.ToString())?.FirstOrDefault())?.FirstOrDefault()?.PropertyInstanceSourceId?.ToString();
+                        if (booksPropertyTranslation != null && property.GetPropertyId.ToString() == booksPropertyTranslation)
+                        {
+                            property.IsAssigned = true;
+                        }
+                        else
+                        {
+                            property.IsAssigned = false;
+                        }
+                    }
+                }
+                else if (productPropertyType == typeof(RumPropertyGroup))
+                {
+                    foreach (var property in productResult.Records.Cast<RumPropertyGroup>())
+                    {
+                        string booksPropertyTranslation = translatedData?.Data?.Attributes?.Select(p => p.TranslatedPropertyInstances.Where(tp => tp.PropertyInstanceSourceId == property.Id.ToString())?.FirstOrDefault())?.FirstOrDefault()?.PropertyInstanceSourceId?.ToString();
+                        if (booksPropertyTranslation != null && property.Id.ToString() == booksPropertyTranslation)
+                        {
+                            property.IsAssigned = true;
+                        }
+                        else
+                        {
+                            property.IsAssigned = false;
+                        }
+                    }
+                }
+                else if (productPropertyType == typeof(ProductProperties))
+                {
+                    foreach (var property in productResult.Records.Cast<ProductProperties>())
+                    {
+                        string booksPropertyTranslation = translatedData?.Data?.Attributes?.Select(p => p.TranslatedPropertyInstances.Where(tp => tp.PropertyInstanceSourceId == property.GetPropertyId.ToString())?.FirstOrDefault())?.FirstOrDefault()?.PropertyInstanceSourceId?.ToString();
+                        if (booksPropertyTranslation != null && property.GetPropertyId.ToString() == booksPropertyTranslation)
+                        {
+                            property.IsAssigned = true;
+                        }
+                        else
+                        {
+                            property.IsAssigned = false;
+                        }
+                    }
+                }
+                else if (productPropertyType == typeof(Portfolio))
+                {
+                    foreach (var property in productResult.Records.Cast<Portfolio>())
+                    {
+                        string booksPropertyTranslation = translatedData?.Data?.Attributes?.Select(p => p.TranslatedPropertyInstances.Where(tp => tp.PropertyInstanceSourceId == property.ID)?.FirstOrDefault())?.FirstOrDefault()?.PropertyInstanceSourceId?.ToString();
+                        if (booksPropertyTranslation != null && property.ID == booksPropertyTranslation)
+                        {
+                            property.IsAssigned = true;
+                        }
+                        else
+                        {
+                            property.IsAssigned = false;
+                        }
+                    }
+                }
+            }
+            return productResult;
         }
         #endregion
     }

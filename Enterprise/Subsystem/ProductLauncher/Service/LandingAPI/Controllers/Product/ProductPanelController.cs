@@ -123,6 +123,40 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			return Request.CreateResponse(HttpStatusCode.OK, result);
 		}
 
+		//TODO: Make this API as [Obsolete] after UI Integration of Primary properties
+		/// <summary>
+		/// Returns Properties  
+		/// </summary>
+		/// <param name="editorPersonaId">Assign user Id</param>
+		/// <param name="userPersonaId">Author user persona id who is creating or editing user</param> 
+		/// <param name="productId">Author user persona id who is creating or editing user</param>
+		/// <param name="datafilter">A datafilter used to filter the properties.</param>
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "Update successful", Type = typeof(HttpResponseMessage))]
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
+		[Route("product/properties")]		
+		[HttpGet]
+		public HttpResponseMessage GetProperties(long editorPersonaId, long userPersonaId, int productId, [FromUri]RequestParameter datafilter)
+		{
+			var completeRoute = this.ControllerContext.RouteData.Route;
+			string method = completeRoute.RouteTemplate.Substring(completeRoute.RouteTemplate.IndexOf("/"));
+
+			if (editorPersonaId == 0)
+				return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
+
+			if (_realpageUserId == Guid.Empty)
+				return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
+
+			ListResponse result = new ListResponse();
+			result = _manageProductPanel.GetProductProperties(editorPersonaId, userPersonaId, productId, datafilter);
+				
+			if (result.IsError)
+				Request.CreateResponse(HttpStatusCode.Forbidden, result);
+
+			return Request.CreateResponse(HttpStatusCode.OK, result);
+		}
+
 		/// <summary>
 		/// Returns Properties  
 		/// </summary>
@@ -137,7 +171,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
 		[Route("product/properties")]
 		[HttpPost]
-		public HttpResponseMessage GetProperties(long editorPersonaId, long userPersonaId, int productId, [FromUri]RequestParameter datafilter, [FromBody] UPFMProperty upfmProperty)
+		public HttpResponseMessage GetProperties(long editorPersonaId, long userPersonaId, int productId, [FromUri] RequestParameter datafilter, [FromBody] UPFMProperty upfmProperty)
 		{
 			var completeRoute = this.ControllerContext.RouteData.Route;
 			string method = completeRoute.RouteTemplate.Substring(completeRoute.RouteTemplate.IndexOf("/"));
@@ -149,14 +183,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
 
 			ListResponse result = new ListResponse();
-
 			result = _manageProductPanel.GetProductProperties(editorPersonaId, userPersonaId, productId, datafilter);
-			//TODO: compare result and send it back to UI
-			if (!result.IsError)
+
+			if (!result.IsError && result.Records.Count > 0 && upfmProperty?.id != null)
 			{
 				result = _manageProductPanel.CompareProductAndPrimaryProperties(upfmProperty, productId, result);
 			}
-				
+
 			if (result.IsError)
 				Request.CreateResponse(HttpStatusCode.Forbidden, result);
 
