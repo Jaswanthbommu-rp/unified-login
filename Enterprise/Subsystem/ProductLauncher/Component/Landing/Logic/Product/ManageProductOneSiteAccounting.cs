@@ -327,23 +327,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 List<ACCompany> cmpList = GetUserCompaniesDetails(editorPersonaId, userPersonaId, datafilter);
 
-                //foreach (var comp in cmpList)
-                //{
-                //    if(comp.isAssigned == true)
-                //    {
-                //        companyPropertiesList.ForEach(m =>
-                //        {
-                //            if (m.CompanyId == comp.Id)
-                //            {
-                //                m.DisableSelection = true;
-                //                m.IsAssigned = true;
-                //            }
-                //        });
-                //    }
-                //}
+				if (companyPropertiesList.Count(p => !string.IsNullOrEmpty(p.MConsoleId.Trim())) == 0)
+				{
+					//We have MConsole company here
+					companyPropertiesList.ForEach(x => x.Id = string.Concat(x.Id + "|" + x.CompanyId));
+				}
 
-
-                response = new ListResponse()
+				response = new ListResponse()
                 {
                     Records = companyPropertiesList.Cast<object>().ToList(),
                     TotalRows = companyPropertiesList.Count,
