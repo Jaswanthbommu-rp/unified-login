@@ -238,7 +238,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
 		[Route("product/groupproperties")]
 		[HttpGet]
-		public HttpResponseMessage GetProductGroupProperties(long editorPersonaId, long userPersonaId, int productId, int propertyGroupId, [FromUri]RequestParameter datafilter)
+		public HttpResponseMessage GetProductGroupProperties(long editorPersonaId, long userPersonaId, int productId, string propertyGroupId, [FromUri]RequestParameter datafilter)
 		{
 			var completeRoute = this.ControllerContext.RouteData.Route;
 			string method = completeRoute.RouteTemplate.Substring(completeRoute.RouteTemplate.IndexOf("/"));
@@ -249,7 +249,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			if (_realpageUserId == Guid.Empty)
 				return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
 
-			if (propertyGroupId == 0)
+			if ( string.IsNullOrEmpty(propertyGroupId) ||  propertyGroupId == "0")
 				return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid Group Id.");
 
 			ListResponse result = new ListResponse();
@@ -261,6 +261,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
 			return Request.CreateResponse(HttpStatusCode.OK, result);
 		}
+
+
 
 		/// <summary>
 		/// Returns  group Properties
