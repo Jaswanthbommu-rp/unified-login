@@ -69,7 +69,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="propertyGroupId"></param>
 		/// <param name="datafilter"></param>		
 		/// <returns>String.empty if success else error</returns>
-		ListResponse GetProductGroupProperties(long editorPersonaId, long userPersonaId, int productId, int propertyGroupId, RequestParameter datafilter);
+		ListResponse GetProductGroupProperties(long editorPersonaId, long userPersonaId, int productId, string propertyGroupId, RequestParameter datafilter);
 
 		/// <summary>
 		/// Get Product Rights
