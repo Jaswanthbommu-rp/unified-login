@@ -897,6 +897,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		[Description("RMA")]
 		AoMarketAnalytics = 66,
 
+		/// <summary>
+		/// Reporting
+		/// </summary>
+		[Description("RPT")]
+		Reporting = 67,
+
 	}
 	public enum ProductProcVersion
 	{
