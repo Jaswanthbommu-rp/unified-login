@@ -1,4 +1,5 @@
 ﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using System;
@@ -104,5 +105,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="userLoginName"></param>
 		/// <returns>String.empty if success else error</returns>
 		ListResponse GetProductLocationGroups(long editorPersonaId, long userPersonaId, int productId, RequestParameter datafilter, bool assignedOnly = false, string userLoginName = "");
+
+		/// <summary>
+		/// Compare Product and Primary properties
+		/// </summary>
+		/// <param name="upfmProperty"></param>
+		/// <param name="productId"></param>
+		/// <param name="listResponse"></param>
+		/// <returns></returns>
+		ListResponse CompareProductAndPrimaryProperties(UPFMProperty upfmProperty, int productId, ListResponse listResponse);
 	}
 }
