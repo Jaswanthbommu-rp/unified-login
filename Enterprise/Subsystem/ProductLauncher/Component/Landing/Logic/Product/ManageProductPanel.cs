@@ -21,6 +21,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ac
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ops;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Rum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
+using System.Net.Http;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -33,6 +34,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         readonly IManageUnifiedLogin _manageUnifiedLogin;
         private readonly IManageProductOneSite _manageProductOneSite;
         protected IPropertyRepository _propertyRepository;
+        private IManageBlueBook _manageBlueBook;
 
         #endregion
 
@@ -54,16 +56,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
             _manageProductOneSite = new ManageProductOneSite(_userClaims);
             _propertyRepository = new PropertyRepository();
+            _manageBlueBook = new ManageBlueBook(_userClaims);
         }
-        
-        /// <summary>
-        /// Unit Test Product panel constructor
-        /// </summary>
-        /// <param name="userClaims"></param>
-        /// <param name="repository"></param>
-        /// <param name="manageBlueBook"></param>
-        /// <param name="manageProductOneSite"></param>
-        public ManageProductPanel(DefaultUserClaim userClaims, IRepository repository, IManageBlueBook manageBlueBook, IManageProductOneSite manageProductOneSite)
+
+		/// <summary>
+		/// Unit Test Product panel constructor
+		/// </summary>
+		/// <param name="userClaims"></param>
+		/// <param name="repository"></param>
+		/// <param name="manageBlueBook"></param>
+		/// <param name="messageHandler"></param>
+		/// <param name="manageProductOneSite"></param>
+		public ManageProductPanel(DefaultUserClaim userClaims, IRepository repository, IManageBlueBook manageBlueBook, HttpMessageHandler messageHandler, IManageProductOneSite manageProductOneSite)
         {
             _userClaims = userClaims;
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
@@ -77,6 +81,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             ProductRepository productRepository = new ProductRepository(repository);
             _manageUnifiedLogin = new ManageUnifiedLogin(_userClaims, _productInternalSettingRepository, productRepository, manageBlueBook);
             _manageProductOneSite = manageProductOneSite;
+            _propertyRepository = new PropertyRepository();
+            _manageBlueBook = new ManageBlueBook(_userClaims, _productInternalSettingRepository, messageHandler);
         }
 
         #endregion
@@ -736,7 +742,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 return productResult;
             }
             TranslatePropertyInstance translatedData = new TranslatePropertyInstance();
-            IManageBlueBook _manageBlueBook = new ManageBlueBook(_userClaims);
+            //IManageBlueBook _manageBlueBook = new ManageBlueBook(_userClaims);
             List<UPFMPropertyInstance> _upfmPropertyInstance = new List<UPFMPropertyInstance>();
             string productcode = ProductEnumHelper.StringValueOf((ProductEnum)productId);
             /*

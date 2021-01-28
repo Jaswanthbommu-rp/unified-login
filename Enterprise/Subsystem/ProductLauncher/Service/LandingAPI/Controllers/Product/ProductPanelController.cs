@@ -1,6 +1,11 @@
-﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+﻿using RP.Enterprise.Foundation.DataAccess.Component;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
@@ -26,24 +31,37 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		private readonly IProductRepository _productRepository;
 		private Guid emptyGuid = Guid.Empty;		
 		private IManageProductPanel _manageProductPanel;
-        #endregion
-        #region Constructor
-        /// <summary>
-        /// Default constructor
-        /// </summary>
-        public ProductPanelController() : base()
+		private ProductInternalSettingRepository _productInternalSettingRepository;
+		private IManageBlueBook _manageBlueBook;
+		private bool _excludeTest = false;
+
+		public HttpMessageHandler MessageHandler { get; }
+		#endregion
+		#region Constructor
+		/// <summary>
+		/// Default constructor
+		/// </summary>
+		public ProductPanelController() : base()
 		{
 		}
 
 		/// <summary>
 		/// Testing Constructor
 		/// </summary>
-		/// <param name="userClaim"></param>
-		/// <param name="productRepository">Product Repository</param>
-		public ProductPanelController(DefaultUserClaim userClaim, IProductRepository productRepository)
+		/// <param name="_defaultUserClaim"></param>
+		/// <param name="repository">Product Repository</param>
+		/// <param name="repositoryResponse"></param>
+		/// <param name="messageHandler"></param>
+		/// <param name="manageProductOneSite"></param>
+		public ProductPanelController(DefaultUserClaim _defaultUserClaim, IRepository repository, IRepositoryResponse repositoryResponse, HttpMessageHandler messageHandler, IManageProductOneSite manageProductOneSite)
 		{
-			_userClaims = userClaim;
-			_productRepository = productRepository;			
+			_userClaims = _defaultUserClaim;
+			_productRepository = new ProductRepository(repository);
+			_productInternalSettingRepository = new ProductInternalSettingRepository(repository);
+			_manageBlueBook = new ManageBlueBook(_defaultUserClaim, _productInternalSettingRepository, messageHandler);
+			_manageProductPanel = new ManageProductPanel(_defaultUserClaim, repository, _manageBlueBook, messageHandler, manageProductOneSite);
+			_excludeTest = true;
+			MessageHandler = messageHandler;
 		}
 
 		/// <summary>
@@ -139,13 +157,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		[HttpGet]
 		public HttpResponseMessage GetProperties(long editorPersonaId, long userPersonaId, int productId, [FromUri]RequestParameter datafilter)
 		{
-			var completeRoute = this.ControllerContext.RouteData.Route;
-			string method = completeRoute.RouteTemplate.Substring(completeRoute.RouteTemplate.IndexOf("/"));
-
 			if (editorPersonaId == 0)
 				return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
 
-			if (_realpageUserId == Guid.Empty)
+			if (!_excludeTest && _realpageUserId == Guid.Empty)
 				return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
 
 			ListResponse result = new ListResponse();
@@ -173,13 +188,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		[HttpPost]
 		public HttpResponseMessage GetProperties(long editorPersonaId, long userPersonaId, int productId, [FromUri] RequestParameter datafilter, [FromBody] UPFMProperty upfmProperty)
 		{
-			var completeRoute = this.ControllerContext.RouteData.Route;
-			string method = completeRoute.RouteTemplate.Substring(completeRoute.RouteTemplate.IndexOf("/"));
-
 			if (editorPersonaId == 0)
 				return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
 
-			if (_realpageUserId == Guid.Empty)
+			if (!_excludeTest && _realpageUserId == Guid.Empty)
 				return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
 
 			ListResponse result = new ListResponse();
@@ -189,7 +201,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			{
 				result = _manageProductPanel.CompareProductAndPrimaryProperties(upfmProperty, productId, result);
 			}
-
 			if (result.IsError)
 				Request.CreateResponse(HttpStatusCode.Forbidden, result);
 
