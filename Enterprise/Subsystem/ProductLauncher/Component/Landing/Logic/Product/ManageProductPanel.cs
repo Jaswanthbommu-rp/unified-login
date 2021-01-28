@@ -784,8 +784,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     var productList = productResult.Records.Cast<ProductProperty>();
                     foreach (var property in productList)
                     {
-                        string booksPropertyTranslation = translatedData?.Data?.Attributes?.Select(p => p.TranslatedPropertyInstances.Where(tp => tp.PropertyInstanceSourceId == property.ID)?.FirstOrDefault())?.FirstOrDefault()?.PropertyInstanceSourceId?.ToString();
-                        if (booksPropertyTranslation != null && property.ID == booksPropertyTranslation)
+                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.ID));
+                        if (instanceExists != null)
                         {
                             property.IsAssigned = true;
                         }
@@ -799,8 +799,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     foreach (var property in productResult.Records.Cast<ACProperty>())
                     {
-                        string booksPropertyTranslation = translatedData?.Data?.Attributes?.Select(p => p.TranslatedPropertyInstances.Where(tp => tp.PropertyInstanceSourceId == property.Id)?.FirstOrDefault())?.FirstOrDefault()?.PropertyInstanceSourceId?.ToString();
-                        if (booksPropertyTranslation != null && property.Id == booksPropertyTranslation)
+                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.Id));
+                        if (instanceExists != null)
                         {
                             property.IsAssigned = true;
                         }
@@ -814,8 +814,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     foreach (var property in productResult.Records.Cast<AssetGroup>())
                     {
-                        string booksPropertyTranslation = translatedData?.Data?.Attributes?.Select(p => p.TranslatedPropertyInstances.Where(tp => tp.PropertyInstanceSourceId == property.ID)?.FirstOrDefault())?.FirstOrDefault()?.PropertyInstanceSourceId?.ToString();
-                        if (booksPropertyTranslation != null && property.ID == booksPropertyTranslation)
+                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.ID));
+                        if (instanceExists != null)
                         {
                             property.IsAssigned = true;
                         }
@@ -829,8 +829,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     foreach (var property in productResult.Records.Cast<OnSiteProperty>())
                     {
-                        string booksPropertyTranslation = translatedData?.Data?.Attributes?.Select(p => p.TranslatedPropertyInstances.Where(tp => tp.PropertyInstanceSourceId == property.GetPropertyId.ToString())?.FirstOrDefault())?.FirstOrDefault()?.PropertyInstanceSourceId?.ToString();
-                        if (booksPropertyTranslation != null && property.GetPropertyId.ToString() == booksPropertyTranslation)
+                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.GetPropertyId.ToString()));
+                        if (instanceExists != null)
                         {
                             property.IsAssigned = true;
                         }
@@ -844,8 +844,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     foreach (var property in productResult.Records.Cast<RumPropertyGroup>())
                     {
-                        string booksPropertyTranslation = translatedData?.Data?.Attributes?.Select(p => p.TranslatedPropertyInstances.Where(tp => tp.PropertyInstanceSourceId == property.Id.ToString())?.FirstOrDefault())?.FirstOrDefault()?.PropertyInstanceSourceId?.ToString();
-                        if (booksPropertyTranslation != null && property.Id.ToString() == booksPropertyTranslation)
+                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.Id.ToString()));
+                        if (instanceExists != null)
                         {
                             property.IsAssigned = true;
                         }
@@ -859,8 +859,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     foreach (var property in productResult.Records.Cast<ProductProperties>())
                     {
-                        string booksPropertyTranslation = translatedData?.Data?.Attributes?.Select(p => p.TranslatedPropertyInstances.Where(tp => tp.PropertyInstanceSourceId == property.GetPropertyId.ToString())?.FirstOrDefault())?.FirstOrDefault()?.PropertyInstanceSourceId?.ToString();
-                        if (booksPropertyTranslation != null && property.GetPropertyId.ToString() == booksPropertyTranslation)
+                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.GetPropertyId));
+                        if (instanceExists != null)
                         {
                             property.IsAssigned = true;
                         }
@@ -874,8 +874,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     foreach (var property in productResult.Records.Cast<Portfolio>())
                     {
-                        string booksPropertyTranslation = translatedData?.Data?.Attributes?.Select(p => p.TranslatedPropertyInstances.Where(tp => tp.PropertyInstanceSourceId == property.ID)?.FirstOrDefault())?.FirstOrDefault()?.PropertyInstanceSourceId?.ToString();
-                        if (booksPropertyTranslation != null && property.ID == booksPropertyTranslation)
+                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.ID));
+                        if (instanceExists != null)
                         {
                             property.IsAssigned = true;
                         }
