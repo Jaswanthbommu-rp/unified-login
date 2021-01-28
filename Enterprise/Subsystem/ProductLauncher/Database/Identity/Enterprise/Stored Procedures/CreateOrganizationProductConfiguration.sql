@@ -26,7 +26,7 @@ BEGIN
 	Where op.ProductID = @ProductId
 	And op.PartyId = @PartyId
 	And op.ThruDate IS NULL
-	And op.ConfigurationId NOT IN (select ConfigurationId from Enterprise.GlobalProductConfiguration Where ProductId = @ProductId)
+	And op.ConfigurationId NOT IN (select ConfigurationId from Enterprise.GlobalProductConfiguration Where ProductId = @ProductId and ThruDate IS NULL)
 
 	
 	 BEGIN TRY
