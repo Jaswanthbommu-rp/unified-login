@@ -5,44 +5,10 @@
 AS
 BEGIN
 	BEGIN TRY
-
-	DECLARE @UsePrimaryPropertiesTypeId INT
-	DECLARE @UPPConfigurationId INT
-	DECLARE @UPPProductSettingId INT
-
-	SELECT @UsePrimaryPropertiesTypeId = ProductSettingTypeId FROM Enterprise.ProductSettingType 
-	WHERE Name = 'UsePrimaryProperties'
-
-	SELECT @UPPConfigurationId = PC.ConfigurationId, @UPPProductSettingId=PC.ProductSettingId
-	FROM Enterprise.ProductSetting PS 
-	INNER JOIN Enterprise.ProductConfiguration PC on PS.ProductSettingId = PC.ProductSettingId
-	INNER JOIN Enterprise.OrganizationProduct OP on OP.ConfigurationId = PC.ConfigurationId 
-		AND OP.PartyId = @PartyId
-	INNER JOIN Enterprise.ProductSettingType PST on PS.ProductSettingTypeId = PST.ProductSettingTypeId 
-	AND PST.Name = 'UsePrimaryProperties'
-
 		UPDATE Enterprise.OrganizationProduct 
 		SET ThruDate = GETUTCDATE() 
 		OUTPUT INSERTED.OrganizationProductId AS Id, '' AS ErrorMessage
 		WHERE PartyId = @PartyId AND ProductId = @ProductId AND ((GETUTCDATE() BETWEEN FromDate AND ThruDate) OR (ThruDate IS NULL));
-
-		IF EXISTS (
-			SELECT TOP 1 1 FROM Enterprise.ProductSetting PS 
-			WHERE PS.ProductSettingId = @UPPProductSettingId
-			AND PS.ProductSettingTypeId = @UsePrimaryPropertiesTypeId
-			AND PS.ProductId = @ProductId
-			AND ThruDate IS NULL
-		)
-		BEGIN
-		
-			UPDATE PS 
-			SET Value = 0,ThruDate = GETUTCDATE() 
-				FROM Enterprise.ProductSetting PS 
-			WHERE PS.ProductSettingId = @UPPProductSettingId
-			AND PS.ProductSettingTypeId = @UsePrimaryPropertiesTypeId
-			AND PS.ProductId = @ProductId
-		END
-
 	END TRY
 	BEGIN CATCH
 		 DECLARE @ErrorLogID INT;
