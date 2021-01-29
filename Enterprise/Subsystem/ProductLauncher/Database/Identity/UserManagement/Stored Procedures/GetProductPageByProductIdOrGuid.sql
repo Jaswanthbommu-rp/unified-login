@@ -18,6 +18,7 @@ BEGIN
 		,umpp.IsActive
 		,umpp.[CreatedBy]
 		,umpp.[CreatedDate]
+		,umpp.ProductPageTypeId  
 	FROM
 		[UserManagement].[ProductPage] umpp
 	INNER JOIN 	[Enterprise].[Product] ep	On
