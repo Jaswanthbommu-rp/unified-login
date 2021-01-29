@@ -937,12 +937,7 @@ DECLARE @NOW DATETIME = GETUTCDATE();
  FROM Enterprise.MasterConfigurationType
  WHERE Name = 'Organization';
 
- --SELECT @MasterSettingId = MasterSettingId
- --FROM Enterprise.MasterSetting AS MS
- --INNER JOIN Enterprise.MasterSettingType AS MST ON MST.MasterSettingTypeId = MS.MasterSettingTypeId
- --WHERE MST.MasterConfigurationTypeId = @MasterConfigurationTypeId
- --AND MST.Name = 'UsePrimaryProperties'
-
+ 
 	Select @MasterSettingTypeId = MasterSettingTypeId from Enterprise.MasterSettingType where Name = 'UsePrimaryProperties'
 
 				IF NOT EXISTS (
@@ -991,6 +986,12 @@ insert into @orglist (partyid)
 Select PartyId From enterprise.Organization
 	
 --select * from @productlist
+SELECT @MasterSettingId = MasterSettingId
+ FROM Enterprise.MasterSetting AS MS
+ INNER JOIN Enterprise.MasterSettingType AS MST ON MST.MasterSettingTypeId = MS.MasterSettingTypeId
+ WHERE MST.MasterConfigurationTypeId = @MasterConfigurationTypeId
+ AND MST.Name = 'UsePrimaryProperties'
+ AND MS.Value = '0'
 
 declare @MAX_ID INT
 declare @Current_ID INT = 1
@@ -1003,7 +1004,7 @@ begin
 	select @Currentpartyid = partyid
 		from @orglist where entid = @Current_ID
 
-	IF NOT EXISTS ( SELECT 1 FROM Enterprise.MasterConfiguration
+		IF NOT EXISTS ( SELECT 1 FROM Enterprise.MasterConfiguration
 					WHERE MasterConfigurationTypeId = @MasterConfigurationTypeId
 					AND AttributeId = @Currentpartyid)
                  BEGIN
@@ -1019,6 +1020,13 @@ begin
 						);
                      SELECT @MasterConfigurationId = SCOPE_IDENTITY();
                  END;
+				 ELSE
+				BEGIN
+				SELECT @MasterConfigurationId = MasterConfigurationId FROM Enterprise.MasterConfiguration
+					WHERE MasterConfigurationTypeId = @MasterConfigurationTypeId
+					AND AttributeId = @Currentpartyid
+				END
+
              IF NOT EXISTS
 				(
 					SELECT 1
