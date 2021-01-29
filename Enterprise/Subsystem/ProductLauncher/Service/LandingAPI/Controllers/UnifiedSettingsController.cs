@@ -23,6 +23,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
     {
         #region Private variables
         IRepositoryResponse _repositoryResponse = new RepositoryResponse();
+        private IManageOrganization _manageOrganization;
         #endregion
 
         #region Constructor
@@ -47,10 +48,59 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [SwaggerResponseExamples(typeof(IList<Setting>), typeof(SettingsExample))]
         [Route("companines/{companyId}/settings")]
         [HttpGet]
-        public HttpResponseMessage GetSettings(string category, long companyId, )
+        public HttpResponseMessage GetSettings(string category, Guid companyId, string[] includes)
         {
-        }
-            #endregion
+            Organization organization = new Organization();
+            IManageOrganization manageOrganization = new ManageOrganization(_userClaims);
+            IApiError apiError;
+
+            if (companyId != null)
+            {
+                Organization org = _manageOrganization.GetOrganization(companyId);
+                if (org == null)
+                {
+                    apiError = new ApiError()
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        Status = (short)HttpStatusCode.BadRequest,
+                        Title = "Company not found.",
+                        Detail = $"Company not found for Id: {companyId}",
+                        Links = string.Empty,
+                        Code = "Settings.GetSettings.2",
+                        Source = new ApiErrorSource()
+                        {
+                            JsonPointer = string.Empty,
+                            Parameter = string.Empty
+                        }
+                    };
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, apiError);
+                }
+
+                bool IsValid = _manageOrganization.ValidateOrganization(_userClaims.OrganizationMasterId, _userClaims.UserRealPageGuid, org.RealPageId);
+                if (!IsValid)
+                {
+                    apiError = new ApiError()
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        Status = (short)HttpStatusCode.BadRequest,
+                        Title = "User is not authorized.",
+                        Detail = $"Logged in user is not authorized to view security settings for {org.Name}.",
+                        Links = string.Empty,
+                        Code = "Settings.GetSettings.3",
+                        Source = new ApiErrorSource()
+                        {
+                            JsonPointer = string.Empty,
+                            Parameter = string.Empty
+                        }
+                    };
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, apiError);
+                }
+            }
+
+            
 
         }
+        #endregion
+
+    }
 }
