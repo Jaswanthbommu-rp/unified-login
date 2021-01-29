@@ -60,6 +60,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         protected GbProductMap BlueBookGbProductMap { get; set; }
 
+        /// <summary>
+        /// Productudm source code
+        /// </summary>
+        protected string _udmSourceCode = "";
+
+        /// <summary>
+        /// Product Details
+        /// </summary>
+        protected GbProductMap _productDetails = new GbProductMap();
+
+        /// <summary>
+        /// Product Repository
+        /// </summary>
+        protected IProductRepository _productRepository = new ProductRepository();
         #endregion
 
         #region Ctor
