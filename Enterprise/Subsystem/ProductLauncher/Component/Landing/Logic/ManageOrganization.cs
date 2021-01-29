@@ -684,7 +684,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 		#endregion
 
-		#region Edit Property
+		#region Property
 		#region GetPropertyForCompany
 		public List<UPFMPropertyInstance> GetPropertyByInstanceId(Guid propertyInstanceId)
         {
@@ -714,6 +714,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 throw new Exception("Invalid parameter propertyName.");
             }
             return _propertyRepository.UpdateProperty(propertyInstanceId, propertyName);
+        }
+        #endregion
+
+        #region AddProperty
+        /// <summary>
+        /// Add Property For Organization
+        /// </summary>
+        /// <param name="property">property</param>
+        /// <param name="companyInstanceID">companyInstanceID</param>
+        /// <returns></returns>
+        public RepositoryResponse AddPropertyForOrganization(UPFMPropertyInstance property, Guid companyInstanceID)
+        {
+            var response = _propertyRepository.InsertUPFMPropertyInstance(property);
+            property.InstanceId = response.RealPageId;
+            if (response.ErrorMessage.Length == 0)
+            {
+                bool booksReponse = AddPropetyToBooks(property, companyInstanceID);
+                if(!booksReponse)
+				{
+                    response.ErrorMessage = "Error while adding data to Books";
+				}                
+            }
+            return response;            
         }
         #endregion
         #endregion
@@ -957,6 +980,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				property.PropertyAddress = property?.Address + "," + property?.City + "," + property?.State + "," + property?.PostalCode;
             }
             return propertySetup;
+        }
+
+        private bool AddPropetyToBooks(UPFMPropertyInstance property, Guid companyInstanceID)
+        {
+            // insert to books
+            PropertyInstance pi = new PropertyInstance()
+            {
+                PropertyName = property.Name,
+                CompanyInstanceSourceId = companyInstanceID.ToString(),
+                PropertyInstanceSourceId = property.InstanceId.ToString(),
+                CustomerPropertyId = Convert.ToInt32(!string.IsNullOrEmpty(property.CustomerPropertyId) ? property.CustomerPropertyId : "0"),
+                CustomerEnvironment = property.Domain,
+                Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
+                IsActive = true,
+                Address = new InstanceAddress()
+                {
+                    Address = property.Address,
+                    City = property.City,
+                    State = property.State,
+                    PostalCode = property.PostalCode,
+                    County = property.County,
+                    Country = property.Country,
+                },
+                ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Property Creation"
+            };
+            return _manageBlueBook.AddBooksGreenBookPropertyInstanceFromProvisioning(pi);
         }
         #endregion
     }

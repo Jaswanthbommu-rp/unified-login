@@ -25,6 +25,7 @@ using System.Runtime.Caching;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -1040,6 +1041,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         }
         #endregion
 
+        #region Property
+
         #region Get Properties for a Organization
         /// <summary>
         /// Get Properties for a Organization
@@ -1092,7 +1095,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             output.pagingSummary = pagingSummary;
             return Request.CreateResponse(HttpStatusCode.OK, output);
         }
-		#endregion
+        #endregion
 
 		#region AuditCompanyProperties
 		/// <summary>
@@ -1251,7 +1254,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         [HttpPut]
         public HttpResponseMessage UpdatePropertyForOrganization(Guid propertyInstanceId, string propertyName)
-        {            
+        {
             if ((propertyInstanceId == Guid.Empty) || (propertyInstanceId == null))
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: propertyInstanceId");
@@ -1263,8 +1266,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
             var currentProperty = _manageOrganization.GetPropertyByInstanceId(propertyInstanceId);
 
-            if(currentProperty != null && currentProperty.FirstOrDefault().Name.ToLower() != propertyName.ToLower())
-			{
+            if (currentProperty != null && currentProperty.FirstOrDefault().Name.ToLower() != propertyName.ToLower())
+            {
                 _repositoryResponse = _manageOrganization.UpdateProperty(propertyInstanceId, propertyName);
 
                 if (_repositoryResponse.Id == 0)
@@ -1274,16 +1277,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 if (_repositoryResponse.Id > 0)
                 {
                     PropertyInstanceAck ack = new PropertyInstanceAck
-                    {                        
+                    {
                         PropertyInstanceSourceId = propertyInstanceId.ToString(),
                         Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
                         PropertyName = propertyName,
                         ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)
-                        
+
                     };
                     _manageBlueBook.AcknowledgePropertyUpdate(ack);
                 }
-            }            
+            }
             return Request.CreateResponse(HttpStatusCode.OK, propertyInstanceId);
         }
 
@@ -1361,6 +1364,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         }
         #endregion
 
+        #region AddPropertyInstance
+        /// <summary>
+        ///Add Properties for a Organization
+        /// </summary>
+        /// <param name="property">property</param>
+        /// <param name="companyInstanceID">companyInstanceID</param>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [Route("CompanySetup/CompanyProperty")]
+        [AuthorizeScope("companyfunctions", "rplandingapi")]
+        [HttpPost]
+        public HttpResponseMessage AddPropertyForOrganization([FromBody] UPFMPropertyInstance property, Guid companyInstanceID)
+        {
+            if ((companyInstanceID == Guid.Empty) || (companyInstanceID == null))
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: companyInstanceID");
+            }
+            if (property == null)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Null parameter: Property Object");
+            }
+            _repositoryResponse = _manageOrganization.AddPropertyForOrganization(property, companyInstanceID);
+            return Request.CreateResponse(HttpStatusCode.OK, _repositoryResponse);
+        }
+        #endregion
+        #endregion
 
 
         #region Private functions
