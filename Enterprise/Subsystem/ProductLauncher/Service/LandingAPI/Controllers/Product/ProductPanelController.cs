@@ -1,11 +1,18 @@
-﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+﻿using RP.Enterprise.Foundation.DataAccess.Component;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using Swashbuckle.Swagger.Annotations;
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
@@ -24,24 +31,37 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		private readonly IProductRepository _productRepository;
 		private Guid emptyGuid = Guid.Empty;		
 		private IManageProductPanel _manageProductPanel;
-        #endregion
-        #region Constructor
-        /// <summary>
-        /// Default constructor
-        /// </summary>
-        public ProductPanelController() : base()
+		private ProductInternalSettingRepository _productInternalSettingRepository;
+		private IManageBlueBook _manageBlueBook;
+		private bool _excludeTest = false;
+
+		public HttpMessageHandler MessageHandler { get; }
+		#endregion
+		#region Constructor
+		/// <summary>
+		/// Default constructor
+		/// </summary>
+		public ProductPanelController() : base()
 		{
 		}
 
 		/// <summary>
 		/// Testing Constructor
 		/// </summary>
-		/// <param name="userClaim"></param>
-		/// <param name="productRepository">Product Repository</param>
-		public ProductPanelController(DefaultUserClaim userClaim, IProductRepository productRepository)
+		/// <param name="_defaultUserClaim"></param>
+		/// <param name="repository">Product Repository</param>
+		/// <param name="repositoryResponse"></param>
+		/// <param name="messageHandler"></param>
+		/// <param name="manageProductOneSite"></param>
+		public ProductPanelController(DefaultUserClaim _defaultUserClaim, IRepository repository, IRepositoryResponse repositoryResponse, HttpMessageHandler messageHandler, IManageProductOneSite manageProductOneSite)
 		{
-			_userClaims = userClaim;
-			_productRepository = productRepository;			
+			_userClaims = _defaultUserClaim;
+			_productRepository = new ProductRepository(repository);
+			_productInternalSettingRepository = new ProductInternalSettingRepository(repository);
+			_manageBlueBook = new ManageBlueBook(_defaultUserClaim, _productInternalSettingRepository, messageHandler);
+			_manageProductPanel = new ManageProductPanel(_defaultUserClaim, repository, _manageBlueBook, messageHandler, manageProductOneSite);
+			_excludeTest = true;
+			MessageHandler = messageHandler;
 		}
 
 		/// <summary>
@@ -121,6 +141,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			return Request.CreateResponse(HttpStatusCode.OK, result);
 		}
 
+		//TODO: Make this API as [Obsolete] after UI Integration of Primary properties
 		/// <summary>
 		/// Returns Properties  
 		/// </summary>
@@ -132,23 +153,54 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
 		[SwaggerResponse(HttpStatusCode.OK, Description = "Update successful", Type = typeof(HttpResponseMessage))]
 		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
-		[Route("product/properties")]
+		[Route("product/properties")]		
 		[HttpGet]
 		public HttpResponseMessage GetProperties(long editorPersonaId, long userPersonaId, int productId, [FromUri]RequestParameter datafilter)
 		{
-			var completeRoute = this.ControllerContext.RouteData.Route;
-			string method = completeRoute.RouteTemplate.Substring(completeRoute.RouteTemplate.IndexOf("/"));
-
 			if (editorPersonaId == 0)
 				return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
 
-			if (_realpageUserId == Guid.Empty)
+			if (!_excludeTest && _realpageUserId == Guid.Empty)
 				return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
 
 			ListResponse result = new ListResponse();
+			result = _manageProductPanel.GetProductProperties(editorPersonaId, userPersonaId, productId, datafilter);
+				
+			if (result.IsError)
+				Request.CreateResponse(HttpStatusCode.Forbidden, result);
 
+			return Request.CreateResponse(HttpStatusCode.OK, result);
+		}
+
+		/// <summary>
+		/// Returns Properties  
+		/// </summary>
+		/// <param name="editorPersonaId">Assign user Id</param>
+		/// <param name="userPersonaId">Author user persona id who is creating or editing user</param> 
+		/// <param name="productId">Author user persona id who is creating or editing user</param>
+		/// <param name="datafilter">A datafilter used to filter the properties.</param>
+		/// <param name="upfmProperty">upfmProperty</param>
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "Update successful", Type = typeof(HttpResponseMessage))]
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
+		[Route("product/properties")]
+		[HttpPost]
+		public HttpResponseMessage GetProperties(long editorPersonaId, long userPersonaId, int productId, [FromUri] RequestParameter datafilter, [FromBody] UPFMProperty upfmProperty)
+		{
+			if (editorPersonaId == 0)
+				return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
+
+			if (!_excludeTest && _realpageUserId == Guid.Empty)
+				return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
+
+			ListResponse result = new ListResponse();
 			result = _manageProductPanel.GetProductProperties(editorPersonaId, userPersonaId, productId, datafilter);
 
+			if (!result.IsError && result.Records.Count > 0 && upfmProperty?.id != null)
+			{
+				result = _manageProductPanel.CompareProductAndPrimaryProperties(upfmProperty, productId, result);
+			}
 			if (result.IsError)
 				Request.CreateResponse(HttpStatusCode.Forbidden, result);
 

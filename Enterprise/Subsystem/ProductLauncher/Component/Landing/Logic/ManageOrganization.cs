@@ -60,7 +60,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _productRepository = new ProductRepository(repository);
             _defaultUserClaim = userClaim;
             _manageBlueBook = new ManageBlueBook(_defaultUserClaim, _productInternalSettingRepository, messageHandler);
-            _manageProductPanel = new ManageProductPanel(_defaultUserClaim, repository, _manageBlueBook, null);
+            _manageProductPanel = new ManageProductPanel(_defaultUserClaim, repository, _manageBlueBook, messageHandler, null);
             _propertyRepository = new PropertyRepository(repository);
         }
 
@@ -78,7 +78,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _productRepository = new ProductRepository(repository);
             _defaultUserClaim = userClaim;
             _manageBlueBook = new ManageBlueBook(_defaultUserClaim, _productInternalSettingRepository, messageHandler);
-            _manageProductPanel = new ManageProductPanel(_defaultUserClaim, repository, _manageBlueBook, manageProductOneSite);
+            _manageProductPanel = new ManageProductPanel(_defaultUserClaim, repository, _manageBlueBook,messageHandler, manageProductOneSite);
             _propertyRepository = new PropertyRepository(repository);
         }
 
