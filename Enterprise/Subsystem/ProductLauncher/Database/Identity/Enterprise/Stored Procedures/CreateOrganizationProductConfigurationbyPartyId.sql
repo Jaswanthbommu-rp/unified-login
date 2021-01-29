@@ -36,7 +36,7 @@ BEGIN
          FROM Enterprise.ProductSetting  
          WHERE ProductSettingId = @ProductSettingID  
   		 
-		INSERT INTO @ProductConfigurationIds ( ConfigurationId ) 
+		INSERT INTO @ProductConfigurationIds ( ProductConfigurationId ) 
 		SELECT PC.ConfigurationId
 		FROM Enterprise.ProductSetting PS 
 		INNER JOIN Enterprise.ProductConfiguration PC on 

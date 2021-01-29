@@ -838,7 +838,7 @@ DECLARE @PRoductId INT
 DECLARE @COnfigurationId INT
 DECLARE @MasterConFigurationTypeId VARCHAR(100);
 
-
+DECLARE @NOW DATETIME = GETUTCDATE(); 
 
 SELECT @MasterConFigurationTypeId = MasterConfigurationTypeId
 FROM Enterprise.MasterConfigurationType
@@ -930,18 +930,62 @@ GO
 DECLARE @MasterConfigurationId BIGINT;
 DECLARE @MasterConfigurationTypeId BIGINT;
 DECLARE @MasterSettingId INT;
+Declare @MasterSettingTypeId INT;
+DECLARE @NOW DATETIME = GETUTCDATE(); 
 
  SELECT @MasterConfigurationTypeId = MasterConfigurationTypeId
  FROM Enterprise.MasterConfigurationType
  WHERE Name = 'Organization';
 
- SELECT @MasterSettingId = MasterSettingId
- FROM Enterprise.MasterSetting AS MS
- INNER JOIN Enterprise.MasterSettingType AS MST ON MST.MasterSettingTypeId = MS.MasterSettingTypeId
- WHERE MST.MasterConfigurationTypeId = @MasterConfigurationTypeId
- AND MST.Name = 'UsePrimaryProperties'
+ --SELECT @MasterSettingId = MasterSettingId
+ --FROM Enterprise.MasterSetting AS MS
+ --INNER JOIN Enterprise.MasterSettingType AS MST ON MST.MasterSettingTypeId = MS.MasterSettingTypeId
+ --WHERE MST.MasterConfigurationTypeId = @MasterConfigurationTypeId
+ --AND MST.Name = 'UsePrimaryProperties'
 
- DECLARE @NOW DATETIME = GETUTCDATE(); 
+	Select @MasterSettingTypeId = MasterSettingTypeId from Enterprise.MasterSettingType where Name = 'UsePrimaryProperties'
+
+				IF NOT EXISTS (
+                    SELECT 1
+                    FROM Enterprise.MasterSetting
+                    WHERE Value = '0'
+					AND MasterSettingTypeId = @MasterSettingTypeId
+                )
+                    BEGIN
+                        INSERT INTO Enterprise.MasterSetting
+                        (MasterSettingTypeId, 
+                         Value, 
+                         FromDate
+                        )
+                        VALUES
+                        (@MasterSettingTypeId, 
+                         '0', 
+                         @NOW
+                        );                      
+                END;
+      
+
+				IF NOT EXISTS
+                (
+                    SELECT 1
+                    FROM Enterprise.MasterSetting
+                    WHERE Value = '1'
+					AND MasterSettingTypeId = @MasterSettingTypeId
+                )
+                BEGIN
+                        INSERT INTO Enterprise.MasterSetting
+                        (MasterSettingTypeId, 
+                         Value, 
+                         FromDate
+                        )
+                        VALUES
+                        (@MasterSettingTypeId, 
+                         '1', 
+                         @NOW
+                        );
+				END;
+
+ 
 declare @orglist table ( entid int identity, partyid int)
 insert into @orglist (partyid)
 Select PartyId From enterprise.Organization
@@ -965,11 +1009,13 @@ begin
                  BEGIN
                      INSERT INTO Enterprise.MasterConfiguration
 						(MasterConfigurationTypeId,
-						 AttributeId
+						 AttributeId,
+						 FromDate
 						)
                      VALUES
 						(@MasterConfigurationTypeId,
-						 @Currentpartyid
+						 @Currentpartyid,
+						 @NOW
 						);
                      SELECT @MasterConfigurationId = SCOPE_IDENTITY();
                  END;
