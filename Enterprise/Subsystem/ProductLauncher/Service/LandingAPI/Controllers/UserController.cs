@@ -960,6 +960,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			return Request.CreateResponse(HttpStatusCode.OK, userRights);
 		}
 
+
+        /// <summary>
+        /// Used to delete a users App Auth token setup
+        /// </summary>
+        /// <param name="realPageId"></param>
+        /// <returns></returns>
+        //[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+        //[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        //[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        //[SwaggerResponse(HttpStatusCode.OK, Description = "App Auth token deleted")]
+        //[SwaggerOperation("DeleteUserAppAuthToken")]
+        //[Route("multifactorauth/appauth/token/user/{realPageId}")]
+        //[HttpDelete]
+        //[AuthorizeScope("rplandingapi")]
+        //public HttpResponseMessage DeleteUserAppAuthToken(Guid realPageId)
+        //{
+        //    ITwoFactorLogic _twoFactorLogic = new TwoFactorLogic(_userClaims, null);
+        //    int result = _twoFactorLogic.DeleteUserAppAuthToken(realPageId);
+        //    if (result == 0)
+        //    {
+        //        return Request.CreateResponse(HttpStatusCode.BadRequest, "No records deleted");
+        //    }
+		//
+        //    return Request.CreateResponse(HttpStatusCode.OK);
+        //}
+
 		#endregion
 	}
 

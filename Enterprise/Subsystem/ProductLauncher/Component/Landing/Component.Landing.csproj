@@ -202,6 +202,7 @@
     <Compile Include="Logic\Interfaces\IManageProduct.cs" />
     <Compile Include="Logic\Interfaces\IManageSecuritySettings.cs" />
     <Compile Include="Logic\Interfaces\IManageUPFMProductsIntegration.cs" />
+    <Compile Include="Logic\Interfaces\ITwoFactorLogic.cs" />
     <Compile Include="Logic\ManageUserLoginPersona.cs" />
     <Compile Include="Logic\ProductIntegration\Model\IProductProperties.cs" />
     <Compile Include="Logic\ProductIntegration\Model\ClickPay\ClickPayOrganization.cs" />
@@ -334,6 +335,7 @@
     <Compile Include="Logic\Security\IManageSecurity.cs" />
     <Compile Include="Logic\Security\ManageSecurity.cs" />
     <Compile Include="Logic\Enterprise\Helpers\TokenHelper.cs" />
+    <Compile Include="Logic\TwoFactorLogic.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repository\BaseRepository.cs" />
     <Compile Include="Repository\Clients\ClientsSetupRepository.cs" />
@@ -379,6 +381,7 @@
     <Compile Include="Repository\Interfaces\ISharedDataRepository.cs" />
     <Compile Include="Repository\Interfaces\IStreetAddressRepository.cs" />
     <Compile Include="Repository\Interfaces\ITelecommunicationNumberRepository.cs" />
+    <Compile Include="Repository\Interfaces\ITwoFactorRepository.cs" />
     <Compile Include="Repository\Interfaces\IUnifiedLoginRepository.cs" />
     <Compile Include="Repository\Interfaces\IUserLoginRepository.cs" />
     <Compile Include="Repository\Interfaces\IUserRepository.cs" />
@@ -386,6 +389,7 @@
     <Compile Include="Repository\Interfaces\IUserTokenRepository.cs" />
     <Compile Include="Repository\Interfaces\IStatusTypeRepository.cs" />
     <Compile Include="Repository\Interfaces\IUserLoginPersonaRepository.cs" />
+    <Compile Include="Repository\TwoFactorRepository.cs" />
     <Compile Include="Repository\StatusTypeRepository.cs" />
     <Compile Include="Repository\OmniChannelRepository.cs" />
     <Compile Include="Repository\OrganizationProductRepository.cs" />
