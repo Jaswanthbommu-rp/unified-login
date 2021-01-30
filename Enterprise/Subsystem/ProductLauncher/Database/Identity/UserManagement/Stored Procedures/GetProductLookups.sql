@@ -9,5 +9,6 @@ AS
 BEGIN
  SELECT ProductTypeId, Name, Description from Enterprise.ProductType with (nolock) where ParentProductTypeId is null;  
  SELECT ControlTypeId, Name, Description from [UserManagement].[ControlType] with (nolock);  
- SELECT ProductPageTypeId, value, Description from [UserManagement].[ProductPageType] with (nolock);  
+ SELECT ProductPageTypeId, value, Description from [UserManagement].[ProductPageType] with (nolock);
+ SELECT ProductSettingTypeId,Name,Description,SensitiveData from Enterprise.ProductSettingType with (nolock);
 END
