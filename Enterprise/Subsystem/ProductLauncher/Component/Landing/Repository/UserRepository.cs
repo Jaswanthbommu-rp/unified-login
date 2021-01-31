@@ -2508,6 +2508,38 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
             return repositoryResponse;
         }
+
+        /// <summary>
+        /// Update AO user profile
+        /// </summary>
+        /// <param name="productUserAccountDetails"></param>
+        /// <param name="editorPersonaId"></param>
+        /// <returns></returns>
+        public void UpdateAOUserProfileBatch(ProductUserAccountDetails productUserAccountDetails)
+        {
+            using (var repository = GetRepository())
+            {
+                var userProfile = GetUserDetails(productUserAccountDetails.PersonaId);
+                Persona userPersona = _managePersona.GetPersona(productUserAccountDetails.PersonaId);
+
+                ProductBatch pb = new ProductBatch()
+                {
+                    ProductId = (int)ProductEnum.AssetOptimizer,
+                    StatusTypeId = 2,
+                    RetryCount = 0,
+                    InputJson = new RolePropertyList() { PropertyList = new List<string>(), RoleList = new List<string>(), IsAssigned = true }
+                };
+
+                var productBatch = new List<ProductBatch>();
+                productBatch.Add(pb);
+
+                this.SaveUserProductBatchData(repository, null, productUserAccountDetails.LoggedInUserPersonaId,
+                        productUserAccountDetails.PersonaId,
+                        productUserAccountDetails.LoggedInUserRealPageId, userPersona.Organization.RealPageId, null,
+                        (int)BatchProcessType.ProfileUpdate, productBatch, productUserAccountDetails.SubProducts, userProfile.UserRoleTypeId, true);
+            }
+        }
+
         /// <summary>
 		/// Get the an UserEmployee by UserLoginPersonaId and OrganizationPartyId
 		/// </summary>
@@ -3362,7 +3394,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             int batchProcessTypeId,
             IList<ProductBatch> productBatchData,
             IList<string> aoProductsAvailableForUser,
-            int userTypeId)
+            int userTypeId,
+            bool mtProfileUpdate = false)
         {
             string saveProductBatchError = "Save Product User Profile/Type Error: ";
             string aoInputJsonString = string.Empty;
@@ -3624,6 +3657,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
             else if (batchProcessTypeId == (int)BatchProcessType.ProfileUpdate)
             {
+
+                if(mtProfileUpdate == true && aoProductsAvailableForUser.Count > 0)
+                {
+                    ProductBatch pb = new ProductBatch()
+                    {
+                        ProductId = (int)ProductEnum.AssetOptimizer,
+                        StatusTypeId = 5,
+                        RetryCount = 0,
+                        InputJson = new RolePropertyList() { PropertyList = new List<string>(), RoleList = new List<string>(), IsAssigned = true }
+                    };
+                    productListToCreate.Add(pb);
+                }
+
                 if (userProducts?.Count > 0)
                 {
                     foreach (var product in userProducts)
@@ -3644,7 +3690,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 if (!productBatchData.Any(p => p.ProductId == (int)ProductEnum.ClientPortal))
                 {
-                    if (!(userTypeId == (int)UserRoleType.UserNoEmail))
+                    if (!(userTypeId == (int)UserRoleType.UserNoEmail) && mtProfileUpdate == false)
                     {
                         // check salesforce contact for  all new users
                         ProductBatch pb = new ProductBatch()

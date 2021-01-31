@@ -162,5 +162,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		/// <param name="employeeIdDetail"></param>
 		/// <returns></returns>
 		RepositoryResponse UpdateUserEmployeeId(IUserEmployeeId employeeIdDetail);
+
+		/// <summary>
+		/// Update AO profile update
+		/// </summary>
+		/// <param name="productUserAccountDetails"></param>
+		/// <param name="editorPersonaId"></param>
+		void UpdateAOUserProfileBatch(ProductUserAccountDetails productUserAccountDetails);
 	}
 }

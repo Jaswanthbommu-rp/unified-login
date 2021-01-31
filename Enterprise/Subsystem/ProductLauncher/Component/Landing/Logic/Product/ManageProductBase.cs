@@ -416,6 +416,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public void UpdateUserEmployeeId(long personaId, string employeeId)
         {
             Persona userPersona = _managePersona.GetPersona(personaId);
+            ManageUser manageUser = new ManageUser(_userClaim);
+            var personaProfile = manageUser.GetUserProfile(new Guid() ,userPersona.RealPageId, userPersona.OrganizationPartyId);
+
             var userLogin = _manageUserLogin.GetUserLoginOnly(userPersona.RealPageId);
             IList<IC.UserLoginPersona> userLoginPersonaList = _userLoginPersonaRepository.ListUserLoginPersona(userLoginPersonaId: null, userLoginId: userPersona.UserId, organizationPartyId: userPersona.Organization.PartyId);
             var employeeIdDetails = _userRepository.GetUserEmployeeId(userLoginPersonaList[0].UserLoginPersonaId, userPersona.OrganizationPartyId);
@@ -426,6 +429,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 employeeIdDetails.EmployeeId = employeeId;
                 _userRepository.UpdateUserEmployeeId(employeeIdDetails);
             }
+        }
+
+        /// <summary>
+        /// Update user profile for AO
+        /// </summary>
+        /// <param name="productUserAccountDetails"></param>
+        public void UpdateAOUserProfileBatch(ProductUserAccountDetails productUserAccountDetails)
+        {
+            _userRepository.UpdateAOUserProfileBatch(productUserAccountDetails);
         }
 
         /// <summary>
