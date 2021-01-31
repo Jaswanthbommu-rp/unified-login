@@ -1158,6 +1158,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // Handle AO user products separately 
             if (_productId == (int)ProductEnum.AssetOptimizer)
             {
+                IManagePersona _managePersona = new ManagePersona();
+                IManagePerson _managePerson = new ManagePerson();
+                IManageUserLogin _manageUserLogin = new ManageUserLogin();
+
+                var persona = _managePersona.GetPersona(productUserAccountDetails.PersonaId);
+                var userLogin = _manageUserLogin.GetUserLoginOnly(persona.RealPageId);
+                //var person = _managePerson.GetPerson(persona.RealPageId);
+
+                //Insert a record to batch to run profile update if email is changed
+                if (userLogin.LoginName.ToLower() != productUserAccountDetails.ProductSettings.FirstOrDefault(x => x.Key == SamlAttributeEnum.productUsername).Value?.ToLower())
+                {
+                    manageProductBase.UpdateAOUserProfileBatch(productUserAccountDetails);
+                }
+
                 return UpdateAoUserDetails(productUserAccountDetails);
             }
 

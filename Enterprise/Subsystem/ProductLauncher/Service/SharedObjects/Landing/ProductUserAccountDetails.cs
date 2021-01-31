@@ -1,4 +1,5 @@
 ﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using System;
 using System.Collections.Generic;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing
@@ -37,5 +38,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         /// Employee id
         /// </summary>
         public string EmployeeId { get; set; }
+
+        /// <summary>
+        /// Editor PersonaId
+        /// </summary>
+        public long LoggedInUserPersonaId { get; set; }
+
+        /// <summary>
+        /// Editor RealpageId
+        /// </summary>
+        public Guid LoggedInUserRealPageId { get; set; }
     }
 }
