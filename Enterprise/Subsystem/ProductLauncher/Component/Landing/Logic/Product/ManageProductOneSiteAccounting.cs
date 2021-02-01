@@ -303,6 +303,90 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 		//
 		/// <summary>
+		/// Get the property Groups for the given user persona
+		/// </summary>
+		/// <param name="editorPersonaId"></param>
+		/// <param name="userPersonaId"></param>
+		/// <param name="datafilter"></param>
+		/// <returns></returns>
+		public ListResponse GetPropertyGroupEntities(long editorPersonaId, long userPersonaId,string locationGrpId, RequestParameter datafilter)
+		{
+			ListResponse response = new ListResponse();
+			Dictionary<string, object> logData = new Dictionary<string, object>();
+			response = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+			if (response.IsError) { return response; }
+			FilterSortParameters wsParams = ManageProductOneSiteAccountingHelpers.GenerateSearchAndPaging(datafilter, "Name", 0, 9999);
+
+			Property[] prop = new Property[1] { new Property() };
+			List<NameValuePair> loginInfo = new List<NameValuePair>
+			{
+				new NameValuePair { Name = "CompanyID", Value = _companyName },
+				new NameValuePair { Name = "Login", Value = _intactLogin },
+				new NameValuePair { Name = "Password", Value = _intactPassword }
+			};
+			if (!String.IsNullOrEmpty(_productUserId))
+			{
+				loginInfo.Add(new NameValuePair { Name = "SystemIdentifier", Value = _productUserId });
+			}
+			if (!String.IsNullOrEmpty(locationGrpId))
+			{
+				loginInfo.Add(new NameValuePair { Name = "locGroupIds", Value = locationGrpId });
+			}
+			logData = new Dictionary<string, object>();
+			logData.Add("user", RemovePrivateData(loginInfo.ToArray()));
+			WriteToDiagnosticLog($"GetPropertyGroupEntities - _productUserId = {_productUserId}", logData);
+			prop[0].NameValuePair = loginInfo.ToArray();
+
+			TotalRows[] results2 = new TotalRows[1];
+			LocationGroupID[] location;
+			IList<ProductPropertyGroup> list;
+
+			try
+			{
+
+				location = _service.GetAllPropertyGroupMembers(prop, wsParams, out results2);
+				logData = new Dictionary<string, object>();
+				logData.Add("location", location);
+				WriteToDiagnosticLog($"GetPropertyGroupEntities - result from api", logData);
+				list = location.ToGBPropertyGroup();
+
+				if (list == null)
+				{
+					if (results2.Length > 0)
+					{
+						string message = results2[0].TotalRows1;
+						if (message.ToUpper().Contains("NOT A VALID USERID"))
+						{
+							throw new Exception("Invalid user");
+						}
+					}
+					list = new List<ProductPropertyGroup>();
+				}
+
+				response = new ListResponse()
+				{
+					Records = list.Cast<object>().ToList(),
+					TotalRows = list.Count,
+					RowsPerPage = list.Count,
+					TotalPages = 1,
+					ErrorReason = "",
+					Additional = null
+				};
+			}
+			catch (Exception ex)
+			{
+				WriteToErrorLog($"GetPropertyGroupEntities - Error", exception: ex);
+				response = new ListResponse()
+				{
+					IsError = true,
+					ErrorReason = ex.Message
+				};
+			}
+			return response;
+		}
+
+		//
+		/// <summary>
 		/// Get the properties for the given user persona
 		/// </summary>
 		/// <param name="editorPersonaId"></param>

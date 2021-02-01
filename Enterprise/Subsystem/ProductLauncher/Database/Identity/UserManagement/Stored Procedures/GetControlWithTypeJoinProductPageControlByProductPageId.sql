@@ -19,6 +19,7 @@ BEGIN
  ,[UserManagement].[Control].[DataSource]  
  ,[UserManagement].[Control].[Sequence]  
  ,[UserManagement].[ControlType].[Name] AS 'ControlType' 
+ ,[UserManagement].[ControlType].[ControlTypeId] as 'ControlTypeId'
  ,[UserManagement].[Control].[CreatedBy]  
  ,[UserManagement].[Control].[CreatedDate]  
  ,CASE WHEN Children.ControlId IS NULL THEN 'False' ELSE 'True' END AS Children   
