@@ -2,6 +2,7 @@
 (
 	[SettingCategoryTypeId] SMALLINT NOT NULL IDENTITY, 
     [Name] NVARCHAR(100) NOT NULL,
+
 CONSTRAINT [PK_SettingCategoryType] PRIMARY KEY CLUSTERED 
 (
 	[SettingCategoryTypeId] ASC

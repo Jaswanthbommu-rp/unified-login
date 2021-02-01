@@ -203,6 +203,7 @@
     <Compile Include="Logic\Interfaces\IManageSecuritySettings.cs" />
     <Compile Include="Logic\Interfaces\IManageUnifiedSettings.cs" />
     <Compile Include="Logic\Interfaces\IManageUPFMProductsIntegration.cs" />
+    <Compile Include="Logic\Interfaces\IUnifiedSettingsRepository.cs" />
     <Compile Include="Logic\ManageUnifiedSettings.cs" />
     <Compile Include="Logic\ManageUserLoginPersona.cs" />
     <Compile Include="Logic\ProductIntegration\Model\IProductProperties.cs" />
@@ -414,7 +415,7 @@
     <Compile Include="Repository\StreetAddressRepository.cs" />
     <Compile Include="Repository\TelecommunicationNumberRepository.cs" />
     <Compile Include="Repository\UnifiedLoginRepository.cs" />
-    <Compile Include="Repository\UnifiedSecuritySettingsRepository.cs" />
+    <Compile Include="Repository\UnifiedSettingsRepository.cs" />
     <Compile Include="Repository\UserLoginPersonaRepository.cs" />
     <Compile Include="Repository\UserLoginRepository.cs" />
     <Compile Include="Repository\UserRepository.cs" />

@@ -11,22 +11,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
     public interface IManageUnifiedSettings
     {
 		/// <summary>
-		/// Get Security Settings (Password and Activity Configuration Security Settings)
+		/// Get Security Settings
 		/// </summary>
 		/// <param name="category">Settings category</param>
 		/// <param name="companyId">Organization</param>
 		/// <param name="includes"></param>
 		/// <returns>Security Settings List objects (KeyValue pairs)</returns>
-		IList<Setting> GetSecuritySettings(string category, Guid companyId, string[] includes);
+		IList<Setting> GetUnifiedSettings(string category, long companyId, string[] includes = null);
 
 		/// <summary>
-		/// Update an existing Security Settings (Password and Activity Configuration Security Settings)
+		/// Update an existing Security Settings 
 		/// </summary>
 		/// <param name="settings">Security Settings (Password and Activity Configuration Security Settings) object of the parameter values</param>
 		/// <param name="category">Settings category</param>
 		/// <param name="companyId">Organization</param>
 		/// <param name="includes"></param>
 		/// <returns>RepositoryResponse object</returns>
-		RepositoryResponse UpdateSecuritySettings(IList<Setting> settings, string category, Guid companyId, string[] includes);
+		RepositoryResponse UpdateUnifiedSettings(IList<Setting> settings, string category, long companyId, string[] includes = null);
 	}
 }
