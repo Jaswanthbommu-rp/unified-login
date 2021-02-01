@@ -640,7 +640,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// AO Market Analytics
 		/// </summary>
 		[Description("RMA")]
-		AoMarketAnalytics = 66
+		AoMarketAnalytics = 66,
+
+		/// <summary>
+		/// Reporting
+		/// </summary>
+		[Description("RPT")]
+		Reporting = 67
 	}
 
 	/// <summary>
@@ -896,6 +902,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// </summary>
 		[Description("RMA")]
 		AoMarketAnalytics = 66,
+
+		/// <summary>
+		/// Reporting
+		/// </summary>
+		[Description("RPT")]
+		Reporting = 67,
 
 	}
 	public enum ProductProcVersion
