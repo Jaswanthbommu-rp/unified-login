@@ -1059,7 +1059,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				if (!_productUsername.Equals(userLogin.LoginName, StringComparison.OrdinalIgnoreCase))
 				{
 					aoUser.Login = userLogin.LoginName.ToLower();
-					aoUser.UserId = userLogin.LoginName.ToLower();
+					//aoUser.UserId = userLogin.LoginName.ToLower();
 					loginNameChanged = true;
 				}
 				var updateResult = "";
@@ -2199,7 +2199,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					else if (loginNameChanged)
 					{
 						UpdateSamlUserAttribute(userPersonaId, (int)ProductEnum.AssetOptimizer, SamlAttributeEnum.productUsername, productLoginName);
-						UpdateSamlUserAttribute(userPersonaId, (int)ProductEnum.AssetOptimizer, SamlAttributeEnum.UserId, productLoginName);
+						//UpdateSamlUserAttribute(userPersonaId, (int)ProductEnum.AssetOptimizer, SamlAttributeEnum.UserId, productLoginName);
 						// add activity log
 						WriteActivityLogWithMessage(editorPersonaId, userPersonaId, "User {0} {1} account is updated for product {2} by user {3} {4}.");
 					}
@@ -2228,7 +2228,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						else if (loginNameChanged)
 						{
 							UpdateSamlUserAttribute(userPersonaId, (int)ProductEnumHelper.GetAoProductEnum(product), SamlAttributeEnum.productUsername, productLoginName);
-							UpdateSamlUserAttribute(userPersonaId, (int)ProductEnumHelper.GetAoProductEnum(product), SamlAttributeEnum.UserId, productLoginName);
+							//UpdateSamlUserAttribute(userPersonaId, (int)ProductEnumHelper.GetAoProductEnum(product), SamlAttributeEnum.UserId, productLoginName);
 							// add activity log
 							WriteActivityLogWithMessageByProduct(editorPersonaId, userPersonaId, (int)ProductEnumHelper.GetAoProductEnum(product), "{0} {1} was assigned {2} by {3} {4}.");
 						}
