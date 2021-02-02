@@ -9,6 +9,6 @@ SELECT pt.ProductTypeId as TypeId, pt.Name as TypeName,
 FROM Enterprise.Product p  
     left join Enterprise.ProductType pt on p.ProductTypeId = pt.ProductTypeId  
     left JOIN Enterprise.ProductType pt2 on pt2.ProductTypeId = pt.ParentProductTypeId  
-WHERE (ProductId = @ProductId  OR @ProductId IS NULL)  
+WHERE ProductId = isnull(@productId, productId)
 ORDER BY pt.Name  
 END
