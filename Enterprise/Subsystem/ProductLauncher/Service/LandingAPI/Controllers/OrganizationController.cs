@@ -1372,14 +1372,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Null parameter: Property Object");
             }
-            if (string.IsNullOrEmpty(property.Name)
-                || (string.IsNullOrEmpty(property.Domain)))
+            if (((string.IsNullOrEmpty(property.Name)) || (property.Name.Trim().Length == 0))
+                || ((string.IsNullOrEmpty(property.Domain)) || (property.Domain.Trim().Length == 0)))
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "PropertyName,Domain should not be empty");
             }
-            if ((string.IsNullOrEmpty(property.CustomerPropertyId.Trim())))
+            if ((string.IsNullOrEmpty(property.CustomerPropertyId)) ||(property.CustomerPropertyId.Trim().Length == 0))
             {
-                return Request.CreateResponse(HttpStatusCode.BadRequest, "CustomerPropertyId should not be empty");
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "CustomerPropertyId should not be empty or null");
             }
             if ((Convert.ToInt64(property.CustomerPropertyId.Trim()) == 0)
                 || (Convert.ToInt64(property.CustomerPropertyId.Trim()) <= 0))
