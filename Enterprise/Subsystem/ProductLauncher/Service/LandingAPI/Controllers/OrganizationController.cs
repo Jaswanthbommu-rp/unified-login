@@ -1373,11 +1373,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Null parameter: Property Object");
             }
             if (string.IsNullOrEmpty(property.Name)
-                || (string.IsNullOrEmpty(property.Domain))
-                || ((string.IsNullOrEmpty(property.CustomerPropertyId)) || (property.CustomerPropertyId == "0")))
+                || (string.IsNullOrEmpty(property.Domain)))
             {
-                return Request.CreateResponse(HttpStatusCode.BadRequest, "PropertyName,Domain and CustomerPropertyId should not be empty");
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "PropertyName,Domain should not be empty");
             }
+            if ((string.IsNullOrEmpty(property.CustomerPropertyId.Trim())))
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "CustomerPropertyId should not be empty");
+            }
+            if ((Convert.ToInt64(property.CustomerPropertyId.Trim()) == 0)
+                || (Convert.ToInt64(property.CustomerPropertyId.Trim()) <= 0))
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "CustomerPropertyId should be greater then zero");
+            }
+
             _repositoryResponse = _manageOrganization.AddPropertyForOrganization(property, companyInstanceID);
             return Request.CreateResponse(HttpStatusCode.OK, _repositoryResponse);
         }
