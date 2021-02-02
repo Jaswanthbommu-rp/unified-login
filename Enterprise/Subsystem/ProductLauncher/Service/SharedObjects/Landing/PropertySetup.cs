@@ -83,6 +83,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         public string Domain { get; set; }
 
         /// <summary>
+        /// Latitude
+        /// </summary>
+        [JsonProperty(PropertyName = "Latitude")]
+        public decimal? Latitude { get; set; }
+
+        /// <summary>
+        /// Longitude
+        /// </summary>
+        [JsonProperty(PropertyName = "Longitude")]
+        public decimal? Longitude { get; set; }
+
+        /// <summary>
+        /// IsActive
+        /// </summary>
+        [JsonProperty(PropertyName = "IsActive")]
+        public string IsActive { get; set; }
+
+        /// <summary>
         /// PropertyAddress for export
         /// </summary>
         [JsonProperty(PropertyName = "PropertyAddress")]

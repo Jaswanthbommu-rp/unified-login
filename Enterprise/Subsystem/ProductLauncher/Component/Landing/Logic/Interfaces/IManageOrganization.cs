@@ -154,6 +154,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <returns>RepositoryResponse object</returns>
 		RepositoryResponse UpdateProperty(Guid propertyInstanceId, string propertyName);
 
-        List<PropertyAudit> AuditCompanyProductPropertiesToUPFM(Guid companyInstanceId, int product);
-    }
+		/// <summary>
+		/// AddPropertyForOrganization
+		/// </summary>
+		/// <param name="property">property</param>
+		/// <param name="companyInstanceID">company InstanceID</param>
+		/// <returns></returns>
+		RepositoryResponse AddPropertyForOrganization(UPFMPropertyInstance property, Guid companyInstanceID);
+
+		/// <summary>
+		/// AuditCompanyProductPropertiesToUPFM
+		/// </summary>
+		/// <param name="companyInstanceId">companyInstanceId</param>
+		/// <param name="product">product</param>
+		/// <returns></returns>
+		List<PropertyAudit> AuditCompanyProductPropertiesToUPFM(Guid companyInstanceId, int product);
+
+		/// <summary>
+		/// Search Property Details By CustomerPropertyId(BlueId)
+		/// </summary>
+		/// <param name="customerPropertyId">customerPropertyId</param>
+		/// <returns></returns>
+		List<PropertySetup> SearchPropertyDetailsByCustomerPropertyId(string customerPropertyId);
+	}
 }
