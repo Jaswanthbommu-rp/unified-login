@@ -742,7 +742,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             property.InstanceId = response.RealPageId;
             if (response.ErrorMessage.Length == 0)
             {
-				bool booksReponse = AddPropetyToBooks(property, companyInstanceID);
+				bool booksReponse = AddPropertyToBooks(property, companyInstanceID);
 				if (!booksReponse)
 				{
 					response.ErrorMessage = "Error while adding data to Books";
@@ -1030,7 +1030,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return propertySetup;
         }
 
-        private bool AddPropetyToBooks(UPFMPropertyInstance property, Guid companyInstanceID)
+        private bool AddPropertyToBooks(UPFMPropertyInstance property, Guid companyInstanceID)
         {
             // insert to books
             PropertyInstance pi = new PropertyInstance()
