@@ -1377,13 +1377,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "PropertyName,Domain should not be empty");
             }
-            if((string.IsNullOrEmpty(property.CustomerPropertyId.Trim())))
-			{
+            if ((string.IsNullOrEmpty(property.CustomerPropertyId.Trim())))
+            {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "CustomerPropertyId should not be empty");
             }
-            if((Convert.ToInt64(property.CustomerPropertyId.Trim()) == 0)
+            if ((Convert.ToInt64(property.CustomerPropertyId.Trim()) == 0)
                 || (Convert.ToInt64(property.CustomerPropertyId.Trim()) <= 0))
-			{
+            {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "CustomerPropertyId should be greater then zero");
             }
 
