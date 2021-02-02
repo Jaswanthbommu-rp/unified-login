@@ -345,6 +345,7 @@
     <Compile Include="Landing\SecuritySettings.cs" />
     <Compile Include="Landing\SortTableType.cs" />
     <Compile Include="Landing\StatusType.cs" />
+    <Compile Include="Landing\UnifiedSetting.cs" />
     <Compile Include="Landing\UserCompaniesProperties.cs" />
     <Compile Include="Landing\UserEmployee.cs" />
     <Compile Include="Landing\UserOrganizationExists.cs" />

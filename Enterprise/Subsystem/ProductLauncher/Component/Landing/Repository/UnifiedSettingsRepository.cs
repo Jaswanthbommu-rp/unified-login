@@ -13,7 +13,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 	{
         #region Constructor
         /// <summary>
-        /// Security Settings base Constructor
+        /// Unified Settings base Constructor
         /// </summary>
         public UnifiedSettingsRepository() : base(DbConnectionEnum.IdpConfigurationDb)
         {
@@ -26,11 +26,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		#endregion
 		#region public Security Settings methods
 		/// <summary>
-		/// Get Security Settings (Password and Activity Configuration Security Settings)
+		/// Get Unified Settings (Password and Activity Configuration Security Settings)
 		/// </summary>
-		/// <param name="booksCustomerMasterId">Books Customer MasterId</param>
-		/// <param name="bookMasterTypeId">Type of Book MasterId (e.g. 1 = Black, 2 = Blue)</param>
-		/// <returns>Security Settings List objects (KeyValue pairs)</returns>
+		/// <param name="PartyId">partyid</param>
+		/// <param name="Category">setting category</param>
+		/// <returns> Settings List objects (KeyValue pairs)</returns>
 		public IList<Setting> GetUnifiedSettings(long PartyId, string Category)
 		{
 			dynamic param = new
@@ -46,11 +46,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		}
 
 		/// <summary>
-		/// Update Security Settings (Password and Activity Configuration Security Settings)
+		/// Update  Settings 
 		/// </summary>
-		/// <param name="settings">Security Settings (Password and Activity Configuration Security Settings) object of the parameter values</param>
-		/// <param name="booksCustomerMasterId">Books Customer MasterId</param>
-		/// <param name="bookMasterTypeId">Type of Book MasterId (e.g. 1 = Black, 2 = Blue)</param>
+		/// <param name="settings"> Settings object of the parameter values</param>
+		/// <param name="PartyId">partyid</param>
+		/// <param name="Category">setting category</param>
 		/// <returns>Repository response object</returns>
 		public RepositoryResponse UpdateUnifiedSettings(IList<Setting> settings, long PartyId, string Category, long userId)
 		{
@@ -70,8 +70,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 						{
 							PartyId = PartyId,
 							Category = Category,
-							JsonUnifiedSettings = jsonSecuritySettings,
-							CreatedBy = userId
+							CreatedBy = userId,
+							JsonUnifiedSettings = jsonSecuritySettings							
 						};
 						repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUnifiedSetting, param);
 						if (repositoryResponse.Id == 0)

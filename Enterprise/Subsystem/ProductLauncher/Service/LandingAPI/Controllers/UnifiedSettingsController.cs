@@ -48,7 +48,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [SwaggerResponseExamples(typeof(IList<Setting>), typeof(UnifiedSettingsExample))]
         [Route("companines/{companyId}/settings")]
         [HttpGet]
-        public HttpResponseMessage GetSettings(string category, Guid companyId, string[] includes)
+        public HttpResponseMessage GetSettings(string category, Guid companyId, [FromUri]string[] includes)
         {
             Organization organization = new Organization();
             IManageOrganization manageOrganization = new ManageOrganization(_userClaims);
@@ -56,7 +56,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             if (companyId != null)
             {
-                Organization org = _manageOrganization.GetOrganization(companyId);
+                Organization org = manageOrganization.GetOrganization(companyId);
                 if (org == null)
                 {
                     apiError = new ApiError()
@@ -76,7 +76,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     return Request.CreateResponse(HttpStatusCode.BadRequest, apiError);
                 }
 
-                bool IsValid = _manageOrganization.ValidateOrganization(_userClaims.OrganizationMasterId, _userClaims.UserRealPageGuid, org.RealPageId);
+                bool IsValid = manageOrganization.ValidateOrganization(_userClaims.OrganizationMasterId, _userClaims.UserRealPageGuid, org.RealPageId);
                 if (!IsValid)
                 {
                     apiError = new ApiError()
@@ -97,6 +97,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 }
 
                 IList<Setting> settingList = new List<Setting>();
+                UnifiedSetting unfiedSetting = new UnifiedSetting();
                 IManageUnifiedSettings manageSettings = new ManageUnifiedSettings(_userClaims);
                 settingList = manageSettings.GetUnifiedSettings(category, org.PartyId, includes);
 
@@ -119,7 +120,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     };
                     return Request.CreateResponse(HttpStatusCode.BadRequest, apiError);
                 }
-                return Request.CreateResponse(HttpStatusCode.OK, settingList);
+                unfiedSetting.keys = (List<Setting>)settingList;
+                return Request.CreateResponse(HttpStatusCode.OK, unfiedSetting);
             } 
             else
             {
@@ -156,7 +158,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [SwaggerResponse(HttpStatusCode.OK, Description = "Settings updated")]
         [Route("companines/{companyId}/settings")]
         [HttpPatch]
-        public HttpResponseMessage UpdateUnifiedSettings([FromBody] IList<Setting> settings, string category, Guid companyId, string[] includes)
+        public HttpResponseMessage UpdateUnifiedSettings([FromBody] IList<Setting> settings, string category, Guid companyId, [FromUri] string[] includes)
         {
             Organization organization = new Organization();
             IManageOrganization manageOrganization = new ManageOrganization(_userClaims);
@@ -164,7 +166,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             if (companyId != null)
             {
-                Organization org = _manageOrganization.GetOrganization(companyId);
+                Organization org = manageOrganization.GetOrganization(companyId);
                 if (org == null)
                 {
                     apiError = new ApiError()
@@ -184,7 +186,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     return Request.CreateResponse(HttpStatusCode.BadRequest, apiError);
                 }
 
-                bool IsValid = _manageOrganization.ValidateOrganization(_userClaims.OrganizationMasterId, _userClaims.UserRealPageGuid, org.RealPageId);
+                bool IsValid = manageOrganization.ValidateOrganization(_userClaims.OrganizationMasterId, _userClaims.UserRealPageGuid, org.RealPageId);
                 if (!IsValid)
                 {
                     apiError = new ApiError()
@@ -243,6 +245,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 }
 
                 IList<Setting> settingList = new List<Setting>();
+                UnifiedSetting unfiedSetting = new UnifiedSetting();
                 IManageUnifiedSettings manageSettings = new ManageUnifiedSettings(_userClaims);
 
                 _repositoryResponse = manageSettings.UpdateUnifiedSettings(settings, category, org.PartyId, includes);
@@ -286,7 +289,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         };
                         return Request.CreateResponse(HttpStatusCode.BadRequest, apiError);
                     }
-                    return Request.CreateResponse(HttpStatusCode.OK, settingList);
+                    unfiedSetting.keys = (List<Setting>)settingList;
+                    return Request.CreateResponse(HttpStatusCode.OK, unfiedSetting);
                 }
                               
             }
