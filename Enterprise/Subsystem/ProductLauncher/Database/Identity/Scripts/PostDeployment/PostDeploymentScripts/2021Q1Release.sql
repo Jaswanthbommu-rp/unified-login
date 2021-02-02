@@ -1203,3 +1203,9 @@ BEGIN
    UPDATE Enterprise.Product SET Name= N'Sustain: Water', Description= N'Sustain: Water' where ProductId = 59 
 END
 GO
+
+
+-- defect 701779
+update [Security].[Right]
+set TargetProductId = (select ProductId from Enterprise.Product where Name = 'Reporting' and BooksProductCode = 'RPT')
+where RightName = 'AccessUnifiedReporting'
