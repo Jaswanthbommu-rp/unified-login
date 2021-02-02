@@ -1392,7 +1392,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// <param name="customerPropertyId">customerPropertyId</param>
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
-        [Route("CompanySetup/CompanyProperty/SearchByBlueId")]
+        [Route("CompanySetup/CompanyProperty/propertyinstance/{customerPropertyId}")]
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         [HttpGet]
         public HttpResponseMessage SearchPropertyByBlueId(string customerPropertyId)
