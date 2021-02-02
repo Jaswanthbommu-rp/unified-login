@@ -1058,7 +1058,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				//If the User's LoginName changed in the PrimaryOrganization then update it in the Product
 				if (!_productUsername.Equals(userLogin.LoginName, StringComparison.OrdinalIgnoreCase))
 				{
-					//aoUser.Login = userLogin.LoginName.ToLower();
+					aoUser.Login = userLogin.LoginName.ToLower();
 					//aoUser.UserId = userLogin.LoginName.ToLower();
 					loginNameChanged = true;
 				}
