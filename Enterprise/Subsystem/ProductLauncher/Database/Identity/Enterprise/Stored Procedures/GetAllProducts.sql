@@ -1,11 +1,14 @@
 ﻿CREATE PROCEDURE [Enterprise].[GetAllProducts] 
 AS
 BEGIN
-SELECT pt.ProductTypeId as TypeId, 
-	   pt.Name as TypeName, p.ProductId, p.ProductGUID, p.Name, 
-	   p.Description, p.ProductTypeId,p.BooksProductCode,
-	   p.UDMSourceCode, p.AssignToAllUsers
+SELECT pt.ProductTypeId as TypeId, pt.Name as TypeName,
+       pt2.ProductTypeId as ParentTypeId, pt2.Name as ParentTypeName,
+       p.ProductId,  p.ProductGUID, p.Name,
+       p.Description, p.ProductTypeId,p.BooksProductCode,
+       p.UDMSourceCode, p.AssignToAllUsers
 FROM Enterprise.Product p
-	LEFT JOIN Enterprise.ProductType pt on pt.ProductTypeId = p.ProductTypeId
-ORDER BY pt.Name
+    left join Enterprise.ProductType pt on p.ProductTypeId = pt.ProductTypeId
+    left JOIN Enterprise.ProductType pt2 on pt2.ProductTypeId = pt.ParentProductTypeId
+ORDER BY pt.Name   
+
 END
