@@ -2345,6 +2345,112 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         }
 
         [Fact]
+        public void AddPropertyForOrganization_EmptyName_ReturnBadRequest()
+        {
+            //Arrange
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            )
+            {
+                Request = new HttpRequestMessage(),
+                Configuration = new HttpConfiguration()
+            };
+
+            UPFMPropertyInstance _propertyInstance = new UPFMPropertyInstance()
+            {
+                Name = "",
+                Address = "8 W NELSON AVE  ALEXANDRIA  VA  22301 - 2059",
+                City = "ALEXANDRIA",
+                State = "VA",
+                PostalCode = "22301-2059",
+                County = "ALEXANDRIA CITY",
+                Country = "UNITED STATES",
+                CustomerPropertyId = "1234",
+                Domain = "Primary"
+            };
+
+            //Act           
+            HttpResponseMessage response = organizationController.AddPropertyForOrganization(_propertyInstance, new Guid());
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
+        }
+
+        [Fact]
+        public void AddPropertyForOrganization_EmptyDomain_ReturnBadRequest()
+        {
+            //Arrange
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            )
+            {
+                Request = new HttpRequestMessage(),
+                Configuration = new HttpConfiguration()
+            };
+
+            UPFMPropertyInstance _propertyInstance = new UPFMPropertyInstance()
+            {
+                Name = "LACY COURT",
+                Address = "8 W NELSON AVE  ALEXANDRIA  VA  22301 - 2059",
+                City = "ALEXANDRIA",
+                State = "VA",
+                PostalCode = "22301-2059",
+                County = "ALEXANDRIA CITY",
+                Country = "UNITED STATES",
+                CustomerPropertyId = "1234",
+                Domain = "Primary"
+            };
+
+            //Act           
+            HttpResponseMessage response = organizationController.AddPropertyForOrganization(_propertyInstance, new Guid());
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
+        }
+
+        [Fact]
+        public void AddPropertyForOrganization_EmptyCustomerPropertyId_ReturnBadRequest()
+        {
+            //Arrange
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            )
+            {
+                Request = new HttpRequestMessage(),
+                Configuration = new HttpConfiguration()
+            };
+
+            UPFMPropertyInstance _propertyInstance = new UPFMPropertyInstance()
+            {
+                Name = "LACY COURT",
+                Address = "8 W NELSON AVE  ALEXANDRIA  VA  22301 - 2059",
+                City = "ALEXANDRIA",
+                State = "VA",
+                PostalCode = "22301-2059",
+                County = "ALEXANDRIA CITY",
+                Country = "UNITED STATES",
+                CustomerPropertyId = "",
+                Domain = ""
+            };
+
+            //Act           
+            HttpResponseMessage response = organizationController.AddPropertyForOrganization(_propertyInstance, new Guid());
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
+        }
+
+
+        [Fact]
         public void AddPropertyForOrganization_ValidResponse()
         {
             //Arrange
@@ -2372,7 +2478,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 PostalCode = "22301-2059",
                 County = "ALEXANDRIA CITY",
                 Country = "UNITED STATES",
-                CustomerPropertyId = "1234"
+                CustomerPropertyId = "1234",
+                Domain = "Primary"
             };
             //Act           
             HttpResponseMessage response = organizationController.AddPropertyForOrganization(_propertyInstance, EmployeeCompanyRealPageId);
@@ -2381,5 +2488,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
         }
         #endregion
-    }
+
+        #region SearchPropertyByPropertyId
+        [Fact]
+        public void SearchPropertyByBlueId_InvalidPropertyObject_ReturnBadRequest()
+        {
+            //Arrange
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            )
+            { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
+
+            //Act           
+            HttpResponseMessage response = organizationController.SearchPropertyByBlueId("0");
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
+        }		
+		#endregion
+	}
 }

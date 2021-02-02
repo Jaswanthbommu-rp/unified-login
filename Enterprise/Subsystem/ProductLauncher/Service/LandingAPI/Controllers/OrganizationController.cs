@@ -1269,22 +1269,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             if (currentProperty != null && currentProperty.FirstOrDefault().Name.ToLower() != propertyName.ToLower())
             {
                 _repositoryResponse = _manageOrganization.UpdateProperty(propertyInstanceId, propertyName);
-
                 if (_repositoryResponse.Id == 0)
                 {
                     return Request.CreateResponse(HttpStatusCode.BadRequest, _repositoryResponse.ErrorMessage);
-                }
-                if (_repositoryResponse.Id > 0)
-                {
-                    PropertyInstanceAck ack = new PropertyInstanceAck
-                    {
-                        PropertyInstanceSourceId = propertyInstanceId.ToString(),
-                        Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
-                        PropertyName = propertyName,
-                        ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)
-
-                    };
-                    _manageBlueBook.AcknowledgePropertyUpdate(ack);
                 }
             }
             return Request.CreateResponse(HttpStatusCode.OK, propertyInstanceId);
@@ -1385,21 +1372,50 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Null parameter: Property Object");
             }
+            if (string.IsNullOrEmpty(property.Name)
+                || (string.IsNullOrEmpty(property.Domain))
+                || ((string.IsNullOrEmpty(property.CustomerPropertyId)) || (property.CustomerPropertyId == "0")))
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "PropertyName,Domain and CustomerPropertyId should not be empty");
+            }
             _repositoryResponse = _manageOrganization.AddPropertyForOrganization(property, companyInstanceID);
             return Request.CreateResponse(HttpStatusCode.OK, _repositoryResponse);
         }
-        #endregion
+
         #endregion
 
-
-        #region Private functions
+        #region SearchPropertyByBlueId
 
         /// <summary>
-        /// Used to delete products from an organization
+        ///Search Property By BlueId
         /// </summary>
-        /// <param name="addProductList"></param>
-        /// <param name="partyId"></param>
-        private IRepositoryResponse DeleteProductsFromOrganization(List<ProductEnum> addProductList, long partyId)
+        /// <param name="customerPropertyId">customerPropertyId</param>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [Route("CompanySetup/CompanyProperty/SearchByBlueId")]
+        [AuthorizeScope("companyfunctions", "rplandingapi")]
+        [HttpGet]
+        public HttpResponseMessage SearchPropertyByBlueId(string customerPropertyId)
+		{
+            if ((string.IsNullOrEmpty(customerPropertyId)) || (customerPropertyId == "0"))
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: companyInstanceID");
+            }
+            List <PropertySetup> _propertySearchList = _manageOrganization.SearchPropertyDetailsByCustomerPropertyId(customerPropertyId);
+            return Request.CreateResponse(HttpStatusCode.OK, _propertySearchList);
+        }
+		#endregion
+		#endregion
+
+
+		#region Private functions
+
+		/// <summary>
+		/// Used to delete products from an organization
+		/// </summary>
+		/// <param name="addProductList"></param>
+		/// <param name="partyId"></param>
+		private IRepositoryResponse DeleteProductsFromOrganization(List<ProductEnum> addProductList, long partyId)
         {
             IRepositoryResponse response = new RepositoryResponse();
             IManageOrganizationProduct manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository);

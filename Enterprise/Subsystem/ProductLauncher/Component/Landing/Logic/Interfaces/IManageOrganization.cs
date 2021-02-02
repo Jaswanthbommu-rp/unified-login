@@ -169,5 +169,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="product">product</param>
 		/// <returns></returns>
 		List<PropertyAudit> AuditCompanyProductPropertiesToUPFM(Guid companyInstanceId, int product);
-    }
+
+		/// <summary>
+		/// Search Property Details By CustomerPropertyId(BlueId)
+		/// </summary>
+		/// <param name="customerPropertyId">customerPropertyId</param>
+		/// <returns></returns>
+		List<PropertySetup> SearchPropertyDetailsByCustomerPropertyId(string customerPropertyId);
+	}
 }
