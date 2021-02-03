@@ -659,7 +659,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         public IList<int> GetProductIdsByCompany(Guid organizationRealPageId)
         {
             RPObjectCache rpCache = new RPObjectCache();
-            var cacheKey = $"getProductIdsByCompanyGuid_{organizationRealPageId}";
+            var cacheKey = $"getProductIdListByCompanyGuid_{organizationRealPageId}";
 
             IList<int> products = rpCache.GetFromCache<IList<int>>(cacheKey, 180, () =>
             {
