@@ -30,7 +30,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			//Assert
 			Assert.True("GetSettings" == baseTest.VerifyRouteToAction(
 				HttpMethod.Get,
-				"https://landingapi.local/api/companines/F5C090FA-78AB-452F-B504-98AAFEE09121/settings?category=security&includes=%22%22"
+				"https://landingapi.local/api/companies/F5C090FA-78AB-452F-B504-98AAFEE09121/settings?category=security&includes=%22%22"
 				)
 			);
 		}
