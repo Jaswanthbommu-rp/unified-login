@@ -42,24 +42,29 @@ BEGIN
 				   @mappingValue = MappingValue,
 				   @editable = Editable,@hidden = Hidden
 				from @settings where Id = @Current_ID
-
-			IF NOT EXISTS (SELECT 1 FROM [Ident].[OrganizationSettings]
-							WHERE MappingName = @mappingName
-							And PartyId = @PartyId
-							And SettingCategoryTypeId = @categoryId)
-
+			
+			
+			IF ((NULLIF(LTRIM(RTRIM(@mappingName)), '') IS NOT NULL) AND
+				(NULLIF(LTRIM(RTRIM(@mappingValue)), '') IS NOT NULL))
 			BEGIN
-				INSERT INTO [Ident].[OrganizationSettings](PartyId,SettingCategoryTypeId,MappingName,
-					MappingValue,Editable,Hidden,CreatedBy,CreatedDate)
-				SELECT @PartyId,@categoryId,@mappingName,@mappingValue,@editable,@hidden,@CreatedBy,GETUTCDATE()
-			END
-			ELSE
-			BEGIN
-				UPDATE [Ident].[OrganizationSettings] SET MappingValue = @mappingValue,
-						UpdatedDate = GETUTCDATE()
-				WHERE MappingName = @mappingName
-				And PartyId = @PartyId
-				And SettingCategoryTypeId = @categoryId
+				IF NOT EXISTS (SELECT 1 FROM [Ident].[OrganizationSettings]
+								WHERE MappingName = @mappingName
+								And PartyId = @PartyId
+								And SettingCategoryTypeId = @categoryId)
+
+				BEGIN
+					INSERT INTO [Ident].[OrganizationSettings](PartyId,SettingCategoryTypeId,MappingName,
+						MappingValue,Editable,Hidden,CreatedBy,CreatedDate)
+					SELECT @PartyId,@categoryId,@mappingName,@mappingValue,@editable,@hidden,@CreatedBy,GETUTCDATE()
+				END
+				ELSE
+				BEGIN
+					UPDATE [Ident].[OrganizationSettings] SET MappingValue = @mappingValue,
+							UpdatedDate = GETUTCDATE()
+					WHERE MappingName = @mappingName
+					And PartyId = @PartyId
+					And SettingCategoryTypeId = @categoryId
+				END
 			END
 			set @Current_ID = @Current_ID + 1
 		end

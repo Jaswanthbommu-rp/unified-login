@@ -46,7 +46,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about the Settings based on category", Type = typeof(IList<Setting>))]
         [SwaggerResponseExamples(typeof(IList<Setting>), typeof(UnifiedSettingsExample))]
-        [Route("companines/{companyId}/settings")]
+        [Route("companies/{companyId}/settings")]
         [HttpGet]
         public HttpResponseMessage GetSettings(string category, Guid companyId, [FromUri]string[] includes)
         {
@@ -156,7 +156,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [SwaggerResponse(HttpStatusCode.OK, Description = "Settings updated")]
-        [Route("companines/{companyId}/settings")]
+        [Route("companies/{companyId}/settings")]
         [HttpPatch]
         public HttpResponseMessage UpdateUnifiedSettings([FromBody] IList<Setting> settings, string category, Guid companyId, [FromUri] string[] includes)
         {
