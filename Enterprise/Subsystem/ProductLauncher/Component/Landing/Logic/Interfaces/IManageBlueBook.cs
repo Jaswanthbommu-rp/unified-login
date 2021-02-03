@@ -153,5 +153,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <param name="companyRealPageId"></param>
         /// <returns></returns>
         List<BooksPropertyInstance> GetPropertyInstanceForCompany(Guid companyRealPageId);
+
+        ///// <summary>
+        ///// Get Property Details By CustomerPropertyId(blue book Id)
+        ///// </summary>
+        ///// <param name="customerPropertyId"></param>
+        ///// <returns></returns>
+        List<BooksPropertyInstance> GetPropertyInstanceByCustomerPropertyId(string CustomerPropertyId);
     }
 }
