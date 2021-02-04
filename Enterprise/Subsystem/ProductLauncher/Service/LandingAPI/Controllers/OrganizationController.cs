@@ -1076,7 +1076,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
 
             globals.Add(BaseType.RequestParameter, datafilter);
-
+            var cacheKey = $"getPropertyInstanceForCompany_{companyInstanceId}";
+            RPObjectCache.RemoveFromCache(cacheKey);
             List<CompanyPropertySetup> companyPropertySetup = _manageOrganization.GetPropertiesForCompany(companyInstanceId, propertyName, domain, blueId, globals);
 
             int totalRecords = 0;
@@ -1310,7 +1311,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 datafilter = new RequestParameter();
             }
             globals.Add(BaseType.RequestParameter, datafilter);
-
+            var cacheKey = $"getPropertyInstanceForCompany_{companyInstanceId}";
+            RPObjectCache.RemoveFromCache(cacheKey);
             List<CompanyPropertySetup> propertyList = _manageOrganization.GetPropertiesForCompany(companyInstanceId, propertyName, domain, blueId, globals);
 
             if (propertyList != null && propertyList.Count > 0)
