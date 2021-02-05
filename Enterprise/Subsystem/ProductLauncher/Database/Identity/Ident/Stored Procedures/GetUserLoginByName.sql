@@ -3,7 +3,6 @@
 )
 AS
 BEGIN
-	-- THIS PROC MAY NO LONGER BE USED!! DELETE IN THE FUTURE
     SELECT ul.UserId,
         ul.PersonPartyId,
         ul.[LoginName],
