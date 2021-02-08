@@ -1,7 +1,7 @@
 ﻿CREATE PROCEDURE [Enterprise].[GetAllProducts] @ProductId INT = NULL
 AS  
 BEGIN  
-SELECT pt.ProductTypeId as TypeId, pt.Name as TypeName,  
+SELECT pt.ProductTypeId as TypeId, pt.Name as TypeName, pt.ProductTypeGuid, 
        pt2.ProductTypeId as ParentTypeId, pt2.Name as ParentTypeName,  
        p.ProductId,  p.ProductGUID, p.Name,  
        p.Description, p.ProductTypeId,p.BooksProductCode,  
