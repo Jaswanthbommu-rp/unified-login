@@ -829,7 +829,6 @@ exec [Enterprise].CreateNewProduct
 	@SubjectIdSamlAttribute =''
 
 GO
-
 /***********************************
 Add UsePrimaryProperties ORG Level
 ***********************************/
@@ -1079,7 +1078,6 @@ END
 
 		
 GO
-
    --Panel Script for Sustain:Water
 DECLARE @UserId bigint,
        @ProductId int = 59,
