@@ -60,6 +60,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         protected GbProductMap BlueBookGbProductMap { get; set; }
 
+        /// <summary>
+        /// Productudm source code
+        /// </summary>
+        protected string _udmSourceCode = "";
+
+        /// <summary>
+        /// Product Details
+        /// </summary>
+        protected GbProductMap _productDetails = new GbProductMap();
+
+        /// <summary>
+        /// Product Repository
+        /// </summary>
+        protected IProductRepository _productRepository = new ProductRepository();
         #endregion
 
         #region Ctor
@@ -70,6 +84,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         protected ManageProductInvokerBase(ProductEnum productType, long editorPersonaId, long subjectPersonaId, DefaultUserClaim userClaims)
         {
             _dataCollector = new DataCollector();
+            _userClaims = userClaims;
+            ProductId = (int)ProductEnum.LeadManagement;
+            ProductType = productType;
+            _productDetails = _productRepository.GetBooksMasterProductDetail(ProductId);
+            _udmSourceCode = _productDetails.UDMSourceCode?.Length > 0 ? _productDetails.UDMSourceCode : _productDetails.BooksProductCode;
             Init(productType, editorPersonaId, subjectPersonaId, userClaims);
         }
 
