@@ -312,6 +312,7 @@
     <Compile Include="Controllers\StatusTypeController.cs" />
     <Compile Include="Controllers\TelecommunicationNumberController.cs" />
     <Compile Include="Controllers\TestController.cs" />
+    <Compile Include="Controllers\UnifiedSettingsController.cs" />
     <Compile Include="Controllers\UserController.cs" />
     <Compile Include="Controllers\SamlController.cs" />
     <Compile Include="Controllers\UserLoginController.cs" />
@@ -367,6 +368,7 @@
     <Folder Include="Views\ProductUser\" />
     <Folder Include="Views\Profile\" />
     <Folder Include="Views\TelecommunicationNumber\" />
+    <Folder Include="Views\UnifiedSettings\" />
     <Folder Include="Views\UserLogin\" />
     <Folder Include="Views\UserManagement\" />
   </ItemGroup>

@@ -1078,3 +1078,134 @@ END
 
 		
 GO
+   --Panel Script for Sustain:Water
+DECLARE @UserId bigint,
+       @ProductId int = 59,
+       @productSettingId INT,
+       @productSettingTypeId INT,
+       @productGroupSettingTypeId INT,
+       @ConfigurationId INT,
+       @ParentControlID INT,
+       @ControlID INT,
+       @MaxControlId INT,
+       @MaxControlAttributeId INT,
+       @Now datetime = GETDATE();
+
+SELECT @UserId = UserId
+FROM   Ident.UserLogin
+WHERE  LoginName LIKE 'realpagead@%'
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM [UserManagement].[ProductPage] WHERE ProductId = @ProductId)
+BEGIN
+		SET IDENTITY_INSERT [UserManagement].[Control] ON 
+
+		SELECT @MaxControlId = max(ControlId) from UserManagement.Control
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 1, NULL, 8, N'IntelligentBuildingWaterUIId', NULL, NULL, 1, @UserId, @Now)
+		
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 2, @MaxControlId + 1, 9, N'IntelligentBuildingWaterAccessRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)
+		
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 3, @MaxControlId + 2, 2, N'IntelligentBuildingWaterAccessRolesSelectGridUIId', NULL, NULL, 2, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 4, @MaxControlId + 3, 7, N'IntelligentBuildingWaterAccessRadioUIId', NULL, N'isAssigned', 1, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 5, @MaxControlId + 3, 5, N'IntelligentBuildingWaterAccessRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 6, @MaxControlId + 3, 5, N'IntelligentBuildingWaterAccessRoleTypeLabelUIId', N'Role Type', N'roletype', 3, @UserId, @Now)
+		
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 7, @MaxControlId + 3, 11, N'IntelligentBuildingWaterAccessIconUIId', NULL, N'InfoIcon', 4, @UserId, @Now)
+		
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 8, @MaxControlId + 1, 9, N'IntelligentBuildingWaterAccessPropertiesTabUIId', N'Properties', NULL, 2, @UserId, @Now)
+		
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 9, @MaxControlId + 8, 1, N'IntelligentBuildingWaterAccessAllowaccesstoallcurrentandfuturepropertiesPropertiesSwitchUIId', N'Assign access to current and new properties automatically', N'allProperties', 1, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 10, @MaxControlId + 8, 3, N'IntelligentBuildingWaterAccessPropertiesMultiSelectGridUIId', NULL, NULL, 2, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 11, @MaxControlId + 10, 10, N'IntelligentBuildingWaterAccessCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 12, @MaxControlId + 10, 5, N'IntelligentBuildingWaterAccessPropertyLabelUIId', N'Property', N'name', 2, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 13, @MaxControlId + 10, 5, N'IntelligentBuildingWaterAccessCityLabelUIId', N'City', N'city', 3, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 14, @MaxControlId + 10, 5, N'IntelligentBuildingWaterAccessStateLabelUIId', N'State', N'state', 4, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 15, @MaxControlId + 7, 5, N'IntelligentBuildingWaterAccessRoleDetailsLabelUIId', N'Role Details', NULL, 1, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 16, @MaxControlId + 7, 12, N'IntelligentBuildingWaterAccessGridUIId', N'NULL', NULL, 1, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 17, @MaxControlId + 16, 5, N'IntelligentBuildingWaterAccessRightLabelUIId', N'Right', 'description', 1, @UserId, @Now)
+
+		 
+		SET IDENTITY_INSERT [UserManagement].[Control] OFF
+		
+		SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+
+		SELECT @MaxControlAttributeId = max(ControlAttributeId) from [UserManagement].[ControlAttribute]
+
+		INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlAttributeId + 1, @MaxControlId + 2, N'Default', N'True', @UserId, @Now)
+
+		INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlAttributeId + 2, @MaxControlId + 3, N'ShowSelectAll', N'False', @UserId, @Now)
+
+		INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlAttributeId + 3, @MaxControlId + 7, N'InfoIcon', N'Slide', @UserId, @Now)
+
+		SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+		SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+
+		INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName], [CreatedBy], [CreatedDate], [IsActive], [ProductPageTypeId]) 
+		VALUES (43, 59, N'Sustain: Water Product Access', @UserId, @Now, 1, 1)
+
+		SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+
+		SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+
+		INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate])
+		VALUES (53, 43, @MaxControlId + 1, @UserId, @Now)
+
+		SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+            
+END
+GO
+
+Declare @ServerName SYSNAME = @@SERVERNAME;
+
+IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B')
+BEGIN
+	IF EXISTS(SELECT 1 FROM Ident.SamlProductSettings where ProductId = 59 and LoginUri ='www.abcwater.realpage.com')
+   BEGIN
+          UPDATE Ident.SamlProductSettings SET LoginUri = 'https://sustain-water.realpage.com/' where ProductId = 59 
+   END
+END
+GO
+IF EXISTS(SELECT 1 FROM Enterprise.Product where ProductId = 59 AND Name = N'Intelligent Building Water' AND Description=N'Intelligent Building Water' )
+BEGIN
+   UPDATE Enterprise.Product SET Name= N'Sustain: Water', Description= N'Sustain: Water' where ProductId = 59 
+END
+GO
+
+
+-- defect 701779
+update [Security].[Right]
+set TargetProductId = (select ProductId from Enterprise.Product where Name = 'Reporting' and BooksProductCode = 'RPT')
+where RightName = 'AccessUnifiedReporting'

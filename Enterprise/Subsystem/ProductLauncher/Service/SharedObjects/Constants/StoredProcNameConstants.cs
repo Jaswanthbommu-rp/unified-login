@@ -384,6 +384,10 @@
         public const string SP_GetSecuritySetting = "Ident.GetSecuritySetting";
         public const string SP_UpdateSecuritySetting = "Ident.UpdateSecuritySetting";
 
+        //Unified Setting
+        public const string SP_GetUnifiedSetting = "Ident.GetUnifiedSetting";
+        public const string SP_UpdateUnifiedSetting = "Ident.UpdateUnifiedSetting";
+
         //Custom Fields
         public const string SP_AddUpdateFieldFromJSON = "CustomField.AddUpdateFieldFromJSON";
         public const string SP_GetFieldsByMasterId = "CustomField.GetFieldsByMasterId";
