@@ -84,6 +84,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         protected ManageProductInvokerBase(ProductEnum productType, long editorPersonaId, long subjectPersonaId, DefaultUserClaim userClaims)
         {
             _dataCollector = new DataCollector();
+            _userClaims = userClaims;
+            ProductId = (int)ProductEnum.LeadManagement;
+            ProductType = productType;
+            _productDetails = _productRepository.GetBooksMasterProductDetail(ProductId);
+            _udmSourceCode = _productDetails.UDMSourceCode?.Length > 0 ? _productDetails.UDMSourceCode : _productDetails.BooksProductCode;
             Init(productType, editorPersonaId, subjectPersonaId, userClaims);
         }
 
