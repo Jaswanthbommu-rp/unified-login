@@ -1267,7 +1267,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
             var currentProperty = _manageOrganization.GetPropertyByInstanceId(propertyInstanceId);
 
-            if (currentProperty != null && currentProperty.FirstOrDefault().Name.ToLower() != propertyName.ToLower())
+            if (currentProperty != null && !currentProperty.FirstOrDefault().Name.Equals(propertyName, StringComparison.Ordinal))
             {
                 _repositoryResponse = _manageOrganization.UpdateProperty(propertyInstanceId, propertyName);
                 if (_repositoryResponse.Id == 0)
