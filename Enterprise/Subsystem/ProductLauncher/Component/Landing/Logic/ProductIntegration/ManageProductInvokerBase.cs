@@ -83,12 +83,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         protected ManageProductInvokerBase(ProductEnum productType, long editorPersonaId, long subjectPersonaId, DefaultUserClaim userClaims)
         {
-            _dataCollector = new DataCollector();
-            _userClaims = userClaims;
-            ProductId = (int)ProductEnum.LeadManagement;
-            ProductType = productType;
-            _productDetails = _productRepository.GetBooksMasterProductDetail(ProductId);
-            _udmSourceCode = _productDetails.UDMSourceCode?.Length > 0 ? _productDetails.UDMSourceCode : _productDetails.BooksProductCode;
+            _dataCollector = new DataCollector();            
             Init(productType, editorPersonaId, subjectPersonaId, userClaims);
         }
 
@@ -111,7 +106,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             ProductType = productType;
             ProductId = (int) ProductType;
             _userClaims = userClaims;
-
+            _productDetails = _productRepository.GetBooksMasterProductDetail(ProductId);
+            _udmSourceCode = _productDetails.UDMSourceCode?.Length > 0 ? _productDetails.UDMSourceCode : _productDetails.BooksProductCode;
             // Get editor & subject user details & Verify editor user is the logged-in user
             GetValidateEditorSubjectUserDetails(editorPersonaId, subjectPersonaId);
 
