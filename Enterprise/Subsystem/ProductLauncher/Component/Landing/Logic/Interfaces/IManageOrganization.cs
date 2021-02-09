@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
@@ -175,6 +176,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// </summary>
 		/// <param name="customerPropertyId">customerPropertyId</param>
 		/// <returns></returns>
-		List<PropertySetup> SearchPropertyDetailsByCustomerPropertyId(string customerPropertyId);
+		PropertyInstanceSearch SearchPropertyDetailsByCustomerPropertyId(string customerPropertyId);
 	}
 }
