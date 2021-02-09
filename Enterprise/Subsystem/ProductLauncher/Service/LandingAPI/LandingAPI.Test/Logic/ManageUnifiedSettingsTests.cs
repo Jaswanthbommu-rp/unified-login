@@ -81,7 +81,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             //Act
             int NumberOfProperties = type.GetProperties().Length;
             IManageUnifiedSettings manageSecuritySettings = new ManageUnifiedSettings(settingsRepository, _userUserClaim);
-            IList<Setting> securitySettings = manageSecuritySettings.GetUnifiedSettings(category, partyId, null);
+            IList<Setting> securitySettings = manageSecuritySettings.GetUnifiedSettings(category, partyId);
 
             Assert.True(
                 securitySettings.Count == _expectedUnifiedSettings.Count

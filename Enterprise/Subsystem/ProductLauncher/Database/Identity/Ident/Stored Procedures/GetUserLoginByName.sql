@@ -14,9 +14,10 @@ BEGIN
         ULP.FromDate,
         ULP.ThruDate,
 		ULP.StatusThruDate AS StatusThruDate,
-		ul.LastLoginDate 'LastLogin',
+		ul.LastLoginDate [LastLogin],
         '' AS [TimeZoneOffset],--MS.Value [TimeZoneOffset],
-		ul.TwoFactorEnabled [TwoFactorEnabled]
+		ul.TwoFactorEnabled [TwoFactorEnabled],
+		ul.TwoFactorLastNotifyDate [TwoFactorLastNotifyDate]
     FROM Ident.UserLogin ul
         JOIN Enterprise.Party p ON p.PartyId = UL.PersonPartyId
 		INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginId = UL.UserId AND ULP.PrimaryOrganization = 1 -- ONLY JOIN TO THE PRIMARY ORG FOR THIS PROC

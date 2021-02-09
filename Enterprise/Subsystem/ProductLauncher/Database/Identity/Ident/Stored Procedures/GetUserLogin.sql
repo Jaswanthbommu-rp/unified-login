@@ -26,7 +26,8 @@ AS
             ULP.StatusThruDate,
             ul.LastLoginDate [LastLogin],
             '' AS [TimeZoneOffset],--MS.Value [TimeZoneOffset],
-			ul.TwoFactorEnabled [TwoFactorEnabled]
+			ul.TwoFactorEnabled [TwoFactorEnabled],
+            ul.TwoFactorLastNotifyDate [TwoFactorLastNotifyDate]
         FROM Ident.UserLogin ul
             INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginId = Ul.UserId
             JOIN Enterprise.Party p ON p.PartyId = ul.PersonPartyId
