@@ -760,7 +760,7 @@ BEGIN
 			VALUES (@MaxControlId +7, @MaxControlId +5, 12, N'FinancialSuiteProductAccessLocationGroupDetailsGridUIId', NULL, NULL, 2, @UserId, @Now)
 
 			INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
-			VALUES (@MaxControlId +8, @MaxControlId +7, 5, N'FinancialSuiteProductAccessLocationGroupDetailsPropertyLabelUIId', N'Entity', N'propertyName', 2, @UserId, @Now)
+			VALUES (@MaxControlId +8, @MaxControlId +7, 5, N'FinancialSuiteProductAccessLocationGroupDetailsPropertyLabelUIId', N'Entity', N'name', 2, @UserId, @Now)
 			
 			SET IDENTITY_INSERT [UserManagement].[Control] OFF
 END
@@ -790,6 +790,7 @@ END
 			END
 			
             SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
 GO
 
 --CREATE new product called Reporting
@@ -828,3 +829,390 @@ exec [Enterprise].CreateNewProduct
 	@SubjectIdSamlAttribute =''
 
 GO
+/***********************************
+Add UsePrimaryProperties ORG Level
+***********************************/
+DECLARE @ProductSettingTypeId INT
+DECLARE @ProductSettingId INT
+DECLARE @PRoductId INT
+DECLARE @COnfigurationId INT
+DECLARE @MasterConFigurationTypeId VARCHAR(100);
+
+DECLARE @NOW DATETIME = GETUTCDATE(); 
+
+SELECT @MasterConFigurationTypeId = MasterConfigurationTypeId
+FROM Enterprise.MasterConfigurationType
+WHERE Name = 'Organization';
+
+IF NOT EXISTS(SELECT 1 FROM Enterprise.MasterSettingType WHERE Name = 'UsePrimaryProperties' AND MasterConfigurationTypeId = @MasterConFigurationTypeId)
+BEGIN
+INSERT INTO Enterprise.MasterSettingType
+(Name,
+ MasterConfigurationTypeId
+)
+VALUES
+('UsePrimaryProperties',
+ @MasterConFigurationTypeId
+);
+END
+
+GO
+if not exists ( select top 1 1 from Enterprise.ProductSettingType where name = 'UsePrimaryProperties' )
+begin
+	insert into enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'UsePrimaryProperties', 'Should the product consume UPFM property', 0)
+end
+
+
+DECLARE @NOW DATETIME = GETUTCDATE(); 
+declare @productlist table ( entid int identity, productid int, productsettingtype varchar(500), productsettingvalue varchar(2000))
+insert into @productlist (productid, productsettingtype,productsettingvalue)
+Select productid,'UsePrimaryProperties','1' From enterprise.product
+	
+--select * from @productlist
+
+declare @MAX_ID INT
+declare @Current_ID INT = 1
+declare @CurrentProductId INT = 1
+
+select @MAX_ID = max(entid) from @productlist
+
+while @Current_ID <= @MAX_ID
+begin
+	declare @currentSettingType varchar(500)
+	declare @currentsettingValue varchar(2000)
+
+	select @CurrentProductId = productid , @currentSettingType = productsettingtype, @currentSettingValue = productsettingvalue
+		from @productlist where entid = @Current_ID
+
+	--print 'productid = ' + convert(varchar,@currentproductid)
+
+	if not exists (
+	select top 1 1 
+		FROM Enterprise.GlobalProductConfiguration gpc  
+		JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId  
+		JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId  
+		JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId  
+			WHERE  gpc.ProductId = @CurrentProductId  
+		AND ((@NOW BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@NOW >= gpc.FromDate AND gpc.ThruDate IS NULL))  
+		AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))  
+		AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))  
+		AND pst.Name = @currentSettingType
+		AND ps.Value = @currentsettingValue
+	)
+	begin
+		declare @currentproductconfigurationid INT
+		select distinct top 1 @currentproductconfigurationid = pc.configurationid
+			FROM Enterprise.GlobalProductConfiguration gpc  
+			JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId  
+			JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId  
+			JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId  
+				WHERE  gpc.ProductId = @CurrentProductId
+			AND ((@NOW BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@NOW >= gpc.FromDate AND gpc.ThruDate IS NULL))  
+			AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))  
+			AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))  
+		order by pc.ConfigurationId desc
+
+		if (@currentproductconfigurationid is not null)
+		begin
+			insert into enterprise.ProductSetting ( productid, ProductSettingTypeId, value, FromDate )
+				select @CurrentProductId, productsettingtypeid, @currentSettingValue, GETUTCDATE()
+					from enterprise.ProductSettingType where name = @currentSettingType
+			insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate, ThruDate )
+				values ( @currentproductconfigurationid, @@IDENTITY, GETUTCDATE(), null )
+		end
+	end
+	
+	set @Current_ID = @Current_ID + 1
+end
+
+GO
+--insert userprimaryproperties data for orgs
+DECLARE @MasterConfigurationId BIGINT;
+DECLARE @MasterConfigurationTypeId BIGINT;
+DECLARE @MasterSettingId INT;
+Declare @MasterSettingTypeId INT;
+DECLARE @NOW DATETIME = GETUTCDATE(); 
+
+ SELECT @MasterConfigurationTypeId = MasterConfigurationTypeId
+ FROM Enterprise.MasterConfigurationType
+ WHERE Name = 'Organization';
+
+ 
+	Select @MasterSettingTypeId = MasterSettingTypeId from Enterprise.MasterSettingType where Name = 'UsePrimaryProperties'
+
+				IF NOT EXISTS (
+                    SELECT 1
+                    FROM Enterprise.MasterSetting
+                    WHERE Value = '0'
+					AND MasterSettingTypeId = @MasterSettingTypeId
+                )
+                    BEGIN
+                        INSERT INTO Enterprise.MasterSetting
+                        (MasterSettingTypeId, 
+                         Value, 
+                         FromDate
+                        )
+                        VALUES
+                        (@MasterSettingTypeId, 
+                         '0', 
+                         @NOW
+                        );                      
+                END;
+      
+
+				IF NOT EXISTS
+                (
+                    SELECT 1
+                    FROM Enterprise.MasterSetting
+                    WHERE Value = '1'
+					AND MasterSettingTypeId = @MasterSettingTypeId
+                )
+                BEGIN
+                        INSERT INTO Enterprise.MasterSetting
+                        (MasterSettingTypeId, 
+                         Value, 
+                         FromDate
+                        )
+                        VALUES
+                        (@MasterSettingTypeId, 
+                         '1', 
+                         @NOW
+                        );
+				END;
+
+ 
+declare @orglist table ( entid int identity, partyid int)
+insert into @orglist (partyid)
+Select PartyId From enterprise.Organization
+	
+--select * from @productlist
+SELECT @MasterSettingId = MasterSettingId
+ FROM Enterprise.MasterSetting AS MS
+ INNER JOIN Enterprise.MasterSettingType AS MST ON MST.MasterSettingTypeId = MS.MasterSettingTypeId
+ WHERE MST.MasterConfigurationTypeId = @MasterConfigurationTypeId
+ AND MST.Name = 'UsePrimaryProperties'
+ AND MS.Value = '0'
+
+declare @MAX_ID INT
+declare @Current_ID INT = 1
+declare @Currentpartyid INT = 1
+
+select @MAX_ID = max(entid) from @orglist
+
+while @Current_ID <= @MAX_ID
+begin
+	select @Currentpartyid = partyid
+		from @orglist where entid = @Current_ID
+
+		IF NOT EXISTS ( SELECT 1 FROM Enterprise.MasterConfiguration
+					WHERE MasterConfigurationTypeId = @MasterConfigurationTypeId
+					AND AttributeId = @Currentpartyid)
+                 BEGIN
+                     INSERT INTO Enterprise.MasterConfiguration
+						(MasterConfigurationTypeId,
+						 AttributeId,
+						 FromDate
+						)
+                     VALUES
+						(@MasterConfigurationTypeId,
+						 @Currentpartyid,
+						 @NOW
+						);
+                     SELECT @MasterConfigurationId = SCOPE_IDENTITY();
+                 END;
+				 ELSE
+				BEGIN
+				SELECT @MasterConfigurationId = MasterConfigurationId FROM Enterprise.MasterConfiguration
+					WHERE MasterConfigurationTypeId = @MasterConfigurationTypeId
+					AND AttributeId = @Currentpartyid
+				END
+
+             IF NOT EXISTS
+				(
+					SELECT 1
+					FROM Enterprise.MasterConfigurationSetting
+					WHERE MasterConfigurationId = @MasterConfigurationId
+						  AND MasterSettingId = @MasterSettingId
+				)
+                 BEGIN
+                     INSERT INTO Enterprise.MasterConfigurationSetting
+						(MasterConfigurationId,
+						 MasterSettingId
+						)
+                     VALUES
+						(@MasterConfigurationId,
+						 @MasterSettingId
+						);
+                 END;
+	set @Current_ID = @Current_ID + 1
+end
+
+GO
+--Accounting Location Group
+Declare @MCMasterControlId int,@MCUPPControlId int,@MaxControlId int,@MaxControlAttributeId int
+DECLARE @UserId bigint,
+	@ProductId int ,
+	@Now datetime = GETDATE()
+
+SELECT	@UserId = UserId
+FROM	Ident.UserLogin
+WHERE	LoginName LIKE 'realpagead@%'
+
+Select @MCMasterControlId = ControlId From UserManagement.Control 
+Where UIId = 'MarketingCenterProductAccessPropertiesTabUIId' AND ControlTypeId = 9
+
+Select @MCUPPControlId = ControlId From UserManagement.Control 
+Where UIId = 'MarketingCenterProductAccessUsePrimaryPropertiesSwitchUIId' AND ControlTypeId = 1
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[Control] WHERE ControlId = @MCUPPControlId)
+BEGIN
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	SELECT @MaxControlId = max(ControlId) from UserManagement.Control
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@MaxControlId +1, @MCMasterControlId, 1, N'MarketingCenterProductAccessUsePrimaryPropertiesSwitchUIId', N'Use Primary Properties', N'UsePrimaryProperties', 2, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+END
+
+		
+GO
+   --Panel Script for Sustain:Water
+DECLARE @UserId bigint,
+       @ProductId int = 59,
+       @productSettingId INT,
+       @productSettingTypeId INT,
+       @productGroupSettingTypeId INT,
+       @ConfigurationId INT,
+       @ParentControlID INT,
+       @ControlID INT,
+       @MaxControlId INT,
+       @MaxControlAttributeId INT,
+       @Now datetime = GETDATE();
+
+SELECT @UserId = UserId
+FROM   Ident.UserLogin
+WHERE  LoginName LIKE 'realpagead@%'
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM [UserManagement].[ProductPage] WHERE ProductId = @ProductId)
+BEGIN
+		SET IDENTITY_INSERT [UserManagement].[Control] ON 
+
+		SELECT @MaxControlId = max(ControlId) from UserManagement.Control
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 1, NULL, 8, N'IntelligentBuildingWaterUIId', NULL, NULL, 1, @UserId, @Now)
+		
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 2, @MaxControlId + 1, 9, N'IntelligentBuildingWaterAccessRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)
+		
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 3, @MaxControlId + 2, 2, N'IntelligentBuildingWaterAccessRolesSelectGridUIId', NULL, NULL, 2, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 4, @MaxControlId + 3, 7, N'IntelligentBuildingWaterAccessRadioUIId', NULL, N'isAssigned', 1, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 5, @MaxControlId + 3, 5, N'IntelligentBuildingWaterAccessRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 6, @MaxControlId + 3, 5, N'IntelligentBuildingWaterAccessRoleTypeLabelUIId', N'Role Type', N'roletype', 3, @UserId, @Now)
+		
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 7, @MaxControlId + 3, 11, N'IntelligentBuildingWaterAccessIconUIId', NULL, N'InfoIcon', 4, @UserId, @Now)
+		
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 8, @MaxControlId + 1, 9, N'IntelligentBuildingWaterAccessPropertiesTabUIId', N'Properties', NULL, 2, @UserId, @Now)
+		
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 9, @MaxControlId + 8, 1, N'IntelligentBuildingWaterAccessAllowaccesstoallcurrentandfuturepropertiesPropertiesSwitchUIId', N'Assign access to current and new properties automatically', N'allProperties', 1, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 10, @MaxControlId + 8, 3, N'IntelligentBuildingWaterAccessPropertiesMultiSelectGridUIId', NULL, NULL, 2, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 11, @MaxControlId + 10, 10, N'IntelligentBuildingWaterAccessCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 12, @MaxControlId + 10, 5, N'IntelligentBuildingWaterAccessPropertyLabelUIId', N'Property', N'name', 2, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 13, @MaxControlId + 10, 5, N'IntelligentBuildingWaterAccessCityLabelUIId', N'City', N'city', 3, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 14, @MaxControlId + 10, 5, N'IntelligentBuildingWaterAccessStateLabelUIId', N'State', N'state', 4, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 15, @MaxControlId + 7, 5, N'IntelligentBuildingWaterAccessRoleDetailsLabelUIId', N'Role Details', NULL, 1, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 16, @MaxControlId + 7, 12, N'IntelligentBuildingWaterAccessGridUIId', N'NULL', NULL, 1, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 17, @MaxControlId + 16, 5, N'IntelligentBuildingWaterAccessRightLabelUIId', N'Right', 'description', 1, @UserId, @Now)
+
+		 
+		SET IDENTITY_INSERT [UserManagement].[Control] OFF
+		
+		SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+
+		SELECT @MaxControlAttributeId = max(ControlAttributeId) from [UserManagement].[ControlAttribute]
+
+		INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlAttributeId + 1, @MaxControlId + 2, N'Default', N'True', @UserId, @Now)
+
+		INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlAttributeId + 2, @MaxControlId + 3, N'ShowSelectAll', N'False', @UserId, @Now)
+
+		INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlAttributeId + 3, @MaxControlId + 7, N'InfoIcon', N'Slide', @UserId, @Now)
+
+		SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+		SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+
+		INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName], [CreatedBy], [CreatedDate], [IsActive], [ProductPageTypeId]) 
+		VALUES (43, 59, N'Sustain: Water Product Access', @UserId, @Now, 1, 1)
+
+		SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+
+		SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+
+		INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate])
+		VALUES (53, 43, @MaxControlId + 1, @UserId, @Now)
+
+		SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+            
+END
+GO
+
+Declare @ServerName SYSNAME = @@SERVERNAME;
+
+IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B')
+BEGIN
+	IF EXISTS(SELECT 1 FROM Ident.SamlProductSettings where ProductId = 59 and LoginUri ='www.abcwater.realpage.com')
+   BEGIN
+          UPDATE Ident.SamlProductSettings SET LoginUri = 'https://sustain-water.realpage.com/' where ProductId = 59 
+   END
+END
+GO
+IF EXISTS(SELECT 1 FROM Enterprise.Product where ProductId = 59 AND Name = N'Intelligent Building Water' AND Description=N'Intelligent Building Water' )
+BEGIN
+   UPDATE Enterprise.Product SET Name= N'Sustain: Water', Description= N'Sustain: Water' where ProductId = 59 
+END
+GO
+
+
+-- defect 701779
+update [Security].[Right]
+set TargetProductId = (select ProductId from Enterprise.Product where Name = 'Reporting' and BooksProductCode = 'RPT')
+where RightName = 'AccessUnifiedReporting'
+
+
+-- Update UDMSourceCode for ILMLM and ILMLA Products
+IF EXISTS(SELECT * FROM Enterprise.Product WHERE ProductId = 40 AND UDMSourceCode IS NULL)
+	UPDATE Enterprise.Product SET UDMSourceCode = 'ILMLA' WHERE ProductId = 40
+IF EXISTS(SELECT * FROM Enterprise.Product WHERE ProductId = 41 AND UDMSourceCode IS NULL)
+	UPDATE Enterprise.Product SET UDMSourceCode = 'ILMLA' WHERE ProductId = 41

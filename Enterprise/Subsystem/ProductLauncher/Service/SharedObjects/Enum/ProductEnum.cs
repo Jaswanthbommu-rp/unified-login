@@ -647,7 +647,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// LeaseLabs
 		/// </summary>
 		[Description("LeaseLabs")]
-		LeaseLabs = 68
+		LeaseLabs = 68,
+		/// <summary>
+		/// Reporting
+		/// </summary>
+		[Description("RPT")]
+		Reporting = 67
 	}
 
 	/// <summary>
@@ -909,6 +914,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		[Description("LeaseLabs")]
 		ManageLeaseLabsProductAccess = 68,
 
+
+		/// <summary>
+		/// Reporting
+		/// </summary>
+		[Description("RPT")]
+		Reporting = 67,
 
 	}
 	public enum ProductProcVersion

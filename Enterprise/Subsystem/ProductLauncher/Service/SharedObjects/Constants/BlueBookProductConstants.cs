@@ -299,5 +299,8 @@
 		/// LeaseLabs
 		/// </summary>
 		public const string LeaseLabs = "LeaseLabs";
+		/// Renter Engagement
+		/// </summary>
+		public const string Reporting = "RPT";
 	}
 }

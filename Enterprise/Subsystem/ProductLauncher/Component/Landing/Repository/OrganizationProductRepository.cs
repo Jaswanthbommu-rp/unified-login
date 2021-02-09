@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using Serilog.Events;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 {
@@ -146,5 +148,91 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 			return removeUsersForProduct;
 		}
 
-	}
+		/// <summary>
+		/// Create organization Product Setting (Expire the setting if exists)
+		/// </summary>
+		/// <param name="PartyId">User OrgId</param>
+		/// <param name="ProductId">ProductId</param>
+		/// <param name="ProductSettingTypeId">Product Setting TypeId</param>
+		/// <param name="Value">Product Setting Type Value</param>
+		/// <returns>Repository response object</returns>
+		public RepositoryResponse CreateOrganizationProductSetting(long PartyId, int ProductId, int ProductSettingTypeId, string Value)
+		{
+			DateTime utcNow = DateTime.UtcNow;
+			DateTime utcMaxValue = DateTime.MaxValue.ToUniversalTime();
+			RepositoryResponse repositoryResponse = new RepositoryResponse();
+			int ProductSettingId = 0;
+			int ConfigurationId = 0;
+			Dictionary<string, object> dataLog = new Dictionary<string, object>();
+			
+			using (var repository = GetRepository())
+			{
+				try
+				{
+					//Setup the parameter values to CreatePersonaConfiguration
+					dynamic param = new
+					{
+						PartyId = PartyId,
+						ProductId = ProductId,
+					};
+					//Create CreatePersonaConfiguration
+					repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateOrganizationProductConfiguration, param);
+					
+					if (repositoryResponse.Id == 0)
+					{
+						repositoryResponse.ErrorMessage = "CreateOrganizationProductSetting Error: CreatePersonaConfiguration failed.";						
+					}
+					else
+					{
+						ConfigurationId = Convert.ToInt32(repositoryResponse.Id);
+						//Setup the parameter values to CreateProductSetting
+						param = new
+						{
+							ProductId = ProductId,
+							ProductSettingTypeId = ProductSettingTypeId,
+							Value = Value,
+							FromDate = utcNow,
+							ProductSettingId = ProductSettingId
+						};
+						//CreateProductSetting
+						repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateProductSetting, param);
+						
+						if (repositoryResponse.Id == 0)
+						{
+							repositoryResponse.ErrorMessage = "CreateOrganizationProductSetting Error: CreateProductSetting failed.";
+						}
+						else
+						{
+							ProductSettingId = Convert.ToInt32(repositoryResponse.Id);
+							//Setup the parameter values to CreateProductConfigurationbyPersonaId
+							param = new
+							{
+								OrgPartyId = PartyId,
+								ConfigurationId = ConfigurationId,
+								ProductId = ProductId,
+								ProductSettingID = ProductSettingId
+							};
+							//CreateProductConfigurationbyPartyId
+							repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateOrganizationProductConfigurationbyPartyId, param);
+							
+							if (repositoryResponse.Id == 0)
+							{
+								repositoryResponse.ErrorMessage = "CreateOrganizationProductSetting Error: CreateOrganizationProductConfigurationbyPartyId failed.";
+								
+							}
+
+						}
+					}
+				}
+				catch (Exception exception)
+				{
+					repositoryResponse = new RepositoryResponse();
+					repositoryResponse.ErrorMessage = $"Create/Update Organization Product Setting Error: " + exception.Message;
+				}
+				
+				return repositoryResponse;
+			}
+		}
+		
+    }
 }

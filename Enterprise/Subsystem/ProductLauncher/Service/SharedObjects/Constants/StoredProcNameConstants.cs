@@ -157,7 +157,8 @@
 		public const string SP_ListProductUsersForOrganization = "Enterprise.ListProductUsersForOrganization";
         public const string SP_ListCompanySetup = "Enterprise.GetCompanyList";
         public const string SP_DisableUsersForProduct = "Enterprise.DisableUsersForProduct";
-
+        public const string SP_CreateOrganizationProductConfiguration = "Enterprise.CreateOrganizationProductConfiguration";
+        public const string SP_CreateOrganizationProductConfigurationbyPartyId = "Enterprise.CreateOrganizationProductConfigurationbyPartyId";
         //PartyRelationship
         public const string SP_GetPartyRelationshipByRealPageId = "Enterprise.GetPartyRelationshipByRealPageId";
 
@@ -380,6 +381,10 @@
         //Security Setting
         public const string SP_GetSecuritySetting = "Ident.GetSecuritySetting";
         public const string SP_UpdateSecuritySetting = "Ident.UpdateSecuritySetting";
+
+        //Unified Setting
+        public const string SP_GetUnifiedSetting = "Ident.GetUnifiedSetting";
+        public const string SP_UpdateUnifiedSetting = "Ident.UpdateUnifiedSetting";
 
         //Custom Fields
         public const string SP_AddUpdateFieldFromJSON = "CustomField.AddUpdateFieldFromJSON";

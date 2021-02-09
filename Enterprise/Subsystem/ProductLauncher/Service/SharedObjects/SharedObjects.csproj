@@ -144,6 +144,7 @@
     <Compile Include="BlackBook\Company.cs" />
     <Compile Include="BlackBook\CompanyInstance.cs" />
     <Compile Include="BlackBook\CompanyInstanceAdd.cs" />
+    <Compile Include="BlackBook\PropertyInstanceAddress.cs" />
     <Compile Include="BlackBook\CompanyInstanceAddress.cs" />
     <Compile Include="BlackBook\CompanyLocation.cs" />
     <Compile Include="BlackBook\CompanyPropertyInstanceMap.cs" />
@@ -345,6 +346,7 @@
     <Compile Include="Landing\SecuritySettings.cs" />
     <Compile Include="Landing\SortTableType.cs" />
     <Compile Include="Landing\StatusType.cs" />
+    <Compile Include="Landing\UnifiedSetting.cs" />
     <Compile Include="Landing\UserCompaniesProperties.cs" />
     <Compile Include="Landing\UserEmployee.cs" />
     <Compile Include="Landing\UserOrganizationExists.cs" />

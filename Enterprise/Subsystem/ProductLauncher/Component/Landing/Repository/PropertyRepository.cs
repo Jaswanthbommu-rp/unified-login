@@ -268,6 +268,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 ,@Latitude		= propertyInstance.Latitude
                 ,@Longitude		= propertyInstance.Longitude
                 ,@CustomerPropertyId = propertyInstance.CustomerPropertyId
+                ,@Domain = propertyInstance.Domain
             };
 
             using (var repository = GetRepository())

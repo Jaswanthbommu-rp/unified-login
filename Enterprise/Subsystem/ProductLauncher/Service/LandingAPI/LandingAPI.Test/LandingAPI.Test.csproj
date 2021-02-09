@@ -137,6 +137,8 @@
     <Compile Include="ControllerTest\ContactMechanismUsageTypeTests.cs" />
     <Compile Include="ControllerTest\DashboardTest.cs" />
     <Compile Include="ControllerTest\ElectronicAddressTests.cs" />
+    <Compile Include="ControllerTest\ProductPanelTest.cs" />
+    <Compile Include="ControllerTest\UnifiedSettingsControllerTest.cs" />
     <Compile Include="Logic\Enterprise\EnterpriseUserTests.cs" />
     <Compile Include="ControllerTest\OrganizationTests.cs" />
     <Compile Include="ControllerTest\PartyRelationshipTests.cs" />
@@ -147,6 +149,7 @@
     <Compile Include="ControllerTest\WebHookTests.cs" />
     <Compile Include="Logic\ManageBlueBookTests.cs" />
     <Compile Include="Logic\ManageCredentialTest.cs" />
+    <Compile Include="Logic\ManageUnifiedSettingsTests.cs" />
     <Compile Include="Logic\ManageUserLoginPersonaTests.cs" />
     <Compile Include="Logic\ProductIntegration\ClickPayIntegrationTest.cs" />
     <Compile Include="Logic\ProductIntegration\ClickPayTestData.cs" />
