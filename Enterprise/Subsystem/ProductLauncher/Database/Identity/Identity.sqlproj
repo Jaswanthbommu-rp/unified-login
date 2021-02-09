@@ -1016,19 +1016,22 @@
     <Build Include="RoleRightsManagement\Stored Procedures\ListSecurityStatus.sql" />
     <Build Include="Enterprise\Stored Procedures\ListProductGlobalSettingsBySettingType.sql" />
     <Build Include="Enterprise\Stored Procedures\CreateNewProduct.sql" />
-
     <Build Include="Ident\Tables\SettingCategoryType.sql" />
     <Build Include="Ident\Tables\OrganizationSettings.sql" />
     <Build Include="Ident\Stored Procedures\GetUnifiedSetting.sql" />
     <Build Include="Ident\Stored Procedures\UpdateUnifiedSetting.sql" />
-
     <Build Include="UserManagement\Stored Procedures\GetProductPageByProductId.sql" />
     <Build Include="UserManagement\Stored Procedures\GetProductLookups.sql" />
     <Build Include="Enterprise\Stored Procedures\CreateOrganizationProductConfiguration.sql" />
     <Build Include="Enterprise\Stored Procedures\CreateOrganizationProductConfigurationbyPartyId.sql" />
     <Build Include="Enterprise\Stored Procedures\GetAllProducts.sql" />
-    <Build Include="Enterprise\Stored Procedures\GetProductSettings.sql" />
-
+    <Build Include="UserManagement\Stored Procedures\DeleteProductContol.sql" />
+    <Build Include="UserManagement\Stored Procedures\DeletePage.sql" />
+    <Build Include="Enterprise\Stored Procedures\SetProduct.sql" />
+    <Build Include="Enterprise\Stored Procedures\SetProductType.sql" />
+    <Build Include="Enterprise\Stored Procedures\SetProductSetting.sql" />
+    <Build Include="UserManagement\Stored Procedures\SetProductPage.sql" />
+    <Build Include="Enterprise\Stored Procedures\SetProductControl.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
