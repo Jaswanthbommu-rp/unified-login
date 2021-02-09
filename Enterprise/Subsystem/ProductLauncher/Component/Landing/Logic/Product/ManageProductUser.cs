@@ -308,6 +308,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     case ProductEnum.IntelligentBuildingTrash:
                     case ProductEnum.IntelligentBuildingWater:
                     case ProductEnum.HandsOnTrainingSystem:
+                    case ProductEnum.LeaseLabs:
                     case ProductEnum.HospitalityService:
                        IUPFMProduct upfmProduct = new UPFMProductIntegration(productId, _defaultUserClaim);
                         productPropertiesRoles =
@@ -484,6 +485,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case ProductEnum.IntelligentBuildingTrash:
                 case ProductEnum.IntelligentBuildingWater:
                 case ProductEnum.HandsOnTrainingSystem:
+                case ProductEnum.LeaseLabs:
                 case ProductEnum.HospitalityService:
                     result = "User details Change not implemented for this Product.";
                     break;
@@ -620,6 +622,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     case ProductEnum.IntelligentBuildingTrash:
                     case ProductEnum.IntelligentBuildingWater:
                     case ProductEnum.HandsOnTrainingSystem:
+                    case ProductEnum.LeaseLabs:
                     case ProductEnum.HospitalityService:
                         result = "User Profile Change not implemented for this Product.";
                         break;
@@ -865,6 +868,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     case ProductEnum.IntelligentBuildingTrash:
                     case ProductEnum.IntelligentBuildingWater:
                     case ProductEnum.HandsOnTrainingSystem:
+                    case ProductEnum.LeaseLabs:
                     case ProductEnum.HospitalityService:
                         IUPFMProduct upfmProduct = new UPFMProductIntegration(productId, _defaultUserClaim);
                         productPropertiesRoles =

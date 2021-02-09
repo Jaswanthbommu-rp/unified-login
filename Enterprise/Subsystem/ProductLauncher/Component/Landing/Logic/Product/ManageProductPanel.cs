@@ -383,6 +383,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     case (int)ProductEnum.IntelligentBuildingEnergy:
                     case (int)ProductEnum.IntelligentBuildingWater:
                     case (int)ProductEnum.HandsOnTrainingSystem:
+                    case (int)ProductEnum.LeaseLabs:
                     case (int)ProductEnum.HospitalityService:
                          var upfmProductIntegration = new ManageUPFMProductsIntegration(productId, _userClaims);
                          var upfmProduct = ProductEnumHelper.GetUPFMProductEnum(productId);
