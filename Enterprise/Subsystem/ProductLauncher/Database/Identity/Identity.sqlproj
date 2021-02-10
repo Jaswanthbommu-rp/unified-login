@@ -1025,6 +1025,8 @@
     <Build Include="Enterprise\Stored Procedures\CreateOrganizationProductConfiguration.sql" />
     <Build Include="Enterprise\Stored Procedures\CreateOrganizationProductConfigurationbyPartyId.sql" />
     <Build Include="Enterprise\Stored Procedures\GetAllProducts.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetProductSettings.sql" />
+    <Build Include="Ident\Stored Procedures\ListPersonaProductsSamlDetails.sql" />
     <Build Include="UserManagement\Stored Procedures\DeleteProductContol.sql" />
     <Build Include="UserManagement\Stored Procedures\DeletePage.sql" />
     <Build Include="Enterprise\Stored Procedures\SetProduct.sql" />

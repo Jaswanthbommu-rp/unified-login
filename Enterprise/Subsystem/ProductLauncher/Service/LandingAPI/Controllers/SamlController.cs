@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Web.Http;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -56,6 +57,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         {
             var samlRepository = new SamlRepository();
             return samlRepository.GetProductSamlDetails(PersonaId, ProductId);
+        }
+
+        /// <summary>
+		/// Get Persona Products Saml attributes  
+		/// </summary>
+		/// <param name="PersonaId"></param>
+		/// <param name="ProductId"></param>
+		/// <returns>List of Saml Attributes</returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about the user", Type = typeof(ProductSamlDetails))]
+        [SwaggerResponseExamples(typeof(ProductSamlDetails), typeof(PersonaProductsSamlAttributesExample))]
+        [Authorize]
+        [Route("saml/persona/products/samlattributes")]
+        [HttpGet]
+        //[Route("saml/getproductsamldetails")]
+        public IList<ProductSamlDetails> GetPersonaProductSamlDetails(long PersonaId) 
+        {
+            var samlRepository = new SamlRepository();
+            return samlRepository.ListPersonaProductsSamlDetails(PersonaId);
         }
 
         /// <summary>
@@ -165,6 +186,50 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Used to document examples of the Product Saml setting webapi result
+        /// </summary>
+        public class PersonaProductsSamlAttributesExample : IProvideExamples
+        {
+            /// <summary>
+            /// Example object data used by Swagger to document the output of the webapi method
+            /// </summary>
+            /// <returns>User List example</returns>
+            public object GetExamples()
+            {
+                List<ProductSamlDetails> example = new List<ProductSamlDetails>();
+                example.Add(new ProductSamlDetails()
+                {
+                    ProductId = 1,
+                    ProductName = "OneSite",
+                    ProductDescription = "One Site",
+                    ProductStatus = "Success",
+                    UserID = "6",
+                    ProductUserName = "test",
+                    PMCID ="12344",
+                    RoleType = "",
+                    PortalId = "",
+                    OrganizationId="",
+                    NWPUserType=""
+                });
+                example.Add(new ProductSamlDetails()
+                {
+                    ProductId = 18,
+                    ProductName = "Utility Management",
+                    ProductDescription = "RUM",
+                    ProductStatus = "Success",
+                    UserID = "1116",
+                    ProductUserName = "test1",
+                    PMCID = "",
+                    RoleType = "",
+                    PortalId = "",
+                    OrganizationId = "",
+                    NWPUserType = "PR"
+                });
+
+                return example;
+            }
+        }
 
         /// <summary>
         /// Used to document examples of the Product Saml setting webapi result

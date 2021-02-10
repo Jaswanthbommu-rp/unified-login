@@ -195,7 +195,7 @@
         public const string SP_ListProduct = "Enterprise.ListProduct";
         public const string SP_ListProductsByPersonaId = "Enterprise.ListProductsByPersonaId";
         public const string SP_GetUserProductBatchJsonData = "Enterprise.GetUserProductBatchJsonData";
-
+        
         public const string SP_GetProductsByPersonaId = "Security.GetProductsByPersonaId";
 
         //Remove
@@ -251,6 +251,7 @@
         //SAML
         public const string SP_GetProductSamlDetails = "Ident.GetProductSamlDetails";
         public const string SP_GetProductSamlSettings = "Ident.GetProductSamlSettings";
+        public const string SP_ListPersonaProductsSamlDetails = "Ident.ListPersonaProductsSamlDetails";
 
         public const string SP_CreateSamlUserAttribute = "Ident.CreateSamlUserAttribute";
         public const string SP_DeleteSamlUserProductInfoAndStatus = "Enterprise.UnLinkProductFromPersona";
