@@ -19,7 +19,7 @@ BEGIN
 	AND (ea.ElectronicAddressString <> '' AND CHARINDEX(@Name, ea.ElectronicAddressString, 1) > 0)
 	AND			cmu.ContactMechanismUsageTypeID = 301
 
-	;WITH resultList ( CompanyName, Username, NotificationEmail, UserType, FirstName, LastName, PartyId, UserId, ThirdPartyIDPDesc )
+	;WITH resultList ( CompanyName, Username, NotificationEmail, UserType, FirstName, LastName, PartyId, UserId, ThirdPartyIDPDesc, PersonaId )
 	AS (
 		SELECT
 			O.Name [CompanyName],
@@ -36,7 +36,8 @@ BEGIN
 			PE.LastName [LastName],
 			ULP.OrganizationPartyId [PartyId],
 			UL.UserId [UserId],
-			IPT.Description [ThirdPartyIDPDesc]
+			IPT.Description [ThirdPartyIDPDesc],
+			P.PersonaId
 		FROM	Ident.UserLogin UL
 					INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginId = ul.UserId
 					INNER JOIN Person.Persona P ON ULP.UserLoginPersonaId = P.UserLoginPersonaId
@@ -69,7 +70,8 @@ BEGIN
 			PE.LastName [LastName],
 			ULP.OrganizationPartyId [PartyId],
 			UL.UserId [UserId],
-			IPT.Description [ThirdPartyIDPDesc]
+			IPT.Description [ThirdPartyIDPDesc],
+			P.PersonaId
 		FROM	Ident.UserLogin UL
 					INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginId = ul.UserId
 					INNER JOIN Person.Persona P ON ULP.UserLoginPersonaId = P.UserLoginPersonaId
@@ -85,7 +87,7 @@ BEGIN
 		AND		PR.Thrudate IS NULL
 	) 
 	SELECT 
-		DISTINCT CompanyName, Username, NotificationEmail, UserType, FirstName, LastName, PartyId, UserId, ThirdPartyIDPDesc  
+		DISTINCT CompanyName, Username, NotificationEmail, UserType, FirstName, LastName, PartyId, UserId, ThirdPartyIDPDesc, PersonaId  
 	FROM 
 		resultList
 END;
