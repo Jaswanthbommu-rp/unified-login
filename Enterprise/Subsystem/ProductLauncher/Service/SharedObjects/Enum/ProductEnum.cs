@@ -97,6 +97,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 				case ProductEnum.HandsOnTrainingSystem: return "hots";
 				case ProductEnum.P2EngagementQueue: return "video-call-laptop";
 				case ProductEnum.AoMarketAnalytics: return "marketing-analytics";
+				case ProductEnum.LeaseLabs: return "lease-labs";
 			}
 			return null;
 		}
@@ -224,6 +225,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 				case 59 : return ProductEnum.IntelligentBuildingWater;
 				case 60 : return ProductEnum.HospitalityService;
 				case 63: return ProductEnum.HandsOnTrainingSystem;
+				case 68: return ProductEnum.LeaseLabs;
 			}
 
 			throw new Exception($"UPFM product with Id - {productID} is not supported in green book.");
@@ -641,7 +643,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// </summary>
 		[Description("RMA")]
 		AoMarketAnalytics = 66,
-
+		/// <summary>
+		/// LeaseLabs
+		/// </summary>
+		[Description("LeaseLabs")]
+		LeaseLabs = 68,
 		/// <summary>
 		/// Reporting
 		/// </summary>
@@ -902,6 +908,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// </summary>
 		[Description("RMA")]
 		AoMarketAnalytics = 66,
+		/// <summary>
+		/// HOTS
+		/// </summary>
+		[Description("LeaseLabs")]
+		ManageLeaseLabsProductAccess = 68,
+
 
 		/// <summary>
 		/// Reporting

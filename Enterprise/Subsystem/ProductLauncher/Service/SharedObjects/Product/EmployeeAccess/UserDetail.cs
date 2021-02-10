@@ -81,5 +81,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         /// Books Master Id
         /// </summary>
         public long BooksMasterId { get; set; }
+        /// <summary>
+        /// Persona Id
+        /// </summary>
+        public long PersonaId { get; set; }
     }
 }
