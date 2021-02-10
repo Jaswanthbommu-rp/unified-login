@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces
@@ -60,5 +61,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 	    /// <param name="productId">The product id to delete</param>
 	    /// <returns>The result of deleting the user info</returns>
 	    RepositoryResponse DeleteSamlUserProductInfoAndStatus(long personaId, int productId);
-    }
+
+		/// <summary>
+		/// List All Persona Products SAML Details
+		/// </summary>
+		/// <param name="PersonaId">User personaId</param>		
+		/// <returns>List of Persona Products SAML Details</returns>
+		IList<ProductSamlDetails> ListPersonaProductsSamlDetails(long PersonaId);
+	}
 }
