@@ -62,21 +62,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// <summary>
 		/// Get Persona Products Saml attributes  
 		/// </summary>
-		/// <param name="PersonaId"></param>
-		/// <param name="ProductId"></param>
+		/// <param name="personaId"></param>
 		/// <returns>List of Saml Attributes</returns>
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about the user", Type = typeof(ProductSamlDetails))]
         [SwaggerResponseExamples(typeof(ProductSamlDetails), typeof(PersonaProductsSamlAttributesExample))]
         [Authorize]
-        [Route("saml/persona/products/samlattributes")]
+        [Route("saml/persona/{personaId}/attributes")]
         [HttpGet]
-        //[Route("saml/getproductsamldetails")]
-        public IList<ProductSamlDetails> GetPersonaProductSamlDetails(long PersonaId) 
+        public IList<ProductSamlDetails> GetPersonaProductSamlDetails([FromUri] long personaId) 
         {
             var samlRepository = new SamlRepository();
-            return samlRepository.ListPersonaProductsSamlDetails(PersonaId);
+            return samlRepository.ListPersonaProductsSamlDetails(personaId);
         }
 
         /// <summary>

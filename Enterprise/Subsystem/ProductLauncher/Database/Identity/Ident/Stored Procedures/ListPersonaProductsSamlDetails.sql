@@ -51,6 +51,12 @@ BEGIN
                AND ((@NOW BETWEEN p.FromDate AND p.ThruDate)
                     OR (@NOW >= p.FromDate
                         AND p.ThruDate IS NULL))  
+			AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate)
+                    OR (@NOW >= ps.FromDate
+                        AND ps.ThruDate IS NULL))  
+			AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate)
+                    OR (@NOW >= pc.FromDate
+                        AND pc.ThruDate IS NULL))  
    
 
 	   Update @productData SET UserID = sua.Value
@@ -58,21 +64,18 @@ BEGIN
 	   INNER JOIN @productData P ON
 		P.ProductId = sua.ProductId
 	   INNER JOIN Ident.SamlAttribute sa 
-		ON (sua.SamlAttributeId = sa.SamlAttributeId)
-	   INNER JOIN Ident.SamlAttributeType sat 
-		ON (sa.SamlAttributeTypeId = sat.SamlAttributeTypeId)
+		ON (sua.SamlAttributeId = sa.SamlAttributeId)	
 	   WHERE sua.PersonaId = @PersonaId
 	   And sa.Name = 'UserId'
-	   AND ((@NOW BETWEEN sua.FromDate AND sua.ThruDate) OR (@NOW >= sua.FromDate AND sua.ThruDate IS NULL))
+	   AND ((@NOW BETWEEN sua.FromDate AND sua.ThruDate) OR 
+		   (@NOW >= sua.FromDate AND sua.ThruDate IS NULL))
 	
 	   Update @productData SET ProductUserName = sua.Value
 	   From Ident.SamlUserAttribute sua
 	   INNER JOIN @productData P ON
 		P.ProductId = sua.ProductId
 	   INNER JOIN Ident.SamlAttribute sa 
-		ON (sua.SamlAttributeId = sa.SamlAttributeId)
-	   INNER JOIN Ident.SamlAttributeType sat 
-		ON (sa.SamlAttributeTypeId = sat.SamlAttributeTypeId)
+		ON (sua.SamlAttributeId = sa.SamlAttributeId)	  
 	   WHERE sua.PersonaId = @PersonaId
 	   And sa.Name = 'productUsername'
 	   AND ((@NOW BETWEEN sua.FromDate AND sua.ThruDate) OR (@NOW >= sua.FromDate AND sua.ThruDate IS NULL))
@@ -94,9 +97,7 @@ BEGIN
 	   INNER JOIN @productData P ON
 		P.ProductId = sua.ProductId
 	   INNER JOIN Ident.SamlAttribute sa 
-		ON (sua.SamlAttributeId = sa.SamlAttributeId)
-	   INNER JOIN Ident.SamlAttributeType sat 
-		ON (sa.SamlAttributeTypeId = sat.SamlAttributeTypeId)
+		ON (sua.SamlAttributeId = sa.SamlAttributeId)	 
 	   WHERE sua.PersonaId = @PersonaId
 	   And sa.Name = 'RoleCode'
 	   AND ((@NOW BETWEEN sua.FromDate AND sua.ThruDate) OR (@NOW >= sua.FromDate AND sua.ThruDate IS NULL))
@@ -106,9 +107,7 @@ BEGIN
 	   INNER JOIN @productData P ON
 		P.ProductId = sua.ProductId
 	   INNER JOIN Ident.SamlAttribute sa 
-		ON (sua.SamlAttributeId = sa.SamlAttributeId)
-	   INNER JOIN Ident.SamlAttributeType sat 
-		ON (sa.SamlAttributeTypeId = sat.SamlAttributeTypeId)
+		ON (sua.SamlAttributeId = sa.SamlAttributeId)	  
 	   WHERE sua.PersonaId = @PersonaId
 	   And sa.Name = 'portal_id'
 	   AND ((@NOW BETWEEN sua.FromDate AND sua.ThruDate) OR (@NOW >= sua.FromDate AND sua.ThruDate IS NULL))
@@ -118,9 +117,7 @@ BEGIN
 	   INNER JOIN @productData P ON
 		P.ProductId = sua.ProductId
 	   INNER JOIN Ident.SamlAttribute sa 
-		ON (sua.SamlAttributeId = sa.SamlAttributeId)
-	   INNER JOIN Ident.SamlAttributeType sat 
-		ON (sa.SamlAttributeTypeId = sat.SamlAttributeTypeId)
+		ON (sua.SamlAttributeId = sa.SamlAttributeId)	  
 	   WHERE sua.PersonaId = @PersonaId
 	   And sa.Name = 'organization_id'
 	   AND ((@NOW BETWEEN sua.FromDate AND sua.ThruDate) OR (@NOW >= sua.FromDate AND sua.ThruDate IS NULL))
@@ -130,12 +127,11 @@ BEGIN
 	   INNER JOIN @productData P ON
 		P.ProductId = sua.ProductId
 	   INNER JOIN Ident.SamlAttribute sa 
-		ON (sua.SamlAttributeId = sa.SamlAttributeId)
-	   INNER JOIN Ident.SamlAttributeType sat 
-		ON (sa.SamlAttributeTypeId = sat.SamlAttributeTypeId)
+		ON (sua.SamlAttributeId = sa.SamlAttributeId)	 
 	   WHERE sua.PersonaId = @PersonaId
 	   And sa.Name = 'NWPUserType'
 	   AND ((@NOW BETWEEN sua.FromDate AND sua.ThruDate) OR (@NOW >= sua.FromDate AND sua.ThruDate IS NULL))
 	
 	   Select * from @productData	
+	   order by ProductName
 END;
