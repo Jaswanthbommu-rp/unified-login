@@ -14,6 +14,7 @@
 	@ToUserLastName NVARCHAR(50),
 	@ToUserRealpageId uniqueidentifier,
 	@BooksMasterOrganizationId INT,
+	@OrganizationPartyId INT,
 	@BooksProductCode NVARCHAR(100),
 	@BooksMasterPropertyId INT = NULL,
 	@IsSystemAdminActivity BIT = 0,
@@ -103,10 +104,8 @@ BEGIN
 						  LCT.Name = @LogCategoryType
 				)
 				BEGIN
-					SELECT @Increment = MAX(LogTypeId)
-					FROM [Logging].[LogType]
-					INSERT INTO Logging.LogType( LogTypeId, [Name], LogCategoryTypeId )
-					VALUES( @Increment + 1, @LogType, @LogCategoryTypeId );
+					INSERT INTO Logging.LogType( [Name], LogCategoryTypeId )
+					VALUES( @LogType, @LogCategoryTypeId );
 					SELECT @LogTypeId = SCOPE_IDENTITY();
 				END
 			END;
@@ -251,6 +250,7 @@ BEGIN
 					FromUserId,
 					ToUserId,
 					BooksMasterOrganizationId,
+					OrganizationPartyId,
 					ProductId,
 					ServerId,
 					ApplicationTimestamp,
@@ -269,6 +269,7 @@ BEGIN
 						ELSE @ToUserId
 					END,
 					ISNULL(@BooksMasterOrganizationId, 0),
+					ISNULL(@OrganizationPartyId, 0),
 					@ProductId,
 					@ServerId,
 					@Timestamp,

@@ -284,6 +284,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             || r.ProductId == (int)ProductEnum.CIMPL
                             || r.ProductId == (int)ProductEnum.VendorMarketplace
                             || r.ProductId == (int)ProductEnum.HelpCenter
+                            || r.ProductId == (int)ProductEnum.PMEDasboard
+                            || r.ProductId == (int)ProductEnum.P2EngagementQueue
                         )
                         {
                             userProducts.Add(new PersonaProductUserDetails
@@ -317,6 +319,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     if (userProducts.Any(a => a.ProductId == (int)ProductEnum.HelpCenter))
                     {
                         userProducts.Remove(userProducts.First(a => a.ProductId == (int)ProductEnum.HelpCenter));
+                    }
+                }
+                if (_userClaim.Rights.All(rght => rght != null && !rght.Equals("AccessPMEDashboard", StringComparison.OrdinalIgnoreCase)))
+                {
+                    if (userProducts.Any(a => a.ProductId == (int)ProductEnum.PMEDasboard))
+                    {
+                        userProducts.Remove(userProducts.First(a => a.ProductId == (int)ProductEnum.PMEDasboard));
+                    }
+                }
+                if (_userClaim.Rights.All(rght => rght != null && !rght.Equals("AccessP2EngagementQueue", StringComparison.OrdinalIgnoreCase)))
+                {
+                    if (userProducts.Any(a => a.ProductId == (int)ProductEnum.P2EngagementQueue))
+                    {
+                        userProducts.Remove(userProducts.First(a => a.ProductId == (int)ProductEnum.P2EngagementQueue));
                     }
                 }
                 if (_userClaim.Rights.All(rght => rght != null && !rght.Equals("MigrationTool", StringComparison.OrdinalIgnoreCase)) || _userClaim.RealPageEmployee)
@@ -530,7 +546,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             IsResource = true,
                             IsNewTab = true
                         }
-                );
+                    );
                 }
 
                 // need to follow up later when conversions is ready to be tested
@@ -651,7 +667,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         public IList<int> GetProductIdsByCompany(Guid organizationRealPageId)
         {
             RPObjectCache rpCache = new RPObjectCache();
-            var cacheKey = $"getProductIdsByCompanyGuid_{organizationRealPageId}";
+            var cacheKey = $"getProductIdListByCompanyGuid_{organizationRealPageId}";
 
             IList<int> products = rpCache.GetFromCache<IList<int>>(cacheKey, 180, () =>
             {
@@ -740,6 +756,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             IList<ProductSettingList> personaProductSettings = GetProductSettingsByPersona(personaId);
             products.ToList().ForEach(p =>
             {
+                p.ProductCode = ProductEnumHelper.StringValueOf((ProductEnum) p.ProductId);
+
                 var personaSetting = personaProductSettings.Where(i => i.ProductId == p.ProductId);
 
                 personaSetting.ToList().ForEach(s =>
@@ -1576,8 +1594,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		/// <returns>List of Roles by PartyId and Product</returns>
 		public List<ProductRole> ListRolesForProductByParty(long partyId, IList<int> productIdList, int productId)
         {
-            string schemaName = getRoleRightsSchemaName();
-            var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesForProductsByPartyId" : StoredProcNameConstants.SP_ListRolesForProductsByPartyId;
+            var procName = StoredProcNameConstants.SP_ListRolesForProductsByPartyId;
 
             using (var repository = GetRepository())
             {
@@ -1634,8 +1651,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         {
             using (var repository = GetRepository())
             {
-                string schemaName = getRoleRightsSchemaName();
-                var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesAssociatedWithRights" : StoredProcNameConstants.SP_ListRolesAssociatedWithRights;
+                var procName = StoredProcNameConstants.SP_ListRolesAssociatedWithRights;
 
                 dynamic param = new
                 {
@@ -1737,13 +1753,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             ObjectCache productCache = MemoryCache.Default;
             var products = productCache["GB-BB-ProductMap"] as IList<GbProductMap>;
 
-            if (products == null)
+           if (products == null)
             {
                 products = ListProducts(null, null, null, null);
 
                 var cachePolicy = new CacheItemPolicy
                 {
-                    AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(60)// Expier cache every after 60 minutes 
+                    AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(10)// Expire cache every after 60 minutes 
                 };
 
                 productCache.Set("GB-BB-ProductMap", products, cachePolicy);
@@ -1874,6 +1890,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     case (int)ProductRightEnum.AoRevenueManagement:
                     case (int)ProductRightEnum.AoAxiometrics:
                     case (int)ProductRightEnum.AoBenchmarking:
+                    case (int)ProductRightEnum.AoMarketAnalytics:
                         s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageAssetOptimizationProductAccess.ToString());
                         break;
                     case (int)ProductRightEnum.ManageClientPortalProductAccess:
@@ -1954,8 +1971,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     case (int)ProductRightEnum.ManageIntelligentBuildingWaterProductAccess:
                         s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageIntelligentBuildingWaterProductAccess.ToString());
                         break;
-                    case (int)ProductRightEnum.ManageHospitalityServiceProductAccess:
-                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageHospitalityServiceProductAccess.ToString());
+                    case (int)ProductRightEnum.ManageHomeSharingProductAccess:
+                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageHomeSharingProductAccess.ToString());
+                        break;
+                    case (int)ProductRightEnum.ManageHandsOnTrainingSystemProductAccess:
+                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageHandsOnTrainingSystemProductAccess.ToString());
+                        break;
+                    case (int)ProductRightEnum.ManageLeaseLabsProductAccess:
+                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageLeaseLabsProductAccess.ToString());
                         break;
                     default:
                         break;

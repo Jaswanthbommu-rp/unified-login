@@ -74,7 +74,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		{
 			//Arrange
 			long sourceId = 0;
-			int bookMasterTypeId = (int)BookMasterType.CompanyMasterId;
+			int bookMasterTypeId = (int)BookMasterType.CustomerMasterId;
 
 			_manageSecuritySettings = new ManageSecuritySettings(_mockSecuritySettingsRepository.Object, _userUserClaim);
 
@@ -90,7 +90,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		{
 			//Arrange
 			int sourceId = 2116;
-			int bookMasterTypeId = (int)BookMasterType.CompanyMasterId;
+			int bookMasterTypeId = (int)BookMasterType.CustomerMasterId;
 			Type type = typeof(IList<Setting>);
             
             var mockRepository = new Mock<IRepository>();
@@ -119,7 +119,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         {
             //Arrange
             int sourceId = 2116;
-            int bookMasterTypeId = (int)BookMasterType.CompanyMasterId;
+            int bookMasterTypeId = (int)BookMasterType.CustomerMasterId;
             Type type = typeof(IList<Setting>);
 
             var mockRepository = new Mock<IRepository>();
@@ -144,7 +144,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         {
             //Arrange
             int sourceId = 2116;
-            int bookMasterTypeId = (int)BookMasterType.CompanyMasterId;
+            int bookMasterTypeId = (int)BookMasterType.CustomerMasterId;
             Type type = typeof(IList<Setting>);
 
             var mockRepository = new Mock<IRepository>();

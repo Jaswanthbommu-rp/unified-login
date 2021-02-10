@@ -11,9 +11,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Caching;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Accounting;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ops;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Rum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
+using System.Net.Http;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -23,6 +31,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private DefaultUserClaim _userClaims;
         readonly IProductInternalSettingRepository _productInternalSettingRepository;
         readonly IList<ProductInternalSetting> _productInternalSettingList;
+        readonly IManageUnifiedLogin _manageUnifiedLogin;
+        private readonly IManageProductOneSite _manageProductOneSite;
+        protected IPropertyRepository _propertyRepository;
+        private IManageBlueBook _manageBlueBook;
 
         #endregion
 
@@ -41,6 +53,36 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // load from database
                 return _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform).ToList();
             });
+            _manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
+            _manageProductOneSite = new ManageProductOneSite(_userClaims);
+            _propertyRepository = new PropertyRepository();
+            _manageBlueBook = new ManageBlueBook(_userClaims);
+        }
+
+		/// <summary>
+		/// Unit Test Product panel constructor
+		/// </summary>
+		/// <param name="userClaims"></param>
+		/// <param name="repository"></param>
+		/// <param name="manageBlueBook"></param>
+		/// <param name="messageHandler"></param>
+		/// <param name="manageProductOneSite"></param>
+		public ManageProductPanel(DefaultUserClaim userClaims, IRepository repository, IManageBlueBook manageBlueBook, HttpMessageHandler messageHandler, IManageProductOneSite manageProductOneSite)
+        {
+            _userClaims = userClaims;
+            _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
+            var rpcache = new RPObjectCache();
+            var cacheKey = $"productInternalSettingPanel_{(int)ProductEnum.UnifiedPlatform}";
+            _productInternalSettingList = rpcache.GetFromCache<IList<ProductInternalSetting>>(cacheKey, 60, () =>
+            {
+                // load from database
+                return _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform).ToList();
+            });
+            ProductRepository productRepository = new ProductRepository(repository);
+            _manageUnifiedLogin = new ManageUnifiedLogin(_userClaims, _productInternalSettingRepository, productRepository, manageBlueBook);
+            _manageProductOneSite = manageProductOneSite;
+            _propertyRepository = new PropertyRepository();
+            _manageBlueBook = new ManageBlueBook(_userClaims, _productInternalSettingRepository, messageHandler);
         }
 
         #endregion
@@ -51,15 +93,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             ListResponse result = new ListResponse();
             try
             {
-                IManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
-
                 //IProduct product;
                 string productName = Enum.GetName(typeof(ProductEnum), productId);
                 string productcode = ProductEnumHelper.StringValueOf((ProductEnum)productId);
                 switch (productId)
                 {
                     case (int)ProductEnum.OneSite:
-                        IManageProductOneSite _manageProductOneSite = new ManageProductOneSite(_userClaims);
                         result = _manageProductOneSite.GetOneSitePropertyList(editorPersonaId, userPersonaId, assignedOnly, datafilter);
                         break;
                     case (int)ProductEnum.MarketingCenter:
@@ -150,11 +189,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                         if (!usePropertyInstanceUnifiedLogin)
                         {
-                            result = manageUnifiedLogin.GetProperties(editorPersonaId, userPersonaId, false, datafilter);
+                            result = _manageUnifiedLogin.GetProperties(editorPersonaId, userPersonaId, false, datafilter);
                         }
                         else
                         {
-                            result = manageUnifiedLogin.GetUPFMProperties(editorPersonaId, userPersonaId, false, ProductEnum.UnifiedPlatform, datafilter);
+                            result = _manageUnifiedLogin.GetUPFMProperties(editorPersonaId, userPersonaId, false, ProductEnum.UnifiedPlatform, datafilter);
                         }
 
                         break;
@@ -246,7 +285,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 switch (productId)
                 {
                     case (int)ProductEnum.OneSite:
-                        IManageProductOneSite _manageProductOneSite = new ManageProductOneSite(_userClaims);
                         if (userPersonaId > 0)
                         {
                             result = _manageProductOneSite.GetOneSiteRoleList(editorPersonaId, userPersonaId, assignedOnly, datafilter);
@@ -314,6 +352,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     case (int)ProductEnum.AoAmenityOptimization:
                     case (int)ProductEnum.AoAIRevenueManagement:
                     case (int)ProductEnum.AoRentControl:
+                    case (int)ProductEnum.AoMarketAnalytics:
                         var manageProductAo = new ManageProductAssetOptimization(_userClaims);
                         result = manageProductAo.GetProductRoles(editorPersonaId, userPersonaId, productcode, datafilter, userLoginName);
                         break;
@@ -344,8 +383,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         result = productDALogic.GetProductRoles(datafilter);
                         break;
                     case (int)ProductEnum.UnifiedPlatform:
-                        IManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
-                        result = manageUnifiedLogin.GetUserRolesWithRights(editorPersonaId, userPersonaId, partyId);
+                        result = _manageUnifiedLogin.GetUserRolesWithRights(editorPersonaId, userPersonaId, partyId);
                         break;
                     case (int)ProductEnum.RenovationManager:
                         var productRMLogic = ManageProductFactory.GetProductLogic(ProductEnum.RenovationManager, editorPersonaId, userPersonaId, _userClaims);
@@ -358,12 +396,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     case (int)ProductEnum.IntelligentBuildingTrash:
                     case (int)ProductEnum.IntelligentBuildingEnergy:
                     case (int)ProductEnum.IntelligentBuildingWater:
+                    case (int)ProductEnum.HandsOnTrainingSystem:
+                    case (int)ProductEnum.LeaseLabs:
                     case (int)ProductEnum.HospitalityService:
                          var upfmProductIntegration = new ManageUPFMProductsIntegration(productId, _userClaims);
                          var upfmProduct = ProductEnumHelper.GetUPFMProductEnum(productId);
                          result = upfmProductIntegration.GetRoles(editorPersonaId, userPersonaId, _userClaims.OrganizationPartyId, upfmProduct);
                          break;
                     case (int)ProductEnum.ClickPay:
+                        var productLogic = ManageProductFactory.GetProductLogic(ProductEnum.ClickPay, editorPersonaId, userPersonaId, _userClaims);
+                        result = productLogic.GetProductRoles(null);
+                        break;
                     case (int)ProductEnum.AoAxiometrics:
                     case (int)ProductEnum.AssetOptimizer:
                     case (int)ProductEnum.CIMPL:
@@ -388,6 +431,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     case (int)ProductEnum.UnifiedUI:
                     case (int)ProductEnum.VendorMarketplace:
                     case (int)ProductEnum.Yieldstar:
+                    case (int)ProductEnum.PMEDasboard:
                         //pending implementation
                         throw new BlueBookException(CommonMessageConstants.CompanyErrorMessage);
                     default:
@@ -453,12 +497,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             switch (productId)
             {
                 case (int)ProductEnum.OneSite:
-                    IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_userClaims);
-                    result = manageProductOneSite.GetOneSiteRights(editorPersonaId, datafilter, roleId, assignedToRoleOnly);
+                    result = _manageProductOneSite.GetOneSiteRights(editorPersonaId, datafilter, roleId, assignedToRoleOnly);
                     break;
                 case (int)ProductEnum.UnifiedPlatform:
-                    IManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
-                    result = manageUnifiedLogin.GetRightsByRole(editorPersonaId, partyId, roleId);
+                    result = _manageUnifiedLogin.GetRightsByRole(editorPersonaId, partyId, roleId);
                     break;
                 case (int)ProductEnum.UnifiedAmenities:
                     IManageUnifiedAmenities manageUnifiedAmenities = new ManageUnifiedAmenities(_userClaims);
@@ -520,6 +562,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     case (int)ProductEnum.AoAmenityOptimization:
                     case (int)ProductEnum.AoAIRevenueManagement:
                     case (int)ProductEnum.AoRentControl:
+                    case (int)ProductEnum.AoMarketAnalytics:
                         var manageProductAo = new ManageProductAssetOptimization(_userClaims);
                         result = manageProductAo.GetProductPropertyGroups(editorPersonaId, userPersonaId, productcode, userLoginName);
                         break;
@@ -595,7 +638,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return result;
         }
 
-        public ListResponse GetProductGroupProperties(long editorPersonaId, long userPersonaId, int productId, int propertyGroupId, RequestParameter datafilter)
+        public ListResponse GetProductGroupProperties(long editorPersonaId, long userPersonaId, int productId, string propertyGroupId, RequestParameter datafilter)
         {
             ListResponse result = new ListResponse();
             IProduct product;
@@ -613,11 +656,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.AoAIRevenueManagement:
                 case (int)ProductEnum.AoRentControl:
                     var manageProductAo = new ManageProductAssetOptimization(_userClaims);
-                    result = manageProductAo.GetGroupProperties(editorPersonaId, userPersonaId, propertyGroupId);
+                    result = manageProductAo.GetGroupProperties(editorPersonaId, userPersonaId, Convert.ToInt32(propertyGroupId));
                     break;
                 case (int)ProductEnum.PortfolioManagement:
                     var productPMLogic = ManageProductFactory.GetProductLogic(ProductEnum.PortfolioManagement, editorPersonaId, userPersonaId, _userClaims);
-                    result = productPMLogic.GetProductPropertiesByGroup(propertyGroupId.ToString(), datafilter);
+                    result = productPMLogic.GetProductPropertiesByGroup(propertyGroupId, datafilter);
+                    break;
+                case (int)ProductEnum.FinancialSuite:
+                    var manageProductOneSiteAccounting = new ManageProductOneSiteAccounting(_userClaims);
+                    result = manageProductOneSiteAccounting.GetPropertyGroupEntities(editorPersonaId, userPersonaId, propertyGroupId, datafilter);
                     break;
                 default:
                     break;
@@ -641,6 +688,206 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     break;
             }
             return result;
+        }
+
+        public ListResponse GetProductOrganizations(long editorPersonaId, long userPersonaId, int productId, string organizationRoleId, string organizationType)
+        {
+            ListResponse result = new ListResponse();
+            IProduct product;
+            string productName = Enum.GetName(typeof(ProductEnum), productId);
+            string productcode = ProductEnumHelper.StringValueOf((ProductEnum)productId);
+            switch (productId)
+            {
+                case (int)ProductEnum.ClickPay:
+                    var productLogic = ManageProductFactory.GetProductLogic(ProductEnum.ClickPay, editorPersonaId, userPersonaId, _userClaims);
+                    result = productLogic.GetProductOrganizations(organizationRoleId, organizationType, null);
+                    break;
+                default:
+                    break;
+            }
+            return result;
+        }
+
+        public ListResponse GetProductLocationGroups(long editorPersonaId, long userPersonaId, int productId, RequestParameter datafilter, bool assignedOnly = false, string userLoginName = "")
+        {
+            ListResponse result = new ListResponse();
+           
+            switch (productId)
+            {
+                case (int)ProductEnum.FinancialSuite:
+                    var manageProductOneSiteAccounting = new ManageProductOneSiteAccounting(_userClaims);
+                    result = manageProductOneSiteAccounting.GetUserPropertyGroups(editorPersonaId, userPersonaId, datafilter);
+                    break;
+                default:
+                    break;
+            }
+            if (result.IsError)
+            {
+                throw new Exception(result.ErrorReason);
+            }           
+           
+            return result;
+        }
+
+        /// <summary>
+        /// Compare Product and Primary properties
+        /// </summary>
+        /// <param name="upfmProperty"></param>
+        /// <param name="productId"></param>
+        /// <param name="productResult"></param>
+        /// <returns></returns>
+        public ListResponse CompareProductAndPrimaryProperties(UPFMProperty upfmProperty, int productId, ListResponse productResult)
+        {
+            if (productResult == null || productResult.Records.Count == 0)
+            {
+                return productResult;
+            }
+            TranslatePropertyInstance translatedData = new TranslatePropertyInstance();
+            //IManageBlueBook _manageBlueBook = new ManageBlueBook(_userClaims);
+            List<UPFMPropertyInstance> _upfmPropertyInstance = new List<UPFMPropertyInstance>();
+            string productcode = ProductEnumHelper.StringValueOf((ProductEnum)productId);
+            /*
+             * If All property selection is true, then upfmProperty == -1
+             */
+            if (upfmProperty.id[0] == "-1")
+            {
+                var booksPropertyList = _manageBlueBook.GetUPFMPropertyInstances(_userClaims.OrganizationRealPageGuid.ToString());
+                if (booksPropertyList != null)
+                {
+                    _upfmPropertyInstance = _propertyRepository.ListUPFMPropertyInstanceIdByInstanceIds(booksPropertyList);
+                    upfmProperty.id = _upfmPropertyInstance.Select(p => p.InstanceId.ToString()).ToList<string>();
+                }
+            }
+
+            UPFMProperty primaryPropertyIds = new UPFMProperty
+            {
+                id = upfmProperty.id.ConvertAll(d => d.ToLower())
+            };
+
+            if (productId == (int)ProductEnum.UnifiedPlatform)
+            {
+                var upfmProeprtiesType = productResult.Records[0].GetType();                
+                if (upfmProeprtiesType == typeof(ProductProperty))
+                {
+                    var upfmPropertyList = productResult.Records.Cast<ProductProperty>();
+                    upfmPropertyList.Where(p => primaryPropertyIds.id.Contains(p.ID)).ToList().ForEach(c => c.IsAssigned = true);
+                    upfmPropertyList.Where(p => !primaryPropertyIds.id.Contains(p.ID)).ToList().ForEach(c => c.IsAssigned = false);
+                }
+            }
+            else
+            {
+                translatedData = _manageBlueBook.GetTranslatePropertiesFromUPFMToProductv3(primaryPropertyIds, productcode);
+                var productPropertyType = productResult.Records[0].GetType();
+                var foundProductPropertyIdList = new List<string>();
+
+                if (productPropertyType == typeof(ProductProperty))
+                {
+                    var productList = productResult.Records.Cast<ProductProperty>();
+                    foreach (var property in productList)
+                    {
+                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.ID));
+                        if (instanceExists != null)
+                        {
+                            property.IsAssigned = true;
+                        }
+                        else
+                        {
+                            property.IsAssigned = false;
+                        }
+                    }
+                }
+                else if (productPropertyType == typeof(ACProperty))
+                {
+                    foreach (var property in productResult.Records.Cast<ACProperty>())
+                    {
+                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.Id));
+                        if (instanceExists != null)
+                        {
+                            property.IsAssigned = true;
+                        }
+                        else
+                        {
+                            property.IsAssigned = false;
+                        }
+                    }
+                }
+                else if (productPropertyType == typeof(AssetGroup))
+                {
+                    foreach (var property in productResult.Records.Cast<AssetGroup>())
+                    {
+                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.ID));
+                        if (instanceExists != null)
+                        {
+                            property.IsAssigned = true;
+                        }
+                        else
+                        {
+                            property.IsAssigned = false;
+                        }
+                    }
+                }
+                else if (productPropertyType == typeof(OnSiteProperty))
+                {
+                    foreach (var property in productResult.Records.Cast<OnSiteProperty>())
+                    {
+                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.GetPropertyId.ToString()));
+                        if (instanceExists != null)
+                        {
+                            property.IsAssigned = true;
+                        }
+                        else
+                        {
+                            property.IsAssigned = false;
+                        }
+                    }
+                }
+                else if (productPropertyType == typeof(RumPropertyGroup))
+                {
+                    foreach (var property in productResult.Records.Cast<RumPropertyGroup>())
+                    {
+                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.Id.ToString()));
+                        if (instanceExists != null)
+                        {
+                            property.IsAssigned = true;
+                        }
+                        else
+                        {
+                            property.IsAssigned = false;
+                        }
+                    }
+                }
+                else if (productPropertyType == typeof(ProductProperties))
+                {
+                    foreach (var property in productResult.Records.Cast<ProductProperties>())
+                    {
+                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.GetPropertyId));
+                        if (instanceExists != null)
+                        {
+                            property.IsAssigned = true;
+                        }
+                        else
+                        {
+                            property.IsAssigned = false;
+                        }
+                    }
+                }
+                else if (productPropertyType == typeof(Portfolio))
+                {
+                    foreach (var property in productResult.Records.Cast<Portfolio>())
+                    {
+                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.ID));
+                        if (instanceExists != null)
+                        {
+                            property.IsAssigned = true;
+                        }
+                        else
+                        {
+                            property.IsAssigned = false;
+                        }
+                    }
+                }
+            }
+            return productResult;
         }
         #endregion
     }

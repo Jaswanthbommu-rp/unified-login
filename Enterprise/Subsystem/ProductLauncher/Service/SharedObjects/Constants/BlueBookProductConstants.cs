@@ -166,6 +166,11 @@
 		public const string AoBenchmarking = "BM";
 
 		/// <summary>
+		/// Market Analytics
+		/// </summary>
+		public const string AoMarketAnalytics = "RMA";
+
+		/// <summary>
 		/// Support Tool
 		/// </summary>
 		public const string SupportTool = "ST";
@@ -278,5 +283,24 @@
 		/// Hospitality as a Service
 		/// </summary>
 		public const string HospitalityService = "HAAS";
+		/// <summary>
+		/// Hands-On Training System
+		/// </summary>
+		public const string HandsOnTrainingSystem = "HOTS";
+		/// <summary>
+		///PMEDashboard
+		/// </summary>
+		public const string PMEDashboard = "PME";
+		/// <summary>
+		/// Renter Engagement
+		/// </summary>
+		public const string P2EngagementQueue = "PEQ";
+		/// <summary>
+		/// LeaseLabs
+		/// </summary>
+		public const string LeaseLabs = "LeaseLabs";
+		/// Renter Engagement
+		/// </summary>
+		public const string Reporting = "RPT";
 	}
 }

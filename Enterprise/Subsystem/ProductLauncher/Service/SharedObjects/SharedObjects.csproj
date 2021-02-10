@@ -140,9 +140,12 @@
     <Compile Include="Base\RPObjectCache.cs" />
     <Compile Include="Base\RequestParameter.cs" />
     <Compile Include="Base\RequestParameterModelBinder.cs" />
+    <Compile Include="BlackBook\BooksPropertyInstance.cs" />
     <Compile Include="BlackBook\Company.cs" />
     <Compile Include="BlackBook\CompanyInstance.cs" />
     <Compile Include="BlackBook\CompanyInstanceAdd.cs" />
+    <Compile Include="BlackBook\PropertyInstanceSearch.cs" />
+    <Compile Include="BlackBook\PropertyInstanceAddress.cs" />
     <Compile Include="BlackBook\CompanyInstanceAddress.cs" />
     <Compile Include="BlackBook\CompanyLocation.cs" />
     <Compile Include="BlackBook\CompanyMaster.cs" />
@@ -155,9 +158,11 @@
     <Compile Include="BlackBook\InstanceAddress.cs" />
     <Compile Include="BlackBook\InstanceAttribute.cs" />
     <Compile Include="BlackBook\InstancePhone.cs" />
+    <Compile Include="BlackBook\ProductCenterCancel.cs" />
     <Compile Include="BlackBook\ProductCenterEnablement.cs" />
     <Compile Include="BlackBook\PropertyInstance.cs" />
     <Compile Include="BlackBook\CustomerCompanyPropertyMap.cs" />
+    <Compile Include="BlackBook\PropertyInstanceAck.cs" />
     <Compile Include="BlackBook\TranslateCompanyInstance.cs" />
     <Compile Include="BlackBook\TranslatePropertyInstance.cs" />
     <Compile Include="BlackBook\UPFMProductPropertyInstanceMap.cs" />
@@ -281,12 +286,15 @@
     <Compile Include="IdentityConfig\IUserLoginCommon.cs" />
     <Compile Include="IdentityConfig\IUserLoginOnly.cs" />
     <Compile Include="IdentityConfig\IUserLoginPersona.cs" />
+    <Compile Include="IdentityConfig\ProductInternalSettingByType.cs" />
     <Compile Include="IdentityConfig\SameSiteExclusion.cs" />
     <Compile Include="IdentityConfig\ULClaim.cs" />
     <Compile Include="IdentityConfig\UserLoginOnly.cs" />
     <Compile Include="IdentityConfig\UserLoginOrganization.cs" />
     <Compile Include="IdentityConfig\UserLoginPersona.cs" />
     <Compile Include="Landing\ApiError.cs" />
+    <Compile Include="Landing\Properties.cs" />
+    <Compile Include="Landing\CompanyPropertySetup.cs" />
     <Compile Include="Landing\CustomFieldType.cs" />
     <Compile Include="Landing\Export\DataExport.cs" />
     <Compile Include="Landing\Export\ExportDataFileConfiguration.cs" />
@@ -315,6 +323,8 @@
     <Compile Include="Landing\PasswordPolicyCommon.cs" />
     <Compile Include="Landing\PersonaCompany.cs" />
     <Compile Include="Landing\PersonaCompanyDetails.cs" />
+    <Compile Include="Landing\PropertyAudit.cs" />
+    <Compile Include="Landing\PropertySetup.cs" />
     <Compile Include="Landing\PropertyRoleList.cs" />
     <Compile Include="Landing\IUserOrganization.cs" />
     <Compile Include="IdentityConfig\LinkElectronicAddress.cs" />
@@ -325,7 +335,7 @@
     <Compile Include="IdentityConfig\PartyRole.cs" />
     <Compile Include="IdentityConfig\PostalAddress.cs" />
     <Compile Include="IdentityConfig\PreferredContactMethod.cs" />
-    <Compile Include="IdentityConfig\ProductSetting.cs" />
+    <Compile Include="IdentityConfig\ProductInternalSetting.cs" />
     <Compile Include="IdentityConfig\ProductUsers.cs" />
     <Compile Include="IdentityConfig\Profile.cs" />
     <Compile Include="IdentityConfig\RelationshipType.cs" />
@@ -339,6 +349,8 @@
     <Compile Include="Landing\SecuritySettings.cs" />
     <Compile Include="Landing\SortTableType.cs" />
     <Compile Include="Landing\StatusType.cs" />
+    <Compile Include="Landing\UnifiedSetting.cs" />
+    <Compile Include="Landing\UserCompaniesProperties.cs" />
     <Compile Include="Landing\UserEmployee.cs" />
     <Compile Include="Landing\UserOrganizationExists.cs" />
     <Compile Include="IdentityConfig\UserLoginCommon.cs" />
@@ -539,6 +551,7 @@
     <Compile Include="Product\PersonaProduct.cs" />
     <Compile Include="Product\ProductEasyLMS.cs" />
     <Compile Include="Product\Ops\SessionRequest.cs" />
+    <Compile Include="Product\ProductPropertyGroup.cs" />
     <Compile Include="Product\ProductPropertyMap.cs" />
     <Compile Include="Product\ProductRoleAttribute.cs" />
     <Compile Include="Product\RentersInsurance\IInsuranceService.cs" />

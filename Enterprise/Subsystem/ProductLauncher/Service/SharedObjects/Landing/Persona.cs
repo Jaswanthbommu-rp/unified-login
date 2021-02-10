@@ -220,11 +220,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         /// Persona Has HospitalityService User Access
         /// </summary>
         public bool hasManageHospitalityServiceAccess { get; set; } = true;
+        // <summary>
+        /// Persona Has Hands-On Training System User Access
+        /// </summary>
+        public bool hasManageHandsOnTrainingSystemAccess { get; set; } = true;
 
         /// <summary>
         /// Persona Has Platform Alerts Access
         /// </summary>
         public bool hasPlatformAlertsAccess { get; set; } = false;
+
+        // <summary>
+        /// Persona Has Hands-On Training System User Access
+        /// </summary>
+        public bool hasManageLeaseLabsAccess { get; set; } = true;
 
         #region Examples
         /// <summary>

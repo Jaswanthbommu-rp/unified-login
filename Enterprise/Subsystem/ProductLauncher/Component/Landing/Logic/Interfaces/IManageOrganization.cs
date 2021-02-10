@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
@@ -126,5 +129,53 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <returns>Company list</returns>
 		List<CompanySetup> GetCompanyList(string organizationName, int domain, int? blueId, int organizationId, IDictionary<object, object> globals);
 
+		/// <summary>
+		/// Get Properties for a Organization
+		/// </summary>
+		/// <param name="companyInstanceId">companyInstanceId</param>
+		/// <param name="propertyName">PropertyName</param>
+		/// <param name="domain">Domain</param>
+		/// <param name="blueId">blueId</param>
+		/// <param name="globals">datafilter</param>
+		/// <returns>List of Properties for a company </returns>
+		List<CompanyPropertySetup> GetPropertiesForCompany(Guid companyInstanceId, string propertyName = null, string domain = null, int? blueId = null,  IDictionary<object, object> globals = null);
+
+		/// <summary>
+		/// Get Property By PeropertyId
+		/// </summary>
+		/// <param name="propertyInstanceId"></param>
+		/// <returns></returns>
+		List<UPFMPropertyInstance> GetPropertyByInstanceId(Guid propertyInstanceId);
+
+		/// <summary>
+		/// Update an existing Property Name
+		/// </summary>
+		/// <param name="propertyInstanceId">property Instance Id</param>
+		/// <param name="propertyName">propertyName</param>
+		/// <returns>RepositoryResponse object</returns>
+		RepositoryResponse UpdateProperty(Guid propertyInstanceId, string propertyName);
+
+		/// <summary>
+		/// AddPropertyForOrganization
+		/// </summary>
+		/// <param name="property">property</param>
+		/// <param name="companyInstanceID">company InstanceID</param>
+		/// <returns></returns>
+		RepositoryResponse AddPropertyForOrganization(UPFMPropertyInstance property, Guid companyInstanceID);
+
+		/// <summary>
+		/// AuditCompanyProductPropertiesToUPFM
+		/// </summary>
+		/// <param name="companyInstanceId">companyInstanceId</param>
+		/// <param name="product">product</param>
+		/// <returns></returns>
+		List<PropertyAudit> AuditCompanyProductPropertiesToUPFM(Guid companyInstanceId, int product);
+
+		/// <summary>
+		/// Search Property Details By CustomerPropertyId(BlueId)
+		/// </summary>
+		/// <param name="customerPropertyId">customerPropertyId</param>
+		/// <returns></returns>
+		PropertyInstanceSearch SearchPropertyDetailsByCustomerPropertyId(string customerPropertyId);
 	}
 }

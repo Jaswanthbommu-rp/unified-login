@@ -1,4 +1,5 @@
 ﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using System;
@@ -69,7 +70,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="propertyGroupId"></param>
 		/// <param name="datafilter"></param>		
 		/// <returns>String.empty if success else error</returns>
-		ListResponse GetProductGroupProperties(long editorPersonaId, long userPersonaId, int productId, int propertyGroupId, RequestParameter datafilter);
+		ListResponse GetProductGroupProperties(long editorPersonaId, long userPersonaId, int productId, string propertyGroupId, RequestParameter datafilter);
 
 		/// <summary>
 		/// Get Product Rights
@@ -81,5 +82,37 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="datafilter"></param>			
 		/// <returns>String.empty if success else error</returns>
 		ListResponse GetProductRights(long editorPersonaId, long userPersonaId, long partyId, int productId, RequestParameter datafilter);
+
+		/// <summary>
+		/// Get Product Rights
+		/// </summary> 
+		/// <param name="editorPersonaId">editorPersonaId</param>
+		/// <param name="userPersonaId"></param>
+		/// <param name="productId"></param>
+		/// <param name="organizationRoleId"></param>
+		/// <param name="organizationType"></param>			
+		/// <returns>String.empty if success else error</returns>
+		ListResponse GetProductOrganizations(long editorPersonaId, long userPersonaId, int productId, string organizationRoleId, string organizationType);
+
+		/// <summary>
+		/// Get Product Location Groups
+		/// </summary> 
+		/// <param name="editorPersonaId">editorPersonaId</param>		
+		/// <param name="productId"></param>
+		/// <param name="userPersonaId"></param>
+		/// <param name="assignedOnly"></param>
+		/// <param name="datafilter"></param>
+		/// <param name="userLoginName"></param>
+		/// <returns>String.empty if success else error</returns>
+		ListResponse GetProductLocationGroups(long editorPersonaId, long userPersonaId, int productId, RequestParameter datafilter, bool assignedOnly = false, string userLoginName = "");
+
+		/// <summary>
+		/// Compare Product and Primary properties
+		/// </summary>
+		/// <param name="upfmProperty"></param>
+		/// <param name="productId"></param>
+		/// <param name="listResponse"></param>
+		/// <returns></returns>
+		ListResponse CompareProductAndPrimaryProperties(UPFMProperty upfmProperty, int productId, ListResponse listResponse);
 	}
 }

@@ -41,8 +41,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Repository
 			var productRepository = new ProductInternalSettingRepository();
 			List<ProductInternalSetting> productInternalSettings = new List<ProductInternalSetting>();
 			productInternalSettings = productRepository.GetProductSettings((int)ProductEnum.UnifiedPlatform).ToList();
-			string schemaName = productInternalSettings.FirstOrDefault(s => s.Name.Equals("RolesRightsSchemaName", StringComparison.OrdinalIgnoreCase))?.Value;
-			var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesForProductsByPersonaId" : StoredProcNameConstants.SP_ListRolesForProductsByPersonaId;
+			var procName = StoredProcNameConstants.SP_ListRolesForProductsByPersonaId;
 
 			dynamic param = new
 			{
@@ -85,8 +84,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Repository
 			var productRepository = new ProductInternalSettingRepository();
 			List<ProductInternalSetting> productInternalSettings = new List<ProductInternalSetting>();
 			productInternalSettings = productRepository.GetProductSettings((int)ProductEnum.UnifiedPlatform).ToList();
-			string schemaName = productInternalSettings.FirstOrDefault(s => s.Name.Equals("RolesRightsSchemaName", StringComparison.OrdinalIgnoreCase))?.Value;
-			var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesAssociatedWithRights" : StoredProcNameConstants.SP_ListRolesAssociatedWithRights;
+			var procName = StoredProcNameConstants.SP_ListRolesAssociatedWithRights;
 
 			dynamic param = new
 			{

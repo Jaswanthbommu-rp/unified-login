@@ -106,7 +106,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Manage Organization Business logic
         /// </summary>
-        protected IManageOrganization _manageOrganization = new ManageOrganization();
+        //protected IManageOrganization _manageOrganization = new ManageOrganization();
 
         /// <summary>
         /// Manage Electronic Address Business logic
@@ -245,7 +245,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (productRepository != null) { _productRepository = productRepository; }
             _productInternalSettingList = GetProductSetting(_productId);
             _productDetails = GetBooksMasterProductDetail(_productId);
-            _udmSourceCode = _productDetails.UDMSourceCode?.Length > 0 ? _productDetails.UDMSourceCode : _productDetails.BooksProductCode;          
+            if (_productDetails != null)
+            {
+                _udmSourceCode = _productDetails.UDMSourceCode?.Length > 0 ? _productDetails.UDMSourceCode : _productDetails.BooksProductCode;
+            }
         }
 
         /// <summary>
@@ -404,6 +407,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public void UpdateSamlUserAttributes(long personaId, Dictionary<SamlAttributeEnum, string> settingList)
         {
             UpdateSamlUserAttributes(personaId, settingList, _productId);
+        }
+        /// <summary>
+        /// Update user Employee Id
+        /// </summary>
+        /// <param name="personaId"></param>
+        /// <param name="employeeId"></param>
+        public void UpdateUserEmployeeId(long personaId, string employeeId)
+        {
+            Persona userPersona = _managePersona.GetPersona(personaId);
+            var userLogin = _manageUserLogin.GetUserLoginOnly(userPersona.RealPageId);
+            IList<IC.UserLoginPersona> userLoginPersonaList = _userLoginPersonaRepository.ListUserLoginPersona(userLoginPersonaId: null, userLoginId: userPersona.UserId, organizationPartyId: userPersona.Organization.PartyId);
+            var employeeIdDetails = _userRepository.GetUserEmployeeId(userLoginPersonaList[0].UserLoginPersonaId, userPersona.OrganizationPartyId);
+
+            //Update User Employee Id
+            if (string.IsNullOrEmpty(employeeIdDetails.EmployeeId))
+            {
+                employeeIdDetails.EmployeeId = employeeId;
+                _userRepository.UpdateUserEmployeeId(employeeIdDetails);
+            }
         }
 
         /// <summary>
@@ -965,6 +987,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         }
 
         /// <summary>
+        /// Write Update User activity log
+        /// </summary> 
+        protected void WriteResetVerificationCodeActivityLog(long fromPersonaId, IC.Person toPerson, UserLoginOnly toUserGbLogin)
+        {
+            WriteActivityLog(fromPersonaId, toPerson, toUserGbLogin,
+                 "{3} {4} reset the OneSite verification code for {0} {1}.");
+        }
+
+        /// <summary>
         /// Write Update User-Type Activity Log
         /// </summary>
         protected void WriteUpdateUserTypeActivityLog(long fromPersonaId, IC.Person toPerson, UserLoginOnly toUserGbLogin, BatchProcessType batchProcessType)
@@ -1018,13 +1049,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // log product user updated activity
             var fromUserLogDetail = GetUserActivityLogInfo(fromPersonaId);
             var toUserLogDetail = GetUserActivityLogInfo(toPersonaId);
-            //var booksProductDetail = _productRepository.GetBooksMasterProductDetail(productId);
+            var booksProductDetail = _productRepository.GetBooksMasterProductDetail(productId);
 
             var logMessage = string.Format(message, toUserLogDetail.FirstName, toUserLogDetail.LastName,
-                _productDetails.Name, fromUserLogDetail.FirstName, fromUserLogDetail.LastName);
+                booksProductDetail.Name, fromUserLogDetail.FirstName, fromUserLogDetail.LastName);
 
             WriteActivityLog(fromUserLogDetail, toUserLogDetail,
-               _productDetails.BooksProductCode, logMessage);
+               booksProductDetail.BooksProductCode, logMessage);
         }
 
         private void WriteActivityLog(long fromPersonaId, IC.Person toPerson, UserLoginOnly toUserGbLogin, string message)
@@ -1043,6 +1074,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                      FirstName = toPerson.FirstName,
                      LastName = toPerson.LastName,
                      BooksOrganizationMasterId = fromUserLogDetail.BooksOrganizationMasterId,
+                     OrganizationPartyId = fromUserLogDetail.OrganizationPartyId,
                      LoginName = toUserGbLogin.LoginName,
                      UserId = toUserGbLogin.UserId,
                      RealPageId = toUserGbLogin.RealPageId
@@ -1066,6 +1098,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 RealPageId = userLogin.RealPageId,
                 LoginName = userLogin.LoginName,
                 BooksOrganizationMasterId = persona.Organization.BooksMasterId,
+                OrganizationPartyId = persona.OrganizationPartyId,
                 UserId = userLogin.UserId
             };
         }
@@ -1081,6 +1114,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     LogCategoryName = LogActivityCategoryType.ProductAccess.ToString(),
                     CorrelationId = _correlationId,
                     BooksMasterOrganizationId = toUserLogInfo.BooksOrganizationMasterId,
+                    OrganizationPartyId = toUserLogInfo.OrganizationPartyId,
                     Message = message,
 
                     FromUserLoginName = fromUserLogInfo.LoginName,
@@ -1134,6 +1168,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public Guid RealPageId { get; set; }
         public string LoginName { get; set; }
         public long BooksOrganizationMasterId { get; set; }
+        public long OrganizationPartyId { get; set; }
+
         public long UserId { get; set; }
     }
 

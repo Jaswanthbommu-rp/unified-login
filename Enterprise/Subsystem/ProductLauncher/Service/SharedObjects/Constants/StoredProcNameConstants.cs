@@ -156,7 +156,9 @@
         public const string SP_CreateOrganizationDomain = "Enterprise.CreateOrganizationDomain";
 		public const string SP_ListProductUsersForOrganization = "Enterprise.ListProductUsersForOrganization";
         public const string SP_ListCompanySetup = "Enterprise.GetCompanyList";
-
+        public const string SP_DisableUsersForProduct = "Enterprise.DisableUsersForProduct";
+        public const string SP_CreateOrganizationProductConfiguration = "Enterprise.CreateOrganizationProductConfiguration";
+        public const string SP_CreateOrganizationProductConfigurationbyPartyId = "Enterprise.CreateOrganizationProductConfigurationbyPartyId";
         //PartyRelationship
         public const string SP_GetPartyRelationshipByRealPageId = "Enterprise.GetPartyRelationshipByRealPageId";
 
@@ -180,6 +182,7 @@
         public const string SP_ListProductSettingsByPersona = "Enterprise.ListProductSettingsByPersona";
         public const string SP_ListProductSettingsByPersonaId = "Enterprise.ListProductSettingsByPersonaId";
         public const string SP_ListGlobalSettingsForProduct = "Enterprise.ListGlobalSettingsForProduct";
+        public const string SP_ListProductGlobalSettingsBySettingType = "Enterprise.ListProductGlobalSettingsBySettingType";
         public const string SP_CreateProductSetting = "Enterprise.CreateProductSetting";
         public const string SP_CreateProductSettingType = "Enterprise.CreateProductSettingType";
         public const string SP_LinkProductSettingToConfiguration = "Enterprise.LinkProductSettingToConfiguration";
@@ -193,7 +196,7 @@
         public const string SP_ListProductsByPersonaId = "Enterprise.ListProductsByPersonaId";
         public const string SP_GetUserProductBatchJsonData = "Enterprise.GetUserProductBatchJsonData";
 
-        public const string SP_GetProductsByPersonaId = "Person.GetProductsByPersonaId";
+        public const string SP_GetProductsByPersonaId = "Security.GetProductsByPersonaId";
 
         //Remove
         public const string SP_ListProductTypes = "Enterprise.ListProductTypes";
@@ -287,21 +290,23 @@
         public const string SP_GetPropertyInstanceByPersonaId = "Enterprise.GetPropertyInstanceByPersonaId";
         public const string SP_GetPropertyInstanceIdsByPersonaId = "Enterprise.GetPropertyInstanceIdsByPersonaId";
         public const string SP_GetPropertyInstanceListById = "Enterprise.GetPropertyInstanceListById";
+        public const string SP_GetPropertyInstanceListByIdWithPaging = "Enterprise.GetPropertyInstanceListByIdWithPaging";
+        public const string SP_UpdatePropertyInstance = "Enterprise.UpdatePropertyInstance";
 
 
-        public const string SP_ListRolesByParty = "Enterprise.ListRolesByParty";
-        public const string SP_ListRolesForProductsByPersonaId = "Enterprise.ListRolesForProductsByPersonaId";
-        public const string SP_ListRolesForProductsByPartyId = "Enterprise.ListRolesForProductsByPartyId";
-        public const string SP_ListRolesAssociatedWithRights = "Enterprise.ListRolesAssociatedWithRights";
-        public const string SP_ListRightsAssociatedWithRoles = "Enterprise.ListRightsAssociatedWithRoles";
-        public const string SP_ListRightForProductsByPartyId = "Enterprise.ListRightForProductsByPartyId";
-        public const string SP_CreateRole = "Enterprise.CreateRole";
-        public const string SP_UpdateRole = "Enterprise.UpdateRole";
-        public const string SP_DeleteRole = "Enterprise.DeleteRole";
-        public const string SP_LinkRightsToRoles = "Enterprise.LinkRightsToRoles";
-        public const string SP_ListAllRights = "Enterprise.ListAllRights";
-        public const string SP_ListSecurityStatus = "Enterprise.ListSecurityStatus";
-        public const string SP_SetDefaulteRole = "Enterprise.SetDefaultRole";
+        public const string SP_ListRolesByParty = "Security.ListRolesByParty";
+        public const string SP_ListRolesForProductsByPersonaId = "Security.ListRolesForProductsByPersonaId";
+        public const string SP_ListRolesForProductsByPartyId = "Security.ListRolesForProductsByPartyId";
+        public const string SP_ListRolesAssociatedWithRights = "Security.ListRolesAssociatedWithRights";
+        public const string SP_ListRightsAssociatedWithRoles = "Security.ListRightsAssociatedWithRoles";
+        public const string SP_ListRightForProductsByPartyId = "Security.ListRightForProductsByPartyId";
+        public const string SP_CreateRole = "Security.CreateRole";
+        public const string SP_UpdateRole = "Security.UpdateRole";
+        public const string SP_DeleteRole = "Security.DeleteRole";
+        public const string SP_LinkRightsToRoles = "Security.LinkRightsToRoles";
+        public const string SP_ListAllRights = "Security.ListAllRights";
+        public const string SP_ListSecurityStatus = "Security.ListSecurityStatus";
+        public const string SP_SetDefaulteRole = "Security.SetDefaultRole";
 
         //Configuration Settings
         public const string SP_ListUserLoginSettings = "Enterprise.ListUserLoginSettings";
@@ -376,6 +381,10 @@
         //Security Setting
         public const string SP_GetSecuritySetting = "Ident.GetSecuritySetting";
         public const string SP_UpdateSecuritySetting = "Ident.UpdateSecuritySetting";
+
+        //Unified Setting
+        public const string SP_GetUnifiedSetting = "Ident.GetUnifiedSetting";
+        public const string SP_UpdateUnifiedSetting = "Ident.UpdateUnifiedSetting";
 
         //Custom Fields
         public const string SP_AddUpdateFieldFromJSON = "CustomField.AddUpdateFieldFromJSON";

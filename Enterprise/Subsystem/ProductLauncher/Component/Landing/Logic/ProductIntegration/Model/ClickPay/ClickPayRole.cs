@@ -18,5 +18,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		public string OrgType { get; set; }
 		[JsonProperty("orgsAssigned")]
 		public int OrgsAssignedCount { get; set; }
+		public bool IsAssigned { get; set; }
+		public List<ClickPaySelectedItems> SelectedItems { get; set; }
+	}
+
+	public class ClickPaySelectedItems
+	{
+		public string Id { get; set; }
+		public bool Value { get; set; }
 	}
 }

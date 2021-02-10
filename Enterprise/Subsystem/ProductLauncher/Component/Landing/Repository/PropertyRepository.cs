@@ -1,10 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Foundation.DataAccess.Component.Helper;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
@@ -262,6 +268,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 ,@Latitude		= propertyInstance.Latitude
                 ,@Longitude		= propertyInstance.Longitude
                 ,@CustomerPropertyId = propertyInstance.CustomerPropertyId
+                ,@Domain = propertyInstance.Domain
             };
 
             using (var repository = GetRepository())
@@ -289,5 +296,73 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 return result;
             }
         }
-	}
+
+        #region Get PropertyList for Company
+        /// <summary>
+        /// Get Properties for a Organization
+        /// </summary>
+        /// <param name="propertyInstanceIds">propertyInstanceIds</param>
+        /// <param name="propertyName">PropertyName</param>
+        /// <param name="propertyMasterid ">propertyMasterid </param>
+        /// <param name="dataFilterSort">datafilter</param>
+        /// <returns>List of Properties for a company </returns>
+        public List<PropertySetup> GetPropertiesForCompany(List<Guid> propertyInstanceIds, string propertyName = null, int? propertyMasterid = null, RequestParameter dataFilterSort = null)
+        {
+            string sortBy = "Name";
+            string sortDirection = "Asc";
+           
+            if (dataFilterSort != null)
+            {
+                if (dataFilterSort.SortBy != null)
+                {
+                    foreach (string SortKey in dataFilterSort.SortBy.Keys)
+                    {
+                        sortBy = SortKey;
+                        sortDirection = dataFilterSort.SortBy[SortKey];
+                    }
+                }
+            }
+            dynamic param = new
+            {
+                InstanceList = TableValueParamHelper.ConvertToTableValuedParameter(propertyInstanceIds, "Enterprise.PropertyInstanceType"),
+                Name = propertyName,
+                PropertyMasterid = propertyMasterid,
+                SortColumn = sortBy,
+                SortDirection = sortDirection,
+                RowsPerPage = dataFilterSort.Pages.ResultsPerPage == 100 ? 0 : dataFilterSort.Pages.ResultsPerPage,
+                PageNumber = ((dataFilterSort.Pages.ResultsPerPage == 100) || (dataFilterSort.Pages.StartRow <= 0)) ? 1 : dataFilterSort.Pages.StartRow
+            };
+            using (var repository = GetRepository())
+            {
+                return repository.GetMany<PropertySetup>(StoredProcNameConstants.SP_GetPropertyInstanceListByIdWithPaging, param);
+            }
+        }
+		#endregion
+
+		#region Update Property
+		/// <summary>
+		/// Update Product
+		/// </summary>
+		/// <param name="instanceId">propertyInstanceId</param>
+		/// <param name="name">name</param>
+		/// <returns>Repository response object</returns>
+		public RepositoryResponse UpdateProperty(Guid instanceId, string name)
+        {
+            dynamic param = new
+            {
+                instanceId,
+                name
+            };
+
+            using (var repository = GetRepository())
+            {
+                return repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdatePropertyInstance, param);                
+            }
+        }
+		#endregion
+
+		#region Private methods
+		
+        #endregion
+    }
 }

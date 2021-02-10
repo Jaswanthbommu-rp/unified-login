@@ -60,6 +60,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         protected GbProductMap BlueBookGbProductMap { get; set; }
 
+        /// <summary>
+        /// Productudm source code
+        /// </summary>
+        protected string _udmSourceCode = "";
+
+        /// <summary>
+        /// Product Details
+        /// </summary>
+        protected GbProductMap _productDetails = new GbProductMap();
+
+        /// <summary>
+        /// Product Repository
+        /// </summary>
+        protected IProductRepository _productRepository = new ProductRepository();
         #endregion
 
         #region Ctor
@@ -69,7 +83,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         protected ManageProductInvokerBase(ProductEnum productType, long editorPersonaId, long subjectPersonaId, DefaultUserClaim userClaims)
         {
-            _dataCollector = new DataCollector();
+            _dataCollector = new DataCollector();            
             Init(productType, editorPersonaId, subjectPersonaId, userClaims);
         }
 
@@ -92,7 +106,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             ProductType = productType;
             ProductId = (int) ProductType;
             _userClaims = userClaims;
-
+            _productDetails = _productRepository.GetBooksMasterProductDetail(ProductId);
+            _udmSourceCode = _productDetails.UDMSourceCode?.Length > 0 ? _productDetails.UDMSourceCode : _productDetails.BooksProductCode;
             // Get editor & subject user details & Verify editor user is the logged-in user
             GetValidateEditorSubjectUserDetails(editorPersonaId, subjectPersonaId);
 
@@ -304,6 +319,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 WriteToDiagnosticLog(
                     $"ManageProductInvokerBase.GetProductProperties - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At API calling - {baseUrlAndQuery}");
 
+                Dictionary<string, bool> additionalData = new Dictionary<string, bool>();
                 var propertyList = GetResultFromApi<IList<ProductProperties>>(baseUrlAndQuery);
 
                 WriteToDiagnosticLog(
@@ -319,6 +335,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     // map user properties
                     if (user != null && user.Properties != null)
                     {
+                        if (user.Properties.Contains("all"))
+                        {
+                            additionalData.Add("allProperties", true);
+                        }
                         WriteToDiagnosticLog(
                             $"ManageProductInvokerBase.GetProductProperties - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling Merge for subject persona Id -{SubjectUserDetails.PersonaId}");
 
@@ -339,7 +359,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     TotalRows = propertyList.Count,
                     RowsPerPage = 9999,
                     ErrorReason = string.Empty,
-                    TotalPages = 1
+                    TotalPages = 1,
+                    Additional = additionalData
                 };
             }
             catch (Exception ex)

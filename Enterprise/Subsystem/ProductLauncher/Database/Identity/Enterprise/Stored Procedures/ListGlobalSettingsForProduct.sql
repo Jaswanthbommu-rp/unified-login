@@ -9,7 +9,10 @@ AS
 				gpc.ConfigurationId,
 				pst.Name,
 				ps.Value,
-				pst.SensitiveData
+				pst.SensitiveData, 
+				pst.ProductSettingTypeId, 
+				ps.ProductSettingId,
+				pst.Description
         FROM	Enterprise.GlobalProductConfiguration gpc
 				JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId
 				JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId

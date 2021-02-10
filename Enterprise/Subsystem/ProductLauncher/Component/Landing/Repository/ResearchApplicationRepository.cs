@@ -36,8 +36,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 			using (var repository = GetRepository())
 			{
 				List<ProductRole> rolesList = new List<ProductRole>();
-				string schemaName = getRoleRightsSchemaName();
-				var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesByParty" : StoredProcNameConstants.SP_ListRolesByParty;
+				var procName = StoredProcNameConstants.SP_ListRolesByParty;
 				IList<dynamic> result = repository.GetMany<dynamic>(procName, new { partyId }).ToList();
 				if (result != null)
 				{
@@ -64,8 +63,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 			using (var repository = GetRepository())
 			{
 				List<ProductRole> rolesList = new List<ProductRole>();
-				string schemaName = getRoleRightsSchemaName();
-				var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesByParty" : StoredProcNameConstants.SP_ListRolesByParty;
+				var procName = StoredProcNameConstants.SP_ListRolesByParty;
 				IList<dynamic> result = repository.GetMany<dynamic>(procName, new { userPersonaId }).ToList();
 				if (result != null)
 				{

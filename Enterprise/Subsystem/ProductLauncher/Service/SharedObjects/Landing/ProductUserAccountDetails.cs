@@ -32,5 +32,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         /// Sub product name for the main product (E.g. Main Product - ProductName=AO, Sub Product - InvestmentAnalytics, Business Intelligence etc)
         /// </summary>
         public IList<string> SubProducts { get; set; }
+
+        /// <summary>
+        /// Employee id
+        /// </summary>
+        public string EmployeeId { get; set; }
     }
 }

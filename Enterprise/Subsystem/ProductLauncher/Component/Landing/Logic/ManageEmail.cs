@@ -152,13 +152,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         public string BuildNewUserLink(string newUserToken, string loginName)
         {
-            string link = ConfigReader.GetLandingUri;
+            string link = ConfigReader.GetIssuerUri;
             if (link.EndsWith("/"))
             {
                 link = link.Substring(0, link.Length - 1);
             }
 
-            link += $"/new-user/#/validate/{newUserToken}/{loginName}";
+            string encodedToken = Convert.ToBase64String(Encoding.UTF8.GetBytes(newUserToken));
+
+            link += $"/PasswordRecovery/RedirectFromInviteEmail?newUserToken={encodedToken}&loginName={loginName}";
 
             return link;
         }
@@ -291,7 +293,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 };
                 WriteToLog(LogEventLevel.Information, "ManageEmail.SendGridEmail: Email details.", logData, null);
 
-                IList<ProductInternalSetting> productSettingList = _productInternalSettingRepository.GetProductInternalSettings(ProductId: (int)ProductEnum.UnifiedPlatform);
+                IList<ProductInternalSetting> productSettingList = _productInternalSettingRepository.GetProductInternalSettings(productId: (int)ProductEnum.UnifiedPlatform);
                 if (productSettingList.Count > 0)
                 {
                     bool IsSendGridEnabled = false;

@@ -487,6 +487,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             LogCategoryName = LogActivityCategoryType.Security.ToString(),
                             CorrelationId = _userClaims.CorrelationId.ToString(),
                             BooksMasterOrganizationId = _userClaims.OrganizationMasterId,
+                            OrganizationPartyId = _userClaims.OrganizationPartyId,
                             Message = string.Format("User {0} {1} unable to change password.", _userClaims.FirstName, _userClaims.LastName),
                             FromUserLoginName = _userClaims.LoginName,
                             FromUserLoginId = _userClaims.UserId,
@@ -546,7 +547,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 {
                     IManageUserLogin manageUserLogin = new ManageUserLogin(_userClaims);
                     IManagePerson managePerson = new ManagePerson();
-                    IManageOrganization manageOrganization = new ManageOrganization();
+                    IManageOrganization manageOrganization = new ManageOrganization(_userClaims);
                     try
                     {
                         IPerson person = managePerson.GetPerson(userResetPassword.RealPageId.Value);
@@ -559,6 +560,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             LogCategoryName = LogActivityCategoryType.Security.ToString(),
                             CorrelationId = _userClaims.CorrelationId.ToString(),
                             BooksMasterOrganizationId = _userClaims.OrganizationMasterId,
+                            OrganizationPartyId = _userClaims.OrganizationPartyId,
                             Message = string.Format("User {0} {1} unable to insert temporary password for {2} {3}.", _userClaims.FirstName, _userClaims.LastName, person.FirstName, person.LastName),
                             FromUserLoginName = _userClaims.LoginName,
                             FromUserLoginId = _userClaims.UserId,

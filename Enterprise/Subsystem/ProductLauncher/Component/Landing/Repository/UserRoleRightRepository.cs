@@ -60,8 +60,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 using (var repository = GetRepository())
                 {
-                    string schemaName = getRoleRightsSchemaName();
-                    var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesForProductsByPersonaId" : StoredProcNameConstants.SP_ListRolesForProductsByPersonaId;
+                    var procName = StoredProcNameConstants.SP_ListRolesForProductsByPersonaId;
 
                     dynamic param = new
                     {
@@ -97,8 +96,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         {
             using (var repository = GetRepository())
             {
-                string schemaName = getRoleRightsSchemaName();
-                var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesForProductsByPersonaId" : StoredProcNameConstants.SP_ListRolesForProductsByPersonaId;
+                var procName = StoredProcNameConstants.SP_ListRolesForProductsByPersonaId;
 
                 dynamic param = new
                 {
@@ -161,8 +159,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 throw new Exception("Missing company product id list");
             }
 
-            string schemaName = getRoleRightsSchemaName();
-            var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRightsAssociatedWithRoles" : StoredProcNameConstants.SP_ListRightsAssociatedWithRoles;
+            var procName = StoredProcNameConstants.SP_ListRightsAssociatedWithRoles;
 
             using (var repository = GetRepository())
             {
@@ -205,8 +202,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 throw new Exception("Missing company product id list");
             }
 
-            string schemaName = getRoleRightsSchemaName();
-            var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRightsAssociatedWithRoles" : StoredProcNameConstants.SP_ListRightsAssociatedWithRoles;
+            var procName = StoredProcNameConstants.SP_ListRightsAssociatedWithRoles;
 
             using (var repository = GetRepository())
             {

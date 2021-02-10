@@ -21,6 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
+using System.Net.Http;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -54,11 +55,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             _productInternalSettingRepository = new ProductInternalSettingRepository();
         }
 
-        public UserRepository(IRepository repository, DefaultUserClaim userClaim) : base(repository)
+        public UserRepository(IRepository repository, DefaultUserClaim userClaim, HttpMessageHandler messageHandler) : base(repository)
         {
             _userClaim = userClaim;//new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
             _userLoginRepository = new UserLoginRepository(repository);
-            _managePersona = new ManagePersona(repository, userClaim);
+            _managePersona = new ManagePersona(repository, userClaim, messageHandler);
             _organizationRepository = new OrganizationRepository(repository);
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
         }
@@ -287,7 +288,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     }
 
                     //Get the Clone User list of UnifiedLogin Top level properties and Role
-                    var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesForProductsByPersonaId" : StoredProcNameConstants.SP_ListRolesForProductsByPersonaId;
+                    var procName = StoredProcNameConstants.SP_ListRolesForProductsByPersonaId;
                     var ulRole = pbRepository.GetMany<dynamic>(procName, new { ProductId = (int)ProductEnum.UnifiedPlatform, PersonaId = cloneUserPersonaId });
                     IEnumerable<dynamic> ulProperties = null;
                     IEnumerable<dynamic> ulPropertyInstances = null;
@@ -360,9 +361,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             userOrganizationExists = IsLoginNameExistsAsAdminInOtherDomain(newProfile.userLogin.LoginName, newProfile.organization[0].RealPageId, booksCustomerMasterId);
             bool primaryOrganization = true;
             //if org has mutil domain and user already exists in other domain and not in in this org
-            if ((userOrganizationExists.UserExistsAsAdminInOtherDomain || userOrganizationExists.UserExistsAsRegularUserInOtherDomain) && !userOrganizationExists.UserExistsInThisOrganization)
+            if ((userOrganizationExists.UserExistsAsAdminInOtherDomain || userOrganizationExists.UserExistsAsRegularUserInOtherDomain ) && !userOrganizationExists.UserExistsInThisOrganization)
             {
-                primaryOrganization = false;
+                if (!newProfile.organization[0].OrganizationDomain.Name.Equals("Primary"))
+                {
+                    primaryOrganization = false;
+                }
+                
             }
 
             using (var repository = GetRepository())
@@ -1080,7 +1085,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                     if (newProfile.ClonedUser)
                                     {
                                         // get the users existing UnifiedLogin role                                       
-                                        procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesForProductsByPersonaId" : StoredProcNameConstants.SP_ListRolesForProductsByPersonaId;
+                                        procName = StoredProcNameConstants.SP_ListRolesForProductsByPersonaId;
 
                                         param = new
                                         {
@@ -1171,7 +1176,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         #region Create UserEmployeeId
 
-                        if (newProfile.UserTypeId != (int)UserRoleType.ExternalUser && userLoginPersonaId > 0)
+                        if (userLoginPersonaId > 0)
                         {
                             param = new
                             {
@@ -2034,7 +2039,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         {
             IUserLoginRepository userLoginRepository = new UserLoginRepository();
             IManagePersona managePersona = new ManagePersona(_userClaim);
-            IManageOrganization manageOrganization = new ManageOrganization();
+            IManageOrganization manageOrganization = new ManageOrganization(_userClaim);
 
             var userLoginOnly = userLoginRepository.GetUserLoginOnly(user.RealPageId);
             var userPersonaOrganizationList = userLoginRepository.ListOrganizationByLoginName(userLoginOnly.LoginName);
@@ -2162,6 +2167,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             LogCategoryName = LogActivityCategoryType.ProductAccess.ToString(),
                             CorrelationId = _userClaim.CorrelationId.ToString(),
                             BooksMasterOrganizationId = _userClaim.OrganizationMasterId,
+                            OrganizationPartyId = _userClaim.OrganizationPartyId,
                             Message = string.Format(logMessage, _userClaim.FirstName, _userClaim.LastName),
                             FromUserLoginName = _userClaim.LoginName,
                             FromUserLoginId = _userClaim.UserId,
@@ -2478,6 +2484,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
+      /// <summary>
+      /// Update user Employee Id
+      /// </summary>
+      /// <param name="employeeIdDetail"></param>
+      /// <returns></returns>
+        public RepositoryResponse UpdateUserEmployeeId(IUserEmployeeId employeeIdDetail)
+        {
+            RepositoryResponse repositoryResponse = new RepositoryResponse();
+            if (employeeIdDetail.UserEmployeeId > 0)
+            {
+                using (var repository = GetRepository())
+                {
+                    dynamic param = new
+                    {
+                        employeeIdDetail.UserEmployeeId,
+                        employeeIdDetail.EmployeeId
+                    };
+
+                    repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateEmployeeId, param);
+                  
+                }
+            }
+            return repositoryResponse;
+        }
         /// <summary>
 		/// Get the an UserEmployee by UserLoginPersonaId and OrganizationPartyId
 		/// </summary>
@@ -3086,7 +3116,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     (int) ProductEnum.IntelligentBuildingTrash,
                     (int) ProductEnum.IntelligentBuildingEnergy,
                     (int) ProductEnum.IntelligentBuildingWater,
-                    (int) ProductEnum.HospitalityService
+                    (int) ProductEnum.HospitalityService,
+                    (int) ProductEnum.HandsOnTrainingSystem,
+                    (int) ProductEnum.LeaseLabs
                 };
             }
 
@@ -4244,7 +4276,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <returns></returns>
         private bool isEmployeeIdChanged(IProfileDetail profile, IProfileDetail oldProfile)
         {
-            return !profile.EmployeeId.Equals(oldProfile.EmployeeId);
+            var oldEmployeeId = string.IsNullOrEmpty(oldProfile.EmployeeId) ? "" : oldProfile.EmployeeId;
+            var newEmployeeId = string.IsNullOrEmpty(profile.EmployeeId) ? "" : profile.EmployeeId;
+            return !newEmployeeId.Equals(oldEmployeeId);
         }
 
         /// <summary>
@@ -4321,6 +4355,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 LogCategoryName = logActivityCategoryType.ToString(),
                 CorrelationId = _userClaim.CorrelationId.ToString(),
                 BooksMasterOrganizationId = _userClaim.OrganizationMasterId,
+                OrganizationPartyId = _userClaim.OrganizationPartyId,
                 Message = string.Format(message, profile.FirstName, profile.LastName, _userClaim.FirstName, _userClaim.LastName, profile.CreateUserSourceType.ToString()),
 
                 FromUserLoginName = _userClaim.LoginName,
@@ -5720,6 +5755,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             if (userOrganizationExists.UserExists && !userOrganizationExists.UserExistsInThisOrganization)
             {
                 UserOrganization userOrganization = userPersonaOrganizationList.ToList().FirstOrDefault(m => m.PrimaryOrganization.Equals(true));
+              
                 isAdminUser = userOrganization != null && userOrganization.PartyRoleTypeId == (int)UserRoleType.SuperUser;
                 isRegularUser = userOrganization != null && userOrganization.PartyRoleTypeId == (int)UserRoleType.User;
 

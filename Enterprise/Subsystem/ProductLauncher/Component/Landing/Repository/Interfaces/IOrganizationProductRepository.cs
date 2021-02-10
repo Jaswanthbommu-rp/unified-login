@@ -26,5 +26,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		/// <param name="fromDate">When the product will be available from for the Organization</param>
 		/// <param name="thruDate">How long the product is available for the Organization</param>
 		RepositoryResponse InsertUpdateOrganizationProduct(long partyId, ProductEnum product, int? configurationId, DateTime? fromDate, DateTime? thruDate);
+
+		/// <summary>
+		/// Used to delete users for product for an Organization
+		/// </summary>
+		/// <param name="partyId">The organization id for the product</param>
+		/// <param name="product">The product Id</param>
+		/// <returns></returns>
+		RepositoryResponse DisableUsersForProduct(long partyId, ProductEnum product);
 	}
 }

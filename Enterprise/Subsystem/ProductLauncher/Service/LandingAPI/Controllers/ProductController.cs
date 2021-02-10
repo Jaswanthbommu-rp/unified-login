@@ -12,7 +12,6 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
-using Serilog;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
@@ -22,6 +21,8 @@ using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Web.Http;
+using System.Web.Http.Controllers;
+using Microsoft.Owin.Security.Provider;
 using Thinktecture.IdentityModel.Client;
 using static RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.SAML.RealPageSAML;
 
@@ -34,7 +35,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
     {
         #region Private variables
 
-        private readonly IProductRepository _productRepository;
+        private IManageProduct _manageProduct;
         private Guid emptyGuid = Guid.Empty;
         private string _key = "4AD12A31-680A-476F-863E-26749D2E7DD4";
 
@@ -45,25 +46,36 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// <summary>
         /// Default constructor
         /// </summary>
-        public ProductController() : base()
+        public ProductController()
         {
+            // DONT USE USERCLAIM IN BASE, IT IS NULL AT THIS POINT. MOVE TO Initialize FUNCTION
         }
 
         /// <summary>
         /// Testing Constructor
         /// </summary>
         /// <param name="userClaim"></param>
-        /// <param name="productRepository">Product Repository</param>
-        public ProductController(DefaultUserClaim userClaim, IProductRepository productRepository)
+        /// <param name="productRepository"></param>
+        /// <param name="productInternalSettingRepository"></param>
+        public ProductController(DefaultUserClaim userClaim, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository)
         {
             _userClaims = userClaim;
-            _productRepository = productRepository;
+            _manageProduct = new ManageProduct(productRepository, productInternalSettingRepository, null, null, null, null, null, null, _userClaims);
         }
 
+        /// <summary>
+        /// Used to initialize DI classes with userclaim
+        /// </summary>
+        /// <param name="controllerContext"></param>
+        protected override void Initialize(HttpControllerContext controllerContext)
+        {
+            base.Initialize(controllerContext);
+            _manageProduct = new ManageProduct(_userClaims);
+        }
         #endregion
 
         #region Methods
-
+        
         /// <summary>
         /// List product user(s) for an organization
         /// </summary>
@@ -121,8 +133,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
 
             ListResponse listResponse = new ListResponse();
-            ManageProduct manageProduct = new ManageProduct(_userClaims);
-            IList<ProductUsers> listProductUsers = manageProduct.GetProductUsers(productId, companyInstanceId, personaId);
+            IList<ProductUsers> listProductUsers = _manageProduct.GetProductUsers(productId, companyInstanceId, personaId);
             if (listProductUsers == null)
             {
                 errorStatus.Success = false;
@@ -141,6 +152,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// </summary>
         /// <param name="personRealPageId">The user unique identifier (Optional - Use Logged-in user unique identifier if parameter value is Guid.Empty)</param>
         /// <param name="accessFilter">filter products by area (such as "user details" or "rolesandrights")</param>
+        /// <param name="loginName">The login name of the user</param>
         /// <returns>list of product families and products</returns>
         [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when Information is out of sync with the server)")]
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
@@ -159,16 +171,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             Guid? userRealPageId = (personRealPageId == Guid.Empty || personRealPageId == null) ? _realpageUserId : personRealPageId;
 
-            if (_productRepository == null)
-            {
-                IManageProduct manageProduct = new ManageProduct(_userClaims);
-                //TODO: FIX PRODUCTS SO WE DONT CLONE PRODUCTS THIS USER DOESN'T HAVE
-                productFamilyList = manageProduct.GetProductFamilies(_userClaims.OrganizationRealPageGuid, _realpageUserId, personRealPageId, accessFilter, loginName);
-            }
-            else
-            {
-                productFamilyList = _productRepository.GetProductFamilies(_userClaims.OrganizationRealPageGuid, _realpageUserId, personRealPageId, accessFilter, loginName);
-            }
+            //TODO: FIX PRODUCTS SO WE DONT CLONE PRODUCTS THIS USER DOESN'T HAVE
+            productFamilyList = _manageProduct.GetProductFamilies(_userClaims.OrganizationRealPageGuid, _realpageUserId, personRealPageId, accessFilter, loginName);
 
             if (productFamilyList != null)
             {
@@ -209,8 +213,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return productInternalSettingsList;
             }
 
-            IManageProduct manageProduct = new ManageProduct(_userClaims);
-            productInternalSettingsList = manageProduct.GetProductInternalSettings(ProductId);
+            productInternalSettingsList = _manageProduct.GetProductInternalSettings(ProductId);
             output.list = productInternalSettingsList;
             output.Status = errorStatus;
             return productInternalSettingsList;
@@ -227,16 +230,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about the product settings", Type = typeof(ProductInternalSetting))]
         [SwaggerResponseExamples(typeof(ProductInternalSetting), typeof(ProductInternalSettingExample))]
-        [Route("product/{productid}/settings")]
+        [Route("product/{productid:int}/settings")]
         [Authorize]
         [HttpGet]
         public IList<ProductInternalSetting> GetProductNonSensitiveSettings(int productid)
         {
-            Status<IErrorData> errorStatus = new Status<IErrorData>();
-            IList<ProductInternalSetting> productInternalSettingsList = new List<ProductInternalSetting>();
+            return _manageProduct.GetProductInternalSettings(productid)?.Where(p => !p.SensitiveData).OrderBy(p => p.Name).ToList();
+        }
 
-            IManageProduct manageProduct = new ManageProduct(_userClaims);
-            return manageProduct.GetProductInternalSettings(productid)?.Where(p => !p.SensitiveData).OrderBy(p => p.Name).ToList();
+        /// <summary>
+        /// Used to get all non-sensitive product internal settings for the given product type
+        /// </summary>
+        /// <param name="productSettingType">The id of the product to get the settings for</param>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when Information is out of sync with the server)")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about the product settings", Type = typeof(ProductInternalSettingByType))]
+        [SwaggerResponseExamples(typeof(ProductInternalSettingByType), typeof(ProductInternalSettingByTypeExample))]
+        [Route("product/{productSettingType}/settings")]
+        [Authorize]
+        [HttpGet]
+        public HttpResponseMessage GetAllProductNonSensitiveSettingsByType(string productSettingType)
+        {
+            var listResult = _manageProduct.GetProductSettingByType(productSettingType)?.Where(p => !p.SensitiveData).OrderBy(p => p.ProductName).ToList();
+            ObjectListOutput<ProductInternalSettingByType, IErrorData> output = new ObjectListOutput<ProductInternalSettingByType, IErrorData> {list = listResult, Status = new Status<IErrorData>(), pagingSummary = new PagingSummary() {TotalRecords = listResult?.Count ?? 0, TotalPages = 1}};
+            return Request.CreateResponse(HttpStatusCode.OK, output);
         }
 
         /// <summary>
@@ -255,8 +274,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [HttpPut]
         public HttpResponseMessage UpdateProductSettingAndLinkToConfiguration(int productId, ProductInternalSetting productInternalSetting)
         {
-            IManageProduct manageProduct = new ManageProduct(_userClaims);
-            RepositoryResponse response = manageProduct.CreateProductSettingAndLinkToConfiguration(productId, productInternalSetting);
+            RepositoryResponse response = _manageProduct.CreateProductSettingAndLinkToConfiguration(productId, productInternalSetting);
 
             if (!String.IsNullOrEmpty(response.ErrorMessage))
             {
@@ -278,8 +296,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [HttpGet]
         public IList<ProductSettingType> ListProductSettingType()
         {
-            IManageProduct manageProduct = new ManageProduct(_userClaims);
-            return manageProduct.ListProductSettingType();
+            return _manageProduct.ListProductSettingType();
         }
 
 
@@ -327,8 +344,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         {
             ObjectListOutput<ProductType, IErrorData> output = new ObjectListOutput<ProductType, IErrorData>();
             Status<IErrorData> errorStatus = new Status<IErrorData>();
-            IManageProduct manageProduct = new ManageProduct(_userClaims);
-            IList<ProductType> productTypes = manageProduct.GetProductTypes();
+            IList<ProductType> productTypes = _manageProduct.GetProductTypes();
             output.list = productTypes;
             output.Status = errorStatus;
             return Request.CreateResponse(HttpStatusCode.OK, output);
@@ -347,8 +363,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [HttpGet]
         public IList<GbProductMap> GetBooksProductMap()
         {
-            IManageProduct manageProduct = new ManageProduct(_userClaims);
-            IList<GbProductMap> booksProductMap = manageProduct.ListProducts();
+            IList<GbProductMap> booksProductMap = _manageProduct.ListProducts();
 
             return booksProductMap;
         }
@@ -370,8 +385,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             RealPageSAML rpsaml = new RealPageSAML(_userClaims);
 
-            IManageProduct manageProduct = new ManageProduct(_userClaims);
-            IList<ProductInternalSetting> productInternalSettingsList = manageProduct.GetProductInternalSettings(productId);
+            IList<ProductInternalSetting> productInternalSettingsList = _manageProduct.GetProductInternalSettings(productId);
 
             IUserLoginRepository userLoginRepository = new UserLoginRepository();
             var userLoginOnly = userLoginRepository.GetUserLoginOnly(_userClaims.UserRealPageGuid);
@@ -590,8 +604,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             string loginUri = productSamlSettings.LoginUri; 
             if (productId == (int)ProductEnum.VendorMarketplace && _userClaims.RealPageEmployee)
             {
-                ManageProduct manageProduct = new ManageProduct(_userClaims);                
-                IList<ProductInternalSetting> productInternalSetting = manageProduct.GetProductInternalSettings(productId);
+                IList<ProductInternalSetting> productInternalSetting = _manageProduct.GetProductInternalSettings(productId);
                 loginUri = productInternalSetting.First(a => a.Name.Equals("AlternateLoginURL", StringComparison.OrdinalIgnoreCase)).Value;                
             }
 
@@ -642,6 +655,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     LogCategoryName = LogActivityCategoryType.ProductAccess.ToString(),
                     CorrelationId = _userClaims.CorrelationId.ToString(),
                     BooksMasterOrganizationId = _userClaims.OrganizationMasterId,
+                    OrganizationPartyId = _userClaims.OrganizationPartyId,
                     Message = message,
 
                     FromUserLoginName = _userClaims.LoginName,
@@ -669,7 +683,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             // Get products
             RPObjectCache rpcache = new RPObjectCache();
             var cacheKey = "GB-BB-ProductMap";
-            var products = rpcache.GetFromCache<IList<GbProductMap>>(cacheKey, 3600, () =>
+            var products = rpcache.GetFromCache<IList<GbProductMap>>(cacheKey, 360, () =>
             {
                 IManageProduct manageProduct = new ManageProduct(userClaim);
                 return manageProduct.ListProducts();
@@ -912,6 +926,50 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     Value = "another value"
                 });
                 return productInternalSettingList;
+            }
+        }
+
+        /// <summary>
+        /// Used to document examples of the ProductInternalSettingExample webapi result
+        /// </summary>
+        [ExcludeFromCodeCoverage]
+        public class ProductInternalSettingByTypeExample : IProvideExamples
+        {
+            /// <summary>
+            /// Example object data used by Swagger to document the output of the webapi method
+            /// </summary>
+            /// <returns>ProductFamilyMethodExample example</returns>
+            public object GetExamples()
+            {
+                var settingList = new List<ProductInternalSettingByType>
+                {
+                    new ProductInternalSettingByType
+                    {
+                        ProductConfigurationId = "1234",
+                        Name = "ShowInUserDetails",
+                        Value = "1",
+                        ProductId = 1,
+                        ProductName = "OneSite",
+                        BooksProductCode = "OS"
+                    },
+                    new ProductInternalSettingByType
+                    {
+                        ProductConfigurationId = "1235",
+                        Name = "ShowInUserDetails",
+                        Value = "0",
+                        ProductId = 37,
+                        ProductName = "Property Photos",
+                        BooksProductCode = "PHOTO"
+                    }
+                };
+
+                Status<IErrorData> errorStatus = new Status<IErrorData>();
+                ObjectOutput<List<ProductInternalSettingByType>, IErrorData> output = new ObjectOutput<List<ProductInternalSettingByType>, IErrorData>()
+                {
+                    obj = settingList,
+                    Status = errorStatus
+                };
+                return output;
             }
         }
 

@@ -22,6 +22,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		string DeleteOneSiteUser(long editorPersonaId, long userPersonaId);
 
         string DeleteRole(long editorPersonaId, int roleId);
+        string ResetVerificationCode(long editorPersonaId, long userPersonaId);
         string EnableOneSiteUser(long editorPersonaId, long userPersonaId, bool active);
         ListResponse GetOneSitePropertyList(long editorPersonaId, long userPersonaId, bool assignedOnly, RequestParameter datafilter);
         ListResponse GetOneSitePropertyListAll(Persona persona, RequestParameter datafilter);

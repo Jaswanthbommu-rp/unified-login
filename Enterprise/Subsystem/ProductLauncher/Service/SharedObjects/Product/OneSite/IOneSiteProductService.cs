@@ -78,6 +78,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         void DisableUserAsync(string SystemIdentifier);
         void DisableUserAsync(string SystemIdentifier, object userState);
         void EnableUser(string SystemIdentifier);
+        void ResetVerificationCode(string SystemIdentifier);
         void EnableUserAsync(string SystemIdentifier);
         void EnableUserAsync(string SystemIdentifier, object userState);
         PropertyList GetAllProperties(NameValuePair[] uiArgs, string SystemIdentifier, FilterSortParameters filterSortParameters);

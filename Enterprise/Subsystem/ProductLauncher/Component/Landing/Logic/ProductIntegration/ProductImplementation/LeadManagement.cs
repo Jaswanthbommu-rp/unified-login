@@ -39,7 +39,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				productUser.Roles = new List<string> { "17" };
 			}
 
-			productUser.Properties = new List<string>();
+			productUser.Properties = new List<string>() { "all" };
 			productUser.PropertyGroups = new List<string>();
 		}
 

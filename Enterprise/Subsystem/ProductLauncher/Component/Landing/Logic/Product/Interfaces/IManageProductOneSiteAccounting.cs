@@ -15,9 +15,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         string DeleteAccountingUser(long editorPersonaId, long deletedPersona);
         //ListResponse GetAccountingUser(long editorPersonaId, long userPersonaId);
         ListResponse GetUserProperties(long editorPersonaId, long userPersonaId, RequestParameter datafilter);
+        ListResponse GetUserPropertyGroups(long editorPersonaId, long userPersonaId, RequestParameter datafilter);
         ListResponse GetUserPropertiesNew(long editorPersonaId, long userPersonaId, RequestParameter datafilter);
         ListResponse GetUserCompanies(long editorPersonaId, long userPersonaId, RequestParameter datafilter);
-
+        ListResponse GetPropertyGroupEntities(long editorPersonaId, long userPersonaId, string locationGrpId, RequestParameter datafilter);
 
         ListResponse GetUserRoles(long editorPersonaId, long userPersonaId, RequestParameter datafilter);
         string ChangeAccountingServiceUserType(long createUserPersonaId, long assignUserPersonaId, List<string> rpList, List<string> PropertyList, List<string> CompanyList, bool isAccountingAdmin, bool isSiteSpendManagementUser, bool isUnRestrictedAccessToProp, BatchProcessType batchProcessType);

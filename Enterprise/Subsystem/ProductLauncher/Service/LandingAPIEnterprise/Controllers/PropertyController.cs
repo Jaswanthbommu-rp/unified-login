@@ -123,7 +123,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 		    };
             ManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
             int productId = (int)ProductEnumHelper.GetProductEnumByProductCode(productCode);
-            ListResponse productResponse;
+            ListResponse productResponse;            
             switch (ProductEnumHelper.GetProductEnumByProductCode(productCode))
             {
                 case ProductEnum.OpsBuyer:
@@ -145,7 +145,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     ManageUPFMProductsIntegration upfmProductIntegration = new ManageUPFMProductsIntegration(productId, _userClaims);
                     var upfmProduct = ProductEnumHelper.GetUPFMProductEnum(productId);
                     productResponse = upfmProductIntegration.GetUPFMProperties(_userClaims.PersonaId, upfmProduct, include);
-                    break;
+                    break;                
                 default:
                     error.Errors.Add(new Error() { Title = "Bad request", Detail = "No valid product code could be found", Source = "/property", StatusCode = "" });
                     return Request.CreateResponse(HttpStatusCode.BadRequest, error);
@@ -165,6 +165,39 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 return Request.CreateResponse(HttpStatusCode.BadRequest, error);
             }
 		}
+
+        /// <summary>
+        /// Get a list of companies and its properties for the given user
+        /// </summary>        
+        /// <param name="productCode">The productid is to get the product properties</param>
+        /// <returns>http Response</returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "A list of companies and its properties for the given user", Type = typeof(UserCompaniesProperties))]
+        [SwaggerResponseExamples(typeof(UserCompaniesProperties), typeof(ProductProperty.CompanyPropertiesSimpleExample))]
+        [Route("user/getusercompanyproperties")]
+        [AuthorizeScope("enterpriseapi")]
+        [HttpGet]
+        public HttpResponseMessage GetUserCompanyProperties(string productCode)
+        {            
+            ErrorResponse error = new ErrorResponse()
+            {
+                Errors = new List<Error>()
+            };
+            int productId = (int)ProductEnumHelper.GetProductEnumByProductCode(productCode);
+            ManageUPFMProductsIntegration upfmProductIntegration = new ManageUPFMProductsIntegration(productId, _userClaims);            
+            var multiCompanyPropertyResponse = upfmProductIntegration.GetUPFMMultiCompanyProperties(productCode);            
+            if (multiCompanyPropertyResponse.Count > 0)
+            {
+                return Request.CreateResponse(HttpStatusCode.OK, multiCompanyPropertyResponse);
+            }
+            else
+            {
+                error.Errors.Add(new Error() { Title = "Error", Detail = multiCompanyPropertyResponse[0].ErrorReason, Source = "/property", StatusCode = "" });
+                return Request.CreateResponse(HttpStatusCode.BadRequest, error);
+            }
+        }
 
         /// <summary>
         /// Get a list of OPS AssetGroups 

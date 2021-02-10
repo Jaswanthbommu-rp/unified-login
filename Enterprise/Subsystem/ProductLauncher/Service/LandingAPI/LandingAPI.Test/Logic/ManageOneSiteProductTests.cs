@@ -629,6 +629,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         [Fact]
         public void Get_UserRoles_WithNoFilterAndNoSort_NoData()
         {
+            var _gbProductMap = new GbProductMap {ProductId = 1, BooksProductCode = "OS", Name = "OneSite", UDMSourceCode = "OS"};
+
             //Arrange
             var mockService = new Mock<IOneSiteProductService>();
             var mockManageBlueBook = new Mock<IManageBlueBook>();
@@ -661,6 +663,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                     It.IsAny<long>()
                 ))
                 .Returns(_userProductSettings);
+
+            mockProductRepository
+                .Setup(m => m.GetBooksMasterProductDetail(
+                    (int)ProductEnum.OneSite)
+                )
+                .Returns(_gbProductMap);
+
             //Act
             IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
                 mockHttpMessageHandler.Object);
@@ -1477,6 +1486,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
           .Returns(_gbProductMap);
 
             ProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository(mockRepository.Object);
+
 
             //Act
             IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, mockService.Object, samlRepository, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, productInternalSettingRepository,
@@ -4669,6 +4679,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             var username = "testuser";
             var isActive = false;
+
+            new RPObjectCache().BustCache();
 
             //Act
             var actual = manageProductOneSite.ChangeUserStatus(editorPersonaId, username, isActive);

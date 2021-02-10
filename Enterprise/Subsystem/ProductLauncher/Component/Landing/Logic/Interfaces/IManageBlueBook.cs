@@ -134,5 +134,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         bool AcknowledgeProvisioningEvent(ProductCenterEnablement productCenterEnablement);
         Company GetBooksCompanyDetailsByCompanyMasterId(long companyMasterId);
         List<CustomerCompanyDomain> GetListOfDomainsByCompany(long companyMasterId);
+
+        /// <summary>
+        /// Used to acknowledge provisioning Cancel events
+        /// </summary>
+        /// <param name="productCenterCancel"></param>
+        /// <returns></returns>
+        bool AcknowledgeProvisioningCancelEvent(ProductCenterCancellation productCenterCancel);
+
+        /// <summary>
+        /// Used to acknowledge on property name update
+        /// </summary>
+        /// <param name="propertyInstanceAck"></param>
+        /// <returns></returns>
+        bool AcknowledgePropertyUpdate(PropertyInstanceAck propertyInstanceAck);
+
+        /// <summary>
+        /// GetPropertyInstanceForCompany
+        /// </summary>
+        /// <param name="companyRealPageId"></param>
+        /// <returns></returns>
+        List<BooksPropertyInstance> GetPropertyInstanceForCompany(Guid companyRealPageId);
+
+        ///// <summary>
+        ///// Get Property Details By CustomerPropertyId(blue book Id)
+        ///// </summary>
+        ///// <param name="customerPropertyId"></param>
+        ///// <returns></returns>
+        List<BooksPropertyInstance> GetPropertyInstanceByCustomerPropertyId(string CustomerPropertyId);
     }
 }

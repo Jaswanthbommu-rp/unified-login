@@ -53,7 +53,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         private System.Threading.SendOrPostCallback RemoveRolesFromUserOperationCompleted;
         
         private System.Threading.SendOrPostCallback EnableUserOperationCompleted;
-        
+
+        private System.Threading.SendOrPostCallback ResetVerificationCodeOperationCompleted;
+
         private System.Threading.SendOrPostCallback DisableUserOperationCompleted;
         
         private System.Threading.SendOrPostCallback GetAllPropertiesOperationCompleted;
@@ -182,7 +184,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         
         /// <remarks/>
         public event EnableUserCompletedEventHandler EnableUserCompleted;
-        
+
+        /// <remarks/>
+        public event ResetVerificationCodeCompletedEventHandler ResetVerificationCodeCompleted;
+
         /// <remarks/>
         public event DisableUserCompletedEventHandler DisableUserCompleted;
         
@@ -617,7 +622,42 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
                 this.EnableUserCompleted(this, new System.ComponentModel.AsyncCompletedEventArgs(invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState));
             }
         }
-        
+
+        /// <remarks/>
+        [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://realpage.com/webservices/ResetVerificationCode", RequestNamespace = "http://realpage.com/webservices", ResponseNamespace = "http://realpage.com/webservices", Use = System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle = System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
+        public void ResetVerificationCode(string SystemIdentifier)
+        {
+            this.Invoke("ResetVerificationCode", new object[] {
+                        SystemIdentifier});
+        }
+
+        /// <remarks/>
+        public void ResetVerificationCodeAsync(string SystemIdentifier)
+        {
+            this.ResetVerificationCodeAsync(SystemIdentifier, null);
+        }
+
+        /// <remarks/>
+        public void ResetVerificationCodeAsync(string SystemIdentifier, object userState)
+        {
+            if ((this.ResetVerificationCodeOperationCompleted == null))
+            {
+                this.ResetVerificationCodeOperationCompleted = new System.Threading.SendOrPostCallback(this.OnResetVerificationCodeOperationCompleted);
+            }
+            this.InvokeAsync("ResetVerificationCode", new object[] {
+                        SystemIdentifier}, this.ResetVerificationCodeOperationCompleted, userState);
+        }
+
+        private void OnResetVerificationCodeOperationCompleted(object arg)
+        {
+            if ((this.ResetVerificationCodeCompleted != null))
+            {
+                System.Web.Services.Protocols.InvokeCompletedEventArgs invokeArgs = ((System.Web.Services.Protocols.InvokeCompletedEventArgs)(arg));
+                this.ResetVerificationCodeCompleted(this, new System.ComponentModel.AsyncCompletedEventArgs(invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState));
+            }
+        }
+
+
         /// <remarks/>
         [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://realpage.com/webservices/DisableUser", RequestNamespace="http://realpage.com/webservices", ResponseNamespace="http://realpage.com/webservices", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
         public void DisableUser(string SystemIdentifier) {
@@ -2462,7 +2502,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
     /// <remarks/>
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.2046.0")]
     public delegate void EnableUserCompletedEventHandler(object sender, System.ComponentModel.AsyncCompletedEventArgs e);
-    
+
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.2046.0")]
+    public delegate void ResetVerificationCodeCompletedEventHandler(object sender, System.ComponentModel.AsyncCompletedEventArgs e);
+
     /// <remarks/>
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.2046.0")]
     public delegate void DisableUserCompletedEventHandler(object sender, System.ComponentModel.AsyncCompletedEventArgs e);

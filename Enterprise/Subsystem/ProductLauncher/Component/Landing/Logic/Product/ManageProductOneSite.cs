@@ -198,8 +198,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 PropertyList propertyList = new PropertyList();
                 Dictionary<string, object> logData = new Dictionary<string, object>();
                 OneSiteUser onesiteuser = new OneSiteUser();
-
-
+                
                 if (!string.IsNullOrEmpty(_systemIdentifier))
                 {
                     onesiteuser = GetOneSiteUserInfo(_systemIdentifier);
@@ -1532,6 +1531,44 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 WriteToErrorLog($"EnableOneSiteUser - Updating user status. userPersonaId = {userPersonaId}, isActive = {isActive.ToString()}", exception: ex);
             }
+            return "";
+        }
+
+        /// <summary>
+        /// Used to ResetVerificationCode of a OneSite user
+        /// </summary>
+        /// <returns></returns>
+        public string ResetVerificationCode(long editorPersonaId, long userPersonaId)
+        {
+            Persona userPersona = _managePersona.GetPersona(userPersonaId);
+            Guid userRealPageId = userPersona.RealPageId;
+
+            IC.Person person = _managePerson.GetPerson(userRealPageId);
+
+            var userLogin = _manageUserLogin.GetUserLoginOnly(userRealPageId);
+
+            try
+            {
+                WriteToDiagnosticLog($"ResetVerificationCode - Resetting User Verification Code");
+
+                IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(userPersonaId, _productId);
+                // the Accounting user making the change to the role, get the Company from the user
+                _systemIdentifier = string.Empty;
+                if (productAttributes.Any(a => a.Name.ToUpper() == "USERID"))
+                {
+                    _systemIdentifier = (from a in productAttributes where a.Name.ToUpper() == "USERID" select a.Value).FirstOrDefault();
+                }
+                _service.ResetVerificationCode(_systemIdentifier);
+
+                //Activity Log
+                WriteResetVerificationCodeActivityLog(editorPersonaId, person, userLogin);
+            }
+            catch (Exception ex)
+            {
+                WriteToErrorLog($"ResetVerificationCode - Resetting User Verification Code = {_systemIdentifier}", exception: ex);
+                return "There was a problem resetting verification code";
+            }
+
             return "";
         }
 

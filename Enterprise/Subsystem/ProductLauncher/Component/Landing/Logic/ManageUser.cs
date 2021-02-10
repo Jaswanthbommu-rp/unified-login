@@ -416,7 +416,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 			var employeeId = this.GetUserEmployeeId(userLoginPersonaList[0].UserLoginPersonaId, profile.Persona.First().OrganizationPartyId);
 
-			oldProfile.EmployeeId = (employeeId != null && !string.IsNullOrEmpty(employeeId.EmployeeId)) ? employeeId.EmployeeId : null;
+			oldProfile.EmployeeId = (employeeId != null && !string.IsNullOrEmpty(employeeId.EmployeeId)) ? employeeId.EmployeeId : "";
 			oldProfile.UserEmployeeId = (employeeId != null  && employeeId.UserEmployeeId > 0) ? employeeId.UserEmployeeId : 0;
 
 			repositoryResponse = _userRepository.UpdateUser(loggedInUserRealPageId, profile, oldProfile);
@@ -537,7 +537,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				case (int)ProductRightEnum.AoInvestmentAnalytics:				
 				case (int)ProductRightEnum.AoRevenueManagement:					
 				case (int)ProductRightEnum.AoAxiometrics:				
-				case (int)ProductRightEnum.AoBenchmarking:				
+				case (int)ProductRightEnum.AoBenchmarking:
+				case (int)ProductRightEnum.AoMarketAnalytics:
 					hasAccess = editorRights.Contains(ProductRightEnum.ManageAssetOptimizationProductAccess.ToString());
 					break;
 				case (int)ProductRightEnum.ManageClientPortalProductAccess:
@@ -753,6 +754,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				LogCategoryName = logActivityCategoryType.ToString(),
 				CorrelationId = _userClaim.CorrelationId.ToString(),
 				BooksMasterOrganizationId = _userClaim.OrganizationMasterId,
+                OrganizationPartyId = _userClaim.OrganizationPartyId,
 				Message = string.Format(message, profile.FirstName, profile.LastName, _userClaim.FirstName, _userClaim.LastName, profile.CreateUserSourceType.ToString()),
 
 				FromUserLoginName = _userClaim.LoginName,

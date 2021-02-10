@@ -221,7 +221,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 
                 persona.hasManageIntelligentBuildingWaterProductAccess = editorRights.Contains(ProductRightEnum.ManageIntelligentBuildingWaterProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
                 
-                persona.hasManageHospitalityServiceAccess = editorRights.Contains(ProductRightEnum.ManageHospitalityServiceProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
+                persona.hasManageHandsOnTrainingSystemAccess = editorRights.Contains(ProductRightEnum.ManageHandsOnTrainingSystemProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
+
+                persona.hasManageLeaseLabsAccess = editorRights.Contains(ProductRightEnum.ManageLeaseLabsProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
+
+                persona.hasManageHospitalityServiceAccess = editorRights.Contains(ProductRightEnum.ManageHomeSharingProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
 
                 persona.hasPlatformAlertsAccess = (editorRights.Contains("CreatePlatformAlerts", StringComparer.OrdinalIgnoreCase) 
                                                 || editorRights.Contains("ApprovePlatformAlerts", StringComparer.OrdinalIgnoreCase));

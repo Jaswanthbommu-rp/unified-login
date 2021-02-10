@@ -15,6 +15,7 @@ using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Web;
@@ -42,11 +43,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <summary>
         /// ManageUserLogin Constructor
         /// </summary>
-        public ManageUserLogin(IRepository repository, DefaultUserClaim userClaim)
+        public ManageUserLogin(IRepository repository, DefaultUserClaim userClaim, HttpMessageHandler messageHandler)
         {
             _userLoginRepository = new UserLoginRepository(repository);
             _credentialRepository = new CredentialRepository(repository);
-            _userRepository = new UserRepository(repository, userClaim);
+            _userRepository = new UserRepository(repository, userClaim, messageHandler);
             _productRepository = new ProductRepository(repository);
             _personRepository = new PersonRepository(repository);
             _roleTypeRepository = new RoleTypeRepository(repository);
@@ -546,6 +547,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             LogCategoryName = LogActivityCategoryType.Email.ToString(),
                             CorrelationId = defaultUserClaim.CorrelationId.ToString(),
                             BooksMasterOrganizationId = defaultUserClaim.OrganizationMasterId,
+                            OrganizationPartyId = defaultUserClaim.OrganizationPartyId,
                             Message = message,
                             FromUserLoginName = userName,
                             FromUserLoginId = defaultUserClaim.UserId,
@@ -628,6 +630,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             LogCategoryName = LogActivityCategoryType.Email.ToString(),
                             CorrelationId = _defaultUserClaim.CorrelationId.ToString(),
                             BooksMasterOrganizationId = organization.BooksMasterId,
+                            OrganizationPartyId = organization.PartyId,
                             Message = message,
                             FromUserLoginName = "automatedsystem",
                             FromUserLoginId = adminUserClaim.UserId,
@@ -739,6 +742,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                                         LogCategoryName = LogActivityCategoryType.Email.ToString(),
                                         CorrelationId = _defaultUserClaim.CorrelationId.ToString(),
                                         BooksMasterOrganizationId = org.BooksMasterId,
+                                        OrganizationPartyId = org.PartyId,
                                         Message = message,
                                         FromUserLoginName = "automatedsystem",
                                         FromUserLoginId = currentUserClaim.UserId,
@@ -1109,6 +1113,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             LogCategoryName = LogActivityCategoryType.User.ToString(),
                             CorrelationId = defaultUserClaim.CorrelationId.ToString(),
                             BooksMasterOrganizationId = defaultUserClaim.OrganizationMasterId,
+                            OrganizationPartyId = defaultUserClaim.OrganizationPartyId,
                             Message = message,
 
                             FromUserLoginName = defaultUserClaim.LoginName,
@@ -1403,6 +1408,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 LogCategoryName = logActivityCategoryType.ToString(),
                 CorrelationId = _defaultUserClaim.CorrelationId.ToString(),
                 BooksMasterOrganizationId = _defaultUserClaim.OrganizationMasterId,
+                OrganizationPartyId = _defaultUserClaim.OrganizationPartyId,
                 Message = string.Format(message, profile.FirstName, profile.LastName, _defaultUserClaim.FirstName, _defaultUserClaim.LastName, profile.CreateUserSourceType.ToString()),
 
                 FromUserLoginName = _defaultUserClaim.LoginName,

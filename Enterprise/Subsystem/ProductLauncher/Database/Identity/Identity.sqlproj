@@ -518,7 +518,6 @@
     <Build Include="Enterprise\Stored Procedures\CreateCommunicationEventAudienceType.sql" />
     <Build Include="Enterprise\Stored Procedures\GetIdentityProviderTypeByRealPageId.sql" />
     <Build Include="Ident\Stored Procedures\LinkIdentityProviderToUserLogin.sql" />
-    <Build Include="Enterprise\Stored Procedures\UpdateRole.sql" />
     <Build Include="Enterprise\Tables\SourceSystem.sql" />
     <Build Include="Enterprise\Tables\PersonaIdentityUserLogin.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.1.sql" />
@@ -529,7 +528,6 @@
     <Build Include="Enterprise\Stored Procedures\CreateActionValueType.sql" />
     <Build Include="Enterprise\Stored Procedures\CreatePartyRoleType.sql" />
     <Build Include="Enterprise\Stored Procedures\CreateRight.sql" />
-    <Build Include="Enterprise\Stored Procedures\CreateRole.sql" />
     <Build Include="Enterprise\Stored Procedures\GetCESCommunicationEvent.sql" />
     <Build Include="Enterprise\Stored Procedures\GetCESCommunicationEventByEventId.sql" />
     <Build Include="Enterprise\Stored Procedures\GetCommunicationEmailTemplate.sql" />
@@ -540,19 +538,15 @@
     <Build Include="Enterprise\Stored Procedures\LinkActionToRights.sql" />
     <Build Include="Enterprise\Stored Procedures\LinkPartyRoleToParty.sql" />
     <Build Include="Enterprise\Stored Procedures\LinkPersonaToRole.sql" />
-    <Build Include="Enterprise\Stored Procedures\LinkRightsToRoles.sql" />
     <Build Include="Enterprise\Stored Procedures\ListActionValueType.sql" />
     <Build Include="Enterprise\Stored Procedures\ListAllActions.sql" />
-    <Build Include="Enterprise\Stored Procedures\ListAllRights.sql" />
     <Build Include="Enterprise\Stored Procedures\ListCommunicationEventAudienceTypes.sql" />
     <Build Include="Enterprise\Stored Procedures\ListPartyRoleTypes.sql" />
     <Build Include="Enterprise\Stored Procedures\ListRightsByPersonaID.sql" />
     <Build Include="Enterprise\Stored Procedures\ListRightsHierarchyByPersonaID.sql" />
-    <Build Include="Enterprise\Stored Procedures\ListRolesByParty.sql" />
     <Build Include="Enterprise\Stored Procedures\ListRolesByRealPageID.sql" />
     <Build Include="Enterprise\Stored Procedures\ListRolesHierarchy.sql" />
     <Build Include="Enterprise\Stored Procedures\ListRootActions.sql" />
-    <Build Include="Enterprise\Stored Procedures\ListSecurityStatus.sql" />
     <Build Include="Enterprise\Stored Procedures\UpdateActionValueType.sql" />
     <Build Include="Enterprise\Stored Procedures\UpdateRight.sql" />
     <Build Include="Enterprise\Stored Procedures\ListPersonaRightsAndActionsByRoute.sql" />
@@ -577,14 +571,8 @@
     <Build Include="Enterprise\Tables\PropertyMapping.sql" />
     <Build Include="Ident\Stored Procedures\UpdateBulkUserStatus.sql" />
     <Build Include="dbo\TypRole.sql" />
-    <Build Include="Enterprise\Stored Procedures\DeleteRole.sql" />
-    <Build Include="Enterprise\Stored Procedures\ListRightForProductsByPartyId.sql" />
-    <Build Include="Enterprise\Stored Procedures\ListRightsAssociatedWithRoles.sql" />
     <Build Include="Enterprise\Stored Procedures\ListRoleCategory.sql" />
-    <Build Include="Enterprise\Stored Procedures\ListRolesAssociatedWithRights.sql" />
     <Build Include="Enterprise\Stored Procedures\ListRolesForProductsByOranizationId.sql" />
-    <Build Include="Enterprise\Stored Procedures\ListRolesForProductsByPartyId.sql" />
-    <Build Include="Enterprise\Stored Procedures\ListRolesForProductsByPersonaId.sql" />
     <Build Include="Enterprise\Stored Procedures\ListRoleUsersByOrganizationID.sql" />
     <Build Include="Enterprise\Tables\RoleValueType.sql" />
     <Build Include="Enterprise\Tables\RightValueType.sql" />
@@ -640,7 +628,6 @@
     <Build Include="Enterprise\Stored Procedures\CreateMasterConfigurationSetting.sql" />
     <Build Include="Enterprise\Stored Procedures\ListMasterConfigurationType.sql" />
     <Build Include="Enterprise\Views\RoleRightStatus.sql" />
-    <Build Include="Enterprise\Stored Procedures\SetDefaultRole.sql" />
     <Build Include="Enterprise\Stored Procedures\ListRoleTypeDependency.sql" />
     <Build Include="Enterprise\Tables\RoleTypeDependency.sql" />
     <Build Include="Enterprise\Views\CreateUserSourceType.sql" />
@@ -1023,8 +1010,28 @@
     <Build Include="Enterprise\Tables\UnifiedLoginCache.sql" />
     <Build Include="Enterprise\Stored Procedures\GetCompanyList.sql" />
     <Build Include="Person\Stored Procedures\ListUsersProductDetailsLoginByLoginName.sql" />
-    <Build Include="Enterprise\Tables\CompanyAddress.sql" />
-    <Build Include="Enterprise\Tables\CompanyContractedName.sql" />
+    <Build Include="Enterprise\Stored Procedures\DisableUsersForProduct.sql" />
+    <Build Include="Enterprise\Stored Procedures\PropertyInstanceListWithPaging.sql" />
+    <Build Include="Enterprise\Stored Procedures\UpdatePropertyInstance.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\ListSecurityStatus.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListProductGlobalSettingsBySettingType.sql" />
+    <Build Include="Enterprise\Stored Procedures\CreateNewProduct.sql" />
+    <Build Include="Ident\Tables\SettingCategoryType.sql" />
+    <Build Include="Ident\Tables\OrganizationSettings.sql" />
+    <Build Include="Ident\Stored Procedures\GetUnifiedSetting.sql" />
+    <Build Include="Ident\Stored Procedures\UpdateUnifiedSetting.sql" />
+    <Build Include="UserManagement\Stored Procedures\GetProductPageByProductId.sql" />
+    <Build Include="UserManagement\Stored Procedures\GetProductLookups.sql" />
+    <Build Include="Enterprise\Stored Procedures\CreateOrganizationProductConfiguration.sql" />
+    <Build Include="Enterprise\Stored Procedures\CreateOrganizationProductConfigurationbyPartyId.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetAllProducts.sql" />
+    <Build Include="UserManagement\Stored Procedures\DeleteProductContol.sql" />
+    <Build Include="UserManagement\Stored Procedures\DeletePage.sql" />
+    <Build Include="Enterprise\Stored Procedures\SetProduct.sql" />
+    <Build Include="Enterprise\Stored Procedures\SetProductType.sql" />
+    <Build Include="Enterprise\Stored Procedures\SetProductSetting.sql" />
+    <Build Include="UserManagement\Stored Procedures\SetProductPage.sql" />
+    <Build Include="Enterprise\Stored Procedures\SetProductControl.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
@@ -1132,6 +1139,7 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\SameSiteData.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\UserManagementData.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\_SeedData.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\2021Q1Release.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />
