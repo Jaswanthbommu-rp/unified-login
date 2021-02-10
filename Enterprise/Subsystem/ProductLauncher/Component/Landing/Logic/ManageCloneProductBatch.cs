@@ -243,7 +243,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 							 product.ProductId == (int)ProductEnum.IntelligentBuildingEnergy ||
 							 product.ProductId == (int)ProductEnum.IntelligentBuildingWater ||
 							 product.ProductId == (int)ProductEnum.HospitalityService ||
-							 product.ProductId == (int)ProductEnum.HandsOnTrainingSystem)
+							 product.ProductId == (int)ProductEnum.HandsOnTrainingSystem ||
+							 product.ProductId == (int)ProductEnum.LeaseLabs)
 					{
 						ManageUPFMProductsIntegration upfmProductIntegration = new ManageUPFMProductsIntegration(product.ProductId, userClaim);
 						var upfmProduct = ProductEnumHelper.GetUPFMProductEnum(product.ProductId);
