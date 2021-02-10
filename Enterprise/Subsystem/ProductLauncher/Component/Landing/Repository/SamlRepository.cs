@@ -4,6 +4,7 @@ using System.Linq;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
@@ -51,6 +52,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		        return repo.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = PersonaId }).ToList();
 	        }
         }
+
+		/// <summary>
+		/// List All Persona Products SAML Details
+		/// </summary>
+		/// <param name="PersonaId">User personaId</param>		
+		/// <returns>List of Persona Products SAML Details</returns>
+		public IList<ProductSamlDetails> ListPersonaProductsSamlDetails(long PersonaId)
+		{
+			using (var repo = GetRepository())
+			{
+				return repo.GetMany<ProductSamlDetails>(StoredProcNameConstants.SP_ListPersonaProductsSamlDetails, new { PersonaId = PersonaId }).ToList();
+			}
+		}
 
 		/// <summary>
 		/// Get the SAML attribute names, types, and values by PersonaId and ProductId
