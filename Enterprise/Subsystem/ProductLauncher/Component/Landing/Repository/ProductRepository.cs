@@ -1977,6 +1977,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     case (int)ProductRightEnum.ManageHandsOnTrainingSystemProductAccess:
                         s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageHandsOnTrainingSystemProductAccess.ToString());
                         break;
+                    case (int)ProductRightEnum.ManageLeaseLabsProductAccess:
+                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageLeaseLabsProductAccess.ToString());
+                        break;
                     default:
                         break;
                 }

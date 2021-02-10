@@ -1267,7 +1267,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
             var currentProperty = _manageOrganization.GetPropertyByInstanceId(propertyInstanceId);
 
-            if (currentProperty != null && currentProperty.FirstOrDefault().Name.ToLower() != propertyName.ToLower())
+            if (currentProperty != null && !currentProperty.FirstOrDefault().Name.Equals(propertyName, StringComparison.Ordinal))
             {
                 _repositoryResponse = _manageOrganization.UpdateProperty(propertyInstanceId, propertyName);
                 if (_repositoryResponse.Id == 0)
@@ -1412,7 +1412,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: companyInstanceID");
             }
-            List <PropertySetup> _propertySearchList = _manageOrganization.SearchPropertyDetailsByCustomerPropertyId(customerPropertyId);
+            PropertyInstanceSearch _propertySearchList = _manageOrganization.SearchPropertyDetailsByCustomerPropertyId(customerPropertyId);
             return Request.CreateResponse(HttpStatusCode.OK, _propertySearchList);
         }
 		#endregion

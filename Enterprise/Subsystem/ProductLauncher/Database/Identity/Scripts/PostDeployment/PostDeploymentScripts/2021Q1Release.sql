@@ -1209,3 +1209,433 @@ GO
 update [Security].[Right]
 set TargetProductId = (select ProductId from Enterprise.Product where Name = 'Reporting' and BooksProductCode = 'RPT')
 where RightName = 'AccessUnifiedReporting'
+
+
+-- Update UDMSourceCode for ILMLM and ILMLA Products
+IF EXISTS(SELECT * FROM Enterprise.Product WHERE ProductId = 40 AND UDMSourceCode IS NULL)
+	UPDATE Enterprise.Product SET UDMSourceCode = 'ILMLA' WHERE ProductId = 40
+IF EXISTS(SELECT * FROM Enterprise.Product WHERE ProductId = 41 AND UDMSourceCode IS NULL)
+	UPDATE Enterprise.Product SET UDMSourceCode = 'ILMLA' WHERE ProductId = 41
+
+GO
+--LeaseLabs
+/*This script is a sample script to create new prodcut in the system.*/
+
+DECLARE @ProductId INT, 
+		@LoginURI NVARCHAR(100), 
+		@SigningCertificateThumbprint NVARCHAR(50), 
+		@ParentProductTypeId INT, 
+		@ProductName NVARCHAR(100)= 'LeaseLabs',  -- Produact Name
+		@LoginURL NVARCHAR(500), 
+		@ProductUrl NVARCHAR(256), 
+		@apiendpoint NVARCHAR(1000), 
+		@tokenEndPoint NVARCHAR(1000), 
+		@apisecret NVARCHAR(1000),
+		@ServerName SYSNAME = @@SERVERNAME,
+		@ProductDescription NVARCHAR(MAX) =''
+
+DECLARE @ProductConfiguration AS PRODUCTCONFIGURATIONTYPE;
+
+/*Validate what product type ths new product belongs to. 'Administration' in the following block 
+need to be chnanged to desired prodcut type. You can query Enterprise.ProductType table for more details.
+*/
+
+SELECT @ParentProductTypeId = ProductTypeId
+FROM Enterprise.ProductType
+WHERE Name = 'Lease Management'
+      AND ParentProductTypeId IS NULL;
+IF NOT EXISTS
+(
+    SELECT TOP 1 1
+    FROM enterprise.ProductType
+    WHERE Name = 'LeaseLabs'
+)
+    BEGIN
+        EXEC [Enterprise].[CreateProductType] 
+             @ProductTypeId = 314, -- Thsi value may change based on the root prodcut type
+             @ParentProductTypeId = @ParentProductTypeId, 
+             @Name = @ProductName, 
+             @Description = @ProductName, 
+             @ProductTypeGUID = '3B85E000-D339-40DC-89A7-D695D4F48082'; -- Use Select newid() to generate new uniqueidentifier.
+END;
+SET @ProductId = 68; -- Assign new product Id
+
+--Following block will create the new prodcut in the database
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM Enterprise.Product
+    WHERE Name = @ProductName
+)
+    BEGIN
+        EXEC Enterprise.CreateProduct 
+             @ProductId = @ProductId, 
+             @ProductGUID = '70267DB2-902F-4113-88F5-5A1646E65564', -- Use Select newid() to generate new uniqueidentifier.
+             @Name = @ProductName, 
+             @Description = @ProductDescription, 
+             @ProductTypeId = 314;
+        
+		UPDATE Enterprise.Product
+          SET 
+              BooksProductCode = 'LeaseLabs'
+        WHERE ProductId = @ProductId;
+END;
+
+--The following block picks up all the detail frm Enterprise.ProductSettingType table
+--To set up the product, bunch of these settings are required.
+SET @apiendpoint = '';
+Set @tokenEndPoint = '';
+SET @apisecret = '';
+IF @ServerName IN ('RCDUSODBSQL001')
+BEGIN
+	SET @apiendpoint = 'https://admin.dev-ws.realpage.com/';
+	SET @tokenEndPoint = '';
+	SET @apisecret = '';
+END
+IF @ServerName IN ('rctusodbsql001')
+BEGIN
+	SET @apiendpoint = 'https://admin.qa-ws.realpage.com/';
+	SET @tokenEndPoint = '';
+	SET @apisecret = '';
+END
+IF @ServerName IN ('RCQUSODBSQL001') 
+BEGIN
+	SET @apiendpoint = 'https://admin.sat-ws.realpage.com/';
+END
+IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B')
+BEGIN
+	SET @apiendpoint = 'https://admin.ws.realpage.com/';
+	SET @tokenEndPoint = '';
+	SET @apisecret = '';
+END
+set nocount on
+INSERT INTO @ProductConfiguration
+(SettingName, 
+ SettingDescription, 
+ SettingValue
+)
+VALUES
+ ('ClassName','','leaselabs')
+,('ProductUrl','','/product/leaselabs')
+,('TitleId','','LeaseLabs')
+,('TitleUniqueId','','F94C333F-EDE2-497D-9109-9631BE29ACC1')
+,('IsNewTab','','1')
+,('MetatagUniqueId','','LeaseLabs')
+,('IsResource','','0')
+,('IsFavorite','','1')
+,('LearnMore','','')
+,('ApiEndPoint','',@apiendpoint)
+,('ProductStatus','Show if the external application was configured for the dashboard user.','8')
+,('ProductStatus','Show if the external application was configured for the dashboard user.','7')
+,('ProductStatus','Show if the external application was configured for the dashboard user.','10')
+,('ProductStatus','Show if the external application was configured for the dashboard user.','19')
+,('ShowInUserDetails','Should the product show in the New/Edit user pages','1')
+,('ShowInRolesAndRights','Should the product show in the Role/Rights page','0')
+,('ShowInAppSwitcher','Should the product show in the application switcher','1')
+,('ShowInUserListFilter','Should the product show in the user list product pick list','1')
+,('ProductAPIRequiresUser','Does the product require a user for api calls','0')
+,('LockOnProductAccess', '', '0')
+,('ProductNotAvailableForRegularUserNoEmail','Product Attribute for Product Not Available for Regular User No Email.','0')
+,('CLIENTID','','bosswasteapi') -- For DEV Environment
+,('TOKENENDPOINT','', '') -- For DEV Environment
+,('APISECRET','', '')
+,('AuthenticationType','Used to determine how to log into the product','Redirect')
+,('NotificationEmailRequiredForUserWithNoEmail', '', '0')
+
+
+
+SELECT * FROM @ProductConfiguration
+
+SET @LoginURL = '';
+IF @ServerName IN ('RCDUSODBSQL001')
+BEGIN
+	SET @LoginURL = 'https://admin.dev-ws.realpage.com/';
+END
+IF @ServerName IN ('rctusodbsql001')
+BEGIN
+	SET @LoginURL = 'https://admin.qa-ws.realpage.com/';
+END
+IF @ServerName IN ('RCQUSODBSQL001')
+BEGIN
+	SET @LoginURL = 'https://admin.sat-ws.realpage.com/';
+END
+IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B')
+BEGIN
+	SET @LoginURL = 'https://admin.ws.realpage.com/';
+END
+
+SET @LoginURI = @LoginURL;
+SET @SigningCertificateThumbprint = NULL;
+
+--Setup the product configurations.
+if not exists (select top 1 1 from Enterprise.ProductSetting where ProductId = @ProductId)
+begin
+
+	EXEC Enterprise.ProductConfigurationSetup 
+		 @ProductId, 
+		 @LoginURI, 
+		 @SigningCertificateThumbprint, 
+		 @ProductConfiguration;
+end;
+
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM ident.SamlProductSettings
+    WHERE ProductId = @ProductId
+          AND LoginUri = @LoginURL
+)
+    BEGIN
+        INSERT INTO ident.SamlProductSettings
+        (
+        --SamlProductSettingsId - column value is auto-generated
+        ProductId, 
+        LoginUri, 
+        SigningCertificateThumbprint, 
+        SubjectIdSamlAttribute
+        )
+        VALUES
+        (
+        -- SamlProductSettingsId - int
+        @ProductId, -- ProductId - int
+        @LoginURL, -- LoginUri - nvarchar
+        N'NA', -- SigningCertificateThumbprint - nvarchar
+        N'productUserName' -- SubjectIdSamlAttribute - nvarchar
+        );
+END;
+GO
+--LeaseLabs ROles and Rights
+
+DECLARE @RightValue nvarchar(200),
+		 @UserId bigint,
+		 @Now datetime = GETDATE(),
+		 @RightId int,
+		 @RoleId INT,
+		 @OrgPartyId int,
+		 @RoleTypeId int,
+		 @ProductId int =68,
+		 @RoleName nvarchar(100),
+		 @OrgVisibilityStatusId INT = 9,
+		 @RightVisibilityStatusId INT = 9,
+		 @StatusTypeId int=13,
+		 @ServerName SYSNAME = @@SERVERNAME;
+
+		DECLARE @TargetRoleValue TABLE (RoleName nvarchar(100))
+
+		INSERT INTO @TargetRoleValue VALUES ('Developer'),('Implementation'),('Product'),
+										('SEO');
+
+	
+			--UserId
+			SELECT	@UserId = UserId
+			FROM	Ident.UserLogin
+			WHERE	LoginName LIKE 'realpagead@%'
+        SELECT @OrgPartyId=PartyId FROM Enterprise.Organization WHERE [Name]='Realpage Employee'
+	
+
+				SELECT @RoleTypeId=RoleTypeId from [Security].RoleType WHERE [Value]='Product'
+ 
+					--Cursor Mapping Role with Right
+						DECLARE curCreateNewRole CURSOR FOR
+						SELECT RoleName
+						FROM @TargetRoleValue
+
+						OPEN curCreateNewRole
+						FETCH NEXT FROM curCreateNewRole INTO @RoleName
+
+						WHILE @@FETCH_STATUS = 0
+						BEGIN
+							IF NOT EXISTS (SELECT TOP 1 1 FROM [Security].[Role] WHERE RoleName = @RoleName and OrgPartyID = @OrgPartyId and ProductId=@ProductId)
+							BEGIN
+								INSERT INTO [Security].[Role]
+								(	RoleName,
+									Shortname, 
+									Description,
+									RoleTypeID,
+									OrgPartyID,
+									ProductId,
+									CreatedBy,
+									createdDate
+								)
+								VALUES ( 
+										@RoleName,
+										@RoleName,
+										@RoleName,
+										@RoleTypeId,
+										@OrgPartyId,
+										@ProductId,
+										@UserId,
+										@Now
+								)
+							END
+							IF NOT EXISTS (SELECT TOP 1 1 FROM [Security].[Right] WHERE [Value] = @RoleName and VisibilityStatusId = 9 and ProductId=@ProductId)
+							BEGIN	
+								INSERT INTO [Security].[Right]
+											(	RightName,
+												Description, 
+												Value,
+												StatusTypeId,
+												VisibilityStatusId,
+												ProductId,
+												TargetProductId,
+												CreatedBy,
+												CreatedDate
+											)
+											VALUES ( 
+													REPLACE(@RoleName, ' ', ''),
+													@RoleName,
+													@RoleName,
+													@StatusTypeId, 
+													@RightVisibilityStatusId,
+													@ProductId,
+													@ProductId,
+													@UserId,
+													@Now
+								)
+							END
+								 
+							SELECT @RoleId = RoleId FROM [Security].[Role] WHERE RoleName=@RoleName and OrgPartyID = @OrgPartyId
+							SELECT @RightId = RightId FROM [Security].[Right] WHERE [Value]=@RoleName and VisibilityStatusId = 9
+							SELECT @RoleId, @RightId
+ 							IF NOT EXISTS (SELECT TOP 1 1 FROM [Security].[RoleRight] WHERE RoleId = @RoleId AND RightId=@RightId)
+							BEGIN
+									INSERT INTO [Security].[RoleRight]
+									(	RoleId,
+										RightId, 
+										CreatedBy,
+										CreatedDate
+									)
+									VALUES ( 
+											@RoleId,
+											@RightId,
+											@UserId,
+											@Now
+										   )
+								END
+										
+							
+							FETCH NEXT FROM curCreateNewRole INTO @RoleName
+						END
+						CLOSE curCreateNewRole
+						DEALLOCATE curCreateNewRole
+
+GO
+
+-- Create manage LeaseLabs right access
+DECLARE @UserId bigint,
+	@Now datetime = GETDATE(),
+	@RightId int;
+	
+SELECT	@UserId = UserId
+FROM	Ident.UserLogin
+WHERE	LoginName LIKE 'realpagead@%'
+
+IF NOT EXISTS(select 1 from [Security].[Right] where RightName='ManageLeaseLabsProductAccess')
+BEGIN
+		---Create Right
+		INSERT INTO [Security].[Right]
+			(	RightName,
+				Description, 
+				Value,
+				StatusTypeId,
+				VisibilityStatusId,
+				ProductId,
+				TargetProductId,
+				CreatedBy,
+				CreatedDate
+            )
+			VALUES ( 
+					'ManageLeaseLabsProductAccess',
+					'Manage LeaseLabs Product Access',
+					'Manage LeaseLabs Product Access',
+					13, 
+					9,
+					3,
+					68,
+					@UserId,
+					@Now
+				   )
+
+				
+END
+ SELECT @RightId=RightId from [Security].[Right] WHERE RightName='ManageLeaseLabsProductAccess'
+
+	IF NOT EXISTS (SELECT TOP 1 1 FROM [Security].[RoleRight] WHERE RoleId = 1 AND RightId=@RightId)
+	BEGIN
+		INSERT INTO [Security].[RoleRight]
+		(	RoleId,
+			RightId, 
+			CreatedBy,
+			CreatedDate
+		)
+		VALUES ( 
+				1,
+				@RightId,
+				@UserId,
+				@Now
+				)
+	END;
+GO
+
+--LeaseLabs Product Panel Script
+DECLARE @MaxControlId INT, 
+		@UserId bigint,
+		@Now datetime = GETDATE(), 
+		@MaxControlAttributeId INT, 
+		@MaxProductPageId INT,
+		@MaxProductPageControlId INT,
+		@ProductId INT = 68;
+SELECT	@UserId = UserId
+FROM	Ident.UserLogin
+WHERE	LoginName LIKE 'realpagead@%'
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId)
+BEGIN
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	SELECT @MaxControlId = max(ControlId) from UserManagement.Control
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (@MaxControlId+1, NULL, 8, N'LeaseLabsProductAccessTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+	
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (@MaxControlId+2, @MaxControlId+1, 9, N'LeaseLabsProductAccessRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)
+	
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (@MaxControlId+3, @MaxControlId+2, 2, N'LeaseLabsProductAccessRolesSelectGridUIId', NULL, NULL, 2, @UserId, @Now)
+	
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (@MaxControlId+4, @MaxControlId+3, 7, N'LeaseLabsProductAccessRadioUIId', NULL, N'isAssigned', 1, @UserId, @Now)
+	
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (@MaxControlId+5, @MaxControlId+3, 5, N'LeaseLabsProductAccessRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)
+	
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (@MaxControlId+6, @MaxControlId+3, 5, N'LeaseLabsProductAccessRoleTypeLabelUIId', N'Role Type', N'roletype', 3, @UserId, @Now)
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON
+	 
+	SELECT @MaxControlAttributeId = max(ControlAttributeId) from [UserManagement].[ControlAttribute]
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+	VALUES (@MaxControlAttributeId + 1, @MaxControlId + 2, N'Default', N'True', @UserId, @Now)
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+	VALUES (@MaxControlAttributeId + 2, @MaxControlId + 3, N'ShowSelectAll', N'False', @UserId, @Now)
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+	SELECT @MaxProductPageId=max(ProductPageId) from [UserManagement].[ProductPage]
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+
+	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName], [CreatedBy], [CreatedDate], [IsActive], [ProductPageTypeId]) VALUES 
+	(@MaxProductPageId + 1, @ProductId, N'LeaseLabs Product Access', @UserId, @Now, 1, 1)
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+
+	SELECT @MaxProductPageControlId=max(ProductPageControlId) from [UserManagement].[ProductPageControl]
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate]) 
+	VALUES (@MaxProductPageControlId + 1, @MaxProductPageId + 1, @MaxControlId + 1, @UserId, @Now)
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+End
+GO
+
+
+

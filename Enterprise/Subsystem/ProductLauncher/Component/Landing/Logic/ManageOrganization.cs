@@ -758,8 +758,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// </summary>
         /// <param name="customerPropertyId">customerPropertyId</param>
         /// <returns></returns>
-        public List<PropertySetup> SearchPropertyDetailsByCustomerPropertyId(string customerPropertyId)
+        public PropertyInstanceSearch SearchPropertyDetailsByCustomerPropertyId(string customerPropertyId)
 		{
+           
+            CustomerProperty propertyDetails = _manageBlueBook.GetCustomerPropertyDetails(customerPropertyId);
+
             List<BooksPropertyInstance> _booksPropertyInstances =  _manageBlueBook.GetPropertyInstanceByCustomerPropertyId(customerPropertyId);
             List<PropertySetup> _listPropertySetup = new List<PropertySetup>();
             if(_booksPropertyInstances != null)
@@ -784,7 +787,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					_listPropertySetup.Add(_property);
                 }
             }
-            return _listPropertySetup;
+
+            PropertyInstanceSearch propertyInstanceSearch = new PropertyInstanceSearch()
+            {
+                CustomerProperty = propertyDetails,
+                PropertyInstance = _listPropertySetup
+            };
+            return propertyInstanceSearch;
         }
         #endregion
         #endregion
