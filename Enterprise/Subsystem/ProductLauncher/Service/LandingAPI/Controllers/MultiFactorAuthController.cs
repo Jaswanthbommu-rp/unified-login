@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Attributes;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.TwoFactor;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -34,15 +35,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             base.Initialize(controllerContext);
             _twoFactorLogic = new TwoFactorLogic(_userClaims, null);
         }
-        
-        [SwaggerResponse(HttpStatusCode.OK, Description = "App Auth token deleted")]
-        [Route("multifactorauth")]
-        [System.Web.Mvc.HttpGet]
-        public HttpResponseMessage GetTest()
+
+        /// <summary>
+        /// Used to update information for the AppAuth user
+        /// </summary>
+        /// <param name="realPageId">The id of the user being edited</param>
+        /// <param name="appAuthUser">The settings to add/update</param>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.NoContent, Description = "AppAuth User Updated")]
+        [SwaggerOperation("UpdateUserAppAuth")]
+        [Route("multifactorauth/appauth/user/{realPageId}")]
+        [HttpPut]
+        [AuthorizeScope("rplandingapi")]
+        public HttpResponseMessage UpdateUserAppAuth(Guid realPageId, [FromBody] AppAuthUser appAuthUser )
         {
-            return Request.CreateResponse(HttpStatusCode.OK);
-        }
+            int result = _twoFactorLogic.UpdateUserTwoFactorStatus(realPageId, appAuthUser.Status );
+            if (result == 0)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "No records updated");
+            }
         
+            return Request.CreateResponse(HttpStatusCode.NoContent);
+        }
+
         /// <summary>
         /// Used to delete a users App Auth token setup
         /// </summary>

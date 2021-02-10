@@ -37,5 +37,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
+        /// <summary>
+        /// Used to update the users two factor status, 0 disabled, 1 active, 2 pending
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="status"></param>
+        public int UpdateUserTwoFactorStatus(long userId, int status)
+        {
+            using (var repository = GetRepository())
+            {
+                dynamic param = new
+                {
+                    UserId = userId,
+                    Status = status
+                };
+                return repository.ExecuteNonQuery(StoredProcNameConstants.SP_UpdateUserLoginTwoFactor, param);
+            }
+        }
+
     }
 }

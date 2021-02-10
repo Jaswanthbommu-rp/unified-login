@@ -5,5 +5,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
     public interface ITwoFactorLogic
     {
         int DeleteUserAppAuthToken(Guid realPageId);
+        int UpdateUserTwoFactorStatus(Guid realPageId, int status);
     }
 }

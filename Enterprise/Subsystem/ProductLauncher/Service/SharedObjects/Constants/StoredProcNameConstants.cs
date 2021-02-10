@@ -64,6 +64,7 @@
         public const string SP_GetPasswordHistory = "Ident.GetPasswordHistory";
 
         public const string SP_CreateUpdateUserTokenDetail = "Ident.CreateUpdateUserTokenDetail";
+        public const string SP_UpdateUserLoginTwoFactor = "Ident.UpdateUserLoginTwoFactor";
 
         public const string SP_GetAuthenticateUser = "Auth.GetAuthenticateUser";
         public const string SP_ResetEnterpriseUserCredential = "Ident.ResetEnterpriseUserCredential";

@@ -649,6 +649,7 @@
     <Compile Include="Swagger\IProvideExamples.cs" />
     <Compile Include="Swagger\SwaggerUtil.cs" />
     <Compile Include="Product\UPFMPropertyInstance.cs" />
+    <Compile Include="TwoFactor\AppAuthUser.cs" />
     <Compile Include="WebHook\Books\CustomerCompanyUpdated.cs" />
     <Compile Include="WebHook\Books\CustomerCompanyDeleted.cs" />
     <Compile Include="WebHook\SHA.cs" />

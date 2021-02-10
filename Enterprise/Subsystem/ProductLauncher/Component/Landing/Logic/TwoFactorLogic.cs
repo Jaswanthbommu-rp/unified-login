@@ -30,5 +30,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             return 0;
         }
+
+        public int UpdateUserTwoFactorStatus(Guid realPageId, int status)
+        {
+            var userLogin = _userLoginRepository.GetUserLoginOnly(realPageId);
+            if (userLogin != null)
+            {
+                return _twoFactorRepository.UpdateUserTwoFactorStatus(userLogin.UserId, status);
+            }
+
+            return 0;
+        }
     }
 }
