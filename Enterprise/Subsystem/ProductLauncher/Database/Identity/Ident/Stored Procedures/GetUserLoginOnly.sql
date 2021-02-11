@@ -10,14 +10,15 @@ BEGIN
 	BEGIN
 		SELECT 
 			ul.UserId,
-			ul.PersonPartyId as 'PartyId',
+			ul.PersonPartyId [PartyId],
 			P1.RealPageId,
 			ul.[LoginName],
 			ul.PasswordModifiedDate,
 			ul.PasswordHash,
 			ul.PasswordSalt,
-			ul.LastLoginDate 'LastLogin',
-			case when ipt.name = 'ID3' then 0 else 1 end as 'Is3rdPartyIDP'
+			ul.LastLoginDate [LastLogin],
+			case when ipt.name = 'ID3' then 0 else 1 end as [Is3rdPartyIDP],
+			ul.TwoFactorEnabled [TwoFactorEnabled]
 		FROM Ident.UserLogin ul
 			INNER JOIN Enterprise.Party p1 on ul.PersonPartyId = p1.PartyId
 			INNER JOIN Ident.IdentityProviderType ipt ON ul.IdentityProviderTypeId = ipt.IdentityProviderTypeId
@@ -36,8 +37,9 @@ BEGIN
 			ul.PasswordModifiedDate,
 			ul.PasswordHash,
 			ul.PasswordSalt,
-			ul.LastLoginDate 'LastLogin',
-			case when ipt.name = 'ID3' then 0 else 1 end as 'Is3rdPartyIDP'
+			ul.LastLoginDate [LastLogin],
+			case when ipt.name = 'ID3' then 0 else 1 end as [Is3rdPartyIDP],
+			ul.TwoFactorEnabled [TwoFactorEnabled]
 		FROM Ident.UserLogin ul
 			INNER JOIN Enterprise.Party p1 on ul.PersonPartyId = p1.PartyId
 			INNER JOIN Ident.IdentityProviderType ipt ON ul.IdentityProviderTypeId = ipt.IdentityProviderTypeId
@@ -55,8 +57,9 @@ BEGIN
 			ul.PasswordModifiedDate,
 			ul.PasswordHash,
 			ul.PasswordSalt,
-			ul.LastLoginDate 'LastLogin',
-			case when ipt.name = 'ID3' then 0 else 1 end as 'Is3rdPartyIDP'
+			ul.LastLoginDate [LastLogin],
+			case when ipt.name = 'ID3' then 0 else 1 end as [Is3rdPartyIDP],
+			ul.TwoFactorEnabled [TwoFactorEnabled]
 		FROM Ident.UserLogin ul
 			INNER JOIN Enterprise.Party p1 on ul.PersonPartyId = p1.PartyId
 			INNER JOIN Ident.IdentityProviderType ipt ON ul.IdentityProviderTypeId = ipt.IdentityProviderTypeId
