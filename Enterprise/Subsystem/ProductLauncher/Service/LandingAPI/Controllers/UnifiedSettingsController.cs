@@ -293,8 +293,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         };
                         return Request.CreateResponse(HttpStatusCode.BadRequest, apiError);
                     }
-                    unfiedSetting.keys = (List<Setting>)settingList;
-                    return Request.CreateResponse(HttpStatusCode.OK, unfiedSetting);
+                    //unfiedSetting.keys = (List<Setting>)settingList;
+                    return Request.CreateResponse(HttpStatusCode.OK, (List<Setting>)settingList);
                 }
                               
             }
