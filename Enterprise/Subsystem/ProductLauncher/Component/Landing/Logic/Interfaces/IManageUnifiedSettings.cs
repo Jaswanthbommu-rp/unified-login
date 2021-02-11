@@ -10,14 +10,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 {
     public interface IManageUnifiedSettings
     {
-		/// <summary>
-		/// Get Security Settings
-		/// </summary>
-		/// <param name="category">Settings category</param>
-		/// <param name="companyId">Organization</param>
-		/// <param name="includes"></param>
-		/// <returns>Security Settings List objects (KeyValue pairs)</returns>
-		IList<Setting> GetUnifiedSettings(string category, long companyId, string[] includes = null);
+        /// <summary>
+        /// Get Company Settings
+        /// </summary>
+        /// <param name="category">Setting Category type</param>
+        /// <param name="partyId">Company Id</param>
+        /// <returns>Security Settings List objects (KeyValue pairs)</returns>
+        IList<Setting> GetUnifiedSettings(string category, long partyId);
 
 		/// <summary>
 		/// Update an existing Security Settings 

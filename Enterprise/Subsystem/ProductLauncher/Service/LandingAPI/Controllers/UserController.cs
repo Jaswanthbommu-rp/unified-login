@@ -6,7 +6,6 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.In
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Security;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Attribute;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
@@ -25,10 +24,10 @@ using SO = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
-	/// <summary>
-	/// Controller to hold all user management related APIs
-	/// </summary>
-	public class UserController : BaseApiController
+    /// <summary>
+    /// Controller to hold all user management related APIs
+    /// </summary>
+    public class UserController : BaseApiController
 	{
 		#region Public Methods
 		/// <summary>
@@ -959,7 +958,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
 			return Request.CreateResponse(HttpStatusCode.OK, userRights);
 		}
-
+		
 		#endregion
 	}
 
