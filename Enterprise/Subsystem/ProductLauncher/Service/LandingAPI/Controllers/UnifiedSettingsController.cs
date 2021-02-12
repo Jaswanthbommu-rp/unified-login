@@ -1,28 +1,23 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
+﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Attribute;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
+using System.Web.Http.Controllers;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
     public class UnifiedSettingsController : BaseApiController
     {
         #region Private variables
-        IRepositoryResponse _repositoryResponse = new RepositoryResponse();
+        private IRepositoryResponse _repositoryResponse;
         private IManageOrganization _manageOrganization;
         #endregion
 
@@ -30,7 +25,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// <summary>
         /// Default constructor
         /// </summary>
-        public UnifiedSettingsController() : base() { }
+        public UnifiedSettingsController(){ }
+        
+        /// <summary>
+        /// Used to initialize DI classes with userclaim
+        /// </summary>
+        /// <param name="controllerContext"></param>
+        protected override void Initialize(HttpControllerContext controllerContext)
+        {
+            base.Initialize(controllerContext);
+            _repositoryResponse = new RepositoryResponse();
+            _manageOrganization = new ManageOrganization(_userClaims);
+        }
+        
+        
         #endregion
 
         #region Public Methods
@@ -48,15 +56,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [SwaggerResponseExamples(typeof(IList<Setting>), typeof(UnifiedSettingsExample))]
         [Route("companies/{companyId}/settings")]
         [HttpGet]
-        public HttpResponseMessage GetSettings(string category, Guid companyId, [FromUri]string[] includes)
+        public HttpResponseMessage GetSettings(string category, Guid companyId, [FromUri] string[] includes = null)
         {
             Organization organization = new Organization();
-            IManageOrganization manageOrganization = new ManageOrganization(_userClaims);
             IApiError apiError;
 
-            if (companyId != null)
+            if (companyId != Guid.Empty)
             {
-                Organization org = manageOrganization.GetOrganization(companyId);
+                Organization org = _manageOrganization.GetOrganization(companyId);
                 if (org == null)
                 {
                     apiError = new ApiError()
@@ -76,7 +83,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     return Request.CreateResponse(HttpStatusCode.BadRequest, apiError);
                 }
 
-                bool IsValid = manageOrganization.ValidateOrganization(_userClaims.OrganizationMasterId, _userClaims.UserRealPageGuid, org.RealPageId);
+                bool IsValid = _manageOrganization.ValidateOrganization(_userClaims.OrganizationMasterId, _userClaims.UserRealPageGuid, org.RealPageId);
                 if (!IsValid)
                 {
                     apiError = new ApiError()
@@ -96,10 +103,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     return Request.CreateResponse(HttpStatusCode.BadRequest, apiError);
                 }
 
-                IList<Setting> settingList = new List<Setting>();
                 UnifiedSetting unfiedSetting = new UnifiedSetting();
                 IManageUnifiedSettings manageSettings = new ManageUnifiedSettings(_userClaims);
-                settingList = manageSettings.GetUnifiedSettings(category, org.PartyId, includes);
+                var settingList = manageSettings.GetUnifiedSettings(category, org.PartyId);
 
                 if (settingList == null)
                 {
@@ -161,12 +167,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         public HttpResponseMessage UpdateUnifiedSettings([FromBody] IList<Setting> settings, string category, Guid companyId, [FromUri] string[] includes)
         {
             Organization organization = new Organization();
-            IManageOrganization manageOrganization = new ManageOrganization(_userClaims);
             IApiError apiError;
 
-            if (companyId != null)
+            if (companyId != Guid.Empty)
             {
-                Organization org = manageOrganization.GetOrganization(companyId);
+                Organization org = _manageOrganization.GetOrganization(companyId);
                 if (org == null)
                 {
                     apiError = new ApiError()
@@ -186,7 +191,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     return Request.CreateResponse(HttpStatusCode.BadRequest, apiError);
                 }
 
-                bool IsValid = manageOrganization.ValidateOrganization(_userClaims.OrganizationMasterId, _userClaims.UserRealPageGuid, org.RealPageId);
+                bool IsValid = _manageOrganization.ValidateOrganization(_userClaims.OrganizationMasterId, _userClaims.UserRealPageGuid, org.RealPageId);
                 if (!IsValid)
                 {
                     apiError = new ApiError()
@@ -244,7 +249,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     return Request.CreateResponse(HttpStatusCode.BadRequest, apiError);
                 }
 
-                IList<Setting> settingList = new List<Setting>();
                 UnifiedSetting unfiedSetting = new UnifiedSetting();
                 IManageUnifiedSettings manageSettings = new ManageUnifiedSettings(_userClaims);
 
@@ -269,7 +273,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 }
                 else
                 {
-                    settingList = manageSettings.GetUnifiedSettings(category, org.PartyId, includes);
+                    var settingList = manageSettings.GetUnifiedSettings(category, org.PartyId);
                     if (settingList == null)
                     {
                         //When trying to get a Security Settings that don't exists
@@ -289,8 +293,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         };
                         return Request.CreateResponse(HttpStatusCode.BadRequest, apiError);
                     }
-                    unfiedSetting.keys = (List<Setting>)settingList;
-                    return Request.CreateResponse(HttpStatusCode.OK, unfiedSetting);
+                    //unfiedSetting.keys = (List<Setting>)settingList;
+                    return Request.CreateResponse(HttpStatusCode.OK, (List<Setting>)settingList);
                 }
                               
             }
@@ -300,7 +304,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 {
                     Id = Guid.NewGuid().ToString(),
                     Status = (short)HttpStatusCode.BadRequest,
-                    Title = "Null Companyd.",
+                    Title = "Null CompanyId.",
                     Detail = $"Empty Company parameter passed",
                     Links = string.Empty,
                     Code = "Settings.GetSettings.2",

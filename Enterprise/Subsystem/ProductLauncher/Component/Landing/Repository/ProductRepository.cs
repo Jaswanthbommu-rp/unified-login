@@ -1299,7 +1299,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                     // get products for personaId
                     var aoLogic = new ManageProductAssetOptimization(_userClaim);
-                    aoUserProducts = aoLogic.GetGbSupportedAoEditorUserProductsToAssign(_userClaim.PersonaId);
+
+                    aoUserProducts = aoLogic.GetAOProductsForNewMultiCompanyUser(_userClaim.PersonaId, _userClaim.LoginName);
 
                     if (personRealPageId == null && loginName != null)
                     {
@@ -2025,6 +2026,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         RowsPerPage = rowsPerPage,
                         PageNumber = pageNumber
                     };
+            }
+        }
+
+        public bool isProductAssigned(long personaId, int productStatus, int productId)
+        {
+            using (var repository = GetRepository())
+            {
+                return repository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = personaId, ProductStatusValue = productStatus.ToString() }).ToList().Any(x => x.ProductId == productId);
             }
         }
         #endregion

@@ -187,8 +187,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             };
             int productId = (int)ProductEnumHelper.GetProductEnumByProductCode(productCode);
             ManageUPFMProductsIntegration upfmProductIntegration = new ManageUPFMProductsIntegration(productId, _userClaims);            
-            var multiCompanyPropertyResponse = upfmProductIntegration.GetUPFMMultiCompanyProperties(productCode);            
-            if (multiCompanyPropertyResponse.Count > 0)
+            var multiCompanyPropertyResponse = upfmProductIntegration.GetUPFMMultiCompanyProperties(productCode);
+            if (multiCompanyPropertyResponse == null)
+            {
+                return Request.CreateResponse(HttpStatusCode.OK, $"{productCode} product not assigned to this user in none of the PMC");
+            }
+            else if(multiCompanyPropertyResponse.Count > 0)
             {
                 return Request.CreateResponse(HttpStatusCode.OK, multiCompanyPropertyResponse);
             }
