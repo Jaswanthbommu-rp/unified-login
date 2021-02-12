@@ -226,12 +226,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			// Get partial api query based on end point
 			if (string.IsNullOrEmpty(baseUrlAndQuery))
-				baseUrlAndQuery = string.Format(GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserEndpoint), SubjectUserDetails.ProductUserId);
+				baseUrlAndQuery = string.Format(GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserEndpoint), SubjectUserDetails.ProductUserName);
 
 			WriteToDiagnosticLog(
 				$"ClickPayManagement.GetProductUser - editorPersona id - {EditorUserDetails.PersonaId}. Calling API - {baseUrlAndQuery}.");
 
-			return GetResultFromApi<IntegrationProductUser>(baseUrlAndQuery, isThrowOnError);
+			var users = GetResultFromApi<ClickPayUsers>(baseUrlAndQuery, isThrowOnError);
+			if (users?.ClickPayUserList != null && users.ClickPayUserList.Count > 0)
+				return users.ClickPayUserList[0];
+
+			return null;
 		}
 		protected override bool CheckUserExistInProduct(string loginNameToCheck, string baseUrlAndQuery = null)
 		{
@@ -400,38 +404,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			Dictionary<string, object> logData = new Dictionary<string, object> { { "result", result } };
 			WriteToErrorLog($"ClickPayManagement.UnassignUser - editorPersona id - {EditorUserDetails.PersonaId}. DeleteUser() returns fail", logData);
-
-			return result.Content;
-		}
-
-		protected override string UpdateUserProfile(ProductUserProfile productUserProfile)
-		{
-			WriteToDiagnosticLog(
-				$"ManageProductInvokerBase.UpdateUserProfile - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}, subjectPersonaId - {SubjectUserDetails.PersonaId}. At beginning of the method.");
-
-			// Call shared method to update profile from green-book or from external source (migration tool)
-			var result = ProductUserProfileChange(productUserProfile);
-
-			if (result.IsSuccessStatusCode)
-			{
-				WriteToDiagnosticLog(
-					$"ManageProductInvokerBase.UpdateUserProfile - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId} subjectPersonaId - {SubjectUserDetails.PersonaId}. Received success. Updating Greenbook mapping.");
-
-				// activity logging
-				ProductActivityLogger.WriteUpdateUserActivityLog(EditorUserDetails, SubjectUserDetails, BlueBookGbProductMap.Name, BlueBookGbProductMap.BooksProductCode,
-					CorrelationId);
-
-				_dataCollector.UpdateProductSettingProductStatus(SubjectUserDetails.PersonaId, PRODUCT_SETTINGTYPE_STATUS, ProductId, (int)ProductBatchStatusType.Success);
-
-				_dataCollector.UpdateSamlUserAttribute(SubjectUserDetails.PersonaId, ProductId, SamlAttributeEnum.productUsername, SubjectUserDetails.LoginName);
-
-				return string.Empty;
-			}
-
-			Dictionary<string, object> logData = new Dictionary<string, object> { { "result", result } };
-			WriteToErrorLog(
-				$"ManageProductInvokerBase.UpdateUserProfile - Product {ProductType} " +
-				$"editorPersona id - {EditorUserDetails.PersonaId} productUserProfile.UserId - {productUserProfile.UserId}.");
 
 			return result.Content;
 		}
