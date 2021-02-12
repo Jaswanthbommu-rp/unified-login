@@ -11,60 +11,74 @@ CREATE PROCEDURE [Enterprise].[CreatePropertyInstance]
 	,@Latitude		DECIMAL(9,6)	= 0
 	,@Longitude		DECIMAL(9,6)	= 0
 	,@CustomerPropertyId	BIGINT  = 0
-	,@Domain		NVARCHAR(50) = 'UNKNOWN'
+	,@Domain		NVARCHAR(50) = 'Primary'
 )
 AS
 BEGIN  
- SET NOCOUNT ON  
+ SET NOCOUNT ON
  DECLARE @PropertyInstanceId BIGINT  
    
   IF NOT EXISTS(select 1 from Enterprise.PropertyInstance where CustomerPropertyId= @CustomerPropertyId and Domain = @Domain)
   BEGIN
 		INSERT INTO [Enterprise].[PropertyInstance]  
-	  ([Name]  
-	  ,[Address]  
-	  ,[City]  
-	  ,[State]  
-	  ,[PostalCode]  
-	  ,[Country]  
-	  ,[County]  
-	  ,[Latitude]  
-	  ,[Longitude]  
-	  ,[CustomerPropertyId]  
-	  ,[Domain])  
+		([Name]  
+		,[Address]  
+		,[City]  
+		,[State]  
+		,[PostalCode]  
+		,[Country]  
+		,[County]  
+		,[Latitude]  
+		,[Longitude]  
+		,[CustomerPropertyId]  
+		,[Domain])  
 		VALUES  
-	 (  
-	  @Name  
-	  ,@Address  
-	  ,@City  
-	  ,@State  
-	  ,@PostalCode  
-	  ,@Country  
-	  ,@County  
-	  ,@Latitude  
-	  ,@Longitude  
-	  ,@CustomerPropertyId  
-	  ,@Domain  
-	 )  
+		(  
+		@Name  
+		,@Address  
+		,@City  
+		,@State  
+		,@PostalCode  
+		,@Country  
+		,@County  
+		,@Latitude  
+		,@Longitude  
+		,@CustomerPropertyId  
+		,@Domain  
+		)  
   
-	 SET @PropertyInstanceId = SCOPE_IDENTITY();  
+		 SET @PropertyInstanceId = SCOPE_IDENTITY();  
   
-	 SELECT   
-	  @PropertyInstanceId AS Id,  
-	  InstanceId AS RealPageId,  
-	  '' AS ErrorMessage  
-	 FROM Enterprise.PropertyInstance  
-	 WHERE  
-	  PropertyInstanceId = @PropertyInstanceId  
+		 SELECT   
+		  @PropertyInstanceId AS Id,  
+		  InstanceId AS RealPageId,  
+		  '' AS ErrorMessage  
+		 FROM Enterprise.PropertyInstance  
+		 WHERE  
+		  PropertyInstanceId = @PropertyInstanceId  
   END
   ELSE
   BEGIN
-	 SELECT   
-	  PropertyInstanceId AS Id,  
-	  InstanceId AS RealPageId,  
-	  'A Platform Property Already Exist with the Same Domain.' AS ErrorMessage  
-	 FROM Enterprise.PropertyInstance
-	 WHERE 
+	UPDATE Enterprise.PropertyInstance
+	SET   
+		[Name]					=@Name
+		,[Address]				=@Address
+		,[City]					=@City
+		,[State]					=@State
+		,[PostalCode]			=@PostalCode
+		,[Country]				=@Country
+		,[County]				=@County
+		,[Latitude]				=@Latitude
+		,[Longitude]				=@Longitude       
+	WHERE   
+	CustomerPropertyId= @CustomerPropertyId and Domain = @Domain 
+
+	SELECT     
+		PropertyInstanceId AS Id,    
+		InstanceId AS RealPageId,
+		'' AS ErrorMessage
+	FROM Enterprise.PropertyInstance  
+	WHERE   
 		CustomerPropertyId= @CustomerPropertyId and Domain = @Domain
   END  
 END

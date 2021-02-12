@@ -687,6 +687,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
             
             List<Guid> propertyInstanceIds;
+            List<PropertySetup> propertyDetails = new List<PropertySetup>();
             List<BooksPropertyInstance> booksPropertyInstance = GetPropertyInstanceFromBooks(companyInstanceId);
             if (domain != null)
             {
@@ -697,9 +698,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 propertyInstanceIds = booksPropertyInstance?.Select(p => p.attributes.propertyInstanceSourceId)?.Select(Guid.Parse).ToList();
             }
-            
-            List<PropertySetup> propertyDetails =  _propertyRepository.GetPropertiesForCompany(propertyInstanceIds, propertyName, blueId,  dataFilter);
-            propertyDetails = AddContractedNameToPropertyList(booksPropertyInstance, propertyDetails);
+            if(propertyInstanceIds != null)
+            {
+                propertyDetails = _propertyRepository.GetPropertiesForCompany(propertyInstanceIds, propertyName, blueId, dataFilter);
+                propertyDetails = AddContractedNameToPropertyList(booksPropertyInstance, propertyDetails);
+            }           
             List<CompanyPropertySetup> companyPropertySetup = new List<CompanyPropertySetup>()
             {
                 new CompanyPropertySetup()
@@ -708,7 +711,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     Property = propertyDetails
                 }
             };
-
             return companyPropertySetup;
         }
 		#endregion
