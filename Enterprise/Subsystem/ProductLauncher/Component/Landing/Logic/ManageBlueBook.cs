@@ -952,8 +952,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         public Company GetBooksCompanyDetailsByCompanyMasterId(long companyMasterId)
         {
-            //https://booksapi-qa.realpage.com/customercompany?filter[customerCompanyId]=in:379&include=customerCompanyLocation
-            //string uri = $"customercompany?filter[customerCompanyId]=in:{companyMasterId}&include=customerCompanyLocation&fields[customercompany]=customerCompanyId,companyName,phoneNumber&fields[customerCompanyLocation]=customerCompanyLocationId,customerCompanyId,address,city,state,country,postalCode,isPrimary&page[size]=9999";
             string uri = $"customercompany?filter[customerCompanyId]=in:{companyMasterId}&include=customerCompanyLocation";
 
             var logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
@@ -965,7 +963,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 var companyInstance = JsonConvert.DeserializeObject<List<Company>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
                 logData = new Dictionary<string, object>() { { "CompanyInstance", companyInstance } };
                 WriteToLog(LogEventLevel.Debug, $"GetBooksCompanyDetailsByCompanyMasterId - Got info - companyMasterId:{companyMasterId}", logData, correlationId: _defaultUserClaim.CorrelationId.ToString());
-                return companyInstance[0];
+                return companyInstance?.FirstOrDefault();
             }
 
             logData = new Dictionary<string, object>() { { "response", response } };
@@ -974,9 +972,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return new Company();
         }
 
+        public List<CustomerCompanyInstance> GetCompanyInstancesByCustomerCompanyId(long customerCompanyId)
+        {
+            var companyInstances = new List<CustomerCompanyInstance>();
+            string uri = $"/companyinstance?filter[source]=UPFM&filter[customerCompanyMap.customerCompanyId]={customerCompanyId}&fields[companyinstance]=companyInstanceId,source,companyInstanceSourceId,companyName,companyType,isActive,domain";
+
+            var logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
+            WriteToLog(LogEventLevel.Debug, $"GetBooksCompanyDetailsByCompanyMasterId - Getting info - customerCompanyId:{customerCompanyId}", logData, correlationId: _defaultUserClaim.CorrelationId.ToString());
+            var response = GetAsync(uri).Result;
+            if (response.IsSuccessStatusCode)
+            {
+                companyInstances = JsonConvert.DeserializeObject<List<CustomerCompanyInstance>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
+                logData = new Dictionary<string, object>() { { "CompanyInstance", companyInstances } };
+                WriteToLog(LogEventLevel.Debug, $"GetBooksCompanyDetailsByCompanyMasterId - Got info - customerCompanyId:{customerCompanyId}", logData, correlationId: _defaultUserClaim.CorrelationId.ToString());
+                return companyInstances;
+            }
+
+            logData = new Dictionary<string, object>() { { "response", response } };
+            WriteToLog(LogEventLevel.Debug, $"GetBooksCompanyDetailsByCompanyMasterId - No info found - customerCompanyId:{customerCompanyId}", logData, correlationId: _defaultUserClaim.CorrelationId.ToString());
+
+            return new List<CustomerCompanyInstance>();
+        }
+
         public List<CustomerCompanyDomain> GetListOfDomainsByCompany(long companyMasterId)
         {
-            //domain/customercompany/379
             string uri = $"domain/customercompany/{companyMasterId}";
 
             var logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };

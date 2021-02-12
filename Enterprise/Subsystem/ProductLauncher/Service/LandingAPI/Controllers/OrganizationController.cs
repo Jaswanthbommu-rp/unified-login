@@ -971,24 +971,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about a list of Organizations", Type = typeof(CompanySetup))]
         [SwaggerResponseExamples(typeof(CompanySetup), typeof(CompanySetupExample))]
-        [Route("companysetup/companymaster/{id}")]
+        [Route("companysetup/companymaster/{customerCompanyId}")]
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         [HttpGet]
-        public HttpResponseMessage GetCompanyMasterById(long id)
+        public HttpResponseMessage GetCompanyMasterById(long customerCompanyId)
         {
-            if (id == 0)
+            if (customerCompanyId == 0)
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "CompanyMasterId not supplied");
             }
-            //IDictionary<object, object> globals = new Dictionary<object, object>();
-            //ObjectListOutput<CompanySetup, IErrorData> output = new ObjectListOutput<CompanySetup, IErrorData>();
-            //Status<IErrorData> errorStatus = new Status<IErrorData>();
+            var companyMaster = _manageOrganization.SearchCompanyDetailsByCustomerCompanyId(customerCompanyId);
 
-            //output = new ObjectListOutput<CompanySetup, IErrorData>() { list = companyList, Status = errorStatus };
-            //output.pagingSummary = pagingSummary;
-            var companyMaster = new CompanyMaster();
-            companyMaster.CompanyDetail = _manageBlueBook.GetBooksCompanyDetailsByCompanyMasterId(id);
-            companyMaster.DomainList = _manageBlueBook.GetListOfDomainsByCompany(id);
+
             return Request.CreateResponse(HttpStatusCode.OK, companyMaster);
         }
 

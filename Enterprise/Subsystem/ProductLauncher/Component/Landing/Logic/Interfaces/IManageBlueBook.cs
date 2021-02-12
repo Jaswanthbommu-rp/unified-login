@@ -133,6 +133,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <returns></returns>
         bool AcknowledgeProvisioningEvent(ProductCenterEnablement productCenterEnablement);
         Company GetBooksCompanyDetailsByCompanyMasterId(long companyMasterId);
+        List<CustomerCompanyInstance> GetCompanyInstancesByCustomerCompanyId(long customerCompanyId);
         List<CustomerCompanyDomain> GetListOfDomainsByCompany(long companyMasterId);
 
         /// <summary>
