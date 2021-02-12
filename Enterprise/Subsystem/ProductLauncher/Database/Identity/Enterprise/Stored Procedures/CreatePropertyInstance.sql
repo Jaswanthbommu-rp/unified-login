@@ -11,7 +11,7 @@ CREATE PROCEDURE [Enterprise].[CreatePropertyInstance]
 	,@Latitude		DECIMAL(9,6)	= 0
 	,@Longitude		DECIMAL(9,6)	= 0
 	,@CustomerPropertyId	BIGINT  = 0
-	,@Domain		NVARCHAR(50) = 'UNKNOWN'
+	,@Domain		NVARCHAR(50) = 'Primary'
 )
 AS
 BEGIN  
