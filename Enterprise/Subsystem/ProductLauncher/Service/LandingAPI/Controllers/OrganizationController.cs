@@ -967,6 +967,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             return Request.CreateResponse(HttpStatusCode.OK, output);
         }
 
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about a list of Organizations", Type = typeof(CompanySetup))]
+        [SwaggerResponseExamples(typeof(CompanySetup), typeof(CompanySetupExample))]
+        [Route("companysetup/companymaster/{customerCompanyId}")]
+        [AuthorizeScope("companyfunctions", "rplandingapi")]
+        [HttpGet]
+        public HttpResponseMessage GetCompanyMasterById(long customerCompanyId)
+        {
+            if (customerCompanyId == 0)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "CompanyMasterId not supplied");
+            }
+            var companyMaster = _manageOrganization.SearchCompanyDetailsByCustomerCompanyId(customerCompanyId);
+
+
+            return Request.CreateResponse(HttpStatusCode.OK, companyMaster);
+        }
+
         /// <summary>
         /// Export Companies
         /// </summary>

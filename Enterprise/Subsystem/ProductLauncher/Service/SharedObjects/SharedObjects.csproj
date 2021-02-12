@@ -144,14 +144,17 @@
     <Compile Include="BlackBook\Company.cs" />
     <Compile Include="BlackBook\CompanyInstance.cs" />
     <Compile Include="BlackBook\CompanyInstanceAdd.cs" />
+    <Compile Include="BlackBook\CustomerCompanyInstance.cs" />
     <Compile Include="BlackBook\PropertyInstanceSearch.cs" />
     <Compile Include="BlackBook\PropertyInstanceAddress.cs" />
     <Compile Include="BlackBook\CompanyInstanceAddress.cs" />
     <Compile Include="BlackBook\CompanyLocation.cs" />
+    <Compile Include="BlackBook\CompanyMaster.cs" />
     <Compile Include="BlackBook\CompanyPropertyInstanceMap.cs" />
     <Compile Include="BlackBook\CompanyPropertyInstanceRootObject.cs" />
     <Compile Include="BlackBook\CompanyPropertyRootObject.cs" />
     <Compile Include="BlackBook\CustomerCompany.cs" />
+    <Compile Include="BlackBook\CustomerCompanyDomain.cs" />
     <Compile Include="BlackBook\CustomerProperty.cs" />
     <Compile Include="BlackBook\InstanceAddress.cs" />
     <Compile Include="BlackBook\InstanceAttribute.cs" />
