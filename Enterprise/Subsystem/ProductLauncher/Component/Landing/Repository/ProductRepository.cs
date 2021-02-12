@@ -2028,6 +2028,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     };
             }
         }
+
+        public bool isProductAssigned(long personaId, int productStatus, int productId)
+        {
+            using (var repository = GetRepository())
+            {
+                return repository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = personaId, ProductStatusValue = productStatus.ToString() }).ToList().Any(x => x.ProductId == productId);
+            }
+        }
         #endregion
     }
 }
