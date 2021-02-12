@@ -5022,7 +5022,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             UserBatchEntity userBatchEntity;
             bool isFeatureUser = false;
             bool usePropertyInstances = getPropertyInstanceUnifiedLogin();
-
+            string message = "";
             //We can get this with the oldProfile
             string schemaName = getRoleRightsSchemaName();
 
@@ -5030,7 +5030,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 //Begin the transaction
                 repository.UnitOfWork.BeginTransaction();
-
+                message += "UpdateUserData Method 1 "; 
                 param = new
                 {
                     UserLoginId = updateUserProfileEntity.NewProfile.userLogin.UserId,
@@ -5051,7 +5051,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 try
                 {
                     repositoryResponse.Id = updateUserProfileEntity.OldProfile.Persona[0].PersonPartyId;
-
+                    message += "UpdateUserData Method 2 ";
                     #region Update Person
 
                     if ((profileChanged) && ((updateUserProfileEntity.IsCurrentOrgThePrimaryOrg) || (userBatchEntity.UserTypeChangedToFromExternal.Equals("FromExternal", StringComparison.OrdinalIgnoreCase))))
@@ -5065,7 +5065,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
                     }
                     #endregion
-
+                    message += "UpdateUserData Method 3 ";
                     if (repositoryResponse.Id != 0)
                     {
                         IIdentityProviderType idpt = (from a in updateUserProfileEntity.IdentityProviderTypeList where a.IsLocal == (updateUserProfileEntity.NewProfile.userLogin.Is3rdPartyIDP ? false : true) select a).FirstOrDefault();
@@ -5091,7 +5091,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
 
                         #region Update UserLogin
-
+                        message += "UpdateUserData Method 4 ";
                         if (updateUserProfileEntity.NewProfile.userLogin != null)
                         {
                             //check to see if user from date changed to feature date
@@ -5110,6 +5110,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 ThruDate = updateUserProfileEntity.NewProfile.userLogin.ThruDate,
                                 PartyId = updateUserProfileEntity.OldProfile.Persona[0].OrganizationPartyId
                             };
+                            message += "UpdateUserData Method 5 ";
                             repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserLogin, param);
                             if (repositoryResponse.Id == 0)
                             {
@@ -5124,7 +5125,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 repositoryResponse.ErrorMessage = changeUserTypeExternal;
                                 throw new Exception(repositoryResponse.ErrorMessage);
                             }
-
+                            message += "UpdateUserData Method 6 ";
                             //update User custom fields
                             if (updateUserProfileEntity.NewProfile.CustomFields?.Count > 0)
                             {
@@ -5150,7 +5151,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                     }
                                 }
                             }
-
+                            message += "UpdateUserData Method 7 ";
                             bool isUserAccessLevelChanged = false;
                             bool isUserEffectiveDateChanged = false;
 
@@ -5166,6 +5167,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                             //Check to see if there is any status change or 3rdpartyidp changed or user effective date changed to future date on 
                             //user update then process for new status
+                            message += "UpdateUserData Method 8 ";
                             if ((updateUserProfileEntity.NewProfile.userLogin.IsActive != updateUserProfileEntity.CurrentOrgStatus.IsActive) || isUserAccessLevelChanged || isUserEffectiveDateChanged)
                             {
 
@@ -5245,7 +5247,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
 
                         #endregion
-
+                        message += "UpdateUserData Method 9 ";
                         #region Update Persona
 
                         //if user type changes then update persona type
@@ -5261,7 +5263,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
 
                         #endregion
-
+                        message += "UpdateUserData Method 10 ";
                         #region Update User Type
 
                         //Get the Current User Type
@@ -5290,7 +5292,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
 
                         #endregion
-
+                        message += "UpdateUserData Method 11 ";
                         #region Update notification email
 
                         string addressType = "";
@@ -5495,7 +5497,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
 
                         #endregion
-
+                        message += "UpdateUserData Method 12 ";
                         #region Update UserEmployeeId
                         if (updateUserProfileEntity.NewProfile.EmployeeId != updateUserProfileEntity.OldProfile.EmployeeId)
                         {
@@ -5535,7 +5537,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             }
                         }
                         #endregion
-
+                        message += "UpdateUserData Method 13 ";
                         bool notificationEmailChanged = isNotificationEmailChanged(priorNotificationEmail, updateUserProfileEntity.NewProfile.NotificationEmail);
 
                         if ((updateUserProfileEntity.NewProfile.userLogin.Status != UserUiStatusType.Disabled) && (profileChanged || loginNamechanged || notificationEmailChanged || employeeIdChanged))
@@ -5545,7 +5547,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 SaveUserProductBatchData(repository, null, p.EditorPersonaId, p.AssignedPersonaId, p.EditorPersonaRealPageId, p.OrganizationRealPageId, null, (Int32)BatchProcessType.ProfileUpdate, updateUserProfileEntity.ProductBatchData, null, p.AssignedUserTypeId);
                             });
                         }
-
+                        message += "UpdateUserData Method 14 ";
                         if (updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue() && !userBatchEntity.UserTypeChanged)
                         {
                             int productCount = SaveProductDetails(repository, updateUserProfileEntity.ProductBatchData, null, updateUserProfileEntity.CreateUserPersonaId, updateUserProfileEntity.OldProfile.Persona[0].PersonaId, updateUserProfileEntity.LoggedInUserRealPageId, updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId, null, updateUserProfileEntity.NewProfile.UserTypeId, updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue(), updateUserProfileEntity.AoProductsAvailableForUser);
@@ -5562,7 +5564,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
 
                         // GreenBook - UnifiedLogin call updating GB Role
-
+                        message += "UpdateUserData Method 15 ";
                         var gbProdBatch = updateUserProfileEntity.NewProfile.productBatch.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedPlatform);
                         if (gbProdBatch != null)
                         {
@@ -5636,6 +5638,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             }
                         }
                     }
+                    message += "UpdateUserData Method 16 ";
                 }
                 catch (Exception exception)
                 {
