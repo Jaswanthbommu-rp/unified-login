@@ -815,6 +815,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			{
 				if (_productRepository.isProductAssigned(company.PersonaId, (int)UserUiStatusType.AccountCreationSuccessful, productId))
 				{
+					if (userCompaniesProperties == null) 
+						userCompaniesProperties = new List<UserCompaniesProperties>();
 					var compnayInstanceSourceId = GetProductCompanyInstanceId(company.OrganizationRealPageId, company.BooksCustomerMasterId, productCode, "Primary");
 					var propertyResponse = GetUPFMProperties(company.PersonaId, upfmProduct, null, companyResponse.Count > 1 ? true : false, company.OrganizationRealPageId.ToString());
 					if (propertyResponse.Records == null || propertyResponse.Records.Count == 0) errorReason = "Properties are not loaded from Blue Book";
