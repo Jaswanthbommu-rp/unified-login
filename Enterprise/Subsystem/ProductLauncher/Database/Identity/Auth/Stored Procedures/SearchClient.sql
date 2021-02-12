@@ -71,7 +71,7 @@ BEGIN
  --AND  
  -- (@ClientGroupId IS NULL  OR  [ClientGroupId] = @ClientGroupId)  
  AND  
-  (@ClientCode IS NULL OR [ClientCode] = @ClientCode OR CHARINDEX(@ClientCode,[ClientCode]) > 0)  
+  (@ClientCode IS NULL OR [ClientCode] = @ClientCode )  
  AND  
   (@ClientName IS NULL OR [ClientName] = @ClientName OR CHARINDEX(@ClientName,[ClientName]) > 0)  
  AND  

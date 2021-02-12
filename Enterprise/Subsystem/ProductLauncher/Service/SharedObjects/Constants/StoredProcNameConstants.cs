@@ -63,6 +63,9 @@
         public const string SP_CreateUserSelectedSecurityQuestions = "Ident.CreateUserSelectedSecurityQuestions";
         public const string SP_GetPasswordHistory = "Ident.GetPasswordHistory";
 
+        public const string SP_CreateUpdateUserTokenDetail = "Ident.CreateUpdateUserTokenDetail";
+        public const string SP_UpdateUserLoginTwoFactor = "Ident.UpdateUserLoginTwoFactor";
+
         public const string SP_GetAuthenticateUser = "Auth.GetAuthenticateUser";
         public const string SP_ResetEnterpriseUserCredential = "Ident.ResetEnterpriseUserCredential";
         public const string SP_GetAllSecurityQuestions = "Ident.GetAllSecurityQuestions";
@@ -195,7 +198,7 @@
         public const string SP_ListProduct = "Enterprise.ListProduct";
         public const string SP_ListProductsByPersonaId = "Enterprise.ListProductsByPersonaId";
         public const string SP_GetUserProductBatchJsonData = "Enterprise.GetUserProductBatchJsonData";
-
+        
         public const string SP_GetProductsByPersonaId = "Security.GetProductsByPersonaId";
 
         //Remove
@@ -251,6 +254,7 @@
         //SAML
         public const string SP_GetProductSamlDetails = "Ident.GetProductSamlDetails";
         public const string SP_GetProductSamlSettings = "Ident.GetProductSamlSettings";
+        public const string SP_ListPersonaProductsSamlDetails = "Ident.ListPersonaProductsSamlDetails";
 
         public const string SP_CreateSamlUserAttribute = "Ident.CreateSamlUserAttribute";
         public const string SP_DeleteSamlUserProductInfoAndStatus = "Enterprise.UnLinkProductFromPersona";
