@@ -417,6 +417,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 }
                 catch (Exception ex)
                 {
+                    WriteToLog(LogEventLevel.Error, $"PostBooks Error", exception:ex);
                     response = Request.CreateResponse(HttpStatusCode.BadRequest, ex.Message);
                 }
             }
@@ -549,8 +550,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     Email = $"{customerCompany.CustomerCompanyId}admin@realpage.com"
                 }
             };
+            WriteToLog(LogEventLevel.Debug, $"Adding company {customerCompany.CompanyName} ");
             var organizationTypeList = _manageOrganization.ListOrganizationType();
             var organizationDomainList = _manageOrganization.ListOrganizationDomain();
+
+            if (organizationTypeList.FirstOrDefault(p => p.Name.Equals(customerCompany.CompanyType, StringComparison.OrdinalIgnoreCase)) == null)
+            {
+                createCompanyResult.Result = "Unknown organization type";
+                return createCompanyResult;
+            }
 
             organization.OrganizationTypeId = organizationTypeList.FirstOrDefault(p => p.Name.Equals(customerCompany.CompanyType, StringComparison.OrdinalIgnoreCase)).OrganizationTypeId;
 
@@ -569,10 +577,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             organization.Products = new List<string>();
 
-            // get a list of products passed by the event
-            foreach (var productId in productIdList)
+            try
             {
-                organization.Products.Add(ProductEnumHelper.StringValueOf((ProductEnum)productId));
+                // get a list of products passed by the event
+                foreach (var productId in productIdList)
+                {
+                    organization.Products.Add(ProductEnumHelper.StringValueOf((ProductEnum) productId));
+                }
+            }
+            catch (Exception)
+            {
+                throw new Exception("Issue parsing products");
             }
 
             var result = _manageOrganization.CreateOrganization(organization, processBlueBookMessage);
