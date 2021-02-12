@@ -1692,3 +1692,18 @@ BEGIN
 	VALUES	(@RightId, @PartyId, 9, @CreatedById, @Now)
 END
 GO
+
+IF EXISTS(SELECT TOP 1 1 FROM Enterprise.ProductSetting EPS
+JOIN enterprise.productsettingtype EPST 
+ON EPS.productsettingtypeid = EPST.productsettingtypeid 
+WHERE productid=48 and name='GetUserEndpoint')
+BEGIN
+	UPDATE EPS
+	SET value = '/users/{0}'
+	FROM Enterprise.ProductSetting EPS
+	JOIN enterprise.productsettingtype EPST 
+	ON EPS.productsettingtypeid = EPST.productsettingtypeid 
+	WHERE productid=48 and name='GetUserEndpoint'
+END
+
+GO
