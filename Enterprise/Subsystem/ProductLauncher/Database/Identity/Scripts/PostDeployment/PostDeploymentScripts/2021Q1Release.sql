@@ -1637,5 +1637,58 @@ BEGIN
 End
 GO
 
+--ADD RIGHT - AbilityToAddProducts
+GO
+DECLARE @CreatedById bigint,
+		@RouteId bigint,
+		@RightId bigint,
+		@Now datetime = GETDATE(),
+		@PartyId bigint,
+		@RoleId bigint
 
+SELECT @CreatedById = UserId
+FROM Ident.UserLogin
+WHERE LoginName = 'RealPageAd@test.com'
 
+IF NOT EXISTS (SELECT 1 FROM [Security].[Right] WHERE RightName = 'AbilityToAddProducts')
+BEGIN
+	INSERT INTO [Security].[right](RightName, [Description], [Value], [StatusTypeId], [VisibilityStatusId], [ProductId], [TargetProductId], CreatedBy, CreatedDate)
+	VALUES ('AbilityToAddProducts', 'Allow an authorized RealPage employee the ability to add products to Unified Platform','Ability to add products to Unified Platform', 13,10, 3, 3, @CreatedById, @Now)	
+END
+
+--RightRoute
+SELECT @RightId = RightId
+FROM [Security].[Right]
+WHERE RightName = 'AbilityToAddProducts'
+
+SELECT @RouteId = RouteId
+FROM [Security].[Route]
+WHERE RouteValue = 'SideMenu'
+
+IF NOT EXISTS (SELECT 1 FROM [Security].[RightRoute] WHERE RightId = @RightId AND RouteId = @RouteId)
+BEGIN
+	INSERT INTO [Security].[RightRoute] (RightId, RouteId, RightName, CreatedBy, CreatedDate)
+	VALUES (@RightId, @RouteId, 'Ability To Add Products', @CreatedById, @Now)
+END
+--RoleRight
+SELECT @RoleId = RoleId 
+FROM [Security].[Role]
+WHERE RoleName = 'User Administrator' AND ShortName = 'SuperUser'
+
+IF NOT EXISTS (SELECT 1 FROM [Security].[RoleRight] WHERE RoleId = @RoleId AND RightId = @RightId)
+BEGIN
+	INSERT INTO [Security].[RoleRight] (RoleId, RightId, CreatedBy, CreatedDate)
+	VALUES	(@RoleId, @RightId, @CreatedById, @Now)
+END
+
+--OrganizationOverRideRight
+SELECT @PartyId = PartyId
+FROM [Enterprise].[Organization] 
+WHERE [Name] = 'RealPage Employee'
+
+IF NOT EXISTS (SELECT 1 FROM [Security].[OrganizationOverRideRight]  WHERE RightId = @RightId AND OrgPartyId = @PartyId)
+BEGIN
+	INSERT INTO [Security].[OrganizationOverRideRight](RightId, OrgPartyId, VisibilityStatusId, CreatedBy, CreatedDate) 
+	VALUES	(@RightId, @PartyId, 9, @CreatedById, @Now)
+END
+GO
