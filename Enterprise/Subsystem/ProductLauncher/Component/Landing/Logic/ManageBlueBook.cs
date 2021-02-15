@@ -945,10 +945,76 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
 
             logData = new Dictionary<string, object>() {{"response", response}};
-            WriteToLog(LogEventLevel.Debug, "GetCompanyListByCompIds - No info found - hashcode:{booksCompanyMasterIds.GetHashCode()}", logData, correlationId: userClaim.CorrelationId.ToString());
+            WriteToLog(LogEventLevel.Debug, $"GetCompanyListByCompIds - No info found - hashcode:{booksCompanyMasterIds.GetHashCode()}", logData, correlationId: userClaim.CorrelationId.ToString());
 
             return companyInstance;
         }
+
+        public Company GetBooksCompanyDetailsByCompanyMasterId(long companyMasterId)
+        {
+            string uri = $"customercompany?filter[customerCompanyId]=in:{companyMasterId}&include=customerCompanyLocation";
+
+            var logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
+            WriteToLog(LogEventLevel.Debug, $"GetBooksCompanyDetailsByCompanyMasterId - Getting info - companyMasterId:{companyMasterId}", logData, correlationId: _defaultUserClaim.CorrelationId.ToString());
+            var response = GetAsync(uri).Result;
+            if (response.IsSuccessStatusCode)
+            {
+                //var companyInstance = JsonConvert.DeserializeObject<Company>(response.Content.ReadAsStringAsync().Result.Replace("company", "customercompany"), new JsonApiSerializerSettings());
+                var companyInstance = JsonConvert.DeserializeObject<List<Company>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
+                logData = new Dictionary<string, object>() { { "CompanyInstance", companyInstance } };
+                WriteToLog(LogEventLevel.Debug, $"GetBooksCompanyDetailsByCompanyMasterId - Got info - companyMasterId:{companyMasterId}", logData, correlationId: _defaultUserClaim.CorrelationId.ToString());
+                return companyInstance?.FirstOrDefault();
+            }
+
+            logData = new Dictionary<string, object>() { { "response", response } };
+            WriteToLog(LogEventLevel.Debug, $"GetBooksCompanyDetailsByCompanyMasterId - No info found - companyMasterId:{companyMasterId}", logData, correlationId: _defaultUserClaim.CorrelationId.ToString());
+
+            return new Company();
+        }
+
+        public List<CustomerCompanyInstance> GetCompanyInstancesByCustomerCompanyId(long customerCompanyId)
+        {
+            var companyInstances = new List<CustomerCompanyInstance>();
+            string uri = $"/companyinstance?filter[source]=UPFM&filter[customerCompanyMap.customerCompanyId]={customerCompanyId}&fields[companyinstance]=companyInstanceId,source,companyInstanceSourceId,companyName,companyType,isActive,domain";
+
+            var logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
+            WriteToLog(LogEventLevel.Debug, $"GetCompanyInstancesByCustomerCompanyId - Getting info - customerCompanyId:{customerCompanyId}", logData, correlationId: _defaultUserClaim.CorrelationId.ToString());
+            var response = GetAsync(uri).Result;
+            if (response.IsSuccessStatusCode)
+            {
+                companyInstances = JsonConvert.DeserializeObject<List<CustomerCompanyInstance>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
+                logData = new Dictionary<string, object>() { { "CompanyInstance", companyInstances } };
+                WriteToLog(LogEventLevel.Debug, $"GetBooksCompanyDetailsByCompanyMasterId - Got info - customerCompanyId:{customerCompanyId}", logData, correlationId: _defaultUserClaim.CorrelationId.ToString());
+                return companyInstances;
+            }
+
+            logData = new Dictionary<string, object>() { { "response", response } };
+            WriteToLog(LogEventLevel.Debug, $"GetBooksCompanyDetailsByCompanyMasterId - No info found - customerCompanyId:{customerCompanyId}", logData, correlationId: _defaultUserClaim.CorrelationId.ToString());
+
+            return new List<CustomerCompanyInstance>();
+        }
+
+        public List<CustomerCompanyDomain> GetListOfDomainsByCompany(long companyMasterId)
+        {
+            string uri = $"domain/customercompany/{companyMasterId}";
+
+            var logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
+            WriteToLog(LogEventLevel.Debug, $"GetListOfDomainsByCompany - Getting info - companyMasterId:{companyMasterId}", logData, correlationId: _defaultUserClaim.CorrelationId.ToString());
+            var response = GetAsync(uri).Result;
+            if (response.IsSuccessStatusCode)
+            {
+                var companyInstance = JsonConvert.DeserializeObject<List<CustomerCompanyDomain>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
+                logData = new Dictionary<string, object>() { { "CompanyInstance", companyInstance } };
+                WriteToLog(LogEventLevel.Debug, $"GetListOfDomainsByCompany - Got info - companyMasterId:{companyMasterId}", logData, correlationId: _defaultUserClaim.CorrelationId.ToString());
+                return companyInstance;
+            }
+
+            logData = new Dictionary<string, object>() { { "response", response } };
+            WriteToLog(LogEventLevel.Debug, $"GetListOfDomainsByCompany - No info found - companyMasterId:{companyMasterId}", logData, correlationId: _defaultUserClaim.CorrelationId.ToString());
+
+            return new List<CustomerCompanyDomain>();
+        }
+
 
         /// <summary>
         /// Used to get the information about the company, using the books customer master id or the UPFM id
@@ -1439,3 +1505,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
