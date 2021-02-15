@@ -60,6 +60,15 @@ BEGIN
 				UL.PersonPartyId = @PartyIdFrom
 				AND
 				ULP.OrganizationPartyId = @PartyIdTo
+		
+		DELETE UE
+		FROM Enterprise.UserEmployeeId UE 
+		   INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginPersonaId = UE.UserLoginPersonaId
+		   INNER JOIN Ident.UserLogin UL ON ULP.UserLoginId = UL.UserId 
+		   WHERE  
+				UL.PersonPartyId = @PartyIdFrom
+				AND
+				ULP.OrganizationPartyId = @PartyIdTo
 
 		DELETE ULP
 		FROM Ident.UserLoginPersona ULP
