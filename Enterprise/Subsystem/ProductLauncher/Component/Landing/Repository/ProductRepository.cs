@@ -1289,7 +1289,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                     // get products for personaId
                     var aoLogic = new ManageProductAssetOptimization(_userClaim);
-                    aoUserProducts = aoLogic.GetGbSupportedAoEditorUserProductsToAssign(_userClaim.PersonaId);
+
+                    aoUserProducts = aoLogic.GetAOProductsForNewMultiCompanyUser(_userClaim.PersonaId, _userClaim.LoginName);
 
                     if (personRealPageId == null && loginName != null)
                     {
