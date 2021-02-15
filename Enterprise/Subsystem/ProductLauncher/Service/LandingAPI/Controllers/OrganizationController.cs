@@ -969,12 +969,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
-        [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about a list of Organizations", Type = typeof(CompanySetup))]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get company details by customer company id", Type = typeof(CompanySetup))]
         [SwaggerResponseExamples(typeof(CompanySetup), typeof(CompanySetupExample))]
         [Route("companysetup/companymaster/{customerCompanyId}")]
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         [HttpGet]
-        public HttpResponseMessage GetCompanyMasterById(long customerCompanyId)
+        public HttpResponseMessage GetCompanyMasterByCustomerCompanyId(long customerCompanyId)
         {
             if (customerCompanyId == 0)
             {
