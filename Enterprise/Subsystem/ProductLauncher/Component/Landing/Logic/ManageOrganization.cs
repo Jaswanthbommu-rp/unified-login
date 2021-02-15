@@ -634,6 +634,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
         #endregion
 
+
+
+        #region Company
         #region OrganizationList
         public List<CompanySetup> GetCompanyList(string organizationName, int domain, int? blueId, int organizationId, IDictionary<object, object> globals)
         {
@@ -642,8 +645,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 dataFilter = globals[BaseType.RequestParameter] as RequestParameter;
             }
-            var company =  _organizationRepository.GetCompanyList(organizationName, domain, blueId, organizationId, dataFilter);
+            var company = _organizationRepository.GetCompanyList(organizationName, domain, blueId, organizationId, dataFilter);
             return GetCompanyAdressFromBooks(company);
+        }
+        #endregion
+        public CompanyMaster SearchCompanyDetailsByCustomerCompanyId(long customerCompanyId)
+        {
+            var companyMaster = new CompanyMaster();
+            companyMaster.CompanyDetail = _manageBlueBook.GetBooksCompanyDetailsByCompanyMasterId(customerCompanyId);
+            companyMaster.DomainList = _manageBlueBook.GetListOfDomainsByCompany(customerCompanyId);
+            var companyInstances = _manageBlueBook.GetCompanyInstancesByCustomerCompanyId(customerCompanyId);
+
+            foreach(var instance in companyInstances)
+            {
+                var attributes = instance?.attributes;
+                if (attributes != null)
+                {
+                    companyMaster.CompanyInstance.Add(attributes);
+                }                
+            }
+
+            foreach(var domain in companyMaster.DomainList.ToList())
+            {
+                if (companyMaster.CompanyInstance.Any(a => a.Domain.Equals(domain.Domain, StringComparison.OrdinalIgnoreCase))){
+                    companyMaster.DomainList.Remove(companyMaster.DomainList.First(a => a.Domain.Equals(domain.Domain, StringComparison.OrdinalIgnoreCase)));
+                }
+            }
+
+            return companyMaster;
         }
         #endregion
 

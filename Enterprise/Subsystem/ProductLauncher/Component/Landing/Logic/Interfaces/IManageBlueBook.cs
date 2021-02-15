@@ -132,6 +132,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <param name="productCenterEnablement"></param>
         /// <returns></returns>
         bool AcknowledgeProvisioningEvent(ProductCenterEnablement productCenterEnablement);
+        
+        /// <summary>
+        /// Used to get books company details by companyMasterId
+        /// </summary>
+        /// <param name="companyMasterId"></param>
+        /// <returns></returns>
+        Company GetBooksCompanyDetailsByCompanyMasterId(long companyMasterId);
+
+        /// <summary>
+        /// Used to get company instances by customerCompanyId
+        /// </summary>
+        /// <param name="customerCompanyId"></param>
+        /// <returns></returns>
+        List<CustomerCompanyInstance> GetCompanyInstancesByCustomerCompanyId(long customerCompanyId);
+
+        /// <summary>
+        /// Used to get a list of domains by companyMasterId
+        /// </summary>
+        /// <param name="companyMasterId"></param>
+        /// <returns></returns>
+        List<CustomerCompanyDomain> GetListOfDomainsByCompany(long companyMasterId);
 
         /// <summary>
         /// Used to acknowledge provisioning Cancel events

@@ -177,5 +177,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="customerPropertyId">customerPropertyId</param>
 		/// <returns></returns>
 		PropertyInstanceSearch SearchPropertyDetailsByCustomerPropertyId(string customerPropertyId);
+
+		/// <summary>
+		/// Search Company Details By CustomerCompanyId
+		/// </summary>
+		/// <param name="customerCompanyId">customerPropertyId</param>
+		/// <returns></returns>
+		CompanyMaster SearchCompanyDetailsByCustomerCompanyId(long customerCompanyId);
+
 	}
 }
