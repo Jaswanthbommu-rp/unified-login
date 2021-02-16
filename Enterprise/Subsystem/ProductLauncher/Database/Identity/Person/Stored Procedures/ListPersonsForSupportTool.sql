@@ -19,7 +19,7 @@ BEGIN
 	AND (ea.ElectronicAddressString <> '' AND CHARINDEX(@Name, ea.ElectronicAddressString, 1) > 0)
 	AND			cmu.ContactMechanismUsageTypeID = 301
 
-	;WITH resultList ( CompanyName, Username, NotificationEmail, UserType, FirstName, LastName, PartyId, UserId, ThirdPartyIDPDesc, PersonaId, PersonaRealPageId )
+	;WITH resultList ( CompanyName, Username, NotificationEmail, UserType, FirstName, LastName, PartyId, UserId, ThirdPartyIDPDesc, PersonaId, PersonaRealPageId, UserStatus )
 	AS (
 		SELECT
 			O.Name [CompanyName],
@@ -38,9 +38,11 @@ BEGIN
 			UL.UserId [UserId],
 			IPT.Description [ThirdPartyIDPDesc],
 			P.PersonaId,
-			prt.realpageId
+			prt.realpageId,
+			st.Name
 		FROM	Ident.UserLogin UL
 					INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginId = ul.UserId
+					INNER JOIN Enterprise.StatusType st on ulp.StatusTypeId = st.StatusTypeId
 					INNER JOIN Person.Persona P ON ULP.UserLoginPersonaId = P.UserLoginPersonaId
 					INNER JOIN Enterprise.Organization O ON O.PartyId = ULP.OrganizationPartyId
 					INNER JOIN Person.Person PE ON PE.PartyId = UL.PersonPartyId
@@ -74,9 +76,11 @@ BEGIN
 			UL.UserId [UserId],
 			IPT.Description [ThirdPartyIDPDesc],
 			P.PersonaId,
-			prt.realpageId
+			prt.realpageId,
+			st.Name
 		FROM	Ident.UserLogin UL
 					INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginId = ul.UserId
+					INNER JOIN Enterprise.StatusType st on ulp.StatusTypeId = st.StatusTypeId
 					INNER JOIN Person.Persona P ON ULP.UserLoginPersonaId = P.UserLoginPersonaId
 					INNER JOIN Enterprise.Organization O ON O.PartyId = ULP.OrganizationPartyId
 					INNER JOIN Person.Person PE ON PE.PartyId = UL.PersonPartyId
@@ -91,7 +95,7 @@ BEGIN
 		AND		PR.Thrudate IS NULL
 	) 
 	SELECT 
-		DISTINCT CompanyName, Username, NotificationEmail, UserType, FirstName, LastName, PartyId, UserId, ThirdPartyIDPDesc, PersonaId , PersonaRealPageId
+		DISTINCT CompanyName, Username, NotificationEmail, UserType, FirstName, LastName, PartyId, UserId, ThirdPartyIDPDesc, PersonaId , PersonaRealPageId, UserStatus
 	FROM 
 		resultList
 END;
