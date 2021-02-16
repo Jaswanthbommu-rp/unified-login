@@ -704,9 +704,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 			foreach(object item in propertyGroupsCollection)
 			{
-				if (((ProductProperty)item).IsAssigned.Value)
+				if (((ProductPropertyGroup)item).IsAssigned.Value)
 				{
-					PropertyList.Add(((ProductProperty)item).ID);
+					PropertyList.Add(((ProductPropertyGroup)item).ID);
 				}
 			}
 
