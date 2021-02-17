@@ -56,6 +56,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         public string PasswordSalt { get; set; }
 
         /// <summary>
+        /// Is Two Factor Enabled, 0 = off, 1 = on, 2 = pending setup
+        /// </summary>
+        [JsonProperty(PropertyName = "TwoFactorEnabled")]
+        public int TwoFactorEnabled { get; set; }
+
+        /// <summary>
+        /// The last date the user was nagged about signing up for MFA
+        /// </summary>
+        [JsonProperty(PropertyName = "TwoFactorLastNotifyDate")]
+        public DateTime TwoFactorLastNotifyDate { get; set; }
+
+        /// <summary>
         /// Is the user account locked
         /// </summary>
         [JsonProperty(PropertyName = "IsLocked")]

@@ -309,6 +309,61 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="userPersonaId"></param>
 		/// <param name="datafilter"></param>
 		/// <returns></returns>
+		public IList<ProductPropertyGroup> GetAllPropertyGroups(long editorPersonaId, long userPersonaId, RequestParameter datafilter)
+		{
+			Dictionary<string, object> logData = new Dictionary<string, object>();
+			FilterSortParameters wsParams = ManageProductOneSiteAccountingHelpers.GenerateSearchAndPaging(datafilter, "Name", 0, 9999);
+
+			Property[] prop = new Property[1] { new Property() };
+			List<NameValuePair> loginInfo = new List<NameValuePair>
+			{
+				new NameValuePair { Name = "CompanyID", Value = _companyName },
+				new NameValuePair { Name = "Login", Value = _intactLogin },
+				new NameValuePair { Name = "Password", Value = _intactPassword }
+			};
+			if (!String.IsNullOrEmpty(_productUserId))
+			{
+				loginInfo.Add(new NameValuePair { Name = "SystemIdentifier", Value = _productUserId });
+			}
+			logData = new Dictionary<string, object>();
+			logData.Add("user", RemovePrivateData(loginInfo.ToArray()));
+			WriteToDiagnosticLog($"GetAllPropertyGroups - _productUserId = {_productUserId}", logData);
+			prop[0].NameValuePair = loginInfo.ToArray();
+
+			TotalRows[] results2 = new TotalRows[1];
+			LocationGroupID[] location;
+			IList<ProductPropertyGroup> list;
+
+			try
+			{
+
+				location = _service.GetAllPropertyGroups(prop, wsParams, out results2);
+				logData = new Dictionary<string, object>();
+				logData.Add("location", location);
+				WriteToDiagnosticLog($"GetAllPropertyGroups - result from api", logData);
+				list = location.ToGBPropertyGroup();
+
+				if (list == null)
+				{
+					list = new List<ProductPropertyGroup>();
+					WriteToDiagnosticLog($"GetAllPropertyGroups - returned null data - no error ", logData);
+				}
+			}
+			catch (Exception ex)
+			{
+				list = null;
+				WriteToErrorLog($"GetAllPropertyGroups - api Error", exception: ex);
+			}
+			return list;
+		}
+		//
+		/// <summary>
+		/// Get the property Groups for the given user persona
+		/// </summary>
+		/// <param name="editorPersonaId"></param>
+		/// <param name="userPersonaId"></param>
+		/// <param name="datafilter"></param>
+		/// <returns></returns>
 		public ListResponse GetPropertyGroupEntities(long editorPersonaId, long userPersonaId,string locationGrpId, RequestParameter datafilter)
 		{
 			ListResponse response = new ListResponse();
@@ -426,6 +481,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 //    }
                 //}
 
+				if (companyPropertiesList.Count(p => !string.IsNullOrEmpty(p.MConsoleId.Trim())) != 0)
+				{
+					//We have MConsole company here
+					companyPropertiesList.ForEach(x => x.Id = string.Concat(x.Id + "|" + x.CompanyId));
+				}
 
                 response = new ListResponse()
                 {
@@ -939,7 +999,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     WriteToDiagnosticLog($"UpdatePropertiesToUser-BatchProcessType.UserTypeRegularToAdmin - START");
                     propertyIDRemoveList = "";
                     List<ACProperty> currentPropertyList = GetAllCompanyProperties(editorPersonaId, userPersonaId, datafilter);
-                    logData = new Dictionary<string, object>();
+					IList<ProductPropertyGroup> currentLocationGrpList = GetAllPropertyGroups(editorPersonaId, userPersonaId, datafilter);
+					logData = new Dictionary<string, object>();
                     logData.Add("currentPropertyList", currentPropertyList);
                     WriteToDiagnosticLog($"UpdatePropertiesToUser-BatchProcessType.UserTypeRegularToAdmin - currentPropertyList", logData);
                     // Get the current property list what is already assigned and remove them.
@@ -958,7 +1019,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         }
                     }
 
-                    if (propertiesToRemove.Count > 0)
+					foreach (ProductPropertyGroup propLG in currentLocationGrpList)
+					{
+						if ((bool)propLG.IsAssigned)
+						{
+							propertiesToRemove.Add(propLG.ID);
+						}
+					}
+
+					if (propertiesToRemove.Count > 0)
                     {
                         propertyIDRemoveList = string.Join(",", propertiesToRemove);
                     }
@@ -990,7 +1059,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     propertyIDAddList = "";
                     List<ACProperty> currentPropertyList =  GetAllCompanyProperties(editorPersonaId, userPersonaId, datafilter);
-                    logData = new Dictionary<string, object>();
+					IList<ProductPropertyGroup> currentLocationGrpList = GetAllPropertyGroups(editorPersonaId, userPersonaId, datafilter);
+					logData = new Dictionary<string, object>();
                     logData.Add("currentPropertyList", currentPropertyList);
                     WriteToDiagnosticLog($"UpdatePropertiesToUser - currentPropertyList", logData);
                     // compare the current property list to what was passed to determine what is new and what was removed.
@@ -1047,7 +1117,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         }
                     }
 
-                    if (propertiesToAssign.Count > 0)
+
+					foreach (ProductPropertyGroup propLG in currentLocationGrpList)
+					{
+						if ((bool)propLG.IsAssigned)
+						{
+							if (!(propertiesToAssign.Contains(propLG.ID)))
+							{
+								propertiesToRemove.Add(propLG.ID);
+							}
+							else
+							{
+								propertiesToAssign.Remove(propLG.ID);
+							}
+						}
+						
+					}
+
+					if (propertiesToAssign.Count > 0)
                     {
                         propertyIDAddList = string.Join(",", propertiesToAssign);
                     }

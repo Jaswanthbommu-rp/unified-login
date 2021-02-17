@@ -44,12 +44,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         #region Public ManageSecuritySettings methods
         /// <summary>
-        /// Get Security Settings (PasswordPolicy and ActivityConfiguration)
+        /// Get Company Settings
         /// </summary>
-        /// <param name="booksCustomerMasterId">Books Customer MasterId</param>
-        /// <param name="bookMasterTypeId">Type of Book MasterId (e.g. 1 = Black, 2 = Blue)</param>
+        /// <param name="category">Setting Category type</param>
+        /// <param name="partyId">Company Id</param>
         /// <returns>Security Settings List objects (KeyValue pairs)</returns>
-        public IList<Setting> GetUnifiedSettings(string category, long partyId, string[] includes)
+        public IList<Setting> GetUnifiedSettings(string category, long partyId)
         {
             IList<Setting> unfiedSettingList = new List<Setting>();
             Guid correlationId = Guid.NewGuid();
@@ -91,7 +91,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// </summary>
         /// <param name="settings">Security Settings (Password and Activity Configuration Security Settings) object of the parameter values</param>
         /// <param name="booksCustomerMasterId">Books Customer MasterId</param>
-        /// <param name="bookMasterTypeId">Type of Book MasterId (e.g. 1 = Black, 2 = Blue)</param>
+        /// <param name="partyId">Company Id</param>
         /// <returns>RepositoryResponse object</returns>
         public RepositoryResponse UpdateUnifiedSettings(IList<Setting> settings, string category, long partyId, string[] includes)
         {

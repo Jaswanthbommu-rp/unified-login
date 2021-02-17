@@ -634,6 +634,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
         #endregion
 
+
+
+        #region Company
         #region OrganizationList
         public List<CompanySetup> GetCompanyList(string organizationName, int domain, int? blueId, int organizationId, IDictionary<object, object> globals)
         {
@@ -642,8 +645,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 dataFilter = globals[BaseType.RequestParameter] as RequestParameter;
             }
-            var company =  _organizationRepository.GetCompanyList(organizationName, domain, blueId, organizationId, dataFilter);
+            var company = _organizationRepository.GetCompanyList(organizationName, domain, blueId, organizationId, dataFilter);
             return GetCompanyAdressFromBooks(company);
+        }
+        #endregion
+        public CompanyMaster SearchCompanyDetailsByCustomerCompanyId(long customerCompanyId)
+        {
+            var companyMaster = new CompanyMaster();
+            companyMaster.CompanyDetail = _manageBlueBook.GetBooksCompanyDetailsByCompanyMasterId(customerCompanyId);
+            companyMaster.DomainList = _manageBlueBook.GetListOfDomainsByCompany(customerCompanyId);
+            var companyInstances = _manageBlueBook.GetCompanyInstancesByCustomerCompanyId(customerCompanyId);
+
+            foreach(var instance in companyInstances)
+            {
+                var attributes = instance?.attributes;
+                if (attributes != null)
+                {
+                    companyMaster.CompanyInstance.Add(attributes);
+                }                
+            }
+
+            foreach(var domain in companyMaster.DomainList.ToList())
+            {
+                if (companyMaster.CompanyInstance.Any(a => a.Domain.Equals(domain.Domain, StringComparison.OrdinalIgnoreCase))){
+                    companyMaster.DomainList.Remove(companyMaster.DomainList.First(a => a.Domain.Equals(domain.Domain, StringComparison.OrdinalIgnoreCase)));
+                }
+            }
+
+            return companyMaster;
         }
         #endregion
 
@@ -658,6 +687,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
             
             List<Guid> propertyInstanceIds;
+            List<PropertySetup> propertyDetails = new List<PropertySetup>();
             List<BooksPropertyInstance> booksPropertyInstance = GetPropertyInstanceFromBooks(companyInstanceId);
             if (domain != null)
             {
@@ -668,9 +698,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 propertyInstanceIds = booksPropertyInstance?.Select(p => p.attributes.propertyInstanceSourceId)?.Select(Guid.Parse).ToList();
             }
-            
-            List<PropertySetup> propertyDetails =  _propertyRepository.GetPropertiesForCompany(propertyInstanceIds, propertyName, blueId,  dataFilter);
-            propertyDetails = AddContractedNameToPropertyList(booksPropertyInstance, propertyDetails);
+            if(propertyInstanceIds != null)
+            {
+                propertyDetails = _propertyRepository.GetPropertiesForCompany(propertyInstanceIds, propertyName, blueId, dataFilter);
+                propertyDetails = AddContractedNameToPropertyList(booksPropertyInstance, propertyDetails);
+            }           
             List<CompanyPropertySetup> companyPropertySetup = new List<CompanyPropertySetup>()
             {
                 new CompanyPropertySetup()
@@ -679,7 +711,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     Property = propertyDetails
                 }
             };
-
             return companyPropertySetup;
         }
 		#endregion

@@ -227,5 +227,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="products"></param>
         /// <returns>List of Users</returns>
         IList<EnterpriseProductUser> GetUsersByCompanyorProducts(string companyId, IList<int?> products);
+
+        /// <summary>
+        /// Get loggedin user assigned products
+        /// </summary>
+        /// <param name="PersonaId"></param>
+        /// <param name="ProductStatus"></param>
+        /// <param name="productId"></param>
+        /// <returns></returns>
+        bool isProductAssigned(long PersonaId, int ProductStatus, int productId);
     }
 }

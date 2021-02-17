@@ -85,5 +85,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         /// Persona Id
         /// </summary>
         public long PersonaId { get; set; }
+        /// <summary>
+        /// User RealPage Id
+        /// </summary>
+        public Guid PersonaRealPageId { get; set; }
+        /// <summary>
+        /// User Status
+        /// </summary>
+        public string UserStatus { get; set; }
     }
 }

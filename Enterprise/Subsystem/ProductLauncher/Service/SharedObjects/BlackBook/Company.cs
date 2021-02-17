@@ -65,6 +65,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackB
         /// </summary>
         //[JsonProperty("modifiedBy")]
         public string ModifiedBy { get; set; }
+        public long MasterCompanyId { get; set; }
     }
 
 }

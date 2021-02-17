@@ -58,7 +58,7 @@
       <HintPath>..\..\packages\Confluent.Kafka.1.5.0\lib\net45\Confluent.Kafka.dll</HintPath>
     </Reference>
     <Reference Include="Dapper, Version=1.60.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Dapper.1.60.1\lib\net451\Dapper.dll</HintPath>
+      <HintPath>..\..\packages\Dapper.1.60.6\lib\net451\Dapper.dll</HintPath>
     </Reference>
     <Reference Include="Elasticsearch.Net, Version=6.0.0.0, Culture=neutral, PublicKeyToken=96c599bbe3e70f5d, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Elasticsearch.Net.6.1.0\lib\net45\Elasticsearch.Net.dll</HintPath>
@@ -70,8 +70,8 @@
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Newtonsoft.Json.12.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="RealPage.Logging.Serilog, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\RealPage.Logging.Serilog.2.4.7\lib\net452\RealPage.Logging.Serilog.dll</HintPath>
+    <Reference Include="RealPage.Logging.Serilog, Version=2.0.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\RealPage.Logging.Serilog.2.5.3\lib\net452\RealPage.Logging.Serilog.dll</HintPath>
     </Reference>
     <Reference Include="RealPage.SerilogSinks.Kafka, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\RealPage.SerilogSinks.Kafka.1.0.1\lib\net45\RealPage.SerilogSinks.Kafka.dll</HintPath>
@@ -144,14 +144,17 @@
     <Compile Include="BlackBook\Company.cs" />
     <Compile Include="BlackBook\CompanyInstance.cs" />
     <Compile Include="BlackBook\CompanyInstanceAdd.cs" />
+    <Compile Include="BlackBook\CustomerCompanyInstance.cs" />
     <Compile Include="BlackBook\PropertyInstanceSearch.cs" />
     <Compile Include="BlackBook\PropertyInstanceAddress.cs" />
     <Compile Include="BlackBook\CompanyInstanceAddress.cs" />
     <Compile Include="BlackBook\CompanyLocation.cs" />
+    <Compile Include="BlackBook\CompanyMaster.cs" />
     <Compile Include="BlackBook\CompanyPropertyInstanceMap.cs" />
     <Compile Include="BlackBook\CompanyPropertyInstanceRootObject.cs" />
     <Compile Include="BlackBook\CompanyPropertyRootObject.cs" />
     <Compile Include="BlackBook\CustomerCompany.cs" />
+    <Compile Include="BlackBook\CustomerCompanyDomain.cs" />
     <Compile Include="BlackBook\CustomerProperty.cs" />
     <Compile Include="BlackBook\InstanceAddress.cs" />
     <Compile Include="BlackBook\InstanceAttribute.cs" />
@@ -650,6 +653,7 @@
     <Compile Include="Swagger\IProvideExamples.cs" />
     <Compile Include="Swagger\SwaggerUtil.cs" />
     <Compile Include="Product\UPFMPropertyInstance.cs" />
+    <Compile Include="TwoFactor\AppAuthUser.cs" />
     <Compile Include="WebHook\Books\CustomerCompanyUpdated.cs" />
     <Compile Include="WebHook\Books\CustomerCompanyDeleted.cs" />
     <Compile Include="WebHook\SHA.cs" />

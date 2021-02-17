@@ -9,6 +9,8 @@ CREATE TABLE [Ident].[UserLogin] (
     [LastLoginDate]          DATETIME       NULL,
     [CreateUserSourceId]     INT            NULL,
     [CreateDate]             DATETIME       CONSTRAINT [DF__tmp_ms_xx__Creat__5086CE36] DEFAULT (getutcdate()) NOT NULL,
+    [TwoFactorEnabled] TINYINT NOT NULL DEFAULT 0, 
+    [TwoFactorLastNotifyDate] SMALLDATETIME NULL, 
     CONSTRAINT [PK_UserLogin] PRIMARY KEY CLUSTERED ([UserId] ASC) WITH (FILLFACTOR = 80),
     CONSTRAINT [FK_UserLogin_Party] FOREIGN KEY ([PersonPartyId]) REFERENCES [Enterprise].[Party] ([PartyId]),
     CONSTRAINT [FK_UserLogin_StatusType] FOREIGN KEY ([CreateUserSourceId]) REFERENCES [Enterprise].[StatusType] ([StatusTypeId]) ON UPDATE CASCADE,
