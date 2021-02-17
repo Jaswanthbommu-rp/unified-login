@@ -481,7 +481,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 //    }
                 //}
 
-				if (companyPropertiesList.Count(p => !string.IsNullOrEmpty(p.MConsoleId.Trim())) == 0)
+				if (companyPropertiesList.Count(p => !string.IsNullOrEmpty(p.MConsoleId.Trim())) != 0)
 				{
 					//We have MConsole company here
 					companyPropertiesList.ForEach(x => x.Id = string.Concat(x.Id + "|" + x.CompanyId));
