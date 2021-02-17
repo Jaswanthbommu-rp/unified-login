@@ -19,7 +19,7 @@ BEGIN
 	AND (ea.ElectronicAddressString <> '' AND CHARINDEX(@Name, ea.ElectronicAddressString, 1) > 0)
 	AND			cmu.ContactMechanismUsageTypeID = 301
 
-	;WITH resultList ( CompanyName, Username, NotificationEmail, UserType, FirstName, LastName, PartyId, UserId, ThirdPartyIDPDesc, PersonaId )
+	;WITH resultList ( CompanyName, Username, NotificationEmail, UserType, FirstName, LastName, PartyId, UserId, ThirdPartyIDPDesc, PersonaId, PersonaRealPageId, UserStatus )
 	AS (
 		SELECT
 			O.Name [CompanyName],
@@ -37,12 +37,16 @@ BEGIN
 			ULP.OrganizationPartyId [PartyId],
 			UL.UserId [UserId],
 			IPT.Description [ThirdPartyIDPDesc],
-			P.PersonaId
+			P.PersonaId,
+			prt.realpageId,
+			st.Name
 		FROM	Ident.UserLogin UL
 					INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginId = ul.UserId
+					INNER JOIN Enterprise.StatusType st on ulp.StatusTypeId = st.StatusTypeId
 					INNER JOIN Person.Persona P ON ULP.UserLoginPersonaId = P.UserLoginPersonaId
 					INNER JOIN Enterprise.Organization O ON O.PartyId = ULP.OrganizationPartyId
 					INNER JOIN Person.Person PE ON PE.PartyId = UL.PersonPartyId
+					INNER JOIN Enterprise.Party prt ON prt.PartyId = PE.PartyId
 					INNER JOIN Enterprise.PartyRelationship PR ON (PR.PartyIdFrom = PE.PartyId AND pr.PartyIdTo = o.PartyId)
 					INNER JOIN Enterprise.RoleType ert ON (pr.RoleTypeIdFrom = ert.PartyRoleTypeId AND ert.ParentPartyRoleTypeId = 400)
 					INNER JOIN Ident.IdentityProviderType IPT ON IPT.IdentityProviderTypeId = UL.IdentityProviderTypeId
@@ -71,12 +75,16 @@ BEGIN
 			ULP.OrganizationPartyId [PartyId],
 			UL.UserId [UserId],
 			IPT.Description [ThirdPartyIDPDesc],
-			P.PersonaId
+			P.PersonaId,
+			prt.realpageId,
+			st.Name
 		FROM	Ident.UserLogin UL
 					INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginId = ul.UserId
+					INNER JOIN Enterprise.StatusType st on ulp.StatusTypeId = st.StatusTypeId
 					INNER JOIN Person.Persona P ON ULP.UserLoginPersonaId = P.UserLoginPersonaId
 					INNER JOIN Enterprise.Organization O ON O.PartyId = ULP.OrganizationPartyId
 					INNER JOIN Person.Person PE ON PE.PartyId = UL.PersonPartyId
+					INNER JOIN Enterprise.Party prt ON prt.PartyId = PE.PartyId
 					INNER JOIN Enterprise.PartyRelationship PR ON (PR.PartyIdFrom = PE.PartyId AND pr.PartyIdTo = o.PartyId)
 					INNER JOIN Enterprise.RoleType ert ON (pr.RoleTypeIdFrom = ert.PartyRoleTypeId AND ert.ParentPartyRoleTypeId = 400)
 					INNER JOIN Ident.IdentityProviderType IPT ON IPT.IdentityProviderTypeId = UL.IdentityProviderTypeId
@@ -87,7 +95,7 @@ BEGIN
 		AND		PR.Thrudate IS NULL
 	) 
 	SELECT 
-		DISTINCT CompanyName, Username, NotificationEmail, UserType, FirstName, LastName, PartyId, UserId, ThirdPartyIDPDesc, PersonaId  
+		DISTINCT CompanyName, Username, NotificationEmail, UserType, FirstName, LastName, PartyId, UserId, ThirdPartyIDPDesc, PersonaId , PersonaRealPageId, UserStatus
 	FROM 
 		resultList
 END;

@@ -1692,3 +1692,22 @@ BEGIN
 	VALUES	(@RightId, @PartyId, 9, @CreatedById, @Now)
 END
 GO
+
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM [UserManagement].[Control] 
+WHERE UIId = 'UnifiedPlatformRolesAndRightsRightLabelTypeUIId')
+BEGIN
+	DECLARE @ParentControlId INT, @UserId BIGINT, @Now DATETIME = GETDATE();
+
+	SELECT	@UserId = UserId
+	FROM	Ident.UserLogin
+	WHERE	LoginName LIKE 'realpagead@%'
+
+	SELECT @ParentControlId = ParentControlId FROM [UserManagement].[Control] 
+	WHERE UIId = 'UnifiedPlatformRolesAndRightsRightLabelUIId' AND DataSource = 'name';
+
+	INSERT INTO [UserManagement].[Control](ParentControlId,ControlTypeId,UIId,DisplayName,DataSource,Sequence,CreatedBy,CreatedDate)
+	VALUES(@ParentControlId,5,'UnifiedPlatformRolesAndRightsRightLabelTypeUIId', 'Type','roletype',3,@UserId,@Now);
+END
+
+GO
