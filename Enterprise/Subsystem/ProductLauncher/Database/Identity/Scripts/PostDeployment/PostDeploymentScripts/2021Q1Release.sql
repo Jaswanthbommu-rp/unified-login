@@ -1693,6 +1693,42 @@ BEGIN
 END
 GO
 
+-- Updating the Unified Amenities roles to be sentence-cased
+IF EXISTS(SELECT 1 FROM Security.Role WHERE ProductId = 26 AND RoleName='Manage Amenity Status')
+BEGIN
+UPDATE Security.Role SET RoleName='Manage amenity status'
+WHERE ProductId = 26 AND RoleName='Manage Amenity Status'
+END
+
+IF EXISTS(SELECT 1 FROM Security.Role WHERE ProductId = 26 AND RoleName='Manage Amenity No Pricing') 
+BEGIN
+UPDATE Security.Role SET RoleName='Manage amenity no pricing'
+WHERE ProductId = 26 AND RoleName='Manage Amenity No Pricing'
+END
+
+IF EXISTS(SELECT 1 FROM Security.Role WHERE ProductId = 26 AND RoleName='Manage Amenity With Pricing')
+BEGIN
+UPDATE Security.Role SET RoleName='Manage amenity with pricing'
+WHERE ProductId = 26 AND RoleName='Manage Amenity With Pricing'
+END
+
+IF EXISTS(SELECT 1 FROM Security.Role WHERE ProductId = 26 AND RoleName='Manage Property Amenity No Pricing')
+BEGIN
+UPDATE Security.Role SET RoleName='Manage property amenity no pricing'
+WHERE ProductId = 26 AND RoleName='Manage Property Amenity No Pricing'
+END
+
+IF EXISTS(SELECT 1 FROM Security.Role WHERE ProductId = 26 AND RoleName='Manage Property Amenity With Pricing')
+BEGIN
+UPDATE Security.Role SET RoleName='Manage property amenity with pricing'
+WHERE ProductId = 26 AND RoleName='Manage Property Amenity With Pricing'
+END
+
+IF EXISTS(SELECT 1 FROM Security.Role WHERE ProductId = 26 AND RoleName='View Amenities')
+BEGIN
+UPDATE Security.Role SET RoleName='View amenities'
+WHERE ProductId = 26 AND RoleName='View Amenities'
+END
 
 IF NOT EXISTS (SELECT TOP 1 1 FROM [UserManagement].[Control] 
 WHERE UIId = 'UnifiedPlatformRolesAndRightsRightLabelTypeUIId')
