@@ -1709,4 +1709,3 @@ BEGIN
    UPDATE [Security].[Right] SET Value='Access to Company-level questionnaires and Portfolio Views in CIMPL' where RightId=@RightID
 END
 GO
-
