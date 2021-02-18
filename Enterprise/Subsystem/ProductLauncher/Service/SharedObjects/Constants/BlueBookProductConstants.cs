@@ -302,5 +302,9 @@
 		/// Renter Engagement
 		/// </summary>
 		public const string Reporting = "RPT";
+		/// <summary>
+		/// Self-Guided Tour
+		/// </summary>
+		public const string SelfGuidedTour = "LS";
 	}
 }

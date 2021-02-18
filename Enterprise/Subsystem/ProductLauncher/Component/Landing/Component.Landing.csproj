@@ -219,6 +219,7 @@
     <Compile Include="Logic\ProductIntegration\ProductImplementation\ClickPayManagement.cs" />
     <Compile Include="Logic\ProductIntegration\ProductImplementation\DepositAlternativeManagement.cs" />
     <Compile Include="Logic\ProductIntegration\ProductImplementation\RenovationManager.cs" />
+    <Compile Include="Logic\ProductIntegration\ProductImplementation\SelfGuidedTour.cs" />
     <Compile Include="Logic\ProductIntegration\ProductImplementation\SeniorLeadManagement.cs" />
     <Compile Include="Logic\Product\ManageIntelligentBuilding.cs" />
     <Compile Include="Logic\Product\ManageProductOneSiteAccounting.cs" />
