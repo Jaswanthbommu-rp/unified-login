@@ -1747,3 +1747,19 @@ BEGIN
 END
 
 GO
+--Renaming Right
+IF EXISTS(SELECT TOP 1 1 FROM [Security].[Right] where Value ='View all company-level settings')
+BEGIN
+   DECLARE @RightID INT;
+   SELECT @RightID = RightId from [Security].[Right] where Value ='View all company-level settings'
+   UPDATE [Security].[Right] SET Value='View all company-level settings & templates' where RightId=@RightID
+END
+GO
+
+IF EXISTS(SELECT TOP 1 1 FROM [Security].[Right] where Value ='Access to Company-level questionnaires and Summary Views in CIMPL')
+BEGIN
+   DECLARE @RightID INT;
+   SELECT @RightID = RightId from [Security].[Right] where Value ='Access to Company-level questionnaires and Summary Views in CIMPL'
+   UPDATE [Security].[Right] SET Value='Access to Company-level questionnaires and Portfolio Views in CIMPL' where RightId=@RightID
+END
+GO
