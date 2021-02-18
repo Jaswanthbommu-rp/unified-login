@@ -142,7 +142,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 case ProductEnum.IntelligentBuildingEnergy:
                 case ProductEnum.IntelligentBuildingWater:
                 case ProductEnum.HospitalityService:
-                case ProductEnum.SelfGuidedTour:
                     ManageUPFMProductsIntegration upfmProductIntegration = new ManageUPFMProductsIntegration(productId, _userClaims);
                     var upfmProduct = ProductEnumHelper.GetUPFMProductEnum(productId);
                     productResponse = upfmProductIntegration.GetUPFMProperties(_userClaims.PersonaId, upfmProduct, include);
