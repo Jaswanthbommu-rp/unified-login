@@ -227,7 +227,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 				case 60 : return ProductEnum.HospitalityService;
 				case 63: return ProductEnum.HandsOnTrainingSystem;
 				case 68: return ProductEnum.LeaseLabs;
-				case 69: return ProductEnum.SelfGuidedTour;
+				case 65: return ProductEnum.SelfGuidedTour;
 			}
 
 			throw new Exception($"UPFM product with Id - {productID} is not supported in green book.");
@@ -659,7 +659,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// SelfGuidedTour
 		/// </summary>
 		[Description("SGT")]
-		SelfGuidedTour = 69
+		SelfGuidedTour = 65
 	}
 
 	/// <summary>
@@ -932,7 +932,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// SelfGuidedTour
 		/// </summary>
 		[Description("SGT")]
-		SelfGuidedTour = 69
+		SelfGuidedTour = 65
 
 	}
 	public enum ProductProcVersion
