@@ -827,6 +827,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return propertyInstanceSearch;
         }
         #endregion
+
+        #region Delete Property
+        /// <summary>
+        /// Delete Property instance
+        /// </summary>
+        /// <param name="propertyInstanceID">propertyInstanceID</param>
+        /// <returns></returns>
+        public RepositoryResponse DeletePropertyForOrganization(Guid propertyInstanceID)
+        {
+            var response = _propertyRepository.DeleteUPFMPropertyInstance(propertyInstanceID);
+            if (response.ErrorMessage.Length == 0)
+            {
+                bool booksReponse = DeletePropertyFromBooks(propertyInstanceID);
+                if (!booksReponse)
+                {
+                    response.ErrorMessage = "Error while deleting property from Books";
+                }
+            }
+            return response;
+        }
+        #endregion
+
         #endregion
 
 
@@ -1094,6 +1116,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Property Creation"
             };
             return _manageBlueBook.AddBooksGreenBookPropertyInstanceFromProvisioning(pi);
+        }
+
+        private bool DeletePropertyFromBooks(Guid propertyInstanceID)
+		{
+            return _manageBlueBook.DeletePropertyFromBooks(propertyInstanceID);
         }
         #endregion
     }

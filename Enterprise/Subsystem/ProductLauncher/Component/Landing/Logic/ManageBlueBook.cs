@@ -742,6 +742,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         /// <summary>
+        /// Used to delete an existing property instance
+        /// </summary>
+        /// <param name="propertyInstance"></param>
+        /// <returns></returns>
+        public bool DeletePropertyFromBooks(Guid propertyInstance)
+        {
+            string uri = $"propertyinstance/{propertyInstance}/UPFM?modifiedBy={WebUtility.UrlEncode(ProductEnum.UnifiedPlatform.ToString())}";
+            Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "propertyinstance", propertyInstance } };
+            WriteToLog(LogEventLevel.Debug, $"DeleteBookPropertyInstance - deleting instance {propertyInstance}.", logData);
+            var response = _httpClient.DeleteAsync(uri).Result;
+            logData = new Dictionary<string, object>() { { "StatusCode", response.StatusCode } };
+            WriteToLog(LogEventLevel.Debug, $"DeleteBookPropertyInstance - deleted instance {propertyInstance}.", logData);
+            return response.IsSuccessStatusCode;
+        }
+
+        /// <summary>
         /// Used to acknowledge provisioning events
         /// </summary>
         /// <param name="productCenterEnablement"></param>

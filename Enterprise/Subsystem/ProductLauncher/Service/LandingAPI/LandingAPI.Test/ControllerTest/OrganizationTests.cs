@@ -2507,7 +2507,129 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             //Assert
             Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
-        }		
-		#endregion
-	}
+        }
+        #endregion
+
+        #region Delete Property
+        [Fact]
+        public void DeletePropertyForOrganization_InvalidPropertyObject_ReturnBadRequest()
+        {
+            //Arrange
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            )
+            {
+                Request = new HttpRequestMessage(),
+                Configuration = new HttpConfiguration()
+            };
+
+            //Act           
+            HttpResponseMessage response = organizationController.DeleteProperty(Guid.Empty);
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
+        }
+
+        [Fact]
+        public void DeletePropertyForOrganization_InValidPropertyObject_Returns_ErrorResponse()
+        {
+            //Arrange
+
+            List<ProductInternalSetting> productInternalSettings = new List<ProductInternalSetting>()
+            {
+                new ProductInternalSetting() {Name = "BooksUseDomains", Value = "1"},
+                new ProductInternalSetting() {Name = "BooksUseUPFMId", Value = "1"},
+                new ProductInternalSetting() {Name = "BooksUseTranslatev2", Value = "0"}
+            };
+
+            _mockRepository
+               .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
+               .Returns(productInternalSettings);
+            Guid propertyInstance = new Guid("a1ef0ac9-2f84-4288-b369-e59b1d6c13de");
+            RepositoryResponse repository = new RepositoryResponse()
+            {
+                RealPageId = propertyInstance,
+                Id = 0,
+                ErrorMessage = "Property is in use. Cannot delete a property that is in use"
+            };
+
+            Mock<ManageBlueBook> _manageBlueBook = new Mock<ManageBlueBook>();
+
+            Mock<IRepository> _mockPropertyRepository = new Mock<IRepository>();
+            _mockRepository
+               .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_DeletePropertyInstance,
+                   It.IsAny<object>()))
+               .Returns(repository);
+            _mockHttpMessageHandler.Setup(HttpMethod.Delete, $"http://localhost/propertyinstance/a1ef0ac9-2f84-4288-b369-e59b1d6c13de/UPFM?modifiedBy=UnifiedPlatform", new HttpResponseMessage(HttpStatusCode.NoContent) { Content = new StringContent("{ \"result\" : \"success\"}") });
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            )
+            {
+                Request = new HttpRequestMessage(),
+                Configuration = new HttpConfiguration()
+            };
+            //Act           
+            HttpResponseMessage response = organizationController.DeleteProperty(propertyInstance);
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
+            RepositoryResponse repositoryResponse = JsonConvert.DeserializeObject<RepositoryResponse>(response.Content.ReadAsStringAsync().Result);
+            Assert.True(repositoryResponse.ErrorMessage == repository.ErrorMessage);
+        }
+
+        [Fact]
+        public void DeletePropertyForOrganization_ValidPropertyObject_Returns_Success()
+        {
+            //Arrange
+            
+            List<ProductInternalSetting> productInternalSettings = new List<ProductInternalSetting>()
+            {
+                new ProductInternalSetting() {Name = "BooksUseDomains", Value = "1"},
+                new ProductInternalSetting() {Name = "BooksUseUPFMId", Value = "1"},
+                new ProductInternalSetting() {Name = "BooksUseTranslatev2", Value = "0"}
+            };
+
+            _mockRepository
+               .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
+               .Returns(productInternalSettings);
+            Guid propertyInstance = new Guid("a1ef0ac9-2f84-4288-b369-e59b1d6c13de");
+            RepositoryResponse repository = new RepositoryResponse()
+            {
+                RealPageId = propertyInstance,
+                Id = 0,
+                ErrorMessage = ""
+            };
+           
+            Mock<ManageBlueBook> _manageBlueBook = new Mock<ManageBlueBook>();
+
+			Mock <IRepository> _mockPropertyRepository = new Mock<IRepository>();
+            _mockRepository
+               .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_DeletePropertyInstance,
+                   It.IsAny<object>()))
+               .Returns(repository);
+            _mockHttpMessageHandler.Setup(HttpMethod.Delete, $"http://localhost/propertyinstance/a1ef0ac9-2f84-4288-b369-e59b1d6c13de/UPFM?modifiedBy=UnifiedPlatform", new HttpResponseMessage(HttpStatusCode.NoContent) { Content = new StringContent("{ \"result\" : \"success\"}") });
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            )
+            {
+                Request = new HttpRequestMessage(),
+                Configuration = new HttpConfiguration()
+            };
+            //Act           
+            HttpResponseMessage response = organizationController.DeleteProperty(propertyInstance);
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
+        }
+        #endregion
+    }
 }
