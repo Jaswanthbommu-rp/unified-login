@@ -243,6 +243,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 							 product.ProductId == (int)ProductEnum.IntelligentBuildingEnergy ||
 							 product.ProductId == (int)ProductEnum.IntelligentBuildingWater ||
 							 product.ProductId == (int)ProductEnum.HospitalityService ||
+							 product.ProductId == (int)ProductEnum.SelfGuidedTour ||
 							 product.ProductId == (int)ProductEnum.HandsOnTrainingSystem ||
 							 product.ProductId == (int)ProductEnum.LeaseLabs)
 					{
@@ -519,7 +520,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					productID == (int)ProductEnum.IntelligentBuildingTrash ||
 					productID == (int)ProductEnum.IntelligentBuildingEnergy ||
 					productID == (int)ProductEnum.IntelligentBuildingWater ||
-					productID == (int)ProductEnum.HospitalityService)
+					productID == (int)ProductEnum.HospitalityService ||
+					productID == (int)ProductEnum.SelfGuidedTour)
 				{
 					PropertyList.Add("-1");
 				}
@@ -547,7 +549,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 						if (productID == (int)ProductEnum.IntelligentBuildingTrash ||
 							productID == (int)ProductEnum.IntelligentBuildingEnergy ||
 							productID == (int)ProductEnum.IntelligentBuildingWater ||
-							productID == (int)ProductEnum.HospitalityService)
+							productID == (int)ProductEnum.HospitalityService ||
+							productID == (int)ProductEnum.SelfGuidedTour)
 						{
 							PropertyList.Add(((ProductProperty)item).Alias);
 						}
