@@ -1763,3 +1763,12 @@ BEGIN
    UPDATE [Security].[Right] SET Value='Access to Company-level questionnaires and Portfolio Views in CIMPL' where RightId=@RightID
 END
 GO
+
+DECLARE @ProductSettingTypeId INT
+select @ProductSettingTypeId = ProductSettingTypeId from Enterprise.ProductSettingType where Name='IsNewTab'
+
+IF EXISTS ( select TOP 1 1 from Enterprise.ProductSetting where ProductId = 26 and  ProductSettingTypeId = @ProductSettingTypeId and Value = 0)
+BEGIN
+ UPDATE Enterprise.ProductSetting SET Value = 1 where ProductId = 26 and  ProductSettingTypeId = @ProductSettingTypeId
+END
+GO
