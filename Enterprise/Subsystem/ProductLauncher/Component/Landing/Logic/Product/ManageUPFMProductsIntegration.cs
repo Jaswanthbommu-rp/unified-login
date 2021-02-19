@@ -565,9 +565,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					IList<int> productIdList = _productRepository.GetProductIdsByCompany(userPersona.OrganizationPartyId);
 					var gbAllRoles = _productRepository.ListRolesForProductByParty(userPersona.OrganizationPartyId, productIdList, _productId) ?? new List<ProductRole>();
 					string superUserRoleId;
-					if (_productId == (int)ProductEnum.HospitalityService || _productId == (int)ProductEnum.SelfGuidedTour)
+					if (_productId == (int)ProductEnum.HospitalityService)
 					{
 						superUserRoleId = gbAllRoles.First(a => a.Name.Equals("Property Admin", StringComparison.OrdinalIgnoreCase)).ID;
+					}
+					else if (_productId == (int)ProductEnum.SelfGuidedTour)
+					{
+						superUserRoleId = gbAllRoles.First(a => a.Name.Equals("Implementations", StringComparison.OrdinalIgnoreCase)).ID;
 					}
 					else if(_productId == (int)ProductEnum.HandsOnTrainingSystem)
                     {
