@@ -310,6 +310,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     case ProductEnum.HandsOnTrainingSystem:
                     case ProductEnum.LeaseLabs:
                     case ProductEnum.HospitalityService:
+                    case ProductEnum.SelfGuidedTour:
                        IUPFMProduct upfmProduct = new UPFMProductIntegration(productId, _defaultUserClaim);
                         productPropertiesRoles =
                             GetProductPropertiesRoles<UPFMProductPropertyRole>(productUser.InputJson);
@@ -624,6 +625,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     case ProductEnum.HandsOnTrainingSystem:
                     case ProductEnum.LeaseLabs:
                     case ProductEnum.HospitalityService:
+                    case ProductEnum.SelfGuidedTour:
                         result = "User Profile Change not implemented for this Product.";
                         break;
                     default:
@@ -870,6 +872,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     case ProductEnum.HandsOnTrainingSystem:
                     case ProductEnum.LeaseLabs:
                     case ProductEnum.HospitalityService:
+                    case ProductEnum.SelfGuidedTour:
                         IUPFMProduct upfmProduct = new UPFMProductIntegration(productId, _defaultUserClaim);
                         productPropertiesRoles =
                             GetProductPropertiesRoles<UPFMProductPropertyRole>(batchRecord.InputJson);

@@ -209,6 +209,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     case (int)ProductEnum.IntelligentBuildingEnergy:
                     case (int)ProductEnum.IntelligentBuildingWater:
                     case (int)ProductEnum.HospitalityService:
+                    case (int)ProductEnum.SelfGuidedTour:
                          var upfmProductIntegration = new ManageUPFMProductsIntegration(productId, _userClaims);
                          var upfmProduct = ProductEnumHelper.GetUPFMProductEnum(productId);
                          result = upfmProductIntegration.GetUPFMProperties(editorPersonaId, userPersonaId, false, upfmProduct, null);
@@ -399,6 +400,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     case (int)ProductEnum.HandsOnTrainingSystem:
                     case (int)ProductEnum.LeaseLabs:
                     case (int)ProductEnum.HospitalityService:
+                    case (int)ProductEnum.SelfGuidedTour:
                          var upfmProductIntegration = new ManageUPFMProductsIntegration(productId, _userClaims);
                          var upfmProduct = ProductEnumHelper.GetUPFMProductEnum(productId);
                          result = upfmProductIntegration.GetRoles(editorPersonaId, userPersonaId, _userClaims.OrganizationPartyId, upfmProduct);
@@ -510,6 +512,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.IntelligentBuildingEnergy:
                 case (int)ProductEnum.IntelligentBuildingWater:
                 case (int)ProductEnum.HospitalityService:
+                case (int)ProductEnum.SelfGuidedTour:
                          var upfmProductIntegration = new ManageUPFMProductsIntegration(productId, _userClaims);
                         var upfmProduct = ProductEnumHelper.GetUPFMProductEnum(productId);
                         result = upfmProductIntegration.GetRightsByRole(editorPersonaId, partyId, roleId, upfmProduct);

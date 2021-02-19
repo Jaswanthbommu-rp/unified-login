@@ -98,6 +98,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 				case ProductEnum.P2EngagementQueue: return "video-call-laptop";
 				case ProductEnum.AoMarketAnalytics: return "marketing-analytics";
 				case ProductEnum.LeaseLabs: return "lease-labs";
+				case ProductEnum.SelfGuidedTour: return "self-guided-tour";
 			}
 			return null;
 		}
@@ -226,6 +227,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 				case 60 : return ProductEnum.HospitalityService;
 				case 63: return ProductEnum.HandsOnTrainingSystem;
 				case 68: return ProductEnum.LeaseLabs;
+				case 65: return ProductEnum.SelfGuidedTour;
 			}
 
 			throw new Exception($"UPFM product with Id - {productID} is not supported in green book.");
@@ -652,7 +654,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// Reporting
 		/// </summary>
 		[Description("RPT")]
-		Reporting = 67
+		Reporting = 67,
+		/// <summary>
+		/// SelfGuidedTour
+		/// </summary>
+		[Description("SGT")]
+		SelfGuidedTour = 65
 	}
 
 	/// <summary>
@@ -920,6 +927,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// </summary>
 		[Description("RPT")]
 		Reporting = 67,
+
+		/// <summary>
+		/// SelfGuidedTour
+		/// </summary>
+		[Description("SGT")]
+		SelfGuidedTour = 65
 
 	}
 	public enum ProductProcVersion
