@@ -1772,3 +1772,27 @@ BEGIN
  UPDATE Enterprise.ProductSetting SET Value = 1 where ProductId = 26 and  ProductSettingTypeId = @ProductSettingTypeId
 END
 GO
+
+
+IF NOT EXISTS (SELECT * FROM Security.Role where ProductId = 65 and RoleName = 'Implementations')
+BEGIN
+	INSERT INTO Security.Role (RoleName, ShortName, Description, RoleTypeID, ProductId, CreatedBy, CreatedDate)
+	VALUES ('Implementations', 'Implementations', 'Implementations', 1, 65,480, GETDATE())
+END
+
+IF NOT EXISTS (SELECT * FROM Security.[Right] where ProductId = 65 and RightName = 'Implementation')
+BEGIN
+	INSERT INTO Security.[Right] (RightName, Description, Value, StatusTypeId, VisibilityStatusId, ProductId, TargetProductId, CreatedBy, CreatedDate)
+	VALUES ('Implementation', 'Implementations', 'Implementations', 13, 0, 65, 65, 480, GETDATE())
+END
+
+DECLARE @roleId INT, @rightId INT
+
+SELECT @roleId = RoleId from Security.Role where ProductId = 65 and RoleName = 'Implementations'
+SELECT @rightId = RightId from Security.[Right] where ProductId = 65 and RightName = 'Implementation'
+
+IF NOT EXISTS(SELECT * FROM Security.RoleRight where RoleId = @roleId and RightId = @rightId)
+BEGIN
+	INSERT INTO Security.RoleRight(RoleId, RightId, CreatedBy, CreatedDate)
+	VALUES (@roleId, @rightId, 480, GETDATE())
+END

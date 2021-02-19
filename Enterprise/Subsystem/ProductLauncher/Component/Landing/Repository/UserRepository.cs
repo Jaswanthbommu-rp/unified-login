@@ -3118,7 +3118,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     (int) ProductEnum.IntelligentBuildingWater,
                     (int) ProductEnum.HospitalityService,
                     (int) ProductEnum.HandsOnTrainingSystem,
-                    (int) ProductEnum.LeaseLabs
+                    (int) ProductEnum.LeaseLabs,
+                    (int) ProductEnum.SelfGuidedTour
                 };
             }
 
