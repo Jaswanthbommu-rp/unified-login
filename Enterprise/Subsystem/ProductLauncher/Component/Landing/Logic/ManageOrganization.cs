@@ -1119,7 +1119,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         private bool DeletePropertyFromBooks(Guid propertyInstanceID)
-		{
+        {
             return _manageBlueBook.DeletePropertyFromBooks(propertyInstanceID);
         }
         #endregion
