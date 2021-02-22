@@ -220,7 +220,7 @@ DECLARE @RightId INT,
 
 SELECT    @UserId = UserId
             FROM    Ident.UserLogin
-            WHERE    LoginName LIKE 'realpagead@%'
+            WHERE  LoginName LIKE 'realpagead@%'
 
 
 IF NOT EXISTS (SELECT TOP 1 1 FROM Security.[Right] where  RightName = 'AccessUnifiedReporting')
@@ -365,7 +365,6 @@ insert into @productlist values
 	(58, 'ShowInNewCompanySetup', '1' ),
 	(59, 'ShowInNewCompanySetup', '1' ),
 	(60, 'ShowInNewCompanySetup', '1' ),
-	(63, 'ShowInNewCompanySetup', '1' ),
 
 	(1, 'ShowInAuditProductPage', '1' ),
 	(3, 'ShowInAuditProductPage', '1' ),
@@ -403,8 +402,7 @@ insert into @productlist values
 	(57, 'ShowInAuditProductPage', '0' ),
 	(58, 'ShowInAuditProductPage', '0' ),
 	(59, 'ShowInAuditProductPage', '0' ),
-	(60, 'ShowInAuditProductPage', '0' ),
-	(63, 'ShowInAuditProductPage', '0' )
+	(60, 'ShowInAuditProductPage', '0' )
 	
 --select * from @productlist
 
@@ -1648,7 +1646,7 @@ DECLARE @CreatedById bigint,
 
 SELECT @CreatedById = UserId
 FROM Ident.UserLogin
-WHERE LoginName = 'RealPageAd@test.com'
+WHERE LoginName like 'realpagead@%'
 
 IF NOT EXISTS (SELECT 1 FROM [Security].[Right] WHERE RightName = 'AbilityToAddProducts')
 BEGIN
@@ -1774,6 +1772,8 @@ END
 GO
 
 
+/* --- NEEDS TO BE IN DCMS BECAUSE OF NEW PRODUCT CREATION
+
 IF NOT EXISTS (SELECT * FROM Security.Role where ProductId = 65 and RoleName = 'Implementations')
 BEGIN
 	INSERT INTO Security.Role (RoleName, ShortName, Description, RoleTypeID, ProductId, CreatedBy, CreatedDate)
@@ -1796,3 +1796,4 @@ BEGIN
 	INSERT INTO Security.RoleRight(RoleId, RightId, CreatedBy, CreatedDate)
 	VALUES (@roleId, @rightId, 480, GETDATE())
 END
+*/
