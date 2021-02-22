@@ -220,7 +220,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 				dynamic paramUpdateNewUserLogin = new
 				{
 					RealPageId = realPageId,
-					LoginName = user.LoginName,
 					PasswordHash = newPasswordHash,
 					PasswordSalt = newPasswordSalt,
 					FromDate = organizationStatus.FromDate,
