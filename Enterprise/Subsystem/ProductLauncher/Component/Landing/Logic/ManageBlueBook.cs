@@ -748,12 +748,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <returns></returns>
         public bool DeletePropertyFromBooks(Guid propertyInstance)
         {
-            string uri = $"propertyinstance/{propertyInstance}/UPFM?modifiedBy={WebUtility.UrlEncode(ProductEnum.UnifiedPlatform.ToString())}";
+            string uri = $"propertyinstance/{propertyInstance.ToString().ToLower()}/UPFM?modifiedBy={WebUtility.UrlEncode(ProductEnum.UnifiedPlatform.ToString())}";
             Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "propertyinstance", propertyInstance } };
-            WriteToLog(LogEventLevel.Debug, $"DeleteBookPropertyInstance - deleting instance {propertyInstance}.", logData);
+            WriteToLog(LogEventLevel.Debug, $"DeleteBookPropertyInstance - deleting instance {propertyInstance.ToString().ToLower()}.", logData);
             var response = _httpClient.DeleteAsync(uri).Result;
             logData = new Dictionary<string, object>() { { "StatusCode", response.StatusCode } };
-            WriteToLog(LogEventLevel.Debug, $"DeleteBookPropertyInstance - deleted instance {propertyInstance}.", logData);
+            WriteToLog(LogEventLevel.Debug, $"DeleteBookPropertyInstance - deleted instance {propertyInstance.ToString().ToLower()}.", logData);
             return response.IsSuccessStatusCode;
         }
 
