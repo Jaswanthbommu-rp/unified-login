@@ -1771,4 +1771,48 @@ BEGIN
 END
 GO
 
+---Script to add SettingsApiEndPoint configuration
+DECLARE @LoginURL NVARCHAR(500) = 'https://settingsapi-dev.realpage.com',
+@ServerName SYSNAME = @@SERVERNAME
+IF @ServerName IN ('RCDUSODBSQL001')
+BEGIN
+	SET @LoginURL = 'https://settingsapi-dev.realpage.com';
+END
+IF @ServerName IN ('RCTUSODBSQL001')
+BEGIN
+	SET @LoginURL = 'https://settingsapi-qa.realpage.com';
+END
+IF @ServerName IN ('RCQUSODBSQL001')
+BEGIN
+	SET @LoginURL = 'https://settingsapi-sat.realpage.com';
+END
+IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B')
+BEGIN
+	SET @LoginURL = 'https://settingsapi.realpage.com';
+END
 
+IF NOT EXISTS ( select top (1) 1 from Enterprise.ProductSettingType where name = 'SettingsApiEndPoint')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'SettingsApiEndPoint', 'The api endpoint for Unified Settings', 0 )
+END
+
+IF NOT EXISTS(Select top (1) 1 from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'SettingsApiEndPoint' and ps.ProductId= 3)
+BEGIN
+	Insert into Enterprise.ProductSetting (ProductId, ProductSettingTypeId, Value, FromDate)
+	Select 3, ProductSettingTypeId, @LoginURL, GETUTCDATE()
+	from Enterprise.ProductSettingType
+	where Name = 'SettingsApiEndPoint'
+
+	declare @productsettingid int
+	select @productsettingid = productsettingid from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'SettingsApiEndPoint' and ps.ProductId= 3
+
+	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
+				select TOP (1) ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is NULL ORDER BY GlobalProductConfigurationId DESC
+END
+GO
