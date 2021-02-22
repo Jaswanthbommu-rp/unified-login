@@ -296,6 +296,7 @@
         public const string SP_GetPropertyInstanceListById = "Enterprise.GetPropertyInstanceListById";
         public const string SP_GetPropertyInstanceListByIdWithPaging = "Enterprise.GetPropertyInstanceListByIdWithPaging";
         public const string SP_UpdatePropertyInstance = "Enterprise.UpdatePropertyInstance";
+        public const string SP_DeletePropertyInstance = "Enterprise.DeletePropertyInstance";
 
 
         public const string SP_ListRolesByParty = "Security.ListRolesByParty";
