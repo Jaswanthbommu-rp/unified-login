@@ -1,9 +1,8 @@
 ﻿using Newtonsoft.Json;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using Serilog;
 using Serilog.Events;
@@ -23,7 +22,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <summary>
         /// ManageSecuritySettings Constructor
         /// </summary>
-        /// <param name="securitySettingsRepository">SecuritySettings Repository</param>
+        /// <param name="unifiedSettingsRepository">SecuritySettings Repository</param>
         /// <param name="userClaim">Information about the user</param>
         public ManageUnifiedSettings(IUnifiedSettingsRepository unifiedSettingsRepository, DefaultUserClaim userClaim)
         {
@@ -43,6 +42,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         #endregion
 
         #region Public ManageSecuritySettings methods
+
+        /// <summary>
+        /// Get Company Settings cached
+        /// </summary>
+        /// <param name="category">Setting Category type</param>
+        /// <param name="partyId">Company Id</param>
+        /// <returns>Security Settings List objects (KeyValue pairs)</returns>
+        public IList<Setting> GetUnifiedSettingsCached(string category, long partyId)
+        {
+            RPObjectCache rpCache = new RPObjectCache();
+            string cacheKey = $"GetUnifiedSettingsCached{category}_{partyId}";
+            var unifiedSettings = rpCache.GetFromCache<IList<Setting>>(cacheKey, 30, () =>
+            {
+                return GetUnifiedSettings(category, partyId);
+            });
+            return unifiedSettings;
+        }
+
         /// <summary>
         /// Get Company Settings
         /// </summary>
