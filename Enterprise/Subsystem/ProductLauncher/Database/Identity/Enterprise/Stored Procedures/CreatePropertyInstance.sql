@@ -16,7 +16,7 @@ CREATE PROCEDURE [Enterprise].[CreatePropertyInstance]
 AS
 BEGIN  
  SET NOCOUNT ON
- DECLARE @PropertyInstanceId BIGINT  
+ DECLARE @PropertyInstanceId BIGINT
    
   IF NOT EXISTS(select 1 from Enterprise.PropertyInstance where CustomerPropertyId= @CustomerPropertyId and Domain = @Domain)
   BEGIN
@@ -64,12 +64,14 @@ BEGIN
 		[Name]					=@Name
 		,[Address]				=@Address
 		,[City]					=@City
-		,[State]					=@State
+		,[State]				=@State
 		,[PostalCode]			=@PostalCode
 		,[Country]				=@Country
 		,[County]				=@County
 		,[Latitude]				=@Latitude
-		,[Longitude]				=@Longitude       
+		,[Longitude]			=@Longitude
+		,[IsDeleted]			=0
+		,[ThruDate]				= NULL
 	WHERE   
 	CustomerPropertyId= @CustomerPropertyId and Domain = @Domain 
 
