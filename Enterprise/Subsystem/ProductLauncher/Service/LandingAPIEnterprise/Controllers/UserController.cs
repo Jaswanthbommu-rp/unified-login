@@ -849,7 +849,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [HttpGet]
         public HttpResponseMessage GetUserProductsByPersonaId(long? personaId = 0)
         {
-            UserProductOutputResultv2 productResult = new UserProductOutputResultv2 {Products = new Dictionary<string, List<UserProducts>>(), Settings = new Dictionary<string, object>()};
+            UserProductOutputResultv2 productResult = new UserProductOutputResultv2 {Products = new Dictionary<string, List<UserProducts>>(), Settings = new Dictionary<string, object>(), Resources = new List<UserProducts>() };
 
             if (!personaId.HasValue || personaId == 0)
             {
@@ -918,11 +918,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
                         if (up.IsResource)
                         {
-                            if (productResult.Resources == null)
-                            {
-                                productResult.Resources = new List<UserProducts>();
-                            }
-
                             productResult.Resources.Add(up);
                         }
                     }
