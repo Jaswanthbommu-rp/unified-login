@@ -1,5 +1,5 @@
 ﻿CREATE TYPE [dbo].[AdditionalInfo] AS TABLE (
-    [Key]   NVARCHAR (200)   NULL,
+    [Key]   NVARCHAR (MAX)   NULL,
     [Value] NVARCHAR (MAX) NULL);
 
 

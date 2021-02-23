@@ -47,7 +47,7 @@ BEGIN
 					--Assign
 					;WITH PropertyInstances ( PropertyInstanceId )
 						as ( SELECT propertyinstanceid FROM Enterprise.PropertyInstance PI1 INNER JOIN OPENJSON(JSON_QUERY(@PropertyInstanceJSON, '$.InputJson.PropertyList')) ap 
-					ON CONVERT(VARCHAR(40),PI1.InstanceId) = ap.[value]
+					ON CONVERT(VARCHAR(40),PI1.InstanceId) = ap.[value] and PI1.IsDeleted = 0
 					)
 					INSERT INTO Enterprise.PropertyInstanceMapping (
 						PersonaId,
@@ -64,7 +64,7 @@ BEGIN
 					--Reassign.  Already unassigned (ThruDate Is NOT NULL)
 					;WITH PropertyInstances ( PropertyInstanceId )
 						as ( SELECT propertyinstanceid FROM Enterprise.PropertyInstance PI1 INNER JOIN OPENJSON(JSON_QUERY(@PropertyInstanceJSON, '$.InputJson.PropertyList')) ap 
-					ON CONVERT(VARCHAR(40),PI1.InstanceId) = ap.[value]
+					ON CONVERT(VARCHAR(40),PI1.InstanceId) = ap.[value] and PI1.IsDeleted = 0
 					)
 					INSERT INTO Enterprise.PropertyInstanceMapping (
 						PersonaId,
@@ -83,7 +83,7 @@ BEGIN
 			--Remove
 			;WITH PropertyInstances ( PropertyInstanceId )
 						as ( SELECT propertyinstanceid FROM Enterprise.PropertyInstance PI1 INNER JOIN OPENJSON(JSON_QUERY(@PropertyInstanceJSON, '$.InputJson.RemovedPropertyList')) ap 
-					ON CONVERT(VARCHAR(40),PI1.InstanceId) = ap.[value]
+					ON CONVERT(VARCHAR(40),PI1.InstanceId) = ap.[value] and PI1.IsDeleted = 0
 					)
 			UPDATE	epm
 			SET			epm.ThruDate = @Now, Active = 0
