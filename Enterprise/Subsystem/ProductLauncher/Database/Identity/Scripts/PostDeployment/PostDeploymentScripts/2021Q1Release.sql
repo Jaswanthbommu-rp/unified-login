@@ -1774,19 +1774,35 @@ GO
 ---Script to add SettingsApiEndPoint configuration
 DECLARE @LoginURL NVARCHAR(500) = 'https://settingsapi-dev.realpage.com',
 @ServerName SYSNAME = @@SERVERNAME
-IF @ServerName IN ('RCDUSODBSQL001')
+IF @ServerName IN ('RCDUSODBSQL001') --DEV
 BEGIN
 	SET @LoginURL = 'https://settingsapi-dev.realpage.com';
 END
-IF @ServerName IN ('RCTUSODBSQL001')
+IF @ServerName IN ('RCTUSODBSQL001') --QA
 BEGIN
 	SET @LoginURL = 'https://settingsapi-qa.realpage.com';
 END
-IF @ServerName IN ('RCQUSODBSQL001')
+IF @ServerName IN ('RCQUSODBSQL001') --SAT
 BEGIN
 	SET @LoginURL = 'https://settingsapi-sat.realpage.com';
 END
-IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B')
+IF @ServerName IN ('RCTUSODBSQL001A','RCTUSODBSQL001B') --UAT
+BEGIN
+	SET @LoginURL = 'https://settingsapi-uat.realpage.com';
+END
+IF @ServerName IN ('RCVGBKDBSQL001') --DEMO
+BEGIN
+	SET @LoginURL = 'https://settingsapi-demo.realpage.com';
+END
+IF @ServerName IN ('RCTUSODBTUL001') --TRAINING
+BEGIN
+	SET @LoginURL = 'https://settingsapi-training.realpage.com';
+END
+IF @ServerName IN ('RCIUSODBSQL002') --PREPROD
+BEGIN
+	SET @LoginURL = 'https://settingsapi-preprod.realpage.com';
+END
+IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B') --PROD
 BEGIN
 	SET @LoginURL = 'https://settingsapi.realpage.com';
 END
