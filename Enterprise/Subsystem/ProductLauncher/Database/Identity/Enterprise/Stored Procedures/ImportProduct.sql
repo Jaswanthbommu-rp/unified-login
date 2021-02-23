@@ -14,20 +14,23 @@
  ,@ProductConfiguration ProductConfigurationType READONLY   
  ,@ProductPages [UserManagement].[ProductPageType] READONLY  
  ,@ProductControls [UserManagement].[ProductControlType] READONLY  
+ ,@ProductControlsAttribute [UserManagement].[ProductControlAttributeType] READONLY  
  ,@CreatedBy BIGINT  
 AS        
             
 BEGIN        
  BEGIN TRY     
   BEGIN TRAN  
-   if (not exists(select top 1 1 from Enterprise.Product where ProductId=@ProductId))          
-   begin    
+  
     DECLARE @FromDate DATETIME = GETUTCDATE();    
     DECLARE @Rownum INT;    
     DECLARE @PStatus BIT,  
       @ProductPageId [int],  
-      @DisplayName [nvarchar](510);  
+     @DisplayName [nvarchar](510),  
+     @ControlsAttributes [UserManagement].[ProductControlAttributeType];  
+   ----------------------------------  
     --Create the product  
+   ----------------------------------  
     exec [Enterprise].[SetProduct]  
       @ProductId output,  
       @productGUID output,        
@@ -41,7 +44,9 @@ BEGIN
       @UDMSourceCode,  
       @LoginURI,          
       @SigningCertificateThumbprint  
+   ----------------------------------  
     --Set Product Settings       
+   ----------------------------------  
     IF (exists(SELECT top 1 1 FROM @ProductConfiguration) )  
     BEGIN    
       
@@ -101,7 +106,9 @@ BEGIN
      END;   
      drop table #ProdConfig;  
     END;  
+   ----------------------------------  
     --Create the temp table for product controls  
+   ----------------------------------  
     IF (exists(SELECT top 1 1 FROM @ProductControls) )  
     BEGIN    
      SELECT IDENTITY(INT, 1, 1) AS RowNum,    
@@ -119,7 +126,16 @@ BEGIN
      FROM @ProductControls  
      order by ParentControlId;    
     end  
+  
+     
+   ----------------------------------  
+   --DELETE all the pages and controls before adding       
+   ----------------------------------  
+   exec [UserManagement].DeleteProductPagesAndControls @ProductId  
+  
+   ----------------------------------  
     --Set Product Pages       
+   ----------------------------------  
     IF (exists(SELECT top 1 1 FROM @ProductPages) )  
     BEGIN        
      SELECT IDENTITY(INT, 1, 1) AS RowNum,   
@@ -169,7 +185,10 @@ BEGIN
      END;  
      drop table #ProdPages  
     END;  
+  
+   ----------------------------------  
     --Set Product Controls    
+   ----------------------------------  
     IF (exists(SELECT top 1 1 FROM @ProductControls) )  
     BEGIN    
      DECLARE    
@@ -196,6 +215,11 @@ BEGIN
       FROM #ProdControl    
       WHERE PStatus = 0;    
       
+     delete from @ControlsAttributes  
+  
+     insert into @ControlsAttributes  
+     select * from @ProductControlsAttribute where ControlId=@ControlId  
+  
       SET @NewControlId = NULL  
       --add the control  
       EXEC [UserManagement].[SetProductControl] @ControlId = @NewControlId OUTPUT    
@@ -207,6 +231,7 @@ BEGIN
        ,@DataSource=@DataSource   
        ,@Sequence=@Sequence   
        ,@CreatedBy=@CreatedBy  
+      ,@ProductControlsAttribute = @ControlsAttributes  
   
       -- update the old parent control id with the new control  
       update #ProdControl set ParentControlId=@NewControlId where ParentControlId=@ControlId  
@@ -216,7 +241,7 @@ BEGIN
        WHERE RowNum = @RowNum;    
      END  
     END  
-   END  
+  
         COMMIT  
     END TRY            
     BEGIN CATCH       

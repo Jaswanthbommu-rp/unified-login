@@ -8,6 +8,7 @@
  ,@DataSource NTEXT            
  ,@Sequence TINYINT            
  ,@CreatedBy BIGINT            
+ ,@ProductControlsAttribute [UserManagement].[ProductControlAttributeType] READONLY     
 )             
 AS             
 begin          
@@ -69,6 +70,8 @@ begin
        ,@CreatedBy          
        ,getdate())          
      end          
+  insert into UserManagement.ControlAttribute(ControlId,[Key],Value,CreatedBy,CreatedDate)  
+  select @ControlId, [key], VALUE, @CreatedBy, GETDATE() from @ProductControlsAttribute  
     end          
    END;          
            
