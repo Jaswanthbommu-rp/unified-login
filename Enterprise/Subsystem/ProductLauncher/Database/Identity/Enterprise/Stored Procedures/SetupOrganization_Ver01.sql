@@ -1,4 +1,4 @@
-﻿CREATE PROCEDURE [Enterprise].[SetupOrganization_Ver01]
+﻿CREATE OR alter PROCEDURE [Enterprise].[SetupOrganization_Ver01]
 ( 
 	@OrganizationName nvarchar(150),
 	@BlueBookId int= 0,
@@ -57,35 +57,16 @@ BEGIN
 	FROM		Enterprise.DataImportApplication
 	WHERE	Name = 'BlueBook';
 
-	SELECT	@OrganizationId = PartyID
-	FROM		Enterprise.Organization
-	WHERE	[Name] = @OrganizationName;
-
-	IF @OrganizationId IS NULL
-	BEGIN
-		INSERT INTO #Result (
-			Id,
-			RealPageID,
-			ErrorMessage
-		)
-		EXEC Enterprise.CreateOrganization
-			@OrganizationId = NULL,
-			@OrganizationName = @OrganizationName,
-			@OrganizationTypeId = @OrganizationTypeId,
-			@OrganizationDomainId = @OrganizationDomainId;
-	END;
-	ELSE
-	BEGIN
-		INSERT INTO #Result (
-			Id,
-			RealPageId
-		)
-		SELECT	O.PartyId AS OrganizationId,
-						P.RealPageId AS RealPageId
-		FROM		Enterprise.Organization O
-						INNER JOIN Enterprise.Party P ON P.PartyId = O.PartyId
-		WHERE	O.Name = @OrganizationName;
-	END;
+	INSERT INTO #Result (
+		Id,
+		RealPageID,
+		ErrorMessage
+	)
+	EXEC Enterprise.CreateOrganization
+		@OrganizationId = NULL,
+		@OrganizationName = @OrganizationName,
+		@OrganizationTypeId = @OrganizationTypeId,
+		@OrganizationDomainId = @OrganizationDomainId;
 
 	SELECT	@OrganizationId = Id,
 					@RealPageId = RealPageId
