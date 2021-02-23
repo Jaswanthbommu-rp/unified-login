@@ -203,7 +203,7 @@ BEGIN
 					CP.PreferredPhoneNumber,
 					ne.Email
 				FROM Enterprise.PropertyInstanceMapping AS pim
-					INNER JOIN Enterprise.PropertyInstance AS pi1 ON pim.PropertyInstanceId = pi1.PropertyInstanceId
+					INNER JOIN Enterprise.PropertyInstance AS pi1 ON pim.PropertyInstanceId = pi1.PropertyInstanceId and pi1.IsDeleted = 0
 					INNER JOIN @TableInstance AS ti ON pim.ProductId = ti.productId
 					INNER JOIN Person.Persona AS p ON pim.PersonaId = p.PersonaId
 					INNER JOIN Ident.UserLoginPersona AS ulp ON p.UserLoginPersonaId = ulp.UserLoginPersonaId  

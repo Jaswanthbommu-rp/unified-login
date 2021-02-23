@@ -13,8 +13,9 @@
     [InstanceId] UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID(), 
 	[CustomerPropertyId] BIGINT NOT NULL,
 	[Domain] NVARCHAR(50) NOT NULL,
+	[IsDeleted] TinyInt NOT NULL DEFAULT 0,
+	[ThruDate] Datetime2 NULL,
     CONSTRAINT [PK_PropertyInstance] PRIMARY KEY ([PropertyInstanceId]),
-		
 )
 
 GO

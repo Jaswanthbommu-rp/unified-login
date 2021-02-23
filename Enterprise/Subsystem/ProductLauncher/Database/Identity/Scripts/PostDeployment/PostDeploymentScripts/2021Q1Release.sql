@@ -220,7 +220,7 @@ DECLARE @RightId INT,
 
 SELECT    @UserId = UserId
             FROM    Ident.UserLogin
-            WHERE    LoginName LIKE 'realpagead@%'
+            WHERE  LoginName LIKE 'realpagead@%'
 
 
 IF NOT EXISTS (SELECT TOP 1 1 FROM Security.[Right] where  RightName = 'AccessUnifiedReporting')
@@ -365,7 +365,6 @@ insert into @productlist values
 	(58, 'ShowInNewCompanySetup', '1' ),
 	(59, 'ShowInNewCompanySetup', '1' ),
 	(60, 'ShowInNewCompanySetup', '1' ),
-	(63, 'ShowInNewCompanySetup', '1' ),
 
 	(1, 'ShowInAuditProductPage', '1' ),
 	(3, 'ShowInAuditProductPage', '1' ),
@@ -403,8 +402,7 @@ insert into @productlist values
 	(57, 'ShowInAuditProductPage', '0' ),
 	(58, 'ShowInAuditProductPage', '0' ),
 	(59, 'ShowInAuditProductPage', '0' ),
-	(60, 'ShowInAuditProductPage', '0' ),
-	(63, 'ShowInAuditProductPage', '0' )
+	(60, 'ShowInAuditProductPage', '0' )
 	
 --select * from @productlist
 
@@ -1648,7 +1646,7 @@ DECLARE @CreatedById bigint,
 
 SELECT @CreatedById = UserId
 FROM Ident.UserLogin
-WHERE LoginName = 'RealPageAd@test.com'
+WHERE LoginName like 'realpagead@%'
 
 IF NOT EXISTS (SELECT 1 FROM [Security].[Right] WHERE RightName = 'AbilityToAddProducts')
 BEGIN
@@ -1747,3 +1745,30 @@ BEGIN
 END
 
 GO
+--Renaming Right
+IF EXISTS(SELECT TOP 1 1 FROM [Security].[Right] where Value ='View all company-level settings')
+BEGIN
+   DECLARE @RightID INT;
+   SELECT @RightID = RightId from [Security].[Right] where Value ='View all company-level settings'
+   UPDATE [Security].[Right] SET Value='View all company-level settings & templates' where RightId=@RightID
+END
+GO
+
+IF EXISTS(SELECT TOP 1 1 FROM [Security].[Right] where Value ='Access to Company-level questionnaires and Summary Views in CIMPL')
+BEGIN
+   DECLARE @RightID INT;
+   SELECT @RightID = RightId from [Security].[Right] where Value ='Access to Company-level questionnaires and Summary Views in CIMPL'
+   UPDATE [Security].[Right] SET Value='Access to Company-level questionnaires and Portfolio Views in CIMPL' where RightId=@RightID
+END
+GO
+
+DECLARE @ProductSettingTypeId INT
+select @ProductSettingTypeId = ProductSettingTypeId from Enterprise.ProductSettingType where Name='IsNewTab'
+
+IF EXISTS ( select TOP 1 1 from Enterprise.ProductSetting where ProductId = 26 and  ProductSettingTypeId = @ProductSettingTypeId and Value = 0)
+BEGIN
+ UPDATE Enterprise.ProductSetting SET Value = 1 where ProductId = 26 and  ProductSettingTypeId = @ProductSettingTypeId
+END
+GO
+
+
