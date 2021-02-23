@@ -1,4 +1,4 @@
-﻿CREATE OR alter PROCEDURE [Enterprise].[SetupOrganization_Ver01]
+﻿CREATE PROCEDURE [Enterprise].[SetupOrganization_Ver01]
 ( 
 	@OrganizationName nvarchar(150),
 	@BlueBookId int= 0,
