@@ -151,6 +151,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         break;
                     case (int)ProductEnum.AoBusinessIntelligence:
                     case (int)ProductEnum.AoInvestmentAnalytics:
+                    case (int)ProductEnum.AoAxiometrics:
                     case (int)ProductEnum.AoPerformanceAnalytics:
                     case (int)ProductEnum.AoRevenueManagement:
                     case (int)ProductEnum.AoBenchmarking:
