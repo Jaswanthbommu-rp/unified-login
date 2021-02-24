@@ -62,7 +62,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _managePartyRelationship = new ManagePartyRelationship(new PartyRelationshipRepository(repository));
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
             _manageBlueBook = new ManageBlueBook(userClaims, _productInternalSettingRepository, messageHandler);
-            _manageOrganization = new ManageOrganization(repository, userClaims, messageHandler); 
+            _manageOrganization = new ManageOrganization(repository, userClaims, messageHandler);
             _messageHandler = messageHandler;
             _userClaims = userClaims;
             _propertyRepository = new PropertyRepository(repository);
@@ -87,13 +87,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _managePartyRelationship = new ManagePartyRelationship(new PartyRelationshipRepository(repository));
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
             _manageBlueBook = new ManageBlueBook(userClaims, _productInternalSettingRepository, messageHandler);
-            _manageOrganization = new ManageOrganization(repository, userClaims, messageHandler); 
+            _manageOrganization = new ManageOrganization(repository, userClaims, messageHandler);
             _messageHandler = messageHandler;
             _userClaims = userClaims;
             _propertyRepository = new PropertyRepository(repository);
             _manageProductOneSite = manageProductOneSite;
         }
-        
+
         /// <summary>
         /// Used to initialize DI classes with userclaim
         /// </summary>
@@ -247,7 +247,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 {
                     customerCompanyMap.CompanyInstance?.ForEach(i =>
                     {
-                        if (i.CustomerEnvironment.Equals(companyInstance.CustomerEnvironment, StringComparison.OrdinalIgnoreCase))
+                        if (i.CustomerEnvironment != null && i.CustomerEnvironment.Equals(companyInstance.CustomerEnvironment, StringComparison.OrdinalIgnoreCase))
+                        {
+                            addInstance = false;
+                        }
+                        if (i.Domain != null && i.Domain.Equals(companyInstance.CustomerEnvironment, StringComparison.OrdinalIgnoreCase))
                         {
                             addInstance = false;
                         }
@@ -935,7 +939,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [Route("CompanySetup")]
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         [HttpGet]
-        public HttpResponseMessage GetCompanyList(string organizationName = null, int? domain = null, int? blueId = null,int? organizationId = null, [FromUri] RequestParameter datafilter = null)
+        public HttpResponseMessage GetCompanyList(string organizationName = null, int? domain = null, int? blueId = null, int? organizationId = null, [FromUri] RequestParameter datafilter = null)
         {
             if (string.IsNullOrEmpty(organizationName) && domain == null && blueId == null && organizationId == null)
             {
@@ -952,7 +956,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             globals.Add(BaseType.RequestParameter, datafilter);
 
-            List<CompanySetup> companyList = _manageOrganization.GetCompanyList(organizationName, domain ?? 0, blueId, organizationId??0, globals);
+            List<CompanySetup> companyList = _manageOrganization.GetCompanyList(organizationName, domain ?? 0, blueId, organizationId ?? 0, globals);
 
             int totalRecords = companyList.Count > 0 ? companyList[0].TotalRecords : 0;
             decimal resultsPerPage = ((datafilter.Pages.ResultsPerPage == 100) && (totalRecords > 0)) ? totalRecords : datafilter.Pages.ResultsPerPage;
@@ -1017,7 +1021,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
             globals.Add(BaseType.RequestParameter, datafilter);
 
-            List<CompanySetup> companyList = _manageOrganization.GetCompanyList(organizationName, domain ?? 0, blueId, organizationId ?? 0, globals);           
+            List<CompanySetup> companyList = _manageOrganization.GetCompanyList(organizationName, domain ?? 0, blueId, organizationId ?? 0, globals);
 
             if (companyList != null)
             {
@@ -1035,7 +1039,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         new ExportDataFileConfiguration { Header = "Products", MappedField = "Products", PDFColumnWidth = "0.50", Preference = 7 }
                     };
 
-					plainBytes = DataExport.ExportDataToFile<CompanySetup>(exportConfigurations.OrderBy(p=>p.Preference).ToList(),companyList, dataFormat);
+                    plainBytes = DataExport.ExportDataToFile<CompanySetup>(exportConfigurations.OrderBy(p => p.Preference).ToList(), companyList, dataFormat);
                     output = new ObjectOutput<string, IErrorData>()
                     {
                         obj = Convert.ToBase64String(plainBytes),
@@ -1117,14 +1121,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         }
         #endregion
 
-		#region AuditCompanyProperties
-		/// <summary>
-		/// Audit the given product properties to UPFM properties
-		/// </summary>
-		/// <param name="companyInstanceId"></param>
-		/// <param name="productId"></param>
-		/// <returns></returns>
-		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        #region AuditCompanyProperties
+        /// <summary>
+        /// Audit the given product properties to UPFM properties
+        /// </summary>
+        /// <param name="companyInstanceId"></param>
+        /// <param name="productId"></param>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about the properties for the given company and their mapping to UPFM instances", Type = typeof(PropertyAudit))]
         [SwaggerResponseExamples(typeof(PropertyAudit), typeof(PropertyAuditExample))]
@@ -1166,9 +1170,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Unable to locate company user");
             }
 
-            _userClaims.UserRealPageGuid = adminUserGuid;            
+            _userClaims.UserRealPageGuid = adminUserGuid;
             var auditResult = GetAuditProductProperties(companyInstanceId, productId, adminUserGuid, orgDetails.PartyId);
-            ObjectListOutput<PropertyAudit, IErrorData> output = new ObjectListOutput<PropertyAudit, IErrorData> {list = auditResult, Status = errorStatus, pagingSummary = new PagingSummary() {TotalRecords = auditResult.Count, TotalPages = 1}};
+            ObjectListOutput<PropertyAudit, IErrorData> output = new ObjectListOutput<PropertyAudit, IErrorData> { list = auditResult, Status = errorStatus, pagingSummary = new PagingSummary() { TotalRecords = auditResult.Count, TotalPages = 1 } };
             return Request.CreateResponse(HttpStatusCode.OK, output);
         }
 
@@ -1398,7 +1402,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "PropertyName,Domain should not be empty");
             }
-            if ((string.IsNullOrEmpty(property.CustomerPropertyId)) ||(property.CustomerPropertyId.Trim().Length == 0))
+            if ((string.IsNullOrEmpty(property.CustomerPropertyId)) || (property.CustomerPropertyId.Trim().Length == 0))
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "CustomerPropertyId should not be empty or null");
             }
@@ -1414,6 +1418,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
         #endregion
 
+        #region Delete Property
+        /// <summary>
+        ///Delete Properties for a Organization
+        /// </summary>
+        /// <param name="propertyInstanceID">propertyInstanceID</param>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [Route("CompanySetup/CompanyProperty/propertyinstance/{propertyInstanceID}")]
+        [AuthorizeScope("companyfunctions", "rplandingapi")]
+        [HttpDelete]
+        public HttpResponseMessage DeleteProperty(Guid propertyInstanceID)
+        {
+            if ((propertyInstanceID == Guid.Empty) || (propertyInstanceID == null))
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: propertyInstanceID");
+            }
+            _repositoryResponse = _manageOrganization.DeletePropertyForOrganization(propertyInstanceID);
+            return Request.CreateResponse(HttpStatusCode.OK, _repositoryResponse);
+        }
+        #endregion
+
         #region SearchPropertyByBlueId
 
         /// <summary>
@@ -1426,7 +1451,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         [HttpGet]
         public HttpResponseMessage SearchPropertyByBlueId(string customerPropertyId)
-		{
+        {
             if ((string.IsNullOrEmpty(customerPropertyId)) || (customerPropertyId == "0"))
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: companyInstanceID");
@@ -1434,18 +1459,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             PropertyInstanceSearch _propertySearchList = _manageOrganization.SearchPropertyDetailsByCustomerPropertyId(customerPropertyId);
             return Request.CreateResponse(HttpStatusCode.OK, _propertySearchList);
         }
-		#endregion
-		#endregion
+        #endregion
+        #endregion
 
 
-		#region Private functions
+        #region Private functions
 
-		/// <summary>
-		/// Used to delete products from an organization
-		/// </summary>
-		/// <param name="addProductList"></param>
-		/// <param name="partyId"></param>
-		private IRepositoryResponse DeleteProductsFromOrganization(List<ProductEnum> addProductList, long partyId)
+        /// <summary>
+        /// Used to delete products from an organization
+        /// </summary>
+        /// <param name="addProductList"></param>
+        /// <param name="partyId"></param>
+        private IRepositoryResponse DeleteProductsFromOrganization(List<ProductEnum> addProductList, long partyId)
         {
             IRepositoryResponse response = new RepositoryResponse();
             IManageOrganizationProduct manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository);
@@ -1710,7 +1735,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     BooksMasterId = "1",
                     BooksCustomerMasterId = "3",
                     OrganizationTypeId = 1,
-                    OrganizationType = "Multifamily",                    
+                    OrganizationType = "Multifamily",
                     OrganizationDomainId = 1,
                     Domain = "Primary",
                     Products = 3
@@ -1757,8 +1782,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     TotalRecords = 573
                     }
                 };
-            
-                
+
+
                 List<string> domain = new List<string>()
                 {
                     "Primary",
@@ -1779,7 +1804,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return output;
             }
         }
-        
+
         [ExcludeFromCodeCoverage]
         public class PropertyAuditExample : IProvideExamples
         {
@@ -1820,10 +1845,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         Status = "No Product",
                         Domain = "Primary",
                         ContractedName = "Property 3 UAT"
-                    },                    
+                    },
                 };
-            
-                
+
+
                 Status<IErrorData> errorStatus = new Status<IErrorData>();
                 ObjectOutput<List<PropertyAudit>, IErrorData> output = new ObjectOutput<List<PropertyAudit>, IErrorData>()
                 {

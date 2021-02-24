@@ -1040,6 +1040,9 @@
     <Build Include="UserManagement\ProductPageType.sql" />
     <Build Include="UserManagement\ProductControlType.sql" />
     <Build Include="UserManagement\Stored Procedures\SetProductControl.sql" />
+    <Build Include="Enterprise\Stored Procedures\DeletePropertyInstance.sql" />
+    <Build Include="UserManagement\ProductControlAttributeType.sql" />
+    <Build Include="UserManagement\Stored Procedures\DeleteProductPagesAndControls.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

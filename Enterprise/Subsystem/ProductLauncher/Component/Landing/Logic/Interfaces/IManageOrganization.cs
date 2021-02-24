@@ -185,5 +185,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <returns></returns>
 		CompanyMaster SearchCompanyDetailsByCustomerCompanyId(long customerCompanyId);
 
+		/// <summary>
+		/// Delete Property For Organization
+		/// </summary>
+		/// <param name="propertyInstanceID"></param>
+		/// <returns></returns>
+		RepositoryResponse DeletePropertyForOrganization(Guid propertyInstanceID);
 	}
 }

@@ -1127,8 +1127,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			IList<string> aoProductsAvailableToAssign = GetGbSupportedAoSubjectProductsAssigned(aoActiveAuthorities);
 
-			// remove Axiometrics product
-			aoProductsAvailableToAssign.Remove("AX");
 			var allGroupsResponse = GetSubjectUserAssignedPropertyGroups(samlEditorProductUserName, samlSubjectProductUserName);
 
 			foreach (var aoProduct in aoProductsAvailableToAssign)
@@ -2710,8 +2708,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			// Get products assigned to user
 			IList<string> aoProductsAvailableToAssign = GetGbSupportedAoEditorUserProductsToAssign(sourceUserPersonaId).ToList();
 
-			// remove Axiometrics  product
-			aoProductsAvailableToAssign.Remove("AX");
 			var allGroupsResponse = GetEditorUserAssignedPropertyGroups(sourceUserPersonaId);
 
 			foreach (var aoProduct in aoProductsAvailableToAssign)

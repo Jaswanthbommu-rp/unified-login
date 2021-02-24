@@ -108,6 +108,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         bool DeleteBooksGreenBookCompanyInstance(CompanyInstance companyInstance);
 
         /// <summary>
+        /// Used to delete an existing property instance
+        /// </summary>
+        /// <param name="propertyInstance"></param>
+        /// <returns></returns>
+        bool DeletePropertyFromBooks(Guid propertyInstance);
+
+        /// <summary>
         /// Used to update an existing company instance
         /// </summary>
         /// <param name="companyInstance"></param>
