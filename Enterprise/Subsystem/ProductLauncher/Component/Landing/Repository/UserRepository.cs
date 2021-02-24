@@ -8,6 +8,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Dtos;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
@@ -186,6 +187,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             IList<UserOrganization> userPersonaOrganizationList = new List<UserOrganization>();
             OrganizationStatus currentPrimaryOrgStatus = null;
             ProductBatch gbProductBatch = new ProductBatch();
+            ProductBatch primaryPropertiesBatch = new ProductBatch();
 
             long organizationPartyId = 0;
             long userId = 0;
@@ -239,6 +241,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             string schemaName = getRoleRightsSchemaName();
             bool usePropertyInstanceUnifiedLogin = getPropertyInstanceUnifiedLogin();
             bool usePropertyInstanceUnifiedAmenities = getPropertyInstanceUnifiedAmenities();
+            primaryPropertiesBatch = newProfile.productBatch?.FirstOrDefault<ProductBatch>((Func<ProductBatch, bool>)(p => p.ProductId == (int)ProductEnum.UnifiedUI));
 
             //NOTE TO DEVELOPERS
             //Any new products are added down the line,we need to update the logic in "getProductBatchForUserClone" to get new products to clone.
@@ -271,8 +274,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             userProducts.RemoveAll(a => a.ProductId == product.ProductId);
                         }
 
+                        UPFMProperty upfmProperty = new UPFMProperty();
+                        upfmProperty.id = primaryPropertiesBatch.InputJson.PropertyList.ToList();
                         //Then Get Product Batch Data
-                        IList<ProductBatch> pbData = manageProductBatch.GetUserProductBatchData(cloneUserPersonaId, userClaim, userProducts, createUserPersonaId, isExternalUser, usePropertyInstanceUnifiedAmenities);
+                        IList<ProductBatch> pbData = manageProductBatch.GetUserProductBatchData(cloneUserPersonaId, userClaim, userProducts, createUserPersonaId, upfmProperty,isExternalUser, usePropertyInstanceUnifiedAmenities);
 
                         foreach (ProductBatch pb in pbData)
                         {
@@ -1063,7 +1068,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         IList<EnterpriseRole> enterpriseRoles = repository.GetMany<EnterpriseRole>(procName, param);
 
                         int greenBookRole = 0;
-                        gbProductBatch = newProfile.productBatch?.FirstOrDefault<ProductBatch>((Func<ProductBatch, bool>)(p => p.ProductId == (int)ProductEnum.UnifiedPlatform));
+                        gbProductBatch = newProfile.productBatch?.FirstOrDefault<ProductBatch>((Func<ProductBatch, bool>)(p => p.ProductId == (int)ProductEnum.UnifiedPlatform));                        
+
                         if (currentOrg.OrganizationPartyId.Equals(organizationExternalUser.PartyId))
                         {
                             greenBookRole = enterpriseRoles.FirstOrDefault(r => r.Role.Equals("Basic End User", StringComparison.OrdinalIgnoreCase)).RoleId;
@@ -1163,6 +1169,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                     errorStatus.Success = false;
                                     errorStatus.ErrorCode = "User.CreateUser.27";
                                     errorStatus.ErrorMsg = "There was an error assigning top level properties to persona: {personaId}.";
+                                    createUserResponse.Status = errorStatus;
+                                    createUserResponse.UserStatus = errorStatus.ErrorMsg;
+                                    return createUserResponse;
+                                }
+                            }
+
+                            if (primaryPropertiesBatch != null && ((primaryPropertiesBatch.InputJson?.PropertyList?.Count > 0) || (primaryPropertiesBatch.InputJson?.RemovedPropertyList?.Count > 0)))
+                            {
+                                string primaryPropertyJSON = JsonConvert.SerializeObject(primaryPropertiesBatch);
+                                repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdatePropertyInstanceMapping, new { PersonaId = personaId, ProductId = (int)ProductEnum.UnifiedUI, PropertyInstanceJSON = primaryPropertyJSON });
+                              
+                                if (repositoryResponse.Id == 0)
+                                {
+                                    repository.UnitOfWork.Rollback();
+                                    errorStatus.Success = false;
+                                    errorStatus.ErrorCode = "User.CreateUser.28";
+                                    errorStatus.ErrorMsg = "There was an error assigning primary properties to persona: {personaId}.";
                                     createUserResponse.Status = errorStatus;
                                     createUserResponse.UserStatus = errorStatus.ErrorMsg;
                                     return createUserResponse;
@@ -2273,12 +2296,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             IPersonaRepository personaRespository = new PersonaRepository();
             IOrganizationRepository organizationRepository = new OrganizationRepository();
             IContactMechanismUsageTypeRepository contactMechanismUsageTypeRepository = new ContactMechanismUsageTypeRepository();
+            IPropertyRepository propertyRepository = new PropertyRepository();
 
             IManagePersona managePersona = new ManagePersona(_userClaim);
             IList<IdentityProviderType> identityProviderTypeList = new List<IdentityProviderType>();
             IList<ProductBatch> productBatchData = new List<ProductBatch>();
             IList<ContactMechanismUsageType> emailUsageType = new List<ContactMechanismUsageType>();
-
+          
             //Notification Email
             IContactMechanismRepository contactMechanismRepository = new ContactMechanismRepository();
 
@@ -2371,6 +2395,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     );
                 }
             });
+
+            // get persona primary properties
+            List<string> primaryProperties = propertyRepository.ListUPFMPropertyInstanceIdByPersona(oldProfile.Persona[0].PersonaId, (int)ProductEnum.UnifiedUI).ConvertAll<string>(x => x.ToString());
+           // List<int> primaryProperties = propertyRepository.ListUPFMPropertyInstanceIdByPersona(oldProfile.Persona[0].PersonaId, (int)ProductEnum.UnifiedUI);
 
             UpdateUserProfileEntity updateUserProfileEntity = new UpdateUserProfileEntity
             {
@@ -3376,6 +3404,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             IList<PersonaProductUserDetails> userProducts = repository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = assignUserPersonaId, ProductStatusValue = ((Int32)UserUiStatusType.AccountCreationSuccessful).ToString() }).ToList();
             IList<ProductBatch> productListToCreate = new List<ProductBatch>();
+            var primaryPropertyBatch = productBatchData.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedUI);
+
+            productBatchData = updateProductBatchDataWithPrimaryProperties(createUserPersonaId, assignUserPersonaId, primaryPropertyBatch ,productBatchData.ToList(), userProducts.ToList());
+
             //Remove products to process when product batch data updated in ui while processing user type changed batch process
             if (batchProcessTypeId == (int)BatchProcessType.UserTypeAdminToRegular || batchProcessTypeId == (int)BatchProcessType.UserTypeRegularToAdmin || batchProcessTypeId == (int)BatchProcessType.UserTypeAdminToExternal || batchProcessTypeId == (int)BatchProcessType.UserTypeExternalToAdmin)
             {
@@ -3471,29 +3503,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         dynamic expandoList = new ExpandoObject();
                         expandoList.IsAssigned = true;
                         expandoList.AoUserCompanyPropertyRoleDetailList = new List<ExpandoObject>();
-
-                        //// unassign all AO products
-                        //foreach (var aoProduct in aoUserProductList)
-                        //{
-                        //    dynamic expandoAo = new ExpandoObject();
-                        //    // user has removed specific product
-                        //    expandoAo.SelectedRoleValues = null;
-                        //    expandoAo.SelectedPortfolioValues = null;
-                        //    expandoAo.CompanyId = 0;
-                        //    expandoAo.Product = ProductEnumHelper.GetAoProductId((ProductEnum)aoProduct.ProductId);
-                        //    expandoAo.DivisionName =
-                        //    ProductEnumHelper.GetAoDivisionName((ProductEnum)aoProduct.ProductId);
-                        //    expandoAo.PropertyGroups = null;
-                        //    expandoAo.IsAssigned = false;
-                        //    expandoList.AoUserCompanyPropertyRoleDetailList.Add(expandoAo);
-                        //}
-                        //// add record to remove AO products
-                        //sb.Append(JsonConvert.SerializeObject(expandoList));
-
-                        //// save AO specific records in batch
-                        //SaveProductBatch(repository, aoProductsBatch, createUserResponse,
-                        //    saveProductBatchError, createUserPersonaId, assignUserPersonaId, realPageId, errorStatus,
-                        //    sb.ToString(), (int)BatchProcessType.CreateUpdateProductUser);
 
                         // Collect ALL Json(s) for AO products based on assigned or removed
 
@@ -5536,6 +5545,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
                         #endregion
 
+                        var primaryPropertyBatch = updateUserProfileEntity.NewProfile.productBatch.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedUI);
                         bool notificationEmailChanged = isNotificationEmailChanged(priorNotificationEmail, updateUserProfileEntity.NewProfile.NotificationEmail);
 
                         if ((updateUserProfileEntity.NewProfile.userLogin.Status != UserUiStatusType.Disabled) && (profileChanged || loginNamechanged || notificationEmailChanged || employeeIdChanged))
@@ -5633,6 +5643,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 {
                                     repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdatePropertyInstanceMapping, new { PersonaId = updateUserProfileEntity.OldProfile.Persona[0].PersonaId, ProductId = (int)ProductEnum.UnifiedPlatform, PropertyInstanceJSON = propertyJSON });
                                 }
+                            }
+
+                            if (primaryPropertyBatch != null && ((primaryPropertyBatch.InputJson?.PropertyList?.Count > 0) || (primaryPropertyBatch.InputJson?.RemovedPropertyList?.Count > 0)))
+                            {
+                                string primaryPropertyJSON = JsonConvert.SerializeObject(primaryPropertyBatch);
+                                repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdatePropertyInstanceMapping, new { PersonaId = updateUserProfileEntity.OldProfile.Persona[0].PersonaId, ProductId = (int)ProductEnum.UnifiedUI, PropertyInstanceJSON = primaryPropertyJSON });
                             }
                         }
                     }
@@ -5734,6 +5750,43 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             });
 
             return usePropertyInstanceUnifiedAmenities == "1";
+        }
+
+        private List<ProductBatch> updateProductBatchDataWithPrimaryProperties(long editorPersonaId, long userPersonaId, ProductBatch primaryPropertiesBatch, List<ProductBatch> productBatch, List<PersonaProductUserDetails> userProducts)
+        {
+            List<ProductBatch> finalProductBatch = new List<ProductBatch>();
+            using (var pbRepository = GetRepository())
+            {
+               // List<PersonaProductUserDetails> userProducts = pbRepository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = userPersonaId, ProductStatusValue = ((Int32)ProductBatchStatusType.Success).ToString() }).ToList();
+                if (userProducts.Count > 0)
+                {
+                    DefaultUserClaim userClaim = new DefaultUserClaim(ClaimsPrincipal.Current);
+                    ManageCloneProductBatch manageProductBatch = new ManageCloneProductBatch();
+
+                    UPFMProperty upfmProperty = new UPFMProperty();
+                    var userPersona = _managePersona.GetPersona(userPersonaId);
+                    upfmProperty.id = primaryPropertiesBatch.InputJson.PropertyList.ToList();
+
+                    bool usePropertyInstanceUnifiedAmenities = getPropertyInstanceUnifiedAmenities();
+                    var personaOrganization = userPersona.Organization;
+                    bool isExternalUser = personaOrganization.RelationshipType.Equals("User Type", StringComparison.OrdinalIgnoreCase) && personaOrganization.RoleNameFrom.Equals("External User", StringComparison.OrdinalIgnoreCase);
+                    //Next Remove products which are exists in product batch
+                    foreach (var product in productBatch)
+                    {
+                        userProducts.RemoveAll(a => a.ProductId == product.ProductId);
+                    }
+
+                    //Then Get Product Batch Data
+                    IList<ProductBatch> pbData = manageProductBatch.GetUserProductBatchData(editorPersonaId, userClaim, userProducts, userPersonaId, upfmProperty, isExternalUser, usePropertyInstanceUnifiedAmenities);
+
+                    foreach (ProductBatch pb in pbData)
+                    {
+                        finalProductBatch.Add(pb);
+                    }
+                }
+            }
+
+            return finalProductBatch;
         }
         #endregion
 

@@ -30,6 +30,8 @@ using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
+using System.Threading.Tasks;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -43,6 +45,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private IProductInternalSettingRepository _productInternalSettingRepository;
         private DefaultUserClaim _defaultUserClaim;
         private ISamlRepository _samlRepository;
+        private IPropertyRepository _propertyRepository;
 
         #endregion
 
@@ -66,7 +69,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _productRepository = new ProductRepository();
             _productInternalSettingRepository = new ProductInternalSettingRepository();
             _samlRepository = new SamlRepository();
-
+            _propertyRepository = new PropertyRepository();
             _defaultUserClaim = userClaims;
         }
         #endregion
@@ -88,6 +91,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return string.Empty;
         }
 
+        private string UpdateProductPrimaryPropertyProductStatus(long userPersonaId, int productId, int settingvalue)
+        {
+            var manageProductBase = new ManageProductBase(productId, _productInternalSettingRepository, _productRepository);
+            manageProductBase.UpdateProductSettingProductStatus(userPersonaId, "UsePrimaryProperties", productId, settingvalue);
+            return string.Empty;
+		}
+
         /// <summary>
         /// Creates Product User
         /// </summary> 
@@ -101,6 +111,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             object productPropertiesRoles;
 
             bool isUpdateUser = false;
+            bool usePrimaryProperties = false;
             try
             {
                 productId = (int)productUser.ProductName;
@@ -109,6 +120,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     isUpdateUser = true;
                 }
+
+                var roleProp = GetProductPropertiesRoles<RolePropertyList>(productUser.InputJson) as RolePropertyList;
+                usePrimaryProperties = roleProp.UsePrimaryProperties;
 
                 switch (productUser.ProductName)
                 {
@@ -334,6 +348,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (string.IsNullOrEmpty(result))
             {
                 _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Success);
+                UpdateProductPrimaryPropertyProductStatus(productUser.AssignUserPersonaId, (int)productUser.ProductName, usePrimaryProperties == true ? 1 : 0);                
             }
             else
             {
@@ -857,13 +872,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             GetProductPropertiesRoles<ProductUserRolePropertiesGroups>(batchRecord.InputJson);
                         result = product.CreateUser(batchRecord.RealPageId, batchRecord.CreateUserPersonaId,
                             batchRecord.AssignUserPersonaId, productPropertiesRoles);
-                        break;
-                    //case ProductEnum.IntelligentBuilding:
-                    //    product = new IntelligentBuildingProduct(_defaultUserClaim);
-                    //    productPropertiesRoles =
-                    //        GetProductPropertiesRoles<IBPropertyRole>(batchRecord.InputJson);
-                    //    result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
-                    //    break;
+                        break;                  
                     case ProductEnum.IntelligentBuildingEnergy:
                     case ProductEnum.IntelligentBuildingTrash:
                     case ProductEnum.IntelligentBuildingWater:
@@ -880,6 +889,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         result = "Product code does not exist.";
                         break;
                 }
+
             }
             catch (Exception ex)
             {
@@ -893,7 +903,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // If result OK then update Success status else Error
             if (string.IsNullOrEmpty(result))
             {
-                _productRepository.UpdateProductBatch(batchRecord.ProductBatchId, (int)ProductBatchStatusType.Success);
+                _productRepository.UpdateProductBatch(batchRecord.ProductBatchId, (int)ProductBatchStatusType.Success);               
             }
             else
             {
