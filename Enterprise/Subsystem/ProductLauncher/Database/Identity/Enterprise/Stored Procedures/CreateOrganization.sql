@@ -20,7 +20,6 @@ AS
                  BEGIN
                      SET @OrganizationId = NEWID();
                  END;
-             BEGIN TRANSACTION;
              SET NOCOUNT ON;
              DECLARE @PartyId BIGINT;
 
@@ -98,6 +97,7 @@ AS
 						);
                      SELECT @MasterConfigurationId = SCOPE_IDENTITY();
                  END;
+
              IF NOT EXISTS
 				(
 					SELECT 1
@@ -140,14 +140,12 @@ AS
 						 @MasterSettingId
 						);
                  END;
-             SET NOCOUNT OFF;
-             COMMIT;
+
              SELECT @PartyId AS Id,
                     @OrganizationId AS RealPageId,
                     '' AS ErrorMessage;
          END TRY
          BEGIN CATCH
-             ROLLBACK;
              DECLARE @ErrorLogID INT;
              EXEC dbo.LogError
                   @ErrorLogID = @ErrorLogID OUTPUT;
@@ -157,4 +155,3 @@ AS
              WHERE ErrorLogID = @ErrorLogID;
          END CATCH;
      END;
-
