@@ -2396,10 +2396,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 }
             });
 
-            // get persona primary properties
-            List<string> primaryProperties = propertyRepository.ListUPFMPropertyInstanceIdByPersona(oldProfile.Persona[0].PersonaId, (int)ProductEnum.UnifiedUI).ConvertAll<string>(x => x.ToString());
-           // List<int> primaryProperties = propertyRepository.ListUPFMPropertyInstanceIdByPersona(oldProfile.Persona[0].PersonaId, (int)ProductEnum.UnifiedUI);
-
+           
             UpdateUserProfileEntity updateUserProfileEntity = new UpdateUserProfileEntity
             {
                 LoggedInUserRealPageId = loggedInUserRealPageId,
@@ -3227,6 +3224,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             if (productList != null)
             {
+                ProductBatch primaryPropertyBatch = productList.ToList().FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedUI);
+                if (primaryPropertyBatch != null)
+                {
+                    productList.Remove(primaryPropertyBatch);
+                }
                 //Product EasyLMS is assigned and the tile is display for all users if it's assigned to the Organization 
                 //No need to add an EasyLMS ProductPatch eventhough it's included in the ProductBatch product list from the UI
                 ProductBatch easyLMSProductBatch = productList.ToList().FirstOrDefault(p => p.ProductId == (int)ProductEnum.EasyLMS);
@@ -3408,6 +3410,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             productBatchData = updateProductBatchDataWithPrimaryProperties(createUserPersonaId, assignUserPersonaId, primaryPropertyBatch ,productBatchData.ToList(), userProducts.ToList());
 
+            if (primaryPropertyBatch != null)
+            {
+                productBatchData.Remove(primaryPropertyBatch);
+            }
             //Remove products to process when product batch data updated in ui while processing user type changed batch process
             if (batchProcessTypeId == (int)BatchProcessType.UserTypeAdminToRegular || batchProcessTypeId == (int)BatchProcessType.UserTypeRegularToAdmin || batchProcessTypeId == (int)BatchProcessType.UserTypeAdminToExternal || batchProcessTypeId == (int)BatchProcessType.UserTypeExternalToAdmin)
             {
@@ -5755,6 +5761,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         private List<ProductBatch> updateProductBatchDataWithPrimaryProperties(long editorPersonaId, long userPersonaId, ProductBatch primaryPropertiesBatch, List<ProductBatch> productBatch, List<PersonaProductUserDetails> userProducts)
         {
             List<ProductBatch> finalProductBatch = new List<ProductBatch>();
+            IPropertyRepository propertyRepository = new PropertyRepository();
+            // get persona primary properties
+            List<string> currentprimaryProperties = propertyRepository.ListUPFMPropertyInstanceIdByPersona(userPersonaId, (int)ProductEnum.UnifiedUI).ConvertAll<string>(x => x.ToString());
             using (var pbRepository = GetRepository())
             {
                // List<PersonaProductUserDetails> userProducts = pbRepository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = userPersonaId, ProductStatusValue = ((Int32)ProductBatchStatusType.Success).ToString() }).ToList();
@@ -5765,7 +5774,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                     UPFMProperty upfmProperty = new UPFMProperty();
                     var userPersona = _managePersona.GetPersona(userPersonaId);
-                    upfmProperty.id = primaryPropertiesBatch.InputJson.PropertyList.ToList();
+                    List<string> updatedPrimaryProperties = primaryPropertiesBatch.InputJson.PropertyList.ToList();
+
+                    var filteredList = updatedPrimaryProperties.Except(currentprimaryProperties, StringComparer.OrdinalIgnoreCase).ToList();
+
+                    upfmProperty.id = filteredList;
 
                     bool usePropertyInstanceUnifiedAmenities = getPropertyInstanceUnifiedAmenities();
                     var personaOrganization = userPersona.Organization;
