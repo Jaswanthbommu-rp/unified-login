@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterprise.Helpers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
@@ -30,6 +31,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         DefaultUserClaim _defaultUserClaim;
         IEmailRepository _emailRepository;
         IProductInternalSettingRepository _productInternalSettingRepository;
+        readonly ITokenHelper _tokenHelper;
         #endregion
 
         #region Constructors
@@ -44,6 +46,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _defaultUserClaim = defaultUserClaim;
             _emailRepository = emailRepository;
             _productInternalSettingRepository = productInternalSettingRepository;
+            _tokenHelper = new TokenHelper();
         }
 
         /// <summary>
@@ -55,6 +58,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _defaultUserClaim = defaultUserClaim;
             _emailRepository = new EmailRepository();
             _productInternalSettingRepository = new ProductInternalSettingRepository();
+            _tokenHelper = new TokenHelper();
         }
         #endregion
 
@@ -350,6 +354,62 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 WriteToLog(LogEventLevel.Information, "ManageEmail.SendGridEmail: An error occured when sending the email.", null, ex);
                 return "An error occured when sending the email.";
             }
+        }
+        public bool SendEmailAsync(EmailModel emailModel)
+        {
+            try
+            {
+                Dictionary<string, object> logData = new Dictionary<string, object>()
+                {
+                    {"SendEmail",  emailModel}
+                };
+                WriteToLog(LogEventLevel.Information, "ManageEmail.SendEmailAsync: Email details.", logData, null);
+
+                IList<ProductInternalSetting> productSettingList = _productInternalSettingRepository.GetProductInternalSettings(productId: (int)ProductEnum.UnifiedPlatform);
+               
+                string UnifiedEmailBaseAddress = productSettingList.ToList().FirstOrDefault(s => s.Name.Equals("UnifiedEmailBaseAddress", StringComparison.OrdinalIgnoreCase)).Value;
+                bool IsUseDefaultTemplate = (productSettingList != null)? productSettingList.ToList().FirstOrDefault(s => s.Name.ToUpper().Equals("UseDefaultTemplate", StringComparison.OrdinalIgnoreCase)).Value.Trim() =="1" : true;
+
+                string UnifiedEmailEndPoint = productSettingList.ToList().FirstOrDefault(s => s.Name.Equals("UnifiedEmailEndPoint", StringComparison.OrdinalIgnoreCase)).Value + $"={IsUseDefaultTemplate}";
+                var apiKey = productSettingList.ToList().FirstOrDefault(s => s.Name.ToUpper().Equals("APIKEY", StringComparison.OrdinalIgnoreCase)).Value;
+
+                var ulClientToken = _tokenHelper.GetUnifiedLoginServerToken("emailsapi");
+
+                using (var httpClient = new HttpClient())
+                {
+                    httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", ulClientToken);
+                    //httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "eyJhbGciOiJSUzI1NiIsImtpZCI6IjBDMUM1RkI3REQ3RTVCMkYwM0RFQUM3MzMwMTBEQUJDQTA1NTc2MUMiLCJ0eXAiOiJKV1QiLCJ4NXQiOiJEQnhmdDkxLVd5OEQzcXh6TUJEYXZLQlZkaHcifQ.eyJuYmYiOjE2MTQyMzg3MjksImV4cCI6MTYxNDI0MjMyOSwiaXNzIjoiaHR0cHM6Ly93d3ctZGV2LnJlYWxwYWdlLmNvbS9sb2dpbi9pZGVudGl0eSIsImF1ZCI6WyJodHRwczovL3d3dy1kZXYucmVhbHBhZ2UuY29tL2xvZ2luL2lkZW50aXR5L3Jlc291cmNlcyIsImFjdGl2aXR5cmVhZGVyIiwiZW1haWxzYXBpIiwiZW50ZXJwcmlzZWFwaSIsIm5vdGlmaWNhdGlvbnNhcGkiLCJycGxhbmRpbmdhcGkiLCJ1bmlmaWVkcmVwb3J0aW5nYXBpIiwidW5pZmllZHNldHRpbmdzYXBpIiwidW5pZmllZFVJQXBpIiwidXNlcmluZm9hcGkiLCJ3cml0ZSJdLCJjbGllbnRfaWQiOiJxYWF1dG9tYXRpb24iLCJzdWIiOiIzNjc3IiwiYXV0aF90aW1lIjoxNjE0MjM4NzI5LCJpZHAiOiJsb2NhbCIsIm9yZ1BhcnR5SWQiOiIxMDYzOSIsIm9yZ0lkIjoiMGQwMThlNDYtYzIwZS00NzdkLWFkZWQtNGU1YTM1ZmI4Zjk5Iiwib3JnTmFtZSI6IlJlYWxQYWdlIEVtcGxveWVlIiwib3JnTWFzdGVySWQiOiItMSIsIm9yZ0NvbXBhbnlNYXN0ZXJJZCI6Ii0xIiwib3JnVHlwZSI6Ik90aGVyIiwib3JnRG9tYWluIjoiUHJpbWFyeSIsImNvcnJlbGF0aW9uSWQiOiI4YjBlNGQ0NC0wYzhhLTRjNzktOTFiYS1jODUyZmFlYThkNGYiLCJmaXJzdE5hbWUiOiJLaXJhbiIsIm1pZGRsZU5hbWUiOiIiLCJsYXN0TmFtZSI6IkRldkVtcCIsImxvZ2luTmFtZSI6IktpcmFuQERldkVtcC5jb20iLCJyZWFsUGFnZUlkIjoiOWIxYzVmZjktMzg5MC1lYTExLWE5YmUtMDA1MDU2YjBlNDI5IiwiZ3JlZW5Cb29rVXJsIjoiaHR0cHM6Ly93d3ctZGV2LnJlYWxwYWdlLmNvbS9ob21lIiwicGVyc29uYUlkIjoiMzk1NSIsInVzZXJQYXJ0eUlkIjoiMTQwODUiLCJ0d29GYWN0b3JFbmFibGVkIjoiMCIsInVzZXJJZCI6IjM2NzciLCJyb2xlIjoiS2lyYW4tVXNlciBBZG1pbmlzdHJhdG9yIiwiUGhvbmVOdW1iZXIiOiIiLCJQaG9uZVR5cGUiOiIiLCJqdGkiOiJrQUR5TmFVamM1cndsNkZHWW1sOWR3Iiwic2NvcGUiOlsibGFuZGluZyIsIm9wZW5pZCIsInByb2ZpbGUiLCJhY3Rpdml0eXJlYWRlciIsImVtYWlsc2FwaSIsImVudGVycHJpc2VhcGkiLCJub3RpZmljYXRpb25zYXBpIiwicnBsYW5kaW5nYXBpIiwidW5pZmllZHJlcG9ydGluZ2FwaSIsInVuaWZpZWRzZXR0aW5nc2FwaSIsInVuaWZpZWRVSUFwaSIsInVzZXJpbmZvYXBpIiwid3JpdGUiXSwiYW1yIjpbImxvY2FsIl19.ItksIq-SaiOf15IM1QCdE7wRxUkGhoDo-6lP4v_hXNvld5V-L2A_HOi_SvI5m2i6pR2TaNOEj4gvDsJj0ooZNz3VvecOxjSny3UT1fPaCPe9oaXtav0D3RH0OkITUqXbjvhi_ikl-c5-wa1Ob_7HregB-wsCZCoAf_2sATXNTk8IhWoZnX2ZbYIMM1Twtb2EdCi1PQXcUT6mkBdDg51pNfH0w3eKhsvw-1zJeKSwUmMr7Cpr97cJTzkrNZHmmacQtBUaFai9c2uqLQ0dJ1X9ubOwPDS0sf0AlHbyTiOO_gSwOILIQu5XmXnGvAjFqmdYpag9pR-W3Kv0jcfIp6H5xA");
+                    httpClient.BaseAddress = new Uri(UnifiedEmailBaseAddress);
+                    httpClient.DefaultRequestHeaders.Add("ApiKey", apiKey);
+
+                    var payload = new StringContent(JsonConvert.SerializeObject(emailModel),
+                       Encoding.UTF8, "application/json");
+
+                    WriteToLog(LogEventLevel.Debug, $"ManageEmail.SendEmailAsync: Sending Emails from {httpClient.BaseAddress} {UnifiedEmailEndPoint}", logData);
+                    var request = new HttpRequestMessage
+                    {
+                        Method = HttpMethod.Post,
+                        Content = payload,
+                        RequestUri = new Uri(httpClient.BaseAddress + UnifiedEmailEndPoint),
+                    };
+                    var response = httpClient.SendAsync(request).Result;
+                    var responseContent = response.Content.ReadAsStringAsync().Result;
+
+                    if (response != null && response.IsSuccessStatusCode)
+                    {   
+                        return JsonConvert.DeserializeObject<bool>(responseContent);
+                    }
+                    else
+                    {
+                        WriteToLog(LogEventLevel.Error, $"ManageEmail.SendEmailAsync: Error while sending emails from {UnifiedEmailEndPoint}{responseContent}");
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                WriteToLog(LogEventLevel.Error, "ManageEmail.SendEmailAsync: Exception  while sending emails {@ex}", null, exception);
+            }
+            return false;
         }
         #endregion
 

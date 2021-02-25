@@ -99,6 +99,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         public bool SendNewUserRegistrationEmail(UserLoginOnly userLoginOnly, string companyName, int userTypeId, long organizationPartyId)
         {
             bool IsSendGridEnabled = false;
+            bool IsUnifedEmailsEnabled = false;
             var userPerson = _personManager.GetPerson(userLoginOnly.RealPageId);
             var firstName = userPerson.FirstName;
 
@@ -194,7 +195,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     DateTime utcStarted = DateTime.UtcNow;
                     string emailStatus = "";
 #if (DEBUG)
-                    emailStatus = "success";
+                    emailStatus = "";
 #endif
                     if (string.IsNullOrEmpty(emailStatus))
                     {
@@ -203,17 +204,43 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         {
                             IsSendGridEnabled = productSettingList.ToList().FirstOrDefault(s => s.Name.Equals("IsSendGridEnabled", StringComparison.OrdinalIgnoreCase)).Value.Equals("1");
                         }
-                        if (IsSendGridEnabled)
+
+                        if ((productSettingList.Count > 0) && productSettingList.ToList().Any(s=>s.Name.Equals("IsUnifedEmailsEnabled", StringComparison.OrdinalIgnoreCase)))
                         {
-                            ISendGridEmail sendGridEmail = new SendGridEmail()
+                            var UnifiedEmailSettings = productSettingList.FirstOrDefault(s => s.Name.Equals("IsUnifedEmailsEnabled", StringComparison.OrdinalIgnoreCase));
+                            IsUnifedEmailsEnabled = (UnifiedEmailSettings != null) ? UnifiedEmailSettings.Value.Trim() == "1" : true;
+                        }
+
+                        if (IsUnifedEmailsEnabled)
+                        {
+                            var emailModel = new EmailModel();
+                            emailModel.Subject = cesEmail.EmailSubject;
+                            emailModel.To = new List<UserEmail>
                             {
-                                emailSubject = cesEmail.EmailSubject,
-                                fromAddress = new EmailAddress()
+                                new UserEmail
                                 {
-                                    email = cesEmail.EmailFrom,
-                                    name = cesEmail.EmailFrom
-                                },
-                                toAddress = new List<EmailAddress>()
+                                    Email ="vivek.vishal@realpage.com", //cesEmail.EmailTo,
+                                    Name = firstName
+                                }
+                            };
+
+                            emailModel.Body = cesEmail.EmailBody;
+                            emailModel.Bcc = new List<UserEmail>();
+                            emailStatus = _emailLogic.SendEmailAsync(emailModel)? "success" : "";
+                        }
+                        else
+                        {
+                            if (IsSendGridEnabled)
+                            {
+                                ISendGridEmail sendGridEmail = new SendGridEmail()
+                                {
+                                    emailSubject = cesEmail.EmailSubject,
+                                    fromAddress = new EmailAddress()
+                                    {
+                                        email = cesEmail.EmailFrom,
+                                        name = cesEmail.EmailFrom
+                                    },
+                                    toAddress = new List<EmailAddress>()
                                 {
                                     new EmailAddress()
                                     {
@@ -221,16 +248,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                                         name = cesEmail.EmailTo
                                     }
                                 },
-                                message = cesEmail.EmailBody,
-                                transId = userLoginOnly.UserId.ToString(),
-                                category = "RegistrationEmail"
-                            };
-                            emailStatus = _emailLogic.SendGridEmail(sendGridEmail);
+                                    message = cesEmail.EmailBody,
+                                    transId = userLoginOnly.UserId.ToString(),
+                                    category = "RegistrationEmail"
+                                };
+                                emailStatus = _emailLogic.SendGridEmail(sendGridEmail);
+                            }
+                            else
+                            {
+                                emailStatus = _emailLogic.SendEmail(cesEmail);
+                            }
                         }
-                        else
-                        {
-                            emailStatus = _emailLogic.SendEmail(cesEmail);
-                        }
+                        
                     }
                     DateTime utcEnded = DateTime.UtcNow;
 
@@ -246,6 +275,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     {
                         communicationEventResponse = _communicationEventsLogic.CreateCommunicationEvent((int)EmailStatusType.EmailError, PartyContactMechanismIdFrom, PartyContactMechanismIdTo, utcStarted, utcEnded, emailStatus);
                         message = $"SendNewUserRegistrationEmail - email generation failed - {userLoginOnly.RealPageId}";
+                        return false;
                     }
 
                     logger = logger.ForContext("CorrelationId", correlationId);

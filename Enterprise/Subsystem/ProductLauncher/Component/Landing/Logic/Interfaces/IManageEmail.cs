@@ -1,4 +1,5 @@
 ﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using System.Threading.Tasks;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
 {
@@ -43,5 +44,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="sendGridEmail">SendGrid Email object</param>
 		/// <returns>Email Status</returns>
 		string SendGridEmail(ISendGridEmail sendGridEmail);
-	}
+
+        /// <summary>
+        /// Sending emails from unified emails API
+        /// </summary>
+        /// <param name="emailModel"></param>
+        /// <returns></returns>
+        bool SendEmailAsync(EmailModel emailModel);
+    }
 }
