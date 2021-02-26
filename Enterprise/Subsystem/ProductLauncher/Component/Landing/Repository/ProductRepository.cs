@@ -1563,14 +1563,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         biProduct.SubSolution = "Benchmarking";
                     }
                 }
-
-                // remove axiometrics product
-                var aoP = productFamilyList.FirstOrDefault(p => p.ProductTypeId == 400);
-                if (aoP != null)
-                {
-                    var aoAx = aoP.Solutions.FirstOrDefault(x => x.ProductId == (int)ProductEnum.AoAxiometrics);
-                    aoP.Solutions.Remove(aoAx);
-                }
             }
             catch (Exception ex)
             {
