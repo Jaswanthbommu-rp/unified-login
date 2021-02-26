@@ -35,6 +35,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private HttpClient _httpClient;        
         readonly IProductInternalSettingRepository _productInternalSettingRepository;
         readonly ITokenHelper _tokenHelper;
+        private bool _ignoreUnitTest = false;
 
         ObjectCache _manageSettingCache = MemoryCache.Default;
         #endregion
@@ -51,6 +52,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
             _userClaim = userClaim;
             _tokenHelper = new TokenHelper(repository);
+            _ignoreUnitTest = true;
         }
 
         /// <summary>
@@ -182,7 +184,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		public bool CreateUpdatePropertyInSetting(UnifiedSettingPropertyPayload upfmProperties, HttpMethod requestType)
         {
             GetConfigurationSetting();
-            string ulClientToken = _tokenHelper.GetUnifiedLoginServerToken("unifiedsettingsapi");
+            string ulClientToken = string.Empty;
+			if (!_ignoreUnitTest)
+			{
+                ulClientToken = _tokenHelper.GetUnifiedLoginServerToken("unifiedsettingsapi");
+            }
             Guid correlationId = Guid.NewGuid();           
             //https://settingsapi-dev.realpage.com/v2/provisioning/property           
             string uri = $"v2/provisioning/property";
