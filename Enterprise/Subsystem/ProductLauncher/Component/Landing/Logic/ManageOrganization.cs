@@ -754,8 +754,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             if (_repositoryResponse.Id > 0)
             {
                bool booksResponse =  UpdatePropertyInBooks(propertyInstanceId, propertyName);
-               bool SettingsResponse =  UpdatePropertyInSettings(propertyInstanceId, companyInstanceId);
-               _repositoryResponse = HandleErrorMessage(booksResponse, SettingsResponse, "Error while updating property", _repositoryResponse);
+                bool settingsResponse = false;
+                if (booksResponse)
+                {
+                    settingsResponse = UpdatePropertyInSettings(propertyInstanceId, companyInstanceId);
+                }
+                _repositoryResponse = HandleErrorMessage(booksResponse, settingsResponse, "Error while updating property", _repositoryResponse);
             }
             return _repositoryResponse;
         }
@@ -775,7 +779,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             if (response.ErrorMessage.Length == 0)
             {
                 bool booksResponse = AddPropertyToBooks(property, companyInstanceID);
-                bool settingsResponse = AddPropertyToUnifiedSettings(property, companyInstanceID);
+                bool settingsResponse = false;
+                if (booksResponse)
+                {
+                    settingsResponse = AddPropertyToUnifiedSettings(property, companyInstanceID);
+                }
                 response = HandleErrorMessage(booksResponse, settingsResponse, "Error while adding property", response);
             }
             return response;            
@@ -839,7 +847,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             if (response.ErrorMessage.Length == 0)
             {
                 bool booksResponse = DeletePropertyFromBooks(propertyInstanceID);
-                bool settingsResponse = DeletePropertyFromUnifiedSetting(propertyInstanceID);
+                bool settingsResponse = false;
+                if (booksResponse)
+                {
+                    settingsResponse = DeletePropertyFromUnifiedSetting(propertyInstanceID);
+                }
                 response = HandleErrorMessage(booksResponse, settingsResponse, "Error while deleting property", response);
             }
             return response;
@@ -1097,7 +1109,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 PropertyName = property.Name,
                 CompanyInstanceSourceId = companyInstanceID.ToString().ToLower(),
                 PropertyInstanceSourceId = property.InstanceId.ToString(),
-                CustomerPropertyId = Convert.ToInt32(!string.IsNullOrEmpty(property.CustomerPropertyId) ? property.CustomerPropertyId : "0"),
+               // CustomerPropertyId = Convert.ToInt32(!string.IsNullOrEmpty(property.CustomerPropertyId) ? property.CustomerPropertyId : "0"),
                 CustomerEnvironment = property.Domain,
                 Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
                 IsActive = true,
