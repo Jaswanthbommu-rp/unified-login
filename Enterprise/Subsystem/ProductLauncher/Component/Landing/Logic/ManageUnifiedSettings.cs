@@ -1,13 +1,22 @@
 ﻿using Newtonsoft.Json;
+using RP.Enterprise.Foundation.DataAccess.Component;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterprise.Helpers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using Serilog;
 using Serilog.Events;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Runtime.Caching;
+using System.Text;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -16,18 +25,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         #region Private Variables
         IUnifiedSettingsRepository _unifiedSettingsRepository;
         private DefaultUserClaim _userClaim;
+
+        const string MediaTypeName = "application/vnd.api+json";
+        const int CacheTimeSeconds = 300;
+        const int AuthTokenRefreshMinutes = 50;
+
+        const int MAXRETRYCOUNT = 5;
+
+        private HttpClient _httpClient;        
+        readonly IProductInternalSettingRepository _productInternalSettingRepository;
+        readonly ITokenHelper _tokenHelper;
+        private bool _ignoreUnitTest = false;
+
+        ObjectCache _manageSettingCache = MemoryCache.Default;
         #endregion
 
         #region Constructors
         /// <summary>
         /// ManageSecuritySettings Constructor
         /// </summary>
-        /// <param name="unifiedSettingsRepository">SecuritySettings Repository</param>
+        /// <param name="repository">Repository</param>
         /// <param name="userClaim">Information about the user</param>
-        public ManageUnifiedSettings(IUnifiedSettingsRepository unifiedSettingsRepository, DefaultUserClaim userClaim)
+        public ManageUnifiedSettings(IRepository repository, DefaultUserClaim userClaim)
         {
-            _unifiedSettingsRepository = unifiedSettingsRepository;
+            _unifiedSettingsRepository = new UnifiedSettingsRepository(repository);
+            _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
             _userClaim = userClaim;
+            _tokenHelper = new TokenHelper(repository);
+            _ignoreUnitTest = true;
         }
 
         /// <summary>
@@ -37,7 +62,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         public ManageUnifiedSettings(DefaultUserClaim userClaim)
         {
             _unifiedSettingsRepository = new UnifiedSettingsRepository();
+            _productInternalSettingRepository = new ProductInternalSettingRepository();
             _userClaim = userClaim;
+            _tokenHelper = new TokenHelper();
         }
         #endregion
 
@@ -107,8 +134,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// Update an existing unified Settings 
         /// </summary>
         /// <param name="settings">Security Settings (Password and Activity Configuration Security Settings) object of the parameter values</param>
-        /// <param name="booksCustomerMasterId">Books Customer MasterId</param>
-        /// <param name="partyId">Company Id</param>
+        /// <param name="category">category</param>
+        /// <param name="includes">includes</param>
         /// <returns>RepositoryResponse object</returns>
         public RepositoryResponse UpdateUnifiedSettings(IList<Setting> settings, string category, long partyId, string[] includes)
         {
@@ -145,6 +172,74 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             return repositoryResponse;
         }
+
+		#region Send Property to Settings
+
+		/// <summary>
+		///Send Property Instance to Unified settings to add/update property
+		/// </summary>
+		/// <param name="upfmProperties"></param>
+		/// <param name="requestType"></param>
+		/// <returns></returns>
+		public bool CreateUpdatePropertyInSetting(UnifiedSettingPropertyPayload upfmProperties, HttpMethod requestType)
+        {
+            GetConfigurationSetting();
+            string ulClientToken = string.Empty;
+			if (!_ignoreUnitTest)
+			{
+                ulClientToken = _tokenHelper.GetUnifiedLoginServerToken("unifiedsettingsapi");
+            }
+            Guid correlationId = Guid.NewGuid();           
+            //https://settingsapi-dev.realpage.com/v2/provisioning/property           
+            string uri = $"v2/provisioning/property";
+            Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "upfmProperties", upfmProperties } };
+            WriteToLog(LogEventLevel.Debug, "CreatePropertyInSetting - Adding info.", correlationId, logData);
+
+            var jsonToSave = JsonConvert.SerializeObject(upfmProperties);
+            var request = new HttpRequestMessage
+            {
+                Method = requestType,
+                Content = new StringContent(jsonToSave, Encoding.UTF8, "application/json"),
+                RequestUri = new Uri(_httpClient.BaseAddress + uri)
+            };
+            _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", ulClientToken);
+            var response = _httpClient.SendAsync(request).Result;
+            if (response != null && response.IsSuccessStatusCode)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+		///Send Property Instance to Unified settings to delete instance
+		/// </summary>
+		/// <param name="propertyInstance">UPFM PropertyInstance</param>
+		/// <returns></returns>
+		public bool DeletePropertyInSetting(Guid propertyInstance)
+        {
+            GetConfigurationSetting();
+            var ulClientToken = _tokenHelper.GetUnifiedLoginServerToken("unifiedsettingsapi");
+            Guid correlationId = Guid.NewGuid();
+            //https://settingsapi-dev.realpage.com/v2/provisioning/property/{propertyId}         
+            string uri = $"v2/provisioning/property/{propertyInstance}";
+            Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "propertyInstance", propertyInstance } };
+            WriteToLog(LogEventLevel.Debug, "CreatePropertyInSetting - Adding info.", correlationId, logData);           
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Delete,
+                RequestUri = new Uri(_httpClient.BaseAddress + uri)
+            };
+            _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", ulClientToken);
+            var response = _httpClient.SendAsync(request).Result;
+            if (response != null && response.IsSuccessStatusCode)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        #endregion
         #endregion
 
         #region Private Methods
@@ -166,6 +261,31 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             logger = logger.ForContext("ProductModule", this.GetType());
             logger = logger.ForContext("CorrelationId", correlationId.ToString());
             logger.Write(logType, exception, message);
+        }
+
+        private void GetConfigurationSetting()
+        {
+            string bbUri = "";
+
+            #region GetSettings
+            IList<ProductInternalSetting> productInternalSettingList;
+            productInternalSettingList = _manageSettingCache["productInternalSetting_" + (int)ProductEnum.UnifiedPlatform] as List<ProductInternalSetting>;
+            if (productInternalSettingList == null)
+            {
+                productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
+                CacheItemPolicy policy = new CacheItemPolicy();
+                policy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(CacheTimeSeconds);
+                _manageSettingCache.Set("productInternalSetting_" + (int)ProductEnum.UnifiedPlatform, productInternalSettingList, policy);
+            }
+
+            #endregion
+
+            bbUri = productInternalSettingList.First(a => a.Name.Equals("SettingsApiEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
+            //useDomains = GetBooleanProductSettings("BooksUseDomains");
+            //useUPFMId = GetBooleanProductSettings("BooksUseUPFMId");
+            //useTranslatev2 = GetBooleanProductSettings("BooksUseTranslatev2");
+
+            _httpClient = new HttpClient { BaseAddress = new Uri(bbUri) };
         }
         #endregion
     }
