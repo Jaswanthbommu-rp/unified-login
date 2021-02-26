@@ -151,6 +151,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         break;
                     case (int)ProductEnum.AoBusinessIntelligence:
                     case (int)ProductEnum.AoInvestmentAnalytics:
+                    case (int)ProductEnum.AoAxiometrics:
                     case (int)ProductEnum.AoPerformanceAnalytics:
                     case (int)ProductEnum.AoRevenueManagement:
                     case (int)ProductEnum.AoBenchmarking:
@@ -354,6 +355,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     case (int)ProductEnum.AoAIRevenueManagement:
                     case (int)ProductEnum.AoRentControl:
                     case (int)ProductEnum.AoMarketAnalytics:
+                    case (int)ProductEnum.AoAxiometrics:
                         var manageProductAo = new ManageProductAssetOptimization(_userClaims);
                         result = manageProductAo.GetProductRoles(editorPersonaId, userPersonaId, productcode, datafilter, userLoginName);
                         break;
@@ -409,7 +411,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         var productLogic = ManageProductFactory.GetProductLogic(ProductEnum.ClickPay, editorPersonaId, userPersonaId, _userClaims);
                         result = productLogic.GetProductRoles(null);
                         break;
-                    case (int)ProductEnum.AoAxiometrics:
+                    
                     case (int)ProductEnum.AssetOptimizer:
                     case (int)ProductEnum.CIMPL:
                     case (int)ProductEnum.EasyLMS:
