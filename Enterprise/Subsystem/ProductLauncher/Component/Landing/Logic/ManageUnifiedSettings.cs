@@ -36,10 +36,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         readonly IProductInternalSettingRepository _productInternalSettingRepository;
         readonly ITokenHelper _tokenHelper;
 
-        //private bool useDomains = false;
-        //private bool useUPFMId = false;
-        //private bool useTranslatev2 = false;
-
         ObjectCache _manageSettingCache = MemoryCache.Default;
         #endregion
 

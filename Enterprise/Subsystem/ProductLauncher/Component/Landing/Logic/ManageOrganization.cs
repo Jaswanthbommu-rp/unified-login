@@ -1116,7 +1116,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         private bool UpdatePropertyInBooks(Guid propertyInstanceId, string propertyName)
-		{
+        {
             PropertyInstanceAck ack = new PropertyInstanceAck
             {
                 PropertyInstanceSourceId = propertyInstanceId.ToString(),
@@ -1124,22 +1124,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 PropertyName = propertyName,
                 ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)
             };
-           return _manageBlueBook.AcknowledgePropertyUpdate(ack);
+            return _manageBlueBook.AcknowledgePropertyUpdate(ack);
         }
 
         private bool DeletePropertyFromBooks(Guid propertyInstanceID)
         {
             return _manageBlueBook.DeletePropertyFromBooks(propertyInstanceID);
-        }		
+        }
 
-		private bool AddPropertyToUnifiedSettings(UPFMPropertyInstance property, Guid companyInstanceID)
+        private bool AddPropertyToUnifiedSettings(UPFMPropertyInstance property, Guid companyInstanceID)
         {
             UnifiedSettingPropertyPayload payload = PreparePropertyObjectToUnifiedSetting(property, companyInstanceID);
             return _manageUnifiedSettings.CreateUpdatePropertyInSetting(payload, HttpMethod.Post);
         }
 
         private bool UpdatePropertyInSettings(Guid propertyInstanceId, Guid companyInstanceID)
-		{
+        {
             List<Guid> propGuidList = new List<Guid>
             {
                 propertyInstanceId
@@ -1154,7 +1154,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         private UnifiedSettingPropertyPayload PreparePropertyObjectToUnifiedSetting(UPFMPropertyInstance property, Guid companyInstanceID)
-		{
+        {
             UnifiedSettingProperty usp = new UnifiedSettingProperty
             {
                 Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
