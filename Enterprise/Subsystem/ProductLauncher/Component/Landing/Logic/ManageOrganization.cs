@@ -755,7 +755,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                bool booksResponse =  UpdatePropertyInBooks(propertyInstanceId, propertyName);
                bool SettingsResponse =  UpdatePropertyInSettings(propertyInstanceId, companyInstanceId);
-                _repositoryResponse = HandleErrorMessage(booksResponse, SettingsResponse, "Error while updating property", _repositoryResponse);
+               _repositoryResponse = HandleErrorMessage(booksResponse, SettingsResponse, "Error while updating property", _repositoryResponse);
             }
             return _repositoryResponse;
         }
@@ -774,7 +774,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             property.InstanceId = response.RealPageId;
             if (response.ErrorMessage.Length == 0)
             {
-				bool booksResponse = AddPropertyToBooks(property, companyInstanceID);				
+                bool booksResponse = AddPropertyToBooks(property, companyInstanceID);
                 bool settingsResponse = AddPropertyToUnifiedSettings(property, companyInstanceID);
                 response = HandleErrorMessage(booksResponse, settingsResponse, "Error while adding property", response);
             }

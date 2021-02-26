@@ -212,7 +212,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             {
                 new ProductInternalSetting() {Name = "BooksUseDomains", Value = "1"}, 
                 new ProductInternalSetting() {Name = "BooksUseUPFMId", Value = "1"},
-                 new ProductInternalSetting() {Name = "SettingsApiEndPoint", Value = "http://localhost"},
+                new ProductInternalSetting() {Name = "SettingsApiEndPoint", Value = "http://localhost"},
                 new ProductInternalSetting() {Name = "UnifiedLoginServerClientName", Value = "unifiedlogin-server"},
                 new ProductInternalSetting() {Name = "UnifiedLoginServerClientSecret", Value = "abcdefgh"}
             };
