@@ -53,7 +53,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				{
 					bool translateProperties = false;
 					bool personaProductUsePrimaryProperty = false;
-					bool productEnabledForPrimaryProperty = isProductEnabledForUsePrimaryProperty(product.ProductId);
+					bool productEnabledForPrimaryProperty = IsProductEnabledForUsePrimaryProperty(product.ProductId);
 
 					var productSetting = productSettingList.FirstOrDefault(item => item.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase) && item.ProductId == product.ProductId);
 					personaProductUsePrimaryProperty = (productSetting != null) ? productSetting.Value.Trim() == "1" : true ;
@@ -1252,14 +1252,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			return allProperties;
 		}
 
-		private bool isProductEnabledForUsePrimaryProperty(int productId)
+		private bool IsProductEnabledForUsePrimaryProperty(int productId)
 		{
 			ProductInternalSetting productInternalSetting = new ProductInternalSetting();
 			IProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository();
 			IList<ProductInternalSetting> productInternalSettingList = productInternalSettingRepository.GetProductInternalSettings(productId);
 			productInternalSetting = productInternalSettingList.FirstOrDefault(item => item.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase));
 
-			return productInternalSetting.Value.Trim() == "1" ? true : false;
+			if (productInternalSetting != null)
+			{
+				return productInternalSetting.Value.Trim() == "1" ? true : false;
+			}
+			return false;
 		}
 		
 	}
