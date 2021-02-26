@@ -188,5 +188,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         ///// <param name="customerPropertyId"></param>
         ///// <returns></returns>
         List<BooksPropertyInstance> GetPropertyInstanceByCustomerPropertyId(string CustomerPropertyId);
+
+        /// <summary>
+        /// Used to enable product for an organization
+        /// </summary>
+        /// <param name="systemProductCenter"></param>
+        /// <returns></returns>
+        bool ProductCenterEnable(SystemProductCenter systemProductCenter);
+
+        /// <summary>
+        /// Used to delete product for an organization
+        /// </summary>
+        /// <param name="systemProductCenter"></param>
+        /// <returns></returns>
+        bool ProductCenterDisable(SystemProductCenter systemProductCenter);
     }
 }

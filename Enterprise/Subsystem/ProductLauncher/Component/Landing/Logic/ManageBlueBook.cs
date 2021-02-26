@@ -792,6 +792,75 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         /// <summary>
+        /// Used to enable product for an organization
+        /// </summary>
+        /// <param name="systemProductCenter"></param>
+        /// <returns></returns>
+        public bool ProductCenterEnable(SystemProductCenter systemProductCenter)
+        {
+            string uri = $"systemproductcenter";
+
+            Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "systemProductCenter", systemProductCenter } };
+            var jsonToSave = JsonConvert.SerializeObject(systemProductCenter, new JsonApiSerializerSettings()).Replace("\"id\":\"0\",", "");
+            logData.Add("jsonToSave", jsonToSave);
+            WriteToLog(LogEventLevel.Debug, "ProductCenterEnable - Adding info.", logData);
+
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Post,
+                Content = new StringContent(jsonToSave, Encoding.UTF8, "application/json"),
+                RequestUri = new Uri(_httpClient.BaseAddress + uri)
+            };
+            var response = _httpClient.SendAsync(request).Result;
+            if (response != null && response.IsSuccessStatusCode)
+            {
+                WriteToLog(LogEventLevel.Debug, "ProductCenterEnable - Added info successfully.");
+                return true;
+            }
+
+            logData = new Dictionary<string, object>() { { "response", response } };
+            WriteToLog(LogEventLevel.Error, "ProductCenterEnable - Failed to add info.", logData);
+
+            return false;
+        }
+
+        /// <summary>
+        /// Used to delete product for an organization
+        /// </summary>
+        /// <param name="systemProductCenter"></param>
+        /// <returns></returns>
+        public bool ProductCenterDisable(SystemProductCenter systemProductCenter)
+        {
+            string uri = $"/systemproductcenter/{systemProductCenter.Source}/{systemProductCenter.ProductCenterSourceId}/{systemProductCenter.CompanyInstanceSourceId}?modifiedBy={WebUtility.UrlEncode(systemProductCenter.CreatedBy)}";
+
+            ///systemproductcenter/{source}/{productCenterSourceId}/{companyInstanceSourceId}/{propertyInstanceSourceId}
+            Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "systemProductCenter", systemProductCenter } };
+
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Delete,
+                RequestUri = new Uri(_httpClient.BaseAddress + uri)
+            };
+            var response = _httpClient.SendAsync(request).Result;
+            if (response != null && response.IsSuccessStatusCode)
+            {
+                WriteToLog(LogEventLevel.Debug, "ProductCenterDisable - Deleted info successfully.");
+                return true;
+            }
+
+            if (response.StatusCode == HttpStatusCode.NotFound)
+            {
+                WriteToLog(LogEventLevel.Debug, "ProductCenterDisable - Not found in UDM.");
+                return true;
+            }
+
+            logData = new Dictionary<string, object>() { { "response", response } };
+            WriteToLog(LogEventLevel.Error, "ProductCenterDisable - Failed to add info.", logData);
+
+            return false;
+        }
+
+        /// <summary>
         /// Used to acknowledge provisioning cancel events
         /// </summary>
         /// <param name="productCenterCancellation"></param>
