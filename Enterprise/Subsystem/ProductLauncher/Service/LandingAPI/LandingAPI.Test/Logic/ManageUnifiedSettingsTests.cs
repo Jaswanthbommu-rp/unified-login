@@ -22,6 +22,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		readonly Mock<IUnifiedSettingsRepository> _mockUnifiedSettingsRepository = new Mock<IUnifiedSettingsRepository>();
 
 		private readonly IList<Setting> _expectedUnifiedSettings;
+        Mock<IRepository> _mockRepository = new Mock<IRepository>();
 
         #endregion
 
@@ -54,7 +55,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             string category = "security";
             long partyId = 0;
 
-            _manageUnifiedySettings = new ManageUnifiedSettings(_mockUnifiedSettingsRepository.Object, _userUserClaim);
+            _manageUnifiedySettings = new ManageUnifiedSettings(_mockRepository.Object, _userUserClaim);
 
             //Act
             Exception exception = Record.Exception(() => _manageUnifiedySettings.GetUnifiedSettings(category, partyId));
@@ -80,7 +81,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             //Act
             int NumberOfProperties = type.GetProperties().Length;
-            IManageUnifiedSettings manageSecuritySettings = new ManageUnifiedSettings(settingsRepository, _userUserClaim);
+            IManageUnifiedSettings manageSecuritySettings = new ManageUnifiedSettings(mockRepository.Object, _userUserClaim);
             IList<Setting> securitySettings = manageSecuritySettings.GetUnifiedSettings(category, partyId);
 
             Assert.True(
@@ -111,7 +112,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             IUnifiedSettingsRepository securitySettingsRepository = new UnifiedSettingsRepository(mockRepository.Object);
 
             //Act
-            IManageUnifiedSettings manageSecuritySettings = new ManageUnifiedSettings(securitySettingsRepository, _userUserClaim);
+            IManageUnifiedSettings manageSecuritySettings = new ManageUnifiedSettings(mockRepository.Object, _userUserClaim);
             var response = manageSecuritySettings.UpdateUnifiedSettings(_expectedUnifiedSettings, category,partyId,null);
 
             Assert.True(string.IsNullOrEmpty(response.ErrorMessage));
@@ -136,7 +137,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             IUnifiedSettingsRepository securitySettingsRepository = new UnifiedSettingsRepository(mockRepository.Object);
 
             //Act
-            IManageUnifiedSettings manageSecuritySettings = new ManageUnifiedSettings(securitySettingsRepository, _userUserClaim);
+            IManageUnifiedSettings manageSecuritySettings = new ManageUnifiedSettings(mockRepository.Object, _userUserClaim);
             var response = manageSecuritySettings.UpdateUnifiedSettings(_expectedUnifiedSettings, category, partyId, null);
 
             Assert.Equal("Update security settings Error: There was a problem with the sql.", response.ErrorMessage);

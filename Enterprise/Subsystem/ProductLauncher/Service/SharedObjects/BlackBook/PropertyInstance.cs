@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook
 {
@@ -24,6 +25,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackB
         /// <summary>
         /// used in provisioning
         /// </summary>
+        [JsonProperty("CustomerPropertyId", NullValueHandling=NullValueHandling.Ignore)]
         public int CustomerPropertyId { get; set; }
 
         /// <summary>

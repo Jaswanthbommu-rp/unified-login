@@ -777,6 +777,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                ))
                .Returns(_partyRelationShip);
 
+            mockProductRepository
+              .Setup(m => m.GetBooksMasterProductDetail(
+                  It.IsAny<int>()
+              ))
+              .Returns(_gbProductMap);
+
             IManageProductOneSite manageProductOneSite = new ManageProductOneSite(
 		        editorRealPageId: _editorRealPageId,
 		        service: mockService.Object,
