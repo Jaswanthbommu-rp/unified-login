@@ -779,7 +779,7 @@ END
 			IF NOT EXISTS ( SELECT TOP 1 1 FROM [UserManagement].[ControlAttribute] WHERE ControlId = @FSLGSelallID)
 			BEGIN
 				INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
-				VALUES (@MaxControlAttributeId + 1, @FSLGSelallID, N'ShowSelectAll', N'True', @UserId, @Now)
+				VALUES (@MaxControlAttributeId + 1, @FSLGSelallID, N'ShowSelectAll', N'False', @UserId, @Now)
 			END
 
 			--SELECT @MaxControlAttributeId = max(ControlAttributeId) from UserManagement.ControlAttribute
