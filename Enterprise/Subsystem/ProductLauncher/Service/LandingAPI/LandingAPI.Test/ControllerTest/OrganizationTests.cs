@@ -310,9 +310,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/domain/customercompany/1", booksCompanyMasterDomainListResponse);
             _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/companyinstance?filter[source]=UPFM&filter[customerCompanyMap.customerCompanyId]=1&fields[companyinstance]=companyInstanceId,source,companyInstanceSourceId,companyName,companyType,isActive,domain", booksCompanyInstancesResponse);
         
-            _mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/v2/provisioning/property", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
+            
             _mockHttpMessageHandler.Setup(HttpMethod.Put, $"http://localhost/v2/provisioning/property", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
-            _mockHttpMessageHandler.Setup(HttpMethod.Delete, $"http://localhost/provisioning/property/a1ef0ac9-2f84-4288-b369-e59b1d6c13de", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
+            
         }
 
         #region Controller Unit Tests
@@ -2539,6 +2539,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             _mockTokenHelper
                   .Setup(m => m.GetUnifiedLoginServerToken("unifiedsettingsapi"))
               .Returns("abcdedfghijklmnilol");
+            _mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/v2/provisioning/property", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
 
             OrganizationController organizationController = new OrganizationController(
                 _mockRepository.Object
@@ -2549,10 +2550,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()
-            };           
-
-            
-
+            };   
             
             //Act           
             HttpResponseMessage response = organizationController.AddPropertyForOrganization(_propertyInstance, EmployeeCompanyRealPageId);
@@ -2694,6 +2692,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                    It.IsAny<object>()))
                .Returns(repository);
             _mockHttpMessageHandler.Setup(HttpMethod.Delete, $"http://localhost/propertyinstance/a1ef0ac9-2f84-4288-b369-e59b1d6c13de/UPFM?modifiedBy=UnifiedPlatform", new HttpResponseMessage(HttpStatusCode.NoContent) { Content = new StringContent("{ \"result\" : \"success\"}") });
+            _mockHttpMessageHandler.Setup(HttpMethod.Delete, $"http://localhost/v2/provisioning/property/a1ef0ac9-2f84-4288-b369-e59b1d6c13de", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
             OrganizationController organizationController = new OrganizationController(
                 _mockRepository.Object
                 , _mockRepositoryResponse.Object

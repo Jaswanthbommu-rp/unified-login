@@ -88,7 +88,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
             ManageBlueBook manageBlueBook = new ManageBlueBook(userClaims, productInternalSettingRepository, messageHandler);
             ManageProfile manageProfile = new ManageProfile(userClaims);
-            _manageSettings = new ManageUnifiedSettings(repository, _userClaims);
+            _manageSettings = new ManageUnifiedSettings(repository, _userClaims, messageHandler);
 
             _manageProduct = new ManageProduct(productRepository, productInternalSettingRepository, _managePersona, manageBlueBook, managePartyRelationship, _manageOrganization, manageProfile, manageUserRoleRight, userClaims);
 

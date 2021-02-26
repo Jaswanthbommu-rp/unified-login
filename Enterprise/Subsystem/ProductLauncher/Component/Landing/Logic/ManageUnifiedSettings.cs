@@ -46,13 +46,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// </summary>
         /// <param name="repository">Repository</param>
         /// <param name="userClaim">Information about the user</param>
-        public ManageUnifiedSettings(IRepository repository, DefaultUserClaim userClaim)
+        /// <param name="messageHandler">messageHandler</param>
+        public ManageUnifiedSettings(IRepository repository, DefaultUserClaim userClaim, HttpMessageHandler messageHandler)
         {
             _unifiedSettingsRepository = new UnifiedSettingsRepository(repository);
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
             _userClaim = userClaim;
             _tokenHelper = new TokenHelper(repository);
             _ignoreUnitTest = true;
+            _httpClient = new HttpClient(messageHandler) { BaseAddress = new Uri("http://localhost") };
         }
 
         /// <summary>
@@ -65,6 +67,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _productInternalSettingRepository = new ProductInternalSettingRepository();
             _userClaim = userClaim;
             _tokenHelper = new TokenHelper();
+            _httpClient = new HttpClient();
         }
         #endregion
 
@@ -219,7 +222,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		public bool DeletePropertyInSetting(Guid propertyInstance)
         {
             GetConfigurationSetting();
-            var ulClientToken = _tokenHelper.GetUnifiedLoginServerToken("unifiedsettingsapi");
+            string ulClientToken = string.Empty;
+            if (!_ignoreUnitTest)
+            {
+                ulClientToken = _tokenHelper.GetUnifiedLoginServerToken("unifiedsettingsapi");
+            }
             Guid correlationId = Guid.NewGuid();
             //https://settingsapi-dev.realpage.com/v2/provisioning/property/{propertyId}         
             string uri = $"v2/provisioning/property/{propertyInstance}";
@@ -284,8 +291,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             //useDomains = GetBooleanProductSettings("BooksUseDomains");
             //useUPFMId = GetBooleanProductSettings("BooksUseUPFMId");
             //useTranslatev2 = GetBooleanProductSettings("BooksUseTranslatev2");
-
-            _httpClient = new HttpClient { BaseAddress = new Uri(bbUri) };
+            _httpClient.BaseAddress = new Uri(bbUri);
         }
         #endregion
     }

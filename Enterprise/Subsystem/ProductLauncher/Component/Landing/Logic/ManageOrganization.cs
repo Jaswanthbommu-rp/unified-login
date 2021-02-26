@@ -64,7 +64,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _manageBlueBook = new ManageBlueBook(_defaultUserClaim, _productInternalSettingRepository, messageHandler);
             _manageProductPanel = new ManageProductPanel(_defaultUserClaim, repository, _manageBlueBook, messageHandler, null);
             _propertyRepository = new PropertyRepository(repository);
-            _manageUnifiedSettings = new ManageUnifiedSettings(repository,userClaim);
+            _manageUnifiedSettings = new ManageUnifiedSettings(repository,userClaim, messageHandler);
         }
 
         /// <summary>
@@ -83,7 +83,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _manageBlueBook = new ManageBlueBook(_defaultUserClaim, _productInternalSettingRepository, messageHandler);
             _manageProductPanel = new ManageProductPanel(_defaultUserClaim, repository, _manageBlueBook,messageHandler, manageProductOneSite);
             _propertyRepository = new PropertyRepository(repository);
-            _manageUnifiedSettings = new ManageUnifiedSettings(repository, userClaim);
+            _manageUnifiedSettings = new ManageUnifiedSettings(repository, userClaim, messageHandler);
         }
 
         /// <summary>
