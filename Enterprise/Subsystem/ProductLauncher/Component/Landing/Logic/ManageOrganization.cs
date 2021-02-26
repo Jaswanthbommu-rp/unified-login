@@ -22,6 +22,7 @@ using System.Linq;
 using System.Net.Http;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using PropertySetup = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.PropertySetup;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterprise.Helpers;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -41,6 +42,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private IPropertyRepository _propertyRepository;
         private IManageBlueBook _manageBlueBook;
         private IManageProductPanel _manageProductPanel;
+        private IManageUnifiedSettings _manageUnifiedSettings;       
 
         private DefaultUserClaim _defaultUserClaim;
         #endregion
@@ -62,6 +64,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _manageBlueBook = new ManageBlueBook(_defaultUserClaim, _productInternalSettingRepository, messageHandler);
             _manageProductPanel = new ManageProductPanel(_defaultUserClaim, repository, _manageBlueBook, messageHandler, null);
             _propertyRepository = new PropertyRepository(repository);
+            _manageUnifiedSettings = new ManageUnifiedSettings(repository,userClaim);
         }
 
         /// <summary>
@@ -80,6 +83,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _manageBlueBook = new ManageBlueBook(_defaultUserClaim, _productInternalSettingRepository, messageHandler);
             _manageProductPanel = new ManageProductPanel(_defaultUserClaim, repository, _manageBlueBook,messageHandler, manageProductOneSite);
             _propertyRepository = new PropertyRepository(repository);
+            _manageUnifiedSettings = new ManageUnifiedSettings(repository, userClaim);
         }
 
         /// <summary>
@@ -98,6 +102,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _manageBlueBook = new ManageBlueBook(userClaim);
             _manageProductPanel = new ManageProductPanel(userClaim);
             _defaultUserClaim = userClaim;
+            _manageUnifiedSettings = new ManageUnifiedSettings(userClaim);
         }
 
         #endregion
@@ -731,10 +736,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <summary>
         /// Update existing Property
         /// </summary>
+        /// <param name="companyInstanceId">companyInstanceId</param>
         /// <param name="propertyInstanceId">property Instance Id</param>
         /// <param name="propertyName">propertyName</param>
         /// <returns>RepositoryResponse object</returns>
-        public RepositoryResponse UpdateProperty(Guid propertyInstanceId, string propertyName)
+        public RepositoryResponse UpdateProperty(Guid companyInstanceId, Guid propertyInstanceId, string propertyName)
         {
             if (propertyInstanceId == Guid.Empty)
             {
@@ -747,14 +753,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var _repositoryResponse = _propertyRepository.UpdateProperty(propertyInstanceId, propertyName);           
             if (_repositoryResponse.Id > 0)
             {
-                PropertyInstanceAck ack = new PropertyInstanceAck
-                {
-                    PropertyInstanceSourceId = propertyInstanceId.ToString(),
-                    Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
-                    PropertyName = propertyName,
-                    ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)
-                };
-                _manageBlueBook.AcknowledgePropertyUpdate(ack);
+               bool booksResponse =  UpdatePropertyInBooks(propertyInstanceId, propertyName);
+               bool SettingsResponse =  UpdatePropertyInSettings(propertyInstanceId, companyInstanceId);
+                _repositoryResponse = HandleErrorMessage(booksResponse, SettingsResponse, "Error while updating property", _repositoryResponse);
             }
             return _repositoryResponse;
         }
@@ -773,12 +774,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             property.InstanceId = response.RealPageId;
             if (response.ErrorMessage.Length == 0)
             {
-				bool booksReponse = AddPropertyToBooks(property, companyInstanceID);
-				if (!booksReponse)
-				{
-					response.ErrorMessage = "Error while adding data to Books";
-				}
-			}
+				bool booksResponse = AddPropertyToBooks(property, companyInstanceID);				
+                bool settingsResponse = AddPropertyToUnifiedSettings(property, companyInstanceID);
+                response = HandleErrorMessage(booksResponse, settingsResponse, "Error while adding property", response);
+            }
             return response;            
         }
         #endregion
@@ -839,11 +838,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var response = _propertyRepository.DeleteUPFMPropertyInstance(propertyInstanceID);
             if (response.ErrorMessage.Length == 0)
             {
-                bool booksReponse = DeletePropertyFromBooks(propertyInstanceID);
-                if (!booksReponse)
-                {
-                    response.ErrorMessage = "Error while deleting property from Books";
-                }
+                bool booksResponse = DeletePropertyFromBooks(propertyInstanceID);
+                bool settingsResponse = DeletePropertyFromUnifiedSetting(propertyInstanceID);
+                response = HandleErrorMessage(booksResponse, settingsResponse, "Error while deleting property", response);
             }
             return response;
         }
@@ -1118,9 +1115,99 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return _manageBlueBook.AddBooksGreenBookPropertyInstanceFromProvisioning(pi);
         }
 
+        private bool UpdatePropertyInBooks(Guid propertyInstanceId, string propertyName)
+		{
+            PropertyInstanceAck ack = new PropertyInstanceAck
+            {
+                PropertyInstanceSourceId = propertyInstanceId.ToString(),
+                Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
+                PropertyName = propertyName,
+                ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)
+            };
+           return _manageBlueBook.AcknowledgePropertyUpdate(ack);
+        }
+
         private bool DeletePropertyFromBooks(Guid propertyInstanceID)
         {
             return _manageBlueBook.DeletePropertyFromBooks(propertyInstanceID);
+        }		
+
+		private bool AddPropertyToUnifiedSettings(UPFMPropertyInstance property, Guid companyInstanceID)
+        {
+            UnifiedSettingPropertyPayload payload = PreparePropertyObjectToUnifiedSetting(property, companyInstanceID);
+            return _manageUnifiedSettings.CreateUpdatePropertyInSetting(payload, HttpMethod.Post);
+        }
+
+        private bool UpdatePropertyInSettings(Guid propertyInstanceId, Guid companyInstanceID)
+		{
+            List<Guid> propGuidList = new List<Guid>
+            {
+                propertyInstanceId
+            };
+            UPFMPropertyInstance _propertyInstance = _propertyRepository.ListUPFMPropertyInstanceIdByInstanceIds(propGuidList).FirstOrDefault();
+            UnifiedSettingPropertyPayload payload = PreparePropertyObjectToUnifiedSetting(_propertyInstance, companyInstanceID);
+            return _manageUnifiedSettings.CreateUpdatePropertyInSetting(payload, HttpMethod.Put);
+        }
+        private bool DeletePropertyFromUnifiedSetting(Guid propertyInstanceID)
+        {
+            return _manageUnifiedSettings.DeletePropertyInSetting(propertyInstanceID);
+        }
+
+        private UnifiedSettingPropertyPayload PreparePropertyObjectToUnifiedSetting(UPFMPropertyInstance property, Guid companyInstanceID)
+		{
+            UnifiedSettingProperty usp = new UnifiedSettingProperty
+            {
+                Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
+                Company = new UnifiedSettingCompanyInstance
+                {
+                    CompanyInstanceSourceId = companyInstanceID.ToString().ToLower()
+                },
+                Properties = new List<UnifiedSettingPropertyInstance>()
+                {
+                    new UnifiedSettingPropertyInstance()
+                        {
+                            PropertyName = property.Name,
+                            PropertyInstanceSourceId = property.InstanceId,
+                            CustomerPropertyId = !string.IsNullOrEmpty(property.CustomerPropertyId) ? property.CustomerPropertyId : "0",
+                            IsActive = true,
+                            Address = property.Address,
+                            City = property.City,
+                            State = property.State,
+                            PostalCode = property.PostalCode,
+                            County = property.County,
+                            Country = property.Country
+                    }
+                },
+                CustomerEnvironment = property.Domain
+            };
+            return new UnifiedSettingPropertyPayload
+            {
+                Payload = usp
+            };
+        }
+
+        private RepositoryResponse HandleErrorMessage(bool booksReponse, bool settingsResponse, string errorMessage, RepositoryResponse response)
+		{
+            if (booksReponse && settingsResponse)
+            {
+                return response;
+            }
+            else if (!booksReponse && !settingsResponse)
+            {
+                response.ErrorMessage = errorMessage + " from Books and Settings";
+            }
+            else
+            {
+                if (!booksReponse)
+                {
+                    response.ErrorMessage = errorMessage + " from Books";
+                }
+                if (!settingsResponse)
+                {
+                    response.ErrorMessage = errorMessage + " from Settings";
+                }
+            }
+            return response;
         }
         #endregion
     }
