@@ -1832,3 +1832,16 @@ BEGIN
 				select TOP (1) ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is NULL ORDER BY GlobalProductConfigurationId DESC
 END
 GO
+
+-- 679135
+UPDATE enterprise.product SET Description = 'Axiometrics is the industry leader in providing multifamily and student housing data at individual properties down to the floorplan level. Covering markets of all sizes across the country, Axiometrics delivers detailed reports and analytics on tens of thousands of assets every month.' WHERE productid = 33
+GO
+
+UPDATE ps
+SET ps.Value = 'https://www.realpage.com/asset-optimization/market-analytics/'
+FROM enterprise.ProductSetting ps 
+INNER JOIN enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId 
+WHERE ProductId = 33 AND pst.Name = 'LearnMore'
+-- 679135
+
+GO
