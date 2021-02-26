@@ -1187,7 +1187,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         private RepositoryResponse HandleErrorMessage(bool booksReponse, bool settingsResponse, string errorMessage, RepositoryResponse response)
-		{
+        {
             if (booksReponse && settingsResponse)
             {
                 return response;
