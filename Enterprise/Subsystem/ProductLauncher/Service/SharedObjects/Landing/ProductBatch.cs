@@ -203,6 +203,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		public Notifications Notifications { get; set; }
 
 
-	    #endregion
+		#endregion
+		/// <summary>
+		/// Use Primary Properties to assigned to a user
+		/// </summary>
+		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+		public bool UsePrimaryProperties { get; set; } = false;
 	}
 }

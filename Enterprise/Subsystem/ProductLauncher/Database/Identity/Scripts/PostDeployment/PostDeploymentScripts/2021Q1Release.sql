@@ -745,7 +745,7 @@ BEGIN
 	VALUES (@MaxControlId +3, @MaxControlId +2, 10, N'FinancialSuiteProductAccessLocationGroupCheckboxUIId', NULL, N'isAssigned', 2, @UserId, @Now)
 
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
-	VALUES (@MaxControlId +4, @MaxControlId +2, 5, N'FinancialSuiteProductAccessLocationGroupLabelUIId', N'Group', N'name', 3, @UserId, @Now)
+	VALUES (@MaxControlId +4, @MaxControlId +2, 5, N'FinancialSuiteProductAccessLocationGroupLabelUIId', N'Location Group', N'name', 3, @UserId, @Now)
 
 	--PGSlide
 			INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
@@ -777,7 +777,7 @@ END
 			IF NOT EXISTS ( SELECT TOP 1 1 FROM [UserManagement].[ControlAttribute] WHERE ControlId = @FSLGSelallID)
 			BEGIN
 				INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
-				VALUES (@MaxControlAttributeId + 1, @FSLGSelallID, N'ShowSelectAll', N'True', @UserId, @Now)
+				VALUES (@MaxControlAttributeId + 1, @FSLGSelallID, N'ShowSelectAll', N'False', @UserId, @Now)
 			END
 
 			--SELECT @MaxControlAttributeId = max(ControlAttributeId) from UserManagement.ControlAttribute
@@ -1833,6 +1833,19 @@ BEGIN
 END
 GO
 
+-- 679135
+UPDATE enterprise.product SET Description = 'Axiometrics is the industry leader in providing multifamily and student housing data at individual properties down to the floorplan level. Covering markets of all sizes across the country, Axiometrics delivers detailed reports and analytics on tens of thousands of assets every month.' WHERE productid = 33
+GO
+
+UPDATE ps
+SET ps.Value = 'https://www.realpage.com/asset-optimization/market-analytics/'
+FROM enterprise.ProductSetting ps 
+INNER JOIN enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId 
+WHERE ProductId = 33 AND pst.Name = 'LearnMore'
+-- 679135
+
+GO
+
 -- ILMLM/ILMLA Authentication for GB API
 DECLARE @ServerName SYSNAME = @@SERVERNAME
 IF @ServerName IN ('RCDUSODBSQL001','RCTUSODBSQL001') --DEV And QA
@@ -1847,7 +1860,8 @@ BEGIN
 	BEGIN
 		INSERT INTO Enterprise.ProductSetting VALUES(40,1011,'WHZkanhYV01DT2Y1akZ6NA==',GETDATE(),NULL)
 		INSERT INTO Enterprise.ProductSetting VALUES(41,1011,'WHZkanhYV01DT2Y1akZ6NA==',GETDATE(),NULL)
-	END	
+	END			
+
 END
 IF @ServerName IN ('RCQUSODBSQL001') --SAT
 BEGIN
@@ -1877,4 +1891,35 @@ BEGIN
 		INSERT INTO Enterprise.ProductSetting VALUES(41,1011,'ZUpNSFlpeHgzMXk0dTBnUQ==',GETDATE(),NULL)
 	END
 END
-GO
+
+IF EXISTS (SELECT 1 ProductSettingId FROM Enterprise.ProductSetting WHERE ProductId = 40 and ProductSettingTypeId = 1010)
+BEGIN
+INSERT INTO Enterprise.ProductConfiguration(ConfigurationId, ProductSettingId, FromDate, ThruDate) VALUES (
+(SELECT TOP 1 ConfigurationId FROM Enterprise.GlobalProductConfiguration WHERE ProductId = 40),
+(SELECT TOP 1 ProductSettingId FROM Enterprise.ProductSetting WHERE ProductId = 40 and ProductSettingTypeId = 1010),
+GETDATE(),NULL)
+END
+
+IF EXISTS (SELECT 1 ProductSettingId FROM Enterprise.ProductSetting WHERE ProductId = 40 and ProductSettingTypeId = 1011)
+BEGIN
+INSERT INTO Enterprise.ProductConfiguration(ConfigurationId, ProductSettingId, FromDate, ThruDate) VALUES (
+(SELECT TOP 1 ConfigurationId FROM Enterprise.GlobalProductConfiguration WHERE ProductId = 40),
+(SELECT ProductSettingId FROM Enterprise.ProductSetting WHERE ProductId = 40 and ProductSettingTypeId = 1011),
+GETDATE(),NULL)
+END
+
+IF EXISTS (SELECT 1 ProductSettingId FROM Enterprise.ProductSetting WHERE ProductId = 41 and ProductSettingTypeId = 1010)
+BEGIN
+INSERT INTO Enterprise.ProductConfiguration(ConfigurationId, ProductSettingId, FromDate, ThruDate) VALUES (
+(SELECT TOP 1 ConfigurationId FROM Enterprise.GlobalProductConfiguration WHERE ProductId = 41),
+(SELECT ProductSettingId FROM Enterprise.ProductSetting WHERE ProductId = 41 and ProductSettingTypeId = 1010),
+GETDATE(),NULL)
+END
+
+IF EXISTS (SELECT 1 ProductSettingId FROM Enterprise.ProductSetting WHERE ProductId = 41 and ProductSettingTypeId = 1011)
+BEGIN
+INSERT INTO Enterprise.ProductConfiguration(ConfigurationId, ProductSettingId, FromDate, ThruDate) VALUES (
+(SELECT TOP 1 ConfigurationId FROM Enterprise.GlobalProductConfiguration WHERE ProductId = 41),
+(SELECT ProductSettingId FROM Enterprise.ProductSetting WHERE ProductId = 41 and ProductSettingTypeId = 1011),
+GETDATE(),NULL)
+END
