@@ -310,10 +310,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                     logData = new Dictionary<string, object> {{"error", createResult}};
 
                                     WriteToLog(LogEventLevel.Error, "Error", logData);
-                                    if (!createResult.Result.Equals("Company not found in books environment", StringComparison.OrdinalIgnoreCase))
+                                    if (createResult.Result.Equals("Company not found in books environment", StringComparison.OrdinalIgnoreCase))
                                     {
-                                        return Request.CreateResponse(HttpStatusCode.BadRequest, createResult);
+                                        // shortcut out, this create may be for another environment
+                                        return Request.CreateResponse(HttpStatusCode.Accepted);
                                     }
+                                    return Request.CreateResponse(HttpStatusCode.BadRequest, createResult);
                                 }
 
                                 if (!createResult.RealPageId.Equals(Guid.Empty.ToString()))
