@@ -1895,7 +1895,7 @@ END
 IF EXISTS (SELECT 1 ProductSettingId FROM Enterprise.ProductSetting WHERE ProductId = 40 and ProductSettingTypeId = 1010)
 BEGIN
 INSERT INTO Enterprise.ProductConfiguration(ConfigurationId, ProductSettingId, FromDate, ThruDate) VALUES (
-(SELECT TOP 1 ConfigurationId FROM Enterprise.GlobalProductConfiguration WHERE ProductId = 40),
+(SELECT TOP 1 ConfigurationId FROM Enterprise.GlobalProductConfiguration WHERE ProductId = 40 AND ThruDate IS NULL),
 (SELECT TOP 1 ProductSettingId FROM Enterprise.ProductSetting WHERE ProductId = 40 and ProductSettingTypeId = 1010),
 GETDATE(),NULL)
 END
@@ -1903,7 +1903,7 @@ END
 IF EXISTS (SELECT 1 ProductSettingId FROM Enterprise.ProductSetting WHERE ProductId = 40 and ProductSettingTypeId = 1011)
 BEGIN
 INSERT INTO Enterprise.ProductConfiguration(ConfigurationId, ProductSettingId, FromDate, ThruDate) VALUES (
-(SELECT TOP 1 ConfigurationId FROM Enterprise.GlobalProductConfiguration WHERE ProductId = 40),
+(SELECT TOP 1 ConfigurationId FROM Enterprise.GlobalProductConfiguration WHERE ProductId = 40 AND ThruDate IS NULL),
 (SELECT ProductSettingId FROM Enterprise.ProductSetting WHERE ProductId = 40 and ProductSettingTypeId = 1011),
 GETDATE(),NULL)
 END
@@ -1911,7 +1911,7 @@ END
 IF EXISTS (SELECT 1 ProductSettingId FROM Enterprise.ProductSetting WHERE ProductId = 41 and ProductSettingTypeId = 1010)
 BEGIN
 INSERT INTO Enterprise.ProductConfiguration(ConfigurationId, ProductSettingId, FromDate, ThruDate) VALUES (
-(SELECT TOP 1 ConfigurationId FROM Enterprise.GlobalProductConfiguration WHERE ProductId = 41),
+(SELECT TOP 1 ConfigurationId FROM Enterprise.GlobalProductConfiguration WHERE ProductId = 41 AND ThruDate IS NULL),
 (SELECT ProductSettingId FROM Enterprise.ProductSetting WHERE ProductId = 41 and ProductSettingTypeId = 1010),
 GETDATE(),NULL)
 END
@@ -1919,7 +1919,7 @@ END
 IF EXISTS (SELECT 1 ProductSettingId FROM Enterprise.ProductSetting WHERE ProductId = 41 and ProductSettingTypeId = 1011)
 BEGIN
 INSERT INTO Enterprise.ProductConfiguration(ConfigurationId, ProductSettingId, FromDate, ThruDate) VALUES (
-(SELECT TOP 1 ConfigurationId FROM Enterprise.GlobalProductConfiguration WHERE ProductId = 41),
+(SELECT TOP 1 ConfigurationId FROM Enterprise.GlobalProductConfiguration WHERE ProductId = 41 AND ThruDate IS NULL),
 (SELECT ProductSettingId FROM Enterprise.ProductSetting WHERE ProductId = 41 and ProductSettingTypeId = 1011),
 GETDATE(),NULL)
 END
