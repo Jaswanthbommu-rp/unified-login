@@ -1402,7 +1402,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             string productcode = ProductEnumHelper.StringValueOf((ProductEnum)productId);
             IPropertyRepository propertyRepository = new PropertyRepository();
 
-            if (upfmProperty == null || upfmProperty.id.Count == 0)
+            if (upfmProperty?.id == null )
             {
                 return productResult;
             }
