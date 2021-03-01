@@ -682,18 +682,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         #endregion
 
         #region GetPropertiesForCompany
-        public List<CompanyPropertySetup> GetPropertiesForCompany(Guid companyInstanceId, string propertyName = null, string domain = null, int? blueId = null, IDictionary<object, object> globals=null)
+        public List<CompanyPropertySetup> GetPropertiesForCompany(Guid companyInstanceId, string propertyName = null, string domain = null, int? blueId = null, IDictionary<object, object> globals=null, long editorPersonaId=0, long userPersonaId = 0)
         {
             RequestParameter dataFilter = new RequestParameter();
            
             if (globals.ContainsKey(BaseType.RequestParameter))
             {
                 dataFilter = globals[BaseType.RequestParameter] as RequestParameter;
-            }
-            
+            }            
             List<Guid> propertyInstanceIds;
             List<PropertySetup> propertyDetails = new List<PropertySetup>();
-            List<BooksPropertyInstance> booksPropertyInstance = GetPropertyInstanceFromBooks(companyInstanceId);
+            List<int> userProperties = null;
+            List<BooksPropertyInstance> booksPropertyInstance = GetPropertyInstanceFromBooks(companyInstanceId);            
+            if (userPersonaId > 0)
+            {
+                userProperties = new List<int>();
+                userProperties = _propertyRepository.ListUPFMPropertyInstanceIdByPersona(userPersonaId, ProductEnum.UnifiedUI);
+            }
             if (domain != null)
             {
                 string[] domainFilter = domain.Split(',');
@@ -706,8 +711,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             if(propertyInstanceIds != null)
             {
                 propertyDetails = _propertyRepository.GetPropertiesForCompany(propertyInstanceIds, propertyName, blueId, dataFilter);
-                propertyDetails = AddContractedNameToPropertyList(booksPropertyInstance, propertyDetails);
-            }           
+                propertyDetails = AddContractedNameToPropertyList(booksPropertyInstance, propertyDetails, userProperties);
+            }
             List<CompanyPropertySetup> companyPropertySetup = new List<CompanyPropertySetup>()
             {
                 new CompanyPropertySetup()
@@ -1086,7 +1091,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return _manageBlueBook.GetPropertyInstanceForCompany(companyInstanceId);
         }
 
-        private List<PropertySetup> AddContractedNameToPropertyList(List<BooksPropertyInstance> booksPropertyInstance, List<PropertySetup> propertySetup)
+        private List<PropertySetup> AddContractedNameToPropertyList(List<BooksPropertyInstance> booksPropertyInstance, List<PropertySetup> propertySetup, List<int> userProperties)
         {
             foreach (var property in propertySetup)
             {
@@ -1097,6 +1102,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                                         .Where(pi => pi.attributes.propertyInstanceSourceId.ToString() == property.InstanceId.ToString())
                                         .FirstOrDefault()?.attributes.domain;				
 				property.PropertyAddress = property?.Address + "," + property?.City + "," + property?.State + "," + property?.PostalCode;
+				if (userProperties != null && userProperties.Count > 0 && userProperties.Contains(property.PropertyInstanceId))
+				{
+                    property.IsAssigned = true;
+				}
             }
             return propertySetup;
         }
