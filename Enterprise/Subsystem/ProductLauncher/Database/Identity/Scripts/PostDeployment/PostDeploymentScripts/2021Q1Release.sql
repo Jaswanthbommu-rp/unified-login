@@ -1845,3 +1845,81 @@ WHERE ProductId = 33 AND pst.Name = 'LearnMore'
 -- 679135
 
 GO
+
+-- ILMLM/ILMLA Authentication for GB API
+DECLARE @ServerName SYSNAME = @@SERVERNAME
+IF @ServerName IN ('RCDUSODBSQL001','RCTUSODBSQL001') --DEV And QA
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM Enterprise.ProductSetting WHERE ProductId IN (40,41) AND ProductSettingTypeId = 1010)
+	BEGIN
+		INSERT INTO Enterprise.ProductSetting VALUES(40,1010,'dW5pZmllZC1sb2dpbkByZWFscGFnZS5jb20=',GETDATE(),NULL)
+		INSERT INTO Enterprise.ProductSetting VALUES(41,1010,'dW5pZmllZC1sb2dpbkByZWFscGFnZS5jb20=',GETDATE(),NULL)
+	END	
+
+	IF NOT EXISTS (SELECT 1 FROM Enterprise.ProductSetting WHERE ProductId IN (40,41) AND ProductSettingTypeId = 1011)
+	BEGIN
+		INSERT INTO Enterprise.ProductSetting VALUES(40,1011,'WHZkanhYV01DT2Y1akZ6NA==',GETDATE(),NULL)
+		INSERT INTO Enterprise.ProductSetting VALUES(41,1011,'WHZkanhYV01DT2Y1akZ6NA==',GETDATE(),NULL)
+	END			
+
+END
+IF @ServerName IN ('RCQUSODBSQL001') --SAT
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM Enterprise.ProductSetting WHERE ProductId IN (40,41) AND ProductSettingTypeId = 1010)
+	BEGIN
+		INSERT INTO Enterprise.ProductSetting VALUES(40,1010,'dW5pZmllZC1sb2dpbkByZWFscGFnZS5jb20=',GETDATE(),NULL)
+		INSERT INTO Enterprise.ProductSetting VALUES(41,1010,'dW5pZmllZC1sb2dpbkByZWFscGFnZS5jb20=',GETDATE(),NULL)
+	END	
+
+	IF NOT EXISTS (SELECT 1 FROM Enterprise.ProductSetting WHERE ProductId IN (40,41) AND ProductSettingTypeId = 1011)
+	BEGIN
+		INSERT INTO Enterprise.ProductSetting VALUES(40,1011,'ZVVjVXR5YlI3eXlWRmpJRA==',GETDATE(),NULL)
+		INSERT INTO Enterprise.ProductSetting VALUES(41,1011,'ZVVjVXR5YlI3eXlWRmpJRA==',GETDATE(),NULL)
+	END	
+END
+IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B') --PROD
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM Enterprise.ProductSetting WHERE ProductId IN (40,41) AND ProductSettingTypeId = 1010)
+	BEGIN
+		INSERT INTO Enterprise.ProductSetting VALUES(40,1010,'dW5pZmllZC1sb2dpbkByZWFscGFnZS5jb20=',GETDATE(),NULL)
+		INSERT INTO Enterprise.ProductSetting VALUES(41,1010,'dW5pZmllZC1sb2dpbkByZWFscGFnZS5jb20=',GETDATE(),NULL)
+	END	
+
+	IF NOT EXISTS (SELECT 1 FROM Enterprise.ProductSetting WHERE ProductId IN (40,41) AND ProductSettingTypeId = 1011)
+	BEGIN
+		INSERT INTO Enterprise.ProductSetting VALUES(40,1011,'ZUpNSFlpeHgzMXk0dTBnUQ==',GETDATE(),NULL)
+		INSERT INTO Enterprise.ProductSetting VALUES(41,1011,'ZUpNSFlpeHgzMXk0dTBnUQ==',GETDATE(),NULL)
+	END
+END
+
+IF EXISTS (SELECT 1 ProductSettingId FROM Enterprise.ProductSetting WHERE ProductId = 40 and ProductSettingTypeId = 1010)
+BEGIN
+INSERT INTO Enterprise.ProductConfiguration(ConfigurationId, ProductSettingId, FromDate, ThruDate) VALUES (
+(SELECT TOP 1 ConfigurationId FROM Enterprise.GlobalProductConfiguration WHERE ProductId = 40 AND ThruDate IS NULL),
+(SELECT TOP 1 ProductSettingId FROM Enterprise.ProductSetting WHERE ProductId = 40 and ProductSettingTypeId = 1010),
+GETDATE(),NULL)
+END
+
+IF EXISTS (SELECT 1 ProductSettingId FROM Enterprise.ProductSetting WHERE ProductId = 40 and ProductSettingTypeId = 1011)
+BEGIN
+INSERT INTO Enterprise.ProductConfiguration(ConfigurationId, ProductSettingId, FromDate, ThruDate) VALUES (
+(SELECT TOP 1 ConfigurationId FROM Enterprise.GlobalProductConfiguration WHERE ProductId = 40 AND ThruDate IS NULL),
+(SELECT ProductSettingId FROM Enterprise.ProductSetting WHERE ProductId = 40 and ProductSettingTypeId = 1011),
+GETDATE(),NULL)
+END
+
+IF EXISTS (SELECT 1 ProductSettingId FROM Enterprise.ProductSetting WHERE ProductId = 41 and ProductSettingTypeId = 1010)
+BEGIN
+INSERT INTO Enterprise.ProductConfiguration(ConfigurationId, ProductSettingId, FromDate, ThruDate) VALUES (
+(SELECT TOP 1 ConfigurationId FROM Enterprise.GlobalProductConfiguration WHERE ProductId = 41 AND ThruDate IS NULL),
+(SELECT ProductSettingId FROM Enterprise.ProductSetting WHERE ProductId = 41 and ProductSettingTypeId = 1010),
+GETDATE(),NULL)
+END
+
+IF EXISTS (SELECT 1 ProductSettingId FROM Enterprise.ProductSetting WHERE ProductId = 41 and ProductSettingTypeId = 1011)
+BEGIN
+INSERT INTO Enterprise.ProductConfiguration(ConfigurationId, ProductSettingId, FromDate, ThruDate) VALUES (
+(SELECT TOP 1 ConfigurationId FROM Enterprise.GlobalProductConfiguration WHERE ProductId = 41 AND ThruDate IS NULL),
+(SELECT ProductSettingId FROM Enterprise.ProductSetting WHERE ProductId = 41 and ProductSettingTypeId = 1011),
+GETDATE(),NULL)
+END
