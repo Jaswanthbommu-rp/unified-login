@@ -1075,6 +1075,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// <param name="domain">Domain</param>
         /// <param name="blueId">blueId</param>
         /// <param name="datafilter">datafilter</param>
+        /// <param name="userPersonaId">userPersonaId</param>
+        /// <param name="editorPersonaId">editorPersonaId</param>
         /// <returns>List of Properties for a company </returns>
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
@@ -1083,7 +1085,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [Route("CompanySetup/CompanyPropertyList")]
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         [HttpGet]
-        public HttpResponseMessage GetPropertiesForCompany(Guid companyInstanceId, string domain = null, string propertyName = null, int? blueId = null, [FromUri] RequestParameter datafilter = null)
+        public HttpResponseMessage GetPropertiesForCompany(Guid companyInstanceId, string domain = null, string propertyName = null, int? blueId = null, [FromUri] RequestParameter datafilter = null, long userPersonaId = 0, long editorPersonaId = 0)
         {
             if (companyInstanceId == Guid.Empty)
             {
@@ -1101,7 +1103,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             globals.Add(BaseType.RequestParameter, datafilter);
             var cacheKey = $"getPropertyInstanceForCompany_{companyInstanceId}";
             RPObjectCache.RemoveFromCache(cacheKey);
-            List<CompanyPropertySetup> companyPropertySetup = _manageOrganization.GetPropertiesForCompany(companyInstanceId, propertyName, domain, blueId, globals);
+            List<CompanyPropertySetup> companyPropertySetup = _manageOrganization.GetPropertiesForCompany(companyInstanceId, propertyName, domain, blueId, globals, editorPersonaId, userPersonaId);
 
             int totalRecords = 0;
             if (companyPropertySetup.Count > 0)
