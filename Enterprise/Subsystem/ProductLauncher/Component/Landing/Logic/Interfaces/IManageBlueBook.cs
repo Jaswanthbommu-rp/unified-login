@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
 
@@ -188,5 +189,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         ///// <param name="customerPropertyId"></param>
         ///// <returns></returns>
         List<BooksPropertyInstance> GetPropertyInstanceByCustomerPropertyId(string CustomerPropertyId);
+        ///// <summary>
+        ///// Get translated product primary properties data
+        ///// </summary>
+        ///// <param name="upfmProperty"></param>
+        ///// <returns></returns>
+        ListResponse TranslateProductPrimaryPropertiesData(UPFMProperty upfmProperty, int productId, ListResponse productResult);
     }
 }

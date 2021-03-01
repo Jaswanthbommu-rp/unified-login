@@ -745,7 +745,7 @@ BEGIN
 	VALUES (@MaxControlId +3, @MaxControlId +2, 10, N'FinancialSuiteProductAccessLocationGroupCheckboxUIId', NULL, N'isAssigned', 2, @UserId, @Now)
 
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
-	VALUES (@MaxControlId +4, @MaxControlId +2, 5, N'FinancialSuiteProductAccessLocationGroupLabelUIId', N'Group', N'name', 3, @UserId, @Now)
+	VALUES (@MaxControlId +4, @MaxControlId +2, 5, N'FinancialSuiteProductAccessLocationGroupLabelUIId', N'Location Group', N'name', 3, @UserId, @Now)
 
 	--PGSlide
 			INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
@@ -777,7 +777,7 @@ END
 			IF NOT EXISTS ( SELECT TOP 1 1 FROM [UserManagement].[ControlAttribute] WHERE ControlId = @FSLGSelallID)
 			BEGIN
 				INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
-				VALUES (@MaxControlAttributeId + 1, @FSLGSelallID, N'ShowSelectAll', N'True', @UserId, @Now)
+				VALUES (@MaxControlAttributeId + 1, @FSLGSelallID, N'ShowSelectAll', N'False', @UserId, @Now)
 			END
 
 			--SELECT @MaxControlAttributeId = max(ControlAttributeId) from UserManagement.ControlAttribute
@@ -1831,4 +1831,17 @@ BEGIN
 	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
 				select TOP (1) ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is NULL ORDER BY GlobalProductConfigurationId DESC
 END
+GO
+
+-- 679135
+UPDATE enterprise.product SET Description = 'Axiometrics is the industry leader in providing multifamily and student housing data at individual properties down to the floorplan level. Covering markets of all sizes across the country, Axiometrics delivers detailed reports and analytics on tens of thousands of assets every month.' WHERE productid = 33
+GO
+
+UPDATE ps
+SET ps.Value = 'https://www.realpage.com/asset-optimization/market-analytics/'
+FROM enterprise.ProductSetting ps 
+INNER JOIN enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId 
+WHERE ProductId = 33 AND pst.Name = 'LearnMore'
+-- 679135
+
 GO
