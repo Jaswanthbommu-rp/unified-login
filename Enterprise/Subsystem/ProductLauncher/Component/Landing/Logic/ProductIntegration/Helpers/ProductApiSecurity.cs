@@ -46,14 +46,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     break;
                 case ProductEnum.LeadManagement: //ILM-LM
                 case ProductEnum.LeadAnalytics: //ILM-LA
-                    httpClient.DefaultRequestHeaders.Clear(); // no security
-                    break;
+				case ProductEnum.DepositAlternative:
+					BasicAuthApiSecurity(httpClient);
+					break;
 				case ProductEnum.PortfolioManagement:
 					PortfolioManagementOAuthApiSecurity(httpClient);
 					break;
-	            case ProductEnum.DepositAlternative:
-		            DepositAlternativeApiSecurity(httpClient);
-		            break;
+	            
 	            case ProductEnum.ClickPay:
 		            ClickPayApiSecurity(httpClient);
 		            break;
@@ -82,7 +81,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		    httpClient.DefaultRequestHeaders.Add("apikey", apiKey);
 		}
 
-	    private void DepositAlternativeApiSecurity(HttpClient httpClient)
+	    private void BasicAuthApiSecurity(HttpClient httpClient)
 	    {
 		    string apiUser = _productIntegrationDetails.First(a => a.Name.ToUpper() == "APIUSERNAME").Value;
 		    string apiPassword = _productIntegrationDetails.First(a => a.Name.ToUpper() == "APIPASSWORD").Value;
