@@ -4,6 +4,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
@@ -15,6 +16,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 	{
 		#region Private Variables
 		IOrganizationProductRepository _organizationProductRepository;
+		IManageBlueBook _manageBlueBook;
 		#endregion
 
 		#region Constructors
@@ -31,10 +33,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		/// <summary>
 		/// Create a basic instance of the ManageOrganizationProduct class
 		/// </summary>
-		/// 
-		public ManageOrganizationProduct()
+		/// <param name="manageBlueBook"></param>
+		/// <param name="organizationProductRepository"></param>
+
+		public ManageOrganizationProduct(IManageBlueBook manageBlueBook, IOrganizationProductRepository organizationProductRepository)
 		{
-			_organizationProductRepository = new OrganizationProductRepository();
+			_organizationProductRepository = organizationProductRepository;
+			_manageBlueBook = manageBlueBook;
 		}
 		#endregion
 
@@ -43,15 +48,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		/// <summary>
 		/// Used to add a list of products to the given company
 		/// </summary>
-		/// <param name="partyId"></param>
+		/// <param name="org"></param>
 		/// <param name="productList"></param>
 		/// <returns></returns>
-		public IRepositoryResponse InsertUpdateOrganizationProduct(long partyId, List<ProductEnum> productList)
+		public IRepositoryResponse InsertUpdateOrganizationProduct(Organization org, List<ProductEnum> productList)
 		{
             IRepositoryResponse response = new RepositoryResponse();
 			foreach (ProductEnum product in productList)
 			{
-				response = InsertUpdateOrganizationProduct(partyId: partyId, product: product, configurationId: null, fromDate: null, thruDate: null);
+				var systemProductCenter = new SystemProductCenter() {
+					Id = 0,
+					CompanyInstanceSourceId = org.RealPageId.ToString().ToLower(),
+					CreatedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
+					ProductCenterSourceId = ((int)product).ToString(),
+					PropertyInstanceSourceId = null,
+					Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)
+
+				};
+				var isUpdated = _manageBlueBook.ProductCenterEnable(systemProductCenter);
+
+				if (!isUpdated)
+                {
+					response.ErrorMessage = "Unable to update product in UDM";
+					return response;
+                }
+
+				response = InsertUpdateOrganizationProduct(partyId: org.PartyId, product: product, configurationId: null, fromDate: null, thruDate: null);
 				if (!string.IsNullOrEmpty(response.ErrorMessage))
 				{
 					return response;

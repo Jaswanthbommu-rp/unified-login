@@ -195,5 +195,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         ///// <param name="upfmProperty"></param>
         ///// <returns></returns>
         ListResponse TranslateProductPrimaryPropertiesData(UPFMProperty upfmProperty, int productId, ListResponse productResult);
+
+        /// <summary>
+        /// Used to enable product for an organization
+        /// </summary>
+        /// <param name="systemProductCenter"></param>
+        /// <returns></returns>
+        bool ProductCenterEnable(SystemProductCenter systemProductCenter);
+
+        /// <summary>
+        /// Used to delete product for an organization
+        /// </summary>
+        /// <param name="systemProductCenter"></param>
+        /// <returns></returns>
+        bool ProductCenterDisable(SystemProductCenter systemProductCenter);
     }
 }
