@@ -10,7 +10,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackB
         public string ProductCenterSourceId { get; set; }
         public string CompanyInstanceSourceId { get; set; }
         
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty(NullValueHandling = NullValueHandling.Include)]
         public string PropertyInstanceSourceId { get; set; }
     }
 }
