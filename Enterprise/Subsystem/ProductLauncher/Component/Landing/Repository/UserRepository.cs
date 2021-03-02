@@ -279,11 +279,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         if (primaryPropertiesBatch != null)
                         {
                             upfmProperty.id = primaryPropertiesBatch.InputJson.PropertyList.ToList();
+<<<<<<< HEAD
                         }
 
                         IPersonaRepository personaRepository = new PersonaRepository();
                         var personaProductSettings = personaRepository.GetPersonaProductSettings(cloneUserPersonaId);
                        
+=======
+                        }                       
+                        var personaProductSettings = GetPersonaProductSettings(cloneUserPersonaId);
+>>>>>>> master
                         //Then Get Product Batch Data
                         IList<ProductBatch> pbData = manageProductBatch.GetUserProductBatchData(cloneUserPersonaId, userClaim, userProducts, createUserPersonaId, upfmProperty, personaProductSettings,isExternalUser, usePropertyInstanceUnifiedAmenities);
 

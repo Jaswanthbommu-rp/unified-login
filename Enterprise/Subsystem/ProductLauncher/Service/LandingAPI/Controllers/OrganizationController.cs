@@ -728,8 +728,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             // add the given products to the new company
             if (addProductList.Count > 0)
             {
-                _manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository);
-                _repositoryResponse = _manageOrganizationProduct.InsertUpdateOrganizationProduct(org.PartyId, addProductList);
+                _manageOrganizationProduct = new ManageOrganizationProduct(_manageBlueBook, _organizationProductRepository);
+                _repositoryResponse = _manageOrganizationProduct.InsertUpdateOrganizationProduct(org, addProductList);
                 if (!string.IsNullOrEmpty(_repositoryResponse.ErrorMessage))
                 {
                     return Request.CreateErrorResponse(HttpStatusCode.BadRequest, _repositoryResponse.ErrorMessage);
@@ -793,7 +793,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             // add the given products to the new company
             if (addProductList.Count > 0)
             {
-                IRepositoryResponse response = DeleteProductsFromOrganization(addProductList, org.PartyId);
+                IRepositoryResponse response = DeleteProductsFromOrganization(addProductList, org);
                 if (!string.IsNullOrEmpty(response.ErrorMessage))
                 {
                     Request.CreateErrorResponse(HttpStatusCode.BadRequest, response.ErrorMessage);
@@ -1075,6 +1075,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// <param name="domain">Domain</param>
         /// <param name="blueId">blueId</param>
         /// <param name="datafilter">datafilter</param>
+        /// <param name="userPersonaId">userPersonaId</param>
+        /// <param name="editorPersonaId">editorPersonaId</param>
         /// <returns>List of Properties for a company </returns>
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
@@ -1083,7 +1085,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [Route("CompanySetup/CompanyPropertyList")]
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         [HttpGet]
-        public HttpResponseMessage GetPropertiesForCompany(Guid companyInstanceId, string domain = null, string propertyName = null, int? blueId = null, [FromUri] RequestParameter datafilter = null)
+        public HttpResponseMessage GetPropertiesForCompany(Guid companyInstanceId, string domain = null, string propertyName = null, int? blueId = null, [FromUri] RequestParameter datafilter = null, long userPersonaId = 0, long editorPersonaId = 0)
         {
             if (companyInstanceId == Guid.Empty)
             {
@@ -1101,7 +1103,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             globals.Add(BaseType.RequestParameter, datafilter);
             var cacheKey = $"getPropertyInstanceForCompany_{companyInstanceId}";
             RPObjectCache.RemoveFromCache(cacheKey);
-            List<CompanyPropertySetup> companyPropertySetup = _manageOrganization.GetPropertiesForCompany(companyInstanceId, propertyName, domain, blueId, globals);
+            List<CompanyPropertySetup> companyPropertySetup = _manageOrganization.GetPropertiesForCompany(companyInstanceId, propertyName, domain, blueId, globals, editorPersonaId, userPersonaId);
 
             int totalRecords = 0;
             if (companyPropertySetup.Count > 0)
@@ -1476,13 +1478,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// </summary>
         /// <param name="addProductList"></param>
         /// <param name="partyId"></param>
-        private IRepositoryResponse DeleteProductsFromOrganization(List<ProductEnum> addProductList, long partyId)
+        private IRepositoryResponse DeleteProductsFromOrganization(List<ProductEnum> addProductList, Organization org)
         {
             IRepositoryResponse response = new RepositoryResponse();
             IManageOrganizationProduct manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository);
             foreach (ProductEnum product in addProductList)
             {
-                response = manageOrganizationProduct.DeleteOrganizationProduct(partyId: partyId, product: product);
+                var systemProductCenter = new SystemProductCenter()
+                {
+                    Id = org.PartyId,
+                    CompanyInstanceSourceId = org.RealPageId.ToString().ToLower(),
+                    CreatedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
+                    ProductCenterSourceId = ((int)product).ToString(),
+                    PropertyInstanceSourceId = null,
+                    Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)
+
+                };
+
+                var isUpdated = _manageBlueBook.ProductCenterDisable(systemProductCenter);
+
+                if (!isUpdated)
+                {
+                    response.ErrorMessage = "Unable to delete product in UDM";
+                    return response;
+                }
+                
+                response = manageOrganizationProduct.DeleteOrganizationProduct(partyId: org.PartyId, product: product);
                 if (!string.IsNullOrEmpty(response.ErrorMessage))
                 {
                     return response;
