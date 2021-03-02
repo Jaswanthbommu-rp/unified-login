@@ -13,10 +13,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <summary>
 		/// Used to add a list of products to the given company 
 		/// </summary>
-		/// <param name="partyId"></param>
+		/// <param name="org"></param>
 		/// <param name="productList"></param>
 		/// <returns></returns>
-		IRepositoryResponse InsertUpdateOrganizationProduct(long partyId, List<ProductEnum> productList);
+		IRepositoryResponse InsertUpdateOrganizationProduct(Organization org, List<ProductEnum> productList);
 
 		/// <summary>
 		/// Used to delete a product from an Organization
