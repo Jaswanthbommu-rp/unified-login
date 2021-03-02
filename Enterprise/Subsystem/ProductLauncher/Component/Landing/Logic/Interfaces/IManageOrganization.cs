@@ -137,8 +137,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="domain">Domain</param>
 		/// <param name="blueId">blueId</param>
 		/// <param name="globals">datafilter</param>
+		/// <param name="editorPersonaId">editorPersonaId</param>
+		/// <param name="userPersonaId">userPersonaId</param>
 		/// <returns>List of Properties for a company </returns>
-		List<CompanyPropertySetup> GetPropertiesForCompany(Guid companyInstanceId, string propertyName = null, string domain = null, int? blueId = null,  IDictionary<object, object> globals = null);
+		List<CompanyPropertySetup> GetPropertiesForCompany(Guid companyInstanceId, string propertyName = null, string domain = null, int? blueId = null,  IDictionary<object, object> globals = null, long editorPersonaId = 0, long userPersonaId = 0);
 
 		/// <summary>
 		/// Get Property By PeropertyId
@@ -150,10 +152,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <summary>
 		/// Update an existing Property Name
 		/// </summary>
+		/// <param name="companyInstanceId">companyInstanceId</param>
 		/// <param name="propertyInstanceId">property Instance Id</param>
 		/// <param name="propertyName">propertyName</param>
 		/// <returns>RepositoryResponse object</returns>
-		RepositoryResponse UpdateProperty(Guid propertyInstanceId, string propertyName);
+		RepositoryResponse UpdateProperty(Guid companyInstanceId, Guid propertyInstanceId, string propertyName);
 
 		/// <summary>
 		/// AddPropertyForOrganization

@@ -617,9 +617,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void Post_Books_Provisioning_UPFMOrder_Create_Success()
         {
-            RPObjectCache rPObjectCache = new RPObjectCache();
-            rPObjectCache.BustCache();
-
             Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<IUnitOfWork> mockUnitOfWork = new Mock<IUnitOfWork>();
             Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
@@ -710,6 +707,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_provisioning_upfmorder_create);
 
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
             //Act
             HttpResponseMessage response = webHookController.PostBooks(thinEvent);
             Assert.True(response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.Accepted);
@@ -718,9 +718,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 [Fact]
         public void Post_Books_Provisioning_UPFMOrder_Create_Update_Success()
         {
-            RPObjectCache rPObjectCache = new RPObjectCache();
-            rPObjectCache.BustCache();
-
             Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<IUnitOfWork> mockUnitOfWork = new Mock<IUnitOfWork>();
             Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
@@ -744,7 +741,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 RealPageId = new Guid("5C04F18A-FC9B-1234-AAAF-E26DA83CE516")
             };
 
-            
             Guid propertyGuid = new Guid("5C04F18A-FC9B-4A13-AAAF-E26DA83CE516");
 
             HttpResponseMessage responseCustomerCompany = new HttpResponseMessage(HttpStatusCode.OK);
@@ -819,6 +815,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_provisioning_upfmorder_create_update);
 
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
             //Act
             HttpResponseMessage response = webHookController.PostBooks(thinEvent);
             Assert.True(response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.Accepted);
@@ -828,9 +827,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void Post_Books_Provisioning_UPFMOrder_Create_NullDomain()
         {
-            RPObjectCache rPObjectCache = new RPObjectCache();
-            rPObjectCache.BustCache();
-
             Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 
@@ -849,6 +845,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_provisioning_upfmorder_create_nulldomain);
 
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
             //Act
             HttpResponseMessage response = webHookController.PostBooks(thinEvent);
             
@@ -863,9 +862,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void Post_Books_Provisioning_UPFMOrder_Create_MissingBlueBook()
         {
-            RPObjectCache rPObjectCache = new RPObjectCache();
-            rPObjectCache.BustCache();
-
             Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 
@@ -891,6 +887,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_provisioning_upfmorder_create);
 
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
             //Act
             HttpResponseMessage response = webHookController.PostBooks(thinEvent);
             Assert.True(response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.Accepted);
@@ -899,9 +898,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void Post_Books_Provisioning_UPFMOrder_Cancel_Success()
         {
-            RPObjectCache rPObjectCache = new RPObjectCache();
-            rPObjectCache.BustCache();
-
             Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<IUnitOfWork> mockUnitOfWork = new Mock<IUnitOfWork>();
             Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
@@ -949,6 +945,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_provisioning_upfmorder_cancel);
 
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
             //Act
             HttpResponseMessage response = webHookController.PostBooks(thinEvent);
             Assert.True(response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.Accepted);
@@ -957,9 +956,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void Post_Books_Provisioning_UPFMOrder_Cancel_BadRequest_For_InvalidCompanyInstance()
         {
-            RPObjectCache rPObjectCache = new RPObjectCache();
-            rPObjectCache.BustCache();
-
             Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<IUnitOfWork> mockUnitOfWork = new Mock<IUnitOfWork>();
             Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
@@ -1006,6 +1002,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             webHookController.Request.Headers.Add("signature", _mockJson_books_provisioning_upfmorder_cancel_Invalid_CompanyInstance_Signature);
 
             ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_provisioning_upfmorder_cancel_Invalid_CompanyInstance);
+
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
 
             //Act
             HttpResponseMessage response = webHookController.PostBooks(thinEvent);

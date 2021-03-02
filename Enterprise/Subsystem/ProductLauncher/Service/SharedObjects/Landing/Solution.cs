@@ -92,5 +92,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		/// </summary>
 		[JsonProperty(PropertyName = "ProductNotAvailableForRegularUserNoEmail")]
 		public bool ProductNotAvailableForRegularUserNoEmail { get; set; } = false;
+
+		/// <summary>
+		/// Product use primary properties
+		/// </summary>
+		[JsonProperty(PropertyName = "UsePrimaryProperties")]
+		public bool UsePrimaryProperties { get; set; } = false;
 	}
 }

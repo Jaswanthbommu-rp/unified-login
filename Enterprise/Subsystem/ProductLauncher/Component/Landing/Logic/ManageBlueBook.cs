@@ -1,6 +1,8 @@
 ﻿using JsonApiSerializer;
 using Newtonsoft.Json;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
@@ -12,6 +14,9 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Accounting;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ops;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Rum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
 using Serilog;
 using Serilog.Events;
@@ -792,6 +797,75 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         /// <summary>
+        /// Used to enable product for an organization
+        /// </summary>
+        /// <param name="systemProductCenter"></param>
+        /// <returns></returns>
+        public bool ProductCenterEnable(SystemProductCenter systemProductCenter)
+        {
+            string uri = $"systemproductcenter";
+
+            Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "systemProductCenter", systemProductCenter } };
+            var jsonToSave = JsonConvert.SerializeObject(systemProductCenter, new JsonApiSerializerSettings()).Replace("\"id\":\"0\",", "");
+            logData.Add("jsonToSave", jsonToSave);
+            WriteToLog(LogEventLevel.Debug, "ProductCenterEnable - Adding info.", logData);
+
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Post,
+                Content = new StringContent(jsonToSave, Encoding.UTF8, "application/json"),
+                RequestUri = new Uri(_httpClient.BaseAddress + uri)
+            };
+            var response = _httpClient.SendAsync(request).Result;
+            if (response != null && response.IsSuccessStatusCode)
+            {
+                WriteToLog(LogEventLevel.Debug, "ProductCenterEnable - Added info successfully.");
+                return true;
+            }
+
+            logData = new Dictionary<string, object>() { { "response", response } };
+            WriteToLog(LogEventLevel.Error, "ProductCenterEnable - Failed to add info.", logData);
+
+            return false;
+        }
+
+        /// <summary>
+        /// Used to delete product for an organization
+        /// </summary>
+        /// <param name="systemProductCenter"></param>
+        /// <returns></returns>
+        public bool ProductCenterDisable(SystemProductCenter systemProductCenter)
+        {
+            string uri = $"/systemproductcenter/{systemProductCenter.Source}/{systemProductCenter.ProductCenterSourceId}/{systemProductCenter.CompanyInstanceSourceId}?modifiedBy={WebUtility.UrlEncode(systemProductCenter.CreatedBy)}";
+
+            ///systemproductcenter/{source}/{productCenterSourceId}/{companyInstanceSourceId}/{propertyInstanceSourceId}
+            Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "systemProductCenter", systemProductCenter } };
+
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Delete,
+                RequestUri = new Uri(_httpClient.BaseAddress + uri)
+            };
+            var response = _httpClient.SendAsync(request).Result;
+            if (response != null && response.IsSuccessStatusCode)
+            {
+                WriteToLog(LogEventLevel.Debug, "ProductCenterDisable - Deleted info successfully.");
+                return true;
+            }
+
+            if (response.StatusCode == HttpStatusCode.NotFound)
+            {
+                WriteToLog(LogEventLevel.Debug, "ProductCenterDisable - Not found in UDM.");
+                return true;
+            }
+
+            logData = new Dictionary<string, object>() { { "response", response } };
+            WriteToLog(LogEventLevel.Error, "ProductCenterDisable - Failed to add info.", logData);
+
+            return false;
+        }
+
+        /// <summary>
         /// Used to acknowledge provisioning cancel events
         /// </summary>
         /// <param name="productCenterCancellation"></param>
@@ -1320,7 +1394,135 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return propertyInstance;
         }
 
+        public ListResponse TranslateProductPrimaryPropertiesData(UPFMProperty upfmProperty, int productId, ListResponse productResult)
+        {
+            TranslatePropertyInstance translatedData = new TranslatePropertyInstance();
+            //IManageBlueBook _manageBlueBook = new ManageBlueBook(_userClaims);
+            List<UPFMPropertyInstance> _upfmPropertyInstance = new List<UPFMPropertyInstance>();
+            string productcode = ProductEnumHelper.StringValueOf((ProductEnum)productId);
+            IPropertyRepository propertyRepository = new PropertyRepository();
 
+            if (upfmProperty?.id == null )
+            {
+                return productResult;
+            }
+
+            /*
+             * If All property selection is true, then upfmProperty == -1
+             */
+            if (upfmProperty.id[0] == "-1")
+            {
+                var booksPropertyList = GetUPFMPropertyInstances(_defaultUserClaim.OrganizationRealPageGuid.ToString());
+                if (booksPropertyList != null)
+                {
+                    _upfmPropertyInstance = propertyRepository.ListUPFMPropertyInstanceIdByInstanceIds(booksPropertyList);
+                    upfmProperty.id = _upfmPropertyInstance.Select(p => p.InstanceId.ToString()).ToList<string>();
+                }
+            }
+
+            UPFMProperty primaryPropertyIds = new UPFMProperty
+            {
+                id = upfmProperty.id.ConvertAll(d => d.ToLower())
+            };
+
+            if (productId == (int)ProductEnum.UnifiedPlatform)
+            {
+                var upfmProeprtiesType = productResult.Records[0].GetType();
+                if (upfmProeprtiesType == typeof(ProductProperty))
+                {
+                    var upfmPropertyList = productResult.Records.Cast<ProductProperty>();
+                    upfmPropertyList.Where(p => primaryPropertyIds.id.Contains(p.ID)).ToList().ForEach(c => c.IsAssigned = true);
+                    upfmPropertyList.Where(p => !primaryPropertyIds.id.Contains(p.ID)).ToList().ForEach(c => c.IsAssigned = false);
+                }
+            }
+            else
+            {
+                translatedData = GetTranslatePropertiesFromUPFMToProductv3(primaryPropertyIds, productcode);
+                var productPropertyType = productResult.Records[0].GetType();
+                var foundProductPropertyIdList = new List<string>();
+
+                if (productPropertyType == typeof(ProductProperty))
+                {
+                    var productList = productResult.Records.Cast<ProductProperty>();
+                    foreach (var property in productList)
+                    {
+                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.ID));
+                        if (instanceExists != null)
+                        {
+                            property.IsAssigned = true;
+                        }
+                    }
+                }
+                else if (productPropertyType == typeof(ACProperty))
+                {
+                    foreach (var property in productResult.Records.Cast<ACProperty>())
+                    {
+                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.Id));
+                        if (instanceExists != null)
+                        {
+                            property.IsAssigned = true;
+                        }
+                    }
+                }
+                else if (productPropertyType == typeof(AssetGroup))
+                {
+                    foreach (var property in productResult.Records.Cast<AssetGroup>())
+                    {
+                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.ID));
+                        if (instanceExists != null)
+                        {
+                            property.IsAssigned = true;
+                        }
+                    }
+                }
+                else if (productPropertyType == typeof(OnSiteProperty))
+                {
+                    foreach (var property in productResult.Records.Cast<OnSiteProperty>())
+                    {
+                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.GetPropertyId.ToString()));
+                        if (instanceExists != null)
+                        {
+                            property.IsAssigned = true;
+                        }
+                    }
+                }
+                else if (productPropertyType == typeof(RumPropertyGroup))
+                {
+                    foreach (var property in productResult.Records.Cast<RumPropertyGroup>())
+                    {
+                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.Id.ToString()));
+                        if (instanceExists != null)
+                        {
+                            property.IsAssigned = true;
+                        }
+                    }
+                }
+                else if (productPropertyType == typeof(ProductProperties))
+                {
+                    foreach (var property in productResult.Records.Cast<ProductProperties>())
+                    {
+                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.GetPropertyId));
+                        if (instanceExists != null)
+                        {
+                            property.IsAssigned = true;
+                        }
+                    }
+                }
+                else if (productPropertyType == typeof(Portfolio))
+                {
+                    foreach (var property in productResult.Records.Cast<Portfolio>())
+                    {
+                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.ID));
+                        if (instanceExists != null)
+                        {
+                            property.IsAssigned = true;
+                        }
+                    }
+                }
+            }
+
+            return productResult;
+		}
 
 
         #region Privates

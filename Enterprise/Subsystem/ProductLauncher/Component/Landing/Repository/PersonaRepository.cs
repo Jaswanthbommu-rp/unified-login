@@ -411,6 +411,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 return repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateActivePersona, new { RealPageId = personRealPageId, PersonaId = personaId });
             }
         }
+
+        public List<ProductSettingList> GetPersonaProductSettings(long personaId)
+        {
+            List<ProductSettingList> productSettingList = new List<ProductSettingList>();
+            using (var repository = GetRepository())
+            {
+                productSettingList = repository.GetMany<ProductSettingList>(StoredProcNameConstants.SP_ListProductSettingsByPersonaId, new { PersonaId = personaId }).ToList();
+            }
+
+            return productSettingList;
+        }
         #endregion
     }
 }

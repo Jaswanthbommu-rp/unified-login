@@ -16,6 +16,7 @@ BEGIN
 		,[Longitude]
 		,PI1.[InstanceId]
 		,PI1.CustomerPropertyId
+		,PI1.Domain
 
 	FROM 
 		[Enterprise].[PropertyInstance] pi1
