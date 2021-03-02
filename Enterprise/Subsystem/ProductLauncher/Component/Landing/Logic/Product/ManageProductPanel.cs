@@ -151,6 +151,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         break;
                     case (int)ProductEnum.AoBusinessIntelligence:
                     case (int)ProductEnum.AoInvestmentAnalytics:
+                    case (int)ProductEnum.AoAxiometrics:
                     case (int)ProductEnum.AoPerformanceAnalytics:
                     case (int)ProductEnum.AoRevenueManagement:
                     case (int)ProductEnum.AoBenchmarking:
@@ -273,6 +274,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                 }
             }
+            finally{
+                IPersonaRepository personaRepository = new PersonaRepository();
+               
+                bool usePrimaryProperty = false;
+                if (userPersonaId > 0 ) {
+                    var personaProductSettings = personaRepository.GetPersonaProductSettings(userPersonaId);
+                    var productSetting = personaProductSettings.FirstOrDefault(item => item.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase) && item.ProductId == productId);
+                    if (productSetting != null)
+                    {
+                        usePrimaryProperty =  productSetting.Value.Trim() == "1" ? true : false;
+                    }                    
+                }
+               
+                result.UsePrimaryProperties = usePrimaryProperty;
+            }
             return result;
         }
 
@@ -354,6 +370,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     case (int)ProductEnum.AoAIRevenueManagement:
                     case (int)ProductEnum.AoRentControl:
                     case (int)ProductEnum.AoMarketAnalytics:
+                    case (int)ProductEnum.AoAxiometrics:
                         var manageProductAo = new ManageProductAssetOptimization(_userClaims);
                         result = manageProductAo.GetProductRoles(editorPersonaId, userPersonaId, productcode, datafilter, userLoginName);
                         break;
@@ -409,7 +426,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         var productLogic = ManageProductFactory.GetProductLogic(ProductEnum.ClickPay, editorPersonaId, userPersonaId, _userClaims);
                         result = productLogic.GetProductRoles(null);
                         break;
-                    case (int)ProductEnum.AoAxiometrics:
+                    
                     case (int)ProductEnum.AssetOptimizer:
                     case (int)ProductEnum.CIMPL:
                     case (int)ProductEnum.EasyLMS:
@@ -745,153 +762,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 return productResult;
             }
-            TranslatePropertyInstance translatedData = new TranslatePropertyInstance();
-            //IManageBlueBook _manageBlueBook = new ManageBlueBook(_userClaims);
-            List<UPFMPropertyInstance> _upfmPropertyInstance = new List<UPFMPropertyInstance>();
-            string productcode = ProductEnumHelper.StringValueOf((ProductEnum)productId);
-            /*
-             * If All property selection is true, then upfmProperty == -1
-             */
-            if (upfmProperty.id[0] == "-1")
-            {
-                var booksPropertyList = _manageBlueBook.GetUPFMPropertyInstances(_userClaims.OrganizationRealPageGuid.ToString());
-                if (booksPropertyList != null)
-                {
-                    _upfmPropertyInstance = _propertyRepository.ListUPFMPropertyInstanceIdByInstanceIds(booksPropertyList);
-                    upfmProperty.id = _upfmPropertyInstance.Select(p => p.InstanceId.ToString()).ToList<string>();
-                }
-            }
 
-            UPFMProperty primaryPropertyIds = new UPFMProperty
-            {
-                id = upfmProperty.id.ConvertAll(d => d.ToLower())
-            };
-
-            if (productId == (int)ProductEnum.UnifiedPlatform)
-            {
-                var upfmProeprtiesType = productResult.Records[0].GetType();                
-                if (upfmProeprtiesType == typeof(ProductProperty))
-                {
-                    var upfmPropertyList = productResult.Records.Cast<ProductProperty>();
-                    upfmPropertyList.Where(p => primaryPropertyIds.id.Contains(p.ID)).ToList().ForEach(c => c.IsAssigned = true);
-                    upfmPropertyList.Where(p => !primaryPropertyIds.id.Contains(p.ID)).ToList().ForEach(c => c.IsAssigned = false);
-                }
-            }
-            else
-            {
-                translatedData = _manageBlueBook.GetTranslatePropertiesFromUPFMToProductv3(primaryPropertyIds, productcode);
-                var productPropertyType = productResult.Records[0].GetType();
-                var foundProductPropertyIdList = new List<string>();
-
-                if (productPropertyType == typeof(ProductProperty))
-                {
-                    var productList = productResult.Records.Cast<ProductProperty>();
-                    foreach (var property in productList)
-                    {
-                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.ID));
-                        if (instanceExists != null)
-                        {
-                            property.IsAssigned = true;
-                        }
-                        else
-                        {
-                            property.IsAssigned = false;
-                        }
-                    }
-                }
-                else if (productPropertyType == typeof(ACProperty))
-                {
-                    foreach (var property in productResult.Records.Cast<ACProperty>())
-                    {
-                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.Id));
-                        if (instanceExists != null)
-                        {
-                            property.IsAssigned = true;
-                        }
-                        else
-                        {
-                            property.IsAssigned = false;
-                        }
-                    }
-                }
-                else if (productPropertyType == typeof(AssetGroup))
-                {
-                    foreach (var property in productResult.Records.Cast<AssetGroup>())
-                    {
-                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.ID));
-                        if (instanceExists != null)
-                        {
-                            property.IsAssigned = true;
-                        }
-                        else
-                        {
-                            property.IsAssigned = false;
-                        }
-                    }
-                }
-                else if (productPropertyType == typeof(OnSiteProperty))
-                {
-                    foreach (var property in productResult.Records.Cast<OnSiteProperty>())
-                    {
-                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.GetPropertyId.ToString()));
-                        if (instanceExists != null)
-                        {
-                            property.IsAssigned = true;
-                        }
-                        else
-                        {
-                            property.IsAssigned = false;
-                        }
-                    }
-                }
-                else if (productPropertyType == typeof(RumPropertyGroup))
-                {
-                    foreach (var property in productResult.Records.Cast<RumPropertyGroup>())
-                    {
-                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.Id.ToString()));
-                        if (instanceExists != null)
-                        {
-                            property.IsAssigned = true;
-                        }
-                        else
-                        {
-                            property.IsAssigned = false;
-                        }
-                    }
-                }
-                else if (productPropertyType == typeof(ProductProperties))
-                {
-                    foreach (var property in productResult.Records.Cast<ProductProperties>())
-                    {
-                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.GetPropertyId));
-                        if (instanceExists != null)
-                        {
-                            property.IsAssigned = true;
-                        }
-                        else
-                        {
-                            property.IsAssigned = false;
-                        }
-                    }
-                }
-                else if (productPropertyType == typeof(Portfolio))
-                {
-                    foreach (var property in productResult.Records.Cast<Portfolio>())
-                    {
-                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.ID));
-                        if (instanceExists != null)
-                        {
-                            property.IsAssigned = true;
-                        }
-                        else
-                        {
-                            property.IsAssigned = false;
-                        }
-                    }
-                }
-            }
+            productResult = _manageBlueBook.TranslateProductPrimaryPropertiesData(upfmProperty, productId, productResult);
             return productResult;
         }
-        #endregion
+        #endregion       
     }
 }
