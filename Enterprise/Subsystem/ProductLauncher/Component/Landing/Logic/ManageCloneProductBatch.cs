@@ -56,9 +56,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					bool productEnabledForPrimaryProperty = IsProductEnabledForUsePrimaryProperty(product.ProductId);
 
 					var productSetting = productSettingList.FirstOrDefault(item => item.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase) && item.ProductId == product.ProductId);
-					personaProductUsePrimaryProperty = (productSetting != null) ? productSetting.Value.Trim() == "1" : true ;
+					
+					if (productSetting != null)
+					{
+						personaProductUsePrimaryProperty = productSetting.Value.Trim() == "1" ? true : false;
+					}
 
-					translateProperties = (productEnabledForPrimaryProperty && personaProductUsePrimaryProperty);
+					translateProperties = (productEnabledForPrimaryProperty && personaProductUsePrimaryProperty && upfmProperty.id != null);
 
 					if (product.ProductId == (int)ProductEnum.OneSite)
 					{

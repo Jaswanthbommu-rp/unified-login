@@ -279,8 +279,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         if (primaryPropertiesBatch != null)
                         {
                             upfmProperty.id = primaryPropertiesBatch.InputJson.PropertyList.ToList();
-                        }                       
-                        var personaProductSettings = GetPersonaProductSettings(cloneUserPersonaId);
+                        }
+
+                        IPersonaRepository personaRepository = new PersonaRepository();
+                        var personaProductSettings = personaRepository.GetPersonaProductSettings(cloneUserPersonaId);
+                       
                         //Then Get Product Batch Data
                         IList<ProductBatch> pbData = manageProductBatch.GetUserProductBatchData(cloneUserPersonaId, userClaim, userProducts, createUserPersonaId, upfmProperty, personaProductSettings,isExternalUser, usePropertyInstanceUnifiedAmenities);
 
@@ -4333,16 +4336,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             return !string.Equals(priorNotificationEmail ?? string.Empty, newNotificationEmail ?? string.Empty, StringComparison.OrdinalIgnoreCase);
         }
 
-        private List<ProductSettingList> GetPersonaProductSettings(long personaId)
-        {
-            List<ProductSettingList> productSettingList = new List<ProductSettingList>();
-            using (var repository = GetRepository())
-            {
-                productSettingList = repository.GetMany<ProductSettingList>(StoredProcNameConstants.SP_ListProductSettingsByPersonaId, new { PersonaId = personaId, ProductStatus = ((Int32)UserUiStatusType.AccountCreationSuccessful).ToString() }).ToList();
-            }
-
-            return productSettingList;
-        }
         /// <summary>
         /// GetAoBatchRecords
         /// </summary>
@@ -5839,7 +5832,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         userProducts.RemoveAll(a => a.ProductId == product.ProductId);
                     }
 
-                    var personaProductSettings = GetPersonaProductSettings(userPersonaId);
+                    IPersonaRepository personaRepository = new PersonaRepository();
+                    var personaProductSettings = personaRepository.GetPersonaProductSettings(userPersonaId);
                     //Then Get Product Batch Data
                     IList<ProductBatch> pbData = manageProductBatch.GetUserProductBatchData(editorPersonaId, userClaim, userProducts, userPersonaId, upfmProperty, personaProductSettings, isExternalUser, usePropertyInstanceUnifiedAmenities);
 
