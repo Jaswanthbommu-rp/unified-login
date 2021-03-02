@@ -717,7 +717,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 new CompanyPropertySetup()
 				{
-                    Domain = booksPropertyInstance?.Select(p => p.attributes.domain).Distinct().ToList(),
+                    Domain = booksPropertyInstance?.Where(p=>p.attributes.domain != null).Select(p => p.attributes.domain).Distinct().ToList(),
                     Property = propertyDetails
                 }
             };
