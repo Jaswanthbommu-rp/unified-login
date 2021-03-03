@@ -25,7 +25,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackB
         /// <summary>
         /// used in provisioning
         /// </summary>
-        [JsonProperty("CustomerPropertyId", NullValueHandling=NullValueHandling.Ignore)]
+        [JsonProperty("customerPropertyId", NullValueHandling=NullValueHandling.Ignore)]
         public int? CustomerPropertyId { get; set; }
 
         /// <summary>
