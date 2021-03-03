@@ -274,6 +274,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                 }
             }
+            finally{
+                IPersonaRepository personaRepository = new PersonaRepository();
+               
+                bool usePrimaryProperty = false;
+                if (userPersonaId > 0 ) {
+                    var personaProductSettings = personaRepository.GetPersonaProductSettings(userPersonaId);
+                    var productSetting = personaProductSettings.FirstOrDefault(item => item.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase) && item.ProductId == productId);
+                    if (productSetting != null)
+                    {
+                        usePrimaryProperty =  productSetting.Value.Trim() == "1" ? true : false;
+                    }                    
+                }
+               
+                result.UsePrimaryProperties = usePrimaryProperty;
+            }
             return result;
         }
 
@@ -751,6 +766,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             productResult = _manageBlueBook.TranslateProductPrimaryPropertiesData(upfmProperty, productId, productResult);
             return productResult;
         }
-        #endregion
+        #endregion       
     }
 }
