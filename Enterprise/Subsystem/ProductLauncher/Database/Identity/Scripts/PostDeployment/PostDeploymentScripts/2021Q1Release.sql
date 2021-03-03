@@ -1923,3 +1923,11 @@ INSERT INTO Enterprise.ProductConfiguration(ConfigurationId, ProductSettingId, F
 (SELECT ProductSettingId FROM Enterprise.ProductSetting WHERE ProductId = 41 and ProductSettingTypeId = 1011),
 GETDATE(),NULL)
 END
+
+GO
+IF NOT EXISTS(SELECT TOP 1 1 FROM [Ident].[SettingCategoryType] Where Name = 'Security')
+BEGIN
+	INSERT INTO [Ident].[SettingCategoryType](Name)
+	VALUES('Security')
+END
+GO
