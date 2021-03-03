@@ -2249,6 +2249,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
 
         private string assignedField;
 
+        private string memberidsField;
+
+        private string parentIdField;
+
+        private string parentNameField;
         /// <remarks/>
         public string ID
         {
@@ -2298,6 +2303,42 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
             set
             {
                 this.assignedField = value;
+            }
+        }
+
+        public string Memberids
+        {
+            get
+            {
+                return this.memberidsField;
+            }
+            set
+            {
+                this.memberidsField = value;
+            }
+        }
+
+        public string ParentID
+        {
+            get
+            {
+                return this.parentIdField;
+            }
+            set
+            {
+                this.parentIdField = value;
+            }
+        }
+
+        public string ParentName
+        {
+            get
+            {
+                return this.parentNameField;
+            }
+            set
+            {
+                this.parentNameField = value;
             }
         }
     }
