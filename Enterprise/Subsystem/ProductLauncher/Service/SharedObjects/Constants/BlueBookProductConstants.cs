@@ -166,11 +166,6 @@
 		public const string AoBenchmarking = "BM";
 
 		/// <summary>
-		/// Market Analytics
-		/// </summary>
-		public const string AoMarketAnalytics = "RMA";
-
-		/// <summary>
 		/// Support Tool
 		/// </summary>
 		public const string SupportTool = "ST";
