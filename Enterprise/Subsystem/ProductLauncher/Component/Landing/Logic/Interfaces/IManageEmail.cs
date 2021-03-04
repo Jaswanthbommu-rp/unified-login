@@ -1,5 +1,4 @@
 ﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
-using System.Threading.Tasks;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
 {
