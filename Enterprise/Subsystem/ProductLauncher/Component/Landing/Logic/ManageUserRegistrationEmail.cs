@@ -195,7 +195,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     DateTime utcStarted = DateTime.UtcNow;
                     string emailStatus = "";
 #if (DEBUG)
-                    emailStatus = "";
+                    emailStatus = "success";
 #endif
                     if (string.IsNullOrEmpty(emailStatus))
                     {
@@ -219,7 +219,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             {
                                 new UserEmail
                                 {
-                                    Email ="vivek.vishal@realpage.com", //cesEmail.EmailTo,
+                                    Email =cesEmail.EmailTo,
                                     Name = firstName
                                 }
                             };
