@@ -1889,7 +1889,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     case (int)ProductRightEnum.AoRevenueManagement:
                     case (int)ProductRightEnum.AoAxiometrics:
                     case (int)ProductRightEnum.AoBenchmarking:
-                    case (int)ProductRightEnum.AoMarketAnalytics:
                         s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageAssetOptimizationProductAccess.ToString());
                         break;
                     case (int)ProductRightEnum.ManageClientPortalProductAccess:
