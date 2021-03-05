@@ -265,21 +265,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				if (list == null)
 				{
-					if (list == null)
+					if (results2.Length > 0)
 					{
-						if (results2.Length > 0)
+						string message = results2[0].TotalRows1;
+						if (message.ToUpper().Contains("NOT A VALID USERID"))
 						{
-							string message = results2[0].TotalRows1;
-							if (message.ToUpper().Contains("NOT A VALID USERID"))
-							{
-								throw new Exception("Invalid user");
-							}
+							throw new Exception("Invalid user");
 						}
-						list = new List<ProductPropertyGroup>();
 					}
-				}
-				else{
-					var lstresponse = GetPropertyGroupEntities(list.ToList(), datafilter);
+					list = new List<ProductPropertyGroup>();
 				}
 
 				response = new ListResponse()
