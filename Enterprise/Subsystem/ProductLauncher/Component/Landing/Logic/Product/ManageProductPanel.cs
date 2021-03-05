@@ -286,8 +286,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         usePrimaryProperty =  productSetting.Value.Trim() == "1" ? true : false;
                     }                    
                 }
+
+                Dictionary<string, bool> additionalInfo = new  Dictionary<string, bool>();
+                Dictionary<string, bool> additionalDataCollection = (Dictionary<string, bool>)result.Additional;
+
+                additionalInfo.Add("usePrimaryProperties", usePrimaryProperty);
                
-                result.UsePrimaryProperties = usePrimaryProperty;
+                if (result.Additional != null)
+                {
+                    foreach (KeyValuePair<string, bool> pair in additionalDataCollection)
+                    {
+                        if (!pair.Key.Equals("usePrimaryProperties", StringComparison.OrdinalIgnoreCase))
+                        {
+                            additionalInfo.Add(pair.Key, pair.Value);
+                        }                                            
+                    }
+                }
+                
+
+                result.Additional = additionalInfo;
             }
             return result;
         }
