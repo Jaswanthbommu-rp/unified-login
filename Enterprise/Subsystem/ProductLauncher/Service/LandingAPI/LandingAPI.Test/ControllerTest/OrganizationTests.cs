@@ -2642,7 +2642,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
 
             //Act           
-            HttpResponseMessage response = organizationController.SearchPropertyByBlueId("0");
+            HttpResponseMessage response = organizationController.SearchPropertyByBlueId("0", new Guid());
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
+        }
+
+        [Fact]
+        public void SearchPropertyByBlueId_InvalidCompanyInstance_ReturnBadRequest()
+        {
+            //Arrange
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            )
+            { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
+
+            //Act           
+            HttpResponseMessage response = organizationController.SearchPropertyByBlueId("1234", Guid.Empty);
 
             //Assert
             Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));

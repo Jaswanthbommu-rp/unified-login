@@ -180,8 +180,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// Search Property Details By CustomerPropertyId(BlueId)
 		/// </summary>
 		/// <param name="customerPropertyId">customerPropertyId</param>
+		/// <param name="companyInstanceId">companyInstanceId</param>
 		/// <returns></returns>
-		PropertyInstanceSearch SearchPropertyDetailsByCustomerPropertyId(string customerPropertyId);
+		PropertyInstanceSearch SearchPropertyDetailsByCustomerPropertyId(string customerPropertyId, Guid companyInstanceId);
 
 		/// <summary>
 		/// Search Company Details By CustomerCompanyId
