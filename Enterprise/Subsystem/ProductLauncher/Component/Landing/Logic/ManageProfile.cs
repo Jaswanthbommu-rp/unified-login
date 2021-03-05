@@ -40,12 +40,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="userClaim"></param>
 		public ManageProfile(IRepository repository, DefaultUserClaim userClaim)
         {
-            //_profileRepository = profileRepository;
-			//_productRepository = productRepository;
-            //_personLogic = personLogic;
-            //_userLoginLogic = userLoginLogic;
-            //_partyRelationshipLogic = partyRelationshipLogic;
-            //_contactMechanismLogic = contactMechanismLogic;
             _profileRepository = new ProfileRepository(repository, userClaim);
             _productRepository = new ProductRepository(repository, userClaim);
             _personLogic = new ManagePerson(repository);
