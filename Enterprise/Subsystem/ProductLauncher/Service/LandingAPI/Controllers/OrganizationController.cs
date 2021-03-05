@@ -1453,18 +1453,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         ///Search Property By BlueId
         /// </summary>
         /// <param name="customerPropertyId">customerPropertyId</param>
+        /// <param name="companyInstanceId">companyInstanceId</param>
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [Route("CompanySetup/CompanyProperty/propertyinstance/{customerPropertyId}")]
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         [HttpGet]
-        public HttpResponseMessage SearchPropertyByBlueId(string customerPropertyId)
+        public HttpResponseMessage SearchPropertyByBlueId(string customerPropertyId, Guid companyInstanceId)
         {
             if ((string.IsNullOrEmpty(customerPropertyId)) || (customerPropertyId == "0"))
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: companyInstanceID");
             }
-            PropertyInstanceSearch _propertySearchList = _manageOrganization.SearchPropertyDetailsByCustomerPropertyId(customerPropertyId);
+            if ((companyInstanceId == Guid.Empty) || (companyInstanceId == null))
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: companyInstanceId");
+            }
+            PropertyInstanceSearch _propertySearchList = _manageOrganization.SearchPropertyDetailsByCustomerPropertyId(customerPropertyId, companyInstanceId);
             return Request.CreateResponse(HttpStatusCode.OK, _propertySearchList);
         }
         #endregion
