@@ -106,7 +106,7 @@ BEGIN
 			select distinct op.PartyId from 
 			Enterprise.OrganizationProduct op inner join Enterprise.Organization o on o.PartyId = op.PartyId
 			INNER JOIN Enterprise.VW_DataImportMapping D ON(O.PartyId = D.PartyId) and d.CompanyMasterId > 1
-			where ProductId in(SELECT ProductId FROM @ProductFilter) and ThruDate is null
+			where ProductId in(SELECT ProductId FROM @ProductFilter) and op.ThruDate is null
 			)		
 		)
 	SELECT @sortValue =
