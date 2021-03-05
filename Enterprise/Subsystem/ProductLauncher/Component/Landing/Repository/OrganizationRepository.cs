@@ -466,7 +466,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             RPObjectCache rpCache = new RPObjectCache();
             string cacheKey = $"getListOrganizationDomain";
 
-            List<OrganizationDomain> organizationDomainList = rpCache.GetFromCache<List<OrganizationDomain>>(cacheKey, 120, () =>
+            var organizationDomainList = rpCache.GetFromCache<List<OrganizationDomain>>(cacheKey, 60, () =>
             {
                 dynamic param = null;
                 using (var repository = GetRepository())

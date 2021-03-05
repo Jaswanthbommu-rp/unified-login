@@ -508,9 +508,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 manageProductOneSite: null,
                 userLoginRepository: null);
 
+            new RPObjectCache().BustCache();
 
             ListResponse resp = mpL2L.GetRoles(_editorPersonaId, _userPersonaId, null);
             Assert.True(resp.TotalRows == _l2lUser.Permissions.Count);
+
+            new RPObjectCache().BustCache();
 
             resp = mpL2L.GetProperties(_editorPersonaId, _userPersonaId, null);
             Assert.True(resp.TotalRows == _l2lUser.Properties.Count);

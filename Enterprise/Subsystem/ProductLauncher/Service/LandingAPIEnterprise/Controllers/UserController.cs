@@ -79,7 +79,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             _managePersona = new ManagePersona(repository, userClaims, messageHandler);
 
             _personLogic = new ManagePerson(repository);
-            ProductRepository productRepository = new ProductRepository(repository);
+            ProductRepository productRepository = new ProductRepository(repository, userClaims);
             ProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository(repository);
             // ManagePersona managePersona = new ManagePersona(repository, userClaims);
             _manageOrganization = new ManageOrganization(repository, userClaims, messageHandler);

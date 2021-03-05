@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using Xunit;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
@@ -18,18 +19,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 	[ExcludeFromCodeCoverage]
 	public class ManageProfileTest : ManageProductBaseTests
 	{
-        #region Private Variables
         IManageProfile _profileLogic;
         Mock<IProfileRepository> _mockProfileRepository = new Mock<IProfileRepository>();
-		Mock<IProductRepository> _mockProductRepository = new Mock<IProductRepository>();
 		Mock<IManagePersona> _mockPersonaLogic = new Mock<IManagePersona>();
-        Mock<IManagePerson> _mockPersonLogic = new Mock<IManagePerson>();
-        Mock<IManageUserLogin> _mockUserLoginLogic = new Mock<IManageUserLogin>();
-        Mock<IManageOrganization> _mockOrganizationLogic = new Mock<IManageOrganization>();
-        Mock<IManagePartyRelationship> _mockPartyRelationshipLogic = new Mock<IManagePartyRelationship>();
-        Mock<IManageContactMechanism> _mockContactMechanismLogic = new Mock<IManageContactMechanism>();
-        Mock<IManagePartyRole> _mockPartyRoleLogic = new Mock<IManagePartyRole>();
-		#endregion
+        private Mock<IRepository> _mockRepository = new Mock<IRepository>();
 		
 		public ManageProfileTest() : base((int) ProductEnum.UnifiedPlatform)
 		{
@@ -39,43 +32,45 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			_repositoryResponsePropertySuccess = new RepositoryResponse() { ErrorMessage = "", Id = 1 };
 			_repositoryResponsePropertyFail = new RepositoryResponse() { ErrorMessage = "error", Id = -1 };
 		}
+
 		[Fact]
         public void ListProfileDetails_InvalidProfileDetailList_EmptyList()
         {
             //Arrange
             RequestParameter datafilter = new RequestParameter();
             IDictionary<object, object> globals = new Dictionary<object, object>();
-			IList<ProfileDetail> profileDetailList = new List<ProfileDetail>();
 
-			IList<int> productIdList = new List<int>();
-			productIdList.Add((int)ProductEnum.OneSite);
-			productIdList.Add((int)ProductEnum.FinancialSuite);
-			productIdList.Add((int)ProductEnum.ProspectContactCenter);
+            var productUIList = new List<ProductUI>()
+            {
+                new PersonaProductUserDetails() { ProductId = (int)ProductEnum.OneSite},
+                new PersonaProductUserDetails() { ProductId = (int)ProductEnum.FinancialSuite},
+                new PersonaProductUserDetails() { ProductId = (int)ProductEnum.ProspectContactCenter}
+            };
 
-			_mockPersonaLogic
-				.Setup(m => m.GetActivePersona(
-					It.Is<Guid>(l => l == _userRealPageId)
-				))
-				.Returns(_userPersona);
+            _mockRepository
+                .Setup(m => m.GetOne<long>(StoredProcNameConstants.SP_GetActivePersona,
+                    It.Is<Guid>(l => l == _userRealPageId)
+                ))
+                .Returns(_userPersona.PersonaId);
 
-			_mockProductRepository
-				.Setup(m => m.GetProductIdsByCompany(
-					It.IsAny<Guid>()
-				))
-				.Returns(productIdList);
-
-			_mockProfileRepository
-				.Setup(m => m.ListPersons(null, null, null, null))
-				.Returns(profileDetailList);
+            _mockRepository
+                .Setup(m => m.GetMany<ProductUI>(StoredProcNameConstants.SP_ListProductsByOrganization,
+                    It.Is<object>(
+                        d => TestIs("OrganizationRealPageId".ToLower(), d, _userOrganizationRealPageId))
+                ))
+                .Returns(productUIList);
 
 			globals.Add(BaseType.RequestParameter, datafilter);
-            _profileLogic = new ManageProfile(_mockProfileRepository.Object, _mockProductRepository.Object, _mockPersonaLogic.Object, _mockPersonLogic.Object, _mockUserLoginLogic.Object, _mockOrganizationLogic.Object, _mockPartyRelationshipLogic.Object, _mockContactMechanismLogic.Object, _mockPartyRoleLogic.Object, _userUserClaim);
+
+            _profileLogic = new ManageProfile(_mockRepository.Object, _userUserClaim);
+
+            new RPObjectCache().BustCache();
 
 			//Act
-			profileDetailList = _profileLogic.ListProfileDetails(globals);
+			var profileDetailList = _profileLogic.ListProfileDetails(globals);
 
 			//Assert
-			Assert.True(profileDetailList == null);
+			Assert.True(profileDetailList.Count == 0);
 		}
 
         //[Fact]
@@ -116,7 +111,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.ListPersons(null, null, null, null))
                 .Returns(expectedProfileDetailList);
 
-            _profileLogic = new ManageProfile(_mockProfileRepository.Object, _mockProductRepository.Object, _mockPersonaLogic.Object, _mockPersonLogic.Object, _mockUserLoginLogic.Object, _mockOrganizationLogic.Object, _mockPartyRelationshipLogic.Object, _mockContactMechanismLogic.Object, _mockPartyRoleLogic.Object, _userUserClaim);
+            //_profileLogic = new ManageProfile(_mockProfileRepository.Object, _mockProductRepository.Object, _mockPersonaLogic.Object, _mockPersonLogic.Object, _mockUserLoginLogic.Object, _mockOrganizationLogic.Object, _mockPartyRelationshipLogic.Object, _mockContactMechanismLogic.Object, _mockPartyRoleLogic.Object, _userUserClaim);
+            _profileLogic = new ManageProfile(_mockRepository.Object, _userUserClaim);
 
             //Act
             profileDetailList = _profileLogic.ListProfileDetails(globals);
