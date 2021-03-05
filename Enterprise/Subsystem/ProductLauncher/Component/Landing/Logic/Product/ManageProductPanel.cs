@@ -290,13 +290,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 Dictionary<string, bool> additionalInfo = new  Dictionary<string, bool>();
                 Dictionary<string, bool> additionalDataCollection = (Dictionary<string, bool>)result.Additional;
 
-                additionalInfo.Add("UsePrimaryProperties", usePrimaryProperty);
+                additionalInfo.Add("usePrimaryProperties", usePrimaryProperty);
                
                 if (result.Additional != null)
                 {
                     foreach (KeyValuePair<string, bool> pair in additionalDataCollection)
                     {
-                        additionalInfo.Add(pair.Key, pair.Value);                       
+                        if (pair.Key != "usePrimaryProperties")
+                        {
+                            additionalInfo.Add(pair.Key, pair.Value);
+                        }                                            
                     }
                 }
                 
