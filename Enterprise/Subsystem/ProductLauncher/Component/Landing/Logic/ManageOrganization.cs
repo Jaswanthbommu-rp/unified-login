@@ -717,7 +717,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 new CompanyPropertySetup()
 				{
-                    Domain = booksPropertyInstance?.Select(p => p.attributes.domain).Distinct().ToList(),
+                    Domain = booksPropertyInstance?.Where(p=>p.attributes.domain != null).Select(p => p.attributes.domain).Distinct().ToList(),
                     Property = propertyDetails
                 }
             };
@@ -800,34 +800,42 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// Search Property Details By CustomerPropertyId(BlueId)
         /// </summary>
         /// <param name="customerPropertyId">customerPropertyId</param>
+        /// <param name="companyInstanceId">companyInstanceId</param>
         /// <returns></returns>
-        public PropertyInstanceSearch SearchPropertyDetailsByCustomerPropertyId(string customerPropertyId)
-		{
-           
+        public PropertyInstanceSearch SearchPropertyDetailsByCustomerPropertyId(string customerPropertyId, Guid companyInstanceId)
+        {
+            List<BooksPropertyInstance> booksPropertyInstance = GetPropertyInstanceFromBooks(companyInstanceId);
+            if (booksPropertyInstance != null && booksPropertyInstance.Count > 0)
+            {
+                var instanceExists = booksPropertyInstance.FirstOrDefault(pi => pi.attributes.customerPropertyMap.Any(p => p.customerPropertyId == Convert.ToInt64(customerPropertyId)));
+                if (instanceExists == null)
+                {
+                    return new PropertyInstanceSearch();
+                }
+            }
             CustomerProperty propertyDetails = _manageBlueBook.GetCustomerPropertyDetails(customerPropertyId);
-
-            List<BooksPropertyInstance> _booksPropertyInstances =  _manageBlueBook.GetPropertyInstanceByCustomerPropertyId(customerPropertyId);
+            List<BooksPropertyInstance> _booksPropertyInstances = _manageBlueBook.GetPropertyInstanceByCustomerPropertyId(customerPropertyId);
             List<PropertySetup> _listPropertySetup = new List<PropertySetup>();
-            if(_booksPropertyInstances != null)
-			{
+            if (_booksPropertyInstances != null)
+            {
                 foreach (var booksProperty in _booksPropertyInstances)
                 {
-					PropertySetup _property = new PropertySetup
-					{
-						Name = booksProperty?.attributes.propertyName,
-						Domain = booksProperty?.attributes.domain,
-						IsActive = booksProperty?.attributes.isActive,
-						InstanceId = string.IsNullOrEmpty(booksProperty?.attributes.propertyInstanceSourceId) ? Guid.Empty : Guid.Parse(booksProperty?.attributes.propertyInstanceSourceId),
-						ContractedName = booksProperty?.attributes?.customerPropertyMap?.FirstOrDefault()?.customerProperty?.FirstOrDefault()?.propertyName,
-						Address = booksProperty?.attributes?.customerPropertyMap?.FirstOrDefault()?.customerProperty?.FirstOrDefault()?.address?.Address,
-						City = booksProperty?.attributes?.customerPropertyMap?.FirstOrDefault()?.customerProperty?.FirstOrDefault()?.address?.City,
-						State = booksProperty?.attributes?.customerPropertyMap?.FirstOrDefault()?.customerProperty?.FirstOrDefault()?.address?.State,
-						Country = booksProperty?.attributes?.customerPropertyMap?.FirstOrDefault()?.customerProperty?.FirstOrDefault()?.address?.Country,
-						County = booksProperty?.attributes?.customerPropertyMap?.FirstOrDefault()?.customerProperty?.FirstOrDefault()?.address?.County,
-						Latitude = booksProperty?.attributes?.customerPropertyMap?.FirstOrDefault()?.customerProperty?.FirstOrDefault()?.address?.Latitude,
-						Longitude = booksProperty?.attributes?.customerPropertyMap?.FirstOrDefault()?.customerProperty?.FirstOrDefault()?.address?.Longitude
-					};
-					_listPropertySetup.Add(_property);
+                    PropertySetup _property = new PropertySetup
+                    {
+                        Name = booksProperty?.attributes.propertyName,
+                        Domain = booksProperty?.attributes.domain,
+                        IsActive = booksProperty?.attributes.isActive,
+                        InstanceId = string.IsNullOrEmpty(booksProperty?.attributes.propertyInstanceSourceId) ? Guid.Empty : Guid.Parse(booksProperty?.attributes.propertyInstanceSourceId),
+                        ContractedName = booksProperty?.attributes?.customerPropertyMap?.FirstOrDefault()?.customerProperty?.FirstOrDefault()?.propertyName,
+                        Address = booksProperty?.attributes?.customerPropertyMap?.FirstOrDefault()?.customerProperty?.FirstOrDefault()?.address?.Address,
+                        City = booksProperty?.attributes?.customerPropertyMap?.FirstOrDefault()?.customerProperty?.FirstOrDefault()?.address?.City,
+                        State = booksProperty?.attributes?.customerPropertyMap?.FirstOrDefault()?.customerProperty?.FirstOrDefault()?.address?.State,
+                        Country = booksProperty?.attributes?.customerPropertyMap?.FirstOrDefault()?.customerProperty?.FirstOrDefault()?.address?.Country,
+                        County = booksProperty?.attributes?.customerPropertyMap?.FirstOrDefault()?.customerProperty?.FirstOrDefault()?.address?.County,
+                        Latitude = booksProperty?.attributes?.customerPropertyMap?.FirstOrDefault()?.customerProperty?.FirstOrDefault()?.address?.Latitude,
+                        Longitude = booksProperty?.attributes?.customerPropertyMap?.FirstOrDefault()?.customerProperty?.FirstOrDefault()?.address?.Longitude
+                    };
+                    _listPropertySetup.Add(_property);
                 }
             }
 
