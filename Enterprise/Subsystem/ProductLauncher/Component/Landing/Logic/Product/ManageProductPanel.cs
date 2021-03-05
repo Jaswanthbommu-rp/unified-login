@@ -296,7 +296,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     foreach (KeyValuePair<string, bool> pair in additionalDataCollection)
                     {
-                        if (!pair.Key.Equals("usePrimaryProperties"))
+                        if (!pair.Key.Equals("usePrimaryProperties", StringComparison.OrdinalIgnoreCase))
                         {
                             additionalInfo.Add(pair.Key, pair.Value);
                         }                                            
