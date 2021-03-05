@@ -1044,7 +1044,6 @@
     <Build Include="UserManagement\ProductControlAttributeType.sql" />
     <Build Include="UserManagement\Stored Procedures\DeleteProductPagesAndControls.sql" />
     <Build Include="Ident\Stored Procedures\UpdateUserTwoFactorLastNotifyDate.sql" />
-    <Build Include="Enterprise\Stored Procedures\GetProductSettingsById.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
