@@ -138,10 +138,10 @@
     <Compile Include="ControllerTest\DashboardTest.cs" />
     <Compile Include="ControllerTest\ElectronicAddressTests.cs" />
     <Compile Include="ControllerTest\MultiFactorAuthTest.cs" />
+    <Compile Include="ControllerTest\OrganizationTests.cs" />
     <Compile Include="ControllerTest\ProductPanelTest.cs" />
     <Compile Include="ControllerTest\UnifiedSettingsControllerTest.cs" />
     <Compile Include="Logic\Enterprise\EnterpriseUserTests.cs" />
-    <Compile Include="ControllerTest\OrganizationTests.cs" />
     <Compile Include="ControllerTest\PartyRelationshipTests.cs" />
     <Compile Include="ControllerTest\PasswordPolicyTests.cs" />
     <Compile Include="ControllerTest\LogTests.cs" />
