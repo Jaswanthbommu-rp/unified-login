@@ -18,8 +18,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 	{
         private readonly RouteTestBase _baseTest;
 
-        #region Constructor
-        public UserTests()
+		private static DefaultUserClaim _defaultUserClaim = new DefaultUserClaim();
+
+		#region Constructor
+		public UserTests()
         {
             HttpConfiguration config = new HttpConfiguration();
             WebApiConfig.Register(config);
@@ -137,7 +139,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 		{
 			//Arrange
 			Guid realPageId = Guid.Empty;
-			UserController userController = new UserController();
+			UserController userController = new UserController(_defaultUserClaim);
 
 			//Act
 			Exception exception = Record.Exception(() => userController.AssignProductsToAdministrators(realPageId, 1));
@@ -151,7 +153,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 		{
 			//Arrange
 			Guid realPageId = Guid.Empty;
-			UserController userController = new UserController();
+			UserController userController = new UserController(_defaultUserClaim);
 
 			//Act
 			Exception exception = Record.Exception(() => userController.AssignProductsToAdministrators(realPageId, -1));
