@@ -60,6 +60,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         private static DefaultUserClaim _defaultUserClaim = new DefaultUserClaim();
         public static Guid propertyGuid = new Guid("5C04F18A-FC9B-4A13-AAAF-E26DA83CE516");
 
+        private static List<Organization> _organizationList;
+
         private static List<GbProductMap> _gbProductMap;
 
         #endregion
@@ -166,7 +168,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 }
             };
 
-            var organizationList = new List<Organization>()
+            _organizationList = new List<Organization>()
             {
                 new Organization()
                 {
@@ -253,25 +255,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization,
                     It.Is<object>(
                         d => TestIsRealPageId(d, _RealPageId))))
-                .Returns(organizationList[0]);
+                .Returns(_organizationList[0]);
 
             _mockRepository
                 .Setup(m => m.GetMany<Organization>(StoredProcNameConstants.SP_GetOrganization,
                     It.Is<object>(
                         d => TestIsRealPageId(d, null))))
-                .Returns(organizationList);
+                .Returns(_organizationList);
 
             _mockRepository
                 .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization,
                     It.Is<object>(
                         d => TestIsBooksCompanyMasterId(d, _BooksCompanyMasterId))))
-                .Returns(organizationList[0]);
+                .Returns(_organizationList[0]);
 
             _mockRepository
                 .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization,
                     It.Is<object>(
                         d => TestIsBooksMasterId(d, _BooksMasterId))))
-                .Returns(organizationList[0]);
+                .Returns(_organizationList[0]);
 
             _mockRepository
                 .Setup(m => m.UnitOfWork)
@@ -772,6 +774,39 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             };
             UserLoginOnly userLoginOnlyNull = null;
 
+            var organizationTypeList = new List<OrganizationType>()
+            {
+                new OrganizationType()
+                {
+                    OrganizationTypeId = 6,
+                    Name = "Multifamily",
+                    CreateDate = new DateTime()
+                },
+                new OrganizationType()
+                {
+                    OrganizationTypeId = 14,
+                    Name = "Vendor",
+                    CreateDate = new DateTime()
+                },
+                new OrganizationType()
+                {
+                    OrganizationTypeId = 7,
+                    Name = "Other",
+                    CreateDate = new DateTime()
+                }
+            };
+
+            var organizationDomainList = new List<OrganizationDomain>()
+            {
+                new OrganizationDomain()
+                {
+                    OrganizationDomainId = 1,
+                    Name = "Primary",
+                    CreateDate = new DateTime()
+                }
+            };
+
+
             RepositoryResponse repositoryResponse = new RepositoryResponse()
             {
                 Id = 0,
@@ -779,23 +814,56 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 RealPageId = _RealPageId
             };
 
-            _mockRepository
+            var mockRepository = new Mock<IRepository>();
+
+            Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
+
+            mockRepository
                 .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_SetupOrganization, It.IsAny<object>()))
                 .Returns(repositoryResponse);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_CreateOrganizationProduct, It.IsAny<object>()))
                 .Returns(repositoryResponse);
 
-            _mockRepository
+            mockRepository
                 .SetupSequence(m => m.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, It.IsAny<object>()))
                 .Returns(userLoginOnlyNull)
                 .Returns(userLoginOnly);
 
+            mockRepository
+                .Setup(m => m.GetMany<OrganizationType>(StoredProcNameConstants.SP_ListOrganizationType, null))
+                .Returns(organizationTypeList);
+
+            mockRepository
+                .Setup(m => m.GetMany<OrganizationDomain>(StoredProcNameConstants.SP_ListOrganizationDomain, null))
+                .Returns(organizationDomainList);
+            
+            mockRepository
+                .Setup(m => m.UnitOfWork)
+                .Returns(_mockUnitofWork.Object);
+
+            mockRepository
+                .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization,
+                    It.Is<object>(
+                        d => TestIsRealPageId(d, _RealPageId))))
+                .Returns(_organizationList[0]);
+            
+            //return repository.GetMany<ProductUI>(StoredProcNameConstants.SP_ListProductsByOrganization, new { OrganizationRealPageId = organizationRealPageId }).ToList();
+
+            mockRepository
+                .Setup(m => m.GetMany<ProductUI>(StoredProcNameConstants.SP_ListProductsByOrganization,
+                    It.Is<object>(
+                        d => TestIsRealPageId(d, _RealPageId))))
+                .Returns(new List<ProductUI>(){ new PersonaProductUserDetails() { ProductId = 1}});
+            
+            mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/companyinstance", new HttpResponseMessage(HttpStatusCode.OK) {Content = new StringContent("{ \"result\" : \"success\"}")});
+            mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/systemproductcenter", new HttpResponseMessage(HttpStatusCode.OK) {Content = new StringContent("{ \"result\" : \"success\"}")});
+
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
+                mockRepository.Object
                 , _mockRepositoryResponse.Object
-                , _mockHttpMessageHandler.Object
+                , mockHttpMessageHandler.Object
                 , _defaultUserClaim
             ) {Request = new HttpRequestMessage(), Configuration = new HttpConfiguration()};
 
