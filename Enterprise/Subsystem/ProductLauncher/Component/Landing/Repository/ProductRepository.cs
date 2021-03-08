@@ -1580,6 +1580,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 Log.Write(LogEventLevel.Error, ex, message);
             }
 
+            //Sort products by name
+            productFamilyList.ToList().ForEach(x =>
+            {
+                x.Solutions = x.Solutions.OrderBy(y => y.ProductName).ToList();
+            });
+
             return productFamilyList;
 
         }
