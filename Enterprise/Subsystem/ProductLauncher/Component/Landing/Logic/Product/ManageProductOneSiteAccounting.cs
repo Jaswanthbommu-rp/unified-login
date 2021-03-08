@@ -1019,14 +1019,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         }
                     }
 
-					foreach (ProductPropertyGroup propLG in currentLocationGrpList)
+					if (currentLocationGrpList != null)
 					{
-						if ((bool)propLG.IsAssigned)
+						foreach (ProductPropertyGroup propLG in currentLocationGrpList)
 						{
-							propertiesToRemove.Add(propLG.ID);
+							if ((bool)propLG.IsAssigned)
+							{
+								propertiesToRemove.Add(propLG.ID);
+							}
 						}
 					}
-
+					
 					if (propertiesToRemove.Count > 0)
                     {
                         propertyIDRemoveList = string.Join(",", propertiesToRemove);
@@ -1117,23 +1120,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         }
                     }
 
-
-					foreach (ProductPropertyGroup propLG in currentLocationGrpList)
+					if (currentLocationGrpList != null)
 					{
-						if ((bool)propLG.IsAssigned)
+						foreach (ProductPropertyGroup propLG in currentLocationGrpList)
 						{
-							if (!(propertiesToAssign.Contains(propLG.ID)))
+							if ((bool)propLG.IsAssigned)
 							{
-								propertiesToRemove.Add(propLG.ID);
-							}
-							else
-							{
-								propertiesToAssign.Remove(propLG.ID);
+								if (!(propertiesToAssign.Contains(propLG.ID)))
+								{
+									propertiesToRemove.Add(propLG.ID);
+								}
+								else
+								{
+									propertiesToAssign.Remove(propLG.ID);
+								}
 							}
 						}
-						
 					}
-
+				
 					if (propertiesToAssign.Count > 0)
                     {
                         propertyIDAddList = string.Join(",", propertiesToAssign);
