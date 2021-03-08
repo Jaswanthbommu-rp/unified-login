@@ -15,6 +15,7 @@
 	[Domain] NVARCHAR(50) NOT NULL,
 	[IsDeleted] TinyInt NOT NULL DEFAULT 0,
 	[ThruDate] Datetime2 NULL,
+	[IsActive] TinyInt NOT NULL DEFAULT 1,
     CONSTRAINT [PK_PropertyInstance] PRIMARY KEY ([PropertyInstanceId]),
 )
 

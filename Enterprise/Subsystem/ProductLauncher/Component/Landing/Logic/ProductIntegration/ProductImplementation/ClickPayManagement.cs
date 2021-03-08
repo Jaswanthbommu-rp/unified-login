@@ -408,6 +408,47 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			return result.Content;
 		}
 
+		/// <summary>
+        /// Direct call to product to change profile including isActive (mainly used to activate-deactivate from Migration tool)
+        /// </summary>
+        /// <param name="productUserProfile">Product user information</param>
+        /// <returns>string.Empty if success else response contents.</returns>
+		public override bool ExternalProductUserProfileChange(ProductUserProfile productUserProfile)
+		{
+			WriteToDiagnosticLog(
+				$"ClickPayManagement.ProductUserProfileChange - editorPersona id - " +
+				$"{EditorUserDetails.PersonaId}, productUserProfile.UserId - {productUserProfile.UserId}. At beginning of the method.");
+
+			var getUserUrl = string.Format(GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserEndpoint), productUserProfile.LoginName);
+
+			var clickpayProductUser = GetProductUser(getUserUrl);
+			clickpayProductUser.IsActive = productUserProfile.IsActive;
+
+			var baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.PutUserEndpoint);
+
+			WriteToDiagnosticLog(
+				$"ClickPayManagement.ProductUserProfileChange - editorPersona id - " +
+				$"{EditorUserDetails.PersonaId}  productUserProfile.UserId - {productUserProfile.UserId}. Calling API - {baseUrlAndQuery}.");
+
+			// dump API call info
+			DumpApiCallInfoToDiagnosticLog(baseUrlAndQuery, clickpayProductUser);
+
+			var integration = new ApiIntegration(_httpClient, baseUrlAndQuery);
+			var result = integration.PutEntity<ProductUserProfile>(clickpayProductUser);
+			
+			if (result.IsSuccessStatusCode)
+			{
+				return true;
+			}
+
+			// log exception details from result
+			WriteToErrorLog(
+				$"ClickPayManagement.ExternalProductUserProfileChange - " +
+				$"editorPersona id - {EditorUserDetails.PersonaId} productUserProfile.UserId - {productUserProfile.UserId}. Result received - {result}.");
+
+			return false;
+		}
+
 		protected override ApiResponse ProductUserProfileChange(ProductUserProfile productUserProfile)
 		{
 			WriteToDiagnosticLog(

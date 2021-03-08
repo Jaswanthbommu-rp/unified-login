@@ -10,6 +10,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using RP.Enterprise.Foundation.DataAccess.Component;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -21,10 +22,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		#region Private Variables
 		IProfileRepository _profileRepository;
 		IProductRepository _productRepository;
-		IManagePersona _personaLogic;
         IManagePerson _personLogic;
         IManageUserLogin _userLoginLogic;
-        IManageOrganization _organizationLogic;
         IManagePartyRelationship _partyRelationshipLogic;
         IManageContactMechanism _contactMechanismLogic;
         IManagePartyRole _partyRoleLogic;
@@ -35,28 +34,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 		#region Constructors
 		/// <summary>
-		/// ManageProfile Constructor
-		/// </summary>
-		/// <param name="profileRepository">Profile Repository</param>
-		/// <param name="productRepository">Product Repository</param>
-		/// <param name="personaLogic">Persona Logic</param>
-		/// <param name="personLogic">Person Logic</param>
-		/// <param name="userLoginLogic">UserLogin Logic</param>
-		/// <param name="organizationLogic">Organization Logic</param>
-		/// <param name="partyRelationshipLogic">PartyRelationship Logic</param>
-		/// <param name="contactMechanismLogic">Contact Mechanism Logic</param>
-		/// <param name="partyRoleLogic">Party Role Logic</param>
-		/// <param name="userClaim">User claims</param>
-		public ManageProfile(IProfileRepository profileRepository, IProductRepository productRepository, IManagePersona personaLogic, IManagePerson personLogic, IManageUserLogin userLoginLogic, IManageOrganization organizationLogic, IManagePartyRelationship partyRelationshipLogic, IManageContactMechanism contactMechanismLogic, IManagePartyRole partyRoleLogic, DefaultUserClaim userClaim)
+        /// Unit test constructor
+        /// </summary>
+        /// <param name="repository"></param>
+        /// <param name="userClaim"></param>
+		public ManageProfile(IRepository repository, DefaultUserClaim userClaim)
         {
-            _profileRepository = profileRepository;
-			_productRepository = productRepository;
-			_personaLogic = personaLogic;
-            _personLogic = personLogic;
-            _userLoginLogic = userLoginLogic;
-            _organizationLogic = organizationLogic;
-            _partyRelationshipLogic = partyRelationshipLogic;
-            _contactMechanismLogic = contactMechanismLogic;
+            _profileRepository = new ProfileRepository(repository, userClaim);
+            _productRepository = new ProductRepository(repository, userClaim);
+            _personLogic = new ManagePerson(repository);
+            _userLoginLogic = new ManageUserLogin(userClaim);
+            _partyRelationshipLogic = new ManagePartyRelationship(repository);
+            _contactMechanismLogic = new ManageContactMechanism(repository);
+            _partyRoleLogic = new ManagePartyRole(repository);
+            //For list Persons, return users of RoleType Parent = User Role (400)
+            _parentPartyRoleTypeId = (int)ParentUserRoleType.UserRole;
 			_userClaim = userClaim;
 		}
 
@@ -68,10 +60,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 	    {
 		    _profileRepository = new ProfileRepository(userClaim);
 			_productRepository = new ProductRepository(userClaim);
-		    _personaLogic = new ManagePersona();
 		    _personLogic = new ManagePerson();
 		    _userLoginLogic = new ManageUserLogin(userClaim);
-		    _organizationLogic = new ManageOrganization(userClaim);
 		    _partyRelationshipLogic = new ManagePartyRelationship();
 		    _contactMechanismLogic = new ManageContactMechanism();
 		    _partyRoleLogic = new ManagePartyRole();

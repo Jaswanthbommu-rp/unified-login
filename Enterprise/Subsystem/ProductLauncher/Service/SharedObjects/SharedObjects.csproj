@@ -164,6 +164,7 @@
     <Compile Include="BlackBook\PropertyInstance.cs" />
     <Compile Include="BlackBook\CustomerCompanyPropertyMap.cs" />
     <Compile Include="BlackBook\PropertyInstanceAck.cs" />
+    <Compile Include="BlackBook\SystemProductCenter.cs" />
     <Compile Include="BlackBook\TranslateCompanyInstance.cs" />
     <Compile Include="BlackBook\TranslatePropertyInstance.cs" />
     <Compile Include="BlackBook\UPFMProductPropertyInstanceMap.cs" />
@@ -347,6 +348,7 @@
     <Compile Include="IdentityConfig\TelecommunicationNumber.cs" />
     <Compile Include="BlackBook\CompanyMap.cs" />
     <Compile Include="Landing\SendGridEmail.cs" />
+    <Compile Include="Landing\UnifiedSettingPropertyInstance.cs" />
     <Compile Include="Landing\Setting.cs" />
     <Compile Include="Landing\SecuritySettings.cs" />
     <Compile Include="Landing\SortTableType.cs" />
