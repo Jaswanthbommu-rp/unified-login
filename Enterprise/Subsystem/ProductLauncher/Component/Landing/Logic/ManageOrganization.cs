@@ -22,7 +22,6 @@ using System.Linq;
 using System.Net.Http;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using PropertySetup = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.PropertySetup;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterprise.Helpers;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -48,23 +47,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         #endregion
         
         #region Constructors
+
         /// <summary>
         /// Unit Test Constructor
         /// </summary>
         public ManageOrganization(IRepository repository, DefaultUserClaim userClaim, HttpMessageHandler messageHandler)
         {
+            _defaultUserClaim = userClaim;
             _organizationRepository = new OrganizationRepository(repository);
             _credentialRepository = new CredentialRepository(repository);
             _userLoginRepository = new UserLoginRepository(repository);
             _personaRepository = new PersonaRepository(repository);
             _organizationProductRepository = new OrganizationProductRepository(repository);
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
-            _productRepository = new ProductRepository(repository);
-            _defaultUserClaim = userClaim;
+            _productRepository = new ProductRepository(repository, userClaim);
             _manageBlueBook = new ManageBlueBook(_defaultUserClaim, _productInternalSettingRepository, messageHandler);
             _manageProductPanel = new ManageProductPanel(_defaultUserClaim, repository, _manageBlueBook, messageHandler, null);
             _propertyRepository = new PropertyRepository(repository);
-            _manageUnifiedSettings = new ManageUnifiedSettings(repository,userClaim, messageHandler);
+            _manageUnifiedSettings = new ManageUnifiedSettings(repository, userClaim, messageHandler);
         }
 
         /// <summary>
@@ -72,14 +72,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// </summary>
         public ManageOrganization(IRepository repository, DefaultUserClaim userClaim, HttpMessageHandler messageHandler, IManageProductOneSite manageProductOneSite)
         {
+            _defaultUserClaim = userClaim;
             _organizationRepository = new OrganizationRepository(repository);
             _credentialRepository = new CredentialRepository(repository);
             _userLoginRepository = new UserLoginRepository(repository);
             _personaRepository = new PersonaRepository(repository);
             _organizationProductRepository = new OrganizationProductRepository(repository);
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
-            _productRepository = new ProductRepository(repository);
-            _defaultUserClaim = userClaim;
+            _productRepository = new ProductRepository(repository, userClaim);
             _manageBlueBook = new ManageBlueBook(_defaultUserClaim, _productInternalSettingRepository, messageHandler);
             _manageProductPanel = new ManageProductPanel(_defaultUserClaim, repository, _manageBlueBook,messageHandler, manageProductOneSite);
             _propertyRepository = new PropertyRepository(repository);
@@ -109,7 +109,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         #region Public Organization methods
 
-        public ObjectOutput<OrganizationCreateResult, IErrorData> CreateOrganization(OrganizationCreate organization, bool processBlueBookMessage = false)
+        public ObjectOutput<OrganizationCreateResult, IErrorData> CreateOrganization(OrganizationCreate organization, List<ProductEnum> addProductList, bool processBlueBookMessage = false)
         {
             var repositoryResponse = new RepositoryResponse();
             var outputResult = new ObjectOutput<OrganizationCreateResult, IErrorData>() {Status = new Status<IErrorData>() {Success = false}};
@@ -126,17 +126,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 return outputResult;
             }
 
-			List<ProductEnum> addProductList = new List<ProductEnum>();
-            // verify the products, if any, exist and can be added to the customer
-            List<string> invalidProductList = ParseProduct(organization.Products, addProductList);
-
-            if (invalidProductList.Count > 0)
-            {
-                outputResult.Status.ErrorMsg = "An invalid product was given : " + String.Join(",", invalidProductList);
-                return outputResult;
-            }
-
-            OrganizationAdminUser aUser = organization.AdminUser;
+			OrganizationAdminUser aUser = organization.AdminUser;
             if (aUser == null)
             {
                 outputResult.Status.ErrorMsg = "No admin user information provided";
