@@ -1382,6 +1382,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             return productlist;
         }
 
+        private string GetSpecificProductInternalSetting(int productId, string name) =>
+            _manageProduct.GetProductInternalSettings(productId).FirstOrDefault(f => f.Name?.ToLower() == name?.ToLower())?.Value;
+
         /// <summary>
         /// Used to return the product list of the user to the RAUL UI component
         /// </summary>
@@ -1400,7 +1403,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                         Name = prodDetail.ProductName,
                         Description = prodDetail.ProductDescription,
                         Url = prodDetail.ProductUrl.ToUpper().Contains("HTTP") ? prodDetail.ProductUrl : ConfigReader.GetLandingUri + prodDetail.ProductUrl,
-                        Label = ProductEnumHelper.GetProductRaulLabel((ProductEnum)prodDetail.ProductId),
+                        Label = GetSpecificProductInternalSetting(prodDetail.ProductId, "ProductIcon"),
                         FamilyId = prodDetail?.FamilyId,
                         FamilyName = prodDetail.Family,
                         IsFavorite = prodDetail.IsFavorite,
@@ -1430,7 +1433,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                         Name = prodDetail.Name,
                         Description = prodDetail.Description,
                         Url = prodDetail.Url != null && prodDetail.Url.ToUpper().Contains("HTTP") ? prodDetail.Url : ConfigReader.GetLandingUri + $"product-redirect.html?prod={prodDetail.ProductId}&persona={personaId}",
-                        Label = ProductEnumHelper.GetProductRaulLabel((ProductEnum)prodDetail.ProductId),
+                        Label = GetSpecificProductInternalSetting(prodDetail.ProductId, "ProductIcon"),
                         FamilyId = prodDetail?.FamilyId,
                         FamilyName = prodDetail.FamilyName,
                         IsFavorite = prodDetail.isFavorite,
@@ -1465,7 +1468,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                         Name = prodDetail.ProductName,
                         Description = prodDetail.ProductDescription,
                         Url = prodDetail.ProductUrl.ToUpper().Contains("HTTP") ? prodDetail.ProductUrl : ConfigReader.GetLandingUri + $"product-redirect.html?prod={prodDetail.ProductId}&persona={prodDetail.PersonaId}",
-                        Label = ProductEnumHelper.GetProductRaulLabel((ProductEnum)prodDetail.ProductId),
+                        Label = GetSpecificProductInternalSetting(prodDetail.ProductId, "ProductIcon"),
                         FamilyId = prodDetail?.FamilyId,
                         FamilyName = prodDetail.Family,
                         IsFavorite = prodDetail.IsFavorite,
