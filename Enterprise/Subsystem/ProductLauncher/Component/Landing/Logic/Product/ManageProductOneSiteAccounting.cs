@@ -1137,6 +1137,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 							}
 						}
 					}
+
 				
 					if (propertiesToAssign.Count > 0)
                     {
