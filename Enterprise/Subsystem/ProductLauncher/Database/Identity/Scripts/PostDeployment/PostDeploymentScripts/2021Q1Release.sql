@@ -1069,7 +1069,7 @@ BEGIN
 	SELECT @MaxControlId = max(ControlId) from UserManagement.Control
 
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
-	VALUES (@MaxControlId +1, @MCMasterControlId, 1, N'MarketingCenterProductAccessUsePrimaryPropertiesSwitchUIId', N'Use Primary Properties', N'UsePrimaryProperties', 2, @UserId, @Now)
+	VALUES (@MaxControlId +1, @MCMasterControlId, 1, N'MarketingCenterProductAccessUsePrimaryPropertiesSwitchUIId', N'Use Primary Properties', N'usePrimaryProperties', 2, @UserId, @Now)
 
 	SET IDENTITY_INSERT [UserManagement].[Control] OFF
 END
@@ -1933,3 +1933,4 @@ BEGIN
 UPDATE [UserManagement].[Control] SET DisplayName='Role' WHERE ControlId = @ControlId
 END
 GO
+
