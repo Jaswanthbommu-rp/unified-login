@@ -1,26 +1,20 @@
-﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+﻿using RP.Enterprise.Foundation.DataAccess.Component;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Factory;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ResidentPortal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Caching;
-using RP.Enterprise.Foundation.DataAccess.Component;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Accounting;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ops;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Rum;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
 using System.Net.Http;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
@@ -78,10 +72,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // load from database
                 return _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform).ToList();
             });
-            ProductRepository productRepository = new ProductRepository(repository);
+            ProductRepository productRepository = new ProductRepository(repository, userClaims);
             _manageUnifiedLogin = new ManageUnifiedLogin(_userClaims, _productInternalSettingRepository, productRepository, manageBlueBook);
             _manageProductOneSite = manageProductOneSite;
-            _propertyRepository = new PropertyRepository();
+            _propertyRepository = new PropertyRepository(repository);
             _manageBlueBook = new ManageBlueBook(_userClaims, _productInternalSettingRepository, messageHandler);
         }
 
@@ -286,8 +280,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         usePrimaryProperty =  productSetting.Value.Trim() == "1" ? true : false;
                     }                    
                 }
+
+                Dictionary<string, bool> additionalInfo = new  Dictionary<string, bool>();
+                Dictionary<string, bool> additionalDataCollection = (Dictionary<string, bool>)result.Additional;
+
+                additionalInfo.Add("usePrimaryProperties", usePrimaryProperty);
                
-                result.UsePrimaryProperties = usePrimaryProperty;
+                if (result.Additional != null)
+                {
+                    foreach (KeyValuePair<string, bool> pair in additionalDataCollection)
+                    {
+                        if (!pair.Key.Equals("usePrimaryProperties", StringComparison.OrdinalIgnoreCase))
+                        {
+                            additionalInfo.Add(pair.Key, pair.Value);
+                        }                                            
+                    }
+                }
+                
+
+                result.Additional = additionalInfo;
             }
             return result;
         }

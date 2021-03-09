@@ -2083,4 +2083,12 @@ BEGIN
 	END
 END
 
+-- Updating DisplayName of UnifiedPlatformRolesAndRightsRightLabelUIId for name DataSource
+GO
+DECLARE @ControlId INT
+SELECT @ControlId = ControlId FROM [UserManagement].[Control] WHERE UIId='UnifiedPlatformRolesAndRightsRightLabelUIId' AND DataSource='name'
+IF (@ControlId <> '')
+BEGIN
+UPDATE [UserManagement].[Control] SET DisplayName='Role' WHERE ControlId = @ControlId
+END
 GO

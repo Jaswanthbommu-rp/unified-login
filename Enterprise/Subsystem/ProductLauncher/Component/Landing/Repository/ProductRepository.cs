@@ -45,11 +45,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
 
         /// <summary>
-        /// base Constructor
+        /// Unit test constructor
         /// </summary>
-        public ProductRepository(IRepository repository) : base(repository)
+        public ProductRepository(IRepository repository, DefaultUserClaim userClaim) : base(repository)
         {
-            _userClaim = new DefaultUserClaim { CorrelationId = Guid.Empty };
+            _userClaim = userClaim;
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
         }
 
@@ -1579,6 +1579,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 Log.Write(LogEventLevel.Error, ex, message);
             }
+
+            //Sort products by name
+            productFamilyList.ToList().ForEach(x =>
+            {
+                x.Solutions = x.Solutions.OrderBy(y => y.ProductName).ToList();
+            });
 
             return productFamilyList;
 

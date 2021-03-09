@@ -17,12 +17,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 	{
 		#region Organization methods
 
-		/// <summary>
+        /// <summary>
 		/// Used to create a new organization with product details
 		/// </summary>
 		/// <param name="organization"></param>
+		/// <param name="addProductList"></param>
 		/// <param name="processBlueBookMessage"></param>
-        ObjectOutput<OrganizationCreateResult, IErrorData> CreateOrganization(OrganizationCreate organization, bool processBlueBookMessage = false);
+		/// <returns></returns>
+        ObjectOutput<OrganizationCreateResult, IErrorData> CreateOrganization(OrganizationCreate organization, List<ProductEnum> addProductList, bool processBlueBookMessage = false);
 
 		/// <summary>
 		/// Used to insert a new Organization
@@ -178,8 +180,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// Search Property Details By CustomerPropertyId(BlueId)
 		/// </summary>
 		/// <param name="customerPropertyId">customerPropertyId</param>
+		/// <param name="companyInstanceId">companyInstanceId</param>
 		/// <returns></returns>
-		PropertyInstanceSearch SearchPropertyDetailsByCustomerPropertyId(string customerPropertyId);
+		PropertyInstanceSearch SearchPropertyDetailsByCustomerPropertyId(string customerPropertyId, Guid companyInstanceId);
 
 		/// <summary>
 		/// Search Company Details By CustomerCompanyId
