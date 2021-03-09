@@ -140,6 +140,5 @@ BEGIN
 
 	SET IDENTITY_INSERT [UserManagement].[Control] OFF
 END
-
 		
 GO
