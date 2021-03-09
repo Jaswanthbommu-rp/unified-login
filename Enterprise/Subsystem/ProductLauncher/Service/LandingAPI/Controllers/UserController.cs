@@ -1,4 +1,5 @@
-﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Attributes;
+﻿using RP.Enterprise.Foundation.DataAccess.Component;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Attributes;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
@@ -20,6 +21,7 @@ using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Web.Http;
+using System.Web.Http.Controllers;
 using SO = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
@@ -29,14 +31,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
     /// </summary>
     public class UserController : BaseApiController
 	{
-		#region Public Methods
-		/// <summary>
-		/// Give administrators access to missing products based on a customer company
-		/// </summary> 
-		/// <param name="organizationRealPageId">Organization enterprise Id</param>
-		/// <param name="assignUserPersonaId">Assigned to user PersonaId</param>
-		/// <returns>HTTP response message including the status code and data.</returns>
-		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request (when organizationRealPageId is invalid Guid)")]
+        #region Public Methods
+        /// <summary>
+        /// Give administrators access to missing products based on a customer company
+        /// </summary> 
+        /// <param name="organizationRealPageId">Organization enterprise Id</param>
+        /// <param name="assignUserPersonaId">Assigned to user PersonaId</param>
+        /// <returns>HTTP response message including the status code and data.</returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request (when organizationRealPageId is invalid Guid)")]
 		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
 		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
 		[SwaggerResponse(HttpStatusCode.OK, Description = "Give administrators access to missing products based on a customer company", Type = typeof(ObjectOutput<Guid, IErrorData>))]
@@ -187,6 +189,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			return Request.CreateResponse(HttpStatusCode.OK, output);
 		}
 
+		private string GetSpecificProductInternalSetting(int productId, string name)
+        {
+			ManageProduct manageProduct = new ManageProduct(_userClaims);
+
+			return manageProduct.GetProductInternalSettings(productId).FirstOrDefault(f => f.Name?.ToLower() == name?.ToLower())?.Value;
+		}
+
 		/// <summary>
 		/// Used to return the product list of the user to the RAUL UI component
 		/// </summary>
@@ -205,7 +214,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 						Name = prodDetail.ProductName,
 						Description = prodDetail.ProductDescription,
 						Url = prodDetail.ProductUrl.ToUpper().Contains("HTTP") ? prodDetail.ProductUrl : ConfigReader.GetLandingUri + prodDetail.ProductUrl,
-						Label = ProductEnumHelper.GetProductRaulLabel((ProductEnum)prodDetail.ProductId),
+						Label = GetSpecificProductInternalSetting(prodDetail.ProductId, "ProductIcon"),
 						FamilyId = prodDetail?.FamilyId,
 						FamilyName = prodDetail.Family,
 						IsFavorite = prodDetail.IsFavorite,
