@@ -189,13 +189,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			return Request.CreateResponse(HttpStatusCode.OK, output);
 		}
 
-		private string GetSpecificProductInternalSetting(int productId, string name)
-        {
-			ManageProduct manageProduct = new ManageProduct(_userClaims);
-
-			return manageProduct.GetProductInternalSettings(productId).FirstOrDefault(f => f.Name?.ToLower() == name?.ToLower())?.Value;
-		}
-
 		/// <summary>
 		/// Used to return the product list of the user to the RAUL UI component
 		/// </summary>
@@ -203,6 +196,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		/// <returns></returns>
 		private List<UserProducts> ConvertDashboardProductsToRAUL(IList<PersonaProductUserDetails> products)
 		{
+			ManageProduct manageProduct = new ManageProduct(_userClaims);
+			var productIconSettings = manageProduct.GetProductSettingByType("ProductIcon");
+
 			List<UserProducts> productList = new List<UserProducts>();
 			foreach (PersonaProductUserDetails prodDetail in products)
 			{
@@ -214,7 +210,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 						Name = prodDetail.ProductName,
 						Description = prodDetail.ProductDescription,
 						Url = prodDetail.ProductUrl.ToUpper().Contains("HTTP") ? prodDetail.ProductUrl : ConfigReader.GetLandingUri + prodDetail.ProductUrl,
-						Label = GetSpecificProductInternalSetting(prodDetail.ProductId, "ProductIcon"),
+						Label = productIconSettings.FirstOrDefault(f => f.ProductId == prodDetail.ProductId)?.Value,
 						FamilyId = prodDetail?.FamilyId,
 						FamilyName = prodDetail.Family,
 						IsFavorite = prodDetail.IsFavorite,
