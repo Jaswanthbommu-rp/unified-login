@@ -6,6 +6,8 @@
 	[OrganizationTypeId] [int] NOT NULL DEFAULT -1,
     [OrganizationDomainId] [int] NOT NULL DEFAULT 1,
 	[CreateDate] [datetime] NULL,
+	[ThruDate] Datetime2 NULL,
+	[IsActive] TinyInt NOT NULL DEFAULT 1,
     CONSTRAINT [PK_Organization] PRIMARY KEY (PartyId), 
     CONSTRAINT [FK_Organization_Party] FOREIGN KEY (PartyId) REFERENCES Enterprise.Party(PartyId) ON DELETE CASCADE ON UPDATE CASCADE, 
     CONSTRAINT [FK_Organization_OrganizationDomain] FOREIGN KEY ([OrganizationDomainId]) REFERENCES [Enterprise].[OrganizationDomain] ([OrganizationDomainId])

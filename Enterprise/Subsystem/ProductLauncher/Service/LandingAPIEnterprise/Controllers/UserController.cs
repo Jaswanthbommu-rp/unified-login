@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Attributes;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterprise.User;
@@ -22,6 +23,8 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Op
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.ResponseObject;
 using RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Dto;
 using RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Helpers;
+using Serilog;
+using Serilog.Events;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
@@ -33,10 +36,6 @@ using System.Net.Http;
 using System.Security.Claims;
 using System.Web.Http;
 using System.Web.Http.Controllers;
-using RP.Enterprise.Foundation.DataAccess.Component;
-using Serilog;
-using Serilog.Events;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Controllers
 {
@@ -45,6 +44,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
     /// </summary>
     public class UserController : BaseApiController
     {
+        #region Private variables
+
+        IRepositoryResponse _repositoryResponse;
+        IManagePersona _managePersona;
+        private IManagePerson _personLogic;
+        IManageProduct _manageProduct;
+        IManageOrganization _manageOrganization;
+        private HttpMessageHandler _messageHandler;
+        private IManageUnifiedSettings _manageSettings;
+
+        #endregion
+
         #region Constructor
 
         /// <summary>
@@ -68,7 +79,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             _managePersona = new ManagePersona(repository, userClaims, messageHandler);
 
             _personLogic = new ManagePerson(repository);
-            ProductRepository productRepository = new ProductRepository(repository);
+            ProductRepository productRepository = new ProductRepository(repository, userClaims);
             ProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository(repository);
             // ManagePersona managePersona = new ManagePersona(repository, userClaims);
             _manageOrganization = new ManageOrganization(repository, userClaims, messageHandler);
@@ -77,6 +88,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
             ManageBlueBook manageBlueBook = new ManageBlueBook(userClaims, productInternalSettingRepository, messageHandler);
             ManageProfile manageProfile = new ManageProfile(userClaims);
+            _manageSettings = new ManageUnifiedSettings(repository, _userClaims, messageHandler);
 
             _manageProduct = new ManageProduct(productRepository, productInternalSettingRepository, _managePersona, manageBlueBook, managePartyRelationship, _manageOrganization, manageProfile, manageUserRoleRight, userClaims);
 
@@ -96,20 +108,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             _personLogic = new ManagePerson();
             _manageProduct = new ManageProduct(_userClaims);
             _manageOrganization = new ManageOrganization(_userClaims);
+            _manageSettings = new ManageUnifiedSettings(_userClaims);
         }
 
         #endregion
 
-        #region Private variables
-
-        IRepositoryResponse _repositoryResponse;
-        IManagePersona _managePersona;
-        private IManagePerson _personLogic;
-        IManageProduct _manageProduct;
-        IManageOrganization _manageOrganization;
-        private HttpMessageHandler _messageHandler;
-
-        #endregion
 
         /// <summary>
         /// Create a user in RealPage Unified platform and assign product(s).
@@ -844,7 +847,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [HttpGet]
         public HttpResponseMessage GetUserProductsByPersonaId(long? personaId = 0)
         {
-            UserProductOutputResultv2 productResult = new UserProductOutputResultv2 { Products = new Dictionary<string, List<UserProducts>>() };
+            UserProductOutputResultv2 productResult = new UserProductOutputResultv2 {Products = new Dictionary<string, List<UserProducts>>(), Settings = new Dictionary<string, object>(), Resources = new List<UserProducts>() };
 
             if (!personaId.HasValue || personaId == 0)
             {
@@ -866,6 +869,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 {
                     return Request.CreateResponse(HttpStatusCode.BadRequest, "Get User Products by persona: Invalid company id");
                 }
+
+                var sessionTimeout = 480;
+                var settingList = _manageSettings.GetUnifiedSettingsCached("Security", persona.OrganizationPartyId);
+                if (settingList.Any(p => p.Name.Equals("SessionTimeout", StringComparison.OrdinalIgnoreCase)))
+                {
+                    if (Int32.TryParse(settingList.FirstOrDefault(p =>
+                        p.Name.Equals("SessionTimeout", StringComparison.OrdinalIgnoreCase))?.Value, out var trySessionTimeout))
+                    {
+                        sessionTimeout = trySessionTimeout;
+                    }
+                }
+                productResult.Settings.Add("SessionTimeout", sessionTimeout);
 
                 var person = _personLogic.GetPerson(persona.RealPageId);
 
@@ -901,11 +916,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
                         if (up.IsResource)
                         {
-                            if (productResult.Resources == null)
-                            {
-                                productResult.Resources = new List<UserProducts>();
-                            }
-
                             productResult.Resources.Add(up);
                         }
                     }
@@ -913,9 +923,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     // Support Tool User should not have access to Client Portal
                     if (_userClaims.ImpersonatedBy != Guid.Empty)
                     {
-                        if (productResult.Resources.Any(a => a.Id == (int)ProductEnum.ClientPortal))
+                        if (productResult.Resources.Any(a => a.Id == (int) ProductEnum.ClientPortal))
                         {
-                            productResult.Resources.Remove(productResult.Resources.First(a => a.Id == (int)ProductEnum.ClientPortal));
+                            productResult.Resources.Remove(productResult.Resources.First(a => a.Id == (int) ProductEnum.ClientPortal));
                         }
                     }
                 }
@@ -1598,6 +1608,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             /// User Resource list
             /// </summary>
             public List<UserProducts> Resources { get; set; }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public Dictionary<string, object> Settings { get; set; }
         }
 
         /// <summary>

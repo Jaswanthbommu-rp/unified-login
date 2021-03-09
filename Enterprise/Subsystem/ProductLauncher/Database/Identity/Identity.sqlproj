@@ -1031,12 +1031,19 @@
     <Build Include="Enterprise\Stored Procedures\SetProductType.sql" />
     <Build Include="Enterprise\Stored Procedures\SetProductSetting.sql" />
     <Build Include="UserManagement\Stored Procedures\SetProductPage.sql" />
-    <Build Include="Enterprise\Stored Procedures\SetProductControl.sql" />
     <Build Include="Ident\Stored Procedures\ListPersonaProductsSamlDetails.sql" />
     <Build Include="Ident\Stored Procedures\CreateUpdateUserTokenDetail.sql" />
     <Build Include="Ident\Stored Procedures\GetUserTokenDetail.sql" />
     <Build Include="Ident\Stored Procedures\UpdateUserLoginTwoFactor.sql" />
     <Build Include="Ident\Tables\UserTokens.sql" />
+    <Build Include="Enterprise\Stored Procedures\ImportProduct.sql" />
+    <Build Include="UserManagement\ProductPageType.sql" />
+    <Build Include="UserManagement\ProductControlType.sql" />
+    <Build Include="UserManagement\Stored Procedures\SetProductControl.sql" />
+    <Build Include="Enterprise\Stored Procedures\DeletePropertyInstance.sql" />
+    <Build Include="UserManagement\ProductControlAttributeType.sql" />
+    <Build Include="UserManagement\Stored Procedures\DeleteProductPagesAndControls.sql" />
+    <Build Include="Ident\Stored Procedures\UpdateUserTwoFactorLastNotifyDate.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

@@ -73,7 +73,7 @@ BEGIN
  FROM   
   [Enterprise].[PropertyInstance] pi1  
   INNER JOIN @InstanceList IL  
-   ON IL.InstanceId = PI1.InstanceId
+   ON IL.InstanceId = PI1.InstanceId and pi1.IsDeleted = 0
     WHERE (@Name IS NULL OR pi1.Name LIKE '%' + @Name + '%') 
   AND (@PropertyMasterid IS NULL OR PI1.CustomerPropertyId LIKE '%' + @PropertyMasterid + '%')  
   

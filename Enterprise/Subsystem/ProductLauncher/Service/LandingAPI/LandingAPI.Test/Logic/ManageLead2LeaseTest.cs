@@ -491,7 +491,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                     It.IsAny<long>()
                 ))
                 .Returns(_userProductSettings);
-            
+
             //Act
             IManageProductLead2Lease mpL2L = new ManageProductLead2Lease(
                 editorRealPageId: _editorRealPageId,
@@ -508,9 +508,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 manageProductOneSite: null,
                 userLoginRepository: null);
 
+            new RPObjectCache().BustCache();
 
             ListResponse resp = mpL2L.GetRoles(_editorPersonaId, _userPersonaId, null);
             Assert.True(resp.TotalRows == _l2lUser.Permissions.Count);
+
+            new RPObjectCache().BustCache();
 
             resp = mpL2L.GetProperties(_editorPersonaId, _userPersonaId, null);
             Assert.True(resp.TotalRows == _l2lUser.Properties.Count);
@@ -1828,6 +1831,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                     It.Is<long>(l => l == 4)
                  ))
                  .Returns(_editorPersona);
+
+            mockProductRepository
+              .Setup(m => m.GetBooksMasterProductDetail(
+                  It.IsAny<int>()
+              ))
+              .Returns(_gbProductMap);
 
             IManageProductLead2Lease mpL2L = new ManageProductLead2Lease(
               editorRealPageId: _editorRealPageId,

@@ -41,5 +41,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		/// Additional
 		/// </summary>
         public object Additional {get;set;}
+		
 	}
 }

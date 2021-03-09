@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
 
@@ -108,6 +109,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         bool DeleteBooksGreenBookCompanyInstance(CompanyInstance companyInstance);
 
         /// <summary>
+        /// Used to delete an existing property instance
+        /// </summary>
+        /// <param name="propertyInstance"></param>
+        /// <returns></returns>
+        bool DeletePropertyFromBooks(Guid propertyInstance);
+
+        /// <summary>
         /// Used to update an existing company instance
         /// </summary>
         /// <param name="companyInstance"></param>
@@ -181,5 +189,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         ///// <param name="customerPropertyId"></param>
         ///// <returns></returns>
         List<BooksPropertyInstance> GetPropertyInstanceByCustomerPropertyId(string CustomerPropertyId);
+        ///// <summary>
+        ///// Get translated product primary properties data
+        ///// </summary>
+        ///// <param name="upfmProperty"></param>
+        ///// <returns></returns>
+        ListResponse TranslateProductPrimaryPropertiesData(UPFMProperty upfmProperty, int productId, ListResponse productResult);
+
+        /// <summary>
+        /// Used to enable product for an organization
+        /// </summary>
+        /// <param name="systemProductCenter"></param>
+        /// <returns></returns>
+        bool ProductCenterEnable(SystemProductCenter systemProductCenter);
+
+        /// <summary>
+        /// Used to delete product for an organization
+        /// </summary>
+        /// <param name="systemProductCenter"></param>
+        /// <returns></returns>
+        bool ProductCenterDisable(SystemProductCenter systemProductCenter);
     }
 }

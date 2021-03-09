@@ -220,7 +220,7 @@ DECLARE @RightId INT,
 
 SELECT    @UserId = UserId
             FROM    Ident.UserLogin
-            WHERE    LoginName LIKE 'realpagead@%'
+            WHERE  LoginName LIKE 'realpagead@%'
 
 
 IF NOT EXISTS (SELECT TOP 1 1 FROM Security.[Right] where  RightName = 'AccessUnifiedReporting')
@@ -365,7 +365,6 @@ insert into @productlist values
 	(58, 'ShowInNewCompanySetup', '1' ),
 	(59, 'ShowInNewCompanySetup', '1' ),
 	(60, 'ShowInNewCompanySetup', '1' ),
-	(63, 'ShowInNewCompanySetup', '1' ),
 
 	(1, 'ShowInAuditProductPage', '1' ),
 	(3, 'ShowInAuditProductPage', '1' ),
@@ -403,8 +402,7 @@ insert into @productlist values
 	(57, 'ShowInAuditProductPage', '0' ),
 	(58, 'ShowInAuditProductPage', '0' ),
 	(59, 'ShowInAuditProductPage', '0' ),
-	(60, 'ShowInAuditProductPage', '0' ),
-	(63, 'ShowInAuditProductPage', '0' )
+	(60, 'ShowInAuditProductPage', '0' )
 	
 --select * from @productlist
 
@@ -747,7 +745,7 @@ BEGIN
 	VALUES (@MaxControlId +3, @MaxControlId +2, 10, N'FinancialSuiteProductAccessLocationGroupCheckboxUIId', NULL, N'isAssigned', 2, @UserId, @Now)
 
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
-	VALUES (@MaxControlId +4, @MaxControlId +2, 5, N'FinancialSuiteProductAccessLocationGroupLabelUIId', N'Group', N'name', 3, @UserId, @Now)
+	VALUES (@MaxControlId +4, @MaxControlId +2, 5, N'FinancialSuiteProductAccessLocationGroupLabelUIId', N'Location Group', N'name', 3, @UserId, @Now)
 
 	--PGSlide
 			INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
@@ -779,7 +777,7 @@ END
 			IF NOT EXISTS ( SELECT TOP 1 1 FROM [UserManagement].[ControlAttribute] WHERE ControlId = @FSLGSelallID)
 			BEGIN
 				INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
-				VALUES (@MaxControlAttributeId + 1, @FSLGSelallID, N'ShowSelectAll', N'True', @UserId, @Now)
+				VALUES (@MaxControlAttributeId + 1, @FSLGSelallID, N'ShowSelectAll', N'False', @UserId, @Now)
 			END
 
 			--SELECT @MaxControlAttributeId = max(ControlAttributeId) from UserManagement.ControlAttribute
@@ -1648,7 +1646,7 @@ DECLARE @CreatedById bigint,
 
 SELECT @CreatedById = UserId
 FROM Ident.UserLogin
-WHERE LoginName = 'RealPageAd@test.com'
+WHERE LoginName like 'realpagead@%'
 
 IF NOT EXISTS (SELECT 1 FROM [Security].[Right] WHERE RightName = 'AbilityToAddProducts')
 BEGIN
@@ -1690,5 +1688,248 @@ IF NOT EXISTS (SELECT 1 FROM [Security].[OrganizationOverRideRight]  WHERE Right
 BEGIN
 	INSERT INTO [Security].[OrganizationOverRideRight](RightId, OrgPartyId, VisibilityStatusId, CreatedBy, CreatedDate) 
 	VALUES	(@RightId, @PartyId, 9, @CreatedById, @Now)
+END
+GO
+
+-- Updating the Unified Amenities roles to be sentence-cased
+IF EXISTS(SELECT 1 FROM Security.Role WHERE ProductId = 26 AND RoleName='Manage Amenity Status')
+BEGIN
+UPDATE Security.Role SET RoleName='Manage amenity status'
+WHERE ProductId = 26 AND RoleName='Manage Amenity Status'
+END
+
+IF EXISTS(SELECT 1 FROM Security.Role WHERE ProductId = 26 AND RoleName='Manage Amenity No Pricing') 
+BEGIN
+UPDATE Security.Role SET RoleName='Manage amenity no pricing'
+WHERE ProductId = 26 AND RoleName='Manage Amenity No Pricing'
+END
+
+IF EXISTS(SELECT 1 FROM Security.Role WHERE ProductId = 26 AND RoleName='Manage Amenity With Pricing')
+BEGIN
+UPDATE Security.Role SET RoleName='Manage amenity with pricing'
+WHERE ProductId = 26 AND RoleName='Manage Amenity With Pricing'
+END
+
+IF EXISTS(SELECT 1 FROM Security.Role WHERE ProductId = 26 AND RoleName='Manage Property Amenity No Pricing')
+BEGIN
+UPDATE Security.Role SET RoleName='Manage property amenity no pricing'
+WHERE ProductId = 26 AND RoleName='Manage Property Amenity No Pricing'
+END
+
+IF EXISTS(SELECT 1 FROM Security.Role WHERE ProductId = 26 AND RoleName='Manage Property Amenity With Pricing')
+BEGIN
+UPDATE Security.Role SET RoleName='Manage property amenity with pricing'
+WHERE ProductId = 26 AND RoleName='Manage Property Amenity With Pricing'
+END
+
+IF EXISTS(SELECT 1 FROM Security.Role WHERE ProductId = 26 AND RoleName='View Amenities')
+BEGIN
+UPDATE Security.Role SET RoleName='View amenities'
+WHERE ProductId = 26 AND RoleName='View Amenities'
+END
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM [UserManagement].[Control] 
+WHERE UIId = 'UnifiedPlatformRolesAndRightsRightLabelTypeUIId')
+BEGIN
+	DECLARE @ParentControlId INT, @UserId BIGINT, @Now DATETIME = GETDATE();
+
+	SELECT	@UserId = UserId
+	FROM	Ident.UserLogin
+	WHERE	LoginName LIKE 'realpagead@%'
+
+	SELECT @ParentControlId = ParentControlId FROM [UserManagement].[Control] 
+	WHERE UIId = 'UnifiedPlatformRolesAndRightsRightLabelUIId' AND DataSource = 'name';
+
+	INSERT INTO [UserManagement].[Control](ParentControlId,ControlTypeId,UIId,DisplayName,DataSource,Sequence,CreatedBy,CreatedDate)
+	VALUES(@ParentControlId,5,'UnifiedPlatformRolesAndRightsRightLabelTypeUIId', 'Type','roletype',3,@UserId,@Now);
+END
+
+GO
+--Renaming Right
+IF EXISTS(SELECT TOP 1 1 FROM [Security].[Right] where Value ='View all company-level settings')
+BEGIN
+   DECLARE @RightID INT;
+   SELECT @RightID = RightId from [Security].[Right] where Value ='View all company-level settings'
+   UPDATE [Security].[Right] SET Value='View all company-level settings & templates' where RightId=@RightID
+END
+GO
+
+IF EXISTS(SELECT TOP 1 1 FROM [Security].[Right] where Value ='Access to Company-level questionnaires and Summary Views in CIMPL')
+BEGIN
+   DECLARE @RightID INT;
+   SELECT @RightID = RightId from [Security].[Right] where Value ='Access to Company-level questionnaires and Summary Views in CIMPL'
+   UPDATE [Security].[Right] SET Value='Access to Company-level questionnaires and Portfolio Views in CIMPL' where RightId=@RightID
+END
+GO
+
+DECLARE @ProductSettingTypeId INT
+select @ProductSettingTypeId = ProductSettingTypeId from Enterprise.ProductSettingType where Name='IsNewTab'
+
+IF EXISTS ( select TOP 1 1 from Enterprise.ProductSetting where ProductId = 26 and  ProductSettingTypeId = @ProductSettingTypeId and Value = 0)
+BEGIN
+ UPDATE Enterprise.ProductSetting SET Value = 1 where ProductId = 26 and  ProductSettingTypeId = @ProductSettingTypeId
+END
+GO
+
+---Script to add SettingsApiEndPoint configuration
+DECLARE @LoginURL NVARCHAR(500) = 'https://settingsapi-dev.realpage.com',
+@ServerName SYSNAME = @@SERVERNAME
+IF @ServerName IN ('RCDUSODBSQL001') --DEV
+BEGIN
+	SET @LoginURL = 'https://settingsapi-dev.realpage.com';
+END
+IF @ServerName IN ('RCTUSODBSQL001') --QA
+BEGIN
+	SET @LoginURL = 'https://settingsapi-qa.realpage.com';
+END
+IF @ServerName IN ('RCQUSODBSQL001') --SAT
+BEGIN
+	SET @LoginURL = 'https://settingsapi-sat.realpage.com';
+END
+IF @ServerName IN ('RCTUSODBSQL001A','RCTUSODBSQL001B') --UAT
+BEGIN
+	SET @LoginURL = 'https://settingsapi-uat.realpage.com';
+END
+IF @ServerName IN ('RCVGBKDBSQL001') --DEMO
+BEGIN
+	SET @LoginURL = 'https://settingsapi-demo.realpage.com';
+END
+IF @ServerName IN ('RCTUSODBTUL001') --TRAINING
+BEGIN
+	SET @LoginURL = 'https://settingsapi-training.realpage.com';
+END
+IF @ServerName IN ('RCIUSODBSQL002') --PREPROD
+BEGIN
+	SET @LoginURL = 'https://settingsapi-preprod.realpage.com';
+END
+IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B') --PROD
+BEGIN
+	SET @LoginURL = 'https://settingsapi.realpage.com';
+END
+
+IF NOT EXISTS ( select top (1) 1 from Enterprise.ProductSettingType where name = 'SettingsApiEndPoint')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'SettingsApiEndPoint', 'The api endpoint for Unified Settings', 0 )
+END
+
+IF NOT EXISTS(Select top (1) 1 from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'SettingsApiEndPoint' and ps.ProductId= 3)
+BEGIN
+	Insert into Enterprise.ProductSetting (ProductId, ProductSettingTypeId, Value, FromDate)
+	Select 3, ProductSettingTypeId, @LoginURL, GETUTCDATE()
+	from Enterprise.ProductSettingType
+	where Name = 'SettingsApiEndPoint'
+
+	declare @productsettingid int
+	select @productsettingid = productsettingid from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'SettingsApiEndPoint' and ps.ProductId= 3
+
+	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
+				select TOP (1) ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is NULL ORDER BY GlobalProductConfigurationId DESC
+END
+GO
+
+-- 679135
+UPDATE enterprise.product SET Description = 'Axiometrics is the industry leader in providing multifamily and student housing data at individual properties down to the floorplan level. Covering markets of all sizes across the country, Axiometrics delivers detailed reports and analytics on tens of thousands of assets every month.' WHERE productid = 33
+GO
+
+UPDATE ps
+SET ps.Value = 'https://www.realpage.com/asset-optimization/market-analytics/'
+FROM enterprise.ProductSetting ps 
+INNER JOIN enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId 
+WHERE ProductId = 33 AND pst.Name = 'LearnMore'
+-- 679135
+
+GO
+
+-- ILMLM/ILMLA Authentication for GB API
+DECLARE @ServerName SYSNAME = @@SERVERNAME
+IF @ServerName IN ('RCDUSODBSQL001','RCTUSODBSQL001') --DEV And QA
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM Enterprise.ProductSetting WHERE ProductId IN (40,41) AND ProductSettingTypeId = 1010)
+	BEGIN
+		INSERT INTO Enterprise.ProductSetting VALUES(40,1010,'dW5pZmllZC1sb2dpbkByZWFscGFnZS5jb20=',GETDATE(),NULL)
+		INSERT INTO Enterprise.ProductSetting VALUES(41,1010,'dW5pZmllZC1sb2dpbkByZWFscGFnZS5jb20=',GETDATE(),NULL)
+	END	
+
+	IF NOT EXISTS (SELECT 1 FROM Enterprise.ProductSetting WHERE ProductId IN (40,41) AND ProductSettingTypeId = 1011)
+	BEGIN
+		INSERT INTO Enterprise.ProductSetting VALUES(40,1011,'WHZkanhYV01DT2Y1akZ6NA==',GETDATE(),NULL)
+		INSERT INTO Enterprise.ProductSetting VALUES(41,1011,'WHZkanhYV01DT2Y1akZ6NA==',GETDATE(),NULL)
+	END			
+
+END
+IF @ServerName IN ('RCQUSODBSQL001') --SAT
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM Enterprise.ProductSetting WHERE ProductId IN (40,41) AND ProductSettingTypeId = 1010)
+	BEGIN
+		INSERT INTO Enterprise.ProductSetting VALUES(40,1010,'dW5pZmllZC1sb2dpbkByZWFscGFnZS5jb20=',GETDATE(),NULL)
+		INSERT INTO Enterprise.ProductSetting VALUES(41,1010,'dW5pZmllZC1sb2dpbkByZWFscGFnZS5jb20=',GETDATE(),NULL)
+	END	
+
+	IF NOT EXISTS (SELECT 1 FROM Enterprise.ProductSetting WHERE ProductId IN (40,41) AND ProductSettingTypeId = 1011)
+	BEGIN
+		INSERT INTO Enterprise.ProductSetting VALUES(40,1011,'ZVVjVXR5YlI3eXlWRmpJRA==',GETDATE(),NULL)
+		INSERT INTO Enterprise.ProductSetting VALUES(41,1011,'ZVVjVXR5YlI3eXlWRmpJRA==',GETDATE(),NULL)
+	END	
+END
+IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B') --PROD
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM Enterprise.ProductSetting WHERE ProductId IN (40,41) AND ProductSettingTypeId = 1010)
+	BEGIN
+		INSERT INTO Enterprise.ProductSetting VALUES(40,1010,'dW5pZmllZC1sb2dpbkByZWFscGFnZS5jb20=',GETDATE(),NULL)
+		INSERT INTO Enterprise.ProductSetting VALUES(41,1010,'dW5pZmllZC1sb2dpbkByZWFscGFnZS5jb20=',GETDATE(),NULL)
+	END	
+
+	IF NOT EXISTS (SELECT 1 FROM Enterprise.ProductSetting WHERE ProductId IN (40,41) AND ProductSettingTypeId = 1011)
+	BEGIN
+		INSERT INTO Enterprise.ProductSetting VALUES(40,1011,'ZUpNSFlpeHgzMXk0dTBnUQ==',GETDATE(),NULL)
+		INSERT INTO Enterprise.ProductSetting VALUES(41,1011,'ZUpNSFlpeHgzMXk0dTBnUQ==',GETDATE(),NULL)
+	END
+END
+
+IF EXISTS (SELECT 1 ProductSettingId FROM Enterprise.ProductSetting WHERE ProductId = 40 and ProductSettingTypeId = 1010)
+BEGIN
+INSERT INTO Enterprise.ProductConfiguration(ConfigurationId, ProductSettingId, FromDate, ThruDate) VALUES (
+(SELECT TOP 1 ConfigurationId FROM Enterprise.GlobalProductConfiguration WHERE ProductId = 40 AND ThruDate IS NULL),
+(SELECT TOP 1 ProductSettingId FROM Enterprise.ProductSetting WHERE ProductId = 40 and ProductSettingTypeId = 1010),
+GETDATE(),NULL)
+END
+
+IF EXISTS (SELECT 1 ProductSettingId FROM Enterprise.ProductSetting WHERE ProductId = 40 and ProductSettingTypeId = 1011)
+BEGIN
+INSERT INTO Enterprise.ProductConfiguration(ConfigurationId, ProductSettingId, FromDate, ThruDate) VALUES (
+(SELECT TOP 1 ConfigurationId FROM Enterprise.GlobalProductConfiguration WHERE ProductId = 40 AND ThruDate IS NULL),
+(SELECT ProductSettingId FROM Enterprise.ProductSetting WHERE ProductId = 40 and ProductSettingTypeId = 1011),
+GETDATE(),NULL)
+END
+
+IF EXISTS (SELECT 1 ProductSettingId FROM Enterprise.ProductSetting WHERE ProductId = 41 and ProductSettingTypeId = 1010)
+BEGIN
+INSERT INTO Enterprise.ProductConfiguration(ConfigurationId, ProductSettingId, FromDate, ThruDate) VALUES (
+(SELECT TOP 1 ConfigurationId FROM Enterprise.GlobalProductConfiguration WHERE ProductId = 41 AND ThruDate IS NULL),
+(SELECT ProductSettingId FROM Enterprise.ProductSetting WHERE ProductId = 41 and ProductSettingTypeId = 1010),
+GETDATE(),NULL)
+END
+
+IF EXISTS (SELECT 1 ProductSettingId FROM Enterprise.ProductSetting WHERE ProductId = 41 and ProductSettingTypeId = 1011)
+BEGIN
+INSERT INTO Enterprise.ProductConfiguration(ConfigurationId, ProductSettingId, FromDate, ThruDate) VALUES (
+(SELECT TOP 1 ConfigurationId FROM Enterprise.GlobalProductConfiguration WHERE ProductId = 41 AND ThruDate IS NULL),
+(SELECT ProductSettingId FROM Enterprise.ProductSetting WHERE ProductId = 41 and ProductSettingTypeId = 1011),
+GETDATE(),NULL)
+END
+
+-- Updating DisplayName of UnifiedPlatformRolesAndRightsRightLabelUIId for name DataSource
+GO
+DECLARE @ControlId INT
+SELECT @ControlId = ControlId FROM [UserManagement].[Control] WHERE UIId='UnifiedPlatformRolesAndRightsRightLabelUIId' AND DataSource='name'
+IF (@ControlId <> '')
+BEGIN
+UPDATE [UserManagement].[Control] SET DisplayName='Role' WHERE ControlId = @ControlId
 END
 GO
