@@ -61,7 +61,7 @@ BEGIN
 					AND @mappingName = 'ForcedLock'
 					AND PartyId = @PartyId
 
-					UPDATE iac SET	iac.ActivityTokenExpirationMinutes =
+					UPDATE iac SET	iac.MaxActivityAttemptCount =
 							CASE
 								WHEN @mappingValue > 0 THEN @mappingValue
 								ELSE iac.MaxActivityAttemptCount
@@ -72,7 +72,7 @@ BEGIN
 					AND @mappingName = 'Login'
 					AND PartyId = @PartyId
 
-					UPDATE iac SET	iac.MaxActivityAttemptCount =
+					UPDATE iac SET	iac.ActivityTokenExpirationMinutes =
 							CASE
 								WHEN @mappingValue > 0 AND @mappingValue % 1 = 0 THEN @mappingValue * 1440
 								WHEN @mappingValue IS NOT NULL THEN @mappingValue
