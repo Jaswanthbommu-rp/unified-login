@@ -130,3 +130,162 @@ begin
 end
 
 COMMIT TRAN;
+GO
+
+------Create Product Setting for IsUnifedEmailsEnabled -------------
+DECLARE	@ProductSettingTypeId int,
+		@ProductSettingId int,
+		@now datetime=getdate(),
+		@ConfigurationId int,
+		@emailBaseAddress NVARCHAR(500),
+		@ServerName SYSNAME = @@SERVERNAME,
+		@emailEndpoint NVARCHAR(50) ='/v1/emails'
+
+IF @ServerName IN ('RCDUSODBSQL001','rctusodbsql001','RCQUSODBSQL001')
+BEGIN
+	IF NOT EXISTS(SELECT * FROM Enterprise.ProductSettingType WHERE [NAME]='IsUnifedEmailsEnabled')
+	BEGIN
+	EXEC [Enterprise].[CreateProductSettingType]
+			@ProductSettingTypeName = N'IsUnifedEmailsEnabled',
+			@ProductSettingTypeDescription = N'Enable Unified Email to send email to unified platform',
+			@ProductSettingTypeSensitiveData = 0,
+			@ProductSettingTypeId = @ProductSettingTypeId OUTPUT
+
+	SELECT	@ProductSettingTypeId as N'@ProductSettingTypeId'
+
+	EXEC	[Enterprise].[CreateProductSetting]
+			@ProductId = 3,
+			@ProductSettingTypeId = @ProductSettingTypeId,
+			@Value = N'1',
+			@FromDate=@now,
+			@ThruDate = NULL,
+			@ProductSettingId = @ProductSettingId OUTPUT
+
+	SELECT	@ProductSettingId as N'@ProductSettingId'
+
+	SELECT  @ConfigurationId=ConfigurationId
+					FROM Enterprise.GlobalProductConfiguration
+					WHERE ProductId = 3
+						AND (GETDATE() BETWEEN FromDate AND ThruDate
+						OR ThruDate IS NULL)
+
+	EXEC Enterprise.LinkProductSettingToConfiguration
+		@ConfigurationId = @ConfigurationId, -- int
+		@ProductSettingId = @ProductSettingId, -- int
+		@FromDate = @now, -- datetime
+		@ThruDate = NULL  -- datetime
+
+	END
+
+	------Create Product Setting for UnifiedEmailBaseAddress -------------
+
+	IF NOT EXISTS(SELECT * FROM Enterprise.ProductSettingType WHERE [NAME]='UnifiedEmailBaseAddress')
+	BEGIN
+	SET @emailBaseAddress = '';
+	IF @ServerName IN ('RCDUSODBSQL001')
+	BEGIN
+		SET @emailBaseAddress = 'https://internalapi-dev.realpage.com/emails/b2b';
+	END
+	IF @ServerName IN ('rctusodbsql001')
+	BEGIN
+		SET @emailBaseAddress = 'https://internalapi-qa.realpage.com/emails/b2b';
+	END
+	IF @ServerName IN ('RCQUSODBSQL001')
+	BEGIN
+		SET @emailBaseAddress = 'https://internalapi-sat.realpage.com/emails/b2b';
+	END
+	IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B')
+	BEGIN
+		SET @emailBaseAddress = '';
+	END
+
+	EXEC	[Enterprise].[CreateProductSettingType]
+			@ProductSettingTypeName = N'UnifiedEmailBaseAddress',
+			@ProductSettingTypeDescription = N'Unified Email base address endpoint',
+			@ProductSettingTypeSensitiveData = 0,
+			@ProductSettingTypeId = @ProductSettingTypeId OUTPUT
+
+	SELECT	@ProductSettingTypeId as N'@ProductSettingTypeId'
+
+	EXEC	[Enterprise].[CreateProductSetting]
+			@ProductId = 3,
+			@ProductSettingTypeId = @ProductSettingTypeId,
+			@Value = @emailBaseAddress,
+			@FromDate=@now,
+			@ThruDate = NULL,
+			@ProductSettingId = @ProductSettingId OUTPUT
+
+	SELECT	@ProductSettingId as N'@ProductSettingId'
+
+	SELECT  @ConfigurationId=ConfigurationId
+					FROM Enterprise.GlobalProductConfiguration
+					WHERE ProductId = 3
+						AND (GETDATE() BETWEEN FromDate AND ThruDate
+						OR ThruDate IS NULL)
+
+	EXEC Enterprise.LinkProductSettingToConfiguration
+		@ConfigurationId = @ConfigurationId, -- int
+		@ProductSettingId = @ProductSettingId, -- int
+		@FromDate = @now, -- datetime
+		@ThruDate = NULL  -- datetime
+
+	END
+	------Create Product Setting for UnifiedEmailEndPoint -------------
+
+	IF NOT EXISTS(SELECT * FROM Enterprise.ProductSettingType WHERE [NAME]='UnifiedEmailEndPoint')
+	BEGIN
+	EXEC	[Enterprise].[CreateProductSettingType]
+			@ProductSettingTypeName = N'UnifiedEmailEndPoint',
+			@ProductSettingTypeDescription = N'Unified Email endpoin',
+			@ProductSettingTypeSensitiveData = 0,
+			@ProductSettingTypeId = @ProductSettingTypeId OUTPUT
+
+	SELECT	@ProductSettingTypeId as N'@ProductSettingTypeId'
+
+	EXEC	[Enterprise].[CreateProductSetting]
+			@ProductId = 3,
+			@ProductSettingTypeId = @ProductSettingTypeId,
+			@Value = @emailEndpoint,
+			@FromDate=@now,
+			@ThruDate = NULL,
+			@ProductSettingId = @ProductSettingId OUTPUT
+
+	SELECT	@ProductSettingId as N'@ProductSettingId'
+
+	SELECT  @ConfigurationId=ConfigurationId
+					FROM Enterprise.GlobalProductConfiguration
+					WHERE ProductId = 3
+						AND (GETDATE() BETWEEN FromDate AND ThruDate
+						OR ThruDate IS NULL)
+
+	EXEC Enterprise.LinkProductSettingToConfiguration
+		@ConfigurationId = @ConfigurationId, -- int
+		@ProductSettingId = @ProductSettingId, -- int
+		@FromDate = @now, -- datetime
+		@ThruDate = NULL  -- datetime
+	END
+END
+GO
+
+--Check existing email system ---
+DECLARE @ServerName SYSNAME = @@SERVERNAME
+
+IF @ServerName IN ('RCDUSODBSQL001','rctusodbsql001','RCQUSODBSQL001')
+BEGIN
+	IF EXISTS(SELECT *  FROM Enterprise.ProductSetting ps 
+						JOIN Enterprise.ProductSettingType pst on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+						WHERE ps.ProductId=3 and pst.[NAME] ='IsUnifedEmailsEnabled' and ps.value='1')
+	BEGIN
+
+			IF EXISTS(SELECT *  FROM Enterprise.ProductSetting ps 
+									JOIN Enterprise.ProductSettingType pst on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+									WHERE ps.ProductId=3 and pst.[NAME] ='IsSendGridEnabled' and ps.value='1')
+			BEGIN
+			   UPDATE Enterprise.ProductSetting SET [Value]=0 
+			   WHERE ProductSettingId=(SELECT ProductSettingId  FROM Enterprise.ProductSetting ps 
+									JOIN Enterprise.ProductSettingType pst on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+									WHERE ps.ProductId=3 and pst.[NAME] ='IsSendGridEnabled')
+			END
+	END
+END
+GO
