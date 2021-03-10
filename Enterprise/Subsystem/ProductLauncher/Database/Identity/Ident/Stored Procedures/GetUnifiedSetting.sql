@@ -14,4 +14,17 @@ BEGIN
 		OS.SettingCategoryTypeId = SCT.SettingCategoryTypeId
 	WHERE OS.PartyId = @PartyId
 	AND SCT.Name = @Category
+	UNION
+	SELECT	iat.[ActivityCode] AS 'Name',
+				CASE
+					WHEN iat.ActivityCode = 'Login' THEN iac.MaxActivityAttemptCount
+					WHEN iat.ActivityCode = 'NewUserRegistration' THEN iac.ActivityTokenExpirationMinutes / 1440
+					ELSE iac.ActivityTokenExpirationMinutes
+				END AS 'Value',
+				1 AS 'Editable',
+                0 AS 'Hidden'
+	FROM	[Ident].[ActivityConfiguration] iac
+				INNER JOIN Ident.ActivityType iat ON iat.ActivityTypeId = iac.ActivityTypeId
+	WHERE	iac.PartyId = @PartyId
+	AND		iat.ActivityCode IN ('Login', 'ForcedLock', 'NewUserRegistration')
 END
