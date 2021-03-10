@@ -246,38 +246,7 @@ BEGIN
 	From [Ident].[PasswordPolicy]  
 END
 
-IF NOT EXISTS (SELECT 1 From [Ident].[OrganizationSettings] Where MappingName = 'ForcedLock')
-BEGIN
-	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
-		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
-	Select PartyId,@SettingCategoryTypeId,'ForcedLock',
-		iac.MaxActivityAttemptCount,1,0,@UserId,@Now
-	FROM [Ident].[ActivityConfiguration] iac
-		 INNER JOIN Ident.ActivityType iat ON iat.ActivityTypeId = iac.ActivityTypeId				
-	WHERE iat.ActivityCode = 'ForcedLock'
-END
 
-IF NOT EXISTS (SELECT 1 From [Ident].[OrganizationSettings] Where MappingName = 'Login')
-BEGIN
-	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
-		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
-	Select PartyId,@SettingCategoryTypeId,'Login',
-		iac.MaxActivityAttemptCount,1,0,@UserId,@Now
-	FROM [Ident].[ActivityConfiguration] iac
-		 INNER JOIN Ident.ActivityType iat ON iat.ActivityTypeId = iac.ActivityTypeId				
-	WHERE iat.ActivityCode = 'Login' 
-END
-
-IF NOT EXISTS (SELECT 1 From [Ident].[OrganizationSettings] Where MappingName = 'NewUserRegistration')
-BEGIN
-	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
-		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
-	Select PartyId,@SettingCategoryTypeId,'NewUserRegistration',
-		iac.ActivityTokenExpirationMinutes,1,0,@UserId,@Now
-	FROM [Ident].[ActivityConfiguration] iac
-		 INNER JOIN Ident.ActivityType iat ON iat.ActivityTypeId = iac.ActivityTypeId				
-	WHERE iat.ActivityCode = 'NewUserRegistration' 
-END
 GO
 --Accounting Location Group
 Declare @MCMasterControlId int,@MCUPPControlId int,@MaxControlId int,@MaxControlAttributeId int
