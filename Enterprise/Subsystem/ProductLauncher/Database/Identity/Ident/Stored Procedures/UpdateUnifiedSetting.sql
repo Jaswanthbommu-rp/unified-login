@@ -49,6 +49,7 @@ BEGIN
 			BEGIN
 				IF @mappingName IN ('Login', 'ForcedLock', 'NewUserRegistration')
 				BEGIN
+				
 					UPDATE iac SET	iac.ActivityTokenExpirationMinutes =
 							CASE
 								WHEN @mappingValue > 0 THEN @mappingValue
@@ -57,6 +58,7 @@ BEGIN
 					FROM [Ident].[ActivityConfiguration] iac
 					INNER JOIN Ident.ActivityType iat ON iat.ActivityTypeId = iac.ActivityTypeId	
 					WHERE iat.ActivityCode = 'ForcedLock'
+					AND @mappingName = 'ForcedLock'
 					AND PartyId = @PartyId
 
 					UPDATE iac SET	iac.ActivityTokenExpirationMinutes =
@@ -67,6 +69,7 @@ BEGIN
 					FROM [Ident].[ActivityConfiguration] iac
 					INNER JOIN Ident.ActivityType iat ON iat.ActivityTypeId = iac.ActivityTypeId	
 					WHERE iat.ActivityCode = 'Login'
+					AND @mappingName = 'Login'
 					AND PartyId = @PartyId
 
 					UPDATE iac SET	iac.MaxActivityAttemptCount =
@@ -78,6 +81,7 @@ BEGIN
 					FROM [Ident].[ActivityConfiguration] iac
 					INNER JOIN Ident.ActivityType iat ON iat.ActivityTypeId = iac.ActivityTypeId	
 					WHERE iat.ActivityCode = 'NewUserRegistration'
+					AND @mappingName = 'NewUserRegistration'
 					AND PartyId = @PartyId
 				END
 				ELSE
