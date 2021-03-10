@@ -1923,7 +1923,6 @@ INSERT INTO Enterprise.ProductConfiguration(ConfigurationId, ProductSettingId, F
 (SELECT ProductSettingId FROM Enterprise.ProductSetting WHERE ProductId = 41 and ProductSettingTypeId = 1011),
 GETDATE(),NULL)
 END
-GO
 
 -- Updating DisplayName of UnifiedPlatformRolesAndRightsRightLabelUIId for name DataSource
 GO
