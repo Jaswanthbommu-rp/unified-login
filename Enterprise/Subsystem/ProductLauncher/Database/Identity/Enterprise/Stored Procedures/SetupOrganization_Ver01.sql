@@ -129,10 +129,7 @@ BEGIN
 		INSERT INTO Ident.OrganizationSettings (PartyId,SettingCategoryTypeId,MappingName,MappingValue,MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
 		SELECT @OrganizationId,SettingCategoryTypeId,MappingName,MappingValue,MappingValue,Editable,[Hidden],@UserId,GETDATE()
 		FROM [Ident].[OrganizationSettings]
-		WHERE	PartyId = 3
-		AND MappingName IN ('MinimumLength','MaximumLength','MinimumLowercase','MinimumUppercase','MinimumNumeric','MinimumSpecialCharacter,AllowUsersToChangeOwnPassword',
-						'EnablePasswordExpiration','PasswordExpirationPeriodInDays','PreventPasswordReuse','NumberOfPasswordsToRemember')
-		
+		WHERE	PartyId = 3				
 	END;
 
 	--Setup thirdparty IDP
