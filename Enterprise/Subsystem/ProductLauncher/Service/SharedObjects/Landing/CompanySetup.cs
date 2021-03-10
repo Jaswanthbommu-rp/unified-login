@@ -70,6 +70,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         public string Domain { get; set; }
 
         /// <summary>
+        /// Status
+        /// </summary>
+        [JsonProperty(PropertyName = "Status")]
+        public string Status { get; set; }
+
+        /// <summary>
         /// Products
         /// </summary>
         [JsonProperty(PropertyName = "Products")]
@@ -79,6 +85,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         /// Address
         /// </summary>
         public string Address { get; set; }
+
+        /// <summary>
+        /// RealPageAccessUser
+        /// </summary>
+        public string RealPageAccessUser { get; set; }
 
 
         /// <summary>  

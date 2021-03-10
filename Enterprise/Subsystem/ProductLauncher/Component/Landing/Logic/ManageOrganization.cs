@@ -171,7 +171,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				OrganizationDomain = new OrganizationDomain()
                 {
 					OrganizationDomainId = organization.OrganizationDomainId
-                }
+                },
+                IsActive = organization.IsActive
             };
             repositoryResponse = InsertOrganization(org);
 
