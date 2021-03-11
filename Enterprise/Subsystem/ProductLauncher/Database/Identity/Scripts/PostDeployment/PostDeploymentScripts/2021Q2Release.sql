@@ -147,104 +147,114 @@ Select @SettingCategoryTypeId = SettingCategoryTypeId
 From [Ident].[SettingCategoryType]
 Where Name = 'Security'
 
-IF NOT EXISTS (SELECT 1 From [Ident].[OrganizationSettings] Where MappingName = 'NumberOfPasswordsToRemember')
-BEGIN
+-- 'NumberOfPasswordsToRemember'
+
 	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
 		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
 	Select PartyId,@SettingCategoryTypeId,'NumberOfPasswordsToRemember',
 		NumberOfPasswordsToRemember,1,0,@UserId,@Now
 	From [Ident].[PasswordPolicy]  
-END
+	where PartyId  not in (select PartyId From Ident.OrganizationSettings where   MappingName = 'NumberOfPasswordsToRemember')
 
-IF NOT EXISTS (SELECT 1 From [Ident].[OrganizationSettings] Where MappingName = 'PreventPasswordReuse')
-BEGIN
+--'PreventPasswordReuse'
+
 	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
 		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
 	Select PartyId,@SettingCategoryTypeId,'PreventPasswordReuse',
 		PreventPasswordReuse,1,1,@UserId,@Now
 	From [Ident].[PasswordPolicy]  
-END
+	where PartyId  not in (select PartyId From Ident.OrganizationSettings where   MappingName = 'PreventPasswordReuse')
 
-IF NOT EXISTS (SELECT 1 From [Ident].[OrganizationSettings] Where MappingName = 'PasswordExpirationPeriodInDays')
-BEGIN
+
+--'PasswordExpirationPeriodInDays'
+
 	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
 		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
 	Select PartyId,@SettingCategoryTypeId,'PasswordExpirationPeriodInDays',
 		PasswordExpirationPeriodInDays,1,0,@UserId,@Now
 	From [Ident].[PasswordPolicy]  
-END
+	where PartyId  not in (select PartyId From Ident.OrganizationSettings where   MappingName = 'PasswordExpirationPeriodInDays')
 
-IF NOT EXISTS (SELECT 1 From [Ident].[OrganizationSettings] Where MappingName = 'EnablePasswordExpiration')
-BEGIN
+
+-- 'EnablePasswordExpiration'
+
 	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
 		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
 	Select PartyId,@SettingCategoryTypeId,'EnablePasswordExpiration',
 		EnablePasswordExpiration,1,1,@UserId,@Now
 	From [Ident].[PasswordPolicy]  
-END
+	where PartyId  not in (select PartyId From Ident.OrganizationSettings where   MappingName = 'EnablePasswordExpiration')
 
-IF NOT EXISTS (SELECT 1 From [Ident].[OrganizationSettings] Where MappingName = 'AllowUsersToChangeOwnPassword')
-BEGIN
+
+--'AllowUsersToChangeOwnPassword'
+
 	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
 		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
 	Select PartyId,@SettingCategoryTypeId,'AllowUsersToChangeOwnPassword',
 		AllowUsersToChangeOwnPassword,1,1,@UserId,@Now
 	From [Ident].[PasswordPolicy]  
-END
+	where PartyId  not in (select PartyId From Ident.OrganizationSettings where   MappingName = 'AllowUsersToChangeOwnPassword')
 
-IF NOT EXISTS (SELECT 1 From [Ident].[OrganizationSettings] Where MappingName = 'MinimumSpecialCharacter')
-BEGIN
+
+--'MinimumSpecialCharacter'
+
 	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
 		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
 	Select PartyId,@SettingCategoryTypeId,'MinimumSpecialCharacter',
 		MinimumSpecialCharacter,1,1,@UserId,@Now
-	From [Ident].[PasswordPolicy]  
-END
+	From [Ident].[PasswordPolicy]
+	where PartyId  not in (select PartyId From Ident.OrganizationSettings where   MappingName = 'MinimumSpecialCharacter')
 
-IF NOT EXISTS (SELECT 1 From [Ident].[OrganizationSettings] Where MappingName = 'MinimumNumeric')
-BEGIN
+
+--'MinimumNumeric'
+
 	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
 		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
 	Select PartyId,@SettingCategoryTypeId,'MinimumNumeric',
 		MinimumNumeric,1,1,@UserId,@Now
 	From [Ident].[PasswordPolicy]  
-END
+	where PartyId  not in (select PartyId From Ident.OrganizationSettings where   MappingName = 'MinimumNumeric')
 
-IF NOT EXISTS (SELECT 1 From [Ident].[OrganizationSettings] Where MappingName = 'MinimumUppercase')
-BEGIN
+
+--'MinimumUppercase'
+
 	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
 		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
 	Select PartyId,@SettingCategoryTypeId,'MinimumUppercase',
 		MinimumUppercase,1,1,@UserId,@Now
 	From [Ident].[PasswordPolicy]  
-END
+	where PartyId  not in (select PartyId From Ident.OrganizationSettings where   MappingName = 'MinimumUppercase')
 
-IF NOT EXISTS (SELECT 1 From [Ident].[OrganizationSettings] Where MappingName = 'MinimumLowercase')
-BEGIN
+
+-- 'MinimumLowercase'
+
 	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
 		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
 	Select PartyId,@SettingCategoryTypeId,'MinimumLowercase',
 		MinimumLowercase,1,1,@UserId,@Now
 	From [Ident].[PasswordPolicy]  
-END
+	where PartyId  not in (select PartyId From Ident.OrganizationSettings where   MappingName = 'MinimumLowercase')
 
-IF NOT EXISTS (SELECT 1 From [Ident].[OrganizationSettings] Where MappingName = 'MaximumLength')
-BEGIN
+
+--'MaximumLength'
+
 	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
 		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
 	Select PartyId,@SettingCategoryTypeId,'MaximumLength',
 		MaximumLength,1,1,@UserId,@Now
 	From [Ident].[PasswordPolicy]  
-END
+	where PartyId  not in (select PartyId From Ident.OrganizationSettings where   MappingName = 'MaximumLength')
 
-IF NOT EXISTS (SELECT 1 From [Ident].[OrganizationSettings] Where MappingName = 'MinimumLength')
-BEGIN
+
+--'MinimumLength'
+
 	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
 		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
 	Select PartyId,@SettingCategoryTypeId,'MinimumLength',
 		MinimumLength,1,0,@UserId,@Now
 	From [Ident].[PasswordPolicy]  
-END
+	where PartyId  not in (select PartyId From Ident.OrganizationSettings where   MappingName = 'MinimumLength')
+
 
 
 GO
