@@ -130,75 +130,180 @@ begin
 end
 
 COMMIT TRAN;
+--settings data transfer from passwordpolicy table to orgsettings  table
 GO
+GO
+-- Move Password policy settings data in to new organization settings table
+DECLARE @UserId bigint,
+	@ProductId int ,
+	@SettingCategoryTypeId smallint,
+	@Now datetime = GETDATE()
 
-------Create Product Setting for IsUnifedEmailsEnabled -------------
+SELECT	@UserId = UserId
+FROM	Ident.UserLogin
+WHERE	LoginName LIKE 'realpagead@%'
+
+Select @SettingCategoryTypeId = SettingCategoryTypeId
+From [Ident].[SettingCategoryType]
+Where Name = 'Security'
+
+IF NOT EXISTS (SELECT 1 From [Ident].[OrganizationSettings] Where MappingName = 'NumberOfPasswordsToRemember')
+BEGIN
+	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
+		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+	Select PartyId,@SettingCategoryTypeId,'NumberOfPasswordsToRemember',
+		NumberOfPasswordsToRemember,1,0,@UserId,@Now
+	From [Ident].[PasswordPolicy]  
+END
+
+IF NOT EXISTS (SELECT 1 From [Ident].[OrganizationSettings] Where MappingName = 'PreventPasswordReuse')
+BEGIN
+	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
+		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+	Select PartyId,@SettingCategoryTypeId,'PreventPasswordReuse',
+		PreventPasswordReuse,1,1,@UserId,@Now
+	From [Ident].[PasswordPolicy]  
+END
+
+IF NOT EXISTS (SELECT 1 From [Ident].[OrganizationSettings] Where MappingName = 'PasswordExpirationPeriodInDays')
+BEGIN
+	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
+		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+	Select PartyId,@SettingCategoryTypeId,'PasswordExpirationPeriodInDays',
+		PasswordExpirationPeriodInDays,1,0,@UserId,@Now
+	From [Ident].[PasswordPolicy]  
+END
+
+IF NOT EXISTS (SELECT 1 From [Ident].[OrganizationSettings] Where MappingName = 'EnablePasswordExpiration')
+BEGIN
+	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
+		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+	Select PartyId,@SettingCategoryTypeId,'EnablePasswordExpiration',
+		EnablePasswordExpiration,1,1,@UserId,@Now
+	From [Ident].[PasswordPolicy]  
+END
+
+IF NOT EXISTS (SELECT 1 From [Ident].[OrganizationSettings] Where MappingName = 'AllowUsersToChangeOwnPassword')
+BEGIN
+	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
+		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+	Select PartyId,@SettingCategoryTypeId,'AllowUsersToChangeOwnPassword',
+		AllowUsersToChangeOwnPassword,1,1,@UserId,@Now
+	From [Ident].[PasswordPolicy]  
+END
+
+IF NOT EXISTS (SELECT 1 From [Ident].[OrganizationSettings] Where MappingName = 'MinimumSpecialCharacter')
+BEGIN
+	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
+		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+	Select PartyId,@SettingCategoryTypeId,'MinimumSpecialCharacter',
+		MinimumSpecialCharacter,1,1,@UserId,@Now
+	From [Ident].[PasswordPolicy]  
+END
+
+IF NOT EXISTS (SELECT 1 From [Ident].[OrganizationSettings] Where MappingName = 'MinimumNumeric')
+BEGIN
+	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
+		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+	Select PartyId,@SettingCategoryTypeId,'MinimumNumeric',
+		MinimumNumeric,1,1,@UserId,@Now
+	From [Ident].[PasswordPolicy]  
+END
+
+IF NOT EXISTS (SELECT 1 From [Ident].[OrganizationSettings] Where MappingName = 'MinimumUppercase')
+BEGIN
+	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
+		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+	Select PartyId,@SettingCategoryTypeId,'MinimumUppercase',
+		MinimumUppercase,1,1,@UserId,@Now
+	From [Ident].[PasswordPolicy]  
+END
+
+IF NOT EXISTS (SELECT 1 From [Ident].[OrganizationSettings] Where MappingName = 'MinimumLowercase')
+BEGIN
+	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
+		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+	Select PartyId,@SettingCategoryTypeId,'MinimumLowercase',
+		MinimumLowercase,1,1,@UserId,@Now
+	From [Ident].[PasswordPolicy]  
+END
+
+IF NOT EXISTS (SELECT 1 From [Ident].[OrganizationSettings] Where MappingName = 'MaximumLength')
+BEGIN
+	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
+		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+	Select PartyId,@SettingCategoryTypeId,'MaximumLength',
+		MaximumLength,1,1,@UserId,@Now
+	From [Ident].[PasswordPolicy]  
+END
+
+IF NOT EXISTS (SELECT 1 From [Ident].[OrganizationSettings] Where MappingName = 'MinimumLength')
+BEGIN
+	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
+		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+	Select PartyId,@SettingCategoryTypeId,'MinimumLength',
+		MinimumLength,1,0,@UserId,@Now
+	From [Ident].[PasswordPolicy]  
+END
+
+
+GO
+--Accounting Location Group
+Declare @MCMasterControlId int,@MCUPPControlId int,@MaxControlId int,@MaxControlAttributeId int
+DECLARE @UserId bigint,
+	@ProductId int ,
+	@Now datetime = GETDATE()
+
+SELECT	@UserId = UserId
+FROM	Ident.UserLogin
+WHERE	LoginName LIKE 'realpagead@%'
+
+Select @MCMasterControlId = ControlId From UserManagement.Control 
+Where UIId = 'MarketingCenterProductAccessPropertiesTabUIId' AND ControlTypeId = 9
+
+Select @MCUPPControlId = ControlId From UserManagement.Control 
+Where UIId = 'MarketingCenterProductAccessUsePrimaryPropertiesSwitchUIId' AND ControlTypeId = 1
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[Control] WHERE ControlId = @MCUPPControlId)
+BEGIN
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	SELECT @MaxControlId = max(ControlId) from UserManagement.Control
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@MaxControlId +1, @MCMasterControlId, 1, N'MarketingCenterProductAccessUsePrimaryPropertiesSwitchUIId', N'Use Primary Properties', N'usePrimaryProperties', 2, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+END
+Else
+Begin
+	Update [UserManagement].[Control] Set DataSource = 'usePrimaryProperties'
+	Where ControlId = @MCUPPControlId
+End
+
+GO
+------Create Product Setting type for IsUnifiedEmailEnabled -------------
 DECLARE	@ProductSettingTypeId int,
-		@ProductSettingId int,
-		@now datetime=getdate(),
-		@ConfigurationId int,
-		@emailBaseAddress NVARCHAR(500),
-		@ServerName SYSNAME = @@SERVERNAME,
-		@emailEndpoint NVARCHAR(50) ='/v1/emails'
+		@ServerName SYSNAME = @@SERVERNAME
 
 IF @ServerName IN ('RCDUSODBSQL001','rctusodbsql001','RCQUSODBSQL001')
 BEGIN
-	IF NOT EXISTS(SELECT * FROM Enterprise.ProductSettingType WHERE [NAME]='IsUnifedEmailsEnabled')
+	IF NOT EXISTS(SELECT * FROM Enterprise.ProductSettingType WHERE [NAME]='IsUnifiedEmailEnabled')
 	BEGIN
 	EXEC [Enterprise].[CreateProductSettingType]
-			@ProductSettingTypeName = N'IsUnifedEmailsEnabled',
+			@ProductSettingTypeName = N'IsUnifiedEmailEnabled',
 			@ProductSettingTypeDescription = N'Enable Unified Email to send email to unified platform',
 			@ProductSettingTypeSensitiveData = 0,
 			@ProductSettingTypeId = @ProductSettingTypeId OUTPUT
 
 	SELECT	@ProductSettingTypeId as N'@ProductSettingTypeId'
 
-	EXEC	[Enterprise].[CreateProductSetting]
-			@ProductId = 3,
-			@ProductSettingTypeId = @ProductSettingTypeId,
-			@Value = N'1',
-			@FromDate=@now,
-			@ThruDate = NULL,
-			@ProductSettingId = @ProductSettingId OUTPUT
-
-	SELECT	@ProductSettingId as N'@ProductSettingId'
-
-	SELECT  @ConfigurationId=ConfigurationId
-					FROM Enterprise.GlobalProductConfiguration
-					WHERE ProductId = 3
-						AND (GETDATE() BETWEEN FromDate AND ThruDate
-						OR ThruDate IS NULL)
-
-	EXEC Enterprise.LinkProductSettingToConfiguration
-		@ConfigurationId = @ConfigurationId, -- int
-		@ProductSettingId = @ProductSettingId, -- int
-		@FromDate = @now, -- datetime
-		@ThruDate = NULL  -- datetime
-
 	END
 
-	------Create Product Setting for UnifiedEmailBaseAddress -------------
+	------Create Product Setting type for UnifiedEmailBaseAddress -------------
 
 	IF NOT EXISTS(SELECT * FROM Enterprise.ProductSettingType WHERE [NAME]='UnifiedEmailBaseAddress')
 	BEGIN
-	SET @emailBaseAddress = '';
-	IF @ServerName IN ('RCDUSODBSQL001')
-	BEGIN
-		SET @emailBaseAddress = 'https://internalapi-dev.realpage.com/emails/b2b';
-	END
-	IF @ServerName IN ('rctusodbsql001')
-	BEGIN
-		SET @emailBaseAddress = 'https://internalapi-qa.realpage.com/emails/b2b';
-	END
-	IF @ServerName IN ('RCQUSODBSQL001')
-	BEGIN
-		SET @emailBaseAddress = 'https://internalapi-sat.realpage.com/emails/b2b';
-	END
-	IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B')
-	BEGIN
-		SET @emailBaseAddress = '';
-	END
-
 	EXEC	[Enterprise].[CreateProductSettingType]
 			@ProductSettingTypeName = N'UnifiedEmailBaseAddress',
 			@ProductSettingTypeDescription = N'Unified Email base address endpoint',
@@ -207,85 +312,18 @@ BEGIN
 
 	SELECT	@ProductSettingTypeId as N'@ProductSettingTypeId'
 
-	EXEC	[Enterprise].[CreateProductSetting]
-			@ProductId = 3,
-			@ProductSettingTypeId = @ProductSettingTypeId,
-			@Value = @emailBaseAddress,
-			@FromDate=@now,
-			@ThruDate = NULL,
-			@ProductSettingId = @ProductSettingId OUTPUT
-
-	SELECT	@ProductSettingId as N'@ProductSettingId'
-
-	SELECT  @ConfigurationId=ConfigurationId
-					FROM Enterprise.GlobalProductConfiguration
-					WHERE ProductId = 3
-						AND (GETDATE() BETWEEN FromDate AND ThruDate
-						OR ThruDate IS NULL)
-
-	EXEC Enterprise.LinkProductSettingToConfiguration
-		@ConfigurationId = @ConfigurationId, -- int
-		@ProductSettingId = @ProductSettingId, -- int
-		@FromDate = @now, -- datetime
-		@ThruDate = NULL  -- datetime
-
 	END
-	------Create Product Setting for UnifiedEmailEndPoint -------------
+	------Create Product Setting type for UnifiedEmailEndPoint -------------
 
 	IF NOT EXISTS(SELECT * FROM Enterprise.ProductSettingType WHERE [NAME]='UnifiedEmailEndPoint')
 	BEGIN
 	EXEC	[Enterprise].[CreateProductSettingType]
 			@ProductSettingTypeName = N'UnifiedEmailEndPoint',
-			@ProductSettingTypeDescription = N'Unified Email endpoin',
+			@ProductSettingTypeDescription = N'Unified Email endpoint',
 			@ProductSettingTypeSensitiveData = 0,
 			@ProductSettingTypeId = @ProductSettingTypeId OUTPUT
 
 	SELECT	@ProductSettingTypeId as N'@ProductSettingTypeId'
-
-	EXEC	[Enterprise].[CreateProductSetting]
-			@ProductId = 3,
-			@ProductSettingTypeId = @ProductSettingTypeId,
-			@Value = @emailEndpoint,
-			@FromDate=@now,
-			@ThruDate = NULL,
-			@ProductSettingId = @ProductSettingId OUTPUT
-
-	SELECT	@ProductSettingId as N'@ProductSettingId'
-
-	SELECT  @ConfigurationId=ConfigurationId
-					FROM Enterprise.GlobalProductConfiguration
-					WHERE ProductId = 3
-						AND (GETDATE() BETWEEN FromDate AND ThruDate
-						OR ThruDate IS NULL)
-
-	EXEC Enterprise.LinkProductSettingToConfiguration
-		@ConfigurationId = @ConfigurationId, -- int
-		@ProductSettingId = @ProductSettingId, -- int
-		@FromDate = @now, -- datetime
-		@ThruDate = NULL  -- datetime
-	END
-END
-GO
-
---Check existing email system ---
-DECLARE @ServerName SYSNAME = @@SERVERNAME
-
-IF @ServerName IN ('RCDUSODBSQL001','rctusodbsql001','RCQUSODBSQL001')
-BEGIN
-	IF EXISTS(SELECT *  FROM Enterprise.ProductSetting ps 
-						JOIN Enterprise.ProductSettingType pst on ps.ProductSettingTypeId = pst.ProductSettingTypeId
-						WHERE ps.ProductId=3 and pst.[NAME] ='IsUnifedEmailsEnabled' and ps.value='1')
-	BEGIN
-
-			IF EXISTS(SELECT *  FROM Enterprise.ProductSetting ps 
-									JOIN Enterprise.ProductSettingType pst on ps.ProductSettingTypeId = pst.ProductSettingTypeId
-									WHERE ps.ProductId=3 and pst.[NAME] ='IsSendGridEnabled' and ps.value='1')
-			BEGIN
-			   UPDATE Enterprise.ProductSetting SET [Value]=0 
-			   WHERE ProductSettingId=(SELECT ProductSettingId  FROM Enterprise.ProductSetting ps 
-									JOIN Enterprise.ProductSettingType pst on ps.ProductSettingTypeId = pst.ProductSettingTypeId
-									WHERE ps.ProductId=3 and pst.[NAME] ='IsSendGridEnabled')
-			END
 	END
 END
 GO
