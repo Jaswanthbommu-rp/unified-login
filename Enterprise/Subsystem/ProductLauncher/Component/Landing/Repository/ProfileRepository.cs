@@ -49,14 +49,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
 		#region Constructor
 		/// <summary>
-		/// Profile base Constructor
+		/// Unit test constructor
 		/// </summary>
-		public ProfileRepository(IManageUserLogin manageUserLogin, IPartyRelationshipRepository partyRelationshipRepository, IProductRepository productRepository) : base(DbConnectionEnum.IdpConfigurationDb)
-		{
-			_manageUserLogin = manageUserLogin;
-			_partyRelationshipRepository = partyRelationshipRepository;
-			_productRepository = productRepository;
-		}
+        public ProfileRepository(IRepository repository, DefaultUserClaim userClaim) : base(repository)
+        {
+            _userClaim = userClaim;
+            _manageUserLogin = new ManageUserLogin(repository, userClaim, null);
+            _partyRelationshipRepository = new PartyRelationshipRepository(repository);
+            _productRepository = new ProductRepository(repository, userClaim);
+        }
 
 		/// <summary>
 		/// Profile base Constructor
