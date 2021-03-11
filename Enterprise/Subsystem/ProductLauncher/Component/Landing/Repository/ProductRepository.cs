@@ -1456,7 +1456,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             }
 
                             productSetting = productSettingList.FirstOrDefault(item => item.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase) && item.ProductId == s.ProductId);
-                            s.UsePrimaryProperties = (productSetting != null) ? productSetting.Value.Trim() == "1" : true;                            
+                            if (productSetting != null)
+                            {
+                                s.UsePrimaryProperties = productSetting.Value.Trim() == "1" ? true : false;
+                            }                                                     
                         }
 
                         if (aoNonMigratedUserProducts?.Count > 0 && !setIsAssigned && !string.IsNullOrWhiteSpace(s.ProductCode))
