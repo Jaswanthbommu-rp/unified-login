@@ -99,7 +99,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         public bool SendNewUserRegistrationEmail(UserLoginOnly userLoginOnly, string companyName, int userTypeId, long organizationPartyId)
         {
             bool IsSendGridEnabled = false;
-            bool IsUnifedEmailsEnabled = false;
+            bool IsUnifiedEmailEnabled = false;
             var userPerson = _personManager.GetPerson(userLoginOnly.RealPageId);
             var firstName = userPerson.FirstName;
 
@@ -205,13 +205,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             IsSendGridEnabled = productSettingList.ToList().FirstOrDefault(s => s.Name.Equals("IsSendGridEnabled", StringComparison.OrdinalIgnoreCase)).Value.Equals("1");
                         }
 
-                        if ((productSettingList.Count > 0) && productSettingList.ToList().Any(s=>s.Name.Equals("IsUnifedEmailsEnabled", StringComparison.OrdinalIgnoreCase)))
+                        if ((productSettingList.Count > 0) && productSettingList.ToList().Any(s=>s.Name.Equals("IsUnifiedEmailEnabled", StringComparison.OrdinalIgnoreCase)))
                         {
-                            var UnifiedEmailSettings = productSettingList.FirstOrDefault(s => s.Name.Equals("IsUnifedEmailsEnabled", StringComparison.OrdinalIgnoreCase));
-                            IsUnifedEmailsEnabled = (UnifiedEmailSettings != null) ? UnifiedEmailSettings.Value.Trim() == "1" : true;
+                            var UnifiedEmailSettings = productSettingList.FirstOrDefault(s => s.Name.Equals("IsUnifiedEmailEnabled", StringComparison.OrdinalIgnoreCase));
+                            IsUnifiedEmailEnabled = (UnifiedEmailSettings != null) ? UnifiedEmailSettings.Value.Trim() == "1" : true;
                         }
 
-                        if (IsUnifedEmailsEnabled)
+                        if (IsUnifiedEmailEnabled)
                         {
                             var emailModel = new EmailModel();
                             emailModel.Subject = cesEmail.EmailSubject;
