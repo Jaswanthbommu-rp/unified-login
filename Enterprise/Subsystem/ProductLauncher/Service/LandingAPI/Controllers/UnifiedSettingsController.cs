@@ -249,10 +249,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     return Request.CreateResponse(HttpStatusCode.BadRequest, apiError);
                 }
 
-                UnifiedSetting unfiedSetting = new UnifiedSetting();
+               
                 IManageUnifiedSettings manageSettings = new ManageUnifiedSettings(_userClaims);
-
                 _repositoryResponse = manageSettings.UpdateUnifiedSettings(settings, category, org.PartyId, includes);
+
+                //We need to call this to save password settings data in old table.After march release this will be removed 
+                IManageSecuritySettings manageSecuritySettings = new ManageSecuritySettings(_userClaims);
+                _repositoryResponse = manageSecuritySettings.UpdateSecuritySettings(settings, _userClaims.CustomerMasterId, 2);
+                //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                
+
                 if (_repositoryResponse.Id == 0)
                 {
                     apiError = new ApiError()
