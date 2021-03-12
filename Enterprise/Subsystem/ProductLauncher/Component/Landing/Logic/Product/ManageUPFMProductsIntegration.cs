@@ -293,8 +293,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		{
 			ListResponse response = new ListResponse();
 			/*
-				* Updating product code ProductEnum.UnifiedPlatform for CIMPL and Settings 
-				  becuase these two product properties save as productid 3 in UP database
+				Updating product code to ProductEnum.UnifiedPlatform for CIMPL and Settings 
+				becuase these two products properties saved as productid 3 in UP database
 			*/
 			if (product == ProductEnum.CIMPL || product == ProductEnum.UnifiedSettings)
 			{

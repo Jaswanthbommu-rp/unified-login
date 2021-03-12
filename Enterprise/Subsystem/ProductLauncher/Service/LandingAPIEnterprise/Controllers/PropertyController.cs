@@ -131,7 +131,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     productResponse = manageProductOps.GetCompanyAssets(_userClaims.PersonaId, 0, false, null);
                     break;                
                 case ProductEnum.UnifiedPlatform:
-                    productResponse = manageUnifiedLogin.GetProperties(_userClaims.PersonaId, productCode, include);
+                    productResponse = manageUnifiedLogin.GetProperties(_userClaims.PersonaId, include);
                     break;
                 //case ProductEnum.IntelligentBuilding:
                 //    IManageIntelligentBuilding manageIntelligentBuilding = new ManageIntelligentBuilding(_userClaims);
