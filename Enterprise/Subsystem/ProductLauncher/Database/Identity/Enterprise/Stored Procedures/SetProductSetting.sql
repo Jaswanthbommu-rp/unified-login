@@ -25,7 +25,6 @@ BEGIN
  Enterprise.ProductSetting a  
  join Enterprise.ProductConfiguration b  
   on a.ProductSettingId=b.ProductSettingId and b.ConfigurationId=@ConfigurationId     
-   and b.ThruDate is null    
     where a.ThruDate is null and Value = @Value and ProductSettingTypeId=@ProductSettingTypeId        
      and ProductId=@ProductId))        
    Begin      
@@ -57,9 +56,6 @@ BEGIN
     --if exists then close it by setting the ThruDate to now              
     if(@TempSettingId is not null)              
     begin              
-     update Enterprise.ProductSetting              
-     set ThruDate = @now              
-     where ProductSettingId=@TempSettingId              
                   
      update Enterprise.ProductConfiguration              
      set ThruDate = @now              
