@@ -116,40 +116,20 @@ BEGIN
 	IF NOT EXISTS
 	(
 		SELECT	1
-		FROM		Ident.PasswordPolicy
+		FROM		Ident.OrganizationSettings
 		WHERE	PartyId = @OrganizationId
 	)
 	BEGIN
-		INSERT INTO [Ident].[PasswordPolicy] (
-			[PartyId],
-			[MinimumLength],
-			[MaximumLength],
-			[MinimumLowercase],
-			[MinimumUppercase],
-			[MinimumNumeric],
-			[MinimumSpecialCharacter],
-			[AllowUsersToChangeOwnPassword],
-			[EnablePasswordExpiration],
-			[PasswordExpirationPeriodInDays],
-			[PreventPasswordReuse],
-			[NumberOfPasswordsToRemember],
-			[UserId]
-		)
-		SELECT	@OrganizationId,
-						[MinimumLength],
-						[MaximumLength],
-						[MinimumLowercase],
-						[MinimumUppercase],
-						[MinimumNumeric],
-						[MinimumSpecialCharacter],
-						[AllowUsersToChangeOwnPassword],
-						[EnablePasswordExpiration],
-						[PasswordExpirationPeriodInDays],
-						[PreventPasswordReuse],
-						[NumberOfPasswordsToRemember],
-						3
-		FROM		[Ident].[PasswordPolicy]
-		WHERE	PartyId = 3;
+		DECLARE @UserId bigint
+
+		SELECT	@UserId = UserId
+		FROM	Ident.UserLogin
+		WHERE	LoginName LIKE 'realpagead@%'
+		
+		INSERT INTO Ident.OrganizationSettings (PartyId,SettingCategoryTypeId,MappingName,MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+		SELECT @OrganizationId,SettingCategoryTypeId,MappingName,MappingValue,Editable,[Hidden],@UserId,GETDATE()
+		FROM [Ident].[OrganizationSettings]
+		WHERE	PartyId = 3				
 	END;
 
 	--Setup thirdparty IDP

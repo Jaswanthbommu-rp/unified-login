@@ -295,6 +295,7 @@
     <Compile Include="IdentityConfig\UserLoginOrganization.cs" />
     <Compile Include="IdentityConfig\UserLoginPersona.cs" />
     <Compile Include="Landing\ApiError.cs" />
+    <Compile Include="Landing\EmailModel.cs" />
     <Compile Include="Landing\ProductSamlDetails.cs" />
     <Compile Include="Landing\Properties.cs" />
     <Compile Include="Landing\CompanyPropertySetup.cs" />
@@ -355,6 +356,7 @@
     <Compile Include="Landing\StatusType.cs" />
     <Compile Include="Landing\UnifiedSetting.cs" />
     <Compile Include="Landing\UserCompaniesProperties.cs" />
+    <Compile Include="Landing\UserEmail.cs" />
     <Compile Include="Landing\UserEmployee.cs" />
     <Compile Include="Landing\UserOrganizationExists.cs" />
     <Compile Include="IdentityConfig\UserLoginCommon.cs" />
