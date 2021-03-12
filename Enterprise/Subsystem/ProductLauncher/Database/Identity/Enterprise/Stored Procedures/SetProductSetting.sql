@@ -57,9 +57,6 @@ BEGIN
     --if exists then close it by setting the ThruDate to now              
     if(@TempSettingId is not null)              
     begin              
-     update Enterprise.ProductSetting              
-     set ThruDate = @now              
-     where ProductSettingId=@TempSettingId              
                   
      update Enterprise.ProductConfiguration              
      set ThruDate = @now              
