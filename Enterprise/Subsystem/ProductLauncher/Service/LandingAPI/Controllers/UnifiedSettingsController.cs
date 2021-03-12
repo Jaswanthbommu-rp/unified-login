@@ -11,6 +11,7 @@ using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
+using System.Linq;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -254,10 +255,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 _repositoryResponse = manageSettings.UpdateUnifiedSettings(settings, category, org.PartyId, includes);
 
                 //We need to call this to save password settings data in old table.After march release this will be removed 
-                IManageSecuritySettings manageSecuritySettings = new ManageSecuritySettings(_userClaims);
-                _repositoryResponse = manageSecuritySettings.UpdateSecuritySettings(settings, _userClaims.CustomerMasterId, 2);
+                var settingsToCheck = settings.ToList();
+                if (settingsToCheck.Any(p => p.Name.Equals("NumberOfPasswordsToRemember", StringComparison.OrdinalIgnoreCase)) ||
+                    settingsToCheck.Any(p => p.Name.Equals("PasswordExpirationPeriodInDays", StringComparison.OrdinalIgnoreCase)) ||
+                    settingsToCheck.Any(p => p.Name.Equals("MinimumLength", StringComparison.OrdinalIgnoreCase)) ||
+                    settingsToCheck.Any(p => p.Name.Equals("ForcedLock", StringComparison.OrdinalIgnoreCase)) ||
+                    settingsToCheck.Any(p => p.Name.Equals("Login", StringComparison.OrdinalIgnoreCase)) ||
+                    settingsToCheck.Any(p => p.Name.Equals("NewUserRegistration", StringComparison.OrdinalIgnoreCase))
+                )
+                {
+                    IManageSecuritySettings manageSecuritySettings = new ManageSecuritySettings(_userClaims);
+                    _repositoryResponse = manageSecuritySettings.UpdateSecuritySettings(settings, _userClaims.CustomerMasterId, 2);
+                }
+
                 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                
+
 
                 if (_repositoryResponse.Id == 0)
                 {
