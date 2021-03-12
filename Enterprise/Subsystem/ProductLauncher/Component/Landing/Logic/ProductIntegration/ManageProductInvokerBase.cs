@@ -1069,8 +1069,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         protected string GetOperationEndPoint(ProductEntityEndpointKeyEnum entityType)
         {
-            // Get partial api query based on end point
-            var partialApiQueryUrl = ProductInternalSettingList.First(a => a.Name.ToUpper() == entityType.ToString().ToUpper()).Value;
+            // Getting and Appenidng companiId of getuserendpoint for ILMLM and ILMLA
+            var compantId = entityType == ProductEntityEndpointKeyEnum.GetUserEndpoint && (ProductType == ProductEnum.LeadManagement || ProductType == ProductEnum.LeadAnalytics) ? "/" + CompanyInstanceSourceId : "";
+            // Get partial api query based on end point                         
+            var partialApiQueryUrl = compantId + ProductInternalSettingList.First(a => a.Name.ToUpper() == entityType.ToString().ToUpper()).Value;
             if (string.IsNullOrEmpty(partialApiQueryUrl))
             {
                 throw new Exception();
