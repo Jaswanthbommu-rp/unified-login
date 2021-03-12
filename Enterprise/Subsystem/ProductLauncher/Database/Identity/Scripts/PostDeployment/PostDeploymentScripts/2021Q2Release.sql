@@ -290,5 +290,50 @@ Begin
 	Update [UserManagement].[Control] Set DataSource = 'usePrimaryProperties'
 	Where ControlId = @MCUPPControlId
 End
-		
+
+GO
+------Create Product Setting type for IsUnifiedEmailEnabled -------------
+DECLARE	@ProductSettingTypeId int,
+		@ServerName SYSNAME = @@SERVERNAME
+
+IF @ServerName IN ('RCDUSODBSQL001','rctusodbsql001','RCQUSODBSQL001')
+BEGIN
+	IF NOT EXISTS(SELECT * FROM Enterprise.ProductSettingType WHERE [NAME]='IsUnifiedEmailEnabled')
+	BEGIN
+	EXEC [Enterprise].[CreateProductSettingType]
+			@ProductSettingTypeName = N'IsUnifiedEmailEnabled',
+			@ProductSettingTypeDescription = N'Enable Unified Email to send email to unified platform',
+			@ProductSettingTypeSensitiveData = 0,
+			@ProductSettingTypeId = @ProductSettingTypeId OUTPUT
+
+	SELECT	@ProductSettingTypeId as N'@ProductSettingTypeId'
+
+	END
+
+	------Create Product Setting type for UnifiedEmailBaseAddress -------------
+
+	IF NOT EXISTS(SELECT * FROM Enterprise.ProductSettingType WHERE [NAME]='UnifiedEmailBaseAddress')
+	BEGIN
+	EXEC	[Enterprise].[CreateProductSettingType]
+			@ProductSettingTypeName = N'UnifiedEmailBaseAddress',
+			@ProductSettingTypeDescription = N'Unified Email base address endpoint',
+			@ProductSettingTypeSensitiveData = 0,
+			@ProductSettingTypeId = @ProductSettingTypeId OUTPUT
+
+	SELECT	@ProductSettingTypeId as N'@ProductSettingTypeId'
+
+	END
+	------Create Product Setting type for UnifiedEmailEndPoint -------------
+
+	IF NOT EXISTS(SELECT * FROM Enterprise.ProductSettingType WHERE [NAME]='UnifiedEmailEndPoint')
+	BEGIN
+	EXEC	[Enterprise].[CreateProductSettingType]
+			@ProductSettingTypeName = N'UnifiedEmailEndPoint',
+			@ProductSettingTypeDescription = N'Unified Email endpoint',
+			@ProductSettingTypeSensitiveData = 0,
+			@ProductSettingTypeId = @ProductSettingTypeId OUTPUT
+
+	SELECT	@ProductSettingTypeId as N'@ProductSettingTypeId'
+	END
+END
 GO
