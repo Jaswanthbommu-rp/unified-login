@@ -608,11 +608,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             // Get partial api query based on end point
             if (string.IsNullOrEmpty(baseUrlAndQuery))
-                baseUrlAndQuery = string.Format(GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserEndpoint), SubjectUserDetails.ProductUserName);
-
+                baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserEndpoint);
+            
             WriteToDiagnosticLog(
                 $"ManageProductInvokerBase.GetProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling API - {baseUrlAndQuery}.");
 
+            if ((ProductType == ProductEnum.LeadManagement || ProductType == ProductEnum.LeadAnalytics) && baseUrlAndQuery.Contains("{0}"))            
+                baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, SubjectUserDetails.LoginName);            
+            else 
+                baseUrlAndQuery = string.Format(baseUrlAndQuery, SubjectUserDetails.ProductUserName);
+            
             return GetResultFromApi<IntegrationProductUser>(baseUrlAndQuery, isThrowOnError);
         }
 
@@ -1068,8 +1073,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         }
 
         protected string GetOperationEndPoint(ProductEntityEndpointKeyEnum entityType)
-        {
-            // Get partial api query based on end point
+        {                        
+            // Get partial api query based on end point                         
             var partialApiQueryUrl = ProductInternalSettingList.First(a => a.Name.ToUpper() == entityType.ToString().ToUpper()).Value;
             if (string.IsNullOrEmpty(partialApiQueryUrl))
             {
