@@ -5829,7 +5829,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     //Next Remove products which are exists in product batch
                     foreach (var product in productBatch)
                     {
-                        if (product.ProductId != 2)
+                        if (product.ProductId != (int)ProductEnum.UnifiedUI)
                         {
                             finalProductBatch.Add(product);
                         }
