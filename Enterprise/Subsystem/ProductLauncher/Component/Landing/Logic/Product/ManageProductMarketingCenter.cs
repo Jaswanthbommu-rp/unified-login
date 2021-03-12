@@ -850,8 +850,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						logData.Add("userResult", userResult);
 						WriteToDiagnosticLog("ManageMarketingCenterUser - Update user. Got result from marketing center.", logData);
 						long newid = userResult.id;
+
 						WriteToDiagnosticLog("ManageMarketingCenterUser - Update user. newid=" + newid);
 						UpdateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.UserId, newid.ToString());
+
+						WriteToDiagnosticLog("ManageMarketingCenterUser - Update user. productUsername=" + mcUser.EmailAddress);
+						UpdateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.productUsername, mcUser.EmailAddress);
+
 						WriteToDiagnosticLog("ManageMarketingCenterUser - Update user success. Saved user id");
 						WriteUpdateUserActivityLog(editorPersonaId, (Person)person, (UserLoginOnly)userLogin);
 
