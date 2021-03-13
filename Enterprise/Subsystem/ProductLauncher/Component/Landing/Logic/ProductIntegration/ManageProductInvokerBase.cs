@@ -613,7 +613,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             WriteToDiagnosticLog(
                 $"ManageProductInvokerBase.GetProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling API - {baseUrlAndQuery}.");
 
-            if ((ProductType == ProductEnum.LeadManagement || ProductType == ProductEnum.LeadAnalytics) && baseUrlAndQuery.Contains("{0}"))            
+            if (baseUrlAndQuery.Contains("{0}"))            
                 baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, SubjectUserDetails.ProductUserName);            
             else 
                 baseUrlAndQuery = string.Format(baseUrlAndQuery, SubjectUserDetails.ProductUserName);
