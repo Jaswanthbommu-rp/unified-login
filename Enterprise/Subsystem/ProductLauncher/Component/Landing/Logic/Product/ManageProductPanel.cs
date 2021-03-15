@@ -217,6 +217,40 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     throw new Exception(result.ErrorReason);
                 }
+                else
+                {
+                    IPersonaRepository personaRepository = new PersonaRepository();
+
+                    bool usePrimaryProperty = false;
+                    if (userPersonaId > 0)
+                    {
+                        var personaProductSettings = personaRepository.GetPersonaProductSettings(userPersonaId);
+                        var productSetting = personaProductSettings.FirstOrDefault(item => item.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase) && item.ProductId == productId);
+                        if (productSetting != null)
+                        {
+                            usePrimaryProperty = productSetting.Value.Trim() == "1" ? true : false;
+                        }
+                    }
+
+                    Dictionary<string, bool> additionalInfo = new Dictionary<string, bool>();
+                    Dictionary<string, bool> additionalDataCollection = (Dictionary<string, bool>)result.Additional;
+
+                    additionalInfo.Add("usePrimaryProperties", usePrimaryProperty);
+
+                    if (result.Additional != null)
+                    {
+                        foreach (KeyValuePair<string, bool> pair in additionalDataCollection)
+                        {
+                            if (!pair.Key.Equals("usePrimaryProperties", StringComparison.OrdinalIgnoreCase))
+                            {
+                                additionalInfo.Add(pair.Key, pair.Value);
+                            }
+                        }
+                    }
+
+
+                    result.Additional = additionalInfo;
+                }
             }
             catch (Exception ex)
             {
@@ -268,38 +302,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                 }
             }
-            finally{
-                IPersonaRepository personaRepository = new PersonaRepository();
-               
-                bool usePrimaryProperty = false;
-                if (userPersonaId > 0 ) {
-                    var personaProductSettings = personaRepository.GetPersonaProductSettings(userPersonaId);
-                    var productSetting = personaProductSettings.FirstOrDefault(item => item.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase) && item.ProductId == productId);
-                    if (productSetting != null)
-                    {
-                        usePrimaryProperty =  productSetting.Value.Trim() == "1" ? true : false;
-                    }                    
-                }
-
-                Dictionary<string, bool> additionalInfo = new  Dictionary<string, bool>();
-                Dictionary<string, bool> additionalDataCollection = (Dictionary<string, bool>)result.Additional;
-
-                additionalInfo.Add("usePrimaryProperties", usePrimaryProperty);
-               
-                if (result.Additional != null)
-                {
-                    foreach (KeyValuePair<string, bool> pair in additionalDataCollection)
-                    {
-                        if (!pair.Key.Equals("usePrimaryProperties", StringComparison.OrdinalIgnoreCase))
-                        {
-                            additionalInfo.Add(pair.Key, pair.Value);
-                        }                                            
-                    }
-                }
-                
-
-                result.Additional = additionalInfo;
-            }
+           
             return result;
         }
 

@@ -18,8 +18,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 	{
         private readonly RouteTestBase _baseTest;
 
-        #region Constructor
-        public UserTests()
+		#region Constructor
+		public UserTests()
         {
             HttpConfiguration config = new HttpConfiguration();
             WebApiConfig.Register(config);
