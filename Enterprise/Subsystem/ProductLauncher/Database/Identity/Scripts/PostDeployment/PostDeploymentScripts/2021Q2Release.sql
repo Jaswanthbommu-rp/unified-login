@@ -32,7 +32,6 @@ insert into @productlist values
 (19, 'ProductIcon', 'learning-portal'),
 (20, 'ProductIcon', 'realpage-document-management'),
 (21, 'ProductIcon', 'leasing-and-rent-conversion-tool'),
-(22, 'ProductIcon', 'rentjoy'),
 (23, 'ProductIcon', 'on-site'),
 (24, 'ProductIcon', 'research-application'),
 (25, 'ProductIcon', 'self-provisioning-portal'),
@@ -44,7 +43,6 @@ insert into @productlist values
 (31, 'ProductIcon', 'investment-analytics'),
 (32, 'ProductIcon', 'revenue-management'),
 (33, 'ProductIcon', 'axiometrics'),
-(34, 'ProductIcon', 'benchmarking'),
 (35, 'ProductIcon', 'support-tool'),
 (36, 'ProductIcon', 'easy-lms'),
 (37, 'ProductIcon', 'property-photos'),
@@ -67,12 +65,7 @@ insert into @productlist values
 (58, 'ProductIcon', 'intelligent-building-energy'),
 (59, 'ProductIcon', 'intelligent-building-water'),
 (60, 'ProductIcon', 'resident-services'),
-(62, 'ProductIcon', 'product-updates'),
-(63, 'ProductIcon', 'hots'),
-(64, 'ProductIcon', 'video-call-laptop'),
-(65, 'ProductIcon', 'self-guided-tour'),
-(66, 'ProductIcon', 'marketing-analytics'),
-(68, 'ProductIcon', 'lease-labs');
+(62, 'ProductIcon', 'product-updates');
 
 declare @MAX_ID INT
 declare @Current_ID INT = 1
@@ -346,4 +339,13 @@ BEGIN
 UPDATE Enterprise.ProductSetting SET value = '/{0}/users?loginName={1}'
 WHERE ProductId IN (40, 41) AND ProductSettingTypeId = @ProductSettingTypeId
 END
+GO
+
+-- Fix for some bad product setting data
+
+UPDATE pc
+	SET ThruDate = GETUTCDATE()
+FROM enterprise.GlobalProductConfiguration gpc INNER JOIN enterprise.ProductConfiguration pc on pc.ConfigurationId = gpc.ConfigurationId INNER JOIN enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId
+WHERE gpc.ProductId != ps.ProductId;
+
 GO
