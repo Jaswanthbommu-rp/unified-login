@@ -346,6 +346,7 @@ GO
 UPDATE pc
 	SET ThruDate = GETUTCDATE()
 FROM enterprise.GlobalProductConfiguration gpc INNER JOIN enterprise.ProductConfiguration pc on pc.ConfigurationId = gpc.ConfigurationId INNER JOIN enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId
-WHERE gpc.ProductId != ps.ProductId;
+WHERE gpc.ProductId != ps.ProductId
+	AND pc.ThruDate IS NULL;
 
 GO
