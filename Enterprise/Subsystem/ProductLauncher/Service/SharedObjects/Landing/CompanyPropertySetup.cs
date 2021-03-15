@@ -9,9 +9,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
     /// Property Setup
     /// </summary>
     public class CompanyPropertySetup
-    {        
+    {
         public List<PropertySetup> Property { get; set; }
-        
+
         public List<string> Domain { get; set; }
+
+        public List<Guid> SelectedPropertyIds { get; set; }
     }
 }
