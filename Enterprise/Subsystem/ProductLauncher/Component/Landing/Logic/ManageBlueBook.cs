@@ -1057,7 +1057,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     CacheItemPolicy policy = new CacheItemPolicy { AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(1800) };
                     // 30 Mins cached 1800 secs
-                    _manageBlueBookCache.Set($"getCompanysByCompIds_{booksCompanyMasterHash}", companyInstance, policy);
+                    _manageBlueBookCache.Set($"GetUPFMCompanyDetailsByInstanceIds_{booksCompanyMasterHash}", companyInstance, policy);
                 }
             }
             return companyInstance;
@@ -1108,18 +1108,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             string uri = $"companyinstance?filter[source]=UPFM&include=companyInstanceLocation&filter[companyInstanceSourceId]=in:{upfmCompanyInstanceIds}";
 
             var logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
-            WriteToLog(LogEventLevel.Debug, $"GetCompanyListByCompIds - Getting info - hashcode:{upfmCompanyInstanceIds.GetHashCode()}", logData, correlationId: userClaim.CorrelationId.ToString());
+            WriteToLog(LogEventLevel.Debug, $"GetBooksUPFMCompanyDetails - Getting info - hashcode:{upfmCompanyInstanceIds.GetHashCode()}", logData, correlationId: userClaim.CorrelationId.ToString());
             var response = GetAsync(uri).Result;
             if (response.IsSuccessStatusCode)
             {
                 companyInstance = JsonConvert.DeserializeObject<List<CustomerCompanyInstance>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
-                logData = new Dictionary<string, object>() { { "CompanyInstance", companyInstance } };
-                WriteToLog(LogEventLevel.Debug, $"GetCompanyListByCompIds - Got info - hashcode:{upfmCompanyInstanceIds.GetHashCode()}", logData, correlationId: userClaim.CorrelationId.ToString());
+                logData = new Dictionary<string, object>() { { "upfmCompanyInstances", upfmCompanyInstances } };
+                WriteToLog(LogEventLevel.Debug, $"GetBooksUPFMCompanyDetails - Got info - hashcode:{upfmCompanyInstanceIds.GetHashCode()}", logData, correlationId: userClaim.CorrelationId.ToString());
                 return companyInstance;
             }
 
             logData = new Dictionary<string, object>() { { "response", response } };
-            WriteToLog(LogEventLevel.Debug, $"GetCompanyListByCompIds - No info found - hashcode:{upfmCompanyInstanceIds.GetHashCode()}", logData, correlationId: userClaim.CorrelationId.ToString());
+            WriteToLog(LogEventLevel.Debug, $"GetBooksUPFMCompanyDetails - No info found - hashcode:{upfmCompanyInstanceIds.GetHashCode()}", logData, correlationId: userClaim.CorrelationId.ToString());
 
             return companyInstance;
         }
