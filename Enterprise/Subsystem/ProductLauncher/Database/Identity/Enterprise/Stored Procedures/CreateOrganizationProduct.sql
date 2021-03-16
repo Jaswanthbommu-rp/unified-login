@@ -35,38 +35,6 @@ BEGIN
 
 		SELECT	SCOPE_IDENTITY() AS Id, '' AS ErrorMessage;
 
-
-		-- Adding Default Product Roles for Home Sharing		
-		IF (@ProductId = 60 AND EXISTS(SELECT 1 FROM Enterprise.OrganizationProduct WHERE PartyId = @PartyId AND ProductId = @ProductId AND ThruDate IS NULL))
-		  BEGIN
-			DECLARE @PropertyAdminRoleId INT
-			DECLARE @PropertyUserRoleId INT							
-
-			INSERT INTO Security.Role(RoleName,ShortName,Description,RoleTypeID,OrgPartyID,ProductId,CreatedBy,CreatedDate)
-			VALUES('Property Admin','Property Admin','Property Admin',3,@PartyId,@ProductId,@UserId,GETDATE())
-	
-			SELECT @PropertyAdminRoleId = SCOPE_IDENTITY()
-
-			INSERT INTO Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
-			VALUES(
-			@PropertyAdminRoleId,
-			(SELECT RightId FROM Security.[Right] WHERE RightName='PropertyAdmin' AND ProductId = 60),
-			@UserId,
-			GETDATE())
-	
-			INSERT INTO Security.Role(RoleName,ShortName,Description,RoleTypeID,OrgPartyID,ProductId,CreatedBy,CreatedDate)
-			VALUES('Property User','Property User','Property User',3,@PartyId,@ProductId,@UserId,GETDATE())
-	
-			SELECT @PropertyUserRoleId = SCOPE_IDENTITY()
-
-			INSERT INTO Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
-			VALUES(
-			@PropertyUserRoleId,
-			(SELECT RightId FROM Security.[Right] WHERE RightName='PropertyUser' AND ProductId = 60),
-			@UserId,
-			GETDATE())
-		  END
-
 		IF @ProductId = 26
 		BEGIN
 			IF (@SchemaName = 'Security')
