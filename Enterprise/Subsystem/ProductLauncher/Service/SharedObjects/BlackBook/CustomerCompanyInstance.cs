@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook
 {
@@ -10,7 +11,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackB
         public string CompanyName { get; set; }
         public string CompanyType { get; set; }
         public string IsActive { get; set; }
-        public string Domain { get; set; }
+        public string Domain { get; set; }		
+		public List<CompanyLocation> CompanyInstanceLocation { get; set; }
 	}
 
 	public class CustomerCompanyInstance

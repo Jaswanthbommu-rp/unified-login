@@ -66,10 +66,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		/// </summary>
 		public OrganizationAdminUser CompanyAdminUser { get; set; }
 
-		/// <summary>
-		/// Address
-		/// </summary>
-		public List<CompanyInstanceAddress> CompanyInstanceLocation { get; set; }
+		///// <summary>
+		///// Address
+		///// </summary>
+		//public List<CompanyInstanceAddress> CompanyInstanceLocation { get; set; }
 
 		/// <summary>
 		/// IsActive

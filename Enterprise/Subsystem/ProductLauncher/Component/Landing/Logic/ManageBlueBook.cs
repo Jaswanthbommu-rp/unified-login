@@ -958,6 +958,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         /// <summary>
+        /// Used to get a list of UPFM company id's for the given company list
+        /// </summary>
+        /// <param name="upfmCompanyIds">upfmCompanyIds</param>
+        /// <returns></returns>
+        private string AppendUPFMCompanyInstances(List<String> upfmCompanyIds)
+        {
+            string compIds = "";
+            foreach (var upfmCompanyId in upfmCompanyIds)
+            {
+                if (compIds == "")
+                {
+                    compIds = upfmCompanyId;
+                }
+                else
+                {
+                    compIds += "," + upfmCompanyId;
+                }
+            }
+            return compIds;
+        }
+
+
+        /// <summary>
         /// Used to split a list into sub smaller lists
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -1011,6 +1034,44 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         /// <summary>
+        /// Used to get the information about the list of companies by companyIds from the BlueBook system
+        /// </summary>
+        /// <param name="companyInstanceIds"></param>        
+        /// <returns></returns>
+        public IList<CustomerCompanyInstance> GetUPFMCompanyDetailsByInstanceIds(List<string> companyInstanceIds)
+        {
+            IList<CustomerCompanyInstance> companyInstance = new List<CustomerCompanyInstance>();
+            Dictionary<string, object> logData;
+
+            // get the hash of the full company list
+            int booksCompanyMasterHash = AppendUPFMCompanyInstances(companyInstanceIds).GetHashCode();
+
+            companyInstance = _manageBlueBookCache[$"getCompanysByCompIds_{booksCompanyMasterHash}"] as List<CustomerCompanyInstance>;
+            //if (companyInstance == null)
+            //{
+                int splitSize = (int)(companyInstanceIds.Count * .01);
+                if (splitSize == 0)
+                {
+                    splitSize = 10;
+                }
+
+                var splitCompanyList = SplitList<string>(companyInstanceIds, splitSize);
+                ConcurrentBag<CustomerCompanyInstance> result = new ConcurrentBag<CustomerCompanyInstance>();
+                Parallel.ForEach(splitCompanyList, new ParallelOptions { MaxDegreeOfParallelism = 5 }, companyList => { GetBooksUPFMCompanyDetails(_defaultUserClaim, companyList).ForEach(x => result.Add(x)); });
+           return result.ToList();
+            //companyInstance = result.ToList();
+            //if (companyInstance.Count > 0)
+            //{
+            //    CacheItemPolicy policy = new CacheItemPolicy { AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(86400) };
+            //    // 24 hrs cached 86400 secs
+            //    _manageBlueBookCache.Set($"getCompanysByCompIds_{booksCompanyMasterHash}", companyInstance, policy);
+            //}
+            // }
+
+           // return companyInstance;
+        }
+
+        /// <summary>
         /// Used to get company details for the given company list
         /// </summary>
         /// <param name="userClaim"></param>
@@ -1036,6 +1097,37 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             logData = new Dictionary<string, object>() {{"response", response}};
             WriteToLog(LogEventLevel.Debug, $"GetCompanyListByCompIds - No info found - hashcode:{booksCompanyMasterIds.GetHashCode()}", logData, correlationId: userClaim.CorrelationId.ToString());
+
+            return companyInstance;
+        }
+
+        /// <summary>
+        /// Used to get company details for the given company list
+        /// </summary>
+        /// <param name="userClaim"></param>
+        /// <param name="upfmCompanyInstances"></param>
+        /// <returns></returns>
+        private List<CustomerCompanyInstance> GetBooksUPFMCompanyDetails(DefaultUserClaim userClaim, List<String> upfmCompanyInstances)
+        {
+            string upfmCompanyInstanceIds = AppendUPFMCompanyInstances(upfmCompanyInstances);
+
+            var companyInstance = new List<CustomerCompanyInstance>();
+            //http://booksapi-qa.realpage.com/companyinstance?filter[source]=UPFM&include=companyInstanceLocation&filter[companyInstanceSourceId]=in:
+            string uri = $"companyinstance?filter[source]=UPFM&include=companyInstanceLocation&filter[companyInstanceSourceId]=in:{upfmCompanyInstanceIds}";
+
+            var logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
+            WriteToLog(LogEventLevel.Debug, $"GetCompanyListByCompIds - Getting info - hashcode:{upfmCompanyInstanceIds.GetHashCode()}", logData, correlationId: userClaim.CorrelationId.ToString());
+            var response = GetAsync(uri).Result;
+            if (response.IsSuccessStatusCode)
+            {
+                companyInstance = JsonConvert.DeserializeObject<List<CustomerCompanyInstance>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
+                logData = new Dictionary<string, object>() { { "CompanyInstance", companyInstance } };
+                WriteToLog(LogEventLevel.Debug, $"GetCompanyListByCompIds - Got info - hashcode:{upfmCompanyInstanceIds.GetHashCode()}", logData, correlationId: userClaim.CorrelationId.ToString());
+                return companyInstance;
+            }
+
+            logData = new Dictionary<string, object>() { { "response", response } };
+            WriteToLog(LogEventLevel.Debug, $"GetCompanyListByCompIds - No info found - hashcode:{upfmCompanyInstanceIds.GetHashCode()}", logData, correlationId: userClaim.CorrelationId.ToString());
 
             return companyInstance;
         }

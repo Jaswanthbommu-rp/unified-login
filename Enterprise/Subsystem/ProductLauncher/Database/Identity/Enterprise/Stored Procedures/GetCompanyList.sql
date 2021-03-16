@@ -122,9 +122,9 @@ BEGIN
 				  Ident.UserLogin UL  
 				  INNER JOIN Enterprise.Party P ON UL.PersonPartyId = P.PartyId  
 				) UL ON CONVERT(VARCHAR(40), UL.RealPageId) = MS.Value  
-					 WHERE MCT.Name = 'Organization'  
-						   AND MST.Name = 'RealPageEmployeeAccessID'
-    WHERE	(@OrganizationName IS NULL OR O.Name LIKE '%' + @OrganizationName + '%')
+	WHERE MCT.Name = 'Organization'  
+		AND MST.Name = 'RealPageEmployeeAccessID'
+        AND	(@OrganizationName IS NULL OR O.Name LIKE '%' + @OrganizationName + '%')
 		AND	(@OrganizationID = 0 OR O.PartyId = @OrganizationID)
 		AND	(@Domain = 0 OR O.OrganizationDomainId = @Domain)
 		AND	(@BooksCustomerMasterId IS NULL OR D.CompanyMasterId LIKE '%' + @BooksCustomerMasterId + '%')

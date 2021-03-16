@@ -104,10 +104,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 {
                     dynamic paramsList = new
                     {
-                        organizationId = organization.RealPageId,
-                        organizationName = organization.Name,
+                        organizationId = organization?.RealPageId,
+                        organizationName = organization?.Name,
                         OrganizationTypeId = organization?.organizationType?.OrganizationTypeId ?? organizationTypeId,
-                        OrganizationDomainId = organization?.OrganizationDomain?.OrganizationDomainId ?? organizationDomainId
+                        OrganizationDomainId = organization?.OrganizationDomain?.OrganizationDomainId ?? organizationDomainId,
+                        OrganizationStatus = organization?.IsActive
                     };
 
                     response = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateOrganization, paramsList);

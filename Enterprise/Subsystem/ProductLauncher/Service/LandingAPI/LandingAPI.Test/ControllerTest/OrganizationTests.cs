@@ -1724,8 +1724,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 					OrganizationPartyId = 3,
 					OrganizationName = "RealPage",
 					ContractedName = "RealPage",
-					RealPageId = Guid.NewGuid(),
-					BooksMasterId = "1",
+					RealPageId = new Guid("daf71f77-4558-4cb0-91b8-29d8b0e62f15"),
+                    BooksMasterId = "1",
 					BooksCustomerMasterId = "379",
 					OrganizationTypeId = 1,
 					OrganizationType = "Multifamily",
@@ -1773,12 +1773,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			   }
 			};
 
-			HttpResponseMessage responseMapResource = new HttpResponseMessage(HttpStatusCode.OK);
+            var upfmCompanyInstancesJson = "{\"data\":[{\"type\":\"companyinstance\",\"id\":\"1049316\",\"attributes\":{\"companyInstanceId\":1049316,\"source\":\"UPFM\",\"companyInstanceSourceId\":\"daf71f77-4558-4cb0-91b8-29d8b0e62f15\",\"companyName\":\"CF Real Estate Services\",\"companyType\":\"Multifamily\",\"isActive\":true,\"domain\":\"Primary\",\"deletedReason\":\"Deprecated Field\",\"marketSegment\":[]},\"links\":{\"self\":\"\\/companyinstance\\/1049316\"}},{\"type\":\"companyinstance\",\"id\":\"1068792\",\"attributes\":{\"companyInstanceId\":1068792,\"source\":\"UPFM\",\"companyInstanceSourceId\":\"e072dcfc-99b8-493d-8f8d-26786c965d08\",\"companyName\":\"CF REAL ESTATE SERVICES - UAT\",\"companyType\":null,\"isActive\":true,\"domain\":\"UAT\",\"deletedReason\":\"Deprecated Field\",\"marketSegment\":[]},\"links\":{\"self\":\"\\/companyinstance\\/1068792\"}}]}";
+            HttpResponseMessage upfmCompanyInstancesResponse = new HttpResponseMessage(HttpStatusCode.OK);
+            upfmCompanyInstancesResponse.Content = new StringContent(upfmCompanyInstancesJson);
+
+            HttpResponseMessage responseMapResource = new HttpResponseMessage(HttpStatusCode.OK);
 			var jsonToSave = JsonConvert.SerializeObject(mapResource, new JsonApiSerializerSettings());
 			responseMapResource.Content = new StringContent(jsonToSave);
 
 			_mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompany?filter[customerCompanyId]=in:{_BooksCompanyMasterId}&include=customerCompanyLocation&fields[customercompany]=customerCompanyId,companyName,phoneNumber&fields[customerCompanyLocation]=customerCompanyLocationId,customerCompanyId,address,city,state,country,postalCode,isPrimary&page[size]=9999", responseMapResource);
-			HttpResponseMessage response = organizationController.GetCompanyList("RealPage", null, null, null, null);
+            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/companyinstance?filter[source]=UPFM&include=companyInstanceLocation&filter[companyInstanceSourceId]=in:daf71f77-4558-4cb0-91b8-29d8b0e62f15", upfmCompanyInstancesResponse);
+
+
+            HttpResponseMessage response = organizationController.GetCompanyList("RealPage", null, null, null, null);
 
             ObjectListOutput<CompanySetup, IErrorData> propertyOutput = new ObjectListOutput<CompanySetup, IErrorData>();
             propertyOutput = response.Content.ReadAsAsync<ObjectListOutput<CompanySetup, IErrorData>>().Result;
