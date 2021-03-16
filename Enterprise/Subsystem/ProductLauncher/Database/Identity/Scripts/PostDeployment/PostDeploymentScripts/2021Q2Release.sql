@@ -350,3 +350,41 @@ WHERE gpc.ProductId != ps.ProductId
 	AND pc.ThruDate IS NULL;
 
 GO
+
+-- Adding Rights to HomeSharing Product
+IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B')
+BEGIN
+	DECLARE @UserId INT
+	SELECT @UserId = UserId FROM Ident.UserLogin WHERE LoginName like 'realpagead@%'
+	
+	INSERT INTO Security.[Right](RightName,Description,Value,StatusTypeId,VisibilityStatusId,
+	ProductId,TargetProductId,CreatedBy,CreatedDate)
+	VALUES('PropertyAdmin','Property Admin','Property Admin',13,9,60,60,@UserId,GETDATE())	
+	
+	INSERT INTO Security.[Right](RightName,Description,Value,StatusTypeId,VisibilityStatusId,
+	ProductId,TargetProductId,CreatedBy,CreatedDate)
+	VALUES('PropertyUser','Property User','Property User',13,9,60,60,@UserId,GETDATE())
+
+	DECLARE @ServerName SYSNAME = @@SERVERNAME;	
+	DECLARE @PropertyAdminRoleId INT
+	DECLARE @PropertyUserRoleId INT							
+
+	INSERT INTO Security.Role(RoleName,ShortName,Description,RoleTypeID,OrgPartyID,ProductId,CreatedBy,CreatedDate)
+	VALUES('Property Admin','Property Admin','Property Admin',3,NULL,60,@UserId,GETDATE())
+	
+	SELECT @PropertyAdminRoleId = SCOPE_IDENTITY()
+
+	INSERT INTO Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+	VALUES(	@PropertyAdminRoleId,	(SELECT RightId FROM Security.[Right] WHERE RightName = 'PropertyAdmin' AND ProductId = 60),@UserId,GETDATE())
+	
+	INSERT INTO Security.Role(RoleName,ShortName,Description,RoleTypeID,OrgPartyID,ProductId,CreatedBy,CreatedDate)
+	VALUES('Property User','Property User','Property User',3,NULL,60,@UserId,GETDATE())
+	
+	SELECT @PropertyUserRoleId = SCOPE_IDENTITY()
+
+	INSERT INTO Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+	VALUES(	@PropertyUserRoleId,(SELECT RightId FROM Security.[Right] WHERE RightName = 'PropertyUser' AND ProductId = 60),	@UserId,GETDATE())
+END
+
+-- Making avialable these two roles/rights for all PMC's
+UPDATE TOP (2) Security.Role SET OrgPartyID = NULL WHERE RoleName IN ('Property Admin','Property User')
