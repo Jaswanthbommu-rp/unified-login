@@ -23,7 +23,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         public Guid InstanceId { get; set; }
 
         public bool IsAssigned { get; set; }
-        public bool IsActive { get; set; } = false;
+        public bool IsActive { get; set; } = true;
 
         public string CustomerPropertyId { get; set; }
 
