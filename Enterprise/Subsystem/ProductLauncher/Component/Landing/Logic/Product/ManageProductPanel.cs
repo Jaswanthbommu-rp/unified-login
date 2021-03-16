@@ -597,6 +597,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     case (int)ProductEnum.AoAIRevenueManagement:
                     case (int)ProductEnum.AoRentControl:
                     case (int)ProductEnum.AoMarketAnalytics:
+                    case (int)ProductEnum.AoAxiometrics:
                         var manageProductAo = new ManageProductAssetOptimization(_userClaims);
                         result = manageProductAo.GetProductPropertyGroups(editorPersonaId, userPersonaId, productcode, userLoginName);
                         break;
