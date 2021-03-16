@@ -1047,28 +1047,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             int booksCompanyMasterHash = AppendUPFMCompanyInstances(companyInstanceIds).GetHashCode();
 
             companyInstance = _manageBlueBookCache[$"getCompanysByCompIds_{booksCompanyMasterHash}"] as List<CustomerCompanyInstance>;
-            //if (companyInstance == null)
-            //{
-                int splitSize = (int)(companyInstanceIds.Count * .01);
-                if (splitSize == 0)
-                {
-                    splitSize = 10;
-                }
-
+            if (companyInstance == null)
+            {
+                int splitSize = 50;
                 var splitCompanyList = SplitList<string>(companyInstanceIds, splitSize);
                 ConcurrentBag<CustomerCompanyInstance> result = new ConcurrentBag<CustomerCompanyInstance>();
                 Parallel.ForEach(splitCompanyList, new ParallelOptions { MaxDegreeOfParallelism = 5 }, companyList => { GetBooksUPFMCompanyDetails(_defaultUserClaim, companyList).ForEach(x => result.Add(x)); });
-           return result.ToList();
-            //companyInstance = result.ToList();
-            //if (companyInstance.Count > 0)
-            //{
-            //    CacheItemPolicy policy = new CacheItemPolicy { AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(86400) };
-            //    // 24 hrs cached 86400 secs
-            //    _manageBlueBookCache.Set($"getCompanysByCompIds_{booksCompanyMasterHash}", companyInstance, policy);
-            //}
-            // }
 
-           // return companyInstance;
+                companyInstance = result.ToList();
+                if (companyInstance.Count > 0)
+                {
+                    CacheItemPolicy policy = new CacheItemPolicy { AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(86400) };
+                    // 24 hrs cached 86400 secs
+                    _manageBlueBookCache.Set($"getCompanysByCompIds_{booksCompanyMasterHash}", companyInstance, policy);
+                }
+            }
+            return companyInstance;
         }
 
         /// <summary>
