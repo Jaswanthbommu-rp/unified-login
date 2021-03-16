@@ -738,24 +738,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="propertyInstanceId">property Instance Id</param>
         /// <param name="propertyName">propertyName</param>
         /// <returns>RepositoryResponse object</returns>
-        public RepositoryResponse UpdateProperty(Guid companyInstanceId, Guid propertyInstanceId, string propertyName)
+        public RepositoryResponse UpdateProperty(UPFMPropertyInstance property, Guid companyInstanceId)
         {
-            if (propertyInstanceId == Guid.Empty)
+            if (property.InstanceId == Guid.Empty)
             {
                 throw new Exception("Invalid parameter propertyInstanceId.");
             }
-            if (string.IsNullOrEmpty(propertyName))
+            if (string.IsNullOrEmpty(property.Name))
             {
                 throw new Exception("Invalid parameter propertyName.");
             }
-            var _repositoryResponse = _propertyRepository.UpdateProperty(propertyInstanceId, propertyName);           
+            var _repositoryResponse = _propertyRepository.UpdateProperty(property.InstanceId, property.Name);           
             if (_repositoryResponse.Id > 0)
             {
-               bool booksResponse =  UpdatePropertyInBooks(propertyInstanceId, propertyName);
+               bool booksResponse =  UpdatePropertyInBooks(property);
                 bool settingsResponse = false;
                 if (booksResponse)
                 {
-                    settingsResponse = UpdatePropertyInSettings(propertyInstanceId, companyInstanceId);
+                    settingsResponse = UpdatePropertyInSettings(property.InstanceId, companyInstanceId);
                 }
                 _repositoryResponse = HandleErrorMessage(booksResponse, settingsResponse, "Error while updating property", _repositoryResponse);
             }
@@ -1125,8 +1125,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 										.FirstOrDefault()?.attributes.customerPropertyMap?.FirstOrDefault()?.customerProperty.FirstOrDefault()?.propertyName;
                 property.Domain = booksPropertyInstance?
                                         .Where(pi => pi.attributes.propertyInstanceSourceId.ToString() == property.InstanceId.ToString())
-                                        .FirstOrDefault()?.attributes.domain;				
-				property.PropertyAddress = property?.Address + "," + property?.City + "," + property?.State + "," + property?.PostalCode;
+                                        .FirstOrDefault()?.attributes.domain;	
+
+                var propertyAddress = booksPropertyInstance?
+                                        .Where(pi => pi.attributes.propertyInstanceSourceId.ToString() == property.InstanceId.ToString())
+                                        .FirstOrDefault()?.attributes.address;
+
+                property.Address = propertyAddress?.Address;
+                property.City = propertyAddress?.City;
+                property.State = propertyAddress?.State;
+                property.PostalCode = propertyAddress?.PostalCode;
+                property.Country = propertyAddress?.Country;
+                property.County = propertyAddress?.County;
+                property.PropertyAddress = propertyAddress?.Address + "," + propertyAddress?.City + "," + propertyAddress?.State + "," + propertyAddress?.PostalCode;
 				if (userProperties != null && userProperties.Count > 0 && userProperties.Contains(property.PropertyInstanceId))
 				{
                     property.IsAssigned = true;
@@ -1161,13 +1172,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return _manageBlueBook.AddBooksGreenBookPropertyInstanceFromProvisioning(pi);
         }
 
-        private bool UpdatePropertyInBooks(Guid propertyInstanceId, string propertyName)
+        private bool UpdatePropertyInBooks(UPFMPropertyInstance property)
         {
             PropertyInstanceAck ack = new PropertyInstanceAck
             {
-                PropertyInstanceSourceId = propertyInstanceId.ToString(),
+                PropertyInstanceSourceId = property.InstanceId.ToString(),
                 Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
-                PropertyName = propertyName,
+                PropertyName = property.Name,
+                IsActive = property.IsActive,
+                Address = new PropertyInstanceAddress()
+                {
+                    Address = property.Address,
+                    City = property.City,
+                    State = property.State,
+                    PostalCode = property.PostalCode,
+                    County = property.County,
+                    Country = property.Country,
+                },
                 ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)
             };
             return _manageBlueBook.AcknowledgePropertyUpdate(ack);

@@ -1312,33 +1312,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [Route("CompanySetup/CompanyPropertyList")]
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         [HttpPut]
-        public HttpResponseMessage UpdatePropertyForOrganization(Guid companyInstanceId, Guid propertyInstanceId, string propertyName)
+        public HttpResponseMessage UpdatePropertyForOrganization([FromBody] UPFMPropertyInstance property, Guid companyInstanceId )
         {
             if ((companyInstanceId == Guid.Empty) || (companyInstanceId == null))
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: companyInstanceId");
             }
 
-            if ((propertyInstanceId == Guid.Empty) || (propertyInstanceId == null))
+            if ((property.InstanceId == Guid.Empty) || (property.InstanceId == null))
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: propertyInstanceId");
             }
 
-            if (String.IsNullOrEmpty(propertyName))
+            if (String.IsNullOrEmpty(property.Name))
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Null parameter: propertyName");
             }
-            var currentProperty = _manageOrganization.GetPropertyByInstanceId(propertyInstanceId);
+            var currentProperty = _manageOrganization.GetPropertyByInstanceId(property.InstanceId);
 
-            if (currentProperty != null && !currentProperty.FirstOrDefault().Name.Equals(propertyName, StringComparison.Ordinal))
+            if (currentProperty != null )
             {
-                _repositoryResponse = _manageOrganization.UpdateProperty(companyInstanceId, propertyInstanceId, propertyName);
+                _repositoryResponse = _manageOrganization.UpdateProperty(property, companyInstanceId);
                 if (_repositoryResponse.Id == 0)
                 {
                     return Request.CreateResponse(HttpStatusCode.BadRequest, _repositoryResponse.ErrorMessage);
                 }
             }
-            return Request.CreateResponse(HttpStatusCode.OK, propertyInstanceId);
+            return Request.CreateResponse(HttpStatusCode.OK, property.InstanceId);
         }
 
         /// <summary>
