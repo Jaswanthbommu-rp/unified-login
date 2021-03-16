@@ -2,6 +2,7 @@
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
@@ -29,60 +30,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         public int DeleteUserAppAuthToken(Guid realPageId)
         {
             var userLogin = _userLoginRepository.GetUserLoginOnly(realPageId);
-            var person = _personRepository.GetPerson(realPageId);
 
             if (userLogin != null)
             {
                 var result = _twoFactorRepository.ResetAuthenticatorKey(userLogin.UserId, string.Empty);
-                if (result > 0)
-                {
-                    if (realPageId == _userClaim.UserRealPageGuid) 
-                    {
-                        LogActivity.WriteActivity(new ActivityDetails()
-                        {
-                            LogActivityTypeName = "Update User",
-                            LogCategoryName = LogActivityCategoryType.User.ToString(),
-                            CorrelationId = _userClaim.CorrelationId.ToString(),
-                            BooksMasterOrganizationId = _userClaim.OrganizationMasterId,
-                            OrganizationPartyId = _userClaim.OrganizationPartyId,
-                            Message = $"Multi-factor authentication method reset by {person.FirstName} {person.LastName}.",
+                
+                if (result > 0 && _userClaim != null)
+                    LogDeleteActivity(realPageId, userLogin);
 
-                            FromUserLoginName = _userClaim.LoginName,
-                            FromUserLoginId = _userClaim.UserId,
-                            FromUserFirstName = _userClaim.FirstName,
-                            FromUserLastName = _userClaim.LastName,
-                            FromUserRealpageId = _userClaim.UserRealPageGuid.ToString(),
-                            BooksProductCode = "UPFM"
-                        });
-                    } 
-                    else 
-                    {
-                        LogActivity.WriteActivity(new ActivityDetails()
-                        {
-                            LogActivityTypeName = "Update User",
-                            LogCategoryName = LogActivityCategoryType.User.ToString(),
-                            CorrelationId = _userClaim.CorrelationId.ToString(),
-                            BooksMasterOrganizationId = _userClaim.OrganizationMasterId,
-                            OrganizationPartyId = _userClaim.OrganizationPartyId,
-                            Message = $"{_userClaim.FirstName} {_userClaim.FirstName} reset the multi-factor authentication setup for { person.FirstName} {person.LastName}.",
-
-                            FromUserLoginName = _userClaim.LoginName,
-                            FromUserLoginId = _userClaim.UserId,
-                            FromUserFirstName = _userClaim.FirstName,
-                            FromUserLastName = _userClaim.LastName,
-                            FromUserRealpageId = _userClaim.UserRealPageGuid.ToString(),
-
-                            ToUserFirstName= person.FirstName,
-                            ToUserLastName=person.LastName,
-                            ToUserLoginId= userLogin.UserId,
-                            ToUserLoginName=userLogin.LoginName,
-                            ToUserRealpageId=userLogin.RealPageId.ToString(),
-
-                            BooksProductCode = "UPFM"
-                        });
-                    }
-                    
-                }
                 return result;
             }
 
@@ -98,6 +53,56 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
 
             return 0;
+        }
+
+        private void LogDeleteActivity(Guid realPageId, UserLoginOnly userLogin) 
+        {
+            var person = _personRepository.GetPerson(realPageId);
+            if (realPageId == _userClaim.UserRealPageGuid)
+            {
+                LogActivity.WriteActivity(new ActivityDetails()
+                {
+                    LogActivityTypeName = "Update User",
+                    LogCategoryName = LogActivityCategoryType.User.ToString(),
+                    CorrelationId = _userClaim.CorrelationId.ToString(),
+                    BooksMasterOrganizationId = _userClaim.OrganizationMasterId,
+                    OrganizationPartyId = _userClaim.OrganizationPartyId,
+                    Message = $"Multi-factor authentication method reset by {person.FirstName} {person.LastName}.",
+
+                    FromUserLoginName = _userClaim.LoginName,
+                    FromUserLoginId = _userClaim.UserId,
+                    FromUserFirstName = _userClaim.FirstName,
+                    FromUserLastName = _userClaim.LastName,
+                    FromUserRealpageId = _userClaim.UserRealPageGuid.ToString(),
+                    BooksProductCode = "UPFM"
+                });
+            }
+            else
+            {
+                LogActivity.WriteActivity(new ActivityDetails()
+                {
+                    LogActivityTypeName = "Update User",
+                    LogCategoryName = LogActivityCategoryType.User.ToString(),
+                    CorrelationId = _userClaim.CorrelationId.ToString(),
+                    BooksMasterOrganizationId = _userClaim.OrganizationMasterId,
+                    OrganizationPartyId = _userClaim.OrganizationPartyId,
+                    Message = $"{_userClaim.FirstName} {_userClaim.FirstName} reset the multi-factor authentication setup for { person.FirstName} {person.LastName}.",
+
+                    FromUserLoginName = _userClaim.LoginName,
+                    FromUserLoginId = _userClaim.UserId,
+                    FromUserFirstName = _userClaim.FirstName,
+                    FromUserLastName = _userClaim.LastName,
+                    FromUserRealpageId = _userClaim.UserRealPageGuid.ToString(),
+
+                    ToUserFirstName = person.FirstName,
+                    ToUserLastName = person.LastName,
+                    ToUserLoginId = userLogin.UserId,
+                    ToUserLoginName = userLogin.LoginName,
+                    ToUserRealpageId = userLogin.RealPageId.ToString(),
+
+                    BooksProductCode = "UPFM"
+                });
+            }
         }
     }
 }
