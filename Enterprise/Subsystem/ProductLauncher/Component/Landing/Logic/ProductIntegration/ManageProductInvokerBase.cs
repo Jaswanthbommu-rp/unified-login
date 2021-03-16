@@ -767,7 +767,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         protected virtual bool CheckUserExistInProduct(string loginNameToCheck, string baseUrlAndQuery = null)
         {
             if (baseUrlAndQuery == null)
-                baseUrlAndQuery = string.Format(GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserEndpoint), loginNameToCheck);
+                baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserEndpoint);
+
+            if (baseUrlAndQuery.Contains("{0}"))
+                baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, loginNameToCheck);
+            else
+                baseUrlAndQuery = string.Format(baseUrlAndQuery, loginNameToCheck);
 
             var productUser = GetProductUser(baseUrlAndQuery, false);
 
