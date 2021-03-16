@@ -1046,7 +1046,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             // get the hash of the full company list
             int booksCompanyMasterHash = AppendUPFMCompanyInstances(companyInstanceIds).GetHashCode();
 
-            companyInstance = _manageBlueBookCache[$"getCompanysByCompIds_{booksCompanyMasterHash}"] as List<CustomerCompanyInstance>;
+            companyInstance = _manageBlueBookCache[$"GetUPFMCompanyDetailsByInstanceIds_{booksCompanyMasterHash}"] as List<CustomerCompanyInstance>;
             if (companyInstance == null)
             {
                 int splitSize = 50;
