@@ -1003,7 +1003,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         public IList<Company> GetCompanyListByCompIds(List<UnifiedLoginCompany> booksCompanyMasterList)
         {
             IList<Company> companyInstance = new List<Company>();
-            Dictionary<string, object> logData;
 
             // get the hash of the full company list
             int booksCompanyMasterHash = GetCompanyIds(booksCompanyMasterList).GetHashCode();
@@ -1024,8 +1023,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 companyInstance = result.ToList();
                 if (companyInstance.Count > 0)
                 {
-                    CacheItemPolicy policy = new CacheItemPolicy {AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(86400)};
-                    // 24 hrs cached 86400 secs
+                    CacheItemPolicy policy = new CacheItemPolicy {AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(1800) };
+                    // 30 Mins cached 1800 secs
                     _manageBlueBookCache.Set($"getCompanysByCompIds_{booksCompanyMasterHash}", companyInstance, policy);
                 }
             }
@@ -1040,8 +1039,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <returns></returns>
         public IList<CustomerCompanyInstance> GetUPFMCompanyDetailsByInstanceIds(List<string> companyInstanceIds)
         {
-            IList<CustomerCompanyInstance> companyInstance = new List<CustomerCompanyInstance>();
-            Dictionary<string, object> logData;
+            IList<CustomerCompanyInstance> companyInstance = new List<CustomerCompanyInstance>();            
 
             // get the hash of the full company list
             int booksCompanyMasterHash = AppendUPFMCompanyInstances(companyInstanceIds).GetHashCode();
@@ -1057,8 +1055,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 companyInstance = result.ToList();
                 if (companyInstance.Count > 0)
                 {
-                    CacheItemPolicy policy = new CacheItemPolicy { AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(86400) };
-                    // 24 hrs cached 86400 secs
+                    CacheItemPolicy policy = new CacheItemPolicy { AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(1800) };
+                    // 30 Mins cached 1800 secs
                     _manageBlueBookCache.Set($"getCompanysByCompIds_{booksCompanyMasterHash}", companyInstance, policy);
                 }
             }
