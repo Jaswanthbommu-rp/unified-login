@@ -86,7 +86,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     CorrelationId = _userClaim.CorrelationId.ToString(),
                     BooksMasterOrganizationId = _userClaim.OrganizationMasterId,
                     OrganizationPartyId = _userClaim.OrganizationPartyId,
-                    Message = $"{_userClaim.FirstName} {_userClaim.FirstName} reset the multi-factor authentication setup for { person.FirstName} {person.LastName}.",
+                    Message = $"{_userClaim.FirstName} {_userClaim.LastName} reset the multi-factor authentication setup for { person.FirstName} {person.LastName}.",
 
                     FromUserLoginName = _userClaim.LoginName,
                     FromUserLoginId = _userClaim.UserId,
