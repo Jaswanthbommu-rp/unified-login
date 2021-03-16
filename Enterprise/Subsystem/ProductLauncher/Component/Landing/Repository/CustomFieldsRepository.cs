@@ -36,15 +36,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		/// <summary>
 		/// Get Custom Fields
 		/// </summary>
-		/// <param name="booksCustomerMasterId">Book MasterId</param>
-		/// <param name="bookMasterTypeId">Type of Book MasterId (e.g. 1 = Black, 2 = Blue)</param>
+		/// <param name="partyId">PartyId/param>
 		/// <param name="dataFilterSort">Data Filtering and Sorting</param>
 		/// <returns>Custom Fields (KeyValue pairs)</returns>
-		public IList<Setting> GetCustomFields(long booksCustomerMasterId, int bookMasterTypeId = (int)BookMasterType.CustomerMasterId, RequestParameter dataFilterSort = null)
+		public IList<Setting> GetCustomFields(long partyId, RequestParameter dataFilterSort = null)
 		{
 			string customFieldsJson = string.Empty;
 
-			IList<CustomField> customField = GetCustomField(booksCustomerMasterId, bookMasterTypeId, dataFilterSort);
+			IList<CustomField> customField = GetCustomField(partyId, dataFilterSort);
 
 			if (customField.Count > 0)
 			{
@@ -72,10 +71,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		/// Get Custom Fields
 		/// </summary>
 		/// <param name="booksCustomerMasterId">Books Customer MasterId</param>
-		/// <param name="bookMasterTypeId">Type of Book MasterId (e.g. 1 = Black, 2 = Blue)</param>
 		/// <param name="dataFilterSort">Data Filtering and Sorting</param>
 		/// <returns>List of Custom Fields objects</returns>
-		public IList<CustomField> GetCustomField(long booksCustomerMasterId, int bookMasterTypeId = (int)BookMasterType.CustomerMasterId, RequestParameter dataFilterSort = null)
+		public IList<CustomField> GetCustomField(long partyId, RequestParameter dataFilterSort = null)
 		{
 			IList<CustomField> customFields = new List<CustomField>();
 
@@ -128,8 +126,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
 			dynamic param = new
 			{
-				SourceId = booksCustomerMasterId,
-				DataImportApplicationId = bookMasterTypeId,
+				PartyId = partyId,
 				FilterBy = filterByJson,
 				SortBy = sortByJson,
 				RowsPerPage = dataFilterSort.Pages.ResultsPerPage,
@@ -196,7 +193,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		/// <param name="booksCustomerMasterId">Books Customer MasterId</param>
 		/// <param name="bookMasterTypeId">Type of Book MasterId (e.g. 1 = Black, 2 = Blue)</param>
 		/// <returns>Repository response object</returns>
-		public RepositoryResponse AddUpdateCustomFields(IList<Setting> settings, long userId, long booksCustomerMasterId, int bookMasterTypeId = (int)BookMasterType.CustomerMasterId)
+		public RepositoryResponse AddUpdateDeleteCustomFields(IList<Setting> settings, long userId, long partyId, string operation = "update")
 		{
 			RepositoryResponse repositoryResponse = new RepositoryResponse();
 			repositoryResponse.Id = 0;
@@ -212,8 +209,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 						string jsonCustomFields = settings[0].Value;
 						param = new
 						{
-							SourceId = booksCustomerMasterId,
-							DataImportApplicationId = bookMasterTypeId,
+							PartyId = partyId,
+							Operation = operation,
 							Json = jsonCustomFields,
 							CreatedBy = userId
 						};

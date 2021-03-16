@@ -74,7 +74,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             try
             {
-                repositoryResponse = _customFieldsRepository.AddUpdateCustomFields(settings, _userClaim.UserId, booksCustomerMasterId, bookMasterTypeId);
+                repositoryResponse = _customFieldsRepository.AddUpdateDeleteCustomFields(settings, _userClaim.UserId, booksCustomerMasterId);
             }
             catch (Exception exception)
             {
@@ -94,6 +94,53 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return repositoryResponse;
         }
 
+        /// <summary>
+		/// Add/Update Custom Fields
+		/// </summary>
+		/// <param name="settings">A list of one Setting object where the Value is a JSON of the Custom Fields to Add/Update</param>
+		/// <param name="partyId">Books Customer MasterId</param>
+		/// <param name="operation">add/update/delete</param>
+		/// <returns>RepositoryResponse object</returns>
+        public RepositoryResponse AddUpdateDeleteCustomFields(IList<Setting> settings, long partyId, string operation)
+        {
+            RepositoryResponse repositoryResponse = new RepositoryResponse();
+            Dictionary<string, object> logData = new Dictionary<string, object>
+            {
+                { "ManageCustomFields.AddUpdateDeleteCustomFields", $"Party Id: {partyId}, customFields: {settings}" }
+            };
+            WriteToLog(LogEventLevel.Debug, "ManageCustomFields.AddUpdateDeleteCustomFields: Begin", _userClaim.CorrelationId, logData, null);
+            if ((settings == null) || (settings.Count == 0))
+            {
+                throw new ArgumentNullException(nameof(settings), "Null Custom Fields.");
+            }
+
+            if (partyId == 0)
+            {
+                throw new Exception("Missing Book Master Id.");
+            }
+
+            try
+            {
+                repositoryResponse = _customFieldsRepository.AddUpdateDeleteCustomFields(settings, _userClaim.UserId, partyId, operation);
+            }
+            catch (Exception exception)
+            {
+                logData = new Dictionary<string, object>
+                {
+                    { "ManageCustomFields.AddUpdateDeleteCustomFields", "Exception" }
+                };
+                WriteToLog(LogEventLevel.Debug, "ManageCustomFields.AddUpdateDeleteCustomFields: Exception", _userClaim.CorrelationId, logData, exception);
+            }
+
+            logData = new Dictionary<string, object>
+            {
+                { "Update CustomFields", settings }
+            };
+            WriteToLog(LogEventLevel.Debug, "ManageCustomFields.AddUpdateDeleteCustomFields: End", _userClaim.CorrelationId, logData, null);
+
+            return repositoryResponse;
+        }
+        
         /// <summary>
         /// Add/Update Custom Fields values for a user
         /// </summary>
@@ -149,17 +196,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="booksCustomerMasterId">Books Customer MasterId</param>
         /// <param name="bookMasterTypeId">Type of Book MasterId (e.g. 1 = Black, 2 = Blue)</param>
         /// <returns>Custom Fields (KeyValue pairs)</returns>
-        public IList<Setting> GetCustomFields(IDictionary<object, object> globals, long booksCustomerMasterId, int bookMasterTypeId = (int)BookMasterType.CustomerMasterId)
+        public IList<Setting> GetCustomFields(IDictionary<object, object> globals, long partyId)
         {
             RequestParameter dataFilter = new RequestParameter();
             IList<Setting> settingList = new List<Setting>();
             Dictionary<string, object> logData = new Dictionary<string, object>
             {
-                { "ManageCustomFields.GetCustomFields", $"Organization Books Customer MasterId: {booksCustomerMasterId}, Book Master TypeId: {bookMasterTypeId}" }
+                { "ManageCustomFields.GetCustomFields", $"Organization Books Customer MasterId: {partyId}" }
             };
             WriteToLog(LogEventLevel.Debug, "ManageCustomFields.GetCustomFields: Begin", _userClaim.CorrelationId, logData, null);
 
-            if (booksCustomerMasterId == 0)
+            if (partyId == 0)
             {
                 throw new Exception("Missing Books Customer Master Id.");
             }
@@ -171,7 +218,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     dataFilter = globals[BaseType.RequestParameter] as RequestParameter;
                 }
 
-                settingList = _customFieldsRepository.GetCustomFields(booksCustomerMasterId, bookMasterTypeId, dataFilter);
+                settingList = _customFieldsRepository.GetCustomFields(partyId, dataFilter);
             }
             catch (Exception exception)
             {
@@ -198,17 +245,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="booksCustomerMasterId">Books Customer MasterId</param>
         /// <param name="bookMasterTypeId">Type of Book MasterId (e.g. 1 = Black, 2 = Blue)</param>
         /// <returns>List of Custom Fields objects</returns>
-        public IList<CustomField> GetCustomField(IDictionary<object, object> globals, long booksCustomerMasterId, int bookMasterTypeId = (int)BookMasterType.CustomerMasterId)
+        public IList<CustomField> GetCustomField(IDictionary<object, object> globals, long partyId)
         {
             RequestParameter dataFilter = new RequestParameter();
             IList<CustomField> customFieldList = new List<CustomField>();
             Dictionary<string, object> logData = new Dictionary<string, object>
             {
-                { "ManageCustomFields.GetCustomField", $"Organization Book MasterId: {booksCustomerMasterId}, Book Master TypeId: {bookMasterTypeId}" }
+                { "ManageCustomFields.GetCustomField", $"Organization Book PartyId: {partyId}" }
             };
             WriteToLog(LogEventLevel.Debug, "ManageCustomFields.GetCustomField: Begin", _userClaim.CorrelationId, logData, null);
 
-            if (booksCustomerMasterId == 0)
+            if (partyId == 0)
             {
                 throw new Exception("Missing Book Master Id.");
             }
@@ -220,7 +267,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     dataFilter = globals[BaseType.RequestParameter] as RequestParameter;
                 }
 
-                customFieldList = _customFieldsRepository.GetCustomField(booksCustomerMasterId, bookMasterTypeId, dataFilter);
+                customFieldList = _customFieldsRepository.GetCustomField(partyId, dataFilter);
             }
             catch (Exception exception)
             {

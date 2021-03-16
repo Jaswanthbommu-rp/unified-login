@@ -159,7 +159,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 					datafilter.Pages.ResultsPerPage = 0;
 					IDictionary<object, object> globals = new Dictionary<object, object>();
 					globals.Add(BaseType.RequestParameter, datafilter);
-					settingList = manageCustomFields.GetCustomFields(globals, booksCustomerMasterId, bookMasterTypeId);
+					settingList = manageCustomFields.GetCustomFields(globals, booksCustomerMasterId);
 
 					if (settingList == null)
 					{
@@ -474,7 +474,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 						IDictionary<object, object> globals = new Dictionary<object, object>();
 						RequestParameter datafilter = new RequestParameter();
 						globals.Add(BaseType.RequestParameter, datafilter);
-						IList<CustomField> customFieldList = manageCustomFields.GetCustomField(globals: globals, booksCustomerMasterId: _userClaims.CustomerMasterId, bookMasterTypeId: (int)BookMasterType.CustomerMasterId);
+						IList<CustomField> customFieldList = manageCustomFields.GetCustomField(globals: globals, booksCustomerMasterId: _userClaims.CustomerMasterId);
 
 						string jsonCustomFields = settings[0].Value;
 						jsonCustomFields = JObject.Parse(jsonCustomFields).SelectToken("customField").ToString();

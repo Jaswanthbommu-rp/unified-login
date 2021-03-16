@@ -19,7 +19,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		/// <param name="booksCustomerMasterId">Books Customer MasterId</param>
 		/// <param name="bookMasterTypeId">Type of Book MasterId (e.g. 1 = Black, 2 = Blue)</param>
 		/// <returns>Repository response object</returns>
-		RepositoryResponse AddUpdateCustomFields(IList<Setting> settings, long userId, long booksCustomerMasterId, int bookMasterTypeId = (int)BookMasterType.CustomerMasterId);
+		RepositoryResponse AddUpdateDeleteCustomFields(IList<Setting> settings, long userId, long partyId, string operation = "update");
 
 		/// <summary>
 		/// Add/Update Custom Fields values for a user
@@ -32,11 +32,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		/// <summary>
 		/// Get Custom Fields
 		/// </summary>
-		/// <param name="booksCustomerMasterId">Books Customer MasterId</param>
-		/// <param name="bookMasterTypeId">Type of Book MasterId (e.g. 1 = Black, 2 = Blue)</param>
+		/// <param name="partyId">Books Customer PartyId</param>
 		/// <param name="dataFilterSort">Data Filtering and Sorting</param>
 		/// <returns>Custom Fields (KeyValue pairs)</returns>
-		IList<Setting> GetCustomFields(long booksCustomerMasterId, int bookMasterTypeId = (int)BookMasterType.CustomerMasterId, RequestParameter dataFilterSort = null);
+		IList<Setting> GetCustomFields(long partyId, RequestParameter dataFilterSort = null);
 
 		/// <summary>
 		/// Get Custom Fields
@@ -45,7 +44,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		/// <param name="bookMasterTypeId">Type of Book MasterId (e.g. 1 = Black, 2 = Blue)</param>
 		/// <param name="dataFilterSort">Data Filtering and Sorting</param>
 		/// <returns>List of Custom Fields objects</returns>
-		IList<CustomField> GetCustomField(long booksCustomerMasterId, int bookMasterTypeId = (int)BookMasterType.CustomerMasterId, RequestParameter dataFilterSort = null);
+		IList<CustomField> GetCustomField(long booksCustomerMasterId, RequestParameter dataFilterSort = null);
 
 		/// <summary>
 		/// Get CustomField Type

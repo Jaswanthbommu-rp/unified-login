@@ -136,7 +136,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			//Act
 			_mockCustomFieldsRepository = new Mock<ICustomFieldsRepository>();
 			_mockCustomFieldsRepository
-				.Setup(m => m.AddUpdateCustomFields(settingList, userId, booksCustomerMasterId, bookMasterTypeId))
+				.Setup(m => m.AddUpdateDeleteCustomFields(settingList, userId, booksCustomerMasterId, "update"))
 				.Returns(new RepositoryResponse { Id = 1, ErrorMessage = "" });
 
 			_manageCustomFields = new ManageCustomFields(_mockCustomFieldsRepository.Object, _userUserClaim);
@@ -261,10 +261,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			datafilter.Pages.ResultsPerPage = 0;
 			IDictionary<object, object> globals = new Dictionary<object, object>();
 			globals.Add(BaseType.RequestParameter, datafilter);
-			long booksCustomerMasterId = 0;
+			long partyId = 0;
 
 			//Assert
-			Assert.Throws<Exception>(() => _manageCustomFields.GetCustomFields(globals, booksCustomerMasterId, (int)BookMasterType.CustomerMasterId));
+			Assert.Throws<Exception>(() => _manageCustomFields.GetCustomFields(globals, partyId));
 		}
 
 		[Fact]
@@ -281,7 +281,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			long booksCustomerMasterId = 0;
 
 			//Assert
-			Assert.Throws<Exception>(() => _manageCustomFields.GetCustomField(globals, booksCustomerMasterId, (int)BookMasterType.CustomerMasterId));
+			Assert.Throws<Exception>(() => _manageCustomFields.GetCustomField(globals, booksCustomerMasterId));
 		}
 
 		[Fact]
@@ -321,13 +321,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
 			_mockCustomFieldsRepository = new Mock<ICustomFieldsRepository>();
 			_mockCustomFieldsRepository
-				.Setup(m => m.GetCustomField(booksCustomerMasterId, bookMasterTypeId, datafilter))
+				.Setup(m => m.GetCustomField(booksCustomerMasterId, datafilter))
 				.Returns(() => expectedCustomFieldList);
 
 			//Act
 			int NumberOfProperties = type.GetProperties().Length;
 			_manageCustomFields = new ManageCustomFields(_mockCustomFieldsRepository.Object, _userUserClaim);
-			IList<CustomField> customFieldsList = _manageCustomFields.GetCustomField(globals, booksCustomerMasterId, bookMasterTypeId);
+			IList<CustomField> customFieldsList = _manageCustomFields.GetCustomField(globals, bookMasterTypeId);
 
 			//Assert
 			Assert.True(
