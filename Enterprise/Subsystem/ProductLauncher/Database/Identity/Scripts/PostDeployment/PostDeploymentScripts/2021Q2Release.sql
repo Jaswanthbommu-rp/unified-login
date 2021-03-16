@@ -130,3 +130,220 @@ begin
 end
 
 COMMIT TRAN;
+--settings data transfer from passwordpolicy table to orgsettings  table
+GO
+GO
+-- Move Password policy settings data in to new organization settings table
+DECLARE @UserId bigint,
+	@ProductId int ,
+	@SettingCategoryTypeId smallint,
+	@Now datetime = GETDATE()
+
+SELECT	@UserId = UserId
+FROM	Ident.UserLogin
+WHERE	LoginName LIKE 'realpagead@%'
+
+Select @SettingCategoryTypeId = SettingCategoryTypeId
+From [Ident].[SettingCategoryType]
+Where Name = 'Security'
+
+-- 'NumberOfPasswordsToRemember'
+
+	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
+		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+	Select PartyId,@SettingCategoryTypeId,'NumberOfPasswordsToRemember',
+		NumberOfPasswordsToRemember,1,0,@UserId,@Now
+	From [Ident].[PasswordPolicy]  
+	where PartyId  not in (select PartyId From Ident.OrganizationSettings where   MappingName = 'NumberOfPasswordsToRemember')
+
+--'PreventPasswordReuse'
+
+	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
+		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+	Select PartyId,@SettingCategoryTypeId,'PreventPasswordReuse',
+		PreventPasswordReuse,1,1,@UserId,@Now
+	From [Ident].[PasswordPolicy]  
+	where PartyId  not in (select PartyId From Ident.OrganizationSettings where   MappingName = 'PreventPasswordReuse')
+
+
+--'PasswordExpirationPeriodInDays'
+
+	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
+		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+	Select PartyId,@SettingCategoryTypeId,'PasswordExpirationPeriodInDays',
+		PasswordExpirationPeriodInDays,1,0,@UserId,@Now
+	From [Ident].[PasswordPolicy]  
+	where PartyId  not in (select PartyId From Ident.OrganizationSettings where   MappingName = 'PasswordExpirationPeriodInDays')
+
+
+-- 'EnablePasswordExpiration'
+
+	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
+		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+	Select PartyId,@SettingCategoryTypeId,'EnablePasswordExpiration',
+		EnablePasswordExpiration,1,1,@UserId,@Now
+	From [Ident].[PasswordPolicy]  
+	where PartyId  not in (select PartyId From Ident.OrganizationSettings where   MappingName = 'EnablePasswordExpiration')
+
+
+--'AllowUsersToChangeOwnPassword'
+
+	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
+		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+	Select PartyId,@SettingCategoryTypeId,'AllowUsersToChangeOwnPassword',
+		AllowUsersToChangeOwnPassword,1,1,@UserId,@Now
+	From [Ident].[PasswordPolicy]  
+	where PartyId  not in (select PartyId From Ident.OrganizationSettings where   MappingName = 'AllowUsersToChangeOwnPassword')
+
+
+--'MinimumSpecialCharacter'
+
+	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
+		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+	Select PartyId,@SettingCategoryTypeId,'MinimumSpecialCharacter',
+		MinimumSpecialCharacter,1,1,@UserId,@Now
+	From [Ident].[PasswordPolicy]
+	where PartyId  not in (select PartyId From Ident.OrganizationSettings where   MappingName = 'MinimumSpecialCharacter')
+
+
+--'MinimumNumeric'
+
+	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
+		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+	Select PartyId,@SettingCategoryTypeId,'MinimumNumeric',
+		MinimumNumeric,1,1,@UserId,@Now
+	From [Ident].[PasswordPolicy]  
+	where PartyId  not in (select PartyId From Ident.OrganizationSettings where   MappingName = 'MinimumNumeric')
+
+
+--'MinimumUppercase'
+
+	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
+		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+	Select PartyId,@SettingCategoryTypeId,'MinimumUppercase',
+		MinimumUppercase,1,1,@UserId,@Now
+	From [Ident].[PasswordPolicy]  
+	where PartyId  not in (select PartyId From Ident.OrganizationSettings where   MappingName = 'MinimumUppercase')
+
+
+-- 'MinimumLowercase'
+
+	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
+		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+	Select PartyId,@SettingCategoryTypeId,'MinimumLowercase',
+		MinimumLowercase,1,1,@UserId,@Now
+	From [Ident].[PasswordPolicy]  
+	where PartyId  not in (select PartyId From Ident.OrganizationSettings where   MappingName = 'MinimumLowercase')
+
+
+--'MaximumLength'
+
+	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
+		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+	Select PartyId,@SettingCategoryTypeId,'MaximumLength',
+		MaximumLength,1,1,@UserId,@Now
+	From [Ident].[PasswordPolicy]  
+	where PartyId  not in (select PartyId From Ident.OrganizationSettings where   MappingName = 'MaximumLength')
+
+
+--'MinimumLength'
+
+	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
+		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+	Select PartyId,@SettingCategoryTypeId,'MinimumLength',
+		MinimumLength,1,0,@UserId,@Now
+	From [Ident].[PasswordPolicy]  
+	where PartyId  not in (select PartyId From Ident.OrganizationSettings where   MappingName = 'MinimumLength')
+
+
+
+GO
+--Accounting Location Group
+Declare @MCMasterControlId int,@MCUPPControlId int,@MaxControlId int,@MaxControlAttributeId int
+DECLARE @UserId bigint,
+	@ProductId int ,
+	@Now datetime = GETDATE()
+
+SELECT	@UserId = UserId
+FROM	Ident.UserLogin
+WHERE	LoginName LIKE 'realpagead@%'
+
+Select @MCMasterControlId = ControlId From UserManagement.Control 
+Where UIId = 'MarketingCenterProductAccessPropertiesTabUIId' AND ControlTypeId = 9
+
+Select @MCUPPControlId = ControlId From UserManagement.Control 
+Where UIId = 'MarketingCenterProductAccessUsePrimaryPropertiesSwitchUIId' AND ControlTypeId = 1
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[Control] WHERE ControlId = @MCUPPControlId)
+BEGIN
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	SELECT @MaxControlId = max(ControlId) from UserManagement.Control
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@MaxControlId +1, @MCMasterControlId, 1, N'MarketingCenterProductAccessUsePrimaryPropertiesSwitchUIId', N'Use Primary Properties', N'usePrimaryProperties', 2, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+END
+Else
+Begin
+	Update [UserManagement].[Control] Set DataSource = 'usePrimaryProperties'
+	Where ControlId = @MCUPPControlId
+End
+
+GO
+------Create Product Setting type for IsUnifiedEmailEnabled -------------
+DECLARE	@ProductSettingTypeId int,
+		@ServerName SYSNAME = @@SERVERNAME
+
+IF @ServerName IN ('RCDUSODBSQL001','rctusodbsql001','RCQUSODBSQL001')
+BEGIN
+	IF NOT EXISTS(SELECT * FROM Enterprise.ProductSettingType WHERE [NAME]='IsUnifiedEmailEnabled')
+	BEGIN
+	EXEC [Enterprise].[CreateProductSettingType]
+			@ProductSettingTypeName = N'IsUnifiedEmailEnabled',
+			@ProductSettingTypeDescription = N'Enable Unified Email to send email to unified platform',
+			@ProductSettingTypeSensitiveData = 0,
+			@ProductSettingTypeId = @ProductSettingTypeId OUTPUT
+
+	SELECT	@ProductSettingTypeId as N'@ProductSettingTypeId'
+
+	END
+
+	------Create Product Setting type for UnifiedEmailBaseAddress -------------
+
+	IF NOT EXISTS(SELECT * FROM Enterprise.ProductSettingType WHERE [NAME]='UnifiedEmailBaseAddress')
+	BEGIN
+	EXEC	[Enterprise].[CreateProductSettingType]
+			@ProductSettingTypeName = N'UnifiedEmailBaseAddress',
+			@ProductSettingTypeDescription = N'Unified Email base address endpoint',
+			@ProductSettingTypeSensitiveData = 0,
+			@ProductSettingTypeId = @ProductSettingTypeId OUTPUT
+
+	SELECT	@ProductSettingTypeId as N'@ProductSettingTypeId'
+
+	END
+	------Create Product Setting type for UnifiedEmailEndPoint -------------
+
+	IF NOT EXISTS(SELECT * FROM Enterprise.ProductSettingType WHERE [NAME]='UnifiedEmailEndPoint')
+	BEGIN
+	EXEC	[Enterprise].[CreateProductSettingType]
+			@ProductSettingTypeName = N'UnifiedEmailEndPoint',
+			@ProductSettingTypeDescription = N'Unified Email endpoint',
+			@ProductSettingTypeSensitiveData = 0,
+			@ProductSettingTypeId = @ProductSettingTypeId OUTPUT
+
+	SELECT	@ProductSettingTypeId as N'@ProductSettingTypeId'
+	END
+END
+GO
+
+--Updating GetUserEndpoint for ILMLA and ILMLA products
+DECLARE @ProductSettingTypeId INT
+SELECT @ProductSettingTypeId = ProductSettingTypeId FROM Enterprise.ProductSettingType WHERE Name='GetUserEndpoint'
+IF EXISTS(SELECT 1 FROM Enterprise.ProductSetting WHERE ProductId IN (40, 41) AND ProductSettingTypeId = @ProductSettingTypeId)
+BEGIN
+UPDATE Enterprise.ProductSetting SET value = '/{0}/users?loginName={1}'
+WHERE ProductId IN (40, 41) AND ProductSettingTypeId = @ProductSettingTypeId
+END
+GO

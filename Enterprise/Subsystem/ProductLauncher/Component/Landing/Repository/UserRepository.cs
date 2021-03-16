@@ -5829,6 +5829,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     //Next Remove products which are exists in product batch
                     foreach (var product in productBatch)
                     {
+                        if (product.ProductId != (int)ProductEnum.UnifiedUI)
+                        {
+                            finalProductBatch.Add(product);
+                        }
                         userProducts.RemoveAll(a => a.ProductId == product.ProductId);
                     }
 
@@ -5841,11 +5845,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     {
                         finalProductBatch.Add(pb);
                     }
+
+                    return finalProductBatch;
                 }
 
             }
 
-            return finalProductBatch;
+            return productBatch;
         }
         #endregion
 
