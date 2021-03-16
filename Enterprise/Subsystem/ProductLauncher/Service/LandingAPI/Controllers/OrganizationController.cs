@@ -248,7 +248,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 CompanyInstanceSourceId = result.obj.Org.RealPageId.ToString().ToLower(),
                 CompanyName = result.obj.Org.Name,
                 Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
-                IsActive = true,
+                IsActive = organization.IsActive == 1,
                 CreatedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
                 CustomerEnvironment = result.obj.Org.OrganizationDomain.Name
             };
@@ -331,10 +331,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 return Request.CreateResponse(HttpStatusCode.NotFound, "Not found");
             }
+            if(org == null)
+			{
+                return Request.CreateResponse(HttpStatusCode.NotFound, "Not found");
+            }
 
             bool orgNameChanged = org.Name != organization.Name ? true : false;
 
             org.Name = organization.Name;
+            org.IsActive = organization.IsActive;
 
             var orgTypes = _manageOrganization.ListOrganizationType();
             if (organization.OrganizationTypeId != 0)
@@ -416,7 +421,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         CompanyInstanceSourceId = companyMap.CompanyInstanceSourceId,
                         CompanyName = org.Name,
                         CustomerCompanyId = null,
-                        IsActive = companyMap.CompanyInstance[0].IsActive,
+                        IsActive = organization.IsActive == 1,
                         Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
                         CustomerEnvironment = null,
                         ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation"

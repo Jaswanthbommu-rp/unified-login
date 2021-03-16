@@ -5,7 +5,8 @@
 	@BlackBookId int= 0,
 	@ThirdPartyIDP int= NULL,
 	@OrganizationTypeId INT,
-	@OrganizationDomainId INT = 1
+	@OrganizationDomainId INT = 1,
+	@OrganizationStatus TinyInt = 1
 )
 AS
 BEGIN
@@ -66,7 +67,8 @@ BEGIN
 		@OrganizationId = NULL,
 		@OrganizationName = @OrganizationName,
 		@OrganizationTypeId = @OrganizationTypeId,
-		@OrganizationDomainId = @OrganizationDomainId;
+		@OrganizationDomainId = @OrganizationDomainId,
+		@OrganizationStatus = @OrganizationStatus;
 
 	SELECT	@OrganizationId = Id,
 					@RealPageId = RealPageId
