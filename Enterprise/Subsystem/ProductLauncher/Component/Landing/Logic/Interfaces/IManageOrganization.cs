@@ -17,12 +17,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 	{
 		#region Organization methods
 
-		/// <summary>
+        /// <summary>
 		/// Used to create a new organization with product details
 		/// </summary>
 		/// <param name="organization"></param>
+		/// <param name="addProductList"></param>
 		/// <param name="processBlueBookMessage"></param>
-        ObjectOutput<OrganizationCreateResult, IErrorData> CreateOrganization(OrganizationCreate organization, bool processBlueBookMessage = false);
+		/// <returns></returns>
+        ObjectOutput<OrganizationCreateResult, IErrorData> CreateOrganization(OrganizationCreate organization, List<ProductEnum> addProductList, bool processBlueBookMessage = false);
 
 		/// <summary>
 		/// Used to insert a new Organization
@@ -152,11 +154,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <summary>
 		/// Update an existing Property Name
 		/// </summary>
-		/// <param name="companyInstanceId">companyInstanceId</param>
-		/// <param name="propertyInstanceId">property Instance Id</param>
-		/// <param name="propertyName">propertyName</param>
+		/// <param name="property">property</param>
+		/// <param name="companyInstanceID">company InstanceID</param>
 		/// <returns>RepositoryResponse object</returns>
-		RepositoryResponse UpdateProperty(Guid companyInstanceId, Guid propertyInstanceId, string propertyName);
+		RepositoryResponse UpdateProperty(UPFMPropertyInstance property, Guid companyInstanceId);
 
 		/// <summary>
 		/// AddPropertyForOrganization

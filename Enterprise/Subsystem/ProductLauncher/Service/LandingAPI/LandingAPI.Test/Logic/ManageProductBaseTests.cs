@@ -130,5 +130,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         {
             return Convert.ToBase64String(Encoding.UTF8.GetBytes(value));
         }
+		public bool TestIs(string propertyName, object obj, Guid? realPageId)
+        {
+            if (obj == null && realPageId == null)
+            {
+                return true;
+            }
+
+            if (obj == null)
+            {
+                return false;
+            }
+
+            return obj.ToString().ToLower().Contains($"{propertyName} = {realPageId}");
+        }
     }
 }

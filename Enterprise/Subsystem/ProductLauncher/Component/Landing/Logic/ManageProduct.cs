@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Runtime.Caching;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
@@ -57,6 +59,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _manageOrganization = manageOrganization;
             _manageProfile = manageProfile;
             _manageUserRoleRight = manageUserRoleRight;
+            _defaultUserClaim = userClaim;
+        }
+
+        /// <summary>
+        /// Repository test Constructor
+        /// </summary>
+        public ManageProduct(IRepository repository, DefaultUserClaim userClaim, HttpMessageHandler messageHandler)
+        {
+            _productRepository = new ProductRepository(repository, userClaim);
+            _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
+            _managePersona = new ManagePersona(repository, userClaim, messageHandler);
+            _manageBlueBook = new ManageBlueBook(userClaim, _productInternalSettingRepository, messageHandler);
+            _managePartyRelationship = new ManagePartyRelationship(repository);
+            _manageOrganization = new ManageOrganization(repository, userClaim, messageHandler, null);
+            _manageProfile = new ManageProfile(userClaim);
+            _manageUserRoleRight = new ManageUserRoleRight();
             _defaultUserClaim = userClaim;
         }
 

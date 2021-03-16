@@ -265,18 +265,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				if (list == null)
 				{
-					if (list == null)
+					if (results2.Length > 0)
 					{
-						if (results2.Length > 0)
+						string message = results2[0].TotalRows1;
+						if (message.ToUpper().Contains("NOT A VALID USERID"))
 						{
-							string message = results2[0].TotalRows1;
-							if (message.ToUpper().Contains("NOT A VALID USERID"))
-							{
-								throw new Exception("Invalid user");
-							}
+							throw new Exception("Invalid user");
 						}
-						list = new List<ProductPropertyGroup>();
 					}
+					list = new List<ProductPropertyGroup>();
 				}
 
 				response = new ListResponse()
@@ -301,6 +298,83 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			return response;
 		}
 
+		private ListResponse GetPropertyGroupEntities(List<ProductPropertyGroup> locationGroups, RequestParameter datafilter)
+		{
+			ListResponse response = new ListResponse();
+			Dictionary<string, object> logData = new Dictionary<string, object>();
+			List<string> locationGrps = new List<string>();
+
+			FilterSortParameters wsParams = ManageProductOneSiteAccountingHelpers.GenerateSearchAndPaging(datafilter, "Name", 0, 9999);
+
+			locationGrps = locationGroups.Select(a => a.ID).ToList();
+
+			Property[] prop = new Property[1] { new Property() };
+			List<NameValuePair> loginInfo = new List<NameValuePair>
+			{
+				new NameValuePair { Name = "CompanyID", Value = _companyName },
+				new NameValuePair { Name = "Login", Value = _intactLogin },
+				new NameValuePair { Name = "Password", Value = _intactPassword }
+			};
+			if (!String.IsNullOrEmpty(_productUserId))
+			{
+				loginInfo.Add(new NameValuePair { Name = "SystemIdentifier", Value = _productUserId });
+			}
+			if (locationGrps.Count > 0)
+			{
+				loginInfo.Add(new NameValuePair { Name = "locGroupIds", Value = String.Join(",", locationGrps) });
+			}
+			logData = new Dictionary<string, object>();
+			logData.Add("user", RemovePrivateData(loginInfo.ToArray()));
+			WriteToDiagnosticLog($"GetPropertyGroupEntities - _productUserId = {_productUserId}", logData);
+			prop[0].NameValuePair = loginInfo.ToArray();
+
+			TotalRows[] results2 = new TotalRows[1];
+			LocationGroupID[] location;
+			IList<ProductPropertyGroup> list;
+
+			try
+			{
+
+				location = _service.GetAllPropertyGroupMembers(prop, wsParams, out results2);
+				logData = new Dictionary<string, object>();
+				logData.Add("location", location);
+				WriteToDiagnosticLog($"GetPropertyGroupEntities - result from api", logData);
+				list = location.ToGBPropertyGroup();
+
+				if (list == null)
+				{
+					if (results2.Length > 0)
+					{
+						string message = results2[0].TotalRows1;
+						if (message.ToUpper().Contains("NOT A VALID USERID"))
+						{
+							throw new Exception("Invalid user");
+						}
+					}
+					list = new List<ProductPropertyGroup>();
+				}
+
+				response = new ListResponse()
+				{
+					Records = list.Cast<object>().ToList(),
+					TotalRows = list.Count,
+					RowsPerPage = list.Count,
+					TotalPages = 1,
+					ErrorReason = "",
+					Additional = null
+				};
+			}
+			catch (Exception ex)
+			{
+				WriteToErrorLog($"GetPropertyGroupEntities - Error", exception: ex);
+				response = new ListResponse()
+				{
+					IsError = true,
+					ErrorReason = ex.Message
+				};
+			}
+			return response;
+		}
 		//
 		/// <summary>
 		/// Get the property Groups for the given user persona
@@ -1019,13 +1093,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         }
                     }
 
-					foreach (ProductPropertyGroup propLG in currentLocationGrpList)
+					if (currentLocationGrpList != null)
 					{
-						if ((bool)propLG.IsAssigned)
+						foreach (ProductPropertyGroup propLG in currentLocationGrpList)
 						{
-							propertiesToRemove.Add(propLG.ID);
+							if ((bool)propLG.IsAssigned)
+							{
+								propertiesToRemove.Add(propLG.ID);
+							}
 						}
-					}
+					}					
 
 					if (propertiesToRemove.Count > 0)
                     {
@@ -1117,22 +1194,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         }
                     }
 
-
-					foreach (ProductPropertyGroup propLG in currentLocationGrpList)
+					if (currentLocationGrpList != null)
 					{
-						if ((bool)propLG.IsAssigned)
+						foreach (ProductPropertyGroup propLG in currentLocationGrpList)
 						{
-							if (!(propertiesToAssign.Contains(propLG.ID)))
+							if ((bool)propLG.IsAssigned)
 							{
-								propertiesToRemove.Add(propLG.ID);
+								if (!(propertiesToAssign.Contains(propLG.ID)))
+								{
+									propertiesToRemove.Add(propLG.ID);
+								}
+								else
+								{
+									propertiesToAssign.Remove(propLG.ID);
+								}
 							}
-							else
-							{
-								propertiesToAssign.Remove(propLG.ID);
-							}
+
 						}
-						
-					}
+					}					
 
 					if (propertiesToAssign.Count > 0)
                     {
@@ -3356,10 +3435,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				{
 					Name = loc.Name,
 					ID = loc.ID,					
-					IsAssigned = (loc.Assigned.ToLower() == "true" ? true : false)
-				});
+					IsAssigned = (loc.Assigned.ToLower() == "true" ? true : false),
+					AssignedProperties = loc.Memberids.Split(',').ToList()
+			});
 			}
-			return (from propertyGroup in results orderby propertyGroup.ID, propertyGroup.Name select propertyGroup).ToList();
+			return (from propertyGroup in results orderby propertyGroup.ID, propertyGroup.Name, propertyGroup.AssignedProperties select propertyGroup).ToList();
 		}
 		/// <summary>
 		/// Used to convert a OneSite Accounting role into a GreenBook role to be used by the UI
