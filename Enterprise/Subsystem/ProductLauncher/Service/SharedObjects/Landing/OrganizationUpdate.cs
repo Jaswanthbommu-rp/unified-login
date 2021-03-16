@@ -58,5 +58,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		/// </summary>
 		[JsonProperty(PropertyName = "realPageId")]
 		public Guid RealPageId { get; set; }
+
+		/// <summary>
+		/// IsActive
+		/// </summary>		
+		public int IsActive { get; set; } = 1;
 	}
 }

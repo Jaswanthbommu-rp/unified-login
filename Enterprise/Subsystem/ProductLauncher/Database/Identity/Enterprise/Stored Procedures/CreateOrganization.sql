@@ -2,7 +2,8 @@
                                                   @OrganizationName NVARCHAR(150),
                                                   @TimeZone         NVARCHAR(200) NULL = 'Central Standard Time',
 												  @OrganizationTypeId INT,
-                                                  @OrganizationDomainId INT = 1
+                                                  @OrganizationDomainId INT = 1,
+												  @OrganizationStatus TinyInt = 1
 AS
      BEGIN
          DECLARE @IdentityProviderId INT;
@@ -40,7 +41,8 @@ AS
 				 IdentityProviderTypeId,
 				 OrganizationTypeId,
                  OrganizationDomainId,
-				 CreateDate
+				 CreateDate,
+				 IsActive
 				)
              VALUES
 				(@PartyId,
@@ -48,7 +50,8 @@ AS
 				 @IdentityProviderId,
 				 @OrganizationTypeId,
                  @OrganizationDomainId,
-				 GETUTCDATE()
+				 GETUTCDATE(),
+				 @OrganizationStatus
 				);
 
              INSERT INTO Enterprise.PartyContactMechanism

@@ -92,6 +92,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <returns></returns>
         IList<Company> GetCompanyListByCompIds(List<UnifiedLoginCompany> booksCompanyMasterList);
 
+        /// <summary>
+        /// GetUPFMCompanyDetailsByInstanceIds
+        /// </summary>
+        /// <param name="companyInstanceIds"></param>
+        /// <returns></returns>
+        IList<CustomerCompanyInstance> GetUPFMCompanyDetailsByInstanceIds(List<string> companyInstanceIds);
+
         IList<ProductProperty> GetCustomerProperty(long booksCompanyMasterId = 0, string include = null, string filter = null);
 
         /// <summary>

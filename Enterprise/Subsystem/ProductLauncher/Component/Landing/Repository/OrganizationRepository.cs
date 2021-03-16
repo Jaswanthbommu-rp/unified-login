@@ -69,7 +69,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         BlueBookId = organization.BooksCustomerMasterId,
                         BlackBookId = organization.BooksMasterId,
                         OrganizationTypeId = organization?.organizationType?.OrganizationTypeId ?? organizationTypeId,
-                        OrganizationDomainId = organization.OrganizationDomain.OrganizationDomainId
+                        OrganizationDomainId = organization.OrganizationDomain.OrganizationDomainId,
+                        OrganizationStatus = organization.IsActive
                     };
 
                     newOrganization = repository.Execute<RepositoryResponse>(StoredProcNameConstants.SP_SetupOrganization, paramNewOrg);
@@ -103,10 +104,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 {
                     dynamic paramsList = new
                     {
-                        organizationId = organization.RealPageId,
-                        organizationName = organization.Name,
+                        organizationId = organization?.RealPageId,
+                        organizationName = organization?.Name,
                         OrganizationTypeId = organization?.organizationType?.OrganizationTypeId ?? organizationTypeId,
-                        OrganizationDomainId = organization?.OrganizationDomain?.OrganizationDomainId ?? organizationDomainId
+                        OrganizationDomainId = organization?.OrganizationDomain?.OrganizationDomainId ?? organizationDomainId,
+                        OrganizationStatus = organization?.IsActive
                     };
 
                     response = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateOrganization, paramsList);
@@ -509,6 +511,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             string filterByProduct = null;
             string filterByDomain = null;
             string filterByType = null;
+            string filterByStatus = null;
 
             List<CompanySetup> companylst = new List<CompanySetup>();
             if (dataFilterSort != null)
@@ -527,6 +530,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 break;
                             case "type":
                                 filterByType = dataFilterSort.FilterBy[FilterKey];
+                                break;
+                            case "status":
+                                filterByStatus = dataFilterSort.FilterBy[FilterKey];
                                 break;
                         }
                     }
@@ -552,6 +558,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 FilterByProduct = filterByProduct,
                 FilterByDomain = filterByDomain,
                 FilterByType = filterByType,
+                FilterByStatus = filterByStatus,
                 SortColumn = sortBy,
                 SortDirection = sortDirection,
                 RowsPerPage = dataFilterSort.Pages.ResultsPerPage == 100 ? 0 : dataFilterSort.Pages.ResultsPerPage,
