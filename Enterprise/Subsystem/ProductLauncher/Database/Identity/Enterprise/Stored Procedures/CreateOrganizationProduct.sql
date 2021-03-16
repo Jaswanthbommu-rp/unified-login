@@ -7,8 +7,6 @@
 AS
 BEGIN
 	DECLARE @SchemaName varchar(25);
-	DECLARE @UserId BIGINT
-	SELECT @UserId = UserId FROM Ident.UserLogin WHERE LoginName like 'realpagead@%'
 	SELECT	@SchemaName = ps.Value				
 	FROM	Enterprise.GlobalProductConfiguration gpc
 			JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId
@@ -39,7 +37,8 @@ BEGIN
 		BEGIN
 			IF (@SchemaName = 'Security')
 			BEGIN
-				DECLARE @UARoleId Int				
+				DECLARE @UserId bigint,@UARoleId Int
+				SELECT	@UserId = UserId FROM	Ident.UserLogin WHERE	LoginName LIKE 'realpagead@%'
 				Select @UARoleId = RoleId from [Security].Role where ShortName = 'View.Amenities'
 
 				INSERT INTO Security.OrganizationDefaultRole(OrgPartyId,RoleId,CreatedBy,CreatedDate)
