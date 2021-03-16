@@ -171,7 +171,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				OrganizationDomain = new OrganizationDomain()
                 {
 					OrganizationDomainId = organization.OrganizationDomainId
-                }
+                },
+                IsActive = organization.IsActive
             };
             repositoryResponse = InsertOrganization(org);
 
@@ -1088,9 +1089,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private List<CompanySetup> GetCompanyAdressFromBooks(List<CompanySetup> companyDetails)
         {
             List<UnifiedLoginCompany> compList = new List<UnifiedLoginCompany>();
+            List<string> companyInstanceList = new List<string>();
             // ManageBlueBook _blueBook = new ManageBlueBook(_userClaim);
             foreach (var item in companyDetails)
             {
+                companyInstanceList.Add(item.RealPageId.ToString().ToLower());
                 compList.Add(new UnifiedLoginCompany
                 {
                     CompanyId = long.Parse(item.BooksMasterId.ToString()),
@@ -1098,12 +1101,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 });
             }
             IList<Company> booksCompanyDetails = _manageBlueBook.GetCompanyListByCompIds(compList);
+            IList<CustomerCompanyInstance> booksCompanyInstanceDetails = _manageBlueBook.GetUPFMCompanyDetailsByInstanceIds(companyInstanceList);
             foreach (var items in companyDetails)
             {
-                var address = booksCompanyDetails.Where(add => add.Id == items.BooksCustomerMasterId).FirstOrDefault()?.CustomerCompanyLocation;
-                if (address != null && address.Length > 0)
+                var address = booksCompanyInstanceDetails.Where(add => add.attributes.companyInstanceSourceId == items.RealPageId.ToString()).FirstOrDefault()?.attributes.CompanyInstanceLocation;
+                items.ContractedName = booksCompanyDetails.Where(add => add.Id == items.BooksCustomerMasterId).FirstOrDefault()?.CompanyName;
+                if (address != null && address.Count > 0)
                 {
-                    items.ContractedName = booksCompanyDetails.Where(add => add.Id == items.BooksCustomerMasterId).FirstOrDefault()?.CompanyName;
                     items.CompanyLocation = address[0];
                     items.Address = address[0]?.Address + "," + address[0]?.City + "," + address[0]?.State + "," + address[0]?.PostalCode;
                 }
