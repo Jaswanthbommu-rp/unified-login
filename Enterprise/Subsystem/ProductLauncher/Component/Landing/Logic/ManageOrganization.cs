@@ -745,7 +745,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 throw new Exception("Invalid parameter propertyName.");
             }
-            var _repositoryResponse = _propertyRepository.UpdateProperty(property.InstanceId, property.Name);           
+            var _repositoryResponse = _propertyRepository.UpdateProperty(property.InstanceId, property.Name, property.IsActive);           
             if (_repositoryResponse.Id > 0)
             {
                bool booksResponse =  UpdatePropertyInBooks(property);

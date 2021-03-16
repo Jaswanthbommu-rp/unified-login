@@ -346,12 +346,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		/// <param name="instanceId">propertyInstanceId</param>
 		/// <param name="name">name</param>
 		/// <returns>Repository response object</returns>
-		public RepositoryResponse UpdateProperty(Guid instanceId, string name)
+		public RepositoryResponse UpdateProperty(Guid instanceId, string name, bool active)
         {
             dynamic param = new
             {
                 instanceId,
-                name
+                name,
+                active
             };
 
             using (var repository = GetRepository())
