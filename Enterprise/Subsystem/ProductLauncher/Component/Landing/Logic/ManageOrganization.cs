@@ -683,12 +683,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }            
             List<Guid> propertyInstanceIds;
             List<PropertySetup> propertyDetails = new List<PropertySetup>();
+            List<UPFMPropertyInstance> selectedPropertyInstances = new List<UPFMPropertyInstance>();
             List<int> userProperties = null;
             List<BooksPropertyInstance> booksPropertyInstance = GetPropertyInstanceFromBooks(companyInstanceId);            
             if (userPersonaId > 0)
             {
                 userProperties = new List<int>();
                 userProperties = _propertyRepository.ListUPFMPropertyInstanceIdByPersona(userPersonaId, ProductEnum.UnifiedUI);
+                selectedPropertyInstances = _propertyRepository.ListUPFMPropertyInstanceByPersona(userPersonaId, ProductEnum.UnifiedUI);
             }
             if (domain != null)
             {
@@ -709,7 +711,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 new CompanyPropertySetup()
 				{
                     Domain = booksPropertyInstance?.Where(p=>p.attributes.domain != null).Select(p => p.attributes.domain).Distinct().ToList(),
-                    Property = propertyDetails
+                    Property = propertyDetails,
+                    SelectedPropertyIds = selectedPropertyInstances?.Select(p=>p.InstanceId).ToList<Guid>()
                 }
             };
             return companyPropertySetup;
