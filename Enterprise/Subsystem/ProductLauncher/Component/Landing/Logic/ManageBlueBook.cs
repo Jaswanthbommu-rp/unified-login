@@ -921,12 +921,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var response = _httpClient.SendAsync(request).Result;
             if (response != null && response.IsSuccessStatusCode)
             {
-                WriteToLog(LogEventLevel.Debug, "AcknowledgePropertyUpdate - Canceled successfully.");
+                WriteToLog(LogEventLevel.Debug, "AcknowledgePropertyUpdate - updated successfully.");
                 return true;
             }
 
             logData = new Dictionary<string, object>() { { "response", response } };
-            WriteToLog(LogEventLevel.Error, "AcknowledgePropertyUpdate - Failed to Cancel.", logData);
+            WriteToLog(LogEventLevel.Error, "AcknowledgePropertyUpdate - Failed to update.", logData);
 
             return true;
         }
@@ -1407,7 +1407,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				string uri = $"propertyinstance?filter[source]=UPFM" +
                 "&filter[companyPropertyInstanceMap.companyInstance.companyInstanceSourceId]=" + companyRealPageId.ToString().ToLower() +
                       "&page[size]=9999&include=customerPropertyMap.customerProperty" +
-                       "&fields[propertyinstance]=propertyInstanceId,propertyInstanceSourceId,propertyName,source,domain" +
+                       "&fields[propertyinstance]=propertyInstanceId,propertyInstanceSourceId,propertyName,source,domain,address" +
                           "&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId"+
                              "&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName";
               
