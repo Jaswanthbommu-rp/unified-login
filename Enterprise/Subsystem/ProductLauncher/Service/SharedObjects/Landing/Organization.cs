@@ -95,12 +95,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         /// </summary>
         public bool PrimaryOrganization { get; set; }
 
-        #region Examples
-        /// <summary>
-        /// Example for New UserLogin method
-        /// </summary>
-        /// <returns>Newly Created User Id</returns>
-        public static Organization GetOrganizationExample()
+		/// <summary>
+		/// IsActive
+		/// </summary>		
+		public int IsActive { get; set; } = 1;
+
+		#region Examples
+		/// <summary>
+		/// Example for New UserLogin method
+		/// </summary>
+		/// <returns>Newly Created User Id</returns>
+		public static Organization GetOrganizationExample()
         {
 			Organization result = new Organization()
 			{

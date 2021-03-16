@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -64,6 +65,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		/// The additional Company admin user (Included in the RabbitMQ Message from BlueBook)
 		/// </summary>
 		public OrganizationAdminUser CompanyAdminUser { get; set; }
+
+		///// <summary>
+		///// Address
+		///// </summary>
+		//public List<CompanyInstanceAddress> CompanyInstanceLocation { get; set; }
+
+		/// <summary>
+		/// IsActive
+		/// </summary>		
+		public int IsActive { get; set; } = 1;
 	}
 
 	/// <summary>
