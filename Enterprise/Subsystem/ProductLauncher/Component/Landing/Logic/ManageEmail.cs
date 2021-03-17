@@ -374,7 +374,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                
                 string UnifiedEmailBaseAddress = productSettingList.ToList().FirstOrDefault(s => s.Name.Equals("UnifiedEmailBaseAddress", StringComparison.OrdinalIgnoreCase)).Value;
                 string UnifiedEmailEndPoint = productSettingList.ToList().FirstOrDefault(s => s.Name.Equals("UnifiedEmailEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
-
+                var UseDefaultTemplate = productSettingList.ToList().FirstOrDefault(s => s.Name.Equals("UseDefaultTemplate", StringComparison.OrdinalIgnoreCase)).Value == "1" ? true : false;
+                string emailUrl = string.Concat(UnifiedEmailBaseAddress, UnifiedEmailEndPoint) + $"?useDefaultTemplate={UseDefaultTemplate}";
+               
                 var ulClientToken = _tokenHelper.GetUnifiedLoginServerToken("emailsapi");
 
                 using (var httpClient = new HttpClient())
@@ -391,7 +393,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     {
                         Method = HttpMethod.Post,
                         Content = payload,
-                        RequestUri = new Uri(httpClient.BaseAddress + UnifiedEmailEndPoint),
+                        RequestUri = new Uri(emailUrl),
                     };
                     var response = httpClient.SendAsync(request).Result;
                     var responseContent = response.Content.ReadAsStringAsync().Result;
