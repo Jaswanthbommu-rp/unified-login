@@ -8,6 +8,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackB
 		public string PropertyInstanceSourceId { get; set; }
 		public string Source { get; set; }
 		public string PropertyName { get; set; }
+		public PropertyInstanceAddress Address { get; set; }
+		public bool IsActive { get; set; }
 		public string ModifiedBy { get; set; }		
 	}
 }

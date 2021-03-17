@@ -1,16 +1,18 @@
 ﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook
 {
 	public class CompanyInstanceAttribute
 	{
-        public long CompanyInstanceId { get; set; }
-        public string Source { get; set; }
-        public string companyInstanceSourceId { get; set; }
-        public string CompanyName { get; set; }
-        public string CompanyType { get; set; }
-        public string IsActive { get; set; }
-        public string Domain { get; set; }
+		public long CompanyInstanceId { get; set; }
+		public string Source { get; set; }
+		public string companyInstanceSourceId { get; set; }
+		public string CompanyName { get; set; }
+		public string CompanyType { get; set; }
+		public string IsActive { get; set; }
+		public string Domain { get; set; }
+		public List<CompanyLocation> CompanyInstanceLocation { get; set; }
 	}
 
 	public class CustomerCompanyInstance

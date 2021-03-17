@@ -248,7 +248,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 CompanyInstanceSourceId = result.obj.Org.RealPageId.ToString().ToLower(),
                 CompanyName = result.obj.Org.Name,
                 Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
-                IsActive = true,
+                IsActive = organization.IsActive == 1,
                 CreatedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
                 CustomerEnvironment = result.obj.Org.OrganizationDomain.Name
             };
@@ -331,10 +331,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 return Request.CreateResponse(HttpStatusCode.NotFound, "Not found");
             }
+            if(org == null)
+			{
+                return Request.CreateResponse(HttpStatusCode.NotFound, "Not found");
+            }
 
             bool orgNameChanged = org.Name != organization.Name ? true : false;
 
             org.Name = organization.Name;
+            org.IsActive = organization.IsActive;
 
             var orgTypes = _manageOrganization.ListOrganizationType();
             if (organization.OrganizationTypeId != 0)
@@ -416,7 +421,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         CompanyInstanceSourceId = companyMap.CompanyInstanceSourceId,
                         CompanyName = org.Name,
                         CustomerCompanyId = null,
-                        IsActive = companyMap.CompanyInstance[0].IsActive,
+                        IsActive = organization.IsActive == 1,
                         Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
                         CustomerEnvironment = null,
                         ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation"
@@ -1312,33 +1317,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [Route("CompanySetup/CompanyPropertyList")]
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         [HttpPut]
-        public HttpResponseMessage UpdatePropertyForOrganization(Guid companyInstanceId, Guid propertyInstanceId, string propertyName)
+        public HttpResponseMessage UpdatePropertyForOrganization([FromBody] UPFMPropertyInstance property, Guid companyInstanceId )
         {
             if ((companyInstanceId == Guid.Empty) || (companyInstanceId == null))
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: companyInstanceId");
             }
 
-            if ((propertyInstanceId == Guid.Empty) || (propertyInstanceId == null))
+            if ((property.InstanceId == Guid.Empty) || (property.InstanceId == null))
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: propertyInstanceId");
             }
 
-            if (String.IsNullOrEmpty(propertyName))
+            if (String.IsNullOrEmpty(property.Name))
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Null parameter: propertyName");
             }
-            var currentProperty = _manageOrganization.GetPropertyByInstanceId(propertyInstanceId);
+            var currentProperty = _manageOrganization.GetPropertyByInstanceId(property.InstanceId);
 
-            if (currentProperty != null && !currentProperty.FirstOrDefault().Name.Equals(propertyName, StringComparison.Ordinal))
+            if (currentProperty != null )
             {
-                _repositoryResponse = _manageOrganization.UpdateProperty(companyInstanceId, propertyInstanceId, propertyName);
+                _repositoryResponse = _manageOrganization.UpdateProperty(property, companyInstanceId);
                 if (_repositoryResponse.Id == 0)
                 {
                     return Request.CreateResponse(HttpStatusCode.BadRequest, _repositoryResponse.ErrorMessage);
                 }
             }
-            return Request.CreateResponse(HttpStatusCode.OK, propertyInstanceId);
+            return Request.CreateResponse(HttpStatusCode.OK, property.InstanceId);
         }
 
         /// <summary>

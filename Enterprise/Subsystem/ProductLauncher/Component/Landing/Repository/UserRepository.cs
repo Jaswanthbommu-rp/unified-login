@@ -5825,7 +5825,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                     bool usePropertyInstanceUnifiedAmenities = getPropertyInstanceUnifiedAmenities();
                     var personaOrganization = userPersona.Organization;
-                    bool isExternalUser = personaOrganization.RelationshipType.Equals("User Type", StringComparison.OrdinalIgnoreCase) && personaOrganization.RoleNameFrom.Equals("External User", StringComparison.OrdinalIgnoreCase);
+                    bool isExternalUser = false;
+                    if (personaOrganization.RelationshipType != null && personaOrganization.RoleNameFrom != null)
+                    {
+                        isExternalUser = personaOrganization.RelationshipType.Equals("User Type", StringComparison.OrdinalIgnoreCase) && personaOrganization.RoleNameFrom.Equals("External User", StringComparison.OrdinalIgnoreCase);
+                    }
+                    
                     //Next Remove products which are exists in product batch
                     foreach (var product in productBatch)
                     {
@@ -5839,7 +5844,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     IPersonaRepository personaRepository = new PersonaRepository();
                     var personaProductSettings = personaRepository.GetPersonaProductSettings(userPersonaId);
                     //Then Get Product Batch Data
-                    IList<ProductBatch> pbData = manageProductBatch.GetUserProductBatchData(editorPersonaId, userClaim, userProducts, userPersonaId, upfmProperty, personaProductSettings, isExternalUser, usePropertyInstanceUnifiedAmenities);
+                    IList<ProductBatch> pbData = manageProductBatch.GetUserProductBatchData(userPersonaId, userClaim, userProducts, editorPersonaId, upfmProperty, personaProductSettings, isExternalUser, usePropertyInstanceUnifiedAmenities);
 
                     foreach (ProductBatch pb in pbData)
                     {
