@@ -2,7 +2,8 @@
     @OrganizationId UNIQUEIDENTIFIER,
 	@OrganizationName NVARCHAR(150),
 	@OrganizationTypeId INT,
-	@OrganizationDomainId INT
+	@OrganizationDomainId INT,
+	@OrganizationStatus TinyInt = 1
 AS
     BEGIN
 		BEGIN TRY
@@ -17,6 +18,7 @@ AS
 				,OrganizationDomainId = CASE WHEN @OrganizationDomainId IS NULL THEN O.OrganizationDomainId
 					ELSE @OrganizationDomainId
 				END
+				,IsActive = @OrganizationStatus
 			FROM [Enterprise].Organization o
 			JOIN [Enterprise].Party p ON p.PartyId = o.PartyId
 			WHERE p.RealPageId = @OrganizationId

@@ -154,11 +154,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <summary>
 		/// Update an existing Property Name
 		/// </summary>
-		/// <param name="companyInstanceId">companyInstanceId</param>
-		/// <param name="propertyInstanceId">property Instance Id</param>
-		/// <param name="propertyName">propertyName</param>
+		/// <param name="property">property</param>
+		/// <param name="companyInstanceID">company InstanceID</param>
 		/// <returns>RepositoryResponse object</returns>
-		RepositoryResponse UpdateProperty(Guid companyInstanceId, Guid propertyInstanceId, string propertyName);
+		RepositoryResponse UpdateProperty(UPFMPropertyInstance property, Guid companyInstanceId);
 
 		/// <summary>
 		/// AddPropertyForOrganization

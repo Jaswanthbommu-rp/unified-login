@@ -138,7 +138,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 throw new Exception("Missing user realpage id.");
             }
-            return _userLoginRepository.GetUserLoginOnly(realPageId); ;
+            return _userLoginRepository.GetUserLoginOnly(realPageId);
         }
 
         /// <summary>
