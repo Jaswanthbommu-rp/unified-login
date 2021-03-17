@@ -61,7 +61,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             string result;
 
-            WriteToDiagnosticLog($"RenovationManager.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of method.");
+            WriteToDiagnosticLog($"LeadManagement.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of method.");
 
             // Get product user object 
             var newProductUser = GenerateProductUserObject(userRolePropertiesRegion);
@@ -76,7 +76,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             if (string.IsNullOrEmpty(SubjectUserDetails.ProductUserName) && productUser == null)
             {
-                WriteToDiagnosticLog($"RenovationManager.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling CreateUser.");
+                WriteToDiagnosticLog($"LeadManagement.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling CreateUser.");
                 // Create User
                 result = CreateUser(newProductUser);
             }
@@ -87,7 +87,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             else
             {
-                WriteToDiagnosticLog($"RenovationManager.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling UpdateUser.");
+                WriteToDiagnosticLog($"LeadManagement.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling UpdateUser.");
                 // Update user with Id/Login from product
                 if (productUser != null)
                 {
@@ -146,23 +146,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         }
         private IntegrationProductUser getBaseUserDataFromProduct(string loginNameToCheck, string baseUrlAndQuery = null)
         {
-            // Get partial api query based on end point
             if (string.IsNullOrEmpty(baseUrlAndQuery))
-                baseUrlAndQuery = string.Format(GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserEndpoint), SubjectUserDetails.ProductUserName);
+                baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserEndpoint);
 
-            WriteToDiagnosticLog(
-                $"ManageProductInvokerBase.GetProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling API - {baseUrlAndQuery}.");
-
-            if (baseUrlAndQuery.Contains("{0}"))
-                baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, SubjectUserDetails.ProductUserName);
+            bool isCompanyIdRequiredToQuery = baseUrlAndQuery.Contains("{0}");
+            if (isCompanyIdRequiredToQuery)
+            {
+                baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, loginNameToCheck);
+            }
             else
-                baseUrlAndQuery = string.Format(baseUrlAndQuery, SubjectUserDetails.ProductUserName);
-
+            {
+                baseUrlAndQuery = string.Format(baseUrlAndQuery, loginNameToCheck);
+            }
+            WriteToDiagnosticLog(
+              $"ManageProductInvokerBase.GetProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method.");
 
             var productUser = GetResultFromApi<IntegrationProductUser>(baseUrlAndQuery, false);
 
             WriteToDiagnosticLog(
-                        $"ManageProductInvokerBase.GetProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling API - {baseUrlAndQuery}.");
+                $"ManageProductInvokerBase.GetProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling API - {baseUrlAndQuery}.");
 
             return productUser;
         }
