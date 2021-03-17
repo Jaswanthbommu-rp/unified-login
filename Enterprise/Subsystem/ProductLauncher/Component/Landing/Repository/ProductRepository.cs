@@ -1384,7 +1384,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     else
                     {
                         userProducts = repository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = personaId, ProductStatusValue = ((Int32)UserUiStatusType.AccountCreationSuccessful).ToString() }).ToList();
-                        productSettingList = repository.GetMany<ProductSettingList>(StoredProcNameConstants.SP_ListProductSettingsByPersonaId, new { PersonaId = personaId, ProductStatus = ((Int32)UserUiStatusType.AccountCreationSuccessful).ToString() }).ToList();
+                        productSettingList = repository.GetMany<ProductSettingList>(StoredProcNameConstants.SP_ListProductSettingsByPersonaId, new { PersonaId = personaId}).ToList();
                     }
                 }
             }
