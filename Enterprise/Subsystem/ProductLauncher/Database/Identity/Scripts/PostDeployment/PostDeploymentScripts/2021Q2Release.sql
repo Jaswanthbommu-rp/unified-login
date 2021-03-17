@@ -328,6 +328,19 @@ BEGIN
 
 	SELECT	@ProductSettingTypeId as N'@ProductSettingTypeId'
 	END
+
+	------Create Product Setting type for UseDefaultTemplate -------------
+
+	IF NOT EXISTS(SELECT * FROM Enterprise.ProductSettingType WHERE [NAME]='UseDefaultTemplate')
+	BEGIN
+	EXEC	[Enterprise].[CreateProductSettingType]
+			@ProductSettingTypeName = N'UseDefaultTemplate',
+			@ProductSettingTypeDescription = N' Set to false if you wish to provide your own template/html.',
+			@ProductSettingTypeSensitiveData = 0,
+			@ProductSettingTypeId = @ProductSettingTypeId OUTPUT
+
+	SELECT	@ProductSettingTypeId as N'@ProductSettingTypeId'
+	END
 END
 GO
 
@@ -348,5 +361,4 @@ UPDATE pc
 FROM enterprise.GlobalProductConfiguration gpc INNER JOIN enterprise.ProductConfiguration pc on pc.ConfigurationId = gpc.ConfigurationId INNER JOIN enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId
 WHERE gpc.ProductId != ps.ProductId
 	AND pc.ThruDate IS NULL;
-
 GO
