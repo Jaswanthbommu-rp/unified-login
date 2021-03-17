@@ -921,12 +921,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var response = _httpClient.SendAsync(request).Result;
             if (response != null && response.IsSuccessStatusCode)
             {
-                WriteToLog(LogEventLevel.Debug, "AcknowledgePropertyUpdate - Canceled successfully.");
+                WriteToLog(LogEventLevel.Debug, "AcknowledgePropertyUpdate - updated successfully.");
                 return true;
             }
 
             logData = new Dictionary<string, object>() { { "response", response } };
-            WriteToLog(LogEventLevel.Error, "AcknowledgePropertyUpdate - Failed to Cancel.", logData);
+            WriteToLog(LogEventLevel.Error, "AcknowledgePropertyUpdate - Failed to update.", logData);
 
             return true;
         }
@@ -958,6 +958,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         /// <summary>
+        /// Used to get a list of UPFM company id's for the given company list
+        /// </summary>
+        /// <param name="upfmCompanyIds">upfmCompanyIds</param>
+        /// <returns></returns>
+        private string AppendUPFMCompanyInstances(List<String> upfmCompanyIds)
+        {
+            string compIds = "";
+            foreach (var upfmCompanyId in upfmCompanyIds)
+            {
+                if (compIds == "")
+                {
+                    compIds = upfmCompanyId;
+                }
+                else
+                {
+                    compIds += "," + upfmCompanyId;
+                }
+            }
+            return compIds;
+        }
+
+
+        /// <summary>
         /// Used to split a list into sub smaller lists
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -980,7 +1003,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         public IList<Company> GetCompanyListByCompIds(List<UnifiedLoginCompany> booksCompanyMasterList)
         {
             IList<Company> companyInstance = new List<Company>();
-            Dictionary<string, object> logData;
 
             // get the hash of the full company list
             int booksCompanyMasterHash = GetCompanyIds(booksCompanyMasterList).GetHashCode();
@@ -1001,12 +1023,43 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 companyInstance = result.ToList();
                 if (companyInstance.Count > 0)
                 {
-                    CacheItemPolicy policy = new CacheItemPolicy {AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(86400)};
-                    // 24 hrs cached 86400 secs
+                    CacheItemPolicy policy = new CacheItemPolicy {AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(1800) };
+                    // 30 Mins cached 1800 secs
                     _manageBlueBookCache.Set($"getCompanysByCompIds_{booksCompanyMasterHash}", companyInstance, policy);
                 }
             }
 
+            return companyInstance;
+        }
+
+        /// <summary>
+        /// Used to get the information about the list of companies by companyIds from the BlueBook system
+        /// </summary>
+        /// <param name="companyInstanceIds"></param>        
+        /// <returns></returns>
+        public IList<CustomerCompanyInstance> GetUPFMCompanyDetailsByInstanceIds(List<string> companyInstanceIds)
+        {
+            IList<CustomerCompanyInstance> companyInstance = new List<CustomerCompanyInstance>();            
+
+            // get the hash of the full company list
+            int booksCompanyMasterHash = AppendUPFMCompanyInstances(companyInstanceIds).GetHashCode();
+
+            companyInstance = _manageBlueBookCache[$"GetUPFMCompanyDetailsByInstanceIds_{booksCompanyMasterHash}"] as List<CustomerCompanyInstance>;
+            if (companyInstance == null)
+            {
+                int splitSize = 50;
+                var splitCompanyList = SplitList<string>(companyInstanceIds, splitSize);
+                ConcurrentBag<CustomerCompanyInstance> result = new ConcurrentBag<CustomerCompanyInstance>();
+                Parallel.ForEach(splitCompanyList, new ParallelOptions { MaxDegreeOfParallelism = 5 }, companyList => { GetBooksUPFMCompanyDetails(_defaultUserClaim, companyList).ForEach(x => result.Add(x)); });
+
+                companyInstance = result.ToList();
+                if (companyInstance.Count > 0)
+                {
+                    CacheItemPolicy policy = new CacheItemPolicy { AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(1800) };
+                    // 30 Mins cached 1800 secs
+                    _manageBlueBookCache.Set($"GetUPFMCompanyDetailsByInstanceIds_{booksCompanyMasterHash}", companyInstance, policy);
+                }
+            }
             return companyInstance;
         }
 
@@ -1036,6 +1089,37 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             logData = new Dictionary<string, object>() {{"response", response}};
             WriteToLog(LogEventLevel.Debug, $"GetCompanyListByCompIds - No info found - hashcode:{booksCompanyMasterIds.GetHashCode()}", logData, correlationId: userClaim.CorrelationId.ToString());
+
+            return companyInstance;
+        }
+
+        /// <summary>
+        /// Used to get company details for the given company list
+        /// </summary>
+        /// <param name="userClaim"></param>
+        /// <param name="upfmCompanyInstances"></param>
+        /// <returns></returns>
+        private List<CustomerCompanyInstance> GetBooksUPFMCompanyDetails(DefaultUserClaim userClaim, List<String> upfmCompanyInstances)
+        {
+            string upfmCompanyInstanceIds = AppendUPFMCompanyInstances(upfmCompanyInstances);
+
+            var companyInstance = new List<CustomerCompanyInstance>();
+            //http://booksapi-qa.realpage.com/companyinstance?filter[source]=UPFM&include=companyInstanceLocation&filter[companyInstanceSourceId]=in:
+            string uri = $"companyinstance?filter[source]=UPFM&include=companyInstanceLocation&filter[companyInstanceSourceId]=in:{upfmCompanyInstanceIds}";
+
+            var logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
+            WriteToLog(LogEventLevel.Debug, $"GetBooksUPFMCompanyDetails - Getting info - hashcode:{upfmCompanyInstanceIds.GetHashCode()}", logData, correlationId: userClaim.CorrelationId.ToString());
+            var response = GetAsync(uri).Result;
+            if (response.IsSuccessStatusCode)
+            {
+                companyInstance = JsonConvert.DeserializeObject<List<CustomerCompanyInstance>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
+                logData = new Dictionary<string, object>() { { "upfmCompanyInstances", upfmCompanyInstances } };
+                WriteToLog(LogEventLevel.Debug, $"GetBooksUPFMCompanyDetails - Got info - hashcode:{upfmCompanyInstanceIds.GetHashCode()}", logData, correlationId: userClaim.CorrelationId.ToString());
+                return companyInstance;
+            }
+
+            logData = new Dictionary<string, object>() { { "response", response } };
+            WriteToLog(LogEventLevel.Debug, $"GetBooksUPFMCompanyDetails - No info found - hashcode:{upfmCompanyInstanceIds.GetHashCode()}", logData, correlationId: userClaim.CorrelationId.ToString());
 
             return companyInstance;
         }
@@ -1323,7 +1407,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				string uri = $"propertyinstance?filter[source]=UPFM" +
                 "&filter[companyPropertyInstanceMap.companyInstance.companyInstanceSourceId]=" + companyRealPageId.ToString().ToLower() +
                       "&page[size]=9999&include=customerPropertyMap.customerProperty" +
-                       "&fields[propertyinstance]=propertyInstanceId,propertyInstanceSourceId,propertyName,source,domain" +
+                       "&fields[propertyinstance]=propertyInstanceId,propertyInstanceSourceId,propertyName,source,domain,address" +
                           "&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId"+
                              "&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName";
               

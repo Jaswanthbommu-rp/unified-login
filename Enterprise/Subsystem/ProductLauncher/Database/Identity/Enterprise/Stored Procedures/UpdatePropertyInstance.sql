@@ -1,13 +1,15 @@
 CREATE PROCEDURE [Enterprise].[UpdatePropertyInstance] (  
  @InstanceId UNIQUEIDENTIFIER ,  
- @Name NVARCHAR(50)
+ @Name NVARCHAR(50),
+ @Active TINYINT
 )  
 AS  
 BEGIN    
  BEGIN TRY  
   BEGIN TRANSACTION;  
   UPDATE  Enterprise.PropertyInstance 
-  SET     Name = ISNULL(@Name, Name)    
+  SET     Name = ISNULL(@Name, Name) ,
+  IsActive = @Active
   OUTPUT inserted.PropertyInstanceId AS Id,  
     '' AS ErrorMessage  
   FROM    Enterprise.PropertyInstance 
