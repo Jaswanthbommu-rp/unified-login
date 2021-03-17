@@ -400,8 +400,4 @@ BEGIN
 	INSERT INTO Security.RoleRight(RoleId, RightId, CreatedBy, CreatedDate)
 	VALUES(@PropertyUserRoleId, @PropertyUserRightId, @UserId, GETDATE())
 END
--- Making avialable these two roles/rights for all PMC's
-IF EXISTS(SELECT 1 FROM Security.Role WHERE RoleName IN ('Property Admin','Property User') AND OrgPartyID IS NOT NULL)
-BEGIN
-	UPDATE TOP (2) Security.Role SET OrgPartyID = NULL WHERE RoleName IN ('Property Admin','Property User')
-END
+
