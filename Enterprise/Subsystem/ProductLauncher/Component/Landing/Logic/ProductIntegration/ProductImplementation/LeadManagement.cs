@@ -112,6 +112,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
 		/// Create a user in the product
 		/// </summary>
+        /// 
         private string CreateMultiCompanyUser(IntegrationProductUser productUser)
         {
             WriteToDiagnosticLog(
