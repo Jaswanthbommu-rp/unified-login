@@ -207,7 +207,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             string existingUnifiedLoginInstanceId = thinEvent.Payload?["company"]["companyInstanceSourceId"] == null || thinEvent.Payload?["company"]["companyInstanceSourceId"].Type == JTokenType.Null ? null : thinEvent.Payload?["company"]["companyInstanceSourceId"].ToString();
 
                             List<int> uniqueProductIdList = new List<int>();
-                            List<int> companyProductList = new List<int>();
 
                             List<UPFMPropertyInstance> propertyInstanceList = new List<UPFMPropertyInstance>();
                             ProductCenterEnablement centerEnablement = new ProductCenterEnablement() {Details = new List<ProductCenterEnablementSettings>()};
@@ -223,12 +222,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                     {
                                         uniqueProductIdList.Add(productId);
                                     }
-
-                                    companyProductList.Add(productId);
                                 }
                             }
                             catch (Exception ex)
                             {
+                                logData = new Dictionary<string, object> {{"error", ex.Message}};
+                                WriteToLog(LogEventLevel.Error, "Error parsing company product list", logData);
                             }
 
                             try
@@ -280,6 +279,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                         }
                                         catch (Exception ex)
                                         {
+                                            logData = new Dictionary<string, object> {{"error", ex.Message}};
+                                            WriteToLog(LogEventLevel.Error, "Error parsing property address longitude", logData);
                                         }
                                     }
 
@@ -342,16 +343,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                     if (existingProductList.All(p => p.ProductId != productId))
                                     {
                                         var addresponse = _manageOrganizationProduct.InsertUpdateOrganizationProduct(partyId: org.PartyId, product: (ProductEnum) productId, configurationId: null, fromDate: null, thruDate: null);
-                                        if (companyProductList.All(p => p != productId))
-                                        {
-                                            companyProductList.Add(productId);
-                                        }
                                     }
                                 }
                             }
 
                             // add ack for new products for the company
-                            foreach (var productId in companyProductList)
+                            foreach (var productId in uniqueProductIdList)
                             {
                                 centerEnablement.Details.Add(new ProductCenterEnablementSettings()
                                 {
@@ -366,7 +363,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             }
 
                             // add any new properties
-                            string propertyResult = AddPropertiesFromBooks(customerCompanyId, existingUnifiedLoginInstanceId, customerDomain, propertyInstanceList, ref centerEnablement);
+                            string propertyResult = AddPropertiesFromBooks(customerCompanyId, existingUnifiedLoginInstanceId, customerDomain, propertyInstanceList);
 
                             // enable the products
                             if (centerEnablement.Details.Count > 0)
@@ -445,9 +442,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// <param name="unifiedLoginInstanceId"></param>
         /// <param name="customerCompanyDomain"></param>
         /// <param name="propertyInstanceList"></param>
-        /// <param name="centerEnablement"></param>
         /// <returns></returns>
-        private string AddPropertiesFromBooks(int customerCompanyId, string unifiedLoginInstanceId, string customerCompanyDomain, List<UPFMPropertyInstance> propertyInstanceList, ref ProductCenterEnablement centerEnablement)
+        private string AddPropertiesFromBooks(int customerCompanyId, string unifiedLoginInstanceId, string customerCompanyDomain, List<UPFMPropertyInstance> propertyInstanceList)
         {
             string result = "";
             foreach (var property in propertyInstanceList)
@@ -481,19 +477,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation"
                         };
                         var resultBooks = _manageBlueBook.AddBooksGreenBookPropertyInstanceFromProvisioning(pi);
-                        foreach (var productId in property.ProductList)
+                    }
+                    else
+                    {
+                        var logData = new Dictionary<string, object>
                         {
-                            centerEnablement.Details.Add(new ProductCenterEnablementSettings()
-                            {
-                                Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
-                                CustomerEnvironment = customerCompanyDomain,
-                                CustomerCompanyId = customerCompanyId,
-                                CompanyInstanceSourceId = unifiedLoginInstanceId,
-                                ProductCenterSourceId = productId.ToString(),
-                                PropertyInstanceSourceId = property.InstanceId.ToString(),
-                                CustomerPropertyId = pi.CustomerPropertyId.ToString()
-                            });
-                        }
+                                {"property", property},
+                                {"response.ErrorMessage", response.ErrorMessage}
+                        };
+                        WriteToLog(LogEventLevel.Error, "AddPropertiesFromBooks Error", logData);
                     }
                 }
             }
@@ -562,7 +554,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     LastName = "Access",
                     Suffix = "",
                     Title = "",
-                    Email = $"{customerCompany.CustomerCompanyId}admin@realpage.com"
                 }
             };
             WriteToLog(LogEventLevel.Debug, $"Adding company {customerCompany.CompanyName} ");
@@ -590,14 +581,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 organization.OrganizationDomainId = organizationDomainList.FirstOrDefault(p => p.Name.Equals(domain, StringComparison.OrdinalIgnoreCase)).OrganizationDomainId;
             }
 
-            organization.Products = new List<string>();
+            var emailAdditional = domain.Equals("Primary", StringComparison.OrdinalIgnoreCase) ? "" : domain.ToLower();
+            organization.AdminUser.Email = $"{customerCompany.CustomerCompanyId}{emailAdditional}admin@realpage.com";
+
+            var addProductList = new List<ProductEnum>();
 
             try
             {
                 // get a list of products passed by the event
                 foreach (var productId in productIdList)
                 {
-                    organization.Products.Add(ProductEnumHelper.StringValueOf((ProductEnum) productId));
+                    addProductList.Add((ProductEnum) productId);
                 }
             }
             catch (Exception)
@@ -605,7 +599,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 throw new Exception("Issue parsing products");
             }
 
-            var result = _manageOrganization.CreateOrganization(organization, processBlueBookMessage);
+            var result = _manageOrganization.CreateOrganization(organization, addProductList, processBlueBookMessage);
 
             if (!result.Status.Success || !string.IsNullOrEmpty(result.Status.ErrorMsg))
             {

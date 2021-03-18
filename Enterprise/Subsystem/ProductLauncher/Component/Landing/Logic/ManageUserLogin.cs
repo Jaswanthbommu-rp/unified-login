@@ -31,7 +31,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         IUserLoginRepository _userLoginRepository;
         ICredentialRepository _credentialRepository;
         IUserRepository _userRepository;
-        IProductRepository _productRepository;
         IOrganizationRepository _organizationRepository;
         private IRoleTypeRepository _roleTypeRepository;
         private IPersonRepository _personRepository;
@@ -48,7 +47,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _userLoginRepository = new UserLoginRepository(repository);
             _credentialRepository = new CredentialRepository(repository);
             _userRepository = new UserRepository(repository, userClaim, messageHandler);
-            _productRepository = new ProductRepository(repository);
             _personRepository = new PersonRepository(repository);
             _roleTypeRepository = new RoleTypeRepository(repository);
             _organizationRepository = new OrganizationRepository(repository);
@@ -63,7 +61,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _userLoginRepository = new UserLoginRepository();
             _credentialRepository = new CredentialRepository();
             _userRepository = new UserRepository();
-            _productRepository = new ProductRepository();
             _personRepository = new PersonRepository();
             _roleTypeRepository = new RoleTypeRepository();
             _organizationRepository = new OrganizationRepository();
@@ -78,7 +75,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _userLoginRepository = new UserLoginRepository();
             _credentialRepository = new CredentialRepository();
             _userRepository = new UserRepository(userClaim);
-            _productRepository = new ProductRepository();
             _personRepository = new PersonRepository();
             _roleTypeRepository = new RoleTypeRepository();
             _organizationRepository = new OrganizationRepository();
@@ -142,7 +138,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 throw new Exception("Missing user realpage id.");
             }
-            return _userLoginRepository.GetUserLoginOnly(realPageId); ;
+            return _userLoginRepository.GetUserLoginOnly(realPageId);
         }
 
         /// <summary>

@@ -66,6 +66,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _messageHandler = messageHandler;
             _userClaims = userClaims;
             _propertyRepository = new PropertyRepository(repository);
+            _manageProduct = new ManageProduct(repository, userClaims, messageHandler);
         }
 
         /// <summary>
@@ -109,6 +110,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _manageOrganization = new ManageOrganization(_userClaims);
             _manageBlueBook = new ManageBlueBook(_userClaims);
             _productInternalSettingRepository = new ProductInternalSettingRepository();
+            _manageProduct = new ManageProduct(_userClaims);
         }
 
         #endregion
@@ -128,6 +130,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         private IPropertyRepository _propertyRepository;
         private IRepository _repository;
         private IManageProductOneSite _manageProductOneSite;
+        private IManageProduct _manageProduct;
+
         #endregion
 
         #region Public Organization Methods
@@ -210,7 +214,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 organization.OrganizationDomainId = organizationDomainList.FirstOrDefault(p => p.Name.Equals(organization.OrganizationDomain, StringComparison.OrdinalIgnoreCase)).OrganizationDomainId;
             }
 
-            var result = _manageOrganization.CreateOrganization(organization, processBlueBookMessage);
+            var addProductList = new List<ProductEnum>();
+            // verify the products, if any, exist and can be added to the customer
+            List<string> invalidProductList = ManageOrganization.ParseProduct(organization.Products, addProductList);
+
+            if (invalidProductList.Count > 0)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "An invalid product was given : " + String.Join(",", invalidProductList));
+            }
+
+            var result = _manageOrganization.CreateOrganization(organization, addProductList, processBlueBookMessage);
 
             if (!result.Status.Success)
             {
@@ -222,22 +235,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 companyMapResource = _manageBlueBook.GetCompanyMap(companyRealPageId: result.obj.Org.RealPageId, booksCompanyMasterId: organization.BooksCustomerMasterId, source: ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform), domain: result.obj.Org.OrganizationDomain.Name, includeGreenBookCares: false);
             }
-            catch (Exception ex) { }
+            catch (Exception)
+            {
+                // ignored
+            }
 
             // add the new company to books
             var companyInstance = new CompanyInstanceAdd()
             {
                 Id = organization.BooksCustomerMasterId,
                 CustomerCompanyId = organization.BooksCustomerMasterId,
-                CompanyInstanceSourceId = result.obj.Org.RealPageId.ToString(),
+                CompanyInstanceSourceId = result.obj.Org.RealPageId.ToString().ToLower(),
                 CompanyName = result.obj.Org.Name,
                 Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
-                IsActive = true,
+                IsActive = organization.IsActive == 1,
                 CreatedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
                 CustomerEnvironment = result.obj.Org.OrganizationDomain.Name
             };
 
-            //return Request.CreateResponse(HttpStatusCode.OK, result.obj);
             bool addInstance = true;
 
             if (companyMapResource != null)
@@ -263,8 +278,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             if (addInstance)
             {
                 _manageBlueBook.AddBooksGreenBookCompanyInstance(companyInstance);
-            }
 
+                // add the products assigned to the new company
+                var cacheKey = $"getListProductsByOrganization_{result.obj.Org.RealPageId}";
+                MemoryCache.Default.Remove(cacheKey);
+
+                IList<ProductUI> productList = _manageProduct.GetProducts(result.obj.Org.RealPageId, 0, true);
+                foreach (var product in productList)
+                {
+                    SystemProductCenter spc = new SystemProductCenter()
+                    {
+                        Id = 0,
+                        CompanyInstanceSourceId = companyInstance.CompanyInstanceSourceId,
+                        CreatedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
+                        ProductCenterSourceId = product.ProductId.ToString(),
+                        Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)
+                    };
+                    _manageBlueBook.ProductCenterEnable(spc);
+                }
+            }
             return Request.CreateResponse(HttpStatusCode.OK, result.obj);
         }
 
@@ -299,10 +331,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 return Request.CreateResponse(HttpStatusCode.NotFound, "Not found");
             }
+            if(org == null)
+			{
+                return Request.CreateResponse(HttpStatusCode.NotFound, "Not found");
+            }
 
             bool orgNameChanged = org.Name != organization.Name ? true : false;
 
             org.Name = organization.Name;
+            org.IsActive = organization.IsActive;
 
             var orgTypes = _manageOrganization.ListOrganizationType();
             if (organization.OrganizationTypeId != 0)
@@ -384,7 +421,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         CompanyInstanceSourceId = companyMap.CompanyInstanceSourceId,
                         CompanyName = org.Name,
                         CustomerCompanyId = null,
-                        IsActive = companyMap.CompanyInstance[0].IsActive,
+                        IsActive = organization.IsActive == 1,
                         Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
                         CustomerEnvironment = null,
                         ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation"
@@ -1280,33 +1317,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [Route("CompanySetup/CompanyPropertyList")]
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         [HttpPut]
-        public HttpResponseMessage UpdatePropertyForOrganization(Guid companyInstanceId, Guid propertyInstanceId, string propertyName)
+        public HttpResponseMessage UpdatePropertyForOrganization([FromBody] UPFMPropertyInstance property, Guid companyInstanceId )
         {
             if ((companyInstanceId == Guid.Empty) || (companyInstanceId == null))
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: companyInstanceId");
             }
 
-            if ((propertyInstanceId == Guid.Empty) || (propertyInstanceId == null))
+            if ((property.InstanceId == Guid.Empty) || (property.InstanceId == null))
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: propertyInstanceId");
             }
 
-            if (String.IsNullOrEmpty(propertyName))
+            if (String.IsNullOrEmpty(property.Name))
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Null parameter: propertyName");
             }
-            var currentProperty = _manageOrganization.GetPropertyByInstanceId(propertyInstanceId);
+            var currentProperty = _manageOrganization.GetPropertyByInstanceId(property.InstanceId);
 
-            if (currentProperty != null && !currentProperty.FirstOrDefault().Name.Equals(propertyName, StringComparison.Ordinal))
+            if (currentProperty != null )
             {
-                _repositoryResponse = _manageOrganization.UpdateProperty(companyInstanceId, propertyInstanceId, propertyName);
+                _repositoryResponse = _manageOrganization.UpdateProperty(property, companyInstanceId);
                 if (_repositoryResponse.Id == 0)
                 {
                     return Request.CreateResponse(HttpStatusCode.BadRequest, _repositoryResponse.ErrorMessage);
                 }
             }
-            return Request.CreateResponse(HttpStatusCode.OK, propertyInstanceId);
+            return Request.CreateResponse(HttpStatusCode.OK, property.InstanceId);
         }
 
         /// <summary>
@@ -1453,18 +1490,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         ///Search Property By BlueId
         /// </summary>
         /// <param name="customerPropertyId">customerPropertyId</param>
+        /// <param name="companyInstanceId">companyInstanceId</param>
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [Route("CompanySetup/CompanyProperty/propertyinstance/{customerPropertyId}")]
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         [HttpGet]
-        public HttpResponseMessage SearchPropertyByBlueId(string customerPropertyId)
+        public HttpResponseMessage SearchPropertyByBlueId(string customerPropertyId, Guid companyInstanceId)
         {
             if ((string.IsNullOrEmpty(customerPropertyId)) || (customerPropertyId == "0"))
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: companyInstanceID");
             }
-            PropertyInstanceSearch _propertySearchList = _manageOrganization.SearchPropertyDetailsByCustomerPropertyId(customerPropertyId);
+            if ((companyInstanceId == Guid.Empty) || (companyInstanceId == null))
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: companyInstanceId");
+            }
+            PropertyInstanceSearch _propertySearchList = _manageOrganization.SearchPropertyDetailsByCustomerPropertyId(customerPropertyId, companyInstanceId);
             return Request.CreateResponse(HttpStatusCode.OK, _propertySearchList);
         }
         #endregion

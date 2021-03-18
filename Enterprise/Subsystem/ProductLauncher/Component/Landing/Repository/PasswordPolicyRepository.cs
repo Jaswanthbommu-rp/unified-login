@@ -2,6 +2,10 @@
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 {
@@ -35,10 +39,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <returns>Password Policy object</returns>
         public PasswordPolicy GetPasswordPolicy(long partyId)
 		{
-			using (var repository = GetRepository())
+			var settings = GetUnifiedSettings(partyId, "Security");
+
+			//There should be a setting for each one of the properties. If a setting is missing, then something is wrong with the data in the DB
+			var policy = new PasswordPolicy()
 			{
-				return repository.GetOne<PasswordPolicy>(StoredProcNameConstants.SP_GetPasswordPolicy, new { partyId });
-			}
+				PartyId = partyId,
+				MinimumLength = Byte.Parse(settings.FirstOrDefault(a => a.Name == "MinimumLength").Value),
+				MaximumLength = Byte.Parse(settings.FirstOrDefault(a => a.Name == "MaximumLength").Value),
+				MinimumLowercase = Byte.Parse(settings.FirstOrDefault(a => a.Name == "MinimumLowercase").Value),
+				MinimumUppercase = Byte.Parse(settings.FirstOrDefault(a => a.Name == "MinimumUppercase").Value),
+				MinimumNumeric = Byte.Parse(settings.FirstOrDefault(a => a.Name == "MinimumNumeric").Value),
+				MinimumSpecialCharacter = Byte.Parse(settings.FirstOrDefault(a => a.Name == "MinimumSpecialCharacter").Value),
+				EnablePasswordExpiration = settings.FirstOrDefault(a => a.Name == "EnablePasswordExpiration").Value == "1",
+				PasswordExpirationPeriodInDays = Int16.Parse(settings.FirstOrDefault(a => a.Name == "PasswordExpirationPeriodInDays").Value),
+				PreventPasswordReuse = settings.FirstOrDefault(a => a.Name == "PreventPasswordReuse").Value == "1",
+				NumberOfPasswordsToRemember = Byte.Parse(settings.FirstOrDefault(a => a.Name == "NumberOfPasswordsToRemember").Value),
+				AllowUsersToChangeOwnPassword = settings.FirstOrDefault(a => a.Name == "AllowUsersToChangeOwnPassword").Value == "1" ? true : false
+			};
+
+			return policy;
 		}
 
 		/// <summary>
@@ -100,6 +120,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 			{
 				var result = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreatePasswordPolicy, param);
 				return result;
+			}
+		}
+
+		private IList<Setting> GetUnifiedSettings(long PartyId, string Category)
+		{
+			dynamic param = new
+			{
+				PartyId = PartyId,
+				Category = Category
+			};
+
+			using (var repository = GetRepository())
+			{
+				return repository.GetMany<Setting>(StoredProcNameConstants.SP_GetUnifiedSetting, param);
 			}
 		}
 		#endregion
