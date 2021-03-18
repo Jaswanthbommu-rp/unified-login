@@ -49,6 +49,7 @@ IF NOT EXISTS
         WHERE ProductId = @ProductId;
 END;
 
+SET @ProductUrl = '';
 
 IF @ServerName IN('RCDUSODBSQL001')
     BEGIN
