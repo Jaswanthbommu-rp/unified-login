@@ -93,6 +93,8 @@ VALUES
 
 SELECT * FROM @ProductConfiguration
 
+SET @LoginURL = ''
+
 IF @ServerName IN('RCDUSODBSQL001')
     BEGIN
         SET @LoginURL = 'https://p2-qa.realpage.com/renter-engagement';
