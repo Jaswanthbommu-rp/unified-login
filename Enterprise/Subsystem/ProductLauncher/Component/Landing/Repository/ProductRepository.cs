@@ -1988,6 +1988,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     case (int)ProductRightEnum.ManageLeaseLabsProductAccess:
                         s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageLeaseLabsProductAccess.ToString());
                         break;
+                    case (int)ProductRightEnum.ManageSGTourProductAccess:
+                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageSGTourProductAccess.ToString());
+                        break;
                     default:
                         break;
                 }
