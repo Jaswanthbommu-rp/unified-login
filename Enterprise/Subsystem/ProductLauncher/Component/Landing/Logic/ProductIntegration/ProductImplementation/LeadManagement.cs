@@ -57,6 +57,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
+        /// <summary>
+		/// Create or update product user
+		/// Gets called from Product-Batch
+		/// </summary> 
         public override string CreateUpdateProductUser(ProductUserRolePropertiesGroups userRolePropertiesRegion, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser)
         {
             string result;
@@ -83,7 +87,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             //Create Multi company with put
             else if (string.IsNullOrEmpty(SubjectUserDetails.ProductUserName) && productUser != null)
             {
-                result = CreateMultiCompanyUserILM(productUser);
+                result = CreateMultiCompanyUser(productUser);
             }
             else
             {
@@ -105,7 +109,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return result;
         }
 
-        private string CreateMultiCompanyUserILM(IntegrationProductUser productUser)
+        /// <summary>
+		/// Create a user in the product
+		/// </summary>
+        private string CreateMultiCompanyUser(IntegrationProductUser productUser)
         {
             WriteToDiagnosticLog(
                 $"ManageProductInvokerBase.CreateUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method.");
@@ -144,6 +151,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             return result.Content;
         }
+
+        #region private
         private IntegrationProductUser getBaseUserDataFromProduct(string loginNameToCheck, string baseUrlAndQuery = null)
         {
             if (string.IsNullOrEmpty(baseUrlAndQuery))
@@ -168,5 +177,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             return productUser;
         }
+        #endregion
     }
 }
