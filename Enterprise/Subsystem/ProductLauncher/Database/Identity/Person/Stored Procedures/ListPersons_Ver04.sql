@@ -473,7 +473,7 @@ BEGIN
 		  FROM #UserLogin ulp  
 			 INNER JOIN Person.Person p ON p.PartyId = ulp.PersonPartyId  
 			 INNER JOIN Enterprise.Party pa ON p.PartyId = pa.PartyID  
-			 INNER JOIN Enterprise.PartyContactMechanism PCM ON ulp.PersonPartyId = PCM.PartyId
+			 INNER JOIN Enterprise.PartyContactMechanism PCM ON ulp.PersonPartyId = PCM.PartyId AND CAST(PCM.ThruDate AS Date) > GetDate()
 			 INNER JOIN Enterprise.ElectronicAddress EA ON PCM.ContactMechanismId=EA.ContactMechanismID
 			 INNER JOIN Enterprise.PartyRelationship prs ON prs.PartyIdFrom = ulp.PersonPartyId AND prs.PartyIdTo = @PartyId  
 			 INNER JOIN Enterprise.RelationshipType rst ON rst.RelationshipTypeId = prs.PartyRelationshipTypeId  
