@@ -610,52 +610,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		}
 
 		/// <summary>
-		/// Get a list of UPFM property instances for the give user
-		/// </summary>
-		/// <param name="editorPersonaId"></param>
-		/// <param name="userPersonaId"></param>
-		/// <param name="assignedOnly"></param>
-		/// <param name="product"></param>
-		/// <param name="datafilter"></param>
-		/// <returns></returns>
-		public ListResponse GetUPFMProperties(long editorPersonaId, long userPersonaId, bool assignedOnly, ProductEnum product, RequestParameter datafilter)
-		{
-			ListResponse result = new ListResponse();
-			WriteToDiagnosticLog($"ManageUnifiedLogin.GetUPFMProperties - at beginning of method for user with editorPersona id - {editorPersonaId}");
-
-			try
-			{
-				result = GetCompanyEditorAndUserDetails(editorPersonaId, 0);
-				if (result.IsError)
-				{
-					WriteToErrorLog($"ManageUnifiedLogin.GetUPFMProperties.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
-					return result;
-				}
-
-				//var booksPropertyList = _blueBook.GetUPFMPropertyInstances(_userClaims.OrganizationRealPageGuid.ToString());
-
-				var booksPropertyList = _blueBook.GetPropertiesPerProductCenter(_userClaims.OrganizationRealPageGuid.ToString(), product);
-				var customerPropertyList = ListUPFMPropertyInstanceIdByInstanceIds(booksPropertyList);
-
-				WriteToDiagnosticLog($"ManageUnifiedLogin.ListUPFMPropertyInstanceIdByInstanceIds() completed for user with editorPersona id -{editorPersonaId}.");
-				WriteToDiagnosticLog($"GetProperties- calling MergeUPFMBooksPropertiesWithUPFMProperties....for user with editorPersona id -{editorPersonaId} & userPersonaId-{userPersonaId}.");
-				result = MergeUPFMBooksPropertiesWithProductProperty(customerPropertyList, userPersonaId, assignedOnly);
-				WriteToDiagnosticLog($"GetProperties-MergeUPFMBooksPropertiesWithUPFMProperties completed for user with editorPersona id -{editorPersonaId}.");
-
-			}
-			catch (Exception ex)
-			{
-				result.IsError = true;
-				result.ErrorReason = $"ManageProductProspectContact.GetProperties - There was a problem getting the properties.";
-				WriteToErrorLog($"ManageProductProspectContact.GetProperties - There was a problem getting the properties for user with editorPersona id - {editorPersonaId}.",
-					exception: ex);
-			}
-
-			return result;
-		}
-
-
-		/// <summary>
 		/// Used to convert a UPFM property instance to a Product Property 
 		/// </summary>
 		/// <param name="upfmPropertyInstance"></param>

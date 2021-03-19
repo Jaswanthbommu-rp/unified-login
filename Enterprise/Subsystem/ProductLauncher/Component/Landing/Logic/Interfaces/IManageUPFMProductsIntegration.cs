@@ -33,8 +33,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="editorPersonaId"></param>
 		/// <param name="userPersonaId"></param>
 		/// <param name="partyId"></param>
+		/// <param name="productId"></param>
 		/// <returns></returns>
-		ListResponse GetRoles(long editorPersonaId, long userPersonaId, long partyId, ProductEnum product);
+		ListResponse GetRoles(long editorPersonaId, long userPersonaId, long partyId);
 
 		/// <summary>
 		/// Returns Rights with selected rights for a roleId
@@ -62,10 +63,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="editorPersonaId"></param>
 		/// <param name="userPersonaId"></param>
 		/// <param name="assignedOnly"></param>
-		/// <param name="product"></param>
 		/// <param name="datafilter"></param>
 		/// <returns></returns>
-		ListResponse GetUPFMProperties(long editorPersonaId, long userPersonaId, bool assignedOnly, ProductEnum product, RequestParameter datafilter);
+		ListResponse GetUPFMProperties(long editorPersonaId, long userPersonaId, bool assignedOnly, RequestParameter datafilter);
 
 		/// <summary>
 		/// Get a companyinstanceSourceId of a product
