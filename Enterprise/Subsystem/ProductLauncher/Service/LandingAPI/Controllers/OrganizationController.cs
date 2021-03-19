@@ -1312,8 +1312,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         ///Update Properties for a Organization
         /// </summary>
         /// <param name="companyInstanceId">companyInstanceId</param>
-        /// <param name="propertyInstanceId">propertyInstanceId</param>
-        /// <param name="propertyName">PropertyName</param>
+        /// <param name="property">property Object</param>
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [Route("CompanySetup/CompanyPropertyList")]
