@@ -559,44 +559,126 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             string result;
 
-            WriteToDiagnosticLog(
-                $"ManageProductInvokerBase.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of method.");
+            WriteToDiagnosticLog($"ManageProductInvokerBase.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of method.");
 
             // Get product user object 
             var newProductUser = GenerateProductUserObject(userRolePropertiesRegion);
 
-            if (string.IsNullOrEmpty(SubjectUserDetails.ProductUserName))
+            if (SubjectUserDetails.UserRoleTypeId == (int)UserRoleType.UserNoEmail)
             {
-                WriteToDiagnosticLog(
-                    $"ManageProductInvokerBase.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling CreateUser.");
+                newProductUser.LoginName = newProductUser.Email;
+            }
+          
+            // Get User & check if already exist 
+            var productUser = getBaseUserDataFromProduct(newProductUser.LoginName);
+            
 
-                // Get User & check if already exist 
-                bool isUserExistInProduct = CheckUserExistInProduct(newProductUser.LoginName);
-                if (isUserExistInProduct)
-                {
-                    WriteToErrorLog(
-                        $"ManageProductInvokerBase.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Product User {newProductUser.LoginName} already exist.");
-
-                    return $"{newProductUser.LoginName} already exist in the product {ProductType}.";
-                }
-
+            if (string.IsNullOrEmpty(SubjectUserDetails.ProductUserName) && productUser == null)
+            {
+                WriteToDiagnosticLog($"ManageProductInvokerBase.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling CreateUser.");
                 // Create User
                 result = CreateUser(newProductUser);
-
+            }
+            //Create Multi company with put
+            else if (string.IsNullOrEmpty(SubjectUserDetails.ProductUserName) && productUser != null)
+            {
+               WriteToDiagnosticLog($"ManageProductInvokerBase.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling CreateMultiCompanyUser.");
+               
+                // Create Multi-Company User
+                result = CreateMultiCompanyUser(productUser);
             }
             else
             {
-                WriteToDiagnosticLog(
-                    $"ManageProductInvokerBase.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling UpdateUser.");
+                WriteToDiagnosticLog($"ManageProductInvokerBase.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling UpdateUser.");
                 // Update user with Id/Login from product
-                newProductUser.UserId = SubjectUserDetails.ProductUserId;
-                newProductUser.LoginName = SubjectUserDetails.ProductUserName;
+                if (productUser != null)
+                {
+                    newProductUser.UserId = productUser.UserId;
+                    newProductUser.LoginName = productUser.LoginName;
+                }
+                else
+                {
+                    newProductUser.UserId = SubjectUserDetails.ProductUserId;
+                    newProductUser.LoginName = SubjectUserDetails.ProductUserName;
+                }
+                WriteToDiagnosticLog($"ManageProductInvokerBase.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling updateuser.");
 
                 result = UpdateUser(newProductUser, batchProcessType);
             }
-
             return result;
         }
+
+        #region private
+        public virtual IntegrationProductUser getBaseUserDataFromProduct(string loginNameToCheck, string baseUrlAndQuery = null)
+        {
+            if (string.IsNullOrEmpty(baseUrlAndQuery))
+                baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserEndpoint);
+
+            bool isCompanyIdRequiredToQuery = baseUrlAndQuery.Contains("{0}");
+            if (isCompanyIdRequiredToQuery)
+            {
+                baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, loginNameToCheck);
+            }
+            else
+            {
+                baseUrlAndQuery = string.Format(baseUrlAndQuery, loginNameToCheck);
+            }
+            WriteToDiagnosticLog(
+              $"ManageProductInvokerBase.GetProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method.");
+
+            var productUser = GetResultFromApi<IntegrationProductUser>(baseUrlAndQuery, false);
+
+            WriteToDiagnosticLog(
+                $"ManageProductInvokerBase.GetProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling API - {baseUrlAndQuery}.");
+
+            return productUser;
+        }
+        #endregion
+
+
+        /// <summary>
+        /// Create a user in the product
+        /// </summary>
+        public virtual string CreateMultiCompanyUser(IntegrationProductUser productUser)
+        {
+            WriteToDiagnosticLog(
+                $"ManageProductInvokerBase.CreateUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method.");
+
+            var baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.PostUserEndpoint);
+
+            WriteToDiagnosticLog(
+                $"ManageProductInvokerBase.CreateUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling API - {baseUrlAndQuery}.");
+
+            // dump api info
+            DumpApiCallInfoToDiagnosticLog(baseUrlAndQuery, productUser);
+
+            var integration = new ApiIntegration(_httpClient, baseUrlAndQuery);
+            var result = integration.PutEntity<IntegrationProductUser>(productUser);
+
+            if (result.IsSuccessStatusCode)
+            {
+                WriteToDiagnosticLog(
+                    $"ManageProductInvokerBase.CreateUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Received success. Updating Geenbook mapping.");
+
+                // map product user in green book
+                _dataCollector.CreateProductUserInGreenBook(SubjectUserDetails.PersonaId, result.Content, ProductId, productUser.LoginName);
+
+                // OPTIONAL - If product needs more attributes than userid or loginName then override in the product (e.g. PAM uses)
+                CreateAdditionalSamlUserAttribute(SubjectUserDetails.PersonaId, ProductId, productUser);
+
+                // activity logging
+                ProductActivityLogger.WriteCreateUserActivityLog(EditorUserDetails, SubjectUserDetails, BlueBookGbProductMap.Name, BlueBookGbProductMap.BooksProductCode,
+                    CorrelationId);
+
+                return string.Empty;
+            }
+
+            WriteToErrorLog(
+                $"ManageProductInvokerBase.CreateUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. result received - {result}.");
+
+            return result.Content;
+        }
+
 
         /// <summary>
         /// Get Product User API call
