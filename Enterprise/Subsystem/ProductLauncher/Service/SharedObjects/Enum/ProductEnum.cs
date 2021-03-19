@@ -855,7 +855,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// SelfGuidedTour
 		/// </summary>
 		[Description("SGT")]
-		SelfGuidedTour = 65
+		ManageSGTourProductAccess = 65
 
 	}
 	public enum ProductProcVersion
