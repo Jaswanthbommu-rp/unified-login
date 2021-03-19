@@ -85,24 +85,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="userPersonaId"></param>
 		/// <param name="partyId"></param>
 		/// <returns></returns>
-		public ListResponse GetRoles(long editorPersonaId, long userPersonaId, long partyId, ProductEnum product)
+		public ListResponse GetRoles(long editorPersonaId, long userPersonaId, long partyId)
 		{
 			WriteToDiagnosticLog($"ManageUPFMProductUser - GetRoles at beginning of method for user with editorPersona id - {editorPersonaId}");
-			int upfmProductId = (int) product;
 		   var response = new ListResponse();
 			try
 			{
 				ListResponse result = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
 				if (result.IsError)
 				{
-					WriteToErrorLog($"ManageUPFMProductUser-GetRoles.GetCompanyEditorAndUserDetails error for product {upfmProductId}  with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
+					WriteToErrorLog($"ManageUPFMProductUser-GetRoles.GetCompanyEditorAndUserDetails error for product {_upfmProductId}  with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
 					return result;
 				}
 
 				// get roles from DB for UnifiedAmenities product
-				WriteToDiagnosticLog($"ManageUPFMProductUser -GetRoles  Getting all GB roles from GB DB - ocr.ListRolesByParty with party id - {partyId} and product {upfmProductId}");
+				WriteToDiagnosticLog($"ManageUPFMProductUser -GetRoles  Getting all GB roles from GB DB - ocr.ListRolesByParty with party id - {partyId} and product {_upfmProductId}");
 				IList<int> productIdList = _productRepository.GetProductIdsByCompany(partyId);
-				var gbAllRoles = _productRepository.ListRolesForProductByParty(partyId, productIdList, upfmProductId) ?? new List<ProductRole>();
+				var gbAllRoles = _productRepository.ListRolesForProductByParty(partyId, productIdList, _upfmProductId) ?? new List<ProductRole>();
 				gbAllRoles = gbAllRoles?.OrderBy(r => r.Name).ToList();
 
 
@@ -404,13 +403,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="editorPersonaId"></param>
 		/// <param name="userPersonaId"></param>
 		/// <param name="assignedOnly"></param>
-		/// <param name="product"></param>
 		/// <param name="datafilter"></param>
 		/// <returns></returns>
-		public ListResponse GetUPFMProperties(long editorPersonaId, long userPersonaId, bool assignedOnly, ProductEnum product, RequestParameter datafilter)
+		public ListResponse GetUPFMProperties(long editorPersonaId, long userPersonaId, bool assignedOnly, RequestParameter datafilter)
 		{
 			ListResponse result = new ListResponse();
-			WriteToDiagnosticLog($"ManageUPFMProductUser.GetUPFMProperties - at beginning of method for user with editorPersona id - {editorPersonaId} - for product {product}");
+			WriteToDiagnosticLog($"ManageUPFMProductUser.GetUPFMProperties - at beginning of method for user with editorPersona id - {editorPersonaId} - for product {_upfmProductId}");
 
 			try
 			{
@@ -423,7 +421,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				//var booksPropertyList = _blueBook.GetUPFMPropertyInstances(_userClaims.OrganizationRealPageGuid.ToString());
 
-				var booksPropertyList = _blueBook.GetPropertiesPerProductCenter(_userClaims.OrganizationRealPageGuid.ToString(), product);
+				var booksPropertyList = _blueBook.GetPropertiesPerProductCenter(_userClaims.OrganizationRealPageGuid.ToString(), _upfmProductId);
 				var customerPropertyList = ListUPFMPropertyInstanceIdByInstanceIds(booksPropertyList);
 
 				WriteToDiagnosticLog($"ManageUPFMProductUser.ListUPFMPropertyInstanceIdByInstanceIds() completed for user with editorPersona id -{editorPersonaId}.");
