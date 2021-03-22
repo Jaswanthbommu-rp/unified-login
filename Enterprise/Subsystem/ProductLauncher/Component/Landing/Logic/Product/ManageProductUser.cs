@@ -496,197 +496,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public string ChangeUserType(ProductUserProperitiesRoles batchRecord)
         {
             string result = string.Empty;
-            int productId = 0;
-            object productPropertiesRoles;
 
             try
             {
-                productId = (int)batchRecord.ProductName;
-                IProduct product;
-                switch (batchRecord.ProductName)
-                {
-                    case (int)ProductEnum.OneSite:
-                        product = new OneSiteProduct(_defaultUserClaim);
-
-                        if (ValidateDictionaryMapping(batchRecord.InputJson))
-                        {
-                            productPropertiesRoles =
-                               JsonConvert.DeserializeObject<Dictionary<string, RolePropertyList>>(batchRecord.InputJson.Trim());
-                        }
-                        else
-                        {
-                            productPropertiesRoles =
-                                GetProductPropertiesRoles<RolePropertyList>(batchRecord.InputJson);
-                        }
-
-                        result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
-                        break;
-                    case (int)ProductEnum.MarketingCenter:
-                        product = new MarketingCenterProduct(_defaultUserClaim);
-                        productPropertiesRoles =
-                            GetProductPropertiesRoles<MarketingCenterRoleAndPropertyList>(batchRecord.InputJson);
-                        result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
-                        break;
-                    case (int)ProductEnum.FinancialSuite:
-                        product = new OneSiteAccountingProduct(_defaultUserClaim);
-                        productPropertiesRoles =
-                            GetProductPropertiesRoles<AccountingRoleAndPropertyList>(batchRecord.InputJson);
-                        result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
-                        break;
-                    case (int)ProductEnum.OpsBuyer:
-                        product = new OpsProduct(_defaultUserClaim);
-                        productPropertiesRoles =
-                            GetProductPropertiesRoles<OpsRoleAndPropertyList>(batchRecord.InputJson);
-                        result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
-                        break;
-                    case (int)ProductEnum.VendorServices:
-                        product = new VendorServicesProduct(_defaultUserClaim);
-                        productPropertiesRoles =
-                            GetProductPropertiesRoles<UserProductPropertyNotification>(batchRecord.InputJson);
-                        result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
-                        break;
-                    case (int)ProductEnum.ClientPortal:
-                        product = new ClientPortalProduct(_defaultUserClaim);
-                        productPropertiesRoles =
-                            GetProductPropertiesRoles<ClientPortalPropertyRole>(batchRecord.InputJson);
-                        result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
-                        break;
-                    case (int)ProductEnum.SalesForce:
-                        product = new SalesForceProduct(_defaultUserClaim);
-                        productPropertiesRoles =
-                            GetProductPropertiesRoles<ClientPortalPropertyRole>(batchRecord.InputJson);
-                        result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
-                        break;
-                    case (int)ProductEnum.ProspectContactCenter:
-                        product = new ProspectContactCenterProduct(_defaultUserClaim);
-                        productPropertiesRoles =
-                            GetProductPropertiesRoles<ProspectContactPropertyRole>(batchRecord.InputJson);
-                        result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
-                        break;
-                    case (int)ProductEnum.Lead2Lease:
-                        product = new Lead2LeaseProduct(_defaultUserClaim);
-                        productPropertiesRoles =
-                                GetProductPropertiesRoles<RolePropertyList>(batchRecord.InputJson);
-                        result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
-                        break;
-                    case (int)ProductEnum.ResidentPortal:
-                        product = new ResidentPortalProduct(_defaultUserClaim);
-                        productPropertiesRoles = GetProductPropertiesRoles<ResidentPortal>(batchRecord.InputJson);
-                        result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
-                        break;
-                    case (int)ProductEnum.OnSite:
-                        product = new OnSiteProduct(_defaultUserClaim);
-                        productPropertiesRoles =
-                            GetProductPropertiesRoles<OnSiteUserPropertyRegionRole>(batchRecord.InputJson);
-                        result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
-                        break;
-                    case (int)ProductEnum.Insurance:
-                        product = new RentersInsuranceProduct(_defaultUserClaim);
-                        productPropertiesRoles =
-                            GetProductPropertiesRoles<RentersInsuranceRoleAndPropertyList>(batchRecord.InputJson);
-                        result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
-                        break;
-                    case (int)ProductEnum.UtilityManagement:
-                        product = new UtilityManagementProduct(_defaultUserClaim);
-                        productPropertiesRoles =
-                            GetProductPropertiesRoles<RumUserPropertyRegionRole>(batchRecord.InputJson);
-                        result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
-                        break;
-                    case (int)ProductEnum.ResearchApplication:
-                        product = new ResearchApplicationProduct(_defaultUserClaim);
-                        productPropertiesRoles =
-                            GetProductPropertiesRoles<ResearchAppRoleAndPropertyList>(batchRecord.InputJson);
-                        result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
-                        break;
-                    case (int)ProductEnum.SelfProvisioningPortal:
-                        product = new SelfProvisioningPortalProduct(_defaultUserClaim);
-                        productPropertiesRoles =
-                            GetProductPropertiesRoles<SelfProvisioningPortal>(batchRecord.InputJson);
-                        result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
-                        break;
-                    case (int)ProductEnum.UnifiedAmenities:
-                        product = new UnifiedAmenitiesProduct(_defaultUserClaim);
-                        productPropertiesRoles =
-                            GetProductPropertiesRoles<UnifiedAmenitiesPropertyRole>(batchRecord.InputJson);
-                        result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
-                        break;
-                    case (int)ProductEnum.AssetOptimizer:
-                        product = new AssetOptimizerProduct(_defaultUserClaim);
-                        productPropertiesRoles =
-                            GetProductPropertiesRoles<AoUserCompanyPropertyRoleDetails>(batchRecord.InputJson);
-                        result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
-                        break;
-                    case (int)ProductEnum.LeadManagement:
-                        product = new LeadManagementProduct((ProductEnum)batchRecord.ProductName);
-                        productPropertiesRoles =
-                            GetProductPropertiesRoles<ProductUserRolePropertiesGroups>(batchRecord.InputJson);
-                        result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
-                        break;
-                    case (int)ProductEnum.LeadAnalytics:
-                        product = new LeadManagementProduct((ProductEnum)batchRecord.ProductName);
-                        productPropertiesRoles =
-                            GetProductPropertiesRoles<ProductUserRolePropertiesGroups>(batchRecord.InputJson);
-                        result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
-                        break;
-                    case (int)ProductEnum.RPDocumentManagement:
-                        product = new RPDocumentManagementProduct(_defaultUserClaim);
-                        productPropertiesRoles = GetProductPropertiesRoles<RolePropertyList>(batchRecord.InputJson);
-                        result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
-                        break;
-                    case (int)ProductEnum.PortfolioManagement:
-                        product = new PortfolioManagementProduct((ProductEnum)batchRecord.ProductName);
-                        productPropertiesRoles =
-                            GetProductPropertiesRoles<ProductUserRolePropertiesGroups>(batchRecord.InputJson);
-                        result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
-                        break;
-                    case (int)ProductEnum.IntegrationMarketplace:
-                        product = new IntegrationMarketplaceProduct(_defaultUserClaim);
-                        productPropertiesRoles = GetProductPropertiesRoles<IntegrationMarketplacePropertyRole>(batchRecord.InputJson);
-                        result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
-                        break;
-                    case (int)ProductEnum.DepositAlternative:
-                        product = new DepositAlternativeProduct((ProductEnum)batchRecord.ProductName);
-                        productPropertiesRoles =
-                            GetProductPropertiesRoles<ProductUserRolePropertiesGroups>(batchRecord.InputJson);
-                        result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
-                        break;
-                    case (int)ProductEnum.ClickPay:
-                        product = new ClickPayProduct((ProductEnum)batchRecord.ProductName);
-                        productPropertiesRoles =
-                            GetProductPropertiesRoles<ProductUserRolePropertiesGroups>(batchRecord.InputJson);
-                        result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
-                        break;
-                    case (int)ProductEnum.SeniorLeadManagement:
-                        product = new SeniorLeadManagementProduct(_defaultUserClaim, (ProductEnum)batchRecord.ProductName);
-                        productPropertiesRoles =
-                            GetProductPropertiesRoles<ProductUserRolePropertiesGroups>(batchRecord.InputJson);
-                        result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
-                        break;
-                    case (int)ProductEnum.RenovationManager:
-                        product = new RenovationManagerProduct((ProductEnum)batchRecord.ProductName);
-                        productPropertiesRoles =
-                            GetProductPropertiesRoles<ProductUserRolePropertiesGroups>(batchRecord.InputJson);
-                        result = product.CreateUser(batchRecord.RealPageId, batchRecord.CreateUserPersonaId,
-                            batchRecord.AssignUserPersonaId, productPropertiesRoles);
-                        break;                  
-                    case (int)ProductEnum.IntelligentBuildingEnergy:
-                    case (int)ProductEnum.IntelligentBuildingTrash:
-                    case (int)ProductEnum.IntelligentBuildingWater:
-                    case (int)ProductEnum.HandsOnTrainingSystem:
-                    case (int)ProductEnum.LeaseLabs:
-                    case (int)ProductEnum.HospitalityService:
-                    case (int)ProductEnum.SelfGuidedTour:
-                        IUPFMProduct upfmProduct = new UPFMProductIntegration(productId, _defaultUserClaim);
-                        productPropertiesRoles =
-                            GetProductPropertiesRoles<UPFMProductPropertyRole>(batchRecord.InputJson);
-                        result = upfmProduct.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId,
-                           batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles, (ProductEnum)batchRecord.ProductName);
-                        break;
-                    default:
-                        result = "Product code does not exist.";
-                        break;
-                }
-
+                var integration = _integrationTypeFactory.GetIntegration(batchRecord.ProductName, _defaultUserClaim);
+                result = integration.ChangeUserType(batchRecord);
             }
             catch (Exception ex)
             {
@@ -713,7 +527,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     _productRepository.UpdateProductBatch(batchRecord.ProductBatchId, (int)ProductBatchStatusType.Error, null, result);
                     //Activity log
                     result = "An error occurred during the change user type process";
-                    WriteActivityLogWithMessage(batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, result, productId);
+                    WriteActivityLogWithMessage(batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, result, batchRecord.ProductName);
 
                 }
             }
@@ -905,7 +719,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         /// <returns>String.empty if success else error</returns>
         //string ChangeProductUserType(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, BatchProcessType batchProcessType, object rolePropList, ProductEnum productName);
-        string ChangeProductUserType(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, BatchProcessType batchProcessType, object productPropertiesRoles, ProductEnum productName);
+        string ChangeProductUserType(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, BatchProcessType batchProcessType, object productPropertiesRoles);
     }
     #endregion
 
@@ -3939,7 +3753,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="batchProcessType">Batch Process Type</param>
         /// <param name="rolePropList">>Unified Amenities Role And Property List</param>
         /// <returns>String.empty if success else error</returns>
-        public string ChangeProductUserType(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, BatchProcessType batchProcessType, object rolePropList, ProductEnum product)
+        public string ChangeProductUserType(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, BatchProcessType batchProcessType, object rolePropList)
         {
             string changeProductUserTypeResponse = string.Empty;
 
@@ -3963,7 +3777,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
 
             base.UserClaim.UserRealPageGuid = createUserRealPageId;
-            var ib = new ManageUPFMProductsIntegration((int)product, base.UserClaim);
+            var ib = new ManageUPFMProductsIntegration(_productId, base.UserClaim);
 
             changeProductUserTypeResponse = ib.ManageUPFMProductUser(createUserPersonaId, assignUserPersonaId, rpList);
             return changeProductUserTypeResponse;
