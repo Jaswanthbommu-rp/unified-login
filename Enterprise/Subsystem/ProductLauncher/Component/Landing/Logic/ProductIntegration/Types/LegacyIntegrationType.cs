@@ -1,8 +1,9 @@
-﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+﻿using Newtonsoft.Json;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Factory;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
@@ -10,6 +11,19 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Accounting;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ClientPortal;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.IntegrationMarketplace;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.MarketingCenter;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ops;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ProspectContactCenter;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.RentersInsurance;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ResearchApplication;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ResidentPortal;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Rum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.SelfProvisioningPortal;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedAmenities;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.VendorServices;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -381,17 +395,293 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.OneSite:
                     result = _manageProductOneSite.GetOneSiteRights(editorPersonaId, dataFilter, roleId, assignedToRoleOnly);
                     break;
+
                 case (int)ProductEnum.UnifiedPlatform:
                     result = _manageUnifiedLogin.GetRightsByRole(editorPersonaId, partyId, roleId);
                     break;
+
                 case (int)ProductEnum.UnifiedAmenities:
                     IManageUnifiedAmenities manageUnifiedAmenities = new ManageUnifiedAmenities(_userClaims);
                     result = manageUnifiedAmenities.GetRightsByRole(editorPersonaId, partyId, roleId);
                     break;
+
                 default:
                     break;
             }
             return result;
+        }
+
+        public string CreateUser(ProductUserProperitiesRoles productUser)
+        {
+            string result = string.Empty;
+            IProduct product;
+            object productPropertiesRoles;
+
+            switch (_productId)
+            {
+                case (int)ProductEnum.OneSite:
+
+                    product = new OneSiteProduct(_userClaims);
+
+                    if (ValidateDictionaryMapping(productUser.InputJson))
+                    {
+                        productPropertiesRoles =
+                           JsonConvert.DeserializeObject<Dictionary<string, RolePropertyList>>(productUser.InputJson.Trim());
+                    }
+                    else
+                    {
+                        productPropertiesRoles =
+                            GetProductPropertiesRoles<RolePropertyList>(productUser.InputJson);
+                    }
+
+                    result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
+                        productUser.AssignUserPersonaId, productPropertiesRoles);
+
+                    break;
+
+                case (int)ProductEnum.MarketingCenter:
+                    product = new MarketingCenterProduct(_userClaims);
+                    productPropertiesRoles =
+                        GetProductPropertiesRoles<MarketingCenterRoleAndPropertyList>(productUser.InputJson);
+                    result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
+                        productUser.AssignUserPersonaId, productPropertiesRoles);
+                    break;
+
+                case (int)ProductEnum.FinancialSuite:
+                    product = new OneSiteAccountingProduct(_userClaims);
+                    productPropertiesRoles =
+                        GetProductPropertiesRoles<AccountingRoleAndPropertyList>(productUser.InputJson);
+                    result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
+                        productUser.AssignUserPersonaId, productPropertiesRoles);
+                    break;
+
+                case (int)ProductEnum.OpsBuyer:
+                    product = new OpsProduct(_userClaims);
+                    productPropertiesRoles =
+                        GetProductPropertiesRoles<OpsRoleAndPropertyList>(productUser.InputJson);
+                    result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
+                        productUser.AssignUserPersonaId, productPropertiesRoles);
+                    break;
+
+                case (int)ProductEnum.VendorServices:
+                    product = new VendorServicesProduct(_userClaims);
+                    productPropertiesRoles =
+                        GetProductPropertiesRoles<UserProductPropertyNotification>(productUser.InputJson);
+                    result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
+                        productUser.AssignUserPersonaId, productPropertiesRoles);
+                    break;
+
+                case (int)ProductEnum.ClientPortal:
+                    product = new ClientPortalProduct(_userClaims);
+                    productPropertiesRoles =
+                        GetProductPropertiesRoles<ClientPortalPropertyRole>(productUser.InputJson);
+                    result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
+                        productUser.AssignUserPersonaId, productPropertiesRoles);
+                    break;
+
+                case (int)ProductEnum.SalesForce:
+                    product = new SalesForceProduct(_userClaims);
+                    productPropertiesRoles =
+                        GetProductPropertiesRoles<ClientPortalPropertyRole>(productUser.InputJson);
+                    result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
+                        productUser.AssignUserPersonaId, productPropertiesRoles);
+                    break;
+
+                case (int)ProductEnum.ProspectContactCenter:
+                    product = new ProspectContactCenterProduct(_userClaims);
+                    productPropertiesRoles =
+                        GetProductPropertiesRoles<ProspectContactPropertyRole>(productUser.InputJson);
+                    result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
+                        productUser.AssignUserPersonaId, productPropertiesRoles);
+                    break;
+
+                case (int)ProductEnum.Lead2Lease:
+                    product = new Lead2LeaseProduct(_userClaims);
+                    productPropertiesRoles =
+                        GetProductPropertiesRoles<RolePropertyList>(productUser.InputJson);
+                    result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
+                        productUser.AssignUserPersonaId, productPropertiesRoles);
+                    break;
+
+                case (int)ProductEnum.ResidentPortal:
+                    product = new ResidentPortalProduct(_userClaims);
+                    productPropertiesRoles = GetProductPropertiesRoles<ResidentPortal>(productUser.InputJson);
+                    result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
+                        productUser.AssignUserPersonaId, productPropertiesRoles);
+                    break;
+
+                case (int)ProductEnum.OnSite:
+                    product = new OnSiteProduct(_userClaims);
+                    productPropertiesRoles =
+                        GetProductPropertiesRoles<OnSiteUserPropertyRegionRole>(productUser.InputJson);
+                    result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
+                        productUser.AssignUserPersonaId, productPropertiesRoles);
+                    break;
+
+                case (int)ProductEnum.Insurance:
+                    product = new RentersInsuranceProduct(_userClaims);
+                    productPropertiesRoles =
+                        GetProductPropertiesRoles<RentersInsuranceRoleAndPropertyList>(productUser.InputJson);
+                    result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
+                        productUser.AssignUserPersonaId, productPropertiesRoles);
+                    break;
+
+                case (int)ProductEnum.UtilityManagement:
+                    product = new UtilityManagementProduct(_userClaims);
+                    productPropertiesRoles =
+                        GetProductPropertiesRoles<RumUserPropertyRegionRole>(productUser.InputJson);
+                    result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
+                        productUser.AssignUserPersonaId, productPropertiesRoles);
+                    break;
+
+                case (int)ProductEnum.ResearchApplication:
+                    product = new ResearchApplicationProduct(_userClaims);
+                    productPropertiesRoles =
+                        GetProductPropertiesRoles<ResearchAppRoleAndPropertyList>(productUser.InputJson);
+                    result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
+                        productUser.AssignUserPersonaId, productPropertiesRoles);
+                    break;
+
+                case (int)ProductEnum.SelfProvisioningPortal:
+                    product = new SelfProvisioningPortalProduct(_userClaims);
+                    productPropertiesRoles =
+                        GetProductPropertiesRoles<SelfProvisioningPortal>(productUser.InputJson);
+                    result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
+                        productUser.AssignUserPersonaId, productPropertiesRoles);
+                    break;
+
+                case (int)ProductEnum.UnifiedAmenities:
+                    product = new UnifiedAmenitiesProduct(_userClaims);
+                    productPropertiesRoles =
+                        GetProductPropertiesRoles<UnifiedAmenitiesPropertyRole>(productUser.InputJson);
+                    result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
+                        productUser.AssignUserPersonaId, productPropertiesRoles);
+                    break;
+
+                case (int)ProductEnum.AssetOptimizer:
+                    product = new AssetOptimizerProduct(_userClaims);
+                    productPropertiesRoles =
+                        GetProductPropertiesRoles<AoUserCompanyPropertyRoleDetails>(productUser.InputJson);
+                    result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
+                        productUser.AssignUserPersonaId, productPropertiesRoles);
+                    break;
+
+                case (int)ProductEnum.LeadManagement:
+                    product = new LeadManagementProduct((ProductEnum)productUser.ProductName);
+                    productPropertiesRoles =
+                        GetProductPropertiesRoles<ProductUserRolePropertiesGroups>(productUser.InputJson);
+                    result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
+                        productUser.AssignUserPersonaId, productPropertiesRoles);
+                    break;
+
+                case (int)ProductEnum.LeadAnalytics:
+                    product = new LeadManagementProduct((ProductEnum)productUser.ProductName);
+                    productPropertiesRoles =
+                        GetProductPropertiesRoles<ProductUserRolePropertiesGroups>(productUser.InputJson);
+                    result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
+                        productUser.AssignUserPersonaId, productPropertiesRoles);
+                    break;
+
+                case (int)ProductEnum.RPDocumentManagement:
+                    product = new RPDocumentManagementProduct(_userClaims);
+                    productPropertiesRoles = GetProductPropertiesRoles<RolePropertyList>(productUser.InputJson);
+                    result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
+                        productUser.AssignUserPersonaId, productPropertiesRoles);
+                    break;
+
+                case (int)ProductEnum.PortfolioManagement:
+                    product = new PortfolioManagementProduct((ProductEnum)productUser.ProductName);
+                    productPropertiesRoles =
+                        GetProductPropertiesRoles<ProductUserRolePropertiesGroups>(productUser.InputJson);
+                    result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
+                        productUser.AssignUserPersonaId, productPropertiesRoles);
+                    break;
+
+                case (int)ProductEnum.IntegrationMarketplace:
+                    product = new IntegrationMarketplaceProduct(_userClaims);
+                    productPropertiesRoles =
+                        GetProductPropertiesRoles<IntegrationMarketplacePropertyRole>(productUser.InputJson);
+                    result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
+                        productUser.AssignUserPersonaId, productPropertiesRoles);
+                    break;
+
+                case (int)ProductEnum.DepositAlternative:
+                    product = new DepositAlternativeProduct((ProductEnum)productUser.ProductName);
+                    productPropertiesRoles =
+                        GetProductPropertiesRoles<ProductUserRolePropertiesGroups>(productUser.InputJson);
+                    result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
+                        productUser.AssignUserPersonaId, productPropertiesRoles);
+                    break;
+
+                case (int)ProductEnum.ClickPay:
+                    product = new ClickPayProduct((ProductEnum)productUser.ProductName);
+                    productPropertiesRoles =
+                        GetProductPropertiesRoles<ProductUserRolePropertiesGroups>(productUser.InputJson);
+                    result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
+                        productUser.AssignUserPersonaId, productPropertiesRoles);
+                    break;
+
+                case (int)ProductEnum.SeniorLeadManagement:
+                    product = new SeniorLeadManagementProduct(_userClaims, (ProductEnum)productUser.ProductName);
+                    productPropertiesRoles =
+                        GetProductPropertiesRoles<ProductUserRolePropertiesGroups>(productUser.InputJson);
+                    result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
+                        productUser.AssignUserPersonaId, productPropertiesRoles);
+                    break;
+
+                case (int)ProductEnum.RenovationManager:
+                    product = new RenovationManagerProduct((ProductEnum)productUser.ProductName);
+                    productPropertiesRoles =
+                        GetProductPropertiesRoles<ProductUserRolePropertiesGroups>(productUser.InputJson);
+                    result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
+                        productUser.AssignUserPersonaId, productPropertiesRoles);
+                    break;
+
+                default:
+                    result = "Product code does not exist.";
+                    break;
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Validate if the input value can be serialized as dictionary
+        /// </summary>
+        /// <param name="productUserInputJson">Json payload</param>
+        /// <returns>A boolean indicating if its valid or not</returns>
+        private bool ValidateDictionaryMapping(string productUserInputJson)
+        {
+            bool result;
+
+            try
+            {
+                JsonConvert.DeserializeObject<Dictionary<string, RolePropertyList>>(productUserInputJson.Trim());
+
+                result = true;
+            }
+            catch (Exception)
+            {
+                result = false;
+            }
+
+            return result;
+        }
+
+        private T GetProductPropertiesRoles<T>(string productUserInputJson)
+        {
+            if (string.IsNullOrEmpty(productUserInputJson))
+                return default(T); //throw new Exception("productUserInputJson is null or empty");
+
+            try
+            {
+                return JsonConvert.DeserializeObject<T>(productUserInputJson.Trim());
+            }
+            catch (Exception ex)
+            {
+                // if the parser fails return an empty object so the product call can catch the error
+                return default(T);
+            }
         }
     }
 }
