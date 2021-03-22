@@ -13,5 +13,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         ListResponse GetRightsForRole(long editorPersonaId, int roleId, long partyId, bool assignedToRoleOnly, RequestParameter dataFilter);
 
         string CreateUser(ProductUserProperitiesRoles productUser);
+
+        string ChangeUserType(ProductUserProperitiesRoles batchRecord);
     }
 }

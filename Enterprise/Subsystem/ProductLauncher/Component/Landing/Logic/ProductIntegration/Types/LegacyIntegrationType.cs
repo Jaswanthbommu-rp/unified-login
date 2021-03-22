@@ -413,7 +413,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         public string CreateUser(ProductUserProperitiesRoles productUser)
         {
-            string result = string.Empty;
+            string result;
             IProduct product;
             object productPropertiesRoles;
 
@@ -431,7 +431,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     else
                     {
                         productPropertiesRoles =
-                            GetProductPropertiesRoles<RolePropertyList>(productUser.InputJson);
+                            DeserializeJSON<RolePropertyList>(productUser.InputJson);
                     }
 
                     result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
@@ -442,7 +442,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.MarketingCenter:
                     product = new MarketingCenterProduct(_userClaims);
                     productPropertiesRoles =
-                        GetProductPropertiesRoles<MarketingCenterRoleAndPropertyList>(productUser.InputJson);
+                        DeserializeJSON<MarketingCenterRoleAndPropertyList>(productUser.InputJson);
                     result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
                         productUser.AssignUserPersonaId, productPropertiesRoles);
                     break;
@@ -450,7 +450,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.FinancialSuite:
                     product = new OneSiteAccountingProduct(_userClaims);
                     productPropertiesRoles =
-                        GetProductPropertiesRoles<AccountingRoleAndPropertyList>(productUser.InputJson);
+                        DeserializeJSON<AccountingRoleAndPropertyList>(productUser.InputJson);
                     result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
                         productUser.AssignUserPersonaId, productPropertiesRoles);
                     break;
@@ -458,7 +458,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.OpsBuyer:
                     product = new OpsProduct(_userClaims);
                     productPropertiesRoles =
-                        GetProductPropertiesRoles<OpsRoleAndPropertyList>(productUser.InputJson);
+                        DeserializeJSON<OpsRoleAndPropertyList>(productUser.InputJson);
                     result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
                         productUser.AssignUserPersonaId, productPropertiesRoles);
                     break;
@@ -466,7 +466,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.VendorServices:
                     product = new VendorServicesProduct(_userClaims);
                     productPropertiesRoles =
-                        GetProductPropertiesRoles<UserProductPropertyNotification>(productUser.InputJson);
+                        DeserializeJSON<UserProductPropertyNotification>(productUser.InputJson);
                     result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
                         productUser.AssignUserPersonaId, productPropertiesRoles);
                     break;
@@ -474,7 +474,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.ClientPortal:
                     product = new ClientPortalProduct(_userClaims);
                     productPropertiesRoles =
-                        GetProductPropertiesRoles<ClientPortalPropertyRole>(productUser.InputJson);
+                        DeserializeJSON<ClientPortalPropertyRole>(productUser.InputJson);
                     result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
                         productUser.AssignUserPersonaId, productPropertiesRoles);
                     break;
@@ -482,7 +482,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.SalesForce:
                     product = new SalesForceProduct(_userClaims);
                     productPropertiesRoles =
-                        GetProductPropertiesRoles<ClientPortalPropertyRole>(productUser.InputJson);
+                        DeserializeJSON<ClientPortalPropertyRole>(productUser.InputJson);
                     result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
                         productUser.AssignUserPersonaId, productPropertiesRoles);
                     break;
@@ -490,7 +490,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.ProspectContactCenter:
                     product = new ProspectContactCenterProduct(_userClaims);
                     productPropertiesRoles =
-                        GetProductPropertiesRoles<ProspectContactPropertyRole>(productUser.InputJson);
+                        DeserializeJSON<ProspectContactPropertyRole>(productUser.InputJson);
                     result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
                         productUser.AssignUserPersonaId, productPropertiesRoles);
                     break;
@@ -498,14 +498,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.Lead2Lease:
                     product = new Lead2LeaseProduct(_userClaims);
                     productPropertiesRoles =
-                        GetProductPropertiesRoles<RolePropertyList>(productUser.InputJson);
+                        DeserializeJSON<RolePropertyList>(productUser.InputJson);
                     result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
                         productUser.AssignUserPersonaId, productPropertiesRoles);
                     break;
 
                 case (int)ProductEnum.ResidentPortal:
                     product = new ResidentPortalProduct(_userClaims);
-                    productPropertiesRoles = GetProductPropertiesRoles<ResidentPortal>(productUser.InputJson);
+                    productPropertiesRoles = DeserializeJSON<ResidentPortal>(productUser.InputJson);
                     result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
                         productUser.AssignUserPersonaId, productPropertiesRoles);
                     break;
@@ -513,7 +513,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.OnSite:
                     product = new OnSiteProduct(_userClaims);
                     productPropertiesRoles =
-                        GetProductPropertiesRoles<OnSiteUserPropertyRegionRole>(productUser.InputJson);
+                        DeserializeJSON<OnSiteUserPropertyRegionRole>(productUser.InputJson);
                     result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
                         productUser.AssignUserPersonaId, productPropertiesRoles);
                     break;
@@ -521,7 +521,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.Insurance:
                     product = new RentersInsuranceProduct(_userClaims);
                     productPropertiesRoles =
-                        GetProductPropertiesRoles<RentersInsuranceRoleAndPropertyList>(productUser.InputJson);
+                        DeserializeJSON<RentersInsuranceRoleAndPropertyList>(productUser.InputJson);
                     result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
                         productUser.AssignUserPersonaId, productPropertiesRoles);
                     break;
@@ -529,7 +529,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.UtilityManagement:
                     product = new UtilityManagementProduct(_userClaims);
                     productPropertiesRoles =
-                        GetProductPropertiesRoles<RumUserPropertyRegionRole>(productUser.InputJson);
+                        DeserializeJSON<RumUserPropertyRegionRole>(productUser.InputJson);
                     result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
                         productUser.AssignUserPersonaId, productPropertiesRoles);
                     break;
@@ -537,7 +537,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.ResearchApplication:
                     product = new ResearchApplicationProduct(_userClaims);
                     productPropertiesRoles =
-                        GetProductPropertiesRoles<ResearchAppRoleAndPropertyList>(productUser.InputJson);
+                        DeserializeJSON<ResearchAppRoleAndPropertyList>(productUser.InputJson);
                     result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
                         productUser.AssignUserPersonaId, productPropertiesRoles);
                     break;
@@ -545,7 +545,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.SelfProvisioningPortal:
                     product = new SelfProvisioningPortalProduct(_userClaims);
                     productPropertiesRoles =
-                        GetProductPropertiesRoles<SelfProvisioningPortal>(productUser.InputJson);
+                        DeserializeJSON<SelfProvisioningPortal>(productUser.InputJson);
                     result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
                         productUser.AssignUserPersonaId, productPropertiesRoles);
                     break;
@@ -553,7 +553,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.UnifiedAmenities:
                     product = new UnifiedAmenitiesProduct(_userClaims);
                     productPropertiesRoles =
-                        GetProductPropertiesRoles<UnifiedAmenitiesPropertyRole>(productUser.InputJson);
+                        DeserializeJSON<UnifiedAmenitiesPropertyRole>(productUser.InputJson);
                     result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
                         productUser.AssignUserPersonaId, productPropertiesRoles);
                     break;
@@ -561,7 +561,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.AssetOptimizer:
                     product = new AssetOptimizerProduct(_userClaims);
                     productPropertiesRoles =
-                        GetProductPropertiesRoles<AoUserCompanyPropertyRoleDetails>(productUser.InputJson);
+                        DeserializeJSON<AoUserCompanyPropertyRoleDetails>(productUser.InputJson);
                     result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
                         productUser.AssignUserPersonaId, productPropertiesRoles);
                     break;
@@ -569,7 +569,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.LeadManagement:
                     product = new LeadManagementProduct((ProductEnum)productUser.ProductName);
                     productPropertiesRoles =
-                        GetProductPropertiesRoles<ProductUserRolePropertiesGroups>(productUser.InputJson);
+                        DeserializeJSON<ProductUserRolePropertiesGroups>(productUser.InputJson);
                     result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
                         productUser.AssignUserPersonaId, productPropertiesRoles);
                     break;
@@ -577,14 +577,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.LeadAnalytics:
                     product = new LeadManagementProduct((ProductEnum)productUser.ProductName);
                     productPropertiesRoles =
-                        GetProductPropertiesRoles<ProductUserRolePropertiesGroups>(productUser.InputJson);
+                        DeserializeJSON<ProductUserRolePropertiesGroups>(productUser.InputJson);
                     result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
                         productUser.AssignUserPersonaId, productPropertiesRoles);
                     break;
 
                 case (int)ProductEnum.RPDocumentManagement:
                     product = new RPDocumentManagementProduct(_userClaims);
-                    productPropertiesRoles = GetProductPropertiesRoles<RolePropertyList>(productUser.InputJson);
+                    productPropertiesRoles = DeserializeJSON<RolePropertyList>(productUser.InputJson);
                     result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
                         productUser.AssignUserPersonaId, productPropertiesRoles);
                     break;
@@ -592,7 +592,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.PortfolioManagement:
                     product = new PortfolioManagementProduct((ProductEnum)productUser.ProductName);
                     productPropertiesRoles =
-                        GetProductPropertiesRoles<ProductUserRolePropertiesGroups>(productUser.InputJson);
+                        DeserializeJSON<ProductUserRolePropertiesGroups>(productUser.InputJson);
                     result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
                         productUser.AssignUserPersonaId, productPropertiesRoles);
                     break;
@@ -600,7 +600,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.IntegrationMarketplace:
                     product = new IntegrationMarketplaceProduct(_userClaims);
                     productPropertiesRoles =
-                        GetProductPropertiesRoles<IntegrationMarketplacePropertyRole>(productUser.InputJson);
+                        DeserializeJSON<IntegrationMarketplacePropertyRole>(productUser.InputJson);
                     result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
                         productUser.AssignUserPersonaId, productPropertiesRoles);
                     break;
@@ -608,7 +608,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.DepositAlternative:
                     product = new DepositAlternativeProduct((ProductEnum)productUser.ProductName);
                     productPropertiesRoles =
-                        GetProductPropertiesRoles<ProductUserRolePropertiesGroups>(productUser.InputJson);
+                        DeserializeJSON<ProductUserRolePropertiesGroups>(productUser.InputJson);
                     result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
                         productUser.AssignUserPersonaId, productPropertiesRoles);
                     break;
@@ -616,7 +616,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.ClickPay:
                     product = new ClickPayProduct((ProductEnum)productUser.ProductName);
                     productPropertiesRoles =
-                        GetProductPropertiesRoles<ProductUserRolePropertiesGroups>(productUser.InputJson);
+                        DeserializeJSON<ProductUserRolePropertiesGroups>(productUser.InputJson);
                     result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
                         productUser.AssignUserPersonaId, productPropertiesRoles);
                     break;
@@ -624,7 +624,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.SeniorLeadManagement:
                     product = new SeniorLeadManagementProduct(_userClaims, (ProductEnum)productUser.ProductName);
                     productPropertiesRoles =
-                        GetProductPropertiesRoles<ProductUserRolePropertiesGroups>(productUser.InputJson);
+                        DeserializeJSON<ProductUserRolePropertiesGroups>(productUser.InputJson);
                     result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
                         productUser.AssignUserPersonaId, productPropertiesRoles);
                     break;
@@ -632,11 +632,191 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.RenovationManager:
                     product = new RenovationManagerProduct((ProductEnum)productUser.ProductName);
                     productPropertiesRoles =
-                        GetProductPropertiesRoles<ProductUserRolePropertiesGroups>(productUser.InputJson);
+                        DeserializeJSON<ProductUserRolePropertiesGroups>(productUser.InputJson);
                     result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
                         productUser.AssignUserPersonaId, productPropertiesRoles);
                     break;
 
+                default:
+                    result = "Product code does not exist.";
+                    break;
+            }
+
+            return result;
+        }
+
+        public string ChangeUserType(ProductUserProperitiesRoles batchRecord)
+        {
+            string result;
+            object productPropertiesRoles;
+
+            IProduct product;
+            switch (_productId)
+            {
+                case (int)ProductEnum.OneSite:
+                    product = new OneSiteProduct(_userClaims);
+
+                    if (ValidateDictionaryMapping(batchRecord.InputJson))
+                    {
+                        productPropertiesRoles =
+                           JsonConvert.DeserializeObject<Dictionary<string, RolePropertyList>>(batchRecord.InputJson.Trim());
+                    }
+                    else
+                    {
+                        productPropertiesRoles =
+                            DeserializeJSON<RolePropertyList>(batchRecord.InputJson);
+                    }
+
+                    result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
+                    break;
+                case (int)ProductEnum.MarketingCenter:
+                    product = new MarketingCenterProduct(_userClaims);
+                    productPropertiesRoles =
+                        DeserializeJSON<MarketingCenterRoleAndPropertyList>(batchRecord.InputJson);
+                    result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
+                    break;
+                case (int)ProductEnum.FinancialSuite:
+                    product = new OneSiteAccountingProduct(_userClaims);
+                    productPropertiesRoles =
+                        DeserializeJSON<AccountingRoleAndPropertyList>(batchRecord.InputJson);
+                    result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
+                    break;
+                case (int)ProductEnum.OpsBuyer:
+                    product = new OpsProduct(_userClaims);
+                    productPropertiesRoles =
+                        DeserializeJSON<OpsRoleAndPropertyList>(batchRecord.InputJson);
+                    result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
+                    break;
+                case (int)ProductEnum.VendorServices:
+                    product = new VendorServicesProduct(_userClaims);
+                    productPropertiesRoles =
+                        DeserializeJSON<UserProductPropertyNotification>(batchRecord.InputJson);
+                    result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
+                    break;
+                case (int)ProductEnum.ClientPortal:
+                    product = new ClientPortalProduct(_userClaims);
+                    productPropertiesRoles =
+                        DeserializeJSON<ClientPortalPropertyRole>(batchRecord.InputJson);
+                    result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
+                    break;
+                case (int)ProductEnum.SalesForce:
+                    product = new SalesForceProduct(_userClaims);
+                    productPropertiesRoles =
+                        DeserializeJSON<ClientPortalPropertyRole>(batchRecord.InputJson);
+                    result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
+                    break;
+                case (int)ProductEnum.ProspectContactCenter:
+                    product = new ProspectContactCenterProduct(_userClaims);
+                    productPropertiesRoles =
+                        DeserializeJSON<ProspectContactPropertyRole>(batchRecord.InputJson);
+                    result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
+                    break;
+                case (int)ProductEnum.Lead2Lease:
+                    product = new Lead2LeaseProduct(_userClaims);
+                    productPropertiesRoles =
+                            DeserializeJSON<RolePropertyList>(batchRecord.InputJson);
+                    result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
+                    break;
+                case (int)ProductEnum.ResidentPortal:
+                    product = new ResidentPortalProduct(_userClaims);
+                    productPropertiesRoles = DeserializeJSON<ResidentPortal>(batchRecord.InputJson);
+                    result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
+                    break;
+                case (int)ProductEnum.OnSite:
+                    product = new OnSiteProduct(_userClaims);
+                    productPropertiesRoles =
+                        DeserializeJSON<OnSiteUserPropertyRegionRole>(batchRecord.InputJson);
+                    result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
+                    break;
+                case (int)ProductEnum.Insurance:
+                    product = new RentersInsuranceProduct(_userClaims);
+                    productPropertiesRoles =
+                        DeserializeJSON<RentersInsuranceRoleAndPropertyList>(batchRecord.InputJson);
+                    result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
+                    break;
+                case (int)ProductEnum.UtilityManagement:
+                    product = new UtilityManagementProduct(_userClaims);
+                    productPropertiesRoles =
+                        DeserializeJSON<RumUserPropertyRegionRole>(batchRecord.InputJson);
+                    result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
+                    break;
+                case (int)ProductEnum.ResearchApplication:
+                    product = new ResearchApplicationProduct(_userClaims);
+                    productPropertiesRoles =
+                        DeserializeJSON<ResearchAppRoleAndPropertyList>(batchRecord.InputJson);
+                    result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
+                    break;
+                case (int)ProductEnum.SelfProvisioningPortal:
+                    product = new SelfProvisioningPortalProduct(_userClaims);
+                    productPropertiesRoles =
+                        DeserializeJSON<SelfProvisioningPortal>(batchRecord.InputJson);
+                    result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
+                    break;
+                case (int)ProductEnum.UnifiedAmenities:
+                    product = new UnifiedAmenitiesProduct(_userClaims);
+                    productPropertiesRoles =
+                        DeserializeJSON<UnifiedAmenitiesPropertyRole>(batchRecord.InputJson);
+                    result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
+                    break;
+                case (int)ProductEnum.AssetOptimizer:
+                    product = new AssetOptimizerProduct(_userClaims);
+                    productPropertiesRoles =
+                        DeserializeJSON<AoUserCompanyPropertyRoleDetails>(batchRecord.InputJson);
+                    result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
+                    break;
+                case (int)ProductEnum.LeadManagement:
+                    product = new LeadManagementProduct((ProductEnum)batchRecord.ProductName);
+                    productPropertiesRoles =
+                        DeserializeJSON<ProductUserRolePropertiesGroups>(batchRecord.InputJson);
+                    result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
+                    break;
+                case (int)ProductEnum.LeadAnalytics:
+                    product = new LeadManagementProduct((ProductEnum)batchRecord.ProductName);
+                    productPropertiesRoles =
+                        DeserializeJSON<ProductUserRolePropertiesGroups>(batchRecord.InputJson);
+                    result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
+                    break;
+                case (int)ProductEnum.RPDocumentManagement:
+                    product = new RPDocumentManagementProduct(_userClaims);
+                    productPropertiesRoles = DeserializeJSON<RolePropertyList>(batchRecord.InputJson);
+                    result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
+                    break;
+                case (int)ProductEnum.PortfolioManagement:
+                    product = new PortfolioManagementProduct((ProductEnum)batchRecord.ProductName);
+                    productPropertiesRoles =
+                        DeserializeJSON<ProductUserRolePropertiesGroups>(batchRecord.InputJson);
+                    result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
+                    break;
+                case (int)ProductEnum.IntegrationMarketplace:
+                    product = new IntegrationMarketplaceProduct(_userClaims);
+                    productPropertiesRoles = DeserializeJSON<IntegrationMarketplacePropertyRole>(batchRecord.InputJson);
+                    result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
+                    break;
+                case (int)ProductEnum.DepositAlternative:
+                    product = new DepositAlternativeProduct((ProductEnum)batchRecord.ProductName);
+                    productPropertiesRoles =
+                        DeserializeJSON<ProductUserRolePropertiesGroups>(batchRecord.InputJson);
+                    result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
+                    break;
+                case (int)ProductEnum.ClickPay:
+                    product = new ClickPayProduct((ProductEnum)batchRecord.ProductName);
+                    productPropertiesRoles =
+                        DeserializeJSON<ProductUserRolePropertiesGroups>(batchRecord.InputJson);
+                    result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
+                    break;
+                case (int)ProductEnum.SeniorLeadManagement:
+                    product = new SeniorLeadManagementProduct(_userClaims, (ProductEnum)batchRecord.ProductName);
+                    productPropertiesRoles =
+                        DeserializeJSON<ProductUserRolePropertiesGroups>(batchRecord.InputJson);
+                    result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
+                    break;
+                case (int)ProductEnum.RenovationManager:
+                    product = new RenovationManagerProduct((ProductEnum)batchRecord.ProductName);
+                    productPropertiesRoles =
+                        DeserializeJSON<ProductUserRolePropertiesGroups>(batchRecord.InputJson);
+                    result = product.CreateUser(batchRecord.RealPageId, batchRecord.CreateUserPersonaId,
+                        batchRecord.AssignUserPersonaId, productPropertiesRoles);
+                    break;
                 default:
                     result = "Product code does not exist.";
                     break;
@@ -668,7 +848,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return result;
         }
 
-        private T GetProductPropertiesRoles<T>(string productUserInputJson)
+        private T DeserializeJSON<T>(string productUserInputJson)
         {
             if (string.IsNullOrEmpty(productUserInputJson))
                 return default(T); //throw new Exception("productUserInputJson is null or empty");

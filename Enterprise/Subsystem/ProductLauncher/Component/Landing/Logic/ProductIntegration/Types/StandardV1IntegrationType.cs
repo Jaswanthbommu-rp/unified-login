@@ -6,6 +6,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 {
     public class StandardV1IntegrationType : IIntegrationType
     {
+        public string ChangeUserType(ProductUserProperitiesRoles batchRecord)
+        {
+            throw new System.NotImplementedException();
+        }
+
         public string CreateUser(ProductUserProperitiesRoles productUser)
         {
             throw new System.NotImplementedException();

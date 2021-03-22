@@ -35,23 +35,31 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         public string CreateUser(ProductUserProperitiesRoles productUser)
         {
-            var productPropertiesRoles = GetProductPropertiesRoles<UPFMProductPropertyRole>(productUser.InputJson);
+            var productPropertiesRoles = DeserializeJSON<UPFMProductPropertyRole>(productUser.InputJson);
             return _upfmProductIntegration.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
                productUser.AssignUserPersonaId, productPropertiesRoles);
         }
 
-        private T GetProductPropertiesRoles<T>(string productUserInputJson)
+        public string ChangeUserType(ProductUserProperitiesRoles batchRecord)
+        {
+            var productPropertiesRoles = DeserializeJSON<UPFMProductPropertyRole>(batchRecord.InputJson);
+            return _upfmProductIntegration.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId,
+               batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
+        }
+
+        private T DeserializeJSON<T>(string productUserInputJson)
         {
             if (string.IsNullOrEmpty(productUserInputJson))
-                return default(T); //throw new Exception("productUserInputJson is null or empty");
+            {
+                return default(T);
+            }
 
             try
             {
                 return JsonConvert.DeserializeObject<T>(productUserInputJson.Trim());
             }
-            catch (Exception ex)
+            catch
             {
-                // if the parser fails return an empty object so the product call can catch the error
                 return default(T);
             }
         }
