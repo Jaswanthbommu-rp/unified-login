@@ -337,6 +337,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
 
             bool orgNameChanged = org.Name != organization.Name ? true : false;
+            bool orgStatusChanged = org.IsActive != organization.IsActive ? true : false;
 
             org.Name = organization.Name;
             org.IsActive = organization.IsActive;
@@ -402,7 +403,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
 
             //orgNameChanged = false;
-            if (orgNameChanged)
+            if (orgNameChanged || orgStatusChanged)
             {
                 // update the name in MDM
                 IList<CustomerCompanyMap> companyMapResource = null;
