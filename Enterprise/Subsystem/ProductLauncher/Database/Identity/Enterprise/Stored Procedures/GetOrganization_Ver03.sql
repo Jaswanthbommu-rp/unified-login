@@ -15,7 +15,8 @@ BEGIN
 			COALESCE(ISNULL(D.MasterId, 0),0) AS BooksMasterId,  
 			COALESCE(ISNULL(D.CompanyMasterId, 0), 0) AS BooksCustomerMasterId,  
 			o.OrganizationTypeId,
-			o.OrganizationDomainId
+			o.OrganizationDomainId,
+			o.IsActive
 		 FROM [Enterprise].Organization AS o  
 			INNER JOIN [Enterprise].Party P ON P.PartyId = O.PartyId  
 			LEFT OUTER JOIN Enterprise.VW_DataImportMapping D ON(O.PartyId = D.PartyId)  
@@ -30,7 +31,8 @@ BEGIN
 			COALESCE(ISNULL(D.MasterId, 0),0) AS BooksMasterId,  
 			COALESCE(ISNULL(D.CompanyMasterId, 0), 0) AS BooksCustomerMasterId,  
 			o.OrganizationTypeId,
-			o.OrganizationDomainId
+			o.OrganizationDomainId,
+			o.IsActive
 		 FROM [Enterprise].Organization AS o  
 			INNER JOIN [Enterprise].Party P ON P.PartyId = O.PartyId  
 			LEFT OUTER JOIN Enterprise.VW_DataImportMapping D ON(O.PartyId = D.PartyId)  
@@ -45,7 +47,8 @@ BEGIN
 			COALESCE(ISNULL(D.MasterId, 0),0) AS BooksMasterId,  
 			COALESCE(ISNULL(D.CompanyMasterId, 0), 0) AS BooksCustomerMasterId,  
 			o.OrganizationTypeId,
-			o.OrganizationDomainId
+			o.OrganizationDomainId,
+			o.IsActive
 		 FROM [Enterprise].Organization AS o  
 			INNER JOIN [Enterprise].Party P ON P.PartyId = O.PartyId  
 			LEFT OUTER JOIN Enterprise.VW_DataImportMapping D ON(O.PartyId = D.PartyId)  
@@ -60,7 +63,8 @@ BEGIN
 			COALESCE(ISNULL(D.MasterId, 0),0) AS BooksMasterId,  
 			COALESCE(ISNULL(D.CompanyMasterId, 0), 0) AS BooksCustomerMasterId,  
 			o.OrganizationTypeId,
-			o.OrganizationDomainId
+			o.OrganizationDomainId,
+			o.IsActive
 		 FROM [Enterprise].Organization AS o  
 			INNER JOIN [Enterprise].Party P ON P.PartyId = O.PartyId  
 			LEFT OUTER JOIN Enterprise.VW_DataImportMapping D ON(O.PartyId = D.PartyId)  
@@ -75,7 +79,8 @@ BEGIN
 			COALESCE(ISNULL(D.MasterId, 0),0) AS BooksMasterId,  
 			COALESCE(ISNULL(D.CompanyMasterId, 0), 0) AS BooksCustomerMasterId,  
 			o.OrganizationTypeId,
-			o.OrganizationDomainId
+			o.OrganizationDomainId,
+			o.IsActive
 		 FROM [Enterprise].Organization AS o  
 			INNER JOIN [Enterprise].Party P ON P.PartyId = O.PartyId  
 			LEFT OUTER JOIN Enterprise.VW_DataImportMapping D ON(O.PartyId = D.PartyId)  

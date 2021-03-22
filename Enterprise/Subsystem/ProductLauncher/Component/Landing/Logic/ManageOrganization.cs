@@ -799,14 +799,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         public PropertyInstanceSearch SearchPropertyDetailsByCustomerPropertyId(string customerPropertyId, Guid companyInstanceId)
         {
             List<BooksPropertyInstance> booksPropertyInstance = GetPropertyInstanceFromBooks(companyInstanceId);
-            if (booksPropertyInstance != null && booksPropertyInstance.Count > 0)
+            if (booksPropertyInstance == null)
+            {
+                return new PropertyInstanceSearch();
+            }
+            else if (booksPropertyInstance != null && booksPropertyInstance.Count > 0)
             {
                 var instanceExists = booksPropertyInstance.FirstOrDefault(pi => pi.attributes.customerPropertyMap.Any(p => p.customerPropertyId == Convert.ToInt64(customerPropertyId)));
                 if (instanceExists == null)
                 {
                     return new PropertyInstanceSearch();
                 }
-            }
+            }			
             CustomerProperty propertyDetails = _manageBlueBook.GetCustomerPropertyDetails(customerPropertyId);
             List<BooksPropertyInstance> _booksPropertyInstances = _manageBlueBook.GetPropertyInstanceByCustomerPropertyId(customerPropertyId);
             List<PropertySetup> _listPropertySetup = new List<PropertySetup>();
