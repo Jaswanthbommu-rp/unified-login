@@ -832,11 +832,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     _listPropertySetup.Add(_property);
                 }
             }
+            //Prepare domain list
+            var booksProductsPropertyInstance = GetAllProductsPropertyInstanceFromBooks(companyInstanceId);
+            List<string> distinctDomains = booksProductsPropertyInstance?
+                    .Where(p => p.attributes.domain != null).Select(p => p.attributes.domain).Distinct().ToList();
 
+            List<string> existingDomains = _listPropertySetup.Where(p => p.Domain != null).Select(p => p.Domain).Distinct().ToList();
+            List<string> domainList = existingDomains != null ? distinctDomains?.Except(existingDomains).ToList() : new List<string>();
             PropertyInstanceSearch propertyInstanceSearch = new PropertyInstanceSearch()
             {
                 CustomerProperty = propertyDetails,
-                PropertyInstance = _listPropertySetup
+                PropertyInstance = _listPropertySetup,
+                Domain = domainList
             };
             return propertyInstanceSearch;
         }
@@ -1118,6 +1125,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private List<BooksPropertyInstance> GetPropertyInstanceFromBooks(Guid companyInstanceId)
         {                    
             return _manageBlueBook.GetPropertyInstanceForCompany(companyInstanceId);
+        }
+
+        private List<BooksPropertyInstance> GetAllProductsPropertyInstanceFromBooks(Guid companyInstanceId)
+        {
+            return _manageBlueBook.GetAllProductsPropertyInstanceFromBooks(companyInstanceId);
         }
 
         private List<PropertySetup> AddContractedNameToPropertyList(List<BooksPropertyInstance> booksPropertyInstance, List<PropertySetup> propertySetup, List<int> userProperties)

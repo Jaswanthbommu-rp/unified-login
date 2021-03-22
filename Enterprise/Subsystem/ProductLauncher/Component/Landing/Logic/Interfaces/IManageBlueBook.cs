@@ -196,6 +196,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         ///// <param name="customerPropertyId"></param>
         ///// <returns></returns>
         List<BooksPropertyInstance> GetPropertyInstanceByCustomerPropertyId(string CustomerPropertyId);
+
+        /// <summary>
+        /// GetAllProductsPropertyInstanceFromBooks
+        /// </summary>
+        /// <param name="companyRealPageId"></param>
+        /// <returns></returns>
+        List<BooksPropertyInstance> GetAllProductsPropertyInstanceFromBooks(Guid companyRealPageId);
+
         ///// <summary>
         ///// Get translated product primary properties data
         ///// </summary>
