@@ -44,7 +44,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="partyId"></param>
 		/// <param name="roleId"></param>
 		/// <returns></returns>
-		ListResponse GetRightsByRole(long editorPersonaId, long partyId, long roleId, ProductEnum product);
+		ListResponse GetRightsByRole(long editorPersonaId, long partyId, long roleId);
 
 		/// <summary>
 		/// Used to get the list of properties for the company or for the given user

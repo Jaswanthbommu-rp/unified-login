@@ -235,33 +235,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         public ListResponse GetProductRightsForRole(long editorPersonaId, int roleId, long partyId, int productId, RequestParameter datafilter, bool assignedToRoleOnly = false)
         {
-            ListResponse result = new ListResponse();
-
-            switch (productId)
-            {
-                case (int)ProductEnum.OneSite:
-                    result = _manageProductOneSite.GetOneSiteRights(editorPersonaId, datafilter, roleId, assignedToRoleOnly);
-                    break;
-                case (int)ProductEnum.UnifiedPlatform:
-                    result = _manageUnifiedLogin.GetRightsByRole(editorPersonaId, partyId, roleId);
-                    break;
-                case (int)ProductEnum.UnifiedAmenities:
-                    IManageUnifiedAmenities manageUnifiedAmenities = new ManageUnifiedAmenities(_userClaims);
-                    result = manageUnifiedAmenities.GetRightsByRole(editorPersonaId, partyId, roleId);
-                    break;
-                case (int)ProductEnum.IntelligentBuildingTrash:
-                case (int)ProductEnum.IntelligentBuildingEnergy:
-                case (int)ProductEnum.IntelligentBuildingWater:
-                case (int)ProductEnum.HospitalityService:
-                case (int)ProductEnum.SelfGuidedTour:
-                         var upfmProductIntegration = new ManageUPFMProductsIntegration(productId, _userClaims);
-                        var upfmProduct = ProductEnumHelper.GetUPFMProductEnum(productId);
-                        result = upfmProductIntegration.GetRightsByRole(editorPersonaId, partyId, roleId, upfmProduct);
-                    break;              
-                default:
-                    break;
-            }
-            return result;
+            var integration = _integrationTypeFactory.GetIntegration(productId, _userClaims);
+            return integration.GetRightsForRole(editorPersonaId, roleId, partyId, assignedToRoleOnly, datafilter);
         }
 
         public ListResponse GetProductPropertyGroups(long editorPersonaId, long userPersonaId, int productId, RequestParameter datafilter, bool assignedOnly = false, string userLoginName = "")

@@ -29,5 +29,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         public ListResponse GetProperties(long editorPersonaId, long userPersonaId, RequestParameter dataFilter) =>
             _upfmProductIntegration.GetUPFMProperties(editorPersonaId, userPersonaId, false, dataFilter);
+
+        public ListResponse GetRightsForRole(long editorPersonaId, int roleId, long partyId, bool assignedToRoleOnly, RequestParameter dataFilter) =>
+            _upfmProductIntegration.GetRightsByRole(editorPersonaId, partyId, roleId);
     }
 }
