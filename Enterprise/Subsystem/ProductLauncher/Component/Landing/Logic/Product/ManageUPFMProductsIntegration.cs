@@ -475,7 +475,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="productId"></param>
 		/// <param name="propertyInstanceId"></param>
 		/// <returns></returns>
-		private RepositoryResponse DeleteAssignedPropertyInstanceData(long userPersonaId, ProductEnum product, long propertyInstanceId)
+		private RepositoryResponse DeleteAssignedPropertyInstanceData(long userPersonaId, int product, long propertyInstanceId)
 		{
 			return DeleteAssignedUserPropertyInstanceData(userPersonaId, product, propertyInstanceId);
 		}
@@ -486,7 +486,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="productId"></param>
 		/// <param name="propertyInstanceId"></param>
 		/// <returns></returns>
-		private RepositoryResponse InsertAssignedPropertyInstanceData(long userPersonaId, ProductEnum product, long propertyInstanceId)
+		private RepositoryResponse InsertAssignedPropertyInstanceData(long userPersonaId, int product, long propertyInstanceId)
 		{
 			return InsertAssignedUserPropertyInstanceData(userPersonaId, product, propertyInstanceId);
 		}
@@ -543,7 +543,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="userPersonaId"></param>
 		/// <param name="userAssignProductPropertyRole"></param>
 		/// <returns></returns>
-		public string ManageUPFMProductUser(long editorPersonaId, long userPersonaId, UPFMProductPropertyRole userAssignProductPropertyRole, ProductEnum product)
+		public string ManageUPFMProductUser(long editorPersonaId, long userPersonaId, UPFMProductPropertyRole userAssignProductPropertyRole)
 		{
 			WriteToDiagnosticLog($"ManageUPFMProductUser - Begin create/update user for user with userPersonaId id - {userPersonaId}.");
 			try
@@ -713,12 +713,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 					if (unassignedProperties.Count > 0)
 					{
-						Parallel.ForEach(unassignedProperties, property => { result = DeleteAssignedPropertyInstanceData(userPersonaId, product, Convert.ToInt64(property)); });
+						Parallel.ForEach(unassignedProperties, property => { result = DeleteAssignedPropertyInstanceData(userPersonaId, _productId, Convert.ToInt64(property)); });
 					}
 
 					if (assignedProperties.Count > 0)
 					{
-						Parallel.ForEach(assignedProperties, property => { result = InsertAssignedPropertyInstanceData(userPersonaId, product, Convert.ToInt64(property)); });
+						Parallel.ForEach(assignedProperties, property => { result = InsertAssignedPropertyInstanceData(userPersonaId, _productId, Convert.ToInt64(property)); });
 					}
 				}
 
@@ -740,7 +740,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <summary>
 		/// Unassign User
 		/// </summary> 
-		public string UnassignUser(long editorPersonaId, long userPersonaId, UPFMProductPropertyRole userAssignProductPropertyRole, ProductEnum product)
+		public string UnassignUser(long editorPersonaId, long userPersonaId, UPFMProductPropertyRole userAssignProductPropertyRole)
 		{
 			var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
 			if (listResponse.IsError)
@@ -764,7 +764,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					return result.ErrorMessage;
 				}
 
-				List<ProductProperty> propertyList = GetAssignedPropertyForPersona(userPersonaId, product);
+				List<ProductProperty> propertyList = GetAssignedPropertyForPersona(userPersonaId, _productId);
 				List<string> unassignedProperties = new List<string>();
 
 				foreach (var property in propertyList)
@@ -774,7 +774,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				if (unassignedProperties.Count > 0)
 				{
-					Parallel.ForEach(unassignedProperties, property => { result = DeleteAssignedPropertyInstanceData(userPersonaId, product, Convert.ToInt64(property)); });
+					Parallel.ForEach(unassignedProperties, property => { result = DeleteAssignedPropertyInstanceData(userPersonaId, _productId, Convert.ToInt64(property)); });
 				}
 			}
 

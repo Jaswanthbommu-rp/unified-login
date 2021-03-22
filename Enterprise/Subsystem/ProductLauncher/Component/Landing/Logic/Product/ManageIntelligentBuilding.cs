@@ -281,7 +281,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					return result.ErrorMessage;
 				}
 
-				List<ProductProperty> propertyList = GetAssignedPropertyForPersona(userPersonaId, ProductEnum.IntelligentBuildingTrash);
+				List<ProductProperty> propertyList = GetAssignedPropertyForPersona(userPersonaId, (int)ProductEnum.IntelligentBuildingTrash);
 				List<string> unassignedProperties = new List<string>();
 
 				foreach (var property in propertyList)
@@ -646,7 +646,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <returns></returns>
 		private RepositoryResponse DeleteAssignedPropertyInstanceData(long userPersonaId, ProductEnum productId, long propertyInstanceId)
 		{
-			return DeleteAssignedUserPropertyInstanceData(userPersonaId, ProductEnum.IntelligentBuildingTrash, propertyInstanceId);
+			return DeleteAssignedUserPropertyInstanceData(userPersonaId, (int)ProductEnum.IntelligentBuildingTrash, propertyInstanceId);
 		}
 		/// <summary>
 		/// Used to assign a property instance to the given user
@@ -657,7 +657,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <returns></returns>
 		private RepositoryResponse InsertAssignedPropertyInstanceData(long userPersonaId, ProductEnum productId, long propertyInstanceId)
 		{
-			return InsertAssignedUserPropertyInstanceData(userPersonaId, ProductEnum.IntelligentBuildingTrash, propertyInstanceId);
+			return InsertAssignedUserPropertyInstanceData(userPersonaId, (int)ProductEnum.IntelligentBuildingTrash, propertyInstanceId);
 		}
 
 		/// <summary>
