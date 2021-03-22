@@ -371,5 +371,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             return result;
         }
+
+        public ListResponse GetRightsForRole(long editorPersonaId, int roleId, long partyId, bool assignedToRoleOnly, RequestParameter dataFilter)
+        {
+            ListResponse result = new ListResponse();
+
+            switch (_productId)
+            {
+                case (int)ProductEnum.OneSite:
+                    result = _manageProductOneSite.GetOneSiteRights(editorPersonaId, dataFilter, roleId, assignedToRoleOnly);
+                    break;
+                case (int)ProductEnum.UnifiedPlatform:
+                    result = _manageUnifiedLogin.GetRightsByRole(editorPersonaId, partyId, roleId);
+                    break;
+                case (int)ProductEnum.UnifiedAmenities:
+                    IManageUnifiedAmenities manageUnifiedAmenities = new ManageUnifiedAmenities(_userClaims);
+                    result = manageUnifiedAmenities.GetRightsByRole(editorPersonaId, partyId, roleId);
+                    break;
+                default:
+                    break;
+            }
+            return result;
+        }
     }
 }

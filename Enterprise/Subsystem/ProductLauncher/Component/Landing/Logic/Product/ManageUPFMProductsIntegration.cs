@@ -151,10 +151,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="partyId"></param>
 		/// <param name="roleId"></param>
 		/// <returns></returns>
-		public ListResponse GetRightsByRole(long editorPersonaId, long partyId, long roleId, ProductEnum product)
+		public ListResponse GetRightsByRole(long editorPersonaId, long partyId, long roleId)
 		{
 			WriteToDiagnosticLog($"ManageUPFMProductUser.GetRightsByRole at beginning of method for user with editorPersona id - {editorPersonaId}");
-			int upfmProductId = (int)product;
 			var response = new ListResponse();
 			try
 			{
@@ -168,7 +167,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				WriteToDiagnosticLog($"ManageUPFMProductUser.GetRightsByRole Getting all GB roles from GB DB - pr.ListRolesForProductByParty with party id - {partyId}");
 				ProductRepository pr = new ProductRepository();
 				IList<int> productIdList = pr.GetProductIdsByCompany(partyId);
-				var gbAllRights = _unifiedLoginRepository.ListRightsByRole(partyId, productIdList, upfmProductId, roleId) ?? new List<ProductRight>();
+				var gbAllRights = _unifiedLoginRepository.ListRightsByRole(partyId, productIdList, _productId, roleId) ?? new List<ProductRight>();
 
 				gbAllRights = gbAllRights.OrderBy(r => r.Description).ToList();
 

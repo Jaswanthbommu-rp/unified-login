@@ -11,6 +11,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             throw new System.NotImplementedException();
         }
 
+        public ListResponse GetRightsForRole(long editorPersonaId, int roleId, long partyId, bool assignedToRoleOnly, RequestParameter dataFilter)
+        {
+            throw new System.NotImplementedException();
+        }
+
         public ListResponse GetRoles(long editorPersonaId, long userPersonaId, long partyId, AccessType? accessType, RequestParameter dataFilter)
         {
             throw new System.NotImplementedException();
