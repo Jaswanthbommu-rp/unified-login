@@ -63,7 +63,7 @@ BEGIN
 
 	CREATE TABLE #tempOrganizations
 	(
-		OrganizationPartyId		bigint, 
+		OrganizationPartyId		BIGINT, 
 		OrganizationName		NVARCHAR(300),
 		RealPageId				UNIQUEIDENTIFIER,
 		BooksMasterId			NVARCHAR(200),
@@ -73,6 +73,7 @@ BEGIN
 		OrganizationDomainId	INT,
 		Domain					NVARCHAR(40),
 		Status					NVARCHAR(40),
+		IsActive				TINYINT,
 		Products				INT,
 		RealPageAccessUser NVARCHAR(100)
 	)	
@@ -86,6 +87,7 @@ BEGIN
 								   OrganizationDomainId,	
 								   Domain,
 								   Status,
+								   IsActive,
 								   Products,
 								   RealPageAccessUser)
 	SELECT O.PartyId as OrganizationPartyId,    
@@ -101,6 +103,7 @@ BEGIN
 				WHEN O.IsActive = 0 THEN 'Inactive' 
 				ELSE ''
 				END as Status,
+		   O.IsActive,
 		   Products = (select count(distinct productid) 
 						from Enterprise.OrganizationProduct op where o.PartyId= op.PartyId and ThruDate is null),
 		   UL.LoginName
@@ -158,6 +161,7 @@ BEGIN
 			OrganizationDomainId,	
 			Domain,
 			Status,
+			IsActive,
 			Products,
 			RealPageAccessUser,
 			TotalRecords, 
@@ -176,6 +180,7 @@ BEGIN
 			OrganizationDomainId,	
 			Domain,
 			Status,
+			IsActive,
 			Products,
 			RealPageAccessUser,
 			COUNT(1) OVER () AS [TotalRecords],
@@ -199,6 +204,7 @@ BEGIN
 		OrganizationDomainId,	
 		Domain,
 		Status,
+		IsActive,
 		Products,
 		RealPageAccessUser,
 		TotalRecords
