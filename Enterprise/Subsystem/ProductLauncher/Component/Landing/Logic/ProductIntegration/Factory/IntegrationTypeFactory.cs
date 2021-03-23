@@ -13,30 +13,41 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
     {
         private readonly IProductInternalSettingRepository _productInternalSettingRepository;
 
+        private readonly IManageUnifiedLogin _manageUnifiedLogin;
+
+        private readonly IManageProductOneSite _manageProductOneSite;
+
+        private readonly DefaultUserClaim _userClaims;
+
         public DefaultIntegrationTypeFactory(IProductInternalSettingRepository productInternalSettingRepository, IManageUnifiedLogin manageUnifiedLogin,
-            IManageProductOneSite manageProductOneSite)
+            IManageProductOneSite manageProductOneSite, DefaultUserClaim userClaims)
         {
             _productInternalSettingRepository = productInternalSettingRepository;
-
-            // TODO: Would be more performant to move this init to a static field instead
-            _integrationTypeMap = new Dictionary<string, Func<int, DefaultUserClaim, IIntegrationType>>(StringComparer.OrdinalIgnoreCase)
-            {
-                ["Legacy"] = (productId, userClaims) => new LegacyIntegrationType(productId, userClaims, manageUnifiedLogin, manageProductOneSite, productInternalSettingRepository),
-                ["UPFM"] = (productId, userClaims) => new UPFMIntegrationType(productId, userClaims),
-                ["Standard v1"] = (productId, userClaims) => new StandardV1IntegrationType()
-            };
+            _manageUnifiedLogin = manageUnifiedLogin;
+            _manageProductOneSite = manageProductOneSite;
+            _userClaims = userClaims;
         }
 
-        private readonly IReadOnlyDictionary<string, Func<int, DefaultUserClaim, IIntegrationType>> _integrationTypeMap;
+        private delegate IIntegrationType FactoryInitMethod(int productId, DefaultUserClaim userClaims, IManageUnifiedLogin manageUnifiedLogin,
+            IManageProductOneSite manageProductOneSite, IProductInternalSettingRepository productInternalSettingRepository);
 
-        public IIntegrationType GetIntegration(int productId, DefaultUserClaim userClaims)
+        private readonly IReadOnlyDictionary<string, FactoryInitMethod> _integrationTypeMap =
+            new Dictionary<string, FactoryInitMethod>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Legacy"] = (productId, userClaims, manageUnifiedLogin, manageProductOneSite, productInternalSettingRepository) =>
+                    new LegacyIntegrationType(productId, userClaims, manageUnifiedLogin, manageProductOneSite, productInternalSettingRepository),
+                ["UPFM"] = (productId, userClaims, _1, _2, _3) => new UPFMIntegrationType(productId, userClaims),
+                ["Standard v1"] = (_1, _2, _3, _4, _5) => new StandardV1IntegrationType()
+            };
+
+        public IIntegrationType GetIntegration(int productId)
         {
             string integrationType = GetIntegrationTypeForProductId(productId);
 
             IIntegrationType ret = null;
             if (_integrationTypeMap.ContainsKey(integrationType))
             {
-                ret = _integrationTypeMap[integrationType](productId, userClaims);
+                ret = _integrationTypeMap[integrationType](productId, _userClaims, _manageUnifiedLogin, _manageProductOneSite, _productInternalSettingRepository);
             }
             return ret;
         }

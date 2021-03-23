@@ -46,7 +46,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _propertyRepository = new PropertyRepository();
             _manageBlueBook = new ManageBlueBook(_userClaims);
 
-            _integrationTypeFactory = new DefaultIntegrationTypeFactory(_productInternalSettingRepository, _manageUnifiedLogin, _manageProductOneSite);
+            _integrationTypeFactory = new DefaultIntegrationTypeFactory(_productInternalSettingRepository, _manageUnifiedLogin, _manageProductOneSite, _userClaims);
         }
 
 		/// <summary>
@@ -67,7 +67,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _propertyRepository = new PropertyRepository(repository);
             _manageBlueBook = new ManageBlueBook(_userClaims, _productInternalSettingRepository, messageHandler);
 
-            _integrationTypeFactory = new DefaultIntegrationTypeFactory(_productInternalSettingRepository, _manageUnifiedLogin, _manageProductOneSite);
+            _integrationTypeFactory = new DefaultIntegrationTypeFactory(_productInternalSettingRepository, _manageUnifiedLogin, _manageProductOneSite, _userClaims);
         }
 
         #endregion
@@ -78,7 +78,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             ListResponse result;
             try
             {
-                var integration = _integrationTypeFactory.GetIntegration(productId, _userClaims);
+                var integration = _integrationTypeFactory.GetIntegration(productId);
                 result = integration.GetProperties(editorPersonaId, userPersonaId, datafilter);
 
                 if (result.IsError)
@@ -179,7 +179,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             ListResponse result;
             try
             {
-                var integration = _integrationTypeFactory.GetIntegration(productId, _userClaims);
+                var integration = _integrationTypeFactory.GetIntegration(productId);
                 result = integration.GetRoles(editorPersonaId, userPersonaId, partyId, accessType, datafilter);
 
                 if (result.IsError)
@@ -235,7 +235,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         public ListResponse GetProductRightsForRole(long editorPersonaId, int roleId, long partyId, int productId, RequestParameter datafilter, bool assignedToRoleOnly = false)
         {
-            var integration = _integrationTypeFactory.GetIntegration(productId, _userClaims);
+            var integration = _integrationTypeFactory.GetIntegration(productId);
             return integration.GetRightsForRole(editorPersonaId, roleId, partyId, assignedToRoleOnly, datafilter);
         }
 

@@ -76,7 +76,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             var manageUnifiedLogin = new ManageUnifiedLogin(_defaultUserClaim);
             var manageProductOneSite = new ManageProductOneSite(_defaultUserClaim);
-            _integrationTypeFactory = new DefaultIntegrationTypeFactory(_productInternalSettingRepository, manageUnifiedLogin, manageProductOneSite);
+            _integrationTypeFactory = new DefaultIntegrationTypeFactory(_productInternalSettingRepository, manageUnifiedLogin, manageProductOneSite, _defaultUserClaim);
         }
         #endregion
 
@@ -127,7 +127,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var roleProp = GetProductPropertiesRoles<RolePropertyList>(productUser.InputJson) as RolePropertyList;
                 usePrimaryProperties = roleProp.UsePrimaryProperties;
 
-                var integration = _integrationTypeFactory.GetIntegration(productUser.ProductName, _defaultUserClaim);
+                var integration = _integrationTypeFactory.GetIntegration(productUser.ProductName);
                 result = integration.CreateUser(productUser);
             }
             catch (Exception ex)
@@ -499,7 +499,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             try
             {
-                var integration = _integrationTypeFactory.GetIntegration(batchRecord.ProductName, _defaultUserClaim);
+                var integration = _integrationTypeFactory.GetIntegration(batchRecord.ProductName);
                 result = integration.ChangeUserType(batchRecord);
             }
             catch (Exception ex)

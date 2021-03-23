@@ -37,7 +37,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             var manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
             var manageProductOneSite = new ManageProductOneSite(_userClaims);
 
-            _integrationTypeFactory = new DefaultIntegrationTypeFactory(productInternalSettingRepository, manageUnifiedLogin, manageProductOneSite);
+            _integrationTypeFactory = new DefaultIntegrationTypeFactory(productInternalSettingRepository, manageUnifiedLogin, manageProductOneSite, _userClaims);
         }
 
         /// <summary>
@@ -146,7 +146,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             }
             else
             {
-                var integration = _integrationTypeFactory.GetIntegration(productId, _userClaims);
+                var integration = _integrationTypeFactory.GetIntegration(productId);
                 productResponse = integration.GetProperties(_userClaims.PersonaId, 0, null);
             }
 
