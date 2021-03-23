@@ -24,7 +24,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="addProductList"></param>
 		/// <param name="processBlueBookMessage"></param>
 		/// <returns></returns>
-        ObjectOutput<OrganizationCreateResult, IErrorData> CreateOrganization(OrganizationCreate organization, List<ProductEnum> addProductList, bool processBlueBookMessage = false);
+        ObjectOutput<OrganizationCreateResult, IErrorData> CreateOrganization(OrganizationCreate organization, List<int> addProductList, bool processBlueBookMessage = false);
 
 		/// <summary>
 		/// Used to insert a new Organization
@@ -196,5 +196,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="propertyInstanceID"></param>
 		/// <returns></returns>
 		RepositoryResponse DeletePropertyForOrganization(Guid propertyInstanceID);
+
+		/// <summary>
+		/// Used to parse the list of valid product codes
+		/// </summary>
+		/// <param name="productCode"></param>
+		/// <param name="addProductList"></param>
+		/// <returns></returns>
+		List<string> ParseProduct(List<string> productCode, List<int> addProductList);
 	}
 }

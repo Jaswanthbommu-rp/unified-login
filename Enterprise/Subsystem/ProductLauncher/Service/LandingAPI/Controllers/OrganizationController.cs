@@ -214,9 +214,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 organization.OrganizationDomainId = organizationDomainList.FirstOrDefault(p => p.Name.Equals(organization.OrganizationDomain, StringComparison.OrdinalIgnoreCase)).OrganizationDomainId;
             }
 
-            var addProductList = new List<ProductEnum>();
+            var addProductList = new List<int>();
             // verify the products, if any, exist and can be added to the customer
-            List<string> invalidProductList = ManageOrganization.ParseProduct(organization.Products, addProductList);
+            List<string> invalidProductList = _manageOrganization.ParseProduct(organization.Products, addProductList);
 
             if (invalidProductList.Count > 0)
             {
@@ -755,9 +755,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest, errorStatus);
             }
 
-            List<ProductEnum> addProductList = new List<ProductEnum>();
+            List<int> addProductList = new List<int>();
             // verify the products, if any, exist and can be added to the customer
-            List<string> invalidProductList = ManageOrganization.ParseProduct(products, addProductList);
+            List<string> invalidProductList = _manageOrganization.ParseProduct(products, addProductList);
             if (invalidProductList.Count > 0)
             {
                 return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "An invalid product was given : " + String.Join(",", invalidProductList));
@@ -820,9 +820,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest, errorStatus);
             }
 
-            List<ProductEnum> addProductList = new List<ProductEnum>();
+            List<int> addProductList = new List<int>();
             // verify the products, if any, exist and can be added to the customer
-            List<string> invalidProductList = ManageOrganization.ParseProduct(products, addProductList);
+            List<string> invalidProductList = _manageOrganization.ParseProduct(products, addProductList);
             if (invalidProductList.Count > 0)
             {
                 return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "An invalid product was given : " + String.Join(",", invalidProductList));
@@ -1525,7 +1525,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// </summary>
         /// <param name="addProductList"></param>
         /// <param name="partyId"></param>
-        private IRepositoryResponse DeleteProductsFromOrganization(List<ProductEnum> addProductList, Organization org)
+        private IRepositoryResponse DeleteProductsFromOrganization(List<int> addProductList, Organization org)
         {
             IRepositoryResponse response = new RepositoryResponse();
             IManageOrganizationProduct manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository);
@@ -1536,7 +1536,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     Id = org.PartyId,
                     CompanyInstanceSourceId = org.RealPageId.ToString().ToLower(),
                     CreatedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
-                    ProductCenterSourceId = ((int)product).ToString(),
+                    ProductCenterSourceId = product.ToString(),
                     PropertyInstanceSourceId = null,
                     Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)
 
