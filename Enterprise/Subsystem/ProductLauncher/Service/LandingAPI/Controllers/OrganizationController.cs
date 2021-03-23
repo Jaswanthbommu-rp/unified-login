@@ -1009,6 +1009,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             return Request.CreateResponse(HttpStatusCode.OK, output);
         }
 
+        /// <summary>
+        /// Search Company By CustomerCompanyId
+        /// </summary>
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [SwaggerResponse(HttpStatusCode.OK, Description = "Get company details by customer company id", Type = typeof(CompanySetup))]
@@ -1495,23 +1498,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         ///Search Property By BlueId
         /// </summary>
         /// <param name="customerPropertyId">customerPropertyId</param>
-        /// <param name="companyInstanceId">companyInstanceId</param>
+        /// <param name="booksCustomerMasterId">booksCustomerMasterId</param>
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [Route("CompanySetup/CompanyProperty/propertyinstance/{customerPropertyId}")]
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         [HttpGet]
-        public HttpResponseMessage SearchPropertyByBlueId(string customerPropertyId, Guid companyInstanceId)
+        public HttpResponseMessage SearchPropertyByBlueId(string customerPropertyId, string booksCustomerMasterId)
         {
             if ((string.IsNullOrEmpty(customerPropertyId)) || (customerPropertyId == "0"))
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: companyInstanceID");
             }
-            if ((companyInstanceId == Guid.Empty) || (companyInstanceId == null))
+            if ((string.IsNullOrEmpty(booksCustomerMasterId)) || (booksCustomerMasterId == "0"))
             {
-                return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: companyInstanceId");
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: companyInstanceID");
             }
-            PropertyInstanceSearch _propertySearchList = _manageOrganization.SearchPropertyDetailsByCustomerPropertyId(customerPropertyId, companyInstanceId);
+            PropertyInstanceSearch _propertySearchList = _manageOrganization.SearchPropertyDetailsByCustomerPropertyId(customerPropertyId, booksCustomerMasterId);
             return Request.CreateResponse(HttpStatusCode.OK, _propertySearchList);
         }
         #endregion
