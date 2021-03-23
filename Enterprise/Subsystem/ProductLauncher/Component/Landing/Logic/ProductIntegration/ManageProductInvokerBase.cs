@@ -1288,7 +1288,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 ProductInternalSettingList =
                     _productInternalSettingRepository.GetProductInternalSettings(ProductId);
                 ProductApiBaseUrl = ProductInternalSettingList.First(a => a.Name.ToUpper() == "APIENDPOINT").Value;
-                CreateUpdateMultiCompanyUserRequiresPMC = ProductInternalSettingList.First(a => a.Name.ToUpper() == "CREATEUPDATEPMC").Value;
+
+                if (ProductId == 40 || ProductId == 41)
+                {
+                    CreateUpdateMultiCompanyUserRequiresPMC = ProductInternalSettingList.First(a => a.Name.ToUpper() == "CREATEUPDATEPMC").Value;
+                }
+                
             }
             catch (Exception ex)
             {
