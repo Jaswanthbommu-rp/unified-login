@@ -1593,6 +1593,52 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		}
 
 		/// <summary>
+		/// Gets ao products with User admin role 
+		/// </summary> 
+		public IList<string> GetGbSupportedAoProductsWithUserAdminRole(long userPersonaId)
+		{
+			WriteToDiagnosticLog(
+				$"ManageProductAssetOptimization.GetGbSupportedAoProductsWithUserAdminRole - Begin with editorPersona id - {userPersonaId}.");
+
+			var products = new List<string>();
+			var aoUserProducts = new List<string>();
+			ListResponse result = new ListResponse();
+			var samlProductUserName = GetSamlProductUserName(userPersonaId).ToLower();
+			string productUserProfileApiUrl = "";
+			if (!string.IsNullOrEmpty(samlProductUserName))
+			{
+				productUserProfileApiUrl = $"{_apiEndPoint}user/divisions/unity/{samlProductUserName}/";
+				if (_editorPersona == null)
+				{
+					result = GetCompanyEditorAndUserDetails(userPersonaId, 0);
+				}
+				var blueAOCompanyInfo = GetProductCompanyInstanceId(_udmSourceCode);
+				var aoDivisionProduct = GetResultFromApi<IList<AoDivisionProduct>>(productUserProfileApiUrl);
+
+				if (aoDivisionProduct != null && aoDivisionProduct.Count > 0)
+				{
+					aoUserProducts = aoDivisionProduct.SelectMany(c => c.Products).Where(p=>p.CompanyId.Equals(blueAOCompanyInfo.CompanyInstanceSourceId)).Select(s => s.Product).ToList();
+				}
+			}
+
+			if (aoUserProducts.Count > 0)
+			{
+				foreach (var product in aoUserProducts)
+				{
+					if (ProductEnumHelper.CheckAoProductSupportedByGreenBook(product))
+					{
+						products.Add(product);
+					}
+				}
+			}
+
+			WriteToDiagnosticLog(
+				$"ManageProductAssetOptimization.GetGbSupportedAoProductsWithUserAdminRole at end of method for user with " +
+				$"editorPersona id - {userPersonaId} samlProductUserName - {samlProductUserName}. productUserProfileApiUrl {productUserProfileApiUrl}, product count {products.Count}");
+
+			return products;
+		}
+		/// <summary>
 		/// Gets products available for assigning
 		/// </summary> 
 		public List<string> GetAOProductsForNewMultiCompanyUser(long editorUserPersonaId, string loginName)
@@ -2943,6 +2989,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 		[JsonProperty(PropertyName = "productId")]
 		public int GbProductId { get; set; }
+		
+		[JsonProperty(PropertyName = "companyid")]
+		public string CompanyId { get; set; }
 
 	}
 
