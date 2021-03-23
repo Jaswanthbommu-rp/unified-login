@@ -48,7 +48,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         protected UserDetails EditorUserDetails { get; set; }
         protected UserDetails SubjectUserDetails { get; set; }
         protected string ProductApiBaseUrl { get; set; }
-        protected string ProductBaseUrlMultiCompanyRequiredPMC { get; private set; }
+        protected string CreateUpdateMultiCompanyUserRequiresPMC { get; private set; }
         protected string CompanyInstanceSourceId { get; set; }
         protected IList<ProductInternalSetting> ProductInternalSettingList { get; set; }
 
@@ -584,7 +584,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 result = CreateUser(newProductUser);
 
             }
-            else if (string.IsNullOrEmpty(SubjectUserDetails.ProductUserName) && productUser != null && ProductBaseUrlMultiCompanyRequiredPMC.Equals("1"))
+            else if (string.IsNullOrEmpty(SubjectUserDetails.ProductUserName) && productUser != null && CreateUpdateMultiCompanyUserRequiresPMC.Equals("1"))
             {
                 result = CreateMultiCompanyUser(productUser);
             }
@@ -1288,7 +1288,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 ProductInternalSettingList =
                     _productInternalSettingRepository.GetProductInternalSettings(ProductId);
                 ProductApiBaseUrl = ProductInternalSettingList.First(a => a.Name.ToUpper() == "APIENDPOINT").Value;
-                ProductBaseUrlMultiCompanyRequiredPMC = ProductInternalSettingList.First(a => a.Name.ToUpper() == "CREATEUPDATEPMC").Value;
+                CreateUpdateMultiCompanyUserRequiresPMC = ProductInternalSettingList.First(a => a.Name.ToUpper() == "CREATEUPDATEPMC").Value;
             }
             catch (Exception ex)
             {
