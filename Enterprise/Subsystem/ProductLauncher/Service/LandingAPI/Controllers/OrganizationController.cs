@@ -337,6 +337,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
 
             bool orgNameChanged = org.Name != organization.Name ? true : false;
+            bool orgStatusChanged = org.IsActive != organization.IsActive ? true : false;
 
             org.Name = organization.Name;
             org.IsActive = organization.IsActive;
@@ -402,7 +403,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
 
             //orgNameChanged = false;
-            if (orgNameChanged)
+            if (orgNameChanged || orgStatusChanged)
             {
                 // update the name in MDM
                 IList<CustomerCompanyMap> companyMapResource = null;
@@ -1073,7 +1074,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         new ExportDataFileConfiguration { Header = "Address", MappedField = "Address", PDFColumnWidth = "3.25", Preference = 4 },
                         new ExportDataFileConfiguration { Header = "Blue Id", MappedField = "BooksCustomerMasterId", PDFColumnWidth = "0.70", Preference = 5 },
                         new ExportDataFileConfiguration { Header = "Type", MappedField = "OrganizationType", PDFColumnWidth = "1.00", Preference = 6 },
-                        new ExportDataFileConfiguration { Header = "Products", MappedField = "Products", PDFColumnWidth = "0.50", Preference = 7 }
+                        new ExportDataFileConfiguration { Header = "Products", MappedField = "Products", PDFColumnWidth = "0.50", Preference = 7 },
+                        new ExportDataFileConfiguration { Header = "Company ID", MappedField = "RealPageId", PDFColumnWidth = "3.25", Preference = 8 },
+                        new ExportDataFileConfiguration { Header = "Status", MappedField = "Status", PDFColumnWidth = "2.25", Preference = 9 }
                     };
 
                     plainBytes = DataExport.ExportDataToFile<CompanySetup>(exportConfigurations.OrderBy(p => p.Preference).ToList(), companyList, dataFormat);
@@ -1310,8 +1313,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         ///Update Properties for a Organization
         /// </summary>
         /// <param name="companyInstanceId">companyInstanceId</param>
-        /// <param name="propertyInstanceId">propertyInstanceId</param>
-        /// <param name="propertyName">PropertyName</param>
+        /// <param name="property">property Object</param>
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [Route("CompanySetup/CompanyPropertyList")]
@@ -1394,8 +1396,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         new ExportDataFileConfiguration { Header = "Contracted Name", MappedField = "ContractedName", PDFColumnWidth = "2.85", Preference = 2 },
                         new ExportDataFileConfiguration { Header = "Blue Id", MappedField = "customerPropertyId", PDFColumnWidth = "0.70", Preference = 3 },
                         new ExportDataFileConfiguration { Header = "Domain", MappedField = "Domain", PDFColumnWidth = "0.85", Preference = 4 },
-                        new ExportDataFileConfiguration { Header = "Address", MappedField = "PropertyAddress", PDFColumnWidth = "3.25", Preference = 5 }
+                        new ExportDataFileConfiguration { Header = "Address", MappedField = "PropertyAddress", PDFColumnWidth = "3.25", Preference = 5 },
+                        new ExportDataFileConfiguration { Header = "Property ID", MappedField = "InstanceId", PDFColumnWidth = "3.25", Preference = 6 },
+                        new ExportDataFileConfiguration { Header = "Status", MappedField = "IsActive", PDFColumnWidth = "2.25", Preference = 7 }
                     };
+
                     plainBytes = DataExport.ExportDataToFile<PropertySetup>(exportConfigurations.OrderBy(p => p.Preference).ToList(), propertyList[0]?.Property, dataFormat);
                     output = new ObjectOutput<string, IErrorData>()
                     {
