@@ -164,6 +164,7 @@
     <Compile Include="BlackBook\PropertyInstance.cs" />
     <Compile Include="BlackBook\CustomerCompanyPropertyMap.cs" />
     <Compile Include="BlackBook\PropertyInstanceAck.cs" />
+    <Compile Include="BlackBook\SystemProductCenter.cs" />
     <Compile Include="BlackBook\TranslateCompanyInstance.cs" />
     <Compile Include="BlackBook\TranslatePropertyInstance.cs" />
     <Compile Include="BlackBook\UPFMProductPropertyInstanceMap.cs" />
@@ -294,6 +295,7 @@
     <Compile Include="IdentityConfig\UserLoginOrganization.cs" />
     <Compile Include="IdentityConfig\UserLoginPersona.cs" />
     <Compile Include="Landing\ApiError.cs" />
+    <Compile Include="Landing\EmailModel.cs" />
     <Compile Include="Landing\ProductSamlDetails.cs" />
     <Compile Include="Landing\Properties.cs" />
     <Compile Include="Landing\CompanyPropertySetup.cs" />
@@ -347,12 +349,14 @@
     <Compile Include="IdentityConfig\TelecommunicationNumber.cs" />
     <Compile Include="BlackBook\CompanyMap.cs" />
     <Compile Include="Landing\SendGridEmail.cs" />
+    <Compile Include="Landing\UnifiedSettingPropertyInstance.cs" />
     <Compile Include="Landing\Setting.cs" />
     <Compile Include="Landing\SecuritySettings.cs" />
     <Compile Include="Landing\SortTableType.cs" />
     <Compile Include="Landing\StatusType.cs" />
     <Compile Include="Landing\UnifiedSetting.cs" />
     <Compile Include="Landing\UserCompaniesProperties.cs" />
+    <Compile Include="Landing\UserEmail.cs" />
     <Compile Include="Landing\UserEmployee.cs" />
     <Compile Include="Landing\UserOrganizationExists.cs" />
     <Compile Include="IdentityConfig\UserLoginCommon.cs" />

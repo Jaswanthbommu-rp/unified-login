@@ -5,7 +5,8 @@
 	@BlackBookId int= 0,
 	@ThirdPartyIDP int= NULL,
 	@OrganizationTypeId INT,
-	@OrganizationDomainId INT = 1
+	@OrganizationDomainId INT = 1,
+	@OrganizationStatus TinyInt = 1
 )
 AS
 BEGIN
@@ -57,35 +58,17 @@ BEGIN
 	FROM		Enterprise.DataImportApplication
 	WHERE	Name = 'BlueBook';
 
-	SELECT	@OrganizationId = PartyID
-	FROM		Enterprise.Organization
-	WHERE	[Name] = @OrganizationName;
-
-	IF @OrganizationId IS NULL
-	BEGIN
-		INSERT INTO #Result (
-			Id,
-			RealPageID,
-			ErrorMessage
-		)
-		EXEC Enterprise.CreateOrganization
-			@OrganizationId = NULL,
-			@OrganizationName = @OrganizationName,
-			@OrganizationTypeId = @OrganizationTypeId,
-			@OrganizationDomainId = @OrganizationDomainId;
-	END;
-	ELSE
-	BEGIN
-		INSERT INTO #Result (
-			Id,
-			RealPageId
-		)
-		SELECT	O.PartyId AS OrganizationId,
-						P.RealPageId AS RealPageId
-		FROM		Enterprise.Organization O
-						INNER JOIN Enterprise.Party P ON P.PartyId = O.PartyId
-		WHERE	O.Name = @OrganizationName;
-	END;
+	INSERT INTO #Result (
+		Id,
+		RealPageID,
+		ErrorMessage
+	)
+	EXEC Enterprise.CreateOrganization
+		@OrganizationId = NULL,
+		@OrganizationName = @OrganizationName,
+		@OrganizationTypeId = @OrganizationTypeId,
+		@OrganizationDomainId = @OrganizationDomainId,
+		@OrganizationStatus = @OrganizationStatus;
 
 	SELECT	@OrganizationId = Id,
 					@RealPageId = RealPageId
@@ -135,40 +118,20 @@ BEGIN
 	IF NOT EXISTS
 	(
 		SELECT	1
-		FROM		Ident.PasswordPolicy
+		FROM		Ident.OrganizationSettings
 		WHERE	PartyId = @OrganizationId
 	)
 	BEGIN
-		INSERT INTO [Ident].[PasswordPolicy] (
-			[PartyId],
-			[MinimumLength],
-			[MaximumLength],
-			[MinimumLowercase],
-			[MinimumUppercase],
-			[MinimumNumeric],
-			[MinimumSpecialCharacter],
-			[AllowUsersToChangeOwnPassword],
-			[EnablePasswordExpiration],
-			[PasswordExpirationPeriodInDays],
-			[PreventPasswordReuse],
-			[NumberOfPasswordsToRemember],
-			[UserId]
-		)
-		SELECT	@OrganizationId,
-						[MinimumLength],
-						[MaximumLength],
-						[MinimumLowercase],
-						[MinimumUppercase],
-						[MinimumNumeric],
-						[MinimumSpecialCharacter],
-						[AllowUsersToChangeOwnPassword],
-						[EnablePasswordExpiration],
-						[PasswordExpirationPeriodInDays],
-						[PreventPasswordReuse],
-						[NumberOfPasswordsToRemember],
-						3
-		FROM		[Ident].[PasswordPolicy]
-		WHERE	PartyId = 3;
+		DECLARE @UserId bigint
+
+		SELECT	@UserId = UserId
+		FROM	Ident.UserLogin
+		WHERE	LoginName LIKE 'realpagead@%'
+		
+		INSERT INTO Ident.OrganizationSettings (PartyId,SettingCategoryTypeId,MappingName,MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+		SELECT @OrganizationId,SettingCategoryTypeId,MappingName,MappingValue,Editable,[Hidden],@UserId,GETDATE()
+		FROM [Ident].[OrganizationSettings]
+		WHERE	PartyId = 3				
 	END;
 
 	--Setup thirdparty IDP

@@ -45,11 +45,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
 
         /// <summary>
-        /// base Constructor
+        /// Unit test constructor
         /// </summary>
-        public ProductRepository(IRepository repository) : base(repository)
+        public ProductRepository(IRepository repository, DefaultUserClaim userClaim) : base(repository)
         {
-            _userClaim = new DefaultUserClaim { CorrelationId = Guid.Empty };
+            _userClaim = userClaim;
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
         }
 
@@ -539,8 +539,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         new ProductUI
                         {
                             ProductId = (int)ProductEnum.HelpCenter,
-                            ProductName = "Help Center",
-                            TitleId = "Help Center",
+                            ProductName = "Simon Help Center",
+                            TitleId = "Simon Help Center",
                             ProductUrl = "product/helpcenter",
                             HasAccess = false,
                             IsResource = true,
@@ -1384,7 +1384,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     else
                     {
                         userProducts = repository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = personaId, ProductStatusValue = ((Int32)UserUiStatusType.AccountCreationSuccessful).ToString() }).ToList();
-                        productSettingList = repository.GetMany<ProductSettingList>(StoredProcNameConstants.SP_ListProductSettingsByPersonaId, new { PersonaId = personaId, ProductStatus = ((Int32)UserUiStatusType.AccountCreationSuccessful).ToString() }).ToList();
+                        productSettingList = repository.GetMany<ProductSettingList>(StoredProcNameConstants.SP_ListProductSettingsByPersonaId, new { PersonaId = personaId}).ToList();
                     }
                 }
             }
@@ -1439,6 +1439,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         productInternalSetting = productInternalSettingList.FirstOrDefault(item => item.Name.Equals("ProductNotAvailableForRegularUserNoEmail", StringComparison.OrdinalIgnoreCase));
                         s.ProductNotAvailableForRegularUserNoEmail = (productInternalSetting != null) ? productInternalSetting.Value.Trim() == "1" : true;
 
+                        productInternalSetting = productInternalSettingList.FirstOrDefault(item => item.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase));
+                        s.UsePrimaryProperties = (productInternalSetting != null) ? productInternalSetting.Value.Trim() == "1" : true;
+
                         if (setIsAssigned == true)
                         {
                             s.IsAssigned = userProducts.Any(item => item.ProductId == s.ProductId);
@@ -1451,6 +1454,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                     s.IsAssigned = false;
                                 }
                             }
+
+                            productSetting = productSettingList.FirstOrDefault(item => item.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase) && item.ProductId == s.ProductId);
+                            if (productSetting != null)
+                            {
+                                s.UsePrimaryProperties = productSetting.Value.Trim() == "1" ? true : false;
+                            }                                                     
                         }
 
                         if (aoNonMigratedUserProducts?.Count > 0 && !setIsAssigned && !string.IsNullOrWhiteSpace(s.ProductCode))
@@ -1563,14 +1572,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         biProduct.SubSolution = "Benchmarking";
                     }
                 }
-
-                // remove axiometrics product
-                var aoP = productFamilyList.FirstOrDefault(p => p.ProductTypeId == 400);
-                if (aoP != null)
-                {
-                    var aoAx = aoP.Solutions.FirstOrDefault(x => x.ProductId == (int)ProductEnum.AoAxiometrics);
-                    aoP.Solutions.Remove(aoAx);
-                }
             }
             catch (Exception ex)
             {
@@ -1581,6 +1582,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 Log.Write(LogEventLevel.Error, ex, message);
             }
+
+            //Sort products by name
+            productFamilyList.ToList().ForEach(x =>
+            {
+                x.Solutions = x.Solutions.OrderBy(y => y.ProductName).ToList();
+            });
 
             return productFamilyList;
 
@@ -1980,6 +1987,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         break;
                     case (int)ProductRightEnum.ManageLeaseLabsProductAccess:
                         s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageLeaseLabsProductAccess.ToString());
+                        break;
+                    case (int)ProductRightEnum.ManageSGTourProductAccess:
+                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageSGTourProductAccess.ToString());
                         break;
                     default:
                         break;

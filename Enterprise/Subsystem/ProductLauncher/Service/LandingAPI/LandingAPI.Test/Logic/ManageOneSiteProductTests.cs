@@ -777,6 +777,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                ))
                .Returns(_partyRelationShip);
 
+            mockProductRepository
+              .Setup(m => m.GetBooksMasterProductDetail(
+                  It.IsAny<int>()
+              ))
+              .Returns(_gbProductMap);
+
             IManageProductOneSite manageProductOneSite = new ManageProductOneSite(
 		        editorRealPageId: _editorRealPageId,
 		        service: mockService.Object,
@@ -1505,7 +1511,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             var mockManageBlueBook = new Mock<IManageBlueBook>();
             var mockManagePersona = new Mock<IManagePersona>();
             var mockProductRepository = new Mock<IProductRepository>();
-            var mockProductInternalSettingRepository = new Mock<IProductInternalSettingRepository>();
+            var mockRepository = new Mock<IRepository>();
 
             SamlRepository samlRepository = new SamlRepository();
 
@@ -1527,8 +1533,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                ))
                .Returns(_gbProductMap);
 
+            mockRepository
+                .Setup(m => m.GetMany<IC.ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.Is<object>(
+                    d => d.ToString().Contains($"ProductId = 1"))))
+                .Returns(_productInternalSettingsOneSite);
+
+            ProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository(mockRepository.Object);
+
             //Act
-            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, mockService.Object, samlRepository, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
+            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, mockService.Object, samlRepository, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, productInternalSettingRepository,
                 mockHttpMessageHandler.Object);
             Persona persona = new Persona();
             var exception = Record.Exception(() => manageProductOneSite.GetOneSiteRightsCenters(_editorPersonaId));

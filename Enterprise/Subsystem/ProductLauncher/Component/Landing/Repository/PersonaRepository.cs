@@ -42,15 +42,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             _userLoginRepository = new UserLoginRepository(repository);
         }
 
-        /// <summary>
-        /// Unit test constructor
-        /// </summary>
-        /// <param name="organizationRepository"></param>
-        public PersonaRepository(IOrganizationRepository organizationRepository) : base(DbConnectionEnum.IdpConfigurationDb)
-        {
-            _organizationRepository = organizationRepository;
-        }
-
         public PersonaRepository(IOrganizationRepository organizationRepository, IUserLoginRepository userLoginRepository) : base(DbConnectionEnum.IdpConfigurationDb)
         {
             _organizationRepository = organizationRepository;
@@ -410,6 +401,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 return repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateActivePersona, new { RealPageId = personRealPageId, PersonaId = personaId });
             }
+        }
+
+        public List<ProductSettingList> GetPersonaProductSettings(long personaId)
+        {
+            List<ProductSettingList> productSettingList = new List<ProductSettingList>();
+            using (var repository = GetRepository())
+            {
+                productSettingList = repository.GetMany<ProductSettingList>(StoredProcNameConstants.SP_ListProductSettingsByPersonaId, new { PersonaId = personaId }).ToList();
+            }
+
+            return productSettingList;
         }
         #endregion
     }

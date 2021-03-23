@@ -30,8 +30,8 @@ BEGIN
 	DECLARE @ProductId int;
 	DECLARE @ServerId int;
 	DECLARE @Now datetime= GETUTCDATE();
-	DECLARE @Key nvarchar(50);
-	DECLARE @Value nvarchar(200);
+	DECLARE @Key nvarchar(MAX);
+	DECLARE @Value nvarchar(MAX);
 	DECLARE @LogCategoryTypeId int;
 	DECLARE @TPVId int;
 	DECLARE @ToUserId bigint;

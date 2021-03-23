@@ -284,97 +284,116 @@ BEGIN
 
 	END
 	
-	CREATE INDEX [IX_Temp_PersonaProduct] ON #PersonaProduct([PersonaID]) ON [PRIMARY]
+	DROP INDEX IF EXISTS [NCI_Temp_PersonaProduct_ProductId] ON [dbo].[#PersonaProduct]
+	CREATE NONCLUSTERED INDEX [NCI_Temp_PersonaProduct_ProductId]	ON [dbo].[#PersonaProduct] ([ProductId]) INCLUDE ([PersonaId])
 	
-	;WITH cteProductCount
+    DROP INDEX IF EXISTS [NCI_CustomField_Org_Seq_Enabled] ON [CustomField].[Field]
+	CREATE NONCLUSTERED INDEX [NCI_CustomField_Org_Seq_Enabled] ON [CustomField].[Field]([FieldId],OrganizationId) include ([Sequence]) where [Enabled] = 1 
+
+
+	DROP TABLE IF EXISTS #CustomFields
+
+	SELECT cff.FieldId AS 'Id',  
+		cff.Name AS 'FieldName',  
+		cffv.Value AS 'FieldValue',  
+		ULP.UserLoginID AS 'UserId',  
+		ULP.UserLoginPersonaID AS 'UserLoginPersonaId'  
+	INTO #CustomFields
+	FROM [CustomField].[Field] cff  
+		INNER JOIN [CustomField].[FieldValue] cffv ON cff.FieldId = cffv.FieldId   
+		INNER JOIN Ident.UserLoginPersona ULP ON cffv.UserLoginPersonaId = ULP.UserLoginPersonaId  
+	WHERE  cff.OrganizationId = @PartyId  
+	AND    cff.Sequence = @minSequence  
+	AND cff.Enabled = 1 
+	AND    ((NOT cffv.Value IS NULL) OR (LEN(cffv.Value) = 0))  
+
+
+	DROP TABLE IF EXISTS #UserLogin
+
+	CREATE TABLE #UserLogin
 	(
-		PersonaId,
-		ProductCount
+		PersonaId BIGINT PRIMARY KEY,  
+		UserLoginPersonaId BIGINT NULL,
+		PersonPartyId BIGINT NULL,  
+		UserId BIGINT NULL,  
+		LoginName VARCHAR(255) NULL,  
+		LastLogin DATETIME NULL,  
+		FromDate DATETIME NULL,  
+		ThruDate DATETIME NULL,  
+		IdentityProviderTypeId INT NULL,  
+		StatusId INT,  
+		StatusName VARCHAR(50) NULL,
+		StatusThruDate DATETIME NULL,  
+		PasswordModifiedDate smalldatetime NULL
 	)
-	AS
+
+	INSERT INTO #UserLogin
 	(
-		SELECT	pp.PersonaId,
-					COUNT(pp.ProductId)
-		FROM	#PersonaProduct pp
-					INNER JOIN @AssignedProductIds ap ON (ap.ProductId = pp.ProductId)
-		GROUP BY pp.PersonaId
-	),
-	cteCustomFields
-	(
-		Id,
-		FieldName,
-		FieldValue,
-		UserId,
-		UserLoginPersonaId
+	PersonaId,UserLoginPersonaId,PersonPartyId,UserId,LoginName,LastLogin,FromDate,ThruDate,IdentityProviderTypeId
+	,StatusId,StatusName,StatusThruDate,PasswordModifiedDate
 	)
-	AS
+	SELECT   
+		pe.PersonaId, 
+		iulp.UserLoginPersonaId, 
+		ul.PersonPartyId,  
+		ul.UserId,  
+		ul.LoginName,  
+		ul.LastLoginDate AS LastLogin,  
+		iulp.FromDate,  
+		iulp.ThruDate,  
+		ul.IdentityProviderTypeId,  
+		iulp.StatusTypeId AS StatusId,  
+		CASE  
+		WHEN ((iulp.StatusTypeId = 12) AND (ul.LastLoginDate IS NULL)) THEN 'Pending'  
+		WHEN ((iulp.StatusTypeId = 12) AND (ul.LastLoginDate IS NOT NULL)) THEN 'Active'  
+		ELSE est.Name  
+		END AS 'StatusName',  
+		iulp.StatusThruDate,  
+		ul.PasswordModifiedDate 
+	FROM Person.Persona pe  
+		INNER JOIN Ident.UserLoginPersona iulp ON (pe.UserLoginPersonaId = iulp.UserLoginPersonaId)  
+		INNER JOIN Ident.UserLogin ul ON iulp.UserLoginId = ul.UserId  
+		INNER JOIN Enterprise.StatusType est ON iulp.StatusTypeId = est.StatusTypeId  
+		LEFT OUTER JOIN @filterStatus fs ON (est.StatusTypeId = fs.StatusTypeId)  
+	WHERE iulp.OrganizationPartyId = @PartyId  
+	AND  pe.personaId  NOT IN ( SELECT ISNULL(PersonaId, 0) FROM @HoldPersona)  
+	AND  (  
+		pe.PersonaId IN  
+		(  
+		SELECT PersonaID  
+		FROM #PersonaProduct  
+		WHERE PE.PersonaId = PersonaID AND ProductId = @filterProductId  
+		)  
+		OR @filterProductId IS NULL  
+	)  
+	AND  ((@filterStatusTypeId = 0) OR (NOT fs.StatusTypeId IS NULL))  
+
+
+	DROP TABLE IF EXISTS #ProductCount
+
+	CREATE TABLE #ProductCount
 	(
-		SELECT	cff.FieldId AS 'Id',
-					cff.Name AS 'FieldName',
-					cffv.Value AS 'FieldValue',
-					ULP.UserLoginID AS 'UserId',
-					ULP.UserLoginPersonaID AS 'UserLoginPersonaId'
-		FROM	[CustomField].[Field] cff
-					INNER JOIN [CustomField].[FieldValue] cffv ON (cff.Enabled = 1 AND cff.FieldId = cffv.FieldId)
-					INNER JOIN Ident.UserLoginPersona ULP ON cffv.UserLoginPersonaId = ULP.UserLoginPersonaId
-		WHERE		cff.OrganizationId = @PartyId
-		AND				cff.Sequence = @minSequence
-		AND				((NOT cffv.Value IS NULL) OR (LEN(cffv.Value) = 0))
-	),
-	cteUserLogin
-	(
-		UserLoginPersonaId,
-		PersonaId,
-		PersonPartyId,
-		UserId,
-		LoginName,
-		LastLogin,
-		FromDate,
-		ThruDate,
-		IdentityProviderTypeId,
-		StatusId,
-		StatusName,
-		StatusThruDate,
-		PasswordModifiedDate
+	PersonaId INT NOT NULL PRIMARY KEY,
+	ProductCount INT NOT NULL
 	)
-	AS
+
+	INSERT INTO #ProductCount
 	(
-		SELECT		iulp.UserLoginPersonaId,
-					pe.PersonaId,
-					ul.PersonPartyId,
-					ul.UserId,
-					ul.LoginName,
-					ul.LastLoginDate,
-					iulp.FromDate,
-					iulp.ThruDate,
-					ul.IdentityProviderTypeId,
-					iulp.StatusTypeId,
-					CASE
-						WHEN ((iulp.StatusTypeId = 12) AND (ul.LastLoginDate IS NULL)) THEN 'Pending'
-						WHEN ((iulp.StatusTypeId = 12) AND (ul.LastLoginDate IS NOT NULL)) THEN 'Active'
-						ELSE est.Name
-					END AS 'StatusName',
-					iulp.StatusThruDate,
-					ul.PasswordModifiedDate
-		FROM	Person.Persona pe
-					INNER JOIN Ident.UserLoginPersona iulp ON (pe.UserLoginPersonaId = iulp.UserLoginPersonaId)
-					INNER JOIN Ident.UserLogin ul ON iulp.UserLoginId = ul.UserId
-					INNER JOIN Enterprise.StatusType est ON iulp.StatusTypeId = est.StatusTypeId
-					LEFT OUTER JOIN @filterStatus fs ON (est.StatusTypeId = fs.StatusTypeId)
-		WHERE	iulp.OrganizationPartyId = @PartyId
-		AND		pe.personaId  NOT IN ( SELECT ISNULL(PersonaId, 0) FROM @HoldPersona)
-		AND		(
-					pe.PersonaId IN
-					(
-						SELECT	PersonaID
-						FROM	#PersonaProduct
-						WHERE	PE.PersonaId = PersonaID AND ProductId = @filterProductId
-					)
-					OR @filterProductId IS NULL
-				)
-		AND		((@filterStatusTypeId = 0) OR (NOT fs.StatusTypeId IS NULL))
-	),
- 	cteUsersFinal
+		PersonaId,ProductCount
+	)
+	SELECT 
+		pp.PersonaId,  
+		COUNT(pp.ProductId) AS ProductCount
+	FROM #PersonaProduct pp  
+		INNER JOIN @AssignedProductIds ap ON (ap.ProductId = pp.ProductId)  
+	GROUP BY pp.PersonaId  
+
+	DROP INDEX IF EXISTS [NCI_cteUserLogin_PersonPartyId] ON [dbo].[#UserLogin]
+	CREATE NONCLUSTERED INDEX [NCI_cteUserLogin_PersonPartyId]  ON [dbo].[#UserLogin] ([PersonPartyId])
+	INCLUDE ([UserLoginPersonaId],[PersonaId],[UserId],[LoginName],[LastLogin],[FromDate],[ThruDate],[IdentityProviderTypeId],[StatusId],[StatusName],[StatusThruDate],[PasswordModifiedDate])
+
+
+	;WITH cteUsersFinal
 	(
 		RealPageID,
 		PartyId,
@@ -403,76 +422,86 @@ BEGIN
 		TotalRecords,
 		RowNumber
 	)
-	AS
+	AS 
 	(
-		SELECT DISTINCT
-					pa.RealpageId AS RealPageID,
-					p.PartyId,
-					p.FirstName,
-					p.MiddleName,
-					p.LastName,
-					UE.Employee as EmployeeId,
-					p.Title,
-					p.Suffix,
-					CASE
-						WHEN cf.FieldValue IS NULL THEN ''
-						ELSE cf.FieldValue
-					END AS 'CustomFieldValue',
-					ulp.UserId,
-					ulp.LoginName,
-					ulp.LastLogin,
-					ulp.FromDate,
-					ulp.ThruDate,
-					ulp.StatusId,
-					ulp.StatusName,
-					ulp.StatusThruDate,
-					CASE
-						WHEN ipt.Name = 'ID3' THEN 0
-						ELSE 1
-					END AS 'Is3rdPartyIDP',
-					ISNULL(pct.ProductCount, 0) AS Products,
-					0 AS Properties,
-					ISNULL(rt.Name, '') AS UserType,
-					prs.RoleTypeIdFrom AS PartyRoleTypeId,
-					ulp.PasswordModifiedDate,
-					@OffsetMinutes,
-					COUNT(1) OVER () AS TotalRecords,
-					CASE @sortValue
-						WHEN 100 THEN ROW_NUMBER() OVER (ORDER BY p.FirstName + ' ' + p.LastName ASC)
-						WHEN 101 THEN ROW_NUMBER() OVER (ORDER BY pct.ProductCount ASC, p.FirstName + ' ' + p.LastName ASC)
-						WHEN 102 THEN ROW_NUMBER() OVER (ORDER BY ulp.LastLogin ASC, p.FirstName + ' ' + p.LastName ASC)
-						WHEN 103 THEN ROW_NUMBER() OVER (ORDER BY ulp.LoginName ASC, p.FirstName + ' ' + p.LastName ASC)
-						WHEN 104 THEN ROW_NUMBER() OVER (ORDER BY ulp.StatusName ASC, p.FirstName + ' ' + p.LastName ASC)
-						WHEN 105 THEN ROW_NUMBER() OVER (ORDER BY UE.Employee ASC, p.FirstName + ' ' + p.LastName ASC)
-						WHEN -100 THEN ROW_NUMBER() OVER (ORDER BY p.FirstName + ' ' + p.LastName DESC)
-						WHEN -101 THEN ROW_NUMBER() OVER (ORDER BY pct.ProductCount DESC, p.FirstName + ' ' + p.LastName DESC)
-						WHEN -102 THEN ROW_NUMBER() OVER (ORDER BY ulp.LastLogin DESC, p.FirstName + ' ' + p.LastName DESC)
-						WHEN -103 THEN ROW_NUMBER() OVER (ORDER BY ulp.LoginName DESC, p.FirstName + ' ' + p.LastName DESC)
-						WHEN -104 THEN ROW_NUMBER() OVER (ORDER BY ulp.StatusName DESC, p.FirstName + ' ' + p.LastName DESC)
-						WHEN -105 THEN ROW_NUMBER() OVER (ORDER BY UE.Employee DESC, p.FirstName + ' ' + p.LastName DESC)
-					END AS RowNumber
-		FROM	cteUserLogin ulp
-					INNER JOIN Person.Person p ON p.PartyId = ulp.PersonPartyId
-					INNER JOIN Enterprise.Party pa ON p.PartyId = pa.PartyID
-					INNER JOIN Enterprise.PartyRelationship prs ON prs.PartyIdFrom = ulp.PersonPartyId AND prs.PartyIdTo = @PartyId
-					INNER JOIN Enterprise.RelationshipType rst ON rst.RelationshipTypeId = prs.PartyRelationshipTypeId
-					INNER JOIN Enterprise.RoleType rt ON (rt.PartyRoleTypeId = rst.RoleTypeIdValidFrom)
-					INNER JOIN Ident.IdentityProviderType ipt ON ulp.IdentityProviderTypeId = ipt.IdentityProviderTypeId
-					LEFT OUTER JOIN cteProductCount pct ON pct.PersonaId = ulp.PersonaId
-					LEFT OUTER JOIN cteCustomFields cf ON (cf.UserLoginPersonaId = ulp.UserLoginPersonaId)
-					LEFT OUTER JOIN Enterprise.UserEmployeeId UE ON ulp.UserLoginPersonaId = UE.UserLoginPersonaId
-		WHERE		(
-								(@filterName IS NULL)
-								OR (CHARINDEX(@filterName, FirstName + ' ' + LastName, 1) > 0)
-								OR (CHARINDEX(@filterName, ulp.LoginName, 1) > 0)
-								OR (CHARINDEX(@filterName, cf.FieldValue, 1) > 0)
-								OR (CHARINDEX(@filterName, UE.Employee, 1) > 0)
-							)
-		AND		((@NOW BETWEEN prs.FromDate AND prs.ThruDate) OR (@NOW >= prs.FromDate AND prs.ThruDate IS NULL))
-		AND		((@ParentPartyRoleTypeId IS NULL) OR (rt.ParentPartyRoleTypeId = @ParentPartyRoleTypeId))
-		AND		((@filterPartyRoleTypeId IS NULL) OR (prs.RoleTypeIdFrom = @filterPartyRoleTypeId))
+		  SELECT 
+			 pa.RealpageId AS RealPageID,  
+			 p.PartyId,  
+			 p.FirstName,  
+			 p.MiddleName,  
+			 p.LastName,  
+			 UE.Employee as EmployeeId,  
+			 p.Title,  
+			 p.Suffix,  
+			 CASE  
+			  WHEN cf.FieldValue IS NULL THEN ''  
+			  ELSE cf.FieldValue  
+			 END AS 'CustomFieldValue',  
+			 ulp.UserId,  
+			 ulp.LoginName,  
+			 ulp.LastLogin,  
+			 ulp.FromDate,  
+			 ulp.ThruDate,  
+			 ulp.StatusId,  
+			 ulp.StatusName,  
+			 ulp.StatusThruDate,  
+			 CASE  
+			  WHEN ipt.Name = 'ID3' THEN 0  
+			  ELSE 1  
+			 END AS 'Is3rdPartyIDP',  
+			 ISNULL(pct.ProductCount, 0) AS Products,  
+			 0 AS Properties,  
+			 ISNULL(rt.Name, '') AS UserType,  
+			 prs.RoleTypeIdFrom AS PartyRoleTypeId,  
+			 ulp.PasswordModifiedDate,  
+			 @OffsetMinutes,  
+			 COUNT(1) OVER () AS TotalRecords,
+			 CASE @sortValue  
+				  WHEN 100 THEN ROW_NUMBER() OVER (ORDER BY p.FirstName + ' ' + p.LastName ASC)  
+				  WHEN 101 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(pct.ProductCount,0) ASC, p.FirstName + ' ' + p.LastName ASC)  
+				  WHEN 102 THEN ROW_NUMBER() OVER (ORDER BY ulp.LastLogin ASC, p.FirstName + ' ' + p.LastName ASC)  
+				  WHEN 103 THEN ROW_NUMBER() OVER (ORDER BY ulp.LoginName ASC, p.FirstName + ' ' + p.LastName ASC)  
+				  WHEN 104 THEN ROW_NUMBER() OVER (ORDER BY ulp.StatusName ASC, p.FirstName + ' ' + p.LastName ASC)  
+				  WHEN 105 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(UE.Employee,'') ASC, p.FirstName + ' ' + p.LastName ASC)  
+				  WHEN -100 THEN ROW_NUMBER() OVER (ORDER BY p.FirstName + ' ' + p.LastName DESC)  
+				  WHEN -101 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(pct.ProductCount,0)  DESC, p.FirstName + ' ' + p.LastName DESC)  
+				  WHEN -102 THEN ROW_NUMBER() OVER (ORDER BY ulp.LastLogin DESC, p.FirstName + ' ' + p.LastName DESC)  
+				  WHEN -103 THEN ROW_NUMBER() OVER (ORDER BY ulp.LoginName DESC, p.FirstName + ' ' + p.LastName DESC)  
+				  WHEN -104 THEN ROW_NUMBER() OVER (ORDER BY ulp.StatusName DESC, p.FirstName + ' ' + p.LastName DESC)  
+				  WHEN -105 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(UE.Employee,'') DESC, p.FirstName + ' ' + p.LastName DESC)  
+				 END AS RowNumber
+		  FROM #UserLogin ulp  
+			 INNER JOIN Person.Person p ON p.PartyId = ulp.PersonPartyId  
+			 INNER JOIN Enterprise.Party pa ON p.PartyId = pa.PartyID  
+			 LEFT JOIN
+				(SELECT * 
+				 FROM
+					(
+						SELECT *,ROW_NUMBER() OVER(PARTITION BY PartyId ORDER BY FromDate DESC) AS RowNo
+						FROm Enterprise.PartyContactMechanism
+						WHERE ThruDate > GETUTCDATE()
+					) X
+				WHERE X.RowNo = 1) PCM ON ulp.PersonPartyId = PCM.PartyId
+			 LEFT JOIN Enterprise.ElectronicAddress EA ON PCM.ContactMechanismId=EA.ContactMechanismID
+			 INNER JOIN Enterprise.PartyRelationship prs ON prs.PartyIdFrom = ulp.PersonPartyId AND prs.PartyIdTo = @PartyId  
+			 INNER JOIN Enterprise.RelationshipType rst ON rst.RelationshipTypeId = prs.PartyRelationshipTypeId  
+			 INNER JOIN Enterprise.RoleType rt ON (rt.PartyRoleTypeId = rst.RoleTypeIdValidFrom)  
+			 INNER JOIN Ident.IdentityProviderType ipt ON ulp.IdentityProviderTypeId = ipt.IdentityProviderTypeId  
+			 LEFT OUTER JOIN #ProductCount pct ON pct.PersonaId = ulp.PersonaId  
+			 LEFT OUTER JOIN #CustomFields cf ON (cf.UserLoginPersonaId = ulp.UserLoginPersonaId)  
+			 LEFT OUTER JOIN Enterprise.UserEmployeeId UE ON ulp.UserLoginPersonaId = UE.UserLoginPersonaId  
+		  WHERE  (  
+				(@filterName IS NULL)  
+				OR (CHARINDEX(@filterName, FirstName + ' ' + LastName, 1) > 0)  
+				OR (CHARINDEX(@filterName, ulp.LoginName, 1) > 0)  
+				OR (CHARINDEX(@filterName, cf.FieldValue, 1) > 0)  
+				OR (CHARINDEX(@filterName, UE.Employee, 1) > 0)  
+				OR (CHARINDEX(@filterName, EA.ElectronicAddressString, 1) > 0)
+			   )  
+		  AND  ((@NOW BETWEEN prs.FromDate AND prs.ThruDate) OR (@NOW >= prs.FromDate AND prs.ThruDate IS NULL))  
+		  AND  ((@ParentPartyRoleTypeId IS NULL) OR (rt.ParentPartyRoleTypeId = @ParentPartyRoleTypeId))  
+		  AND  ((@filterPartyRoleTypeId IS NULL) OR (prs.RoleTypeIdFrom = @filterPartyRoleTypeId))  
 	)
-
 	SELECT	TotalRecords,
 				RealPageID,
 				PartyId,
@@ -504,5 +533,11 @@ BEGIN
 	FETCH NEXT(@RowsPerPage) ROWS ONLY
 	OPTION (RECOMPILE)
 
-	drop table #PersonaProduct
+	
+	DROP INDEX IF EXISTS [NCI_CustomField_Org_Seq_Enabled] ON [CustomField].[Field]
+	DROP TABLE IF EXISTS #ProductCount
+	DROP INDEX IF EXISTS [NCI_cteUserLogin_PersonPartyId] ON [dbo].[#UserLogin]
+	DROP TABLE IF EXISTS #UserLogin
+	DROP TABLE IF EXISTS #PersonaProduct
+
 END;

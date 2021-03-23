@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
@@ -19,13 +20,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 		#region Constructors
 		/// <summary>
-		/// ManageContactMechanism Constructor
+		/// Unit test constructor
 		/// </summary>
 		/// <param name="contactMechanismRepository">Contact Mechanism Repository</param>
 		public ManageContactMechanism(IContactMechanismRepository contactMechanismRepository)
 		{
 			_contactMechanismRepository = contactMechanismRepository;
 		}
+
+		/// <summary>
+		/// Unit test constructor
+		/// </summary>
+		/// <param name="repository"></param>
+        public ManageContactMechanism(IRepository repository)
+        {
+            _contactMechanismRepository = new ContactMechanismRepository(repository);
+        }
 
 		/// <summary>
 		/// Create a basic instance of the ManageContactMechanism Controller class

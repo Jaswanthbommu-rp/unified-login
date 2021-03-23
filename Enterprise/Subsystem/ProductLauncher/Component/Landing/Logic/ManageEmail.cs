@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterprise.Helpers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
@@ -30,6 +31,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         DefaultUserClaim _defaultUserClaim;
         IEmailRepository _emailRepository;
         IProductInternalSettingRepository _productInternalSettingRepository;
+        readonly ITokenHelper _tokenHelper;
         #endregion
 
         #region Constructors
@@ -44,6 +46,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _defaultUserClaim = defaultUserClaim;
             _emailRepository = emailRepository;
             _productInternalSettingRepository = productInternalSettingRepository;
+            _tokenHelper = new TokenHelper();
         }
 
         /// <summary>
@@ -55,6 +58,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _defaultUserClaim = defaultUserClaim;
             _emailRepository = new EmailRepository();
             _productInternalSettingRepository = new ProductInternalSettingRepository();
+            _tokenHelper = new TokenHelper();
         }
         #endregion
 
@@ -350,6 +354,65 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 WriteToLog(LogEventLevel.Information, "ManageEmail.SendGridEmail: An error occured when sending the email.", null, ex);
                 return "An error occured when sending the email.";
             }
+        }
+        /// <summary>
+        /// Send an Email through Unified Email
+        /// </summary>
+        /// <param name="emailModel"></param>
+        /// <returns></returns>
+        public bool SendEmailAsync(EmailModel emailModel)
+        {
+            try
+            {
+                Dictionary<string, object> logData = new Dictionary<string, object>()
+                {
+                    {"SendEmail",  emailModel}
+                };
+                WriteToLog(LogEventLevel.Information, "ManageEmail.SendEmailAsync: Email details.", logData, null);
+
+                IList<ProductInternalSetting> productSettingList = _productInternalSettingRepository.GetProductInternalSettings(productId: (int)ProductEnum.UnifiedPlatform);
+               
+                string UnifiedEmailBaseAddress = productSettingList.ToList().FirstOrDefault(s => s.Name.Equals("UnifiedEmailBaseAddress", StringComparison.OrdinalIgnoreCase)).Value;
+                string UnifiedEmailEndPoint = productSettingList.ToList().FirstOrDefault(s => s.Name.Equals("UnifiedEmailEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
+                var UseDefaultTemplate = productSettingList.ToList().FirstOrDefault(s => s.Name.Equals("UseDefaultTemplate", StringComparison.OrdinalIgnoreCase)).Value == "1" ? true : false;
+                string emailUrl = string.Concat(UnifiedEmailBaseAddress, UnifiedEmailEndPoint) + $"?useDefaultTemplate={UseDefaultTemplate}";
+               
+                var ulClientToken = _tokenHelper.GetUnifiedLoginServerToken("emailsapi");
+
+                using (var httpClient = new HttpClient())
+                {
+                    httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", ulClientToken);
+                    httpClient.BaseAddress = new Uri(UnifiedEmailBaseAddress);
+
+                    var payload = new StringContent(JsonConvert.SerializeObject(emailModel),
+                       Encoding.UTF8, "application/json");
+
+                    logData.Add("UlClientToken",  ulClientToken);
+                    WriteToLog(LogEventLevel.Debug, $"ManageEmail.SendEmailAsync: Sending Emails from {httpClient.BaseAddress} {UnifiedEmailEndPoint}", logData);
+                    var request = new HttpRequestMessage
+                    {
+                        Method = HttpMethod.Post,
+                        Content = payload,
+                        RequestUri = new Uri(emailUrl),
+                    };
+                    var response = httpClient.SendAsync(request).Result;
+                    var responseContent = response.Content.ReadAsStringAsync().Result;
+
+                    if (response != null && response.IsSuccessStatusCode)
+                    {   
+                        return JsonConvert.DeserializeObject<bool>(responseContent);
+                    }
+                    else
+                    {
+                        WriteToLog(LogEventLevel.Error, $"ManageEmail.SendEmailAsync: Error while sending emails from {UnifiedEmailEndPoint}{responseContent}");
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                WriteToLog(LogEventLevel.Error, "ManageEmail.SendEmailAsync: Exception  while sending emails {@ex}", null, exception);
+            }
+            return false;
         }
         #endregion
 

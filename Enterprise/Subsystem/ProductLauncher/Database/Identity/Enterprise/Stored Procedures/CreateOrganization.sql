@@ -2,7 +2,8 @@
                                                   @OrganizationName NVARCHAR(150),
                                                   @TimeZone         NVARCHAR(200) NULL = 'Central Standard Time',
 												  @OrganizationTypeId INT,
-                                                  @OrganizationDomainId INT = 1
+                                                  @OrganizationDomainId INT = 1,
+												  @OrganizationStatus TinyInt = 1
 AS
      BEGIN
          DECLARE @IdentityProviderId INT;
@@ -20,7 +21,6 @@ AS
                  BEGIN
                      SET @OrganizationId = NEWID();
                  END;
-             BEGIN TRANSACTION;
              SET NOCOUNT ON;
              DECLARE @PartyId BIGINT;
 
@@ -41,7 +41,8 @@ AS
 				 IdentityProviderTypeId,
 				 OrganizationTypeId,
                  OrganizationDomainId,
-				 CreateDate
+				 CreateDate,
+				 IsActive
 				)
              VALUES
 				(@PartyId,
@@ -49,7 +50,8 @@ AS
 				 @IdentityProviderId,
 				 @OrganizationTypeId,
                  @OrganizationDomainId,
-				 GETUTCDATE()
+				 GETUTCDATE(),
+				 @OrganizationStatus
 				);
 
              INSERT INTO Enterprise.PartyContactMechanism
@@ -98,6 +100,7 @@ AS
 						);
                      SELECT @MasterConfigurationId = SCOPE_IDENTITY();
                  END;
+
              IF NOT EXISTS
 				(
 					SELECT 1
@@ -140,14 +143,12 @@ AS
 						 @MasterSettingId
 						);
                  END;
-             SET NOCOUNT OFF;
-             COMMIT;
+
              SELECT @PartyId AS Id,
                     @OrganizationId AS RealPageId,
                     '' AS ErrorMessage;
          END TRY
          BEGIN CATCH
-             ROLLBACK;
              DECLARE @ErrorLogID INT;
              EXEC dbo.LogError
                   @ErrorLogID = @ErrorLogID OUTPUT;
@@ -157,4 +158,3 @@ AS
              WHERE ErrorLogID = @ErrorLogID;
          END CATCH;
      END;
-

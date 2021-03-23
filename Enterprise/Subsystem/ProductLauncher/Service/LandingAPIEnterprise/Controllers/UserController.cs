@@ -79,7 +79,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             _managePersona = new ManagePersona(repository, userClaims, messageHandler);
 
             _personLogic = new ManagePerson(repository);
-            ProductRepository productRepository = new ProductRepository(repository);
+            ProductRepository productRepository = new ProductRepository(repository, userClaims);
             ProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository(repository);
             // ManagePersona managePersona = new ManagePersona(repository, userClaims);
             _manageOrganization = new ManageOrganization(repository, userClaims, messageHandler);
@@ -88,9 +88,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
             ManageBlueBook manageBlueBook = new ManageBlueBook(userClaims, productInternalSettingRepository, messageHandler);
             ManageProfile manageProfile = new ManageProfile(userClaims);
-            
-            UnifiedSettingsRepository unifiedSettingsRepository = new UnifiedSettingsRepository(repository);
-            _manageSettings = new ManageUnifiedSettings(unifiedSettingsRepository, _userClaims);
+            _manageSettings = new ManageUnifiedSettings(repository, _userClaims, messageHandler);
 
             _manageProduct = new ManageProduct(productRepository, productInternalSettingRepository, _managePersona, manageBlueBook, managePartyRelationship, _manageOrganization, manageProfile, manageUserRoleRight, userClaims);
 
@@ -849,7 +847,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [HttpGet]
         public HttpResponseMessage GetUserProductsByPersonaId(long? personaId = 0)
         {
-            UserProductOutputResultv2 productResult = new UserProductOutputResultv2 {Products = new Dictionary<string, List<UserProducts>>(), Settings = new Dictionary<string, object>()};
+            UserProductOutputResultv2 productResult = new UserProductOutputResultv2 {Products = new Dictionary<string, List<UserProducts>>(), Settings = new Dictionary<string, object>(), Resources = new List<UserProducts>() };
 
             if (!personaId.HasValue || personaId == 0)
             {
@@ -918,11 +916,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
                         if (up.IsResource)
                         {
-                            if (productResult.Resources == null)
-                            {
-                                productResult.Resources = new List<UserProducts>();
-                            }
-
                             productResult.Resources.Add(up);
                         }
                     }
@@ -1396,6 +1389,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         /// <returns></returns>
         private List<UserProducts> ConvertDashboardProductsToRAUL(IList<PersonaProductUserDetails> products)
         {
+            var productIconSettings = _manageProduct.GetProductSettingByType("ProductIcon");
+
             List<UserProducts> productList = new List<UserProducts>();
             foreach (PersonaProductUserDetails prodDetail in products)
             {
@@ -1407,7 +1402,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                         Name = prodDetail.ProductName,
                         Description = prodDetail.ProductDescription,
                         Url = prodDetail.ProductUrl.ToUpper().Contains("HTTP") ? prodDetail.ProductUrl : ConfigReader.GetLandingUri + prodDetail.ProductUrl,
-                        Label = ProductEnumHelper.GetProductRaulLabel((ProductEnum)prodDetail.ProductId),
+                        Label = productIconSettings.FirstOrDefault(f => f.ProductId == prodDetail.ProductId)?.Value,
                         FamilyId = prodDetail?.FamilyId,
                         FamilyName = prodDetail.Family,
                         IsFavorite = prodDetail.IsFavorite,
@@ -1425,6 +1420,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
         private List<UserProducts> ConvertPersonaProductsToRAUL(IList<PersonaProduct> products, long personaId)
         {
+            var productIconSettings = _manageProduct.GetProductSettingByType("ProductIcon");
+
             List<UserProducts> productList = new List<UserProducts>();
 
             foreach (PersonaProduct prodDetail in products)
@@ -1437,7 +1434,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                         Name = prodDetail.Name,
                         Description = prodDetail.Description,
                         Url = prodDetail.Url != null && prodDetail.Url.ToUpper().Contains("HTTP") ? prodDetail.Url : ConfigReader.GetLandingUri + $"product-redirect.html?prod={prodDetail.ProductId}&persona={personaId}",
-                        Label = ProductEnumHelper.GetProductRaulLabel((ProductEnum)prodDetail.ProductId),
+                        Label = productIconSettings.FirstOrDefault(f => f.ProductId == prodDetail.ProductId)?.Value,
                         FamilyId = prodDetail?.FamilyId,
                         FamilyName = prodDetail.FamilyName,
                         IsFavorite = prodDetail.isFavorite,
@@ -1461,6 +1458,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         /// <returns></returns>
         private List<UserProducts> ConvertDashboardProductsToRAULv2(IList<PersonaProductUserDetails> products)
         {
+            var productIconSettings = _manageProduct.GetProductSettingByType("ProductIcon");
+
             List<UserProducts> productList = new List<UserProducts>();
             foreach (PersonaProductUserDetails prodDetail in products)
             {
@@ -1472,7 +1471,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                         Name = prodDetail.ProductName,
                         Description = prodDetail.ProductDescription,
                         Url = prodDetail.ProductUrl.ToUpper().Contains("HTTP") ? prodDetail.ProductUrl : ConfigReader.GetLandingUri + $"product-redirect.html?prod={prodDetail.ProductId}&persona={prodDetail.PersonaId}",
-                        Label = ProductEnumHelper.GetProductRaulLabel((ProductEnum)prodDetail.ProductId),
+                        Label = productIconSettings.FirstOrDefault(f => f.ProductId == prodDetail.ProductId)?.Value,
                         FamilyId = prodDetail?.FamilyId,
                         FamilyName = prodDetail.Family,
                         IsFavorite = prodDetail.IsFavorite,

@@ -20,33 +20,35 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		private readonly IUserRepository _userRepository = new UserRepository();
 		private readonly ITelecommunicationNumberRepository _telecommunicationNumberRepository = new TelecommunicationNumberRepository();
 
-		/// <summary>
-		/// Get Product Company Map
-		/// </summary>
-		public CustomerCompanyMap GetProductCompanyMap(string blueBookProductCode, int booksMasterId, DefaultUserClaim userClaims, string domain)
-		{
-			try
-			{
-				IManageBlueBook blueBook = new ManageBlueBook(userClaims);
+        /// <summary>
+        /// Get Product Company Map
+        /// </summary>
+        public CustomerCompanyMap GetProductCompanyMap(string blueBookProductCode, int booksMasterId, DefaultUserClaim userClaims, string domain)
+        {
+            try
+            {
+                IManageBlueBook blueBook = new ManageBlueBook(userClaims);
 
-			IList<CustomerCompanyMap> companyProductList = blueBook.GetCompanyMap(userClaims.OrganizationRealPageGuid, booksMasterId, source: blueBookProductCode.ToUpper(), domain: domain);
-			if (companyProductList == null) { companyProductList = new List<CustomerCompanyMap>(); }
+                IList<CustomerCompanyMap> companyProductList = blueBook.GetCompanyMap(userClaims.OrganizationRealPageGuid, booksMasterId, source: blueBookProductCode.ToUpper(), domain: domain);
+                if (companyProductList == null)
+                {
+                    companyProductList = new List<CustomerCompanyMap>();
+                }
 
-				CustomerCompanyMap company = new CustomerCompanyMap();
-				if (companyProductList.Any(a => a.Source.ToUpper() == blueBookProductCode.ToUpper()))
-				{
-					company = (from a in companyProductList where a.Source.ToUpper() == blueBookProductCode.ToUpper() select a).FirstOrDefault();
-				}
+                if (companyProductList.Any(a => a.Source.Equals(blueBookProductCode, StringComparison.OrdinalIgnoreCase)))
+                {
+                    return (from a in companyProductList where a.Source.Equals(blueBookProductCode, StringComparison.OrdinalIgnoreCase) select a).FirstOrDefault();
+                }
+                
+                return new CustomerCompanyMap();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message, ex);
+            }
+        }
 
-				return company;
-			}
-			catch (Exception ex)
-			{
-				throw new Exception(ex.Message , ex);
-			}
-		}
-
-		/// <summary>
+        /// <summary>
 		/// Get BlueBook Product map
 		/// </summary>
 		public GbProductMap GetBlueBookProductMap(int productId)

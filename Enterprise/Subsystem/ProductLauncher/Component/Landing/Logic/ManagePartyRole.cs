@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
@@ -19,13 +20,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 		#region Constructors
 		/// <summary>
-		/// ManagePartyRole Constructor
+        /// Unit test constructor
 		/// </summary>
 		/// <param name="partyRoleRepository">PartyRole Repository</param>
 		public ManagePartyRole(IPartyRoleRepository partyRoleRepository)
 		{
 			_partyRoleRepository = partyRoleRepository;
 		}
+
+        /// <summary>
+        /// Unit test constructor
+        /// </summary>
+        /// <param name="repository">Repository</param>
+        public ManagePartyRole(IRepository repository)
+        {
+            _partyRoleRepository = new PartyRoleRepository(repository);
+        }
 
 		/// <summary>
 		/// Create a basic instance of the ManagePartyRole Controller class

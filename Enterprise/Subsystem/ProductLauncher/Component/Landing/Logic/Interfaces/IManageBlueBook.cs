@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
 
@@ -91,6 +92,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <returns></returns>
         IList<Company> GetCompanyListByCompIds(List<UnifiedLoginCompany> booksCompanyMasterList);
 
+        /// <summary>
+        /// GetUPFMCompanyDetailsByInstanceIds
+        /// </summary>
+        /// <param name="companyInstanceIds"></param>
+        /// <returns></returns>
+        IList<CustomerCompanyInstance> GetUPFMCompanyDetailsByInstanceIds(List<string> companyInstanceIds);
+
         IList<ProductProperty> GetCustomerProperty(long booksCompanyMasterId = 0, string include = null, string filter = null);
 
         /// <summary>
@@ -106,6 +114,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <param name="companyInstance"></param>
         /// <returns></returns>
         bool DeleteBooksGreenBookCompanyInstance(CompanyInstance companyInstance);
+
+        /// <summary>
+        /// Used to delete an existing property instance
+        /// </summary>
+        /// <param name="propertyInstance"></param>
+        /// <returns></returns>
+        bool DeletePropertyFromBooks(Guid propertyInstance);
 
         /// <summary>
         /// Used to update an existing company instance
@@ -181,5 +196,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         ///// <param name="customerPropertyId"></param>
         ///// <returns></returns>
         List<BooksPropertyInstance> GetPropertyInstanceByCustomerPropertyId(string CustomerPropertyId);
+
+        /// <summary>
+        /// GetAllProductsPropertyInstanceFromBooks
+        /// </summary>
+        /// <param name="companyRealPageId"></param>
+        /// <returns></returns>
+        List<BooksPropertyInstance> GetAllProductsPropertyInstanceFromBooks(Guid companyRealPageId);
+
+        ///// <summary>
+        ///// Get translated product primary properties data
+        ///// </summary>
+        ///// <param name="upfmProperty"></param>
+        ///// <returns></returns>
+        ListResponse TranslateProductPrimaryPropertiesData(UPFMProperty upfmProperty, int productId, ListResponse productResult);
+
+        /// <summary>
+        /// Used to enable product for an organization
+        /// </summary>
+        /// <param name="systemProductCenter"></param>
+        /// <returns></returns>
+        bool ProductCenterEnable(SystemProductCenter systemProductCenter);
+
+        /// <summary>
+        /// Used to delete product for an organization
+        /// </summary>
+        /// <param name="systemProductCenter"></param>
+        /// <returns></returns>
+        bool ProductCenterDisable(SystemProductCenter systemProductCenter);
     }
 }

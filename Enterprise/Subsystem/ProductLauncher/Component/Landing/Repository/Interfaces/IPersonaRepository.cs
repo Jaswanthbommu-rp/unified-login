@@ -72,6 +72,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="personaId"></param>
         /// <returns></returns>
         RepositoryResponse UpdateActivePersona(Guid personRealPageId, long personaId);
+        /// <summary>
+        /// Used to get persona products settings
+        /// </summary>
+        /// <param name="personaId"></param>
+        /// <returns></returns>
+        List<ProductSettingList> GetPersonaProductSettings(long personaId);
 
     }
 }

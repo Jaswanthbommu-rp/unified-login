@@ -1,6 +1,8 @@
 ﻿using JsonApiSerializer;
 using Newtonsoft.Json;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
@@ -12,6 +14,9 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Accounting;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ops;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Rum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
 using Serilog;
 using Serilog.Events;
@@ -742,6 +747,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         /// <summary>
+        /// Used to delete an existing property instance
+        /// </summary>
+        /// <param name="propertyInstance"></param>
+        /// <returns></returns>
+        public bool DeletePropertyFromBooks(Guid propertyInstance)
+        {
+            string uri = $"propertyinstance/{propertyInstance.ToString().ToLower()}/UPFM?modifiedBy={WebUtility.UrlEncode(ProductEnum.UnifiedPlatform.ToString())}";
+            Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "propertyinstance", propertyInstance } };
+            WriteToLog(LogEventLevel.Debug, $"DeleteBookPropertyInstance - deleting instance {propertyInstance.ToString().ToLower()}.", logData);
+            var response = _httpClient.DeleteAsync(uri).Result;
+            logData = new Dictionary<string, object>() { { "StatusCode", response.StatusCode } };
+            WriteToLog(LogEventLevel.Debug, $"DeleteBookPropertyInstance - deleted instance {propertyInstance.ToString().ToLower()}.", logData);
+            return response.IsSuccessStatusCode;
+        }
+
+        /// <summary>
         /// Used to acknowledge provisioning events
         /// </summary>
         /// <param name="productCenterEnablement"></param>
@@ -773,6 +794,75 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             WriteToLog(LogEventLevel.Error, "AcknowledgeProvisioningEvent - Failed to add info.", logData);
 
             return true;
+        }
+
+        /// <summary>
+        /// Used to enable product for an organization
+        /// </summary>
+        /// <param name="systemProductCenter"></param>
+        /// <returns></returns>
+        public bool ProductCenterEnable(SystemProductCenter systemProductCenter)
+        {
+            string uri = $"systemproductcenter";
+
+            Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "systemProductCenter", systemProductCenter } };
+            var jsonToSave = JsonConvert.SerializeObject(systemProductCenter, new JsonApiSerializerSettings()).Replace("\"id\":\"0\",", "");
+            logData.Add("jsonToSave", jsonToSave);
+            WriteToLog(LogEventLevel.Debug, "ProductCenterEnable - Adding info.", logData);
+
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Post,
+                Content = new StringContent(jsonToSave, Encoding.UTF8, "application/json"),
+                RequestUri = new Uri(_httpClient.BaseAddress + uri)
+            };
+            var response = _httpClient.SendAsync(request).Result;
+            if (response != null && response.IsSuccessStatusCode)
+            {
+                WriteToLog(LogEventLevel.Debug, "ProductCenterEnable - Added info successfully.");
+                return true;
+            }
+
+            logData = new Dictionary<string, object>() { { "response", response } };
+            WriteToLog(LogEventLevel.Error, "ProductCenterEnable - Failed to add info.", logData);
+
+            return false;
+        }
+
+        /// <summary>
+        /// Used to delete product for an organization
+        /// </summary>
+        /// <param name="systemProductCenter"></param>
+        /// <returns></returns>
+        public bool ProductCenterDisable(SystemProductCenter systemProductCenter)
+        {
+            string uri = $"/systemproductcenter/{systemProductCenter.Source}/{systemProductCenter.ProductCenterSourceId}/{systemProductCenter.CompanyInstanceSourceId}?modifiedBy={WebUtility.UrlEncode(systemProductCenter.CreatedBy)}";
+
+            ///systemproductcenter/{source}/{productCenterSourceId}/{companyInstanceSourceId}/{propertyInstanceSourceId}
+            Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "systemProductCenter", systemProductCenter } };
+
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Delete,
+                RequestUri = new Uri(_httpClient.BaseAddress + uri)
+            };
+            var response = _httpClient.SendAsync(request).Result;
+            if (response != null && response.IsSuccessStatusCode)
+            {
+                WriteToLog(LogEventLevel.Debug, "ProductCenterDisable - Deleted info successfully.");
+                return true;
+            }
+
+            if (response.StatusCode == HttpStatusCode.NotFound)
+            {
+                WriteToLog(LogEventLevel.Debug, "ProductCenterDisable - Not found in UDM.");
+                return true;
+            }
+
+            logData = new Dictionary<string, object>() { { "response", response } };
+            WriteToLog(LogEventLevel.Error, "ProductCenterDisable - Failed to add info.", logData);
+
+            return false;
         }
 
         /// <summary>
@@ -831,12 +921,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var response = _httpClient.SendAsync(request).Result;
             if (response != null && response.IsSuccessStatusCode)
             {
-                WriteToLog(LogEventLevel.Debug, "AcknowledgePropertyUpdate - Canceled successfully.");
+                WriteToLog(LogEventLevel.Debug, "AcknowledgePropertyUpdate - updated successfully.");
                 return true;
             }
 
             logData = new Dictionary<string, object>() { { "response", response } };
-            WriteToLog(LogEventLevel.Error, "AcknowledgePropertyUpdate - Failed to Cancel.", logData);
+            WriteToLog(LogEventLevel.Error, "AcknowledgePropertyUpdate - Failed to update.", logData);
 
             return true;
         }
@@ -868,6 +958,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         /// <summary>
+        /// Used to get a list of UPFM company id's for the given company list
+        /// </summary>
+        /// <param name="upfmCompanyIds">upfmCompanyIds</param>
+        /// <returns></returns>
+        private string AppendUPFMCompanyInstances(List<String> upfmCompanyIds)
+        {
+            string compIds = "";
+            foreach (var upfmCompanyId in upfmCompanyIds)
+            {
+                if (compIds == "")
+                {
+                    compIds = upfmCompanyId;
+                }
+                else
+                {
+                    compIds += "," + upfmCompanyId;
+                }
+            }
+            return compIds;
+        }
+
+
+        /// <summary>
         /// Used to split a list into sub smaller lists
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -890,7 +1003,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         public IList<Company> GetCompanyListByCompIds(List<UnifiedLoginCompany> booksCompanyMasterList)
         {
             IList<Company> companyInstance = new List<Company>();
-            Dictionary<string, object> logData;
 
             // get the hash of the full company list
             int booksCompanyMasterHash = GetCompanyIds(booksCompanyMasterList).GetHashCode();
@@ -911,12 +1023,43 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 companyInstance = result.ToList();
                 if (companyInstance.Count > 0)
                 {
-                    CacheItemPolicy policy = new CacheItemPolicy {AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(86400)};
-                    // 24 hrs cached 86400 secs
+                    CacheItemPolicy policy = new CacheItemPolicy {AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(1800) };
+                    // 30 Mins cached 1800 secs
                     _manageBlueBookCache.Set($"getCompanysByCompIds_{booksCompanyMasterHash}", companyInstance, policy);
                 }
             }
 
+            return companyInstance;
+        }
+
+        /// <summary>
+        /// Used to get the information about the list of companies by companyIds from the BlueBook system
+        /// </summary>
+        /// <param name="companyInstanceIds"></param>        
+        /// <returns></returns>
+        public IList<CustomerCompanyInstance> GetUPFMCompanyDetailsByInstanceIds(List<string> companyInstanceIds)
+        {
+            IList<CustomerCompanyInstance> companyInstance = new List<CustomerCompanyInstance>();            
+
+            // get the hash of the full company list
+            int booksCompanyMasterHash = AppendUPFMCompanyInstances(companyInstanceIds).GetHashCode();
+
+            companyInstance = _manageBlueBookCache[$"GetUPFMCompanyDetailsByInstanceIds_{booksCompanyMasterHash}"] as List<CustomerCompanyInstance>;
+            if (companyInstance == null)
+            {
+                int splitSize = 50;
+                var splitCompanyList = SplitList<string>(companyInstanceIds, splitSize);
+                ConcurrentBag<CustomerCompanyInstance> result = new ConcurrentBag<CustomerCompanyInstance>();
+                Parallel.ForEach(splitCompanyList, new ParallelOptions { MaxDegreeOfParallelism = 5 }, companyList => { GetBooksUPFMCompanyDetails(_defaultUserClaim, companyList).ForEach(x => result.Add(x)); });
+
+                companyInstance = result.ToList();
+                if (companyInstance.Count > 0)
+                {
+                    CacheItemPolicy policy = new CacheItemPolicy { AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(1800) };
+                    // 30 Mins cached 1800 secs
+                    _manageBlueBookCache.Set($"GetUPFMCompanyDetailsByInstanceIds_{booksCompanyMasterHash}", companyInstance, policy);
+                }
+            }
             return companyInstance;
         }
 
@@ -946,6 +1089,37 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             logData = new Dictionary<string, object>() {{"response", response}};
             WriteToLog(LogEventLevel.Debug, $"GetCompanyListByCompIds - No info found - hashcode:{booksCompanyMasterIds.GetHashCode()}", logData, correlationId: userClaim.CorrelationId.ToString());
+
+            return companyInstance;
+        }
+
+        /// <summary>
+        /// Used to get company details for the given company list
+        /// </summary>
+        /// <param name="userClaim"></param>
+        /// <param name="upfmCompanyInstances"></param>
+        /// <returns></returns>
+        private List<CustomerCompanyInstance> GetBooksUPFMCompanyDetails(DefaultUserClaim userClaim, List<String> upfmCompanyInstances)
+        {
+            string upfmCompanyInstanceIds = AppendUPFMCompanyInstances(upfmCompanyInstances);
+
+            var companyInstance = new List<CustomerCompanyInstance>();
+            //http://booksapi-qa.realpage.com/companyinstance?filter[source]=UPFM&include=companyInstanceLocation&filter[companyInstanceSourceId]=in:
+            string uri = $"companyinstance?filter[source]=UPFM&include=companyInstanceLocation&filter[companyInstanceSourceId]=in:{upfmCompanyInstanceIds}";
+
+            var logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
+            WriteToLog(LogEventLevel.Debug, $"GetBooksUPFMCompanyDetails - Getting info - hashcode:{upfmCompanyInstanceIds.GetHashCode()}", logData, correlationId: userClaim.CorrelationId.ToString());
+            var response = GetAsync(uri).Result;
+            if (response.IsSuccessStatusCode)
+            {
+                companyInstance = JsonConvert.DeserializeObject<List<CustomerCompanyInstance>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
+                logData = new Dictionary<string, object>() { { "upfmCompanyInstances", upfmCompanyInstances } };
+                WriteToLog(LogEventLevel.Debug, $"GetBooksUPFMCompanyDetails - Got info - hashcode:{upfmCompanyInstanceIds.GetHashCode()}", logData, correlationId: userClaim.CorrelationId.ToString());
+                return companyInstance;
+            }
+
+            logData = new Dictionary<string, object>() { { "response", response } };
+            WriteToLog(LogEventLevel.Debug, $"GetBooksUPFMCompanyDetails - No info found - hashcode:{upfmCompanyInstanceIds.GetHashCode()}", logData, correlationId: userClaim.CorrelationId.ToString());
 
             return companyInstance;
         }
@@ -1233,7 +1407,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				string uri = $"propertyinstance?filter[source]=UPFM" +
                 "&filter[companyPropertyInstanceMap.companyInstance.companyInstanceSourceId]=" + companyRealPageId.ToString().ToLower() +
                       "&page[size]=9999&include=customerPropertyMap.customerProperty" +
-                       "&fields[propertyinstance]=propertyInstanceId,propertyInstanceSourceId,propertyName,source,domain" +
+                       "&fields[propertyinstance]=propertyInstanceId,propertyInstanceSourceId,propertyName,source,domain,address" +
                           "&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId"+
                              "&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName";
               
@@ -1304,7 +1478,181 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return propertyInstance;
         }
 
+        /// <summary>
+        /// Used to get All products Properties of the company, using the books customer master id 
+        /// </summary>
+        /// <param name="companyRealPageId"></param>
+        /// <returns></returns>
+        public List<BooksPropertyInstance> GetAllProductsPropertyInstanceFromBooks(Guid companyRealPageId)
+        {
+            List<BooksPropertyInstance> propertyInstance = new List<BooksPropertyInstance>();
+            RPObjectCache rpcache = new RPObjectCache();
+            var cacheKey = $"getPropertyInstanceForCompany_{companyRealPageId}";
 
+            /*
+             http://booksapi.realpage.com/propertyinstance?
+            &filter[companyPropertyInstanceMap.companyInstance.companyInstanceSourceId]=cf1fac30-0562-49c4-9410-fbb8919bbdb8
+            &page[size]=9999&include=customerPropertyMap.customerProperty
+            &fields[propertyinstance]=propertyInstanceId,propertyInstanceSourceId,propertyName,source
+            &fields[customerPropertyMap]=customerPropertyId,propertyInstanceId
+            &fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName
+
+            */
+            string uri = $"propertyinstance?" +
+            "filter[companyPropertyInstanceMap.companyInstance.companyInstanceSourceId]=" + companyRealPageId.ToString().ToLower() +
+                  "&page[size]=9999&include=customerPropertyMap.customerProperty" +
+                   "&fields[propertyinstance]=propertyInstanceId,propertyInstanceSourceId,propertyName,source,domain" +
+                      "&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId" +
+                         "&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName";
+
+            Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
+            WriteToLog(LogEventLevel.Debug, "GetAllProductsPropertyInstanceFromBooks - Getting info.", logData);
+            var response = GetAsync(uri).Result;
+            if (response.IsSuccessStatusCode)
+            {
+                //companyInstance = response.Content.ReadAsJsonApiAsync<CompanyResource>(_contractResolver, _cache).Result;
+                propertyInstance = JsonConvert.DeserializeObject<List<BooksPropertyInstance>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
+                logData = new Dictionary<string, object>() { { "GetAllProductsPropertyInstanceFromBooks", propertyInstance } };
+                WriteToLog(LogEventLevel.Debug, "GetAllProductsPropertyInstanceFromBooks - Got info.", logData);
+            }
+            else
+            {
+                logData = new Dictionary<string, object>() { { "response", response } };
+                WriteToLog(LogEventLevel.Debug, "GetAllProductsPropertyInstanceFromBooks - No info found.", logData);
+                return null;
+            }
+            return propertyInstance;
+        }
+
+        public ListResponse TranslateProductPrimaryPropertiesData(UPFMProperty upfmProperty, int productId, ListResponse productResult)
+        {
+            TranslatePropertyInstance translatedData = new TranslatePropertyInstance();
+            //IManageBlueBook _manageBlueBook = new ManageBlueBook(_userClaims);
+            List<UPFMPropertyInstance> _upfmPropertyInstance = new List<UPFMPropertyInstance>();
+            string productcode = ProductEnumHelper.StringValueOf((ProductEnum)productId);
+            IPropertyRepository propertyRepository = new PropertyRepository();
+
+            if (upfmProperty?.id == null )
+            {
+                return productResult;
+            }
+
+            /*
+             * If All property selection is true, then upfmProperty == -1
+             */
+            if (upfmProperty.id[0] == "-1")
+            {
+                var booksPropertyList = GetUPFMPropertyInstances(_defaultUserClaim.OrganizationRealPageGuid.ToString());
+                if (booksPropertyList != null)
+                {
+                    _upfmPropertyInstance = propertyRepository.ListUPFMPropertyInstanceIdByInstanceIds(booksPropertyList);
+                    upfmProperty.id = _upfmPropertyInstance.Select(p => p.InstanceId.ToString()).ToList<string>();
+                }
+            }
+
+            UPFMProperty primaryPropertyIds = new UPFMProperty
+            {
+                id = upfmProperty.id.ConvertAll(d => d.ToLower())
+            };
+
+            if (productId == (int)ProductEnum.UnifiedPlatform)
+            {
+                var upfmProeprtiesType = productResult.Records[0].GetType();
+                if (upfmProeprtiesType == typeof(ProductProperty))
+                {
+                    var upfmPropertyList = productResult.Records.Cast<ProductProperty>();
+                    upfmPropertyList.Where(p => primaryPropertyIds.id.Contains(p.ID)).ToList().ForEach(c => c.IsAssigned = true);
+                    upfmPropertyList.Where(p => !primaryPropertyIds.id.Contains(p.ID)).ToList().ForEach(c => c.IsAssigned = false);
+                }
+            }
+            else
+            {
+                translatedData = GetTranslatePropertiesFromUPFMToProductv3(primaryPropertyIds, productcode);
+                var productPropertyType = productResult.Records[0].GetType();
+                var foundProductPropertyIdList = new List<string>();
+
+                if (productPropertyType == typeof(ProductProperty))
+                {
+                    var productList = productResult.Records.Cast<ProductProperty>();
+                    foreach (var property in productList)
+                    {
+                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.ID));
+                        if (instanceExists != null)
+                        {
+                            property.IsAssigned = true;
+                        }
+                    }
+                }
+                else if (productPropertyType == typeof(ACProperty))
+                {
+                    foreach (var property in productResult.Records.Cast<ACProperty>())
+                    {
+                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.Id));
+                        if (instanceExists != null)
+                        {
+                            property.IsAssigned = true;
+                        }
+                    }
+                }
+                else if (productPropertyType == typeof(AssetGroup))
+                {
+                    foreach (var property in productResult.Records.Cast<AssetGroup>())
+                    {
+                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.ID));
+                        if (instanceExists != null)
+                        {
+                            property.IsAssigned = true;
+                        }
+                    }
+                }
+                else if (productPropertyType == typeof(OnSiteProperty))
+                {
+                    foreach (var property in productResult.Records.Cast<OnSiteProperty>())
+                    {
+                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.GetPropertyId.ToString()));
+                        if (instanceExists != null)
+                        {
+                            property.IsAssigned = true;
+                        }
+                    }
+                }
+                else if (productPropertyType == typeof(RumPropertyGroup))
+                {
+                    foreach (var property in productResult.Records.Cast<RumPropertyGroup>())
+                    {
+                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.Id.ToString()));
+                        if (instanceExists != null)
+                        {
+                            property.IsAssigned = true;
+                        }
+                    }
+                }
+                else if (productPropertyType == typeof(ProductProperties))
+                {
+                    foreach (var property in productResult.Records.Cast<ProductProperties>())
+                    {
+                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.GetPropertyId));
+                        if (instanceExists != null)
+                        {
+                            property.IsAssigned = true;
+                        }
+                    }
+                }
+                else if (productPropertyType == typeof(Portfolio))
+                {
+                    foreach (var property in productResult.Records.Cast<Portfolio>())
+                    {
+                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.ID));
+                        if (instanceExists != null)
+                        {
+                            property.IsAssigned = true;
+                        }
+                    }
+                }
+            }
+
+            return productResult;
+		}
 
 
         #region Privates

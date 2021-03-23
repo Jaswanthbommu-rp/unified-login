@@ -56,7 +56,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		public ProductPanelController(DefaultUserClaim _defaultUserClaim, IRepository repository, IRepositoryResponse repositoryResponse, HttpMessageHandler messageHandler, IManageProductOneSite manageProductOneSite)
 		{
 			_userClaims = _defaultUserClaim;
-			_productRepository = new ProductRepository(repository);
+			_productRepository = new ProductRepository(repository, _defaultUserClaim);
 			_productInternalSettingRepository = new ProductInternalSettingRepository(repository);
 			_manageBlueBook = new ManageBlueBook(_defaultUserClaim, _productInternalSettingRepository, messageHandler);
 			_manageProductPanel = new ManageProductPanel(_defaultUserClaim, repository, _manageBlueBook, messageHandler, manageProductOneSite);

@@ -292,6 +292,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		public ListResponse GetUPFMProperties(long userPersonaId, ProductEnum product, string include = null, bool isMultiCompany = false, string multiCompanyRealPageId = null)
 		{
 			ListResponse response = new ListResponse();
+			/*
+				Updating product code to ProductEnum.UnifiedPlatform for CIMPL and Settings 
+				becuase these two products properties saved as productid 3 in UP database
+			*/
+			if (product == ProductEnum.CIMPL || product == ProductEnum.UnifiedSettings)
+			{
+				_upfmProductId = (int)ProductEnum.UnifiedPlatform;
+				_udmSourceCode = product.ToEnumDescription().ToString();
+			}
 			var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, _upfmProductId);
 			List<ProductProperty> userPropertyList = new List<ProductProperty>();
 			List<ProductProperty> translatedUserPropertyList = new List<ProductProperty>();
@@ -568,6 +577,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					if (_productId == (int)ProductEnum.HospitalityService)
 					{
 						superUserRoleId = gbAllRoles.First(a => a.Name.Equals("Property Admin", StringComparison.OrdinalIgnoreCase)).ID;
+					}
+					else if (_productId == (int)ProductEnum.SelfGuidedTour)
+					{
+						superUserRoleId = gbAllRoles.First(a => a.Name.Equals("Implementations", StringComparison.OrdinalIgnoreCase)).ID;
 					}
 					else if(_productId == (int)ProductEnum.HandsOnTrainingSystem)
                     {

@@ -129,8 +129,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 case ProductEnum.OpsBuyer:
                     IManageProductOps manageProductOps = new ManageProductOps(_userClaims);
                     productResponse = manageProductOps.GetCompanyAssets(_userClaims.PersonaId, 0, false, null);
-                    break;
-                case ProductEnum.CIMPL:
+                    break;                
                 case ProductEnum.UnifiedPlatform:
                     productResponse = manageUnifiedLogin.GetProperties(_userClaims.PersonaId, include);
                     break;
@@ -138,10 +137,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 //    IManageIntelligentBuilding manageIntelligentBuilding = new ManageIntelligentBuilding(_userClaims);
                 //    productResponse = manageIntelligentBuilding.GetUPFMProperties(_userClaims.PersonaId, include);
                 //    break;
+                case ProductEnum.CIMPL:
+                case ProductEnum.UnifiedSettings:
                 case ProductEnum.IntelligentBuildingTrash:
                 case ProductEnum.IntelligentBuildingEnergy:
                 case ProductEnum.IntelligentBuildingWater:
                 case ProductEnum.HospitalityService:
+                case ProductEnum.SelfGuidedTour:
                     ManageUPFMProductsIntegration upfmProductIntegration = new ManageUPFMProductsIntegration(productId, _userClaims);
                     var upfmProduct = ProductEnumHelper.GetUPFMProductEnum(productId);
                     productResponse = upfmProductIntegration.GetUPFMProperties(_userClaims.PersonaId, upfmProduct, include);

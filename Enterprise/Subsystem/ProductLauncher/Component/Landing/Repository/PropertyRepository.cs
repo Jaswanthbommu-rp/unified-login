@@ -341,17 +341,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
 		#region Update Property
 		/// <summary>
-		/// Update Product
+		/// Update property
 		/// </summary>
 		/// <param name="instanceId">propertyInstanceId</param>
 		/// <param name="name">name</param>
 		/// <returns>Repository response object</returns>
-		public RepositoryResponse UpdateProperty(Guid instanceId, string name)
+		public RepositoryResponse UpdateProperty(Guid instanceId, string name, bool active)
         {
             dynamic param = new
             {
                 instanceId,
-                name
+                name,
+                active
             };
 
             using (var repository = GetRepository())
@@ -359,10 +360,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 return repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdatePropertyInstance, param);                
             }
         }
-		#endregion
+        #endregion
 
-		#region Private methods
-		
+        #region Delete Property
+        /// <summary>
+        /// Delete Property
+        /// </summary>
+        /// <param name="instanceId">propertyInstanceId</param>
+        /// <returns>Repository response object</returns>
+        public RepositoryResponse DeleteUPFMPropertyInstance(Guid instanceId)
+        {
+            dynamic param = new
+            {
+                instanceId
+            };
+            using (var repository = GetRepository())
+            {
+                return repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_DeletePropertyInstance, param);
+            }
+        }
+        #endregion
+
+        #region Private methods
+
         #endregion
     }
 }
