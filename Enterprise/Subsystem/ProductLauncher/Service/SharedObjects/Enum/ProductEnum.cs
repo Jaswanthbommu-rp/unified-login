@@ -18,11 +18,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 			{
 				return attributes[0].Description;
 			}
-			else
-			{
-				return value.ToString();
-			}
-		}
+
+            return value.ToString();
+        }
 
 		/// <summary>
 		/// Get enum list of AO products
