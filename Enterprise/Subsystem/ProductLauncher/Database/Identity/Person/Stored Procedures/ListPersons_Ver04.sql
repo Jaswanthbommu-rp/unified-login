@@ -479,7 +479,7 @@ BEGIN
 					(
 						SELECT *,ROW_NUMBER() OVER(PARTITION BY PartyId ORDER BY FromDate DESC) AS RowNo
 						FROm Enterprise.PartyContactMechanism
-						WHERE ThruDate > GetDate()
+						WHERE ThruDate > GETUTCDATE()
 					) X
 				WHERE X.RowNo = 1) PCM ON ulp.PersonPartyId = PCM.PartyId
 			 LEFT JOIN Enterprise.ElectronicAddress EA ON PCM.ContactMechanismId=EA.ContactMechanismID
