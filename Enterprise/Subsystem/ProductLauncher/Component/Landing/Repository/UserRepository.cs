@@ -5371,7 +5371,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         if (userContactMechanismId != 0)
                         {
                             // the user already had the contact mechanism so update id
-                            if ((updateUserProfileEntity.NewProfile.UserTypeId != (int)UserRoleType.UserNoEmail) && loginNamechanged)
+                            if ((updateUserProfileEntity.NewProfile.UserTypeId != (int)UserRoleType.UserNoEmail) && (loginNamechanged || userBatchEntity.IsUserTypeChangedFromNoEmailToRegular || userBatchEntity.IsUserTypeChangedFromNoEmailToExternal))
                             {
                                 param = new
                                 {
