@@ -48,7 +48,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         protected UserDetails EditorUserDetails { get; set; }
         protected UserDetails SubjectUserDetails { get; set; }
         protected string ProductApiBaseUrl { get; set; }
-        protected string CreateUpdateMultiCompanyUserRequiresPMC { get; private set; }
+        protected bool CreateUpdateMultiCompanyUserRequiresPMC { get; private set; }
         protected string CompanyInstanceSourceId { get; set; }
         protected IList<ProductInternalSetting> ProductInternalSettingList { get; set; }
 
@@ -85,7 +85,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         protected ManageProductInvokerBase(ProductEnum productType, long editorPersonaId, long subjectPersonaId, DefaultUserClaim userClaims)
         {
-            _dataCollector = new DataCollector();            
+            _dataCollector = new DataCollector();
             Init(productType, editorPersonaId, subjectPersonaId, userClaims);
         }
 
@@ -584,7 +584,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 result = CreateUser(newProductUser);
 
             }
-            else if (string.IsNullOrEmpty(SubjectUserDetails.ProductUserName) && productUser != null && CreateUpdateMultiCompanyUserRequiresPMC.Equals("1"))
+            else if (string.IsNullOrEmpty(SubjectUserDetails.ProductUserName) && productUser != null && CreateUpdateMultiCompanyUserRequiresPMC)
             {
                 result = CreateMultiCompanyUser(productUser);
             }
@@ -697,15 +697,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // Get partial api query based on end point
             if (string.IsNullOrEmpty(baseUrlAndQuery))
                 baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserEndpoint);
-            
+
             WriteToDiagnosticLog(
                 $"ManageProductInvokerBase.GetProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling API - {baseUrlAndQuery}.");
 
-            if (baseUrlAndQuery.Contains("{0}"))            
-                baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, SubjectUserDetails.ProductUserName);            
-            else 
+            if (baseUrlAndQuery.Contains("{0}"))
+                baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, SubjectUserDetails.ProductUserName);
+            else
                 baseUrlAndQuery = string.Format(baseUrlAndQuery, SubjectUserDetails.ProductUserName);
-            
+
             return GetResultFromApi<IntegrationProductUser>(baseUrlAndQuery, isThrowOnError);
         }
 
@@ -1166,7 +1166,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         }
 
         protected string GetOperationEndPoint(ProductEntityEndpointKeyEnum entityType)
-        {                        
+        {
             // Get partial api query based on end point                         
             var partialApiQueryUrl = ProductInternalSettingList.First(a => a.Name.ToUpper() == entityType.ToString().ToUpper()).Value;
             if (string.IsNullOrEmpty(partialApiQueryUrl))
@@ -1218,7 +1218,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
             }
-			logger = logger.ForContext("ProductModule", this.GetType());
+            logger = logger.ForContext("ProductModule", this.GetType());
             logger = logger.ForContext("CorrelationId", CorrelationId.ToString());
             logger.Write(logType, exception, message );
         }
@@ -1289,11 +1289,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     _productInternalSettingRepository.GetProductInternalSettings(ProductId);
                 ProductApiBaseUrl = ProductInternalSettingList.First(a => a.Name.ToUpper() == "APIENDPOINT").Value;
 
-                if (ProductId == 40 || ProductId == 41)
-                {
-                    CreateUpdateMultiCompanyUserRequiresPMC = ProductInternalSettingList.First(a => a.Name.ToUpper() == "CREATEUPDATEPMC").Value;
-                }
-                
+                var productInternalSetting = ProductInternalSettingList.FirstOrDefault(item => item.Name.Equals("CreateUpdateMultiCompanyUserRequiresPMC", StringComparison.OrdinalIgnoreCase));
+                CreateUpdateMultiCompanyUserRequiresPMC = (productInternalSetting != null) ? productInternalSetting.Value.Trim() == "1" : false;
             }
             catch (Exception ex)
             {
