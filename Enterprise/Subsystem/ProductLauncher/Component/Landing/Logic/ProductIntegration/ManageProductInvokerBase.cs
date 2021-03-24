@@ -563,7 +563,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 $"ManageProductInvokerBase.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of method.");
 
             var newProductUser = GenerateProductUserObject(userRolePropertiesRegion);
-            var productUser = getBaseUserDataFromProduct(newProductUser.LoginName);
+            var productUser = GetBaseUserDataFromProduct(newProductUser.LoginName);
 
             if (string.IsNullOrEmpty(SubjectUserDetails.ProductUserName) && productUser == null)
             {
@@ -617,7 +617,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         }
 
         #region private
-        public virtual IntegrationProductUser getBaseUserDataFromProduct(string loginNameToCheck, string baseUrlAndQuery = null)
+        public virtual IntegrationProductUser GetBaseUserDataFromProduct(string loginNameToCheck, string baseUrlAndQuery = null)
         {
             if (string.IsNullOrEmpty(baseUrlAndQuery))
                 baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserEndpoint);
