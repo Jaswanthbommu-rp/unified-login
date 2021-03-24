@@ -2662,7 +2662,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
 
             //Act           
-            HttpResponseMessage response = organizationController.SearchPropertyByBlueId("0", new Guid());
+            HttpResponseMessage response = organizationController.SearchPropertyByBlueId("0", "1");
 
             //Assert
             Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
@@ -2681,7 +2681,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
 
             //Act           
-            HttpResponseMessage response = organizationController.SearchPropertyByBlueId("1234", Guid.Empty);
+            HttpResponseMessage response = organizationController.SearchPropertyByBlueId("1234", "0");
 
             //Assert
             Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
@@ -2712,17 +2712,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             HttpResponseMessage booksAssignedPropertyInstanceResponse = new HttpResponseMessage(HttpStatusCode.OK);
             booksAssignedPropertyInstanceResponse.Content = new StringContent(booksAssignedPropertyInstanceJson);
 
-            var booksAssignedDomainPropertyInstanceJson = "{\r\n\"data\": [\r\n{\r\n\"type\": \"propertyinstance\",\r\n\"id\": \"1005297957\",\r\n\"attributes\": {\r\n\"propertyInstanceId\": 1005297957,\r\n\"propertyInstanceSourceId\": \"974693db-23bd-4cc3-a984-fbf9e5bf189c\",\r\n\"propertyName\": \"141 LOFTS\",\r\n\"isActive\": false,\r\n\"domain\": \"Primary\",\r\n\"deletedReason\": \"Deprecated Field\",\r\n\"customerPropertyMap\": [\r\n{\r\n\"customerPropertyId\": 1234,\r\n\"propertyInstanceId\": 1005297957,\r\n\"customerProperty\": [\r\n{\r\n\"customerPropertyId\": 239608,\r\n\"propertyName\": \"141 LOFTS\",\r\n\"address\": {\r\n\"address\": \"141 DESIARD ST\",\r\n\"city\": \"MONROE\",\r\n\"state\": \"LA\",\r\n\"country\": \"UNITED STATES\",\r\n\"county\": \"OUACHITA PARISH\",\r\n\"postalCode\": \"71201-7385\",\r\n\"latitude\": 32.502026,\r\n\"longitude\": -92.117078\r\n},\r\n\"hasMedia\": \"Deprecated Field\"\r\n}\r\n]\r\n}\r\n]\r\n}\r\n}\r\n],\r\n\"meta\": {\r\n\"totalEntities\": 7,\r\n\"totalPages\": 7\r\n}\r\n}";
+            var booksAssignedDomainPropertyInstanceJson = "{\r\n\"data\": [\r\n{\r\n\"type\": \"propertyinstance\",\r\n\"id\": \"12345\",\r\n\"attributes\": {\r\n\"propertyInstanceId\": 12345,\r\n\"propertyInstanceSourceId\": \"3102523\",\r\n\"propertyName\": \"141 Lofts\",\r\n\"source\": \"OS\",\r\n\"isActive\": true,\r\n\"domain\": \"Primary\",\r\n\"deletedReason\": \"Deprecated Field\",\r\n\"customerPropertyMap\": [\r\n{\r\n\"customerPropertyId\": 239608,\r\n\"propertyInstanceId\": 12345,\r\n\"customerProperty\": [\r\n{\r\n\"customerPropertyId\": 239608,\r\n\"propertyName\": \"141 LOFTS\",\r\n\"address\": {\r\n\"address\": \"141 DESIARD ST\",\r\n\"city\": \"MONROE\",\r\n\"state\": \"LA\",\r\n\"country\": \"UNITED STATES\",\r\n\"county\": \"OUACHITA PARISH\",\r\n\"postalCode\": \"71201-7385\",\r\n\"latitude\": 32.502026,\r\n\"longitude\": -92.117078\r\n},\r\n\"hasMedia\": \"Deprecated Field\"\r\n}\r\n]\r\n}\r\n]\r\n}\r\n}\r\n],\r\n\"meta\": {\r\n\"totalEntities\": 1,\r\n\"totalPages\": 1\r\n}\r\n}";
             HttpResponseMessage booksAssignedDomainPropertyInstanceResponse = new HttpResponseMessage(HttpStatusCode.OK);
             booksAssignedDomainPropertyInstanceResponse.Content = new StringContent(booksAssignedDomainPropertyInstanceJson);
 
             _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/propertyinstance?filter[source]=UPFM&filter[companyPropertyInstanceMap.companyInstance.companyInstanceSourceId]=f5c090fa-78ab-452f-b504-98aafee09121&page[size]=9999&include=customerPropertyMap.customerProperty&fields[propertyinstance]=propertyInstanceId,propertyInstanceSourceId,propertyName,source,domain,address&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName", booksPropertyInstanceResponse);
             _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customerproperty/1234", booksCustomerPropertyInstanceResponse);
             _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/propertyinstance?filter[source]=UPFM&filter[customerPropertyMap.customerPropertyId]=1234&page[size]=9999& fields[propertyinstance]=propertyInstanceId,propertyName,domain,propertyInstanceSourceId,isActive&include=customerPropertyMap.customerProperty&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName,address", booksAssignedPropertyInstanceResponse);
-            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/propertyinstance?filter[companyPropertyInstanceMap.companyInstance.companyInstanceSourceId]=f5c090fa-78ab-452f-b504-98aafee09121&page[size]=9999&include=customerPropertyMap.customerProperty&fields[propertyinstance]=propertyInstanceId,propertyInstanceSourceId,propertyName,source,domain&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName", booksAssignedPropertyInstanceResponse);
+            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/propertyinstance?filter[customerPropertyMap.customerPropertyId]=12345&page[size]%20=9999&%20fields[propertyinstance]=propertyInstanceId,propertyName,domain,propertyInstanceSourceId,isActive,source&include=customerPropertyMap.customerProperty&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName,address", booksAssignedPropertyInstanceResponse);
 
             //Act           
-            HttpResponseMessage response = organizationController.SearchPropertyByBlueId("1234", new Guid("f5c090fa-78ab-452f-b504-98aafee09121"));
+            HttpResponseMessage response = organizationController.SearchPropertyByBlueId("1234", "12345");
 
             //Assert
             Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
