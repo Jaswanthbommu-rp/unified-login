@@ -150,6 +150,94 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
         }
 
+
+        /// <summary>
+		/// Get Settings Details
+		/// </summary>
+		/// <param name="category">Setting category (e.g. Security, CustomFields)</param>
+		/// <param name="companyId">Organization Id</param>
+		/// <param name="includes">filter</param>
+		/// <returns>A Settings Details based on category</returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when  object have invalid entries / when Information is out of sync with the server)")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get list of picklist", Type = typeof(IList<Picklist>))]
+        [SwaggerResponseExamples(typeof(IList<Picklist>), typeof(UnifiedSettingsExample))]
+        [Route("companies/{companyId}/settings/picklist")]
+        [HttpGet]
+        //public HttpResponseMessage GetSettingsPickList(string category, Guid companyId, [FromUri] string[] includes = null)
+        public HttpResponseMessage GetSettingsPickList(string category, Guid companyId)
+        {
+            Organization organization = new Organization();
+            IApiError apiError;
+
+            if (companyId != Guid.Empty)
+            {
+                Organization org = _manageOrganization.GetOrganization(companyId);
+                if (org == null)
+                {
+                    apiError = new ApiError()
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        Status = (short)HttpStatusCode.BadRequest,
+                        Title = "Company not found.",
+                        Detail = $"Company not found for Id: {companyId}",
+                        Links = string.Empty,
+                        Code = "Settings.GetSettingsPickList.2",
+                        Source = new ApiErrorSource()
+                        {
+                            JsonPointer = string.Empty,
+                            Parameter = string.Empty
+                        }
+                    };
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, apiError);
+                }
+
+                bool IsValid = _manageOrganization.ValidateOrganization(_userClaims.OrganizationMasterId, _userClaims.UserRealPageGuid, org.RealPageId);
+                if (!IsValid)
+                {
+                    apiError = new ApiError()
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        Status = (short)HttpStatusCode.BadRequest,
+                        Title = "User is not authorized.",
+                        Detail = $"Logged in user is not authorized to view security settings for {org.Name}.",
+                        Links = string.Empty,
+                        Code = "Settings.GetSettingsPickList.3",
+                        Source = new ApiErrorSource()
+                        {
+                            JsonPointer = string.Empty,
+                            Parameter = string.Empty
+                        }
+                    };
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, apiError);
+                }
+
+                IManageUnifiedSettings manageSettings = new ManageUnifiedSettings(_userClaims);
+                var picklist = manageSettings.GetSettingsPickList(category);
+
+                return Request.CreateResponse(HttpStatusCode.OK, picklist);
+            }
+            else
+            {
+                apiError = new ApiError()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Status = (short)HttpStatusCode.BadRequest,
+                    Title = "Null Companyd.",
+                    Detail = $"Empty Company parameter passed",
+                    Links = string.Empty,
+                    Code = "Settings.GetSettingsPickList.2",
+                    Source = new ApiErrorSource()
+                    {
+                        JsonPointer = string.Empty,
+                        Parameter = string.Empty
+                    }
+                };
+                return Request.CreateResponse(HttpStatusCode.BadRequest, apiError);
+            }
+        }
+
         /// <summary>
 		/// Update Settings by category
 		/// </summary>

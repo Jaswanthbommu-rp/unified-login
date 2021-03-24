@@ -349,6 +349,7 @@
     <Compile Include="IdentityConfig\TelecommunicationNumber.cs" />
     <Compile Include="BlackBook\CompanyMap.cs" />
     <Compile Include="Landing\SendGridEmail.cs" />
+    <Compile Include="Landing\Picklist.cs" />
     <Compile Include="Landing\UnifiedSettingPropertyInstance.cs" />
     <Compile Include="Landing\Setting.cs" />
     <Compile Include="Landing\SecuritySettings.cs" />

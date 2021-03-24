@@ -45,6 +45,36 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 			}
 		}
 
+		public IList<Picklist> GetSettingsPickList(string category)
+		{
+			List<Picklist> picklists = new List<Picklist>();
+			using (var repo = GetRepository())
+			{
+				string sp = "";
+				if (category.ToLower() == "customfields")
+					sp = StoredProcNameConstants.SP_GetFieldType;
+
+				if (sp != "") 
+				{
+					Picklist picklist = new Picklist();
+					picklist.name = category;
+					picklist.options = new List<Option>();
+					var customFiledTypes = repo.GetMany<CustomFieldType>(sp, null);
+					foreach (var item in customFiledTypes)
+					{
+						picklist.options.Add(new Option()
+						{
+							label = item.Name,
+							value = item.FieldTypeId.ToString()
+						});
+					}
+					picklists.Add(picklist);
+				}
+			};
+
+			return picklists;
+		}
+
 		/// <summary>
 		/// Update  Settings 
 		/// </summary>
