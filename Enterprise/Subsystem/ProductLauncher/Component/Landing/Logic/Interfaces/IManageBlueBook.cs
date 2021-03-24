@@ -130,7 +130,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         string UpdateBooksGreenBookCompanyInstance(CompanyInstance companyInstance);
        
         TranslatePropertyInstance GetTranslatePropertiesFromUPFMToProductv3(UPFMProperty upfmProperties, string productSource);
-        List<Guid> GetPropertiesPerProductCenter(string companyRealPageId, ProductEnum product);
+        List<Guid> GetPropertiesPerProductCenter(string companyRealPageId, int productId);
 
         CustomerProperty GetCustomerPropertyDetails(string propertyInstanceId);
 

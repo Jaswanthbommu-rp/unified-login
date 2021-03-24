@@ -3,6 +3,8 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Factory;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Attribute;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
@@ -27,13 +29,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
     /// </summary>
     public class PropertyController : BaseApiController
     {
-	    /// <summary>
-	    /// Get a list of roles for the given user and product
-	    /// </summary>
-	    /// <param name="realPageId">The guid for the user being requested</param>
-	    /// <param name="productCode">The code for the product being requested. Supported products OPS-Ops</param>
-	    /// <returns></returns>
-	    [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+        private readonly IIntegrationTypeFactory _integrationTypeFactory;
+
+        public PropertyController()
+        {
+            var productInternalSettingRepository = new ProductInternalSettingRepository();
+            var manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
+            var manageProductOneSite = new ManageProductOneSite(_userClaims);
+
+            _integrationTypeFactory = new DefaultIntegrationTypeFactory(productInternalSettingRepository, manageUnifiedLogin, manageProductOneSite, _userClaims);
+        }
+
+        /// <summary>
+        /// Get a list of roles for the given user and product
+        /// </summary>
+        /// <param name="realPageId">The guid for the user being requested</param>
+        /// <param name="productCode">The code for the product being requested. Supported products OPS-Ops</param>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
 	    [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
 	    [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
 	    [SwaggerResponse(HttpStatusCode.OK, Description = "A list of properties for the given company", Type = typeof(ProductProperty))]
@@ -124,33 +137,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             ManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
             int productId = (int)ProductEnumHelper.GetProductEnumByProductCode(productCode);
             ListResponse productResponse;            
-            switch (ProductEnumHelper.GetProductEnumByProductCode(productCode))
+
+            // The logic in UnifiedPlatform is 100% different than that in the LegacyIntegrationType version
+            // Including this for backwards compatibility (for now...)
+            if(productId == (int)ProductEnum.UnifiedPlatform)
             {
-                case ProductEnum.OpsBuyer:
-                    IManageProductOps manageProductOps = new ManageProductOps(_userClaims);
-                    productResponse = manageProductOps.GetCompanyAssets(_userClaims.PersonaId, 0, false, null);
-                    break;                
-                case ProductEnum.UnifiedPlatform:
-                    productResponse = manageUnifiedLogin.GetProperties(_userClaims.PersonaId, include);
-                    break;
-                //case ProductEnum.IntelligentBuilding:
-                //    IManageIntelligentBuilding manageIntelligentBuilding = new ManageIntelligentBuilding(_userClaims);
-                //    productResponse = manageIntelligentBuilding.GetUPFMProperties(_userClaims.PersonaId, include);
-                //    break;
-                case ProductEnum.CIMPL:
-                case ProductEnum.UnifiedSettings:
-                case ProductEnum.IntelligentBuildingTrash:
-                case ProductEnum.IntelligentBuildingEnergy:
-                case ProductEnum.IntelligentBuildingWater:
-                case ProductEnum.HospitalityService:
-                case ProductEnum.SelfGuidedTour:
-                    ManageUPFMProductsIntegration upfmProductIntegration = new ManageUPFMProductsIntegration(productId, _userClaims);
-                    var upfmProduct = ProductEnumHelper.GetUPFMProductEnum(productId);
-                    productResponse = upfmProductIntegration.GetUPFMProperties(_userClaims.PersonaId, upfmProduct, include);
-                    break;                
-                default:
-                    error.Errors.Add(new Error() { Title = "Bad request", Detail = "No valid product code could be found", Source = "/property", StatusCode = "" });
-                    return Request.CreateResponse(HttpStatusCode.BadRequest, error);
+                productResponse = manageUnifiedLogin.GetProperties(_userClaims.PersonaId, include);
+            }
+            else
+            {
+                var integration = _integrationTypeFactory.GetIntegration(productId);
+                productResponse = integration.GetProperties(_userClaims.PersonaId, 0, null);
             }
 
             if (!productResponse.IsError)

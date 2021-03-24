@@ -532,17 +532,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return companyPropertyInstanceResource;
         }
 
-        public List<Guid> GetPropertiesPerProductCenter (string companyRealPageId, ProductEnum product)
+        public List<Guid> GetPropertiesPerProductCenter (string companyRealPageId, int productId)
         {
             Dictionary<string, object> logData = new Dictionary<string, object>();
 
             var rpcache = new RPObjectCache();
-            var cacheKey = $"getPropertiesPerProductCenter_{companyRealPageId}_{product}";
+            var cacheKey = $"getPropertiesPerProductCenter_{companyRealPageId}_{productId}";
 
             var PropertyInstanceResource = rpcache.GetFromCache<List<Guid>>(cacheKey, 60, () =>
             {
                 // http://booksapi-qa.realpage.com/propertiesperproductcenter/UPFM/F5C090FA-78AB-452F-B504-98AAFEE09121/57
-                string uri = $"propertiesperproductcenter/UPFM/{companyRealPageId}/{(int)product}";
+                string uri = $"propertiesperproductcenter/UPFM/{companyRealPageId}/{productId}";
                 logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
                 WriteToLog(LogEventLevel.Debug, "GetPropertiesPerProductCenter - Getting info.", logData);
                 var response = GetAsync(uri).Result;
