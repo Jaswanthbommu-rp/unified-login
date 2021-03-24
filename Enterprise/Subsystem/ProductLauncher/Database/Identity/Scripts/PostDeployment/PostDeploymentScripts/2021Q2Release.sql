@@ -503,3 +503,58 @@ begin
 end
 
 COMMIT TRAN;
+
+ --Adding Product Setting Type for ILM & ILM LA
+			   
+			   IF NOT EXISTS (Select Top 1 1 From Enterprise.ProductSettingType Where Name='CreateUpdateMultiCompanyUserRequiresPMC')
+	              BEGIN
+		              INSERT INTO Enterprise.ProductSettingType ( name, Description)
+                      VALUES ('CreateUpdateMultiCompanyUserRequiresPMC','Create Update MultiComapny User Required PMC')   
+	              END
+			      
+			     DECLARE @ProductSttingTypeId bigint,@ConfigurationId INT,@ProductSettingILM INT,@ProductSettingILMLA INT;
+				  
+                 DECLARE @ConfigurationIDTable TABLE (ID INT);
+				 DECLARE @ProductSettingILMTable TABLE (ID INT);
+				 DECLARE @ProductSettingILMLATable TABLE (ID INT);
+			   
+			     SELECT @ProductSttingTypeId = ProductSettingTypeId From Enterprise.ProductSettingType Where Name='CreateUpdateMultiCompanyUserRequiresPMC';  
+				 
+				 IF NOT EXISTS (Select TOP 1 1 From Enterprise.ProductSetting where ProductId = 40 and ProductSettingTypeId = @ProductSttingTypeId)
+				 BEGIN
+				    Insert into Enterprise.Configuration(CreateDate)   Output   Inserted.ConfigurationId INTO  @ConfigurationIDTable
+                    Values(GetUTCDATE())
+                    -- GET A NEW CONFIGURATION ID
+                     SELECT @ConfigurationId = ID FROM @ConfigurationIDTable;
+					 
+					
+		          INSERT INTO Enterprise.ProductSetting (ProductId,ProductSettingTypeId,VALUE,FromDate,ThruDate) Output   Inserted.ProductSettingId INTO  @ProductSettingILMTable
+				  VALUES(40,@ProductSttingTypeId,1,GETUTCDATE(),NULL)
+										   
+                      -- GET A NEW PRODUCTSETTING ID FOR ILM
+                     SELECT @ProductSettingILM  = ID FROM @ProductSettingILMTable;
+	             END
+				 
+				 IF NOT EXISTS (Select TOP 1 1 From Enterprise.ProductSetting where ProductId = 41 and ProductSettingTypeId = @ProductSttingTypeId)
+				 BEGIN
+		         INSERT INTO Enterprise.ProductSetting (ProductId,ProductSettingTypeId,VALUE,FromDate,ThruDate) Output   Inserted.ProductSettingId INTO @ProductSettingILMLATable
+					                       VALUES(41,@ProductSttingTypeId,1,GETUTCDATE(),NULL)
+                     -- GET A NEW PRODUCTSETTING ID FOR ILMLA
+                     SELECT @ProductSettingILMLA  = ID FROM @ProductSettingILMLATable;
+	             END
+				 
+				 IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductConfiguration WHERE  ConfigurationId= @ConfigurationId and ProductSettingId =
+				 @ProductSettingILM)
+				 BEGIN
+				 INSERT INTO Enterprise.ProductConfiguration(ConfigurationId,ProductSettingId,FromDate,ThruDate)
+				 VALUES(@ConfigurationId,@ProductSettingILM,GETUTCDATE(),NULL)
+				 END
+				  IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductConfiguration WHERE  ConfigurationId= @ConfigurationId and ProductSettingId =
+				 @ProductSettingILMLA)
+				 BEGIN
+				 INSERT INTO Enterprise.ProductConfiguration(ConfigurationId,ProductSettingId,FromDate,ThruDate)
+				 VALUES(@ConfigurationId,@ProductSettingILMLA,GETUTCDATE(),NULL)
+				 END
+			     GO
+
+				
