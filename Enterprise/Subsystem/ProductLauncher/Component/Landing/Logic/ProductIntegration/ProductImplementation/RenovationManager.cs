@@ -382,7 +382,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <summary>
 		/// Create a user in the product
 		/// </summary>
-		protected string CreateMultiCompanyUser(IntegrationProductUser productUser)
+		protected override string CreateMultiCompanyUser(IntegrationProductUser productUser)
 		{
 			WriteToDiagnosticLog(
 				$"ManageProductInvokerBase.CreateUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method.");
@@ -423,7 +423,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		}
 		#endregion
 		#region private
-		private IntegrationProductUser getBaseUserDataFromProduct(string loginNameToCheck, string baseUrlAndQuery = null)
+		public  override IntegrationProductUser getBaseUserDataFromProduct(string loginNameToCheck, string baseUrlAndQuery = null)
 		{
 			if (string.IsNullOrEmpty(baseUrlAndQuery))
 				baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserExistEndpoint);
