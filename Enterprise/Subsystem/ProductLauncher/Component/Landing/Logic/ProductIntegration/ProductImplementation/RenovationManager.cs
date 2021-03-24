@@ -125,7 +125,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				newProductUser.LoginName = newProductUser.Email;
 			}
 
-			var productUser = getBaseUserDataFromProduct(newProductUser.LoginName);
+			var productUser = GetBaseUserDataFromProduct(newProductUser.LoginName);
 			//For Multi company user creation first check user data from product,if user data exists then do put else post
 
 			if (string.IsNullOrEmpty(SubjectUserDetails.ProductUserName) && productUser == null)
@@ -423,7 +423,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		}
 		#endregion
 		#region private
-		public  override IntegrationProductUser getBaseUserDataFromProduct(string loginNameToCheck, string baseUrlAndQuery = null)
+		public  override IntegrationProductUser GetBaseUserDataFromProduct(string loginNameToCheck, string baseUrlAndQuery = null)
 		{
 			if (string.IsNullOrEmpty(baseUrlAndQuery))
 				baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserExistEndpoint);
