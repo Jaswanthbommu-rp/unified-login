@@ -40,7 +40,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         protected ProductEnum ProductType;
         protected int ProductId;
-        private string result;
         protected IDataCollector _dataCollector;
         private IManagePersona _managePersona;
         private IProductInternalSettingRepository _productInternalSettingRepository;
@@ -559,6 +558,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary> 
         public virtual string CreateUpdateProductUser(ProductUserRolePropertiesGroups userRolePropertiesRegion, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser)
         {
+            string result;
             WriteToDiagnosticLog(
                 $"ManageProductInvokerBase.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of method.");
 
