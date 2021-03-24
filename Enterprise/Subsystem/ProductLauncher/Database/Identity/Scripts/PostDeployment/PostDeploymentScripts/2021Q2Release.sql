@@ -506,55 +506,78 @@ COMMIT TRAN;
 
  --Adding Product Setting Type for ILM & ILM LA
 			   
-			   IF NOT EXISTS (Select Top 1 1 From Enterprise.ProductSettingType Where Name='CreateUpdateMultiCompanyUserRequiresPMC')
-	              BEGIN
-		              INSERT INTO Enterprise.ProductSettingType ( name, Description)
-                      VALUES ('CreateUpdateMultiCompanyUserRequiresPMC','Create Update MultiComapny User Required PMC')   
-	              END
-			      
-			     DECLARE @ProductSttingTypeId bigint,@ConfigurationId INT,@ProductSettingILM INT,@ProductSettingILMLA INT;
-				  
-                 DECLARE @ConfigurationIDTable TABLE (ID INT);
-				 DECLARE @ProductSettingILMTable TABLE (ID INT);
-				 DECLARE @ProductSettingILMLATable TABLE (ID INT);
-			   
-			     SELECT @ProductSttingTypeId = ProductSettingTypeId From Enterprise.ProductSettingType Where Name='CreateUpdateMultiCompanyUserRequiresPMC';  
-				 
-				 IF NOT EXISTS (Select TOP 1 1 From Enterprise.ProductSetting where ProductId = 40 and ProductSettingTypeId = @ProductSttingTypeId)
-				 BEGIN
-				    Insert into Enterprise.Configuration(CreateDate)   Output   Inserted.ConfigurationId INTO  @ConfigurationIDTable
-                    Values(GetUTCDATE())
-                    -- GET A NEW CONFIGURATION ID
-                     SELECT @ConfigurationId = ID FROM @ConfigurationIDTable;
-					 
-					
-		          INSERT INTO Enterprise.ProductSetting (ProductId,ProductSettingTypeId,VALUE,FromDate,ThruDate) Output   Inserted.ProductSettingId INTO  @ProductSettingILMTable
-				  VALUES(40,@ProductSttingTypeId,1,GETUTCDATE(),NULL)
-										   
-                      -- GET A NEW PRODUCTSETTING ID FOR ILM
-                     SELECT @ProductSettingILM  = ID FROM @ProductSettingILMTable;
-	             END
-				 
-				 IF NOT EXISTS (Select TOP 1 1 From Enterprise.ProductSetting where ProductId = 41 and ProductSettingTypeId = @ProductSttingTypeId)
-				 BEGIN
-		         INSERT INTO Enterprise.ProductSetting (ProductId,ProductSettingTypeId,VALUE,FromDate,ThruDate) Output   Inserted.ProductSettingId INTO @ProductSettingILMLATable
-					                       VALUES(41,@ProductSttingTypeId,1,GETUTCDATE(),NULL)
-                     -- GET A NEW PRODUCTSETTING ID FOR ILMLA
-                     SELECT @ProductSettingILMLA  = ID FROM @ProductSettingILMLATable;
-	             END
-				 
-				 IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductConfiguration WHERE  ConfigurationId= @ConfigurationId and ProductSettingId =
-				 @ProductSettingILM)
-				 BEGIN
-				 INSERT INTO Enterprise.ProductConfiguration(ConfigurationId,ProductSettingId,FromDate,ThruDate)
-				 VALUES(@ConfigurationId,@ProductSettingILM,GETUTCDATE(),NULL)
-				 END
-				  IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductConfiguration WHERE  ConfigurationId= @ConfigurationId and ProductSettingId =
-				 @ProductSettingILMLA)
-				 BEGIN
-				 INSERT INTO Enterprise.ProductConfiguration(ConfigurationId,ProductSettingId,FromDate,ThruDate)
-				 VALUES(@ConfigurationId,@ProductSettingILMLA,GETUTCDATE(),NULL)
-				 END
-			     GO
+  BEGIN TRAN
+
+-- Add ProductIcon product settings
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'CreateUpdateMultiCompanyUserRequiresPMC')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
+	VALUES ('CreateUpdateMultiCompanyUserRequiresPMC', 'Create Update MultiCompany User Requires PMC', 0);
+END
+
+DECLARE @NOW DATETIME = GETUTCDATE();
+declare @productlist table ( entid int identity, productid int, productsettingtype varchar(500), productsettingvalue varchar(100))
+insert into @productlist values
+(40,  'CreateUpdateMultiCompanyUserRequiresPMC','1'),
+(41,  'CreateUpdateMultiCompanyUserRequiresPMC','1');
+
+declare @MAX_ID INT
+declare @Current_ID INT = 1
+declare @CurrentProductId INT = 1
+
+select @MAX_ID = max(entid) from @productlist
+
+while @Current_ID <= @MAX_ID
+begin
+	declare @currentSettingType varchar(500)
+	declare @currentsettingValue varchar(2000)
+
+	select @CurrentProductId = productid , @currentSettingType = productsettingtype, @currentSettingValue = productsettingvalue
+		from @productlist where entid = @Current_ID
+
+	--print 'productid = ' + convert(varchar,@currentproductid)
+
+	if not exists (
+	select top 1 1 
+		FROM Enterprise.GlobalProductConfiguration gpc  
+		JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId  
+		JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId  
+		JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId  
+			WHERE  gpc.ProductId = @CurrentProductId  
+		AND ((@NOW BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@NOW >= gpc.FromDate AND gpc.ThruDate IS NULL))  
+		AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))  
+		AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))  
+		AND pst.Name = @currentSettingType
+		AND ps.Value = @currentsettingValue
+	)
+	begin
+		declare @currentproductconfigurationid INT
+		select distinct top 1 @currentproductconfigurationid = pc.configurationid
+			FROM Enterprise.GlobalProductConfiguration gpc  
+			JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId  
+			JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId  
+			JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId  
+				WHERE  gpc.ProductId = @CurrentProductId
+			AND ((@NOW BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@NOW >= gpc.FromDate AND gpc.ThruDate IS NULL))  
+			AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))  
+			AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))  
+		order by pc.ConfigurationId desc
+
+		if (@currentproductconfigurationid is not null)
+		begin
+			insert into enterprise.ProductSetting ( productid, ProductSettingTypeId, value, FromDate )
+				select @CurrentProductId, productsettingtypeid, @currentSettingValue, GETUTCDATE()
+					from enterprise.ProductSettingType where name = @currentSettingType
+			insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate, ThruDate )
+				values ( @currentproductconfigurationid, @@IDENTITY, GETUTCDATE(), null )
+		end
+	end
+	
+	set @Current_ID = @Current_ID + 1
+end
+
+COMMIT TRAN;
+
 
 				
