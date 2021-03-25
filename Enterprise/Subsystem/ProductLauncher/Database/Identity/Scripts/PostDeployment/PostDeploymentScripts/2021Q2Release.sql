@@ -505,7 +505,6 @@ end
 COMMIT TRAN;
 
 GO
-GO
  --Adding Product Setting Type for ILM & ILM LA
 			   
   BEGIN TRAN
