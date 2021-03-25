@@ -21,6 +21,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using System.Web.Http.Controllers;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Controllers
 {
@@ -29,10 +30,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
     /// </summary>
     public class PropertyController : BaseApiController
     {
-        private readonly IIntegrationTypeFactory _integrationTypeFactory;
+        private IIntegrationTypeFactory _integrationTypeFactory;
 
-        public PropertyController()
+        /// <summary>
+        /// Used to initialize DI classes with userclaim
+        /// </summary>
+        /// <param name="controllerContext"></param>
+        protected override void Initialize(HttpControllerContext controllerContext)
         {
+            base.Initialize(controllerContext);
             var productInternalSettingRepository = new ProductInternalSettingRepository();
             var manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
             var manageProductOneSite = new ManageProductOneSite(_userClaims);
