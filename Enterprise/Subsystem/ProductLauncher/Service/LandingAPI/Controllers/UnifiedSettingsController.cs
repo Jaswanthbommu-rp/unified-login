@@ -12,6 +12,7 @@ using System.Web.Http;
 using System.Web.Http.Controllers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using Newtonsoft.Json.Linq;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -20,6 +21,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         #region Private variables
         private IRepositoryResponse _repositoryResponse;
         private IManageOrganization _manageOrganization;
+        private const string ADD_OPERATION = "add";
+        private const string UPDATE_OPERATION = "update";
+        private const string DELETE_OPERATION = "delete";
         #endregion
 
         #region Constructor
@@ -321,21 +325,233 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
         }
 
+  //      /// <summary>
+		///// Update Settings by category
+		///// </summary>
+		///// <param name="settings">Settings list of object (Key value pairs) of the parameter values</param>
+		///// <param name="category">Setting category (e.g. Security, CustomFields)</param>
+		///// <param name="companyId">Organization Id</param>
+		///// <param name="includes">Filter</param>
+		///// <returns></returns>
+		//[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when SecuritySettings object have invalid entries / when Information is out of sync with the server)")]
+  //      [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+  //      [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+  //      [SwaggerResponse(HttpStatusCode.OK, Description = "Settings updated")]
+  //      [Route("companies/{companyId}/settings/{operation}/table-rows")]
+  //      [HttpPost]
+  //      public HttpResponseMessage UpdateUnifiedSettings([FromBody] IList<Setting> settings, string category, Guid companyId, string operation)
+  //      {
+  //          Organization organization = new Organization();
+  //          IApiError apiError;
+
+  //          if (companyId == Guid.Empty)
+  //          {
+  //              apiError = new ApiError()
+  //              {
+  //                  Id = Guid.NewGuid().ToString(),
+  //                  Status = (short)HttpStatusCode.BadRequest,
+  //                  Title = "Null CompanyId.",
+  //                  Detail = $"Empty Company parameter passed",
+  //                  Links = string.Empty,
+  //                  Code = "Settings.GetSettings.2",
+  //                  Source = new ApiErrorSource()
+  //                  {
+  //                      JsonPointer = string.Empty,
+  //                      Parameter = string.Empty
+  //                  }
+  //              };
+  //              return Request.CreateResponse(HttpStatusCode.BadRequest, apiError);
+  //          }
+
+  //          Organization org = _manageOrganization.GetOrganization(companyId);
+  //          if (org == null)
+  //          {
+  //              apiError = new ApiError()
+  //              {
+  //                  Id = Guid.NewGuid().ToString(),
+  //                  Status = (short)HttpStatusCode.BadRequest,
+  //                  Title = "Company not found.",
+  //                  Detail = $"Company not found for Id: {companyId}",
+  //                  Links = string.Empty,
+  //                  Code = "Settings.GetSettings.2",
+  //                  Source = new ApiErrorSource()
+  //                  {
+  //                      JsonPointer = string.Empty,
+  //                      Parameter = string.Empty
+  //                  }
+  //              };
+  //              return Request.CreateResponse(HttpStatusCode.BadRequest, apiError);
+  //          }
+
+  //          bool IsValid = _manageOrganization.ValidateOrganization(_userClaims.OrganizationMasterId, _userClaims.UserRealPageGuid, org.RealPageId);
+  //          if (!IsValid)
+  //          {
+  //              apiError = new ApiError()
+  //              {
+  //                  Id = Guid.NewGuid().ToString(),
+  //                  Status = (short)HttpStatusCode.BadRequest,
+  //                  Title = "User is not authorized.",
+  //                  Detail = $"Logged in user is not authorized to view security settings for {org.Name}.",
+  //                  Links = string.Empty,
+  //                  Code = "Settings.GetSettings.3",
+  //                  Source = new ApiErrorSource()
+  //                  {
+  //                      JsonPointer = string.Empty,
+  //                      Parameter = string.Empty
+  //                  }
+  //              };
+  //              return Request.CreateResponse(HttpStatusCode.BadRequest, apiError);
+  //          }
+
+  //          if (settings == null)
+  //          {
+  //              apiError = new ApiError()
+  //              {
+  //                  Id = Guid.NewGuid().ToString(),
+  //                  Status = (short)HttpStatusCode.BadRequest,
+  //                  Title = "Invalid parameter.",
+  //                  Detail = $"Null parameter: {category} Settings",
+  //                  Links = string.Empty,
+  //                  Code = "Settings.UpdateSettings.4",
+  //                  Source = new ApiErrorSource()
+  //                  {
+  //                      JsonPointer = string.Empty,
+  //                      Parameter = string.Empty
+  //                  }
+  //              };
+  //              return Request.CreateResponse(HttpStatusCode.BadRequest, apiError);
+  //          }
+
+  //          if (category == null)
+  //          {
+  //              apiError = new ApiError()
+  //              {
+  //                  Id = Guid.NewGuid().ToString(),
+  //                  Status = (short)HttpStatusCode.BadRequest,
+  //                  Title = "Invalid parameter.",
+  //                  Detail = $"Null parameter:  Category",
+  //                  Links = string.Empty,
+  //                  Code = "Settings.UpdateSettings.5",
+  //                  Source = new ApiErrorSource()
+  //                  {
+  //                      JsonPointer = string.Empty,
+  //                      Parameter = string.Empty
+  //                  }
+  //              };
+  //              return Request.CreateResponse(HttpStatusCode.BadRequest, apiError);
+  //          }
+
+  //          UnifiedSetting unfiedSetting = new UnifiedSetting();
+  //          IManageCustomFields manageCustomFields = new ManageCustomFields(_userClaims);
+
+  //          if (string.IsNullOrEmpty(operation))
+  //          {
+  //              apiError = new ApiError()
+  //              {
+  //                  Id = Guid.NewGuid().ToString(),
+  //                  Status = (short)HttpStatusCode.BadRequest,
+  //                  Title = "Null operation.",
+  //                  Detail = _repositoryResponse.ErrorMessage,
+  //                  Links = string.Empty,
+  //                  Code = $"Settings.UpdateSettings.V2.",
+  //                  Source = new ApiErrorSource()
+  //                  {
+  //                      JsonPointer = string.Empty,
+  //                      Parameter = string.Empty
+  //                  }
+  //              };
+  //              return Request.CreateResponse(HttpStatusCode.BadRequest, apiError);
+  //          }
+
+  //          var validoperations = new HashSet<string>() { "add", "update", "delete" };
+
+  //          if (!validoperations.Contains(operation))
+  //          {
+  //              apiError = new ApiError()
+  //              {
+  //                  Id = Guid.NewGuid().ToString(),
+  //                  Status = (short)HttpStatusCode.BadRequest,
+  //                  Title = "Invalid operation.",
+  //                  Detail = _repositoryResponse.ErrorMessage,
+  //                  Links = string.Empty,
+  //                  Code = $"Settings.UpdateSettings.V2.{operation}.", 
+  //                  Source = new ApiErrorSource()
+  //                  {
+  //                      JsonPointer = string.Empty,
+  //                      Parameter = string.Empty
+  //                  }
+  //              };
+  //              return Request.CreateResponse(HttpStatusCode.BadRequest, apiError);
+  //          }
+
+
+  //          _repositoryResponse = manageCustomFields.AddUpdateDeleteCustomFields(settings, org.PartyId, operation);
+  //          if (_repositoryResponse.Id == 0)
+  //          {
+  //              apiError = new ApiError()
+  //              {
+  //                  Id = Guid.NewGuid().ToString(),
+  //                  Status = (short)HttpStatusCode.BadRequest,
+  //                  Title = "Update unified settings Failed.",
+  //                  Detail = _repositoryResponse.ErrorMessage,
+  //                  Links = string.Empty,
+  //                  Code = "Settings.UpdateSettings.11",
+  //                  Source = new ApiErrorSource()
+  //                  {
+  //                      JsonPointer = string.Empty,
+  //                      Parameter = string.Empty
+  //                  }
+  //              };
+  //              return Request.CreateResponse(HttpStatusCode.BadRequest, apiError);
+  //          }
+  //          else
+  //          {
+  //              RequestParameter datafilter = new RequestParameter();
+  //              datafilter.Pages.ResultsPerPage = 0;
+  //              IDictionary<object, object> globals = new Dictionary<object, object>();
+  //              globals.Add(BaseType.RequestParameter, datafilter);
+  //              var settingList = manageCustomFields.GetCustomFields(globals, org.PartyId);
+
+  //              if (settingList == null)
+  //              {
+  //                  //When trying to get a Security Settings that don't exists
+  //                  apiError = new ApiError()
+  //                  {
+  //                      Id = Guid.NewGuid().ToString(),
+  //                      Status = (short)HttpStatusCode.NotFound,
+  //                      Title = "Custom Fields not found.",
+  //                      Detail = $"Custom Fields not found for {organization.Name}",
+  //                      Links = string.Empty,
+  //                      Code = "Settings.GetSettings.5",
+  //                      Source = new ApiErrorSource()
+  //                      {
+  //                          JsonPointer = string.Empty,
+  //                          Parameter = string.Empty
+  //                      }
+  //                  };
+  //                  return Request.CreateResponse(HttpStatusCode.BadRequest, apiError);
+  //              }
+
+  //              return Request.CreateResponse(HttpStatusCode.OK, (List<Setting>)settingList);
+  //          }
+  //      }
+
+
         /// <summary>
-		/// Update Settings by category
-		/// </summary>
-		/// <param name="settings">Settings list of object (Key value pairs) of the parameter values</param>
-		/// <param name="category">Setting category (e.g. Security, CustomFields)</param>
-		/// <param name="companyId">Organization Id</param>
-		/// <param name="includes">Filter</param>
-		/// <returns></returns>
-		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when SecuritySettings object have invalid entries / when Information is out of sync with the server)")]
+        /// Update Settings by category
+        /// </summary>
+        /// <param name="settings">Settings list of object (Key value pairs) of the parameter values</param>
+        /// <param name="category">Setting category (e.g. Security, CustomFields)</param>
+        /// <param name="companyId">Organization Id</param>
+        /// <param name="includes">Filter</param>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when SecuritySettings object have invalid entries / when Information is out of sync with the server)")]
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [SwaggerResponse(HttpStatusCode.OK, Description = "Settings updated")]
         [Route("companies/{companyId}/settings/{operation}/table-rows")]
         [HttpPost]
-        public HttpResponseMessage UpdateUnifiedSettings([FromBody] IList<Setting> settings, string category, Guid companyId, string operation)
+        public HttpResponseMessage SetCustomFields([FromBody] List<SettingRow> rows, string category, Guid companyId, string operation)
         {
             Organization organization = new Organization();
             IApiError apiError;
@@ -399,7 +615,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest, apiError);
             }
 
-            if (settings == null)
+            if (rows == null)
             {
                 apiError = new ApiError()
                 {
@@ -437,9 +653,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest, apiError);
             }
 
-            UnifiedSetting unfiedSetting = new UnifiedSetting();
-            IManageCustomFields manageCustomFields = new ManageCustomFields(_userClaims);
-
+         
             if (string.IsNullOrEmpty(operation))
             {
                 apiError = new ApiError()
@@ -459,18 +673,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest, apiError);
             }
 
-            var validoperations = new HashSet<string>() { "add", "update", "delete" };
+           // var validoperations = new HashSet<string>() { "add", "update", "delete" };
 
-            if (!validoperations.Contains(operation))
+            if (operation != ADD_OPERATION && operation != DELETE_OPERATION && operation != UPDATE_OPERATION )
             {
                 apiError = new ApiError()
                 {
                     Id = Guid.NewGuid().ToString(),
                     Status = (short)HttpStatusCode.BadRequest,
-                    Title = "Invalid operation.",
+                    Title = "Invalid operation.Possible operations are add, update, delete",
                     Detail = _repositoryResponse.ErrorMessage,
                     Links = string.Empty,
-                    Code = $"Settings.UpdateSettings.V2.{operation}.", 
+                    Code = $"Settings.UpdateSettings.V2.{operation}.",
                     Source = new ApiErrorSource()
                     {
                         JsonPointer = string.Empty,
@@ -480,8 +694,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest, apiError);
             }
 
+            List<SettingRow> result = null;
 
-            _repositoryResponse = manageCustomFields.AddUpdateDeleteCustomFields(settings, org.PartyId, operation);
+            UnifiedSetting unfiedSetting = new UnifiedSetting();
+            IManageUnifiedSettings manageSettings = new ManageUnifiedSettings(_userClaims);
+
+            _repositoryResponse = manageSettings.SaveTableSettings(org.PartyId, category, operation, rows);
             if (_repositoryResponse.Id == 0)
             {
                 apiError = new ApiError()
@@ -500,38 +718,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 };
                 return Request.CreateResponse(HttpStatusCode.BadRequest, apiError);
             }
-            else
-            {
-                RequestParameter datafilter = new RequestParameter();
-                datafilter.Pages.ResultsPerPage = 0;
-                IDictionary<object, object> globals = new Dictionary<object, object>();
-                globals.Add(BaseType.RequestParameter, datafilter);
-                var settingList = manageCustomFields.GetCustomFields(globals, org.PartyId);
-
-                if (settingList == null)
-                {
-                    //When trying to get a Security Settings that don't exists
-                    apiError = new ApiError()
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        Status = (short)HttpStatusCode.NotFound,
-                        Title = "Custom Fields not found.",
-                        Detail = $"Custom Fields not found for {organization.Name}",
-                        Links = string.Empty,
-                        Code = "Settings.GetSettings.5",
-                        Source = new ApiErrorSource()
-                        {
-                            JsonPointer = string.Empty,
-                            Parameter = string.Empty
-                        }
-                    };
-                    return Request.CreateResponse(HttpStatusCode.BadRequest, apiError);
-                }
-
-                return Request.CreateResponse(HttpStatusCode.OK, (List<Setting>)settingList);
-            }
+            
+            return Request.CreateResponse(HttpStatusCode.OK, rows);
+           
         }
+
         #endregion
+       
         #region Get Examples
         /// <summary>
         /// Used to document examples of the User List Model webapi result

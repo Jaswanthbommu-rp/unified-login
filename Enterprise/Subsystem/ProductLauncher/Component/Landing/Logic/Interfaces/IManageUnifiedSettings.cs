@@ -45,5 +45,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="propertyInstance"></param>
 		/// <returns></returns>
 		bool DeletePropertyInSetting(Guid propertyInstance);
+		RepositoryResponse SaveTableSettings(long partyId, string category, string operation,  List<SettingRow> rows);
 	}
 }

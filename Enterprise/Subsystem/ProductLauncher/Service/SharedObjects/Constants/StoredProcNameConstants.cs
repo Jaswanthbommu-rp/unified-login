@@ -392,6 +392,7 @@
         public const string SP_UpdateUnifiedSetting = "Ident.UpdateUnifiedSetting";
 
         //Custom Fields
+        public const string SP_AddUpdateDeleteCustomField = "CustomField.AddUpdateDeleteCustomField";
         public const string SP_AddUpdateFieldFromJSON = "CustomField.AddUpdateFieldFromJSON";
         public const string SP_GetFieldsByMasterId = "CustomField.GetFieldsByMasterId";
         public const string SP_GetFieldsValuesByUserLoginPersonaId = "CustomField.GetFieldsValuesByUserLoginPersonaId";

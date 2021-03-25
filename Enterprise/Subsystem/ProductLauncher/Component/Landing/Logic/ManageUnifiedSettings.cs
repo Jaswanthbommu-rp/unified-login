@@ -13,6 +13,7 @@ using Serilog;
 using Serilog.Events;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.Caching;
@@ -176,15 +177,79 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return repositoryResponse;
         }
 
-		#region Send Property to Settings
+        public RepositoryResponse SaveTableSettings(   long partyId,
+                                                       string category,
+                                                       string operation,
+                                                       List<SettingRow> rows)
+        {
 
-		/// <summary>
-		///Send Property Instance to Unified settings to add/update property
-		/// </summary>
-		/// <param name="upfmProperties"></param>
-		/// <param name="requestType"></param>
-		/// <returns></returns>
-		public bool CreateUpdatePropertyInSetting(UnifiedSettingPropertyPayload upfmProperties, HttpMethod requestType)
+            RepositoryResponse repositoryResponse = new RepositoryResponse();
+            Guid correlationId = Guid.NewGuid();
+            string operationName = $"Update {category} Settings";
+            Dictionary<string, object> logData = new Dictionary<string, object>
+            {
+                { operationName, $"Organization Id: {partyId}, category: {category}, Settings: {rows}" }
+            };
+            WriteToLog(LogEventLevel.Debug, operationName + ": Begin", correlationId, logData, null);
+            if (rows == null)
+            {
+                throw new ArgumentNullException(nameof(rows), "Null  Settings ");
+            }
+
+            try
+            {
+                DataTable dataTable = new DataTable(category);
+                string json = "";
+                dataTable.Columns.Add("OrganizationId");
+                foreach (Setting col in rows[0].Columns)
+                {
+                    dataTable.Columns.Add(col.Name.Trim());
+                }
+
+                foreach (SettingRow row in rows)
+                {
+                    DataRow dataRow = dataTable.NewRow();
+
+                    foreach (Setting col in row.Columns)
+                    {
+                        dataRow[col.Name.Trim()] = col.Value;
+                    }
+                    dataRow["OrganizationId"] = partyId;
+                    dataTable.Rows.Add(dataRow);
+
+                    json = JsonConvert.SerializeObject(dataTable);
+                }
+                repositoryResponse = _unifiedSettingsRepository.AddUpdateCustomFields(json,  partyId, operation, _userClaim.UserId);
+            }
+            catch (Exception exception)
+            {
+                logData = new Dictionary<string, object>
+                {
+                    { "Update UnifiedSettings", "Exception" }
+                };
+                WriteToLog(LogEventLevel.Debug, operationName + ": Exception", correlationId, logData, exception);
+            }
+
+            logData = new Dictionary<string, object>
+            {
+                { operationName, rows }
+            };
+            WriteToLog(LogEventLevel.Debug, operationName + ": End", correlationId, logData, null);
+
+            return repositoryResponse;
+            
+
+        }
+
+            #region Send Property to Settings
+
+            /// <summary>
+            ///Send Property Instance to Unified settings to add/update property
+            /// </summary>
+            /// <param name="upfmProperties"></param>
+            /// <param name="requestType"></param>
+            /// <returns></returns>
+            public bool CreateUpdatePropertyInSetting(UnifiedSettingPropertyPayload upfmProperties, HttpMethod requestType)
         {
             GetConfigurationSetting();
             string ulClientToken = string.Empty;
