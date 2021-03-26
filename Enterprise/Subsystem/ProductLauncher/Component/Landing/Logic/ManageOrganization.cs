@@ -812,7 +812,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				}
 			}
 			CustomerProperty propertyDetails = _manageBlueBook.GetCustomerPropertyDetails(customerPropertyId);
-            List<BooksPropertyInstance> _booksPropertyInstances = _manageBlueBook.GetPropertyInstanceByCustomerPropertyId(customerPropertyId);
+            List<BooksPropertyInstance> _booksPropertyInstances = _manageBlueBook.GetUPFMPropertyInstancesByCustomerPropertyId(customerPropertyId);
             List<PropertySetup> _listPropertySetup = new List<PropertySetup>();
             if (_booksPropertyInstances != null)
             {
@@ -1092,6 +1092,57 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             propertyAuditResult.Add(pa);
         }
 
+        #endregion
+
+        #region Get Product status details
+        /// <summary>
+        /// Product status details
+        /// </summary>
+        /// <param name="propertyInstanceSourceId">productInstanceId</param>
+        /// <param name="source">source</param>
+        /// <returns></returns>
+        public ProductPropertyDetails GetSourceProductDetails(string propertyInstanceSourceId, string source)
+        {           
+            var booksProductSource = _manageBlueBook.GetPropertyDetailsByPropertyInstanceIdAndSource(propertyInstanceSourceId, source);
+            if (booksProductSource != null && booksProductSource.attributes != null)
+            {
+                var customerProp = booksProductSource.attributes?.customerPropertyMap?
+                                        .Where(p => p.propertyInstanceSourceId == booksProductSource.attributes.propertyInstanceSourceId)?.FirstOrDefault();
+                ProductStatusDetail productStatus = new ProductStatusDetail
+                {
+                    IsActive = booksProductSource.attributes.isActive,
+                    ProductInstanceId = booksProductSource.attributes.propertyInstanceSourceId,
+                    Domain = booksProductSource.attributes.domain,
+                    CustomerPropertyId = customerProp?.customerPropertyId.ToString(),
+                    ContractedName = customerProp?.customerProperty?.FirstOrDefault().propertyName.ToString()
+                };
+                List<PropertySetup> _listPropertySetup = new List<PropertySetup>();
+                if (customerProp != null)
+                {
+                    List<BooksPropertyInstance> _booksPropertyInstances = _manageBlueBook.GetUPFMPropertyInstancesByCustomerPropertyId(customerProp?.customerPropertyId.ToString());
+                    if (_booksPropertyInstances != null)
+                    {
+                        foreach (var booksProperty in _booksPropertyInstances)
+                        {
+                            PropertySetup _property = new PropertySetup
+                            {
+                                Name = booksProperty?.attributes.propertyName,
+                                Domain = booksProperty?.attributes.domain,
+                                IsActive = booksProperty?.attributes.isActive,
+                                InstanceId = string.IsNullOrEmpty(booksProperty?.attributes.propertyInstanceSourceId) ? Guid.Empty : Guid.Parse(booksProperty?.attributes.propertyInstanceSourceId),
+                            };
+                            _listPropertySetup.Add(_property);
+                        }
+                    }
+                }
+                return new ProductPropertyDetails
+                {
+                    ProductStatusDetail = productStatus,
+                    PropertyDetails = _listPropertySetup
+                };
+            }
+            return new ProductPropertyDetails();
+        }
         #endregion
 
 

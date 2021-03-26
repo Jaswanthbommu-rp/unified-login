@@ -195,7 +195,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         ///// </summary>
         ///// <param name="customerPropertyId"></param>
         ///// <returns></returns>
-        List<BooksPropertyInstance> GetPropertyInstanceByCustomerPropertyId(string CustomerPropertyId);
+        List<BooksPropertyInstance> GetUPFMPropertyInstancesByCustomerPropertyId(string CustomerPropertyId);
 
         /// <summary>
         /// GetAllProductsPropertyInstanceFromBooks
@@ -203,6 +203,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <param name="customerPropertyId"></param>
         /// <returns></returns>
         List<BooksPropertyInstance> GetAllProductsPropertyInstanceFromBooks(string customerPropertyId);
+
+        /// <summary>
+        /// Get source product details from books
+        /// </summary>
+        /// <param name="propertyInstanceSourceId">propertyInstanceSourceId</param>
+        /// <param name="source">source</param>
+        /// <returns></returns>
+        BooksPropertyInstance GetPropertyDetailsByPropertyInstanceIdAndSource(string propertyInstanceSourceId, string source);
 
         ///// <summary>
         ///// Get translated product primary properties data
