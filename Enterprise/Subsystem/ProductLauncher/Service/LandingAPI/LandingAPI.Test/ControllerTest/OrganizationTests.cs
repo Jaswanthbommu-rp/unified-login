@@ -2859,6 +2859,79 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         }
         #endregion
 
+        #region GetProductStatusDetails
+        [Fact]
+        public void GetProductStatusDetails_InvalidProductInstanceId_ReturnBadRequest()
+        {
+            //Arrange
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            )
+            { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
+
+            //Act           
+            HttpResponseMessage response = organizationController.GetProductStatusDetails("0", "OS");
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
+        }
+
+        [Fact]
+        public void GetProductStatusDetails_InvalidSource_ReturnBadRequest()
+        {
+            //Arrange
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            )
+            { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
+
+            //Act           
+            HttpResponseMessage response = organizationController.GetProductStatusDetails("1234", "");
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
+        }
+
+        [Fact]
+        public void GetProductStatusDetails_ReturnsValidResponse()
+        {
+            //Arrange
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            )
+            {
+                Request = new HttpRequestMessage(),
+                Configuration = new HttpConfiguration()
+            };
+            var booksProductDetailJson = "{\"data\":{\"type\":\"propertyinstance\",\"id\":\"1790436\",\"attributes\":{\"propertyInstanceId\":1790436,\"propertyInstanceSourceId\":\"12345\",\"propertyName\":\"Historical-Cobblestone Cove\",\"source\":\"OS\",\"phaseParentId\":null,\"legalSiteName\":null,\"website\":null,\"email\":null,\"notAPhysicalPropertyAddress\":null,\"isActive\":true,\"greenBookCares\":false,\"buildings\":null,\"nrr\":false,\"modifiedSource\":null,\"isAcquired\":false,\"isSoldOrTransfer\":null,\"soldOrTransferAt\":null,\"customerEnvironment\":\"Primary\",\"domain\":\"Primary\",\"customerPropertyMap\":[{\"customerPropertyId\":123456,\"propertyInstanceId\":1790436,\"propertyInstanceSourceId\":\"12345\",\"source\":\"OS\",\"customerProperty\":[{\"customerPropertyId\":123456,\"customerCompanyId\":379,\"masterPropertyId\":47093,\"propertyName\":\"COBBLESTONE COVE\",\"phaseParentId\":null,\"legalSiteName\":null,\"phoneNumber\":null,\"website\":null,\"email\":null,\"migrationStatus\":\"staged\",\"hasMedia\":\"Deprecated Field\",\"mediaTypeId\":null,\"assetType\":null,\"isActive\":false,\"companyRelationship\r\n\":\"Other\",\"startDate\":null,\"endDate\":null}]}]}}}";
+            HttpResponseMessage booksProductDetailResponse = new HttpResponseMessage(HttpStatusCode.OK);
+            booksProductDetailResponse.Content = new StringContent(booksProductDetailJson);
+
+            var booksCustomerPropertyInstanceJson = "{\"data\":[{\"type\":\"propertyinstance\",\"id\":\"1005251854\",\"attributes\":{\"propertyInstanceId\":1005251854,\"propertyInstanceSourceId\":\"003b0509-1189-49dc-bbe6-01c5b6277a83\",\"propertyName\":\"Cobblestone Cove\",\"isActive\":true,\"domain\":\"Primary\",\"deletedReason\":\"Deprecated Field\",\"customerPropertyMap\":[{\"customerPropertyId\":123456,\"propertyInstanceId\":1005251854,\"customerProperty\":[{\"customerPropertyId\":123456,\"propertyName\":\"COBBLESTONE COVE\",\"hasMedia\":\"Deprecated Field\"}]}]}}],\"meta\":{\"totalEntities\":1,\"totalPages\":1}}";
+            HttpResponseMessage booksCustomerPropertyInstanceResponse = new HttpResponseMessage(HttpStatusCode.OK);
+            booksCustomerPropertyInstanceResponse.Content = new StringContent(booksCustomerPropertyInstanceJson);
+
+            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/propertyinstance/12345/OS?include=customerPropertyMap.customerProperty", booksProductDetailResponse);
+            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/propertyinstance?filter[source]=UPFM&filter[customerPropertyMap.customerPropertyId]=123456&page[size]=9999& fields[propertyinstance]=propertyInstanceId,propertyName,domain,propertyInstanceSourceId,isActive&include=customerPropertyMap.customerProperty&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName,address", booksCustomerPropertyInstanceResponse);
+           
+
+            //Act           
+            HttpResponseMessage response = organizationController.GetProductStatusDetails("12345", "OS");
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
+        }
+        #endregion
+
 
         #region GetCompanyMasterByCustomerCompanyId
         [Fact]

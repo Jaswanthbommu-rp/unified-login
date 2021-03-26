@@ -204,6 +204,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <returns></returns>
         List<BooksPropertyInstance> GetAllProductsPropertyInstanceFromBooks(string customerPropertyId);
 
+        /// <summary>
+        /// Get source product details from books
+        /// </summary>
+        /// <param name="propertyInstanceSourceId">propertyInstanceSourceId</param>
+        /// <param name="source">source</param>
+        /// <returns></returns>
+        BooksPropertyInstance GetSourceProductDetailsFromBooks(string propertyInstanceSourceId, string source);
+
         ///// <summary>
         ///// Get translated product primary properties data
         ///// </summary>
