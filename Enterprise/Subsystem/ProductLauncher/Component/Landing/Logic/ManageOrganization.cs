@@ -812,7 +812,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				}
 			}
 			CustomerProperty propertyDetails = _manageBlueBook.GetCustomerPropertyDetails(customerPropertyId);
-            List<BooksPropertyInstance> _booksPropertyInstances = _manageBlueBook.GetPropertyInstanceByCustomerPropertyId(customerPropertyId);
+            List<BooksPropertyInstance> _booksPropertyInstances = _manageBlueBook.GetUPFMPropertyInstancesByCustomerPropertyId(customerPropertyId);
             List<PropertySetup> _listPropertySetup = new List<PropertySetup>();
             if (_booksPropertyInstances != null)
             {
@@ -1102,7 +1102,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <returns></returns>
         public ProductPropertyDetails GetSourceProductDetails(string propertyInstanceSourceId, string source)
         {           
-            var booksProductSource = _manageBlueBook.GetSourceProductDetailsFromBooks(propertyInstanceSourceId, source);
+            var booksProductSource = _manageBlueBook.GetPropertyDetailsByPropertyInstanceIdAndSource(propertyInstanceSourceId, source);
             if (booksProductSource != null && booksProductSource.attributes != null)
             {
                 var customerProp = booksProductSource.attributes?.customerPropertyMap?
@@ -1118,7 +1118,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 List<PropertySetup> _listPropertySetup = new List<PropertySetup>();
                 if (customerProp != null)
                 {
-                    List<BooksPropertyInstance> _booksPropertyInstances = _manageBlueBook.GetPropertyInstanceByCustomerPropertyId(customerProp?.customerPropertyId.ToString());
+                    List<BooksPropertyInstance> _booksPropertyInstances = _manageBlueBook.GetUPFMPropertyInstancesByCustomerPropertyId(customerProp?.customerPropertyId.ToString());
                     if (_booksPropertyInstances != null)
                     {
                         foreach (var booksProperty in _booksPropertyInstances)
