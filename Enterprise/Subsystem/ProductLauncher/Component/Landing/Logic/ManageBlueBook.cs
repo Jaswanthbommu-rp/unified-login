@@ -1520,6 +1520,41 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return propertyInstance;
         }
 
+
+        /// <summary>
+        /// Get source product details from books
+        /// </summary>
+        /// <param name="propertyInstanceSourceId">propertyInstanceSourceId</param>
+        /// <param name="source">source</param>
+        /// <returns></returns>
+        public BooksPropertyInstance GetSourceProductDetailsFromBooks(string propertyInstanceSourceId, string source)
+        {
+            BooksPropertyInstance propertyInstance = new BooksPropertyInstance();
+            /*
+                 https://booksapi-qa.realpage.com/propertyinstance/1736037/LS?include=customerPropertyMap.customerProperty
+            */
+
+            string uri = $"propertyinstance/" + propertyInstanceSourceId + "/"+ source + "?include=customerPropertyMap.customerProperty";
+
+            Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
+            WriteToLog(LogEventLevel.Debug, "GetSourceProductDetailsFromBooks - Getting info.", logData);
+            var response = GetAsync(uri).Result;
+            if (response.IsSuccessStatusCode)
+            {
+                //companyInstance = response.Content.ReadAsJsonApiAsync<CompanyResource>(_contractResolver, _cache).Result;
+                propertyInstance = JsonConvert.DeserializeObject<BooksPropertyInstance>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
+                logData = new Dictionary<string, object>() { { "GetSourceProductDetailsFromBooks", propertyInstance } };
+                WriteToLog(LogEventLevel.Debug, "GetSourceProductDetailsFromBooks - Got info.", logData);
+            }
+            else
+            {
+                logData = new Dictionary<string, object>() { { "response", response } };
+                WriteToLog(LogEventLevel.Debug, "GetSourceProductDetailsFromBooks - No info found.", logData);
+                return null;
+            }
+            return propertyInstance;
+        }
+
         public ListResponse TranslateProductPrimaryPropertiesData(UPFMProperty upfmProperty, int productId, ListResponse productResult)
         {
             TranslatePropertyInstance translatedData = new TranslatePropertyInstance();
