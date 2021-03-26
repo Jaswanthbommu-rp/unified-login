@@ -1085,6 +1085,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     pa.UPFMName = upfmProperty.Name;
                     pa.Domain = upfmProperty.Domain;
                     pa.ContractedName = upfmProperty.ContractedName;
+                    pa.UPFMInstanceId = upfmProperty.InstanceId.ToString();
                 }
             }
 
