@@ -581,7 +581,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// <summary>
 		/// SelfGuidedTour
 		/// </summary>
-		[Description("SGT")]
+		[Description("6247")]
 		SelfGuidedTour = 65
 	}
 
@@ -854,7 +854,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// <summary>
 		/// SelfGuidedTour
 		/// </summary>
-		[Description("SGT")]
+		[Description("6247")]
 		ManageSGTourProductAccess = 65
 
 	}
