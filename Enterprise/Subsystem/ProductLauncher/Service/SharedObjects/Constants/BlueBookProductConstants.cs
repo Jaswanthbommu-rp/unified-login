@@ -305,6 +305,6 @@
 		/// <summary>
 		/// Self-Guided Tour
 		/// </summary>
-		public const string SelfGuidedTour = "SGT";
+		public const string SelfGuidedTour = "6247";
 	}
 }
