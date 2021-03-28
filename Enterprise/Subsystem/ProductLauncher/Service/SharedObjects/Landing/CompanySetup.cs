@@ -104,5 +104,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
 		/// Total number of records count (without any paging if the response is limited by paging)
 		/// </summary>
 		public int TotalRecords { get; set; }
+
+        /// <summary>  
+        /// Use Primary Properties
+        /// </summary>
+        [JsonProperty(PropertyName = "UsePrimaryProperties")]
+        public bool UsePrimaryProperties { get; set; } = false;
     }
 }

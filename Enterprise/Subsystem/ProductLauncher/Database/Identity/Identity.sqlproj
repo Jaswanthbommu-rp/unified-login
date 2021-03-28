@@ -1045,6 +1045,8 @@
     <Build Include="UserManagement\Stored Procedures\DeleteProductPagesAndControls.sql" />
     <Build Include="Ident\Stored Procedures\UpdateUserTwoFactorLastNotifyDate.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2021Q2Release.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetOrganizationMasterConfiguration.sql" />
+    <Build Include="Enterprise\Stored Procedures\CreateUsePrimaryPropertyMasterConfigurationSetting.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

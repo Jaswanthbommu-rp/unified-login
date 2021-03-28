@@ -113,6 +113,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         {
             var repositoryResponse = new RepositoryResponse();
             var outputResult = new ObjectOutput<OrganizationCreateResult, IErrorData>() {Status = new Status<IErrorData>() {Success = false}};
+            IConfigurationSettingRepository configurationSettingRepository = new ConfigurationSettingRepository();
 
             if (organization.BooksCompanyId == organization.BooksCustomerMasterId)
             {
@@ -186,8 +187,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             org = GetOrganization(organizationRealPageId);
 
-            //check the guid
+            //Add use primary properties setting
+            MasterConfigurationSetting masterConfigurationSetting = new MasterConfigurationSetting
+            {
+                ConfigurationType = "Organization",
+                SettingType = "UsePrimaryProperties",
+                PartyId = org.PartyId.ToString(),
+                Value = organization.UsePrimaryProperties.ToString()               
+            };
 
+            var configurationSettingResponse =  configurationSettingRepository.CreateUsePrimaryPropertyMasterConfigurationSetting(masterConfigurationSetting);
+
+            org.UsePrimaryProperties = organization.UsePrimaryProperties;
 
             // add the given products to the new company
             var productResponse = AddProductsToOrganization(addProductList, org.PartyId, organization.OrganizationTypeId);
@@ -399,6 +410,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 throw new Exception("Invalid parameter realPageId.");
             }
             return _organizationRepository.UpdateOrganization(organization);
+        }
+
+        public RepositoryResponse UpdateOrganizationUsePrimaryPropertySetting(Organization organization)
+        {
+            if (organization == null)
+            {
+                throw new ArgumentNullException(nameof(organization), "Null Organization.");
+            }
+
+            if (organization.RealPageId == Guid.Empty)
+            {
+                throw new Exception("Invalid parameter realPageId.");
+            }
+
+            IConfigurationSettingRepository configurationSettingRepository = new ConfigurationSettingRepository();
+          
+            //Add use primary properties setting
+            MasterConfigurationSetting masterConfigurationSetting = new MasterConfigurationSetting
+            {
+                ConfigurationType = "Organization",
+                SettingType = "UsePrimaryProperties",
+                PartyId = organization.PartyId.ToString(),
+                Value = organization.UsePrimaryProperties.ToString()
+            };
+
+            return configurationSettingRepository.CreateUsePrimaryPropertyMasterConfigurationSetting(masterConfigurationSetting);
         }
 
         /// <summary>

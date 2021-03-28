@@ -6,84 +6,44 @@
 )  
 AS  
 BEGIN  
-	-- breaking where clauses into separate queries for performance
-	if @RealPageId is not null
-	begin
-		 SELECT O.PartyId,  
+	DECLARE @UsePrimaryProperty tinyint = 0;
+    
+	IF (@PartyId IS NULL AND @RealPageId IS NOT NULL)
+	BEGIN
+		Select @PartyId = PartyId FROM Enterprise.Party WHERE RealPageId = @RealPageId
+	END
+	IF (@PartyId IS NULL AND @RealPageId IS NULL AND @BlueBookId IS NOT NULL)
+	BEGIN
+		Select @PartyId = PartyId FROM Enterprise.VW_DataImportMapping WHERE CompanyMasterId = @BlueBookId
+	END
+	IF (@PartyId IS NULL AND @RealPageId IS NULL AND @BlueBookId IS NULL AND @BlackBookId IS NOT NULL)
+	BEGIN
+		Select @PartyId = PartyId FROM Enterprise.VW_DataImportMapping WHERE MasterId = @BlueBookId
+	END
+	
+	SELECT @UsePrimaryProperty = MS.Value            
+        FROM Enterprise.MasterConfigurationSetting mcs
+        INNER JOIN Enterprise.MasterConfiguration mc ON mc.MasterConfigurationId = mcs.MasterConfigurationId
+        INNER JOIN Enterprise.MasterSetting ms ON mcs.MasterSettingId = ms.MasterSettingId
+        INNER JOIN Enterprise.MasterSettingType mst ON mst.MasterSettingTypeId = ms.MasterSettingTypeId
+        INNER JOIN Enterprise.MasterConfigurationType mct ON mct.MasterConfigurationTypeId = mst.MasterConfigurationTypeId
+	WHERE MST.Name = 'UsePrimaryProperties'
+			AND MCT.Name = 'Organization'
+			AND  MC.AttributeId = @PartyId
+		
+	SELECT O.PartyId,  
 			O.Name,  
 			P.RealPageId,  
 			COALESCE(ISNULL(D.MasterId, 0),0) AS BooksMasterId,  
 			COALESCE(ISNULL(D.CompanyMasterId, 0), 0) AS BooksCustomerMasterId,  
 			o.OrganizationTypeId,
 			o.OrganizationDomainId,
-			o.IsActive
-		 FROM [Enterprise].Organization AS o  
-			INNER JOIN [Enterprise].Party P ON P.PartyId = O.PartyId  
-			LEFT OUTER JOIN Enterprise.VW_DataImportMapping D ON(O.PartyId = D.PartyId)  
-		 WHERE 
-			@RealPageId = P.RealPageId
-	end
-	else if @PartyId is not null 
-	begin
-		 SELECT O.PartyId,  
-			O.Name,  
-			P.RealPageId,  
-			COALESCE(ISNULL(D.MasterId, 0),0) AS BooksMasterId,  
-			COALESCE(ISNULL(D.CompanyMasterId, 0), 0) AS BooksCustomerMasterId,  
-			o.OrganizationTypeId,
-			o.OrganizationDomainId,
-			o.IsActive
+			o.IsActive,
+			@UsePrimaryProperty AS 'UsePrimaryProperties'
 		 FROM [Enterprise].Organization AS o  
 			INNER JOIN [Enterprise].Party P ON P.PartyId = O.PartyId  
 			LEFT OUTER JOIN Enterprise.VW_DataImportMapping D ON(O.PartyId = D.PartyId)  
 		 WHERE 
 			@PartyId = o.PartyId
-	end
-	else if @BlueBookId is not null
-	begin
-		 SELECT O.PartyId,  
-			O.Name,  
-			P.RealPageId,  
-			COALESCE(ISNULL(D.MasterId, 0),0) AS BooksMasterId,  
-			COALESCE(ISNULL(D.CompanyMasterId, 0), 0) AS BooksCustomerMasterId,  
-			o.OrganizationTypeId,
-			o.OrganizationDomainId,
-			o.IsActive
-		 FROM [Enterprise].Organization AS o  
-			INNER JOIN [Enterprise].Party P ON P.PartyId = O.PartyId  
-			LEFT OUTER JOIN Enterprise.VW_DataImportMapping D ON(O.PartyId = D.PartyId)  
-		 WHERE 
-			@BlueBookId = D.CompanyMasterId
-	end
-	else if @BlackBookId is not null
-	begin
-		 SELECT O.PartyId,  
-			O.Name,  
-			P.RealPageId,  
-			COALESCE(ISNULL(D.MasterId, 0),0) AS BooksMasterId,  
-			COALESCE(ISNULL(D.CompanyMasterId, 0), 0) AS BooksCustomerMasterId,  
-			o.OrganizationTypeId,
-			o.OrganizationDomainId,
-			o.IsActive
-		 FROM [Enterprise].Organization AS o  
-			INNER JOIN [Enterprise].Party P ON P.PartyId = O.PartyId  
-			LEFT OUTER JOIN Enterprise.VW_DataImportMapping D ON(O.PartyId = D.PartyId)  
-		 WHERE 
-			@BlackBookId = D.MasterId
-	end
-	else
-	begin
-		 SELECT O.PartyId,  
-			O.Name,  
-			P.RealPageId,  
-			COALESCE(ISNULL(D.MasterId, 0),0) AS BooksMasterId,  
-			COALESCE(ISNULL(D.CompanyMasterId, 0), 0) AS BooksCustomerMasterId,  
-			o.OrganizationTypeId,
-			o.OrganizationDomainId,
-			o.IsActive
-		 FROM [Enterprise].Organization AS o  
-			INNER JOIN [Enterprise].Party P ON P.PartyId = O.PartyId  
-			LEFT OUTER JOIN Enterprise.VW_DataImportMapping D ON(O.PartyId = D.PartyId)  
-	end
 	
 END;
