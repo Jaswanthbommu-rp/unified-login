@@ -91,6 +91,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="organizationRealPageId">Organization Enterprise RealPageId</param>
 		/// <returns>RepositoryResponse object</returns>
 		RepositoryResponse CreateInitialOrgSuperUser(long organizationId, string firstName, string middleName, string lastName, string title, string suffix, string email, bool defaultIDP, int? idpTypeId, Guid organizationRealPageId);
+
+		/// <summary>
+		/// Used to update Organization use primary properties setting
+		/// </summary>
+		/// <param name="organization"></param>
+		/// <returns></returns>
+		RepositoryResponse UpdateOrganizationUsePrimaryPropertySetting(Organization organization);
 		#endregion
 
 		#region Organization Type methods

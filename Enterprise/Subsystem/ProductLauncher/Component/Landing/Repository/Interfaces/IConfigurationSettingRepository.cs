@@ -37,5 +37,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="masterSetting">Master Configuration setting object</param>
         /// <returns>Repository response object</returns>
         RepositoryResponse CreateMasterConfigurationSetting(MasterConfigurationSetting masterSetting);
-    }
+		/// <summary>
+		/// Gets master configuration id for given org
+		/// </summary>
+		/// <param name="masterSetting">Master Configuration setting object</param>
+		/// <returns>Repository response object</returns>
+		int GetOrganizationMasterConfigurationId(string Name, long PartyId);
+
+		/// <summary>
+		/// Adds a use primary properties master configuration setting value
+		/// </summary>
+		/// <param name="masterSetting">Master Configuration setting object</param>
+		/// <returns>Repository response object</returns>
+		RepositoryResponse CreateUsePrimaryPropertyMasterConfigurationSetting(MasterConfigurationSetting masterSetting);
+
+	}
 }
