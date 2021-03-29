@@ -41,7 +41,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private IPropertyRepository _propertyRepository;
         private IManageBlueBook _manageBlueBook;
         private IManageProductPanel _manageProductPanel;
-        private IManageUnifiedSettings _manageUnifiedSettings;       
+        private IManageUnifiedSettings _manageUnifiedSettings;
+        private IConfigurationSettingRepository _configurationSettingRepository ;
 
         private DefaultUserClaim _defaultUserClaim;
         #endregion
@@ -64,6 +65,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _manageBlueBook = new ManageBlueBook(_defaultUserClaim, _productInternalSettingRepository, messageHandler);
             _manageProductPanel = new ManageProductPanel(_defaultUserClaim, repository, _manageBlueBook, messageHandler, null);
             _propertyRepository = new PropertyRepository(repository);
+            _configurationSettingRepository = new ConfigurationSettingRepository(repository);
             _manageUnifiedSettings = new ManageUnifiedSettings(repository, userClaim, messageHandler);
         }
 
@@ -83,6 +85,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _manageBlueBook = new ManageBlueBook(_defaultUserClaim, _productInternalSettingRepository, messageHandler);
             _manageProductPanel = new ManageProductPanel(_defaultUserClaim, repository, _manageBlueBook,messageHandler, manageProductOneSite);
             _propertyRepository = new PropertyRepository(repository);
+            _configurationSettingRepository = new ConfigurationSettingRepository(repository);
             _manageUnifiedSettings = new ManageUnifiedSettings(repository, userClaim, messageHandler);
         }
 
@@ -99,6 +102,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _productInternalSettingRepository = new ProductInternalSettingRepository();
             _productRepository = new ProductRepository();
             _propertyRepository = new PropertyRepository();
+            _configurationSettingRepository = new ConfigurationSettingRepository();
             _manageBlueBook = new ManageBlueBook(userClaim);
             _manageProductPanel = new ManageProductPanel(userClaim);
             _defaultUserClaim = userClaim;
@@ -113,6 +117,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         {
             var repositoryResponse = new RepositoryResponse();
             var outputResult = new ObjectOutput<OrganizationCreateResult, IErrorData>() {Status = new Status<IErrorData>() {Success = false}};
+           
 
             if (organization.BooksCompanyId == organization.BooksCustomerMasterId)
             {
@@ -186,8 +191,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             org = GetOrganization(organizationRealPageId);
 
-            //check the guid
-
+            //create/update use promaryproperty setting
+            createUsePrimaryPropertyMasterConfigurationSetting(org.PartyId, organization.UsePrimaryProperties);
+            org.UsePrimaryProperties = organization.UsePrimaryProperties;
 
             // add the given products to the new company
             var productResponse = AddProductsToOrganization(addProductList, org.PartyId, organization.OrganizationTypeId);
@@ -401,6 +407,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return _organizationRepository.UpdateOrganization(organization);
         }
 
+        public void UpdateOrganizationUsePrimaryPropertySetting(Organization organization)
+        {
+            if (organization == null)
+            {
+                throw new ArgumentNullException(nameof(organization), "Null Organization.");
+            }
+
+            if (organization.RealPageId == Guid.Empty)
+            {
+                throw new Exception("Invalid parameter realPageId.");
+            }
+
+            //create/update use primaryproperty setting
+            createUsePrimaryPropertyMasterConfigurationSetting(organization.PartyId, organization.UsePrimaryProperties);           
+        }
+
         /// <summary>
         /// Get Organization details
         /// </summary>
@@ -416,7 +438,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             Organization organization = _organizationRepository.GetOrganization(realPageId, organizationPartyId);
             return organization;
         }
-
+               
         /// <summary>
         /// Used to get the list of organizations
         /// </summary>
@@ -1347,6 +1369,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
             }
             return response;
+        }
+
+        private void createUsePrimaryPropertyMasterConfigurationSetting(long partyId, int value)
+        {
+            
+            //Add use primary properties setting
+            MasterConfigurationSetting masterConfigurationSetting = new MasterConfigurationSetting
+            {
+                ConfigurationType = "Organization",
+                SettingType = "UsePrimaryProperties",
+                PartyId = partyId.ToString(),
+                Value = value.ToString()
+            };
+
+            var configurationSettingResponse = _configurationSettingRepository.CreateUsePrimaryPropertyMasterConfigurationSetting(masterConfigurationSetting);
         }
         #endregion
     }
