@@ -295,6 +295,7 @@
     <Compile Include="IdentityConfig\UserLoginOrganization.cs" />
     <Compile Include="IdentityConfig\UserLoginPersona.cs" />
     <Compile Include="Landing\ApiError.cs" />
+    <Compile Include="Landing\SettingPickList.cs" />
     <Compile Include="Landing\EmailModel.cs" />
     <Compile Include="Landing\ProductSamlDetails.cs" />
     <Compile Include="Landing\Properties.cs" />

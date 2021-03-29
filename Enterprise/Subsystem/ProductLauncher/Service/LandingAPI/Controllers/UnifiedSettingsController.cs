@@ -166,53 +166,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [Route("companies/{companyId}/settings/picklist")]
         [HttpGet]
         //public HttpResponseMessage GetSettingsPickList(string category, Guid companyId, [FromUri] string[] includes = null)
-        public HttpResponseMessage GetSettingsPickList(string category, Guid companyId)
+        public HttpResponseMessage GetSettingsPickList(string category, Guid companyId, [FromUri] string[] includes = null)
         {
-            Organization organization = new Organization();
+            //TODO: make use of companyID and includes. Supporting only by CategoryName for now.
             IApiError apiError;
 
-            if (companyId != Guid.Empty)
+            if (!string.IsNullOrWhiteSpace(category))
             {
-                Organization org = _manageOrganization.GetOrganization(companyId);
-                if (org == null)
-                {
-                    apiError = new ApiError()
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        Status = (short)HttpStatusCode.BadRequest,
-                        Title = "Company not found.",
-                        Detail = $"Company not found for Id: {companyId}",
-                        Links = string.Empty,
-                        Code = "Settings.GetSettingsPickList.2",
-                        Source = new ApiErrorSource()
-                        {
-                            JsonPointer = string.Empty,
-                            Parameter = string.Empty
-                        }
-                    };
-                    return Request.CreateResponse(HttpStatusCode.BadRequest, apiError);
-                }
-
-                bool IsValid = _manageOrganization.ValidateOrganization(_userClaims.OrganizationMasterId, _userClaims.UserRealPageGuid, org.RealPageId);
-                if (!IsValid)
-                {
-                    apiError = new ApiError()
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        Status = (short)HttpStatusCode.BadRequest,
-                        Title = "User is not authorized.",
-                        Detail = $"Logged in user is not authorized to view security settings for {org.Name}.",
-                        Links = string.Empty,
-                        Code = "Settings.GetSettingsPickList.3",
-                        Source = new ApiErrorSource()
-                        {
-                            JsonPointer = string.Empty,
-                            Parameter = string.Empty
-                        }
-                    };
-                    return Request.CreateResponse(HttpStatusCode.BadRequest, apiError);
-                }
-
                 IManageUnifiedSettings manageSettings = new ManageUnifiedSettings(_userClaims);
                 var picklist = manageSettings.GetSettingsPickList(category);
 
@@ -224,8 +184,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 {
                     Id = Guid.NewGuid().ToString(),
                     Status = (short)HttpStatusCode.BadRequest,
-                    Title = "Null Companyd.",
-                    Detail = $"Empty Company parameter passed",
+                    Title = "Null Category",
+                    Detail = $"Empty category passed",
                     Links = string.Empty,
                     Code = "Settings.GetSettingsPickList.2",
                     Source = new ApiErrorSource()

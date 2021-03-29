@@ -50,26 +50,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 			List<Picklist> picklists = new List<Picklist>();
 			using (var repo = GetRepository())
 			{
-				string sp = "";
-				if (category.ToLower() == "customfields")
-					sp = StoredProcNameConstants.SP_GetFieldType;
+				dynamic param = new{
+					categoryName = category
+				};
 
-				if (sp != "") 
+				Picklist picklist = new Picklist();
+				picklist.name = category;
+				picklist.options = new List<Option>();
+				var settingPickList = repo.GetMany<SettingPickList>(StoredProcNameConstants.SP_GetUnifiedSettingPicklist, param);
+
+				foreach (SettingPickList item in settingPickList)
 				{
-					Picklist picklist = new Picklist();
-					picklist.name = category;
-					picklist.options = new List<Option>();
-					var customFiledTypes = repo.GetMany<CustomFieldType>(sp, null);
-					foreach (var item in customFiledTypes)
+					picklist.options.Add(new Option()
 					{
-						picklist.options.Add(new Option()
-						{
-							label = item.Name,
-							value = item.FieldTypeId.ToString()
-						});
-					}
-					picklists.Add(picklist);
+						label = item.MappingName,
+						value = item.MappingValue
+					});
 				}
+
+				picklists.Add(picklist);
 			};
 
 			return picklists;
