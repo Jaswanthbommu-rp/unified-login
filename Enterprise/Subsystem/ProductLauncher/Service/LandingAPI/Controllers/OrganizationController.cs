@@ -1009,6 +1009,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             return Request.CreateResponse(HttpStatusCode.OK, output);
         }
 
+        /// <summary>
+        /// Search Company By CustomerCompanyId
+        /// </summary>
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [SwaggerResponse(HttpStatusCode.OK, Description = "Get company details by customer company id", Type = typeof(CompanySetup))]
@@ -1495,24 +1498,53 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         ///Search Property By BlueId
         /// </summary>
         /// <param name="customerPropertyId">customerPropertyId</param>
-        /// <param name="companyInstanceId">companyInstanceId</param>
+        /// <param name="booksCustomerMasterId">booksCustomerMasterId</param>
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [Route("CompanySetup/CompanyProperty/propertyinstance/{customerPropertyId}")]
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         [HttpGet]
-        public HttpResponseMessage SearchPropertyByBlueId(string customerPropertyId, Guid companyInstanceId)
+        public HttpResponseMessage SearchPropertyByBlueId(string customerPropertyId, string booksCustomerMasterId)
         {
             if ((string.IsNullOrEmpty(customerPropertyId)) || (customerPropertyId == "0"))
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: companyInstanceID");
             }
-            if ((companyInstanceId == Guid.Empty) || (companyInstanceId == null))
+            if ((string.IsNullOrEmpty(booksCustomerMasterId)) || (booksCustomerMasterId == "0"))
             {
-                return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: companyInstanceId");
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: companyInstanceID");
             }
-            PropertyInstanceSearch _propertySearchList = _manageOrganization.SearchPropertyDetailsByCustomerPropertyId(customerPropertyId, companyInstanceId);
+            PropertyInstanceSearch _propertySearchList = _manageOrganization.SearchPropertyDetailsByCustomerPropertyId(customerPropertyId, booksCustomerMasterId);
             return Request.CreateResponse(HttpStatusCode.OK, _propertySearchList);
+        }
+        #endregion
+
+        #region GetProductStatusDetails
+        /// <summary>
+        /// Get Product Status Details
+        /// </summary>
+        /// <param name="productInstanceId">productInstanceId</param>
+        /// <param name="source">source</param>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about the product", Type = typeof(ProductPropertyDetails))]
+        [SwaggerResponseExamples(typeof(ProductPropertyDetails), typeof(ProductPropertyDetailsExample))]
+        [Route("CompanySetup/Audit/product/{productInstanceId}/source/{source}/productStatus")]
+        [AuthorizeScope("companyfunctions", "rplandingapi")]
+        [HttpGet]
+        public HttpResponseMessage GetProductStatusDetails(string productInstanceId, string source)
+        {
+            if ((string.IsNullOrEmpty(productInstanceId)) || (productInstanceId == "0"))
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: companyInstanceID");
+            }
+            if ((string.IsNullOrEmpty(source)))
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: source");
+            }
+            ProductPropertyDetails _productPropertyDetails = _manageOrganization.GetSourceProductDetails(productInstanceId, source);
+            return Request.CreateResponse(HttpStatusCode.OK, _productPropertyDetails);
         }
         #endregion
         #endregion
@@ -1524,7 +1556,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// Used to delete products from an organization
         /// </summary>
         /// <param name="addProductList"></param>
-        /// <param name="partyId"></param>
+        /// <param name="org"></param>
         private IRepositoryResponse DeleteProductsFromOrganization(List<int> addProductList, Organization org)
         {
             IRepositoryResponse response = new RepositoryResponse();
@@ -1927,6 +1959,50 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 ObjectOutput<List<PropertyAudit>, IErrorData> output = new ObjectOutput<List<PropertyAudit>, IErrorData>()
                 {
                     obj = propertyAuditExample,
+                    Status = errorStatus
+                };
+
+                return output;
+            }
+        }
+
+        [ExcludeFromCodeCoverage]
+        public class ProductPropertyDetailsExample : IProvideExamples
+        {
+            /// <summary>
+            /// Example object data used by Swagger to document the output of the webapi method
+            /// </summary>
+            /// <returns>List of Companies example</returns>
+            public object GetExamples()
+            {
+                ProductPropertyDetails propertyProductExample = new ProductPropertyDetails
+                {
+                    ProductStatusDetail = new ProductStatusDetail()
+                    {                        
+                        CustomerPropertyId = "1234567",
+                        ProductInstanceId = "1234567",
+                        ContractedName = "Property 1",
+                        IsActive = "true",
+                        Domain = "Primary"
+                    },
+                    PropertyDetails = new List<PropertySetup>()
+                    {
+                        new PropertySetup()
+                        {                           
+                            Name = "WOODVILLE VILLAGE",
+                            ContractedName = "WOODVILLE VILLAGE",                           
+                            InstanceId = Guid.Parse("1e38a88a-b986-416e-b0cf-5944935a92be"),                           
+                            Domain = "Primary",
+                            IsActive = "true "
+                        }
+                    }
+                };
+
+
+                Status<IErrorData> errorStatus = new Status<IErrorData>();
+                ObjectOutput<ProductPropertyDetails, IErrorData> output = new ObjectOutput<ProductPropertyDetails, IErrorData>()
+                {
+                    obj = propertyProductExample,
                     Status = errorStatus
                 };
 

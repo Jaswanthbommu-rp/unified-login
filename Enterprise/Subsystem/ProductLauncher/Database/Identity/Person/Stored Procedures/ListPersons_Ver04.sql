@@ -388,6 +388,25 @@ BEGIN
 		INNER JOIN @AssignedProductIds ap ON (ap.ProductId = pp.ProductId)  
 	GROUP BY pp.PersonaId  
 
+	DROP TABLE IF EXISTS #PartyContactMechanism
+
+	CREATE TABLE #PartyContactMechanism
+	(
+		PartyId BIGINT PRIMARY KEY,
+		ContactMechanismId INT,
+		RowNo INT
+	)
+
+	INSERT INTO #PartyContactMechanism(PartyId,ContactMechanismId,RowNo)
+	SELECT PartyId,ContactMechanismId,RowNo 
+	FROM
+	(
+		SELECT PartyId,ContactMechanismId,ROW_NUMBER() OVER(PARTITION BY PartyId ORDER BY FromDate DESC) AS RowNo
+		FROm Enterprise.PartyContactMechanism
+		WHERE ThruDate > GETUTCDATE()
+	) X
+	WHERE X.RowNo = 1
+
 	DROP INDEX IF EXISTS [NCI_cteUserLogin_PersonPartyId] ON [dbo].[#UserLogin]
 	CREATE NONCLUSTERED INDEX [NCI_cteUserLogin_PersonPartyId]  ON [dbo].[#UserLogin] ([PersonPartyId])
 	INCLUDE ([UserLoginPersonaId],[PersonaId],[UserId],[LoginName],[LastLogin],[FromDate],[ThruDate],[IdentityProviderTypeId],[StatusId],[StatusName],[StatusThruDate],[PasswordModifiedDate])
@@ -473,15 +492,7 @@ BEGIN
 		  FROM #UserLogin ulp  
 			 INNER JOIN Person.Person p ON p.PartyId = ulp.PersonPartyId  
 			 INNER JOIN Enterprise.Party pa ON p.PartyId = pa.PartyID  
-			 LEFT JOIN
-				(SELECT * 
-				 FROM
-					(
-						SELECT *,ROW_NUMBER() OVER(PARTITION BY PartyId ORDER BY FromDate DESC) AS RowNo
-						FROm Enterprise.PartyContactMechanism
-						WHERE ThruDate > GETUTCDATE()
-					) X
-				WHERE X.RowNo = 1) PCM ON ulp.PersonPartyId = PCM.PartyId
+			 LEFT JOIN #PartyContactMechanism PCM ON ulp.PersonPartyId = PCM.PartyId
 			 LEFT JOIN Enterprise.ElectronicAddress EA ON PCM.ContactMechanismId=EA.ContactMechanismID
 			 INNER JOIN Enterprise.PartyRelationship prs ON prs.PartyIdFrom = ulp.PersonPartyId AND prs.PartyIdTo = @PartyId  
 			 INNER JOIN Enterprise.RelationshipType rst ON rst.RelationshipTypeId = prs.PartyRelationshipTypeId  
@@ -539,5 +550,6 @@ BEGIN
 	DROP INDEX IF EXISTS [NCI_cteUserLogin_PersonPartyId] ON [dbo].[#UserLogin]
 	DROP TABLE IF EXISTS #UserLogin
 	DROP TABLE IF EXISTS #PersonaProduct
+	DROP TABLE IF EXISTS #PartyContactMechanism
 
 END;
