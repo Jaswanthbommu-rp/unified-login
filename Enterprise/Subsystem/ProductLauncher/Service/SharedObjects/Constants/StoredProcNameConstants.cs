@@ -319,6 +319,8 @@
         public const string SP_ListOrganizationSettings = "Enterprise.ListOrganizationSettings";
         public const string SP_ListOrganizations = "Enterprise.ListOrganizations_Ver01";
         public const string SP_CreateMasterConfigurationSetting = "Enterprise.CreateMasterConfigurationSetting";
+        public const string SP_GetOrganizationMasterConfiguration = "Enterprise.GetOrganizationMasterConfiguration";
+        public const string SP_CreateUsePrimaryPropertyMasterConfigurationSetting = "Enterprise.CreateUsePrimaryPropertyMasterConfigurationSetting";
 
         #region Persona Security
         public const string SP_ListRolesByRealPageID = "Enterprise.ListRolesByRealPageID";
