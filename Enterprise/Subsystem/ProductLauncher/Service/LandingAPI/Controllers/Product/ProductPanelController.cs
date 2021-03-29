@@ -208,6 +208,31 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		}
 
 		/// <summary>
+		/// Returns Properties  
+		/// </summary>
+		/// <param name="productId">Author user persona id who is creating or editing user</param>
+		/// <param name="upfmProperty">Properties to be translated</param>
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "Update successful", Type = typeof(HttpResponseMessage))]
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
+		[Route("product/translatedproperties")]
+		[HttpPost]
+		public HttpResponseMessage GetTranslatedProperties([FromBody] UPFMProperty upfmProperty, int productId)
+		{
+			var result = new UPFMProperty();
+			
+			if (upfmProperty?.id != null)
+			{
+				result = _manageProductPanel.TranslateProductProperties(upfmProperty, productId);
+			}
+			//if (result.IsError)
+			//	Request.CreateResponse(HttpStatusCode.Forbidden, result);
+
+			return Request.CreateResponse(HttpStatusCode.OK, result);
+		}
+
+		/// <summary>
 		/// Returns Property groups
 		/// </summary>
 		/// <param name="editorPersonaId">Assign user Id</param>

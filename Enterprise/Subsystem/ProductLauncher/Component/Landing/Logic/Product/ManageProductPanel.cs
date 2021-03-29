@@ -780,6 +780,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             productResult = _manageBlueBook.TranslateProductPrimaryPropertiesData(upfmProperty, productId, productResult);
             return productResult;
         }
-        #endregion       
+
+        public UPFMProperty TranslateProductProperties(UPFMProperty upfmProperty, int productId)
+        {
+            var response = _manageBlueBook.TranslateProductProperties(upfmProperty, productId);
+            var upfmPropertyInstances = response?.Data?.Attributes?.Select(a => a.TranslatedPropertyInstances?.Select(p => p.PropertyInstanceSourceId.ToLower()));
+            UPFMProperty up = new UPFMProperty();
+            up.id = (List<string>)response?.Data?.Attributes?.Select(a => a.TranslatedPropertyInstances?.Select(p => p.PropertyInstanceSourceId.ToLower()));
+            return up;
+        }
+        #endregion
     }
 }

@@ -354,6 +354,39 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         /// <summary>
+        /// Get all UPFM instances related to the given Product instance source. Filters domain automatically
+        /// </summary>
+        /// <param name="properties">List of product properties</param>
+        /// <param name="productSource">productSource</param>
+        /// <returns></returns>
+        public TranslatePropertyInstance GetTranslatePropertiesFromProductToUPFM(UPFMProperty properties, string productSource)
+        {
+            //https://booksapi-stg.realpage.com/translate/v3/propertyinstance/IB/UPFM
+            //{"propertyInstanceSourceIds": ["5972c050-7072-4b3f-8b6a-e280b5e36eb0","5972c050-7072-4b3f-8b6a-e280b5e36eb0","ef1fad66-b1f6-4981-8bec-e2d12279aba2"]}
+            TranslatePropertyInstance translatePropertyInstance = new TranslatePropertyInstance();
+            string uri = $"translate/v3/propertyinstance/{productSource}/{ProductEnum.UnifiedPlatform.ToEnumDescription()}";
+            Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "propertyInstanceSourceIds", properties } };
+            WriteToLog(LogEventLevel.Debug, "GetTranslatePropertiesFromProductToUPFM - Adding info.", logData);
+
+            var jsonToSave = JsonConvert.SerializeObject(properties);//, new JsonApiSerializerSettings()).Replace("companyinstanceadd", "companyinstance");
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Post,
+                Content = new StringContent(jsonToSave, Encoding.UTF8, "application/json"),
+                RequestUri = new Uri(_httpClient.BaseAddress + uri)
+            };
+            var response = _httpClient.SendAsync(request).Result;
+            if (response != null && response.IsSuccessStatusCode)
+            {
+                translatePropertyInstance = JsonConvert.DeserializeObject<TranslatePropertyInstance>(response.Content.ReadAsStringAsync().Result);
+                logData = new Dictionary<string, object>() { { "response", translatePropertyInstance } };
+                WriteToLog(LogEventLevel.Debug, "GetTranslatePropertiesFromProductToUPFM - Got info.", logData);
+                return translatePropertyInstance;
+            }
+            return translatePropertyInstance;
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="companyRealPageId"></param>
@@ -1522,6 +1555,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 return null;
             }
             return propertyInstance;
+        }
+
+        public TranslatePropertyInstance TranslateProductProperties(UPFMProperty upfmProperty, int productId)
+        {
+            UPFMProperty primaryPropertyIds = new UPFMProperty
+            {
+                id = upfmProperty.id.ConvertAll(d => d.ToLower())
+            };
+            string productcode = ProductEnumHelper.StringValueOf((ProductEnum)productId);
+            var translatedData = GetTranslatePropertiesFromProductToUPFM(primaryPropertyIds, productcode);
+
+            return translatedData;
         }
 
         public ListResponse TranslateProductPrimaryPropertiesData(UPFMProperty upfmProperty, int productId, ListResponse productResult)
