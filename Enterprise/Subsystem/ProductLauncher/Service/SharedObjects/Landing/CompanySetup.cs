@@ -75,6 +75,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         [JsonProperty(PropertyName = "Status")]
         public string Status { get; set; }
 
+        public int IsActive { get; set; }
+
         /// <summary>
         /// Products
         /// </summary>

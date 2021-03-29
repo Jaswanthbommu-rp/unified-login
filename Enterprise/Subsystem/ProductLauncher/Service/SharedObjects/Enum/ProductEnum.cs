@@ -18,11 +18,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 			{
 				return attributes[0].Description;
 			}
-			else
-			{
-				return value.ToString();
-			}
-		}
+
+            return value.ToString();
+        }
 
 		/// <summary>
 		/// Get enum list of AO products
@@ -581,7 +579,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// <summary>
 		/// SelfGuidedTour
 		/// </summary>
-		[Description("SGT")]
+		[Description("6247")]
 		SelfGuidedTour = 65
 	}
 
@@ -854,8 +852,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// <summary>
 		/// SelfGuidedTour
 		/// </summary>
-		[Description("SGT")]
-		SelfGuidedTour = 65
+		[Description("6247")]
+		ManageSGTourProductAccess = 65
 
 	}
 	public enum ProductProcVersion

@@ -1300,7 +1300,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     // get products for personaId
                     var aoLogic = new ManageProductAssetOptimization(_userClaim);
 
-                    aoUserProducts = aoLogic.GetAOProductsForNewMultiCompanyUser(_userClaim.PersonaId, _userClaim.LoginName);
+                    aoUserProducts = aoLogic.GetGbSupportedAoProductsWithUserAdminRole(_userClaim.PersonaId);
 
                     if (personRealPageId == null && loginName != null)
                     {
@@ -1384,7 +1384,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     else
                     {
                         userProducts = repository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = personaId, ProductStatusValue = ((Int32)UserUiStatusType.AccountCreationSuccessful).ToString() }).ToList();
-                        productSettingList = repository.GetMany<ProductSettingList>(StoredProcNameConstants.SP_ListProductSettingsByPersonaId, new { PersonaId = personaId, ProductStatus = ((Int32)UserUiStatusType.AccountCreationSuccessful).ToString() }).ToList();
+                        productSettingList = repository.GetMany<ProductSettingList>(StoredProcNameConstants.SP_ListProductSettingsByPersonaId, new { PersonaId = personaId}).ToList();
                     }
                 }
             }
@@ -1987,6 +1987,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         break;
                     case (int)ProductRightEnum.ManageLeaseLabsProductAccess:
                         s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageLeaseLabsProductAccess.ToString());
+                        break;
+                    case (int)ProductRightEnum.ManageSGTourProductAccess:
+                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageSGTourProductAccess.ToString());
                         break;
                     default:
                         break;

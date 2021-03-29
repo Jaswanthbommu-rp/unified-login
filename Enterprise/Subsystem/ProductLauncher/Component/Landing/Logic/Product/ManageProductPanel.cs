@@ -479,23 +479,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                result = new ListResponse();
-                result.IsError = true;
+                result = new ListResponse {IsError = true};
 
-                if (ex is BlueBookException)
+                if (ex is BlueBookException || (ex?.InnerException is BlueBookException))
                 {
                     result.ErrorReason = CommonMessageConstants.CompanyErrorMessage;
                 }
                 else
                 {
-                    //UI calls GetRoles but sometimes it diplays the data in Right tab for some products, that's why this validation was added
-                    if (ex.Message == CommonMessageConstants.RightErrorMessage)
+                    //UI calls GetRoles but sometimes it displays the data in Right tab for some products, that's why this validation was added
+                    if (ex.Message.Equals(CommonMessageConstants.RightErrorMessage, StringComparison.OrdinalIgnoreCase))
                     {
                         result.ErrorReason = ex.Message;
                         return result;
                     }
 
-                    if (ex.Message == CommonMessageConstants.CompanyErrorMessage)
+                    if (ex.Message.Equals(CommonMessageConstants.CompanyErrorMessage, StringComparison.OrdinalIgnoreCase))
                     {
                         result.ErrorReason = CommonMessageConstants.CompanyErrorMessage;
                     }
@@ -503,7 +502,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         if (ex.InnerException != null)
                         {
-                            if (ex.InnerException.Message == CommonMessageConstants.CompanyErrorMessage)
+                            if (ex.InnerException.Message.Equals(CommonMessageConstants.CompanyErrorMessage, StringComparison.OrdinalIgnoreCase))
                             {
                                 result.ErrorReason = CommonMessageConstants.CompanyErrorMessage;
                             }

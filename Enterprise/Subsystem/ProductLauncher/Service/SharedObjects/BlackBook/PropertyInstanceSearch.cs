@@ -16,5 +16,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackB
         /// propertyInstance
         /// </summary>
         public List<PropertySetup> PropertyInstance { get; set; }
+
+        public List<string> Domain { get; set; }
     }
 }

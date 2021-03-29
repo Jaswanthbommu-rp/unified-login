@@ -1438,7 +1438,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// </summary>
         /// <param name="CustomerPropertyId"></param>
         /// <returns></returns>
-        public List<BooksPropertyInstance> GetPropertyInstanceByCustomerPropertyId(string CustomerPropertyId)
+        public List<BooksPropertyInstance> GetUPFMPropertyInstancesByCustomerPropertyId(string CustomerPropertyId)
         {
             List<BooksPropertyInstance> propertyInstance = new List<BooksPropertyInstance>();
 
@@ -1461,18 +1461,95 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             "&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName,address";
 
             Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
-            WriteToLog(LogEventLevel.Debug, "getPropertyInstanceForCompany - Getting info.", logData);
+            WriteToLog(LogEventLevel.Debug, "GetUPFMPropertyInstancesByCustomerPropertyId - Getting info.", logData);
             var response = GetAsync(uri).Result;
             if (response.IsSuccessStatusCode)
             {
                 propertyInstance = JsonConvert.DeserializeObject<List<BooksPropertyInstance>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
                 logData = new Dictionary<string, object>() { { "getPropertyInstanceForCompany", propertyInstance } };
-                WriteToLog(LogEventLevel.Debug, "getPropertyInstanceForCompany - Got info.", logData);
+                WriteToLog(LogEventLevel.Debug, "GetUPFMPropertyInstancesByCustomerPropertyId - Got info.", logData);
             }
             else
             {
                 logData = new Dictionary<string, object>() { { "response", response } };
-                WriteToLog(LogEventLevel.Debug, "getPropertyInstanceForCompany - No info found.", logData);
+                WriteToLog(LogEventLevel.Debug, "GetUPFMPropertyInstancesByCustomerPropertyId - No info found.", logData);
+                return null;
+            }
+            return propertyInstance;
+        }
+
+        /// <summary>
+        /// Used to get All products Properties of the company, using the books customer master id 
+        /// </summary>
+        /// <param name="customerPropertyId"></param>
+        /// <returns></returns>
+        public List<BooksPropertyInstance> GetAllProductsPropertyInstanceFromBooks(string customerPropertyId)
+        {
+            List<BooksPropertyInstance> propertyInstance = new List<BooksPropertyInstance>();
+            RPObjectCache rpcache = new RPObjectCache();
+
+            /*
+            https://booksapi-qa.realpage.com/propertyinstance?filter[customerPropertyMap.customerPropertyId]=239608
+            &page[size]%20=9999&%20fields[propertyinstance]=propertyInstanceId,propertyName,domain,propertyInstanceSourceId,isActive,source
+            &include=customerPropertyMap.customerProperty&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId
+            &fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName,address
+            */
+
+            string uri = $"propertyinstance?" +
+                    "filter[customerPropertyMap.customerPropertyId]=" + customerPropertyId +
+                    "&page[size] =9999& fields[propertyinstance]=propertyInstanceId,propertyName,domain,propertyInstanceSourceId,isActive,source" +
+                    "&include=customerPropertyMap.customerProperty&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId" +
+                    "&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName,address";
+
+            Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
+            WriteToLog(LogEventLevel.Debug, "GetAllProductsPropertyInstanceFromBooks - Getting info.", logData);
+            var response = GetAsync(uri).Result;
+            if (response.IsSuccessStatusCode)
+            {
+                //companyInstance = response.Content.ReadAsJsonApiAsync<CompanyResource>(_contractResolver, _cache).Result;
+                propertyInstance = JsonConvert.DeserializeObject<List<BooksPropertyInstance>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
+                logData = new Dictionary<string, object>() { { "GetAllProductsPropertyInstanceFromBooks", propertyInstance } };
+                WriteToLog(LogEventLevel.Debug, "GetAllProductsPropertyInstanceFromBooks - Got info.", logData);
+            }
+            else
+            {
+                logData = new Dictionary<string, object>() { { "response", response } };
+                WriteToLog(LogEventLevel.Debug, "GetAllProductsPropertyInstanceFromBooks - No info found.", logData);
+                return null;
+            }
+            return propertyInstance;
+        }
+
+
+        /// <summary>
+        /// Get source product details from books
+        /// </summary>
+        /// <param name="propertyInstanceSourceId">propertyInstanceSourceId</param>
+        /// <param name="source">source</param>
+        /// <returns></returns>
+        public BooksPropertyInstance GetPropertyDetailsByPropertyInstanceIdAndSource(string propertyInstanceSourceId, string source)
+        {
+            BooksPropertyInstance propertyInstance = new BooksPropertyInstance();
+            /*
+                 https://booksapi-qa.realpage.com/propertyinstance/1736037/LS?include=customerPropertyMap.customerProperty
+            */
+
+            string uri = $"propertyinstance/" + propertyInstanceSourceId + "/"+ source + "?include=customerPropertyMap.customerProperty";
+
+            Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
+            WriteToLog(LogEventLevel.Debug, "GetPropertyDetailsByPropertyInstanceIdAndSource - Getting info.", logData);
+            var response = GetAsync(uri).Result;
+            if (response.IsSuccessStatusCode)
+            {
+                //companyInstance = response.Content.ReadAsJsonApiAsync<CompanyResource>(_contractResolver, _cache).Result;
+                propertyInstance = JsonConvert.DeserializeObject<BooksPropertyInstance>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
+                logData = new Dictionary<string, object>() { { "GetSourceProductDetailsFromBooks", propertyInstance } };
+                WriteToLog(LogEventLevel.Debug, "GetPropertyDetailsByPropertyInstanceIdAndSource - Got info.", logData);
+            }
+            else
+            {
+                logData = new Dictionary<string, object>() { { "response", response } };
+                WriteToLog(LogEventLevel.Debug, "GetPropertyDetailsByPropertyInstanceIdAndSource - No info found.", logData);
                 return null;
             }
             return propertyInstance;

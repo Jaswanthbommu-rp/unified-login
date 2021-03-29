@@ -329,6 +329,7 @@
     <Compile Include="Landing\PersonaCompany.cs" />
     <Compile Include="Landing\PersonaCompanyDetails.cs" />
     <Compile Include="Landing\PropertyAudit.cs" />
+    <Compile Include="Landing\ProductStatusDetail.cs" />
     <Compile Include="Landing\PropertySetup.cs" />
     <Compile Include="Landing\PropertyRoleList.cs" />
     <Compile Include="Landing\IUserOrganization.cs" />

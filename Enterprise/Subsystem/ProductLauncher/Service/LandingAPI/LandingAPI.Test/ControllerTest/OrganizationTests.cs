@@ -2662,7 +2662,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
 
             //Act           
-            HttpResponseMessage response = organizationController.SearchPropertyByBlueId("0", new Guid());
+            HttpResponseMessage response = organizationController.SearchPropertyByBlueId("0", "1");
 
             //Assert
             Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
@@ -2681,10 +2681,51 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
 
             //Act           
-            HttpResponseMessage response = organizationController.SearchPropertyByBlueId("1234", Guid.Empty);
+            HttpResponseMessage response = organizationController.SearchPropertyByBlueId("1234", "0");
 
             //Assert
             Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
+        }
+        [Fact]
+        public void SearchPropertyByBlueId_ReturnsValidResponse()
+		{
+            //Arrange
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            )
+            {
+                Request = new HttpRequestMessage(),
+                Configuration = new HttpConfiguration()
+            };
+            var booksPropertyInstanceJson = "{\r\n\"data\": [\r\n{\r\n\"type\": \"propertyinstance\",\r\n\"id\": \"1005251854\",\r\n\"attributes\": {\r\n\"propertyInstanceId\": 1005251854,\r\n\"propertyInstanceSourceId\": \"003b0509-1189-49dc-bbe6-01c5b6277a83\",\r\n\"propertyName\": \"Cobblestone Cove\",\r\n\"source\": \"UPFM\",\r\n\"address\": {\r\n\"address\": null,\r\n\"city\": null,\r\n\"state\": null,\r\n\"country\": null,\r\n\"county\": null,\r\n\"postalCode\": null\r\n},\r\n\"domain\": \"Primary\",\r\n\"deletedReason\": \"Deprecated Field\",\r\n\"customerPropertyMap\": [\r\n{\r\n\"customerPropertyId\": 1234,\r\n\"propertyInstanceId\": 1005251854,\r\n\"customerProperty\": [\r\n{\r\n\"customerPropertyId\": 1405001,\r\n\"propertyName\": \"COBBLESTONE COVE\",\r\n\"hasMedia\": \"Deprecated Field\"\r\n}\r\n]\r\n}\r\n]\r\n}\r\n}\r\n],\r\n\"meta\": {\r\n\"totalEntities\": 610,\r\n\"totalPages\": 610\r\n}\r\n}"; ;
+            HttpResponseMessage booksPropertyInstanceResponse = new HttpResponseMessage(HttpStatusCode.OK);
+            booksPropertyInstanceResponse.Content = new StringContent(booksPropertyInstanceJson);
+
+            var booksCustomerPropertyInstanceJson = "{\r\n\"data\": {\r\n\"type\": \"customerproperty\",\r\n\"id\": \"1234\",\r\n\"attributes\": {\r\n\"customerPropertyId\": 149555,\r\n\"customerCompanyId\": 379,\r\n\"masterPropertyId\": 240208,\r\n\"propertyName\": \"501 CONNELL\",\r\n\"phaseParentId\": null,\r\n\"legalSiteName\": null,\r\n\"phoneNumber\": null,\r\n\"website\": null,\r\n\"email\": null,\r\n\"address\": {\r\n\"address\": \"501 CONNELL AVE SW\",\r\n\"city\": \"ATLANTA\",\r\n\"state\": \"GA\",\r\n\"country\": \"UNITED STATES\",\r\n\"county\": \"FULTON COUNTY\",\r\n\"postalCode\": \"30315-8123\",\r\n\"latitude\": 33.6833,\r\n\"longitude\": -84.405843\r\n},\r\n\"units\": 84,\r\n\"stories\": null,\r\n\"bedCount\": null,\r\n\"squareFeet\": null,\r\n\"yearBuilt\": null,\r\n\"renovationStartDate\": null,\r\n\"renovationEndDate\": null,\r\n\"createdAt\": \"2019-05-23 22:48:19.000000-0500\",\r\n\"modifiedAt\": \"2019-05-23 22:48:19.000000-0500\",\r\n\"deletedAt\": null,\r\n\"certifiedAt\": null,\r\n\"createdBy\": null,\r\n\"modifiedBy\": null,\r\n\"geocoded\": true,\r\n\"isUat\": false,\r\n\"apn\": null,\r\n\"fips\": null,\r\n\"propertyType\": \"Conventional\",\r\n\"propertySubType\": null,\r\n\"googleLatitude\": 33.6837717,\r\n\"googleLongitude\": -84.4058924,\r\n\"constructionStatus\": null,\r\n\"constructionType\": null,\r\n\"assetClass\": null,\r\n\"buildings\": null,\r\n\"modifiedSource\": null,\r\n\"migrationStatus\": \"staged\",\r\n\"hasMedia\": \"Deprecated Field\",\r\n\"mediaTypeId\": null,\r\n\"assetType\": null,\r\n\"isActive\": true,\r\n\"companyRelationship\": null,\r\n\"startDate\": null,\r\n\"endDate\": null\r\n}\r\n}\r\n}";
+            HttpResponseMessage booksCustomerPropertyInstanceResponse = new HttpResponseMessage(HttpStatusCode.OK);
+            booksCustomerPropertyInstanceResponse.Content = new StringContent(booksCustomerPropertyInstanceJson);
+
+            var booksAssignedPropertyInstanceJson = "{\r\n\"data\": [\r\n{\r\n\"type\": \"propertyinstance\",\r\n\"id\": \"1005297957\",\r\n\"attributes\": {\r\n\"propertyInstanceId\": 1005297957,\r\n\"propertyInstanceSourceId\": \"974693db-23bd-4cc3-a984-fbf9e5bf189c\",\r\n\"propertyName\": \"141 LOFTS\",\r\n\"isActive\": false,\r\n\"domain\": \"Primary\",\r\n\"deletedReason\": \"Deprecated Field\",\r\n\"customerPropertyMap\": [\r\n{\r\n\"customerPropertyId\": 1234,\r\n\"propertyInstanceId\": 1005297957,\r\n\"customerProperty\": [\r\n{\r\n\"customerPropertyId\": 239608,\r\n\"propertyName\": \"141 LOFTS\",\r\n\"address\": {\r\n\"address\": \"141 DESIARD ST\",\r\n\"city\": \"MONROE\",\r\n\"state\": \"LA\",\r\n\"country\": \"UNITED STATES\",\r\n\"county\": \"OUACHITA PARISH\",\r\n\"postalCode\": \"71201-7385\",\r\n\"latitude\": 32.502026,\r\n\"longitude\": -92.117078\r\n},\r\n\"hasMedia\": \"Deprecated Field\"\r\n}\r\n]\r\n}\r\n]\r\n}\r\n}\r\n],\r\n\"meta\": {\r\n\"totalEntities\": 7,\r\n\"totalPages\": 7\r\n}\r\n}";
+            HttpResponseMessage booksAssignedPropertyInstanceResponse = new HttpResponseMessage(HttpStatusCode.OK);
+            booksAssignedPropertyInstanceResponse.Content = new StringContent(booksAssignedPropertyInstanceJson);
+
+            var booksAssignedDomainPropertyInstanceJson = "{\r\n\"data\": [\r\n{\r\n\"type\": \"propertyinstance\",\r\n\"id\": \"12345\",\r\n\"attributes\": {\r\n\"propertyInstanceId\": 12345,\r\n\"propertyInstanceSourceId\": \"3102523\",\r\n\"propertyName\": \"141 Lofts\",\r\n\"source\": \"OS\",\r\n\"isActive\": true,\r\n\"domain\": \"Primary\",\r\n\"deletedReason\": \"Deprecated Field\",\r\n\"customerPropertyMap\": [\r\n{\r\n\"customerPropertyId\": 239608,\r\n\"propertyInstanceId\": 12345,\r\n\"customerProperty\": [\r\n{\r\n\"customerPropertyId\": 239608,\r\n\"propertyName\": \"141 LOFTS\",\r\n\"address\": {\r\n\"address\": \"141 DESIARD ST\",\r\n\"city\": \"MONROE\",\r\n\"state\": \"LA\",\r\n\"country\": \"UNITED STATES\",\r\n\"county\": \"OUACHITA PARISH\",\r\n\"postalCode\": \"71201-7385\",\r\n\"latitude\": 32.502026,\r\n\"longitude\": -92.117078\r\n},\r\n\"hasMedia\": \"Deprecated Field\"\r\n}\r\n]\r\n}\r\n]\r\n}\r\n}\r\n],\r\n\"meta\": {\r\n\"totalEntities\": 1,\r\n\"totalPages\": 1\r\n}\r\n}";
+            HttpResponseMessage booksAssignedDomainPropertyInstanceResponse = new HttpResponseMessage(HttpStatusCode.OK);
+            booksAssignedDomainPropertyInstanceResponse.Content = new StringContent(booksAssignedDomainPropertyInstanceJson);
+
+            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/propertyinstance?filter[source]=UPFM&filter[companyPropertyInstanceMap.companyInstance.companyInstanceSourceId]=f5c090fa-78ab-452f-b504-98aafee09121&page[size]=9999&include=customerPropertyMap.customerProperty&fields[propertyinstance]=propertyInstanceId,propertyInstanceSourceId,propertyName,source,domain,address&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName", booksPropertyInstanceResponse);
+            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customerproperty/1234", booksCustomerPropertyInstanceResponse);
+            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/propertyinstance?filter[source]=UPFM&filter[customerPropertyMap.customerPropertyId]=1234&page[size]=9999& fields[propertyinstance]=propertyInstanceId,propertyName,domain,propertyInstanceSourceId,isActive&include=customerPropertyMap.customerProperty&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName,address", booksAssignedPropertyInstanceResponse);
+            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/propertyinstance?filter[customerPropertyMap.customerPropertyId]=12345&page[size]%20=9999&%20fields[propertyinstance]=propertyInstanceId,propertyName,domain,propertyInstanceSourceId,isActive,source&include=customerPropertyMap.customerProperty&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName,address", booksAssignedPropertyInstanceResponse);
+
+            //Act           
+            HttpResponseMessage response = organizationController.SearchPropertyByBlueId("1234", "12345");
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
         }
         #endregion
 
@@ -2812,6 +2853,79 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             };
             //Act           
             HttpResponseMessage response = organizationController.DeleteProperty(propertyInstance);
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
+        }
+        #endregion
+
+        #region GetProductStatusDetails
+        [Fact]
+        public void GetProductStatusDetails_InvalidProductInstanceId_ReturnBadRequest()
+        {
+            //Arrange
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            )
+            { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
+
+            //Act           
+            HttpResponseMessage response = organizationController.GetProductStatusDetails("0", "OS");
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
+        }
+
+        [Fact]
+        public void GetProductStatusDetails_InvalidSource_ReturnBadRequest()
+        {
+            //Arrange
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            )
+            { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
+
+            //Act           
+            HttpResponseMessage response = organizationController.GetProductStatusDetails("1234", "");
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
+        }
+
+        [Fact]
+        public void GetProductStatusDetails_ReturnsValidResponse()
+        {
+            //Arrange
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            )
+            {
+                Request = new HttpRequestMessage(),
+                Configuration = new HttpConfiguration()
+            };
+            var booksProductDetailJson = "{\"data\":{\"type\":\"propertyinstance\",\"id\":\"1790436\",\"attributes\":{\"propertyInstanceId\":1790436,\"propertyInstanceSourceId\":\"12345\",\"propertyName\":\"Historical-Cobblestone Cove\",\"source\":\"OS\",\"phaseParentId\":null,\"legalSiteName\":null,\"website\":null,\"email\":null,\"notAPhysicalPropertyAddress\":null,\"isActive\":true,\"greenBookCares\":false,\"buildings\":null,\"nrr\":false,\"modifiedSource\":null,\"isAcquired\":false,\"isSoldOrTransfer\":null,\"soldOrTransferAt\":null,\"customerEnvironment\":\"Primary\",\"domain\":\"Primary\",\"customerPropertyMap\":[{\"customerPropertyId\":123456,\"propertyInstanceId\":1790436,\"propertyInstanceSourceId\":\"12345\",\"source\":\"OS\",\"customerProperty\":[{\"customerPropertyId\":123456,\"customerCompanyId\":379,\"masterPropertyId\":47093,\"propertyName\":\"COBBLESTONE COVE\",\"phaseParentId\":null,\"legalSiteName\":null,\"phoneNumber\":null,\"website\":null,\"email\":null,\"migrationStatus\":\"staged\",\"hasMedia\":\"Deprecated Field\",\"mediaTypeId\":null,\"assetType\":null,\"isActive\":false,\"companyRelationship\r\n\":\"Other\",\"startDate\":null,\"endDate\":null}]}]}}}";
+            HttpResponseMessage booksProductDetailResponse = new HttpResponseMessage(HttpStatusCode.OK);
+            booksProductDetailResponse.Content = new StringContent(booksProductDetailJson);
+
+            var booksCustomerPropertyInstanceJson = "{\"data\":[{\"type\":\"propertyinstance\",\"id\":\"1005251854\",\"attributes\":{\"propertyInstanceId\":1005251854,\"propertyInstanceSourceId\":\"003b0509-1189-49dc-bbe6-01c5b6277a83\",\"propertyName\":\"Cobblestone Cove\",\"isActive\":true,\"domain\":\"Primary\",\"deletedReason\":\"Deprecated Field\",\"customerPropertyMap\":[{\"customerPropertyId\":123456,\"propertyInstanceId\":1005251854,\"customerProperty\":[{\"customerPropertyId\":123456,\"propertyName\":\"COBBLESTONE COVE\",\"hasMedia\":\"Deprecated Field\"}]}]}}],\"meta\":{\"totalEntities\":1,\"totalPages\":1}}";
+            HttpResponseMessage booksCustomerPropertyInstanceResponse = new HttpResponseMessage(HttpStatusCode.OK);
+            booksCustomerPropertyInstanceResponse.Content = new StringContent(booksCustomerPropertyInstanceJson);
+
+            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/propertyinstance/12345/OS?include=customerPropertyMap.customerProperty", booksProductDetailResponse);
+            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/propertyinstance?filter[source]=UPFM&filter[customerPropertyMap.customerPropertyId]=123456&page[size]=9999& fields[propertyinstance]=propertyInstanceId,propertyName,domain,propertyInstanceSourceId,isActive&include=customerPropertyMap.customerProperty&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName,address", booksCustomerPropertyInstanceResponse);
+           
+
+            //Act           
+            HttpResponseMessage response = organizationController.GetProductStatusDetails("12345", "OS");
 
             //Assert
             Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));

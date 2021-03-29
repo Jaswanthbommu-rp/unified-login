@@ -7,14 +7,7 @@ exec Enterprise.GetPropertyInstanceListByIdWithPaging @InstanceList=@p1,@Name=NU
 @PropertyMasterid=null,@SortColumn=N'CustomerPropertyId',@SortDirection=N'Dec',@RowsPerPage=100,@PageNumber=1  
 
 */
--- Procedure : Enterprise.GetPropertyInstanceListByIdWithPaging  
--- Purpose  : Select Property list   for a company
--- Date     Author    Comment  
--------------------------------------------------------------------------------------------------------------------------------------------  
--- 12/03/2020   RohithVundyala    Created  
--- Copyright  : copyright (c) 2015.  RealPage Inc.  
--- This module is the confidential & proprietary property of RealPage Inc.  
--------------------------------------------------------------------------------------------------------------------------------------------  
+
 CREATE PROCEDURE [Enterprise].[GetPropertyInstanceListByIdWithPaging]   
 (   
  @InstanceList [Enterprise].[PropertyInstanceType] READONLY,  
@@ -43,7 +36,8 @@ BEGIN
   County				NVARCHAR(120), 
   InstanceId			UNIQUEIDENTIFIER,
   CustomerPropertyId	BIGINT,
-  Domain				NVARCHAR(100)
+  Domain				NVARCHAR(100),
+  IsActive				NVARCHAR(40)
  )   
  INSERT INTO #tempPropertyInstance(
 			PropertyInstanceId    
@@ -56,7 +50,8 @@ BEGIN
 			,[County]		 
 			,PI1.[InstanceId]  
 			,PI1.CustomerPropertyId   
-           ,Domain)  
+           ,Domain
+		   ,IsActive)  
  SELECT  
 		  PI1.[PropertyInstanceId]  
 		  ,[Name]  
@@ -69,6 +64,10 @@ BEGIN
 		  ,PI1.[InstanceId]  
 		  ,PI1.CustomerPropertyId
 		  ,Domain
+		  , CASE WHEN pi1.IsActive = 1 THEN 'Active'  
+		WHEN pi1.IsActive = 0 THEN 'Inactive'   
+		ELSE ''  
+		END as IsActive 
   
  FROM   
   [Enterprise].[PropertyInstance] pi1  
@@ -98,6 +97,7 @@ BEGIN
 	,[InstanceId]  
 	,CustomerPropertyId   
     ,Domain
+	,IsActive
 	,TotalRecords
 	,RowNumber
   )  
@@ -114,8 +114,9 @@ BEGIN
 	,[County]		 
 	,[InstanceId]  
 	,CustomerPropertyId   
-    ,Domain,  
-   COUNT(1) OVER () AS [TotalRecords],  
+    ,Domain
+	,IsActive
+   ,COUNT(1) OVER () AS [TotalRecords],  
    CASE @sortValue  
     WHEN 100 THEN ROW_NUMBER() OVER (ORDER BY Name ASC)  
     WHEN 101 THEN ROW_NUMBER() OVER (ORDER BY CustomerPropertyId ASC, Name ASC)  
@@ -136,8 +137,9 @@ BEGIN
 	,[County]		 
 	,[InstanceId]  
 	,CustomerPropertyId   
-    ,Domain,  
-	TotalRecords  
+    ,Domain
+	,IsActive
+	,TotalRecords  
  FROM cteFilterProperties  
  ORDER BY RowNumber  
  OFFSET ((@PageNumber - 1) * @RowsPerPage) ROWS  

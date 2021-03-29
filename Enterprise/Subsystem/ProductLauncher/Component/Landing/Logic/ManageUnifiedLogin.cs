@@ -32,7 +32,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="userClaims"></param>
         public ManageUnifiedLogin(DefaultUserClaim userClaims) : base((int) ProductEnum.UnifiedPlatform, userClaims, null, null)
         {
-            WriteToDiagnosticLog("UnifiedLogin - ManageUnifiedLogin.Ctor - Getting Product settings.");
             _productId = (int) ProductEnum.UnifiedPlatform;
             _editorRealPageId = userClaims.UserRealPageGuid;
             _blueBook = new ManageBlueBook(userClaims);
@@ -48,7 +47,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="manageBlueBook"></param>
         public ManageUnifiedLogin(DefaultUserClaim userClaims, IProductInternalSettingRepository productInternalSettingRepository, ProductRepository productRepository, IManageBlueBook manageBlueBook) : base((int) ProductEnum.UnifiedPlatform, userClaims, productInternalSettingRepository, productRepository)
         {
-            WriteToDiagnosticLog("UnifiedLogin - ManageUnifiedLogin.Ctor - Getting Product settings.");
             _productId = (int) ProductEnum.UnifiedPlatform;
             _editorRealPageId = userClaims.UserRealPageGuid;
             _blueBook = manageBlueBook;
