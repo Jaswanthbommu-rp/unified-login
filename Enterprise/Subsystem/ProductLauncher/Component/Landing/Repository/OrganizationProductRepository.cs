@@ -34,12 +34,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		/// Used to add/update a product to an organization
 		/// </summary>
 		/// <param name="partyId">Company party id</param>
-		/// <param name="product">The product enum</param>
+		/// <param name="product">The product id</param>
 		/// <param name="configurationId">The configuration id for the product being assigned. NULL will assign global product configuration</param>
 		/// <param name="fromDate">When the product will be available from for the Organization</param>
 		/// <param name="thruDate">How long the product is available for the Organization</param>
 		/// <returns></returns>
-		public RepositoryResponse InsertUpdateOrganizationProduct(long partyId, ProductEnum product, int? configurationId, DateTime? fromDate, DateTime? thruDate)
+		public RepositoryResponse InsertUpdateOrganizationProduct(long partyId, int product, int? configurationId, DateTime? fromDate, DateTime? thruDate)
 		{
 			RepositoryResponse newProductOrganization = new RepositoryResponse();
 
@@ -52,7 +52,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 					dynamic paramNewOrg = new
 					{
 						PartyId = partyId,
-						ProductId = (int)product,
+						ProductId = product,
 						ConfigurationID = configurationId,
 						FromDate = fromDate,
 						ThruDate = thruDate

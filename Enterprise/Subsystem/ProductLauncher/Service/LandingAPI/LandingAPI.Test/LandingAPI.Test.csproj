@@ -156,6 +156,7 @@
     <Compile Include="Logic\ProductIntegration\ClickPayTestData.cs" />
     <Compile Include="Logic\ProductIntegration\DiqIntegrationTest.cs" />
     <Compile Include="Logic\ProductIntegration\DiqTestData.cs" />
+    <Compile Include="Logic\ProductIntegration\Factory\DefaultIntegrationTypeFactoryTests.cs" />
     <Compile Include="Logic\ProductIntegration\IlaTestData.cs" />
     <Compile Include="Logic\ProductIntegration\IlmTestData.cs" />
     <Compile Include="Logic\ProductIntegration\PamTestData.cs" />
@@ -267,6 +268,7 @@
   <ItemGroup>
     <Analyzer Include="..\..\..\packages\xunit.analyzers.0.10.0\analyzers\dotnet\cs\xunit.analyzers.dll" />
   </ItemGroup>
+  <ItemGroup />
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>
