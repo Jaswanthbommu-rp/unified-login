@@ -85,24 +85,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="userPersonaId"></param>
 		/// <param name="partyId"></param>
 		/// <returns></returns>
-		public ListResponse GetRoles(long editorPersonaId, long userPersonaId, long partyId, ProductEnum product)
+		public ListResponse GetRoles(long editorPersonaId, long userPersonaId, long partyId)
 		{
 			WriteToDiagnosticLog($"ManageUPFMProductUser - GetRoles at beginning of method for user with editorPersona id - {editorPersonaId}");
-			int upfmProductId = (int) product;
 		   var response = new ListResponse();
 			try
 			{
 				ListResponse result = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
 				if (result.IsError)
 				{
-					WriteToErrorLog($"ManageUPFMProductUser-GetRoles.GetCompanyEditorAndUserDetails error for product {upfmProductId}  with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
+					WriteToErrorLog($"ManageUPFMProductUser-GetRoles.GetCompanyEditorAndUserDetails error for product {_upfmProductId}  with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
 					return result;
 				}
 
 				// get roles from DB for UnifiedAmenities product
-				WriteToDiagnosticLog($"ManageUPFMProductUser -GetRoles  Getting all GB roles from GB DB - ocr.ListRolesByParty with party id - {partyId} and product {upfmProductId}");
+				WriteToDiagnosticLog($"ManageUPFMProductUser -GetRoles  Getting all GB roles from GB DB - ocr.ListRolesByParty with party id - {partyId} and product {_upfmProductId}");
 				IList<int> productIdList = _productRepository.GetProductIdsByCompany(partyId);
-				var gbAllRoles = _productRepository.ListRolesForProductByParty(partyId, productIdList, upfmProductId) ?? new List<ProductRole>();
+				var gbAllRoles = _productRepository.ListRolesForProductByParty(partyId, productIdList, _upfmProductId) ?? new List<ProductRole>();
 				gbAllRoles = gbAllRoles?.OrderBy(r => r.Name).ToList();
 
 
@@ -152,10 +151,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="partyId"></param>
 		/// <param name="roleId"></param>
 		/// <returns></returns>
-		public ListResponse GetRightsByRole(long editorPersonaId, long partyId, long roleId, ProductEnum product)
+		public ListResponse GetRightsByRole(long editorPersonaId, long partyId, long roleId)
 		{
 			WriteToDiagnosticLog($"ManageUPFMProductUser.GetRightsByRole at beginning of method for user with editorPersona id - {editorPersonaId}");
-			int upfmProductId = (int)product;
 			var response = new ListResponse();
 			try
 			{
@@ -169,7 +167,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				WriteToDiagnosticLog($"ManageUPFMProductUser.GetRightsByRole Getting all GB roles from GB DB - pr.ListRolesForProductByParty with party id - {partyId}");
 				ProductRepository pr = new ProductRepository();
 				IList<int> productIdList = pr.GetProductIdsByCompany(partyId);
-				var gbAllRights = _unifiedLoginRepository.ListRightsByRole(partyId, productIdList, upfmProductId, roleId) ?? new List<ProductRight>();
+				var gbAllRights = _unifiedLoginRepository.ListRightsByRole(partyId, productIdList, _productId, roleId) ?? new List<ProductRight>();
 
 				gbAllRights = gbAllRights.OrderBy(r => r.Description).ToList();
 
@@ -404,13 +402,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="editorPersonaId"></param>
 		/// <param name="userPersonaId"></param>
 		/// <param name="assignedOnly"></param>
-		/// <param name="product"></param>
 		/// <param name="datafilter"></param>
 		/// <returns></returns>
-		public ListResponse GetUPFMProperties(long editorPersonaId, long userPersonaId, bool assignedOnly, ProductEnum product, RequestParameter datafilter)
+		public ListResponse GetUPFMProperties(long editorPersonaId, long userPersonaId, bool assignedOnly, RequestParameter datafilter)
 		{
 			ListResponse result = new ListResponse();
-			WriteToDiagnosticLog($"ManageUPFMProductUser.GetUPFMProperties - at beginning of method for user with editorPersona id - {editorPersonaId} - for product {product}");
+			WriteToDiagnosticLog($"ManageUPFMProductUser.GetUPFMProperties - at beginning of method for user with editorPersona id - {editorPersonaId} - for product {_upfmProductId}");
 
 			try
 			{
@@ -423,7 +420,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				//var booksPropertyList = _blueBook.GetUPFMPropertyInstances(_userClaims.OrganizationRealPageGuid.ToString());
 
-				var booksPropertyList = _blueBook.GetPropertiesPerProductCenter(_userClaims.OrganizationRealPageGuid.ToString(), product);
+				var booksPropertyList = _blueBook.GetPropertiesPerProductCenter(_userClaims.OrganizationRealPageGuid.ToString(), _upfmProductId);
 				var customerPropertyList = ListUPFMPropertyInstanceIdByInstanceIds(booksPropertyList);
 
 				WriteToDiagnosticLog($"ManageUPFMProductUser.ListUPFMPropertyInstanceIdByInstanceIds() completed for user with editorPersona id -{editorPersonaId}.");
@@ -478,7 +475,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="productId"></param>
 		/// <param name="propertyInstanceId"></param>
 		/// <returns></returns>
-		private RepositoryResponse DeleteAssignedPropertyInstanceData(long userPersonaId, ProductEnum product, long propertyInstanceId)
+		private RepositoryResponse DeleteAssignedPropertyInstanceData(long userPersonaId, int product, long propertyInstanceId)
 		{
 			return DeleteAssignedUserPropertyInstanceData(userPersonaId, product, propertyInstanceId);
 		}
@@ -489,7 +486,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="productId"></param>
 		/// <param name="propertyInstanceId"></param>
 		/// <returns></returns>
-		private RepositoryResponse InsertAssignedPropertyInstanceData(long userPersonaId, ProductEnum product, long propertyInstanceId)
+		private RepositoryResponse InsertAssignedPropertyInstanceData(long userPersonaId, int product, long propertyInstanceId)
 		{
 			return InsertAssignedUserPropertyInstanceData(userPersonaId, product, propertyInstanceId);
 		}
@@ -546,7 +543,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="userPersonaId"></param>
 		/// <param name="userAssignProductPropertyRole"></param>
 		/// <returns></returns>
-		public string ManageUPFMProductUser(long editorPersonaId, long userPersonaId, UPFMProductPropertyRole userAssignProductPropertyRole, ProductEnum product)
+		public string ManageUPFMProductUser(long editorPersonaId, long userPersonaId, UPFMProductPropertyRole userAssignProductPropertyRole)
 		{
 			WriteToDiagnosticLog($"ManageUPFMProductUser - Begin create/update user for user with userPersonaId id - {userPersonaId}.");
 			try
@@ -716,12 +713,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 					if (unassignedProperties.Count > 0)
 					{
-						Parallel.ForEach(unassignedProperties, property => { result = DeleteAssignedPropertyInstanceData(userPersonaId, product, Convert.ToInt64(property)); });
+						Parallel.ForEach(unassignedProperties, property => { result = DeleteAssignedPropertyInstanceData(userPersonaId, _productId, Convert.ToInt64(property)); });
 					}
 
 					if (assignedProperties.Count > 0)
 					{
-						Parallel.ForEach(assignedProperties, property => { result = InsertAssignedPropertyInstanceData(userPersonaId, product, Convert.ToInt64(property)); });
+						Parallel.ForEach(assignedProperties, property => { result = InsertAssignedPropertyInstanceData(userPersonaId, _productId, Convert.ToInt64(property)); });
 					}
 				}
 
@@ -743,7 +740,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <summary>
 		/// Unassign User
 		/// </summary> 
-		public string UnassignUser(long editorPersonaId, long userPersonaId, UPFMProductPropertyRole userAssignProductPropertyRole, ProductEnum product)
+		public string UnassignUser(long editorPersonaId, long userPersonaId, UPFMProductPropertyRole userAssignProductPropertyRole)
 		{
 			var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
 			if (listResponse.IsError)
@@ -767,7 +764,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					return result.ErrorMessage;
 				}
 
-				List<ProductProperty> propertyList = GetAssignedPropertyForPersona(userPersonaId, product);
+				List<ProductProperty> propertyList = GetAssignedPropertyForPersona(userPersonaId, _productId);
 				List<string> unassignedProperties = new List<string>();
 
 				foreach (var property in propertyList)
@@ -777,7 +774,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				if (unassignedProperties.Count > 0)
 				{
-					Parallel.ForEach(unassignedProperties, property => { result = DeleteAssignedPropertyInstanceData(userPersonaId, product, Convert.ToInt64(property)); });
+					Parallel.ForEach(unassignedProperties, property => { result = DeleteAssignedPropertyInstanceData(userPersonaId, _productId, Convert.ToInt64(property)); });
 				}
 			}
 

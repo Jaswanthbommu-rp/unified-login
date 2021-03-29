@@ -16,7 +16,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="org"></param>
 		/// <param name="productList"></param>
 		/// <returns></returns>
-		IRepositoryResponse InsertUpdateOrganizationProduct(Organization org, List<ProductEnum> productList);
+		IRepositoryResponse InsertUpdateOrganizationProduct(Organization org, List<int> productList);
 
 		/// <summary>
 		/// Used to delete a product from an Organization
@@ -35,7 +35,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="fromDate"></param>
 		/// <param name="thruDate"></param>
 		/// <returns></returns>
-		IRepositoryResponse InsertUpdateOrganizationProduct(long partyId, ProductEnum product, int? configurationId, DateTime? fromDate, DateTime? thruDate);
+		IRepositoryResponse InsertUpdateOrganizationProduct(long partyId, int product, int? configurationId, DateTime? fromDate, DateTime? thruDate);
 
 		/// <summary>
 		/// Used to delete users for product for an Organization
