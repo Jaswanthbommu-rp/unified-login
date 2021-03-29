@@ -310,9 +310,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 							 product.ProductId == (int)ProductEnum.LeaseLabs)
 					{
 						ManageUPFMProductsIntegration upfmProductIntegration = new ManageUPFMProductsIntegration(product.ProductId, userClaim);
-						var upfmProduct = ProductEnumHelper.GetUPFMProductEnum(product.ProductId);
-						propertiesResponse = upfmProductIntegration.GetUPFMProperties(createUserPersonaId, personaId, false, upfmProduct, null);
-						rolesResponse = upfmProductIntegration.GetRoles(createUserPersonaId, personaId, userClaim.OrganizationPartyId, upfmProduct);
+						propertiesResponse = upfmProductIntegration.GetUPFMProperties(createUserPersonaId, personaId, false, null);
+						rolesResponse = upfmProductIntegration.GetRoles(createUserPersonaId, personaId, userClaim.OrganizationPartyId);
 						productListToCreate.Add(CreateProductBatchRecord(propertiesResponse, rolesResponse, product.ProductId));
 					}
 				}
