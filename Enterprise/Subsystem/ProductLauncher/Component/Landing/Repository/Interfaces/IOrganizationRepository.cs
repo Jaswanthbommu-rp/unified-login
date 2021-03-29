@@ -87,6 +87,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="productIdList">List of product ids</param>   
         /// <returns></returns>
         RepositoryResponse CreateInitialOrgSuperUser(long organizationId, string firstName, string middleName, string lastName, string title, string suffix, string email, bool defaultIDP, int? idpTypeId, IList<int> productIdList);
+        /// <summary>
+        /// Returns the Organization Setting Value
+        /// <param name="settingName">SettingName</param>
+        /// <param name="partyId">partyId</param>
+        /// </summary>
+        string GetOrganizationSettingValue(string settingName, long partyId);
         #endregion
 
         #region Organization Type methods
