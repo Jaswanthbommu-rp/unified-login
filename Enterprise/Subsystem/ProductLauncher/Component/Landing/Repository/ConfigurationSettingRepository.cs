@@ -1,10 +1,12 @@
-﻿using RP.Enterprise.Foundation.DataAccess.Component;
+﻿using Dapper;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using System.Collections.Generic;
+using System.Data;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 {
@@ -133,6 +135,57 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 var result = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateMasterConfigurationSetting, param);
                 return result;
+            }
+        }
+
+        /// <summary>
+        /// Add a use primary properties master configuration setting value
+        /// </summary>
+        /// <param name="masterSetting">Master Configuration setting object</param>
+        /// <returns>Repository response object</returns>
+        public RepositoryResponse CreateUsePrimaryPropertyMasterConfigurationSetting(MasterConfigurationSetting masterSetting)
+        {
+            dynamic param = new
+            {
+                @MasterConfigurationType = masterSetting.ConfigurationType,
+                @MasterSettingType = masterSetting.SettingType,
+                @PartyId = masterSetting.PartyId,
+                @Value = masterSetting.Value
+            };
+
+            using (var repository = GetRepository())
+            {
+                var result = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateUsePrimaryPropertyMasterConfigurationSetting, param);
+                return result;
+            }
+        }
+
+        /// <summary>
+        /// Returns the id of ProductSettingType
+        /// <param name="productSettingName">productSettingName</param>
+        /// </summary>
+        public int GetOrganizationMasterConfigurationId(string Name, long PartyId)
+        {
+            using (var repository = GetRepository())
+            {
+                int masterConfigurationId = 0;
+
+               
+                DynamicParameters param = new DynamicParameters();
+                param.Add("@PartyId", PartyId, dbType: DbType.Int32, direction: ParameterDirection.Input);
+                param.Add("@Name", Name, dbType: DbType.String, direction: ParameterDirection.Input);
+                param.Add("@MasterConfigurationId", masterConfigurationId, dbType: DbType.Int32, direction: ParameterDirection.Output);
+
+                try
+                {
+                    repository.Execute(StoredProcNameConstants.SP_GetOrganizationMasterConfiguration, param);
+                    masterConfigurationId = param.Get<int>("@MasterConfigurationId");
+                }
+                catch
+                {
+                }
+
+                return masterConfigurationId;
             }
         }
         #endregion

@@ -91,6 +91,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="organizationRealPageId">Organization Enterprise RealPageId</param>
 		/// <returns>RepositoryResponse object</returns>
 		RepositoryResponse CreateInitialOrgSuperUser(long organizationId, string firstName, string middleName, string lastName, string title, string suffix, string email, bool defaultIDP, int? idpTypeId, Guid organizationRealPageId);
+
+		/// <summary>
+		/// Used to update Organization use primary properties setting
+		/// </summary>
+		/// <param name="organization"></param>
+		/// <returns></returns>
+		void UpdateOrganizationUsePrimaryPropertySetting(Organization organization);
 		#endregion
 
 		#region Organization Type methods
@@ -182,7 +189,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="source">source</param>
 		/// <returns></returns>
 		ProductPropertyDetails GetSourceProductDetails(string propertyInstanceSourceId, string source);
-
 		/// <summary>
 		/// Search Property Details By CustomerPropertyId(BlueId)
 		/// </summary>
@@ -212,5 +218,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="addProductList"></param>
 		/// <returns></returns>
 		List<string> ParseProduct(List<string> productCode, List<int> addProductList);
+		/// <summary>
+		/// Get Organization setting value
+		/// </summary>
+		/// <param name="settingName">settingName</param>
+		/// <param name="organizationPartyId">Optional organization PartyId</param>
+		/// <returns>setting value</returns>
+		string GetOrganizationSettingValue(long organizationPartyId, string settingName);
 	}
 }
