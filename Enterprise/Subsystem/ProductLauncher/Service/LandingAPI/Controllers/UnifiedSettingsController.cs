@@ -152,12 +152,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
 
         /// <summary>
-		/// Get Settings Details
+		/// Get Setting PickList
 		/// </summary>
 		/// <param name="category">Setting category (e.g. Security, CustomFields)</param>
 		/// <param name="companyId">Organization Id</param>
 		/// <param name="includes">filter</param>
-		/// <returns>A Settings Details based on category</returns>
+		/// <returns>A Settings Picklist based on category</returns>
 		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when  object have invalid entries / when Information is out of sync with the server)")]
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]

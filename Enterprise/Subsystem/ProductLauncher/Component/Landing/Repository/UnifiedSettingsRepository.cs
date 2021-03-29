@@ -55,9 +55,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 				};
 
 				Picklist picklist = new Picklist();
-				picklist.name = category;
 				picklist.options = new List<Option>();
-				var settingPickList = repo.GetMany<SettingPickList>(StoredProcNameConstants.SP_GetUnifiedSettingPicklist, param);
+				List<SettingPickList> settingPickList = repo.GetMany<SettingPickList>(StoredProcNameConstants.SP_GetUnifiedSettingPicklist, param);
+				
+				if (settingPickList.Count > 0)
+					picklist.name = settingPickList[0].CategoryName;
 
 				foreach (SettingPickList item in settingPickList)
 				{
