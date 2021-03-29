@@ -441,8 +441,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 }
             }
             org = _manageOrganization.GetOrganization(org.RealPageId);
-            var usePrimaryPropertySettingValue = _manageOrganization.GetOrganizationSettingValue(org.PartyId, "UsePrimaryProperties");
-            if (usePrimaryPropertySettingValue != string.Empty && usePrimaryPropertySettingValue != null && usePrimaryPropertySettingValue != "")
+            string usePrimaryPropertySettingValue = _manageOrganization.GetOrganizationSettingValue(org.PartyId, "UsePrimaryProperties");
+            if (!string.IsNullOrEmpty(usePrimaryPropertySettingValue))
             {
                 org.UsePrimaryProperties = Convert.ToInt32(usePrimaryPropertySettingValue);
             }
