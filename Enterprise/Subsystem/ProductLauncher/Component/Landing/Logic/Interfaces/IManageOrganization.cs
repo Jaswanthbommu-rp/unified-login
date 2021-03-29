@@ -176,12 +176,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		List<PropertyAudit> AuditCompanyProductPropertiesToUPFM(Guid companyInstanceId, int product);
 
 		/// <summary>
+		/// GetSourceProductDetails
+		/// </summary>
+		/// <param name="propertyInstanceSourceId">propertyInstanceSourceId</param>
+		/// <param name="source">source</param>
+		/// <returns></returns>
+		ProductPropertyDetails GetSourceProductDetails(string propertyInstanceSourceId, string source);
+
+		/// <summary>
 		/// Search Property Details By CustomerPropertyId(BlueId)
 		/// </summary>
 		/// <param name="customerPropertyId">customerPropertyId</param>
-		/// <param name="companyInstanceId">companyInstanceId</param>
+		/// <param name="booksCustomerMasterId">booksCustomerMasterId</param>
 		/// <returns></returns>
-		PropertyInstanceSearch SearchPropertyDetailsByCustomerPropertyId(string customerPropertyId, Guid companyInstanceId);
+		PropertyInstanceSearch SearchPropertyDetailsByCustomerPropertyId(string customerPropertyId, string booksCustomerMasterId);
 
 		/// <summary>
 		/// Search Company Details By CustomerCompanyId
