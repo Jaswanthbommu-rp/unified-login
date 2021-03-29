@@ -99,6 +99,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
 		/// IsActive
 		/// </summary>		
 		public int IsActive { get; set; } = 1;
+		/// <summary>
+		/// Use primary properties
+		/// </summary>		
+		public int UsePrimaryProperties { get; set; } = 0;
 
 		#region Examples
 		/// <summary>
@@ -112,6 +116,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
 				RealPageId = new Guid("C802694D-5553-4527-8616-3C0F434AE62D"),
 				BooksMasterId = 12345,
 				Name = "Some company",
+				UsePrimaryProperties = 0,
 				organizationType = new OrganizationType()
 				{
 					OrganizationTypeId = 6,
