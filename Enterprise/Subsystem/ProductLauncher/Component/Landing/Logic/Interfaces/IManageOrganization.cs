@@ -97,7 +97,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// </summary>
 		/// <param name="organization"></param>
 		/// <returns></returns>
-		RepositoryResponse UpdateOrganizationUsePrimaryPropertySetting(Organization organization);
+		void UpdateOrganizationUsePrimaryPropertySetting(Organization organization);
 		#endregion
 
 		#region Organization Type methods

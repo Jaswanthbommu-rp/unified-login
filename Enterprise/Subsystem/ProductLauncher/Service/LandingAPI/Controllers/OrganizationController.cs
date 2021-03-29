@@ -403,7 +403,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest, _repositoryResponse.ErrorMessage);
             }
 
-            var uPPResponse = _manageOrganization.UpdateOrganizationUsePrimaryPropertySetting(org);
+            _manageOrganization.UpdateOrganizationUsePrimaryPropertySetting(org);
             //orgNameChanged = false;
             if (orgNameChanged || orgStatusChanged)
             {
