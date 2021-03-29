@@ -438,7 +438,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             Organization organization = _organizationRepository.GetOrganization(realPageId, organizationPartyId);
             return organization;
         }
-               
+
+        /// <summary>
+        /// Get Organization setting value
+        /// </summary>
+        /// <param name="settingName">settingName</param>
+        /// <param name="organizationPartyId">Optional organization PartyId</param>
+        /// <returns>setting value</returns>
+        public string GetOrganizationSettingValue(long organizationPartyId , string settingName)
+        {
+            if (settingName == string.Empty )
+            {
+                throw new Exception("Invalid parameter: Setting name is required.");
+            }
+
+            if (organizationPartyId == null || organizationPartyId == 0)
+            {
+                throw new Exception("Invalid parameter: Organization partyId is required.");
+            }
+
+            return _organizationRepository.GetOrganizationSettingValue(settingName, organizationPartyId);           
+        }
+
         /// <summary>
         /// Used to get the list of organizations
         /// </summary>

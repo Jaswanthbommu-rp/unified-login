@@ -203,5 +203,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="propertyInstanceID"></param>
 		/// <returns></returns>
 		RepositoryResponse DeletePropertyForOrganization(Guid propertyInstanceID);
+
+		/// <summary>
+		/// Get Organization setting value
+		/// </summary>
+		/// <param name="settingName">settingName</param>
+		/// <param name="organizationPartyId">Optional organization PartyId</param>
+		/// <returns>setting value</returns>
+		string GetOrganizationSettingValue(long organizationPartyId, string settingName);
 	}
 }

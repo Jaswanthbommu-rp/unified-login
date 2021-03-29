@@ -13,6 +13,8 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using Dapper;
+using System.Data;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 {
@@ -432,6 +434,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             });
 
             return products;
+        }
+
+        /// <summary>
+        /// Returns the Organization Setting Value
+        /// <param name="settingName">SettingName</param>
+        /// <param name="partyId">partyId</param>
+        /// </summary>
+        public string GetOrganizationSettingValue(string settingName, long partyId)
+        {
+            using (var repository = GetRepository())
+            {
+                string settingValue = "";
+                DynamicParameters param = new DynamicParameters();
+                param.Add("@PartyId", partyId, dbType: DbType.Int32, direction: ParameterDirection.Input);
+                param.Add("@SettingName", settingName, dbType: DbType.String, direction: ParameterDirection.Input);
+                param.Add("@SettingValue", settingValue, dbType: DbType.String, direction: ParameterDirection.Output);
+
+                try
+                {
+                    repository.Execute(StoredProcNameConstants.SP_GetOrganizationSettingValue, param);
+                    settingValue = param.Get<string>("@SettingValue");
+                }
+                catch
+                {
+                }
+
+                return settingValue;
+            }
         }
         #endregion
 
