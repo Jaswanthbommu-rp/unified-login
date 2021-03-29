@@ -341,6 +341,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             org.Name = organization.Name;
             org.IsActive = organization.IsActive;
+            org.UsePrimaryProperties = organization.UsePrimaryProperties;
 
             var orgTypes = _manageOrganization.ListOrganizationType();
             if (organization.OrganizationTypeId != 0)
@@ -402,6 +403,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest, _repositoryResponse.ErrorMessage);
             }
 
+            _manageOrganization.UpdateOrganizationUsePrimaryPropertySetting(org);
             //orgNameChanged = false;
             if (orgNameChanged || orgStatusChanged)
             {
@@ -439,8 +441,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 }
             }
             org = _manageOrganization.GetOrganization(org.RealPageId);
+            var usePrimaryPropertySettingValue = _manageOrganization.GetOrganizationSettingValue(org.PartyId, "UsePrimaryProperties");
+            if (usePrimaryPropertySettingValue != string.Empty && usePrimaryPropertySettingValue != null && usePrimaryPropertySettingValue != "")
+            {
+                org.UsePrimaryProperties = Convert.ToInt32(usePrimaryPropertySettingValue);
+            }
+            
 
-            return Request.CreateResponse(HttpStatusCode.OK, org);
+           return Request.CreateResponse(HttpStatusCode.OK, org);
         }
 
         /// <summary>

@@ -24,7 +24,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="addProductList"></param>
 		/// <param name="processBlueBookMessage"></param>
 		/// <returns></returns>
-        ObjectOutput<OrganizationCreateResult, IErrorData> CreateOrganization(OrganizationCreate organization, List<int> addProductList, bool processBlueBookMessage = false);
+        ObjectOutput<OrganizationCreateResult, IErrorData> CreateOrganization(OrganizationCreate organization, List<ProductEnum> addProductList, bool processBlueBookMessage = false);
 
 		/// <summary>
 		/// Used to insert a new Organization
@@ -91,6 +91,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="organizationRealPageId">Organization Enterprise RealPageId</param>
 		/// <returns>RepositoryResponse object</returns>
 		RepositoryResponse CreateInitialOrgSuperUser(long organizationId, string firstName, string middleName, string lastName, string title, string suffix, string email, bool defaultIDP, int? idpTypeId, Guid organizationRealPageId);
+
+		/// <summary>
+		/// Used to update Organization use primary properties setting
+		/// </summary>
+		/// <param name="organization"></param>
+		/// <returns></returns>
+		void UpdateOrganizationUsePrimaryPropertySetting(Organization organization);
 		#endregion
 
 		#region Organization Type methods
@@ -176,14 +183,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		List<PropertyAudit> AuditCompanyProductPropertiesToUPFM(Guid companyInstanceId, int product);
 
 		/// <summary>
-		/// GetSourceProductDetails
-		/// </summary>
-		/// <param name="propertyInstanceSourceId">propertyInstanceSourceId</param>
-		/// <param name="source">source</param>
-		/// <returns></returns>
-		ProductPropertyDetails GetSourceProductDetails(string propertyInstanceSourceId, string source);
-
-		/// <summary>
 		/// Search Property Details By CustomerPropertyId(BlueId)
 		/// </summary>
 		/// <param name="customerPropertyId">customerPropertyId</param>
@@ -206,11 +205,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		RepositoryResponse DeletePropertyForOrganization(Guid propertyInstanceID);
 
 		/// <summary>
-		/// Used to parse the list of valid product codes
+		/// Get Organization setting value
 		/// </summary>
-		/// <param name="productCode"></param>
-		/// <param name="addProductList"></param>
-		/// <returns></returns>
-		List<string> ParseProduct(List<string> productCode, List<int> addProductList);
+		/// <param name="settingName">settingName</param>
+		/// <param name="organizationPartyId">Optional organization PartyId</param>
+		/// <returns>setting value</returns>
+		string GetOrganizationSettingValue(long organizationPartyId, string settingName);
 	}
 }
