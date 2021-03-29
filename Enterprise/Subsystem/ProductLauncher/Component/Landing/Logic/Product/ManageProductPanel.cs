@@ -783,11 +783,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         public UPFMProperty TranslateProductProperties(UPFMProperty upfmProperty, int productId)
         {
-            var response = _manageBlueBook.TranslateProductProperties(upfmProperty, productId);
-            var upfmPropertyInstances = response?.Data?.Attributes?.Select(a => a.TranslatedPropertyInstances?.Select(p => p.PropertyInstanceSourceId.ToLower()));
-            UPFMProperty up = new UPFMProperty();
-            up.id = (List<string>)response?.Data?.Attributes?.Select(a => a.TranslatedPropertyInstances?.Select(p => p.PropertyInstanceSourceId.ToLower()));
-            return up;
+            UPFMProperty primaryPropertyIds = new UPFMProperty
+            {
+                id = upfmProperty.id.ConvertAll(d => d.ToLower())
+            };
+            string productcode = ProductEnumHelper.StringValueOf((ProductEnum)productId);
+            var translatedData = _manageBlueBook.GetTranslatePropertiesFromProductToUPFM(primaryPropertyIds, productcode);
+            List<string> translatedUPFMInstances = new List<string>();
+            if (translatedData != null)
+            {
+                foreach (var attributs in translatedData.Data.Attributes)
+                {
+                    foreach (var propertyData in attributs.TranslatedPropertyInstances)
+                    {
+                        translatedUPFMInstances.Add(propertyData.PropertyInstanceSourceId);                        
+                    }
+                }
+            }
+            return new UPFMProperty()
+            {
+                id = translatedUPFMInstances
+            };
+                
         }
         #endregion
     }

@@ -1553,19 +1553,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return propertyInstance;
         }
 
-        public TranslatePropertyInstance TranslateProductProperties(UPFMProperty upfmProperty, int productId)
-        {
-            UPFMProperty primaryPropertyIds = new UPFMProperty
-            {
-                id = upfmProperty.id.ConvertAll(d => d.ToLower())
-            };
-            string productcode = ProductEnumHelper.StringValueOf((ProductEnum)productId);
-            var translatedData = GetTranslatePropertiesFromProductToUPFM(primaryPropertyIds, productcode);
-
-            return translatedData;
-        }
-
-
         /// <summary>
         /// Get source product details from books
         /// </summary>

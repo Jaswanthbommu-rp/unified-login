@@ -252,12 +252,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <param name="systemProductCenter"></param>
         /// <returns></returns>
         bool ProductCenterDisable(SystemProductCenter systemProductCenter);
-
-        ///// <summary>
-        ///// Get translated product properties
-        ///// </summary>
-        ///// <param name="upfmProperty"></param>
-        ///// <returns></returns>
-        TranslatePropertyInstance TranslateProductProperties(UPFMProperty upfmProperty, int productId);
+        
     }
 }
