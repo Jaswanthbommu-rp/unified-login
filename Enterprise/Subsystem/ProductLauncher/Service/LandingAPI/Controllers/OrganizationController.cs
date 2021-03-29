@@ -214,9 +214,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 organization.OrganizationDomainId = organizationDomainList.FirstOrDefault(p => p.Name.Equals(organization.OrganizationDomain, StringComparison.OrdinalIgnoreCase)).OrganizationDomainId;
             }
 
-            var addProductList = new List<ProductEnum>();
+            var addProductList = new List<int>();
             // verify the products, if any, exist and can be added to the customer
-            List<string> invalidProductList = ManageOrganization.ParseProduct(organization.Products, addProductList);
+            List<string> invalidProductList = _manageOrganization.ParseProduct(organization.Products, addProductList);
 
             if (invalidProductList.Count > 0)
             {
@@ -763,9 +763,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest, errorStatus);
             }
 
-            List<ProductEnum> addProductList = new List<ProductEnum>();
+            List<int> addProductList = new List<int>();
             // verify the products, if any, exist and can be added to the customer
-            List<string> invalidProductList = ManageOrganization.ParseProduct(products, addProductList);
+            List<string> invalidProductList = _manageOrganization.ParseProduct(products, addProductList);
             if (invalidProductList.Count > 0)
             {
                 return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "An invalid product was given : " + String.Join(",", invalidProductList));
@@ -828,9 +828,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest, errorStatus);
             }
 
-            List<ProductEnum> addProductList = new List<ProductEnum>();
+            List<int> addProductList = new List<int>();
             // verify the products, if any, exist and can be added to the customer
-            List<string> invalidProductList = ManageOrganization.ParseProduct(products, addProductList);
+            List<string> invalidProductList = _manageOrganization.ParseProduct(products, addProductList);
             if (invalidProductList.Count > 0)
             {
                 return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "An invalid product was given : " + String.Join(",", invalidProductList));
@@ -1526,6 +1526,35 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             return Request.CreateResponse(HttpStatusCode.OK, _propertySearchList);
         }
         #endregion
+
+        #region GetProductStatusDetails
+        /// <summary>
+        /// Get Product Status Details
+        /// </summary>
+        /// <param name="productInstanceId">productInstanceId</param>
+        /// <param name="source">source</param>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about the product", Type = typeof(ProductPropertyDetails))]
+        [SwaggerResponseExamples(typeof(ProductPropertyDetails), typeof(ProductPropertyDetailsExample))]
+        [Route("CompanySetup/Audit/product/{productInstanceId}/source/{source}/productStatus")]
+        [AuthorizeScope("companyfunctions", "rplandingapi")]
+        [HttpGet]
+        public HttpResponseMessage GetProductStatusDetails(string productInstanceId, string source)
+        {
+            if ((string.IsNullOrEmpty(productInstanceId)) || (productInstanceId == "0"))
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: companyInstanceID");
+            }
+            if ((string.IsNullOrEmpty(source)))
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: source");
+            }
+            ProductPropertyDetails _productPropertyDetails = _manageOrganization.GetSourceProductDetails(productInstanceId, source);
+            return Request.CreateResponse(HttpStatusCode.OK, _productPropertyDetails);
+        }
+        #endregion
         #endregion
 
 
@@ -1535,8 +1564,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// Used to delete products from an organization
         /// </summary>
         /// <param name="addProductList"></param>
-        /// <param name="partyId"></param>
-        private IRepositoryResponse DeleteProductsFromOrganization(List<ProductEnum> addProductList, Organization org)
+        /// <param name="org"></param>
+        private IRepositoryResponse DeleteProductsFromOrganization(List<int> addProductList, Organization org)
         {
             IRepositoryResponse response = new RepositoryResponse();
             IManageOrganizationProduct manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository);
@@ -1547,7 +1576,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     Id = org.PartyId,
                     CompanyInstanceSourceId = org.RealPageId.ToString().ToLower(),
                     CreatedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
-                    ProductCenterSourceId = ((int)product).ToString(),
+                    ProductCenterSourceId = product.ToString(),
                     PropertyInstanceSourceId = null,
                     Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)
 
@@ -1938,6 +1967,50 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 ObjectOutput<List<PropertyAudit>, IErrorData> output = new ObjectOutput<List<PropertyAudit>, IErrorData>()
                 {
                     obj = propertyAuditExample,
+                    Status = errorStatus
+                };
+
+                return output;
+            }
+        }
+
+        [ExcludeFromCodeCoverage]
+        public class ProductPropertyDetailsExample : IProvideExamples
+        {
+            /// <summary>
+            /// Example object data used by Swagger to document the output of the webapi method
+            /// </summary>
+            /// <returns>List of Companies example</returns>
+            public object GetExamples()
+            {
+                ProductPropertyDetails propertyProductExample = new ProductPropertyDetails
+                {
+                    ProductStatusDetail = new ProductStatusDetail()
+                    {                        
+                        CustomerPropertyId = "1234567",
+                        ProductInstanceId = "1234567",
+                        ContractedName = "Property 1",
+                        IsActive = "true",
+                        Domain = "Primary"
+                    },
+                    PropertyDetails = new List<PropertySetup>()
+                    {
+                        new PropertySetup()
+                        {                           
+                            Name = "WOODVILLE VILLAGE",
+                            ContractedName = "WOODVILLE VILLAGE",                           
+                            InstanceId = Guid.Parse("1e38a88a-b986-416e-b0cf-5944935a92be"),                           
+                            Domain = "Primary",
+                            IsActive = "true "
+                        }
+                    }
+                };
+
+
+                Status<IErrorData> errorStatus = new Status<IErrorData>();
+                ObjectOutput<ProductPropertyDetails, IErrorData> output = new ObjectOutput<ProductPropertyDetails, IErrorData>()
+                {
+                    obj = propertyProductExample,
                     Status = errorStatus
                 };
 

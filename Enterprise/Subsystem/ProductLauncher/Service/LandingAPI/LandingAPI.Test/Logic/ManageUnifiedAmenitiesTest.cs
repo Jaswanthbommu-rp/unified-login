@@ -321,7 +321,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			_mockPropertyRepository
 				.Setup(m => m.ListPropertiesByPersona(
 					It.IsAny<long>(),
-					It.IsAny<ProductEnum>()
+					It.IsAny<int>()
 				))
 				.Returns(_productPropertyList);
 

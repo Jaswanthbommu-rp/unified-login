@@ -521,11 +521,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// Used to get the list of properties for the given user
         /// </summary>
         /// <param name="userPersonaId">The persona id of the user to get the list of properties for</param>
-        /// <param name="productEnum">The product id</param>
+        /// <param name="productId">The product id</param>
         /// <returns></returns>
-        protected List<ProductProperty> GetAssignedPropertyForPersona(long userPersonaId, ProductEnum productEnum)
+        protected List<ProductProperty> GetAssignedPropertyForPersona(long userPersonaId, int productId)
         {
-            List<ProductProperty> propertyList = _propertyRepository.ListPropertiesByPersona(userPersonaId, productEnum);
+            List<ProductProperty> propertyList = _propertyRepository.ListPropertiesByPersona(userPersonaId, productId);
             return propertyList;
         }
 
@@ -585,7 +585,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="productId">The product enum</param>
         /// <param name="propertyInstanceId">The property instance id to add</param>
         /// <returns></returns>
-        protected RepositoryResponse InsertAssignedUserPropertyInstanceData(long userPersonaId, ProductEnum productId, long propertyInstanceId)
+        protected RepositoryResponse InsertAssignedUserPropertyInstanceData(long userPersonaId, int productId, long propertyInstanceId)
         {
             RepositoryResponse result = new RepositoryResponse();
             WriteToDiagnosticLog($"InsertAssignedUserPropertyInstanceData START - calling DB to insert Property instance assigned to user userPersonaId - {userPersonaId}, PropertyId - {propertyInstanceId}.");
@@ -629,7 +629,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="productId">The product enum</param>
         /// <param name="propertyInstanceId">The property instance id to remove</param>
         /// <returns></returns>
-        protected RepositoryResponse DeleteAssignedUserPropertyInstanceData(long userPersonaId, ProductEnum productId, long propertyInstanceId)
+        protected RepositoryResponse DeleteAssignedUserPropertyInstanceData(long userPersonaId, int productId, long propertyInstanceId)
         {
             RepositoryResponse result = new RepositoryResponse();
             WriteToDiagnosticLog($"DeleteAssignedUserPropertyInstanceData START - calling DB to delete Property instance assigned to user userPersonaId - {userPersonaId}, PropertyInstanceId - {propertyInstanceId}.");

@@ -7,6 +7,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackB
 	{
 		public int customerPropertyId { get; set; }
 		public int propertyInstanceId { get; set; }
+		public string propertyInstanceSourceId { get; set; }
 		public List<CustomerPropertyInstance> customerProperty { get; set; }
     }
 

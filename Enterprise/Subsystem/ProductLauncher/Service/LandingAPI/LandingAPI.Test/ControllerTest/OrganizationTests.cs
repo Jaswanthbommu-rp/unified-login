@@ -389,6 +389,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void InsertOrganization_DuplicateBookMasterId_BadRequest()
         {
+            _mockRepository
+                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
+                    It.IsAny<object>()))
+                .Returns(_gbProductMap);
+
             //Arrange
             OrganizationCreate organizationCreate = new OrganizationCreate()
             {
@@ -433,6 +438,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void InsertOrganization_InvalidOrganizationType_BadRequest()
         {
+            _mockRepository
+                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
+                    It.IsAny<object>()))
+                .Returns(_gbProductMap);
+
             //Arrange
             OrganizationCreate organizationCreate = new OrganizationCreate()
             {
@@ -521,6 +531,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void InsertOrganization_InvalidAdminUser_BadRequest()
         {
+            _mockRepository
+                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
+                    It.IsAny<object>()))
+                .Returns(_gbProductMap);
+
             //Arrange
             OrganizationCreate organizationCreate = new OrganizationCreate()
             {
@@ -558,6 +573,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void InsertOrganization_CompanyExits_BadRequest()
         {
+            _mockRepository
+                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
+                    It.IsAny<object>()))
+                .Returns(_gbProductMap);
+
             //Arrange
             OrganizationCreate organizationCreate = new OrganizationCreate()
             {
@@ -602,6 +622,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void InsertOrganization_CustomerMasterBookIdExits_BadRequest()
         {
+            _mockRepository
+                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
+                    It.IsAny<object>()))
+                .Returns(_gbProductMap);
+
             //Arrange
             OrganizationCreate organizationCreate = new OrganizationCreate()
             {
@@ -646,6 +671,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void InsertOrganization_AdminExits_BadRequest()
         {
+            _mockRepository
+                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
+                    It.IsAny<object>()))
+                .Returns(_gbProductMap);
+
             //Arrange
             UserLoginOnly userLoginOnly = new UserLoginOnly()
             {
@@ -702,6 +732,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void InsertOrganization_ErrorInsertOrganization_BadRequest()
         {
+            _mockRepository
+                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
+                    It.IsAny<object>()))
+                .Returns(_gbProductMap);
+
             //Arrange
             UserLoginOnly userLoginOnly = new UserLoginOnly();
             userLoginOnly = null;
@@ -852,8 +887,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                     It.Is<object>(
                         d => TestIsRealPageId(d, _RealPageId))))
                 .Returns(_organizationList[0]);
-            
-            //return repository.GetMany<ProductUI>(StoredProcNameConstants.SP_ListProductsByOrganization, new { OrganizationRealPageId = organizationRealPageId }).ToList();
+
+            mockRepository
+                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
+                    It.IsAny<object>()))
+                .Returns(_gbProductMap);
 
             mockRepository
                 .Setup(m => m.GetMany<ProductUI>(StoredProcNameConstants.SP_ListProductsByOrganization,
@@ -1475,9 +1513,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 , _mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
-            ) {Request = new HttpRequestMessage(), Configuration = new HttpConfiguration()};
+            )
+            { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
 
-            List<ProductEnum> productList = new EditableList<ProductEnum>();
+            List<int> productList = new EditableList<int>();
             List<string> blueBookProductList = new List<string>();
 
             // verify all blue book enums match a product
@@ -1486,20 +1525,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 blueBookProductList.Add(pi.GetValue(pi).ToString());
             }
 
-            List<string> invalidProductList = ManageOrganization.ParseProduct(blueBookProductList, productList);
-            Assert.True(invalidProductList.Count == 0 && productList.Count == blueBookProductList.Count);
+            foreach (var productCode in blueBookProductList)
+            {
+                productList.Add((int)ProductEnumHelper.GetProductEnumByProductCode(productCode));
+            }
 
             // list of products to exclude from Bluebook to product integration
-            var ignoreProductList = new List<ProductEnum>()
+            var ignoreProductList = new List<int>()
             {
-                ProductEnum.UnifiedUI, ProductEnum.SelfProvisioningPortal, ProductEnum.SalesForce, ProductEnum.SettingsManagement
+                (int)ProductEnum.UnifiedUI, (int)ProductEnum.SelfProvisioningPortal, (int)ProductEnum.SalesForce, (int)ProductEnum.SettingsManagement
             };
 
             foreach (var pr in typeof(ProductEnum).GetFields())
             {
-                if ((!pr.Name.Equals("value__", StringComparison.OrdinalIgnoreCase))&& (!pr.Name.Equals("UnifiedSettings", StringComparison.OrdinalIgnoreCase)))
+                if ((!pr.Name.Equals("value__", StringComparison.OrdinalIgnoreCase)) && (!pr.Name.Equals("UnifiedSettings", StringComparison.OrdinalIgnoreCase)))
                 {
-                    ProductEnum current = (ProductEnum) Enum.Parse(typeof(ProductEnum), pr.Name);
+                    int current = (int)Enum.Parse(typeof(ProductEnum), pr.Name);
                     if (!ignoreProductList.Contains(current))
                     {
                         // if this fails, then you didn't add the product to the BlueBookProductConstants.cs file!
@@ -2867,6 +2908,79 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             };
             //Act           
             HttpResponseMessage response = organizationController.DeleteProperty(propertyInstance);
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
+        }
+        #endregion
+
+        #region GetProductStatusDetails
+        [Fact]
+        public void GetProductStatusDetails_InvalidProductInstanceId_ReturnBadRequest()
+        {
+            //Arrange
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            )
+            { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
+
+            //Act           
+            HttpResponseMessage response = organizationController.GetProductStatusDetails("0", "OS");
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
+        }
+
+        [Fact]
+        public void GetProductStatusDetails_InvalidSource_ReturnBadRequest()
+        {
+            //Arrange
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            )
+            { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
+
+            //Act           
+            HttpResponseMessage response = organizationController.GetProductStatusDetails("1234", "");
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
+        }
+
+        [Fact]
+        public void GetProductStatusDetails_ReturnsValidResponse()
+        {
+            //Arrange
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            )
+            {
+                Request = new HttpRequestMessage(),
+                Configuration = new HttpConfiguration()
+            };
+            var booksProductDetailJson = "{\"data\":{\"type\":\"propertyinstance\",\"id\":\"1790436\",\"attributes\":{\"propertyInstanceId\":1790436,\"propertyInstanceSourceId\":\"12345\",\"propertyName\":\"Historical-Cobblestone Cove\",\"source\":\"OS\",\"phaseParentId\":null,\"legalSiteName\":null,\"website\":null,\"email\":null,\"notAPhysicalPropertyAddress\":null,\"isActive\":true,\"greenBookCares\":false,\"buildings\":null,\"nrr\":false,\"modifiedSource\":null,\"isAcquired\":false,\"isSoldOrTransfer\":null,\"soldOrTransferAt\":null,\"customerEnvironment\":\"Primary\",\"domain\":\"Primary\",\"customerPropertyMap\":[{\"customerPropertyId\":123456,\"propertyInstanceId\":1790436,\"propertyInstanceSourceId\":\"12345\",\"source\":\"OS\",\"customerProperty\":[{\"customerPropertyId\":123456,\"customerCompanyId\":379,\"masterPropertyId\":47093,\"propertyName\":\"COBBLESTONE COVE\",\"phaseParentId\":null,\"legalSiteName\":null,\"phoneNumber\":null,\"website\":null,\"email\":null,\"migrationStatus\":\"staged\",\"hasMedia\":\"Deprecated Field\",\"mediaTypeId\":null,\"assetType\":null,\"isActive\":false,\"companyRelationship\r\n\":\"Other\",\"startDate\":null,\"endDate\":null}]}]}}}";
+            HttpResponseMessage booksProductDetailResponse = new HttpResponseMessage(HttpStatusCode.OK);
+            booksProductDetailResponse.Content = new StringContent(booksProductDetailJson);
+
+            var booksCustomerPropertyInstanceJson = "{\"data\":[{\"type\":\"propertyinstance\",\"id\":\"1005251854\",\"attributes\":{\"propertyInstanceId\":1005251854,\"propertyInstanceSourceId\":\"003b0509-1189-49dc-bbe6-01c5b6277a83\",\"propertyName\":\"Cobblestone Cove\",\"isActive\":true,\"domain\":\"Primary\",\"deletedReason\":\"Deprecated Field\",\"customerPropertyMap\":[{\"customerPropertyId\":123456,\"propertyInstanceId\":1005251854,\"customerProperty\":[{\"customerPropertyId\":123456,\"propertyName\":\"COBBLESTONE COVE\",\"hasMedia\":\"Deprecated Field\"}]}]}}],\"meta\":{\"totalEntities\":1,\"totalPages\":1}}";
+            HttpResponseMessage booksCustomerPropertyInstanceResponse = new HttpResponseMessage(HttpStatusCode.OK);
+            booksCustomerPropertyInstanceResponse.Content = new StringContent(booksCustomerPropertyInstanceJson);
+
+            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/propertyinstance/12345/OS?include=customerPropertyMap.customerProperty", booksProductDetailResponse);
+            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/propertyinstance?filter[source]=UPFM&filter[customerPropertyMap.customerPropertyId]=123456&page[size]=9999& fields[propertyinstance]=propertyInstanceId,propertyName,domain,propertyInstanceSourceId,isActive&include=customerPropertyMap.customerProperty&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName,address", booksCustomerPropertyInstanceResponse);
+           
+
+            //Act           
+            HttpResponseMessage response = organizationController.GetProductStatusDetails("12345", "OS");
 
             //Assert
             Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));

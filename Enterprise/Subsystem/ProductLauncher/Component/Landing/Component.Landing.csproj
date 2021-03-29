@@ -207,6 +207,8 @@
     <Compile Include="Logic\Interfaces\IUnifiedSettingsRepository.cs" />
     <Compile Include="Logic\ManageUnifiedSettings.cs" />
     <Compile Include="Logic\ManageUserLoginPersona.cs" />
+    <Compile Include="Logic\ProductIntegration\Factory\IIntegrationTypeFactory.cs" />
+    <Compile Include="Logic\ProductIntegration\Factory\IntegrationTypeFactory.cs" />
     <Compile Include="Logic\ProductIntegration\Model\IProductProperties.cs" />
     <Compile Include="Logic\ProductIntegration\Model\ClickPay\ClickPayOrganization.cs" />
     <Compile Include="Logic\ProductIntegration\Model\ClickPay\ClickPayRole.cs" />
@@ -221,6 +223,10 @@
     <Compile Include="Logic\ProductIntegration\ProductImplementation\RenovationManager.cs" />
     <Compile Include="Logic\ProductIntegration\ProductImplementation\SelfGuidedTour.cs" />
     <Compile Include="Logic\ProductIntegration\ProductImplementation\SeniorLeadManagement.cs" />
+    <Compile Include="Logic\ProductIntegration\Types\IIntegrationType.cs" />
+    <Compile Include="Logic\ProductIntegration\Types\LegacyIntegrationType.cs" />
+    <Compile Include="Logic\ProductIntegration\Types\StandardV1IntegrationType.cs" />
+    <Compile Include="Logic\ProductIntegration\Types\UPFMIntegrationType.cs" />
     <Compile Include="Logic\Product\ManageIntelligentBuilding.cs" />
     <Compile Include="Logic\Product\ManageProductOneSiteAccounting.cs" />
     <Compile Include="Logic\ManageSecuritySettings.cs" />
