@@ -91,13 +91,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return unifiedSettings;
         }
 
-        /// <summary>
-        /// Get Company Settings
-        /// </summary>
-        /// <param name="category">Setting Category type</param>
-        /// <param name="partyId">Company Id</param>
-        /// <returns>Security Settings List objects (KeyValue pairs)</returns>
-        public IList<Setting> GetUnifiedSettings(string category, long partyId)
+
+        public ISettingResponse GetSettings(string category, long partyId)
+        {
+            ISettingResponse settingResponse = new SettingResponse();
+        }
+            /// <summary>
+            /// Get Company Settings
+            /// </summary>
+            /// <param name="category">Setting Category type</param>
+            /// <param name="partyId">Company Id</param>
+            /// <returns>Security Settings List objects (KeyValue pairs)</returns>
+            public IList<Setting> GetUnifiedSettings(string category, long partyId)
         {
             IList<Setting> unfiedSettingList = new List<Setting>();
             Guid correlationId = Guid.NewGuid();
