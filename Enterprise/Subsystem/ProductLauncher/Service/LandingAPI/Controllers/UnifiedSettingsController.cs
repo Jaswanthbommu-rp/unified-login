@@ -150,6 +150,54 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
         }
 
+
+        /// <summary>
+		/// Get Setting PickList
+		/// </summary>
+		/// <param name="category">Setting category (e.g. Security, CustomFields)</param>
+		/// <param name="companyId">Organization Id</param>
+		/// <param name="includes">filter</param>
+		/// <returns>A Settings Picklist based on category</returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when  object have invalid entries / when Information is out of sync with the server)")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get list of picklist", Type = typeof(IList<Picklist>))]
+        [SwaggerResponseExamples(typeof(IList<Picklist>), typeof(UnifiedSettingsExample))]
+        [Route("companies/{companyId}/settings/picklist")]
+        [HttpGet]
+        //public HttpResponseMessage GetSettingsPickList(string category, Guid companyId, [FromUri] string[] includes = null)
+        public HttpResponseMessage GetSettingsPickList(string category, Guid companyId, [FromUri] string[] includes = null)
+        {
+            //TODO: make use of companyID and includes. Supporting only by CategoryName for now.
+            IApiError apiError;
+
+            if (!string.IsNullOrWhiteSpace(category))
+            {
+                IManageUnifiedSettings manageSettings = new ManageUnifiedSettings(_userClaims);
+                var picklist = manageSettings.GetSettingsPickList(category);
+
+                return Request.CreateResponse(HttpStatusCode.OK, picklist);
+            }
+            else
+            {
+                apiError = new ApiError()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Status = (short)HttpStatusCode.BadRequest,
+                    Title = "Null Category",
+                    Detail = $"Empty category passed",
+                    Links = string.Empty,
+                    Code = "Settings.GetSettingsPickList.2",
+                    Source = new ApiErrorSource()
+                    {
+                        JsonPointer = string.Empty,
+                        Parameter = string.Empty
+                    }
+                };
+                return Request.CreateResponse(HttpStatusCode.BadRequest, apiError);
+            }
+        }
+
         /// <summary>
 		/// Update Settings by category
 		/// </summary>
