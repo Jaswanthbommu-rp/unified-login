@@ -49,7 +49,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 			if (customField.Count > 0)
 			{
 				customFieldsJson = JsonConvert.SerializeObject(
-					new {
+					new
+					{
 						customField
 					}
 				);
@@ -64,7 +65,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 					Right = 0
 				}
 			};
-			
+
 			return settingList;
 		}
 

@@ -13,5 +13,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         IList<Setting> GetUnifiedSettings(long PartyId, string Category);
         IList<Picklist> GetSettingsPickList(string category);
         RepositoryResponse UpdateUnifiedSettings(IList<Setting> settings, long PartyId, string Category, long userId);
+        RepositoryResponse AddUpdateCustomFields(string jsonData, long partyId, string operation, long userId);
+        IList<CustomField> GetUnifiedSettingsCustomFields(long PartyId);
     }
 }

@@ -77,6 +77,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		}
 
 		/// <summary>
+		/// Get Unified Settings custom fields
+		/// </summary>
+		/// <param name="PartyId">partyid</param>
+		/// <returns> custom field List objects</returns>
+		public IList<CustomField> GetUnifiedSettingsCustomFields(long PartyId)
+		{
+			dynamic param = new
+			{
+				PartyId = PartyId
+			};
+
+			using (var repository = GetRepository())
+			{
+				return repository.GetMany<CustomField>(StoredProcNameConstants.SP_GetFieldsByPartyId, param);
+			}
+		}
+
+		/// <summary>
 		/// Update  Settings 
 		/// </summary>
 		/// <param name="settings"> Settings object of the parameter values</param>
@@ -115,6 +133,62 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 				{
 					repositoryResponse.Id = 0;
 					repositoryResponse.ErrorMessage = "Update Security Settings Error: " + exception.Message;
+				}
+				finally
+				{
+					if (repositoryResponse.ErrorMessage.Length == 0)
+					{
+						//Commit and end transaction.
+						repository.UnitOfWork.Commit();
+					}
+					else
+					{
+						//Rollback transaction and dispose it.
+						repository.UnitOfWork.Rollback();
+					}
+				}
+				return repositoryResponse;
+			}
+		}
+
+		/// <summary>
+		/// Add Update Custom Fields
+		/// </summary>
+		/// <param name="JsonData"> Add Update Custom Fields parameter values</param>
+		/// <param name="userId">userId</param>		
+		/// <returns>Repository response object</returns>
+		public RepositoryResponse AddUpdateCustomFields(string jsonData, long partyId, string operation, long userId)
+		{
+			RepositoryResponse repositoryResponse = new RepositoryResponse();
+			repositoryResponse.Id = 0;
+
+			using (var repository = GetRepository())
+			{
+				repository.UnitOfWork.BeginTransaction();
+				try
+				{
+					dynamic param;
+					if (jsonData?.Length > 0)
+					{
+						param = new
+						{
+							CFJsonData = jsonData,
+							PartyId = partyId,
+							Operation = operation,
+							CreatedBy = userId
+							
+						};
+						repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdateDeleteCustomField, param);
+						if (repositoryResponse.Id == 0)
+						{
+							repositoryResponse.ErrorMessage = $"Add Update Custom Fields Error: {repositoryResponse.ErrorMessage}.";
+						}
+					}
+				}
+				catch (Exception exception)
+				{
+					repositoryResponse.Id = 0;
+					repositoryResponse.ErrorMessage = "Add Update Custom Fields Error: " + exception.Message;
 				}
 				finally
 				{

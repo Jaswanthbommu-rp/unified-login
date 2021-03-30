@@ -23,6 +23,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		readonly Mock<IUnifiedSettingsRepository> _mockUnifiedSettingsRepository = new Mock<IUnifiedSettingsRepository>();
         Mock<HttpMessageHandler> _mockHttpMessageHandler = new Mock<HttpMessageHandler>();
         private readonly IList<Setting> _expectedUnifiedSettings;
+        private readonly IList<CustomField> _expectedCustomFields;
         Mock<IRepository> _mockRepository = new Mock<IRepository>();
 
         #endregion
@@ -45,6 +46,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                     Right = 0,
                      Editable = true,
                     Hidden = false
+                }
+            };
+
+            _expectedCustomFields = new List<CustomField>()
+            {
+                new CustomField()
+                {
+                    Name = "test1",
+                    FieldId=1,
+                    Sequence = 1,
+                    Enabled = true,
+                    ReadOnly = false,
+                    Required = true,
+                    FieldTypeId = 1,
+                    MinCharLength = 1,
+                    MaxCharLength = 10
+                },
+                new CustomField()
+                {
+                    Name = "test2",
+                    FieldId=1,
+                    Sequence = 1,
+                    Enabled = true,
+                    ReadOnly = false,
+                    Required = true,
+                    FieldTypeId = 1,
+                    MinCharLength = 1,
+                    MaxCharLength = 10
                 }
             };
         }
@@ -83,14 +112,40 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             //Act
             int NumberOfProperties = type.GetProperties().Length;
             IManageUnifiedSettings manageSecuritySettings = new ManageUnifiedSettings(mockRepository.Object, _userUserClaim, _mockHttpMessageHandler.Object);
-            IList<Setting> securitySettings = manageSecuritySettings.GetUnifiedSettings(category, partyId);
+            ISettingResponse securitySettings = manageSecuritySettings.GetUnifiedSettings(category, partyId);
 
             Assert.True(
-                securitySettings.Count == _expectedUnifiedSettings.Count
+                securitySettings.Keys.Count == _expectedUnifiedSettings.Count
                 &&
-                securitySettings.SequenceEqual(_expectedUnifiedSettings)
+                securitySettings.Keys.SequenceEqual(_expectedUnifiedSettings)
                 &&
                 NumberOfProperties == 1
+            );
+        }
+
+        [Fact]
+        public void GetUnifiedSettings_Mock_ReturnValidCustomFields()
+        {
+            //Arrange
+            string category = "customfields";
+            long partyId = 123456;
+            Type type = typeof(IList<Setting>);
+
+            var mockRepository = new Mock<IRepository>();
+
+            mockRepository.Setup(m => m.GetMany<CustomField>(StoredProcNameConstants.SP_GetFieldsByPartyId, It.IsAny<object>()))
+                .Returns(_expectedCustomFields);
+
+            IUnifiedSettingsRepository settingsRepository = new UnifiedSettingsRepository(mockRepository.Object);
+
+            //Act
+            int NumberOfProperties = type.GetProperties().Length;
+            IManageUnifiedSettings manageSecuritySettings = new ManageUnifiedSettings(mockRepository.Object, _userUserClaim, _mockHttpMessageHandler.Object);
+            ISettingResponse securitySettings = manageSecuritySettings.GetUnifiedSettings(category, partyId);
+
+            var values = securitySettings.Tables.Select(s => s.Value).FirstOrDefault();
+            Assert.True(
+                values.Count() == _expectedCustomFields.Count                
             );
         }
 

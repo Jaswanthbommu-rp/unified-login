@@ -23,10 +23,10 @@ using LE = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landi
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
-	/// <summary>
-	/// Person Controller to hold all user management related APIs
-	/// </summary>
-	public class PersonController : BaseApiController
+    /// <summary>
+    /// Person Controller to hold all user management related APIs
+    /// </summary>
+    public class PersonController : BaseApiController
     {
         #region Private variables
         IRepositoryResponse repositoryResponse = new RepositoryResponse();
@@ -88,37 +88,37 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [HttpGet]
         public HttpResponseMessage GetPerson(Guid realPageId)
         {
-			ObjectOutput<IPerson, IErrorData> output = new ObjectOutput<IPerson, IErrorData>();
-			Status<IErrorData> errorStatus = new Status<IErrorData>();
+            ObjectOutput<IPerson, IErrorData> output = new ObjectOutput<IPerson, IErrorData>();
+            Status<IErrorData> errorStatus = new Status<IErrorData>();
 
-			realPageId = ((realPageId == Guid.Empty) || (realPageId == null)) ? _realpageUserId : realPageId;
+            realPageId = ((realPageId == Guid.Empty) || (realPageId == null)) ? _realpageUserId : realPageId;
             if ((realPageId == Guid.Empty) || (realPageId == null))
             {
-				errorStatus.Success = false;
-				errorStatus.ErrorCode = "Person.GetPerson.1";
-				errorStatus.ErrorMsg = "Get Person: Invalid parameter enterprise User Id";
-				output.Status = errorStatus;
-				return Request.CreateResponse(HttpStatusCode.OK, output);
+                errorStatus.Success = false;
+                errorStatus.ErrorCode = "Person.GetPerson.1";
+                errorStatus.ErrorMsg = "Get Person: Invalid parameter enterprise User Id";
+                output.Status = errorStatus;
+                return Request.CreateResponse(HttpStatusCode.OK, output);
             }
 
-			IPerson person = new Person();
+            IPerson person = new Person();
 
             IManagePerson personLogic = new ManagePerson();
             person = personLogic.GetPerson(realPageId);
 
             if (person != null)
             {
-				output.Status = errorStatus;
+                output.Status = errorStatus;
                 output.obj = person;
                 return Request.CreateResponse(HttpStatusCode.OK, output);
             }
 
-			//When trying to get a Person that doesn't exists / deleted
-			errorStatus.Success = false;
-			errorStatus.ErrorCode = "Person.GetPerson.2";
-			errorStatus.ErrorMsg = "Get Person: Invalid enterprise User Id";
-			output.Status = errorStatus;
-			return Request.CreateResponse(HttpStatusCode.OK, output);
+            //When trying to get a Person that doesn't exists / deleted
+            errorStatus.Success = false;
+            errorStatus.ErrorCode = "Person.GetPerson.2";
+            errorStatus.ErrorMsg = "Get Person: Invalid enterprise User Id";
+            output.Status = errorStatus;
+            return Request.CreateResponse(HttpStatusCode.OK, output);
         }
 
         /// <summary>
@@ -156,7 +156,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             return Request.CreateResponse(HttpStatusCode.OK, person);
         }
-        
+
         /// <summary>
         /// List person profiles
         /// </summary>
@@ -169,7 +169,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [Route("persons")]
         [AuthorizeRight("viewusers", "viewonlysupporttoolaccess")]
         [HttpGet]
-        public HttpResponseMessage ListPersons([FromUri]RequestParameter datafilter)
+        public HttpResponseMessage ListPersons([FromUri] RequestParameter datafilter)
         {
             IDictionary<object, object> globals = new Dictionary<object, object>();
             ObjectListOutput<ProfileDetail, IErrorData> output = new ObjectListOutput<ProfileDetail, IErrorData>();
@@ -182,183 +182,183 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             globals.Add(BaseType.RequestParameter, datafilter);
 
-			ManageUser manageUser = new ManageUser(_userClaims);
+            ManageUser manageUser = new ManageUser(_userClaims);
 
-			IManageProfile manageProfile = new ManageProfile(_userClaims);
+            IManageProfile manageProfile = new ManageProfile(_userClaims);
             IList<ProfileDetail> profileDetailList = manageProfile.ListProfileDetails(globals: globals, organizationRealPageId: null);
 
-			int totalRecords = profileDetailList.Count > 0 ? profileDetailList[0].TotalRecords : 0;
-			decimal resultsPerPage = ((datafilter.Pages.ResultsPerPage == 100) && (totalRecords > 0)) ? totalRecords : datafilter.Pages.ResultsPerPage;
-			resultsPerPage = (resultsPerPage == 0) ? totalRecords : resultsPerPage;
-			PagingSummary pagingSummary = new PagingSummary()
-			{
-				TotalRecords = totalRecords,
-				TotalPages = (resultsPerPage == 0) ? 0 : (int)Math.Ceiling(totalRecords / resultsPerPage)
-			};
+            int totalRecords = profileDetailList.Count > 0 ? profileDetailList[0].TotalRecords : 0;
+            decimal resultsPerPage = ((datafilter.Pages.ResultsPerPage == 100) && (totalRecords > 0)) ? totalRecords : datafilter.Pages.ResultsPerPage;
+            resultsPerPage = (resultsPerPage == 0) ? totalRecords : resultsPerPage;
+            PagingSummary pagingSummary = new PagingSummary()
+            {
+                TotalRecords = totalRecords,
+                TotalPages = (resultsPerPage == 0) ? 0 : (int)Math.Ceiling(totalRecords / resultsPerPage)
+            };
 
-			output = new ObjectListOutput<ProfileDetail, IErrorData>() { list = profileDetailList, Status = errorStatus };
-			output.pagingSummary = pagingSummary;
-			return Request.CreateResponse(HttpStatusCode.OK, output);
+            output = new ObjectListOutput<ProfileDetail, IErrorData>() { list = profileDetailList, Status = errorStatus };
+            output.pagingSummary = pagingSummary;
+            return Request.CreateResponse(HttpStatusCode.OK, output);
         }
 
-	    /// <summary>
-	    /// List person profiles by organization id. Internal only
-	    /// </summary>
-		/// <param name="realPageId">Organization EnterpriseId</param>
-	    /// <param name="datafilter"></param>
-	    /// <returns>List of Person object</returns>
-	    [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
-	    [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
-	    [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about a list of person profiles", Type = typeof(IProfileDetail))]
-	    [SwaggerResponseExamples(typeof(IProfileDetail), typeof(ListPersonsExample))]
-	    [Route("persons/company/{realPageId}")]
-	    [AuthorizeRight("viewusers")]
-	    [HttpGet]
-	    public HttpResponseMessage ListPersonsByOrg(Guid realPageId, [FromUri]RequestParameter datafilter)
-	    {
-		    IDictionary<object, object> globals = new Dictionary<object, object>();
-		    ObjectListOutput<ProfileDetail, IErrorData> output = new ObjectListOutput<ProfileDetail, IErrorData>();
-		    Status<IErrorData> errorStatus = new Status<IErrorData>();
+        /// <summary>
+        /// List person profiles by organization id. Internal only
+        /// </summary>
+        /// <param name="realPageId">Organization EnterpriseId</param>
+        /// <param name="datafilter"></param>
+        /// <returns>List of Person object</returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about a list of person profiles", Type = typeof(IProfileDetail))]
+        [SwaggerResponseExamples(typeof(IProfileDetail), typeof(ListPersonsExample))]
+        [Route("persons/company/{realPageId}")]
+        [AuthorizeRight("viewusers")]
+        [HttpGet]
+        public HttpResponseMessage ListPersonsByOrg(Guid realPageId, [FromUri] RequestParameter datafilter)
+        {
+            IDictionary<object, object> globals = new Dictionary<object, object>();
+            ObjectListOutput<ProfileDetail, IErrorData> output = new ObjectListOutput<ProfileDetail, IErrorData>();
+            Status<IErrorData> errorStatus = new Status<IErrorData>();
 
-		    if (datafilter == null)
-		    {
-			    datafilter = new RequestParameter();
-		    }
+            if (datafilter == null)
+            {
+                datafilter = new RequestParameter();
+            }
 
-		    globals.Add(BaseType.RequestParameter, datafilter);
+            globals.Add(BaseType.RequestParameter, datafilter);
 
-		    IManageProfile manageProfile = new ManageProfile(_userClaims);
-		    IList<ProfileDetail> profileDetailList = manageProfile.ListProfileDetails(globals: globals, organizationRealPageId: realPageId);
+            IManageProfile manageProfile = new ManageProfile(_userClaims);
+            IList<ProfileDetail> profileDetailList = manageProfile.ListProfileDetails(globals: globals, organizationRealPageId: realPageId);
 
-			int totalRecords = profileDetailList.Count > 0 ? profileDetailList[0].TotalRecords : 0;
-			decimal resultsPerPage = ((datafilter.Pages.ResultsPerPage == 100) && (totalRecords > 0)) ? totalRecords : datafilter.Pages.ResultsPerPage;
-			PagingSummary pagingSummary = new PagingSummary()
-			{
-				TotalRecords = totalRecords,
-				TotalPages = (int)Math.Ceiling(totalRecords / resultsPerPage)
-			};
+            int totalRecords = profileDetailList.Count > 0 ? profileDetailList[0].TotalRecords : 0;
+            decimal resultsPerPage = ((datafilter.Pages.ResultsPerPage == 100) && (totalRecords > 0)) ? totalRecords : datafilter.Pages.ResultsPerPage;
+            PagingSummary pagingSummary = new PagingSummary()
+            {
+                TotalRecords = totalRecords,
+                TotalPages = (int)Math.Ceiling(totalRecords / resultsPerPage)
+            };
 
-			output = new ObjectListOutput<ProfileDetail, IErrorData>() { list = profileDetailList, Status = errorStatus };
-			output.pagingSummary = pagingSummary;
-			return Request.CreateResponse(HttpStatusCode.OK, output);
-	    }
+            output = new ObjectListOutput<ProfileDetail, IErrorData>() { list = profileDetailList, Status = errorStatus };
+            output.pagingSummary = pagingSummary;
+            return Request.CreateResponse(HttpStatusCode.OK, output);
+        }
 
-		/// <summary>
-		/// Export Users
-		/// </summary>
-		/// <param name="datafilter">Filter, Sort, Paginate</param>
-		/// <param name="dataFormat">Retrun data in this format (default = CSV)</param>
-		/// <returns>List of Person object</returns>
-		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
-		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
-		[SwaggerResponse(HttpStatusCode.OK, Description = "Get information about a list of person profiles", Type = typeof(IProfileDetail))]
-		[SwaggerResponseExamples(typeof(IProfileDetail), typeof(ListPersonsExample))]
-		[Route("persons/export")]
-		[AuthorizeRight("viewusers")]
-		[HttpGet]
-		public HttpResponseMessage ListUsersExport([FromUri]RequestParameter datafilter, SaveFormat dataFormat = SaveFormat.CSV)
-		{
-			string jsonString = string.Empty;
-			byte[] plainBytes;
-			IDictionary<object, object> globals = new Dictionary<object, object>();
-			ObjectOutput<string, IErrorData> output = new ObjectOutput<string, IErrorData>();
-			DateTime parsedMaxValueDate = DateTime.Parse("Dec 31, 9999");
+        /// <summary>
+        /// Export Users
+        /// </summary>
+        /// <param name="datafilter">Filter, Sort, Paginate</param>
+        /// <param name="dataFormat">Retrun data in this format (default = CSV)</param>
+        /// <returns>List of Person object</returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about a list of person profiles", Type = typeof(IProfileDetail))]
+        [SwaggerResponseExamples(typeof(IProfileDetail), typeof(ListPersonsExample))]
+        [Route("persons/export")]
+        [AuthorizeRight("viewusers")]
+        [HttpGet]
+        public HttpResponseMessage ListUsersExport([FromUri] RequestParameter datafilter, SaveFormat dataFormat = SaveFormat.CSV)
+        {
+            string jsonString = string.Empty;
+            byte[] plainBytes;
+            IDictionary<object, object> globals = new Dictionary<object, object>();
+            ObjectOutput<string, IErrorData> output = new ObjectOutput<string, IErrorData>();
+            DateTime parsedMaxValueDate = DateTime.Parse("Dec 31, 9999");
 
-			Status<IErrorData> errorStatus = new Status<IErrorData>();
+            Status<IErrorData> errorStatus = new Status<IErrorData>();
 
-			if (datafilter == null)
-			{
-				datafilter = new RequestParameter();
-			}
+            if (datafilter == null)
+            {
+                datafilter = new RequestParameter();
+            }
 
-			globals.Add(BaseType.RequestParameter, datafilter);
+            globals.Add(BaseType.RequestParameter, datafilter);
 
-			IManageProfile manageProfile = new ManageProfile(_userClaims);
-			IList<ProfileDetail> profileDetailList = manageProfile.ListProfileDetails(globals);
+            IManageProfile manageProfile = new ManageProfile(_userClaims);
+            IList<ProfileDetail> profileDetailList = manageProfile.ListProfileDetails(globals);
 
-			List<LE.User> listUsers = new List<LE.User>();
+            List<LE.User> listUsers = new List<LE.User>();
 
-			ManageUserLogin manageUserLogin = new ManageUserLogin(_userClaims);
-			var userLogin = manageUserLogin.GetUserLogin(_realpageUserId, _orgPartyId); // keep for now
+            ManageUserLogin manageUserLogin = new ManageUserLogin(_userClaims);
+            var userLogin = manageUserLogin.GetUserLogin(_realpageUserId, _orgPartyId); // keep for now
 
-			if (profileDetailList != null)
-			{
-				profileDetailList.ToList().ForEach(p =>
-				{
-					//User Type
-					string userType = string.Empty;
-					if (p.userLogin.UserRoleType != null)
-					{
-						Enum enumUserRole = p.userLogin.UserRoleType;
-						Type enumUserRoleType = enumUserRole.GetType();
-						System.Reflection.FieldInfo fieldInfoUserRole = enumUserRoleType.GetField(enumUserRole.ToString());
-						object[] userRoleAttributes = fieldInfoUserRole.GetCustomAttributes(typeof(DescriptionAttribute), false);
-						userType = userRoleAttributes.Length == 0 ? enumUserRole.ToString() : ((DescriptionAttribute)userRoleAttributes[0]).Description;
-					}
+            if (profileDetailList != null)
+            {
+                profileDetailList.ToList().ForEach(p =>
+                {
+                    //User Type
+                    string userType = string.Empty;
+                    if (p.userLogin.UserRoleType != null)
+                    {
+                        Enum enumUserRole = p.userLogin.UserRoleType;
+                        Type enumUserRoleType = enumUserRole.GetType();
+                        System.Reflection.FieldInfo fieldInfoUserRole = enumUserRoleType.GetField(enumUserRole.ToString());
+                        object[] userRoleAttributes = fieldInfoUserRole.GetCustomAttributes(typeof(DescriptionAttribute), false);
+                        userType = userRoleAttributes.Length == 0 ? enumUserRole.ToString() : ((DescriptionAttribute)userRoleAttributes[0]).Description;
+                    }
 
-					listUsers.Add(
-						new LE.User()
-						{
-							UserType = userType,
-							FirstName = p.FirstName,
-							MiddleName = p.MiddleName,
-							LastName = p.LastName,
-							LoginName = p.userLogin.LoginName,
-							Products = p.SummaryCount.TotalAssignedProducts,
-							LastLogin = p.userLogin.LastLogin != null ? p.userLogin.LastLogin.Value.ToShortDateString() : string.Empty,
+                    listUsers.Add(
+                        new LE.User()
+                        {
+                            UserType = userType,
+                            FirstName = p.FirstName,
+                            MiddleName = p.MiddleName,
+                            LastName = p.LastName,
+                            LoginName = p.userLogin.LoginName,
+                            Products = p.SummaryCount.TotalAssignedProducts,
+                            LastLogin = p.userLogin.LastLogin != null ? p.userLogin.LastLogin.Value.ToShortDateString() : string.Empty,
                             Status = p.userLogin.Status.ToString().Equals("disabled", StringComparison.OrdinalIgnoreCase) ? "Deactivated" : p.userLogin.Status.ToString(),
                             IDP = p.userLogin.Is3rdPartyIDP ? "Yes" : "No",
-							EffectiveDate = p.userLogin.FromDate != null ? p.userLogin.FromDate.Value.ToShortDateString() : string.Empty,
-							ExpireDate = ((p.userLogin.ThruDate == null) || (DateTime.Compare(p.userLogin.ThruDate.Value, parsedMaxValueDate) == 0)) ? string.Empty : p.userLogin.ThruDate.Value.ToShortDateString(),
-							CustomField = p.CustomField,
-							EmployeeId = p.EmployeeId
-						}
-					);
-				});				
-				errorStatus = DataExport.SetAsposeLicense();
-				if (errorStatus.Success)
-				{
-					List<ExportDataFileConfiguration> exportConfigurations = new List<ExportDataFileConfiguration>
-					{
-						new ExportDataFileConfiguration { Header = "User Type", MappedField = "UserType", PDFColumnWidth = "1.30", Preference = 1 },
-						new ExportDataFileConfiguration { Header = "First Name", MappedField = "FirstName", PDFColumnWidth = "0.85", Preference = 2 },
-						new ExportDataFileConfiguration { Header = "Last Name", MappedField = "LastName", PDFColumnWidth = "0.85", Preference = 3 },
-						new ExportDataFileConfiguration { Header = "Employee ID", MappedField = "EmployeeId", PDFColumnWidth = "0.85", Preference = 4 },
-						new ExportDataFileConfiguration { Header = "Username", MappedField = "LoginName", PDFColumnWidth = "2.25", Preference = 5 },
-						new ExportDataFileConfiguration { Header = "Products", MappedField = "Products", PDFColumnWidth = "0.60", Preference = 6 },
-						new ExportDataFileConfiguration { Header = "Last Login", MappedField = "LastLogin", PDFColumnWidth = "1.00", Preference = 7 },
-						new ExportDataFileConfiguration { Header = "Status", MappedField = "Status", PDFColumnWidth = "0.50", Preference = 8 },
-						new ExportDataFileConfiguration { Header = "IDP Flag", MappedField = "IDP", PDFColumnWidth = "0.55", Preference = 9 },
-						new ExportDataFileConfiguration { Header = "User Effective", MappedField = "EffectiveDate", PDFColumnWidth = "0.95", Preference = 10 },
-						new ExportDataFileConfiguration { Header = "User Expires", MappedField = "ExpireDate", PDFColumnWidth = "0.90", Preference = 11 }
-					};
+                            EffectiveDate = p.userLogin.FromDate != null ? p.userLogin.FromDate.Value.ToShortDateString() : string.Empty,
+                            ExpireDate = ((p.userLogin.ThruDate == null) || (DateTime.Compare(p.userLogin.ThruDate.Value, parsedMaxValueDate) == 0)) ? string.Empty : p.userLogin.ThruDate.Value.ToShortDateString(),
+                            CustomField = p.CustomField,
+                            EmployeeId = p.EmployeeId
+                        }
+                    );
+                });
+                errorStatus = DataExport.SetAsposeLicense();
+                if (errorStatus.Success)
+                {
+                    List<ExportDataFileConfiguration> exportConfigurations = new List<ExportDataFileConfiguration>
+                    {
+                        new ExportDataFileConfiguration { Header = "User Type", MappedField = "UserType", PDFColumnWidth = "1.30", Preference = 1 },
+                        new ExportDataFileConfiguration { Header = "First Name", MappedField = "FirstName", PDFColumnWidth = "0.85", Preference = 2 },
+                        new ExportDataFileConfiguration { Header = "Last Name", MappedField = "LastName", PDFColumnWidth = "0.85", Preference = 3 },
+                        new ExportDataFileConfiguration { Header = "Employee ID", MappedField = "EmployeeId", PDFColumnWidth = "0.85", Preference = 4 },
+                        new ExportDataFileConfiguration { Header = "Username", MappedField = "LoginName", PDFColumnWidth = "2.25", Preference = 5 },
+                        new ExportDataFileConfiguration { Header = "Products", MappedField = "Products", PDFColumnWidth = "0.60", Preference = 6 },
+                        new ExportDataFileConfiguration { Header = "Last Login", MappedField = "LastLogin", PDFColumnWidth = "1.00", Preference = 7 },
+                        new ExportDataFileConfiguration { Header = "Status", MappedField = "Status", PDFColumnWidth = "0.50", Preference = 8 },
+                        new ExportDataFileConfiguration { Header = "IDP Flag", MappedField = "IDP", PDFColumnWidth = "0.55", Preference = 9 },
+                        new ExportDataFileConfiguration { Header = "User Effective", MappedField = "EffectiveDate", PDFColumnWidth = "0.95", Preference = 10 },
+                        new ExportDataFileConfiguration { Header = "User Expires", MappedField = "ExpireDate", PDFColumnWidth = "0.90", Preference = 11 }
+                    };
 
-					IDictionary<object, object> CFglobals = new Dictionary<object, object>();
-					//get the enabled custom field with the smallest sequence
-					RequestParameter customFieldsDataFilter = new RequestParameter();
-					customFieldsDataFilter.Pages.ResultsPerPage = 1;
-					customFieldsDataFilter.Pages.StartRow = 1;
-					customFieldsDataFilter.SortBy.Add("Sequence", "ASC");
-					customFieldsDataFilter.FilterBy.Add("Enabled", "1");
-					CFglobals.Add(BaseType.RequestParameter, customFieldsDataFilter);
+                    IDictionary<object, object> CFglobals = new Dictionary<object, object>();
+                    //get the enabled custom field with the smallest sequence
+                    RequestParameter customFieldsDataFilter = new RequestParameter();
+                    customFieldsDataFilter.Pages.ResultsPerPage = 1;
+                    customFieldsDataFilter.Pages.StartRow = 1;
+                    customFieldsDataFilter.SortBy.Add("Sequence", "ASC");
+                    customFieldsDataFilter.FilterBy.Add("Enabled", "1");
+                    CFglobals.Add(BaseType.RequestParameter, customFieldsDataFilter);
 
-					ManageCustomFields manageCustomFields = new ManageCustomFields(_userClaims);
-					IList<CustomField> customFieldList = manageCustomFields.GetCustomField(globals: CFglobals, booksCustomerMasterId: _userClaims.CustomerMasterId, bookMasterTypeId: (int)BookMasterType.CustomerMasterId);
-					bool customFieldsEnabled = ((customFieldList != null) && (customFieldList.Count > 0));
-					if (customFieldsEnabled)
-					{
-						string customFieldName = customFieldList[0].Name;
-						exportConfigurations.Add(new ExportDataFileConfiguration { Header = customFieldName, MappedField = "CustomField", PDFColumnWidth = "", Preference = 12 });
-					}
+                    ManageCustomFields manageCustomFields = new ManageCustomFields(_userClaims);
+                    IList<CustomField> customFieldList = manageCustomFields.GetCustomField(globals: CFglobals, booksCustomerMasterId: _userClaims.CustomerMasterId, bookMasterTypeId: (int)BookMasterType.CustomerMasterId);
+                    bool customFieldsEnabled = ((customFieldList != null) && (customFieldList.Count > 0));
+                    if (customFieldsEnabled)
+                    {
+                        string customFieldName = customFieldList[0].Name;
+                        exportConfigurations.Add(new ExportDataFileConfiguration { Header = customFieldName, MappedField = "CustomField", PDFColumnWidth = "", Preference = 12 });
+                    }
 
-					plainBytes = DataExport.ExportDataToFile<LE.User>(exportConfigurations.OrderBy(p => p.Preference).ToList(), listUsers, dataFormat);
-					output = new ObjectOutput<string, IErrorData>()
-					{
-						obj = Convert.ToBase64String(plainBytes),
-						Status = errorStatus
-					};
+                    plainBytes = DataExport.ExportDataToFile<LE.User>(exportConfigurations.OrderBy(p => p.Preference).ToList(), listUsers, dataFormat);
+                    output = new ObjectOutput<string, IErrorData>()
+                    {
+                        obj = Convert.ToBase64String(plainBytes),
+                        Status = errorStatus
+                    };
 
-					/*
+                    /*
 					DO NOT REMOVE
 					SerializerContractResolver jsonResolver = new SerializerContractResolver();
 					jsonResolver.RenameProperty(typeof(ObjectOutput<string, IErrorData>), "data", "fileContent");
@@ -368,32 +368,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 					jsonString = JsonConvert.SerializeObject(output, serializerSettings);
 					object newOutput = JsonConvert.DeserializeObject(jsonString);
 					*/
-					return Request.CreateResponse(HttpStatusCode.OK, output);
-				}
-				else
-				{
-					output.Status = errorStatus;
-					return Request.CreateResponse(HttpStatusCode.OK, output);
-				}
-			}
-			else
-			{
-				errorStatus.Success = false;
-				errorStatus.ErrorCode = "Person.ListUsersExport.1";
-				errorStatus.ErrorMsg = "List Users Export: No data";
-				output.Status = errorStatus;
-				return Request.CreateResponse(HttpStatusCode.OK, output);
-			}
-		}
-		#endregion
+                    return Request.CreateResponse(HttpStatusCode.OK, output);
+                }
+                else
+                {
+                    output.Status = errorStatus;
+                    return Request.CreateResponse(HttpStatusCode.OK, output);
+                }
+            }
+            else
+            {
+                errorStatus.Success = false;
+                errorStatus.ErrorCode = "Person.ListUsersExport.1";
+                errorStatus.ErrorMsg = "List Users Export: No data";
+                output.Status = errorStatus;
+                return Request.CreateResponse(HttpStatusCode.OK, output);
+            }
+        }
+        #endregion
 
-		#region Persona
-		/// <summary>
-		/// Used to get a persons active persona by realpageId
-		/// </summary>
-		/// <param name="realPageId">User personaId</param>
-		/// <returns>A list of personas for the give user id</returns>
-		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when Person object have invalid entries)")]
+        #region Persona
+        /// <summary>
+        /// Used to get a persons active persona by realpageId
+        /// </summary>
+        /// <param name="realPageId">User personaId</param>
+        /// <returns>A list of personas for the give user id</returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when Person object have invalid entries)")]
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [SwaggerResponse(HttpStatusCode.OK, Description = "Newly created Person Id", Type = typeof(Persona))]
@@ -401,35 +401,35 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [Route("person/persona/{realPageId}")]
         public HttpResponseMessage GetActivePersona([FromUri] Guid realPageId)
         {
-			ObjectOutput<IPersona, IErrorData> output = new ObjectOutput<IPersona, IErrorData>();
-			Status<IErrorData> errorStatus = new Status<IErrorData>();
+            ObjectOutput<IPersona, IErrorData> output = new ObjectOutput<IPersona, IErrorData>();
+            Status<IErrorData> errorStatus = new Status<IErrorData>();
 
-			if (realPageId == Guid.Empty)
-			{
-				errorStatus.Success = false;
-				errorStatus.ErrorCode = "Person.GetActivePersona.1";
-				errorStatus.ErrorMsg = "Get active persona: Invalid parameter enterprise User Id";
-				output.Status = errorStatus;
-				return Request.CreateResponse(HttpStatusCode.OK, output);
-			}
+            if (realPageId == Guid.Empty)
+            {
+                errorStatus.Success = false;
+                errorStatus.ErrorCode = "Person.GetActivePersona.1";
+                errorStatus.ErrorMsg = "Get active persona: Invalid parameter enterprise User Id";
+                output.Status = errorStatus;
+                return Request.CreateResponse(HttpStatusCode.OK, output);
+            }
 
-			ManagePersona personaManager = new ManagePersona(_userClaims);
+            ManagePersona personaManager = new ManagePersona(_userClaims);
             Persona persona = personaManager.GetFirstAvailablePersonaByCompany(realPageId, _orgPartyId);
 
-			if ((persona != null) && (persona.PersonaId > 0))
-			{
-				output.obj = persona; ;
-				output.Status = errorStatus;
-				return Request.CreateResponse(HttpStatusCode.OK, output);
-			}
+            if ((persona != null) && (persona.PersonaId > 0))
+            {
+                output.obj = persona; ;
+                output.Status = errorStatus;
+                return Request.CreateResponse(HttpStatusCode.OK, output);
+            }
 
-			//When trying to get a Person that doesn't exists / deleted
-			errorStatus.Success = false;
-			errorStatus.ErrorCode = "Person.GetActivePersona.2";
-			errorStatus.ErrorMsg = "Get active persona: Invalid enterprise User Id.";
-			output.Status = errorStatus;
-			return Request.CreateResponse(HttpStatusCode.OK, output);
-		}
+            //When trying to get a Person that doesn't exists / deleted
+            errorStatus.Success = false;
+            errorStatus.ErrorCode = "Person.GetActivePersona.2";
+            errorStatus.ErrorMsg = "Get active persona: Invalid enterprise User Id.";
+            output.Status = errorStatus;
+            return Request.CreateResponse(HttpStatusCode.OK, output);
+        }
 
 
         /// <summary>
@@ -443,7 +443,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [SwaggerResponse(HttpStatusCode.OK, Description = "Person Id", Type = typeof(Persona))]
         [HttpGet]
         [Route("person/personas/{realPageId}")]
-        public IList<Persona> GetListOfPersona([FromUri]Guid realPageId)
+        public IList<Persona> GetListOfPersona([FromUri] Guid realPageId)
         {
             if (realPageId == null) { throw new HttpResponseException(HttpStatusCode.BadRequest); }
 
@@ -484,7 +484,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
         }
         #endregion
-                
+
         #region Output results for documentation
         /// <summary>
         /// Used to document examples of the New Person webapi result
@@ -502,18 +502,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
         }
 
-		/// <summary>
-		/// Used to document examples of the User Profile
-		/// </summary>
-		[ExcludeFromCodeCoverage]
-		public class ListPersonsExample : IProvideExamples
+        /// <summary>
+        /// Used to document examples of the User Profile
+        /// </summary>
+        [ExcludeFromCodeCoverage]
+        public class ListPersonsExample : IProvideExamples
         {
             /// <summary>
             /// Example object data used by Swagger to document the output of the webapi method
             /// </summary>
             /// <returns>Profile example</returns>
             public object GetExamples()
-            {                
+            {
                 IList<IProfileDetail> listProfile = new List<IProfileDetail>();
                 IProfileDetail profile = new ProfileDetail();
                 profile.userLogin = new UserLogin()
@@ -557,9 +557,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return output;
             }
         }
-		#endregion
-		
-	}
+        #endregion
+
+    }
 }
 
 
