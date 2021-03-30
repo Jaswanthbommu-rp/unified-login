@@ -466,6 +466,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             productResult = _manageBlueBook.TranslateProductPrimaryPropertiesData(upfmProperty, productId, productResult);
             return productResult;
         }
-        #endregion       
+
+        public UPFMProperty TranslateProductProperties(UPFMProperty upfmProperty, int productId)
+        {
+            UPFMProperty primaryPropertyIds = new UPFMProperty
+            {
+                id = upfmProperty.id.ConvertAll(d => d.ToLower())
+            };
+            string productcode = ProductEnumHelper.StringValueOf((ProductEnum)productId);
+            var translatedData = _manageBlueBook.GetTranslatePropertiesFromProductToUPFM(primaryPropertyIds, productcode);
+            List<string> translatedUPFMInstances = new List<string>();
+            if (translatedData != null)
+            {
+                foreach (var attributs in translatedData.Data.Attributes)
+                {
+                    foreach (var propertyData in attributs.TranslatedPropertyInstances)
+                    {
+                        translatedUPFMInstances.Add(propertyData.PropertyInstanceSourceId);                        
+                    }
+                }
+            }
+            return new UPFMProperty()
+            {
+                id = translatedUPFMInstances
+            };
+                
+        }
+        #endregion
     }
 }
