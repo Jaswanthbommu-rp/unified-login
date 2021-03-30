@@ -133,6 +133,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return unfiedSettingList;
         }
 
+        public IList<Picklist> GetSettingsPickList(string category)
+        {
+            IList<Picklist> picklists = new List<Picklist>();
+
+            Guid correlationId = Guid.NewGuid();
+            Dictionary<string, object> logData = new Dictionary<string, object>
+            {
+                { "Get SettingsPickList",$"Category: {category}"}
+            };
+            WriteToLog(LogEventLevel.Debug, "GetSettingsPickList: Begin", correlationId, logData, null);
+
+            try
+            {
+                picklists = _unifiedSettingsRepository.GetSettingsPickList(category);
+            }
+            catch (Exception exception)
+            {
+                var a = exception.ToString();
+            }
+
+            return picklists;
+        }
+
         /// <summary>
         /// Update an existing unified Settings 
         /// </summary>
@@ -293,6 +316,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             //useTranslatev2 = GetBooleanProductSettings("BooksUseTranslatev2");
             _httpClient.BaseAddress = new Uri(bbUri);
         }
+
         #endregion
     }
 }

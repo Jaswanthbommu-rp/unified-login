@@ -581,4 +581,20 @@ end
 COMMIT TRAN;
 
 
+GO
+--TFS: 702072 populate UnifiedSettingPicklist table
+if not exists(select top 1 1 from Enterprise.SettingPicklist where CategoryName = 'CustomFields' and MappingName =  'Alphanumeric')
+Begin 
+	Insert into Enterprise.SettingPicklist(CategoryName, MappingName, MappingValue, Description, ModifiedBy, ModifiedDate)
+	values ('CustomFields', 'Alphanumeric', 1, 'consists of both letters and numerals', 480, GETDATE())
+End
+
+if not exists(select top 1 1 from Enterprise.SettingPicklist where CategoryName = 'CustomFields' and MappingName =  'Numeric')
+Begin 
+	Insert into Enterprise.SettingPicklist(CategoryName, MappingName, MappingValue, Description, ModifiedBy, ModifiedDate)
+	values ('CustomFields', 'Numeric', 2, 'consists of only numerals', 480, GETDATE())
+End
+Go
+
+
 				
