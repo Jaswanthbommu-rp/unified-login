@@ -51,16 +51,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		/// <param name="org"></param>
 		/// <param name="productList"></param>
 		/// <returns></returns>
-		public IRepositoryResponse InsertUpdateOrganizationProduct(Organization org, List<ProductEnum> productList)
+		public IRepositoryResponse InsertUpdateOrganizationProduct(Organization org, List<int> productList)
 		{
             IRepositoryResponse response = new RepositoryResponse();
-			foreach (ProductEnum product in productList)
+			foreach (int product in productList)
 			{
 				var systemProductCenter = new SystemProductCenter() {
 					Id = 0,
 					CompanyInstanceSourceId = org.RealPageId.ToString().ToLower(),
 					CreatedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
-					ProductCenterSourceId = ((int)product).ToString(),
+					ProductCenterSourceId = product.ToString(),
 					PropertyInstanceSourceId = null,
 					Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)
 
@@ -91,7 +91,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		/// <param name="fromDate"></param>
 		/// <param name="thruDate"></param>
 		/// <returns></returns>
-		public IRepositoryResponse InsertUpdateOrganizationProduct(long partyId, ProductEnum product, int? configurationId, DateTime? fromDate, DateTime? thruDate )
+		public IRepositoryResponse InsertUpdateOrganizationProduct(long partyId, int product, int? configurationId, DateTime? fromDate, DateTime? thruDate )
 		{
 			return _organizationProductRepository.InsertUpdateOrganizationProduct(partyId, product, configurationId, fromDate, thruDate);
 		}

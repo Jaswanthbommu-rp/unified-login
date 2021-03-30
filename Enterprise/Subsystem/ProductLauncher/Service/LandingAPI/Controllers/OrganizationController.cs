@@ -214,9 +214,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 organization.OrganizationDomainId = organizationDomainList.FirstOrDefault(p => p.Name.Equals(organization.OrganizationDomain, StringComparison.OrdinalIgnoreCase)).OrganizationDomainId;
             }
 
-            var addProductList = new List<ProductEnum>();
+            var addProductList = new List<int>();
             // verify the products, if any, exist and can be added to the customer
-            List<string> invalidProductList = ManageOrganization.ParseProduct(organization.Products, addProductList);
+            List<string> invalidProductList = _manageOrganization.ParseProduct(organization.Products, addProductList);
 
             if (invalidProductList.Count > 0)
             {
@@ -341,6 +341,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             org.Name = organization.Name;
             org.IsActive = organization.IsActive;
+            org.UsePrimaryProperties = organization.UsePrimaryProperties;
 
             var orgTypes = _manageOrganization.ListOrganizationType();
             if (organization.OrganizationTypeId != 0)
@@ -402,6 +403,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest, _repositoryResponse.ErrorMessage);
             }
 
+            _manageOrganization.UpdateOrganizationUsePrimaryPropertySetting(org);
             //orgNameChanged = false;
             if (orgNameChanged || orgStatusChanged)
             {
@@ -439,8 +441,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 }
             }
             org = _manageOrganization.GetOrganization(org.RealPageId);
+            string usePrimaryPropertySettingValue = _manageOrganization.GetOrganizationSettingValue(org.PartyId, "UsePrimaryProperties");
+            if (!string.IsNullOrEmpty(usePrimaryPropertySettingValue))
+            {
+                org.UsePrimaryProperties = Convert.ToInt32(usePrimaryPropertySettingValue);
+            }
+            
 
-            return Request.CreateResponse(HttpStatusCode.OK, org);
+           return Request.CreateResponse(HttpStatusCode.OK, org);
         }
 
         /// <summary>
@@ -755,9 +763,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest, errorStatus);
             }
 
-            List<ProductEnum> addProductList = new List<ProductEnum>();
+            List<int> addProductList = new List<int>();
             // verify the products, if any, exist and can be added to the customer
-            List<string> invalidProductList = ManageOrganization.ParseProduct(products, addProductList);
+            List<string> invalidProductList = _manageOrganization.ParseProduct(products, addProductList);
             if (invalidProductList.Count > 0)
             {
                 return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "An invalid product was given : " + String.Join(",", invalidProductList));
@@ -820,9 +828,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest, errorStatus);
             }
 
-            List<ProductEnum> addProductList = new List<ProductEnum>();
+            List<int> addProductList = new List<int>();
             // verify the products, if any, exist and can be added to the customer
-            List<string> invalidProductList = ManageOrganization.ParseProduct(products, addProductList);
+            List<string> invalidProductList = _manageOrganization.ParseProduct(products, addProductList);
             if (invalidProductList.Count > 0)
             {
                 return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "An invalid product was given : " + String.Join(",", invalidProductList));
@@ -1557,7 +1565,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// </summary>
         /// <param name="addProductList"></param>
         /// <param name="org"></param>
-        private IRepositoryResponse DeleteProductsFromOrganization(List<ProductEnum> addProductList, Organization org)
+        private IRepositoryResponse DeleteProductsFromOrganization(List<int> addProductList, Organization org)
         {
             IRepositoryResponse response = new RepositoryResponse();
             IManageOrganizationProduct manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository);
@@ -1568,7 +1576,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     Id = org.PartyId,
                     CompanyInstanceSourceId = org.RealPageId.ToString().ToLower(),
                     CreatedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
-                    ProductCenterSourceId = ((int)product).ToString(),
+                    ProductCenterSourceId = product.ToString(),
                     PropertyInstanceSourceId = null,
                     Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)
 

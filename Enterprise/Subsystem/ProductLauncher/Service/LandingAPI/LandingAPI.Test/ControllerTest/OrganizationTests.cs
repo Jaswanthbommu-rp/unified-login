@@ -389,6 +389,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void InsertOrganization_DuplicateBookMasterId_BadRequest()
         {
+            _mockRepository
+                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
+                    It.IsAny<object>()))
+                .Returns(_gbProductMap);
+
             //Arrange
             OrganizationCreate organizationCreate = new OrganizationCreate()
             {
@@ -433,6 +438,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void InsertOrganization_InvalidOrganizationType_BadRequest()
         {
+            _mockRepository
+                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
+                    It.IsAny<object>()))
+                .Returns(_gbProductMap);
+
             //Arrange
             OrganizationCreate organizationCreate = new OrganizationCreate()
             {
@@ -521,6 +531,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void InsertOrganization_InvalidAdminUser_BadRequest()
         {
+            _mockRepository
+                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
+                    It.IsAny<object>()))
+                .Returns(_gbProductMap);
+
             //Arrange
             OrganizationCreate organizationCreate = new OrganizationCreate()
             {
@@ -558,6 +573,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void InsertOrganization_CompanyExits_BadRequest()
         {
+            _mockRepository
+                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
+                    It.IsAny<object>()))
+                .Returns(_gbProductMap);
+
             //Arrange
             OrganizationCreate organizationCreate = new OrganizationCreate()
             {
@@ -602,6 +622,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void InsertOrganization_CustomerMasterBookIdExits_BadRequest()
         {
+            _mockRepository
+                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
+                    It.IsAny<object>()))
+                .Returns(_gbProductMap);
+
             //Arrange
             OrganizationCreate organizationCreate = new OrganizationCreate()
             {
@@ -646,6 +671,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void InsertOrganization_AdminExits_BadRequest()
         {
+            _mockRepository
+                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
+                    It.IsAny<object>()))
+                .Returns(_gbProductMap);
+
             //Arrange
             UserLoginOnly userLoginOnly = new UserLoginOnly()
             {
@@ -702,6 +732,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void InsertOrganization_ErrorInsertOrganization_BadRequest()
         {
+            _mockRepository
+                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
+                    It.IsAny<object>()))
+                .Returns(_gbProductMap);
+
             //Arrange
             UserLoginOnly userLoginOnly = new UserLoginOnly();
             userLoginOnly = null;
@@ -827,6 +862,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Returns(repositoryResponse);
 
             mockRepository
+              .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_CreateUsePrimaryPropertyMasterConfigurationSetting, It.IsAny<object>()))
+              .Returns(repositoryResponse);
+
+            mockRepository
                 .SetupSequence(m => m.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, It.IsAny<object>()))
                 .Returns(userLoginOnlyNull)
                 .Returns(userLoginOnly);
@@ -848,8 +887,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                     It.Is<object>(
                         d => TestIsRealPageId(d, _RealPageId))))
                 .Returns(_organizationList[0]);
-            
-            //return repository.GetMany<ProductUI>(StoredProcNameConstants.SP_ListProductsByOrganization, new { OrganizationRealPageId = organizationRealPageId }).ToList();
+
+            mockRepository
+                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
+                    It.IsAny<object>()))
+                .Returns(_gbProductMap);
 
             mockRepository
                 .Setup(m => m.GetMany<ProductUI>(StoredProcNameConstants.SP_ListProductsByOrganization,
@@ -874,6 +916,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 OrganizationTypeId = 6,
                 Name = "New Company",
                 OrganizationDomain = "Primary",
+                UsePrimaryProperties = 0,
                 Products = new List<string>()
                 {
                     "AB"
@@ -925,6 +968,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateOrganization, It.IsAny<object>()))
                 .Returns(repositoryResponse);
 
+            _mockRepository
+            .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_CreateUsePrimaryPropertyMasterConfigurationSetting, It.IsAny<object>()))
+            .Returns(repositoryResponse);
+
+            _mockRepository
+           .Setup(m => m.Execute<string>(StoredProcNameConstants.SP_GetOrganizationSettingValue, null))
+           .Returns("0");
+
             OrganizationController organizationController = new OrganizationController(
                 _mockRepository.Object
                 , _mockRepositoryResponse.Object
@@ -941,6 +992,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 OrganizationDomainId = 0,
                 OrganizationDomainName = "Primary",
                 Name = "New Company",
+                UsePrimaryProperties = 0
             };
             HttpResponseMessage response = organizationController.UpdateOrganization(organizationUpdate);
             OrganizationCreateResult orgResult = JsonConvert.DeserializeObject<OrganizationCreateResult>(response.Content.ReadAsStringAsync().Result);
@@ -1461,9 +1513,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 , _mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
-            ) {Request = new HttpRequestMessage(), Configuration = new HttpConfiguration()};
+            )
+            { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
 
-            List<ProductEnum> productList = new EditableList<ProductEnum>();
+            List<int> productList = new EditableList<int>();
             List<string> blueBookProductList = new List<string>();
 
             // verify all blue book enums match a product
@@ -1472,20 +1525,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 blueBookProductList.Add(pi.GetValue(pi).ToString());
             }
 
-            List<string> invalidProductList = ManageOrganization.ParseProduct(blueBookProductList, productList);
-            Assert.True(invalidProductList.Count == 0 && productList.Count == blueBookProductList.Count);
+            foreach (var productCode in blueBookProductList)
+            {
+                productList.Add((int)ProductEnumHelper.GetProductEnumByProductCode(productCode));
+            }
 
             // list of products to exclude from Bluebook to product integration
-            var ignoreProductList = new List<ProductEnum>()
+            var ignoreProductList = new List<int>()
             {
-                ProductEnum.UnifiedUI, ProductEnum.SelfProvisioningPortal, ProductEnum.SalesForce, ProductEnum.SettingsManagement
+                (int)ProductEnum.UnifiedUI, (int)ProductEnum.SelfProvisioningPortal, (int)ProductEnum.SalesForce, (int)ProductEnum.SettingsManagement
             };
 
             foreach (var pr in typeof(ProductEnum).GetFields())
             {
-                if ((!pr.Name.Equals("value__", StringComparison.OrdinalIgnoreCase))&& (!pr.Name.Equals("UnifiedSettings", StringComparison.OrdinalIgnoreCase)))
+                if ((!pr.Name.Equals("value__", StringComparison.OrdinalIgnoreCase)) && (!pr.Name.Equals("UnifiedSettings", StringComparison.OrdinalIgnoreCase)))
                 {
-                    ProductEnum current = (ProductEnum) Enum.Parse(typeof(ProductEnum), pr.Name);
+                    int current = (int)Enum.Parse(typeof(ProductEnum), pr.Name);
                     if (!ignoreProductList.Contains(current))
                     {
                         // if this fails, then you didn't add the product to the BlueBookProductConstants.cs file!

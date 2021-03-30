@@ -183,7 +183,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         
                     }
 
-					List<ProductProperty> propertyList = GetAssignedPropertyForPersona(userPersonaId, ProductEnum.UnifiedAmenities);
+					List<ProductProperty> propertyList = GetAssignedPropertyForPersona(userPersonaId, (int)ProductEnum.UnifiedAmenities);
 					List<string> assignedPropertyList = userAssignProductPropertyRole.PropertyList;
 
 					List<string> unassignedProperties = new List<string>();
@@ -548,7 +548,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		private ListResponse MergeProductPropertiesWithGreenbook(IList<ProductProperty> blueBookPropertyList, long userPersonaId, bool assignedOnly)
 		{
 			// merge the given user details with the list
-			List<ProductProperty> propertyList = GetAssignedPropertyForPersona(userPersonaId, ProductEnum.UnifiedAmenities);
+			List<ProductProperty> propertyList = GetAssignedPropertyForPersona(userPersonaId, (int)ProductEnum.UnifiedAmenities);
 
 			foreach (var property in propertyList)
 			{
@@ -601,7 +601,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns></returns>
         private RepositoryResponse InsertAssignedPropertyInstanceData(long userPersonaId, ProductEnum productId, long propertyInstanceId)
         {
-            return InsertAssignedUserPropertyInstanceData(userPersonaId, ProductEnum.UnifiedAmenities, propertyInstanceId);
+            return InsertAssignedUserPropertyInstanceData(userPersonaId, (int)ProductEnum.UnifiedAmenities, propertyInstanceId);
         }
 
 		/// <summary>
@@ -625,7 +625,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns></returns>
         private RepositoryResponse DeleteAssignedPropertyInstanceData(long userPersonaId, ProductEnum productId, long propertyInstanceId)
         {
-            return DeleteAssignedUserPropertyInstanceData(userPersonaId, ProductEnum.UnifiedAmenities, propertyInstanceId);
+            return DeleteAssignedUserPropertyInstanceData(userPersonaId, (int)ProductEnum.UnifiedAmenities, propertyInstanceId);
         }
 
         #endregion
