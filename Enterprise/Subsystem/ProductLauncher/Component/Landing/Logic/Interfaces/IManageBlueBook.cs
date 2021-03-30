@@ -143,9 +143,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// Get properties per product center
         /// </summary>
         /// <param name="companyRealPageId"></param>
-        /// <param name="product"></param>
+        /// <param name="productId"></param>
         /// <returns></returns>
-        List<Guid> GetPropertiesPerProductCenter(string companyRealPageId, ProductEnum product);
+        List<Guid> GetPropertiesPerProductCenter(string companyRealPageId, int productId);
 
         /// <summary>
         /// Get customer property details
