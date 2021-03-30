@@ -296,6 +296,7 @@
     <Compile Include="IdentityConfig\UserLoginPersona.cs" />
     <Compile Include="Landing\ApiError.cs" />
     <Compile Include="Landing\EmailModel.cs" />
+    <Compile Include="Landing\ISettingColumn.cs" />
     <Compile Include="Landing\ISettingResponse.cs" />
     <Compile Include="Landing\ISettingRow.cs" />
     <Compile Include="Landing\ISettingTable.cs" />
@@ -353,6 +354,7 @@
     <Compile Include="IdentityConfig\TelecommunicationNumber.cs" />
     <Compile Include="BlackBook\CompanyMap.cs" />
     <Compile Include="Landing\SendGridEmail.cs" />
+    <Compile Include="Landing\SettingColumn.cs" />
     <Compile Include="Landing\SettingResponse.cs" />
     <Compile Include="Landing\SettingRow.cs" />
     <Compile Include="Landing\SettingTable.cs" />

@@ -11,13 +11,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 {
     public interface IManageUnifiedSettings
     {
-        /// <summary>
-        /// Get Company Settings
-        /// </summary>
-        /// <param name="category">Setting Category type</param>
-        /// <param name="partyId">Company Id</param>
-        /// <returns>Security Settings List objects (KeyValue pairs)</returns>
-        IList<Setting> GetUnifiedSettings(string category, long partyId);
+		/// <summary>
+		/// Get Company Settings
+		/// </summary>
+		/// <param name="category">Setting Category type</param>
+		/// <param name="partyId">Company Id</param>
+		/// <returns>Security Settings List objects (KeyValue pairs)</returns>
+		ISettingResponse GetUnifiedSettings(string category, long partyId);
 
         IList<Setting> GetUnifiedSettingsCached(string category, long partyId);
 

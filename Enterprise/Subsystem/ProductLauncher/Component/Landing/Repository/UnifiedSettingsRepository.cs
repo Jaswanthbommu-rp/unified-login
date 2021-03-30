@@ -46,6 +46,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		}
 
 		/// <summary>
+		/// Get Unified Settings custom fields
+		/// </summary>
+		/// <param name="PartyId">partyid</param>
+		/// <returns> custom field List objects</returns>
+		public IList<CustomField> GetUnifiedSettingsCustomFields(long PartyId)
+		{
+			dynamic param = new
+			{
+				PartyId = PartyId
+			};
+
+			using (var repository = GetRepository())
+			{
+				return repository.GetMany<CustomField>(StoredProcNameConstants.SP_GetFieldsByPartyId, param);
+			}
+		}
+
+		/// <summary>
 		/// Update  Settings 
 		/// </summary>
 		/// <param name="settings"> Settings object of the parameter values</param>

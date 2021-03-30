@@ -293,7 +293,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			datafilter.Pages.StartRow = 1;
 			IDictionary<object, object> globals = new Dictionary<object, object>();
 			globals.Add(BaseType.RequestParameter, datafilter);
-			long booksCustomerMasterId = 5094;
+			long booksCustomerMasterId = 350;
 			int bookMasterTypeId = (int)BookMasterType.CustomerMasterId;
 			Type type = typeof(IList<CustomField>);
 
@@ -327,7 +327,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			//Act
 			int NumberOfProperties = type.GetProperties().Length;
 			_manageCustomFields = new ManageCustomFields(_mockCustomFieldsRepository.Object, _userUserClaim);
-			IList<CustomField> customFieldsList = _manageCustomFields.GetCustomField(globals, bookMasterTypeId);
+			IList<CustomField> customFieldsList = _manageCustomFields.GetCustomField(globals, booksCustomerMasterId);
 
 			//Assert
 			Assert.True(

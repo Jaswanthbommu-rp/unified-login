@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Runtime.Caching;
 using System.Text;
 
@@ -86,25 +87,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             string cacheKey = $"GetUnifiedSettingsCached{category}_{partyId}";
             var unifiedSettings = rpCache.GetFromCache<IList<Setting>>(cacheKey, 30, () =>
             {
-                return GetUnifiedSettings(category, partyId);
+                return GetUnifiedSettingsData(category, partyId);
             });
             return unifiedSettings;
         }
 
 
-        public ISettingResponse GetSettings(string category, long partyId)
+        public ISettingResponse GetUnifiedSettings(string category, long partyId)
         {
             ISettingResponse settingResponse = new SettingResponse();
-        }
-            /// <summary>
-            /// Get Company Settings
-            /// </summary>
-            /// <param name="category">Setting Category type</param>
-            /// <param name="partyId">Company Id</param>
-            /// <returns>Security Settings List objects (KeyValue pairs)</returns>
-            public IList<Setting> GetUnifiedSettings(string category, long partyId)
-        {
-            IList<Setting> unfiedSettingList = new List<Setting>();
             Guid correlationId = Guid.NewGuid();
             Dictionary<string, object> logData = new Dictionary<string, object>
             {
@@ -116,10 +107,46 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 throw new Exception("Missing Organization Id.");
             }
-
             try
             {
-                unfiedSettingList = _unifiedSettingsRepository.GetUnifiedSettings(partyId, category);
+                switch (category.ToUpper())
+                {
+                    case "SECURITY":
+                        {
+                            var settings = GetUnifiedSettingsData(category, partyId);
+
+                            if (settings != null && settings.Count > 0)
+                            {
+                                if (settingResponse.Keys == null)
+                                {
+                                    settingResponse.Keys = new List<ISetting>();
+                                }
+
+                                settingResponse.Keys.AddRange(settings);
+                            }
+
+                            break;
+                        }
+                    case "CUSTOMFIELDS":
+                        {
+                            List<ISettingRow> rows = GetTableSettings(partyId, category);
+                            ISettingTable tableSetting = new SettingTable()
+                            {
+                                name = category,
+                                editable = true,
+                                hidden = false,                                
+                                Value = rows
+                            };
+
+                            if (settingResponse.Tables == null)
+                            {
+                                settingResponse.Tables = new List<ISettingTable>();
+                            }
+
+                            settingResponse.Tables.Add(tableSetting);
+                            break;
+					    }
+                }
             }
             catch (Exception exception)
             {
@@ -132,12 +159,55 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             logData = new Dictionary<string, object>
             {
-                { "Get UnifiedSettings: Data", unfiedSettingList }
+                { "Get UnifiedSettings: Data", settingResponse }
             };
             WriteToLog(LogEventLevel.Debug, "unfiedSettingList: End", correlationId, logData, null);
 
-            return unfiedSettingList;
+            return settingResponse;
+
         }
+            /// <summary>
+            /// Get Company Settings
+            /// </summary>
+            /// <param name="category">Setting Category type</param>
+            /// <param name="partyId">Company Id</param>
+            /// <returns>Security Settings List objects (KeyValue pairs)</returns>
+        //    public IList<Setting> GetUnifiedSettings(string category, long partyId)
+        //{
+        //    IList<Setting> unfiedSettingList = new List<Setting>();
+        //    Guid correlationId = Guid.NewGuid();
+        //    Dictionary<string, object> logData = new Dictionary<string, object>
+        //    {
+        //        { "Get UnifiedSettings", $"Organization Id: {partyId}, Category: {category}" }
+        //    };
+        //    WriteToLog(LogEventLevel.Debug, "GetUnifiedSettings: Begin", correlationId, logData, null);
+
+        //    if (partyId == 0)
+        //    {
+        //        throw new Exception("Missing Organization Id.");
+        //    }
+
+        //    try
+        //    {
+        //        unfiedSettingList = _unifiedSettingsRepository.GetUnifiedSettings(partyId, category);
+        //    }
+        //    catch (Exception exception)
+        //    {
+        //        logData = new Dictionary<string, object>
+        //        {
+        //            { "Get Unified Settings: Data", "Exception" }
+        //        };
+        //        WriteToLog(LogEventLevel.Error, "unfiedSettingList: Exception", correlationId, logData, exception);
+        //    }
+
+        //    logData = new Dictionary<string, object>
+        //    {
+        //        { "Get UnifiedSettings: Data", unfiedSettingList }
+        //    };
+        //    WriteToLog(LogEventLevel.Debug, "unfiedSettingList: End", correlationId, logData, null);
+
+        //    return unfiedSettingList;
+        //}
 
         /// <summary>
         /// Update an existing unified Settings 
@@ -362,6 +432,80 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             //useUPFMId = GetBooleanProductSettings("BooksUseUPFMId");
             //useTranslatev2 = GetBooleanProductSettings("BooksUseTranslatev2");
             _httpClient.BaseAddress = new Uri(bbUri);
+        }
+
+        private List<ISettingRow> GetTableSettings (long partyId, string category)
+        {
+            List<ISettingRow> rows = new List<ISettingRow>();
+            RepositoryResponse repositoryResponse = new RepositoryResponse();
+
+            var customFields = _unifiedSettingsRepository.GetUnifiedSettingsCustomFields(partyId);
+
+            foreach (var field in customFields)
+            {
+                ISettingRow row = CreateSettingRow(field);
+                rows.Add(row);
+            }
+
+            return rows;
+        }
+
+        #region "CreateSettingRow"
+        private ISettingRow CreateSettingRow(CustomField field)
+        {
+            ISettingRow settingRow = new SettingRow()
+            {
+                Editable = true,
+                Deletable = true,
+                Selectable = true
+            };
+
+            settingRow.Columns = new List<Setting>();
+
+            List<ISettingColumn> settingColumns = new List<ISettingColumn>();
+
+            Type classType = field.GetType();
+            PropertyInfo[] properties = classType.GetProperties();
+
+            foreach (PropertyInfo pi in field.GetType().GetProperties())
+            {
+                string columnName = pi.Name;
+                object columnValue = pi.GetValue(field, null)?.ToString();
+
+                ISettingColumn settingColumn = new SettingColumn()
+                {
+                    Name = columnName,
+                    Value = columnValue == null ? string.Empty : columnValue.ToString()
+                };
+                settingColumns.Add(settingColumn);
+            }
+
+
+            foreach (SettingColumn settingColumn in settingColumns)
+            {
+                string columnName = settingColumn.Name;
+                object columnValue = settingColumn.Value;
+
+                Setting columnSetting = new Setting()
+                {
+                    Name = columnName,
+                    Value = columnValue.ToString(),
+                    Editable = true
+                };
+
+                settingRow.Columns.Add(columnSetting);
+            }            
+
+            return settingRow;
+        }
+        #endregion "CreateSettingRow"
+        private IList<Setting> GetUnifiedSettingsData(string category, long partyId)
+        {
+            IList<Setting> unfiedSettingList = new List<Setting>();
+           
+            unfiedSettingList = _unifiedSettingsRepository.GetUnifiedSettings(partyId, category);           
+
+            return unfiedSettingList;
         }
         #endregion
     }
