@@ -1172,8 +1172,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             output.pagingSummary = pagingSummary;
             return Request.CreateResponse(HttpStatusCode.OK, output);
         }
-
-
         #endregion
 
         #region AuditCompanyProperties
