@@ -17,7 +17,7 @@ BEGIN
 	UNION
 	SELECT	iat.[ActivityCode] AS 'Name',
 				CASE
-					WHEN iat.ActivityCode = 'Login' THEN iac.MaxActivityAttemptCount
+					WHEN iat.ActivityCode = 'Login' THEN CONVERT(VARCHAR(10), iac.MaxActivityAttemptCount)
 					WHEN iat.ActivityCode = 'NewUserRegistration' THEN iac.ActivityTokenExpirationMinutes / 1440
 					ELSE iac.ActivityTokenExpirationMinutes
 				END AS 'Value',

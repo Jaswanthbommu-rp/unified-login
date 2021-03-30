@@ -166,48 +166,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return settingResponse;
 
         }
-            /// <summary>
-            /// Get Company Settings
-            /// </summary>
-            /// <param name="category">Setting Category type</param>
-            /// <param name="partyId">Company Id</param>
-            /// <returns>Security Settings List objects (KeyValue pairs)</returns>
-        //    public IList<Setting> GetUnifiedSettings(string category, long partyId)
-        //{
-        //    IList<Setting> unfiedSettingList = new List<Setting>();
-        //    Guid correlationId = Guid.NewGuid();
-        //    Dictionary<string, object> logData = new Dictionary<string, object>
-        //    {
-        //        { "Get UnifiedSettings", $"Organization Id: {partyId}, Category: {category}" }
-        //    };
-        //    WriteToLog(LogEventLevel.Debug, "GetUnifiedSettings: Begin", correlationId, logData, null);
-
-        //    if (partyId == 0)
-        //    {
-        //        throw new Exception("Missing Organization Id.");
-        //    }
-
-        //    try
-        //    {
-        //        unfiedSettingList = _unifiedSettingsRepository.GetUnifiedSettings(partyId, category);
-        //    }
-        //    catch (Exception exception)
-        //    {
-        //        logData = new Dictionary<string, object>
-        //        {
-        //            { "Get Unified Settings: Data", "Exception" }
-        //        };
-        //        WriteToLog(LogEventLevel.Error, "unfiedSettingList: Exception", correlationId, logData, exception);
-        //    }
-
-        //    logData = new Dictionary<string, object>
-        //    {
-        //        { "Get UnifiedSettings: Data", unfiedSettingList }
-        //    };
-        //    WriteToLog(LogEventLevel.Debug, "unfiedSettingList: End", correlationId, logData, null);
-
-        //    return unfiedSettingList;
-        //}
+          
 
         public IList<Picklist> GetSettingsPickList(string category)
         {
