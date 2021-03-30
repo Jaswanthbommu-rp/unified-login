@@ -295,6 +295,7 @@
     <Compile Include="IdentityConfig\UserLoginOrganization.cs" />
     <Compile Include="IdentityConfig\UserLoginPersona.cs" />
     <Compile Include="Landing\ApiError.cs" />
+    <Compile Include="Landing\SettingPickList.cs" />
     <Compile Include="Landing\EmailModel.cs" />
     <Compile Include="Landing\ISettingColumn.cs" />
     <Compile Include="Landing\ISettingResponse.cs" />
@@ -358,6 +359,7 @@
     <Compile Include="Landing\SettingResponse.cs" />
     <Compile Include="Landing\SettingRow.cs" />
     <Compile Include="Landing\SettingTable.cs" />
+    <Compile Include="Landing\Picklist.cs" />
     <Compile Include="Landing\UnifiedSettingPropertyInstance.cs" />
     <Compile Include="Landing\Setting.cs" />
     <Compile Include="Landing\SecuritySettings.cs" />

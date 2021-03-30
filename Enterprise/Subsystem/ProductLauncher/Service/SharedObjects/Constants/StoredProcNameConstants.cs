@@ -401,6 +401,7 @@
         public const string SP_GetFieldsValuesByUserLoginPersonaId = "CustomField.GetFieldsValuesByUserLoginPersonaId";
         public const string SP_AddUpdateFieldValue = "CustomField.AddUpdateFieldValue";
         public const string SP_GetFieldType = "CustomField.GetFieldType";
+        public const string SP_GetUnifiedSettingPicklist = "Enterprise.GetULPickListByCategory";
         public const string SP_GetFieldsByPartyId = "CustomField.GetFieldsByPartyId";
 
         //EmployeeId

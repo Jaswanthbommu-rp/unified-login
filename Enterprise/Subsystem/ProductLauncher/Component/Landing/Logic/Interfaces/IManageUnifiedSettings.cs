@@ -19,6 +19,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <returns>Security Settings List objects (KeyValue pairs)</returns>
 		ISettingResponse GetUnifiedSettings(string category, long partyId);
 
+		IList<Picklist> GetSettingsPickList(string category);
+
         IList<Setting> GetUnifiedSettingsCached(string category, long partyId);
 
 		/// <summary>
