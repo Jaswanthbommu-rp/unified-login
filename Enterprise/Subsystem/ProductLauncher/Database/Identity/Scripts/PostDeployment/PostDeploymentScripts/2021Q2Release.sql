@@ -598,6 +598,8 @@ Go
 
 
 --Add Suggest Properties button
+BEGIN TRAN
+
 IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'SuggestPrimaryProperties')
 BEGIN
 	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
