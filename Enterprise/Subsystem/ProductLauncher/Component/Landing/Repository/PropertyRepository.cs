@@ -44,14 +44,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		/// <param name="userPersonaId">Persona ID</param>   
 		/// <param name="productId">Product ID</param>   
 		/// <returns>List of Properties/Role assigned to Persona</returns>
-		public List<ProductProperty> ListPropertiesByPersona(long userPersonaId, ProductEnum productId)
+		public List<ProductProperty> ListPropertiesByPersona(long userPersonaId, int productId)
 		{
 			using (var repository = GetRepository())
 			{
 				dynamic param = new
 				{
 					PersonaID = userPersonaId,
-					ProductID = (int)productId
+					ProductID = productId
 				};
 
 				List<ProductProperty> propList = new List<ProductProperty>();
@@ -185,7 +185,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="propertyInstanceId">Property Instance ID</param>      
         /// <param name="remove">isDeleted</param>   
         /// <returns>List of Roles assigned to Persona</returns>
-        public RepositoryResponse InsertRemoveAssignedPropertyInstanceToUser(long userPersonaId, ProductEnum productId, long propertyInstanceId, int remove = 0)
+        public RepositoryResponse InsertRemoveAssignedPropertyInstanceToUser(long userPersonaId, int productId, long propertyInstanceId, int remove = 0)
         {
             using (var repository = GetRepository())
             {
@@ -193,7 +193,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 dynamic param = new
                 {
                     PersonaID = userPersonaId,
-                    ProductID = (int)productId,
+                    ProductID = productId,
                     PropertyInstanceID = propertyInstanceId,
                     Deleted = remove
                 };

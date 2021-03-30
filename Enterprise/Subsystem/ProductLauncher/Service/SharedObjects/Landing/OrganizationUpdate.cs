@@ -63,5 +63,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		/// IsActive
 		/// </summary>		
 		public int IsActive { get; set; } = 1;
+		/// <summary>
+		/// Use primary properties
+		/// </summary>		
+		public int UsePrimaryProperties { get; set; } = 0;
 	}
 }
