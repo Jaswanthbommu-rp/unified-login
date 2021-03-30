@@ -333,9 +333,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
             }
-			logger = logger.ForContext("ProductModule", this.GetType());
+            logger = logger.ForContext("ProductModule", this.GetType());
             logger = logger.ForContext("CorrelationId", correlationId.ToString());
-            logger.Write(logType, exception, message );
+            logger.Write(logType, exception, message);
         }
 
         #endregion

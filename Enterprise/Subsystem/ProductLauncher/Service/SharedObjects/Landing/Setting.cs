@@ -6,6 +6,16 @@
 	public class Setting : ISetting
 	{
 		/// <summary>
+		/// Setting constructor
+		/// </summary>
+		public Setting()
+		{
+			Name = string.Empty;
+			Value = null;
+			Editable = true;
+			Hidden = false;			
+		}
+		/// <summary>
 		/// SecuritySetting Name
 		/// </summary>
 		public string Name { get; set; }
