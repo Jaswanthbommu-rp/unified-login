@@ -342,7 +342,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                 {
                                     if (existingProductList.All(p => p.ProductId != productId))
                                     {
-                                        var addresponse = _manageOrganizationProduct.InsertUpdateOrganizationProduct(partyId: org.PartyId, product: (ProductEnum) productId, configurationId: null, fromDate: null, thruDate: null);
+                                        var addresponse = _manageOrganizationProduct.InsertUpdateOrganizationProduct(partyId: org.PartyId, product: productId, configurationId: null, fromDate: null, thruDate: null);
                                     }
                                 }
                             }
@@ -584,20 +584,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             var emailAdditional = domain.Equals("Primary", StringComparison.OrdinalIgnoreCase) ? "" : domain.ToLower();
             organization.AdminUser.Email = $"{customerCompany.CustomerCompanyId}{emailAdditional}admin@realpage.com";
 
-            var addProductList = new List<ProductEnum>();
-
-            try
-            {
-                // get a list of products passed by the event
-                foreach (var productId in productIdList)
-                {
-                    addProductList.Add((ProductEnum) productId);
-                }
-            }
-            catch (Exception)
-            {
-                throw new Exception("Issue parsing products");
-            }
+            var addProductList = new List<int>(productIdList);
 
             var result = _manageOrganization.CreateOrganization(organization, addProductList, processBlueBookMessage);
 

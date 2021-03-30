@@ -150,7 +150,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         {
             ListResponse response = new ListResponse();
 
-            List<ProductProperty> productPropertyList = GetAssignedPropertyForPersona(userPersonaId, ProductEnum.UnifiedPlatform);
+            List<ProductProperty> productPropertyList = GetAssignedPropertyForPersona(userPersonaId, (int)ProductEnum.UnifiedPlatform);
 
             if (productPropertyList != null)
             {
@@ -1927,7 +1927,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private ListResponse MergeProductPropertiesWithGreenbook(IList<ProductProperty> blueBookPropertyList, long userPersonaId, bool assignedOnly)
         {
             // merge the given user details with the list
-            List<ProductProperty> propertyList = GetAssignedPropertyForPersona(userPersonaId, ProductEnum.UnifiedPlatform);
+            List<ProductProperty> propertyList = GetAssignedPropertyForPersona(userPersonaId, (int)ProductEnum.UnifiedPlatform);
             var propertyOption = new Dictionary<string, bool>();
             propertyOption.Add("allProperties", false); // Single Property
 

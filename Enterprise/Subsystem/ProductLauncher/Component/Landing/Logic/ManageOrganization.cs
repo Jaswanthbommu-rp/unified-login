@@ -41,7 +41,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private IPropertyRepository _propertyRepository;
         private IManageBlueBook _manageBlueBook;
         private IManageProductPanel _manageProductPanel;
-        private IManageUnifiedSettings _manageUnifiedSettings;       
+        private IManageUnifiedSettings _manageUnifiedSettings;
+        private IConfigurationSettingRepository _configurationSettingRepository ;
 
         private DefaultUserClaim _defaultUserClaim;
         #endregion
@@ -64,6 +65,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _manageBlueBook = new ManageBlueBook(_defaultUserClaim, _productInternalSettingRepository, messageHandler);
             _manageProductPanel = new ManageProductPanel(_defaultUserClaim, repository, _manageBlueBook, messageHandler, null);
             _propertyRepository = new PropertyRepository(repository);
+            _configurationSettingRepository = new ConfigurationSettingRepository(repository);
             _manageUnifiedSettings = new ManageUnifiedSettings(repository, userClaim, messageHandler);
         }
 
@@ -83,6 +85,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _manageBlueBook = new ManageBlueBook(_defaultUserClaim, _productInternalSettingRepository, messageHandler);
             _manageProductPanel = new ManageProductPanel(_defaultUserClaim, repository, _manageBlueBook,messageHandler, manageProductOneSite);
             _propertyRepository = new PropertyRepository(repository);
+            _configurationSettingRepository = new ConfigurationSettingRepository(repository);
             _manageUnifiedSettings = new ManageUnifiedSettings(repository, userClaim, messageHandler);
         }
 
@@ -99,6 +102,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _productInternalSettingRepository = new ProductInternalSettingRepository();
             _productRepository = new ProductRepository();
             _propertyRepository = new PropertyRepository();
+            _configurationSettingRepository = new ConfigurationSettingRepository();
             _manageBlueBook = new ManageBlueBook(userClaim);
             _manageProductPanel = new ManageProductPanel(userClaim);
             _defaultUserClaim = userClaim;
@@ -109,10 +113,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         #region Public Organization methods
 
-        public ObjectOutput<OrganizationCreateResult, IErrorData> CreateOrganization(OrganizationCreate organization, List<ProductEnum> addProductList, bool processBlueBookMessage = false)
+        public ObjectOutput<OrganizationCreateResult, IErrorData> CreateOrganization(OrganizationCreate organization, List<int> addProductList, bool processBlueBookMessage = false)
         {
             var repositoryResponse = new RepositoryResponse();
             var outputResult = new ObjectOutput<OrganizationCreateResult, IErrorData>() {Status = new Status<IErrorData>() {Success = false}};
+           
 
             if (organization.BooksCompanyId == organization.BooksCustomerMasterId)
             {
@@ -186,8 +191,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             org = GetOrganization(organizationRealPageId);
 
-            //check the guid
-
+            //create/update use promaryproperty setting
+            createUsePrimaryPropertyMasterConfigurationSetting(org.PartyId, organization.UsePrimaryProperties);
+            org.UsePrimaryProperties = organization.UsePrimaryProperties;
 
             // add the given products to the new company
             var productResponse = AddProductsToOrganization(addProductList, org.PartyId, organization.OrganizationTypeId);
@@ -401,6 +407,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return _organizationRepository.UpdateOrganization(organization);
         }
 
+        public void UpdateOrganizationUsePrimaryPropertySetting(Organization organization)
+        {
+            if (organization == null)
+            {
+                throw new ArgumentNullException(nameof(organization), "Null Organization.");
+            }
+
+            if (organization.RealPageId == Guid.Empty)
+            {
+                throw new Exception("Invalid parameter realPageId.");
+            }
+
+            //create/update use primaryproperty setting
+            createUsePrimaryPropertyMasterConfigurationSetting(organization.PartyId, organization.UsePrimaryProperties);           
+        }
+
         /// <summary>
         /// Get Organization details
         /// </summary>
@@ -415,6 +437,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
             Organization organization = _organizationRepository.GetOrganization(realPageId, organizationPartyId);
             return organization;
+        }
+
+        /// <summary>
+        /// Get Organization setting value
+        /// </summary>
+        /// <param name="settingName">settingName</param>
+        /// <param name="organizationPartyId">Optional organization PartyId</param>
+        /// <returns>setting value</returns>
+        public string GetOrganizationSettingValue(long organizationPartyId , string settingName)
+        {
+            if (settingName == string.Empty )
+            {
+                throw new Exception("Invalid parameter: Setting name is required.");
+            }
+
+            if (organizationPartyId == null || organizationPartyId == 0)
+            {
+                throw new Exception("Invalid parameter: Organization partyId is required.");
+            }
+
+            return _organizationRepository.GetOrganizationSettingValue(settingName, organizationPartyId);           
         }
 
         /// <summary>
@@ -493,19 +536,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         #endregion
 
         /// <summary>
-        /// Used to parse the list of product codes and convert them into ProductEnum
+        /// Used to parse the list of valid product codes
         /// </summary>
         /// <param name="productCode"></param>
         /// <param name="addProductList"></param>
         /// <returns></returns>
-        public static List<string> ParseProduct(List<string> productCode, List<ProductEnum> addProductList)
+        public List<string> ParseProduct(List<string> productCode, List<int> addProductList)
         {
+            var productList = _productRepository.GetAllProducts();
+
             List<string> invalidProductList = new List<string>();
             if (productCode != null)
             {
                 foreach (string product in productCode)
                 {
-                    bool foundProduct = AddProductToList(product, addProductList);
+                    bool foundProduct = AddProductToList(productList, product, addProductList);
                     if (!foundProduct)
                     {
                         invalidProductList.Add(product);
@@ -521,16 +566,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// </summary>
         /// <param name="product"></param>
         /// <param name="addProductList"></param>
+        /// <param name="productList"></param>
         /// <returns></returns>
-        private static bool AddProductToList(string product, List<ProductEnum> addProductList)
+        private bool AddProductToList(IList<GbProductMap> productList, string product, List<int> addProductList)
         {
             bool foundProduct = false;
             try
             {
-                ProductEnum productEnum = ProductEnumHelper.GetProductEnumByProductCode(product);
+                var lookupValue = productList.FirstOrDefault(a => a.BooksProductCode?.Equals(product, StringComparison.OrdinalIgnoreCase) == true);
 
-                foundProduct = true;
-                addProductList.Add(productEnum);
+                if(lookupValue != null)
+                {
+                    foundProduct = true;
+                    addProductList.Add(lookupValue.ProductId);
+                }
             }
             catch (Exception ex)
             {
@@ -546,7 +595,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		/// <param name="partyId">Organization PartyId</param>
 		/// <param name="organizationTypeId">Organization Type</param>
 		/// <returns>IRepositoryResponse</returns>
-		private IRepositoryResponse AddProductsToOrganization(List<ProductEnum> addProductList, long partyId, int organizationTypeId)
+		private IRepositoryResponse AddProductsToOrganization(List<int> addProductList, long partyId, int organizationTypeId)
 		{
             IRepositoryResponse response = new RepositoryResponse();
             ManageOrganizationProduct manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository);
@@ -554,40 +603,40 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			IList<OrganizationType> organizationTypeList = ListOrganizationType();
 			string organizationTypeName = organizationTypeList.ToList().FirstOrDefault(o => o.OrganizationTypeId == organizationTypeId).Name;
 
-			if (!addProductList.Contains(ProductEnum.UnifiedPlatform))
+			if (!addProductList.Contains((int)ProductEnum.UnifiedPlatform))
 			{
 				// add unified login product to every new org
-				addProductList.Add(ProductEnum.UnifiedPlatform);
+				addProductList.Add((int)ProductEnum.UnifiedPlatform);
 			}
-			if (!addProductList.Contains(ProductEnum.ProductUpdates))
+			if (!addProductList.Contains((int)ProductEnum.ProductUpdates))
 			{
 				// add product updates to every new org
-				addProductList.Add(ProductEnum.ProductUpdates);
+				addProductList.Add((int)ProductEnum.ProductUpdates);
 			}
-			if (!addProductList.Contains(ProductEnum.ClientPortal))
+			if (!addProductList.Contains((int)ProductEnum.ClientPortal))
 			{
 				// add client portal product to every new org
-				addProductList.Add(ProductEnum.ClientPortal);
+				addProductList.Add((int)ProductEnum.ClientPortal);
 			}
-			if (!addProductList.Contains(ProductEnum.MigrationTool))
+			if (!addProductList.Contains((int)ProductEnum.MigrationTool))
 			{
 				// add migration tool product to every new org
-				addProductList.Add(ProductEnum.MigrationTool);
+				addProductList.Add((int)ProductEnum.MigrationTool);
 			}
 
 			//Do not add products ClientPortal and MigrationTool to Company if the company type is Vendor.
 			if (organizationTypeName.Equals("Vendor", StringComparison.OrdinalIgnoreCase))
 			{
-				addProductList.Remove(ProductEnum.ClientPortal);
-				addProductList.Remove(ProductEnum.MigrationTool);
-				if (!addProductList.Contains(ProductEnum.VendorMarketplace))
+				addProductList.Remove((int)ProductEnum.ClientPortal);
+				addProductList.Remove((int)ProductEnum.MigrationTool);
+				if (!addProductList.Contains((int)ProductEnum.VendorMarketplace))
 				{
 					// add VendorMarketplace product to every new org of type Vendor
-					addProductList.Add(ProductEnum.VendorMarketplace);
+					addProductList.Add((int)ProductEnum.VendorMarketplace);
 				}
 			}
 
-			foreach (ProductEnum product in addProductList)
+			foreach (int product in addProductList)
 			{
 				response = manageOrganizationProduct.InsertUpdateOrganizationProduct(partyId: partyId, product: product, configurationId: null, fromDate: null, thruDate: null);
 				if (!string.IsNullOrEmpty(response.ErrorMessage))
@@ -812,7 +861,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				}
 			}
 			CustomerProperty propertyDetails = _manageBlueBook.GetCustomerPropertyDetails(customerPropertyId);
-            List<BooksPropertyInstance> _booksPropertyInstances = _manageBlueBook.GetPropertyInstanceByCustomerPropertyId(customerPropertyId);
+            List<BooksPropertyInstance> _booksPropertyInstances = _manageBlueBook.GetUPFMPropertyInstancesByCustomerPropertyId(customerPropertyId);
             List<PropertySetup> _listPropertySetup = new List<PropertySetup>();
             if (_booksPropertyInstances != null)
             {
@@ -1085,12 +1134,64 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     pa.UPFMName = upfmProperty.Name;
                     pa.Domain = upfmProperty.Domain;
                     pa.ContractedName = upfmProperty.ContractedName;
+                    pa.UPFMInstanceId = upfmProperty.InstanceId.ToString();
                 }
             }
 
             propertyAuditResult.Add(pa);
         }
 
+        #endregion
+
+        #region Get Product status details
+        /// <summary>
+        /// Product status details
+        /// </summary>
+        /// <param name="propertyInstanceSourceId">productInstanceId</param>
+        /// <param name="source">source</param>
+        /// <returns></returns>
+        public ProductPropertyDetails GetSourceProductDetails(string propertyInstanceSourceId, string source)
+        {           
+            var booksProductSource = _manageBlueBook.GetPropertyDetailsByPropertyInstanceIdAndSource(propertyInstanceSourceId, source);
+            if (booksProductSource != null && booksProductSource.attributes != null)
+            {
+                var customerProp = booksProductSource.attributes?.customerPropertyMap?
+                                        .Where(p => p.propertyInstanceSourceId == booksProductSource.attributes.propertyInstanceSourceId)?.FirstOrDefault();
+                ProductStatusDetail productStatus = new ProductStatusDetail
+                {
+                    IsActive = booksProductSource.attributes.isActive,
+                    ProductInstanceId = booksProductSource.attributes.propertyInstanceSourceId,
+                    Domain = booksProductSource.attributes.domain,
+                    CustomerPropertyId = customerProp?.customerPropertyId.ToString(),
+                    ContractedName = customerProp?.customerProperty?.FirstOrDefault().propertyName.ToString()
+                };
+                List<PropertySetup> _listPropertySetup = new List<PropertySetup>();
+                if (customerProp != null)
+                {
+                    List<BooksPropertyInstance> _booksPropertyInstances = _manageBlueBook.GetUPFMPropertyInstancesByCustomerPropertyId(customerProp?.customerPropertyId.ToString());
+                    if (_booksPropertyInstances != null)
+                    {
+                        foreach (var booksProperty in _booksPropertyInstances)
+                        {
+                            PropertySetup _property = new PropertySetup
+                            {
+                                Name = booksProperty?.attributes.propertyName,
+                                Domain = booksProperty?.attributes.domain,
+                                IsActive = booksProperty?.attributes.isActive,
+                                InstanceId = string.IsNullOrEmpty(booksProperty?.attributes.propertyInstanceSourceId) ? Guid.Empty : Guid.Parse(booksProperty?.attributes.propertyInstanceSourceId),
+                            };
+                            _listPropertySetup.Add(_property);
+                        }
+                    }
+                }
+                return new ProductPropertyDetails
+                {
+                    ProductStatusDetail = productStatus,
+                    PropertyDetails = _listPropertySetup
+                };
+            }
+            return new ProductPropertyDetails();
+        }
         #endregion
 
 
@@ -1295,6 +1396,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
             }
             return response;
+        }
+
+        private void createUsePrimaryPropertyMasterConfigurationSetting(long partyId, int value)
+        {
+            
+            //Add use primary properties setting
+            MasterConfigurationSetting masterConfigurationSetting = new MasterConfigurationSetting
+            {
+                ConfigurationType = "Organization",
+                SettingType = "UsePrimaryProperties",
+                PartyId = partyId.ToString(),
+                Value = value.ToString()
+            };
+
+            var configurationSettingResponse = _configurationSettingRepository.CreateUsePrimaryPropertyMasterConfigurationSetting(masterConfigurationSetting);
         }
         #endregion
     }

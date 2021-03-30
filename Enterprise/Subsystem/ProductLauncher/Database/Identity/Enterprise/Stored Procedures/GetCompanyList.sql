@@ -75,8 +75,9 @@ BEGIN
 		Status					NVARCHAR(40),
 		IsActive				TINYINT,
 		Products				INT,
-		RealPageAccessUser NVARCHAR(100)
-	)	
+		RealPageAccessUser NVARCHAR(100),
+		UsePrimaryProperties TINYINT)	
+
 	INSERT INTO #tempOrganizations(OrganizationPartyId,		
 								   OrganizationName,		
 								   RealPageId,				
@@ -89,7 +90,8 @@ BEGIN
 								   Status,
 								   IsActive,
 								   Products,
-								   RealPageAccessUser)
+								   RealPageAccessUser,
+								   UsePrimaryProperties)
 	SELECT O.PartyId as OrganizationPartyId,    
 		   O.Name as OrganizationName,    
 		   P.RealPageId,    
@@ -106,18 +108,19 @@ BEGIN
 		   O.IsActive,
 		   Products = (select count(distinct productid) 
 						from Enterprise.OrganizationProduct op where o.PartyId= op.PartyId and ThruDate is null),
-		   UL.LoginName
+		   UL.LoginName,
+		   0
 	FROM [Enterprise].Organization AS o    
 		INNER JOIN [Enterprise].Party P ON P.PartyId = O.PartyId
 		INNER JOIN Enterprise.OrganizationDomain OD ON OD.OrganizationDomainId = O.OrganizationDomainId
 		INNER JOIN Enterprise.OrganizationType OT ON OT.OrganizationTypeId = O.OrganizationTypeId 
 		INNER JOIN Enterprise.VW_DataImportMapping D ON(O.PartyId = D.PartyId) and d.CompanyMasterId > 1
 		INNER JOIN Enterprise.MasterConfiguration MC ON MC.AttributeId = O.PartyId  
-              INNER JOIN Enterprise.MasterConfigurationSetting MCS ON MC.MasterConfigurationId = MCS.MasterConfigurationId  
-              INNER JOIN Enterprise.MasterSetting MS ON MCS.MasterSettingId = MS.MasterSettingId  
-              INNER JOIN Enterprise.MasterSettingType MST ON MST.MasterSettingTypeId = MS.MasterSettingTypeId  
-              INNER JOIN Enterprise.MasterConfigurationType MCT ON MCT.MasterConfigurationTypeId = MST.MasterConfigurationTypeId  
-              INNER JOIN  
+        INNER JOIN Enterprise.MasterConfigurationSetting MCS ON MC.MasterConfigurationId = MCS.MasterConfigurationId  
+        INNER JOIN Enterprise.MasterSetting MS ON MCS.MasterSettingId = MS.MasterSettingId  
+        INNER JOIN Enterprise.MasterSettingType MST ON MST.MasterSettingTypeId = MS.MasterSettingTypeId  
+        INNER JOIN Enterprise.MasterConfigurationType MCT ON MCT.MasterConfigurationTypeId = MST.MasterConfigurationTypeId  
+        INNER JOIN  
 				(  
 				 SELECT P.RealPageId,  
 					 UL.LoginName  
@@ -141,6 +144,17 @@ BEGIN
 			where ProductId in(SELECT ProductId FROM @ProductFilter) and op.ThruDate is null
 			)		
 		)
+
+	UPDATE t SET t.UsePrimaryProperties = MS.Value
+	FROM #tempOrganizations t
+	INNER JOIN Enterprise.MasterConfiguration MC ON MC.AttributeId = t.OrganizationPartyId  
+    INNER JOIN Enterprise.MasterConfigurationSetting MCS ON MC.MasterConfigurationId = MCS.MasterConfigurationId  
+    INNER JOIN Enterprise.MasterSetting MS ON MCS.MasterSettingId = MS.MasterSettingId  
+    INNER JOIN Enterprise.MasterSettingType MST ON MST.MasterSettingTypeId = MS.MasterSettingTypeId  
+    INNER JOIN Enterprise.MasterConfigurationType MCT ON MCT.MasterConfigurationTypeId = MST.MasterConfigurationTypeId  
+	WHERE MCT.Name = 'Organization'  
+	AND MST.Name = 'UsePrimaryProperties'
+
 	SELECT @sortValue =
 		CASE @SortColumn
 			WHEN N'OrganizationName' THEN 100
@@ -164,6 +178,7 @@ BEGIN
 			IsActive,
 			Products,
 			RealPageAccessUser,
+			UsePrimaryProperties,
 			TotalRecords, 
 			RowNumber
 		)
@@ -183,6 +198,7 @@ BEGIN
 			IsActive,
 			Products,
 			RealPageAccessUser,
+			UsePrimaryProperties,
 			COUNT(1) OVER () AS [TotalRecords],
 			CASE @sortValue
 				WHEN 100 THEN ROW_NUMBER() OVER (ORDER BY OrganizationName ASC)
@@ -207,6 +223,7 @@ BEGIN
 		IsActive,
 		Products,
 		RealPageAccessUser,
+		UsePrimaryProperties,
 		TotalRecords
 	FROM cteFilterOrganizations
 	ORDER BY RowNumber
