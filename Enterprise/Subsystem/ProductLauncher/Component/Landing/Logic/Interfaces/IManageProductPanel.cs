@@ -110,13 +110,5 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="listResponse"></param>
 		/// <returns></returns>
 		ListResponse CompareProductAndPrimaryProperties(UPFMProperty upfmProperty, int productId, ListResponse listResponse);
-
-		/// <summary>
-		/// Get translated product properties
-		/// </summary>
-		/// <param name="upfmProperty"></param>
-		/// <param name="productId"></param>
-		/// <returns></returns>
-		UPFMProperty TranslateProductProperties(UPFMProperty upfmProperty, int productId);
 	}
 }

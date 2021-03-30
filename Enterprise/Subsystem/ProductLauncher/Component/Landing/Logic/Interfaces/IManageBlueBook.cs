@@ -130,28 +130,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         string UpdateBooksGreenBookCompanyInstance(CompanyInstance companyInstance);
        
         TranslatePropertyInstance GetTranslatePropertiesFromUPFMToProductv3(UPFMProperty upfmProperties, string productSource);
-
-        /// <summary>
-        /// Get all UPFM instances related to the given Product instance source. Filters domain automatically
-        /// </summary>
-        /// <param name="properties">List of product properties</param>
-        /// <param name="productSource">productSource</param>
-        /// <returns></returns>
-        TranslatePropertyInstance GetTranslatePropertiesFromProductToUPFM(UPFMProperty properties, string productSource);
-
-        /// <summary>
-        /// Get properties per product center
-        /// </summary>
-        /// <param name="companyRealPageId"></param>
-        /// <param name="productId"></param>
-        /// <returns></returns>
         List<Guid> GetPropertiesPerProductCenter(string companyRealPageId, int productId);
 
-        /// <summary>
-        /// Get customer property details
-        /// </summary>
-        /// <param name="propertyInstanceId"></param>
-        /// <returns></returns>
         CustomerProperty GetCustomerPropertyDetails(string propertyInstanceId);
 
         /// <summary>
@@ -252,6 +232,5 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <param name="systemProductCenter"></param>
         /// <returns></returns>
         bool ProductCenterDisable(SystemProductCenter systemProductCenter);
-        
     }
 }
