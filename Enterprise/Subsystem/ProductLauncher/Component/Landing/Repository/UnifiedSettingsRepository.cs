@@ -45,6 +45,37 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 			}
 		}
 
+		public IList<Picklist> GetSettingsPickList(string category)
+		{
+			List<Picklist> picklists = new List<Picklist>();
+			using (var repo = GetRepository())
+			{
+				dynamic param = new{
+					categoryName = category
+				};
+
+				Picklist picklist = new Picklist();
+				picklist.options = new List<Option>();
+				List<SettingPickList> settingPickList = repo.GetMany<SettingPickList>(StoredProcNameConstants.SP_GetUnifiedSettingPicklist, param);
+				
+				if (settingPickList.Count > 0)
+					picklist.name = settingPickList[0].CategoryName;
+
+				foreach (SettingPickList item in settingPickList)
+				{
+					picklist.options.Add(new Option()
+					{
+						label = item.MappingName,
+						value = item.MappingValue
+					});
+				}
+
+				picklists.Add(picklist);
+			};
+
+			return picklists;
+		}
+
 		/// <summary>
 		/// Update  Settings 
 		/// </summary>
