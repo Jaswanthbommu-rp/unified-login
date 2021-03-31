@@ -561,11 +561,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             string result;
             WriteToDiagnosticLog(
                 $"ManageProductInvokerBase.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of method.");
-
+            bool isProductUser = false;
             var newProductUser = GenerateProductUserObject(userRolePropertiesRegion);
             var productUser = GetBaseUserDataFromProduct(newProductUser.LoginName);
+            isProductUser = productUser != null && !string.IsNullOrEmpty(productUser.LoginName);
 
-            if (string.IsNullOrEmpty(SubjectUserDetails.ProductUserName) && string.IsNullOrEmpty(productUser.LoginName))
+            if (string.IsNullOrEmpty(SubjectUserDetails.ProductUserName) && !isProductUser)
             {
                 WriteToDiagnosticLog(
                     $"ManageProductInvokerBase.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling CreateUser.");
@@ -584,7 +585,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 result = CreateUser(newProductUser);
 
             }
-            else if (string.IsNullOrEmpty(SubjectUserDetails.ProductUserName) && productUser != null && CreateUpdateMultiCompanyUserRequiresPMC)
+            else if (string.IsNullOrEmpty(SubjectUserDetails.ProductUserName) && isProductUser && CreateUpdateMultiCompanyUserRequiresPMC)
             {
                 result = CreateMultiCompanyUser(productUser);
             }
@@ -594,7 +595,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     $"ManageProductInvokerBase.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling UpdateUser.");
 
                 // Update user with Id/Login from product
-                if (productUser != null)
+                if (isProductUser)
                 {
                     newProductUser.UserId = productUser.UserId;
                     newProductUser.LoginName = productUser.LoginName;
