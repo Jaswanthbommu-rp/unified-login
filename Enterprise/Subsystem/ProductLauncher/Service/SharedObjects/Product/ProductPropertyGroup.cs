@@ -24,5 +24,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         /// </summary>
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public bool? IsAssigned { get; set; } = false;
+
+        /// <summary>
+        /// property assigned to the group
+        /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public List<string> AssignedProperties { get; set; } 
     }
 }
