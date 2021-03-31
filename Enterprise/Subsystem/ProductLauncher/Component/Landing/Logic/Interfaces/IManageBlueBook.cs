@@ -130,8 +130,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         string UpdateBooksGreenBookCompanyInstance(CompanyInstance companyInstance);
        
         TranslatePropertyInstance GetTranslatePropertiesFromUPFMToProductv3(UPFMProperty upfmProperties, string productSource);
-        List<Guid> GetPropertiesPerProductCenter(string companyRealPageId, ProductEnum product);
 
+        /// <summary>
+        /// Get all UPFM instances related to the given Product instance source. Filters domain automatically
+        /// </summary>
+        /// <param name="properties">List of product properties</param>
+        /// <param name="productSource">productSource</param>
+        /// <returns></returns>
+        TranslatePropertyInstance GetTranslatePropertiesFromProductToUPFM(UPFMProperty properties, string productSource);
+
+        /// <summary>
+        /// Get properties per product center
+        /// </summary>
+        /// <param name="companyRealPageId"></param>
+        /// <param name="productId"></param>
+        /// <returns></returns>
+        List<Guid> GetPropertiesPerProductCenter(string companyRealPageId, int productId);
+
+        /// <summary>
+        /// Get customer property details
+        /// </summary>
+        /// <param name="propertyInstanceId"></param>
+        /// <returns></returns>
         CustomerProperty GetCustomerPropertyDetails(string propertyInstanceId);
 
         /// <summary>
@@ -195,7 +215,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         ///// </summary>
         ///// <param name="customerPropertyId"></param>
         ///// <returns></returns>
-        List<BooksPropertyInstance> GetPropertyInstanceByCustomerPropertyId(string CustomerPropertyId);
+        List<BooksPropertyInstance> GetUPFMPropertyInstancesByCustomerPropertyId(string CustomerPropertyId);
 
         /// <summary>
         /// GetAllProductsPropertyInstanceFromBooks
@@ -203,6 +223,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <param name="customerPropertyId"></param>
         /// <returns></returns>
         List<BooksPropertyInstance> GetAllProductsPropertyInstanceFromBooks(string customerPropertyId);
+
+        /// <summary>
+        /// Get source product details from books
+        /// </summary>
+        /// <param name="propertyInstanceSourceId">propertyInstanceSourceId</param>
+        /// <param name="source">source</param>
+        /// <returns></returns>
+        BooksPropertyInstance GetPropertyDetailsByPropertyInstanceIdAndSource(string propertyInstanceSourceId, string source);
 
         ///// <summary>
         ///// Get translated product primary properties data
@@ -224,5 +252,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <param name="systemProductCenter"></param>
         /// <returns></returns>
         bool ProductCenterDisable(SystemProductCenter systemProductCenter);
+        
     }
 }

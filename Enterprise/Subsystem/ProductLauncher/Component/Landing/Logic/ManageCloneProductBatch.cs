@@ -53,15 +53,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				{
 					bool translateProperties = false;
 					bool personaProductUsePrimaryProperty = false;
+					bool usePrimaryProperties = false;
 					bool productEnabledForPrimaryProperty = IsProductEnabledForUsePrimaryProperty(product.ProductId);
 
 					var productSetting = productSettingList.FirstOrDefault(item => item.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase) && item.ProductId == product.ProductId);
-					
+
 					if (productSetting != null)
 					{
 						personaProductUsePrimaryProperty = productSetting.Value.Trim() == "1" ? true : false;
 					}
 
+					usePrimaryProperties = productEnabledForPrimaryProperty && personaProductUsePrimaryProperty;
 					translateProperties = (productEnabledForPrimaryProperty && personaProductUsePrimaryProperty && upfmProperty.id != null);
 
 					if (product.ProductId == (int)ProductEnum.OneSite)
@@ -71,9 +73,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 						if (translateProperties)
 						{
 							propertiesResponse = manageBlueBook.TranslateProductPrimaryPropertiesData(upfmProperty, product.ProductId, propertiesResponse);
-						}						
+						}
 						rolesResponse = mg.GetOneSiteRoleList(createUserPersonaId, personaId, true, null);
-						productListToCreate.Add(CreateProductBatchRecord(propertiesResponse, rolesResponse, product.ProductId));
+						productListToCreate.Add(CreateProductBatchRecord(propertiesResponse, rolesResponse, product.ProductId, usePrimaryProperties));
 					}
 					else if (product.ProductId == (int)ProductEnum.FinancialSuite)
 					{
@@ -86,7 +88,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 						propertyGroupResponse = accounting.GetUserPropertyGroups(createUserPersonaId, personaId, null);
 						rolesResponse = accounting.GetUserRoles(createUserPersonaId, personaId, null);
 						ListResponse companiesResponse = accounting.GetUserCompanies(createUserPersonaId, personaId, null);
-						productListToCreate.Add(CreateFinancialSuiteProductBatchRecord(propertiesResponse, rolesResponse, product.ProductId, companiesResponse, propertyGroupResponse));
+						productListToCreate.Add(CreateFinancialSuiteProductBatchRecord(propertiesResponse, rolesResponse, product.ProductId, companiesResponse, propertyGroupResponse, usePrimaryProperties));
 					}
 					else if (product.ProductId == (int)ProductEnum.MarketingCenter)
 					{
@@ -97,8 +99,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 							propertiesResponse = manageBlueBook.TranslateProductPrimaryPropertiesData(upfmProperty, product.ProductId, propertiesResponse);
 						}
 						rolesResponse = marketing.GetRoles(createUserPersonaId, personaId, null);
-                        productListToCreate.Add(CreateMarketingCenterProductBatchRecord(propertiesResponse, rolesResponse, product.ProductId));
-                    }
+						productListToCreate.Add(CreateMarketingCenterProductBatchRecord(propertiesResponse, rolesResponse, product.ProductId, usePrimaryProperties));
+					}
 					else if (product.ProductId == (int)ProductEnum.OpsBuyer)
 					{
 						ManageProductOps opsbuyer = new ManageProductOps(userClaim);
@@ -108,7 +110,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 							propertiesResponse = manageBlueBook.TranslateProductPrimaryPropertiesData(upfmProperty, product.ProductId, propertiesResponse);
 						}
 						rolesResponse = opsbuyer.GetRoles(createUserPersonaId, personaId, "", null);
-						productListToCreate.Add(CreateProductBatchRecord(propertiesResponse, rolesResponse, product.ProductId));
+						productListToCreate.Add(CreateProductBatchRecord(propertiesResponse, rolesResponse, product.ProductId, usePrimaryProperties));
 					}
 					else if (product.ProductId == (int)ProductEnum.VendorServices)
 					{
@@ -121,7 +123,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 						rolesResponse = vs.GetRoles(createUserPersonaId, personaId, AccessType.Property, null);
 						var notifications = vs.GetNotificationSettings(createUserPersonaId, personaId);
 						propertyGroupResponse = vs.GetPropertyGroups(createUserPersonaId, personaId, null);
-						productListToCreate.Add(CreateVendorServiceProductBatchRecord(propertiesResponse, rolesResponse, propertyGroupResponse, notifications, product.ProductId));
+						productListToCreate.Add(CreateVendorServiceProductBatchRecord(propertiesResponse, rolesResponse, propertyGroupResponse, notifications, product.ProductId, usePrimaryProperties));
 					}
 					else if (product.ProductId == (int)ProductEnum.ClientPortal)
 					{
@@ -132,7 +134,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 							propertiesResponse = manageBlueBook.TranslateProductPrimaryPropertiesData(upfmProperty, product.ProductId, propertiesResponse);
 						}
 						rolesResponse = cp.GetRoles(createUserPersonaId, personaId, null);
-						productListToCreate.Add(CreateProductBatchRecord(propertiesResponse, rolesResponse, product.ProductId));
+						productListToCreate.Add(CreateProductBatchRecord(propertiesResponse, rolesResponse, product.ProductId, usePrimaryProperties));
 					}
 					else if (product.ProductId == (int)ProductEnum.ProspectContactCenter)
 					{
@@ -142,7 +144,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 						{
 							propertiesResponse = manageBlueBook.TranslateProductPrimaryPropertiesData(upfmProperty, product.ProductId, propertiesResponse);
 						}
-						productListToCreate.Add(CreateProductBatchRecord(propertiesResponse, rolesResponse, product.ProductId));
+						productListToCreate.Add(CreateProductBatchRecord(propertiesResponse, rolesResponse, product.ProductId, usePrimaryProperties));
 					}
 					else if (product.ProductId == (int)ProductEnum.Lead2Lease)
 					{
@@ -153,7 +155,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 							propertiesResponse = manageBlueBook.TranslateProductPrimaryPropertiesData(upfmProperty, product.ProductId, propertiesResponse);
 						}
 						rolesResponse = l2l.GetRoles(createUserPersonaId, personaId, null);
-						productListToCreate.Add(CreateProductBatchRecord(propertiesResponse, rolesResponse, product.ProductId));
+						productListToCreate.Add(CreateProductBatchRecord(propertiesResponse, rolesResponse, product.ProductId, usePrimaryProperties));
 					}
 					else if (product.ProductId == (int)ProductEnum.ResidentPortal)
 					{
@@ -166,7 +168,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 						List<ILevel> LevelList = manageProductResidentPortal.ListLevels(createUserPersonaId, personaId);
 						Notifications notifications = manageProductResidentPortal.GetNotificationSettings(createUserPersonaId, personaId);
 						List<IMessagingGroups> messagingGroups = manageProductResidentPortal.ListMessageGroups(createUserPersonaId, personaId);
-						productListToCreate.Add(CreateResidentPortalProductBatchRecord(propertiesResponse, LevelList, notifications, messagingGroups, product.ProductId));
+						productListToCreate.Add(CreateResidentPortalProductBatchRecord(propertiesResponse, LevelList, notifications, messagingGroups, product.ProductId, usePrimaryProperties));
 					}
 					else if (product.ProductId == (int)ProductEnum.Insurance)
 					{
@@ -177,7 +179,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 							propertiesResponse = manageBlueBook.TranslateProductPrimaryPropertiesData(upfmProperty, product.ProductId, propertiesResponse);
 						}
 						IList<ProductRole> productRoleList = manageProductRentersInsurance.ListRoles(createUserPersonaId, personaId);
-						productListToCreate.Add(CreateRentersInsuranceProductBatchRecord(propertiesResponse, productRoleList, product.ProductId));
+						productListToCreate.Add(CreateRentersInsuranceProductBatchRecord(propertiesResponse, productRoleList, product.ProductId, usePrimaryProperties));
 					}
 					else if (product.ProductId == (int)ProductEnum.OnSite)
 					{
@@ -189,7 +191,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 						}
 						rolesResponse = manageProductOnSite.GetRoles(createUserPersonaId, personaId, null);
 						var regionResponse = manageProductOnSite.GetRegions(createUserPersonaId, personaId, null);
-						productListToCreate.Add(CreateOnSiteBatchRecord(propertiesResponse, rolesResponse, regionResponse, product.ProductId));
+						productListToCreate.Add(CreateOnSiteBatchRecord(propertiesResponse, rolesResponse, regionResponse, product.ProductId, usePrimaryProperties));
 					}
 					else if (product.ProductId == (int)ProductEnum.UtilityManagement)
 					{
@@ -202,7 +204,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 						propertyGroupResponse = manageProductrum.GetPropertyGroups(createUserPersonaId, personaId, null);
 						var regionResponse = manageProductrum.GetRegions(createUserPersonaId, personaId, null);
 						rolesResponse = manageProductrum.GetRoles(createUserPersonaId, personaId, null);
-						productListToCreate.Add(CreateRumProductBatchRecord(propertiesResponse, propertyGroupResponse, regionResponse, rolesResponse));
+						productListToCreate.Add(CreateRumProductBatchRecord(propertiesResponse, propertyGroupResponse, regionResponse, rolesResponse, usePrimaryProperties));
 					}
 					else if (product.ProductId == (int)ProductEnum.SelfProvisioningPortal)
 					{
@@ -212,23 +214,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					else if (product.ProductId == (int)ProductEnum.UnifiedAmenities)
 					{
 						ManageUnifiedAmenities manageUnifiedAmenities = new ManageUnifiedAmenities(userClaim);
-                        if (!usePropertyInstanceUnifiedAmenities)
-                        {
-                            propertiesResponse = manageUnifiedAmenities.GetProperties(createUserPersonaId, personaId, true, null);
+						if (!usePropertyInstanceUnifiedAmenities)
+						{
+							propertiesResponse = manageUnifiedAmenities.GetProperties(createUserPersonaId, personaId, true, null);
 							if (translateProperties)
 							{
 								propertiesResponse = manageBlueBook.TranslateProductPrimaryPropertiesData(upfmProperty, product.ProductId, propertiesResponse);
 							}
 						}
-                        else
-                        {
+						else
+						{
 							ManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(userClaim);
-                            propertiesResponse = manageUnifiedLogin.GetUPFMProperties(createUserPersonaId, personaId, true, ProductEnum.UnifiedAmenities, null);
-                        }
+							propertiesResponse = manageUnifiedLogin.GetUPFMProperties(createUserPersonaId, personaId, true, ProductEnum.UnifiedAmenities, null);
+						}
 
-                        rolesResponse = manageUnifiedAmenities.GetRoles(createUserPersonaId, personaId, product.OrganizationPartyId);
+						rolesResponse = manageUnifiedAmenities.GetRoles(createUserPersonaId, personaId, product.OrganizationPartyId);
 
-                        productListToCreate.Add(CreateProductBatchRecord(propertiesResponse, rolesResponse, product.ProductId));
+						productListToCreate.Add(CreateProductBatchRecord(propertiesResponse, rolesResponse, product.ProductId, usePrimaryProperties));
 					}
 					else if (product.ProductId == (int)ProductEnum.LeadManagement)
 					{
@@ -236,7 +238,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 						var productUser = productLogic.GetProductUser();
 
 						productListToCreate.Add(CreateILMProductBatchRecord(ProductEnum.LeadManagement, productUser.Properties,
-							productUser.Roles.ConvertAll<string>(i => i.ToString()), null));//no groups for LM
+							productUser.Roles.ConvertAll<string>(i => i.ToString()), null, usePrimaryProperties));//no groups for LM
 					}
 					else if (product.ProductId == (int)ProductEnum.LeadAnalytics)
 					{
@@ -244,11 +246,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 						var productUser = productLogic.GetProductUser();
 
 						productListToCreate.Add(CreateILMProductBatchRecord(ProductEnum.LeadAnalytics, productUser.Properties,
-							productUser.Roles.ConvertAll<string>(i => i.ToString()), productUser.PropertyGroups));
+							productUser.Roles.ConvertAll<string>(i => i.ToString()), productUser.PropertyGroups, usePrimaryProperties));
 					}
 					else if (product.ProductId == (int)ProductEnum.RPDocumentManagement)
 					{
-						productListToCreate.Add(CreateDocManagementBatchRecords(userClaim, createUserPersonaId, personaId));
+						productListToCreate.Add(CreateDocManagementBatchRecords(userClaim, createUserPersonaId, personaId, usePrimaryProperties));
 					}
 					else if (product.ProductId == (int)ProductEnum.PortfolioManagement)
 					{
@@ -257,7 +259,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 						var propertyRoles = productUser.PropertyRoleList;
 						var roles = productUser.RoleList.ConvertAll<string>(i => i.ToString());
 
-						productListToCreate.Add(CreateProductBatchRecordForPortfolioManagement(propertyRoles, roles));
+						productListToCreate.Add(CreateProductBatchRecordForPortfolioManagement(propertyRoles, roles, usePrimaryProperties));
 					}
 					else if (product.ProductId == (int)ProductEnum.IntegrationMarketplace)
 					{
@@ -276,14 +278,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 								x.ShortName.Equals(existingRoleCode, StringComparison.OrdinalIgnoreCase)).Id;
 						}
 
-						productListToCreate.Add(CreateIntegrationMarketplaceBatchRecord(existingRoleId, product.ProductId));
+						productListToCreate.Add(CreateIntegrationMarketplaceBatchRecord(existingRoleId, product.ProductId, usePrimaryProperties));
 					}
 					else if (product.ProductId == (int)ProductEnum.DepositAlternative)
 					{
 						var productLogic = ManageProductFactory.GetProductLogic(ProductEnum.DepositAlternative, createUserPersonaId, personaId, userClaim);
 						var productUser = productLogic.GetProductUser();
 
-						productListToCreate.Add(CreateProductBatchRecordForDepositIQ(productUser));
+						productListToCreate.Add(CreateProductBatchRecordForDepositIQ(productUser, usePrimaryProperties));
 					}
 					else if (product.ProductId == (int)ProductEnum.ClickPay)
 					{
@@ -291,16 +293,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 						var productUser = productLogic.GetProductUser();
 						var organizationRoles = productUser.OrganizationRoles;
 
-						productListToCreate.Add(CreateProductBatchRecordForClickPay(organizationRoles));
+						productListToCreate.Add(CreateProductBatchRecordForClickPay(organizationRoles, usePrimaryProperties));
 					}
 					else if (product.ProductId == (int)ProductEnum.RenovationManager)
 					{
 						var productLogic = ManageProductFactory.GetProductLogic(ProductEnum.RenovationManager, createUserPersonaId, personaId, userClaim);
-						var productUser = productLogic.GetProductUser();						
+						var productUser = productLogic.GetProductUser();
 
 						productListToCreate.Add(CreateProductBatchRecordForRenovationManager(productUser));
 					}
-					
+
 					else if (product.ProductId == (int)ProductEnum.IntelligentBuildingTrash ||
 							 product.ProductId == (int)ProductEnum.IntelligentBuildingEnergy ||
 							 product.ProductId == (int)ProductEnum.IntelligentBuildingWater ||
@@ -310,10 +312,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 							 product.ProductId == (int)ProductEnum.LeaseLabs)
 					{
 						ManageUPFMProductsIntegration upfmProductIntegration = new ManageUPFMProductsIntegration(product.ProductId, userClaim);
-						var upfmProduct = ProductEnumHelper.GetUPFMProductEnum(product.ProductId);
-						propertiesResponse = upfmProductIntegration.GetUPFMProperties(createUserPersonaId, personaId, false, upfmProduct, null);
-						rolesResponse = upfmProductIntegration.GetRoles(createUserPersonaId, personaId, userClaim.OrganizationPartyId, upfmProduct);
-						productListToCreate.Add(CreateProductBatchRecord(propertiesResponse, rolesResponse, product.ProductId));
+						propertiesResponse = upfmProductIntegration.GetUPFMProperties(createUserPersonaId, personaId, false, null);
+						rolesResponse = upfmProductIntegration.GetRoles(createUserPersonaId, personaId, userClaim.OrganizationPartyId);
+						productListToCreate.Add(CreateProductBatchRecord(propertiesResponse, rolesResponse, product.ProductId, usePrimaryProperties));
 					}
 				}
 				catch (Exception ex)
@@ -342,7 +343,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			return productListToCreate;
 		}
 
-		private ProductBatch CreateProductBatchRecordForClickPay(List<OrganizationRole> userOrganizationRole)
+		private ProductBatch CreateProductBatchRecordForClickPay(List<OrganizationRole> userOrganizationRole, bool usePrimaryProperties)
 		{
 			var pb = new ProductBatch()
 			{
@@ -351,14 +352,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				RetryCount = 0,
 				InputJson = new RolePropertyList()
 				{
-					OrganizationRoleList = userOrganizationRole
+					OrganizationRoleList = userOrganizationRole,
+					UsePrimaryProperties = usePrimaryProperties
 				}
 			};
 
 			return pb;
 		}
 
-		private ProductBatch CreateProductBatchRecordForDepositIQ(IntegrationProductUser productUser)
+		private ProductBatch CreateProductBatchRecordForDepositIQ(IntegrationProductUser productUser, bool usePrimaryProperties)
 		{
 			ProductBatch productBatch = new ProductBatch()
 			{
@@ -370,7 +372,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					RoleList = productUser.Roles,
 					CanReceiveMonthlyReport = productUser.CanReceiveMonthlyReport,
 					PropertyGroupList = productUser.PropertyGroups,
-					PropertyList = productUser.Properties
+					PropertyList = productUser.Properties,
+					UsePrimaryProperties = usePrimaryProperties
 				}
 			};
 
@@ -386,7 +389,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				RetryCount = 0,
 				InputJson = new RolePropertyList()
 				{
-					RoleList = productUser.Roles,				
+					RoleList = productUser.Roles,
 					PropertyList = productUser.Properties
 				}
 			};
@@ -394,7 +397,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			return productBatch;
 		}
 
-		private ProductBatch CreateIntegrationMarketplaceBatchRecord(int existingRoleId, int productProductId)
+		private ProductBatch CreateIntegrationMarketplaceBatchRecord(int existingRoleId, int productProductId, bool usePrimaryProperties)
 		{
 			var roleList = new List<string> { existingRoleId.ToString() };
 			ProductBatch productBatch = new ProductBatch()
@@ -402,14 +405,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				ProductId = productProductId,
 				StatusTypeId = 5,
 				RetryCount = 0,
-				InputJson = new RolePropertyList() { RoleList = roleList }
+				InputJson = new RolePropertyList() { RoleList = roleList, UsePrimaryProperties = usePrimaryProperties }
 			};
 
 			return productBatch;
 		}
 
 		private ProductBatch CreateILMProductBatchRecord(ProductEnum ilmProduct, List<string> productUserProperties,
-			List<string> productUserRoles, List<string> productUserGroups)
+			List<string> productUserRoles, List<string> productUserGroups, bool usePrimaryProperties)
 		{
 			var pb = new ProductBatch()
 			{
@@ -420,27 +423,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				{
 					PropertyList = productUserProperties,
 					RoleList = productUserRoles,
-					PropertyGroupList = productUserGroups
+					PropertyGroupList = productUserGroups,
+					UsePrimaryProperties = usePrimaryProperties
 				}
 			};
 
 			return pb;
 		}
 
-		private ProductBatch CreateProductBatchRecordForPortfolioManagement(List<PAMRolePropertyList> rolePropertyList, List<string> roleList)
+		private ProductBatch CreateProductBatchRecordForPortfolioManagement(List<PAMRolePropertyList> rolePropertyList, List<string> roleList, bool usePrimaryProperties)
 		{
 			var pb = new ProductBatch()
 			{
 				ProductId = (int)ProductEnum.PortfolioManagement,
 				StatusTypeId = 5,
 				RetryCount = 0,
-				InputJson = new RolePropertyList() { RolePropertiesList = rolePropertyList, RoleList = roleList }
+				InputJson = new RolePropertyList() { RolePropertiesList = rolePropertyList, RoleList = roleList, UsePrimaryProperties = usePrimaryProperties }
 			};
 
 			return pb;
 		}
 
-		private ProductBatch CreateOnSiteBatchRecord(ListResponse propertiesResponse, ListResponse rolesResponse, ListResponse regionResponse, int productId)
+		private ProductBatch CreateOnSiteBatchRecord(ListResponse propertiesResponse, ListResponse rolesResponse, ListResponse regionResponse, int productId, bool usePrimaryProperties)
 		{
 			List<string> propertyList = new List<string>();
 			List<string> roleList = new List<string>();
@@ -510,7 +514,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			}
 
 			inputJson.RoleList = roleList;
-
+			inputJson.UsePrimaryProperties = usePrimaryProperties;
 			ProductBatch productBatch = new ProductBatch()
 			{
 				ProductId = productId,
@@ -540,7 +544,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			return allProperties;
 		}
 
-		private ProductBatch CreateProductBatchRecord(ListResponse propertiesResponse, ListResponse rolesResponse, int productID)
+		private ProductBatch CreateProductBatchRecord(ListResponse propertiesResponse, ListResponse rolesResponse, int productID, bool usePrimaryProperties)
 		{
 			List<string> PropertyList = new List<string>();
 			List<string> RoleList = new List<string>();
@@ -577,7 +581,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 			if (allProperties)
 			{
-			
+
 				if (productID == (int)ProductEnum.ClientPortal ||
 					productID == (int)ProductEnum.IntelligentBuildingTrash ||
 					productID == (int)ProductEnum.IntelligentBuildingEnergy ||
@@ -587,10 +591,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				{
 					PropertyList.Add("-1");
 				}
-				else if (productID == (int)ProductEnum.OneSite || 
-                         productID == (int)ProductEnum.FinancialSuite || 
-                         productID == (int)ProductEnum.ProspectContactCenter ||
-                         productID == (int)ProductEnum.MarketingCenter)
+				else if (productID == (int)ProductEnum.OneSite ||
+						 productID == (int)ProductEnum.FinancialSuite ||
+						 productID == (int)ProductEnum.ProspectContactCenter ||
+						 productID == (int)ProductEnum.MarketingCenter)
 				{
 					PropertyList.Add("ALL");
 				}
@@ -605,7 +609,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 						{
 							PropertyList.Add(((Component.SharedObjects.Product.Ops.AssetGroup)item).ID);
 						}
-					}					
+					}
 					else if (((ProductProperty)item).IsAssigned.Value)
 					{
 						if (productID == (int)ProductEnum.IntelligentBuildingTrash ||
@@ -619,7 +623,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 						else
 						{
 							PropertyList.Add(((ProductProperty)item).ID);
-						}							
+						}
 					}
 				}
 
@@ -630,74 +634,74 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				ProductId = productID,
 				StatusTypeId = 5,
 				RetryCount = 0,
-				InputJson = new RolePropertyList() { PropertyList = PropertyList, RoleList = RoleList }
+				InputJson = new RolePropertyList() { PropertyList = PropertyList, RoleList = RoleList, UsePrimaryProperties = usePrimaryProperties }
 			};
 
 			return pb;
 		}
 
-        private ProductBatch CreateMarketingCenterProductBatchRecord(ListResponse propertiesResponse, ListResponse rolesResponse, int productID)
-        {
-            List<string> PropertyList = new List<string>();
-            List<string> RoleList = new List<string>();
-            bool isAssignNewPropertyByDefault = false;
-            IEnumerable<object> propertiesCollection;
-            if (propertiesResponse.Records != null)
-            {
-                propertiesCollection = (IEnumerable<object>)propertiesResponse.Records;
-            }
-            else
-            {
-                propertiesCollection = new List<object>();
-            }
+		private ProductBatch CreateMarketingCenterProductBatchRecord(ListResponse propertiesResponse, ListResponse rolesResponse, int productID, bool usePrimaryProperties)
+		{
+			List<string> PropertyList = new List<string>();
+			List<string> RoleList = new List<string>();
+			bool isAssignNewPropertyByDefault = false;
+			IEnumerable<object> propertiesCollection;
+			if (propertiesResponse.Records != null)
+			{
+				propertiesCollection = (IEnumerable<object>)propertiesResponse.Records;
+			}
+			else
+			{
+				propertiesCollection = new List<object>();
+			}
 
-            if (propertiesResponse.Additional != null)
-            {
-                isAssignNewPropertyByDefault = CheckForIsAssignedNewPropertyFlag(propertiesResponse.Additional);
-            }
+			if (propertiesResponse.Additional != null)
+			{
+				isAssignNewPropertyByDefault = CheckForIsAssignedNewPropertyFlag(propertiesResponse.Additional);
+			}
 
-            if (productID != (int)ProductEnum.ProspectContactCenter)
-            {
-                if (rolesResponse.Records != null)
-                {
-                    IEnumerable<object> roleCollection = (IEnumerable<object>)rolesResponse.Records;
-                    foreach (object item in roleCollection)
-                    {
-                        if (((ProductRole)item).IsAssigned)
-                        {
-                            RoleList.Add(((ProductRole)item).ID);
-                        }
-                    }
-                }
-            }
+			if (productID != (int)ProductEnum.ProspectContactCenter)
+			{
+				if (rolesResponse.Records != null)
+				{
+					IEnumerable<object> roleCollection = (IEnumerable<object>)rolesResponse.Records;
+					foreach (object item in roleCollection)
+					{
+						if (((ProductRole)item).IsAssigned)
+						{
+							RoleList.Add(((ProductRole)item).ID);
+						}
+					}
+				}
+			}
 
-            foreach (object item in propertiesCollection)
-            {
-                if (productID == (int)ProductEnum.OpsBuyer)
-                {
-                    if (((Component.SharedObjects.Product.Ops.AssetGroup)item).IsAssigned)
-                    {
-                        PropertyList.Add(((Component.SharedObjects.Product.Ops.AssetGroup)item).ID);
-                    }
-                }
-                else if (((ProductProperty)item).IsAssigned.Value)
-                {
-                    PropertyList.Add(((ProductProperty)item).ID);
-                }
-            }
+			foreach (object item in propertiesCollection)
+			{
+				if (productID == (int)ProductEnum.OpsBuyer)
+				{
+					if (((Component.SharedObjects.Product.Ops.AssetGroup)item).IsAssigned)
+					{
+						PropertyList.Add(((Component.SharedObjects.Product.Ops.AssetGroup)item).ID);
+					}
+				}
+				else if (((ProductProperty)item).IsAssigned.Value)
+				{
+					PropertyList.Add(((ProductProperty)item).ID);
+				}
+			}
 
-            ProductBatch pb = new ProductBatch()
-            {
-                ProductId = productID,
-                StatusTypeId = 5,
-                RetryCount = 0,
-                InputJson = new RolePropertyList() { PropertyList = PropertyList, RoleList = RoleList, IsAssignedNewPropertyByDefault= isAssignNewPropertyByDefault}
-            };
+			ProductBatch pb = new ProductBatch()
+			{
+				ProductId = productID,
+				StatusTypeId = 5,
+				RetryCount = 0,
+				InputJson = new RolePropertyList() { PropertyList = PropertyList, RoleList = RoleList, IsAssignedNewPropertyByDefault = isAssignNewPropertyByDefault, UsePrimaryProperties = usePrimaryProperties }
+			};
 
-            return pb;
-        }
+			return pb;
+		}
 
-		private ProductBatch CreateFinancialSuiteProductBatchRecord(ListResponse propertiesResponse, ListResponse rolesResponse, int productID, ListResponse companiesResponse, ListResponse propertyGroupResponse)
+		private ProductBatch CreateFinancialSuiteProductBatchRecord(ListResponse propertiesResponse, ListResponse rolesResponse, int productID, ListResponse companiesResponse, ListResponse propertyGroupResponse, bool usePrimaryProperties)
 		{
 			List<string> PropertyList = new List<string>();
 			List<string> PropertyGroupList = new List<string>();
@@ -767,7 +771,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				}
 			}
 
-			foreach(object item in propertyGroupsCollection)
+			foreach (object item in propertyGroupsCollection)
 			{
 				if (((ProductPropertyGroup)item).IsAssigned.Value)
 				{
@@ -787,7 +791,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					HasAccessToSiteSpendManagementOnly = hasAccessToSiteSpendManagementOnly,
 					IsAccountingAdmin = isAccountingAdmin,
 					HasAccessToAllCurrentFutureProperties = hasAccessToAllCurrentFutureProperties,
-					CompaniesList = companiesList
+					CompaniesList = companiesList,
+					UsePrimaryProperties = usePrimaryProperties
 				}
 			};
 
@@ -795,23 +800,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		}
 
 		private bool CheckForIsAssignedNewPropertyFlag(object additionalInfo)
-        {
-            bool isAssignNewPropertyByDefault = false;
-            if (additionalInfo.GetType().Name.ToUpper() != "STRING")
-            {
-                Dictionary<string, bool> additionalDataCollection = (Dictionary<string, bool>)additionalInfo;
-                foreach (KeyValuePair<string, bool> pair in additionalDataCollection)
-                {
-                    if (pair.Key.Equals("IsAssignedNewPropertyByDefault", StringComparison.OrdinalIgnoreCase))
-                    {
-                        isAssignNewPropertyByDefault = pair.Value;
-                    }
-                }
-            }
-            return isAssignNewPropertyByDefault;
-        }
+		{
+			bool isAssignNewPropertyByDefault = false;
+			if (additionalInfo.GetType().Name.ToUpper() != "STRING")
+			{
+				Dictionary<string, bool> additionalDataCollection = (Dictionary<string, bool>)additionalInfo;
+				foreach (KeyValuePair<string, bool> pair in additionalDataCollection)
+				{
+					if (pair.Key.Equals("IsAssignedNewPropertyByDefault", StringComparison.OrdinalIgnoreCase))
+					{
+						isAssignNewPropertyByDefault = pair.Value;
+					}
+				}
+			}
+			return isAssignNewPropertyByDefault;
+		}
 
-        private ProductBatch CreateVendorServiceProductBatchRecord(ListResponse propertiesResponse, ListResponse rolesResponse, ListResponse propertyGroup, Component.SharedObjects.Product.VendorServices.Notification notification, int productID)
+		private ProductBatch CreateVendorServiceProductBatchRecord(ListResponse propertiesResponse, ListResponse rolesResponse, ListResponse propertyGroup, Component.SharedObjects.Product.VendorServices.Notification notification, int productID, bool usePrimaryProperties)
 		{
 			List<string> PropertyList = new List<string>();
 			List<string> RoleList = new List<string>();
@@ -826,14 +831,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				allProperties = CheckForAllProperties(propertiesResponse.Additional);
 			}
 
-            // Below logic is applied when a user is being cloned from a user that has access to all properties. 
-            if (propertiesResponse != null)
-            {
-                var unselectedPropertiesCount = propertiesCollection.Where(p => ((ProductProperty)p).IsAssigned == false).Count();
-                if (unselectedPropertiesCount == propertiesCollection.Count())
-                    allProperties = true;
-            }
-                        
+			// Below logic is applied when a user is being cloned from a user that has access to all properties. 
+			if (propertiesResponse != null)
+			{
+				var unselectedPropertiesCount = propertiesCollection.Where(p => ((ProductProperty)p).IsAssigned == false).Count();
+				if (unselectedPropertiesCount == propertiesCollection.Count())
+					allProperties = true;
+			}
+
 
 			foreach (object item in roleCollection)
 			{
@@ -886,15 +891,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 			var inputJson = new RolePropertyList();
 			inputJson.PropertyList = PropertyList;
-			inputJson.RoleList = RoleList;            
+			inputJson.RoleList = RoleList;
 			if (propertyGroupList.Count > 0)
 			{
 				inputJson.PropertyGroup = propertyGroupList;
 			}
-            
+
 			inputJson.IsInsuranceExpired = notification.IsInsuranceExpired;
 			inputJson.IsVendorRecommendationChanges = notification.IsVendorRecommendationChanges;
 			inputJson.IsVendorNotLinkedToAnyProperty = notification.IsVendorNotLinkedToAnyProperty;
+			inputJson.UsePrimaryProperties = usePrimaryProperties;
 
 			ProductBatch pb = new ProductBatch()
 			{
@@ -925,7 +931,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				if (aoBIUserName != null)
 				{
 					aoBIUserCompanyPropertyRoleDetails = manageProductAssetOptimization.CopyRegularUser(editorPersonaId, newUserPersonaId, aoBIUserName);
-				}				
+				}
 			}
 
 			var aoUserCompanyPropertyRoleDetails = manageProductAssetOptimization.CopyRegularUser(editorPersonaId, newUserPersonaId);
@@ -968,7 +974,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			return productBatchList;
 		}
 
-		private ProductBatch CreateRumProductBatchRecord(ListResponse propertiesResponse, ListResponse groupResponse, ListResponse regionResponse, ListResponse rolesResponse)
+		private ProductBatch CreateRumProductBatchRecord(ListResponse propertiesResponse, ListResponse groupResponse, ListResponse regionResponse, ListResponse rolesResponse, bool usePrimaryProperties)
 		{
 			List<string> propertyList = new List<string>();
 			List<string> propertyGroupList = new List<string>();
@@ -1011,20 +1017,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				}
 			}
 
-            // Below logic is applied when a user is being cloned from a user that has access to all properties. 
-            if (propertiesCollection != null && propertyGroupList.Count == 0)
-            {
-                var unselectedPropertiesCount = propertiesCollection.Where(p => ((RumPropertyGroup)p).IsAssigned == false).Count();
-                if (unselectedPropertiesCount == propertiesCollection.Count())
-                    propertyList.Add("All");
-            }
+			// Below logic is applied when a user is being cloned from a user that has access to all properties. 
+			if (propertiesCollection != null && propertyGroupList.Count == 0)
+			{
+				var unselectedPropertiesCount = propertiesCollection.Where(p => ((RumPropertyGroup)p).IsAssigned == false).Count();
+				if (unselectedPropertiesCount == propertiesCollection.Count())
+					propertyList.Add("All");
+			}
 
-            ProductBatch pb = new ProductBatch()
+			ProductBatch pb = new ProductBatch()
 			{
 				ProductId = (int)ProductEnum.UtilityManagement,
 				StatusTypeId = 5,
 				RetryCount = 0,
-				InputJson = new RolePropertyList() { PropertyList = propertyList, PropertyGroupList = propertyGroupList, RegionList = regionsList, RoleList = roleList }
+				InputJson = new RolePropertyList() { PropertyList = propertyList, PropertyGroupList = propertyGroupList, RegionList = regionsList, RoleList = roleList, UsePrimaryProperties = usePrimaryProperties }
 			};
 
 			return pb;
@@ -1039,7 +1045,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		/// <param name="messagingGroups">Message Groups</param>
 		/// <param name="productID">Product Id</param>
 		/// <returns>ProductBatch object</returns>
-		private ProductBatch CreateResidentPortalProductBatchRecord(ListResponse propertiesResponse, List<ILevel> rolesResponse, Notifications notifications, List<IMessagingGroups> messagingGroups, int productID)
+		private ProductBatch CreateResidentPortalProductBatchRecord(ListResponse propertiesResponse, List<ILevel> rolesResponse, Notifications notifications, List<IMessagingGroups> messagingGroups, int productID, bool usePrimaryProperties)
 		{
 			List<string> PropertyList = new List<string>();
 			List<string> RoleList = new List<string>();
@@ -1089,6 +1095,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			}
 
 			inputJson.MessageGroups = MessageGroups;
+			inputJson.UsePrimaryProperties = usePrimaryProperties;
 
 			ProductBatch productBatch = new ProductBatch()
 			{
@@ -1109,7 +1116,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		/// <param name="rolesResponse"> list of Roles</param>
 		/// <param name="productID">Product Id</param>
 		/// <returns>ProductBatch object</returns>
-		private ProductBatch CreateRentersInsuranceProductBatchRecord(ListResponse propertiesResponse, IList<ProductRole> rolesResponse, int productID)
+		private ProductBatch CreateRentersInsuranceProductBatchRecord(ListResponse propertiesResponse, IList<ProductRole> rolesResponse, int productID, bool usePrimaryProperties)
 		{
 			List<string> PropertyList = new List<string>();
 			List<string> RoleList = new List<string>();
@@ -1147,7 +1154,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			RoleList.Add(roleId);
 
 			inputJson.RoleList = RoleList;
-
+			inputJson.UsePrimaryProperties = usePrimaryProperties;
 			ProductBatch productBatch = new ProductBatch()
 			{
 				ProductId = productID,
@@ -1186,14 +1193,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		/// <param name="createUserPersonaId"></param>
 		/// <param name="personaId"></param>
 		/// <returns></returns>
-		private ProductBatch CreateDocManagementBatchRecords(DefaultUserClaim userClaim, long createUserPersonaId, long personaId)
+		private ProductBatch CreateDocManagementBatchRecords(DefaultUserClaim userClaim, long createUserPersonaId, long personaId, bool usePrimaryProperties)
 		{
 			ManageProductRPDocumentManagement manageProductRpDocumentManagement = new ManageProductRPDocumentManagement(userClaim);
 
 			List<string> propertyList = new List<string>();
 			List<string> departmentList = new List<string>();
 			List<PAMRolePropertyList> lstRoleProperties = new List<PAMRolePropertyList>();
-			
+
 			//List<string> roleList = new List<string>();
 			RolePropertyList inputJson = new RolePropertyList() { IsAssigned = true };
 
@@ -1224,6 +1231,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				}
 				inputJson.RolePropertiesList = lstRoleProperties;
 			}
+			inputJson.UsePrimaryProperties = usePrimaryProperties;
 
 			ProductBatch productBatch = new ProductBatch()
 			{
@@ -1272,6 +1280,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			}
 			return false;
 		}
-		
+
 	}
 }

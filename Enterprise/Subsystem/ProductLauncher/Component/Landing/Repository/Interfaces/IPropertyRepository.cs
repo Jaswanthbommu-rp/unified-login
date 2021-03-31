@@ -20,7 +20,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="userPersonaId">Persona ID</param>   
         /// <param name="productId">Product ID</param>   
         /// <returns>List of Properties/Role assigned to Persona</returns>
-        List<ProductProperty> ListPropertiesByPersona(long userPersonaId, ProductEnum productId);
+        List<ProductProperty> ListPropertiesByPersona(long userPersonaId, int productId);
 
         /// <summary>
         /// 
@@ -80,7 +80,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="propertyInstanceId"></param>
         /// <param name="remove"></param>
         /// <returns></returns>
-        RepositoryResponse InsertRemoveAssignedPropertyInstanceToUser(long userPersonaId, ProductEnum productId, long propertyInstanceId, int remove = 0);
+        RepositoryResponse InsertRemoveAssignedPropertyInstanceToUser(long userPersonaId, int productId, long propertyInstanceId, int remove = 0);
 
         /// <summary>
         /// Used to insert new UPFM property instances into the database

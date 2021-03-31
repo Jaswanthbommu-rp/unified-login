@@ -21,11 +21,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="editorPersonaId">editorPersonaId</param>		
 		/// <param name="productId"></param>
 		/// <param name="userPersonaId"></param>
-		/// <param name="assignedOnly"></param>
 		/// <param name="datafilter"></param>
-		/// <param name="userLoginName"></param>
 		/// <returns>String.empty if success else error</returns>
-		ListResponse GetProductProperties(long editorPersonaId, long userPersonaId, int productId, RequestParameter datafilter, bool assignedOnly = false, string userLoginName = "");
+		ListResponse GetProductProperties(long editorPersonaId, long userPersonaId, int productId, RequestParameter datafilter);
 		/// <summary>
 		/// Get Product Roles
 		/// </summary> 
@@ -33,12 +31,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="partyId"></param>
 		/// <param name="productId"></param>
 		/// <param name="userPersonaId"></param>
-		/// <param name="assignedOnly"></param>
 		/// <param name="datafilter"></param>
-		/// <param name="userLoginName"></param>		
 		/// <param name="accessType"></param>
 		/// <returns>String.empty if success else error</returns>
-		ListResponse GetProductRoles(long editorPersonaId, long userPersonaId, long partyId, int productId, RequestParameter datafilter, AccessType? accessType, bool assignedOnly = false, string userLoginName = "");
+		ListResponse GetProductRoles(long editorPersonaId, long userPersonaId, long partyId, int productId, RequestParameter datafilter, AccessType? accessType);
 		/// <summary>
 		///Get Product Rights For Role
 		/// </summary> 
@@ -114,5 +110,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="listResponse"></param>
 		/// <returns></returns>
 		ListResponse CompareProductAndPrimaryProperties(UPFMProperty upfmProperty, int productId, ListResponse listResponse);
+
+		/// <summary>
+		/// Get translated product properties
+		/// </summary>
+		/// <param name="upfmProperty"></param>
+		/// <param name="productId"></param>
+		/// <returns></returns>
+		UPFMProperty TranslateProductProperties(UPFMProperty upfmProperty, int productId);
 	}
 }

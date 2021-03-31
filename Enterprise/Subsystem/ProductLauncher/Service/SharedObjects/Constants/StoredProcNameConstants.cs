@@ -162,6 +162,7 @@
         public const string SP_DisableUsersForProduct = "Enterprise.DisableUsersForProduct";
         public const string SP_CreateOrganizationProductConfiguration = "Enterprise.CreateOrganizationProductConfiguration";
         public const string SP_CreateOrganizationProductConfigurationbyPartyId = "Enterprise.CreateOrganizationProductConfigurationbyPartyId";
+        public const string SP_GetOrganizationSettingValue = "Enterprise.GetOrganizationSettingValue";
         //PartyRelationship
         public const string SP_GetPartyRelationshipByRealPageId = "Enterprise.GetPartyRelationshipByRealPageId";
 
@@ -319,6 +320,8 @@
         public const string SP_ListOrganizationSettings = "Enterprise.ListOrganizationSettings";
         public const string SP_ListOrganizations = "Enterprise.ListOrganizations_Ver01";
         public const string SP_CreateMasterConfigurationSetting = "Enterprise.CreateMasterConfigurationSetting";
+        public const string SP_GetOrganizationMasterConfiguration = "Enterprise.GetOrganizationMasterConfiguration";
+        public const string SP_CreateUsePrimaryPropertyMasterConfigurationSetting = "Enterprise.CreateUsePrimaryPropertyMasterConfigurationSetting";
 
         #region Persona Security
         public const string SP_ListRolesByRealPageID = "Enterprise.ListRolesByRealPageID";
@@ -397,6 +400,7 @@
         public const string SP_GetFieldsValuesByUserLoginPersonaId = "CustomField.GetFieldsValuesByUserLoginPersonaId";
         public const string SP_AddUpdateFieldValue = "CustomField.AddUpdateFieldValue";
         public const string SP_GetFieldType = "CustomField.GetFieldType";
+        public const string SP_GetUnifiedSettingPicklist = "Enterprise.GetULPickListByCategory";
 
         //EmployeeId
         public const string SP_CreateEmployeeId = "Enterprise.CreateUserEmployeeId";

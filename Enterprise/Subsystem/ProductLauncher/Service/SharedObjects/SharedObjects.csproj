@@ -295,6 +295,7 @@
     <Compile Include="IdentityConfig\UserLoginOrganization.cs" />
     <Compile Include="IdentityConfig\UserLoginPersona.cs" />
     <Compile Include="Landing\ApiError.cs" />
+    <Compile Include="Landing\SettingPickList.cs" />
     <Compile Include="Landing\EmailModel.cs" />
     <Compile Include="Landing\ProductSamlDetails.cs" />
     <Compile Include="Landing\Properties.cs" />
@@ -328,6 +329,7 @@
     <Compile Include="Landing\PersonaCompany.cs" />
     <Compile Include="Landing\PersonaCompanyDetails.cs" />
     <Compile Include="Landing\PropertyAudit.cs" />
+    <Compile Include="Landing\ProductStatusDetail.cs" />
     <Compile Include="Landing\PropertySetup.cs" />
     <Compile Include="Landing\PropertyRoleList.cs" />
     <Compile Include="Landing\IUserOrganization.cs" />
@@ -349,6 +351,7 @@
     <Compile Include="IdentityConfig\TelecommunicationNumber.cs" />
     <Compile Include="BlackBook\CompanyMap.cs" />
     <Compile Include="Landing\SendGridEmail.cs" />
+    <Compile Include="Landing\Picklist.cs" />
     <Compile Include="Landing\UnifiedSettingPropertyInstance.cs" />
     <Compile Include="Landing\Setting.cs" />
     <Compile Include="Landing\SecuritySettings.cs" />
