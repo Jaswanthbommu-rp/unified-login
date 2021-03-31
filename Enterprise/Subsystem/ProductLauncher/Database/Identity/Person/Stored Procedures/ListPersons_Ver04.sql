@@ -284,6 +284,25 @@ BEGIN
 
 	END
 	
+	DROP TABLE IF EXISTS #PartyContactMechanism
+
+	CREATE TABLE #PartyContactMechanism
+	(
+		PartyId BIGINT PRIMARY KEY,
+		ContactMechanismId INT,
+		RowNo INT
+	)
+
+	INSERT INTO #PartyContactMechanism(PartyId,ContactMechanismId,RowNo)
+	SELECT PartyId,ContactMechanismId,RowNo 
+	FROM
+	(
+		SELECT PartyId,ContactMechanismId,ROW_NUMBER() OVER(PARTITION BY PartyId ORDER BY FromDate DESC) AS RowNo
+		FROm Enterprise.PartyContactMechanism
+		WHERE ThruDate > GETUTCDATE()
+	) X
+	WHERE X.RowNo = 1
+
 	CREATE INDEX [IX_Temp_PersonaProduct] ON #PersonaProduct([PersonaID]) ON [PRIMARY]
 	
 	;WITH cteProductCount
@@ -454,6 +473,8 @@ BEGIN
 		FROM	cteUserLogin ulp
 					INNER JOIN Person.Person p ON p.PartyId = ulp.PersonPartyId
 					INNER JOIN Enterprise.Party pa ON p.PartyId = pa.PartyID
+					LEFT JOIN #PartyContactMechanism PCM ON ulp.PersonPartyId = PCM.PartyId
+					LEFT JOIN Enterprise.ElectronicAddress EA ON PCM.ContactMechanismId=EA.ContactMechanismID
 					INNER JOIN Enterprise.PartyRelationship prs ON prs.PartyIdFrom = ulp.PersonPartyId AND prs.PartyIdTo = @PartyId
 					INNER JOIN Enterprise.RelationshipType rst ON rst.RelationshipTypeId = prs.PartyRelationshipTypeId
 					INNER JOIN Enterprise.RoleType rt ON (rt.PartyRoleTypeId = rst.RoleTypeIdValidFrom)
@@ -467,6 +488,7 @@ BEGIN
 								OR (CHARINDEX(@filterName, ulp.LoginName, 1) > 0)
 								OR (CHARINDEX(@filterName, cf.FieldValue, 1) > 0)
 								OR (CHARINDEX(@filterName, UE.Employee, 1) > 0)
+								OR (CHARINDEX(@filterName, EA.ElectronicAddressString, 1) > 0)
 							)
 		AND		((@NOW BETWEEN prs.FromDate AND prs.ThruDate) OR (@NOW >= prs.FromDate AND prs.ThruDate IS NULL))
 		AND		((@ParentPartyRoleTypeId IS NULL) OR (rt.ParentPartyRoleTypeId = @ParentPartyRoleTypeId))
@@ -505,4 +527,6 @@ BEGIN
 	OPTION (RECOMPILE)
 
 	drop table #PersonaProduct
+	DROP TABLE IF EXISTS #PartyContactMechanism
+
 END;
