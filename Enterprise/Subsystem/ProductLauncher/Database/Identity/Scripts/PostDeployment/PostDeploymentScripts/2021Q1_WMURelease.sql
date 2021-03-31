@@ -128,6 +128,7 @@ end
 
 COMMIT TRAN;
 GO
+
 --Accounting Location Group
 Declare @FSMasterControlId int,@FSLocationGroupControlId int,@MaxControlId int,@MaxControlAttributeId int
 DECLARE @UserId bigint,
