@@ -565,7 +565,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var newProductUser = GenerateProductUserObject(userRolePropertiesRegion);
             var productUser = GetBaseUserDataFromProduct(newProductUser.LoginName);
 
-            if (string.IsNullOrEmpty(SubjectUserDetails.ProductUserName) && productUser == null)
+            if (string.IsNullOrEmpty(SubjectUserDetails.ProductUserName) && string.IsNullOrEmpty(productUser.LoginName))
             {
                 WriteToDiagnosticLog(
                     $"ManageProductInvokerBase.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling CreateUser.");
