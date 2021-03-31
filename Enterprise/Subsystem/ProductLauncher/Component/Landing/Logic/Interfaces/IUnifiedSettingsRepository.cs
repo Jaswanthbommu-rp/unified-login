@@ -11,6 +11,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
     public interface IUnifiedSettingsRepository
     {
         IList<Setting> GetUnifiedSettings(long PartyId, string Category);
+        IList<Picklist> GetSettingsPickList(string category);
         RepositoryResponse UpdateUnifiedSettings(IList<Setting> settings, long PartyId, string Category, long userId);
     }
 }
