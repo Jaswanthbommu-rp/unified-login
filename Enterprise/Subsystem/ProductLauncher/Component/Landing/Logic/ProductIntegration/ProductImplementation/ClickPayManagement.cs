@@ -516,9 +516,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		{
 			foreach (var userOrganizationRole in userOrganizationRoles)
 			{
-				if (userOrganizationRole.RoleId.ToUpper() == orgRoleId.ToUpper())
+				if (userOrganizationRole.RoleId.ToUpper() == orgRoleId.ToUpper()
+					&& orgList.Find(x => x.Id == userOrganizationRole.OrganizationId && x.Type.ToUpper() == orgType.ToUpper()) != null)
 				{
-					orgList.Find(x => x.Id == userOrganizationRole.OrganizationId && x.Type.ToUpper() == orgType.ToUpper()).IsAssigned = true;
+						orgList.Find(x => x.Id == userOrganizationRole.OrganizationId && x.Type.ToUpper() == orgType.ToUpper()).IsAssigned = true;
 				}
 			}
 		}
