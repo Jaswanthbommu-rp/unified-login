@@ -350,16 +350,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             // add ack for new products for the company
                             foreach (var productId in uniqueProductIdList)
                             {
-                                centerEnablement.Details.Add(new ProductCenterEnablementSettings()
+                                var internalSettings = GetUnifiedPlatformSettings(productId);
+                                var updateinUDM = internalSettings.Where(x => x.Name.ToUpper() == "UPDATEPRODUCTINUDM").FirstOrDefault();
+
+                                if (updateinUDM != null && updateinUDM.Value == "1")
                                 {
-                                    Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
-                                    CustomerEnvironment = customerDomain,
-                                    CustomerCompanyId = customerCompanyId,
-                                    CompanyInstanceSourceId = existingUnifiedLoginInstanceId,
-                                    ProductCenterSourceId = productId.ToString(),
-                                    PropertyInstanceSourceId = null,
-                                    CustomerPropertyId = null
-                                });
+                                    centerEnablement.Details.Add(new ProductCenterEnablementSettings()
+                                    {
+                                        Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
+                                        CustomerEnvironment = customerDomain,
+                                        CustomerCompanyId = customerCompanyId,
+                                        CompanyInstanceSourceId = existingUnifiedLoginInstanceId,
+                                        ProductCenterSourceId = productId.ToString(),
+                                        PropertyInstanceSourceId = null,
+                                        CustomerPropertyId = null
+                                    });
+                                }
                             }
 
                             // add any new properties
@@ -502,6 +508,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 // load from database
                 return _productInternalSettingRepository.GetProductInternalSettings((int) ProductEnum.UnifiedPlatform);
+            });
+            return productInternalSettingList;
+        }
+
+        private IList<ProductInternalSetting> GetUnifiedPlatformSettings(int productId)
+        {
+            IList<ProductInternalSetting> productInternalSettingList = new List<ProductInternalSetting>();
+            RPObjectCache rpcache = new RPObjectCache();
+            var cacheKey = "productInternalSetting_" + (int)productId;
+            productInternalSettingList = rpcache.GetFromCache<IList<ProductInternalSetting>>(cacheKey, 60, () =>
+            {
+                // load from database
+                return _productInternalSettingRepository.GetProductInternalSettings((int)productId);
             });
             return productInternalSettingList;
         }
