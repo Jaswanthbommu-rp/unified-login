@@ -671,3 +671,34 @@ begin
 end
 
 COMMIT TRAN;
+
+
+GO
+
+--TFS -716888 : New product setting type
+IF NOT EXISTS (select top  1 1 from Enterprise.ProductSettingType WHERE NAME = 'UpdateProductInUDM')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ( Name, Description, SensitiveData)
+	VALUES ('UpdateProductInUDM', 'Update product in UDM or not.', 0)
+END
+
+GO
+DECLARE @settingTypeId INT = 0;
+SELECT @settingTypeId = ProductSettingTypeId FROM Enterprise.ProductSettingType WHERE NAME = 'UpdateProductInUDM'
+IF @settingTypeId > 0
+BEGIN
+	CREATE TABLE #Temp(ProductId INT);
+	INSERT INTO #Temp
+	Values (1),(4),(6),(8),(9),(10),(13),(15),(16),(17),(18),(20),(23),(26),(36),(37),(40),(41),(44),(45),(47),(48),(50),(56),(57),(58),(59),(60),(63),(65),(66),(68)
+
+	WHILE (Select COUNT(*) FROM #Temp) > 0
+	BEGIN
+		DECLARE @id int;
+		SELECT TOP 1 @id= ProductId from #Temp;
+		EXEC Enterprise.SetProductSetting 0, @id, @settingTypeId, N'1'
+		DELETE From #Temp WHERE ProductId = @id
+	END
+	DROP Table #Temp
+END
+
+--TFS -716888 end
