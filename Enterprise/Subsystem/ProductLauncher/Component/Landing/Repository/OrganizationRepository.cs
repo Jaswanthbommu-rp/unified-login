@@ -149,6 +149,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     organization.organizationType = orgType != null ? new OrganizationType {Name = orgType.Name, OrganizationTypeId = orgType.OrganizationTypeId, CreateDate = orgType.CreateDate} : new OrganizationType();
                     var orgDomain = ListOrganizationDomain().FirstOrDefault(d => d.OrganizationDomainId == organization.OrganizationDomainId);
                     organization.OrganizationDomain = orgDomain != null ? new OrganizationDomain {OrganizationDomainId = orgDomain.OrganizationDomainId, Name = orgDomain.Name, CreateDate = orgDomain.CreateDate} : new OrganizationDomain();
+                    string usePrimaryPropertySettingValue = GetOrganizationSettingValue("UsePrimaryProperties", organization.PartyId);
+                    if (!string.IsNullOrEmpty(usePrimaryPropertySettingValue))
+                    {
+                        organization.UsePrimaryProperties = Convert.ToInt32(usePrimaryPropertySettingValue);
+                    }
                 }
                 return organization;
             }
@@ -172,6 +177,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         o.organizationType = orgType != null ? new OrganizationType {Name = orgType.Name, OrganizationTypeId = orgType.OrganizationTypeId, CreateDate = orgType.CreateDate} : new OrganizationType();
                         var orgDomain = ListOrganizationDomain().FirstOrDefault(d => d.OrganizationDomainId == o.OrganizationDomainId);
                         o.OrganizationDomain = orgDomain != null ? new OrganizationDomain {OrganizationDomainId = orgDomain.OrganizationDomainId, Name = orgDomain.Name, CreateDate = orgDomain.CreateDate} : new OrganizationDomain();
+                        string usePrimaryPropertySettingValue = GetOrganizationSettingValue("UsePrimaryProperties", o.PartyId);
+                        if (!string.IsNullOrEmpty(usePrimaryPropertySettingValue))
+                        {
+                            o.UsePrimaryProperties = Convert.ToInt32(usePrimaryPropertySettingValue);
+                        }
                     }
                 );
 
