@@ -199,6 +199,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         public HttpResponseMessage InsertOrganization([FromBody] OrganizationCreate organization, bool processBlueBookMessage = false)
         {
+            if (!string.IsNullOrEmpty(organization.CompanyInstancePartnerSourceId) && !string.IsNullOrEmpty(organization.CompanyInstancePartner))
+            {
+                var partnerInstance = _manageBlueBook.GetCompanyInstanceBySourceAndInstanceId(organization.CompanyInstancePartnerSourceId, organization.CompanyInstancePartner);
+                if (partnerInstance == null)
+                {
+                    return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Partner instance could not be found");
+                }
+            }
+
             var organizationDomainList = _manageOrganization.ListOrganizationDomain();
 
             if (!organizationDomainList.Any(d => d.Name.Equals(organization.OrganizationDomain, StringComparison.OrdinalIgnoreCase)))
@@ -214,6 +223,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 organization.OrganizationDomainId = organizationDomainList.FirstOrDefault(p => p.Name.Equals(organization.OrganizationDomain, StringComparison.OrdinalIgnoreCase)).OrganizationDomainId;
             }
 
+            
             var addProductList = new List<int>();
             // verify the products, if any, exist and can be added to the customer
             List<string> invalidProductList = _manageOrganization.ParseProduct(organization.Products, addProductList);

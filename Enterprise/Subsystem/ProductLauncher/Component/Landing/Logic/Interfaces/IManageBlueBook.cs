@@ -252,6 +252,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <param name="systemProductCenter"></param>
         /// <returns></returns>
         bool ProductCenterDisable(SystemProductCenter systemProductCenter);
-        
+
+        /// <summary>
+        /// Used to get a specific product instance by source and source instance id
+        /// </summary>
+        /// <param name="instanceId"></param>
+        /// <param name="productSource"></param>
+        /// <returns></returns>
+        CustomerCompanyMap GetCompanyInstanceBySourceAndInstanceId(string instanceId, string productSource);
     }
 }

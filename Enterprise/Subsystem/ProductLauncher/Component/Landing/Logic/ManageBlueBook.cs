@@ -53,7 +53,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         private bool useDomains = false;
         private bool useUPFMId = false;
-        private bool useTranslatev2 = false;
 
         ObjectCache _manageBlueBookCache = MemoryCache.Default;
 
@@ -82,7 +81,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             bbUri = productInternalSettingList.First(a => a.Name.Equals("BlueBookAPIEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
             useDomains = GetBooleanProductSettings("BooksUseDomains");
             useUPFMId = GetBooleanProductSettings("BooksUseUPFMId");
-            useTranslatev2 = GetBooleanProductSettings("BooksUseTranslatev2");
 
             _httpClient = new HttpClient {BaseAddress = new Uri(bbUri)};
         }
@@ -112,7 +110,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             bbUri = productInternalSettingList.First(a => a.Name.Equals("BlueBookAPIEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
             useDomains = GetBooleanProductSettings("BooksUseDomains");
             useUPFMId = GetBooleanProductSettings("BooksUseUPFMId");
-            useTranslatev2 = GetBooleanProductSettings("BooksUseTranslatev2");
 
             //bbUri = "https://booksapi.realpage.com";
             _httpClient = new HttpClient {BaseAddress = new Uri(bbUri)};
@@ -127,7 +124,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
             useDomains = GetBooleanProductSettings("BooksUseDomains");
             useUPFMId = GetBooleanProductSettings("BooksUseUPFMId");
-            useTranslatev2 = GetBooleanProductSettings("BooksUseTranslatev2");
         }
 
         /// <summary>
@@ -164,14 +160,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             if (useTranslate && useUPFMId && companyRealPageId != Guid.Empty && string.IsNullOrEmpty(includeExtra) && !string.IsNullOrEmpty(source) && !source.Equals(ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)))
             {
-                if (!useTranslatev2)
-                {
-                    companyMap = GetTranslateFromUPFMToProduct(companyRealPageId.ToString(), source, domain);
-                }
-                else
-                {
-                    companyMap = GetTranslateFromUPFMToProductv2(companyRealPageId.ToString(), source);
-                }
+                companyMap = GetTranslateFromUPFMToProductv2(companyRealPageId.ToString(), source);
 
                 if (companyMap != null)
                 {
@@ -245,41 +234,35 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         /// <summary>
-        /// Get all instances related to the given UPFM instance source. Filtering on the given domain
+        /// Used to get a specific product instance by source and source instance id
         /// </summary>
-        /// <param name="companyRealPageId"></param>
+        /// <param name="instanceId"></param>
         /// <param name="productSource"></param>
-        /// <param name="domain"></param>
         /// <returns></returns>
-        private IList<CustomerCompanyMap> GetTranslateFromUPFMToProduct(string companyRealPageId, string productSource, string domain)
+        public CustomerCompanyMap GetCompanyInstanceBySourceAndInstanceId(string instanceId, string productSource)
         {
-            //translate/companyinstance/684382D3-F2F8-4F42-8D29-935F834C6888/UPFM/OS?filter[customerEnvironment]=Primary
-            string uri = $"translate/companyinstance/{companyRealPageId}/{ProductEnum.UnifiedPlatform.ToEnumDescription()}/{productSource}?filter[customerEnvironment]={domain}";
-            Dictionary<string, object> logData = new Dictionary<string, object>() {{"uri", uri}};
-            WriteToLog(LogEventLevel.Debug, $"GetTranslateFromUPFMToProduct - Getting info. {productSource}/{domain}", logData);
+            //companyinstance/1051412/OS
+            string uri = $"companyinstance/{instanceId}/{productSource}";
+            Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", uri } };
+            WriteToLog(LogEventLevel.Debug, $"GetCompanyInstanceBySourceAndInstanceId - Getting info. {productSource}", logData);
 
             RPObjectCache rpcache = new RPObjectCache();
-            var cacheKey = $"GetTranslateFromUPFMToProduct_{companyRealPageId}_{productSource}_{domain}";
-            List<CustomerCompanyMap> booksCustomerMaster = rpcache.GetFromCache<List<CustomerCompanyMap>>(cacheKey, 180, () =>
+            var cacheKey = $"GetCompanyInstanceBySourceAndInstanceId_{instanceId}_{productSource}";
+            var instance = rpcache.GetFromCache<CustomerCompanyMap>(cacheKey, 30, () =>
             {
-                List<CustomerCompanyMap> companyListCache = new List<CustomerCompanyMap>();
                 var response = GetAsync(uri).Result;
                 if (response.IsSuccessStatusCode)
                 {
-                    var translateCompanyInstance = JsonConvert.DeserializeObject<TranslateCompanyInstance>(response.Content.ReadAsStringAsync().Result);
-                    logData = new Dictionary<string, object>() {{"response", translateCompanyInstance}, {"uri", uri}, {"productSource", productSource}, {"domain", domain}};
-                    WriteToLog(LogEventLevel.Debug, $"GetTranslateFromUPFMToProduct - Got info. {productSource}/{domain}", logData);
-                    CustomerCompanyMap map = new CustomerCompanyMap(){ CompanyInstance = new List<CompanyInstance>()};
-                    map.CompanyInstanceSourceId = translateCompanyInstance.Data.Attributes.TranslatedCompanyInstances[0].CompanyInstanceSourceId;
-                    map.Source = productSource;
-                    companyListCache.Add(map);
-                    return companyListCache;
+                    var customerCompanyMap = JsonConvert.DeserializeObject<CustomerCompanyMap>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
+                    logData = new Dictionary<string, object>() { { "response", customerCompanyMap } };
+                    WriteToLog(LogEventLevel.Debug, "GetCompanyInstanceBySourceAndInstanceId - Got info.", logData);
+                    return customerCompanyMap;
                 }
 
                 return null;
             });
 
-            return booksCustomerMaster;
+            return instance;
         }
 
         /// <summary>

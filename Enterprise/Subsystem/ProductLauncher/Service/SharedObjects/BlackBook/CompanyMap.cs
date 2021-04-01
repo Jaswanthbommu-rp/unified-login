@@ -44,6 +44,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackB
         /// </summary>
         public string CreatedBy { get; set; }
 
+        /// <summary>
+        /// The domain for the company
+        /// </summary>
+        public string Domain { get; set; }
+
 		/// <summary>
 		/// List of attributes
 		/// </summary>

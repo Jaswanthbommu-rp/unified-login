@@ -303,9 +303,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             //Act
 
             //Assert
-            Assert.True(
-                result.RealPageId == new Guid("C802694D-5553-4527-8616-3C0F434AE62D")
-            );
+            Assert.Equal("Some company", result.Name);
         }
 
         [Fact]
