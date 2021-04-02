@@ -67,7 +67,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _userClaims = userClaims;
             _propertyRepository = new PropertyRepository(repository);
             _manageProduct = new ManageProduct(repository, userClaims, messageHandler);
-            _manageCredential = new ManageCredential(_userClaims);
         }
 
         /// <summary>
@@ -94,7 +93,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _userClaims = userClaims;
             _propertyRepository = new PropertyRepository(repository);
             _manageProductOneSite = manageProductOneSite;
-            _manageCredential = new ManageCredential(_userClaims);
         }
 
         /// <summary>
