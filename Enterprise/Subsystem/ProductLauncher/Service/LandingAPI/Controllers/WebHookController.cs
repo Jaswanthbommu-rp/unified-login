@@ -499,19 +499,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             return result;
         }
 
-        private IList<ProductInternalSetting> GetUnifiedPlatformSettings()
-        {
-            IList<ProductInternalSetting> productInternalSettingList = new List<ProductInternalSetting>();
-            RPObjectCache rpcache = new RPObjectCache();
-            var cacheKey = "productInternalSetting_" + (int) ProductEnum.UnifiedPlatform;
-            productInternalSettingList = rpcache.GetFromCache<IList<ProductInternalSetting>>(cacheKey, 60, () =>
-            {
-                // load from database
-                return _productInternalSettingRepository.GetProductInternalSettings((int) ProductEnum.UnifiedPlatform);
-            });
-            return productInternalSettingList;
-        }
-
         private IList<ProductInternalSetting> GetUnifiedPlatformSettings(int productId)
         {
             IList<ProductInternalSetting> productInternalSettingList = new List<ProductInternalSetting>();
@@ -531,7 +518,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// <returns>The list of settings</returns>
         private string GetTiboWebHookSigningSecret()
         {
-            string signingSecret = GetUnifiedPlatformSettings()?.ToList().FirstOrDefault(s => s.Name.Equals("TiboWebHookSigningSecret", StringComparison.OrdinalIgnoreCase))?.Value;
+            string signingSecret = GetUnifiedPlatformSettings((int)ProductEnum.UnifiedPlatform)?.ToList().FirstOrDefault(s => s.Name.Equals("TiboWebHookSigningSecret", StringComparison.OrdinalIgnoreCase))?.Value;
             return signingSecret ?? "";
         }
 
@@ -548,7 +535,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return createCompanyResult;
             }
 
-            string ignoreEnvironment = GetUnifiedPlatformSettings()?.ToList().FirstOrDefault(s => s.Name.Equals("UPFMOrderIgnoreEnvironment", StringComparison.OrdinalIgnoreCase))?.Value;
+            string ignoreEnvironment = GetUnifiedPlatformSettings((int)ProductEnum.UnifiedPlatform)?.ToList().FirstOrDefault(s => s.Name.Equals("UPFMOrderIgnoreEnvironment", StringComparison.OrdinalIgnoreCase))?.Value;
             if (!string.IsNullOrEmpty(ignoreEnvironment))
             {
                 createCompanyResult.Result = "Ignoring environment";
