@@ -443,13 +443,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 }
             }
             org = _manageOrganization.GetOrganization(org.RealPageId);
-            string usePrimaryPropertySettingValue = _manageOrganization.GetOrganizationSettingValue(org.PartyId, "UsePrimaryProperties");
-            if (!string.IsNullOrEmpty(usePrimaryPropertySettingValue))
-            {
-                org.UsePrimaryProperties = Convert.ToInt32(usePrimaryPropertySettingValue);
-            }
-            
-
+           
            return Request.CreateResponse(HttpStatusCode.OK, org);
         }
 
