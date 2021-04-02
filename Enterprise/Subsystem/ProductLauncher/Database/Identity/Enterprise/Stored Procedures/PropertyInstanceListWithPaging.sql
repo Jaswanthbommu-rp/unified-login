@@ -4,7 +4,7 @@ insert into @p1 values('003B0509-1189-49DC-BBE6-01C5B6277A83')
 insert into @p1 values('00A853D7-72C2-4A40-80DD-0C12ED9AA761')
 insert into @p1 values('01F94ECA-0F6F-4170-B1B7-D9921A744EE8')
 exec Enterprise.GetPropertyInstanceListByIdWithPaging @InstanceList=@p1,@Name=NULL,
-@PropertyMasterid=null,@SortColumn=N'CustomerPropertyId',@SortDirection=N'Dec',@RowsPerPage=100,@PageNumber=1  
+@PropertyMasterid=null,@Status=NULL,@SortColumn=N'CustomerPropertyId',@SortDirection=N'Dec',@RowsPerPage=100,@PageNumber=1   
 
 */
 
@@ -13,6 +13,7 @@ CREATE PROCEDURE [Enterprise].[GetPropertyInstanceListByIdWithPaging]
  @InstanceList [Enterprise].[PropertyInstanceType] READONLY,  
  @Name  VARCHAR(MAX) = NULL,  
  @PropertyMasterid VARCHAR(20) = NULL, 
+ @Status bigint = NULL,
  @SortColumn    VARCHAR(256) = 'Name',  
  @SortDirection   VARCHAR(4) = 'Asc',  
  @RowsPerPage   INT     = 0,  
@@ -75,6 +76,7 @@ BEGIN
    ON IL.InstanceId = PI1.InstanceId and pi1.IsDeleted = 0
     WHERE (@Name IS NULL OR pi1.Name LIKE '%' + @Name + '%') 
   AND (@PropertyMasterid IS NULL OR PI1.CustomerPropertyId LIKE '%' + @PropertyMasterid + '%')  
+  AND (@Status IS NULL OR PI1.IsActive = @Status)
   
  SELECT @sortValue =  
   CASE @SortColumn  
