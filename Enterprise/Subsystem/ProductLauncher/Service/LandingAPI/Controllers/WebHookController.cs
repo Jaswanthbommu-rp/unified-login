@@ -49,7 +49,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _manageOrganization = new ManageOrganization(repository, userClaim, messageHandler);
             _manageBlueBook = new ManageBlueBook(userClaim, _productInternalSettingRepository, messageHandler);
             _organizationProductRepository = new OrganizationProductRepository(repository);
-            _manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository);
+            _manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository, _manageBlueBook, null);
             _userClaims = userClaim;
         }
 
@@ -65,8 +65,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _productInternalSettingRepository = new ProductInternalSettingRepository();
             _manageOrganization = new ManageOrganization(_userClaims);
             _organizationProductRepository = new OrganizationProductRepository();
-            _manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository);
             _manageBlueBook = new ManageBlueBook(_userClaims);
+            _manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository, _manageBlueBook, null);
         }
 
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]

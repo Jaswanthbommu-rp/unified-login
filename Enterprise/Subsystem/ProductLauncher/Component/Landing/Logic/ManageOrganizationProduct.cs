@@ -22,15 +22,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		#endregion
 
 		#region Constructors
-		/// <summary>
-		/// Manage Organization Product Constructor
-		/// </summary>
-		/// <param name="organizationProductRepository">Organization Product Repository</param>
-
-		public ManageOrganizationProduct(IOrganizationProductRepository organizationProductRepository)
-		{
-			_organizationProductRepository = organizationProductRepository;
-		}
 
 		/// <summary>
 		/// Create a basic instance of the ManageOrganizationProduct class
@@ -39,7 +30,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		/// <param name="organizationProductRepository"></param>
 		/// <param name="manageProduct"></param>
 
-		public ManageOrganizationProduct(IManageBlueBook manageBlueBook, IOrganizationProductRepository organizationProductRepository, IManageProduct manageProduct)
+		public ManageOrganizationProduct(IOrganizationProductRepository organizationProductRepository, IManageBlueBook manageBlueBook, IManageProduct manageProduct)
 		{
 			_organizationProductRepository = organizationProductRepository;
 			_manageBlueBook = manageBlueBook;
