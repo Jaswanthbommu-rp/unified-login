@@ -232,6 +232,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <returns></returns>
         BooksPropertyInstance GetPropertyDetailsByPropertyInstanceIdAndSource(string propertyInstanceSourceId, string source);
 
+        /// <summary>
+        /// Get CustomerCompanyMap By CustomerCompanyId
+        /// </summary>
+        /// <param name="customerCompanyId">customerCompanyId</param>
+        /// <param name="companyDomain">companyDomain</param>
+        /// <returns></returns>
+        List<CustomerCompanyMap> GetCustomerCompanyMapByCustomerCompanyId(int customerCompanyId, string companyDomain);
+
+        /// <summary>
+        /// Get CompanyInstance By UPFMCompanyId
+        /// </summary>
+        /// <param name="upfmCompanyId">upfmCompanyId</param>
+        /// <returns></returns>
+        BooksCompanyInstance GetCompanyInstanceByUPFMCompanyId(string upfmCompanyId);
+
         ///// <summary>
         ///// Get translated product primary properties data
         ///// </summary>
