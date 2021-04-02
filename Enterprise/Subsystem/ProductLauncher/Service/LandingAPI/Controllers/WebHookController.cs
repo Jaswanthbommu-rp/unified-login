@@ -49,7 +49,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _manageOrganization = new ManageOrganization(repository, userClaim, messageHandler);
             _manageBlueBook = new ManageBlueBook(userClaim, _productInternalSettingRepository, messageHandler);
             _organizationProductRepository = new OrganizationProductRepository(repository);
-            _manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository);
+            _manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository, _manageBlueBook, null);
             _userClaims = userClaim;
         }
 
@@ -65,8 +65,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _productInternalSettingRepository = new ProductInternalSettingRepository();
             _manageOrganization = new ManageOrganization(_userClaims);
             _organizationProductRepository = new OrganizationProductRepository();
-            _manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository);
             _manageBlueBook = new ManageBlueBook(_userClaims);
+            _manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository, _manageBlueBook, null);
         }
 
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
@@ -350,16 +350,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             // add ack for new products for the company
                             foreach (var productId in uniqueProductIdList)
                             {
-                                centerEnablement.Details.Add(new ProductCenterEnablementSettings()
+                                var internalSettings = GetUnifiedPlatformSettings(productId);
+                                var updateinUDM = internalSettings.Where(x => x.Name.ToUpper() == "UPDATEPRODUCTINUDM").FirstOrDefault();
+
+                                if (updateinUDM != null && updateinUDM.Value == "1")
                                 {
-                                    Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
-                                    CustomerEnvironment = customerDomain,
-                                    CustomerCompanyId = customerCompanyId,
-                                    CompanyInstanceSourceId = existingUnifiedLoginInstanceId,
-                                    ProductCenterSourceId = productId.ToString(),
-                                    PropertyInstanceSourceId = null,
-                                    CustomerPropertyId = null
-                                });
+                                    centerEnablement.Details.Add(new ProductCenterEnablementSettings()
+                                    {
+                                        Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
+                                        CustomerEnvironment = customerDomain,
+                                        CustomerCompanyId = customerCompanyId,
+                                        CompanyInstanceSourceId = existingUnifiedLoginInstanceId,
+                                        ProductCenterSourceId = productId.ToString(),
+                                        PropertyInstanceSourceId = null,
+                                        CustomerPropertyId = null
+                                    });
+                                }
                             }
 
                             // add any new properties
@@ -493,15 +499,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             return result;
         }
 
-        private IList<ProductInternalSetting> GetUnifiedPlatformSettings()
+        private IList<ProductInternalSetting> GetUnifiedPlatformSettings(int productId)
         {
             IList<ProductInternalSetting> productInternalSettingList = new List<ProductInternalSetting>();
             RPObjectCache rpcache = new RPObjectCache();
-            var cacheKey = "productInternalSetting_" + (int) ProductEnum.UnifiedPlatform;
+            var cacheKey = "productInternalSetting_" + (int)productId;
             productInternalSettingList = rpcache.GetFromCache<IList<ProductInternalSetting>>(cacheKey, 60, () =>
             {
                 // load from database
-                return _productInternalSettingRepository.GetProductInternalSettings((int) ProductEnum.UnifiedPlatform);
+                return _productInternalSettingRepository.GetProductInternalSettings((int)productId);
             });
             return productInternalSettingList;
         }
@@ -512,7 +518,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// <returns>The list of settings</returns>
         private string GetTiboWebHookSigningSecret()
         {
-            string signingSecret = GetUnifiedPlatformSettings()?.ToList().FirstOrDefault(s => s.Name.Equals("TiboWebHookSigningSecret", StringComparison.OrdinalIgnoreCase))?.Value;
+            string signingSecret = GetUnifiedPlatformSettings((int)ProductEnum.UnifiedPlatform)?.ToList().FirstOrDefault(s => s.Name.Equals("TiboWebHookSigningSecret", StringComparison.OrdinalIgnoreCase))?.Value;
             return signingSecret ?? "";
         }
 
@@ -529,7 +535,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return createCompanyResult;
             }
 
-            string ignoreEnvironment = GetUnifiedPlatformSettings()?.ToList().FirstOrDefault(s => s.Name.Equals("UPFMOrderIgnoreEnvironment", StringComparison.OrdinalIgnoreCase))?.Value;
+            string ignoreEnvironment = GetUnifiedPlatformSettings((int)ProductEnum.UnifiedPlatform)?.ToList().FirstOrDefault(s => s.Name.Equals("UPFMOrderIgnoreEnvironment", StringComparison.OrdinalIgnoreCase))?.Value;
             if (!string.IsNullOrEmpty(ignoreEnvironment))
             {
                 createCompanyResult.Result = "Ignoring environment";

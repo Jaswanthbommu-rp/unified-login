@@ -56,7 +56,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _repository = repository;
             _repositoryResponse = repositoryResponse;
             _organizationProductRepository = new OrganizationProductRepository(repository);
-            _manageOrganizationProduct = new ManageOrganizationProduct(new OrganizationProductRepository(repository));
             _manageCustomFields = new ManageCustomFields(new CustomFieldsRepository(repository), userClaims);
             _manageUserLogin = new ManageUserLogin(repository, userClaims, messageHandler);
             _managePartyRelationship = new ManagePartyRelationship(new PartyRelationshipRepository(repository));
@@ -67,6 +66,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _userClaims = userClaims;
             _propertyRepository = new PropertyRepository(repository);
             _manageProduct = new ManageProduct(repository, userClaims, messageHandler);
+            _manageOrganizationProduct = new ManageOrganizationProduct(new OrganizationProductRepository(repository), _manageBlueBook, _manageProduct);
         }
 
         /// <summary>
@@ -82,7 +82,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _repository = repository;
             _repositoryResponse = repositoryResponse;
             _organizationProductRepository = new OrganizationProductRepository(repository);
-            _manageOrganizationProduct = new ManageOrganizationProduct(new OrganizationProductRepository(repository));
             _manageCustomFields = new ManageCustomFields(new CustomFieldsRepository(repository), userClaims);
             _manageUserLogin = new ManageUserLogin(repository, userClaims, messageHandler);
             _managePartyRelationship = new ManagePartyRelationship(new PartyRelationshipRepository(repository));
@@ -93,6 +92,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _userClaims = userClaims;
             _propertyRepository = new PropertyRepository(repository);
             _manageProductOneSite = manageProductOneSite;
+            _manageProduct = new ManageProduct(repository, _userClaims, _messageHandler);
+            _manageOrganizationProduct = new ManageOrganizationProduct(new OrganizationProductRepository(repository), _manageBlueBook, _manageProduct);
         }
 
         /// <summary>
@@ -104,13 +105,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             base.Initialize(controllerContext);
             _repositoryResponse = new RepositoryResponse();
             _organizationProductRepository = new OrganizationProductRepository();
-            _manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository);
             _manageUserLogin = new ManageUserLogin();
             _managePartyRelationship = new ManagePartyRelationship();
             _manageOrganization = new ManageOrganization(_userClaims);
             _manageBlueBook = new ManageBlueBook(_userClaims);
             _productInternalSettingRepository = new ProductInternalSettingRepository();
             _manageProduct = new ManageProduct(_userClaims);
+            _manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository, _manageBlueBook, _manageProduct);
         }
 
         #endregion
@@ -768,7 +769,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             // add the given products to the new company
             if (addProductList.Count > 0)
             {
-                _manageOrganizationProduct = new ManageOrganizationProduct(_manageBlueBook, _organizationProductRepository);
+                _manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository, _manageBlueBook, _manageProduct);
                 _repositoryResponse = _manageOrganizationProduct.InsertUpdateOrganizationProduct(org, addProductList);
                 if (!string.IsNullOrEmpty(_repositoryResponse.ErrorMessage))
                 {
@@ -1562,7 +1563,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         private IRepositoryResponse DeleteProductsFromOrganization(List<int> addProductList, Organization org)
         {
             IRepositoryResponse response = new RepositoryResponse();
-            IManageOrganizationProduct manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository);
+            
             foreach (ProductEnum product in addProductList)
             {
                 var systemProductCenter = new SystemProductCenter()
@@ -1584,7 +1585,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     return response;
                 }
                 
-                response = manageOrganizationProduct.DeleteOrganizationProduct(partyId: org.PartyId, product: product);
+                response = _manageOrganizationProduct.DeleteOrganizationProduct(partyId: org.PartyId, product: product);
                 if (!string.IsNullOrEmpty(response.ErrorMessage))
                 {
                     return response;
