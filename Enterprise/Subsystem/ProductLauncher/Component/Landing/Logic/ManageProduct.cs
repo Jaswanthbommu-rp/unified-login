@@ -601,8 +601,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var booksCompanyInstance = _manageBlueBook.GetCompanyInstanceByUPFMCompanyId(upfmCompanyId.ToString().ToLower());
             int customerCompanyId = booksCompanyInstance?.Attributes?.CustomerCompanyMap.FirstOrDefault()?.CustomerCompanyId ?? 0;
             string domain = booksCompanyInstance?.Attributes?.Domain;
-            if(!string.IsNullOrEmpty(domain) && customerCompanyId != 0)
-			{
+            if (!string.IsNullOrEmpty(domain) && customerCompanyId != 0)
+            {
                 var booksCustomerCompanyMap = _manageBlueBook.GetCustomerCompanyMapByCustomerCompanyId(customerCompanyId, domain);
                 foreach (var product in products)
                 {
@@ -615,11 +615,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         If we have more then one product instance with same product code irrespective of greenbookcare flag
                      */
                     if (findBooksProductCode != null && findBooksProductCode.Count() == 1)
-					{
+                    {
                         product.ProductInstance = findBooksProductCode.FirstOrDefault().CompanyInstanceSourceId;
                         product.GreenBookCares = findBooksProductCode.FirstOrDefault().CompanyInstance.FirstOrDefault().GreenBookCares;
-					}
-				}
+                    }
+                }
             }
             return products;
         }

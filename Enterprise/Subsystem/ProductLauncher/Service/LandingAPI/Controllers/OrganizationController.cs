@@ -697,7 +697,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
                 personaId = persona.PersonaId;
             }
-            
+
             CheckPasswordExpirationResponse checkPasswordExpirationResponse = _manageCredential.CheckPasswordExpiration(_userClaims.UserId, _userClaims.UserRealPageGuid);
             if (checkPasswordExpirationResponse != null && !checkPasswordExpirationResponse.IsPasswordExpired)
             {
@@ -705,12 +705,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 MemoryCache.Default.Remove(cacheKey);
 
                 IList<ProductUI> productList = _manageProduct.GetProducts(org.RealPageId, personaId, (allProducts.HasValue ? allProducts.Value : false));
-				if (allProducts.HasValue && allProducts.Value)
+                if (allProducts.HasValue && allProducts.Value)
                 {
                     output.list = _manageProduct.AddProductSourceAndGreenBookCareFlagToProducts(org.RealPageId, productList);
                 }
-				else
-				{
+                else
+                {
                     output.list = productList;
                 }
             }
