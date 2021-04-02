@@ -118,5 +118,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// </summary>
         /// <returns></returns>
         IList<ProductSettingType> ListProductSettingType();
+
+        /// <summary>
+        /// Add ProductSource And GreenBookCareFlag To Products
+        /// </summary>
+        /// <param name="upfmCompanyId"></param>
+        /// <param name="productUI"></param>
+        /// <returns></returns>
+        IList<ProductUI> AddProductSourceAndGreenBookCareFlagToProducts(Guid upfmCompanyId, IList<ProductUI> productUI);
     }
 }

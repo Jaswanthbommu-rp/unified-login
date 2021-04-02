@@ -67,6 +67,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _userClaims = userClaims;
             _propertyRepository = new PropertyRepository(repository);
             _manageProduct = new ManageProduct(repository, userClaims, messageHandler);
+            _manageCredential = new ManageCredential(_userClaims);
         }
 
         /// <summary>
@@ -93,6 +94,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _userClaims = userClaims;
             _propertyRepository = new PropertyRepository(repository);
             _manageProductOneSite = manageProductOneSite;
+            _manageCredential = new ManageCredential(_userClaims);
         }
 
         /// <summary>
@@ -111,6 +113,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _manageBlueBook = new ManageBlueBook(_userClaims);
             _productInternalSettingRepository = new ProductInternalSettingRepository();
             _manageProduct = new ManageProduct(_userClaims);
+            _manageCredential = new ManageCredential(_userClaims);
         }
 
         #endregion
@@ -131,6 +134,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         private IRepository _repository;
         private IManageProductOneSite _manageProductOneSite;
         private IManageProduct _manageProduct;
+        private IManageCredential _manageCredential;
 
         #endregion
 
@@ -701,18 +705,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
                 personaId = persona.PersonaId;
             }
-
-            IManageCredential manageCredential = new ManageCredential(_userClaims);
-            CheckPasswordExpirationResponse checkPasswordExpirationResponse = manageCredential.CheckPasswordExpiration(_userClaims.UserId, _userClaims.UserRealPageGuid);
+            
+            CheckPasswordExpirationResponse checkPasswordExpirationResponse = _manageCredential.CheckPasswordExpiration(_userClaims.UserId, _userClaims.UserRealPageGuid);
             if (checkPasswordExpirationResponse != null && !checkPasswordExpirationResponse.IsPasswordExpired)
             {
-                var manageProduct = new ManageProduct(_userClaims);
                 var cacheKey = $"getListProductsByOrganization_{org.RealPageId}";
                 MemoryCache.Default.Remove(cacheKey);
 
-                IList<ProductUI> productList = manageProduct.GetProducts(org.RealPageId, personaId, (allProducts.HasValue ? allProducts.Value : false));
-
-                output.list = productList;
+                IList<ProductUI> productList = _manageProduct.GetProducts(org.RealPageId, personaId, (allProducts.HasValue ? allProducts.Value : false));
+				if (allProducts.HasValue && allProducts.Value)
+                {
+                    output.list = _manageProduct.AddProductSourceAndGreenBookCareFlagToProducts(org.RealPageId, productList);
+                }
+				else
+				{
+                    output.list = productList;
+                }
             }
 
             output.Status = errorStatus;
