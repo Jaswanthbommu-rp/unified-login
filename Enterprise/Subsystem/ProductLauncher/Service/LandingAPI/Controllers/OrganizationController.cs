@@ -775,7 +775,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             // add the given products to the new company
             if (addProductList.Count > 0)
             {
-                _manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository, _manageBlueBook, _manageProduct);
                 _repositoryResponse = _manageOrganizationProduct.InsertUpdateOrganizationProduct(org, addProductList);
                 if (!string.IsNullOrEmpty(_repositoryResponse.ErrorMessage))
                 {
