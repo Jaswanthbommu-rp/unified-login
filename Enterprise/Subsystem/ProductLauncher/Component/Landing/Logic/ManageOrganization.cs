@@ -725,7 +725,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         #endregion
 
         #region GetPropertiesForCompany
-        public List<CompanyPropertySetup> GetPropertiesForCompany(Guid companyInstanceId, string propertyName = null, string domain = null, int? blueId = null, IDictionary<object, object> globals=null, long editorPersonaId=0, long userPersonaId = 0)
+        public List<CompanyPropertySetup> GetPropertiesForCompany(Guid companyInstanceId, string propertyName = null, string domain = null, int? blueId = null, int? status = null, IDictionary<object, object> globals=null, long editorPersonaId=0, long userPersonaId = 0)
         {
             RequestParameter dataFilter = new RequestParameter();
            
@@ -740,6 +740,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             List<BooksPropertyInstance> booksPropertyInstance = GetPropertyInstanceFromBooks(companyInstanceId);            
             if (userPersonaId > 0)
             {
+                status = 1; //Hardcoding status to 1, because primary properties tab should only get active properties
                 userProperties = new List<int>();
                 userProperties = _propertyRepository.ListUPFMPropertyInstanceIdByPersona(userPersonaId, ProductEnum.UnifiedUI);
                 selectedPropertyInstances = _propertyRepository.ListUPFMPropertyInstanceByPersona(userPersonaId, ProductEnum.UnifiedUI);
@@ -755,7 +756,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
             if(propertyInstanceIds != null)
             {
-                propertyDetails = _propertyRepository.GetPropertiesForCompany(propertyInstanceIds, propertyName, blueId, dataFilter);
+                propertyDetails = _propertyRepository.GetPropertiesForCompany(propertyInstanceIds, propertyName, blueId, status, dataFilter);
                 propertyDetails = AddContractedNameToPropertyList(booksPropertyInstance, propertyDetails, userProperties);
             }
             List<CompanyPropertySetup> companyPropertySetup = new List<CompanyPropertySetup>()

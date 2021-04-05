@@ -112,6 +112,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _productInternalSettingRepository = new ProductInternalSettingRepository();
             _manageProduct = new ManageProduct(_userClaims);
             _manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository, _manageBlueBook, _manageProduct);
+            _manageCredential = new ManageCredential(_userClaims);
         }
 
         #endregion
@@ -132,6 +133,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         private IRepository _repository;
         private IManageProductOneSite _manageProductOneSite;
         private IManageProduct _manageProduct;
+        private IManageCredential _manageCredential;
 
         #endregion
 
@@ -697,17 +699,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 personaId = persona.PersonaId;
             }
 
-            IManageCredential manageCredential = new ManageCredential(_userClaims);
-            CheckPasswordExpirationResponse checkPasswordExpirationResponse = manageCredential.CheckPasswordExpiration(_userClaims.UserId, _userClaims.UserRealPageGuid);
+            CheckPasswordExpirationResponse checkPasswordExpirationResponse = _manageCredential.CheckPasswordExpiration(_userClaims.UserId, _userClaims.UserRealPageGuid);
             if (checkPasswordExpirationResponse != null && !checkPasswordExpirationResponse.IsPasswordExpired)
             {
-                var manageProduct = new ManageProduct(_userClaims);
                 var cacheKey = $"getListProductsByOrganization_{org.RealPageId}";
                 MemoryCache.Default.Remove(cacheKey);
 
-                IList<ProductUI> productList = manageProduct.GetProducts(org.RealPageId, personaId, (allProducts.HasValue ? allProducts.Value : false));
-
-                output.list = productList;
+                IList<ProductUI> productList = _manageProduct.GetProducts(org.RealPageId, personaId, (allProducts.HasValue ? allProducts.Value : false));
+                if (allProducts.HasValue && allProducts.Value)
+                {
+                    output.list = _manageProduct.AddProductSourceAndGreenBookCareFlagToProducts(org.RealPageId, productList);
+                }
+                else
+                {
+                    output.list = productList;
+                }
             }
 
             output.Status = errorStatus;
@@ -1120,6 +1126,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// <param name="propertyName">PropertyName</param>
         /// <param name="domain">Domain</param>
         /// <param name="blueId">blueId</param>
+        /// <param name="status"></param>
         /// <param name="datafilter">datafilter</param>
         /// <param name="userPersonaId">userPersonaId</param>
         /// <param name="editorPersonaId">editorPersonaId</param>
@@ -1131,7 +1138,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [Route("CompanySetup/CompanyPropertyList")]
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         [HttpGet]
-        public HttpResponseMessage GetPropertiesForCompany(Guid companyInstanceId, string domain = null, string propertyName = null, int? blueId = null, [FromUri] RequestParameter datafilter = null, long userPersonaId = 0, long editorPersonaId = 0)
+        public HttpResponseMessage GetPropertiesForCompany(Guid companyInstanceId, string domain = null, string propertyName = null, int? blueId = null, int? status = null, [FromUri] RequestParameter datafilter = null, long userPersonaId = 0, long editorPersonaId = 0)
         {
             if (companyInstanceId == Guid.Empty)
             {
@@ -1149,7 +1156,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             globals.Add(BaseType.RequestParameter, datafilter);
             var cacheKey = $"getPropertyInstanceForCompany_{companyInstanceId}";
             RPObjectCache.RemoveFromCache(cacheKey);
-            List<CompanyPropertySetup> companyPropertySetup = _manageOrganization.GetPropertiesForCompany(companyInstanceId, propertyName, domain, blueId, globals, editorPersonaId, userPersonaId);
+            List<CompanyPropertySetup> companyPropertySetup = _manageOrganization.GetPropertiesForCompany(companyInstanceId, propertyName, domain, blueId, status, globals, editorPersonaId, userPersonaId);
 
             int totalRecords = 0;
             if (companyPropertySetup.Count > 0)
@@ -1361,6 +1368,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// <param name="propertyName">propertyName</param>
         /// <param name="domain">domain</param>
         /// <param name="blueId">blueId</param>
+        /// <param name="status"></param>
         /// <param name="datafilter">Filter, Sort, Paginate</param>
         /// <param name="dataFormat">Retrun data in this format (default = CSV)</param>
         /// <returns>List of Properties object</returns>
@@ -1371,7 +1379,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [Route("CompanySetup/CompanyPropertyList/export")]
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         [HttpGet]
-        public HttpResponseMessage ListPropertyExport(Guid companyInstanceId, string propertyName = null, string domain = null, int? blueId = null, [FromUri] RequestParameter datafilter = null, SaveFormat dataFormat = SaveFormat.CSV)
+        public HttpResponseMessage ListPropertyExport(Guid companyInstanceId, string propertyName = null, string domain = null, int? blueId = null, int? status = null, [FromUri] RequestParameter datafilter = null, SaveFormat dataFormat = SaveFormat.CSV)
         {
             byte[] plainBytes;
             IDictionary<object, object> globals = new Dictionary<object, object>();
@@ -1389,7 +1397,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             globals.Add(BaseType.RequestParameter, datafilter);
             var cacheKey = $"getPropertyInstanceForCompany_{companyInstanceId}";
             RPObjectCache.RemoveFromCache(cacheKey);
-            List<CompanyPropertySetup> propertyList = _manageOrganization.GetPropertiesForCompany(companyInstanceId, propertyName, domain, blueId, globals);
+            List<CompanyPropertySetup> propertyList = _manageOrganization.GetPropertiesForCompany(companyInstanceId, propertyName, domain, blueId, status, globals);
 
             if (propertyList != null && propertyList.Count > 0)
             {
