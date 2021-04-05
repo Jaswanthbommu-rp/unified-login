@@ -35,6 +35,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         private IManageBlueBook _manageBlueBook;
         private IManageOrganizationProduct _manageOrganizationProduct;
         private IOrganizationProductRepository _organizationProductRepository;
+        private IManageProduct _manageProduct;
 
         public WebHookController()
         {
@@ -50,6 +51,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _manageBlueBook = new ManageBlueBook(userClaim, _productInternalSettingRepository, messageHandler);
             _organizationProductRepository = new OrganizationProductRepository(repository);
             _manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository, _manageBlueBook, null);
+            _manageProduct = new ManageProduct(repository, userClaim, messageHandler);
             _userClaims = userClaim;
         }
 
@@ -66,7 +68,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _manageOrganization = new ManageOrganization(_userClaims);
             _organizationProductRepository = new OrganizationProductRepository();
             _manageBlueBook = new ManageBlueBook(_userClaims);
-            _manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository, _manageBlueBook, null);
+            _manageProduct = new ManageProduct(_userClaims);
+            _manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository, _manageBlueBook, _manageProduct);
         }
 
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
