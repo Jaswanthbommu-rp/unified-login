@@ -796,28 +796,23 @@ IF (@ServerName ='RCDUSODBSQL001' AND EXISTS(SELECT 1 FROM Ident.SamlProductSett
 BEGIN
 	UPDATE Ident.SamlProductSettings SET LoginUri = 'https://dev-boss-energy.realpage.com/' WHERE ProductId = 58 
 END
-GO
 
 IF (@ServerName ='rctusodbsql001' AND EXISTS(SELECT 1 FROM Ident.SamlProductSettings where ProductId = 58 and LoginUri ='www.qa-abcenergy.realpage.com'))
 BEGIN
 	UPDATE Ident.SamlProductSettings SET LoginUri = 'https://qa-boss-energy.realpage.com/' WHERE ProductId = 58 
 END
-GO
 
 IF (@ServerName ='RCQUSODBSQL001' AND EXISTS(SELECT 1 FROM Ident.SamlProductSettings where ProductId = 58 and LoginUri ='www.sat-abcenergy.realpage.com'))
 BEGIN
 	UPDATE Ident.SamlProductSettings SET LoginUri = ' https://sat-boss-energy.realpage.com/' WHERE ProductId = 58 
 END
-GO
 
 IF (@ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B') AND EXISTS(SELECT 1 FROM Ident.SamlProductSettings where ProductId = 58 and LoginUri ='www.abcenergy.realpage.com'))
 BEGIN
 	UPDATE Ident.SamlProductSettings SET LoginUri = 'https://smart-energy.realpage.com/' WHERE ProductId = 58 
 END
-GO
 
 IF EXISTS(SELECT 1 FROM Enterprise.Product where ProductId = 58 AND Name = N'Intelligent Building Energy' AND Description=N'Intelligent Building Energy' )
 BEGIN
    UPDATE Enterprise.Product SET Name= N'Smart Energy', Description= N'Smart Energy' where ProductId = 58 
 END
-GO
