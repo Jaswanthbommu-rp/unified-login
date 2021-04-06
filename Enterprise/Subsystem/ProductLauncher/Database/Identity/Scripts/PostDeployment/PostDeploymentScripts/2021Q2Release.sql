@@ -672,6 +672,185 @@ end
 
 COMMIT TRAN;
 
+GO
+
+   --Panel Script for Smart Energy
+DECLARE @UserId bigint,
+       @ProductId int = 58,
+       @productSettingId INT,
+       @productSettingTypeId INT,
+       @productGroupSettingTypeId INT,
+       @ConfigurationId INT,
+       @ParentControlID INT,
+       @ControlID INT,
+       @MaxControlId INT,
+       @MaxControlAttributeId INT,
+       @Now datetime = GETDATE();
+
+SELECT @UserId = UserId
+FROM   Ident.UserLogin
+WHERE  LoginName LIKE 'realpagead@%'
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM [UserManagement].[ProductPage] WHERE ProductId = @ProductId)
+BEGIN
+		SET IDENTITY_INSERT [UserManagement].[Control] ON 
+
+		SELECT @MaxControlId = MAX(ControlId) FROM UserManagement.Control
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 1, NULL, 8, N'IntelligentBuildingEnergyUIId', NULL, NULL, 1, @UserId, @Now)
+		
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 2, @MaxControlId + 1, 9, N'IntelligentBuildingEnergyAccessRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)
+		
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 3, @MaxControlId + 2, 2, N'IntelligentBuildingEnergyAccessRolesSelectGridUIId', NULL, NULL, 2, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 4, @MaxControlId + 3, 7, N'IntelligentBuildingEnergyAccessRadioUIId', NULL, N'isAssigned', 1, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 5, @MaxControlId + 3, 5, N'IntelligentBuildingEnergyAccessRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 6, @MaxControlId + 3, 5, N'IntelligentBuildingEnergyAccessRoleTypeLabelUIId', N'Role Type', N'roletype', 3, @UserId, @Now)
+		
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 7, @MaxControlId + 3, 11, N'IntelligentBuildingEnergyAccessIconUIId', NULL, N'InfoIcon', 4, @UserId, @Now)
+		
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 8, @MaxControlId + 1, 9, N'IntelligentBuildingEnergyAccessPropertiesTabUIId', N'Properties', NULL, 2, @UserId, @Now)
+		
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 9, @MaxControlId + 8, 1, N'IntelligentBuildingEnergyAccessAllowaccesstoallcurrentandfuturepropertiesPropertiesSwitchUIId', N'Assign access to current and new properties automatically', N'allProperties', 1, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 10, @MaxControlId + 8, 3, N'IntelligentBuildingEnergyAccessPropertiesMultiSelectGridUIId', NULL, NULL, 2, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 11, @MaxControlId + 10, 10, N'IntelligentBuildingEnergyAccessCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 12, @MaxControlId + 10, 5, N'IntelligentBuildingEnergyAccessPropertyLabelUIId', N'Property', N'name', 2, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 13, @MaxControlId + 10, 5, N'IntelligentBuildingEnergyAccessCityLabelUIId', N'City', N'city', 3, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 14, @MaxControlId + 10, 5, N'IntelligentBuildingEnergyAccessStateLabelUIId', N'State', N'state', 4, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 15, @MaxControlId + 7, 5, N'IntelligentBuildingEnergyAccessRoleDetailsLabelUIId', N'Role Details', NULL, 1, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 16, @MaxControlId + 7, 12, N'IntelligentBuildingEnergyAccessGridUIId', N'NULL', NULL, 1, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 17, @MaxControlId + 16, 5, N'IntelligentBuildingEnergyAccessRightLabelUIId', N'Right', 'description', 1, @UserId, @Now)
+
+		 
+		SET IDENTITY_INSERT [UserManagement].[Control] OFF
+		
+		SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+
+		SELECT @MaxControlAttributeId = max(ControlAttributeId) from [UserManagement].[ControlAttribute]
+
+		INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlAttributeId + 1, @MaxControlId + 2, N'Default', N'True', @UserId, @Now)
+
+		INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlAttributeId + 2, @MaxControlId + 3, N'ShowSelectAll', N'False', @UserId, @Now)
+
+		INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlAttributeId + 3, @MaxControlId + 7, N'InfoIcon', N'Slide', @UserId, @Now)
+
+		SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+		SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+
+		DECLARE @MaxProductPageId INT
+		SELECT @MaxProductPageId = MAX(ProductPageId) FROM [UserManagement].[ProductPage]
+
+		INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName], [CreatedBy], [CreatedDate], [IsActive], [ProductPageTypeId]) 
+		VALUES (@MaxProductPageId + 1, 58, N'Smart Energy Product Access', @UserId, @Now, 1, 1)
+
+		SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+
+		SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+
+		DECLARE @MaxProductPageControlId INT
+		SELECT @MaxProductPageControlId = MAX(ProductPageControlId) FROM [UserManagement].[ProductPageControl]
+
+		INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate])
+		VALUES (@MaxProductPageControlId + 1, @MaxProductPageId + 1, @MaxControlId + 1, @UserId, @Now)
+
+		SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+            
+END
+
+DECLARE @ServerName SYSNAME = @@SERVERNAME;
+
+IF (@ServerName ='RCDUSODBSQL001' AND EXISTS(SELECT 1 FROM Ident.SamlProductSettings where ProductId = 58 and LoginUri ='www.dev-abcenergy.realpage.com'))
+BEGIN
+	UPDATE Ident.SamlProductSettings SET LoginUri = 'https://dev-boss-energy.realpage.com/' WHERE ProductId = 58 
+END
+
+IF (@ServerName ='rctusodbsql001' AND EXISTS(SELECT 1 FROM Ident.SamlProductSettings where ProductId = 58 and LoginUri ='www.qa-abcenergy.realpage.com'))
+BEGIN
+	UPDATE Ident.SamlProductSettings SET LoginUri = 'https://qa-boss-energy.realpage.com/' WHERE ProductId = 58 
+END
+
+IF (@ServerName ='RCQUSODBSQL001' AND EXISTS(SELECT 1 FROM Ident.SamlProductSettings where ProductId = 58 and LoginUri ='www.sat-abcenergy.realpage.com'))
+BEGIN
+	UPDATE Ident.SamlProductSettings SET LoginUri = ' https://sat-boss-energy.realpage.com/' WHERE ProductId = 58 
+END
+
+IF (@ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B') AND EXISTS(SELECT 1 FROM Ident.SamlProductSettings where ProductId = 58 and LoginUri ='www.abcenergy.realpage.com'))
+BEGIN
+	UPDATE Ident.SamlProductSettings SET LoginUri = 'https://smart-energy.realpage.com/' WHERE ProductId = 58 
+END
+
+IF EXISTS(SELECT 1 FROM Enterprise.Product where ProductId = 58 AND Name = N'Intelligent Building Energy' AND Description=N'Intelligent Building Energy' )
+BEGIN
+   UPDATE Enterprise.Product SET Name= N'Smart Energy', Description= N'Smart Energy' where ProductId = 58 
+END
+
+-- Adding default roles to Smart Energy Product
+IF NOT EXISTS(SELECT 1 FROM Security.Role WHERE ProductId = 58)
+BEGIN
+	INSERT INTO Security.Role(RoleName, ShortName, Description, RoleTypeID, OrgPartyID, ProductId, CreatedBy, CreatedDate )
+	VALUES('Portfolio Manager','PortfolioManager','Portfolio Manager', 1, NULL, 58, @UserId, GETDATE())	
+
+	INSERT INTO Security.Role(RoleName, ShortName, Description, RoleTypeID, OrgPartyID, ProductId, CreatedBy, CreatedDate )
+	VALUES('Property Manager','PropertyManager','Property Manager', 1, NULL, 58, @UserId,GETDATE())	
+END
+
+IF NOT EXISTS(SELECT 1 FROM Security.[Right] WHERE ProductId = 58)
+BEGIN
+	INSERT INTO Security.[Right](RightName, Description, Value, StatusTypeId, VisibilityStatusId, ProductId, TargetProductId, CreatedBy, CreatedDate)
+	VALUES('ReadOnly', NULL, 'Read Only Access',13, 9, 58, 58, @UserId, GETDATE())	
+END
+
+DECLARE @PortfolioManagerRoleId INT;
+DECLARE @PropertyManagerRoleId INT;
+DECLARE @RightId INT;
+
+SELECT @PortfolioManagerRoleId = RoleId FROM Security.Role WHERE RoleName = 'Portfolio Manager' AND ProductId = 58
+SELECT @PropertyManagerRoleId = RoleId FROM Security.Role WHERE RoleName = 'Property Manager' AND ProductId = 58
+SELECT @RightId = RightId FROm Security.[Right] WHERE RightName = 'ReadOnly' AND ProductId = 58 AND TargetProductId = 58
+IF NOT EXISTS(SELECT 1 FROM Security.RoleRight WHERE RightId  = @RightId AND RoleId = @PortfolioManagerRoleId)
+BEGIN
+	INSERT INTO Security.RoleRight(RoleId, RightId, CreatedBy, CreatedDate)
+	VALUES(@PortfolioManagerRoleId, @RightId, @UserId, GETDATE())
+END
+IF NOT EXISTS(SELECT 1 FROM Security.RoleRight WHERE RightId  = @RightId AND RoleId = @PropertyManagerRoleId)
+BEGIN
+	INSERT INTO Security.RoleRight(RoleId, RightId, CreatedBy, CreatedDate)
+	VALUES(@PropertyManagerRoleId, @RightId, @UserId, GETDATE())
+END
+GO
+
 
 GO
 
