@@ -788,7 +788,6 @@ BEGIN
 		SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
             
 END
-GO
 
 DECLARE @ServerName SYSNAME = @@SERVERNAME;
 
@@ -817,15 +816,11 @@ BEGIN
    UPDATE Enterprise.Product SET Name= N'Smart Energy', Description= N'Smart Energy' where ProductId = 58 
 END
 
-GO
-
 -- Adding default roles to Smart Energy Product
-DECLARE @PortfolioManagerRoleId INT;
-DECLARE @PropertyManagerRoleId INT;
 IF NOT EXISTS(SELECT 1 FROM Security.Role WHERE ProductId = 58)
 BEGIN
 	INSERT INTO Security.Role(RoleName, ShortName, Description, RoleTypeID, OrgPartyID, ProductId, CreatedBy, CreatedDate )
-	VALUES('Portfolio Manager','PortfolioManager','Portfolio Manager', 1, NULL, 58, @UserId)	
+	VALUES('Portfolio Manager','PortfolioManager','Portfolio Manager', 1, NULL, 58, @UserId, GETDATE())	
 
 	INSERT INTO Security.Role(RoleName, ShortName, Description, RoleTypeID, OrgPartyID, ProductId, CreatedBy, CreatedDate )
 	VALUES('Property Manager','PropertyManager','Property Manager', 1, NULL, 58, @UserId,GETDATE())	
@@ -837,7 +832,21 @@ BEGIN
 	VALUES('ReadOnly', NULL, 'Read Only Access',13, 9, 58, 58, @UserId, GETDATE())	
 END
 
-IF NOT EXISTS(SELECT 1 FROM Security.RoleRight WHERE RightId  = @RightId)
+DECLARE @PortfolioManagerRoleId INT;
+DECLARE @PropertyManagerRoleId INT;
+DECLARE @RightId INT;
+
+SELECT @PortfolioManagerRoleId = RoleId FROM Security.Role WHERE RoleName = 'Portfolio Manager' AND ProductId = 58
+SELECT @PropertyManagerRoleId = RoleId FROM Security.Role WHERE RoleName = 'Property Manager' AND ProductId = 58
+SELECT @RightId = RightId FROm Security.[Right] WHERE RightName = 'ReadOnly' AND ProductId = 58 AND TargetProductId = 58
+IF NOT EXISTS(SELECT 1 FROM Security.RoleRight WHERE RightId  = @RightId AND RoleId = @PortfolioManagerRoleId)
 BEGIN
-	
+	INSERT INTO Security.RoleRight(RoleId, RightId, CreatedBy, CreatedDate)
+	VALUES(@PortfolioManagerRoleId, @RightId, @UserId, GETDATE())
 END
+IF NOT EXISTS(SELECT 1 FROM Security.RoleRight WHERE RightId  = @RightId AND RoleId = @PropertyManagerRoleId)
+BEGIN
+	INSERT INTO Security.RoleRight(RoleId, RightId, CreatedBy, CreatedDate)
+	VALUES(@PropertyManagerRoleId, @RightId, @UserId, GETDATE())
+END
+GO
