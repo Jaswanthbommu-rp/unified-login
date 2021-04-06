@@ -818,3 +818,26 @@ BEGIN
 END
 
 GO
+
+-- Adding default roles to Smart Energy Product
+DECLARE @PortfolioManagerRoleId INT;
+DECLARE @PropertyManagerRoleId INT;
+IF NOT EXISTS(SELECT 1 FROM Security.Role WHERE ProductId = 58)
+BEGIN
+	INSERT INTO Security.Role(RoleName, ShortName, Description, RoleTypeID, OrgPartyID, ProductId, CreatedBy, CreatedDate )
+	VALUES('Portfolio Manager','PortfolioManager','Portfolio Manager', 1, NULL, 58, @UserId)	
+
+	INSERT INTO Security.Role(RoleName, ShortName, Description, RoleTypeID, OrgPartyID, ProductId, CreatedBy, CreatedDate )
+	VALUES('Property Manager','PropertyManager','Property Manager', 1, NULL, 58, @UserId,GETDATE())	
+END
+
+IF NOT EXISTS(SELECT 1 FROM Security.[Right] WHERE ProductId = 58)
+BEGIN
+	INSERT INTO Security.[Right](RightName, Description, Value, StatusTypeId, VisibilityStatusId, ProductId, TargetProductId, CreatedBy, CreatedDate)
+	VALUES('ReadOnly', NULL, 'Read Only Access',13, 9, 58, 58, @UserId, GETDATE())	
+END
+
+IF NOT EXISTS(SELECT 1 FROM Security.RoleRight WHERE RightId  = @RightId)
+BEGIN
+	
+END
