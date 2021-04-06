@@ -816,3 +816,5 @@ IF EXISTS(SELECT 1 FROM Enterprise.Product where ProductId = 58 AND Name = N'Int
 BEGIN
    UPDATE Enterprise.Product SET Name= N'Smart Energy', Description= N'Smart Energy' where ProductId = 58 
 END
+
+GO
