@@ -1407,7 +1407,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     {
                         new ExportDataFileConfiguration { Header = "Property", MappedField = "Name", PDFColumnWidth = "2.85", Preference = 1 },
                         new ExportDataFileConfiguration { Header = "Contracted Name", MappedField = "ContractedName", PDFColumnWidth = "2.85", Preference = 2 },
-                        new ExportDataFileConfiguration { Header = "Blue Id", MappedField = "customerPropertyId", PDFColumnWidth = "0.70", Preference = 3 },
+                        new ExportDataFileConfiguration { Header = "Blue Id", MappedField = "CustomerPropertyId", PDFColumnWidth = "0.70", Preference = 3 },
                         new ExportDataFileConfiguration { Header = "Domain", MappedField = "Domain", PDFColumnWidth = "0.85", Preference = 4 },
                         new ExportDataFileConfiguration { Header = "Address", MappedField = "PropertyAddress", PDFColumnWidth = "3.25", Preference = 5 },
                         new ExportDataFileConfiguration { Header = "Property ID", MappedField = "InstanceId", PDFColumnWidth = "3.25", Preference = 6 },
