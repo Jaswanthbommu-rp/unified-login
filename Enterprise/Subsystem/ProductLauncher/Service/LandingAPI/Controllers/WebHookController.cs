@@ -50,8 +50,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _manageOrganization = new ManageOrganization(repository, userClaim, messageHandler);
             _manageBlueBook = new ManageBlueBook(userClaim, _productInternalSettingRepository, messageHandler);
             _organizationProductRepository = new OrganizationProductRepository(repository);
-            _manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository, _manageBlueBook, null);
             _manageProduct = new ManageProduct(repository, userClaim, messageHandler);
+            _manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository, _manageBlueBook, _manageProduct);
             _userClaims = userClaim;
         }
 
