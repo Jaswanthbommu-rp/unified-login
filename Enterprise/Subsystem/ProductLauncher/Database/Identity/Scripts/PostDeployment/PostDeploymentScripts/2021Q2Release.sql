@@ -672,6 +672,8 @@ end
 
 COMMIT TRAN;
 
+GO
+
    --Panel Script for Smart Energy
 DECLARE @UserId bigint,
        @ProductId int = 58,
