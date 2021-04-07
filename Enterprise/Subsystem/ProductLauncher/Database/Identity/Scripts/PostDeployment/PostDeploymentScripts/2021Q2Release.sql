@@ -444,7 +444,7 @@ INSERT INTO @productlist
 SELECT p.ProductId, 'ProductIntegrationType', 'Legacy'
 FROM Enterprise.Product p
 	LEFT JOIN @productlist pl on pl.productid = p.ProductId
-WHERE p.ProductId NOT IN (22, 34)
+WHERE p.ProductId NOT IN (22, 34, 42)
 	AND pl.productid IS NULL;
 
 declare @MAX_ID INT
