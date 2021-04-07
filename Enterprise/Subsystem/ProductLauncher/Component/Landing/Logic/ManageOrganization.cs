@@ -44,15 +44,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private IManageUnifiedSettings _manageUnifiedSettings;
         private IConfigurationSettingRepository _configurationSettingRepository ;
         private IManageOrganizationProduct _manageOrganizationProduct;
-        private IManageProduct _manageProduct;
+
         private DefaultUserClaim _defaultUserClaim;
-        private IManagePersona _managePersona;
-        private IManagePartyRelationship _managePartyRelationship;
-        private IManageProfile _manageProfile;
-        private IManageUserRoleRight _manageUserRoleRight;
-
         #endregion
-
+        
         #region Constructors
 
         /// <summary>
@@ -73,8 +68,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _propertyRepository = new PropertyRepository(repository);
             _configurationSettingRepository = new ConfigurationSettingRepository(repository);
             _manageUnifiedSettings = new ManageUnifiedSettings(repository, userClaim, messageHandler);
-            _manageProduct = new ManageProduct(repository, userClaim, messageHandler);
-            _manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository, _manageBlueBook, _manageProduct);
+            _manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository, _manageBlueBook, null);
         }
 
         /// <summary>
@@ -95,8 +89,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _propertyRepository = new PropertyRepository(repository);
             _configurationSettingRepository = new ConfigurationSettingRepository(repository);
             _manageUnifiedSettings = new ManageUnifiedSettings(repository, userClaim, messageHandler);
-            _manageProduct = new ManageProduct(repository, userClaim, messageHandler);
-            _manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository, _manageBlueBook, _manageProduct);
+            _manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository, _manageBlueBook, null);
         }
 
         /// <summary>
@@ -117,12 +110,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _manageProductPanel = new ManageProductPanel(userClaim);
             _defaultUserClaim = userClaim;
             _manageUnifiedSettings = new ManageUnifiedSettings(userClaim);
-            _managePersona = new ManagePersona(userClaim);
-            _managePartyRelationship = new ManagePartyRelationship();
-            _manageProfile = new ManageProfile(userClaim);
-            _manageUserRoleRight = new ManageUserRoleRight();
-            _manageProduct = new ManageProduct(_productRepository, _productInternalSettingRepository, _managePersona, _manageBlueBook, _managePartyRelationship, this, _manageProfile, _manageUserRoleRight, userClaim);
-            _manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository, _manageBlueBook, _manageProduct);
+            _manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository, _manageBlueBook, null);
         }
 
         #endregion
