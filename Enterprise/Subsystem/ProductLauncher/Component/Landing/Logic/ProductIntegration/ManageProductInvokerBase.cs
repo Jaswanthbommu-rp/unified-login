@@ -47,7 +47,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         protected UserDetails EditorUserDetails { get; set; }
         protected UserDetails SubjectUserDetails { get; set; }
         protected string ProductApiBaseUrl { get; set; }
-        protected bool CreateUpdateMultiCompanyUserRequiresPMC { get; private set; }
         protected string CompanyInstanceSourceId { get; set; }
         protected IList<ProductInternalSetting> ProductInternalSettingList { get; set; }
 
@@ -559,17 +558,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public virtual string CreateUpdateProductUser(ProductUserRolePropertiesGroups userRolePropertiesRegion, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser)
         {
             string result;
-            bool isProductUser = false;
 
             WriteToDiagnosticLog(
                 $"ManageProductInvokerBase.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of method.");
 
             // Get product user object 
             var newProductUser = GenerateProductUserObject(userRolePropertiesRegion);
-            var productUser = GetBaseUserDataFromProduct(newProductUser.LoginName);
-            isProductUser = productUser != null && !string.IsNullOrEmpty(productUser.LoginName);
 
-            if (string.IsNullOrEmpty(SubjectUserDetails.ProductUserName) && !isProductUser)
+            if (string.IsNullOrEmpty(SubjectUserDetails.ProductUserName))
             {
                 WriteToDiagnosticLog(
                     $"ManageProductInvokerBase.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling CreateUser.");
@@ -588,102 +584,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 result = CreateUser(newProductUser);
 
             }
-            else if (string.IsNullOrEmpty(SubjectUserDetails.ProductUserName) && isProductUser && CreateUpdateMultiCompanyUserRequiresPMC)
-            {
-                result = CreateMultiCompanyUser(productUser);
-            }
             else
             {
                 WriteToDiagnosticLog(
                     $"ManageProductInvokerBase.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling UpdateUser.");
                 // Update user with Id/Login from product
-                if (isProductUser)
-                {
-                    newProductUser.UserId = productUser.UserId;
-                    newProductUser.LoginName = productUser.LoginName;
-                }
-                else
-                {
-                    newProductUser.UserId = SubjectUserDetails.ProductUserId;
-                    newProductUser.LoginName = SubjectUserDetails.ProductUserName;
-                }
-                
+                newProductUser.UserId = SubjectUserDetails.ProductUserId;
+                newProductUser.LoginName = SubjectUserDetails.ProductUserName;
+
                 result = UpdateUser(newProductUser, batchProcessType);
             }
 
             return result;
         }
 
-        #region private
-        public virtual IntegrationProductUser GetBaseUserDataFromProduct(string loginNameToCheck, string baseUrlAndQuery = null)
-        {
-            if (string.IsNullOrEmpty(baseUrlAndQuery))
-                baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserEndpoint);
-
-            bool isCompanyIdRequiredToQuery = baseUrlAndQuery.Contains("{0}");
-            if (isCompanyIdRequiredToQuery)
-            {
-                baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, loginNameToCheck);
-            }
-            else
-            {
-                baseUrlAndQuery = string.Format(baseUrlAndQuery, loginNameToCheck);
-            }
-            WriteToDiagnosticLog(
-              $"ManageProductInvokerBase.GetProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method.");
-
-            var productUser = GetResultFromApi<IntegrationProductUser>(baseUrlAndQuery, false);
-
-            WriteToDiagnosticLog(
-                $"ManageProductInvokerBase.GetProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling API - {baseUrlAndQuery}.");
-
-            return productUser;
-        }
-        #endregion
-
-
-        /// <summary>
-        /// Create a user in the product
-        /// </summary>
-        protected virtual string CreateMultiCompanyUser(IntegrationProductUser productUser)
-        {
-            WriteToDiagnosticLog(
-                $"ManageProductInvokerBase.CreateUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method.");
-
-            var baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.PostUserEndpoint);
-
-            WriteToDiagnosticLog(
-                $"ManageProductInvokerBase.CreateUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling API - {baseUrlAndQuery}.");
-
-            // dump api info
-            DumpApiCallInfoToDiagnosticLog(baseUrlAndQuery, productUser);
-
-            var integration = new ApiIntegration(_httpClient, baseUrlAndQuery);
-            var result = integration.PutEntity<IntegrationProductUser>(productUser);
-
-            if (result.IsSuccessStatusCode)
-            {
-                WriteToDiagnosticLog(
-                    $"ManageProductInvokerBase.CreateUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Received success. Updating Geenbook mapping.");
-
-                // map product user in green book
-                _dataCollector.CreateProductUserInGreenBook(SubjectUserDetails.PersonaId, result.Content, ProductId, productUser.LoginName);
-
-                // OPTIONAL - If product needs more attributes than userid or loginName then override in the product (e.g. PAM uses)
-                CreateAdditionalSamlUserAttribute(SubjectUserDetails.PersonaId, ProductId, productUser);
-
-                // activity logging
-                ProductActivityLogger.WriteCreateUserActivityLog(EditorUserDetails, SubjectUserDetails, BlueBookGbProductMap.Name, BlueBookGbProductMap.BooksProductCode,
-                    CorrelationId);
-
-                return string.Empty;
-            }
-
-            WriteToErrorLog(
-                $"ManageProductInvokerBase.CreateUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. result received - {result}.");
-
-            return result.Content;
-        }
         /// <summary>
         /// Get Product User API call
         /// </summary> 
