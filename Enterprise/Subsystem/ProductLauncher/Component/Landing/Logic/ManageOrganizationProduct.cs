@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
@@ -17,6 +18,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		#region Private Variables
 		IOrganizationProductRepository _organizationProductRepository;
 		IManageBlueBook _manageBlueBook;
+		IManageProduct _manageProduct;
+
 		#endregion
 
 		#region Constructors
@@ -36,10 +39,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		/// <param name="manageBlueBook"></param>
 		/// <param name="organizationProductRepository"></param>
 
-		public ManageOrganizationProduct(IManageBlueBook manageBlueBook, IOrganizationProductRepository organizationProductRepository)
+		public ManageOrganizationProduct(IManageBlueBook manageBlueBook, IOrganizationProductRepository organizationProductRepository, IManageProduct manageProduct)
 		{
 			_organizationProductRepository = organizationProductRepository;
 			_manageBlueBook = manageBlueBook;
+			_manageProduct = manageProduct;
 		}
 		#endregion
 
@@ -56,22 +60,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             IRepositoryResponse response = new RepositoryResponse();
 			foreach (int product in productList)
 			{
-				var systemProductCenter = new SystemProductCenter() {
-					Id = 0,
-					CompanyInstanceSourceId = org.RealPageId.ToString().ToLower(),
-					CreatedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
-					ProductCenterSourceId = product.ToString(),
-					PropertyInstanceSourceId = null,
-					Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)
+				var productInternalSettings = _manageProduct.GetProductInternalSettings((int)product);
+				var updateinUDM = productInternalSettings.Where(x => x.Name.ToUpper() == "UPDATEPRODUCTINUDM").FirstOrDefault();
 
-				};
-				var isUpdated = _manageBlueBook.ProductCenterEnable(systemProductCenter);
+				if (updateinUDM != null && updateinUDM.Value == "1")
+				{
+					var systemProductCenter = new SystemProductCenter()
+					{
+						Id = 0,
+						CompanyInstanceSourceId = org.RealPageId.ToString().ToLower(),
+						CreatedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
+						ProductCenterSourceId = product.ToString(),
+						PropertyInstanceSourceId = null,
+						Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)
 
-				if (!isUpdated)
-                {
-					response.ErrorMessage = "Unable to update product in UDM";
-					return response;
-                }
+					};
+					var isUpdated = _manageBlueBook.ProductCenterEnable(systemProductCenter);
+
+					if (!isUpdated)
+					{
+						response.ErrorMessage = "Unable to update product in UDM";
+						return response;
+					}
+				}
 
 				response = InsertUpdateOrganizationProduct(partyId: org.PartyId, product: product, configurationId: null, fromDate: null, thruDate: null);
 				if (!string.IsNullOrEmpty(response.ErrorMessage))
