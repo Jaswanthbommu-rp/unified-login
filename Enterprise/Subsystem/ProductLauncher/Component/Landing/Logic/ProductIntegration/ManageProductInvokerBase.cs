@@ -608,16 +608,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             // Get partial api query based on end point
             if (string.IsNullOrEmpty(baseUrlAndQuery))
-                baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserEndpoint);
+                baseUrlAndQuery = string.Format(GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserEndpoint), SubjectUserDetails.ProductUserName);
 
             WriteToDiagnosticLog(
                 $"ManageProductInvokerBase.GetProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling API - {baseUrlAndQuery}.");
-
-            if (baseUrlAndQuery.Contains("{0}"))
-                baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, SubjectUserDetails.ProductUserName);
-            else
-                baseUrlAndQuery = string.Format(baseUrlAndQuery, SubjectUserDetails.ProductUserName);
-
+            
             return GetResultFromApi<IntegrationProductUser>(baseUrlAndQuery, isThrowOnError);
         }
 
@@ -767,12 +762,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         protected virtual bool CheckUserExistInProduct(string loginNameToCheck, string baseUrlAndQuery = null)
         {
             if (baseUrlAndQuery == null)
-                baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserEndpoint);
-            if (baseUrlAndQuery.Contains("{0}"))
-                baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, loginNameToCheck);
-            else
-                baseUrlAndQuery = string.Format(baseUrlAndQuery, loginNameToCheck);
-
+                baseUrlAndQuery = string.Format(GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserEndpoint), loginNameToCheck);
+            
             var productUser = GetProductUser(baseUrlAndQuery, false);
 
             if (productUser != null && !string.IsNullOrEmpty(productUser.UserId))
