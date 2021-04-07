@@ -449,6 +449,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			return false;
 		}
 
+		protected override void UpdateSamlUserAttribute(long personaId, int productId, string productUserId, string productUserLoginName, string productUserEmail)
+		{
+			WriteToDiagnosticLog(
+				$"ClickPayManagement.UpdateSamlUserAttribute - productUserLoginName - {productUserLoginName}. At beginning of the method.");
+			var samlUserAttributeDetails = _dataCollector.GetUserDetailsByPersona(SubjectUserDetails.PersonaId, ProductId);
+			if (string.IsNullOrEmpty(samlUserAttributeDetails.ProductUserId)) 
+			{
+				_dataCollector.CreateSamlUserAttribute(personaId, productId, SamlAttributeEnum.UserId, productUserId);
+			}
+			if(string.IsNullOrEmpty(samlUserAttributeDetails.ProductUserName))
+			{ 
+				_dataCollector.CreateSamlUserAttribute(personaId, productId, SamlAttributeEnum.productUsername, productUserLoginName);
+			}
+		}
+
 		protected override ApiResponse ProductUserProfileChange(ProductUserProfile productUserProfile)
 		{
 			WriteToDiagnosticLog(
@@ -501,9 +516,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		{
 			foreach (var userOrganizationRole in userOrganizationRoles)
 			{
-				if (userOrganizationRole.RoleId.ToUpper() == orgRoleId.ToUpper())
+				if (userOrganizationRole.RoleId.ToUpper() == orgRoleId.ToUpper()
+					&& orgList.Find(x => x.Id == userOrganizationRole.OrganizationId && x.Type.ToUpper() == orgType.ToUpper()) != null)
 				{
-					orgList.Find(x => x.Id == userOrganizationRole.OrganizationId && x.Type.ToUpper() == orgType.ToUpper()).IsAssigned = true;
+						orgList.Find(x => x.Id == userOrganizationRole.OrganizationId && x.Type.ToUpper() == orgType.ToUpper()).IsAssigned = true;
 				}
 			}
 		}

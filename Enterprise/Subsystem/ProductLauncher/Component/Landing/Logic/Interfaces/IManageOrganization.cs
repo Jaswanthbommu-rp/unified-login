@@ -145,11 +145,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="propertyName">PropertyName</param>
 		/// <param name="domain">Domain</param>
 		/// <param name="blueId">blueId</param>
+		/// <param name="status">Status</param>
 		/// <param name="globals">datafilter</param>
 		/// <param name="editorPersonaId">editorPersonaId</param>
 		/// <param name="userPersonaId">userPersonaId</param>
 		/// <returns>List of Properties for a company </returns>
-		List<CompanyPropertySetup> GetPropertiesForCompany(Guid companyInstanceId, string propertyName = null, string domain = null, int? blueId = null,  IDictionary<object, object> globals = null, long editorPersonaId = 0, long userPersonaId = 0);
+		List<CompanyPropertySetup> GetPropertiesForCompany(Guid companyInstanceId, string propertyName = null, string domain = null, int? blueId = null, int? status = null, IDictionary<object, object> globals = null, long editorPersonaId = 0, long userPersonaId = 0);
 
 		/// <summary>
 		/// Get Property By PeropertyId

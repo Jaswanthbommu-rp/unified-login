@@ -336,7 +336,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return productList;
         }
 
- /// <summary>
+        /// <summary>
         /// Used to return a list of productfamilies
         /// </summary>
         /// <param name="organizationRealPageId">The unique identitifier for the organization</param>
@@ -594,6 +594,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         public IList<PersonaProduct> GetAllProductsByPersona(long personaId, ProductBatchStatusType statusType)
         {
             return _productRepository.GetAllProductsByPersona(personaId, statusType);
+        }
+
+        public IList<ProductUI> AddProductSourceAndGreenBookCareFlagToProducts(Guid upfmCompanyId, IList<ProductUI> products)
+        {
+            var booksCompanyInstance = _manageBlueBook.GetCompanyInstanceByUPFMCompanyId(upfmCompanyId.ToString().ToLower());
+            int customerCompanyId = booksCompanyInstance?.Attributes?.CustomerCompanyMap.FirstOrDefault()?.CustomerCompanyId ?? 0;
+            string domain = booksCompanyInstance?.Attributes?.Domain;
+            if (!string.IsNullOrEmpty(domain) && customerCompanyId != 0)
+            {
+                var booksCustomerCompanyMap = _manageBlueBook.GetCustomerCompanyMapByCustomerCompanyId(customerCompanyId, domain);
+                foreach (var product in products)
+                {
+                    var findBooksProductCode = booksCustomerCompanyMap?.Where(p => p.Source == product.ProductCode);
+                    /*
+                     * Not found" when:
+                        Product instance does not exist in UDM
+                        Product instance does not have an assigned domain(this check is not required as we are getting all th products of same domain of company)
+                        Product instance domain is not the same as the UPFM company instance
+                        If we have more then one product instance with same product code irrespective of greenbookcare flag
+                     */
+                    if (findBooksProductCode != null && findBooksProductCode.Count() == 1)
+                    {
+                        product.ProductInstance = findBooksProductCode.FirstOrDefault().CompanyInstanceSourceId;
+                        product.GreenBookCares = findBooksProductCode.FirstOrDefault().CompanyInstance.FirstOrDefault().GreenBookCares;
+                    }
+                }
+            }
+            return products;
         }
 
         #endregion
