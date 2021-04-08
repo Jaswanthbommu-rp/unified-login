@@ -50,6 +50,14 @@ BEGIN
 			END			
 		END
 
+		IF @ProductId = 65
+		BEGIN
+			IF (@SchemaName = 'Security')  
+			BEGIN 
+				EXECUTE [Enterprise].[SetupSGTRoles] @PartyId;
+			END
+		END
+
 	END TRY
 	BEGIN CATCH
 		 DECLARE @ErrorLogID INT;
