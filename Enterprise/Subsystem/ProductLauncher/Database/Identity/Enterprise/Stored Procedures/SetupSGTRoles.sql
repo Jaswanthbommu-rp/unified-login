@@ -26,11 +26,5 @@ BEGIN
 			INSERT INTO Security.Role(RoleName, ShortName, Description, RoleTypeID, OrgPartyID, ProductId, CreatedBy, CreatedDate)
 			VALUES ('Corporate Manager','Corporate Manager','Corporate Manager',3,	@PartyId,	@ProductId,	@UserId,	GETDATE())
 		END
-
-		IF NOT EXISTS ( Select top 1 1 from Security.Role where ProductId = @ProductId and OrgPartyID = @PartyId and RoleName = 'Implementations')
-		BEGIN 
-			INSERT INTO Security.Role(RoleName, ShortName, Description, RoleTypeID, OrgPartyID, ProductId, CreatedBy, CreatedDate)
-			VALUES ('Implementations',	'Implementations','Implementations',	3,  @PartyId,	@ProductId, @UserId,	GETDATE())
-		END
 	END
 END
