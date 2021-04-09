@@ -50,7 +50,12 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Command.Repository
 
             dparm.Add("BooksMasterPropertyId", activityLog.BooksMasterPropertyId, DbType.Int32);
             dparm.Add("IsSystemAdminActivity", activityLog.IsSystemAdminActivity, DbType.Boolean);
-            
+
+            //Used for Settings
+            dparm.Add("SourceId", activityLog.SourceId, DbType.String);
+            dparm.Add("MappingKey", activityLog.MappingKey, DbType.String);
+            dparm.Add("ContextId", activityLog.ContextId, DbType.Int32);
+
             using (var repository = GetRepository())
             {
                 repository.ExecuteStoredProcWithTvp<AdditionalParameters>(tvp, activityLog.AdditionalInformation,
