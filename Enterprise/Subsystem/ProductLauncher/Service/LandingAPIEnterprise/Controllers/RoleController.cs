@@ -18,6 +18,8 @@ using System.Net.Http;
 using System.Web.Http;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Controllers
 {
@@ -26,6 +28,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 	/// </summary>
 	public class RoleController : BaseApiController
 	{
+		private readonly IProductRepository _productRepository;
+
+		public RoleController()
+        {
+			_productRepository = new ProductRepository(_userClaims);
+		}
+
 		/// <summary>
 		/// Get a list of roles for the given user and product
 		/// </summary>
@@ -82,7 +91,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 			else
 			{
 				IManageProductPanel productPanelData = new ManageProductPanel(_userClaims);
-				int productId = (int)ProductEnumHelper.GetProductEnumByProductCode(productCode);
+				var productList = _productRepository.GetAllProducts();
+				int productId = (int)ProductEnumHelper.GetProductEnumByProductCode(productCode, productList);
 				productResponse = productPanelData.GetProductRoles(_userClaims.PersonaId, persona.PersonaId, _userClaims.OrganizationPartyId, productId, null, null);
 				filteredList = productResponse.Records.Cast<Component.SharedObjects.Product.ProductRole>().ToList().FindAll(p => p.IsAssigned);
 			}
@@ -133,7 +143,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 			else
 			{
 				IManageProductPanel productPanelData = new ManageProductPanel(_userClaims);
-				int productId = (int)ProductEnumHelper.GetProductEnumByProductCode(productCode);
+				var productList = _productRepository.GetAllProducts();
+				int productId = (int)ProductEnumHelper.GetProductEnumByProductCode(productCode, productList);
 				productResponse = productPanelData.GetProductRoles(_userClaims.PersonaId, _userClaims.PersonaId, _userClaims.OrganizationPartyId, productId, null, null);				
 			}
 

@@ -39,6 +39,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         private Guid emptyGuid = Guid.Empty;
         private string _key = "4AD12A31-680A-476F-863E-26749D2E7DD4";
 
+        private IProductRepository _productRepository;
+
         #endregion
 
         #region Constructor
@@ -61,6 +63,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         {
             _userClaims = userClaim;
             _manageProduct = new ManageProduct(productRepository, productInternalSettingRepository, null, null, null, null, null, null, _userClaims);
+            _productRepository = productRepository;
         }
 
         /// <summary>
@@ -71,6 +74,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         {
             base.Initialize(controllerContext);
             _manageProduct = new ManageProduct(_userClaims);
+            _productRepository = new ProductRepository(_userClaims);
         }
         #endregion
 
@@ -451,8 +455,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         {
             try
             {
-                ProductEnum productEnum = ProductEnumHelper.GetProductEnumByProductCode(productCode);
-                return GetProductLoginDetails((int)productEnum, personaId);
+                var productList = _productRepository.GetAllProducts();
+                int productEnum = ProductEnumHelper.GetProductEnumByProductCode(productCode, productList);
+                return GetProductLoginDetails(productEnum, personaId);
             }
             catch (Exception ex)
             {
