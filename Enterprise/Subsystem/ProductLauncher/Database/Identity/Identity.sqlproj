@@ -1072,6 +1072,7 @@
     <Build Include="Settings\Tables\SettingTable.sql" />
     <Build Include="Settings\Tables\SettingTableColumn.sql" />
     <Build Include="Settings\Tables\SettingTableRow.sql" />
+    <Build Include="Security\Settings.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
