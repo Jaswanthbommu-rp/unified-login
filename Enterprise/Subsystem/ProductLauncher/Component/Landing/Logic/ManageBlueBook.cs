@@ -853,11 +853,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             if (response != null && response.IsSuccessStatusCode)
             {
                 WriteToLog(LogEventLevel.Debug, "ProductCenterEnable - Added info successfully.");
+                WriteToLog(LogEventLevel.Debug, "ProductCenterEnable - Enablement Completed for ProductCenterSourceId: " + systemProductCenter.ProductCenterSourceId);
                 return true;
             }
 
             logData = new Dictionary<string, object>() { { "response", response } };
             WriteToLog(LogEventLevel.Error, "ProductCenterEnable - Failed to add info.", logData);
+            WriteToLog(LogEventLevel.Debug, "ProductCenterEnable - Enablement failed for ProductCenterSourceId: " + systemProductCenter.ProductCenterSourceId);
 
             return false;
         }

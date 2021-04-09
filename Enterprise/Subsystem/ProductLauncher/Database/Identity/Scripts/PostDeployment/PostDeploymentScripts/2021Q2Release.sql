@@ -867,16 +867,56 @@ IF @settingTypeId > 0
 BEGIN
 	CREATE TABLE #Temp(ProductId INT);
 	INSERT INTO #Temp
-	Values (1),(4),(6),(8),(9),(10),(13),(15),(16),(17),(18),(20),(23),(26),(36),(37),(40),(41),(44),(45),(47),(48),(50),(56),(57),(58),(59),(60),(63),(65),(66),(68)
+	Values 
+		(1),(4),(6),(8),(9),(10),(13),(15),(16),
+		(17),(18),(20),(23),(26),(36),(37),(40),
+		(41),(44),(45),(47),(48),(50),(56),(57),
+		(58),(59),(60),(63),(65),(66),(68),(29),
+		(30),(31),(32),(33),(34),(51),(52),(53),
+		(54),(66)
 
 	WHILE (Select COUNT(*) FROM #Temp) > 0
 	BEGIN
 		DECLARE @id int;
 		SELECT TOP 1 @id= ProductId from #Temp;
-		EXEC Enterprise.SetProductSetting 0, @id, @settingTypeId, N'1'
+		
+		IF NOT EXISTS (
+			SELECT TOP 1 1
+			FROM Enterprise.ProductSetting PS
+			JOIN Enterprise.ProductSettingType PST on PST.ProductSettingTypeId = PS.ProductSettingTypeId
+			WHERE ProductId = @id
+			AND PST.ProductSettingTypeId = @settingTypeId)
+		BEGIN
+			EXEC Enterprise.SetProductSetting 0, @id, @settingTypeId, N'1'
+		END
+		
 		DELETE From #Temp WHERE ProductId = @id
 	END
+
+	SELECT ProductId INTO #Temp2
+	FROM Enterprise.Product
+	WHERE ProductId NOT IN (SELECT ProductId FROM #Temp)
+
+	WHILE (Select COUNT(*) FROM #Temp2) > 0
+	BEGIN
+		DECLARE @id1 int;
+		SELECT TOP 1 @id1 = ProductId from #Temp2;
+		
+		IF NOT EXISTS (
+			SELECT TOP 1 1
+			FROM Enterprise.ProductSetting PS
+			JOIN Enterprise.ProductSettingType PST on PST.ProductSettingTypeId = PS.ProductSettingTypeId
+			WHERE ProductId = @id1
+			AND PST.ProductSettingTypeId = @settingTypeId)
+		BEGIN
+			EXEC Enterprise.SetProductSetting 0, @id1, @settingTypeId, N'0'
+		END
+		
+		DELETE From #Temp2 WHERE ProductId = @id1
+	END
+
 	DROP Table #Temp
+	DROP Table #Temp2
 END
 
 --TFS -716888 end
