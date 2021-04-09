@@ -504,24 +504,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 globalRoles.Add(new ProductRole
                 {
                     ID ="PR",
-                    Name = "Property Manager",
-                    Description = "Property Manager",
+                    Name = "Select Properties",
+                    Description = "Select Properties",
                     IsAssigned = false
                 });
 
                 globalRoles.Add(new ProductRole
                 {
                     ID = "GM",
-                    Name = "Group Manager",
-                    Description = "Group Manager",
+                    Name = "Groups",
+                    Description = "Groups",
                     IsAssigned = false
                 });
 
                 globalRoles.Add(new ProductRole
                 {
                     ID = "PM",
-                    Name = "Portfolio Manager",
-                    Description = "Portfolio Manager",
+                    Name = "All Properties",
+                    Description = "All Properties",
                     IsAssigned = false
                 });
 
@@ -1149,7 +1149,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             IList<Role> roles = new List<Role>();
 
-            string baseUrlAndQuery = $"{_apiEndPoint}/roleoptions/get";
+            string baseUrlAndQuery = $"{_apiEndPoint}/roleoptions/get?companyId={companyInstanceSourceId}";
             var result = GetResultFromApi<IList<dynamic>>(_accessToken, baseUrlAndQuery, false);
 
             WriteToDiagnosticLog($"ManageProductRum.GetRumRoles - Base Uri - {baseUrlAndQuery}");
