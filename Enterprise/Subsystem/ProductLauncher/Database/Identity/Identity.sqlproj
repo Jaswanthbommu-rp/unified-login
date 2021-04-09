@@ -126,6 +126,10 @@
     <Folder Include="RoleRightsManagement" />
     <Folder Include="RoleRightsManagement\Stored Procedures" />
     <Folder Include="RoleRightsManagement\Tables" />
+    <Folder Include="Settings" />
+    <Folder Include="Settings\Functions" />
+    <Folder Include="Settings\Stored Procedures" />
+    <Folder Include="Settings\Tables" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="Auth\Tables\ClientClaims.sql" />
@@ -1051,6 +1055,24 @@
     <Build Include="Enterprise\Stored Procedures\CreateUsePrimaryPropertyMasterConfigurationSetting.sql" />
     <Build Include="Enterprise\Stored Procedures\GetOrganizationSettingValue.sql" />
     <Build Include="Enterprise\Stored Procedures\SetupSGTRoles.sql" />
+    <Build Include="Settings\Stored Procedures\CreateSettingTable.sql" />
+    <Build Include="Settings\Stored Procedures\CreateSettingTableRowColumn.sql" />
+    <Build Include="Settings\Stored Procedures\DeleteSettingTableRowColumn.sql" />
+    <Build Include="Settings\Stored Procedures\GetSettingsMappingData.sql" />
+    <Build Include="Settings\Stored Procedures\GetSettingsTableColumnData.sql" />
+    <Build Include="Settings\Stored Procedures\GetSettingsTableData.sql" />
+    <Build Include="Settings\Stored Procedures\GetSettingsTableRowsData.sql" />
+    <Build Include="Settings\Stored Procedures\GetUnifiedSetting.sql" />
+    <Build Include="Settings\Stored Procedures\UpdateSettingTableRowColumn.sql" />
+    <Build Include="Settings\Stored Procedures\UpdateUnifiedSetting.sql" />
+    <Build Include="Settings\Tables\OrganizationSettings.sql" />
+    <Build Include="Settings\Tables\SettingCategoryType.sql" />
+    <Build Include="Settings\Tables\SettingPicklist.sql" />
+    <Build Include="Settings\Tables\SettingsMapping.sql" />
+    <Build Include="Settings\Tables\SettingTable.sql" />
+    <Build Include="Settings\Tables\SettingTableColumn.sql" />
+    <Build Include="Settings\Tables\SettingTableRow.sql" />
+    <Build Include="Security\Settings.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

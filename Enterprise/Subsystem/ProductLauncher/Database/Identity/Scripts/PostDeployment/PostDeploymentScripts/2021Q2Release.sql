@@ -125,132 +125,7 @@ end
 COMMIT TRAN;
 --settings data transfer from passwordpolicy table to orgsettings  table
 GO
-GO
--- Move Password policy settings data in to new organization settings table
-DECLARE @UserId bigint,
-	@ProductId int ,
-	@SettingCategoryTypeId smallint,
-	@Now datetime = GETDATE()
 
-SELECT	@UserId = UserId
-FROM	Ident.UserLogin
-WHERE	LoginName LIKE 'realpagead@%'
-
-Select @SettingCategoryTypeId = SettingCategoryTypeId
-From [Ident].[SettingCategoryType]
-Where Name = 'Security'
-
--- 'NumberOfPasswordsToRemember'
-
-	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
-		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
-	Select PartyId,@SettingCategoryTypeId,'NumberOfPasswordsToRemember',
-		NumberOfPasswordsToRemember,1,0,@UserId,@Now
-	From [Ident].[PasswordPolicy]  
-	where PartyId  not in (select PartyId From Ident.OrganizationSettings where   MappingName = 'NumberOfPasswordsToRemember')
-
---'PreventPasswordReuse'
-
-	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
-		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
-	Select PartyId,@SettingCategoryTypeId,'PreventPasswordReuse',
-		PreventPasswordReuse,1,1,@UserId,@Now
-	From [Ident].[PasswordPolicy]  
-	where PartyId  not in (select PartyId From Ident.OrganizationSettings where   MappingName = 'PreventPasswordReuse')
-
-
---'PasswordExpirationPeriodInDays'
-
-	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
-		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
-	Select PartyId,@SettingCategoryTypeId,'PasswordExpirationPeriodInDays',
-		PasswordExpirationPeriodInDays,1,0,@UserId,@Now
-	From [Ident].[PasswordPolicy]  
-	where PartyId  not in (select PartyId From Ident.OrganizationSettings where   MappingName = 'PasswordExpirationPeriodInDays')
-
-
--- 'EnablePasswordExpiration'
-
-	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
-		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
-	Select PartyId,@SettingCategoryTypeId,'EnablePasswordExpiration',
-		EnablePasswordExpiration,1,1,@UserId,@Now
-	From [Ident].[PasswordPolicy]  
-	where PartyId  not in (select PartyId From Ident.OrganizationSettings where   MappingName = 'EnablePasswordExpiration')
-
-
---'AllowUsersToChangeOwnPassword'
-
-	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
-		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
-	Select PartyId,@SettingCategoryTypeId,'AllowUsersToChangeOwnPassword',
-		AllowUsersToChangeOwnPassword,1,1,@UserId,@Now
-	From [Ident].[PasswordPolicy]  
-	where PartyId  not in (select PartyId From Ident.OrganizationSettings where   MappingName = 'AllowUsersToChangeOwnPassword')
-
-
---'MinimumSpecialCharacter'
-
-	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
-		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
-	Select PartyId,@SettingCategoryTypeId,'MinimumSpecialCharacter',
-		MinimumSpecialCharacter,1,1,@UserId,@Now
-	From [Ident].[PasswordPolicy]
-	where PartyId  not in (select PartyId From Ident.OrganizationSettings where   MappingName = 'MinimumSpecialCharacter')
-
-
---'MinimumNumeric'
-
-	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
-		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
-	Select PartyId,@SettingCategoryTypeId,'MinimumNumeric',
-		MinimumNumeric,1,1,@UserId,@Now
-	From [Ident].[PasswordPolicy]  
-	where PartyId  not in (select PartyId From Ident.OrganizationSettings where   MappingName = 'MinimumNumeric')
-
-
---'MinimumUppercase'
-
-	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
-		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
-	Select PartyId,@SettingCategoryTypeId,'MinimumUppercase',
-		MinimumUppercase,1,1,@UserId,@Now
-	From [Ident].[PasswordPolicy]  
-	where PartyId  not in (select PartyId From Ident.OrganizationSettings where   MappingName = 'MinimumUppercase')
-
-
--- 'MinimumLowercase'
-
-	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
-		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
-	Select PartyId,@SettingCategoryTypeId,'MinimumLowercase',
-		MinimumLowercase,1,1,@UserId,@Now
-	From [Ident].[PasswordPolicy]  
-	where PartyId  not in (select PartyId From Ident.OrganizationSettings where   MappingName = 'MinimumLowercase')
-
-
---'MaximumLength'
-
-	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
-		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
-	Select PartyId,@SettingCategoryTypeId,'MaximumLength',
-		MaximumLength,1,1,@UserId,@Now
-	From [Ident].[PasswordPolicy]  
-	where PartyId  not in (select PartyId From Ident.OrganizationSettings where   MappingName = 'MaximumLength')
-
-
---'MinimumLength'
-
-	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
-		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
-	Select PartyId,@SettingCategoryTypeId,'MinimumLength',
-		MinimumLength,1,0,@UserId,@Now
-	From [Ident].[PasswordPolicy]  
-	where PartyId  not in (select PartyId From Ident.OrganizationSettings where   MappingName = 'MinimumLength')
-
-
-
-GO
 --Accounting Location Group
 Declare @MCMasterControlId int,@MCUPPControlId int,@MaxControlId int,@MaxControlAttributeId int
 DECLARE @UserId bigint,
@@ -935,5 +810,277 @@ Begin
 End
 Go
 
+if not exists(select top 1 1 from [Settings].[SettingCategoryType] Where Name = 'Security')
+Begin 
+	Insert into [Settings].[SettingCategoryType](Name)
+	values ('Security')
+End
 
-				
+if not exists(select top 1 1 from [Settings].[SettingCategoryType] Where Name = 'CustomFields')
+Begin 
+	Insert into [Settings].[SettingCategoryType](Name)
+	values ('CustomFields')
+End
+Go
+--Settings	data conversion
+DECLARE @UserId bigint,
+	@ProductId int ,
+	@SettingCategoryTypeId smallint,
+	@Now datetime = GETDATE()
+
+SELECT	@UserId = UserId
+FROM	ident.UserLogin
+WHERE	LoginName LIKE 'realpagead@%'
+
+Select @SettingCategoryTypeId = SettingCategoryTypeId
+From [Settings].[SettingCategoryType]
+Where Name = 'Security'
+
+-- 'NumberOfPasswordsToRemember'
+
+	INSERT INTO [Settings].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
+		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+	Select PartyId,@SettingCategoryTypeId,'NumberOfPasswordsToRemember',
+		NumberOfPasswordsToRemember,1,0,@UserId,@Now
+	From [Ident].[PasswordPolicy]  
+	where PartyId  not in (select PartyId From Settings.OrganizationSettings where   MappingName = 'NumberOfPasswordsToRemember')
+
+--'PreventPasswordReuse'
+
+	INSERT INTO [Settings].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
+		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+	Select PartyId,@SettingCategoryTypeId,'PreventPasswordReuse',
+		PreventPasswordReuse,1,1,@UserId,@Now
+	From [Ident].[PasswordPolicy]  
+	where PartyId  not in (select PartyId From Settings.OrganizationSettings where   MappingName = 'PreventPasswordReuse')
+
+
+--'PasswordExpirationPeriodInDays'
+
+	INSERT INTO [Settings].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
+		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+	Select PartyId,@SettingCategoryTypeId,'PasswordExpirationPeriodInDays',
+		PasswordExpirationPeriodInDays,1,0,@UserId,@Now
+	From [Ident].[PasswordPolicy]  
+	where PartyId  not in (select PartyId From Settings.OrganizationSettings where   MappingName = 'PasswordExpirationPeriodInDays')
+
+
+-- 'EnablePasswordExpiration'
+
+	INSERT INTO [Settings].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
+		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+	Select PartyId,@SettingCategoryTypeId,'EnablePasswordExpiration',
+		EnablePasswordExpiration,1,1,@UserId,@Now
+	From [Ident].[PasswordPolicy]  
+	where PartyId  not in (select PartyId From Settings.OrganizationSettings where   MappingName = 'EnablePasswordExpiration')
+
+
+--'AllowUsersToChangeOwnPassword'
+
+	INSERT INTO [Settings].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
+		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+	Select PartyId,@SettingCategoryTypeId,'AllowUsersToChangeOwnPassword',
+		AllowUsersToChangeOwnPassword,1,1,@UserId,@Now
+	From [Ident].[PasswordPolicy]  
+	where PartyId  not in (select PartyId From Settings.OrganizationSettings where   MappingName = 'AllowUsersToChangeOwnPassword')
+
+
+--'MinimumSpecialCharacter'
+
+	INSERT INTO [Settings].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
+		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+	Select PartyId,@SettingCategoryTypeId,'MinimumSpecialCharacter',
+		MinimumSpecialCharacter,1,1,@UserId,@Now
+	From [Ident].[PasswordPolicy]
+	where PartyId  not in (select PartyId From Settings.OrganizationSettings where   MappingName = 'MinimumSpecialCharacter')
+
+
+--'MinimumNumeric'
+
+	INSERT INTO [Settings].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
+		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+	Select PartyId,@SettingCategoryTypeId,'MinimumNumeric',
+		MinimumNumeric,1,1,@UserId,@Now
+	From [Ident].[PasswordPolicy]  
+	where PartyId  not in (select PartyId From Settings.OrganizationSettings where   MappingName = 'MinimumNumeric')
+
+
+--'MinimumUppercase'
+
+	INSERT INTO [Settings].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
+		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+	Select PartyId,@SettingCategoryTypeId,'MinimumUppercase',
+		MinimumUppercase,1,1,@UserId,@Now
+	From [Ident].[PasswordPolicy]  
+	where PartyId  not in (select PartyId From Settings.OrganizationSettings where   MappingName = 'MinimumUppercase')
+
+
+-- 'MinimumLowercase'
+
+	INSERT INTO [Settings].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
+		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+	Select PartyId,@SettingCategoryTypeId,'MinimumLowercase',
+		MinimumLowercase,1,1,@UserId,@Now
+	From [Ident].[PasswordPolicy]  
+	where PartyId  not in (select PartyId From Settings.OrganizationSettings where   MappingName = 'MinimumLowercase')
+
+
+--'MaximumLength'
+
+	INSERT INTO [Settings].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
+		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+	Select PartyId,@SettingCategoryTypeId,'MaximumLength',
+		MaximumLength,1,1,@UserId,@Now
+	From [Ident].[PasswordPolicy]  
+	where PartyId  not in (select PartyId From Settings.OrganizationSettings where   MappingName = 'MaximumLength')
+
+
+--'MinimumLength'
+
+	INSERT INTO [Settings].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
+		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+	Select PartyId,@SettingCategoryTypeId,'MinimumLength',
+		MinimumLength,1,0,@UserId,@Now
+	From [Ident].[PasswordPolicy]  
+	where PartyId  not in (select PartyId From Settings.OrganizationSettings where   MappingName = 'MinimumLength')
+
+	GO
+
+	DECLARE @UserId bigint
+	Declare @securityCategory smallint
+	declare @cfCategory smallint
+
+	SELECT @UserId = UserId
+	FROM   Ident.UserLogin
+	WHERE  LoginName LIKE 'realpagead@%'
+
+	select @securityCategory = SettingCategoryTypeId from [Settings].[SettingCategoryType] Where Name = 'Security'
+	select @cfCategory = SettingCategoryTypeId from [Settings].[SettingCategoryType] Where Name = 'CustomFields'
+
+	if not exists(select top 1 1 from [Settings].[SettingsMapping] Where SettingCategoryTypeId = @securityCategory)
+	Begin 
+		Insert into [Settings].[SettingsMapping](SettingCategoryTypeId,SettingsMappingType,ModifiedBy,CreatedDate)
+		Select @securityCategory,'Key',@UserId,GETUTCDATE()
+	End
+
+	if not exists(select top 1 1 from [Settings].[SettingsMapping] Where SettingCategoryTypeId = @cfCategory)
+	Begin 
+		Insert into [Settings].[SettingsMapping](SettingCategoryTypeId,SettingsMappingType,ModifiedBy,	CreatedDate)
+		Select @cfCategory,'Table',@UserId,GETUTCDATE()
+	End
+	
+	GO
+
+	--Data transfer existing custom fields
+	
+DECLARE @NOW DATETIME = GETUTCDATE();
+declare @CustomFields as TABLE(
+	[Id] [bigint] IDENTITY(1,1) NOT NULL,
+	[FieldId] [bigint] NOT NULL,
+	[OrganizationId] [bigint] NOT NULL,	
+	[Enabled] [bit] NOT NULL,
+	[Name] [nvarchar](100) NOT NULL,
+	[Description] [nvarchar](500) NULL,
+	[FieldTypeId] [tinyint] NOT NULL,
+	[Required] [bit] NULL,
+	[ReadOnly] [bit] NULL,
+	[Sequence] [smallint] NOT NULL,	
+	[MinCharLength] [int] NULL,
+	[MaxCharLength] [int] NULL,
+	[CreatedBy] bigint not null
+)
+
+insert into @CustomFields(FieldId,OrganizationId,Enabled,Name,Description,FieldTypeId,Required,
+	ReadOnly,Sequence,MinCharLength,MaxCharLength,CreatedBy)
+Select FieldId,OrganizationId,Enabled,Name,Description,FieldTypeId,Required,
+	ReadOnly,Sequence,MinCharLength,MaxCharLength,CreatedBy
+From CustomField.Field
+
+declare @MAX_ID INT
+declare @Current_ID INT = 1
+declare @SettingCategoryTypeId smallint
+
+select @SettingCategoryTypeId = SettingCategoryTypeId
+from [Settings].[SettingCategoryType] Where [Name] = 'CustomFields'
+
+select @MAX_ID = max(id) from @CustomFields
+
+SET IDENTITY_INSERT [Settings].[SettingTableRow] ON 
+
+while @Current_ID <= @MAX_ID
+begin
+	declare @partyid bigint,@fieldid bigint,@enabled bit,@name nvarchar(200),
+			@Description nvarchar(200), @Required bit,@ReadOnly bit,
+			@Sequence smallint,@MinCharLength int,@MaxCharLength int,
+			@CreatedBy bigint, @SettingTableId bigint,@fieldTypeId smallint
+
+	Select @partyid = OrganizationId,@fieldid = FieldId,
+		   @enabled = Enabled,@name = Name,@Description = Description,
+		   @ReadOnly = ReadOnly,@Required = Required,@Sequence = Sequence,
+		   @MaxCharLength = MaxCharLength, @MinCharLength = MinCharLength,
+		   @CreatedBy = CreatedBy, @fieldTypeId = FieldTypeId
+	From @CustomFields Where Id = @Current_ID
+
+	IF NOT EXISTS (Select 1 From  [Settings].[SettingTable] Where PartyId = @partyid)
+	BEGIN
+		INSERT INTO [Settings].[SettingTable]([SettingCategoryTypeId],[PartyId],
+				[TableName],[ModifiedBy],[CreatedDate])
+		Select @SettingCategoryTypeId,@partyid,'Customfields'+ CONVERT(varchar(10),@fieldid),@CreatedBy,@NOW
+
+		set @SettingTableId = SCOPE_IDENTITY();
+	END
+	ELSE
+	BEGIN
+		Select @SettingTableId = SettingTableId From  [Settings].[SettingTable] Where PartyId = @partyid
+	END
+
+	IF NOT EXISTS (Select 1 From  [Settings].[SettingTableRow] Where SettingTableId = @SettingTableId)
+	BEGIN
+		INSERT INTO [Settings].[SettingTableRow](SettingTableRowId,SettingTableId,Editable,Deletable,
+		IsActive,ModifiedBy,CreatedDate)
+		Select @fieldid,@SettingTableId,1,1,1,@CreatedBy,@NOW
+	END
+	
+
+	IF NOT EXISTS (Select 1 From  [Settings].[SettingTableColumn] Where SettingTableRowId = @fieldid)
+	BEGIN
+		INSERT INTO [Settings].[SettingTableColumn](SettingTableRowId,TableColumnName,
+		TableColumnValue,ModifiedBy,CreatedDate)
+		SELECT @fieldid,'Enabled',@enabled,@CreatedBy,@NOW
+
+		INSERT INTO [Settings].[SettingTableColumn](SettingTableRowId,TableColumnName,
+			TableColumnValue,ModifiedBy,CreatedDate)
+		SELECT @fieldid,'Name',@name,@CreatedBy,@NOW
+
+
+		INSERT INTO [Settings].[SettingTableColumn](SettingTableRowId,TableColumnName,
+			TableColumnValue,ModifiedBy,CreatedDate)
+		SELECT @fieldid,'FieldTypeId',@fieldTypeId,@CreatedBy,@NOW
+
+		INSERT INTO [Settings].[SettingTableColumn](SettingTableRowId,TableColumnName,
+			TableColumnValue,ModifiedBy,CreatedDate)
+		SELECT @fieldid,'Required',@Required,@CreatedBy,@NOW
+
+		INSERT INTO [Settings].[SettingTableColumn](SettingTableRowId,TableColumnName,
+			TableColumnValue,ModifiedBy,CreatedDate)
+		SELECT @fieldid,'ReadOnly',@ReadOnly,@CreatedBy,@NOW
+
+		INSERT INTO [Settings].[SettingTableColumn](SettingTableRowId,TableColumnName,
+			TableColumnValue,ModifiedBy,CreatedDate)
+		SELECT @fieldid,'Sequence',@Sequence,@CreatedBy,@NOW
+
+		INSERT INTO [Settings].[SettingTableColumn](SettingTableRowId,TableColumnName,
+			TableColumnValue,ModifiedBy,CreatedDate)
+		SELECT @fieldid,'MinCharLength',@MinCharLength,@CreatedBy,@NOW
+
+		INSERT INTO [Settings].[SettingTableColumn](SettingTableRowId,TableColumnName,
+			TableColumnValue,ModifiedBy,CreatedDate)
+		SELECT @fieldid,'MaxCharLength',@MaxCharLength,@CreatedBy,@NOW
+	END	
+
+	set @Current_ID = @Current_ID + 1
+end
+
+SET IDENTITY_INSERT [Settings].[SettingTableRow] OFF 
+
+GO
