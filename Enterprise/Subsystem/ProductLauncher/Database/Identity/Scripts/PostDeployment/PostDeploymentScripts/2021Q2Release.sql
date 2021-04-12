@@ -935,5 +935,91 @@ Begin
 End
 Go
 
+DECLARE @UserId bigint,
+	@Now datetime = GETDATE(),
+	@RightId int,
+	@PartyId int,
+	@RightVisibilityStatusId int =9,
+	@RouteId int,
+	@ServerName SYSNAME = @@SERVERNAME;
+
+IF @ServerName IN ('RCDUSODBSQL001','rctusodbsql001','RCQUSODBSQL001')
+BEGIN
+SELECT	@UserId = UserId
+FROM	Ident.UserLogin
+WHERE	LoginName LIKE 'realpagead@%'
+
+Select @RouteId=RouteId 
+FROM	[Security].[Route]
+Where	RouteValue='SideMenu'
+
+IF NOT EXISTS(select 1 from [Security].[Right] where RightName='ManageCompanyLevelReporting')
+BEGIN
+		---Create Right
+		INSERT INTO [Security].[Right]
+			(	RightName,
+				Description, 
+				Value,
+				StatusTypeId,
+				VisibilityStatusId,
+				ProductId,
+				TargetProductId,
+				CreatedBy,
+				CreatedDate
+            )
+			VALUES ( 
+					'ManageCompanyLevelReporting',
+					'Manage company-level reporting',
+					'Manage company-level reporting',
+					13, 
+					@RightVisibilityStatusId,
+					3,
+					67,
+					@UserId,
+					@Now
+				   )
+
+				
+END
+ SELECT @RightId=RightId from [Security].[Right] WHERE RightName='ManageCompanyLevelReporting'
+
+  -- Add Route with right
+ IF NOT EXISTS (SELECT TOP 1 1 FROM [Security].[RightRoute] WHERE RightId=@RightId and RouteId=@RouteId)
+	BEGIN
+		INSERT INTO [Security].[RightRoute](
+			RightId, 
+			RouteId,
+			RightName,
+			CreatedBy,
+			CreatedDate
+		)
+		VALUES ( 
+				@RightId,
+				@RouteId,
+				'Manage company-level reporting',
+				@UserId,
+				@Now
+				)
+	END;
+
+ -- Add Role with right
+	IF NOT EXISTS (SELECT TOP 1 1 FROM [Security].[RoleRight] WHERE RoleId = 1 AND RightId=@RightId)
+	BEGIN
+		INSERT INTO [Security].[RoleRight]
+		(	RoleId,
+			RightId, 
+			CreatedBy,
+			CreatedDate
+		)
+		VALUES ( 
+				1,
+				@RightId,
+				@UserId,
+				@Now
+				)
+	END;
+END;
+GO
+
 
 				
