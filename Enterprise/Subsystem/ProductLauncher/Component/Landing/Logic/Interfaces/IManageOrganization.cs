@@ -226,5 +226,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="organizationPartyId">Optional organization PartyId</param>
 		/// <returns>setting value</returns>
 		string GetOrganizationSettingValue(long organizationPartyId, string settingName);
+
+		/// <summary>
+		/// UpdateUsePrimaryPropertyForOrganizationProduct
+		/// </summary>
+		/// <param name="organizationPartyId">organizationPartyId</param>
+		/// <param name="productId">productId</param>
+		/// <param name="usePrimaryProperty">usePrimaryProperty</param>
+		/// <returns></returns>
+		RepositoryResponse UpdateUsePrimaryPropertyForOrganizationProduct(long organizationPartyId, int productId, bool usePrimaryProperty);
 	}
 }
