@@ -64,7 +64,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                 UnifiedLoginRepository umr = new UnifiedLoginRepository();
 
-                List<UnifiedLoginCompany> gbAllActiveCompanies = (umr.ListCompanies(filter))?.Where(c => c.IsActive).ToList();
+                List<UnifiedLoginCompany> gbAllActiveCompanies = (umr.ListCompanies(filter))?.Where(c => c.IsActive == true).ToList();
 
                 // Get BooksCompanyMasterIds - RPUP id
                 //string comIdsRpUp = GetCompanyIds(gbAllCompanies);
