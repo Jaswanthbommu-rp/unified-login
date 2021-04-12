@@ -176,7 +176,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             IList<int> products = new List<int>();
 
             var productList = _productRepository.GetAllProducts();
-            productcode.ForEach(x => products.Add(ProductEnumHelper.GetProductEnumByProductCode(x, productList)));
+            productcode.ForEach(x => products.Add(ProductEnumHelper.GetProductIdByProductCode(x, productList)));
 
             IProductRepository productRepository = new ProductRepository();
             var result = productRepository.GetUsersByCompanyorProducts(companyid, products, rowsPerPage.Value, pageNumber.Value, roles, rights, propertyIds);

@@ -92,7 +92,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 			{
 				IManageProductPanel productPanelData = new ManageProductPanel(_userClaims);
 				var productList = _productRepository.GetAllProducts();
-				int productId = (int)ProductEnumHelper.GetProductEnumByProductCode(productCode, productList);
+				int productId = (int)ProductEnumHelper.GetProductIdByProductCode(productCode, productList);
 				productResponse = productPanelData.GetProductRoles(_userClaims.PersonaId, persona.PersonaId, _userClaims.OrganizationPartyId, productId, null, null);
 				filteredList = productResponse.Records.Cast<Component.SharedObjects.Product.ProductRole>().ToList().FindAll(p => p.IsAssigned);
 			}
@@ -144,7 +144,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 			{
 				IManageProductPanel productPanelData = new ManageProductPanel(_userClaims);
 				var productList = _productRepository.GetAllProducts();
-				int productId = (int)ProductEnumHelper.GetProductEnumByProductCode(productCode, productList);
+				int productId = (int)ProductEnumHelper.GetProductIdByProductCode(productCode, productList);
 				productResponse = productPanelData.GetProductRoles(_userClaims.PersonaId, _userClaims.PersonaId, _userClaims.OrganizationPartyId, productId, null, null);				
 			}
 

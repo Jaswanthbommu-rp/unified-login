@@ -456,7 +456,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             try
             {
                 var productList = _productRepository.GetAllProducts();
-                int productEnum = ProductEnumHelper.GetProductEnumByProductCode(productCode, productList);
+                int productEnum = ProductEnumHelper.GetProductIdByProductCode(productCode, productList);
                 return GetProductLoginDetails(productEnum, personaId);
             }
             catch (Exception ex)
