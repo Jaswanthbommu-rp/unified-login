@@ -288,15 +288,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 IList<ProductUI> productList = _manageProduct.GetProducts(result.obj.Org.RealPageId, 0, true);
                 foreach (var product in productList)
                 {
-                    SystemProductCenter spc = new SystemProductCenter()
+                    var productInternalSettings = _manageProduct.GetProductInternalSettings(product.ProductId);
+                    var updateinUDM = productInternalSettings.Where(x => x.Name.ToUpper() == "UPDATEPRODUCTINUDM").FirstOrDefault();
+
+                    if (updateinUDM != null && updateinUDM.Value == "1")
                     {
-                        Id = 0,
-                        CompanyInstanceSourceId = companyInstance.CompanyInstanceSourceId,
-                        CreatedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
-                        ProductCenterSourceId = product.ProductId.ToString(),
-                        Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)
-                    };
-                    _manageBlueBook.ProductCenterEnable(spc);
+                        SystemProductCenter spc = new SystemProductCenter()
+                        {
+                            Id = 0,
+                            CompanyInstanceSourceId = companyInstance.CompanyInstanceSourceId,
+                            CreatedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
+                            ProductCenterSourceId = product.ProductId.ToString(),
+                            Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)
+                        };
+                        _manageBlueBook.ProductCenterEnable(spc);
+                    }
                 }
             }
             return Request.CreateResponse(HttpStatusCode.OK, result.obj);
