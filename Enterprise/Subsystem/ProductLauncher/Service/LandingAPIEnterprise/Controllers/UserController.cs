@@ -89,7 +89,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             ManageUserRoleRight manageUserRoleRight = new ManageUserRoleRight(repository);
             ManagePartyRelationship managePartyRelationship = new ManagePartyRelationship(repository);
 
-            ManageBlueBook manageBlueBook = new ManageBlueBook(userClaims, productInternalSettingRepository, messageHandler);
+            ManageBlueBook manageBlueBook = new ManageBlueBook(userClaims, repository, productInternalSettingRepository, messageHandler);
             ManageProfile manageProfile = new ManageProfile(userClaims);
             _manageSettings = new ManageUnifiedSettings(repository, _userClaims, messageHandler);
 
@@ -697,7 +697,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
             ListResponse listResponse = new ListResponse();
             var products = _productRepository.GetAllProducts();
-            switch (ProductEnumHelper.GetProductEnumByProductCode(productCode, products))
+            switch (ProductEnumHelper.GetProductIdByProductCode(productCode, products))
             {
                 case (int)ProductEnum.OpsBuyer:
                     var samlRepository = new SamlRepository();
@@ -784,7 +784,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
             RequestParameter requestParameter = new RequestParameter() { Pages = new PageRequest() { ResultsPerPage = rowsPerPage, StartRow = pageNumber } };
             var productList = _productRepository.GetAllProducts();
-            switch (ProductEnumHelper.GetProductEnumByProductCode(productCode, productList))
+            switch (ProductEnumHelper.GetProductIdByProductCode(productCode, productList))
             {
                 case (int)ProductEnum.OpsBuyer:
                     IManageProductOps manageProductOps = new ManageProductOps(_userClaims);

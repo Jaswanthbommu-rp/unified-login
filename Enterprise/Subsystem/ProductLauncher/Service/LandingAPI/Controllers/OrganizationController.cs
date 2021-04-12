@@ -61,7 +61,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _manageUserLogin = new ManageUserLogin(repository, userClaims, messageHandler);
             _managePartyRelationship = new ManagePartyRelationship(new PartyRelationshipRepository(repository));
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
-            _manageBlueBook = new ManageBlueBook(userClaims, _productInternalSettingRepository, messageHandler);
+            _manageBlueBook = new ManageBlueBook(userClaims, repository, _productInternalSettingRepository, messageHandler);
             _manageOrganization = new ManageOrganization(repository, userClaims, messageHandler);
             _messageHandler = messageHandler;
             _userClaims = userClaims;
@@ -87,7 +87,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _manageUserLogin = new ManageUserLogin(repository, userClaims, messageHandler);
             _managePartyRelationship = new ManagePartyRelationship(new PartyRelationshipRepository(repository));
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
-            _manageBlueBook = new ManageBlueBook(userClaims, _productInternalSettingRepository, messageHandler);
+            _manageBlueBook = new ManageBlueBook(userClaims, repository, _productInternalSettingRepository, messageHandler);
             _manageOrganization = new ManageOrganization(repository, userClaims, messageHandler);
             _messageHandler = messageHandler;
             _userClaims = userClaims;
@@ -1628,7 +1628,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
             else
             {
-                _manageBlueBook = new ManageBlueBook(_userClaims, _productInternalSettingRepository, _messageHandler);
+                _manageBlueBook = new ManageBlueBook(_userClaims, _repository, _productInternalSettingRepository, _messageHandler);
                 _manageOrganization = new ManageOrganization(_repository, _userClaims, _messageHandler, _manageProductOneSite);
             }
 

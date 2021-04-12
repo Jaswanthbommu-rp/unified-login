@@ -12,8 +12,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 	/// </summary>
 	public static class ProductEnumHelper
 	{
+		[Obsolete("Replaced by GetProductCodeByProductId - Do not use")]
 		public static string StringValueOf(ProductEnum value)
 		{
+			if(value != ProductEnum.UnifiedPlatform
+				&& value != ProductEnum.AoAxiometrics
+				&& value != ProductEnum.AoRentControl
+				&& value != ProductEnum.OneSite)
+            {
+				throw new Exception($"This function is obsolute, use {nameof(GetProductCodeByProductId)} instead");
+            }
+
 			FieldInfo fi = value.GetType().GetField(value.ToString());
 			DescriptionAttribute[] attributes = (DescriptionAttribute[])fi.GetCustomAttributes(typeof(DescriptionAttribute), false);
 			if (attributes.Length > 0)
@@ -144,7 +153,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// <param name="productCode">Product Code</param>
 		/// <param name="products"></param>
 		/// <returns>ProductEnum</returns>
-		public static int GetProductEnumByProductCode(string productCode, IList<GbProductMap> products)
+		public static int GetProductIdByProductCode(string productCode, IList<GbProductMap> products)
 		{
 			var lookupValue = products.FirstOrDefault(a => a.BooksProductCode?.Equals(productCode, StringComparison.OrdinalIgnoreCase) == true);
 
@@ -156,6 +165,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 
 			return lookupValue.ProductId;
 		}
+
+		public static string GetProductCodeByProductId(int productId, IList<GbProductMap> products) =>
+			products.FirstOrDefault(a => a.ProductId == productId)?.BooksProductCode;
 	}
 
 	/// <summary>

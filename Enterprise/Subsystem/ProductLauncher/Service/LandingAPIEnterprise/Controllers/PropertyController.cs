@@ -96,7 +96,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
 		    ListResponse productResponse;
             var productList = _productRepository.GetAllProducts();
-            switch (ProductEnumHelper.GetProductEnumByProductCode(productCode, productList))
+            switch (ProductEnumHelper.GetProductIdByProductCode(productCode, productList))
 		    {
 			    case (int)ProductEnum.OpsBuyer:
 				    IManageProductOps manageProductOps = new ManageProductOps(_userClaims);
@@ -147,7 +147,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 		    };
             ManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
             var productList = _productRepository.GetAllProducts();
-            int productId = ProductEnumHelper.GetProductEnumByProductCode(productCode, productList);
+            int productId = ProductEnumHelper.GetProductIdByProductCode(productCode, productList);
             ListResponse productResponse;            
 
             // The logic in UnifiedPlatform is 100% different than that in the LegacyIntegrationType version
@@ -197,7 +197,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 Errors = new List<Error>()
             };
             var productList = _productRepository.GetAllProducts();
-            int productId = ProductEnumHelper.GetProductEnumByProductCode(productCode, productList);
+            int productId = ProductEnumHelper.GetProductIdByProductCode(productCode, productList);
             ManageUPFMProductsIntegration upfmProductIntegration = new ManageUPFMProductsIntegration(productId, _userClaims);            
             var multiCompanyPropertyResponse = upfmProductIntegration.GetUPFMMultiCompanyProperties(productCode);
             if (multiCompanyPropertyResponse == null)

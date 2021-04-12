@@ -136,7 +136,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 new GbProductMap() {BooksProductCode = "PEQ", Name = "P2 Engagement Queue", ProductId = 64, UDMSourceCode = null},
                 new GbProductMap() {BooksProductCode = "LeaseLabs", Name = "LeaseLabs", ProductId = 68, UDMSourceCode = null},
                 new GbProductMap() {BooksProductCode = "RPT", Name = "Reporting", ProductId = 67, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "SGT", Name = "Self-Guided Tour", ProductId = 65, UDMSourceCode = null},
+                new GbProductMap() {BooksProductCode = "6247", Name = "Self-Guided Tour", ProductId = 65, UDMSourceCode = null},
 
             };
             
@@ -1534,7 +1534,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             foreach (var productCode in blueBookProductList)
             {
-                productList.Add(ProductEnumHelper.GetProductEnumByProductCode(productCode, _gbProductMap));
+                productList.Add(ProductEnumHelper.GetProductIdByProductCode(productCode, _gbProductMap));
             }
 
             // list of products to exclude from Bluebook to product integration
