@@ -69,7 +69,10 @@ BEGIN
 					A.BooksMasterPropertyId AS ''PropertyId'',
 					A.IsSystemAdminActivity AS ''IsSystemAdminActivity'',
 					A.ApplicationTimeStamp,
-					FORMAT(DATEADD(minute, ' + @OffsetMinutes + ', A.ApplicationTimeStamp), ''MM/dd/yyyy hh:mm:s tt'') AS ''ApplicationTimestampOffset''
+					FORMAT(DATEADD(minute, ' + @OffsetMinutes + ', A.ApplicationTimeStamp), ''MM/dd/yyyy hh:mm:s tt'') AS ''ApplicationTimestampOffset'',
+					A.SourceId,
+					A.MappingKey,
+					A.ContextId
 	FROM		Logging.Activity A
 					INNER JOIN Logging.LogType LT ON A.LogTypeId = LT.LogTypeId
 					INNER JOIN Logging.LogCategoryType LCT ON LCT.LogCategoryTypeId = LT.LogCategoryTypeId
@@ -160,8 +163,7 @@ BEGIN
 				ELSE ' = '
 			END +
 			CASE
-				WHEN @ScName IN ('FromRealPageId', 'ToRealPageId') THEN ''''
-				WHEN @SCName IN ('StartDate', 'EndDate') THEN ''''
+				WHEN @SCName IN ('FromRealPageId', 'ToRealPageId','StartDate', 'EndDate','SourceId','MappingKey') THEN ''''
 				ELSE ''
 			END +
 			CASE
@@ -170,11 +172,9 @@ BEGIN
 				ELSE CONVERT(nvarchar(200), @SCValue)
 			END +
 			CASE
-				WHEN @ScName IN ('FromRealPageId') THEN ''''
 				WHEN @ScName IN ('ToRealPageId') THEN ''')'
 				WHEN @SCName = 'Message' THEN ' > 0'
-				WHEN @SCName IN ('StartDate', 'EndDate')
-				THEN ''''
+				WHEN @SCName IN ('FromRealPageId','StartDate', 'EndDate','SourceId','MappingKey') THEN ''''
 				ELSE ''
 			END;
 
