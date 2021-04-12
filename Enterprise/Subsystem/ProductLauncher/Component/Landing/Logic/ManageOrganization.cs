@@ -424,6 +424,39 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         /// <summary>
+		/// UpdateUsePrimaryPropertyForOrganizationProduct
+		/// </summary>
+		/// <param name="organizationPartyId">organizationPartyId</param>
+		/// <param name="productId">productId</param>
+		/// <param name="usePrimaryProperty">usePrimaryProperty</param>
+		/// <returns></returns>
+		public RepositoryResponse UpdateUsePrimaryPropertyForOrganizationProduct(long organizationPartyId, int productId, bool usePrimaryProperty)
+		{
+            RepositoryResponse repositoryResponse = new RepositoryResponse();
+            if (organizationPartyId == 0)
+            {
+                throw new Exception("Invalid parameter organizationPartyId.");
+            }
+            if (productId == 0)
+            {
+                throw new Exception("Invalid parameter productId.");
+            }
+            var organizationDetails = _organizationRepository.GetOrganization(null, organizationPartyId);
+			if (organizationDetails.UsePrimaryProperties == 1)
+            {
+                var productSettingTypeId = _productRepository.GetProductSettingType("UsePrimaryProperties");
+                return _organizationProductRepository.CreateOrganizationProductSetting(organizationPartyId, productId, productSettingTypeId, usePrimaryProperty == true ? "1" : "0");
+            }
+			else
+			{
+                repositoryResponse.ErrorMessage = "Primary properties is not turned on at company level.";
+            }
+            return repositoryResponse;
+            
+        }
+
+
+        /// <summary>
         /// Get Organization details
         /// </summary>
         /// <param name="realPageId">Organization unique identifier</param>

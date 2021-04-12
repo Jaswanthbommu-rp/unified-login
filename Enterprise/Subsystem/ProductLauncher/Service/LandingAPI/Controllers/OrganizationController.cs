@@ -785,6 +785,36 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             return Request.CreateResponse(HttpStatusCode.Created);
         }
 
+
+        /// <summary>
+        /// Update Use primary properties for products
+        /// </summary>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get company details by customer company id", Type = typeof(CompanySetup))]
+        [SwaggerResponseExamples(typeof(CompanySetup), typeof(CompanySetupExample))]
+        [Route("companysetup/party/{organizationPartyId}/product/{productId}/usePrimaryProperty/{usePrimaryProperty}")]
+        [AuthorizeScope("companyfunctions", "rplandingapi")]
+        [HttpPut]
+        public HttpResponseMessage UpdateUsePrimaryPropertyForOrganizationProduct(long organizationPartyId, int productId, bool usePrimaryProperty)
+        {
+            if (organizationPartyId == 0)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "organizationPartyId not supplied");
+            }
+            if (productId == 0)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "productId not supplied");
+            }           
+            _repositoryResponse = _manageOrganization.UpdateUsePrimaryPropertyForOrganizationProduct(organizationPartyId, productId, usePrimaryProperty);
+            if (_repositoryResponse.Id == 0)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, _repositoryResponse.ErrorMessage);
+            }
+
+            return Request.CreateResponse(HttpStatusCode.OK, _repositoryResponse);
+        }
+
         /// <summary>
         /// Remove products from an organization
         /// </summary>

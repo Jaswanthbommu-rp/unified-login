@@ -3034,6 +3034,46 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         }
 
         #endregion
+
+        #region ada
+        [Fact]
+        public void UpdateUsePrimaryPropertyForOrganizationProduct_InvalidorganizationPartyId_ReturnBadRequest()
+        {
+            //Arrange
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            )
+            { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
+
+            //Act           
+            HttpResponseMessage response = organizationController.UpdateUsePrimaryPropertyForOrganizationProduct(0, 1, false);
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
+        }
+
+        [Fact]
+        public void UpdateUsePrimaryPropertyForOrganizationProduct_InvalidProductId_ReturnBadRequest()
+        {
+            //Arrange
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            )
+            { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
+
+            //Act           
+            HttpResponseMessage response = organizationController.UpdateUsePrimaryPropertyForOrganizationProduct(1234, 0 , true);
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
+        }
+        #endregion
     }
 }
        
