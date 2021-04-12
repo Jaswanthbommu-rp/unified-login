@@ -222,7 +222,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 organization.OrganizationDomainId = organizationDomainList.FirstOrDefault(p => p.Name.Equals(organization.OrganizationDomain, StringComparison.OrdinalIgnoreCase)).OrganizationDomainId;
             }
-
             
             var addProductList = new List<int>();
             // verify the products, if any, exist and can be added to the customer
@@ -263,6 +262,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 CustomerEnvironment = result.obj.Org.OrganizationDomain.Name
             };
 
+            if (organization.CompanyAddress != null)
+            {
+                companyInstance.CompanyInstanceLocation = new List<CompanyInstanceAddress>();
+                CompanyInstanceAddress address = new CompanyInstanceAddress()
+                {
+                    Address = organization.CompanyAddress.Address,
+                    City = organization.CompanyAddress.City,
+                    State = organization.CompanyAddress.State,
+                    PostalCode = organization.CompanyAddress.PostalCode,
+                    County = organization.CompanyAddress.County,
+                    Country = organization.CompanyAddress.Country
+                };
+            }
+
             bool addInstance = true;
 
             if (companyMapResource != null)
@@ -287,7 +300,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             // add the new company data to books
             if (addInstance)
             {
-                _manageBlueBook.AddBooksGreenBookCompanyInstance(companyInstance);
+                _manageBlueBook.AddUPFMCompanyFromCompanySetup(companyInstance);
 
                 // add the products assigned to the new company
                 var cacheKey = $"getListProductsByOrganization_{result.obj.Org.RealPageId}";
@@ -591,7 +604,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     // add the company data to books
                     if (commit)
                     {
-                        _manageBlueBook.AddBooksGreenBookCompanyInstance(companyInstance);
+                        _manageBlueBook.AddUPFMCompanyFromProvisioningEvent(companyInstance);
                     }
 
                     result.Add(organization.BooksCustomerMasterId.ToString(), companyInstance);

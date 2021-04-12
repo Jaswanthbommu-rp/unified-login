@@ -144,6 +144,7 @@
     <Compile Include="BlackBook\Company.cs" />
     <Compile Include="BlackBook\CompanyInstance.cs" />
     <Compile Include="BlackBook\CompanyInstanceAdd.cs" />
+    <Compile Include="BlackBook\CompanyInstancePartner.cs" />
     <Compile Include="BlackBook\CustomerCompanyInstance.cs" />
     <Compile Include="BlackBook\PropertyInstanceSearch.cs" />
     <Compile Include="BlackBook\PropertyInstanceAddress.cs" />

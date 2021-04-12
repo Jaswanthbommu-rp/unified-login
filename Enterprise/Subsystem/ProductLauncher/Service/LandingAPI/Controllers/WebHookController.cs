@@ -607,7 +607,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             };
 
             // add the new company data back to books
-            var booksResult = _manageBlueBook.AddBooksGreenBookCompanyInstance(companyInstance);
+            var booksResult = _manageBlueBook.AddUPFMCompanyFromProvisioningEvent(companyInstance);
 
             return createCompanyResult;
         }

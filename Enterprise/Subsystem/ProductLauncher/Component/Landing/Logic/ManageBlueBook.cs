@@ -650,16 +650,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         /// <summary>
-        /// Used to add a new company instance
+        /// Used to add a new company instance from the provisioning event
         /// </summary>
         /// <param name="companyInstance"></param>
         /// <returns></returns>
-        public bool AddBooksGreenBookCompanyInstance(CompanyInstance companyInstance)
+        public bool AddUPFMCompanyFromProvisioningEvent(CompanyInstance companyInstance)
         {
             string uri = $"companyinstance";
 
             Dictionary<string, object> logData = new Dictionary<string, object>() {{"uri", _httpClient.BaseAddress + uri}, {"companyInstance", companyInstance}};
-            WriteToLog(LogEventLevel.Debug, "AddBooksGreenBookCompanyInstance - Adding info.", logData);
+            WriteToLog(LogEventLevel.Debug, "AddUPFMCompanyFromProvisioningEvent - Adding info.", logData);
 
             var jsonToSave = JsonConvert.SerializeObject(companyInstance, new JsonApiSerializerSettings()).Replace("companyinstanceadd", "companyinstance");
             var request = new HttpRequestMessage
@@ -678,6 +678,35 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return false;
         }
 
+        /// <summary>
+        /// Add a UPFM company to UDM from the Add Company page in Unified Login
+        /// </summary>
+        /// <param name="companyInstance"></param>
+        /// <returns></returns>
+        public bool AddUPFMCompanyFromCompanySetup(CompanyInstanceAdd companyInstance)
+        {
+            string uri = $"companyinstance22/{companyInstance.CompanyInstanceSourceId}/UPFM";
+
+            Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "companyInstance", companyInstance } };
+            WriteToLog(LogEventLevel.Debug, "AddUPFMCompanyFromCompanySetup - Adding info.", logData);
+
+            var jsonToSave = JsonConvert.SerializeObject(companyInstance, new JsonApiSerializerSettings()).Replace("companyinstanceadd", "companyinstance");
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Put,
+                Content = new StringContent(jsonToSave, Encoding.UTF8, "application/json"),
+                RequestUri = new Uri(_httpClient.BaseAddress + uri)
+            };
+            var response = _httpClient.SendAsync(request).Result;
+            if (response != null && response.IsSuccessStatusCode)
+            {
+                //var clientResponse = JsonConvert.DeserializeObject<dynamic>(response.Content.ReadAsStringAsync().Result);
+                return true;
+            }
+
+            return false;
+        }
+        
         /// <summary>
         /// Used to delete an existing company instance
         /// </summary>

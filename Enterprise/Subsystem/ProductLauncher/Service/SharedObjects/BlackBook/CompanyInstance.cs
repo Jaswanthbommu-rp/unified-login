@@ -39,11 +39,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackB
         /// Source
         /// </summary>
         public string Source { get; set; }
-        
-		/// <summary>
-        /// Address
+
+        /// <summary>
+        /// Company address
         /// </summary>
-        //public List<CompanyInstanceAddress> CompanyInstanceLocation { get; set; }
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public List<CompanyInstanceAddress> CompanyInstanceLocation { get; set; }
         
 		/// <summary>
         /// Phone number

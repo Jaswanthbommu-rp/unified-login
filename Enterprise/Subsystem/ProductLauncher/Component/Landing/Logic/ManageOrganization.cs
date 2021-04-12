@@ -225,7 +225,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             };
 
             //Create an additional admin user for the Company
-            if ((processBlueBookMessage) && (organization.CompanyAdminUser != null) && (!string.IsNullOrWhiteSpace(organization.CompanyAdminUser.Email)))
+            if (processBlueBookMessage && organization.CompanyAdminUser != null && !string.IsNullOrWhiteSpace(organization.CompanyAdminUser.Email))
             {
                 findExistingUser = _userLoginRepository.GetUserLoginOnly(organization.CompanyAdminUser.Email);
 

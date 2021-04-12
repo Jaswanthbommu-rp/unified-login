@@ -106,7 +106,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// </summary>
         /// <param name="companyInstance"></param>
         /// <returns></returns>
-        bool AddBooksGreenBookCompanyInstance(CompanyInstance companyInstance);
+        bool AddUPFMCompanyFromProvisioningEvent(CompanyInstance companyInstance);
+
+        /// <summary>
+        /// Add a UPFM company to UDM from the Add Company page in Unified Login
+        /// </summary>
+        /// <param name="companyInstance"></param>
+        /// <returns></returns>
+        bool AddUPFMCompanyFromCompanySetup(CompanyInstanceAdd companyInstance);
 
         /// <summary>
         /// Used to delete an existing company instance
