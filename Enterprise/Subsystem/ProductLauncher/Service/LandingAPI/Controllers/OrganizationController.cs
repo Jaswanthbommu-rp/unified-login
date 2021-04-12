@@ -255,18 +255,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             var companyInstance = new CompanyInstanceAdd()
             {
                 Id = organization.BooksCustomerMasterId,
-                CustomerCompanyId = organization.BooksCustomerMasterId,
+                CustomerCompanyId = null,
                 CompanyInstanceSourceId = result.obj.Org.RealPageId.ToString().ToLower(),
                 CompanyName = result.obj.Org.Name,
                 Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
                 IsActive = organization.IsActive == 1,
-                CreatedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
+                ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
                 CustomerEnvironment = result.obj.Org.OrganizationDomain.Name
             };
 
             if (organization.CompanyAddress != null)
             {
-                companyInstance.CompanyInstanceLocation = new List<CompanyInstanceAddress>();
                 CompanyInstanceAddress address = new CompanyInstanceAddress()
                 {
                     Address = organization.CompanyAddress.Address,
@@ -276,6 +275,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     County = organization.CompanyAddress.County,
                     Country = organization.CompanyAddress.Country
                 };
+                companyInstance.CompanyInstanceLocation = new List<CompanyInstanceAddress>() {address};
+            }
+
+            if (!string.IsNullOrEmpty(organization.CompanyInstancePartner) && !string.IsNullOrEmpty(organization.CompanyInstancePartnerSourceId))
+            {
+                companyInstance.CompanyInstancePartners = new List<CompanyInstancePartner>() {new CompanyInstancePartner() {TargetSource = organization.CompanyInstancePartner, TargetCompanyInstanceSourceId = organization.CompanyInstancePartnerSourceId}};
             }
 
             bool addInstance = true;
@@ -302,7 +307,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             // add the new company data to books
             if (addInstance)
             {
-                _manageBlueBook.AddUPFMCompanyFromCompanySetup(companyInstance);
+                var companyCreatedSuccessfully = _manageBlueBook.AddUPFMCompanyFromCompanySetup(companyInstance);
+
+                if (!companyCreatedSuccessfully) return Request.CreateResponse(HttpStatusCode.BadRequest, "There was a problem adding the UPFM instance to UDM");
 
                 // add the products assigned to the new company
                 var cacheKey = $"getListProductsByOrganization_{result.obj.Org.RealPageId}";
@@ -311,15 +318,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 IList<ProductUI> productList = _manageProduct.GetProducts(result.obj.Org.RealPageId, 0, true);
                 foreach (var product in productList)
                 {
-                    SystemProductCenter spc = new SystemProductCenter()
+                    var productInternalSettings = _manageProduct.GetProductInternalSettings(product.ProductId);
+                    var updateinUDM = productInternalSettings.FirstOrDefault(x => x.Name.Equals("UpdateProductInUDM", StringComparison.OrdinalIgnoreCase));
+
+                    if (updateinUDM?.Value == "1")
                     {
-                        Id = 0,
-                        CompanyInstanceSourceId = companyInstance.CompanyInstanceSourceId,
-                        CreatedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
-                        ProductCenterSourceId = product.ProductId.ToString(),
-                        Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)
-                    };
-                    _manageBlueBook.ProductCenterEnable(spc);
+                        SystemProductCenter spc = new SystemProductCenter()
+                        {
+                            Id = 0,
+                            CompanyInstanceSourceId = companyInstance.CompanyInstanceSourceId,
+                            CreatedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
+                            ProductCenterSourceId = product.ProductId.ToString(),
+                            Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)
+                        };
+                        _manageBlueBook.ProductCenterEnable(spc);
+                    }
                 }
             }
             return Request.CreateResponse(HttpStatusCode.OK, result.obj);
