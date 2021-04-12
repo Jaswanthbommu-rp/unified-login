@@ -92,5 +92,11 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Shared.Models
 
 		[DataMember]
 		public string ApplicationTimestampOffset { get; set; }
-	}
+
+        public string SourceId { get; set; }
+
+        public string MappingKey { get; set; }
+
+        public int ContextId { get; set; }
+    }
 }

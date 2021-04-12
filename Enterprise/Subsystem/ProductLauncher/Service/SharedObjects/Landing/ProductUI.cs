@@ -171,5 +171,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
 		/// </summary>
 		[JsonProperty(PropertyName = "ProductCode")]
 		public string ProductCode { get; set; } = string.Empty;
+
+		/// <summary>
+		/// Product Unique Id
+		/// </summary>
+		[JsonProperty(PropertyName = "productInstance")]
+		public string ProductInstance { get; set; } = null;
+
+		/// <summary>
+		/// GreenBook Cares
+		/// </summary>
+		[JsonProperty(PropertyName = "greenBookCares")]
+		public bool GreenBookCares { get; set; }
 	}
 }

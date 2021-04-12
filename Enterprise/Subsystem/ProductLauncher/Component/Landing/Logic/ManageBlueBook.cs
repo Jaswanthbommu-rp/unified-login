@@ -865,11 +865,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             if (response != null && response.IsSuccessStatusCode)
             {
                 WriteToLog(LogEventLevel.Debug, "ProductCenterEnable - Added info successfully.");
+                WriteToLog(LogEventLevel.Debug, "ProductCenterEnable - Enablement Completed for ProductCenterSourceId: " + systemProductCenter.ProductCenterSourceId);
                 return true;
             }
 
             logData = new Dictionary<string, object>() { { "response", response } };
             WriteToLog(LogEventLevel.Error, "ProductCenterEnable - Failed to add info.", logData);
+            WriteToLog(LogEventLevel.Debug, "ProductCenterEnable - Enablement failed for ProductCenterSourceId: " + systemProductCenter.ProductCenterSourceId);
 
             return false;
         }
@@ -1597,6 +1599,74 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 return null;
             }
             return propertyInstance;
+        }
+
+
+        /// <summary>
+        /// Get CompanyInstance By UPFMCompanyId
+        /// </summary>
+        /// <param name="upfmCompanyId">propertyInstanceSourceId</param>
+        /// <returns></returns>
+        public BooksCompanyInstance GetCompanyInstanceByUPFMCompanyId(string upfmCompanyId)
+        {
+            BooksCompanyInstance companyInstance = new BooksCompanyInstance();
+            /*
+                 https://booksapi-qa.realpage.com/companyinstance/f5c090fa-78ab-452f-b504-98aafee09121/UPFM?include=customerCompanyMap
+            */
+
+            string uri = $"/companyinstance/{upfmCompanyId.ToString().ToLower()}/UPFM?include=customerCompanyMap";
+
+            Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
+            WriteToLog(LogEventLevel.Debug, "GetCompanyInstanceByUPFMCompanyId - Getting info.", logData);
+            var response = GetAsync(uri).Result;
+            if (response.IsSuccessStatusCode)
+            {
+                //companyInstance = response.Content.ReadAsJsonApiAsync<CompanyResource>(_contractResolver, _cache).Result;
+                companyInstance = JsonConvert.DeserializeObject<BooksCompanyInstance>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
+                logData = new Dictionary<string, object>() { { "GetSourceProductDetailsFromBooks", companyInstance } };
+                WriteToLog(LogEventLevel.Debug, "GetCompanyInstanceByUPFMCompanyId - Got info.", logData);
+            }
+            else
+            {
+                logData = new Dictionary<string, object>() { { "response", response } };
+                WriteToLog(LogEventLevel.Debug, "GetCompanyInstanceByUPFMCompanyId - No info found.", logData);
+                return null;
+            }
+            return companyInstance;
+        }
+
+        /// <summary>
+        /// Get CompanyInstance By UPFMCompanyId
+        /// </summary>
+        /// <param name="customerCompanyId">customerCompanyId</param>
+        /// <param name="companyDomain">companyDomain</param>
+        /// <returns></returns>
+        public List<CustomerCompanyMap> GetCustomerCompanyMapByCustomerCompanyId(int customerCompanyId, string companyDomain)
+        {
+            List<CustomerCompanyMap> customerCompanyMap = new List<CustomerCompanyMap>();
+            /*
+                 http://booksapi-qa.realpage.com/customercompanymap?filter[customerCompanyId]=379&filter[companyInstance.domain]=Primary&include=companyInstance&fields[companyInstance]=greenBookCares,companyInstanceSourceId
+            */
+
+            string uri = $"/customercompanymap?filter[customerCompanyId]={customerCompanyId}&filter[companyInstance.domain]={companyDomain}&include=companyInstance&fields[companyInstance]=greenBookCares,companyInstanceSourceId,domain";
+
+            Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
+            WriteToLog(LogEventLevel.Debug, "GetCustomerCompanyMapByCustomerCompanyId - Getting info.", logData);
+            var response = GetAsync(uri).Result;
+            if (response.IsSuccessStatusCode)
+            {
+                //companyInstance = response.Content.ReadAsJsonApiAsync<CompanyResource>(_contractResolver, _cache).Result;
+                customerCompanyMap = JsonConvert.DeserializeObject<List<CustomerCompanyMap>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
+                logData = new Dictionary<string, object>() { { "GetSourceProductDetailsFromBooks", customerCompanyMap } };
+                WriteToLog(LogEventLevel.Debug, "GetCustomerCompanyMapByCustomerCompanyId - Got info.", logData);
+            }
+            else
+            {
+                logData = new Dictionary<string, object>() { { "response", response } };
+                WriteToLog(LogEventLevel.Debug, "GetCompanyInstanceByUPFMCompanyId - No info found.", logData);
+                return null;
+            }
+            return customerCompanyMap;
         }
 
         public ListResponse TranslateProductPrimaryPropertiesData(UPFMProperty upfmProperty, int productId, ListResponse productResult)

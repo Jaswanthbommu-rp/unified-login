@@ -21,7 +21,10 @@
 	@ServerName NVARCHAR(50),
 	@Timestamp DATETIME,
 	@AdditionalInformationTPV ADDITIONALINFO READONLY,
-	@ActivityId BIGINT OUTPUT
+	@ActivityId BIGINT OUTPUT,
+	@SourceId NVARCHAR(50) = NULL,
+	@MappingKey NVARCHAR(200) = NULL,
+	@ContextId INT = NULL --Property = 1,Company = 2,GlobalUpdate = 3,Template = 4
 )
 AS
 BEGIN
@@ -256,7 +259,10 @@ BEGIN
 					ApplicationTimestamp,
 					DatabaseTimestamp,
 					BooksMasterPropertyId,
-					IsSystemAdminActivity
+					IsSystemAdminActivity,
+					SourceId,
+					MappingKey,
+					ContextId
 				)
 			VALUES
 				(@LogTypeId,
@@ -275,7 +281,10 @@ BEGIN
 					@Timestamp,
 					@Now,
 					@BooksMasterPropertyId,
-					@IsSystemAdminActivity 
+					@IsSystemAdminActivity,
+					@SourceId,
+					@MappingKey,
+					@ContextId					
 				);
 			IF @@ROWCOUNT > 0
 			BEGIN
