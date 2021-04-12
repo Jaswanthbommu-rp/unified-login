@@ -940,7 +940,6 @@ DECLARE @UserId bigint,
 	@RightId int,
 	@PartyId int,
 	@RightVisibilityStatusId int =9,
-	@OrgVisibilityStatusId int =10,
 	@RouteId int,
 	@ServerName SYSNAME = @@SERVERNAME;
 
@@ -1015,28 +1014,6 @@ END
 		VALUES ( 
 				1,
 				@RightId,
-				@UserId,
-				@Now
-				)
-	END;
-	
-	SELECT @PartyId=PartyId from [Enterprise].[Organization] WHERE Name='CF Real Estate Services'
-
-	IF NOT EXISTS (SELECT TOP 1 1 FROM [Security].[OrganizationOverRideRight] WHERE OrgPartyId = @PartyId AND RightId=@RightId)
-	BEGIN
-		INSERT INTO [Security].[OrganizationOverRideRight]
-		(	
-			RightId,
-			OrgPartyId,
-			VisibilityStatusId, 
-			CreatedBy,
-			CreatedDate
-		)
-		VALUES ( 
-				
-				@RightId,
-				@PartyId,
-				@OrgVisibilityStatusId,
 				@UserId,
 				@Now
 				)
