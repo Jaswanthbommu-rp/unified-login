@@ -431,7 +431,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		/// <param name="usePrimaryProperty">usePrimaryProperty</param>
 		/// <returns></returns>
 		public RepositoryResponse UpdateUsePrimaryPropertyForOrganizationProduct(long organizationPartyId, int productId, bool usePrimaryProperty)
-		{
+        {
             RepositoryResponse repositoryResponse = new RepositoryResponse();
             if (organizationPartyId == 0)
             {
@@ -442,17 +442,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 throw new Exception("Invalid parameter productId.");
             }
             var organizationDetails = _organizationRepository.GetOrganization(null, organizationPartyId);
-			if (organizationDetails.UsePrimaryProperties == 1)
+            if (organizationDetails.UsePrimaryProperties == 1)
             {
                 var productSettingTypeId = _productRepository.GetProductSettingType("UsePrimaryProperties");
                 return _organizationProductRepository.CreateOrganizationProductSetting(organizationPartyId, productId, productSettingTypeId, usePrimaryProperty == true ? "1" : "0");
             }
-			else
-			{
+            else
+            {
                 repositoryResponse.ErrorMessage = "Primary properties is not turned on at company level.";
             }
             return repositoryResponse;
-            
         }
 
 
