@@ -216,7 +216,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 new ProductInternalSetting() {Name = "BooksUseUPFMId", Value = "1"},
                 new ProductInternalSetting() {Name = "SettingsApiEndPoint", Value = "http://localhost"},
                 new ProductInternalSetting() {Name = "UnifiedLoginServerClientName", Value = "unifiedlogin-server"},
-                new ProductInternalSetting() {Name = "UnifiedLoginServerClientSecret", Value = "abcdefgh"}
+                new ProductInternalSetting() {Name = "UnifiedLoginServerClientSecret", Value = "abcdefgh"},
+                new ProductInternalSetting() {Name = "UpdateProductInUDM", Value = "1"},
             };
 
             HttpResponseMessage responseMapResource = new HttpResponseMessage(HttpStatusCode.OK);
@@ -849,6 +850,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 RealPageId = _RealPageId
             };
 
+            List<ProductInternalSetting> productInternalSettings = new List<ProductInternalSetting>()
+            {
+                new ProductInternalSetting() {Name = "UpdateProductInUDM", Value = "1"},
+            };
+
             var mockRepository = new Mock<IRepository>();
 
             Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
@@ -898,7 +904,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                     It.Is<object>(
                         d => TestIsRealPageId(d, _RealPageId))))
                 .Returns(new List<ProductUI>(){ new PersonaProductUserDetails() { ProductId = 1}});
-            
+
+            mockRepository
+                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
+                .Returns(productInternalSettings);
+
             mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/companyinstance", new HttpResponseMessage(HttpStatusCode.OK) {Content = new StringContent("{ \"result\" : \"success\"}")});
             mockHttpMessageHandler.Setup(HttpMethod.Put, $"http://localhost/companyinstance/" + _RealPageId.ToString().ToLower() + "/UPFM", new HttpResponseMessage(HttpStatusCode.OK) {Content = new StringContent("{ \"result\" : \"success\"}")});
             mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/systemproductcenter", new HttpResponseMessage(HttpStatusCode.OK) {Content = new StringContent("{ \"result\" : \"success\"}")});
@@ -921,7 +931,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 UsePrimaryProperties = 0,
                 Products = new List<string>()
                 {
-                    "AB"
+                    "OS"
                 },
                 AdminUser = new OrganizationAdminUser()
                 {
@@ -937,8 +947,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             };
 
             //Act
-            RPObjectCache rPObjectCache = new RPObjectCache();
-            rPObjectCache.BustCache();
+            new RPObjectCache().BustCache();
 
             HttpResponseMessage response = organizationController.InsertOrganization(organizationCreate);
             OrganizationCreateResult orgResult = JsonConvert.DeserializeObject<OrganizationCreateResult>(response.Content.ReadAsStringAsync().Result);

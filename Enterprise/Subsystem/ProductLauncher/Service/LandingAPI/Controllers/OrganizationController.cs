@@ -319,9 +319,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 foreach (var product in productList)
                 {
                     var productInternalSettings = _manageProduct.GetProductInternalSettings(product.ProductId);
-                    var updateinUDM = productInternalSettings.FirstOrDefault(x => x.Name.Equals("UpdateProductInUDM", StringComparison.OrdinalIgnoreCase));
+                    var updateInUDM = productInternalSettings.FirstOrDefault(x => x.Name.Equals("UpdateProductInUDM", StringComparison.OrdinalIgnoreCase));
 
-                    if (updateinUDM?.Value == "1")
+                    if (updateInUDM?.Value == "1")
                     {
                         SystemProductCenter spc = new SystemProductCenter()
                         {
