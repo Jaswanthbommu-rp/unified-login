@@ -174,7 +174,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 	/// Used to identify products by id.
 	/// </summary>
 	[Obsolete("Use an int instead")]
-	public enum ProductEnums
+	public enum ProductEnum
 	{
 		/// <summary>
 		/// OneSite
