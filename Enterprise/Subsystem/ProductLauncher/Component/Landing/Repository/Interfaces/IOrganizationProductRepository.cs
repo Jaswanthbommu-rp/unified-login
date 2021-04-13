@@ -34,5 +34,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		/// <param name="product">The product Id</param>
 		/// <returns></returns>
 		RepositoryResponse DisableUsersForProduct(long partyId, ProductEnum product);
+
+		/// <summary>
+		/// Create organization Product Setting (Expire the setting if exists)
+		/// </summary>
+		/// <param name="PartyId">User OrgId</param>
+		/// <param name="ProductId">ProductId</param>
+		/// <param name="ProductSettingTypeId">Product Setting TypeId</param>
+		/// <param name="Value">Product Setting Type Value</param>
+		/// <returns>Repository response object</returns>
+		RepositoryResponse CreateOrganizationProductSetting(long PartyId, int ProductId, int ProductSettingTypeId, string Value);
 	}
 }

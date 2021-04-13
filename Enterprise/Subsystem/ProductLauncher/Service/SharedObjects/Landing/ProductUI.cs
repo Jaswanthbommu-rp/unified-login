@@ -183,5 +183,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
 		/// </summary>
 		[JsonProperty(PropertyName = "greenBookCares")]
 		public bool GreenBookCares { get; set; }
+
+		/// <summary>
+		/// [JsonProperty(PropertyName = "usePrimaryProperties")]
+		/// </summary>
+		public bool UsePrimaryProperties { get; set; }
 	}
 }
