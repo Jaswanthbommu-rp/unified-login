@@ -445,10 +445,6 @@
       <Project>{941e5338-b2c7-41fd-bad5-a34a8e732e19}</Project>
       <Name>SharedObjects</Name>
     </ProjectReference>
-    <ProjectReference Include="..\IdentityServer\IdentityHelper\IdentityHelper.csproj">
-      <Project>{86748C72-89F8-438D-81D7-419007606978}</Project>
-      <Name>IdentityHelper</Name>
-    </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

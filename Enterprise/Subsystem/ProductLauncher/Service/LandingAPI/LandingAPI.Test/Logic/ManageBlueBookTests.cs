@@ -172,7 +172,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             string productSource = "OS";
             string domain = "Primary";
 
-            //_mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/translate/companyinstance/{organizationList[0].RealPageId}/{ProductEnum.UnifiedPlatform.ToEnumDescription()}/{productSource}?filter[customerEnvironment]={domain}", responseMapResource);
             _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/translate/v2/companyinstance/{organizationList[0].RealPageId}/{ProductEnum.UnifiedPlatform.ToEnumDescription()}/{productSource}?filter[greenbookCares]=true", responseMapResource);
 
             _mockRepository

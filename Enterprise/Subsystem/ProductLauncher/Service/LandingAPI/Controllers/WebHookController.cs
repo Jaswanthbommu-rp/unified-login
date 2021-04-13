@@ -303,7 +303,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             if (existingUnifiedLoginInstanceId == null)
                             {
                                 //return Request.CreateResponse(HttpStatusCode.BadRequest, "stop");
-                                var createResult = CreateCompanyFromBooks(customerCompanyId, customerDomain, uniqueProductIdList);
+                                var createResult = CreateCompanyFromBooks(thinEvent.Payload?["company"], customerCompanyId, customerDomain, uniqueProductIdList);
                                 if (!string.IsNullOrEmpty(createResult.Result))
                                 {
                                     propertyInstanceList = new List<UPFMPropertyInstance>();
@@ -522,7 +522,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             return signingSecret ?? "";
         }
 
-        private CreateCompanyResult CreateCompanyFromBooks(long booksCustomerMasterId, string domain, List<int> productIdList)
+        private CreateCompanyResult CreateCompanyFromBooks(JToken companyPayload, long booksCustomerMasterId, string domain, List<int> productIdList)
         {
             bool processBlueBookMessage = false;
             CreateCompanyResult createCompanyResult = new CreateCompanyResult() {RealPageId = Guid.Empty.ToString()};
@@ -549,9 +549,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return createCompanyResult;
             }
 
+            var companyName = companyPayload?["companyName"] == null || companyPayload?["companyName"].Type == JTokenType.Null ? "Missing name" : companyPayload["companyName"].ToString();
+            var companyAddress = companyPayload?["address"] == null || companyPayload?["address"].Type == JTokenType.Null ? "" : companyPayload["address"].ToString();
+            var companyCity = companyPayload?["city"] == null || companyPayload?["city"].Type == JTokenType.Null ? "" : companyPayload["city"].ToString();
+            var companyState = companyPayload?["state"] == null || companyPayload?["state"].Type == JTokenType.Null ? "" : companyPayload["state"].ToString();
+            var companyPostalCode = companyPayload?["postalCode"] == null || companyPayload?["postalCode"].Type == JTokenType.Null ? "" : companyPayload["postalCode"].ToString();
+            var companyCounty = companyPayload?["county"] == null || companyPayload?["county"].Type == JTokenType.Null ? "" : companyPayload["county"].ToString();
+            var companyCountry = companyPayload?["country"] == null || companyPayload?["country"].Type == JTokenType.Null ? "" : companyPayload["country"].ToString();
+
             OrganizationCreate organization = new OrganizationCreate()
             {
-                Name = customerCompany.CompanyName,
+                Name = companyName,
                 BooksCompanyId = customerCompany.MasterCompanyId,
                 BooksCustomerMasterId = customerCompany.CustomerCompanyId,
                 AdminUser = new OrganizationAdminUser()
@@ -560,9 +568,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     LastName = "Access",
                     Suffix = "",
                     Title = "",
-                }
+                },
+                CompanyAddress = new CompanyInstanceAddress() {Address = companyAddress, City = companyCity, State = companyState, PostalCode = companyPostalCode, County = companyCounty, Country = companyCountry}
             };
-            WriteToLog(LogEventLevel.Debug, $"Adding company {customerCompany.CompanyName} ");
+
+            WriteToLog(LogEventLevel.Debug, $"Adding company {companyName}");
             var organizationTypeList = _manageOrganization.ListOrganizationType();
             var organizationDomainList = _manageOrganization.ListOrganizationDomain();
 
@@ -611,7 +621,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 CreatedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
                 CustomerEnvironment = domain
             };
-
+            
             // add the new company data back to books
             var booksResult = _manageBlueBook.AddUPFMCompanyFromProvisioningEvent(companyInstance);
 
