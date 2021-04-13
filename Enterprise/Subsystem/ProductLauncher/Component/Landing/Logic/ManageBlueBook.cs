@@ -1,5 +1,6 @@
 ﻿using JsonApiSerializer;
 using Newtonsoft.Json;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
@@ -48,6 +49,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         readonly HttpClient _httpClient;
         readonly IList<ProductInternalSetting> productInternalSettingList;
         readonly IProductInternalSettingRepository _productInternalSettingRepository;
+        readonly IProductRepository _productRepository;
 
         readonly AuthTokenData _authTokenInfo = new AuthTokenData();
 
@@ -76,6 +78,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 policy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(CacheTimeSeconds);
                 _manageBlueBookCache.Set("productInternalSetting_" + (int)ProductEnum.UnifiedPlatform, productInternalSettingList, policy);
             }
+
+            _productRepository = new ProductRepository();
 
             #endregion
 
@@ -107,6 +111,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 _manageBlueBookCache.Set("productInternalSetting_" + (int)ProductEnum.UnifiedPlatform, productInternalSettingList, policy);
             }
 
+            _productRepository = new ProductRepository(defaultUserClaim);
+
             #endregion
 
             bbUri = productInternalSettingList.First(a => a.Name.Equals("BlueBookAPIEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
@@ -118,11 +124,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _httpClient = new HttpClient {BaseAddress = new Uri(bbUri)};
         }
 
-        public ManageBlueBook(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository, HttpMessageHandler messageHandler)
+        public ManageBlueBook(DefaultUserClaim userClaim, IRepository repository, IProductInternalSettingRepository productInternalSettingRepository, HttpMessageHandler messageHandler)
         {
             _productInternalSettingRepository = productInternalSettingRepository;
             _httpClient = new HttpClient(messageHandler) {BaseAddress = new Uri("http://localhost")};
             _defaultUserClaim = userClaim;
+            _productRepository = new ProductRepository(repository, userClaim);
 
             productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
             useDomains = GetBooleanProductSettings("BooksUseDomains");
@@ -1662,7 +1669,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             TranslatePropertyInstance translatedData = new TranslatePropertyInstance();
             //IManageBlueBook _manageBlueBook = new ManageBlueBook(_userClaims);
             List<UPFMPropertyInstance> _upfmPropertyInstance = new List<UPFMPropertyInstance>();
-            string productcode = ProductEnumHelper.StringValueOf((ProductEnum)productId);
             IPropertyRepository propertyRepository = new PropertyRepository();
 
             if (upfmProperty?.id == null )
@@ -1700,6 +1706,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
             else
             {
+                var products = _productRepository.GetAllProducts();
+                string productcode = ProductEnumHelper.GetProductCodeByProductId(productId, products);
                 translatedData = GetTranslatePropertiesFromUPFMToProductv3(primaryPropertyIds, productcode);
                 var productPropertyType = productResult.Records[0].GetType();
                 var foundProductPropertyIdList = new List<string>();

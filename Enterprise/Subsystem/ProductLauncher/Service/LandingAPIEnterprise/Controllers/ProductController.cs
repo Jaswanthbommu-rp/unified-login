@@ -27,6 +27,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
     /// </summary>
     public class ProductController : BaseApiController
     {
+        private readonly IProductRepository _productRepository;
+
+        public ProductController()
+        {
+            _productRepository = new ProductRepository(_userClaims);
+        }
+
         /// <summary>
 	    /// Get list of products
 	    /// </summary>
@@ -168,7 +175,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
             IList<int> products = new List<int>();
 
-            productcode.ForEach(x => products.Add((int)ProductEnumHelper.GetProductEnumByProductCode(x)));
+            var productList = _productRepository.GetAllProducts();
+            productcode.ForEach(x => products.Add(ProductEnumHelper.GetProductIdByProductCode(x, productList)));
 
             IProductRepository productRepository = new ProductRepository();
             var result = productRepository.GetUsersByCompanyorProducts(companyid, products, rowsPerPage.Value, pageNumber.Value, roles, rights, propertyIds);

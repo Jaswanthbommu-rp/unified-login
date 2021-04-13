@@ -74,7 +74,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             string include = null;
             string filter = null;
 
-            _manageBlueBook = new ManageBlueBook(_userClaims, productInternalSettingRepository, _mockHttpMessageHandler.Object);
+            _manageBlueBook = new ManageBlueBook(_userClaims, _mockRepository.Object, productInternalSettingRepository, _mockHttpMessageHandler.Object);
 
             //Act
             Exception exception = Record.Exception(() => _manageBlueBook.GetCustomerProperty(booksCompanyMasterId, include, filter));
@@ -177,7 +177,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             ProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository(_mockRepository.Object);
 
-            IManageBlueBook _manageBlueBook = new ManageBlueBook(_userClaims, productInternalSettingRepository, _mockHttpMessageHandler.Object);
+            IManageBlueBook _manageBlueBook = new ManageBlueBook(_userClaims, _mockRepository.Object, productInternalSettingRepository, _mockHttpMessageHandler.Object);
 
             //Act
             var result = _manageBlueBook.GetCompanyMap(organizationList[0].RealPageId, 0, ProductEnum.OneSite.ToEnumDescription(), domain);
@@ -297,7 +297,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             ProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository(_mockRepository.Object);
 
-            IManageBlueBook _manageBlueBook = new ManageBlueBook(_userClaims, productInternalSettingRepository, _mockHttpMessageHandler.Object);
+            IManageBlueBook _manageBlueBook = new ManageBlueBook(_userClaims, _mockRepository.Object, productInternalSettingRepository, _mockHttpMessageHandler.Object);
 
             //Act
             var result = _manageBlueBook.GetCompanyMap(organizationList[0].RealPageId, 0, ProductEnum.OneSite.ToEnumDescription(), domain);
