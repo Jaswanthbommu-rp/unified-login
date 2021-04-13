@@ -686,11 +686,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         public bool AddUPFMCompanyFromCompanySetup(CompanyInstanceAdd companyInstance)
         {
             string uri = $"companyinstance/{companyInstance.CompanyInstanceSourceId}/UPFM";
-
-            Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "companyInstance", companyInstance } };
-            WriteToLog(LogEventLevel.Debug, "AddUPFMCompanyFromCompanySetup - Adding info.", logData);
-
             var jsonToSave = JsonConvert.SerializeObject(companyInstance, new JsonApiSerializerSettings()).Replace("companyinstanceadd", "companyinstance");
+
+            Dictionary<string, object> logData = new Dictionary<string, object>() {{"uri", _httpClient.BaseAddress + uri}, {"companyInstance", companyInstance}, {"jsonToSave", jsonToSave}};
+            WriteToLog(LogEventLevel.Debug, "AddUPFMCompanyFromCompanySetup - Adding info.", logData);
+            
             var request = new HttpRequestMessage
             {
                 Method = HttpMethod.Put,
