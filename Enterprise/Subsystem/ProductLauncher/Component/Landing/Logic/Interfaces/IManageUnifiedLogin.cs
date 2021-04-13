@@ -88,7 +88,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// </summary>
         ListResponse GetProperties(long editorPersonaId, long userPersonaId, bool assignedOnly, RequestParameter datafilter);
 
-        ListResponse GetProperties(long userPersonaId, string include = null);
+        ListResponse GetEnterpriseProperties(long userPersonaId, string include = null);
 
         ListResponse GetUPFMProperties(long editorPersonaId, long userPersonaId, bool assignedOnly, ProductEnum product, RequestParameter datafilter);
     }
