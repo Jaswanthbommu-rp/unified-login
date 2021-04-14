@@ -278,7 +278,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 {
                     foreach (var item in result)
                     {
-                        compList.Add(new UnifiedLoginCompany { CompanyId = long.Parse(item.BooksMasterId.ToString()), BooksCustomerMasterId = long.Parse(item.BooksCustomerMasterId.ToString() == string.Empty ? "0" : item.BooksCustomerMasterId.ToString()), CompanyName = item.Name, IsActive = true, PartyId = item.PartyId, CompanyRealPageId = item.OrganizationRealPageId.ToString(),  UserRealPageId = item.PersonRealPageId.ToString(), UserLoginAs = item.LoginName, Domain = item.Domain });
+                        compList.Add(new UnifiedLoginCompany { CompanyId = long.Parse(item.BooksMasterId.ToString()), BooksCustomerMasterId = long.Parse(item.BooksCustomerMasterId.ToString() == string.Empty ? "0" : item.BooksCustomerMasterId.ToString()), CompanyName = item.Name, IsActive = int.Parse(item.IsActive.ToString()) == 1? true:false, PartyId = item.PartyId, CompanyRealPageId = item.OrganizationRealPageId.ToString(),  UserRealPageId = item.PersonRealPageId.ToString(), UserLoginAs = item.LoginName, Domain = item.Domain });
                     }
 					compList = compList.OrderBy(p => p.CompanyName).ToList();
                 }

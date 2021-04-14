@@ -5,6 +5,7 @@ AS
      BEGIN
          SELECT O.PartyId,
                 O.Name,
+                O.IsActive,
                 P.RealPageId 'OrganizationRealPageId',
                 COALESCE(ISNULL(D.MasterId, 0),0)  AS 'BooksMasterId',
 				COALESCE(ISNULL(D.CompanyMasterId, 0), 0)  AS 'BooksCustomerMasterId',
