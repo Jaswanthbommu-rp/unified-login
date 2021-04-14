@@ -943,8 +943,6 @@ DECLARE @UserId bigint,
 	@RouteId int,
 	@ServerName SYSNAME = @@SERVERNAME;
 
-IF @ServerName IN ('RCDUSODBSQL001','rctusodbsql001','RCQUSODBSQL001')
-BEGIN
 SELECT	@UserId = UserId
 FROM	Ident.UserLogin
 WHERE	LoginName LIKE 'realpagead@%'
@@ -1018,7 +1016,6 @@ END
 				@Now
 				)
 	END;
-END;
 GO
 
 
