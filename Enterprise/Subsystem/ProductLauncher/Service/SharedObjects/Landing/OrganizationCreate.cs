@@ -66,6 +66,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		/// </summary>
 		public OrganizationAdminUser CompanyAdminUser { get; set; }
 
+        public string CompanyInstancePartner { get; set; } = null;
+
+        public string CompanyInstancePartnerSourceId { get; set; } = null;
+
+		public CompanyInstanceAddress CompanyAddress { get; set; }
+
 		///// <summary>
 		///// Address
 		///// </summary>

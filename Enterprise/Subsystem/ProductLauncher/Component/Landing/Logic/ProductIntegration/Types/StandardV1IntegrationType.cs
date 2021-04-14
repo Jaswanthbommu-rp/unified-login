@@ -21,6 +21,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             throw new System.NotImplementedException();
         }
 
+        public ListResponse GetEnterpriseProperties(long userPersonaId, string include)
+        {
+            throw new System.NotImplementedException();
+        }
+
         public ListResponse GetRightsForRole(long editorPersonaId, int roleId, long partyId, bool assignedToRoleOnly, RequestParameter dataFilter)
         {
             throw new System.NotImplementedException();

@@ -1,6 +1,8 @@
 ﻿using Newtonsoft.Json;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using System;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
 {
@@ -109,27 +111,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
 		/// Example for New UserLogin method
 		/// </summary>
 		/// <returns>Newly Created User Id</returns>
-		public static Organization GetOrganizationExample()
+		public static OrganizationCreate GetOrganizationExample()
         {
-			Organization result = new Organization()
+            OrganizationCreate result = new OrganizationCreate()
 			{
-				RealPageId = new Guid("C802694D-5553-4527-8616-3C0F434AE62D"),
-				BooksMasterId = 12345,
 				Name = "Some company",
 				UsePrimaryProperties = 0,
-				organizationType = new OrganizationType()
-				{
-					OrganizationTypeId = 6,
-					Name = "Multifamily",
-					CreateDate = DateTime.Today
-				}, 
-				OrganizationDomain = new OrganizationDomain()
+				OrganizationTypeId = 6,
+				OrganizationDomainId = 1,
+				OrganizationDomain = "Primary",
+				CompanyInstancePartner = "OS",
+				CompanyInstancePartnerSourceId = "1051412",
+				CompanyAddress = new CompanyInstanceAddress()
                 {
-					OrganizationDomainId = 1,
-					Name = "Primary",
-					CreateDate = DateTime.Today
-                }
-			};
+					Address = "1234 Street",
+					City = "Some city",
+					State = "Some state",
+					County = "Some county",
+					Country = "Some country",
+					PostalCode = "12345"
+                },
+				IsActive = 1
+            };
             return result;
         }
         #endregion

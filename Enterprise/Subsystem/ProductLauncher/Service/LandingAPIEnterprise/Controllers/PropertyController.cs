@@ -140,21 +140,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 		    {
 			    Errors = new List<Error>()
 		    };
-            ManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
             int productId = (int)ProductEnumHelper.GetProductEnumByProductCode(productCode);
-            ListResponse productResponse;            
 
-            // The logic in UnifiedPlatform is 100% different than that in the LegacyIntegrationType version
-            // Including this for backwards compatibility (for now...)
-            if(productId == (int)ProductEnum.UnifiedPlatform)
-            {
-                productResponse = manageUnifiedLogin.GetProperties(_userClaims.PersonaId, include);
-            }
-            else
-            {
-                var integration = _integrationTypeFactory.GetIntegration(productId);
-                productResponse = integration.GetProperties(_userClaims.PersonaId, 0, null);
-            }
+            var integration = _integrationTypeFactory.GetIntegration(productId);
+            ListResponse productResponse = integration.GetEnterpriseProperties(_userClaims.PersonaId, include);
 
             if (!productResponse.IsError)
             {
