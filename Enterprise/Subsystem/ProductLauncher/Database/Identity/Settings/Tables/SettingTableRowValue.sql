@@ -5,7 +5,7 @@
 	[SettingTableRowId] [bigint] NOT NULL,
 	[Value] [nvarchar](max) NULL,	
 	[ModifiedBy] [bigint] NOT NULL,
-	[CreatedDate] [datetime] DEFAULT (getdate()) NOT NULL, 
+	[CreatedDate] [datetime] DEFAULT (getutcdate()) NOT NULL, 
 	[UpdatedDate] [datetime]  NULL,
  CONSTRAINT [PK_SettingTableRowValue] PRIMARY KEY CLUSTERED 
 (
