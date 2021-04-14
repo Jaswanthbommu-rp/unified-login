@@ -106,7 +106,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// </summary>
         /// <param name="companyInstance"></param>
         /// <returns></returns>
-        bool AddBooksGreenBookCompanyInstance(CompanyInstance companyInstance);
+        bool AddUPFMCompanyFromProvisioningEvent(CompanyInstance companyInstance);
+
+        /// <summary>
+        /// Add a UPFM company to UDM from the Add Company page in Unified Login
+        /// </summary>
+        /// <param name="companyInstance"></param>
+        /// <returns></returns>
+        bool AddUPFMCompanyFromCompanySetup(CompanyInstanceAdd companyInstance);
 
         /// <summary>
         /// Used to delete an existing company instance
@@ -267,6 +274,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <param name="systemProductCenter"></param>
         /// <returns></returns>
         bool ProductCenterDisable(SystemProductCenter systemProductCenter);
-        
+
+        /// <summary>
+        /// Used to get a specific product instance by source and source instance id
+        /// </summary>
+        /// <param name="instanceId"></param>
+        /// <param name="productSource"></param>
+        /// <returns></returns>
+        CustomerCompanyMap GetCompanyInstanceBySourceAndInstanceId(string instanceId, string productSource);
     }
 }

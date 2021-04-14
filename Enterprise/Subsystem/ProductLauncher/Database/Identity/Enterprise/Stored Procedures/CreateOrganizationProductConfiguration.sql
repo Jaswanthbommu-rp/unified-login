@@ -1,5 +1,6 @@
 ﻿
-Create PROCEDURE [Enterprise].[CreateOrganizationProductConfiguration](
+--[Enterprise].[CreateOrganizationProductConfiguration] 350,9
+CREATE PROCEDURE [Enterprise].[CreateOrganizationProductConfiguration](
 	 @PartyId int
 	,@ProductId int
 	,@FromDate datetime = NULL
@@ -26,16 +27,17 @@ BEGIN
 	Where op.ProductID = @ProductId
 	And op.PartyId = @PartyId
 	And op.ThruDate IS NULL
-	And op.ConfigurationId NOT IN (select ConfigurationId from Enterprise.GlobalProductConfiguration Where ProductId = @ProductId and ThruDate IS NULL)
+	And op.ConfigurationId IN (select ConfigurationId from Enterprise.GlobalProductConfiguration Where ProductId = @ProductId and ThruDate IS NULL)
 
 	
 	 BEGIN TRY
 				IF @ConfigurationId IS NULL
 				BEGIN
-					INSERT INTO Configuration (CreateDate) 
+					INSERT INTO Enterprise.Configuration (CreateDate) 
 					VALUES (@NOW);
 
 					SELECT @ConfigurationId = SCOPE_IDENTITY();
+					SELECT @ConfigurationId as Id, '' AS ErrorMessage
 				END
 				ELSE
 				BEGIN

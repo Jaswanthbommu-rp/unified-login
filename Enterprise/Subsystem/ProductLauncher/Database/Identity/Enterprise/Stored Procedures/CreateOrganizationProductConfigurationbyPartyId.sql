@@ -1,4 +1,4 @@
-﻿Create PROCEDURE [Enterprise].[CreateOrganizationProductConfigurationbyPartyId](    
+﻿CREATE PROCEDURE [Enterprise].[CreateOrganizationProductConfigurationbyPartyId](    
   @OrgPartyId BIGINT
  ,@ConfigurationId INT
  ,@ProductId int    
@@ -37,7 +37,7 @@ BEGIN
          WHERE ProductSettingId = @ProductSettingID  
   		 
 		INSERT INTO @ProductConfigurationIds ( ProductConfigurationId ) 
-		SELECT PC.ConfigurationId
+		SELECT PC.ProductConfigurationId
 		FROM Enterprise.ProductSetting PS 
 		INNER JOIN Enterprise.ProductConfiguration PC on 
 			PS.ProductSettingId = PC.ProductSettingId
