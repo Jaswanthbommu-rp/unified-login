@@ -946,31 +946,7 @@ Where Name = 'Security'
 
 	GO
 
-	DECLARE @UserId bigint
-	Declare @securityCategory smallint
-	declare @cfCategory smallint
-
-	SELECT @UserId = UserId
-	FROM   Ident.UserLogin
-	WHERE  LoginName LIKE 'realpagead@%'
-
-	select @securityCategory = SettingCategoryTypeId from [Settings].[SettingCategoryType] Where Name = 'Security'
-	select @cfCategory = SettingCategoryTypeId from [Settings].[SettingCategoryType] Where Name = 'CustomFields'
-
-	if not exists(select top 1 1 from [Settings].[SettingsMapping] Where SettingCategoryTypeId = @securityCategory)
-	Begin 
-		Insert into [Settings].[SettingsMapping](SettingCategoryTypeId,SettingsMappingType,ModifiedBy,CreatedDate)
-		Select @securityCategory,'Key',@UserId,GETUTCDATE()
-	End
-
-	if not exists(select top 1 1 from [Settings].[SettingsMapping] Where SettingCategoryTypeId = @cfCategory)
-	Begin 
-		Insert into [Settings].[SettingsMapping](SettingCategoryTypeId,SettingsMappingType,ModifiedBy,	CreatedDate)
-		Select @cfCategory,'Table',@UserId,GETUTCDATE()
-	End
 	
-	GO
-
 	--Data transfer existing custom fields
 	
 DECLARE @NOW DATETIME = GETUTCDATE();
@@ -1082,5 +1058,47 @@ begin
 end
 
 SET IDENTITY_INSERT [Settings].[SettingTableRow] OFF 
+
+GO
+
+Declare @CustomFieldVlaues table(
+   Id int identity(1,1),
+   UserLoginPersonaId bigint,
+   FieldId bigint,
+   [Value] nvarchar(max),
+   CreatedDate Datetime,
+   CreatedBy bigint)
+
+  Insert into @CustomFieldVlaues(UserLoginPersonaId,FieldId,[Value],CreatedBy,CreatedDate)
+  Select UserLoginPersonaId,FieldId,[Value],CreatedBy,CreatedDate
+  FROM [UPLocal].[CustomField].[FieldValue]
+
+  declare @MAX_ID INT
+  declare @Current_ID INT = 1
+  select @MAX_ID = max(id) from @CustomFieldVlaues
+  while @Current_ID <= @MAX_ID
+  begin
+	declare @UserLoginPersonaId bigint,
+			@fieldid bigint,
+			@CreatedBy bigint,
+			@Value nvarchar(max),
+			@CreatedDate datetime
+
+	Select @UserLoginPersonaId = UserLoginPersonaId,
+			@fieldid = FieldId,@Value = [value],
+			@CreatedBy = CreatedBy,@CreatedDate = CreatedDate
+	From @CustomFieldVlaues Where id = @Current_ID
+
+	IF NOT EXISTS (Select 1 From  [Settings].[SettingTableRowValue] 
+		Where UserLoginPersonaId = @UserLoginPersonaId 
+		AND SettingTableRowId = @fieldid
+		AND [Value] = @Value)
+	BEGIN
+		INSERT INTO [Settings].[SettingTableRowValue]([SettingTableRowId],[UserLoginPersonaId],
+				[Value],[ModifiedBy],[CreatedDate])
+		Select @fieldid,@UserLoginPersonaId,@Value,@CreatedBy,@CreatedDate
+	END
+	set @Current_ID = @Current_ID + 1
+  end
 
 GO

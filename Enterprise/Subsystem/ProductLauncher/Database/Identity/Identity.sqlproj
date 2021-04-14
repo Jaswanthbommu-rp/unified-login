@@ -1058,7 +1058,6 @@
     <Build Include="Settings\Stored Procedures\CreateSettingTable.sql" />
     <Build Include="Settings\Stored Procedures\CreateSettingTableRowColumn.sql" />
     <Build Include="Settings\Stored Procedures\DeleteSettingTableRowColumn.sql" />
-    <Build Include="Settings\Stored Procedures\GetSettingsMappingData.sql" />
     <Build Include="Settings\Stored Procedures\GetSettingsTableColumnData.sql" />
     <Build Include="Settings\Stored Procedures\GetSettingsTableData.sql" />
     <Build Include="Settings\Stored Procedures\GetSettingsTableRowsData.sql" />
@@ -1068,11 +1067,12 @@
     <Build Include="Settings\Tables\OrganizationSettings.sql" />
     <Build Include="Settings\Tables\SettingCategoryType.sql" />
     <Build Include="Settings\Tables\SettingPicklist.sql" />
-    <Build Include="Settings\Tables\SettingsMapping.sql" />
     <Build Include="Settings\Tables\SettingTable.sql" />
     <Build Include="Settings\Tables\SettingTableColumn.sql" />
     <Build Include="Settings\Tables\SettingTableRow.sql" />
     <Build Include="Security\Settings.sql" />
+    <Build Include="Settings\Tables\SettingTableRowValue.sql" />
+    <Build Include="Settings\Stored Procedures\AddUpdateFieldValue.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
