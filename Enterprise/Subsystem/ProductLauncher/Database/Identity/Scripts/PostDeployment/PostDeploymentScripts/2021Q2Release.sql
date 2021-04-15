@@ -1051,7 +1051,7 @@ declare @CustomFields as TABLE(
 
 insert into @CustomFields(FieldId,OrganizationId,Enabled,Name,Description,FieldTypeId,Required,
 	ReadOnly,Sequence,MinCharLength,MaxCharLength,CreatedBy)
-Select FieldId,OrganizationId,Enabled,Name,Description,FieldTypeId,Required,
+Select FieldId,OrganizationId,Enabled,cf.Name,Description,FieldTypeId,Required,
 	ReadOnly,Sequence,MinCharLength,MaxCharLength,CreatedBy
 From CustomField.Field cf
 Join Enterprise.Organization p on
