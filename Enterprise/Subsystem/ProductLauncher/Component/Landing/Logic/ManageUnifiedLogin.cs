@@ -124,7 +124,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return result;
         }
 
-        public ListResponse GetProperties(long userPersonaId, string include = null)
+        public ListResponse GetEnterpriseProperties(long userPersonaId, string include = null)
         {
             ListResponse response = new ListResponse();
             var productInternalSettingList = GetProductSetting((int)ProductEnum.UnifiedPlatform);

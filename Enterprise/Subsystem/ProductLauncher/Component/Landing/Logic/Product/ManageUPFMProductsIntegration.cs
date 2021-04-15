@@ -288,7 +288,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="isMultiCompany"></param>
 		/// <param name="multiCompanyRealPageId"></param>
 		/// <returns></returns>
-		public ListResponse GetUPFMProperties(long userPersonaId, int product, string productCode, string include = null, bool isMultiCompany = false, string multiCompanyRealPageId = null)
+		public ListResponse GetEnterpriseUPFMProperties(long userPersonaId, int product, string productCode, string include = null, bool isMultiCompany = false, string multiCompanyRealPageId = null)
 		{
 			ListResponse response = new ListResponse();
 			/*
@@ -828,7 +828,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					if (userCompaniesProperties == null) 
 						userCompaniesProperties = new List<UserCompaniesProperties>();
 					var compnayInstanceSourceId = GetProductCompanyInstanceId(company.OrganizationRealPageId, company.BooksCustomerMasterId, productCode, "Primary");
-					var propertyResponse = GetUPFMProperties(company.PersonaId, _productId, productCode, null, companyResponse.Count > 1 ? true : false, company.OrganizationRealPageId.ToString());
+					var propertyResponse = GetEnterpriseUPFMProperties(company.PersonaId, _productId, productCode, null, companyResponse.Count > 1 ? true : false, company.OrganizationRealPageId.ToString());
 					if (propertyResponse.Records == null || propertyResponse.Records.Count == 0) errorReason = "Properties are not loaded from Blue Book";
 
 					var userCompanyProperties = new UserCompaniesProperties()

@@ -56,7 +56,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="isMultiCompany"></param>
 		/// <param name="multiCompanyRealPageId"></param>
 		/// <returns></returns>
-		ListResponse GetUPFMProperties(long userPersonaId, int product, string productCode, string include = null, bool isMultiCompany = false,string multiCompanyRealPageId = null);
+		ListResponse GetEnterpriseUPFMProperties(long userPersonaId, int product, string productCode, string include = null, bool isMultiCompany = false,string multiCompanyRealPageId = null);
 
 		/// <summary>
 		/// Get a list of UPFM property instances for the give user

@@ -8,6 +8,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
     {
         ListResponse GetProperties(long editorPersonaId, long userPersonaId, RequestParameter dataFilter);
 
+        ListResponse GetEnterpriseProperties(long userPersonaId, string include);
+
         ListResponse GetRoles(long editorPersonaId, long userPersonaId, long partyId, AccessType? accessType, RequestParameter dataFilter);
 
         ListResponse GetRightsForRole(long editorPersonaId, int roleId, long partyId, bool assignedToRoleOnly, RequestParameter dataFilter);

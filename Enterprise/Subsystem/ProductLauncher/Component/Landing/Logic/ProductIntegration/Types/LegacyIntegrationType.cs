@@ -386,6 +386,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return result;
         }
 
+        public ListResponse GetEnterpriseProperties(long userPersonaId, string include)
+        {
+            ListResponse productResponse = null;
+
+            switch (_productId)
+            {
+                case (int)ProductEnum.OpsBuyer:
+                    IManageProductOps manageProductOps = new ManageProductOps(_userClaims);
+                    productResponse = manageProductOps.GetCompanyAssets(_userClaims.PersonaId, 0, false, null);
+                    break;
+                case (int)ProductEnum.UnifiedPlatform:
+                    productResponse = _manageUnifiedLogin.GetEnterpriseProperties(_userClaims.PersonaId, include);
+                    break;
+            }
+
+            return productResponse;
+        }
+
         public ListResponse GetRightsForRole(long editorPersonaId, int roleId, long partyId, bool assignedToRoleOnly, RequestParameter dataFilter)
         {
             ListResponse result = new ListResponse();

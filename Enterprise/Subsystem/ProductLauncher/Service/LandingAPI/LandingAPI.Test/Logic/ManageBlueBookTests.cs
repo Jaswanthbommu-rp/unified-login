@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Http;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using Xunit;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
@@ -75,6 +76,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             string filter = null;
 
             _manageBlueBook = new ManageBlueBook(_userClaims, _mockRepository.Object, productInternalSettingRepository, _mockHttpMessageHandler.Object);
+
+            new RPObjectCache().BustCache();
 
             //Act
             Exception exception = Record.Exception(() => _manageBlueBook.GetCustomerProperty(booksCompanyMasterId, include, filter));
@@ -169,7 +172,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             string productSource = "OS";
             string domain = "Primary";
 
-            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/translate/companyinstance/{organizationList[0].RealPageId}/{ProductEnum.UnifiedPlatform.ToEnumDescription()}/{productSource}?filter[customerEnvironment]={domain}", responseMapResource);
+            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/translate/v2/companyinstance/{organizationList[0].RealPageId}/{ProductEnum.UnifiedPlatform.ToEnumDescription()}/{productSource}?filter[greenbookCares]=true", responseMapResource);
 
             _mockRepository
                 .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
@@ -178,6 +181,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             ProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository(_mockRepository.Object);
 
             IManageBlueBook _manageBlueBook = new ManageBlueBook(_userClaims, _mockRepository.Object, productInternalSettingRepository, _mockHttpMessageHandler.Object);
+
+            new RPObjectCache().BustCache();
 
             //Act
             var result = _manageBlueBook.GetCompanyMap(organizationList[0].RealPageId, 0, ProductEnum.OneSite.ToEnumDescription(), domain);
@@ -298,6 +303,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             ProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository(_mockRepository.Object);
 
             IManageBlueBook _manageBlueBook = new ManageBlueBook(_userClaims, _mockRepository.Object, productInternalSettingRepository, _mockHttpMessageHandler.Object);
+
+            new RPObjectCache().BustCache();
 
             //Act
             var result = _manageBlueBook.GetCompanyMap(organizationList[0].RealPageId, 0, ProductEnum.OneSite.ToEnumDescription(), domain);
