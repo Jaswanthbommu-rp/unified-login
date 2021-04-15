@@ -1053,7 +1053,9 @@ insert into @CustomFields(FieldId,OrganizationId,Enabled,Name,Description,FieldT
 	ReadOnly,Sequence,MinCharLength,MaxCharLength,CreatedBy)
 Select FieldId,OrganizationId,Enabled,Name,Description,FieldTypeId,Required,
 	ReadOnly,Sequence,MinCharLength,MaxCharLength,CreatedBy
-From CustomField.Field
+From CustomField.Field cf
+Join Enterprise.Party p on
+	p.PartyId = cf.OrganizationId
 
 declare @MAX_ID INT
 declare @Current_ID INT = 1
