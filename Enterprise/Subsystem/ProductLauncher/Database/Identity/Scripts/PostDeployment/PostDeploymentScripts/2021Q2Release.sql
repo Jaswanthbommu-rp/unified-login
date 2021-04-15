@@ -1166,33 +1166,13 @@ Declare @CustomFieldVlaues table(
   FROM [CustomField].[FieldValue] cf
   join Settings.SettingTableRow sr on
 	sr.SettingTableRowId = cf.FieldId
+  except 
+	 Select UserLoginPersonaId,SettingTableRowId,Value,ModifiedBy,CreatedDate From [Settings].[SettingTableRowValue]  
 
-  declare @MAX_ID INT
-  declare @Current_ID INT = 1
-  select @MAX_ID = max(id) from @CustomFieldVlaues
-  while @Current_ID <= @MAX_ID
-  begin
-	declare @UserLoginPersonaId bigint,
-			@fieldid bigint,
-			@CreatedBy bigint,
-			@Value nvarchar(max),
-			@CreatedDate datetime
 
-	Select @UserLoginPersonaId = UserLoginPersonaId,
-			@fieldid = FieldId,@Value = [value],
-			@CreatedBy = CreatedBy,@CreatedDate = CreatedDate
-	From @CustomFieldVlaues Where id = @Current_ID
-
-	IF NOT EXISTS (Select 1 From  [Settings].[SettingTableRowValue] 
-		Where UserLoginPersonaId = @UserLoginPersonaId 
-		AND SettingTableRowId = @fieldid
-		AND [Value] = @Value)
-	BEGIN
-		INSERT INTO [Settings].[SettingTableRowValue]([SettingTableRowId],[UserLoginPersonaId],
+	INSERT INTO [Settings].[SettingTableRowValue]([SettingTableRowId],[UserLoginPersonaId],
 				[Value],[ModifiedBy],[CreatedDate])
-		Select @fieldid,@UserLoginPersonaId,@Value,@CreatedBy,@CreatedDate
-	END
-	set @Current_ID = @Current_ID + 1
-  end
+	Select FieldId,UserLoginPersonaId,[Value],CreatedBy,CreatedDate
+	From @CustomFieldVlaues
 
 GO
