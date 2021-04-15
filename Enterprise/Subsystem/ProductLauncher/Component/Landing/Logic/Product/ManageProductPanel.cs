@@ -31,6 +31,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         private readonly IIntegrationTypeFactory _integrationTypeFactory;
 
+        private readonly IProductRepository _productRepository;
+
         #endregion
 
         #region Constructors
@@ -47,6 +49,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _manageBlueBook = new ManageBlueBook(_userClaims);
 
             _integrationTypeFactory = new DefaultIntegrationTypeFactory(_productInternalSettingRepository, _manageUnifiedLogin, _manageProductOneSite, _userClaims);
+            _productRepository = new ProductRepository(_userClaims);
         }
 
 		/// <summary>
@@ -65,9 +68,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _manageUnifiedLogin = new ManageUnifiedLogin(_userClaims, _productInternalSettingRepository, productRepository, manageBlueBook);
             _manageProductOneSite = manageProductOneSite;
             _propertyRepository = new PropertyRepository(repository);
-            _manageBlueBook = new ManageBlueBook(_userClaims, _productInternalSettingRepository, messageHandler);
+            _manageBlueBook = new ManageBlueBook(_userClaims, repository, _productInternalSettingRepository, messageHandler);
 
             _integrationTypeFactory = new DefaultIntegrationTypeFactory(_productInternalSettingRepository, _manageUnifiedLogin, _manageProductOneSite, _userClaims);
+            _productRepository = new ProductRepository(repository, _userClaims);
         }
 
         #endregion
@@ -244,12 +248,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             ListResponse result = new ListResponse();
             try
             {
-                IProduct product;
-                string productName = Enum.GetName(typeof(ProductEnum), productId);
-                string productcode = ProductEnumHelper.StringValueOf((ProductEnum)productId);
                 switch (productId)
                 {
-
                     case (int)ProductEnum.OnSite:
                         var manageProductOnSite = new ManageProductOnSite(_userClaims);
                         result = manageProductOnSite.GetRegions(editorPersonaId, userPersonaId, datafilter);
@@ -284,6 +284,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     case (int)ProductEnum.AoMarketAnalytics:
                     case (int)ProductEnum.AoAxiometrics:
                         var manageProductAo = new ManageProductAssetOptimization(_userClaims);
+                        var productList = _productRepository.GetAllProducts();
+                        string productcode = ProductEnumHelper.GetProductCodeByProductId(productId, productList);
                         result = manageProductAo.GetProductPropertyGroups(editorPersonaId, userPersonaId, productcode, userLoginName);
                         break;
                     case (int)ProductEnum.UtilityManagement:
@@ -361,9 +363,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public ListResponse GetProductGroupProperties(long editorPersonaId, long userPersonaId, int productId, string propertyGroupId, RequestParameter datafilter)
         {
             ListResponse result = new ListResponse();
-            IProduct product;
-            string productName = Enum.GetName(typeof(ProductEnum), productId);
-            string productcode = ProductEnumHelper.StringValueOf((ProductEnum)productId);
             switch (productId)
             {
                 case (int)ProductEnum.AoBusinessIntelligence:
@@ -395,8 +394,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public ListResponse GetProductRights(long editorPersonaId, long userPersonaId, long partyId, int productId, RequestParameter datafilter)
         {
             ListResponse result = new ListResponse();
-            string productName = Enum.GetName(typeof(ProductEnum), productId);
-            string productcode = ProductEnumHelper.StringValueOf((ProductEnum)productId);
             switch (productId)
             {
                 case (int)ProductEnum.UtilityManagement:
@@ -413,9 +410,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public ListResponse GetProductOrganizations(long editorPersonaId, long userPersonaId, int productId, string organizationRoleId, string organizationType)
         {
             ListResponse result = new ListResponse();
-            IProduct product;
-            string productName = Enum.GetName(typeof(ProductEnum), productId);
-            string productcode = ProductEnumHelper.StringValueOf((ProductEnum)productId);
             switch (productId)
             {
                 case (int)ProductEnum.ClickPay:
@@ -477,7 +471,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 id = upfmProperty.id.ConvertAll(d => d.ToLower())
             };
-            string productcode = ProductEnumHelper.StringValueOf((ProductEnum)productId);
+            var productList = _productRepository.GetAllProducts();
+            string productcode = ProductEnumHelper.GetProductCodeByProductId(productId, productList);
             var translatedData = _manageBlueBook.GetTranslatePropertiesFromProductToUPFM(primaryPropertyIds, productcode);
             List<string> translatedUPFMInstances = new List<string>();
             if (translatedData != null)

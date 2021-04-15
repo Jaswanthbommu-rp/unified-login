@@ -80,7 +80,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 new GbProductMap() {BooksProductCode = "ACCT", Name = "Financial Suite", ProductId = 8, UDMSourceCode = null},
                 new GbProductMap() {BooksProductCode = "LS", Name = "Marketing Center", ProductId = 9, UDMSourceCode = null},
                 new GbProductMap() {BooksProductCode = "LVL1", Name = "Prospect Contact Center", ProductId = 10, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "NULL", Name = "Social", ProductId = 11, UDMSourceCode = null},
+                new GbProductMap() {BooksProductCode = "??", Name = "Social", ProductId = 11, UDMSourceCode = null},
                 new GbProductMap() {BooksProductCode = "OPSB", Name = "Ops Bid", ProductId = 12, UDMSourceCode = null},
                 new GbProductMap() {BooksProductCode = "OPS", Name = "Spend Management", ProductId = 13, UDMSourceCode = null},
                 new GbProductMap() {BooksProductCode = "OMS", Name = "Client Portal", ProductId = 14, UDMSourceCode = null},
@@ -130,6 +130,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 new GbProductMap() {BooksProductCode = "SMS-W", Name = "Intelligent Building Water", ProductId = 59, UDMSourceCode = "IB"},
                 new GbProductMap() {BooksProductCode = "HAAS", Name = "Home Sharing", ProductId = 60, UDMSourceCode = null},
                 new GbProductMap() {BooksProductCode = "PME", Name = "PME Dashboard", ProductId = 62, UDMSourceCode = null},
+                new GbProductMap() {BooksProductCode = "RMA", Name = "Market Analytics", ProductId = 66, UDMSourceCode = null},
+                new GbProductMap() {BooksProductCode = "ST", Name = "Support Tool", ProductId = 35, UDMSourceCode = null},
+                new GbProductMap() {BooksProductCode = "HOTS", Name = "Hands On Training System", ProductId = 63, UDMSourceCode = null},
+                new GbProductMap() {BooksProductCode = "PEQ", Name = "P2 Engagement Queue", ProductId = 64, UDMSourceCode = null},
+                new GbProductMap() {BooksProductCode = "LeaseLabs", Name = "LeaseLabs", ProductId = 68, UDMSourceCode = null},
+                new GbProductMap() {BooksProductCode = "RPT", Name = "Reporting", ProductId = 67, UDMSourceCode = null},
+                new GbProductMap() {BooksProductCode = "6247", Name = "Self-Guided Tour", ProductId = 65, UDMSourceCode = null},
 
             };
             
@@ -1541,7 +1548,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             foreach (var productCode in blueBookProductList)
             {
-                productList.Add((int)ProductEnumHelper.GetProductEnumByProductCode(productCode));
+                productList.Add(ProductEnumHelper.GetProductIdByProductCode(productCode, _gbProductMap));
             }
 
             // list of products to exclude from Bluebook to product integration
