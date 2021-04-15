@@ -1108,35 +1108,42 @@ begin
 		INSERT INTO [Settings].[SettingTableColumn](SettingTableRowId,TableColumnName,
 		TableColumnValue,ModifiedBy,CreatedDate)
 		SELECT @fieldid,'Enabled',@enabled,@CreatedBy,@NOW
+		Where @enabled IS NOT NULL
 
 		INSERT INTO [Settings].[SettingTableColumn](SettingTableRowId,TableColumnName,
 			TableColumnValue,ModifiedBy,CreatedDate)
 		SELECT @fieldid,'Name',@name,@CreatedBy,@NOW
-
+		Where @name IS NOT NULL
 
 		INSERT INTO [Settings].[SettingTableColumn](SettingTableRowId,TableColumnName,
 			TableColumnValue,ModifiedBy,CreatedDate)
 		SELECT @fieldid,'FieldTypeId',@fieldTypeId,@CreatedBy,@NOW
+		Where @fieldTypeId IS NOT NULL
 
 		INSERT INTO [Settings].[SettingTableColumn](SettingTableRowId,TableColumnName,
 			TableColumnValue,ModifiedBy,CreatedDate)
 		SELECT @fieldid,'Required',@Required,@CreatedBy,@NOW
+		Where @Required IS NOT NULL
 
 		INSERT INTO [Settings].[SettingTableColumn](SettingTableRowId,TableColumnName,
 			TableColumnValue,ModifiedBy,CreatedDate)
 		SELECT @fieldid,'ReadOnly',@ReadOnly,@CreatedBy,@NOW
+		Where @ReadOnly IS NOT NULL
 
 		INSERT INTO [Settings].[SettingTableColumn](SettingTableRowId,TableColumnName,
 			TableColumnValue,ModifiedBy,CreatedDate)
 		SELECT @fieldid,'Sequence',@Sequence,@CreatedBy,@NOW
+		Where @Sequence IS NOT NULL
 
 		INSERT INTO [Settings].[SettingTableColumn](SettingTableRowId,TableColumnName,
 			TableColumnValue,ModifiedBy,CreatedDate)
 		SELECT @fieldid,'MinCharLength',@MinCharLength,@CreatedBy,@NOW
+		Where @MinCharLength IS NOT NULL
 
 		INSERT INTO [Settings].[SettingTableColumn](SettingTableRowId,TableColumnName,
 			TableColumnValue,ModifiedBy,CreatedDate)
 		SELECT @fieldid,'MaxCharLength',@MaxCharLength,@CreatedBy,@NOW
+		Where @MaxCharLength IS NOT NULL
 	END	
 
 	set @Current_ID = @Current_ID + 1
