@@ -14,15 +14,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
     /// Product specific implementation 
     /// Override methods from base class if custom implementation
     /// </summary>
-    public sealed class LeadManagement : ManageProductInvokerBase, IManageProductIntegration
+    public sealed class LeadManagement : StandardV1ProductIntegration, IManageProductIntegration
     {
         #region Ctor
 
-        public LeadManagement(ProductEnum productType, long editorPersonaId, long subjectPersonaId, DefaultUserClaim userClaims) : base(productType, editorPersonaId, subjectPersonaId, userClaims)
+        public LeadManagement(ProductEnum productType, long editorPersonaId, long subjectPersonaId, DefaultUserClaim userClaims) : base((int)productType, editorPersonaId, subjectPersonaId, userClaims)
         { }
 
         public LeadManagement(ProductEnum productType, long editorPersonaId, long subjectPersonaId, DefaultUserClaim userClaims, IDataCollector injectedDataCollector, IManagePersona injectedManagePersona, IProductInternalSettingRepository productInternalSettingRepository) :
-            base(productType, editorPersonaId, subjectPersonaId, userClaims, injectedDataCollector, injectedManagePersona, productInternalSettingRepository)
+            base((int)productType, editorPersonaId, subjectPersonaId, userClaims, injectedDataCollector, injectedManagePersona, productInternalSettingRepository)
         { }
 
         #endregion
@@ -30,7 +30,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         protected override void ApplySuperUserData(IntegrationProductUser productUser)
         {
             // super user related assignments
-            if (ProductType == ProductEnum.LeadAnalytics)
+            if (ProductId == (int)ProductEnum.LeadAnalytics)
             {
                 productUser.Roles = new List<string> { "18" };
             }
@@ -47,7 +47,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             string productUserId, string productUserLoginName, string productUserEmail)
         {
             WriteToDiagnosticLog(
-                $"LeadManagement.UpdateSamlUserAttribute - Product {ProductType} productUserLoginName - {productUserLoginName}. At beginning of the method.");
+                $"LeadManagement.UpdateSamlUserAttribute - Product {ProductId} productUserLoginName - {productUserLoginName}. At beginning of the method.");
 
             // Issue - GB-4715
             // if userName not matches with email then update user login with email
