@@ -1155,8 +1155,10 @@ Declare @CustomFieldVlaues table(
    CreatedBy bigint)
 
   Insert into @CustomFieldVlaues(UserLoginPersonaId,FieldId,[Value],CreatedBy,CreatedDate)
-  Select UserLoginPersonaId,FieldId,[Value],CreatedBy,CreatedDate
-  FROM [CustomField].[FieldValue]
+  Select UserLoginPersonaId,FieldId,[Value],CreatedBy,cf.CreatedDate
+  FROM [CustomField].[FieldValue] cf
+  join Settings.SettingTableRow sr on
+	sr.SettingTableRowId = cf.FieldId
 
   declare @MAX_ID INT
   declare @Current_ID INT = 1
