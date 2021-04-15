@@ -1154,7 +1154,7 @@ Declare @CustomFieldVlaues table(
 
   Insert into @CustomFieldVlaues(UserLoginPersonaId,FieldId,[Value],CreatedBy,CreatedDate)
   Select UserLoginPersonaId,FieldId,[Value],CreatedBy,CreatedDate
-  FROM [UPLocal].[CustomField].[FieldValue]
+  FROM [CustomField].[FieldValue]
 
   declare @MAX_ID INT
   declare @Current_ID INT = 1
