@@ -1080,7 +1080,7 @@ begin
 		   @CreatedBy = CreatedBy, @fieldTypeId = FieldTypeId
 	From @CustomFields Where Id = @Current_ID
 
-	IF NOT EXISTS (Select 1 From  [Settings].[SettingTable] Where PartyId = @partyid)
+	IF NOT EXISTS (Select 1 From  [Settings].[SettingTable] Where PartyId = @partyid and SettingCategoryTypeId = @SettingCategoryTypeId)
 	BEGIN
 		INSERT INTO [Settings].[SettingTable]([SettingCategoryTypeId],[PartyId],
 				[TableName],[ModifiedBy],[CreatedDate])
@@ -1090,10 +1090,10 @@ begin
 	END
 	ELSE
 	BEGIN
-		Select @SettingTableId = SettingTableId From  [Settings].[SettingTable] Where PartyId = @partyid
+		Select @SettingTableId = SettingTableId From  [Settings].[SettingTable] Where PartyId = @partyid and SettingCategoryTypeId = @SettingCategoryTypeId
 	END
 
-	IF NOT EXISTS (Select 1 From  [Settings].[SettingTableRow] Where SettingTableId = @SettingTableId)
+	IF NOT EXISTS (Select 1 From  [Settings].[SettingTableRow] Where SettingTableId = @SettingTableId and SettingTableRowId = @fieldid)
 	BEGIN
 		INSERT INTO [Settings].[SettingTableRow](SettingTableRowId,SettingTableId,Editable,Deletable,
 		IsActive,ModifiedBy,CreatedDate)
