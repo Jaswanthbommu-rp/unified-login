@@ -2,7 +2,7 @@
     [ContactMechanismID] INT          NOT NULL,
     [CountryCode]        VARCHAR (10) NOT NULL,
     [AreaCode]           VARCHAR (10) NOT NULL,
-    [PhoneNumber]        VARCHAR (10) NOT NULL,
+    [PhoneNumber]        VARCHAR (15) NOT NULL,
     CONSTRAINT [PK_TelecommunicationsNumber] PRIMARY KEY CLUSTERED ([ContactMechanismID] ASC),
     CONSTRAINT [FK_TelecommunicationsNumber_ContactMechanism] FOREIGN KEY ([ContactMechanismID]) REFERENCES [Enterprise].[ContactMechanism] ([ContactMechanismID]) ON DELETE CASCADE ON UPDATE CASCADE
 );
