@@ -38,6 +38,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		IRepositoryResponse InsertUpdateOrganizationProduct(long partyId, int product, int? configurationId, DateTime? fromDate, DateTime? thruDate);
 
 		/// <summary>
+		/// Used to insert a new product to an Organization from provisioning
+		/// </summary>
+		/// <param name="partyId"></param>
+		/// <param name="product"></param>
+		/// <param name="configurationId"></param>
+		/// <param name="fromDate"></param>
+		/// <param name="thruDate"></param>
+		/// <param name="org"></param>
+		/// <returns></returns>
+		IRepositoryResponse InsertUpdateOrganizationProductFromProvisioning(int product, int? configurationId, DateTime? fromDate, DateTime? thruDate, Organization org);
+
+		/// <summary>
 		/// Used to delete users for product for an Organization
 		/// </summary>
 		/// <param name="partyId">The organization id for the product</param>

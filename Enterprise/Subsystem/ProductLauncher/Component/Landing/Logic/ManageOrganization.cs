@@ -22,6 +22,12 @@ using System.Linq;
 using System.Net.Http;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using PropertySetup = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.PropertySetup;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
+using Serilog.Events;
+using Serilog;
+using Newtonsoft.Json;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -179,6 +185,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 },
                 IsActive = organization.IsActive
             };
+
             repositoryResponse = InsertOrganization(org);
 
             if (!string.IsNullOrEmpty(repositoryResponse.ErrorMessage))
@@ -347,14 +354,61 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 throw new ArgumentNullException(nameof(organization), "Null Organization.");
             }
-            // see if the organization.BooksMasterId already exists
+            //See if the organization.BooksMasterId already exists and UPDATE
             if (organization.RealPageId != Guid.Empty)
             {
-                return _organizationRepository.UpdateOrganization(organization);
+                var oldOrganization = GetOrganization(organization.RealPageId);
+                var repositoryResponse = _organizationRepository.UpdateOrganization(organization);
+
+                if (string.IsNullOrEmpty(repositoryResponse.ErrorMessage))
+                {
+                    //Is company name being updates
+                    if (string.Compare(oldOrganization.Name, organization.Name, StringComparison.OrdinalIgnoreCase) != 0)
+                    {
+                        var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} updated the company name from {oldOrganization.Name} to {organization.Name}";
+                        LogAuditActivity(LogActivityTypeConstants.COMPANY_UPDATED, LogActivityCategoryType.CompanySetup, message);
+                    }
+                    //Is company type being updated
+                    if (oldOrganization.OrganizationTypeId != organization.OrganizationTypeId)
+                    {
+                        var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} updated the company type for {oldOrganization.Name} to {organization.Name}";
+                        LogAuditActivity(LogActivityTypeConstants.COMPANY_UPDATED, LogActivityCategoryType.CompanySetup, message);
+                    }
+                    //Is company status being updated
+                    if (oldOrganization.IsActive != organization.IsActive)
+                    {
+                        var newStatus = "";
+                        var prevStatus = "";
+                        if (oldOrganization.IsActive == 1)
+                        {
+                            newStatus = "Inactive";
+                            prevStatus = "Active";
+                        }
+                        else
+                        {
+                            newStatus = "Active";
+                            prevStatus = "Inactive";
+                        }
+                        var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} updated the company status for {organization.Name} from {prevStatus} to {newStatus}";
+                        LogAuditActivity(LogActivityTypeConstants.COMPANY_UPDATED, LogActivityCategoryType.CompanySetup, message);
+                    }
+                    
+                }
+                
+                return repositoryResponse;
             }
+            //Create a new organization
             else
             {
-                return _organizationRepository.InsertOrganization(organization);
+                var repositoryResponse = _organizationRepository.InsertOrganization(organization);
+
+                if (string.IsNullOrEmpty(repositoryResponse.ErrorMessage))
+                {
+                    var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} created a new company, {organization.Name} with ID {repositoryResponse.RealPageId} in the {organization.OrganizationDomain.Name} domain";
+                    LogAuditActivity(LogActivityTypeConstants.COMPANY_CREATED, LogActivityCategoryType.CompanySetup, message);
+                }
+
+                return repositoryResponse;
             }
         }
 
@@ -933,6 +987,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             };
             return propertyInstanceSearch;
         }
+        /// <summary>
+        /// Insert A UPFM property instance
+        /// </summary>
+        /// <param name="propertyInstance"></param>
+        /// <returns></returns>
+        public RepositoryResponse InsertUPFMPropertyInstance(UPFMPropertyInstance propertyInstance)
+        {
+            var response = _propertyRepository.InsertUPFMPropertyInstance(propertyInstance);
+            
+            if (response.ErrorMessage.Length == 0)
+            {
+                var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} created a new property, {propertyInstance.Name} with ID {propertyInstance.PropertyInstanceId} in the {propertyInstance.Domain} domain";
+                LogAuditActivity(LogActivityTypeConstants.PROPERTY_CREATED, LogActivityCategoryType.CompanySetup, message);
+            }
+            return response;
+        }
         #endregion
 
         #region Delete Property
@@ -1444,6 +1514,68 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             };
 
             var configurationSettingResponse = _configurationSettingRepository.CreateUsePrimaryPropertyMasterConfigurationSetting(masterConfigurationSetting);
+        }
+
+        private void LogAuditActivity(string logActivityType, LogActivityCategoryType logActivityCategoryType, string message)
+        {
+            try
+            {
+                LogActivity.WriteActivity(new ActivityDetails
+                {
+                    LogActivityTypeName = logActivityType,
+                    LogCategoryName = logActivityCategoryType.ToString(),
+                    CorrelationId = _defaultUserClaim.CorrelationId.ToString(),
+                    BooksMasterOrganizationId = _defaultUserClaim.OrganizationMasterId,
+                    OrganizationPartyId = _defaultUserClaim.OrganizationPartyId,
+                    Message = message,
+
+                    FromUserLoginName = _defaultUserClaim.LoginName,
+                    FromUserLoginId = _defaultUserClaim.UserId,
+                    FromUserRealpageId = _defaultUserClaim.UserRealPageGuid.ToString(),
+                    FromUserFirstName = _defaultUserClaim.FirstName,
+                    FromUserLastName = _defaultUserClaim.LastName,
+
+                    ToUserLoginName = null,
+                    ToUserLoginId = null,
+                    ToUserFirstName = null,
+                    ToUserLastName = null,
+                    ToUserRealpageId = null
+                });
+            }
+            catch (Exception ex)
+            {
+                WriteToLog(LogEventLevel.Error,
+                    $"Error while adding activity message." +
+                    $" BooksMasterOrganizationId{_defaultUserClaim.OrganizationName}, " +
+                    $"author user login name {_defaultUserClaim.LoginName}", exception: ex);
+            }
+        }
+
+        /// <summary>
+        /// Used to write to the log
+        /// </summary>
+        private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
+        {
+            try
+            {
+                string correlationId = "";
+                if (_defaultUserClaim != null)
+                {
+                    correlationId = (_defaultUserClaim.CorrelationId != Guid.Empty) ? _defaultUserClaim.CorrelationId.ToString() : "";
+                }
+                var logger = Log.Logger;
+                if (logData?.Keys != null)
+                {
+                    logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
+                }
+                logger = logger.ForContext("ProductModule", this.GetType());
+                logger = logger.ForContext("CorrelationId", correlationId);
+                logger.Write(logType, exception, message);
+            }
+            catch
+            {
+                /*ignored*/
+            }
         }
         #endregion
     }

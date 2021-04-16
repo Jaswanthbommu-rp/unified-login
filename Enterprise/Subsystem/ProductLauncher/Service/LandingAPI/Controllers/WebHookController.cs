@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 
@@ -63,6 +64,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _organizationRepository = new OrganizationRepository();
             _propertyRepository = new PropertyRepository();
             _productInternalSettingRepository = new ProductInternalSettingRepository();
+            _manageOrganization = new ManageOrganization(_userClaims);
+            
+            ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
+            if (!currentClaimPrincipal.Identity.IsAuthenticated)
+            {
+                var org = _manageOrganization.GetOrganization(EmployeeCompanyRealPageId);
+                _userClaims.OrganizationPartyId = org.PartyId;
+                _userClaims.UserRealPageGuid = new Guid("00000000-0000-0000-0000-000000000001");
+                _userClaims.OrganizationMasterId = -1;
+                _userClaims.UserId = 0;
+                _userClaims.LoginName = "autoprovisioning";
+                _userClaims.FirstName = "Auto";
+                _userClaims.LastName = "Provisioning";
+            }
+
             _manageOrganization = new ManageOrganization(_userClaims);
             _organizationProductRepository = new OrganizationProductRepository();
             _manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository);
@@ -342,7 +358,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                 {
                                     if (existingProductList.All(p => p.ProductId != productId))
                                     {
-                                        var addresponse = _manageOrganizationProduct.InsertUpdateOrganizationProduct(partyId: org.PartyId, product: productId, configurationId: null, fromDate: null, thruDate: null);
+                                        var addresponse = _manageOrganizationProduct.InsertUpdateOrganizationProductFromProvisioning(productId, null, null, null, org);
                                     }
                                 }
                             }
@@ -457,7 +473,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 if (!unifiedLoginInstanceId.Equals(Guid.Empty.ToString()) && property.InstanceId == Guid.Empty)
                 {
                     // add instance to db
-                    var response = _propertyRepository.InsertUPFMPropertyInstance(property);
+                    var response = _manageOrganization.InsertUPFMPropertyInstance(property);
                     if (response.ErrorMessage.Length == 0)
                     {
                         // insert to books

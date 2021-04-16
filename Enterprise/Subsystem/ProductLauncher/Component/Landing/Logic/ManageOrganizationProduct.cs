@@ -1,12 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using Serilog;
+using Serilog.Events;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -20,6 +27,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		IManageBlueBook _manageBlueBook;
 		IManageProduct _manageProduct;
 
+		private DefaultUserClaim _defaultUserClaim;
 		#endregion
 
 		#region Constructors
@@ -89,6 +97,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				{
 					return response;
 				}
+                else
+                {
+					var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} enabled {product} for {org.Name}";
+					LogAuditActivity(LogActivityTypeConstants.PRODUCT_ENABLED_FOR_COMPANY, LogActivityCategoryType.CompanySetup, message);
+				}
 			}
 			return response;
 		}
@@ -108,12 +121,46 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		}
 
 		/// <summary>
+		/// Used to insert a new product to an Organization from provisioning
+		/// </summary>
+		/// <param name="partyId"></param>
+		/// <param name="product"></param>
+		/// <param name="configurationId"></param>
+		/// <param name="fromDate"></param>
+		/// <param name="thruDate"></param>
+		/// <param name="org"></param>
+		/// <returns></returns>
+		public IRepositoryResponse InsertUpdateOrganizationProductFromProvisioning(int product, int? configurationId, DateTime? fromDate, DateTime? thruDate, Organization org)
+		{
+			var response = _organizationProductRepository.InsertUpdateOrganizationProduct(org.PartyId, product, configurationId, fromDate, thruDate);
+
+			if (response.ErrorMessage.Length == 0)
+            {
+				var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} enabled {product} for {org.Name}";
+				LogAuditActivity(LogActivityTypeConstants.PRODUCT_ENABLED_FOR_COMPANY, LogActivityCategoryType.CompanySetup, message);
+			}
+
+			return response;
+		}
+
+		/// <summary>
 		/// Used to delete a product from an Organization
 		/// </summary>
 		/// <param name="partyId">The organization id for the product to delete</param>
 		/// <param name="product">The product to delete</param>
 		/// <returns></returns>
 		public IRepositoryResponse DeleteOrganizationProduct(long partyId, ProductEnum product)
+		{
+			return _organizationProductRepository.DeleteOrganizationProduct(partyId, product);
+		}
+
+		/// <summary>
+		/// Used to delete a product from an Organization, when called from provisioning
+		/// </summary>
+		/// <param name="partyId"></param>
+		/// <param name="product"></param>
+		/// <returns></returns>
+		public IRepositoryResponse DeleteOrganizationProductFromProvisioning(long partyId, ProductEnum product)
 		{
 			return _organizationProductRepository.DeleteOrganizationProduct(partyId, product);
 		}
@@ -129,6 +176,67 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			return _organizationProductRepository.DisableUsersForProduct(partyId, product);
 		}
 
+		private void LogAuditActivity(string logActivityType, LogActivityCategoryType logActivityCategoryType, string message)
+		{
+			try
+			{
+				LogActivity.WriteActivity(new ActivityDetails
+				{
+					LogActivityTypeName = logActivityType,
+					LogCategoryName = logActivityCategoryType.ToString(),
+					CorrelationId = _defaultUserClaim.CorrelationId.ToString(),
+					BooksMasterOrganizationId = _defaultUserClaim.OrganizationMasterId,
+					OrganizationPartyId = _defaultUserClaim.OrganizationPartyId,
+					Message = message,
+
+					FromUserLoginName = _defaultUserClaim.LoginName,
+					FromUserLoginId = _defaultUserClaim.UserId,
+					FromUserRealpageId = _defaultUserClaim.UserRealPageGuid.ToString(),
+					FromUserFirstName = _defaultUserClaim.FirstName,
+					FromUserLastName = _defaultUserClaim.LastName,
+
+					ToUserLoginName = null,
+					ToUserLoginId = null,
+					ToUserFirstName = null,
+					ToUserLastName = null,
+					ToUserRealpageId = null
+				});
+			}
+			catch (Exception ex)
+			{
+				WriteToLog(LogEventLevel.Error,
+					$"Error while adding activity message." +
+					$" BooksMasterOrganizationId{_defaultUserClaim.OrganizationName}, " +
+					$"author user login name {_defaultUserClaim.LoginName}", exception: ex);
+			}
+		}
+
+		/// <summary>
+		/// Used to write to the log
+		/// </summary>
+		private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
+		{
+			try
+			{
+				string correlationId = "";
+				if (_defaultUserClaim != null)
+				{
+					correlationId = (_defaultUserClaim.CorrelationId != Guid.Empty) ? _defaultUserClaim.CorrelationId.ToString() : "";
+				}
+				var logger = Log.Logger;
+				if (logData?.Keys != null)
+				{
+					logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
+				}
+				logger = logger.ForContext("ProductModule", this.GetType());
+				logger = logger.ForContext("CorrelationId", correlationId);
+				logger.Write(logType, exception, message);
+			}
+			catch
+			{
+				/*ignored*/
+			}
+		}
 		#endregion
 	}
 }
