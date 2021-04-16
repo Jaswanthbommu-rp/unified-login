@@ -19,6 +19,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using System.Web.Http.Controllers;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Controllers
 {
@@ -27,10 +28,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
     /// </summary>
     public class ProductController : BaseApiController
     {
-        private readonly IProductRepository _productRepository;
+        private IProductRepository _productRepository;
 
+        /// <summary>
+        /// Default constructor
+        /// </summary>
         public ProductController()
         {
+            // DONT USE USERCLAIM IN BASE, IT IS NULL AT THIS POINT. MOVE TO Initialize FUNCTION
+        }
+
+        protected override void Initialize(HttpControllerContext controllerContext)
+        {
+            base.Initialize(controllerContext);
+
             _productRepository = new ProductRepository(_userClaims);
         }
 

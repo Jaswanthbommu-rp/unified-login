@@ -36,6 +36,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         private IProductRepository _productRepository;
 
         /// <summary>
+        /// Default constructor
+        /// </summary>
+        public PropertyController()
+        {
+            // DONT USE USERCLAIM IN BASE, IT IS NULL AT THIS POINT. MOVE TO Initialize FUNCTION
+        }
+
+        /// <summary>
         /// Used to initialize DI classes with userclaim
         /// </summary>
         /// <param name="controllerContext"></param>

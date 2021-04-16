@@ -20,6 +20,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
+using System.Web.Http.Controllers;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Controllers
 {
@@ -28,10 +29,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 	/// </summary>
 	public class RoleController : BaseApiController
 	{
-		private readonly IProductRepository _productRepository;
+		private IProductRepository _productRepository;
 
+		/// <summary>
+		/// Default constructor
+		/// </summary>
 		public RoleController()
-        {
+		{
+			// DONT USE USERCLAIM IN BASE, IT IS NULL AT THIS POINT. MOVE TO Initialize FUNCTION
+		}
+
+		protected override void Initialize(HttpControllerContext controllerContext)
+		{
+			base.Initialize(controllerContext);
+
 			_productRepository = new ProductRepository(_userClaims);
 		}
 
