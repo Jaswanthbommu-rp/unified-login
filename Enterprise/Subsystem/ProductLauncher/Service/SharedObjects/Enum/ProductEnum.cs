@@ -1,6 +1,8 @@
-﻿using System;
+﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Reflection;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
@@ -10,8 +12,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 	/// </summary>
 	public static class ProductEnumHelper
 	{
+		[Obsolete("Replaced by GetProductCodeByProductId - Do not use")]
 		public static string StringValueOf(ProductEnum value)
 		{
+			if(value != ProductEnum.UnifiedPlatform
+				&& value != ProductEnum.AoAxiometrics
+				&& value != ProductEnum.AoRentControl
+				&& value != ProductEnum.OneSite)
+            {
+				throw new Exception($"This function is obsolute, use {nameof(GetProductCodeByProductId)} instead");
+            }
+
 			FieldInfo fi = value.GetType().GetField(value.ToString());
 			DescriptionAttribute[] attributes = (DescriptionAttribute[])fi.GetCustomAttributes(typeof(DescriptionAttribute), false);
 			if (attributes.Length > 0)
@@ -136,61 +147,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 			throw new Exception($"AO product with Id - {productCode} is not supported in green book.");
 		}
 
-		public static ProductEnum GetUPFMProductEnum(int productID)
-		{
-			switch (productID)
-			{
-				case 57 : return ProductEnum.IntelligentBuildingTrash;
-				case 58 : return ProductEnum.IntelligentBuildingEnergy;
-				case 59 : return ProductEnum.IntelligentBuildingWater;
-				case 60 : return ProductEnum.HospitalityService;
-				case 63: return ProductEnum.HandsOnTrainingSystem;
-				case 68: return ProductEnum.LeaseLabs;
-				case 65: return ProductEnum.SelfGuidedTour;
-				case 45: return ProductEnum.CIMPL;
-				case 56: return ProductEnum.UnifiedSettings;
-			}
-
-			throw new Exception($"UPFM product with Id - {productID} is not supported in green book.");
-		}
 		/// <summary>
 		/// GetProductEnumByProductCode
 		/// </summary>
 		/// <param name="productCode">Product Code</param>
+		/// <param name="products"></param>
 		/// <returns>ProductEnum</returns>
-		public static ProductEnum GetProductEnumByProductCode(string productCode)
+		public static int GetProductIdByProductCode(string productCode, IList<GbProductMap> products)
 		{
-			var ProductEnumsList = System.Enum.GetValues(typeof(ProductEnum));
+			var lookupValue = products.FirstOrDefault(a => a.BooksProductCode?.Equals(productCode, StringComparison.OrdinalIgnoreCase) == true);
 
-			foreach (object pEnum in ProductEnumsList)
-			{
-				string result;
-				FieldInfo fi = typeof(ProductEnum).GetField(pEnum.ToString());
-				if (fi != null)
-				{
-					try
-					{
-						object[] descriptionAttrs = fi.GetCustomAttributes(typeof(DescriptionAttribute), false);
-						DescriptionAttribute description = (DescriptionAttribute)descriptionAttrs[0];
-						result = (description.Description);
-						if (result.Equals(productCode, StringComparison.OrdinalIgnoreCase))
-							return (ProductEnum)pEnum;
-					}
-					catch
-					{
-						result = null;
-					}
-				}
+			if(lookupValue == null)
+            {
+				//If Code reach here that means product code did not match with any Product Enum Description value. So raise an exception
+				throw new Exception("Invalid product code " + productCode);
 			}
 
-			//If Code reach here that means product code did not match with any Product Enum Description value. So raise an exception
-			throw new Exception("Invalid product code");
+			return lookupValue.ProductId;
 		}
+
+		public static string GetProductCodeByProductId(int productId, IList<GbProductMap> products) =>
+			products.FirstOrDefault(a => a.ProductId == productId)?.BooksProductCode;
 	}
 
 	/// <summary>
 	/// Used to identify products by id.
 	/// </summary>
+	[Obsolete("Use an int instead")]
 	public enum ProductEnum
 	{
 		/// <summary>

@@ -19,6 +19,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using System.Web.Http.Controllers;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Controllers
 {
@@ -27,6 +28,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
     /// </summary>
     public class ProductController : BaseApiController
     {
+        private IProductRepository _productRepository;
+
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        public ProductController()
+        {
+            // DONT USE USERCLAIM IN BASE, IT IS NULL AT THIS POINT. MOVE TO Initialize FUNCTION
+        }
+
+        protected override void Initialize(HttpControllerContext controllerContext)
+        {
+            base.Initialize(controllerContext);
+
+            _productRepository = new ProductRepository(_userClaims);
+        }
+
         /// <summary>
 	    /// Get list of products
 	    /// </summary>
@@ -168,7 +186,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
             IList<int> products = new List<int>();
 
-            productcode.ForEach(x => products.Add((int)ProductEnumHelper.GetProductEnumByProductCode(x)));
+            var productList = _productRepository.GetAllProducts();
+            productcode.ForEach(x => products.Add(ProductEnumHelper.GetProductIdByProductCode(x, productList)));
 
             IProductRepository productRepository = new ProductRepository();
             var result = productRepository.GetUsersByCompanyorProducts(companyid, products, rowsPerPage.Value, pageNumber.Value, roles, rights, propertyIds);
