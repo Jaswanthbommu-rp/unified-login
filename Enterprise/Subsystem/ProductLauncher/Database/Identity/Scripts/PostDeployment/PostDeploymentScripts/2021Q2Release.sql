@@ -1051,9 +1051,11 @@ declare @CustomFields as TABLE(
 
 insert into @CustomFields(FieldId,OrganizationId,Enabled,Name,Description,FieldTypeId,Required,
 	ReadOnly,Sequence,MinCharLength,MaxCharLength,CreatedBy)
-Select FieldId,OrganizationId,Enabled,Name,Description,FieldTypeId,Required,
+Select FieldId,OrganizationId,Enabled,cf.Name,Description,FieldTypeId,Required,
 	ReadOnly,Sequence,MinCharLength,MaxCharLength,CreatedBy
-From CustomField.Field
+From CustomField.Field cf
+Join Enterprise.Organization p on
+	p.PartyId = cf.OrganizationId
 
 declare @MAX_ID INT
 declare @Current_ID INT = 1
@@ -1080,7 +1082,7 @@ begin
 		   @CreatedBy = CreatedBy, @fieldTypeId = FieldTypeId
 	From @CustomFields Where Id = @Current_ID
 
-	IF NOT EXISTS (Select 1 From  [Settings].[SettingTable] Where PartyId = @partyid)
+	IF NOT EXISTS (Select 1 From  [Settings].[SettingTable] Where PartyId = @partyid and SettingCategoryTypeId = @SettingCategoryTypeId)
 	BEGIN
 		INSERT INTO [Settings].[SettingTable]([SettingCategoryTypeId],[PartyId],
 				[TableName],[ModifiedBy],[CreatedDate])
@@ -1090,10 +1092,10 @@ begin
 	END
 	ELSE
 	BEGIN
-		Select @SettingTableId = SettingTableId From  [Settings].[SettingTable] Where PartyId = @partyid
+		Select @SettingTableId = SettingTableId From  [Settings].[SettingTable] Where PartyId = @partyid and SettingCategoryTypeId = @SettingCategoryTypeId
 	END
 
-	IF NOT EXISTS (Select 1 From  [Settings].[SettingTableRow] Where SettingTableId = @SettingTableId)
+	IF NOT EXISTS (Select 1 From  [Settings].[SettingTableRow] Where SettingTableId = @SettingTableId and SettingTableRowId = @fieldid)
 	BEGIN
 		INSERT INTO [Settings].[SettingTableRow](SettingTableRowId,SettingTableId,Editable,Deletable,
 		IsActive,ModifiedBy,CreatedDate)
@@ -1106,35 +1108,42 @@ begin
 		INSERT INTO [Settings].[SettingTableColumn](SettingTableRowId,TableColumnName,
 		TableColumnValue,ModifiedBy,CreatedDate)
 		SELECT @fieldid,'Enabled',@enabled,@CreatedBy,@NOW
+		Where @enabled IS NOT NULL
 
 		INSERT INTO [Settings].[SettingTableColumn](SettingTableRowId,TableColumnName,
 			TableColumnValue,ModifiedBy,CreatedDate)
 		SELECT @fieldid,'Name',@name,@CreatedBy,@NOW
-
+		Where @name IS NOT NULL
 
 		INSERT INTO [Settings].[SettingTableColumn](SettingTableRowId,TableColumnName,
 			TableColumnValue,ModifiedBy,CreatedDate)
 		SELECT @fieldid,'FieldTypeId',@fieldTypeId,@CreatedBy,@NOW
+		Where @fieldTypeId IS NOT NULL
 
 		INSERT INTO [Settings].[SettingTableColumn](SettingTableRowId,TableColumnName,
 			TableColumnValue,ModifiedBy,CreatedDate)
 		SELECT @fieldid,'Required',@Required,@CreatedBy,@NOW
+		Where @Required IS NOT NULL
 
 		INSERT INTO [Settings].[SettingTableColumn](SettingTableRowId,TableColumnName,
 			TableColumnValue,ModifiedBy,CreatedDate)
 		SELECT @fieldid,'ReadOnly',@ReadOnly,@CreatedBy,@NOW
+		Where @ReadOnly IS NOT NULL
 
 		INSERT INTO [Settings].[SettingTableColumn](SettingTableRowId,TableColumnName,
 			TableColumnValue,ModifiedBy,CreatedDate)
 		SELECT @fieldid,'Sequence',@Sequence,@CreatedBy,@NOW
+		Where @Sequence IS NOT NULL
 
 		INSERT INTO [Settings].[SettingTableColumn](SettingTableRowId,TableColumnName,
 			TableColumnValue,ModifiedBy,CreatedDate)
 		SELECT @fieldid,'MinCharLength',@MinCharLength,@CreatedBy,@NOW
+		Where @MinCharLength IS NOT NULL
 
 		INSERT INTO [Settings].[SettingTableColumn](SettingTableRowId,TableColumnName,
 			TableColumnValue,ModifiedBy,CreatedDate)
 		SELECT @fieldid,'MaxCharLength',@MaxCharLength,@CreatedBy,@NOW
+		Where @MaxCharLength IS NOT NULL
 	END	
 
 	set @Current_ID = @Current_ID + 1
@@ -1153,35 +1162,17 @@ Declare @CustomFieldVlaues table(
    CreatedBy bigint)
 
   Insert into @CustomFieldVlaues(UserLoginPersonaId,FieldId,[Value],CreatedBy,CreatedDate)
-  Select UserLoginPersonaId,FieldId,[Value],CreatedBy,CreatedDate
-  FROM [CustomField].[FieldValue]
+  Select UserLoginPersonaId,FieldId,[Value],CreatedBy,cf.CreatedDate
+  FROM [CustomField].[FieldValue] cf
+  join Settings.SettingTableRow sr on
+	sr.SettingTableRowId = cf.FieldId
+  except 
+	 Select UserLoginPersonaId,SettingTableRowId,Value,ModifiedBy,CreatedDate From [Settings].[SettingTableRowValue]  
 
-  declare @MAX_ID INT
-  declare @Current_ID INT = 1
-  select @MAX_ID = max(id) from @CustomFieldVlaues
-  while @Current_ID <= @MAX_ID
-  begin
-	declare @UserLoginPersonaId bigint,
-			@fieldid bigint,
-			@CreatedBy bigint,
-			@Value nvarchar(max),
-			@CreatedDate datetime
 
-	Select @UserLoginPersonaId = UserLoginPersonaId,
-			@fieldid = FieldId,@Value = [value],
-			@CreatedBy = CreatedBy,@CreatedDate = CreatedDate
-	From @CustomFieldVlaues Where id = @Current_ID
-
-	IF NOT EXISTS (Select 1 From  [Settings].[SettingTableRowValue] 
-		Where UserLoginPersonaId = @UserLoginPersonaId 
-		AND SettingTableRowId = @fieldid
-		AND [Value] = @Value)
-	BEGIN
-		INSERT INTO [Settings].[SettingTableRowValue]([SettingTableRowId],[UserLoginPersonaId],
+	INSERT INTO [Settings].[SettingTableRowValue]([SettingTableRowId],[UserLoginPersonaId],
 				[Value],[ModifiedBy],[CreatedDate])
-		Select @fieldid,@UserLoginPersonaId,@Value,@CreatedBy,@CreatedDate
-	END
-	set @Current_ID = @Current_ID + 1
-  end
+	Select FieldId,UserLoginPersonaId,[Value],CreatedBy,CreatedDate
+	From @CustomFieldVlaues
 
 GO

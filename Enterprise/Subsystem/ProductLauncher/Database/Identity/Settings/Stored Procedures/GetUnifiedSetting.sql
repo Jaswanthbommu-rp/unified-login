@@ -5,8 +5,8 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 	DECLARE @settings TABLE (			
-			MappingName varchar(200),
-			MappingValue varchar(100),
+			Name varchar(200),
+			Value varchar(100),
 			Editable bit,
 			Hidden bit
 		)
