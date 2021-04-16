@@ -5,6 +5,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Factory;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Attribute;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
@@ -32,6 +33,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
     {
         private IIntegrationTypeFactory _integrationTypeFactory;
 
+        private IProductRepository _productRepository;
+
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        public PropertyController()
+        {
+            // DONT USE USERCLAIM IN BASE, IT IS NULL AT THIS POINT. MOVE TO Initialize FUNCTION
+        }
+
         /// <summary>
         /// Used to initialize DI classes with userclaim
         /// </summary>
@@ -44,6 +55,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             var manageProductOneSite = new ManageProductOneSite(_userClaims);
 
             _integrationTypeFactory = new DefaultIntegrationTypeFactory(productInternalSettingRepository, manageUnifiedLogin, manageProductOneSite, _userClaims);
+            _productRepository = new ProductRepository(_userClaims);
         }
 
         /// <summary>
@@ -91,9 +103,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 		    }
 
 		    ListResponse productResponse;
-		    switch (ProductEnumHelper.GetProductEnumByProductCode(productCode))
+            var productList = _productRepository.GetAllProducts();
+            switch (ProductEnumHelper.GetProductIdByProductCode(productCode, productList))
 		    {
-			    case ProductEnum.OpsBuyer:
+			    case (int)ProductEnum.OpsBuyer:
 				    IManageProductOps manageProductOps = new ManageProductOps(_userClaims);
 				    productResponse = manageProductOps.GetCompanyAssets(_userClaims.PersonaId, persona.PersonaId, false, null);
 				    List<AssetGroup> opsFilteredList = productResponse.Records.Cast<AssetGroup>().ToList().FindAll(p => p.IsAssigned);
@@ -140,7 +153,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 		    {
 			    Errors = new List<Error>()
 		    };
-            int productId = (int)ProductEnumHelper.GetProductEnumByProductCode(productCode);
+            var productList = _productRepository.GetAllProducts();
+            int productId = ProductEnumHelper.GetProductIdByProductCode(productCode, productList);
 
             var integration = _integrationTypeFactory.GetIntegration(productId);
             ListResponse productResponse = integration.GetEnterpriseProperties(_userClaims.PersonaId, include);
@@ -179,7 +193,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             {
                 Errors = new List<Error>()
             };
-            int productId = (int)ProductEnumHelper.GetProductEnumByProductCode(productCode);
+            var productList = _productRepository.GetAllProducts();
+            int productId = ProductEnumHelper.GetProductIdByProductCode(productCode, productList);
             ManageUPFMProductsIntegration upfmProductIntegration = new ManageUPFMProductsIntegration(productId, _userClaims);            
             var multiCompanyPropertyResponse = upfmProductIntegration.GetUPFMMultiCompanyProperties(productCode);
             if (multiCompanyPropertyResponse == null)

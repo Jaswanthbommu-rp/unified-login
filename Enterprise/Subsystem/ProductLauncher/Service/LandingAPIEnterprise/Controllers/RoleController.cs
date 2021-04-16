@@ -18,6 +18,9 @@ using System.Net.Http;
 using System.Web.Http;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
+using System.Web.Http.Controllers;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Controllers
 {
@@ -26,6 +29,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 	/// </summary>
 	public class RoleController : BaseApiController
 	{
+		private IProductRepository _productRepository;
+
+		/// <summary>
+		/// Default constructor
+		/// </summary>
+		public RoleController()
+		{
+			// DONT USE USERCLAIM IN BASE, IT IS NULL AT THIS POINT. MOVE TO Initialize FUNCTION
+		}
+
+		protected override void Initialize(HttpControllerContext controllerContext)
+		{
+			base.Initialize(controllerContext);
+
+			_productRepository = new ProductRepository(_userClaims);
+		}
+
 		/// <summary>
 		/// Get a list of roles for the given user and product
 		/// </summary>
@@ -82,7 +102,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 			else
 			{
 				IManageProductPanel productPanelData = new ManageProductPanel(_userClaims);
-				int productId = (int)ProductEnumHelper.GetProductEnumByProductCode(productCode);
+				var productList = _productRepository.GetAllProducts();
+				int productId = (int)ProductEnumHelper.GetProductIdByProductCode(productCode, productList);
 				productResponse = productPanelData.GetProductRoles(_userClaims.PersonaId, persona.PersonaId, _userClaims.OrganizationPartyId, productId, null, null);
 				filteredList = productResponse.Records.Cast<Component.SharedObjects.Product.ProductRole>().ToList().FindAll(p => p.IsAssigned);
 			}
@@ -133,7 +154,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 			else
 			{
 				IManageProductPanel productPanelData = new ManageProductPanel(_userClaims);
-				int productId = (int)ProductEnumHelper.GetProductEnumByProductCode(productCode);
+				var productList = _productRepository.GetAllProducts();
+				int productId = (int)ProductEnumHelper.GetProductIdByProductCode(productCode, productList);
 				productResponse = productPanelData.GetProductRoles(_userClaims.PersonaId, _userClaims.PersonaId, _userClaims.OrganizationPartyId, productId, null, null);				
 			}
 
