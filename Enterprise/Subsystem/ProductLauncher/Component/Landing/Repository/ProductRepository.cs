@@ -34,6 +34,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
     {
         private DefaultUserClaim _userClaim;
         IProductInternalSettingRepository _productInternalSettingRepository;
+
         #region Ctor
         /// <summary>
         /// base Constructor
@@ -754,9 +755,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 }
             });
             IList<ProductSettingList> personaProductSettings = GetProductSettingsByPersona(personaId);
+            var productList = GetAllProducts();
             products.ToList().ForEach(p =>
             {
-                p.ProductCode = ProductEnumHelper.StringValueOf((ProductEnum) p.ProductId);
+                p.ProductCode = ProductEnumHelper.GetProductCodeByProductId(p.ProductId, productList);
 
                 var personaSetting = personaProductSettings.Where(i => i.ProductId == p.ProductId);
 

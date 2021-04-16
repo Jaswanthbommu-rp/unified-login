@@ -75,7 +75,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             string include = null;
             string filter = null;
 
-            _manageBlueBook = new ManageBlueBook(_userClaims, productInternalSettingRepository, _mockHttpMessageHandler.Object);
+            _manageBlueBook = new ManageBlueBook(_userClaims, _mockRepository.Object, productInternalSettingRepository, _mockHttpMessageHandler.Object);
 
             new RPObjectCache().BustCache();
 
@@ -180,7 +180,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             ProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository(_mockRepository.Object);
 
-            IManageBlueBook _manageBlueBook = new ManageBlueBook(_userClaims, productInternalSettingRepository, _mockHttpMessageHandler.Object);
+            IManageBlueBook _manageBlueBook = new ManageBlueBook(_userClaims, _mockRepository.Object, productInternalSettingRepository, _mockHttpMessageHandler.Object);
 
             new RPObjectCache().BustCache();
 
@@ -302,7 +302,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             ProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository(_mockRepository.Object);
 
-            IManageBlueBook _manageBlueBook = new ManageBlueBook(_userClaims, productInternalSettingRepository, _mockHttpMessageHandler.Object);
+            IManageBlueBook _manageBlueBook = new ManageBlueBook(_userClaims, _mockRepository.Object, productInternalSettingRepository, _mockHttpMessageHandler.Object);
 
             new RPObjectCache().BustCache();
 
