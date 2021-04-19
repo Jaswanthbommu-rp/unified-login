@@ -84,9 +84,7 @@ BEGIN
 	SELECT		COUNT (ActivityId)
 	FROM		Logging.Activity A
 					INNER JOIN Logging.LogType LT ON A.LogTypeId = LT.LogTypeId
-					INNER JOIN Logging.LogCategoryType LCT ON LCT.LogCategoryTypeId = LT.LogCategoryTypeId
-					INNER JOIN Logging.UserLogin FUL ON FUL.UserId = A.FromUserId 
-					INNER JOIN Logging.userLogin TUL ON TUL.UserId = A.ToUserId ';
+					INNER JOIN Logging.LogCategoryType LCT ON LCT.LogCategoryTypeId = LT.LogCategoryTypeId ';
 	IF	(SELECT COUNT(*) FROM @SearchCriteriaTPV	) > 0
 	BEGIN
 		SELECT		IDENTITY( INT, 1, 1) AS RowNum,
@@ -103,6 +101,8 @@ BEGIN
 			FROM		#HoldSearchCriteria
 			WHERE	Name = 'RealPageId';
 			
+			SELECT @FromUserId = UserId, @ToUserId = UserId FROM Logging.Userlogin WHERE RealPageId = @RealPageId
+
 			DELETE
 			FROM		#HoldSearchCriteria
 			WHERE	Name = 'RealPageId';
@@ -123,6 +123,9 @@ BEGIN
 				@RealPageId,
 				0
 			);
+
+			SET @Cmd02 = @Cmd02 + CHAR(13) + '					INNER JOIN Logging.UserLogin FUL ON FUL.UserId = A.FromUserId 
+					INNER JOIN Logging.userLogin TUL ON TUL.UserId = A.ToUserId ';
 		END;
 
 		SET @SearchCriteria = CHAR(9) + 'WHERE' + CHAR(9);
@@ -144,14 +147,15 @@ BEGIN
 				ELSE ''
 			END +
 			CASE
-				WHEN @ScName = 'FromRealpageId' THEN '(FUL.'
-				WHEN @ScName = 'ToRealpageId' THEN 'TUL.'
+				WHEN @ScName = 'FromRealpageId' THEN '(A.'
+				WHEN @ScName = 'ToRealpageId' THEN 'A.'
 				WHEN @ScName = 'LogCategoryTypeId' THEN 'LCT.'
 				ELSE 'A.'
 			END +
 			CASE
 				WHEN @SCName IN ('StartDate', 'EndDate') THEN 'ApplicationTimeStamp'
-				WHEN @SCName IN ('FromRealPageId', 'ToRealPageId') THEN 'RealPageId'
+				WHEN @SCName = 'FromRealPageId' THEN 'FromUserId'
+				WHEN @SCName = 'ToRealPageId' THEN 'ToUserId'
 				WHEN @SCName = 'PropertyId' THEN 'BooksMasterPropertyId'
 				ELSE @SCName
 			END +
@@ -163,18 +167,21 @@ BEGIN
 				ELSE ' = '
 			END +
 			CASE
-				WHEN @SCName IN ('FromRealPageId', 'ToRealPageId','StartDate', 'EndDate','SourceId','MappingKey') THEN ''''
+				WHEN @SCName IN ('StartDate','EndDate','SourceId','MappingKey') THEN ''''
 				ELSE ''
 			END +
 			CASE
 				WHEN @SCname IN('EndDate') THEN @SCValue--+' 23:59:59'
 				WHEN @SCName = 'Message' THEN '1)'
+				WHEN @SCName IN ('FromRealPageId', 'ToRealPageId') THEN CONVERT(VARCHAR,@FromUserId)
 				ELSE CONVERT(nvarchar(200), @SCValue)
 			END +
 			CASE
-				WHEN @ScName IN ('ToRealPageId') THEN ''')'
+				--WHEN @ScName IN ('FromRealPageId') THEN ''''
+				WHEN @ScName IN ('ToRealPageId') THEN ')'
 				WHEN @SCName = 'Message' THEN ' > 0'
-				WHEN @SCName IN ('FromRealPageId','StartDate', 'EndDate','SourceId','MappingKey') THEN ''''
+				WHEN @SCName IN ('StartDate', 'EndDate','SourceId','MappingKey')
+				THEN ''''
 				ELSE ''
 			END;
 
@@ -255,4 +262,5 @@ BEGIN
 	EXECUTE (@Cmd02)
 	SELECT @TotalRows = ROwCnt FROM @TotalRows_t
 	--PRINT @Cmd01;
+	--PRINT @Cmd02;
 END;
