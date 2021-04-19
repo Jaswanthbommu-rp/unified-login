@@ -67,21 +67,17 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
                     return Request.CreateResponse(HttpStatusCode.BadRequest, "No filterCriteria received.");
                 }
 
-                // TODO REPLACE THIS WITH OrganizationPartyId
-                // Add booksMaster id from claims
                 ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
                 if (currentClaimPrincipal.Identity.IsAuthenticated)
                 {
-                    var orgFilter = filterCriteria.ActivitySearchCriteria.Where(x => x.Value.ToUpper() == "BOOKSMASTERORGANIZATIONID");
-                    if (!orgFilter.Any()) // If booksMasterOrganizationId passed then bypass adding from claim
+                    var orgFilter = filterCriteria.ActivitySearchCriteria.Where(x => x.Value.Equals("OrganizationPartyId", StringComparison.OrdinalIgnoreCase));
+                    if (!orgFilter.Any()) // If OrganizationPartyId passed then bypass adding from claim
                     {
-                        var booksMasterOrganizationId = ((from nvp in currentClaimPrincipal.Claims where nvp.Type.ToUpper() == "ORGMASTERID" select nvp.Value).FirstOrDefault());
-
                         filterCriteria.ActivitySearchCriteria.Add(
                             new ActivitySearchCriteria
                             {
-                                Name = "BooksMasterOrganizationId",
-                                Value = booksMasterOrganizationId //e.g. orgMasterId: 4638
+                                Name = "OrganizationPartyId",
+                                Value = _userClaims.OrganizationPartyId.ToString()
                             });
                     };
                 }
@@ -129,16 +125,14 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
                     return Request.CreateResponse(HttpStatusCode.BadRequest, "No filterCriteria received.");
                 }
 
-                // TODO REPLACE THIS WITH OrganizationPartyId
-                // Add booksMaster id from claims
-                var orgFilter = filterCriteria.ActivitySearchCriteria.Where(x => x.Value.ToUpper() == "BOOKSMASTERORGANIZATIONID");
-                if (!orgFilter.Any()) // If booksMasterOrganizationId passed then bypass adding from claim
+                var orgFilter = filterCriteria.ActivitySearchCriteria.Where(x => x.Value.Equals("OrganizationPartyId", StringComparison.OrdinalIgnoreCase));
+                if (!orgFilter.Any()) // If OrganizationPartyId passed then bypass adding from claim
                 {
                     filterCriteria.ActivitySearchCriteria.Add(
                         new ActivitySearchCriteria
                         {
-                            Name = "BooksMasterOrganizationId",
-                            Value = _userClaims.OrganizationMasterId.ToString() //e.g. orgMasterId: 4638
+                            Name = "OrganizationPartyId",
+                            Value = _userClaims.OrganizationPartyId.ToString()
                         });
                 };
 
@@ -287,15 +281,14 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
                     return Request.CreateResponse(HttpStatusCode.BadRequest, result);
                 }
 
-                // TODO REPLACE THIS WITH OrganizationPartyId
-                var orgFilter = filterCriteria.ActivitySearchCriteria.Where(x => x.Value.Equals("BooksMasterOrganizationId", StringComparison.OrdinalIgnoreCase));
+                var orgFilter = filterCriteria.ActivitySearchCriteria.Where(x => x.Value.Equals("OrganizationPartyId", StringComparison.OrdinalIgnoreCase));
                 if (!orgFilter.Any()) // If OrganizationPartyId passed then bypass adding from claim
                 {
                     filterCriteria.ActivitySearchCriteria.Add(
                         new ActivitySearchCriteria
                         {
-                            Name = "BooksMasterOrganizationId",
-                            Value = _userClaims.OrganizationMasterId.ToString() //e.g. orgMasterId: 4638
+                            Name = "OrganizationPartyId",
+                            Value = _userClaims.OrganizationPartyId.ToString()
                         });
                 }
 
