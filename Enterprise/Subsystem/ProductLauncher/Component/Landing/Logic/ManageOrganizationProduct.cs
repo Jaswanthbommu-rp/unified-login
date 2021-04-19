@@ -26,19 +26,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		IOrganizationProductRepository _organizationProductRepository;
 		IManageBlueBook _manageBlueBook;
 		IManageProduct _manageProduct;
+		IProductRepository _productRepository;
 
 		private DefaultUserClaim _defaultUserClaim;
 		#endregion
 
 		#region Constructors
 		/// <summary>
-		/// Manage Organization Product Constructor
+		/// Manage Organization Product Constructor (Default)
 		/// </summary>
-		/// <param name="organizationProductRepository">Organization Product Repository</param>
-
-		public ManageOrganizationProduct(IOrganizationProductRepository organizationProductRepository)
+		/// <param name="userClaim"></param>
+		public ManageOrganizationProduct(DefaultUserClaim userClaim)
 		{
-			_organizationProductRepository = organizationProductRepository;
+			_organizationProductRepository = new OrganizationProductRepository();
+			_defaultUserClaim = userClaim;
+			_manageBlueBook = new ManageBlueBook(userClaim);
+			_manageProduct = new ManageProduct(userClaim);
 		}
 
 		/// <summary>
@@ -47,11 +50,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		/// <param name="manageBlueBook"></param>
 		/// <param name="organizationProductRepository"></param>
 
-		public ManageOrganizationProduct(IManageBlueBook manageBlueBook, IOrganizationProductRepository organizationProductRepository, IManageProduct manageProduct)
+		public ManageOrganizationProduct(DefaultUserClaim userClaim, IManageBlueBook manageBlueBook, IOrganizationProductRepository organizationProductRepository, IManageProduct manageProduct)
 		{
 			_organizationProductRepository = organizationProductRepository;
 			_manageBlueBook = manageBlueBook;
 			_manageProduct = manageProduct;
+			_defaultUserClaim = userClaim;
 		}
 		#endregion
 
@@ -99,7 +103,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				}
                 else
                 {
-					var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} enabled {product} for {org.Name}";
+					var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} enabled {ProductEnumHelper.StringValueOf((ProductEnum)product)} for {org.Name}";
 					LogAuditActivity(LogActivityTypeConstants.PRODUCT_ENABLED_FOR_COMPANY, LogActivityCategoryType.CompanySetup, message);
 				}
 			}
@@ -136,7 +140,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 			if (response.ErrorMessage.Length == 0)
             {
-				var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} enabled {product} for {org.Name}";
+				var products = _productRepository.GetAllProducts();
+				var productName = products.FirstOrDefault(p => p.ProductId == (int)product)?.Name;
+				var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} enabled {productName} for {org.Name}";
 				LogAuditActivity(LogActivityTypeConstants.PRODUCT_ENABLED_FOR_COMPANY, LogActivityCategoryType.CompanySetup, message);
 			}
 
@@ -149,9 +155,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		/// <param name="partyId">The organization id for the product to delete</param>
 		/// <param name="product">The product to delete</param>
 		/// <returns></returns>
-		public IRepositoryResponse DeleteOrganizationProduct(long partyId, ProductEnum product)
+		public IRepositoryResponse DeleteOrganizationProduct(long partyId, ProductEnum product, Organization org)
 		{
-			return _organizationProductRepository.DeleteOrganizationProduct(partyId, product);
+			var response = _organizationProductRepository.DeleteOrganizationProduct(partyId, product);
+
+			if (response.ErrorMessage.Length == 0)
+			{
+				var products = _productRepository.GetAllProducts();
+				var productName = products.FirstOrDefault(p => p.ProductId == (int)product)?.Name;
+				var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} disabled {productName} for {org.Name}";
+				LogAuditActivity(LogActivityTypeConstants.PRODUCT_DISABLED_FOR_COMPANY, LogActivityCategoryType.CompanySetup, message);
+			}
+
+			return response;
 		}
 
 		/// <summary>

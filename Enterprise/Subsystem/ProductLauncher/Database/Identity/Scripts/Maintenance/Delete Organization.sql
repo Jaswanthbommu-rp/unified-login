@@ -7,10 +7,11 @@ To delete multiple: duplicate the node separate by commas.
 */
 
 --SELECT * FROM enterprise.Organization
+--13480	100 APARTMENT ASSOCIATES, INC.
 
 DECLARE @ProductionEnterpriseOrganizationJSON varchar(max) = '
 [
-	{"PartyId":####,"Name":"Camden Development, Inc. DO NOT USE"}
+	{"PartyId":13492,"Name":"upfmprovOS488089869"}
 ]
 '
 

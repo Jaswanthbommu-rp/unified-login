@@ -49,6 +49,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private IManageProductPanel _manageProductPanel;
         private IManageUnifiedSettings _manageUnifiedSettings;
         private IConfigurationSettingRepository _configurationSettingRepository ;
+        private IManageOrganizationProduct _manageOrganizationProduct;
+        private IManageProduct _manageProduct;
 
         private DefaultUserClaim _defaultUserClaim;
         #endregion
@@ -73,6 +75,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _propertyRepository = new PropertyRepository(repository);
             _configurationSettingRepository = new ConfigurationSettingRepository(repository);
             _manageUnifiedSettings = new ManageUnifiedSettings(repository, userClaim, messageHandler);
+            _manageProduct = new ManageProduct(repository, userClaim, messageHandler);
+            _manageOrganizationProduct = new ManageOrganizationProduct(userClaim, _manageBlueBook, _organizationProductRepository, _manageProduct);
         }
 
         /// <summary>
@@ -93,6 +97,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _propertyRepository = new PropertyRepository(repository);
             _configurationSettingRepository = new ConfigurationSettingRepository(repository);
             _manageUnifiedSettings = new ManageUnifiedSettings(repository, userClaim, messageHandler);
+            _manageProduct = new ManageProduct(repository, userClaim, messageHandler);
+            _manageOrganizationProduct = new ManageOrganizationProduct(userClaim, _manageBlueBook, _organizationProductRepository, _manageProduct);
         }
 
         /// <summary>
@@ -113,6 +119,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _manageProductPanel = new ManageProductPanel(userClaim);
             _defaultUserClaim = userClaim;
             _manageUnifiedSettings = new ManageUnifiedSettings(userClaim);
+            _manageOrganizationProduct = new ManageOrganizationProduct(userClaim);
         }
 
         #endregion
@@ -181,7 +188,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 },
 				OrganizationDomain = new OrganizationDomain()
                 {
-					OrganizationDomainId = organization.OrganizationDomainId
+					OrganizationDomainId = organization.OrganizationDomainId,
+                    Name = organization.OrganizationDomain
                 },
                 IsActive = organization.IsActive
             };
@@ -684,7 +692,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		private IRepositoryResponse AddProductsToOrganization(List<int> addProductList, long partyId, int organizationTypeId)
 		{
             IRepositoryResponse response = new RepositoryResponse();
-            ManageOrganizationProduct manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository);
 
 			IList<OrganizationType> organizationTypeList = ListOrganizationType();
 			string organizationTypeName = organizationTypeList.ToList().FirstOrDefault(o => o.OrganizationTypeId == organizationTypeId).Name;
@@ -724,7 +731,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 			foreach (int product in addProductList)
 			{
-				response = manageOrganizationProduct.InsertUpdateOrganizationProduct(partyId: partyId, product: product, configurationId: null, fromDate: null, thruDate: null);
+				response = _manageOrganizationProduct.InsertUpdateOrganizationProduct(partyId: partyId, product: product, configurationId: null, fromDate: null, thruDate: null);
 				if (!string.IsNullOrEmpty(response.ErrorMessage))
 				{
 					return response;
@@ -998,7 +1005,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             
             if (response.ErrorMessage.Length == 0)
             {
-                var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} created a new property, {propertyInstance.Name} with ID {propertyInstance.PropertyInstanceId} in the {propertyInstance.Domain} domain";
+                var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} created a new property, {propertyInstance.Name} with ID {response.RealPageId} in the {propertyInstance.Domain} domain";
                 LogAuditActivity(LogActivityTypeConstants.PROPERTY_CREATED, LogActivityCategoryType.CompanySetup, message);
             }
             return response;

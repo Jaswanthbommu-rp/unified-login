@@ -36,6 +36,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         private IManageBlueBook _manageBlueBook;
         private IManageOrganizationProduct _manageOrganizationProduct;
         private IOrganizationProductRepository _organizationProductRepository;
+        private IManageProduct _manageProduct;
 
         public WebHookController()
         {
@@ -50,7 +51,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _manageOrganization = new ManageOrganization(repository, userClaim, messageHandler);
             _manageBlueBook = new ManageBlueBook(userClaim, repository, _productInternalSettingRepository, messageHandler);
             _organizationProductRepository = new OrganizationProductRepository(repository);
-            _manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository);
+            _manageProduct = new ManageProduct(repository, userClaim, messageHandler);
+            _manageOrganizationProduct = new ManageOrganizationProduct(userClaim, _manageBlueBook, _organizationProductRepository, _manageProduct);
             _userClaims = userClaim;
         }
 
@@ -81,7 +83,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             _manageOrganization = new ManageOrganization(_userClaims);
             _organizationProductRepository = new OrganizationProductRepository();
-            _manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository);
+            _manageOrganizationProduct = new ManageOrganizationProduct(_userClaims);
             _manageBlueBook = new ManageBlueBook(_userClaims);
         }
 
@@ -412,7 +414,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                 {
                                     if (product["productCenterSourceId"] != null && product["productCenterSourceId"].ToString() != "")
                                     {
-                                        var addresponse = _manageOrganizationProduct.DeleteOrganizationProduct(partyId: orgDetails.PartyId, product: (ProductEnum) Convert.ToInt32(product["productCenterSourceId"]));
+                                        var addresponse = _manageOrganizationProduct.DeleteOrganizationProduct(partyId: orgDetails.PartyId, product: (ProductEnum) Convert.ToInt32(product["productCenterSourceId"]), org: orgDetails);
                                         _manageOrganizationProduct.DisableUsersForProduct(partyId: orgDetails.PartyId, product: (ProductEnum) Convert.ToInt32(product["productCenterSourceId"]));
                                         centerCancel.Details.Add(new ProductCenterCancellationSettings()
                                         {
@@ -613,6 +615,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 organization.OrganizationDomainId = organizationDomainList.FirstOrDefault(p => p.Name.Equals(domain, StringComparison.OrdinalIgnoreCase)).OrganizationDomainId;
             }
 
+            organization.OrganizationDomain = domain;
             var emailAdditional = domain.Equals("Primary", StringComparison.OrdinalIgnoreCase) ? "" : domain.ToLower();
             organization.AdminUser.Email = $"{customerCompany.CustomerCompanyId}{emailAdditional}admin@realpage.com";
 

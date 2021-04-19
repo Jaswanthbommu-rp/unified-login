@@ -9,6 +9,6 @@
         User = 2,
         ProductAccess = 3,
         Email = 4,
-        CompanySetup = 10
+        CompanySetup = 5
     }
 }

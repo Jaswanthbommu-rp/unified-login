@@ -33,7 +33,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         IManagePersona _managePersona;
         IManageBlueBook _manageBlueBook;
         IManagePartyRelationship _managePartyRelationship;
-        IManageOrganization _manageOrganization;
+        IOrganizationRepository _organizationRepository;
         IManageProfile _manageProfile;
         IManageUserRoleRight _manageUserRoleRight;
 	    DefaultUserClaim _defaultUserClaim;
@@ -56,7 +56,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _managePersona = managePersona;
             _manageBlueBook = manageBlueBook;
             _managePartyRelationship = managePartyRelationship;
-            _manageOrganization = manageOrganization;
+            _organizationRepository = new OrganizationRepository();
             _manageProfile = manageProfile;
             _manageUserRoleRight = manageUserRoleRight;
             _defaultUserClaim = userClaim;
@@ -72,7 +72,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _managePersona = new ManagePersona(repository, userClaim, messageHandler);
             _manageBlueBook = new ManageBlueBook(userClaim, repository, _productInternalSettingRepository, messageHandler);
             _managePartyRelationship = new ManagePartyRelationship(repository);
-            _manageOrganization = new ManageOrganization(repository, userClaim, messageHandler, null);
+            _organizationRepository = new OrganizationRepository(repository);
             _manageProfile = new ManageProfile(userClaim);
             _manageUserRoleRight = new ManageUserRoleRight();
             _defaultUserClaim = userClaim;
@@ -88,7 +88,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _managePersona = new ManagePersona(userClaim);
             _manageBlueBook = new ManageBlueBook(userClaim);
             _managePartyRelationship = new ManagePartyRelationship();
-            _manageOrganization = new ManageOrganization(userClaim);
+            _organizationRepository = new OrganizationRepository();
             _manageProfile = new ManageProfile(userClaim);
             _manageUserRoleRight = new ManageUserRoleRight();
 	        _defaultUserClaim = userClaim;
@@ -138,7 +138,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             //Get the UL Organization details by the CompanyInstanceId from BlackBook
             if (blueBookCompanyInstanceId != -1)
             {
-                var orgList = _manageOrganization.GetUnifiedLoginCompanyList();
+                var orgList = new List<UnifiedLoginCompany>();// _manageOrganization.GetUnifiedLoginCompanyList();
                 UnifiedLoginCompany ulc = orgList.FirstOrDefault(p => p.Domain.Equals("Primary") && p.BooksCustomerMasterId == blueBookCompanyInstanceId);
                 if (ulc == null)
                 {
@@ -151,7 +151,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 companyRealPageId = EmployeeCompanyRealPageId;
             }
 
-            organization = _manageOrganization.GetOrganization(realPageId: companyRealPageId);
+            //organization = _manageOrganization.GetOrganization(realPageId: companyRealPageId);
             if (organization != null)
             {
 				if (_defaultUserClaim.OrganizationRealPageGuid == Guid.Empty) {

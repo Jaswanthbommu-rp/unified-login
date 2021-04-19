@@ -24,7 +24,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="partyId"></param>
 		/// <param name="product"></param>
 		/// <returns></returns>
-		IRepositoryResponse DeleteOrganizationProduct(long partyId, ProductEnum product);
+		IRepositoryResponse DeleteOrganizationProduct(long partyId, ProductEnum product, Organization org);
 
 		/// <summary>
 		/// Used to insert a new product to an Organization
