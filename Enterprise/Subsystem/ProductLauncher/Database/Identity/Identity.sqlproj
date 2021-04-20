@@ -1073,6 +1073,7 @@
     <Build Include="Security\Settings.sql" />
     <Build Include="Settings\Tables\SettingTableRowValue.sql" />
     <Build Include="Settings\Stored Procedures\AddUpdateFieldValue.sql" />
+    <Build Include="Settings\Stored Procedures\GetSettingsPickListByCategory.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

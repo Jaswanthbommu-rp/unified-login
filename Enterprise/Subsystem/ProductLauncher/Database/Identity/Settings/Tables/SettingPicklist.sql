@@ -2,6 +2,7 @@
 (
 	[PicklistID] [int] IDENTITY(1,1) NOT NULL,
 	[CategoryName] [nvarchar](50) NOT NULL,
+	[MappingKeyName] [nvarchar](100) NOT NULL,
 	[MappingName] [nvarchar](50) NOT NULL,
 	[MappingValue] [int] NULL,
 	[Description] [nvarchar](100) NULL,
