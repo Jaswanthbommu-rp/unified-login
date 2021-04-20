@@ -1676,17 +1676,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             List<UPFMPropertyInstance> _upfmPropertyInstance = new List<UPFMPropertyInstance>();
             string productcode = ProductEnumHelper.StringValueOf((ProductEnum)productId);
             IPropertyRepository propertyRepository = new PropertyRepository();
-
-            if (upfmProperty?.id == null )
-            {
-                return productResult;
-            }
+            bool isPrimaryProperty = !(upfmProperty?.id == null);
 
             /*
              * If All property selection is true, then upfmProperty == -1
              */
-            if (upfmProperty.id[0] == "-1")
+            if (upfmProperty?.id == null || upfmProperty.id[0] == "-1")
             {
+                upfmProperty = new UPFMProperty();
+                //nullInstanceResultFlag = upfmProperty?.id[0] == "-1";
                 var booksPropertyList = GetUPFMPropertyInstances(_defaultUserClaim.OrganizationRealPageGuid.ToString());
                 if (booksPropertyList != null)
                 {
@@ -1724,7 +1722,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.ID));
                         if (instanceExists != null)
                         {
-                            property.IsAssigned = true;
+                            if (isPrimaryProperty)
+                            {
+                                property.IsAssigned = true;
+                            }
+                            property.InstanceId = instanceExists.PropertyInstanceSourceId;
+                        }
+                        else if (isPrimaryProperty)
+                        {
+                            property.IsAssigned = false;
                         }
                     }
                 }
@@ -1735,7 +1741,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.Id));
                         if (instanceExists != null)
                         {
-                            property.IsAssigned = true;
+                            if (isPrimaryProperty)
+                            {
+                                property.IsAssigned = true;
+                            }
+                            property.InstanceId = instanceExists.PropertyInstanceSourceId.ToLower();
+                        }
+                        else if (isPrimaryProperty)
+                        {
+                            property.IsAssigned = false;
                         }
                     }
                 }
@@ -1746,7 +1760,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.ID));
                         if (instanceExists != null)
                         {
-                            property.IsAssigned = true;
+                            if (isPrimaryProperty)
+                            {
+                                property.IsAssigned = true;
+                            }
+                            property.InstanceId = instanceExists.PropertyInstanceSourceId.ToLower();
+                        }
+                        else if (isPrimaryProperty)
+                        {
+                            property.IsAssigned = false;
                         }
                     }
                 }
@@ -1757,7 +1779,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.GetPropertyId.ToString()));
                         if (instanceExists != null)
                         {
-                            property.IsAssigned = true;
+                            if (isPrimaryProperty)
+                            {
+                                property.IsAssigned = true;
+                            }
+                            property.InstanceId = instanceExists.PropertyInstanceSourceId.ToLower();
+                        }
+                        else if (isPrimaryProperty)
+                        {
+                            property.IsAssigned = false;
                         }
                     }
                 }
@@ -1768,7 +1798,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.Id.ToString()));
                         if (instanceExists != null)
                         {
-                            property.IsAssigned = true;
+                            if (isPrimaryProperty)
+                            {
+                                property.IsAssigned = true;
+                            }
+                            property.InstanceId = instanceExists.PropertyInstanceSourceId.ToLower();
+                        }
+                        else if (isPrimaryProperty)
+                        {
+                            property.IsAssigned = false;
                         }
                     }
                 }
@@ -1779,7 +1817,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.GetPropertyId));
                         if (instanceExists != null)
                         {
-                            property.IsAssigned = true;
+                            if (isPrimaryProperty)
+                            {
+                                property.IsAssigned = true;
+                            }
+                            property.InstanceId = instanceExists.PropertyInstanceSourceId.ToLower();
+                        }
+                        else if (isPrimaryProperty)
+                        {
+                            property.IsAssigned = false;
                         }
                     }
                 }
@@ -1790,7 +1836,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.ID));
                         if (instanceExists != null)
                         {
-                            property.IsAssigned = true;
+                            if (isPrimaryProperty)
+                            {
+                                property.IsAssigned = true;
+                            }
+                            property.InstanceId = instanceExists.PropertyInstanceSourceId.ToLower();
+                        }
+                        else if (isPrimaryProperty)
+                        {
+                            property.IsAssigned = false;
                         }
                     }
                 }
