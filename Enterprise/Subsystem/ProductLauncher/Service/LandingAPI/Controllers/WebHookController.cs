@@ -611,6 +611,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
 
             createCompanyResult.RealPageId = result.obj.Org.RealPageId.ToString();
+            
             var companyInstance = new CompanyInstanceAdd()
             {
                 CustomerCompanyId = booksCustomerMasterId,
@@ -619,7 +620,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
                 IsActive = true,
                 CreatedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
-                CustomerEnvironment = domain
+                CustomerEnvironment = domain,
+                CompanyType = customerCompany.CompanyType
             };
             
             // add the new company data back to books
