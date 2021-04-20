@@ -309,15 +309,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			if (userPropertyIdList != null)
 			{
-				var organizationRealPageId = isMultiCompany ? multiCompanyRealPageId : _userClaims.OrganizationRealPageGuid.ToString();
-				var booksPropertyList = _blueBook.GetUPFMPropertyInstances(organizationRealPageId);				
-				if (booksPropertyList != null)
-				{
-					customerPropertyList = ListUPFMPropertyInstanceIdByInstanceIds(booksPropertyList);
-				}
+				var organizationRealPageId = isMultiCompany ? multiCompanyRealPageId : _userClaims.OrganizationRealPageGuid.ToString();				
 
 				if (userPropertyIdList.Count == 1 && userPropertyIdList[0] == -1)
 				{
+					var booksPropertyList = _blueBook.GetPropertiesPerProductCenter(organizationRealPageId, _upfmProductId);
+					customerPropertyList = ListUPFMPropertyInstanceIdByInstanceIds(booksPropertyList);
 					customerPropertyList.ForEach(cp =>
 					{
 						userPropertyList.Add(ConvertUPFMPropertyInstanceToProductProperty(cp, true));
@@ -325,6 +322,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 				else
 				{
+					var booksPropertyList = _blueBook.GetUPFMPropertyInstances(organizationRealPageId);
+					if (booksPropertyList != null)
+					{
+						customerPropertyList = ListUPFMPropertyInstanceIdByInstanceIds(booksPropertyList);
+					}
 					customerPropertyList.ToList().FindAll(b => userPropertyIdList.Any(p => p == b.PropertyInstanceId)).ForEach(cp => { userPropertyList.Add(ConvertUPFMPropertyInstanceToProductProperty(cp, true)); });
 				}
 			}
