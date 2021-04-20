@@ -1175,6 +1175,12 @@
     <None Include="Identity.Training.publish.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="Identity.EUSAT.publish.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Identity.EUPROD.publish.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>	
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\December2019Release.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\March2020Release.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\SameSiteData.sql" />
