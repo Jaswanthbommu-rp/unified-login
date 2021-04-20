@@ -50,7 +50,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         protected string CompanyInstanceSourceId { get; set; }
         protected IList<ProductInternalSetting> ProductInternalSettingList { get; set; }
         protected bool CreateUpdateMultiCompanyUserRequiresPMC { get; private set; }
-        /// <summary>
+        /// <summary> 
         /// Correlation Id used for logging
         /// </summary>
         protected Guid CorrelationId { get; set; }
@@ -558,15 +558,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public virtual string CreateUpdateProductUser(ProductUserRolePropertiesGroups userRolePropertiesRegion, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser)
         {
             string result;
-            bool isProductUser = false;
-
             WriteToDiagnosticLog(
                 $"ManageProductInvokerBase.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of method.");
 
             // Get product user object 
             var newProductUser = GenerateProductUserObject(userRolePropertiesRegion);
             var productUser = GetBaseUserDataFromProduct(newProductUser.LoginName);
-            isProductUser = productUser != null && !string.IsNullOrEmpty(productUser.LoginName);
+            bool isProductUser = productUser != null && !string.IsNullOrEmpty(productUser.LoginName);
 
             if (string.IsNullOrEmpty(SubjectUserDetails.ProductUserName) && !isProductUser)
             {
@@ -1284,6 +1282,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 ProductInternalSettingList =
                     _productInternalSettingRepository.GetProductInternalSettings(ProductId);
                 ProductApiBaseUrl = ProductInternalSettingList.First(a => a.Name.ToUpper() == "APIENDPOINT").Value;
+
+                var productInternalSetting = ProductInternalSettingList.FirstOrDefault(item => item.Name.Equals("CreateUpdateMultiCompanyUserRequiresPMC", StringComparison.OrdinalIgnoreCase));
+                CreateUpdateMultiCompanyUserRequiresPMC = (productInternalSetting != null) ? productInternalSetting.Value.Trim() == "1" : false;
             }
             catch (Exception ex)
             {
