@@ -143,6 +143,12 @@
     <None Include="AuditDB.UAT.publish.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+	<None Include="AuditDB.EUSAT.publish.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+	<None Include="AuditDB.EUPROD.publish.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Logging\Scripts\PostDeployment\2020-February-Release.sql" />
     <None Include="Logging\Scripts\PostDeployment\2019-September-Release.sql" />
   </ItemGroup>
