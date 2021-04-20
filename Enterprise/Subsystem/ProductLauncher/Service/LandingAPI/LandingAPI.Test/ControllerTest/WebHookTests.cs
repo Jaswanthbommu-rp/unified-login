@@ -371,6 +371,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             mockRepository
                 .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
                 .Returns(_productInternalSettings);
+            
+            mockRepository
+                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
+                    It.IsAny<object>()))
+                .Returns(_gbProductMap);
 
             //Arrange
             WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockMessageHandler.Object)
@@ -382,6 +387,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             webHookController.Request.Headers.Add("signature", _mockJson_books_customercompany_deleted_Signature);
 
             ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_customercompany_deleted);
+            new RPObjectCache().BustCache();
 
             //Act
             HttpResponseMessage response = webHookController.PostBooks(thinEvent);

@@ -66,7 +66,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _userClaims = userClaims;
             _propertyRepository = new PropertyRepository(repository);
             _manageProduct = new ManageProduct(repository, userClaims, messageHandler);
-            _manageOrganizationProduct = new ManageOrganizationProduct(userClaims, _manageBlueBook, _organizationProductRepository, _manageProduct);
+            _manageOrganizationProduct = new ManageOrganizationProduct(userClaims, repository, _manageBlueBook, _manageProduct);
         }
 
         /// <summary>

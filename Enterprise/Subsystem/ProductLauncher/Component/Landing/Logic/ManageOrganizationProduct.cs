@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
@@ -42,6 +43,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			_defaultUserClaim = userClaim;
 			_manageBlueBook = new ManageBlueBook(userClaim);
 			_manageProduct = new ManageProduct(userClaim);
+			_productRepository = new ProductRepository(userClaim);
 		}
 
 		/// <summary>
@@ -50,11 +52,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		/// <param name="manageBlueBook"></param>
 		/// <param name="organizationProductRepository"></param>
 
-		public ManageOrganizationProduct(DefaultUserClaim userClaim, IManageBlueBook manageBlueBook, IOrganizationProductRepository organizationProductRepository, IManageProduct manageProduct)
+		public ManageOrganizationProduct(DefaultUserClaim userClaim, IRepository repository, IManageBlueBook manageBlueBook, IManageProduct manageProduct)
 		{
-			_organizationProductRepository = organizationProductRepository;
+			_organizationProductRepository = new OrganizationProductRepository(repository);
 			_manageBlueBook = manageBlueBook;
 			_manageProduct = manageProduct;
+			_productRepository = new ProductRepository(repository, userClaim);
 			_defaultUserClaim = userClaim;
 		}
 		#endregion

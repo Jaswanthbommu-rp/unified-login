@@ -76,7 +76,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _configurationSettingRepository = new ConfigurationSettingRepository(repository);
             _manageUnifiedSettings = new ManageUnifiedSettings(repository, userClaim, messageHandler);
             _manageProduct = new ManageProduct(repository, userClaim, messageHandler);
-            _manageOrganizationProduct = new ManageOrganizationProduct(userClaim, _manageBlueBook, _organizationProductRepository, _manageProduct);
+            _manageOrganizationProduct = new ManageOrganizationProduct(userClaim, repository, _manageBlueBook, _manageProduct);
         }
 
         /// <summary>
@@ -98,7 +98,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _configurationSettingRepository = new ConfigurationSettingRepository(repository);
             _manageUnifiedSettings = new ManageUnifiedSettings(repository, userClaim, messageHandler);
             _manageProduct = new ManageProduct(repository, userClaim, messageHandler);
-            _manageOrganizationProduct = new ManageOrganizationProduct(userClaim, _manageBlueBook, _organizationProductRepository, _manageProduct);
+            _manageOrganizationProduct = new ManageOrganizationProduct(userClaim, repository, _manageBlueBook, _manageProduct);
         }
 
         /// <summary>
