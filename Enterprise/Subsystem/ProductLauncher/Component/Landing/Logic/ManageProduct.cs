@@ -70,7 +70,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _productRepository = new ProductRepository(repository, userClaim);
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
             _managePersona = new ManagePersona(repository, userClaim, messageHandler);
-            _manageBlueBook = new ManageBlueBook(userClaim, _productInternalSettingRepository, messageHandler);
+            _manageBlueBook = new ManageBlueBook(userClaim, repository, _productInternalSettingRepository, messageHandler);
             _managePartyRelationship = new ManagePartyRelationship(repository);
             _manageOrganization = new ManageOrganization(repository, userClaim, messageHandler, null);
             _manageProfile = new ManageProfile(userClaim);
