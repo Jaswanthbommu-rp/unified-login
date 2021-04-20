@@ -881,16 +881,21 @@ GO
 
 
 --TFS: 702072 populate UnifiedSettingPicklist table
-if not exists(select top 1 1 from Enterprise.SettingPicklist where CategoryName = 'CustomFields' and MappingName =  'Alphanumeric')
+DECLARE @UserId bigint
+SELECT	@UserId = UserId
+FROM	ident.UserLogin
+WHERE	LoginName LIKE 'realpagead@%'
+
+if not exists(select top 1 1 from Settings.SettingPicklist where CategoryName = 'CustomFields' and MappingName =  'Alphanumeric')
 Begin 
-	Insert into Enterprise.SettingPicklist(CategoryName, MappingName, MappingValue, Description, ModifiedBy, ModifiedDate)
-	values ('CustomFields', 'Alphanumeric', 1, 'consists of both letters and numerals', 480, GETDATE())
+	Insert into Settings.SettingPicklist(CategoryName,MappingKeyName, MappingName, MappingValue, Description, ModifiedBy, ModifiedDate)
+	values ('CustomFields','customFieldType', 'Alphanumeric', 1, 'consists of both letters and numerals', @UserId, GETUTCDATE())
 End
 
-if not exists(select top 1 1 from Enterprise.SettingPicklist where CategoryName = 'CustomFields' and MappingName =  'Numeric')
+if not exists(select top 1 1 from Settings.SettingPicklist where CategoryName = 'CustomFields' and MappingName =  'Numeric')
 Begin 
-	Insert into Enterprise.SettingPicklist(CategoryName, MappingName, MappingValue, Description, ModifiedBy, ModifiedDate)
-	values ('CustomFields', 'Numeric', 2, 'consists of only numerals', 480, GETDATE())
+	Insert into Settings.SettingPicklist(CategoryName,MappingKeyName, MappingName, MappingValue, Description, ModifiedBy, ModifiedDate)
+	values ('CustomFields','customFieldType', 'Numeric', 2, 'consists of only numerals', @UserId, GETUTCDATE())
 End
 Go
 
@@ -1086,7 +1091,7 @@ begin
 	BEGIN
 		INSERT INTO [Settings].[SettingTable]([SettingCategoryTypeId],[PartyId],
 				[TableName],[ModifiedBy],[CreatedDate])
-		Select @SettingCategoryTypeId,@partyid,'Customfields'+ CONVERT(varchar(10),@fieldid),@CreatedBy,@NOW
+		Select @SettingCategoryTypeId,@partyid,'CustomFields',@CreatedBy,@NOW
 
 		set @SettingTableId = SCOPE_IDENTITY();
 	END
