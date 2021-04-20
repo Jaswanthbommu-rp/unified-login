@@ -251,6 +251,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 // ignored
             }
 
+            var companyTypeName = _manageOrganization.ListOrganizationType().FirstOrDefault(t => t.OrganizationTypeId == organization.OrganizationTypeId)?.Name;
             // add the new company to books
             var companyInstance = new CompanyInstanceAdd()
             {
@@ -261,7 +262,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
                 IsActive = organization.IsActive == 1,
                 ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
-                CustomerEnvironment = result.obj.Org.OrganizationDomain.Name
+                CustomerEnvironment = result.obj.Org.OrganizationDomain.Name,
+                CompanyType = companyTypeName
             };
 
             if (organization.CompanyAddress != null)
