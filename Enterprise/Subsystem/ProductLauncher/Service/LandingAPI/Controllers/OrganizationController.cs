@@ -251,6 +251,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 // ignored
             }
 
+            var companyTypeName = _manageOrganization.ListOrganizationType()?.FirstOrDefault(t => t.OrganizationTypeId == organization.OrganizationTypeId)?.Name;
             // add the new company to books
             var companyInstance = new CompanyInstanceAdd()
             {
@@ -261,7 +262,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
                 IsActive = organization.IsActive == 1,
                 ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
-                CustomerEnvironment = result.obj.Org.OrganizationDomain.Name
+                CustomerEnvironment = result.obj.Org.OrganizationDomain.Name,
+                CompanyType = companyTypeName
             };
 
             if (organization.CompanyAddress != null)
@@ -456,6 +458,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 if (companyMapResource != null && companyMapResource.Any(c => c.CompanyInstanceSourceId == org.RealPageId.ToString()))
                 {
                     var companyMap = companyMapResource.FirstOrDefault(c => c.CompanyInstanceSourceId == org.RealPageId.ToString());
+                    var companyTypeName = _manageOrganization.ListOrganizationType()?.FirstOrDefault(t => t.OrganizationTypeId == organization.OrganizationTypeId)?.Name;
+
                     CompanyInstance updateCompanyInstance = new CompanyInstanceAdd()
                     {
                         CompanyInstanceId = null,
@@ -465,7 +469,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         IsActive = organization.IsActive == 1,
                         Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
                         CustomerEnvironment = null,
-                        ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation"
+                        ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
+                        CompanyType = companyTypeName
                     };
                     var booksResult = _manageBlueBook.UpdateBooksGreenBookCompanyInstance(updateCompanyInstance);
                     if (!string.IsNullOrEmpty(booksResult))
