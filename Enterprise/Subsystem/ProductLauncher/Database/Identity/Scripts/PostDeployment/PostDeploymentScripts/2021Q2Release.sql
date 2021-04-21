@@ -1207,7 +1207,7 @@ BEGIN
 	SELECT @MaxControlId = max(ControlId) from UserManagement.Control
 
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
-	VALUES (@MaxControlId +1, @MasterControlId, 1, N'HAASProductAccessUsePrimaryPropertiesSwitchUIId', N'Use Primary Properties', N'UsePrimaryProperties', 2, @UserId, @Now)
+	VALUES (@MaxControlId +1, @MasterControlId, 1, N'HAASProductAccessUsePrimaryPropertiesSwitchUIId', N'Use Primary Properties', N'usePrimaryProperties', 2, @UserId, @Now)
 
 	SET IDENTITY_INSERT [UserManagement].[Control] OFF
 END
@@ -1235,7 +1235,7 @@ BEGIN
 	SELECT @MaxControlId = max(ControlId) from UserManagement.Control
 
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
-	VALUES (@MaxControlId +1, @MasterControlId, 1, N'IntelligentBuildingWaterProductAccessUsePrimaryPropertiesSwitchUIId', N'Use Primary Properties', N'UsePrimaryProperties', 2, @UserId, @Now)
+	VALUES (@MaxControlId +1, @MasterControlId, 1, N'IntelligentBuildingWaterProductAccessUsePrimaryPropertiesSwitchUIId', N'Use Primary Properties', N'usePrimaryProperties', 2, @UserId, @Now)
 
 	SET IDENTITY_INSERT [UserManagement].[Control] OFF
 END
@@ -1263,7 +1263,7 @@ BEGIN
 	SELECT @MaxControlId = max(ControlId) from UserManagement.Control
 
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
-	VALUES (@MaxControlId +1, @MasterControlId, 1, N'IntelligentBuildingWasteProductAccessUsePrimaryPropertiesSwitchUIId', N'Use Primary Properties', N'UsePrimaryProperties', 2, @UserId, @Now)
+	VALUES (@MaxControlId +1, @MasterControlId, 1, N'IntelligentBuildingWasteProductAccessUsePrimaryPropertiesSwitchUIId', N'Use Primary Properties', N'usePrimaryProperties', 2, @UserId, @Now)
 
 	SET IDENTITY_INSERT [UserManagement].[Control] OFF
 END
@@ -1290,7 +1290,7 @@ BEGIN
 	SELECT @MaxControlId = max(ControlId) from UserManagement.Control
 
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
-	VALUES (@MaxControlId +1, @MasterControlId, 1, N'SGTProductAccessUsePrimaryPropertiesSwitchUIId', N'Use Primary Properties', N'UsePrimaryProperties', 2, @UserId, @Now)
+	VALUES (@MaxControlId +1, @MasterControlId, 1, N'SGTProductAccessUsePrimaryPropertiesSwitchUIId', N'Use Primary Properties', N'usePrimaryProperties', 2, @UserId, @Now)
 
 	SET IDENTITY_INSERT [UserManagement].[Control] OFF
 END
@@ -1317,7 +1317,7 @@ BEGIN
 	SELECT @MaxControlId = max(ControlId) from UserManagement.Control
 
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
-	VALUES (@MaxControlId +1, @MasterControlId, 1, N'IntelligentBuildingEnergyProductAccessUsePrimaryPropertiesSwitchUIId', N'Use Primary Properties', N'UsePrimaryProperties', 2, @UserId, @Now)
+	VALUES (@MaxControlId +1, @MasterControlId, 1, N'IntelligentBuildingEnergyProductAccessUsePrimaryPropertiesSwitchUIId', N'Use Primary Properties', N'usePrimaryProperties', 2, @UserId, @Now)
 
 	SET IDENTITY_INSERT [UserManagement].[Control] OFF
 END
