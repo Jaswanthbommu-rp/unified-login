@@ -1078,7 +1078,7 @@ begin
 	declare @partyid bigint,@fieldid bigint,@enabled bit,@name nvarchar(200),
 			@Description nvarchar(200), @Required bit,@ReadOnly bit,
 			@Sequence smallint,@MinCharLength int,@MaxCharLength int,
-			@CreatedBy bigint, @SettingTableId bigint,@fieldTypeId smallint
+			@CreatedBy bigint, @fieldTypeId smallint
 
 	Select @partyid = OrganizationId,@fieldid = FieldId,
 		   @enabled = Enabled,@name = Name,@Description = Description,
@@ -1086,6 +1086,8 @@ begin
 		   @MaxCharLength = MaxCharLength, @MinCharLength = MinCharLength,
 		   @CreatedBy = CreatedBy, @fieldTypeId = FieldTypeId
 	From @CustomFields Where Id = @Current_ID
+
+	Declare @SettingTableId bigint = NULL
 
 	Select @SettingTableId = SettingTableId From  [Settings].[SettingTable] 
 	Where PartyId = @partyid 

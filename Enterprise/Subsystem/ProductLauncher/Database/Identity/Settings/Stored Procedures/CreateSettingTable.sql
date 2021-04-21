@@ -5,7 +5,8 @@
 	@ModifiedBy bigint)
 AS
 BEGIN
-	Declare @SettingCategoryTypeId smallint,@SettingTableId bigint
+	Declare @SettingCategoryTypeId smallint
+	Declare @SettingTableId bigint = NULL
 	SELECT @SettingCategoryTypeId = SettingCategoryTypeId
 	FROM [Settings].[SettingCategoryType] Where [Name] = @Category
 
