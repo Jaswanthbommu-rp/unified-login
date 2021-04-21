@@ -64,6 +64,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         /// Is the portfolio assigned to the user
         /// </summary>
         public bool IsAssigned { get; set; }
+
+        /// <summary>
+        /// The UPFM property instance id
+        /// </summary>
+        public string InstanceId { get; set; }
     }
 
 
