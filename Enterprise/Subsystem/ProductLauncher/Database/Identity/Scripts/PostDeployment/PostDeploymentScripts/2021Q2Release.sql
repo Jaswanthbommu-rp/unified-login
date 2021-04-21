@@ -1087,17 +1087,18 @@ begin
 		   @CreatedBy = CreatedBy, @fieldTypeId = FieldTypeId
 	From @CustomFields Where Id = @Current_ID
 
-	IF NOT EXISTS (Select 1 From  [Settings].[SettingTable] Where PartyId = @partyid and SettingCategoryTypeId = @SettingCategoryTypeId)
+	Select @SettingTableId = SettingTableId From  [Settings].[SettingTable] 
+	Where PartyId = @partyid 
+	AND SettingCategoryTypeId = @SettingCategoryTypeId
+	AND TableName = 'CustomFields'
+
+	IF (@SettingTableId IS NULL)
 	BEGIN
 		INSERT INTO [Settings].[SettingTable]([SettingCategoryTypeId],[PartyId],
 				[TableName],[ModifiedBy],[CreatedDate])
 		Select @SettingCategoryTypeId,@partyid,'CustomFields',@CreatedBy,@NOW
 
 		set @SettingTableId = SCOPE_IDENTITY();
-	END
-	ELSE
-	BEGIN
-		Select @SettingTableId = SettingTableId From  [Settings].[SettingTable] Where PartyId = @partyid and SettingCategoryTypeId = @SettingCategoryTypeId
 	END
 
 	IF NOT EXISTS (Select 1 From  [Settings].[SettingTableRow] Where SettingTableId = @SettingTableId and SettingTableRowId = @fieldid)
