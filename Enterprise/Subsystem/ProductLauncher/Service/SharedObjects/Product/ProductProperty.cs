@@ -83,7 +83,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         /// <summary>
         /// The UPFM property instance id
         /// </summary>
-        //[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string InstanceId
         {
             get => _instanceId;
