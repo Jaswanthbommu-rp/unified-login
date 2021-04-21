@@ -5,6 +5,12 @@
 AS
 BEGIN
 	BEGIN TRY
+		DECLARE @settingcolumns TABLE (
+			SettingTableColumnId bigint,
+			SettingTableRowId bigint,			
+			ColumnSequence int
+		)
+
 		DECLARE @settings TABLE (
 			Id int identity,
 			ColumnName varchar(200),
@@ -19,13 +25,44 @@ BEGIN
 
 		IF EXISTS (SELECT 1 From @settings Where ColumnName = 'TableRowId')
 		BEGIN
-			Update [Settings].[SettingTableRow] SET [IsActive] = 0,
-													[ModifiedBy] = @ModifiedBy,
-													[UpdatedDate] = GETUTCDATE()
-			Where [SettingTableRowId] IN (
+			--delete data from relevent tables
+			DELETE FROM Settings.SettingTableRowValue
+			Where SettingTableRowId IN (
 				SELECT CONVERT(bigint,ColumnValue) From @settings 
 				Where ColumnName = 'TableRowId')
 
+			DELETE FROM Settings.SettingTableColumn
+			Where SettingTableRowId IN (
+				SELECT CONVERT(bigint,ColumnValue) From @settings 
+				Where ColumnName = 'TableRowId')
+
+			DELETE FROM Settings.SettingTableRow
+			Where SettingTableRowId IN (
+				SELECT CONVERT(bigint,ColumnValue) From @settings 
+				Where ColumnName = 'TableRowId')
+			
+			--after delete row , re-arrainge sequence columns data
+			Insert Into @settingcolumns
+			Select stc.SettingTableColumnId,stc.SettingTableRowId,CONVERT(int,TableColumnValue)
+			From Settings.SettingTableColumn stc
+			JOIN Settings.SettingTableRow sr ON
+				stc.SettingTableRowId = sr.SettingTableRowId
+			JOIN Settings.SettingTable st ON
+				sr.SettingTableId = st.SettingTableId
+			WHERE TableColumnName = 'Sequence'
+			AND st.PartyId = @PartyId
+
+			IF EXISTS (Select 1 FROM @settingcolumns)
+			BEGIN
+				Update @settingcolumns Set ColumnSequence = ColumnSequence -1
+				Update @settingcolumns Set ColumnSequence = 1 Where ColumnSequence = 0
+
+				Update stc SET stc.TableColumnValue = sc.ColumnSequence
+				From Settings.SettingTableColumn stc
+				JOIN @settingcolumns sc ON
+					stc.SettingTableColumnId = sc.SettingTableColumnId And
+					stc.SettingTableRowId = sc.SettingTableRowId
+			END
 			Set @id = 1;
 		END
 		SELECT	COUNT(@id) AS Id,'' AS ErrorMessage		
