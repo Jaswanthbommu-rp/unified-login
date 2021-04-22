@@ -283,7 +283,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			Assert.True(response.Count == 1
 				&& response.Where(p => p.ProductName == "OneSite").ToList().Count == 1
 				&& response.Where(p => p.IsFavorite == true).ToList().Count == 1
-				&& numberOfProperties == 28);
+				&& numberOfProperties == 29);
 		}
 
 		[Fact]
@@ -401,7 +401,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			Assert.True(response.Count == 1
 				&& response.Where(p => p.ProductName == "OneSite").ToList().Count == 1
 				&& response.Where(p => p.IsFavorite == true).ToList().Count == 1
-				&& numberOfProperties == 28);
+				&& numberOfProperties == 29);
 		}
 
 		[Fact]

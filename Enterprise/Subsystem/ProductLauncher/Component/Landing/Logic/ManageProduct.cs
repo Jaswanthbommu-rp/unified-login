@@ -70,7 +70,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _productRepository = new ProductRepository(repository, userClaim);
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
             _managePersona = new ManagePersona(repository, userClaim, messageHandler);
-            _manageBlueBook = new ManageBlueBook(userClaim, _productInternalSettingRepository, messageHandler);
+            _manageBlueBook = new ManageBlueBook(userClaim, repository, _productInternalSettingRepository, messageHandler);
             _managePartyRelationship = new ManagePartyRelationship(repository);
             _manageOrganization = new ManageOrganization(repository, userClaim, messageHandler, null);
             _manageProfile = new ManageProfile(userClaim);
@@ -601,19 +601,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var booksCompanyInstance = _manageBlueBook.GetCompanyInstanceByUPFMCompanyId(upfmCompanyId.ToString().ToLower());
             int customerCompanyId = booksCompanyInstance?.Attributes?.CustomerCompanyMap.FirstOrDefault()?.CustomerCompanyId ?? 0;
             string domain = booksCompanyInstance?.Attributes?.Domain;
-            if (!string.IsNullOrEmpty(domain) && customerCompanyId != 0)
+            var productInternalSettingType = _productInternalSettingRepository.GetProductSettingByType("UsePrimaryProperties");
+            foreach (var product in products)
             {
-                var booksCustomerCompanyMap = _manageBlueBook.GetCustomerCompanyMapByCustomerCompanyId(customerCompanyId, domain);
-                foreach (var product in products)
+                //Assign PrimaryProperty flag for Product               
+                string UsePrimaryProperties = productInternalSettingType?
+                                                        .Where(p => p.BooksProductCode == product.ProductCode
+                                                            && p.ProductId == product.ProductId
+                                                            && p.Name.ToLower() == "useprimaryproperties")
+                                                            ?.FirstOrDefault()?.Value;
+                product.UsePrimaryProperties = UsePrimaryProperties != null && (UsePrimaryProperties !="0");
+                /*
+                 * Not found" when:
+                    Product instance does not exist in UDM
+                    Product instance does not have an assigned domain(this check is not required as we are getting all th products of same domain of company)
+                    Product instance domain is not the same as the UPFM company instance
+                    If we have more then one product instance with same product code irrespective of greenbookcare flag
+                 */
+                if (!string.IsNullOrEmpty(domain) && customerCompanyId != 0)
                 {
+                    var booksCustomerCompanyMap = _manageBlueBook.GetCustomerCompanyMapByCustomerCompanyId(customerCompanyId, domain);
                     var findBooksProductCode = booksCustomerCompanyMap?.Where(p => p.Source == product.ProductCode);
-                    /*
-                     * Not found" when:
-                        Product instance does not exist in UDM
-                        Product instance does not have an assigned domain(this check is not required as we are getting all th products of same domain of company)
-                        Product instance domain is not the same as the UPFM company instance
-                        If we have more then one product instance with same product code irrespective of greenbookcare flag
-                     */
                     if (findBooksProductCode != null && findBooksProductCode.Count() == 1)
                     {
                         product.ProductInstance = findBooksProductCode.FirstOrDefault().CompanyInstanceSourceId;

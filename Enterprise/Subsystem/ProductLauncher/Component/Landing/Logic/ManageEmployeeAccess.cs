@@ -65,15 +65,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 UnifiedLoginRepository umr = new UnifiedLoginRepository();
 
                 List<UnifiedLoginCompany> gbAllCompanies = umr.ListCompanies(filter);
+                List<UnifiedLoginCompany> gbAllActiveCompanies = gbAllCompanies?.Where(c => c.IsActive == true).ToList();
 
                 // Get BooksCompanyMasterIds - RPUP id
                 //string comIdsRpUp = GetCompanyIds(gbAllCompanies);
                 WriteToDiagnosticLog(
                     $"EmployeeAccess - ManageEmployeeAccess.Getcompanies.GetCompanyIds() completed for user with editorPersona id - {editorPersonaId}");
 
-                IList<Company> bbCompanies = _blueBook.GetCompanyListByCompIds(gbAllCompanies);
+                IList<Company> bbCompanies = _blueBook.GetCompanyListByCompIds(gbAllActiveCompanies);
 
-                List<CompanyDetails> mergedCompanies = MergeCompanies(gbAllCompanies, bbCompanies);
+                List<CompanyDetails> mergedCompanies = MergeCompanies(gbAllActiveCompanies, bbCompanies);
 
                 WriteToDiagnosticLog(
                     $"EmployeeAccess - ManageEmployeeAccess.Getcompanies.GetCompanyListByCompIds() completed for user with editorPersona id - {editorPersonaId}");
@@ -178,6 +179,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 cd.UserRealPageId = gb.UserRealPageId;
                 cd.UserLoginAs = gb.UserLoginAs;
                 cd.PartyId = gb.PartyId;
+                cd.IsActive = gb.IsActive;
 
                 if (c != null)
                 {

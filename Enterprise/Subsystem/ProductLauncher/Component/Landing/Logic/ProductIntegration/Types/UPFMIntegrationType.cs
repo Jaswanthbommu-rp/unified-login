@@ -30,6 +30,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public ListResponse GetProperties(long editorPersonaId, long userPersonaId, RequestParameter dataFilter) =>
             _manageUPFMProductIntegration.GetUPFMProperties(editorPersonaId, userPersonaId, false, dataFilter);
 
+        public ListResponse GetEnterpriseProperties(long userPersonaId, string include) =>
+            _manageUPFMProductIntegration.GetEnterpriseUPFMProperties(_userClaims.PersonaId, _productId, include);
+
         public ListResponse GetRightsForRole(long editorPersonaId, int roleId, long partyId, bool assignedToRoleOnly, RequestParameter dataFilter) =>
             _manageUPFMProductIntegration.GetRightsByRole(editorPersonaId, partyId, roleId);
 

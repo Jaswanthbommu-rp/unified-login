@@ -125,132 +125,7 @@ end
 COMMIT TRAN;
 --settings data transfer from passwordpolicy table to orgsettings  table
 GO
-GO
--- Move Password policy settings data in to new organization settings table
-DECLARE @UserId bigint,
-	@ProductId int ,
-	@SettingCategoryTypeId smallint,
-	@Now datetime = GETDATE()
 
-SELECT	@UserId = UserId
-FROM	Ident.UserLogin
-WHERE	LoginName LIKE 'realpagead@%'
-
-Select @SettingCategoryTypeId = SettingCategoryTypeId
-From [Ident].[SettingCategoryType]
-Where Name = 'Security'
-
--- 'NumberOfPasswordsToRemember'
-
-	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
-		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
-	Select PartyId,@SettingCategoryTypeId,'NumberOfPasswordsToRemember',
-		NumberOfPasswordsToRemember,1,0,@UserId,@Now
-	From [Ident].[PasswordPolicy]  
-	where PartyId  not in (select PartyId From Ident.OrganizationSettings where   MappingName = 'NumberOfPasswordsToRemember')
-
---'PreventPasswordReuse'
-
-	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
-		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
-	Select PartyId,@SettingCategoryTypeId,'PreventPasswordReuse',
-		PreventPasswordReuse,1,1,@UserId,@Now
-	From [Ident].[PasswordPolicy]  
-	where PartyId  not in (select PartyId From Ident.OrganizationSettings where   MappingName = 'PreventPasswordReuse')
-
-
---'PasswordExpirationPeriodInDays'
-
-	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
-		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
-	Select PartyId,@SettingCategoryTypeId,'PasswordExpirationPeriodInDays',
-		PasswordExpirationPeriodInDays,1,0,@UserId,@Now
-	From [Ident].[PasswordPolicy]  
-	where PartyId  not in (select PartyId From Ident.OrganizationSettings where   MappingName = 'PasswordExpirationPeriodInDays')
-
-
--- 'EnablePasswordExpiration'
-
-	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
-		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
-	Select PartyId,@SettingCategoryTypeId,'EnablePasswordExpiration',
-		EnablePasswordExpiration,1,1,@UserId,@Now
-	From [Ident].[PasswordPolicy]  
-	where PartyId  not in (select PartyId From Ident.OrganizationSettings where   MappingName = 'EnablePasswordExpiration')
-
-
---'AllowUsersToChangeOwnPassword'
-
-	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
-		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
-	Select PartyId,@SettingCategoryTypeId,'AllowUsersToChangeOwnPassword',
-		AllowUsersToChangeOwnPassword,1,1,@UserId,@Now
-	From [Ident].[PasswordPolicy]  
-	where PartyId  not in (select PartyId From Ident.OrganizationSettings where   MappingName = 'AllowUsersToChangeOwnPassword')
-
-
---'MinimumSpecialCharacter'
-
-	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
-		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
-	Select PartyId,@SettingCategoryTypeId,'MinimumSpecialCharacter',
-		MinimumSpecialCharacter,1,1,@UserId,@Now
-	From [Ident].[PasswordPolicy]
-	where PartyId  not in (select PartyId From Ident.OrganizationSettings where   MappingName = 'MinimumSpecialCharacter')
-
-
---'MinimumNumeric'
-
-	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
-		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
-	Select PartyId,@SettingCategoryTypeId,'MinimumNumeric',
-		MinimumNumeric,1,1,@UserId,@Now
-	From [Ident].[PasswordPolicy]  
-	where PartyId  not in (select PartyId From Ident.OrganizationSettings where   MappingName = 'MinimumNumeric')
-
-
---'MinimumUppercase'
-
-	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
-		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
-	Select PartyId,@SettingCategoryTypeId,'MinimumUppercase',
-		MinimumUppercase,1,1,@UserId,@Now
-	From [Ident].[PasswordPolicy]  
-	where PartyId  not in (select PartyId From Ident.OrganizationSettings where   MappingName = 'MinimumUppercase')
-
-
--- 'MinimumLowercase'
-
-	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
-		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
-	Select PartyId,@SettingCategoryTypeId,'MinimumLowercase',
-		MinimumLowercase,1,1,@UserId,@Now
-	From [Ident].[PasswordPolicy]  
-	where PartyId  not in (select PartyId From Ident.OrganizationSettings where   MappingName = 'MinimumLowercase')
-
-
---'MaximumLength'
-
-	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
-		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
-	Select PartyId,@SettingCategoryTypeId,'MaximumLength',
-		MaximumLength,1,1,@UserId,@Now
-	From [Ident].[PasswordPolicy]  
-	where PartyId  not in (select PartyId From Ident.OrganizationSettings where   MappingName = 'MaximumLength')
-
-
---'MinimumLength'
-
-	INSERT INTO [Ident].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
-		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
-	Select PartyId,@SettingCategoryTypeId,'MinimumLength',
-		MinimumLength,1,0,@UserId,@Now
-	From [Ident].[PasswordPolicy]  
-	where PartyId  not in (select PartyId From Ident.OrganizationSettings where   MappingName = 'MinimumLength')
-
-
-
-GO
 --Accounting Location Group
 Declare @MCMasterControlId int,@MCUPPControlId int,@MaxControlId int,@MaxControlAttributeId int
 DECLARE @UserId bigint,
@@ -921,17 +796,106 @@ END
 
 --TFS -716888 end
 GO
+DECLARE @UserId bigint,
+	@Now datetime = GETDATE(),
+	@RightId int,
+	@PartyId int,
+	@RightVisibilityStatusId int =9,
+	@RouteId int,
+	@ServerName SYSNAME = @@SERVERNAME;
+
+SELECT	@UserId = UserId
+FROM	Ident.UserLogin
+WHERE	LoginName LIKE 'realpagead@%'
+
+Select @RouteId=RouteId 
+FROM	[Security].[Route]
+Where	RouteValue='SideMenu'
+
+IF NOT EXISTS(select 1 from [Security].[Right] where RightName='ManageCompanyLevelReporting')
+BEGIN
+		---Create Right
+		INSERT INTO [Security].[Right]
+			(	RightName,
+				Description, 
+				Value,
+				StatusTypeId,
+				VisibilityStatusId,
+				ProductId,
+				TargetProductId,
+				CreatedBy,
+				CreatedDate
+            )
+			VALUES ( 
+					'ManageCompanyLevelReporting',
+					'Manage company-level reporting',
+					'Manage company-level reporting',
+					13, 
+					@RightVisibilityStatusId,
+					3,
+					67,
+					@UserId,
+					@Now
+				   )
+
+				
+END
+ SELECT @RightId=RightId from [Security].[Right] WHERE RightName='ManageCompanyLevelReporting'
+
+  -- Add Route with right
+ IF NOT EXISTS (SELECT TOP 1 1 FROM [Security].[RightRoute] WHERE RightId=@RightId and RouteId=@RouteId)
+	BEGIN
+		INSERT INTO [Security].[RightRoute](
+			RightId, 
+			RouteId,
+			RightName,
+			CreatedBy,
+			CreatedDate
+		)
+		VALUES ( 
+				@RightId,
+				@RouteId,
+				'Manage company-level reporting',
+				@UserId,
+				@Now
+				)
+	END;
+
+ -- Add Role with right
+	IF NOT EXISTS (SELECT TOP 1 1 FROM [Security].[RoleRight] WHERE RoleId = 1 AND RightId=@RightId)
+	BEGIN
+		INSERT INTO [Security].[RoleRight]
+		(	RoleId,
+			RightId, 
+			CreatedBy,
+			CreatedDate
+		)
+		VALUES ( 
+				1,
+				@RightId,
+				@UserId,
+				@Now
+				)
+	END;
+GO
+
+
 --TFS: 702072 populate UnifiedSettingPicklist table
-if not exists(select top 1 1 from Enterprise.SettingPicklist where CategoryName = 'CustomFields' and MappingName =  'Alphanumeric')
+DECLARE @UserId bigint
+SELECT	@UserId = UserId
+FROM	ident.UserLogin
+WHERE	LoginName LIKE 'realpagead@%'
+
+if not exists(select top 1 1 from Settings.SettingPicklist where CategoryName = 'CustomFields' and MappingName =  'Alphanumeric')
 Begin 
-	Insert into Enterprise.SettingPicklist(CategoryName, MappingName, MappingValue, Description, ModifiedBy, ModifiedDate)
-	values ('CustomFields', 'Alphanumeric', 1, 'consists of both letters and numerals', 480, GETDATE())
+	Insert into Settings.SettingPicklist(CategoryName,MappingKeyName, MappingName, MappingValue, Description, ModifiedBy, ModifiedDate)
+	values ('CustomFields','customFieldType', 'Alphanumeric', 1, 'consists of both letters and numerals', @UserId, GETUTCDATE())
 End
 
-if not exists(select top 1 1 from Enterprise.SettingPicklist where CategoryName = 'CustomFields' and MappingName =  'Numeric')
+if not exists(select top 1 1 from Settings.SettingPicklist where CategoryName = 'CustomFields' and MappingName =  'Numeric')
 Begin 
-	Insert into Enterprise.SettingPicklist(CategoryName, MappingName, MappingValue, Description, ModifiedBy, ModifiedDate)
-	values ('CustomFields', 'Numeric', 2, 'consists of only numerals', 480, GETDATE())
+	Insert into Settings.SettingPicklist(CategoryName,MappingKeyName, MappingName, MappingValue, Description, ModifiedBy, ModifiedDate)
+	values ('CustomFields','customFieldType', 'Numeric', 2, 'consists of only numerals', @UserId, GETUTCDATE())
 End
 Go
 
@@ -1018,5 +982,426 @@ END
 	END;
 GO
 
+if not exists(select top 1 1 from [Settings].[SettingCategoryType] Where Name = 'Security')
+Begin 
+	Insert into [Settings].[SettingCategoryType](Name)
+	values ('Security')
+End
 
-				
+if not exists(select top 1 1 from [Settings].[SettingCategoryType] Where Name = 'CustomFields')
+Begin 
+	Insert into [Settings].[SettingCategoryType](Name)
+	values ('CustomFields')
+End
+Go
+--Settings	data conversion
+DECLARE @UserId bigint,
+	@ProductId int ,
+	@SettingCategoryTypeId smallint,
+	@Now datetime = GETDATE()
+
+SELECT	@UserId = UserId
+FROM	ident.UserLogin
+WHERE	LoginName LIKE 'realpagead@%'
+
+Select @SettingCategoryTypeId = SettingCategoryTypeId
+From [Settings].[SettingCategoryType]
+Where Name = 'Security'
+
+-- 'NumberOfPasswordsToRemember'
+
+	INSERT INTO [Settings].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
+		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+	Select PartyId,@SettingCategoryTypeId,'NumberOfPasswordsToRemember',
+		NumberOfPasswordsToRemember,1,0,@UserId,@Now
+	From [Ident].[PasswordPolicy]  
+	where PartyId  not in (select PartyId From Settings.OrganizationSettings where   MappingName = 'NumberOfPasswordsToRemember')
+
+--'PreventPasswordReuse'
+
+	INSERT INTO [Settings].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
+		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+	Select PartyId,@SettingCategoryTypeId,'PreventPasswordReuse',
+		PreventPasswordReuse,1,1,@UserId,@Now
+	From [Ident].[PasswordPolicy]  
+	where PartyId  not in (select PartyId From Settings.OrganizationSettings where   MappingName = 'PreventPasswordReuse')
+
+
+--'PasswordExpirationPeriodInDays'
+
+	INSERT INTO [Settings].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
+		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+	Select PartyId,@SettingCategoryTypeId,'PasswordExpirationPeriodInDays',
+		PasswordExpirationPeriodInDays,1,0,@UserId,@Now
+	From [Ident].[PasswordPolicy]  
+	where PartyId  not in (select PartyId From Settings.OrganizationSettings where   MappingName = 'PasswordExpirationPeriodInDays')
+
+
+-- 'EnablePasswordExpiration'
+
+	INSERT INTO [Settings].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
+		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+	Select PartyId,@SettingCategoryTypeId,'EnablePasswordExpiration',
+		EnablePasswordExpiration,1,1,@UserId,@Now
+	From [Ident].[PasswordPolicy]  
+	where PartyId  not in (select PartyId From Settings.OrganizationSettings where   MappingName = 'EnablePasswordExpiration')
+
+
+--'AllowUsersToChangeOwnPassword'
+
+	INSERT INTO [Settings].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
+		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+	Select PartyId,@SettingCategoryTypeId,'AllowUsersToChangeOwnPassword',
+		AllowUsersToChangeOwnPassword,1,1,@UserId,@Now
+	From [Ident].[PasswordPolicy]  
+	where PartyId  not in (select PartyId From Settings.OrganizationSettings where   MappingName = 'AllowUsersToChangeOwnPassword')
+
+
+--'MinimumSpecialCharacter'
+
+	INSERT INTO [Settings].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
+		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+	Select PartyId,@SettingCategoryTypeId,'MinimumSpecialCharacter',
+		MinimumSpecialCharacter,1,1,@UserId,@Now
+	From [Ident].[PasswordPolicy]
+	where PartyId  not in (select PartyId From Settings.OrganizationSettings where   MappingName = 'MinimumSpecialCharacter')
+
+--'MinimumNumeric'
+
+	INSERT INTO [Settings].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
+		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+	Select PartyId,@SettingCategoryTypeId,'MinimumNumeric',
+		MinimumNumeric,1,1,@UserId,@Now
+	From [Ident].[PasswordPolicy]  
+	where PartyId  not in (select PartyId From Settings.OrganizationSettings where   MappingName = 'MinimumNumeric')
+
+
+--'MinimumUppercase'
+
+	INSERT INTO [Settings].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
+		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+	Select PartyId,@SettingCategoryTypeId,'MinimumUppercase',
+		MinimumUppercase,1,1,@UserId,@Now
+	From [Ident].[PasswordPolicy]  
+	where PartyId  not in (select PartyId From Settings.OrganizationSettings where   MappingName = 'MinimumUppercase')
+
+
+-- 'MinimumLowercase'
+
+	INSERT INTO [Settings].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
+		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+	Select PartyId,@SettingCategoryTypeId,'MinimumLowercase',
+		MinimumLowercase,1,1,@UserId,@Now
+	From [Ident].[PasswordPolicy]  
+	where PartyId  not in (select PartyId From Settings.OrganizationSettings where   MappingName = 'MinimumLowercase')
+
+
+--'MaximumLength'
+
+	INSERT INTO [Settings].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
+		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+	Select PartyId,@SettingCategoryTypeId,'MaximumLength',
+		MaximumLength,1,1,@UserId,@Now
+	From [Ident].[PasswordPolicy]  
+	where PartyId  not in (select PartyId From Settings.OrganizationSettings where   MappingName = 'MaximumLength')
+
+
+--'MinimumLength'
+
+	INSERT INTO [Settings].[OrganizationSettings] (PartyId,SettingCategoryTypeId,MappingName,
+		MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+	Select PartyId,@SettingCategoryTypeId,'MinimumLength',
+		MinimumLength,1,0,@UserId,@Now
+	From [Ident].[PasswordPolicy]  
+	where PartyId  not in (select PartyId From Settings.OrganizationSettings where   MappingName = 'MinimumLength')
+
+	GO
+
+	
+	--Data transfer existing custom fields
+	
+DECLARE @NOW DATETIME = GETUTCDATE();
+declare @CustomFields as TABLE(
+	[Id] [bigint] IDENTITY(1,1) NOT NULL,
+	[FieldId] [bigint] NOT NULL,
+	[OrganizationId] [bigint] NOT NULL,	
+	[Enabled] [bit] NOT NULL,
+	[Name] [nvarchar](100) NOT NULL,
+	[Description] [nvarchar](500) NULL,
+	[FieldTypeId] [tinyint] NOT NULL,
+	[Required] [bit] NULL,
+	[ReadOnly] [bit] NULL,
+	[Sequence] [smallint] NOT NULL,	
+	[MinCharLength] [int] NULL,
+	[MaxCharLength] [int] NULL,
+	[CreatedBy] bigint not null
+)
+
+insert into @CustomFields(FieldId,OrganizationId,Enabled,Name,Description,FieldTypeId,Required,
+	ReadOnly,Sequence,MinCharLength,MaxCharLength,CreatedBy)
+Select FieldId,OrganizationId,Enabled,cf.Name,Description,FieldTypeId,Required,
+	ReadOnly,Sequence,MinCharLength,MaxCharLength,CreatedBy
+From CustomField.Field cf
+Join Enterprise.Organization p on
+	p.PartyId = cf.OrganizationId
+
+declare @MAX_ID INT
+declare @Current_ID INT = 1
+declare @SettingCategoryTypeId smallint
+
+select @SettingCategoryTypeId = SettingCategoryTypeId
+from [Settings].[SettingCategoryType] Where [Name] = 'CustomFields'
+
+select @MAX_ID = max(id) from @CustomFields
+
+SET IDENTITY_INSERT [Settings].[SettingTableRow] ON 
+
+while @Current_ID <= @MAX_ID
+begin
+	declare @partyid bigint,@fieldid bigint,@enabled bit,@name nvarchar(200),
+			@Description nvarchar(200), @Required bit,@ReadOnly bit,
+			@Sequence smallint,@MinCharLength int,@MaxCharLength int,
+			@CreatedBy bigint, @fieldTypeId smallint
+
+	Select @partyid = OrganizationId,@fieldid = FieldId,
+		   @enabled = Enabled,@name = Name,@Description = Description,
+		   @ReadOnly = ReadOnly,@Required = Required,@Sequence = Sequence,
+		   @MaxCharLength = MaxCharLength, @MinCharLength = MinCharLength,
+		   @CreatedBy = CreatedBy, @fieldTypeId = FieldTypeId
+	From @CustomFields Where Id = @Current_ID
+
+	Declare @SettingTableId bigint = NULL
+
+	Select @SettingTableId = SettingTableId From  [Settings].[SettingTable] 
+	Where PartyId = @partyid 
+	AND SettingCategoryTypeId = @SettingCategoryTypeId
+	AND TableName = 'CustomFields'
+
+	IF (@SettingTableId IS NULL)
+	BEGIN
+		INSERT INTO [Settings].[SettingTable]([SettingCategoryTypeId],[PartyId],
+				[TableName],[ModifiedBy],[CreatedDate])
+		Select @SettingCategoryTypeId,@partyid,'CustomFields',@CreatedBy,@NOW
+
+		set @SettingTableId = SCOPE_IDENTITY();
+	END
+
+	IF NOT EXISTS (Select 1 From  [Settings].[SettingTableRow] Where SettingTableId = @SettingTableId and SettingTableRowId = @fieldid)
+	BEGIN
+		INSERT INTO [Settings].[SettingTableRow](SettingTableRowId,SettingTableId,Editable,Deletable,
+		IsActive,ModifiedBy,CreatedDate)
+		Select @fieldid,@SettingTableId,1,1,1,@CreatedBy,@NOW
+	END
+	
+
+	IF NOT EXISTS (Select 1 From  [Settings].[SettingTableColumn] Where SettingTableRowId = @fieldid)
+	BEGIN
+		INSERT INTO [Settings].[SettingTableColumn](SettingTableRowId,TableColumnName,
+		TableColumnValue,ModifiedBy,CreatedDate)
+		SELECT @fieldid,'Enabled',@enabled,@CreatedBy,@NOW
+		Where @enabled IS NOT NULL
+
+		INSERT INTO [Settings].[SettingTableColumn](SettingTableRowId,TableColumnName,
+			TableColumnValue,ModifiedBy,CreatedDate)
+		SELECT @fieldid,'Name',@name,@CreatedBy,@NOW
+		Where @name IS NOT NULL
+
+		INSERT INTO [Settings].[SettingTableColumn](SettingTableRowId,TableColumnName,
+			TableColumnValue,ModifiedBy,CreatedDate)
+		SELECT @fieldid,'FieldTypeId',@fieldTypeId,@CreatedBy,@NOW
+		Where @fieldTypeId IS NOT NULL
+
+		INSERT INTO [Settings].[SettingTableColumn](SettingTableRowId,TableColumnName,
+			TableColumnValue,ModifiedBy,CreatedDate)
+		SELECT @fieldid,'Required',@Required,@CreatedBy,@NOW
+		Where @Required IS NOT NULL
+
+		INSERT INTO [Settings].[SettingTableColumn](SettingTableRowId,TableColumnName,
+			TableColumnValue,ModifiedBy,CreatedDate)
+		SELECT @fieldid,'ReadOnly',@ReadOnly,@CreatedBy,@NOW
+		Where @ReadOnly IS NOT NULL
+
+		INSERT INTO [Settings].[SettingTableColumn](SettingTableRowId,TableColumnName,
+			TableColumnValue,ModifiedBy,CreatedDate)
+		SELECT @fieldid,'Sequence',@Sequence,@CreatedBy,@NOW
+		Where @Sequence IS NOT NULL
+
+		INSERT INTO [Settings].[SettingTableColumn](SettingTableRowId,TableColumnName,
+			TableColumnValue,ModifiedBy,CreatedDate)
+		SELECT @fieldid,'MinCharLength',@MinCharLength,@CreatedBy,@NOW
+		Where @MinCharLength IS NOT NULL
+
+		INSERT INTO [Settings].[SettingTableColumn](SettingTableRowId,TableColumnName,
+			TableColumnValue,ModifiedBy,CreatedDate)
+		SELECT @fieldid,'MaxCharLength',@MaxCharLength,@CreatedBy,@NOW
+		Where @MaxCharLength IS NOT NULL
+	END	
+
+	set @Current_ID = @Current_ID + 1
+end
+
+SET IDENTITY_INSERT [Settings].[SettingTableRow] OFF 
+
+GO
+
+Declare @CustomFieldVlaues table(
+   Id int identity(1,1),
+   UserLoginPersonaId bigint,
+   FieldId bigint,
+   [Value] nvarchar(max),
+   CreatedDate Datetime,
+   CreatedBy bigint)
+
+  Insert into @CustomFieldVlaues(UserLoginPersonaId,FieldId,[Value],CreatedBy,CreatedDate)
+  Select UserLoginPersonaId,FieldId,[Value],CreatedBy,cf.CreatedDate
+  FROM [CustomField].[FieldValue] cf
+  join Settings.SettingTableRow sr on
+	sr.SettingTableRowId = cf.FieldId
+  except 
+	 Select UserLoginPersonaId,SettingTableRowId,Value,ModifiedBy,CreatedDate From [Settings].[SettingTableRowValue]  
+
+
+	INSERT INTO [Settings].[SettingTableRowValue]([SettingTableRowId],[UserLoginPersonaId],
+				[Value],[ModifiedBy],[CreatedDate])
+	Select FieldId,UserLoginPersonaId,[Value],CreatedBy,CreatedDate
+	From @CustomFieldVlaues
+
+GO
+--Use primary properties switch for upfm products
+Declare @MasterControlId int,@UPPControlId int,@MaxControlId int,@MaxControlAttributeId int
+DECLARE @UserId bigint,
+	@ProductId int ,
+	@Now datetime = GETDATE()
+
+SELECT	@UserId = UserId
+FROM	Ident.UserLogin
+WHERE	LoginName LIKE 'realpagead@%'
+
+Select @MasterControlId = ControlId From UserManagement.Control 
+Where UIId = 'HAASProductAccessPropertiesTabUIId' AND ControlTypeId = 9
+
+Select @UPPControlId = ControlId From UserManagement.Control 
+Where UIId = 'HAASProductAccessUsePrimaryPropertiesSwitchUIId' AND ControlTypeId = 1
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[Control] WHERE ControlId = @UPPControlId)
+BEGIN
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	SELECT @MaxControlId = max(ControlId) from UserManagement.Control
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@MaxControlId +1, @MasterControlId, 1, N'HAASProductAccessUsePrimaryPropertiesSwitchUIId', N'Use Primary Properties', N'usePrimaryProperties', 2, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+END
+GO
+
+Declare @MasterControlId int,@UPPControlId int,@MaxControlId int,@MaxControlAttributeId int
+DECLARE @UserId bigint,
+	@ProductId int ,
+	@Now datetime = GETDATE()
+
+SELECT	@UserId = UserId
+FROM	Ident.UserLogin
+WHERE	LoginName LIKE 'realpagead@%'
+
+Select @MasterControlId = ControlId From UserManagement.Control 
+Where UIId = 'IntelligentBuildingWaterAccessPropertiesTabUIId' AND ControlTypeId = 9
+
+Select @UPPControlId = ControlId From UserManagement.Control 
+Where UIId = 'IntelligentBuildingWaterProductAccessUsePrimaryPropertiesSwitchUIId' AND ControlTypeId = 1
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[Control] WHERE ControlId = @UPPControlId)
+BEGIN
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	SELECT @MaxControlId = max(ControlId) from UserManagement.Control
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@MaxControlId +1, @MasterControlId, 1, N'IntelligentBuildingWaterProductAccessUsePrimaryPropertiesSwitchUIId', N'Use Primary Properties', N'usePrimaryProperties', 2, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+END
+GO
+
+Declare @MasterControlId int,@UPPControlId int,@MaxControlId int,@MaxControlAttributeId int
+DECLARE @UserId bigint,
+	@ProductId int ,
+	@Now datetime = GETDATE()
+
+SELECT	@UserId = UserId
+FROM	Ident.UserLogin
+WHERE	LoginName LIKE 'realpagead@%'
+
+Select @MasterControlId = ControlId From UserManagement.Control 
+Where UIId = 'IntelligentBuildingProductAccessPropertiesTabUIId' AND ControlTypeId = 9
+
+Select @UPPControlId = ControlId From UserManagement.Control 
+Where UIId = 'IntelligentBuildingWasteProductAccessUsePrimaryPropertiesSwitchUIId' AND ControlTypeId = 1
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[Control] WHERE ControlId = @UPPControlId)
+BEGIN
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	SELECT @MaxControlId = max(ControlId) from UserManagement.Control
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@MaxControlId +1, @MasterControlId, 1, N'IntelligentBuildingWasteProductAccessUsePrimaryPropertiesSwitchUIId', N'Use Primary Properties', N'usePrimaryProperties', 2, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+END
+GO
+Declare @MasterControlId int,@UPPControlId int,@MaxControlId int,@MaxControlAttributeId int
+DECLARE @UserId bigint,
+	@ProductId int ,
+	@Now datetime = GETDATE()
+
+SELECT	@UserId = UserId
+FROM	Ident.UserLogin
+WHERE	LoginName LIKE 'realpagead@%'
+
+Select @MasterControlId = ControlId From UserManagement.Control 
+Where UIId = 'SGTProductAccessPropertiesTabUIId' AND ControlTypeId = 9
+
+Select @UPPControlId = ControlId From UserManagement.Control 
+Where UIId = 'SGTProductAccessUsePrimaryPropertiesSwitchUIId' AND ControlTypeId = 1
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[Control] WHERE ControlId = @UPPControlId)
+BEGIN
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	SELECT @MaxControlId = max(ControlId) from UserManagement.Control
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@MaxControlId +1, @MasterControlId, 1, N'SGTProductAccessUsePrimaryPropertiesSwitchUIId', N'Use Primary Properties', N'usePrimaryProperties', 2, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+END
+GO
+Declare @MasterControlId int,@UPPControlId int,@MaxControlId int,@MaxControlAttributeId int
+DECLARE @UserId bigint,
+	@ProductId int ,
+	@Now datetime = GETDATE()
+
+SELECT	@UserId = UserId
+FROM	Ident.UserLogin
+WHERE	LoginName LIKE 'realpagead@%'
+
+Select @MasterControlId = ControlId From UserManagement.Control 
+Where UIId = 'IntelligentBuildingEnergyAccessPropertiesTabUIId' AND ControlTypeId = 9
+
+Select @UPPControlId = ControlId From UserManagement.Control 
+Where UIId = 'IntelligentBuildingEnergyProductAccessUsePrimaryPropertiesSwitchUIId' AND ControlTypeId = 1
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[Control] WHERE ControlId = @UPPControlId)
+BEGIN
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	SELECT @MaxControlId = max(ControlId) from UserManagement.Control
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@MaxControlId +1, @MasterControlId, 1, N'IntelligentBuildingEnergyProductAccessUsePrimaryPropertiesSwitchUIId', N'Use Primary Properties', N'usePrimaryProperties', 2, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+END
+GO

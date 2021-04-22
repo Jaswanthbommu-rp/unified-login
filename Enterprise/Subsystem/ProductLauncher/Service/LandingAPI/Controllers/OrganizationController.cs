@@ -61,7 +61,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _manageUserLogin = new ManageUserLogin(repository, userClaims, messageHandler);
             _managePartyRelationship = new ManagePartyRelationship(new PartyRelationshipRepository(repository));
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
-            _manageBlueBook = new ManageBlueBook(userClaims, _productInternalSettingRepository, messageHandler);
+            _manageBlueBook = new ManageBlueBook(userClaims, repository, _productInternalSettingRepository, messageHandler);
             _manageOrganization = new ManageOrganization(repository, userClaims, messageHandler);
             _messageHandler = messageHandler;
             _userClaims = userClaims;
@@ -87,7 +87,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _manageUserLogin = new ManageUserLogin(repository, userClaims, messageHandler);
             _managePartyRelationship = new ManagePartyRelationship(new PartyRelationshipRepository(repository));
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
-            _manageBlueBook = new ManageBlueBook(userClaims, _productInternalSettingRepository, messageHandler);
+            _manageBlueBook = new ManageBlueBook(userClaims, repository, _productInternalSettingRepository, messageHandler);
             _manageOrganization = new ManageOrganization(repository, userClaims, messageHandler);
             _messageHandler = messageHandler;
             _userClaims = userClaims;
@@ -201,6 +201,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         public HttpResponseMessage InsertOrganization([FromBody] OrganizationCreate organization, bool processBlueBookMessage = false)
         {
+            if (!string.IsNullOrEmpty(organization.CompanyInstancePartnerSourceId) && !string.IsNullOrEmpty(organization.CompanyInstancePartner))
+            {
+                var partnerInstance = _manageBlueBook.GetCompanyInstanceBySourceAndInstanceId(organization.CompanyInstancePartnerSourceId, organization.CompanyInstancePartner);
+                if (partnerInstance == null)
+                {
+                    return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Partner instance could not be found");
+                }
+            }
+
             var organizationDomainList = _manageOrganization.ListOrganizationDomain();
 
             if (!organizationDomainList.Any(d => d.Name.Equals(organization.OrganizationDomain, StringComparison.OrdinalIgnoreCase)))
@@ -215,7 +224,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 organization.OrganizationDomainId = organizationDomainList.FirstOrDefault(p => p.Name.Equals(organization.OrganizationDomain, StringComparison.OrdinalIgnoreCase)).OrganizationDomainId;
             }
-
+            
             var addProductList = new List<int>();
             // verify the products, if any, exist and can be added to the customer
             List<string> invalidProductList = _manageOrganization.ParseProduct(organization.Products, addProductList);
@@ -242,18 +251,39 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 // ignored
             }
 
+            var companyTypeName = _manageOrganization.ListOrganizationType()?.FirstOrDefault(t => t.OrganizationTypeId == organization.OrganizationTypeId)?.Name;
             // add the new company to books
             var companyInstance = new CompanyInstanceAdd()
             {
                 Id = organization.BooksCustomerMasterId,
-                CustomerCompanyId = organization.BooksCustomerMasterId,
+                CustomerCompanyId = null,
                 CompanyInstanceSourceId = result.obj.Org.RealPageId.ToString().ToLower(),
                 CompanyName = result.obj.Org.Name,
                 Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
                 IsActive = organization.IsActive == 1,
-                CreatedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
-                CustomerEnvironment = result.obj.Org.OrganizationDomain.Name
+                ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
+                CustomerEnvironment = result.obj.Org.OrganizationDomain.Name,
+                CompanyType = companyTypeName
             };
+
+            if (organization.CompanyAddress != null)
+            {
+                CompanyInstanceAddress address = new CompanyInstanceAddress()
+                {
+                    Address = organization.CompanyAddress.Address,
+                    City = organization.CompanyAddress.City,
+                    State = organization.CompanyAddress.State,
+                    PostalCode = organization.CompanyAddress.PostalCode,
+                    County = organization.CompanyAddress.County,
+                    Country = organization.CompanyAddress.Country
+                };
+                companyInstance.CompanyInstanceLocation = new List<CompanyInstanceAddress>() {address};
+            }
+
+            if (!string.IsNullOrEmpty(organization.CompanyInstancePartner) && !string.IsNullOrEmpty(organization.CompanyInstancePartnerSourceId))
+            {
+                companyInstance.CompanyInstancePartners = new List<CompanyInstancePartner>() {new CompanyInstancePartner() {TargetSource = organization.CompanyInstancePartner, TargetCompanyInstanceSourceId = organization.CompanyInstancePartnerSourceId}};
+            }
 
             bool addInstance = true;
 
@@ -279,7 +309,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             // add the new company data to books
             if (addInstance)
             {
-                _manageBlueBook.AddBooksGreenBookCompanyInstance(companyInstance);
+                var companyCreatedSuccessfully = _manageBlueBook.AddUPFMCompanyFromCompanySetup(companyInstance);
+
+                if (!companyCreatedSuccessfully) return Request.CreateResponse(HttpStatusCode.BadRequest, "There was a problem adding the UPFM instance to UDM");
 
                 // add the products assigned to the new company
                 var cacheKey = $"getListProductsByOrganization_{result.obj.Org.RealPageId}";
@@ -288,15 +320,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 IList<ProductUI> productList = _manageProduct.GetProducts(result.obj.Org.RealPageId, 0, true);
                 foreach (var product in productList)
                 {
-                    SystemProductCenter spc = new SystemProductCenter()
+                    var productInternalSettings = _manageProduct.GetProductInternalSettings(product.ProductId);
+                    var updateInUDM = productInternalSettings.FirstOrDefault(x => x.Name.Equals("UpdateProductInUDM", StringComparison.OrdinalIgnoreCase));
+
+                    if (updateInUDM?.Value == "1")
                     {
-                        Id = 0,
-                        CompanyInstanceSourceId = companyInstance.CompanyInstanceSourceId,
-                        CreatedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
-                        ProductCenterSourceId = product.ProductId.ToString(),
-                        Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)
-                    };
-                    _manageBlueBook.ProductCenterEnable(spc);
+                        SystemProductCenter spc = new SystemProductCenter()
+                        {
+                            Id = 0,
+                            CompanyInstanceSourceId = companyInstance.CompanyInstanceSourceId,
+                            CreatedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
+                            ProductCenterSourceId = product.ProductId.ToString(),
+                            Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)
+                        };
+                        _manageBlueBook.ProductCenterEnable(spc);
+                    }
                 }
             }
             return Request.CreateResponse(HttpStatusCode.OK, result.obj);
@@ -420,6 +458,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 if (companyMapResource != null && companyMapResource.Any(c => c.CompanyInstanceSourceId == org.RealPageId.ToString()))
                 {
                     var companyMap = companyMapResource.FirstOrDefault(c => c.CompanyInstanceSourceId == org.RealPageId.ToString());
+                    var companyTypeName = _manageOrganization.ListOrganizationType()?.FirstOrDefault(t => t.OrganizationTypeId == organization.OrganizationTypeId)?.Name;
+
                     CompanyInstance updateCompanyInstance = new CompanyInstanceAdd()
                     {
                         CompanyInstanceId = null,
@@ -429,7 +469,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         IsActive = organization.IsActive == 1,
                         Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
                         CustomerEnvironment = null,
-                        ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation"
+                        ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
+                        CompanyType = companyTypeName
                     };
                     var booksResult = _manageBlueBook.UpdateBooksGreenBookCompanyInstance(updateCompanyInstance);
                     if (!string.IsNullOrEmpty(booksResult))
@@ -583,7 +624,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     // add the company data to books
                     if (commit)
                     {
-                        _manageBlueBook.AddBooksGreenBookCompanyInstance(companyInstance);
+                        _manageBlueBook.AddUPFMCompanyFromProvisioningEvent(companyInstance);
                     }
 
                     result.Add(organization.BooksCustomerMasterId.ToString(), companyInstance);
@@ -783,6 +824,36 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
 
             return Request.CreateResponse(HttpStatusCode.Created);
+        }
+
+
+        /// <summary>
+        /// Update Use primary properties for products
+        /// </summary>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get company details by customer company id", Type = typeof(CompanySetup))]
+        [SwaggerResponseExamples(typeof(CompanySetup), typeof(CompanySetupExample))]
+        [Route("companysetup/party/{organizationPartyId}/product/{productId}/usePrimaryProperty/{usePrimaryProperty}")]
+        [AuthorizeScope("companyfunctions", "rplandingapi")]
+        [HttpPut]
+        public HttpResponseMessage UpdateUsePrimaryPropertyForOrganizationProduct(long organizationPartyId, int productId, bool usePrimaryProperty)
+        {
+            if (organizationPartyId == 0)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "organizationPartyId not supplied");
+            }
+            if (productId == 0)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "productId not supplied");
+            }           
+            _repositoryResponse = _manageOrganization.UpdateUsePrimaryPropertyForOrganizationProduct(organizationPartyId, productId, usePrimaryProperty);
+            if (_repositoryResponse.Id == 0)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, _repositoryResponse.ErrorMessage);
+            }
+
+            return Request.CreateResponse(HttpStatusCode.OK, _repositoryResponse);
         }
 
         /// <summary>
@@ -1628,7 +1699,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
             else
             {
-                _manageBlueBook = new ManageBlueBook(_userClaims, _productInternalSettingRepository, _messageHandler);
+                _manageBlueBook = new ManageBlueBook(_userClaims, _repository, _productInternalSettingRepository, _messageHandler);
                 _manageOrganization = new ManageOrganization(_repository, _userClaims, _messageHandler, _manageProductOneSite);
             }
 

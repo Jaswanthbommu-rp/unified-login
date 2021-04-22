@@ -1,5 +1,6 @@
 ﻿using JsonApiSerializer;
 using Newtonsoft.Json;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
@@ -48,12 +49,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         readonly HttpClient _httpClient;
         readonly IList<ProductInternalSetting> productInternalSettingList;
         readonly IProductInternalSettingRepository _productInternalSettingRepository;
+        readonly IProductRepository _productRepository;
 
         readonly AuthTokenData _authTokenInfo = new AuthTokenData();
 
         private bool useDomains = false;
         private bool useUPFMId = false;
-        private bool useTranslatev2 = false;
 
         ObjectCache _manageBlueBookCache = MemoryCache.Default;
 
@@ -77,12 +78,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 _manageBlueBookCache.Set("productInternalSetting_" + (int)ProductEnum.UnifiedPlatform, productInternalSettingList, policy);
             }
 
+            _productRepository = new ProductRepository();
+
             #endregion
 
             bbUri = productInternalSettingList.First(a => a.Name.Equals("BlueBookAPIEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
             useDomains = GetBooleanProductSettings("BooksUseDomains");
             useUPFMId = GetBooleanProductSettings("BooksUseUPFMId");
-            useTranslatev2 = GetBooleanProductSettings("BooksUseTranslatev2");
 
             _httpClient = new HttpClient {BaseAddress = new Uri(bbUri)};
         }
@@ -107,27 +109,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 _manageBlueBookCache.Set("productInternalSetting_" + (int)ProductEnum.UnifiedPlatform, productInternalSettingList, policy);
             }
 
+            _productRepository = new ProductRepository(defaultUserClaim);
+
             #endregion
 
             bbUri = productInternalSettingList.First(a => a.Name.Equals("BlueBookAPIEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
             useDomains = GetBooleanProductSettings("BooksUseDomains");
             useUPFMId = GetBooleanProductSettings("BooksUseUPFMId");
-            useTranslatev2 = GetBooleanProductSettings("BooksUseTranslatev2");
 
             //bbUri = "https://booksapi.realpage.com";
             _httpClient = new HttpClient {BaseAddress = new Uri(bbUri)};
         }
 
-        public ManageBlueBook(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository, HttpMessageHandler messageHandler)
+        public ManageBlueBook(DefaultUserClaim userClaim, IRepository repository, IProductInternalSettingRepository productInternalSettingRepository, HttpMessageHandler messageHandler)
         {
             _productInternalSettingRepository = productInternalSettingRepository;
             _httpClient = new HttpClient(messageHandler) {BaseAddress = new Uri("http://localhost")};
             _defaultUserClaim = userClaim;
+            _productRepository = new ProductRepository(repository, userClaim);
 
             productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
             useDomains = GetBooleanProductSettings("BooksUseDomains");
             useUPFMId = GetBooleanProductSettings("BooksUseUPFMId");
-            useTranslatev2 = GetBooleanProductSettings("BooksUseTranslatev2");
         }
 
         /// <summary>
@@ -164,14 +167,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             if (useTranslate && useUPFMId && companyRealPageId != Guid.Empty && string.IsNullOrEmpty(includeExtra) && !string.IsNullOrEmpty(source) && !source.Equals(ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)))
             {
-                if (!useTranslatev2)
-                {
-                    companyMap = GetTranslateFromUPFMToProduct(companyRealPageId.ToString(), source, domain);
-                }
-                else
-                {
-                    companyMap = GetTranslateFromUPFMToProductv2(companyRealPageId.ToString(), source);
-                }
+                companyMap = GetTranslateFromUPFMToProductv2(companyRealPageId.ToString(), source);
 
                 if (companyMap != null)
                 {
@@ -245,41 +241,35 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         /// <summary>
-        /// Get all instances related to the given UPFM instance source. Filtering on the given domain
+        /// Used to get a specific product instance by source and source instance id
         /// </summary>
-        /// <param name="companyRealPageId"></param>
+        /// <param name="instanceId"></param>
         /// <param name="productSource"></param>
-        /// <param name="domain"></param>
         /// <returns></returns>
-        private IList<CustomerCompanyMap> GetTranslateFromUPFMToProduct(string companyRealPageId, string productSource, string domain)
+        public CustomerCompanyMap GetCompanyInstanceBySourceAndInstanceId(string instanceId, string productSource)
         {
-            //translate/companyinstance/684382D3-F2F8-4F42-8D29-935F834C6888/UPFM/OS?filter[customerEnvironment]=Primary
-            string uri = $"translate/companyinstance/{companyRealPageId}/{ProductEnum.UnifiedPlatform.ToEnumDescription()}/{productSource}?filter[customerEnvironment]={domain}";
-            Dictionary<string, object> logData = new Dictionary<string, object>() {{"uri", uri}};
-            WriteToLog(LogEventLevel.Debug, $"GetTranslateFromUPFMToProduct - Getting info. {productSource}/{domain}", logData);
+            //companyinstance/1051412/OS
+            string uri = $"companyinstance/{instanceId}/{productSource}";
+            Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", uri } };
+            WriteToLog(LogEventLevel.Debug, $"GetCompanyInstanceBySourceAndInstanceId - Getting info. {productSource}", logData);
 
             RPObjectCache rpcache = new RPObjectCache();
-            var cacheKey = $"GetTranslateFromUPFMToProduct_{companyRealPageId}_{productSource}_{domain}";
-            List<CustomerCompanyMap> booksCustomerMaster = rpcache.GetFromCache<List<CustomerCompanyMap>>(cacheKey, 180, () =>
+            var cacheKey = $"GetCompanyInstanceBySourceAndInstanceId_{instanceId}_{productSource}";
+            var instance = rpcache.GetFromCache<CustomerCompanyMap>(cacheKey, 30, () =>
             {
-                List<CustomerCompanyMap> companyListCache = new List<CustomerCompanyMap>();
                 var response = GetAsync(uri).Result;
                 if (response.IsSuccessStatusCode)
                 {
-                    var translateCompanyInstance = JsonConvert.DeserializeObject<TranslateCompanyInstance>(response.Content.ReadAsStringAsync().Result);
-                    logData = new Dictionary<string, object>() {{"response", translateCompanyInstance}, {"uri", uri}, {"productSource", productSource}, {"domain", domain}};
-                    WriteToLog(LogEventLevel.Debug, $"GetTranslateFromUPFMToProduct - Got info. {productSource}/{domain}", logData);
-                    CustomerCompanyMap map = new CustomerCompanyMap(){ CompanyInstance = new List<CompanyInstance>()};
-                    map.CompanyInstanceSourceId = translateCompanyInstance.Data.Attributes.TranslatedCompanyInstances[0].CompanyInstanceSourceId;
-                    map.Source = productSource;
-                    companyListCache.Add(map);
-                    return companyListCache;
+                    var customerCompanyMap = JsonConvert.DeserializeObject<CustomerCompanyMap>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
+                    logData = new Dictionary<string, object>() { { "response", customerCompanyMap } };
+                    WriteToLog(LogEventLevel.Debug, "GetCompanyInstanceBySourceAndInstanceId - Got info.", logData);
+                    return customerCompanyMap;
                 }
 
                 return null;
             });
 
-            return booksCustomerMaster;
+            return instance;
         }
 
         /// <summary>
@@ -667,16 +657,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         /// <summary>
-        /// Used to add a new company instance
+        /// Used to add a new company instance from the provisioning event
         /// </summary>
         /// <param name="companyInstance"></param>
         /// <returns></returns>
-        public bool AddBooksGreenBookCompanyInstance(CompanyInstance companyInstance)
+        public bool AddUPFMCompanyFromProvisioningEvent(CompanyInstance companyInstance)
         {
             string uri = $"companyinstance";
 
             Dictionary<string, object> logData = new Dictionary<string, object>() {{"uri", _httpClient.BaseAddress + uri}, {"companyInstance", companyInstance}};
-            WriteToLog(LogEventLevel.Debug, "AddBooksGreenBookCompanyInstance - Adding info.", logData);
+            WriteToLog(LogEventLevel.Debug, "AddUPFMCompanyFromProvisioningEvent - Adding info.", logData);
 
             var jsonToSave = JsonConvert.SerializeObject(companyInstance, new JsonApiSerializerSettings()).Replace("companyinstanceadd", "companyinstance");
             var request = new HttpRequestMessage
@@ -695,6 +685,35 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return false;
         }
 
+        /// <summary>
+        /// Add a UPFM company to UDM from the Add Company page in Unified Login
+        /// </summary>
+        /// <param name="companyInstance"></param>
+        /// <returns></returns>
+        public bool AddUPFMCompanyFromCompanySetup(CompanyInstanceAdd companyInstance)
+        {
+            string uri = $"companyinstance/{companyInstance.CompanyInstanceSourceId}/UPFM";
+            var jsonToSave = JsonConvert.SerializeObject(companyInstance, new JsonApiSerializerSettings()).Replace("companyinstanceadd", "companyinstance");
+
+            Dictionary<string, object> logData = new Dictionary<string, object>() {{"uri", _httpClient.BaseAddress + uri}, {"companyInstance", companyInstance}, {"jsonToSave", jsonToSave}};
+            WriteToLog(LogEventLevel.Debug, "AddUPFMCompanyFromCompanySetup - Adding info.", logData);
+            
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Put,
+                Content = new StringContent(jsonToSave, Encoding.UTF8, "application/json"),
+                RequestUri = new Uri(_httpClient.BaseAddress + uri)
+            };
+            var response = _httpClient.SendAsync(request).Result;
+            if (response != null && response.IsSuccessStatusCode)
+            {
+                //var clientResponse = JsonConvert.DeserializeObject<dynamic>(response.Content.ReadAsStringAsync().Result);
+                return true;
+            }
+
+            return false;
+        }
+        
         /// <summary>
         /// Used to delete an existing company instance
         /// </summary>
@@ -1662,19 +1681,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             TranslatePropertyInstance translatedData = new TranslatePropertyInstance();
             //IManageBlueBook _manageBlueBook = new ManageBlueBook(_userClaims);
             List<UPFMPropertyInstance> _upfmPropertyInstance = new List<UPFMPropertyInstance>();
-            string productcode = ProductEnumHelper.StringValueOf((ProductEnum)productId);
             IPropertyRepository propertyRepository = new PropertyRepository();
-
-            if (upfmProperty?.id == null )
-            {
-                return productResult;
-            }
+            bool isPrimaryProperty = !(upfmProperty?.id == null);
 
             /*
              * If All property selection is true, then upfmProperty == -1
              */
-            if (upfmProperty.id[0] == "-1")
+            if (upfmProperty?.id == null || upfmProperty.id[0] == "-1")
             {
+                upfmProperty = new UPFMProperty();
+                //nullInstanceResultFlag = upfmProperty?.id[0] == "-1";
                 var booksPropertyList = GetUPFMPropertyInstances(_defaultUserClaim.OrganizationRealPageGuid.ToString());
                 if (booksPropertyList != null)
                 {
@@ -1700,6 +1716,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
             else
             {
+                var products = _productRepository.GetAllProducts();
+                string productcode = ProductEnumHelper.GetProductCodeByProductId(productId, products);
                 translatedData = GetTranslatePropertiesFromUPFMToProductv3(primaryPropertyIds, productcode);
                 var productPropertyType = productResult.Records[0].GetType();
                 var foundProductPropertyIdList = new List<string>();
@@ -1712,7 +1730,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.ID));
                         if (instanceExists != null)
                         {
-                            property.IsAssigned = true;
+                            if (isPrimaryProperty)
+                            {
+                                property.IsAssigned = true;
+                            }
+                            property.InstanceId = instanceExists.PropertyInstanceSourceId;
+                        }
+                        else if (isPrimaryProperty)
+                        {
+                            property.IsAssigned = false;
                         }
                     }
                 }
@@ -1723,7 +1749,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.Id));
                         if (instanceExists != null)
                         {
-                            property.IsAssigned = true;
+                            if (isPrimaryProperty)
+                            {
+                                property.IsAssigned = true;
+                            }
+                            property.InstanceId = instanceExists.PropertyInstanceSourceId.ToLower();
+                        }
+                        else if (isPrimaryProperty)
+                        {
+                            property.IsAssigned = false;
                         }
                     }
                 }
@@ -1734,7 +1768,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.ID));
                         if (instanceExists != null)
                         {
-                            property.IsAssigned = true;
+                            if (isPrimaryProperty)
+                            {
+                                property.IsAssigned = true;
+                            }
+                            property.InstanceId = instanceExists.PropertyInstanceSourceId.ToLower();
+                        }
+                        else if (isPrimaryProperty)
+                        {
+                            property.IsAssigned = false;
                         }
                     }
                 }
@@ -1745,7 +1787,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.GetPropertyId.ToString()));
                         if (instanceExists != null)
                         {
-                            property.IsAssigned = true;
+                            if (isPrimaryProperty)
+                            {
+                                property.IsAssigned = true;
+                            }
+                            property.InstanceId = instanceExists.PropertyInstanceSourceId.ToLower();
+                        }
+                        else if (isPrimaryProperty)
+                        {
+                            property.IsAssigned = false;
                         }
                     }
                 }
@@ -1756,7 +1806,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.Id.ToString()));
                         if (instanceExists != null)
                         {
-                            property.IsAssigned = true;
+                            if (isPrimaryProperty)
+                            {
+                                property.IsAssigned = true;
+                            }
+                            property.InstanceId = instanceExists.PropertyInstanceSourceId.ToLower();
+                        }
+                        else if (isPrimaryProperty)
+                        {
+                            property.IsAssigned = false;
                         }
                     }
                 }
@@ -1767,7 +1825,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.GetPropertyId));
                         if (instanceExists != null)
                         {
-                            property.IsAssigned = true;
+                            if (isPrimaryProperty)
+                            {
+                                property.IsAssigned = true;
+                            }
+                            property.InstanceId = instanceExists.PropertyInstanceSourceId.ToLower();
+                        }
+                        else if (isPrimaryProperty)
+                        {
+                            property.IsAssigned = false;
                         }
                     }
                 }
@@ -1778,7 +1844,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.ID));
                         if (instanceExists != null)
                         {
-                            property.IsAssigned = true;
+                            if (isPrimaryProperty)
+                            {
+                                property.IsAssigned = true;
+                            }
+                            property.InstanceId = instanceExists.PropertyInstanceSourceId.ToLower();
+                        }
+                        else if (isPrimaryProperty)
+                        {
+                            property.IsAssigned = false;
                         }
                     }
                 }

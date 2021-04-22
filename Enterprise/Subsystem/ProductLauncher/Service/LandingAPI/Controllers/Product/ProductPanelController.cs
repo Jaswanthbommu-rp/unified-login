@@ -58,7 +58,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			_userClaims = _defaultUserClaim;
 			_productRepository = new ProductRepository(repository, _defaultUserClaim);
 			_productInternalSettingRepository = new ProductInternalSettingRepository(repository);
-			_manageBlueBook = new ManageBlueBook(_defaultUserClaim, _productInternalSettingRepository, messageHandler);
+			_manageBlueBook = new ManageBlueBook(_defaultUserClaim, repository, _productInternalSettingRepository, messageHandler);
 			_manageProductPanel = new ManageProductPanel(_defaultUserClaim, repository, _manageBlueBook, messageHandler, manageProductOneSite);
 			_excludeTest = true;
 			MessageHandler = messageHandler;
@@ -197,7 +197,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			ListResponse result = new ListResponse();
 			result = _manageProductPanel.GetProductProperties(editorPersonaId, userPersonaId, productId, datafilter);
 
-			if (!result.IsError && result.Records.Count > 0 && upfmProperty?.id != null)
+			if (!result.IsError) // && result.Records.Count > 0 && upfmProperty?.id != null
 			{
 				result = _manageProductPanel.CompareProductAndPrimaryProperties(upfmProperty, productId, result);
 			}
@@ -218,6 +218,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
 		[Route("product/{productId}/translateProductProperties")]
 		[HttpPost]
+		[Obsolete]
 		public HttpResponseMessage GetTranslatedProperties([FromBody] UPFMProperty upfmProperty, int productId)
 		{
 			var result = new UPFMProperty();

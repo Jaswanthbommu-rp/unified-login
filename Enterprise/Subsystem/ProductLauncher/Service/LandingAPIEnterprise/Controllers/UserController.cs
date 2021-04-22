@@ -9,6 +9,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Security;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Attribute;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
@@ -54,6 +55,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         private HttpMessageHandler _messageHandler;
         private IManageUnifiedSettings _manageSettings;
 
+        private IProductRepository _productRepository;
+
         #endregion
 
         #region Constructor
@@ -86,11 +89,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             ManageUserRoleRight manageUserRoleRight = new ManageUserRoleRight(repository);
             ManagePartyRelationship managePartyRelationship = new ManagePartyRelationship(repository);
 
-            ManageBlueBook manageBlueBook = new ManageBlueBook(userClaims, productInternalSettingRepository, messageHandler);
+            ManageBlueBook manageBlueBook = new ManageBlueBook(userClaims, repository, productInternalSettingRepository, messageHandler);
             ManageProfile manageProfile = new ManageProfile(userClaims);
             _manageSettings = new ManageUnifiedSettings(repository, _userClaims, messageHandler);
 
             _manageProduct = new ManageProduct(productRepository, productInternalSettingRepository, _managePersona, manageBlueBook, managePartyRelationship, _manageOrganization, manageProfile, manageUserRoleRight, userClaims);
+
+            _productRepository = new ProductRepository(repository, userClaims);
 
             _messageHandler = messageHandler;
             _userClaims = userClaims;
@@ -109,6 +114,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             _manageProduct = new ManageProduct(_userClaims);
             _manageOrganization = new ManageOrganization(_userClaims);
             _manageSettings = new ManageUnifiedSettings(_userClaims);
+            _productRepository = new ProductRepository(_userClaims);
         }
 
         #endregion
@@ -690,9 +696,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             }
 
             ListResponse listResponse = new ListResponse();
-            switch (ProductEnumHelper.GetProductEnumByProductCode(productCode))
+            var products = _productRepository.GetAllProducts();
+            switch (ProductEnumHelper.GetProductIdByProductCode(productCode, products))
             {
-                case ProductEnum.OpsBuyer:
+                case (int)ProductEnum.OpsBuyer:
                     var samlRepository = new SamlRepository();
                     IList<PersonaProductUserDetails> productList = samlRepository.ListActiveProductsByPersonaId(persona.PersonaId, (int)ProductEnum.OpsBuyer, null);
                     if (productList.Any(p => p.ProductStatus == (int)ProductBatchStatusType.Success))
@@ -776,9 +783,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             }
 
             RequestParameter requestParameter = new RequestParameter() { Pages = new PageRequest() { ResultsPerPage = rowsPerPage, StartRow = pageNumber } };
-            switch (ProductEnumHelper.GetProductEnumByProductCode(productCode))
+            var productList = _productRepository.GetAllProducts();
+            switch (ProductEnumHelper.GetProductIdByProductCode(productCode, productList))
             {
-                case ProductEnum.OpsBuyer:
+                case (int)ProductEnum.OpsBuyer:
                     IManageProductOps manageProductOps = new ManageProductOps(_userClaims);
                     ListResponse listResponse = manageProductOps.GetUsers(_userClaims.PersonaId, requestParameter);
 
