@@ -1013,7 +1013,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 OrganizationDomainId = 0,
                 OrganizationDomainName = "Primary",
                 Name = "New Company",
-                UsePrimaryProperties = 0
+                UsePrimaryProperties = 0,
+                CompanyAddress = new CompanyInstanceAddress() { Address = "1234 Address", City = "Some City", State = "State", Country = "USA", PostalCode = "12345" }
             };
             HttpResponseMessage response = organizationController.UpdateOrganization(organizationUpdate);
             OrganizationCreateResult orgResult = JsonConvert.DeserializeObject<OrganizationCreateResult>(response.Content.ReadAsStringAsync().Result);
