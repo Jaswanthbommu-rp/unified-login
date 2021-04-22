@@ -12,6 +12,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         public string Name { get; set; }
         public string State { get; set; }
         public bool IsAssigned { get; set; }
+
+        /// <summary>
+        /// The UPFM property instance id
+        /// </summary>
+        public string InstanceId { get; set; }
     }
 
     /// <summary>

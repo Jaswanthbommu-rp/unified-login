@@ -26,23 +26,21 @@ BEGIN
 		Declare @sequence smallint;
 		IF (Select COUNT(*) From @settings) > 0
 		BEGIN			
-			IF NOT EXISTS (Select 1 From [Settings].[SettingTableRow] Where SettingTableId = @SettingTableId )
-			BEGIN			
-				INSERT INTO [Settings].[SettingTableRow](SettingTableId,Editable,Deletable,
+			
+			INSERT INTO [Settings].[SettingTableRow](SettingTableId,Editable,Deletable,
 							IsActive,ModifiedBy,CreatedDate)
-				Select @SettingTableId,@editable,@deletable,1,
-				@ModifiedBy,GETUTCDATE()
+			Select @SettingTableId,@editable,@deletable,1,@ModifiedBy,GETUTCDATE()
 
-				set @tableRowId = SCOPE_IDENTITY();
-			END
-			Else
-			BEGIN
-				Select @tableRowId = SettingTableRowId 
-				From [Settings].[SettingTableRow] Where SettingTableId = @SettingTableId
-			END
-			Select @sequence = COUNT(*) 
-			From [Settings].[SettingTableColumn] 
-			Where SettingTableRowId = @tableRowId
+			SET @tableRowId = SCOPE_IDENTITY();
+
+			select @sequence = Max(CONVERT(int,TableColumnValue)) 
+			from Settings.SettingTableColumn stc
+			join Settings.SettingTableRow sr on
+				stc.SettingTableRowId = sr.SettingTableRowId
+			join Settings.SettingTable st on
+				sr.SettingTableId = st.SettingTableId
+			where TableColumnName = 'Sequence'
+			and st.PartyId = @PartyId
 
 			Insert Into @settings(ColumnName,ColumnValue,Editable)
 			Select 'Sequence',@sequence+1,0
