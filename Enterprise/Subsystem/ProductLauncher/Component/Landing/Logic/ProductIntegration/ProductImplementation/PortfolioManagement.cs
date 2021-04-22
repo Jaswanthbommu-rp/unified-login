@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Newtonsoft.Json;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Factory;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Helpers;
@@ -9,13 +7,18 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Inter
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.ProductImplementation
 {
-	/// <summary>
-	/// 
-	/// </summary>
-	public sealed class PortfolioManagement : ManageProductInvokerBase, IManageProductIntegration
+    /// <summary>
+    /// 
+    /// </summary>
+    public sealed class PortfolioManagement : StandardV1ProductIntegration, IManageProductIntegration
 	{
 		#region Constructor
 
@@ -26,17 +29,72 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="editorPersonaId"></param>
 		/// <param name="subjectPersonaId"></param>
 		/// <param name="userClaims"></param>
-		public PortfolioManagement(ProductEnum productType, long editorPersonaId, long subjectPersonaId, DefaultUserClaim userClaims) : base(productType, editorPersonaId, subjectPersonaId, userClaims)
+		public PortfolioManagement(ProductEnum productType, long editorPersonaId, long subjectPersonaId, DefaultUserClaim userClaims) : base((int)productType, editorPersonaId, subjectPersonaId, userClaims)
 		{
 		}
 
 		public PortfolioManagement(ProductEnum productType, long editorPersonaId, long subjectPersonaId, DefaultUserClaim userClaims, IDataCollector injectedDataCollector, IManagePersona injectedManagePersona, IProductInternalSettingRepository productInternalSettingRepository) :
-			base(productType, editorPersonaId, subjectPersonaId, userClaims, injectedDataCollector, injectedManagePersona, productInternalSettingRepository)
+			base((int)productType, editorPersonaId, subjectPersonaId, userClaims, injectedDataCollector, injectedManagePersona, productInternalSettingRepository)
 		{ }
 
-		#endregion
+        #endregion
 
-		#region Methods
+        #region Methods
+
+        protected override void ApplyApiSecurity()
+        {
+			string tokenClientId = ProductInternalSettingList.First(a => a.Name.ToUpper() == "TOKENCLIENTID").Value;
+			string tokenClientSecret = ProductInternalSettingList.First(a => a.Name.ToUpper() == "TOKENCLIENTSECRET").Value;
+			string tokenIssueUri = ProductInternalSettingList.First(a => a.Name.ToUpper() == "APIENDPOINT").Value;
+
+			string accessToken = GetPortfolioManagementAccessToken(tokenIssueUri, tokenClientId, tokenClientSecret);
+			_httpClient = new HttpClient();
+			_httpClient.DefaultRequestHeaders.Clear();
+			_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+		}
+
+		/// <summary>
+		/// Get Portfolio Management AccessToken
+		/// </summary>
+		/// <param name="tokenIssueUri">Token Url</param>
+		/// <param name="tokenClientId">Username</param>
+		/// <param name="tokenClientSecret">Password</param>
+		/// <returns>Access Token</returns>
+		private string GetPortfolioManagementAccessToken(string tokenIssueUri, string tokenClientId, string tokenClientSecret)
+		{
+			string accessToken = string.Empty;
+			try
+			{
+				HttpClient client = new HttpClient();
+				client.SetBasicAuthentication(tokenClientId, tokenClientSecret);
+				Dictionary<string, string> dictionary = new Dictionary<string, string>()
+				{
+					{
+						"grant_type",
+						"client_credentials"
+					},
+					{   "scope",
+						""
+					}
+				};
+
+				HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, tokenIssueUri + "/token")
+				{
+					Content = new FormUrlEncodedContent(dictionary)
+				};
+				HttpResponseMessage postResponse = client.SendAsync(request).Result;
+				if (postResponse.IsSuccessStatusCode)
+				{
+					dynamic resultObject = JsonConvert.DeserializeObject<dynamic>(postResponse.Content.ReadAsStringAsync().Result);
+					accessToken = resultObject.access_token;
+				}
+				return accessToken;
+			}
+			catch (Exception ex)
+			{
+				throw new Exception($"Error in GetToken- {ex.Message}");
+			}
+		}
 
 		/// <summary>
 		/// Get GLOBAL product roles
@@ -46,31 +104,31 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			try
 			{
 				WriteToDiagnosticLog(
-					$"PortfolioManagement.GetProductRoles - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method.");
+					$"PortfolioManagement.GetProductRoles - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method.");
 
 				// Get end point for global role
 				var baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetRoleEndpoint);  //http://wmu-books.asseteye.net/api/gandk/Roles?isGlobalRoles=true
 				baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, "true");
 
 				WriteToDiagnosticLog(
-					$"ManageProductInvokerBase.GetProductRoles - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At API calling - {baseUrlAndQuery}");
+					$"ManageProductInvokerBase.GetProductRoles - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At API calling - {baseUrlAndQuery}");
 
 				var roleList = GetResultFromApi<IList<ProductRole>>(baseUrlAndQuery);
 
 				WriteToDiagnosticLog(
-					$"ManageProductInvokerBase.GetProductRoles - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Received roleList with count = {roleList?.Count}");
+					$"ManageProductInvokerBase.GetProductRoles - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Received roleList with count = {roleList?.Count}");
 
 				if (!string.IsNullOrEmpty(SubjectUserDetails?.ProductUserName))
 				{
 					WriteToDiagnosticLog(
-						$"ManageProductInvokerBase.GetProductRoles - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling GetUser for subject persona Id -{SubjectUserDetails.PersonaId}");
+						$"ManageProductInvokerBase.GetProductRoles - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling GetUser for subject persona Id -{SubjectUserDetails.PersonaId}");
 					var user = GetProductUser();
 
 					// map user roles
 					if (user != null)
 					{
 						WriteToDiagnosticLog(
-							$"ManageProductInvokerBase.GetProductRoles - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling Merge for subject persona Id -{SubjectUserDetails.PersonaId}");
+							$"ManageProductInvokerBase.GetProductRoles - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling Merge for subject persona Id -{SubjectUserDetails.PersonaId}");
 
 						var userRoles = user.RoleList;
 						MergeUserRoles(roleList, userRoles);
@@ -91,7 +149,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			catch (Exception ex)
 			{
-				WriteToErrorLog($"ManageProductInvokerBase.GetProductRoles - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Error - {ex.Message}", null, ex);
+				WriteToErrorLog($"ManageProductInvokerBase.GetProductRoles - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Error - {ex.Message}", null, ex);
 				return new ListResponse()
 				{
 					ErrorReason = ex.Message,
@@ -177,7 +235,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		protected override void CreateAdditionalSamlUserAttribute(long personaId, int productId, IntegrationProductUser productUser)
 		{
 			WriteToDiagnosticLog(
-				$"PortfolioManagement.CreateAdditionalSamlUserAttribute - Product {ProductType} userLoginName - {productUser.LoginName} ; PMC {productUser.CompanyId} . At beginning of the method.");
+				$"PortfolioManagement.CreateAdditionalSamlUserAttribute - Product {ProductId} userLoginName - {productUser.LoginName} ; PMC {productUser.CompanyId} . At beginning of the method.");
 
 			_dataCollector.CreateSamlUserAttribute(personaId, productId, SamlAttributeEnum.PMCID, productUser.CompanyId);
 		}
