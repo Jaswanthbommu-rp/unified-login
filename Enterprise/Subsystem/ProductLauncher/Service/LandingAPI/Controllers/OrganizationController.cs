@@ -460,7 +460,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     var companyMap = companyMapResource.FirstOrDefault(c => c.CompanyInstanceSourceId == org.RealPageId.ToString());
                     var companyTypeName = _manageOrganization.ListOrganizationType()?.FirstOrDefault(t => t.OrganizationTypeId == organization.OrganizationTypeId)?.Name;
 
-                    CompanyInstance updateCompanyInstance = new CompanyInstanceAdd()
+                    CompanyInstanceAdd updateCompanyInstance = new CompanyInstanceAdd()
                     {
                         CompanyInstanceId = null,
                         CompanyInstanceSourceId = companyMap.CompanyInstanceSourceId,
@@ -472,8 +472,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
                         CompanyType = companyTypeName
                     };
-                    var booksResult = _manageBlueBook.UpdateBooksGreenBookCompanyInstance(updateCompanyInstance);
-                    if (!string.IsNullOrEmpty(booksResult))
+
+                    if (organization.CompanyAddress != null)
+                    {
+                        CompanyInstanceAddress address = new CompanyInstanceAddress()
+                        {
+                            Address = organization.CompanyAddress.Address,
+                            City = organization.CompanyAddress.City,
+                            State = organization.CompanyAddress.State,
+                            PostalCode = organization.CompanyAddress.PostalCode,
+                            County = organization.CompanyAddress.County,
+                            Country = organization.CompanyAddress.Country
+                        };
+                        updateCompanyInstance.CompanyInstanceLocation = new List<CompanyInstanceAddress>() { address };
+                    }
+
+                    var booksResult = _manageBlueBook.AddUPFMCompanyFromCompanySetup(updateCompanyInstance);
+
+                    if (booksResult == true)
                     {
                         return Request.CreateResponse(HttpStatusCode.BadRequest, $"Unified Login company was updated successfully but MDM data update failed. Error: " + booksResult);
                     }
