@@ -17,7 +17,8 @@
 	@PwdSalt nvarchar(510) = null,
 	@CompanyJobTitleId int = NULL,
 	@Suffix nvarchar(20) = NULL,
-	@CreateUserSourceType nvarchar(50) = 'UnifiedPlatform' -- default - unifiedplatform
+	@CreateUserSourceType nvarchar(50) = 'UnifiedPlatform',-- default - unifiedplatform
+	@EmployeeId nvarchar(max) = NULL
 )
 AS
 BEGIN
@@ -252,6 +253,13 @@ BEGIN
 				@ElectronicAddressString = @NotificationEmail,
 				@ElectronicAddressType = N'Email';
 		END;
+
+		IF (@EmployeeId IS NOT NULL)
+		BEGIN
+			EXEC Enterprise.CreateUserEmployeeId 
+				@UserLoginPersonaId = @UserLoginPersonaId,
+				@EmployeeId = @EmployeeId
+		END
 
 		IF(@UserTypeId = 402)
 		BEGIN

@@ -57,7 +57,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.E
 				Pwdhash = userProductDetails.UserProfileDetails.PasswordHash,
 				PwdSalt = userProductDetails.UserProfileDetails.PasswordSalt,
 				CreateUserSourceType = "RPX",
-				OrganizationId = userProductDetails.UserProfileDetails.OrganizationPartyId
+				OrganizationId = userProductDetails.UserProfileDetails.OrganizationPartyId,
+				EmployeeId = userProductDetails.UserProfileDetails.EmployeeId
 			};
 
 			using (var repository = GetRepository())
@@ -77,20 +78,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.E
 				// Add products
 				if (userProductDetails.ProductList.Any()) //TODO: remove UL product from list?
 					SaveProductBatch(repository, _userClaim.PersonaId, newUserPersonaId, _userClaim.UserRealPageGuid, userProductDetails.ProductList);
-
-				//Add EmployeeId
-				if (!string.IsNullOrEmpty(userProductDetails.UserProfileDetails.EmployeeId) || !string.IsNullOrEmpty(userProductDetails.UserProfileDetails.EmployeeId))
-				{
-					dynamic paramULP = new
-					{
-						UserLoginId = userId,
-						userProductDetails.UserProfileDetails.OrganizationPartyId
-					};
-
-					var userLoginPersonaList = repository.GetMany<UserLoginPersona>(StoredProcNameConstants.SP_GetUserLoginPersona , paramULP);
-
-					var sEmployeeResult = repository.GetOne<dynamic>(StoredProcNameConstants.SP_CreateEmployeeId, new { userLoginPersonaList[0].UserLoginPersonaId , userProductDetails.UserProfileDetails.EmployeeId });
-				}
+				
 				repository.UnitOfWork.Commit();
 
 				return newUserRealPageId;

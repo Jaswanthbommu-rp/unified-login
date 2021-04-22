@@ -1648,7 +1648,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         [JsonProperty(PropertyName = "active")]
         public bool IsActive { get; set; }
 
-        public bool IsAssigned { get; set; }
+        public bool IsAssigned { get; set; }      
+
+        /// <summary>
+        /// The UPFM property instance id
+        /// </summary>
+        public string InstanceId { get; set; }
     }
 
     public class OnSiteUserPropertyRegionRole

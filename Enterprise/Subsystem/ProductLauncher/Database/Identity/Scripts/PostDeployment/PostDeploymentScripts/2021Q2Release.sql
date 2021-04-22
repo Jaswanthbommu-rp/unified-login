@@ -881,16 +881,21 @@ GO
 
 
 --TFS: 702072 populate UnifiedSettingPicklist table
-if not exists(select top 1 1 from Enterprise.SettingPicklist where CategoryName = 'CustomFields' and MappingName =  'Alphanumeric')
+DECLARE @UserId bigint
+SELECT	@UserId = UserId
+FROM	ident.UserLogin
+WHERE	LoginName LIKE 'realpagead@%'
+
+if not exists(select top 1 1 from Settings.SettingPicklist where CategoryName = 'CustomFields' and MappingName =  'Alphanumeric')
 Begin 
-	Insert into Enterprise.SettingPicklist(CategoryName, MappingName, MappingValue, Description, ModifiedBy, ModifiedDate)
-	values ('CustomFields', 'Alphanumeric', 1, 'consists of both letters and numerals', 480, GETDATE())
+	Insert into Settings.SettingPicklist(CategoryName,MappingKeyName, MappingName, MappingValue, Description, ModifiedBy, ModifiedDate)
+	values ('CustomFields','customFieldType', 'Alphanumeric', 1, 'consists of both letters and numerals', @UserId, GETUTCDATE())
 End
 
-if not exists(select top 1 1 from Enterprise.SettingPicklist where CategoryName = 'CustomFields' and MappingName =  'Numeric')
+if not exists(select top 1 1 from Settings.SettingPicklist where CategoryName = 'CustomFields' and MappingName =  'Numeric')
 Begin 
-	Insert into Enterprise.SettingPicklist(CategoryName, MappingName, MappingValue, Description, ModifiedBy, ModifiedDate)
-	values ('CustomFields', 'Numeric', 2, 'consists of only numerals', 480, GETDATE())
+	Insert into Settings.SettingPicklist(CategoryName,MappingKeyName, MappingName, MappingValue, Description, ModifiedBy, ModifiedDate)
+	values ('CustomFields','customFieldType', 'Numeric', 2, 'consists of only numerals', @UserId, GETUTCDATE())
 End
 Go
 
@@ -1073,7 +1078,7 @@ begin
 	declare @partyid bigint,@fieldid bigint,@enabled bit,@name nvarchar(200),
 			@Description nvarchar(200), @Required bit,@ReadOnly bit,
 			@Sequence smallint,@MinCharLength int,@MaxCharLength int,
-			@CreatedBy bigint, @SettingTableId bigint,@fieldTypeId smallint
+			@CreatedBy bigint, @fieldTypeId smallint
 
 	Select @partyid = OrganizationId,@fieldid = FieldId,
 		   @enabled = Enabled,@name = Name,@Description = Description,
@@ -1082,17 +1087,20 @@ begin
 		   @CreatedBy = CreatedBy, @fieldTypeId = FieldTypeId
 	From @CustomFields Where Id = @Current_ID
 
-	IF NOT EXISTS (Select 1 From  [Settings].[SettingTable] Where PartyId = @partyid and SettingCategoryTypeId = @SettingCategoryTypeId)
+	Declare @SettingTableId bigint = NULL
+
+	Select @SettingTableId = SettingTableId From  [Settings].[SettingTable] 
+	Where PartyId = @partyid 
+	AND SettingCategoryTypeId = @SettingCategoryTypeId
+	AND TableName = 'CustomFields'
+
+	IF (@SettingTableId IS NULL)
 	BEGIN
 		INSERT INTO [Settings].[SettingTable]([SettingCategoryTypeId],[PartyId],
 				[TableName],[ModifiedBy],[CreatedDate])
-		Select @SettingCategoryTypeId,@partyid,'Customfields'+ CONVERT(varchar(10),@fieldid),@CreatedBy,@NOW
+		Select @SettingCategoryTypeId,@partyid,'CustomFields',@CreatedBy,@NOW
 
 		set @SettingTableId = SCOPE_IDENTITY();
-	END
-	ELSE
-	BEGIN
-		Select @SettingTableId = SettingTableId From  [Settings].[SettingTable] Where PartyId = @partyid and SettingCategoryTypeId = @SettingCategoryTypeId
 	END
 
 	IF NOT EXISTS (Select 1 From  [Settings].[SettingTableRow] Where SettingTableId = @SettingTableId and SettingTableRowId = @fieldid)
@@ -1175,4 +1183,142 @@ Declare @CustomFieldVlaues table(
 	Select FieldId,UserLoginPersonaId,[Value],CreatedBy,CreatedDate
 	From @CustomFieldVlaues
 
+GO
+--Use primary properties switch for upfm products
+Declare @MasterControlId int,@UPPControlId int,@MaxControlId int,@MaxControlAttributeId int
+DECLARE @UserId bigint,
+	@ProductId int ,
+	@Now datetime = GETDATE()
+
+SELECT	@UserId = UserId
+FROM	Ident.UserLogin
+WHERE	LoginName LIKE 'realpagead@%'
+
+Select @MasterControlId = ControlId From UserManagement.Control 
+Where UIId = 'HAASProductAccessPropertiesTabUIId' AND ControlTypeId = 9
+
+Select @UPPControlId = ControlId From UserManagement.Control 
+Where UIId = 'HAASProductAccessUsePrimaryPropertiesSwitchUIId' AND ControlTypeId = 1
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[Control] WHERE ControlId = @UPPControlId)
+BEGIN
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	SELECT @MaxControlId = max(ControlId) from UserManagement.Control
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@MaxControlId +1, @MasterControlId, 1, N'HAASProductAccessUsePrimaryPropertiesSwitchUIId', N'Use Primary Properties', N'usePrimaryProperties', 2, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+END
+GO
+
+Declare @MasterControlId int,@UPPControlId int,@MaxControlId int,@MaxControlAttributeId int
+DECLARE @UserId bigint,
+	@ProductId int ,
+	@Now datetime = GETDATE()
+
+SELECT	@UserId = UserId
+FROM	Ident.UserLogin
+WHERE	LoginName LIKE 'realpagead@%'
+
+Select @MasterControlId = ControlId From UserManagement.Control 
+Where UIId = 'IntelligentBuildingWaterAccessPropertiesTabUIId' AND ControlTypeId = 9
+
+Select @UPPControlId = ControlId From UserManagement.Control 
+Where UIId = 'IntelligentBuildingWaterProductAccessUsePrimaryPropertiesSwitchUIId' AND ControlTypeId = 1
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[Control] WHERE ControlId = @UPPControlId)
+BEGIN
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	SELECT @MaxControlId = max(ControlId) from UserManagement.Control
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@MaxControlId +1, @MasterControlId, 1, N'IntelligentBuildingWaterProductAccessUsePrimaryPropertiesSwitchUIId', N'Use Primary Properties', N'usePrimaryProperties', 2, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+END
+GO
+
+Declare @MasterControlId int,@UPPControlId int,@MaxControlId int,@MaxControlAttributeId int
+DECLARE @UserId bigint,
+	@ProductId int ,
+	@Now datetime = GETDATE()
+
+SELECT	@UserId = UserId
+FROM	Ident.UserLogin
+WHERE	LoginName LIKE 'realpagead@%'
+
+Select @MasterControlId = ControlId From UserManagement.Control 
+Where UIId = 'IntelligentBuildingProductAccessPropertiesTabUIId' AND ControlTypeId = 9
+
+Select @UPPControlId = ControlId From UserManagement.Control 
+Where UIId = 'IntelligentBuildingWasteProductAccessUsePrimaryPropertiesSwitchUIId' AND ControlTypeId = 1
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[Control] WHERE ControlId = @UPPControlId)
+BEGIN
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	SELECT @MaxControlId = max(ControlId) from UserManagement.Control
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@MaxControlId +1, @MasterControlId, 1, N'IntelligentBuildingWasteProductAccessUsePrimaryPropertiesSwitchUIId', N'Use Primary Properties', N'usePrimaryProperties', 2, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+END
+GO
+Declare @MasterControlId int,@UPPControlId int,@MaxControlId int,@MaxControlAttributeId int
+DECLARE @UserId bigint,
+	@ProductId int ,
+	@Now datetime = GETDATE()
+
+SELECT	@UserId = UserId
+FROM	Ident.UserLogin
+WHERE	LoginName LIKE 'realpagead@%'
+
+Select @MasterControlId = ControlId From UserManagement.Control 
+Where UIId = 'SGTProductAccessPropertiesTabUIId' AND ControlTypeId = 9
+
+Select @UPPControlId = ControlId From UserManagement.Control 
+Where UIId = 'SGTProductAccessUsePrimaryPropertiesSwitchUIId' AND ControlTypeId = 1
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[Control] WHERE ControlId = @UPPControlId)
+BEGIN
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	SELECT @MaxControlId = max(ControlId) from UserManagement.Control
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@MaxControlId +1, @MasterControlId, 1, N'SGTProductAccessUsePrimaryPropertiesSwitchUIId', N'Use Primary Properties', N'usePrimaryProperties', 2, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+END
+GO
+Declare @MasterControlId int,@UPPControlId int,@MaxControlId int,@MaxControlAttributeId int
+DECLARE @UserId bigint,
+	@ProductId int ,
+	@Now datetime = GETDATE()
+
+SELECT	@UserId = UserId
+FROM	Ident.UserLogin
+WHERE	LoginName LIKE 'realpagead@%'
+
+Select @MasterControlId = ControlId From UserManagement.Control 
+Where UIId = 'IntelligentBuildingEnergyAccessPropertiesTabUIId' AND ControlTypeId = 9
+
+Select @UPPControlId = ControlId From UserManagement.Control 
+Where UIId = 'IntelligentBuildingEnergyProductAccessUsePrimaryPropertiesSwitchUIId' AND ControlTypeId = 1
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[Control] WHERE ControlId = @UPPControlId)
+BEGIN
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	SELECT @MaxControlId = max(ControlId) from UserManagement.Control
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@MaxControlId +1, @MasterControlId, 1, N'IntelligentBuildingEnergyProductAccessUsePrimaryPropertiesSwitchUIId', N'Use Primary Properties', N'usePrimaryProperties', 2, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+END
 GO

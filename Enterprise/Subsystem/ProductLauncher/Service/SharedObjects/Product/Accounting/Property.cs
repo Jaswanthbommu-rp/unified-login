@@ -49,5 +49,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         /// Is Selected
         /// </summary>
         public bool IsCompanyAssigned { get; set; } = false;
+
+        /// <summary>
+        /// The UPFM property instance id
+        /// </summary>
+        public string InstanceId { get; set; }
     }
 }

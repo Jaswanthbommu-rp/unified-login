@@ -5,7 +5,8 @@
 	@ModifiedBy bigint)
 AS
 BEGIN
-	Declare @SettingCategoryTypeId smallint,@SettingTableId bigint
+	Declare @SettingCategoryTypeId smallint
+	Declare @SettingTableId bigint = NULL
 	SELECT @SettingCategoryTypeId = SettingCategoryTypeId
 	FROM [Settings].[SettingCategoryType] Where [Name] = @Category
 
@@ -17,11 +18,19 @@ BEGIN
 		SET @SettingCategoryTypeId = SCOPE_IDENTITY();
 	END
 	
-	INSERT INTO [Settings].[SettingTable]([SettingCategoryTypeId],[PartyId],
-			[TableName],[ModifiedBy],[CreatedDate])
-	Select @SettingCategoryTypeId,@partyid,@Name,@ModifiedBy,GETUTCDATE()
+	Select @SettingTableId = SettingTableId From  [Settings].[SettingTable] 
+	Where PartyId = @partyid 
+	AND SettingCategoryTypeId = @SettingCategoryTypeId
+	AND TableName = @Name
 
-	set @SettingTableId = SCOPE_IDENTITY();
+	IF (@SettingTableId IS NULL)
+	BEGIN
+		INSERT INTO [Settings].[SettingTable]([SettingCategoryTypeId],[PartyId],
+				[TableName],[ModifiedBy],[CreatedDate])
+		Select @SettingCategoryTypeId,@partyid,@Name,@ModifiedBy,GETUTCDATE()
+
+		set @SettingTableId = SCOPE_IDENTITY();
+	END	
 
 	Select @SettingTableId
 END
