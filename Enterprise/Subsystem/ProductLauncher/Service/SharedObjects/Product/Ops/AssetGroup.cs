@@ -42,6 +42,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         /// Asset group property list
         /// </summary>
         [JsonProperty("property_list", NullValueHandling = NullValueHandling.Ignore)]
-        public IList<Portfolio> property_list { get; set; }
+        public IList<Portfolio> property_list { get; set; }       
+
+        /// <summary>
+        /// The UPFM property instance id
+        /// </summary>
+        public string InstanceId { get; set; }
     }
 }

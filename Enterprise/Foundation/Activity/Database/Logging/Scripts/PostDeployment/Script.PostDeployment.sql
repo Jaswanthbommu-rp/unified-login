@@ -18,6 +18,8 @@ Post-Deployment Script Template
 
 --:r .\2020-February-Release.sql
 
-:r .\2020-August-Release.sql
+--:r .\2020-August-Release.sql
+
+:r .\2021Q2Release.sql
 
 

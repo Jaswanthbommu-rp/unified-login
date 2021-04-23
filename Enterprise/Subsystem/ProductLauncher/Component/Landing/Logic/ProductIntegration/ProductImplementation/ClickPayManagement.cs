@@ -14,15 +14,15 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.ProductImplementation
 {
-	public sealed class ClickPayManagement : ManageProductInvokerBase, IManageProductIntegration
+	public sealed class ClickPayManagement : StandardV1ProductIntegration, IManageProductIntegration
 	{
 		#region Ctor
 		private IManagePersona _managePersona;
 		private const string PRODUCT_SETTINGTYPE_STATUS = "ProductStatus";
-		public ClickPayManagement(ProductEnum productType, long editorPersonaId, long subjectPersonaId, DefaultUserClaim userClaims) : base(productType, editorPersonaId, subjectPersonaId, userClaims)
+		public ClickPayManagement(ProductEnum productType, long editorPersonaId, long subjectPersonaId, DefaultUserClaim userClaims) : base((int)productType, editorPersonaId, subjectPersonaId, userClaims)
 		{ }
 		public ClickPayManagement(ProductEnum productType, long editorPersonaId, long subjectPersonaId, DefaultUserClaim userClaims, IDataCollector injectedDataCollector, IManagePersona injectedManagePersona, IProductInternalSettingRepository productInternalSettingRepository) :
-			base(productType, editorPersonaId, subjectPersonaId, userClaims, injectedDataCollector, injectedManagePersona, productInternalSettingRepository)
+			base((int)productType, editorPersonaId, subjectPersonaId, userClaims, injectedDataCollector, injectedManagePersona, productInternalSettingRepository)
 		{ }
 
 		#endregion
@@ -560,7 +560,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			else
 			{
 				WriteToDiagnosticLog(
-					$"ManageProductInvokerBase.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling UpdateUser.");
+					$"ManageProductInvokerBase.CreateUpdateProductUser - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling UpdateUser.");
 				// Update user with Id/Login from product
 				newProductUser.UserId = SubjectUserDetails.ProductUserId;
 				newProductUser.LoginName = SubjectUserDetails.ProductUserName;

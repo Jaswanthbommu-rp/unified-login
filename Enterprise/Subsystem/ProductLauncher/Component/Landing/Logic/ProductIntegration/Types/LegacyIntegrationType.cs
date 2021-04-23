@@ -4,6 +4,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Factory;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
@@ -42,6 +43,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         private readonly IProductInternalSettingRepository _productInternalSettingRepository;
 
+        private readonly IProductRepository _productRepository;
+
         public LegacyIntegrationType(int productId, DefaultUserClaim userClaims, IManageUnifiedLogin manageUnifiedLogin,
             IManageProductOneSite manageProductOneSite, IProductInternalSettingRepository productInternalSettingRepository)
         {
@@ -50,6 +53,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _manageUnifiedLogin = manageUnifiedLogin;
             _manageProductOneSite = manageProductOneSite;
             _productInternalSettingRepository = productInternalSettingRepository;
+            _productRepository = new ProductRepository(_userClaims);
         }
 
         public ListResponse GetRoles(long editorPersonaId, long userPersonaId, long partyId, AccessType? accessType, RequestParameter dataFilter)
@@ -145,8 +149,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.AoMarketAnalytics:
                 case (int)ProductEnum.AoAxiometrics:
                     var manageProductAo = new ManageProductAssetOptimization(_userClaims);
-                    string productcode = ProductEnumHelper.StringValueOf(ProductEnum.AoAxiometrics);
-                    result = manageProductAo.GetProductRoles(editorPersonaId, userPersonaId, productcode, dataFilter, userLoginName);
+                    var products = _productRepository.GetAllProducts();
+                    string productCode = ProductEnumHelper.GetProductCodeByProductId((int)ProductEnum.AoAxiometrics, products);
+                    result = manageProductAo.GetProductRoles(editorPersonaId, userPersonaId, productCode, dataFilter, userLoginName);
                     break;
 
                 case (int)ProductEnum.LeadManagement:
