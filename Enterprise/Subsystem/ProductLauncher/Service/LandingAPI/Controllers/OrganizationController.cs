@@ -92,8 +92,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _userClaims = userClaims;
             _propertyRepository = new PropertyRepository(repository);
             _manageProductOneSite = manageProductOneSite;
-            //_manageProduct = new ManageProduct(repository, userClaims, messageHandler);
-            //_manageOrganizationProduct = new ManageOrganizationProduct(userClaims, _manageBlueBook, _organizationProductRepository, _manageProduct);
         }
 
         /// <summary>
