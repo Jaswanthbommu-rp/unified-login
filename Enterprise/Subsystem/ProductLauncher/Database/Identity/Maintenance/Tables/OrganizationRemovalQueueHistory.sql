@@ -1,6 +1,6 @@
 ﻿CREATE TABLE [Maintenance].[OrganizationRemovalQueueHistory]
 (
-	[OrganizationRemovalQueueHistoryId] INT NOT NULL,
+	[OrganizationRemovalQueueHistoryId] INT IDENTITY NOT NULL,
 	[OrganizationRemovalQueueId] INT NOT NULL,
 	[OrganizationRemovalQueueStatusId] INT NOT NULL, 
 	[StatusChangeDate] DATETIME2 NOT NULL DEFAULT GETUTCDATE(), 

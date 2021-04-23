@@ -6,6 +6,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Un
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Maintenance;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces
 {
@@ -141,5 +142,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         List<CompanySetup> GetCompanyList(string organizationName, int domain, int? blueId, int organizationId, RequestParameter dataFilterSort = null);
 
         #endregion
+
+        /// <summary>
+        /// Used to get a list of organizations to delete
+        /// </summary>
+        /// <param name="batchSize"></param>
+        /// <param name="retryCount"></param>
+        /// <param name="includeErrorRecord"></param>
+        List<OrganizationToDelete> GetOrganizationToDelete(int batchSize, int retryCount, bool includeErrorRecord);
+
+        /// <summary>
+        /// Used to delete the specified company
+        /// </summary>
+        /// <param name="organizationRemovalQueueId"></param>
+        /// <param name="partyId"></param>
+        /// <param name="organizationRealPageId"></param>
+        /// <returns></returns>
+        long DeleteOrganization(int organizationRemovalQueueId, long partyId, Guid organizationRealPageId);
     }
 }

@@ -809,7 +809,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
         #endregion
 
+        #region Organization Delete
 
+        public void DeleteQueuedOrganizations()
+        {
+            var orgsToDelete = _organizationRepository.GetOrganizationToDelete(5, 3, false);
+
+            orgsToDelete.ForEach(p =>
+            {
+                var deleteResult = _organizationRepository.DeleteOrganization(p.OrganizationRemovalQueueId, p.OrganizationPartyId, p.OrganizationRealPageId);
+                if (deleteResult == p.OrganizationPartyId)
+                {
+                    // success
+                }
+
+            });
+        }
+
+        #endregion
 
         #region Company
         #region OrganizationList
