@@ -197,6 +197,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="booksCustomerMasterId">booksCustomerMasterId</param>
 		/// <returns></returns>
 		PropertyInstanceSearch SearchPropertyDetailsByCustomerPropertyId(string customerPropertyId, string booksCustomerMasterId);
+		/// <summary>
+		/// Insert A UPFM property instance
+		/// </summary>
+		/// <param name="propertyInstance"></param>
+		/// <returns></returns>
+		RepositoryResponse InsertUPFMPropertyInstance(UPFMPropertyInstance propertyInstance);
 
 		/// <summary>
 		/// Search Company Details By CustomerCompanyId
