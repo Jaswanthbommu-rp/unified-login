@@ -1400,7 +1400,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [Route("CompanySetup/CompanyPropertyList")]
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         [HttpPut]
-        public HttpResponseMessage UpdatePropertyForOrganization([FromBody] UPFMPropertyInstance property, Guid companyInstanceId )
+        public HttpResponseMessage UpdatePropertyForOrganization([FromBody] UPFMPropertyInstance property, Guid companyInstanceId)
         {
             if ((companyInstanceId == Guid.Empty) || (companyInstanceId == null))
             {
