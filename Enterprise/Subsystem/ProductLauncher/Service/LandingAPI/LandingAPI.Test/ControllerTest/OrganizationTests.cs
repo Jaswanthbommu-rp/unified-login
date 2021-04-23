@@ -997,6 +997,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
            .Setup(m => m.Execute<string>(StoredProcNameConstants.SP_GetOrganizationSettingValue, null))
            .Returns("0");
 
+            Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
+            mockHttpMessageHandler.Setup(HttpMethod.Put, $"http://localhost/companyinstance/" + _RealPageId.ToString().ToLower() + "/UPFM", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
+
             OrganizationController organizationController = new OrganizationController(
                 _mockRepository.Object
                 , _mockRepositoryResponse.Object
@@ -1016,6 +1019,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 UsePrimaryProperties = 0,
                 CompanyAddress = new CompanyInstanceAddress() { Address = "1234 Address", City = "Some City", State = "State", Country = "USA", PostalCode = "12345" }
             };
+
+            //mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/companyinstance/{_RealPageId}/UPFM", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
+            //"companyinstance/c802694d-5553-4527-8616-3c0f434ae62d/UPFM"
             HttpResponseMessage response = organizationController.UpdateOrganization(organizationUpdate);
             OrganizationCreateResult orgResult = JsonConvert.DeserializeObject<OrganizationCreateResult>(response.Content.ReadAsStringAsync().Result);
 
