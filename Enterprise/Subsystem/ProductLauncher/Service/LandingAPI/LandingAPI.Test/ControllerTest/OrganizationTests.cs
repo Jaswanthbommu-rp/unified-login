@@ -1000,6 +1000,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
             mockHttpMessageHandler.Setup(HttpMethod.Put, $"http://localhost/companyinstance/" + _RealPageId.ToString().ToLower() + "/UPFM", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
 
+            new RPObjectCache().BustCache();
+
             OrganizationController organizationController = new OrganizationController(
                 _mockRepository.Object
                 , _mockRepositoryResponse.Object
