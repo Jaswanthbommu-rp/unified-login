@@ -151,10 +151,10 @@ END
 
 --SEED ACTIVITY LOG TYPES
 BEGIN
-   IF NOT EXISTS (SELECT * FROM [AuditDb].[Logging].[LogCategoryType] 
+   IF NOT EXISTS (SELECT * FROM [Logging].[LogCategoryType] 
                    WHERE [Name] = 'Company Setup')
    BEGIN
-       INSERT INTO Logging.LogCategoryType ([Name], [Description])
+       INSERT INTO [Logging].[LogCategoryType] ([Name], [Description])
 		VALUES ('Company Setup', 'Company activities, such as create and product enablement')
    END
 END
@@ -164,57 +164,57 @@ BEGIN
 	DECLARE @logCategoryTypeId int
 
 	SELECT @logCategoryTypeId = LogCategoryTypeId
-	FROM [AuditDb].[Logging].[LogCategoryType]
+	FROM [Logging].[LogCategoryType]
 	WHERE [Name] = 'Company Setup'
 	
-	IF NOT EXISTS (SELECT * FROM [AuditDb].[Logging].[LogType]
+	IF NOT EXISTS (SELECT * FROM [Logging].[LogType]
 		WHERE LogcategoryTypeId = @logCategoryTypeId AND [Name] = 'Company Create')
-	INSERT INTO [AuditDb].[Logging].[LogType] (LogcategoryTypeId, [Name], [Description])
+	INSERT INTO [Logging].[LogType] (LogcategoryTypeId, [Name], [Description])
 	VALUES (@logCategoryTypeId, 'Company Create', 'Company Create')
 
-	IF NOT EXISTS (SELECT * FROM [AuditDb].[Logging].[LogType]
+	IF NOT EXISTS (SELECT * FROM [Logging].[LogType]
 		WHERE LogcategoryTypeId = @logCategoryTypeId AND [Name] = 'Company Update')
-	INSERT INTO [AuditDb].[Logging].[LogType] (LogcategoryTypeId, [Name], [Description])
+	INSERT INTO [Logging].[LogType] (LogcategoryTypeId, [Name], [Description])
 	VALUES (@logCategoryTypeId, 'Company Update', 'Company Update')
 
-	IF NOT EXISTS (SELECT * FROM [AuditDb].[Logging].[LogType]
+	IF NOT EXISTS (SELECT * FROM [Logging].[LogType]
 		WHERE LogcategoryTypeId = @logCategoryTypeId AND [Name] = 'Company Product Update')
-	INSERT INTO [AuditDb].[Logging].[LogType] (LogcategoryTypeId, [Name], [Description])
+	INSERT INTO [Logging].[LogType] (LogcategoryTypeId, [Name], [Description])
 	VALUES (@logCategoryTypeId, 'Company Product Update', 'Company Product Update')
 
-	IF NOT EXISTS (SELECT * FROM [AuditDb].[Logging].[LogType]
+	IF NOT EXISTS (SELECT * FROM [Logging].[LogType]
 		WHERE LogcategoryTypeId = @logCategoryTypeId AND [Name] = 'Property Create')
-	INSERT INTO [AuditDb].[Logging].[LogType] (LogcategoryTypeId, [Name], [Description])
+	INSERT INTO [Logging].[LogType] (LogcategoryTypeId, [Name], [Description])
 	VALUES (@logCategoryTypeId, 'Property Create', 'Property Create')
 
-	IF NOT EXISTS (SELECT * FROM [AuditDb].[Logging].[LogType] 
+	IF NOT EXISTS (SELECT * FROM [Logging].[LogType] 
 		WHERE LogcategoryTypeId = @logCategoryTypeId AND [Name] = 'Property Update')
-	INSERT INTO [AuditDb].[Logging].[LogType] (LogcategoryTypeId, [Name], [Description])
+	INSERT INTO [Logging].[LogType] (LogcategoryTypeId, [Name], [Description])
 	VALUES (@logCategoryTypeId, 'Property Update', 'Property Update')
 
-	IF NOT EXISTS (SELECT * FROM [AuditDb].[Logging].[LogType] 
+	IF NOT EXISTS (SELECT * FROM [Logging].[LogType] 
 		WHERE LogcategoryTypeId = @logCategoryTypeId AND [Name] = 'Property Delete')
-	INSERT INTO [AuditDb].[Logging].[LogType] (LogcategoryTypeId, [Name], [Description])
+	INSERT INTO [Logging].[LogType] (LogcategoryTypeId, [Name], [Description])
 	VALUES (@logCategoryTypeId, 'Property Delete', 'Property Delete')
 
-	IF NOT EXISTS (SELECT * FROM [AuditDb].[Logging].[LogType] 
+	IF NOT EXISTS (SELECT * FROM [Logging].[LogType] 
 		WHERE LogcategoryTypeId = @logCategoryTypeId AND [Name] = 'Provisioning Company Create')
-	INSERT INTO [AuditDb].[Logging].[LogType] (LogcategoryTypeId, [Name], [Description])
+	INSERT INTO [Logging].[LogType] (LogcategoryTypeId, [Name], [Description])
 	VALUES (@logCategoryTypeId, 'Provisioning Company Create', 'Provisioning Company Create')
 
-	IF NOT EXISTS (SELECT * FROM [AuditDb].[Logging].[LogType] 
+	IF NOT EXISTS (SELECT * FROM [Logging].[LogType] 
 		WHERE LogcategoryTypeId = @logCategoryTypeId AND [Name] = 'Provisioning Property Create')
-	INSERT INTO [AuditDb].[Logging].[LogType] (LogcategoryTypeId, [Name], [Description])
+	INSERT INTO [Logging].[LogType] (LogcategoryTypeId, [Name], [Description])
 	VALUES (@logCategoryTypeId, 'Provisioning Property Create', 'Provisioning Property Create')
 
-	IF NOT EXISTS (SELECT * FROM [AuditDb].[Logging].[LogType]
+	IF NOT EXISTS (SELECT * FROM [Logging].[LogType]
 		WHERE LogcategoryTypeId = @logCategoryTypeId AND [Name] = 'Provisioning Company Product Update')
-	INSERT INTO [AuditDb].[Logging].[LogType] (LogcategoryTypeId, [Name], [Description])
+	INSERT INTO [Logging].[LogType] (LogcategoryTypeId, [Name], [Description])
 	VALUES (@logCategoryTypeId, 'Provisioning Company Product Update', 'Provisioning Company Product Update')
 
-	IF NOT EXISTS (SELECT * FROM [AuditDb].[Logging].[LogType]
+	IF NOT EXISTS (SELECT * FROM [Logging].[LogType]
 		WHERE LogcategoryTypeId = @logCategoryTypeId AND [Name] = 'Product Enablement')
-	INSERT INTO [AuditDb].[Logging].[LogType] (LogcategoryTypeId, [Name], [Description])
+	INSERT INTO [Logging].[LogType] (LogcategoryTypeId, [Name], [Description])
 	VALUES (@logCategoryTypeId, 'Product Enablement', 'Product Enablement')
 END
 GO
