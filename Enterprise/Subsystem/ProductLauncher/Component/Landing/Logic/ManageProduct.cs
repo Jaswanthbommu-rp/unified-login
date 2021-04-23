@@ -138,7 +138,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             //Get the UL Organization details by the CompanyInstanceId from BlackBook
             if (blueBookCompanyInstanceId != -1)
             {
-                var orgList = new List<UnifiedLoginCompany>();// _manageOrganization.GetUnifiedLoginCompanyList();
+                var orgList = new List<UnifiedLoginCompany>();
                 UnifiedLoginCompany ulc = orgList.FirstOrDefault(p => p.Domain.Equals("Primary") && p.BooksCustomerMasterId == blueBookCompanyInstanceId);
                 if (ulc == null)
                 {
@@ -151,7 +151,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 companyRealPageId = EmployeeCompanyRealPageId;
             }
 
-            //organization = _manageOrganization.GetOrganization(realPageId: companyRealPageId);
             if (organization != null)
             {
 				if (_defaultUserClaim.OrganizationRealPageGuid == Guid.Empty) {

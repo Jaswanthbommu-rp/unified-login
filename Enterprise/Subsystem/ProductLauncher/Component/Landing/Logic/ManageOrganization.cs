@@ -193,7 +193,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 },
                 IsActive = organization.IsActive
             };
-
             repositoryResponse = InsertOrganization(org);
 
             if (!string.IsNullOrEmpty(repositoryResponse.ErrorMessage))

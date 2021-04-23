@@ -104,11 +104,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				{
 					return response;
 				}
-                else
-                {
-					var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} enabled {ProductEnumHelper.StringValueOf((ProductEnum)product)} for {org.Name}";
-					LogAuditActivity(LogActivityTypeConstants.PRODUCT_ENABLED_FOR_COMPANY, LogActivityCategoryType.CompanySetup, message);
-				}
 			}
 			return response;
 		}
@@ -121,6 +116,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		/// <param name="configurationId"></param>
 		/// <param name="fromDate"></param>
 		/// <param name="thruDate"></param>
+		/// <param name="orgName"></param>
 		/// <returns></returns>
 		public IRepositoryResponse InsertUpdateOrganizationProduct(long partyId, int product, int? configurationId, DateTime? fromDate, DateTime? thruDate, string orgName)
 		{
@@ -165,8 +161,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		/// <summary>
 		/// Used to delete a product from an Organization
 		/// </summary>
-		/// <param name="partyId">The organization id for the product to delete</param>
-		/// <param name="product">The product to delete</param>
+		/// <param name="partyId"></param>
+		/// <param name="product"></param>
+		/// <param name="org"></param>
 		/// <returns></returns>
 		public IRepositoryResponse DeleteOrganizationProduct(long partyId, ProductEnum product, Organization org)
 		{
@@ -181,17 +178,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			}
 
 			return response;
-		}
-
-		/// <summary>
-		/// Used to delete a product from an Organization, when called from provisioning
-		/// </summary>
-		/// <param name="partyId"></param>
-		/// <param name="product"></param>
-		/// <returns></returns>
-		public IRepositoryResponse DeleteOrganizationProductFromProvisioning(long partyId, ProductEnum product)
-		{
-			return _organizationProductRepository.DeleteOrganizationProduct(partyId, product);
 		}
 
 		/// <summary>
