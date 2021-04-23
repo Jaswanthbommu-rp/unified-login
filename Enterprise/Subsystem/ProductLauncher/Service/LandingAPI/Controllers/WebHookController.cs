@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 
@@ -35,6 +36,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         private IManageBlueBook _manageBlueBook;
         private IManageOrganizationProduct _manageOrganizationProduct;
         private IOrganizationProductRepository _organizationProductRepository;
+        private IManageProduct _manageProduct;
 
         public WebHookController()
         {
@@ -49,7 +51,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _manageOrganization = new ManageOrganization(repository, userClaim, messageHandler);
             _manageBlueBook = new ManageBlueBook(userClaim, repository, _productInternalSettingRepository, messageHandler);
             _organizationProductRepository = new OrganizationProductRepository(repository);
-            _manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository);
+            _manageProduct = new ManageProduct(repository, userClaim, messageHandler);
+            _manageOrganizationProduct = new ManageOrganizationProduct(userClaim, repository, _manageBlueBook, _manageProduct);
             _userClaims = userClaim;
         }
 
@@ -64,8 +67,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _propertyRepository = new PropertyRepository();
             _productInternalSettingRepository = new ProductInternalSettingRepository();
             _manageOrganization = new ManageOrganization(_userClaims);
+            
+            ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
+            if (!currentClaimPrincipal.Identity.IsAuthenticated)
+            {
+                var org = _manageOrganization.GetOrganization(EmployeeCompanyRealPageId);
+                _userClaims.OrganizationPartyId = org.PartyId;
+                _userClaims.UserRealPageGuid = new Guid("00000000-0000-0000-0000-000000000001");
+                _userClaims.OrganizationMasterId = -1;
+                _userClaims.UserId = 0;
+                _userClaims.LoginName = "autoprovisioning";
+                _userClaims.FirstName = "Auto";
+                _userClaims.LastName = "Provisioning";
+            }
+
+            _manageOrganization = new ManageOrganization(_userClaims);
             _organizationProductRepository = new OrganizationProductRepository();
-            _manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository);
+            _manageOrganizationProduct = new ManageOrganizationProduct(_userClaims);
             _manageBlueBook = new ManageBlueBook(_userClaims);
         }
 
@@ -342,7 +360,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                 {
                                     if (existingProductList.All(p => p.ProductId != productId))
                                     {
-                                        var addresponse = _manageOrganizationProduct.InsertUpdateOrganizationProduct(partyId: org.PartyId, product: productId, configurationId: null, fromDate: null, thruDate: null);
+                                        var addresponse = _manageOrganizationProduct.InsertUpdateOrganizationProductFromProvisioning(productId, null, null, null, org);
                                     }
                                 }
                             }
@@ -396,7 +414,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                 {
                                     if (product["productCenterSourceId"] != null && product["productCenterSourceId"].ToString() != "")
                                     {
-                                        var addresponse = _manageOrganizationProduct.DeleteOrganizationProduct(partyId: orgDetails.PartyId, product: (ProductEnum) Convert.ToInt32(product["productCenterSourceId"]));
+                                        var addresponse = _manageOrganizationProduct.DeleteOrganizationProduct(partyId: orgDetails.PartyId, product: (ProductEnum) Convert.ToInt32(product["productCenterSourceId"]), org: orgDetails);
                                         _manageOrganizationProduct.DisableUsersForProduct(partyId: orgDetails.PartyId, product: (ProductEnum) Convert.ToInt32(product["productCenterSourceId"]));
                                         centerCancel.Details.Add(new ProductCenterCancellationSettings()
                                         {
@@ -597,6 +615,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 organization.OrganizationDomainId = organizationDomainList.FirstOrDefault(p => p.Name.Equals(domain, StringComparison.OrdinalIgnoreCase)).OrganizationDomainId;
             }
 
+            organization.OrganizationDomain = domain;
             var emailAdditional = domain.Equals("Primary", StringComparison.OrdinalIgnoreCase) ? "" : domain.ToLower();
             organization.AdminUser.Email = $"{customerCompany.CustomerCompanyId}{emailAdditional}admin@realpage.com";
 

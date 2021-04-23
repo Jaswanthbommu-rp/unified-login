@@ -23,8 +23,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// </summary>
 		/// <param name="partyId"></param>
 		/// <param name="product"></param>
+		/// <param name="org"></param>
 		/// <returns></returns>
-		IRepositoryResponse DeleteOrganizationProduct(long partyId, ProductEnum product);
+		IRepositoryResponse DeleteOrganizationProduct(long partyId, ProductEnum product, Organization org);
 
 		/// <summary>
 		/// Used to insert a new product to an Organization
@@ -34,8 +35,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="configurationId"></param>
 		/// <param name="fromDate"></param>
 		/// <param name="thruDate"></param>
+		/// <param name="orgName"></param>
 		/// <returns></returns>
-		IRepositoryResponse InsertUpdateOrganizationProduct(long partyId, int product, int? configurationId, DateTime? fromDate, DateTime? thruDate);
+		IRepositoryResponse InsertUpdateOrganizationProduct(long partyId, int product, int? configurationId, DateTime? fromDate, DateTime? thruDate, string orgName);
+
+		/// <summary>
+		/// Used to insert a new product to an Organization from provisioning
+		/// </summary>
+		/// <param name="partyId"></param>
+		/// <param name="product"></param>
+		/// <param name="configurationId"></param>
+		/// <param name="fromDate"></param>
+		/// <param name="thruDate"></param>
+		/// <param name="org"></param>
+		/// <returns></returns>
+		IRepositoryResponse InsertUpdateOrganizationProductFromProvisioning(int product, int? configurationId, DateTime? fromDate, DateTime? thruDate, Organization org);
 
 		/// <summary>
 		/// Used to delete users for product for an Organization
