@@ -98,5 +98,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		/// </summary>
 		[JsonProperty(PropertyName = "UsePrimaryProperties")]
 		public bool UsePrimaryProperties { get; set; } = false;
+
+		/// <summary>
+		/// Persona Product used primary properties
+		/// </summary>
+		[JsonProperty(PropertyName = "PersonaUsedPrimaryProperties")]
+		public bool PersonaUsedPrimaryProperties { get; set; } = false;
 	}
 }
