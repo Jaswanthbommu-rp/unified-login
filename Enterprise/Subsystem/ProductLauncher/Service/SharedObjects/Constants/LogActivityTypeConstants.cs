@@ -29,7 +29,8 @@
         public const string PRODUCT_ENABLED_FOR_COMPANY = "Product enabled for company";
         public const string PRODUCT_DISABLED_FOR_COMPANY = "Product disabled for company";
         public const string PROPERTY_CREATED = "Property Created";
-        public const string PROPERTY_DELETED = "Property deleted from company";
+        public const string PROPERTY_DELETED = "Property deleted for company";
+        public const string PROPERTY_UPDATED = "Property updated ro company";
     }
 
     //public static class SecurityActivityMessageConstants

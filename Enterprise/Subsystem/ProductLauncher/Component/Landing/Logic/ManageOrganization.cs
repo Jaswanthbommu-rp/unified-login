@@ -939,7 +939,36 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 if (string.Compare(oldProperty.Name, property.Name, StringComparison.OrdinalIgnoreCase) != 0)
                 {
                     var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} updated the property name from {oldProperty.Name} to {property.Name} for {orgName}";
-                    LogAuditActivity(LogActivityTypeConstants.COMPANY_UPDATED, LogActivityCategoryType.CompanySetup, message);
+                    LogAuditActivity(LogActivityTypeConstants.PROPERTY_UPDATED, LogActivityCategoryType.CompanySetup, message);
+                }
+                //Is property address being updated
+                var oldAddress = $"{oldProperty.Address}, {oldProperty.City}, {oldProperty.County}, {oldProperty.State}, {oldProperty.Country}, {oldProperty.PostalCode}";
+                var newAddress = $"{property.Address}, {property.City}, {property.County}, {property.State}, {property.Country}, {property.PostalCode}";
+
+                if (string.Compare(oldProperty.Name, property.Name, StringComparison.OrdinalIgnoreCase) != 0)
+                {
+                    var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} updated the property address from {oldAddress} to {newAddress} for {orgName}";
+                    LogAuditActivity(LogActivityTypeConstants.PROPERTY_UPDATED, LogActivityCategoryType.CompanySetup, message);
+                }
+
+                //Is property status being updated
+                if (oldProperty.IsActive != property.IsActive)
+                {
+                    var newStatus = "";
+                    var prevStatus = "";
+                    
+                    if (oldProperty.IsActive == true)
+                    {
+                        newStatus = "Inactive";
+                        prevStatus = "Active";
+                    }
+                    else
+                    {
+                        newStatus = "Active";
+                        prevStatus = "Inactive";
+                    }
+                    var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} updated the property status for {property.Name} from {prevStatus} to {newStatus}";
+                    LogAuditActivity(LogActivityTypeConstants.PROPERTY_UPDATED, LogActivityCategoryType.CompanySetup, message);
                 }
 
                 bool booksResponse =  UpdatePropertyInBooks(property);
@@ -967,6 +996,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             property.InstanceId = response.RealPageId;
             if (response.ErrorMessage.Length == 0)
             {
+                var orgName = GetOrganization(companyInstanceID)?.Name;
+                var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} created a new property, {property.Name} with ID {response.Id} in the {property.Domain} domain for {orgName}";
+                LogAuditActivity(LogActivityTypeConstants.PROPERTY_CREATED, LogActivityCategoryType.CompanySetup, message);
+
                 bool booksResponse = AddPropertyToBooks(property, companyInstanceID);
                 bool settingsResponse = false;
                 if (booksResponse)
