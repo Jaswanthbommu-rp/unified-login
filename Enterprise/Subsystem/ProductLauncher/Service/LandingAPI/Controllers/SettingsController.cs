@@ -50,6 +50,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		[SwaggerResponseExamples(typeof(IList<Setting>), typeof(SettingsExample))]
 		[Route("settings/company/{booksCustomerMasterId}")]
 		[HttpGet]
+		[Obsolete("Deprecated - Use apicore/v2/SettingsManagement")]
 		public HttpResponseMessage GetSettings(string category, long booksCustomerMasterId, int bookMasterTypeId = (int)BookMasterType.CustomerMasterId)
 		{
 			IApiError apiError;
@@ -215,6 +216,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		[SwaggerResponse(HttpStatusCode.OK, Description = "Settings updated")]
 		[Route("settings/company/{booksCustomerMasterId}")]
 		[HttpPatch]
+		[Obsolete("Deprecated - Use apicore/v2/SettingsManagement")]
 		public HttpResponseMessage UpdateSettings([FromBody] IList<Setting> settings, string category, long booksCustomerMasterId, int bookMasterTypeId = (int)BookMasterType.CustomerMasterId)
 		{
 			IApiError apiError;

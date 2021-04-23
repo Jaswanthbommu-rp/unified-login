@@ -4,6 +4,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Attribute;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using Swashbuckle.Swagger.Annotations;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -52,6 +53,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		[SwaggerOperation("CustomFieldType")]
 		[Route("customfield/type")]
 		[HttpGet]
+		[Obsolete("Deprecated")]
 		public HttpResponseMessage CustomFieldType(byte? fieldTypeId = null)
 		{
 			IList<CustomFieldType> customFieldTypeList = _manageCustomFields.GetCustomFieldType(fieldTypeId);

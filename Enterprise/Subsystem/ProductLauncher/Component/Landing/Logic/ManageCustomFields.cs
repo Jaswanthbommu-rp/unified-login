@@ -54,6 +54,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="booksCustomerMasterId">Books Customer MasterId</param>
         /// <param name="bookMasterTypeId">Type of Book MasterId (e.g. 1 = Black, 2 = Blue)</param>
         /// <returns>RepositoryResponse object</returns>
+        [Obsolete("Deprecated - Use apicore/v2/SettingsManagement")]
         public RepositoryResponse AddUpdateCustomFields(IList<Setting> settings, long booksCustomerMasterId, int bookMasterTypeId = (int)BookMasterType.CustomerMasterId)
         {
             RepositoryResponse repositoryResponse = new RepositoryResponse();
