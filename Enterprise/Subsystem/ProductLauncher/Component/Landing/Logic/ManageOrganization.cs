@@ -211,7 +211,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             org.UsePrimaryProperties = organization.UsePrimaryProperties;
 
             // add the given products to the new company
-            var productResponse = AddProductsToOrganization(addProductList, org.PartyId, organization.OrganizationTypeId);
+            var productResponse = AddProductsToOrganization(addProductList, org.PartyId, organization.OrganizationTypeId, organization.Name);
             if (!string.IsNullOrEmpty(productResponse.ErrorMessage))
             {
                 outputResult.Status.ErrorMsg = productResponse.ErrorMessage;
@@ -466,7 +466,45 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 throw new Exception("Invalid parameter realPageId.");
             }
-            return _organizationRepository.UpdateOrganization(organization);
+
+            var oldOrganization = GetOrganization(organization.RealPageId);
+            var repositoryResponse = _organizationRepository.UpdateOrganization(organization);
+
+            if (string.IsNullOrEmpty(repositoryResponse.ErrorMessage))
+            {
+                //Is company name being updated
+                if (string.Compare(oldOrganization.Name, organization.Name, StringComparison.OrdinalIgnoreCase) != 0)
+                {
+                    var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} updated the company name from {oldOrganization.Name} to {organization.Name}";
+                    LogAuditActivity(LogActivityTypeConstants.COMPANY_UPDATED, LogActivityCategoryType.CompanySetup, message);
+                }
+                //Is company type being updated
+                if (oldOrganization.OrganizationTypeId != organization.OrganizationTypeId)
+                {
+                    var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} updated the company type for {oldOrganization.Name} to {organization.Name}";
+                    LogAuditActivity(LogActivityTypeConstants.COMPANY_UPDATED, LogActivityCategoryType.CompanySetup, message);
+                }
+                //Is company status being updated
+                if (oldOrganization.IsActive != organization.IsActive)
+                {
+                    var newStatus = "";
+                    var prevStatus = "";
+                    if (oldOrganization.IsActive == 1)
+                    {
+                        newStatus = "Inactive";
+                        prevStatus = "Active";
+                    }
+                    else
+                    {
+                        newStatus = "Active";
+                        prevStatus = "Inactive";
+                    }
+                    var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} updated the company status for {organization.Name} from {prevStatus} to {newStatus}";
+                    LogAuditActivity(LogActivityTypeConstants.COMPANY_UPDATED, LogActivityCategoryType.CompanySetup, message);
+                }
+            }
+
+            return repositoryResponse;
         }
 
         public void UpdateOrganizationUsePrimaryPropertySetting(Organization organization)
@@ -689,7 +727,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		/// <param name="partyId">Organization PartyId</param>
 		/// <param name="organizationTypeId">Organization Type</param>
 		/// <returns>IRepositoryResponse</returns>
-		private IRepositoryResponse AddProductsToOrganization(List<int> addProductList, long partyId, int organizationTypeId)
+		private IRepositoryResponse AddProductsToOrganization(List<int> addProductList, long partyId, int organizationTypeId, string organizationName)
 		{
             IRepositoryResponse response = new RepositoryResponse();
 
@@ -731,7 +769,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 			foreach (int product in addProductList)
 			{
-				response = _manageOrganizationProduct.InsertUpdateOrganizationProduct(partyId: partyId, product: product, configurationId: null, fromDate: null, thruDate: null);
+				response = _manageOrganizationProduct.InsertUpdateOrganizationProduct(partyId: partyId, product: product, configurationId: null, fromDate: null, thruDate: null, orgName: organizationName);
 				if (!string.IsNullOrEmpty(response.ErrorMessage))
 				{
 					return response;

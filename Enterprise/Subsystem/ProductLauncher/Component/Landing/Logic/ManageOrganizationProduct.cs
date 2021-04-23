@@ -99,7 +99,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					}
 				}
 
-				response = InsertUpdateOrganizationProduct(partyId: org.PartyId, product: product, configurationId: null, fromDate: null, thruDate: null);
+				response = InsertUpdateOrganizationProduct(partyId: org.PartyId, product: product, configurationId: null, fromDate: null, thruDate: null, orgName: org.Name);
 				if (!string.IsNullOrEmpty(response.ErrorMessage))
 				{
 					return response;
@@ -122,9 +122,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		/// <param name="fromDate"></param>
 		/// <param name="thruDate"></param>
 		/// <returns></returns>
-		public IRepositoryResponse InsertUpdateOrganizationProduct(long partyId, int product, int? configurationId, DateTime? fromDate, DateTime? thruDate )
+		public IRepositoryResponse InsertUpdateOrganizationProduct(long partyId, int product, int? configurationId, DateTime? fromDate, DateTime? thruDate, string orgName)
 		{
-			return _organizationProductRepository.InsertUpdateOrganizationProduct(partyId, product, configurationId, fromDate, thruDate);
+			var response = _organizationProductRepository.InsertUpdateOrganizationProduct(partyId, product, configurationId, fromDate, thruDate);
+
+			if (response.ErrorMessage.Length == 0)
+			{
+				var products = _productRepository.GetAllProducts();
+				var productName = products.FirstOrDefault(p => p.ProductId == (int)product)?.Name;
+				var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} enabled {productName} for {orgName}";
+				LogAuditActivity(LogActivityTypeConstants.PRODUCT_ENABLED_FOR_COMPANY, LogActivityCategoryType.CompanySetup, message);
+			}
+			
+			return response;
 		}
 
 		/// <summary>

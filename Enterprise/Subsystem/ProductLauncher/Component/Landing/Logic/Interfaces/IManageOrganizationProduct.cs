@@ -34,8 +34,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="configurationId"></param>
 		/// <param name="fromDate"></param>
 		/// <param name="thruDate"></param>
+		/// <param name="orgName"></param>
 		/// <returns></returns>
-		IRepositoryResponse InsertUpdateOrganizationProduct(long partyId, int product, int? configurationId, DateTime? fromDate, DateTime? thruDate);
+		IRepositoryResponse InsertUpdateOrganizationProduct(long partyId, int product, int? configurationId, DateTime? fromDate, DateTime? thruDate, string orgName);
 
 		/// <summary>
 		/// Used to insert a new product to an Organization from provisioning
