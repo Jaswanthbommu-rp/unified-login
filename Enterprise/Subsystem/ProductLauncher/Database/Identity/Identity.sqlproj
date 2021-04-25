@@ -10,8 +10,7 @@
     <ProjectGuid>{4a6bb2c4-5b62-4500-bdd0-e7c79d18abf0}</ProjectGuid>
     <DSP>Microsoft.Data.Tools.Schema.Sql.Sql130DatabaseSchemaProvider</DSP>
     <OutputType>Database</OutputType>
-    <RootPath>
-    </RootPath>
+    <RootPath />
     <RootNamespace>Identity</RootNamespace>
     <AssemblyName>Identity</AssemblyName>
     <ModelCollation>1033,CI</ModelCollation>
@@ -64,7 +63,6 @@
   </PropertyGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">11.0</VisualStudioVersion>
-    <!-- Default to the v11.0 targets path if the targets file for the current VS version is not found -->
     <SSDTExists Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets')">True</SSDTExists>
     <VisualStudioVersion Condition="'$(SSDTExists)' == ''">11.0</VisualStudioVersion>
   </PropertyGroup>
@@ -1074,6 +1072,8 @@
     <Build Include="Settings\Tables\SettingTableRowValue.sql" />
     <Build Include="Settings\Stored Procedures\AddUpdateFieldValue.sql" />
     <Build Include="Settings\Stored Procedures\GetSettingsPickListByCategory.sql" />
+    <Build Include="Settings\Stored Procedures\GetFieldsValuesByUserLoginPersonaId.sql" />
+    <Build Include="Settings\Stored Procedures\GetFieldsByPartyId.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
@@ -1181,7 +1181,7 @@
     </None>
     <None Include="Identity.EUPROD.publish.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>	
+    </None>
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\December2019Release.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\March2020Release.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\SameSiteData.sql" />
