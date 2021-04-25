@@ -634,41 +634,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 			IList<OrganizationType> organizationTypeList = ListOrganizationType();
 			string organizationTypeName = organizationTypeList.ToList().FirstOrDefault(o => o.OrganizationTypeId == organizationTypeId).Name;
-
-			if (!addProductList.Contains((int)ProductEnum.UnifiedPlatform))
-			{
-				// add unified login product to every new org
-				addProductList.Add((int)ProductEnum.UnifiedPlatform);
-			}
-			if (!addProductList.Contains((int)ProductEnum.ProductUpdates))
-			{
-				// add product updates to every new org
-				addProductList.Add((int)ProductEnum.ProductUpdates);
-			}
-			if (!addProductList.Contains((int)ProductEnum.ClientPortal))
-			{
-				// add client portal product to every new org
-				addProductList.Add((int)ProductEnum.ClientPortal);
-			}
-			if (!addProductList.Contains((int)ProductEnum.MigrationTool))
-			{
-				// add migration tool product to every new org
-				addProductList.Add((int)ProductEnum.MigrationTool);
-			}
-
-			//Do not add products ClientPortal and MigrationTool to Company if the company type is Vendor.
-			if (organizationTypeName.Equals("Vendor", StringComparison.OrdinalIgnoreCase))
-			{
-				addProductList.Remove((int)ProductEnum.ClientPortal);
-				addProductList.Remove((int)ProductEnum.MigrationTool);
-				if (!addProductList.Contains((int)ProductEnum.VendorMarketplace))
+            //Enable Default products for company
+            var productInternalSettingsByType = _productInternalSettingRepository.GetProductSettingByType("AlwaysEnableProductForOrgType");           
+            foreach (var productSetting in productInternalSettingsByType)
+            {
+                string[] types = productSetting.Value.Split(',');
+                if(types.Contains(organizationTypeName))
 				{
-					// add VendorMarketplace product to every new org of type Vendor
-					addProductList.Add((int)ProductEnum.VendorMarketplace);
-				}
-			}
-
-			foreach (int product in addProductList)
+                    if (!addProductList.Contains(productSetting.ProductId))
+                    {
+                        // add unified login product to every new org
+                        addProductList.Add(productSetting.ProductId);
+                    }
+                }
+            }
+            //Enable Default products for company
+            var productsToActivateOnOtherProductActivation = _productInternalSettingRepository.GetProductSettingByType("EnableProductOnOtherProductsActivation");
+            foreach(var productsToActivate in productsToActivateOnOtherProductActivation)
+			{
+                int[] products = Array.ConvertAll(productsToActivate.Value.Split(','), int.Parse);
+                foreach(int productId in products)
+				{
+                    if (addProductList.Contains(productId) && !addProductList.Contains(productsToActivate.ProductId))
+                    {
+                            addProductList.Add(productsToActivate.ProductId);                       
+                    }
+                }
+            }
+            foreach (int product in addProductList)
 			{
 				response = manageOrganizationProduct.InsertUpdateOrganizationProduct(partyId: partyId, product: product, configurationId: null, fromDate: null, thruDate: null);
 				if (!string.IsNullOrEmpty(response.ErrorMessage))
