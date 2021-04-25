@@ -142,6 +142,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             
             _defaultUserClaim.CorrelationId = new Guid();
             _defaultUserClaim.CustomerMasterId = _BooksCompanyMasterId;
+            _defaultUserClaim.OrganizationPartyId = _PartyId;
 
             var organizationTypeList = new List<OrganizationType>()
             {
