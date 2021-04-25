@@ -623,8 +623,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             dynamic param = new
             {
                 BatchSize = batchSize,
-                RetryCount = retryCount,
-                IncludeErrorRecord = includeErrorRecord
+                RetryCount = retryCount
             };
             using (var repository = GetRepository())
             {

@@ -241,5 +241,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="usePrimaryProperty">usePrimaryProperty</param>
 		/// <returns></returns>
 		RepositoryResponse UpdateUsePrimaryPropertyForOrganizationProduct(long organizationPartyId, int productId, bool usePrimaryProperty);
-	}
+
+        void DeleteQueuedOrganizations();
+
+    }
 }

@@ -1637,10 +1637,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [SwaggerResponse(HttpStatusCode.OK, Description = "Clean up complete")]
         [Route("companysetup/cleanupdatabases")]
         [AuthorizeScope("companyfunctions", "rplandingapi")]
-        [HttpGet]
-        public HttpResponseMessage RunCompanyDatebaseAndUDMCleanUp()
+        [HttpDelete]
+        public HttpResponseMessage RunCompanyDatabaseDeleteAndUDMCleanUp()
         {
-            List<CompanySetup> companyList = _manageOrganization.GetCompanyList(organizationName, domain ?? 0, blueId, organizationId ?? 0, globals);
+            _manageOrganization.DeleteQueuedOrganizations();
 
             return Request.CreateResponse(HttpStatusCode.OK);
         }

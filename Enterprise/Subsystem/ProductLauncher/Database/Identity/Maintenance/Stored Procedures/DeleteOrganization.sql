@@ -1,4 +1,4 @@
-﻿CREATE PROCEDURE [Maintenance].[DeleteOrganization]
+﻿CREATE OR alter PROCEDURE [Maintenance].[DeleteOrganization]
     @OrganizationPartyId BIGINT,
 	@OrganizationRealPageId UNIQUEIDENTIFIER,
 	@OrganizationRemovalQueueId INT = 0
@@ -6,6 +6,12 @@ AS
     BEGIN
 		BEGIN TRY
 			SET NOCOUNT ON;
+
+			DECLARE @RetryCount TINYINT = 0,
+				@TranCount INT = 0
+
+			SET @TranCount = @@TRANCOUNT
+
 			IF @OrganizationRemovalQueueId <> 0
 			BEGIN
 				INSERT INTO Maintenance.OrganizationRemovalQueueHistory
@@ -14,9 +20,13 @@ AS
 				    OrganizationRemovalQueueStatusId
 				)
 				SELECT @OrganizationRemovalQueueId, OrganizationRemovalQueueStatusId FROM Maintenance.OrganizationRemovalQueueStatus WHERE Name = 'Pending Database Removal'
+				SELECT @RetryCount = OrganizationRemovalRetryCount FROM Maintenance.OrganizationRemovalQueue WHERE @OrganizationRemovalQueueId = @OrganizationRemovalQueueId
 			END
 
-			BEGIN TRANSACTION;
+			IF @TranCount = 0
+				BEGIN TRANSACTION;
+			ELSE
+				SAVE TRANSACTION DeleteOrganization_Transation
 
 			DECLARE	@Organization TABLE (
 				PartyID bigint NOT NULL,
@@ -296,12 +306,12 @@ AS
 						INNER JOIN Ident.UserLoginPersona iulp ON (iulp.UserLoginId = iul.UserId)
 						INNER JOIN @Organization o ON (o.PartyId = iulp.OrganizationPartyId)
 
-			DELETE ue
-			FROM	Enterprise.UserEmployeeId ue
-						INNER JOIN Ident.UserLoginPersona iulp ON (iulp.UserLoginPersonaId = ue.UserLoginPersonaId)
-						INNER JOIN Ident.UserLogin iul ON (iul.UserId = iulp.UserLoginId)
-						INNER JOIN @Person p ON (p.PartyID = iul.PersonPartyId)
-			
+			--DELETE ue
+			--FROM	Enterprise.UserEmployeeId ue
+			--			INNER JOIN Ident.UserLoginPersona iulp ON (iulp.UserLoginPersonaId = ue.UserLoginPersonaId)
+			--			INNER JOIN Ident.UserLogin iul ON (iul.UserId = iulp.UserLoginId)
+			--			INNER JOIN @Person p ON (p.PartyID = iul.PersonPartyId)
+			--
 			DELETE	iulp
 			FROM		Ident.UserLoginPersona iulp
 							INNER JOIN Ident.UserLogin iul ON (iul.UserId = iulp.UserLoginId)
@@ -379,7 +389,8 @@ AS
 			FROM	Enterprise.Party ep
 						INNER JOIN @Organization o ON (o.PartyId = ep.PartyId)
 
-			COMMIT;
+			IF @@TRANCOUNT = 0
+				COMMIT;
 
 			IF @OrganizationRemovalQueueId <> 0
 			BEGIN
@@ -394,37 +405,37 @@ AS
 			SELECT @OrganizationPartyId AS ID
 		END TRY
 		BEGIN CATCH
-			IF @@TRANCOUNT > 0
-				ROLLBACK TRAN;
+			DECLARE @error int, @message varchar(4000), @xstate int;
+			SELECT @error = ERROR_NUMBER(), @message = ERROR_MESSAGE(), @xstate = XACT_STATE();
+						
+			IF @xstate = 1 and @TranCount = 0
+				ROLLBACK;
+			IF @xstate = 1 and @TranCount > 0
+				ROLLBACK TRANSACTION DeleteOrganization_Transation
 
-			IF @OrganizationRemovalQueueId <> 0
-			BEGIN
-				INSERT INTO Maintenance.OrganizationRemovalQueueHistory
-				(
-				    OrganizationRemovalQueueId,
-				    OrganizationRemovalQueueStatusId				    
-				)
-				SELECT @OrganizationRemovalQueueId, OrganizationRemovalQueueStatusId FROM Maintenance.OrganizationRemovalQueueStatus WHERE Name = 'Database Removal Failed'
+			SET @RetryCount += 1
 
-				UPDATE Maintenance.OrganizationRemovalQueue SET OrganizationRemovalQueueStatusId = (SELECT TOP (1) OrganizationRemovalQueueStatusId FROM Maintenance.OrganizationRemovalQueueStatus WHERE Name = 'Database Removal Failed' ORDER BY OrganizationRemovalQueueStatusId ) WHERE OrganizationRemovalQueueId = @OrganizationRemovalQueueId
-				INSERT INTO Maintenance.OrganizationRemovalQueueError
-				(
-				    OrganizationRemovalQueueId,
-				    ErrorMessage
-				)
-				VALUES ( @OrganizationRemovalQueueId, ERROR_MESSAGE() )				
-			END
-			ELSE
-            BEGIN
-				DECLARE @ErrorLogID INT;
-				EXEC dbo.LogError
-					@ErrorLogID = @ErrorLogID OUTPUT;
-				SELECT 0 AS Id,
-					ErrorMessage
-				FROM dbo.ErrorLog
-				WHERE ErrorLogID = @ErrorLogID;
+			INSERT INTO Maintenance.OrganizationRemovalQueueHistory
+			(
+				OrganizationRemovalQueueId,
+				OrganizationRemovalQueueStatusId				    
+			)
+			SELECT @OrganizationRemovalQueueId, OrganizationRemovalQueueStatusId FROM Maintenance.OrganizationRemovalQueueStatus WHERE Name = 'Database Removal Failed'
 
-			END
+			UPDATE Maintenance.OrganizationRemovalQueue 
+				SET OrganizationRemovalRetryCount = @RetryCount, 
+					OrganizationRemovalQueueStatusId = (SELECT TOP (1) OrganizationRemovalQueueStatusId FROM Maintenance.OrganizationRemovalQueueStatus WHERE Name = 'Database Removal Failed' ORDER BY OrganizationRemovalQueueStatusId ) 
+				WHERE 
+					OrganizationRemovalQueueId = @OrganizationRemovalQueueId
+				
+			INSERT INTO Maintenance.OrganizationRemovalQueueError
+			(
+				OrganizationRemovalQueueId,
+				ErrorMessage
+			)
+			VALUES ( @OrganizationRemovalQueueId, @message )
+			RAISERROR ('Maintenance.DeleteOrganization: %d: %s', 16, 1, @error, @message) ;
+
 			SELECT  0 AS Id
 					
 		END CATCH

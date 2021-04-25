@@ -1,8 +1,7 @@
-﻿CREATE PROCEDURE [Maintenance].[ListOrganizationToDelete]
+﻿CREATE OR alter PROCEDURE [Maintenance].[ListOrganizationToDelete]
 (
     @BatchSize INT,
-    @RetryCount TINYINT = 3,
-    @IncludeErrorRecord BIT = 'True'
+    @RetryCount TINYINT = 3
 )
 AS
 BEGIN
@@ -13,69 +12,64 @@ BEGIN
 		OrganizationRemovalQueueId INT NOT NULL,
 		OrganizationPartyId INT NOT NULL,
 		OrganizationRealPageId UNIQUEIDENTIFIER NOT NULL,
-		OrganizationRemovalQueueStatusId INT NOT NULL
+		OrganizationRemovalQueueStatusId INT NOT NULL,
+		OrganizationRemoveUDMData TINYINT NOT NULL,
+		OrganizationRemovalRetryCount TINYINT NOT NULL
     );
 
 	DECLARE @OrganizationRemovalQueueStatusId INT
 
-	SELECT @OrganizationRemovalQueueStatusId = OrganizationRemovalQueueStatusId FROM Maintenance.OrganizationRemovalQueueStatus WHERE [Name] = 'Database Removal Failed'
+	SELECT @OrganizationRemovalQueueStatusId = OrganizationRemovalQueueStatusId FROM Maintenance.OrganizationRemovalQueueStatus WHERE [Name] = 'Pending Database Removal'
 
     BEGIN TRANSACTION; -- HAve to lock the tables so that another process can't come in and scoop up our waiting processes
 
-	;WITH QueueErrorList ( errorcount, queueid ) AS (SELECT COUNT(1), OrganizationRemovalQueueId 
-				FROM Maintenance.OrganizationRemovalQueueHistory ORQ 
-				INNER JOIN Maintenance.OrganizationRemovalQueueStatus ORQS ON ORQS.OrganizationRemovalQueueStatusId = ORQ.OrganizationRemovalQueueStatusId
-				WHERE ORQS.Name = 'Database Removal Failed' AND DATEDIFF(DD, StatusChangeDate, GETUTCDATE()) < 2 GROUP BY OrganizationRemovalQueueId
-			)
-	,batchtoprocess as (
+	;WITH BatchToProcess as (
 		SELECT
 			   OrganizationRemovalQueueId,
 			   OrganizationPartyId,
 			   OrganizationRealPageId,
-			   OrganizationRemovalQueueStatusId
+			   OrganizationRemovalQueueStatusId,
+			   OrganizationRemoveUDMData,
+			   OrganizationRemovalRetryCount
 
-		FROM Maintenance.OrganizationRemovalQueue ORQ
-		LEFT OUTER JOIN QueueErrorList QEL ON QEL.queueid = ORQ.OrganizationRemovalQueueId
-		WHERE (
-				  @IncludeErrorRecord = 'True'
-				  AND
-				  (
-					  OrganizationRemovalQueueStatusId IN (SELECT OrganizationRemovalQueueStatusId FROM Maintenance.OrganizationRemovalQueueStatus WHERE Name IN ('Database Removal Failed')
-					  AND qel.errorcount < @RetryCount
-				  )
-			  )
-			  OR
-			  (
-				OrganizationRemovalQueueStatusId IN (SELECT OrganizationRemovalQueueStatusId FROM Maintenance.OrganizationRemovalQueueStatus WHERE Name IN ('Pending Processing'))
-				AND @IncludeErrorRecord = 'False'
-			  )
+		FROM Maintenance.OrganizationRemovalQueue
+		WHERE
+			OrganizationRemovalRetryCount <= @RetryCount
+			AND
+			OrganizationRemovalQueueStatusId IN (SELECT OrganizationRemovalQueueStatusId FROM Maintenance.OrganizationRemovalQueueStatus WHERE Name IN ('Pending Processing', 'Database Removal Failed'))
 		)
-	)
     INSERT INTO @PBFiltered
     (
 		OrganizationRemovalQueueId,
 		OrganizationPartyId,
 		OrganizationRealPageId,
-		OrganizationRemovalQueueStatusId
+		OrganizationRemovalQueueStatusId,
+		OrganizationRemoveUDMData,
+		OrganizationRemovalRetryCount
     )
 	SELECT TOP (@BatchSize)
 		OrganizationRemovalQueueId,
 			   OrganizationPartyId,
 			   OrganizationRealPageId,
-			   @OrganizationRemovalQueueStatusId
+			   @OrganizationRemovalQueueStatusId,
+			   OrganizationRemoveUDMData,
+			   OrganizationRemovalRetryCount
 		FROM
-			batchtoprocess
+			BatchToProcess
 
     UPDATE ORQ
-    SET OrganizationRemovalQueueStatusId = (SELECT OrganizationRemovalQueueStatusId FROM Maintenance.OrganizationRemovalQueueStatus WHERE name = 'Pending Database Removal' )
+    SET OrganizationRemovalQueueStatusId = (SELECT TOP (1) OrganizationRemovalQueueStatusId FROM Maintenance.OrganizationRemovalQueueStatus WHERE name = 'Pending Database Removal' ORDER BY OrganizationRemovalQueueStatusId )
     FROM Maintenance.OrganizationRemovalQueue ORQ
         JOIN @PBFiltered F
             ON F.OrganizationRemovalQueueId = ORQ.OrganizationRemovalQueueId
 
-    SELECT OrganizationRemovalQueueId,
-           OrganizationPartyId,
-           OrganizationRealPageId,
-           OrganizationRemovalQueueStatusId
+    SELECT 
+		OrganizationRemovalQueueId,
+		OrganizationPartyId,
+		OrganizationRealPageId,
+		OrganizationRemovalQueueStatusId,
+		OrganizationRemoveUDMData,
+		OrganizationRemovalRetryCount
     FROM @PBFiltered;
 
     COMMIT TRANSACTION;

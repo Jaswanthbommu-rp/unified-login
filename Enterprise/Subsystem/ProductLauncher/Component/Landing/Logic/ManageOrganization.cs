@@ -817,12 +817,31 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             orgsToDelete.ForEach(p =>
             {
-                var deleteResult = _organizationRepository.DeleteOrganization(p.OrganizationRemovalQueueId, p.OrganizationPartyId, p.OrganizationRealPageId);
-                if (deleteResult == p.OrganizationPartyId)
+                try
                 {
-                    // success
+                    var deleteResult = _organizationRepository.DeleteOrganization(p.OrganizationRemovalQueueId, p.OrganizationPartyId, p.OrganizationRealPageId);
+                    if (deleteResult == p.OrganizationPartyId)
+                    {
+                        // success
+                        //if (p.OrganizationRemoveUDMData)
+                        //{
+                        //    // post to UDM to remove 
+                        //    var result = _manageBlueBook.DeleteBooksGreenBookCompanyInstance(new CompanyInstance() {CompanyInstanceSourceId = p.OrganizationRealPageId.ToString(), ModifiedBy = "UPFM Delete company"});
+                        //    if (result)
+                        //    {
+                        //        // save to log it deleted
+                        //
+                        //    }
+                        //}
+                    }
                 }
-
+                catch (Exception ex)
+                {
+                    WriteToLog(LogEventLevel.Error,
+                        $"{GetType()} - Error while deleting company." +
+                        $" Company {p.OrganizationRealPageId} , " +
+                        $" OrganizationRemovalQueueId {p.OrganizationRemovalQueueId}", exception: ex);
+                }
             });
         }
 
