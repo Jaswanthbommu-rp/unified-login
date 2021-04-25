@@ -391,16 +391,13 @@
         public const string SP_UpdateSecuritySetting = "Ident.UpdateSecuritySetting";
 
         //Unified Setting
-        public const string SP_GetUnifiedSetting = "Ident.GetUnifiedSetting";
+        public const string SP_GetUnifiedSetting = "Settings.GetUnifiedSetting";
         public const string SP_UpdateUnifiedSetting = "Ident.UpdateUnifiedSetting";
 
         //Custom Fields
-        public const string SP_AddUpdateFieldFromJSON = "CustomField.AddUpdateFieldFromJSON";
-        public const string SP_GetFieldsByMasterId = "CustomField.GetFieldsByMasterId";
-        public const string SP_GetFieldsValuesByUserLoginPersonaId = "CustomField.GetFieldsValuesByUserLoginPersonaId";
-        public const string SP_AddUpdateFieldValue = "CustomField.AddUpdateFieldValue";
-        public const string SP_GetFieldType = "CustomField.GetFieldType";
-        public const string SP_GetUnifiedSettingPicklist = "Enterprise.GetULPickListByCategory";
+        public const string SP_GetFieldsByPartyId = "Settings.GetFieldsByPartyId";
+        public const string SP_GetFieldsValuesByUserLoginPersonaId = "Settings.GetFieldsValuesByUserLoginPersonaId";
+        public const string SP_AddUpdateFieldValue = "Settings.AddUpdateFieldValue";
 
         //EmployeeId
         public const string SP_CreateEmployeeId = "Enterprise.CreateUserEmployeeId";
