@@ -1399,7 +1399,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             };
 
             _mockRepository
-                .Setup(m => m.GetMany<CustomField>(StoredProcNameConstants.SP_GetFieldsByMasterId, It.IsAny<object>()))
+                .Setup(m => m.GetMany<CustomField>(StoredProcNameConstants.SP_GetFieldsByPartyId, It.IsAny<object>()))
                 .Returns(customFieldList);
 
             OrganizationController organizationController = new OrganizationController(

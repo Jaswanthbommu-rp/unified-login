@@ -91,7 +91,7 @@
 					,MaxCharLength
 					,@UserLoginPersonaId AS 'UserLoginPersonaId'
 		FROM	@CustomFields cf
-		Join Settings.SettingTableRowValue srv on
+		left outer Join Settings.SettingTableRowValue srv on
 			cf.FieldId = srv.SettingTableRowId 
 			And srv.UserLoginPersonaId = @UserLoginPersonaId
 		Where ((@Enabled IS NULL) OR (cf.Enabled = @Enabled))

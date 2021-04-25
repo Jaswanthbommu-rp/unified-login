@@ -167,7 +167,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             globals.Add(BaseType.RequestParameter, datafilter);
 
-            IList<CustomField> customFieldList = _manageCustomFields.GetCustomField(globals: globals, booksCustomerMasterId: _userClaims.CustomerMasterId, bookMasterTypeId: (int)BookMasterType.CustomerMasterId);
+            IList<CustomField> customFieldList = _manageCustomFields.GetCustomField(globals: globals, partyId: _userClaims.OrganizationPartyId);
 
             ListResponse response = new ListResponse()
             {
