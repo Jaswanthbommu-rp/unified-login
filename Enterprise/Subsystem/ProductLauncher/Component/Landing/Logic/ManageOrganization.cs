@@ -728,18 +728,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="organizationName">organizationName</param>
         /// <returns>IRepositoryResponse</returns>
         private IRepositoryResponse AddProductsToOrganization(List<int> addProductList, long partyId, int organizationTypeId, string organizationName)
-		{
+        {
             IRepositoryResponse response = new RepositoryResponse();
 
-			IList<OrganizationType> organizationTypeList = ListOrganizationType();
-			string organizationTypeName = organizationTypeList.ToList().FirstOrDefault(o => o.OrganizationTypeId == organizationTypeId).Name;
+            IList<OrganizationType> organizationTypeList = ListOrganizationType();
+            string organizationTypeName = organizationTypeList.ToList().FirstOrDefault(o => o.OrganizationTypeId == organizationTypeId).Name;
             //Enable Default products for company
-            var productInternalSettingsByType = _productInternalSettingRepository.GetProductSettingByType("AlwaysEnableProductForOrgType");           
+            var productInternalSettingsByType = _productInternalSettingRepository.GetProductSettingByType("AlwaysEnableProductForOrgType");
             foreach (var productSetting in productInternalSettingsByType)
             {
                 string[] types = productSetting.Value.Split(',');
-                if(types.Contains(organizationTypeName))
-				{
+                if (types.Contains(organizationTypeName))
+                {
                     if (!addProductList.Contains(productSetting.ProductId))
                     {
                         // add unified login product to every new org
@@ -750,15 +750,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             //Enable Product On Other Products Activation //TODO test one more time
             EnableProductOnOtherProductsActivation(addProductList);
             foreach (int product in addProductList)
-			{
-				response = _manageOrganizationProduct.InsertUpdateOrganizationProduct(partyId: partyId, product: product, configurationId: null, fromDate: null, thruDate: null, orgName: organizationName);
-				if (!string.IsNullOrEmpty(response.ErrorMessage))
-				{
-					return response;
-				}
-			}
-			return response;
-		}
+            {
+                response = _manageOrganizationProduct.InsertUpdateOrganizationProduct(partyId: partyId, product: product, configurationId: null, fromDate: null, thruDate: null, orgName: organizationName);
+                if (!string.IsNullOrEmpty(response.ErrorMessage))
+                {
+                    return response;
+                }
+            }
+            return response;
+        }
 
         public List<int> EnableProductOnOtherProductsActivation(List<int> addProductList)
         {
