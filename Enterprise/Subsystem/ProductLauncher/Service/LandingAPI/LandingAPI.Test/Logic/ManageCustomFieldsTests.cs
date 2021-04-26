@@ -27,128 +27,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		{
 		}
 
-		[Fact]
-		public void AddUpdateCustomFields_InvalidSetting_ExceptionThrown()
-		{
-			//Arrange
-			long booksCustomerMasterId = 5094;
-			int bookMasterTypeId = (int)BookMasterType.CustomerMasterId;
-			_manageCustomFields = new ManageCustomFields(_userUserClaim);
-
-			//Act
-			IList<Setting> settingList = new List<Setting>();
-
-
-			//Assert
-			Assert.Throws<ArgumentNullException>(() => _manageCustomFields.AddUpdateCustomFields(settingList, booksCustomerMasterId, bookMasterTypeId));
-		}
-
-		[Fact]
-		public void AddUpdateCustomFields_InvalidbookMasterId_ExceptionThrown()
-		{
-			//Arrange
-			_manageCustomFields = new ManageCustomFields(_userUserClaim);
-			long booksCustomerMasterId = 0;
-			int bookMasterTypeId = (int)BookMasterType.CustomerMasterId;
-
-			//Act
-			IList<CustomField> expectedCustomFieldList = new List<CustomField>()
-			{
-				new CustomField()
-				{
-					FieldId = 15,
-					OrganizationId = 350,
-					Enabled = true,
-					Name = "Employee ID",
-					Description = null,
-					FieldTypeId = 1,
-					FieldTypeName = "Alphanumeric",
-					Required = false,
-					ReadOnly = false,
-					DefaultValue = null,
-					SyncField = null,
-					Sequence = 1,
-					HelpText = null,
-					MinCharLength = 1,
-					MaxCharLength = 10
-				}
-			};
-
-			string customFieldsJson = JsonConvert.SerializeObject(expectedCustomFieldList);
-
-			IList<Setting> settingList = new List<Setting>()
-			{
-				new Setting()
-				{
-					Name = "CustomField",
-					Value = customFieldsJson,
-					Right = 0
-				}
-			};
-
-			//Assert
-			Assert.Throws<Exception>(() => _manageCustomFields.AddUpdateCustomFields(settingList, booksCustomerMasterId, bookMasterTypeId));
-		}
-
-		[Fact]
-		public void AddUpdateCustomFields_MockInputData_ReturnValidRepositoryResponseObject()
-		{
-			//Arrange
-			long userId = 1;
-			_userUserClaim.UserId = 1;
-			long booksCustomerMasterId = 5094;
-			int bookMasterTypeId = (int)BookMasterType.CustomerMasterId;
-			_manageCustomFields = new ManageCustomFields(_userUserClaim);
-			IList<CustomField> expectedCustomFieldList = new List<CustomField>()
-			{
-				new CustomField()
-				{
-					FieldId = 15,
-					OrganizationId = 350,
-					Enabled = true,
-					Name = "Employee ID",
-					Description = null,
-					FieldTypeId = 1,
-					FieldTypeName = "Alphanumeric",
-					Required = false,
-					ReadOnly = false,
-					DefaultValue = null,
-					SyncField = null,
-					Sequence = 1,
-					HelpText = null,
-					MinCharLength = 1,
-					MaxCharLength = 10
-				}
-			};
-
-			string customFieldsJson = JsonConvert.SerializeObject(expectedCustomFieldList);
-
-			IList<Setting> settingList = new List<Setting>()
-			{
-				new Setting()
-				{
-					Name = "CustomField",
-					Value = customFieldsJson,
-					Right = 0
-				}
-			};
-
-			//Act
-			_mockCustomFieldsRepository = new Mock<ICustomFieldsRepository>();
-			_mockCustomFieldsRepository
-				.Setup(m => m.AddUpdateCustomFields(settingList, userId, booksCustomerMasterId, bookMasterTypeId))
-				.Returns(new RepositoryResponse { Id = 1, ErrorMessage = "" });
-
-			_manageCustomFields = new ManageCustomFields(_mockCustomFieldsRepository.Object, _userUserClaim);
-			IRepositoryResponse repositoryResponse = _manageCustomFields.AddUpdateCustomFields(settingList, booksCustomerMasterId, bookMasterTypeId);
-
-			//Assert
-			Assert.True(
-				repositoryResponse.Id == 1
-				&& repositoryResponse.ErrorMessage == ""
-			);
-		}
-
+		
 		[Fact]
 		public void AddUpdateFieldValue_InvalidCreatedBy_ExceptionThrown()
 		{
@@ -250,23 +129,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			);
 		}
 
-		[Fact]
-		public void GetCustomFields_InvalidbookMasterId_ExceptionThrown()
-		{
-			//Arrange
-			_manageCustomFields = new ManageCustomFields(_userUserClaim);
-
-			//Act
-			RequestParameter datafilter = new RequestParameter();
-			datafilter.Pages.ResultsPerPage = 0;
-			IDictionary<object, object> globals = new Dictionary<object, object>();
-			globals.Add(BaseType.RequestParameter, datafilter);
-			long booksCustomerMasterId = 0;
-
-			//Assert
-			Assert.Throws<Exception>(() => _manageCustomFields.GetCustomFields(globals, booksCustomerMasterId, (int)BookMasterType.CustomerMasterId));
-		}
-
+		
 		[Fact]
 		public void GetCustomField_InvalidbookMasterId_ExceptionThrown()
 		{
@@ -279,9 +142,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			IDictionary<object, object> globals = new Dictionary<object, object>();
 			globals.Add(BaseType.RequestParameter, datafilter);
 			long booksCustomerMasterId = 0;
-
+			long OrganizationId = 0;
 			//Assert
-			Assert.Throws<Exception>(() => _manageCustomFields.GetCustomField(globals, booksCustomerMasterId, (int)BookMasterType.CustomerMasterId));
+			Assert.Throws<Exception>(() => _manageCustomFields.GetCustomField(globals, OrganizationId));
 		}
 
 		[Fact]
@@ -294,6 +157,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			IDictionary<object, object> globals = new Dictionary<object, object>();
 			globals.Add(BaseType.RequestParameter, datafilter);
 			long booksCustomerMasterId = 5094;
+			long OrganizationId = 350;
 			int bookMasterTypeId = (int)BookMasterType.CustomerMasterId;
 			Type type = typeof(IList<CustomField>);
 
@@ -321,13 +185,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
 			_mockCustomFieldsRepository = new Mock<ICustomFieldsRepository>();
 			_mockCustomFieldsRepository
-				.Setup(m => m.GetCustomField(booksCustomerMasterId, bookMasterTypeId, datafilter))
+				.Setup(m => m.GetCustomField(OrganizationId, datafilter))
 				.Returns(() => expectedCustomFieldList);
 
 			//Act
 			int NumberOfProperties = type.GetProperties().Length;
 			_manageCustomFields = new ManageCustomFields(_mockCustomFieldsRepository.Object, _userUserClaim);
-			IList<CustomField> customFieldsList = _manageCustomFields.GetCustomField(globals, booksCustomerMasterId, bookMasterTypeId);
+			IList<CustomField> customFieldsList = _manageCustomFields.GetCustomField(globals, OrganizationId);
 
 			//Assert
 			Assert.True(

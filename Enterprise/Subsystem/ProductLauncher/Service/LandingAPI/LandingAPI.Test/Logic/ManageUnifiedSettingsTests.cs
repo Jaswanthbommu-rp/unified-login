@@ -92,63 +92,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 &&
                 NumberOfProperties == 1
             );
-        }
+        }       
 
-        [Fact]
-        public void UpdateSecuritySettings_Mock_Success()
-        {
-            //Arrange
-            string category = "security";
-            long partyId = 123456;
-            Type type = typeof(IList<Setting>);
-
-            var mockRepository = new Mock<IRepository>();
-            var mockUnitofWork = new Mock<IUnitOfWork>();
-
-            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUnifiedSetting, It.IsAny<object>()))
-                .Returns(new RepositoryResponse() { Id = 1234, ErrorMessage = "" });
-
-            mockRepository.Setup(m => m.UnitOfWork).Returns(mockUnitofWork.Object);
-
-            IUnifiedSettingsRepository securitySettingsRepository = new UnifiedSettingsRepository(mockRepository.Object);
-
-            //Act
-            IManageUnifiedSettings manageSecuritySettings = new ManageUnifiedSettings(mockRepository.Object, _userUserClaim, _mockHttpMessageHandler.Object);
-            var response = manageSecuritySettings.UpdateUnifiedSettings(_expectedUnifiedSettings, category,partyId,null);
-
-            Assert.True(string.IsNullOrEmpty(response.ErrorMessage));
-        }
-
-        [Fact]
-        public void UpdateUnifiedySettings_Mock_Failure()
-        {
-            //Arrange
-            string category = "security";
-            long partyId = 123456;
-            Type type = typeof(IList<Setting>);
-
-            var mockRepository = new Mock<IRepository>();
-            var mockUnitofWork = new Mock<IUnitOfWork>();
-
-            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUnifiedSetting, It.IsAny<object>()))
-                .Returns(new RepositoryResponse() { Id = 0, ErrorMessage = "There was a problem with the sql" });
-
-            mockRepository.Setup(m => m.UnitOfWork).Returns(mockUnitofWork.Object);
-
-            IUnifiedSettingsRepository securitySettingsRepository = new UnifiedSettingsRepository(mockRepository.Object);
-
-            //Act
-            IManageUnifiedSettings manageSecuritySettings = new ManageUnifiedSettings(mockRepository.Object, _userUserClaim, _mockHttpMessageHandler.Object);
-            var response = manageSecuritySettings.UpdateUnifiedSettings(_expectedUnifiedSettings, category, partyId, null);
-
-            Assert.Equal("Update security settings Error: There was a problem with the sql.", response.ErrorMessage);
-
-
-            Exception exception = Record.Exception(() => manageSecuritySettings.UpdateUnifiedSettings(null, null,0,null));
-
-            Assert.IsType<ArgumentNullException>(exception);
-
-            Assert.Equal("Null  Settings \r\nParameter name: settings", exception.Message);
-        }
     }
 }
