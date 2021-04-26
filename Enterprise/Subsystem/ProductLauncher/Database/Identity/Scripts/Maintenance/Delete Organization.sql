@@ -135,6 +135,11 @@ FROM		Enterprise.RightValueType erivt
 				INNER JOIN @Right ri ON (ri.RightValueTypeId = erivt.RightValueTypeId)
 				INNER JOIN Enterprise.[Right] eri ON (eri.RightValueTypeId = erivt.RightValueTypeId AND eri.PartyId = ri.PartyId)
 
+DELETE PR 
+		FROM Security.PersonaRole PR 
+		INNER JOIN Security.[Role] R ON PR.RoleId = r.RoleId
+		INNER JOIN @Organization o ON (o.PartyId = R.OrgPartyID)
+
 DELETE	epp
 FROM	Enterprise.PersonaPrivilege epp
 			INNER JOIN @Right ri ON (epp.RoleID = ri.RoleID)
@@ -290,6 +295,12 @@ FROM	Person.Person pp
 			INNER JOIN Ident.UserLogin iul ON (iul.PersonPartyId = pp.PartyId)
 			INNER JOIN Ident.UserLoginPersona iulp ON (iulp.UserLoginId = iul.UserId)
 			INNER JOIN @Organization o ON (o.PartyId = iulp.OrganizationPartyId)
+
+DELETE ue
+FROM	Enterprise.UserEmployeeId ue
+			INNER JOIN Ident.UserLoginPersona iulp ON (iulp.UserLoginPersonaId = ue.UserLoginPersonaId)
+			INNER JOIN Ident.UserLogin iul ON (iul.UserId = iulp.UserLoginId)
+			INNER JOIN @Person p ON (p.PartyID = iul.PersonPartyId)
 
 DELETE	iulp
 FROM		Ident.UserLoginPersona iulp

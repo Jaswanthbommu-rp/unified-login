@@ -1322,3 +1322,32 @@ BEGIN
 	SET IDENTITY_INSERT [UserManagement].[Control] OFF
 END
 GO
+
+-- ADD ALLOW DELETE COMPANY SETTING
+IF NOT EXISTS (SELECT TOP(1) 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'IsOrganizationRemovalEnabled')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
+	VALUES ('IsOrganizationRemovalEnabled', 'Does the environment support the Organization Removal feature', 0);
+END
+
+GO
+
+IF NOT EXISTS ( SELECT TOP (1) 1 FROM Maintenance.OrganizationRemovalQueueStatus )
+BEGIN
+	INSERT INTO Maintenance.OrganizationRemovalQueueStatus
+	(
+		OrganizationRemovalQueueStatusId,
+		Name
+	)
+	VALUES
+	( 0, N'Pending Processing' ),
+	( 1, N'Pending Database Removal' ),
+	( 2, N'Pending UDMData Removal' ),
+	( 3, N'Complete' ),
+	( 4, N'Database Removed' ),
+	( 5, N'UDMData Removed' ),
+	( 6, N'UDMData Not Found' ),
+	( 7, N'Database Removal Failed' ),
+	( 8, N'UDMData Removal Failed' )
+END
+GO
