@@ -1,4 +1,4 @@
-﻿CREATE OR alter PROCEDURE [Maintenance].[DeleteOrganization]
+﻿CREATE PROCEDURE [Maintenance].[DeleteOrganization]
     @OrganizationPartyId BIGINT,
 	@OrganizationRealPageId UNIQUEIDENTIFIER,
 	@OrganizationRemovalQueueId INT = 0
@@ -8,12 +8,44 @@ AS
 			SET NOCOUNT ON;
 
 			DECLARE @RetryCount TINYINT = 0,
-				@TranCount INT = 0
+				@TranCount INT = 0,
+				@IsOrganizationRemovalEnabled INT = 0
 
 			SET @TranCount = @@TRANCOUNT
 
 			IF @OrganizationRemovalQueueId <> 0
 			BEGIN
+				SELECT	@IsOrganizationRemovalEnabled = ISNULL(ps.Value,0)
+					FROM	Enterprise.GlobalProductConfiguration gpc
+							JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId
+							JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId
+							JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId
+					WHERE  gpc.ProductId = 3
+					AND (gpc.ThruDate IS NULL)
+					AND ( pc.ThruDate IS NULL)
+					AND ( ps.ThruDate IS NULL)
+					And PST.Name = 'IsOrganizationRemovalEnabled'
+
+				IF @IsOrganizationRemovalEnabled <> 1
+				BEGIN
+					INSERT INTO Maintenance.OrganizationRemovalQueueError
+					(
+					    OrganizationRemovalQueueId,
+					    ErrorMessage
+					)
+					VALUES
+					(   @OrganizationRemovalQueueId,
+					    'OrganizationRemoval not enabled for environment'
+				    )
+					SELECT @OrganizationRemovalQueueId, OrganizationRemovalQueueStatusId FROM Maintenance.OrganizationRemovalQueueStatus WHERE Name = 'Complete'
+					UPDATE Maintenance.OrganizationRemovalQueue 
+					SET OrganizationRemovalRetryCount = @RetryCount, 
+						OrganizationRemovalQueueStatusId = (SELECT TOP (1) OrganizationRemovalQueueStatusId FROM Maintenance.OrganizationRemovalQueueStatus WHERE Name = 'Complete' ORDER BY OrganizationRemovalQueueStatusId ) 
+					WHERE 
+						OrganizationRemovalQueueId = @OrganizationRemovalQueueId
+					RETURN @IsOrganizationRemovalEnabled
+				END
+				
 				INSERT INTO Maintenance.OrganizationRemovalQueueHistory
 				(
 				    OrganizationRemovalQueueId,

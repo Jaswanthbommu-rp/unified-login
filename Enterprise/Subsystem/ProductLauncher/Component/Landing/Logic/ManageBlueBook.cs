@@ -728,7 +728,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var response = _httpClient.DeleteAsync(uri).Result;
             logData = new Dictionary<string, object>() {{"StatusCode", response.StatusCode}};
             WriteToLog(LogEventLevel.Debug, $"DeleteBooksGreenBookCompanyInstance - deleted instance {companyInstance.CompanyInstanceSourceId}.", logData);
-            return response.IsSuccessStatusCode;
+            if (response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.NotFound)
+            {
+                return true;
+            }
+            return false;
         }
 
         /// <summary>

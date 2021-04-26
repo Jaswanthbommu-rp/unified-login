@@ -823,19 +823,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     if (deleteResult == p.OrganizationPartyId)
                     {
                         // success
-                        //if (p.OrganizationRemoveUDMData)
-                        //{
-                        //    // post to UDM to remove 
-                        //    var result = _manageBlueBook.DeleteBooksGreenBookCompanyInstance(new CompanyInstance() {CompanyInstanceSourceId = p.OrganizationRealPageId.ToString(), ModifiedBy = "UPFM Delete company"});
-                        //    if (result)
-                        //    {
-                        //        // save to log it deleted
-                        //
-                        //    }
-                        //}
-                        _organizationRepository.UpdateOrganizationRemovalQueueStatus(p.OrganizationRemovalQueueId, "Complete");
-                        return;
+                        if (p.OrganizationRemoveUDMData)
+                        {
+                            // post to UDM to remove 
+                            var result = _manageBlueBook.DeleteBooksGreenBookCompanyInstance(new CompanyInstance() {CompanyInstanceSourceId = p.OrganizationRealPageId.ToString()+"12312321", ModifiedBy = "UPFM Delete company"});
+                            _organizationRepository.UpdateOrganizationRemovalQueueStatus(p.OrganizationRemovalQueueId, result ? "UDMData Removed" : "UDMData Removal Failed");
+                        }
 
+                        _organizationRepository.UpdateOrganizationRemovalQueueStatus(p.OrganizationRemovalQueueId, "Complete");
                     }
                 }
                 catch (Exception ex)

@@ -1,4 +1,4 @@
-﻿CREATE OR alter PROCEDURE [Maintenance].[ListOrganizationToDelete]
+﻿CREATE PROCEDURE [Maintenance].[ListOrganizationToDelete]
 (
     @BatchSize INT,
     @RetryCount TINYINT = 3
