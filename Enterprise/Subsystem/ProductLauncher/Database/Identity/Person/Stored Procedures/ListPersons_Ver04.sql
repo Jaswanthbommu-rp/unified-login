@@ -160,11 +160,7 @@ BEGIN
 	FROM		Enterprise.Party
 	WHERE	RealPageId = @RealPageId
 
-	SELECT @minSequence = MIN(Sequence)
-	FROM  [CustomField].[Field]
-	WHERE	OrganizationId = @PartyId
-	AND			Enabled = 1
-
+	
 	IF (@UserListFilterType IN (1, 2))
 	BEGIN
 		INSERT INTO @HoldPersona (
@@ -293,19 +289,38 @@ BEGIN
 
 	DROP TABLE IF EXISTS #CustomFields
 
-	SELECT cff.FieldId AS 'Id',  
-		cff.Name AS 'FieldName',  
-		cffv.Value AS 'FieldValue',  
-		ULP.UserLoginID AS 'UserId',  
-		ULP.UserLoginPersonaID AS 'UserLoginPersonaId'  
+	SELECT  Id,UserLoginPersonaId,FieldValue,Enabled,Name,Value,Sequence
 	INTO #CustomFields
-	FROM [CustomField].[Field] cff  
-		INNER JOIN [CustomField].[FieldValue] cffv ON cff.FieldId = cffv.FieldId   
-		INNER JOIN Ident.UserLoginPersona ULP ON cffv.UserLoginPersonaId = ULP.UserLoginPersonaId  
-	WHERE  cff.OrganizationId = @PartyId  
-	AND    cff.Sequence = @minSequence  
-	AND cff.Enabled = 1 
-	AND    ((NOT cffv.Value IS NULL) OR (LEN(cffv.Value) = 0))  
+	From (
+		Select sr.[SettingTableRowId] AS 'Id',
+			   st.[PartyId] AS 'OrganizationId',
+			   srv.UserLoginPersonaId 'UserLoginPersonaId',
+			   srv.Value 'FieldValue',
+			   [TableColumnName],
+			   [TableColumnValue]
+		from [Settings].[SettingTableColumn] stc
+		join [Settings].[SettingTableRow] sr on
+			stc.[SettingTableRowId] = sr.[SettingTableRowId]
+		join Settings.SettingTableRowValue SRV on
+			srv.SettingTableRowId = sr.SettingTableRowId
+		join [Settings].[SettingTable] st on
+			st.[SettingTableId] = sr.[SettingTableId]
+		where st.[PartyId] = @PartyId) As SourceTable
+	PIVOT
+	(
+		MIN([TableColumnValue])
+		FOR [TableColumnName] IN (Enabled,Name,Value,Sequence)
+	) AS PivotOutput
+
+	Delete from #CustomFields 
+	Where Enabled = 0
+	AND ((FieldValue IS NOT NULL) OR (LEN(FieldValue) > 0) )  
+
+	SELECT @minSequence = MIN(Sequence)
+	FROM  #CustomFields
+
+	Delete from #CustomFields 
+	Where [Sequence] <> @minSequence
 
 
 	DROP TABLE IF EXISTS #UserLogin

@@ -33,23 +33,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		#endregion
 
 		#region public Custom Field methods
+		
 		/// <summary>
-		/// Get Custom Fields
+		/// Get Custom Fields by partyid
 		/// </summary>
-		/// <param name="booksCustomerMasterId">Book MasterId</param>
-		/// <param name="bookMasterTypeId">Type of Book MasterId (e.g. 1 = Black, 2 = Blue)</param>
+		/// <param name="partyId">partyId</param>	
 		/// <param name="dataFilterSort">Data Filtering and Sorting</param>
 		/// <returns>Custom Fields (KeyValue pairs)</returns>
-		public IList<Setting> GetCustomFields(long booksCustomerMasterId, int bookMasterTypeId = (int)BookMasterType.CustomerMasterId, RequestParameter dataFilterSort = null)
+		public IList<Setting> GetCustomFields(long partyId, RequestParameter dataFilterSort = null)
 		{
 			string customFieldsJson = string.Empty;
 
-			IList<CustomField> customField = GetCustomField(booksCustomerMasterId, bookMasterTypeId, dataFilterSort);
+			IList<CustomField> customField = GetCustomField(partyId, dataFilterSort);
 
 			if (customField.Count > 0)
 			{
 				customFieldsJson = JsonConvert.SerializeObject(
-					new {
+					new
+					{
 						customField
 					}
 				);
@@ -64,18 +65,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 					Right = 0
 				}
 			};
-			
+
 			return settingList;
 		}
 
 		/// <summary>
 		/// Get Custom Fields
 		/// </summary>
-		/// <param name="booksCustomerMasterId">Books Customer MasterId</param>
-		/// <param name="bookMasterTypeId">Type of Book MasterId (e.g. 1 = Black, 2 = Blue)</param>
+		/// <param name="partyId">party id</param>	
 		/// <param name="dataFilterSort">Data Filtering and Sorting</param>
 		/// <returns>List of Custom Fields objects</returns>
-		public IList<CustomField> GetCustomField(long booksCustomerMasterId, int bookMasterTypeId = (int)BookMasterType.CustomerMasterId, RequestParameter dataFilterSort = null)
+		public IList<CustomField> GetCustomField(long partyId,  RequestParameter dataFilterSort = null)
 		{
 			IList<CustomField> customFields = new List<CustomField>();
 
@@ -128,8 +128,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
 			dynamic param = new
 			{
-				SourceId = booksCustomerMasterId,
-				DataImportApplicationId = bookMasterTypeId,
+				PartyId = partyId,
 				FilterBy = filterByJson,
 				SortBy = sortByJson,
 				RowsPerPage = dataFilterSort.Pages.ResultsPerPage,
@@ -138,31 +137,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
 			using (var repository = GetRepository())
 			{
-				customFields = repository.GetMany<CustomField>(StoredProcNameConstants.SP_GetFieldsByMasterId, param);
+				customFields = repository.GetMany<CustomField>(StoredProcNameConstants.SP_GetFieldsByPartyId, param);
 			}
 			return customFields;
 		}
-
-		/// <summary>
-		/// Get CustomField Type
-		/// </summary>
-		/// <param name="fieldTypeId">Optional FieldTypeId</param>
-		/// <returns>List of CustomField types</returns>
-		public IList<CustomFieldType> GetCustomFieldType(byte? fieldTypeId = null)
-		{
-			IList<CustomFieldType> customFieldTypeList = new List<CustomFieldType>();
-			dynamic param = new
-			{
-				FieldTypeId = fieldTypeId
-			};
-
-			using (var repository = GetRepository())
-			{
-				customFieldTypeList = repository.GetMany<CustomFieldType>(StoredProcNameConstants.SP_GetFieldType, param);
-			}
-			return customFieldTypeList;
-		}
-
+		
 		/// <summary>
 		/// Get Custom Fields Values for a User
 		/// </summary>
@@ -186,64 +165,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 			}
 
 			return customFieldValueList;
-		}
-
-		/// <summary>
-		/// Add/Update Custom Fields
-		/// </summary>
-		/// <param name="settings">A list of one Setting object where the Value is a JSON of the Custom Fields to Add/Update</param>
-		/// <param name="userId">Logged in UserId</param>
-		/// <param name="booksCustomerMasterId">Books Customer MasterId</param>
-		/// <param name="bookMasterTypeId">Type of Book MasterId (e.g. 1 = Black, 2 = Blue)</param>
-		/// <returns>Repository response object</returns>
-		public RepositoryResponse AddUpdateCustomFields(IList<Setting> settings, long userId, long booksCustomerMasterId, int bookMasterTypeId = (int)BookMasterType.CustomerMasterId)
-		{
-			RepositoryResponse repositoryResponse = new RepositoryResponse();
-			repositoryResponse.Id = 0;
-
-			using (var repository = GetRepository())
-			{
-				repository.UnitOfWork.BeginTransaction();
-				try
-				{
-					dynamic param;
-					if ((settings != null) && (settings.Count > 0))
-					{
-						string jsonCustomFields = settings[0].Value;
-						param = new
-						{
-							SourceId = booksCustomerMasterId,
-							DataImportApplicationId = bookMasterTypeId,
-							Json = jsonCustomFields,
-							CreatedBy = userId
-						};
-						repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdateFieldFromJSON, param);
-						if ((repositoryResponse.Id == 0) && (!string.IsNullOrWhiteSpace(repositoryResponse.ErrorMessage)))
-						{
-							repositoryResponse.ErrorMessage = $"Update custom fields Error: {repositoryResponse.ErrorMessage}.";
-						}
-					}
-				}
-				catch (Exception exception)
-				{
-					repositoryResponse.Id = 0;
-					repositoryResponse.ErrorMessage = "Update Custom Fields Exception: " + exception.Message;
-				}
-				finally
-				{
-					if (repositoryResponse.ErrorMessage.Length == 0)
-					{
-						//Commit and end transaction.
-						repository.UnitOfWork.Commit();
-					}
-					else
-					{
-						//Rollback transaction and dispose it.
-						repository.UnitOfWork.Rollback();
-					}
-				}
-				return repositoryResponse;
-			}
 		}
 
 		/// <summary>
