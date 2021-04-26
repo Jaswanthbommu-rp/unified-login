@@ -914,12 +914,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         #region UpdateProperty
         /// <summary>
-        /// Update existing Property
+        /// Update existing property
         /// </summary>
-        /// <param name="companyInstanceId">companyInstanceId</param>
-        /// <param name="propertyInstanceId">property Instance Id</param>
-        /// <param name="propertyName">propertyName</param>
-        /// <returns>RepositoryResponse object</returns>
+        /// <param name="property"></param>
+        /// <param name="companyInstanceId"></param>
+        /// <returns></returns>
         public RepositoryResponse UpdateProperty(UPFMPropertyInstance property, Guid companyInstanceId)
         {
             if (property.InstanceId == Guid.Empty)
@@ -930,10 +929,50 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 throw new Exception("Invalid parameter propertyName.");
             }
+
+            var oldProperty = GetPropertyByInstanceId(property.InstanceId)?.FirstOrDefault();
             var _repositoryResponse = _propertyRepository.UpdateProperty(property.InstanceId, property.Name, property.IsActive);           
+            
             if (_repositoryResponse.Id > 0)
             {
-               bool booksResponse =  UpdatePropertyInBooks(property);
+                var orgName = GetOrganization(companyInstanceId)?.Name;
+                //Is property name being updated
+                if (string.Compare(oldProperty.Name, property.Name, StringComparison.OrdinalIgnoreCase) != 0)
+                {
+                    var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} updated the property name from {oldProperty.Name} to {property.Name} for {orgName}";
+                    LogAuditActivity(LogActivityTypeConstants.PROPERTY_UPDATED, LogActivityCategoryType.CompanySetup, message);
+                }
+                //Is property address being updated
+                var oldAddress = $"{oldProperty.Address}, {oldProperty.City}, {oldProperty.County}, {oldProperty.State}, {oldProperty.Country}, {oldProperty.PostalCode}";
+                var newAddress = $"{property.Address}, {property.City}, {property.County}, {property.State}, {property.Country}, {property.PostalCode}";
+
+                if (string.Compare(oldAddress, newAddress, StringComparison.OrdinalIgnoreCase) != 0)
+                {
+                    var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} updated the property address from {oldAddress} to {newAddress} for {orgName}";
+                    LogAuditActivity(LogActivityTypeConstants.PROPERTY_UPDATED, LogActivityCategoryType.CompanySetup, message);
+                }
+
+                //Is property status being updated
+                if (oldProperty.IsActive != property.IsActive)
+                {
+                    var newStatus = "";
+                    var prevStatus = "";
+                    
+                    if (oldProperty.IsActive == true)
+                    {
+                        newStatus = "Inactive";
+                        prevStatus = "Active";
+                    }
+                    else
+                    {
+                        newStatus = "Active";
+                        prevStatus = "Inactive";
+                    }
+                    var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} updated the property status for {property.Name} from {prevStatus} to {newStatus}";
+                    LogAuditActivity(LogActivityTypeConstants.PROPERTY_UPDATED, LogActivityCategoryType.CompanySetup, message);
+                }
+
+                bool booksResponse =  UpdatePropertyInBooks(property);
                 bool settingsResponse = false;
                 if (booksResponse)
                 {
@@ -958,6 +997,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             property.InstanceId = response.RealPageId;
             if (response.ErrorMessage.Length == 0)
             {
+                var orgName = GetOrganization(companyInstanceID)?.Name;
+                var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} created a new property, {property.Name} with ID {response.Id} in the {property.Domain} domain for {orgName}";
+                LogAuditActivity(LogActivityTypeConstants.PROPERTY_CREATED, LogActivityCategoryType.CompanySetup, message);
+
                 bool booksResponse = AddPropertyToBooks(property, companyInstanceID);
                 bool settingsResponse = false;
                 if (booksResponse)
@@ -1054,13 +1097,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <summary>
         /// Delete Property instance
         /// </summary>
-        /// <param name="propertyInstanceID">propertyInstanceID</param>
+        /// <param name="propertyInstanceID"></param>
+        /// <param name="companyInstanceId"></param>
         /// <returns></returns>
-        public RepositoryResponse DeletePropertyForOrganization(Guid propertyInstanceID)
+        public RepositoryResponse DeletePropertyForOrganization(Guid propertyInstanceID, Guid companyInstanceId)
         {
             var response = _propertyRepository.DeleteUPFMPropertyInstance(propertyInstanceID);
+
             if (response.ErrorMessage.Length == 0)
             {
+                var orgName = GetOrganization(companyInstanceId)?.Name;
+                var propertyName = GetPropertyByInstanceId(propertyInstanceID)?.FirstOrDefault()?.Name;
+                var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} deleted the property {propertyName} for {orgName}";
+                LogAuditActivity(LogActivityTypeConstants.PROPERTY_DELETED, LogActivityCategoryType.CompanySetup, message);
+
                 bool booksResponse = DeletePropertyFromBooks(propertyInstanceID);
                 bool settingsResponse = false;
                 if (booksResponse)

@@ -162,9 +162,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <summary>
 		/// Update an existing Property Name
 		/// </summary>
-		/// <param name="property">property</param>
-		/// <param name="companyInstanceID">company InstanceID</param>
-		/// <returns>RepositoryResponse object</returns>
+		/// <param name="property"></param>
+		/// <param name="companyInstanceId"></param>
+		/// <returns></returns>
 		RepositoryResponse UpdateProperty(UPFMPropertyInstance property, Guid companyInstanceId);
 
 		/// <summary>
@@ -215,8 +215,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// Delete Property For Organization
 		/// </summary>
 		/// <param name="propertyInstanceID"></param>
+		/// <param name="companyInstanceID"></param>
 		/// <returns></returns>
-		RepositoryResponse DeletePropertyForOrganization(Guid propertyInstanceID);
+		RepositoryResponse DeletePropertyForOrganization(Guid propertyInstanceID, Guid companyInstanceID);
 
 		/// <summary>
 		/// Used to parse the list of valid product codes
