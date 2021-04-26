@@ -1585,21 +1585,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
         #region Delete Property
         /// <summary>
-        ///Delete Properties for a Organization
+        /// Delete Properties for a Organization
         /// </summary>
-        /// <param name="propertyInstanceID">propertyInstanceID</param>
+        /// <param name="propertyInstanceID"></param>
+        /// <param name="companyInstanceID"></param>
+        /// <returns></returns>
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
-        [Route("CompanySetup/CompanyProperty/propertyinstance/{propertyInstanceID}")]
+        [Route("CompanySetup/CompanyProperty/propertyinstance/{propertyInstanceID}/{companyInstanceID}")]
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         [HttpDelete]
-        public HttpResponseMessage DeleteProperty(Guid propertyInstanceID)
+        public HttpResponseMessage DeleteProperty(Guid propertyInstanceID, Guid companyInstanceID)
         {
             if ((propertyInstanceID == Guid.Empty) || (propertyInstanceID == null))
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: propertyInstanceID");
             }
-            _repositoryResponse = _manageOrganization.DeletePropertyForOrganization(propertyInstanceID);
+            _repositoryResponse = _manageOrganization.DeletePropertyForOrganization(propertyInstanceID, companyInstanceID);
             return Request.CreateResponse(HttpStatusCode.OK, _repositoryResponse);
         }
         #endregion

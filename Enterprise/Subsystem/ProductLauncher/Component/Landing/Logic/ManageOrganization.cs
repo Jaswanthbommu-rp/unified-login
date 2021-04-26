@@ -934,7 +934,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             
             if (_repositoryResponse.Id > 0)
             {
-                var orgName = GetOrganization(_repositoryResponse.RealPageId)?.Name;
+                var orgName = GetOrganization(companyInstanceId)?.Name;
                 //Is property name being updated
                 if (string.Compare(oldProperty.Name, property.Name, StringComparison.OrdinalIgnoreCase) != 0)
                 {
@@ -945,7 +945,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 var oldAddress = $"{oldProperty.Address}, {oldProperty.City}, {oldProperty.County}, {oldProperty.State}, {oldProperty.Country}, {oldProperty.PostalCode}";
                 var newAddress = $"{property.Address}, {property.City}, {property.County}, {property.State}, {property.Country}, {property.PostalCode}";
 
-                if (string.Compare(oldProperty.Name, property.Name, StringComparison.OrdinalIgnoreCase) != 0)
+                if (string.Compare(oldAddress, newAddress, StringComparison.OrdinalIgnoreCase) != 0)
                 {
                     var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} updated the property address from {oldAddress} to {newAddress} for {orgName}";
                     LogAuditActivity(LogActivityTypeConstants.PROPERTY_UPDATED, LogActivityCategoryType.CompanySetup, message);
@@ -1096,15 +1096,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <summary>
         /// Delete Property instance
         /// </summary>
-        /// <param name="propertyInstanceID">propertyInstanceID</param>
+        /// <param name="propertyInstanceID"></param>
+        /// <param name="companyInstanceId"></param>
         /// <returns></returns>
-        public RepositoryResponse DeletePropertyForOrganization(Guid propertyInstanceID)
+        public RepositoryResponse DeletePropertyForOrganization(Guid propertyInstanceID, Guid companyInstanceId)
         {
             var response = _propertyRepository.DeleteUPFMPropertyInstance(propertyInstanceID);
 
             if (response.ErrorMessage.Length == 0)
             {
-                var orgName = GetOrganization(response.RealPageId)?.Name;
+                var orgName = GetOrganization(companyInstanceId)?.Name;
                 var propertyName = GetPropertyByInstanceId(propertyInstanceID)?.FirstOrDefault()?.Name;
                 var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} deleted the property {propertyName} for {orgName}";
                 LogAuditActivity(LogActivityTypeConstants.PROPERTY_DELETED, LogActivityCategoryType.CompanySetup, message);

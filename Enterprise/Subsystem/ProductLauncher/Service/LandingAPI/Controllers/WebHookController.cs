@@ -475,7 +475,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 if (!unifiedLoginInstanceId.Equals(Guid.Empty.ToString()) && property.InstanceId == Guid.Empty)
                 {
                     // add instance to db
-                    var response = _propertyRepository.InsertUPFMPropertyInstance(property);
+                    var response = _manageOrganization.InsertUPFMPropertyInstance(property);
                     if (response.ErrorMessage.Length == 0)
                     {
                         // insert to books
