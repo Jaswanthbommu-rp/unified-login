@@ -19,21 +19,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <returns>Security Settings List objects (KeyValue pairs)</returns>
         IList<Setting> GetUnifiedSettings(string category, long partyId);
 
-		IList<Picklist> GetSettingsPickList(string category);
-
         IList<Setting> GetUnifiedSettingsCached(string category, long partyId);
 
-		/// <summary>
-		/// Update an existing Security Settings 
-		/// </summary>
-		/// <param name="settings">Security Settings (Password and Activity Configuration Security Settings) object of the parameter values</param>
-		/// <param name="category">Settings category</param>
-		/// <param name="companyId">Organization</param>
-		/// <param name="includes"></param>
-		/// <returns>RepositoryResponse object</returns>
-		RepositoryResponse UpdateUnifiedSettings(IList<Setting> settings, string category, long companyId, string[] includes = null);
-
-		/// <summary>
+			/// <summary>
 		///Send Property Instance to Unified settings
 		/// </summary>
 		/// <param name="upfmProperties">upfmProperties</param>
