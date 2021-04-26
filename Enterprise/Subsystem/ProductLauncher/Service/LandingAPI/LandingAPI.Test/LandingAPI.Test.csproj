@@ -177,7 +177,6 @@
     <Compile Include="ControllerTest\Product\ProductMarketingCenterTest.cs" />
     <Compile Include="ControllerTest\Product\ProductRumTest.cs" />
     <Compile Include="ControllerTest\Product\ProductVendorServiceTest.cs" />
-    <Compile Include="ControllerTest\SecuritySettingsTests.cs" />
     <Compile Include="ControllerTest\StatusTypeTests.cs" />
     <Compile Include="ControllerTest\UserTests.cs" />
     <Compile Include="ControllerTest\PersonTests.cs" />

@@ -270,7 +270,6 @@
     <Compile Include="Controllers\ContactMechanismController.cs" />
     <Compile Include="Controllers\ContactMechanismUsageTypeController.cs" />
     <Compile Include="Controllers\CredentialController.cs" />
-    <Compile Include="Controllers\CustomFieldController.cs" />
     <Compile Include="Controllers\DashboardController.cs" />
     <Compile Include="Controllers\ElectronicAddressController.cs" />
     <Compile Include="Controllers\EmailController.cs" />
@@ -309,7 +308,6 @@
     <Compile Include="Controllers\RelationshipTypeController.cs" />
     <Compile Include="Controllers\Product\ResearchApplicationController.cs" />
     <Compile Include="Controllers\RoleTypeController.cs" />
-    <Compile Include="Controllers\SettingsController.cs" />
     <Compile Include="Controllers\StatusTypeController.cs" />
     <Compile Include="Controllers\TelecommunicationNumberController.cs" />
     <Compile Include="Controllers\TestController.cs" />

@@ -1084,6 +1084,8 @@
     <Build Include="Maintenance\Stored Procedures\ListOrganizationToDelete.sql" />
     <Build Include="Maintenance\Stored Procedures\UpdateOrganizationRemovalQueueStatus.sql" />
     <Build Include="Maintenance\Stored Procedures\InsertOrganizationRemovalQueue.sql" />
+    <Build Include="Settings\Stored Procedures\GetFieldsValuesByUserLoginPersonaId.sql" />
+    <Build Include="Settings\Stored Procedures\GetFieldsByPartyId.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

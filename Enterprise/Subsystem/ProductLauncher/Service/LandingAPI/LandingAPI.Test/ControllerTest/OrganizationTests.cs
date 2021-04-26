@@ -143,6 +143,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             
             _defaultUserClaim.CorrelationId = new Guid();
             _defaultUserClaim.CustomerMasterId = _BooksCompanyMasterId;
+            _defaultUserClaim.OrganizationPartyId = _PartyId;
 
             var organizationTypeList = new List<OrganizationType>()
             {
@@ -1495,7 +1496,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             };
 
             _mockRepository
-                .Setup(m => m.GetMany<CustomField>(StoredProcNameConstants.SP_GetFieldsByMasterId, It.IsAny<object>()))
+                .Setup(m => m.GetMany<CustomField>(StoredProcNameConstants.SP_GetFieldsByPartyId, It.IsAny<object>()))
                 .Returns(customFieldList);
 
             OrganizationController organizationController = new OrganizationController(
