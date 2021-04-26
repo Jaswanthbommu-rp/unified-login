@@ -833,6 +833,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         //
                         //    }
                         //}
+                        _organizationRepository.UpdateOrganizationRemovalQueueStatus(p.OrganizationRemovalQueueId, "Complete");
+                        return;
+
                     }
                 }
                 catch (Exception ex)

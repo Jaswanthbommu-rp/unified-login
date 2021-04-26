@@ -652,6 +652,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
+        /// <summary>
+        /// Used to update the status of the OrganizationRemovalQueue
+        /// </summary>
+        /// <param name="organizationRemovalQueueId"></param>
+        /// <param name="organizationRemovalQueueStatus"></param>
+        /// <returns></returns>
+        public int UpdateOrganizationRemovalQueueStatus(int organizationRemovalQueueId, string organizationRemovalQueueStatus)
+        {
+            dynamic param = new
+            {
+                OrganizationRemovalQueueId = organizationRemovalQueueId,
+                OrganizationRemovalQueueStatus = organizationRemovalQueueStatus
+            };
+            using (var repository = GetRepository())
+            {
+                return repository.GetOne<int>(StoredProcNameConstants.SP_UpdateOrganizationRemovalQueueStatus, param);
+            }
+        }
+
         #endregion
 
         #region private methods

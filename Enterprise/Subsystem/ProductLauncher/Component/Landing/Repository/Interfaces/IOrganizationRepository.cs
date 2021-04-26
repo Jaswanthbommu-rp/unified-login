@@ -159,5 +159,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="organizationRealPageId"></param>
         /// <returns></returns>
         long DeleteOrganization(int organizationRemovalQueueId, long partyId, Guid organizationRealPageId);
+
+        /// <summary>
+        /// Used to update the status of the OrganizationRemovalQueue
+        /// </summary>
+        /// <param name="organizationRemovalQueueId"></param>
+        /// <param name="organizationRemovalQueueStatus"></param>
+        /// <returns></returns>
+        int UpdateOrganizationRemovalQueueStatus(int organizationRemovalQueueId, string organizationRemovalQueueStatus);
     }
 }

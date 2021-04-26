@@ -1082,6 +1082,7 @@
     <Build Include="Maintenance\Stored Procedures\DeleteOrganization.sql" />
     <Build Include="Maintenance\Tables\OrganizationRemovalQueueError.sql" />
     <Build Include="Maintenance\Stored Procedures\ListOrganizationToDelete.sql" />
+    <Build Include="Maintenance\Stored Procedures\UpdateOrganizationRemovalQueueStatus.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

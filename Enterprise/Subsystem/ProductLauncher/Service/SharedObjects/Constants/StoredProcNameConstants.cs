@@ -410,6 +410,7 @@
         //Maintenance
         public const string SP_ListOrganizationToDelete = "Maintenance.ListOrganizationToDelete";
         public const string SP_DeleteOrganization = "Maintenance.DeleteOrganization";
+        public const string SP_UpdateOrganizationRemovalQueueStatus = "Maintenance.UpdateOrganizationRemovalQueueStatus";
     }
 
     public static class EnterpriseStoredProcNameConstants
