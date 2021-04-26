@@ -403,6 +403,12 @@
         public const string SP_CreateEmployeeId = "Enterprise.CreateUserEmployeeId";
         public const string SP_UpdateEmployeeId = "Enterprise.UpdateUserEmployeeId";
         public const string SP_GetEmployeeId = "Enterprise.GetUserEmployeeIdByUserLoginPersonaId";
+
+        //Maintenance
+        public const string SP_InsertOrganizationRemovalQueue = "Maintenance.InsertOrganizationRemovalQueue";
+        public const string SP_ListOrganizationToDelete = "Maintenance.ListOrganizationToDelete";
+        public const string SP_DeleteOrganization = "Maintenance.DeleteOrganization";
+        public const string SP_UpdateOrganizationRemovalQueueStatus = "Maintenance.UpdateOrganizationRemovalQueueStatus";
     }
 
     public static class EnterpriseStoredProcNameConstants

@@ -128,6 +128,9 @@
     <Folder Include="Settings\Functions" />
     <Folder Include="Settings\Stored Procedures" />
     <Folder Include="Settings\Tables" />
+    <Folder Include="Maintenance" />
+    <Folder Include="Maintenance\Tables" />
+    <Folder Include="Maintenance\Stored Procedures" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="Auth\Tables\ClientClaims.sql" />
@@ -1071,7 +1074,16 @@
     <Build Include="Security\Settings.sql" />
     <Build Include="Settings\Tables\SettingTableRowValue.sql" />
     <Build Include="Settings\Stored Procedures\AddUpdateFieldValue.sql" />
+    <Build Include="Maintenance\Tables\OrganizationRemovalQueueStatus.sql" />
+    <Build Include="Security\Maintenance.sql" />
+    <Build Include="Maintenance\Tables\OrganizationRemovalQueue.sql" />
+    <Build Include="Maintenance\Tables\OrganizationRemovalQueueHistory.sql" />
     <Build Include="Settings\Stored Procedures\GetSettingsPickListByCategory.sql" />
+    <Build Include="Maintenance\Stored Procedures\DeleteOrganization.sql" />
+    <Build Include="Maintenance\Tables\OrganizationRemovalQueueError.sql" />
+    <Build Include="Maintenance\Stored Procedures\ListOrganizationToDelete.sql" />
+    <Build Include="Maintenance\Stored Procedures\UpdateOrganizationRemovalQueueStatus.sql" />
+    <Build Include="Maintenance\Stored Procedures\InsertOrganizationRemovalQueue.sql" />
     <Build Include="Settings\Stored Procedures\GetFieldsValuesByUserLoginPersonaId.sql" />
     <Build Include="Settings\Stored Procedures\GetFieldsByPartyId.sql" />
   </ItemGroup>

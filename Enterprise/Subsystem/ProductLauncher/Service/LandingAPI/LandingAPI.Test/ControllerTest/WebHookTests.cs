@@ -530,6 +530,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
                 .Returns(_productInternalSettings);
 
+            new RPObjectCache().BustCache();
+
             //Arrange
             WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockMessageHandler.Object)
             {
@@ -539,9 +541,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             webHookController.Request.Headers.Add("signature", _mockJson_books_customercompany_deleted_null_customercompanyid_Signature);
 
             ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_customercompany_deleted_null_customercompanyid);
-
-            RPObjectCache rPObjectCache = new RPObjectCache();
-            rPObjectCache.BustCache();
 
             //Act
             HttpResponseMessage response = webHookController.PostBooks(thinEvent);
@@ -561,6 +560,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             mockRepository
                 .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
                 .Returns(_productInternalSettings);
+
+            new RPObjectCache().BustCache();
 
             //Arrange
             WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockMessageHandler.Object)
@@ -599,6 +600,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
                 .Returns(_productInternalSettings);
 
+            new RPObjectCache().BustCache();
+
             //Arrange
             WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockMessageHandler.Object)
             {
@@ -625,6 +628,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
                 .Returns(_productInternalSettings);
 
+            new RPObjectCache().BustCache();
+
             //Arrange
             WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockMessageHandler.Object)
             {
@@ -649,6 +654,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             mockRepository
                 .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
                 .Returns(_productInternalSettings);
+
+            new RPObjectCache().BustCache();
 
             //Arrange
             WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockMessageHandler.Object)
@@ -799,7 +806,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             Assert.True(response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.Accepted);
         }
 
-                [Fact]
+        [Fact]
         public void Post_Books_Provisioning_UPFMOrder_Create_Update_Success()
         {
             Mock<IRepository> mockRepository = new Mock<IRepository>();
@@ -911,7 +918,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             HttpResponseMessage response = webHookController.PostBooks(thinEvent);
             Assert.True(response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.Accepted);
         }
-
 
         [Fact]
         public void Post_Books_Provisioning_UPFMOrder_Create_NullDomain()
@@ -1163,5 +1169,4 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             Assert.True(!response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.BadRequest);
         }
     }
-
 }
