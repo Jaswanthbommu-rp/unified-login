@@ -338,12 +338,12 @@ AS
 						INNER JOIN Ident.UserLoginPersona iulp ON (iulp.UserLoginId = iul.UserId)
 						INNER JOIN @Organization o ON (o.PartyId = iulp.OrganizationPartyId)
 
-			--DELETE ue
-			--FROM	Enterprise.UserEmployeeId ue
-			--			INNER JOIN Ident.UserLoginPersona iulp ON (iulp.UserLoginPersonaId = ue.UserLoginPersonaId)
-			--			INNER JOIN Ident.UserLogin iul ON (iul.UserId = iulp.UserLoginId)
-			--			INNER JOIN @Person p ON (p.PartyID = iul.PersonPartyId)
-			--
+			DELETE ue
+			FROM	Enterprise.UserEmployeeId ue
+						INNER JOIN Ident.UserLoginPersona iulp ON (iulp.UserLoginPersonaId = ue.UserLoginPersonaId)
+						INNER JOIN Ident.UserLogin iul ON (iul.UserId = iulp.UserLoginId)
+						INNER JOIN @Person p ON (p.PartyID = iul.PersonPartyId)
+			
 			DELETE	iulp
 			FROM		Ident.UserLoginPersona iulp
 							INNER JOIN Ident.UserLogin iul ON (iul.UserId = iulp.UserLoginId)
