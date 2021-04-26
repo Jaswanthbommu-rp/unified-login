@@ -7,7 +7,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
     DECLARE @OrganizationRemovalQueueStatusId INT = -1
-	SELECT @OrganizationRemovalQueueStatusId = @OrganizationRemovalQueueStatusId FROM Maintenance.OrganizationRemovalQueueStatus WHERE Name = @OrganizationRemovalQueueStatus
+	SELECT @OrganizationRemovalQueueStatusId = OrganizationRemovalQueueStatusId FROM Maintenance.OrganizationRemovalQueueStatus WHERE Name = @OrganizationRemovalQueueStatus
 	
 	IF @OrganizationRemovalQueueStatusId <> -1
 	BEGIN

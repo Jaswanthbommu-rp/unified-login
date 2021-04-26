@@ -36,7 +36,11 @@ BEGIN
 		WHERE
 			OrganizationRemovalRetryCount <= @RetryCount
 			AND
-			OrganizationRemovalQueueStatusId IN (SELECT OrganizationRemovalQueueStatusId FROM Maintenance.OrganizationRemovalQueueStatus WHERE Name IN ('Pending Processing', 'Database Removal Failed'))
+			( 
+				(OrganizationRemovalQueueStatusId IN (SELECT OrganizationRemovalQueueStatusId FROM Maintenance.OrganizationRemovalQueueStatus WHERE Name IN ('Pending Processing', 'Database Removal Failed')) )
+			OR
+				( OrganizationRemoveUDMData = 1 AND OrganizationRemovalQueueStatusId IN (SELECT OrganizationRemovalQueueStatusId FROM Maintenance.OrganizationRemovalQueueStatus WHERE Name IN ('Database Removed')) )
+			)
 		)
     INSERT INTO @PBFiltered
     (
