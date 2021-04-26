@@ -1635,7 +1635,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [SwaggerResponse(HttpStatusCode.OK, Description = "Clean up complete")]
-        [Route("companysetup/cleanupdatabases")]
+        [Route("companysetup/cleanup")]
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         [HttpDelete]
         public HttpResponseMessage RunCompanyDatabaseDeleteAndUDMCleanUp()
@@ -1644,15 +1644,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             return Request.CreateResponse(HttpStatusCode.OK);
         }
-
+        
         #region Private functions
 
-        /// <summary>
-        /// Used to delete products from an organization
-        /// </summary>
-        /// <param name="addProductList"></param>
-        /// <param name="org"></param>
-        private IRepositoryResponse DeleteProductsFromOrganization(List<int> addProductList, Organization org)
+            /// <summary>
+            /// Used to delete products from an organization
+            /// </summary>
+            /// <param name="addProductList"></param>
+            /// <param name="org"></param>
+            private IRepositoryResponse DeleteProductsFromOrganization(List<int> addProductList, Organization org)
         {
             IRepositoryResponse response = new RepositoryResponse();
             foreach (ProductEnum product in addProductList)
