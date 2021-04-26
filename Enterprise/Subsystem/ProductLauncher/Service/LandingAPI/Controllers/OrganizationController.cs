@@ -847,6 +847,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             // add the given products to the new company
             if (addProductList.Count > 0)
             {
+                _manageOrganization.EnableProductOnOtherProductsActivation(addProductList);
                 _repositoryResponse = _manageOrganizationProduct.InsertUpdateOrganizationProduct(org, addProductList);
                 if (!string.IsNullOrEmpty(_repositoryResponse.ErrorMessage))
                 {
