@@ -1628,6 +1628,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         #endregion
         #endregion
 
+        /// <summary>
+        /// Run the Organization clean up
+        /// </summary>
+        /// <returns>List of Organizations</returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Clean up complete")]
+        [Route("companysetup/cleanupdatabases")]
+        [AuthorizeScope("companyfunctions", "rplandingapi")]
+        [HttpDelete]
+        public HttpResponseMessage RunCompanyDatabaseDeleteAndUDMCleanUp()
+        {
+            _manageOrganization.DeleteQueuedOrganizations();
+
+            return Request.CreateResponse(HttpStatusCode.OK);
+        }
 
         #region Private functions
 

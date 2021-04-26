@@ -15,6 +15,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using Dapper;
 using System.Data;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Maintenance;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 {
@@ -610,6 +611,66 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 return companylst;
             }
         }
+
+        /// <summary>
+        /// Used to get a list of organizations to delete
+        /// </summary>
+        /// <param name="batchSize"></param>
+        /// <param name="retryCount"></param>
+        /// <param name="includeErrorRecord"></param>
+        public List<OrganizationToDelete> GetOrganizationToDelete(int batchSize, int retryCount, bool includeErrorRecord)
+        {
+            dynamic param = new
+            {
+                BatchSize = batchSize,
+                RetryCount = retryCount
+            };
+            using (var repository = GetRepository())
+            {
+                return repository.GetMany<OrganizationToDelete>(StoredProcNameConstants.SP_ListOrganizationToDelete, param);
+            }
+        }
+
+        /// <summary>
+        /// Used to delete the specified company
+        /// </summary>
+        /// <param name="organizationRemovalQueueId"></param>
+        /// <param name="partyId"></param>
+        /// <param name="organizationRealPageId"></param>
+        /// <returns></returns>
+        public long DeleteOrganization(int organizationRemovalQueueId, long partyId, Guid organizationRealPageId)
+        {
+            dynamic param = new
+            {
+                OrganizationRemovalQueueId = organizationRemovalQueueId,
+                OrganizationPartyId = partyId,
+                OrganizationRealPageId = organizationRealPageId
+            };
+            using (var repository = GetRepository())
+            {
+                return repository.GetOne<long>(StoredProcNameConstants.SP_DeleteOrganization, param);
+            }
+        }
+
+        /// <summary>
+        /// Used to update the status of the OrganizationRemovalQueue
+        /// </summary>
+        /// <param name="organizationRemovalQueueId"></param>
+        /// <param name="organizationRemovalQueueStatus"></param>
+        /// <returns></returns>
+        public int UpdateOrganizationRemovalQueueStatus(int organizationRemovalQueueId, string organizationRemovalQueueStatus)
+        {
+            dynamic param = new
+            {
+                OrganizationRemovalQueueId = organizationRemovalQueueId,
+                OrganizationRemovalQueueStatus = organizationRemovalQueueStatus
+            };
+            using (var repository = GetRepository())
+            {
+                return repository.GetOne<int>(StoredProcNameConstants.SP_UpdateOrganizationRemovalQueueStatus, param);
+            }
+        }
+
         #endregion
 
         #region private methods

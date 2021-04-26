@@ -809,7 +809,41 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
         #endregion
 
+        #region Organization Delete
 
+        public void DeleteQueuedOrganizations()
+        {
+            var orgsToDelete = _organizationRepository.GetOrganizationToDelete(5, 3, false);
+
+            orgsToDelete.ForEach(p =>
+            {
+                try
+                {
+                    var deleteResult = _organizationRepository.DeleteOrganization(p.OrganizationRemovalQueueId, p.OrganizationPartyId, p.OrganizationRealPageId);
+                    if (deleteResult == p.OrganizationPartyId)
+                    {
+                        // success
+                        if (p.OrganizationRemoveUDMData)
+                        {
+                            // post to UDM to remove 
+                            var result = _manageBlueBook.DeleteBooksGreenBookCompanyInstance(new CompanyInstance() {CompanyInstanceSourceId = p.OrganizationRealPageId.ToString(), ModifiedBy = "UPFM Delete company"});
+                            _organizationRepository.UpdateOrganizationRemovalQueueStatus(p.OrganizationRemovalQueueId, result ? "UDMData Removed" : "UDMData Removal Failed");
+                        }
+
+                        _organizationRepository.UpdateOrganizationRemovalQueueStatus(p.OrganizationRemovalQueueId, "Complete");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    WriteToLog(LogEventLevel.Error,
+                        $"{GetType()} - Error while deleting company." +
+                        $" Company {p.OrganizationRealPageId} , " +
+                        $" OrganizationRemovalQueueId {p.OrganizationRemovalQueueId}", exception: ex);
+                }
+            });
+        }
+
+        #endregion
 
         #region Company
         #region OrganizationList

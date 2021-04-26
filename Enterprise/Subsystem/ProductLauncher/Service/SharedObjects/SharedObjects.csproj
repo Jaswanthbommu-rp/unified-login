@@ -434,6 +434,7 @@
     <Compile Include="Landing\UserUpdate\UpdateUserProfileEntity.cs" />
     <Compile Include="Landing\UserUpdate\EditorAssignedPersona.cs" />
     <Compile Include="Landing\UserUpdate\UserBatchEntity.cs" />
+    <Compile Include="Maintenance\OrganizationToDelete.cs" />
     <Compile Include="Mappers\ProfileDetailsMapper.cs" />
     <Compile Include="Mappers\UserDetailsMapper.cs" />
     <Compile Include="Product\Accounting\AccountingRoleAndPropertyList.cs" />

@@ -721,14 +721,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <returns></returns>
         public bool DeleteBooksGreenBookCompanyInstance(CompanyInstance companyInstance)
         {
-            string uri = $"companyinstance/{companyInstance.CompanyInstanceId}?modifiedBy={WebUtility.UrlEncode(companyInstance.ModifiedBy)}";
+            string uri = $"companyinstance/{companyInstance.CompanyInstanceSourceId}/UPFM?modifiedBy={WebUtility.UrlEncode(companyInstance.ModifiedBy)}";
 
             Dictionary<string, object> logData = new Dictionary<string, object>() {{"uri", _httpClient.BaseAddress + uri}, {"companyInstance", companyInstance}};
-            WriteToLog(LogEventLevel.Debug, $"DeleteBooksGreenBookCompanyInstance - deleting instance {companyInstance.CompanyInstanceId}.", logData);
+            WriteToLog(LogEventLevel.Debug, $"DeleteBooksGreenBookCompanyInstance - deleting instance {companyInstance.CompanyInstanceSourceId}.", logData);
             var response = _httpClient.DeleteAsync(uri).Result;
             logData = new Dictionary<string, object>() {{"StatusCode", response.StatusCode}};
-            WriteToLog(LogEventLevel.Debug, $"DeleteBooksGreenBookCompanyInstance - deleted instance {companyInstance.CompanyInstanceId}.", logData);
-            return response.IsSuccessStatusCode;
+            WriteToLog(LogEventLevel.Debug, $"DeleteBooksGreenBookCompanyInstance - deleted instance {companyInstance.CompanyInstanceSourceId}.", logData);
+            if (response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.NotFound)
+            {
+                return true;
+            }
+            return false;
         }
 
         /// <summary>

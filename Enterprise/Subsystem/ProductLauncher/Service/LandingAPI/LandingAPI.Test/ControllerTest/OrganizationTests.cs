@@ -29,6 +29,7 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.Dispatcher;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Maintenance;
 using Xunit;
 using RoleType = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig.RoleType;
 
@@ -3008,7 +3009,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         }
         #endregion
 
-
         #region GetCompanyMasterByCustomerCompanyId
         [Fact]
         public void SearchCompanyDetailsByCustomerCompanyId_InvalidCustomerCompanyId_ReturnBadRequest()
@@ -3056,7 +3056,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
         #endregion
 
-        #region ada
+        #region UpdateUsePrimaryPropertyForOrganizationProduct
         [Fact]
         public void UpdateUsePrimaryPropertyForOrganizationProduct_InvalidorganizationPartyId_ReturnBadRequest()
         {
@@ -3094,6 +3094,89 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             //Assert
             Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
         }
+        #endregion
+
+
+        #region Delete Organization
+        [Fact]
+        public void OrganizationCleanup_Success()
+        {
+            //Arrange
+            Mock<IRepository> mockRepository = new Mock<IRepository>();
+
+            List<OrganizationToDelete> organizationToDeletes =
+                new List<OrganizationToDelete>() {new OrganizationToDelete() {OrganizationPartyId = 123, OrganizationRealPageId = _RealPageId, OrganizationRemovalQueueId = 20, OrganizationRemoveUDMData = true, OrganizationRemovalQueueStatusId = 0, OrganizationRemovalRetryCount = 0}};
+
+            mockRepository
+                .Setup(m => m.GetMany<OrganizationToDelete>(StoredProcNameConstants.SP_ListOrganizationToDelete,
+                    It.IsAny<object>()))
+                .Returns(organizationToDeletes);
+
+            mockRepository
+                .Setup(m => m.GetOne<long>(StoredProcNameConstants.SP_DeleteOrganization,
+                    It.IsAny<object>()))
+                .Returns(organizationToDeletes[0].OrganizationPartyId);
+
+            mockRepository
+                .Setup(m => m.GetOne<int>(StoredProcNameConstants.SP_UpdateOrganizationRemovalQueueStatus,
+                    It.IsAny<object>()))
+                .Returns(organizationToDeletes[0].OrganizationRemovalQueueId);
+            
+            OrganizationController organizationController = new OrganizationController(
+                mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            )
+            {
+                Request = new HttpRequestMessage(),
+                Configuration = new HttpConfiguration()
+            };
+
+            //Act           
+            HttpResponseMessage response = organizationController.RunCompanyDatabaseDeleteAndUDMCleanUp();
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
+        }
+
+        [Fact]
+        public void OrganizationCleanup_Error()
+        {
+            //Arrange
+            Mock<IRepository> mockRepository = new Mock<IRepository>();
+
+            List<OrganizationToDelete> organizationToDeletes =
+                new List<OrganizationToDelete>() { new OrganizationToDelete() { OrganizationPartyId = 123, OrganizationRealPageId = _RealPageId, OrganizationRemovalQueueId = 20, OrganizationRemoveUDMData = true, OrganizationRemovalQueueStatusId = 0, OrganizationRemovalRetryCount = 0 } };
+
+            mockRepository
+                .Setup(m => m.GetMany<OrganizationToDelete>(StoredProcNameConstants.SP_ListOrganizationToDelete,
+                    It.IsAny<object>()))
+                .Returns(organizationToDeletes);
+
+            mockRepository
+                .Setup(m => m.GetOne<long>(StoredProcNameConstants.SP_DeleteOrganization,
+                    It.IsAny<object>()))
+                .Returns(0);
+
+            OrganizationController organizationController = new OrganizationController(
+                mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            )
+            {
+                Request = new HttpRequestMessage(),
+                Configuration = new HttpConfiguration()
+            };
+
+            //Act           
+            HttpResponseMessage response = organizationController.RunCompanyDatabaseDeleteAndUDMCleanUp();
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
+        }
+
         #endregion
     }
 }
