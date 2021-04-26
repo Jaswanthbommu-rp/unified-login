@@ -1,6 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing
 {
@@ -67,5 +68,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		/// Use primary properties
 		/// </summary>		
 		public int UsePrimaryProperties { get; set; } = 0;
+		
+		/// <summary>
+		/// Company Address
+		/// </summary>
+		public CompanyInstanceAddress CompanyAddress { get; set; }
 	}
 }
