@@ -150,7 +150,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.AoAxiometrics:
                     var manageProductAo = new ManageProductAssetOptimization(_userClaims);
                     var products = _productRepository.GetAllProducts();
-                    string productCode = ProductEnumHelper.GetProductCodeByProductId(_productId, products);
+                    string productCode = ProductEnumHelper.GetProductCodeByProductId((int)ProductEnum.AoAxiometrics, products);
                     result = manageProductAo.GetProductRoles(editorPersonaId, userPersonaId, productCode, dataFilter, userLoginName);
                     break;
 
