@@ -421,7 +421,7 @@ AS
 			FROM	Enterprise.Party ep
 						INNER JOIN @Organization o ON (o.PartyId = ep.PartyId)
 
-			IF @@TRANCOUNT = 0
+			IF @TranCount = 0
 				COMMIT;
 
 			IF @OrganizationRemovalQueueId <> 0
