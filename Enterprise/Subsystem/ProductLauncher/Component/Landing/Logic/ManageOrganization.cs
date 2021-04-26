@@ -720,62 +720,63 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         /// <summary>
-		/// Used to add a product to an organization
-		/// </summary>
-		/// <param name="addProductList">Product List</param>
-		/// <param name="partyId">Organization PartyId</param>
-		/// <param name="organizationTypeId">Organization Type</param>
-		/// <returns>IRepositoryResponse</returns>
-		private IRepositoryResponse AddProductsToOrganization(List<int> addProductList, long partyId, int organizationTypeId, string organizationName)
-		{
+        /// Used to add a product to an organization
+        /// </summary>
+        /// <param name="addProductList">Product List</param>
+        /// <param name="partyId">Organization PartyId</param>
+        /// <param name="organizationTypeId">Organization Type</param>
+        /// <param name="organizationName">organizationName</param>
+        /// <returns>IRepositoryResponse</returns>
+        private IRepositoryResponse AddProductsToOrganization(List<int> addProductList, long partyId, int organizationTypeId, string organizationName)
+        {
             IRepositoryResponse response = new RepositoryResponse();
 
-			IList<OrganizationType> organizationTypeList = ListOrganizationType();
-			string organizationTypeName = organizationTypeList.ToList().FirstOrDefault(o => o.OrganizationTypeId == organizationTypeId).Name;
+            IList<OrganizationType> organizationTypeList = ListOrganizationType();
+            string organizationTypeName = organizationTypeList.ToList().FirstOrDefault(o => o.OrganizationTypeId == organizationTypeId).Name;
+            //Enable Default products for company
+            var productInternalSettingsByType = _productInternalSettingRepository.GetProductSettingByType("AlwaysEnableProductForOrgType");
+            foreach (var productSetting in productInternalSettingsByType)
+            {
+                string[] types = productSetting.Value.Split(',');
+                if (types.Contains(organizationTypeName))
+                {
+                    if (!addProductList.Contains(productSetting.ProductId))
+                    {
+                        // add unified login product to every new org
+                        addProductList.Add(productSetting.ProductId);
+                    }
+                }
+            }
+            //Enable Product On Other Products Activation //TODO test one more time
+            EnableProductOnOtherProductsActivation(addProductList);
+            foreach (int product in addProductList)
+            {
+                response = _manageOrganizationProduct.InsertUpdateOrganizationProduct(partyId: partyId, product: product, configurationId: null, fromDate: null, thruDate: null, orgName: organizationName);
+                if (!string.IsNullOrEmpty(response.ErrorMessage))
+                {
+                    return response;
+                }
+            }
+            return response;
+        }
 
-			if (!addProductList.Contains((int)ProductEnum.UnifiedPlatform))
-			{
-				// add unified login product to every new org
-				addProductList.Add((int)ProductEnum.UnifiedPlatform);
-			}
-			if (!addProductList.Contains((int)ProductEnum.ProductUpdates))
-			{
-				// add product updates to every new org
-				addProductList.Add((int)ProductEnum.ProductUpdates);
-			}
-			if (!addProductList.Contains((int)ProductEnum.ClientPortal))
-			{
-				// add client portal product to every new org
-				addProductList.Add((int)ProductEnum.ClientPortal);
-			}
-			if (!addProductList.Contains((int)ProductEnum.MigrationTool))
-			{
-				// add migration tool product to every new org
-				addProductList.Add((int)ProductEnum.MigrationTool);
-			}
-
-			//Do not add products ClientPortal and MigrationTool to Company if the company type is Vendor.
-			if (organizationTypeName.Equals("Vendor", StringComparison.OrdinalIgnoreCase))
-			{
-				addProductList.Remove((int)ProductEnum.ClientPortal);
-				addProductList.Remove((int)ProductEnum.MigrationTool);
-				if (!addProductList.Contains((int)ProductEnum.VendorMarketplace))
-				{
-					// add VendorMarketplace product to every new org of type Vendor
-					addProductList.Add((int)ProductEnum.VendorMarketplace);
-				}
-			}
-
-			foreach (int product in addProductList)
-			{
-				response = _manageOrganizationProduct.InsertUpdateOrganizationProduct(partyId: partyId, product: product, configurationId: null, fromDate: null, thruDate: null, orgName: organizationName);
-				if (!string.IsNullOrEmpty(response.ErrorMessage))
-				{
-					return response;
-				}
-			}
-			return response;
-		}
+        public List<int> EnableProductOnOtherProductsActivation(List<int> addProductList)
+        {
+            //Enable Product On Other Products Activation
+            var productsToActivateOnOtherProductActivation = _productInternalSettingRepository.GetProductSettingByType("EnableProductOnOtherProductsActivation");
+            foreach (var productsToActivate in productsToActivateOnOtherProductActivation)
+            {
+                int[] products = Array.ConvertAll(productsToActivate.Value.Split(','), int.Parse);
+                foreach (int productId in products)
+                {
+                    if (addProductList.Contains(productId) && !addProductList.Contains(productsToActivate.ProductId))
+                    {
+                        addProductList.Add(productsToActivate.ProductId);
+                    }
+                }
+            }
+            return addProductList;
+        }
 
         #region Public Organization Type methods
         /// <summary>
