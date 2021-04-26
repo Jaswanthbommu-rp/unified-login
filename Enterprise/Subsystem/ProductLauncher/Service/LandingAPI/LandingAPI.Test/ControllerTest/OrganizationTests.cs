@@ -3208,6 +3208,69 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
 
         #region Delete Organization
+
+        [Fact]
+        public void InsertOrganizationRemovalQueue_Success()
+        {
+            //Arrange
+            OrganizationDelete organizationDelete = new OrganizationDelete() {OrganizationRealPageId = _RealPageId, RequestedBy = "Unit test"};
+            OrganizationRemovalQueue organizationRemovalQueue = new OrganizationRemovalQueue()
+            {
+                OrganizationRealPageId = organizationDelete.OrganizationRealPageId,
+                RequestedBy = organizationDelete.RequestedBy,
+                OrganizationName = _CompanyName,
+                OrganizationDomain = "Primary",
+                OrganizationPartyId = _PartyId,
+
+            };
+
+            _mockRepository
+                .Setup(m => m.GetOne<OrganizationRemovalQueue>(StoredProcNameConstants.SP_InsertOrganizationRemovalQueue,
+                    It.IsAny<object>()))
+                .Returns(organizationRemovalQueue);
+            
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            )
+            {
+                Request = new HttpRequestMessage(),
+                Configuration = new HttpConfiguration()
+            };
+
+            //Act           
+            HttpResponseMessage response = organizationController.InsertOrganizationToDelete(organizationDelete, false);
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.Created));
+        }
+
+        [Fact]
+        public void InsertOrganizationRemovalQueue_InvalidCompanyId()
+        {
+            //Arrange
+            OrganizationDelete organizationDelete = new OrganizationDelete() { OrganizationRealPageId = Guid.Empty, RequestedBy = "Unit test" };
+            
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            )
+            {
+                Request = new HttpRequestMessage(),
+                Configuration = new HttpConfiguration()
+            };
+
+            //Act           
+            HttpResponseMessage response = organizationController.InsertOrganizationToDelete(organizationDelete, false);
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
+        }
+
         [Fact]
         public void OrganizationCleanup_Success()
         {
