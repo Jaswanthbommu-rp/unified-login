@@ -241,5 +241,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="usePrimaryProperty">usePrimaryProperty</param>
 		/// <returns></returns>
 		RepositoryResponse UpdateUsePrimaryPropertyForOrganizationProduct(long organizationPartyId, int productId, bool usePrimaryProperty);
+
+		/// <summary>
+		/// Enable Product On Other Products Activation
+		/// </summary>
+		/// <param name="addProductList">ProductsList</param>
+		/// <returns></returns>
+		List<int> EnableProductOnOtherProductsActivation(List<int> addProductList);
 	}
 }

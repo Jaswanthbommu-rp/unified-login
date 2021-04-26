@@ -1338,13 +1338,15 @@ DECLARE @NOW DATETIME = GETUTCDATE();
 declare @productlist table ( entid int identity, productid int, productsettingtype varchar(500), productsettingvalue varchar(2000))
 insert into @productlist values 
 	(3, 'AlwaysEnableProductForOrgType', 'Multifamily,Vendor,Other'),
-	(14, 'AlwaysEnableProductForOrgType', 'Multifamily,Other'),
 	(19, 'AlwaysEnableProductForOrgType', 'Multifamily,Vendor,Other'),
-	(27, 'AlwaysEnableProductForOrgType', 'Multifamily,Other'),
 	(28, 'AlwaysEnableProductForOrgType', 'Multifamily,Vendor,Other'),
-	(38, 'AlwaysEnableProductForOrgType', 'Vendor'),
 	(45, 'AlwaysEnableProductForOrgType', 'Multifamily,Vendor,Other'),
+	(49, 'AlwaysEnableProductForOrgType', 'Multifamily,Vendor,Other'),
 	(56, 'AlwaysEnableProductForOrgType', 'Multifamily,Vendor,Other'),
+	(27, 'AlwaysEnableProductForOrgType', 'Multifamily,Other'),
+	(14, 'AlwaysEnableProductForOrgType', 'Multifamily,Other'),
+	(38, 'AlwaysEnableProductForOrgType', 'Vendor'),
+
 	(39, 'EnableProductOnOtherProductsActivation', '1')
 	
 --select * from @productlist

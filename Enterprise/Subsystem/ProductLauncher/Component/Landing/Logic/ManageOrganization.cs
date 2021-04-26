@@ -720,13 +720,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         /// <summary>
-		/// Used to add a product to an organization
-		/// </summary>
-		/// <param name="addProductList">Product List</param>
-		/// <param name="partyId">Organization PartyId</param>
-		/// <param name="organizationTypeId">Organization Type</param>
-		/// <returns>IRepositoryResponse</returns>
-		private IRepositoryResponse AddProductsToOrganization(List<int> addProductList, long partyId, int organizationTypeId, string organizationName)
+        /// Used to add a product to an organization
+        /// </summary>
+        /// <param name="addProductList">Product List</param>
+        /// <param name="partyId">Organization PartyId</param>
+        /// <param name="organizationTypeId">Organization Type</param>
+        /// <param name="organizationName">organizationName</param>
+        /// <returns>IRepositoryResponse</returns>
+        private IRepositoryResponse AddProductsToOrganization(List<int> addProductList, long partyId, int organizationTypeId, string organizationName)
 		{
             IRepositoryResponse response = new RepositoryResponse();
 
@@ -746,19 +747,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     }
                 }
             }
-            //Enable Default products for company
-            var productsToActivateOnOtherProductActivation = _productInternalSettingRepository.GetProductSettingByType("EnableProductOnOtherProductsActivation");
-            foreach(var productsToActivate in productsToActivateOnOtherProductActivation)
-			{
-                int[] products = Array.ConvertAll(productsToActivate.Value.Split(','), int.Parse);
-                foreach(int productId in products)
-				{
-                    if (addProductList.Contains(productId) && !addProductList.Contains(productsToActivate.ProductId))
-                    {
-                            addProductList.Add(productsToActivate.ProductId);                       
-                    }
-                }
-            }
+            //Enable Product On Other Products Activation //TODO test one more time
+            EnableProductOnOtherProductsActivation(addProductList);
             foreach (int product in addProductList)
 			{
 				response = _manageOrganizationProduct.InsertUpdateOrganizationProduct(partyId: partyId, product: product, configurationId: null, fromDate: null, thruDate: null, orgName: organizationName);
@@ -769,6 +759,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			}
 			return response;
 		}
+
+        public List<int> EnableProductOnOtherProductsActivation(List<int> addProductList)
+		{
+            //Enable Product On Other Products Activation
+            var productsToActivateOnOtherProductActivation = _productInternalSettingRepository.GetProductSettingByType("EnableProductOnOtherProductsActivation");
+            foreach (var productsToActivate in productsToActivateOnOtherProductActivation)
+            {
+                int[] products = Array.ConvertAll(productsToActivate.Value.Split(','), int.Parse);
+                foreach (int productId in products)
+                {
+                    if (addProductList.Contains(productId) && !addProductList.Contains(productsToActivate.ProductId))
+                    {
+                        addProductList.Add(productsToActivate.ProductId);
+                    }
+                }
+            }
+            return addProductList;
+        }
 
         #region Public Organization Type methods
         /// <summary>
