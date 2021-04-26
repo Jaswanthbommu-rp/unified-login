@@ -1109,8 +1109,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 companyInstance = result.ToList();
                 if (companyInstance.Count > 0)
                 {
-                    CacheItemPolicy policy = new CacheItemPolicy { AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(1800) };
-                    // 30 Mins cached 1800 secs
+                    CacheItemPolicy policy = new CacheItemPolicy { AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(120) };
+                    // 2 Mins cached 120 secs
                     _manageBlueBookCache.Set($"GetUPFMCompanyDetailsByInstanceIds_{booksCompanyMasterHash}", companyInstance, policy);
                 }
             }
