@@ -361,10 +361,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         public HttpResponseMessage UpdateOrganization([FromBody] OrganizationUpdate organization)
         {
             Organization org = null;
+            CompanyLocation oldAddress = null;
+
             if (organization != null)
             {
                 // get the org by UL realpageID
                 org = _manageOrganization.GetOrganization(organization.RealPageId);
+                oldAddress = _manageOrganization.GetCompanyList(org.Name, 0, null, 0, new Dictionary<object, object>())?.FirstOrDefault()?.CompanyLocation;
             }
             else
             {
@@ -377,6 +380,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             bool orgNameChanged = org.Name != organization.Name ? true : false;
             bool orgStatusChanged = org.IsActive != organization.IsActive ? true : false;
+            bool orgAddressChanged = false;
+            
+            //Did the address change
+            if (organization.CompanyAddress != null && 
+                (oldAddress == null ||
+                organization.CompanyAddress.Address.Equals(oldAddress.Address, StringComparison.OrdinalIgnoreCase) ||
+                organization.CompanyAddress.City.Equals(oldAddress.City, StringComparison.OrdinalIgnoreCase) ||
+                organization.CompanyAddress.County.Equals(oldAddress.County, StringComparison.OrdinalIgnoreCase) ||
+                organization.CompanyAddress.Country.Equals(oldAddress.Country, StringComparison.OrdinalIgnoreCase) ||
+                organization.CompanyAddress.State.Equals(oldAddress.State, StringComparison.OrdinalIgnoreCase) ||
+                organization.CompanyAddress.PostalCode.Equals(oldAddress.PostalCode, StringComparison.OrdinalIgnoreCase)))
+            {
+                orgAddressChanged = true;
+            }
+
 
             org.Name = organization.Name;
             org.IsActive = organization.IsActive;
@@ -444,7 +462,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             _manageOrganization.UpdateOrganizationUsePrimaryPropertySetting(org);
             //orgNameChanged = false;
-            if (orgNameChanged || orgStatusChanged)
+            if (orgNameChanged || orgStatusChanged || orgAddressChanged)
             {
                 // update the name in MDM
                 IList<CustomerCompanyMap> companyMapResource = null;
@@ -486,9 +504,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         updateCompanyInstance.CompanyInstanceLocation = new List<CompanyInstanceAddress>() { address };
                     }
 
-                    var booksResult = _manageBlueBook.AddUPFMCompanyFromCompanySetup(updateCompanyInstance);
-
-                    if (booksResult == true)
+                    var booksResult = _manageBlueBook.UpdateBooksGreenBookCompanyInstance(updateCompanyInstance);
+                    if (!string.IsNullOrEmpty(booksResult))
                     {
                         return Request.CreateResponse(HttpStatusCode.BadRequest, $"Unified Login company was updated successfully but MDM data update failed. Error: " + booksResult);
                     }
