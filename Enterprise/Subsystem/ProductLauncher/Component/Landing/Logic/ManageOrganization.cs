@@ -761,7 +761,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		}
 
         public List<int> EnableProductOnOtherProductsActivation(List<int> addProductList)
-		{
+        {
             //Enable Product On Other Products Activation
             var productsToActivateOnOtherProductActivation = _productInternalSettingRepository.GetProductSettingByType("EnableProductOnOtherProductsActivation");
             foreach (var productsToActivate in productsToActivateOnOtherProductActivation)
