@@ -297,6 +297,7 @@
     <Compile Include="IdentityConfig\UserLoginOrganization.cs" />
     <Compile Include="IdentityConfig\UserLoginPersona.cs" />
     <Compile Include="Landing\ApiError.cs" />
+    <Compile Include="Landing\OrganizationDelete.cs" />
     <Compile Include="Landing\SettingPickList.cs" />
     <Compile Include="Landing\EmailModel.cs" />
     <Compile Include="Landing\ProductSamlDetails.cs" />
@@ -434,7 +435,7 @@
     <Compile Include="Landing\UserUpdate\UpdateUserProfileEntity.cs" />
     <Compile Include="Landing\UserUpdate\EditorAssignedPersona.cs" />
     <Compile Include="Landing\UserUpdate\UserBatchEntity.cs" />
-    <Compile Include="Maintenance\OrganizationToDelete.cs" />
+    <Compile Include="Maintenance\OrganizationRemovalQueue.cs" />
     <Compile Include="Mappers\ProfileDetailsMapper.cs" />
     <Compile Include="Mappers\UserDetailsMapper.cs" />
     <Compile Include="Product\Accounting\AccountingRoleAndPropertyList.cs" />

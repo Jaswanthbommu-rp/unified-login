@@ -1,21 +1,18 @@
-﻿using RP.Enterprise.Foundation.DataAccess.Component;
+﻿using Dapper;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Foundation.DataAccess.Component.Helper;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Maintenance;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
-using Dapper;
 using System.Data;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Maintenance;
+using System.Linq;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 {
@@ -618,7 +615,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="batchSize"></param>
         /// <param name="retryCount"></param>
         /// <param name="includeErrorRecord"></param>
-        public List<OrganizationToDelete> GetOrganizationToDelete(int batchSize, int retryCount, bool includeErrorRecord)
+        public List<OrganizationRemovalQueue> GetOrganizationToDelete(int batchSize, int retryCount, bool includeErrorRecord)
         {
             dynamic param = new
             {
@@ -627,7 +624,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             };
             using (var repository = GetRepository())
             {
-                return repository.GetMany<OrganizationToDelete>(StoredProcNameConstants.SP_ListOrganizationToDelete, param);
+                return repository.GetMany<OrganizationRemovalQueue>(StoredProcNameConstants.SP_ListOrganizationToDelete, param);
             }
         }
 
@@ -668,6 +665,31 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             using (var repository = GetRepository())
             {
                 return repository.GetOne<int>(StoredProcNameConstants.SP_UpdateOrganizationRemovalQueueStatus, param);
+            }
+        }
+
+        /// <summary>
+        /// Used to insert a new request to remove a UPFM company and data related to it in UDM
+        /// </summary>
+        /// <param name="orgRemovalQueue"></param>
+        /// <returns></returns>
+        public OrganizationRemovalQueue InsertOrganizationRemovalQueue(OrganizationRemovalQueue orgRemovalQueue)
+        {
+            dynamic param = new
+            {
+                OrganizationPartyId = orgRemovalQueue.OrganizationPartyId,
+                OrganizationRealPageId = orgRemovalQueue.OrganizationRealPageId,
+                OrganizationCustomerMasterId = orgRemovalQueue.OrganizationCustomerMasterId,
+                OrganizationDomain = orgRemovalQueue.OrganizationDomain,
+                OrganizationName = orgRemovalQueue.OrganizationName,
+                OrganizationRemoveUDMData = orgRemovalQueue.OrganizationRemoveUDMData,
+                OrganizationRemovalQueueStatusId = orgRemovalQueue.OrganizationRemovalQueueStatusId,
+                OrganizationRemovalRetryCount = orgRemovalQueue.OrganizationRemovalRetryCount,
+                RequestedBy = orgRemovalQueue.RequestedBy
+            };
+            using (var repository = GetRepository())
+            {
+                return repository.GetOne<OrganizationRemovalQueue>(StoredProcNameConstants.SP_InsertOrganizationRemovalQueue, param);
             }
         }
 

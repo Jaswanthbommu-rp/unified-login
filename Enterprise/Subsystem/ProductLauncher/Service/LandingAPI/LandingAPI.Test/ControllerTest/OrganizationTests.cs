@@ -3104,11 +3104,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             //Arrange
             Mock<IRepository> mockRepository = new Mock<IRepository>();
 
-            List<OrganizationToDelete> organizationToDeletes =
-                new List<OrganizationToDelete>() {new OrganizationToDelete() {OrganizationPartyId = 123, OrganizationRealPageId = _RealPageId, OrganizationRemovalQueueId = 20, OrganizationRemoveUDMData = true, OrganizationRemovalQueueStatusId = 0, OrganizationRemovalRetryCount = 0}};
+            List<OrganizationRemovalQueue> organizationToDeletes =
+                new List<OrganizationRemovalQueue>() {new OrganizationRemovalQueue() {OrganizationPartyId = 123, OrganizationRealPageId = _RealPageId, OrganizationRemovalQueueId = 20, OrganizationRemoveUDMData = true, OrganizationRemovalQueueStatusId = 0, OrganizationRemovalRetryCount = 0}};
 
             mockRepository
-                .Setup(m => m.GetMany<OrganizationToDelete>(StoredProcNameConstants.SP_ListOrganizationToDelete,
+                .Setup(m => m.GetMany<OrganizationRemovalQueue>(StoredProcNameConstants.SP_ListOrganizationToDelete,
                     It.IsAny<object>()))
                 .Returns(organizationToDeletes);
 
@@ -3146,11 +3146,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             //Arrange
             Mock<IRepository> mockRepository = new Mock<IRepository>();
 
-            List<OrganizationToDelete> organizationToDeletes =
-                new List<OrganizationToDelete>() { new OrganizationToDelete() { OrganizationPartyId = 123, OrganizationRealPageId = _RealPageId, OrganizationRemovalQueueId = 20, OrganizationRemoveUDMData = true, OrganizationRemovalQueueStatusId = 0, OrganizationRemovalRetryCount = 0 } };
+            List<OrganizationRemovalQueue> organizationToDeletes =
+                new List<OrganizationRemovalQueue>() { new OrganizationRemovalQueue() { OrganizationPartyId = 123, OrganizationRealPageId = _RealPageId, OrganizationRemovalQueueId = 20, OrganizationRemoveUDMData = true, OrganizationRemovalQueueStatusId = 0, OrganizationRemovalRetryCount = 0 } };
 
             mockRepository
-                .Setup(m => m.GetMany<OrganizationToDelete>(StoredProcNameConstants.SP_ListOrganizationToDelete,
+                .Setup(m => m.GetMany<OrganizationRemovalQueue>(StoredProcNameConstants.SP_ListOrganizationToDelete,
                     It.IsAny<object>()))
                 .Returns(organizationToDeletes);
 

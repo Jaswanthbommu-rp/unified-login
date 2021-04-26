@@ -1330,6 +1330,18 @@ BEGIN
 	VALUES ('IsOrganizationRemovalEnabled', 'Does the environment support the Organization Removal feature', 0);
 END
 
+IF NOT EXISTS (SELECT TOP(1) 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'OrganizationRemovalRetryCount')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
+	VALUES ('OrganizationRemovalRetryCount', 'How many failures should a retry occur before giving up during the organization removal process', 0);
+END
+
+IF NOT EXISTS (SELECT TOP(1) 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'OrganizationRemovalBatchSize')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
+	VALUES ('OrganizationRemovalBatchSize', 'How many organizations should be deleted in a batch during the organization removal process', 0);
+END
+
 GO
 
 IF NOT EXISTS ( SELECT TOP (1) 1 FROM Maintenance.OrganizationRemovalQueueStatus )

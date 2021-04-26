@@ -1,19 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Maintenance;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
+using System;
+using System.Collections.Generic;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
 {
-	/// <summary>
-	/// Manage Organization repository calls
-	/// </summary>
-	public interface IManageOrganization
+    /// <summary>
+    /// Manage Organization repository calls
+    /// </summary>
+    public interface IManageOrganization
 	{
 		#region Organization methods
 
@@ -244,5 +244,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 
         void DeleteQueuedOrganizations();
 
+        /// <summary>
+        /// Used to add a new organization into the queue to be deleted
+        /// </summary>
+        /// <param name="organizationRemovalQueue"></param>
+        /// <returns></returns>
+        OrganizationRemovalQueue InsertOrganizationRemovalQueue(OrganizationRemovalQueue organizationRemovalQueue);
     }
 }

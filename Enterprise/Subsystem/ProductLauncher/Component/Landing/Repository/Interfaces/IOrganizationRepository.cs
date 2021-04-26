@@ -149,7 +149,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="batchSize"></param>
         /// <param name="retryCount"></param>
         /// <param name="includeErrorRecord"></param>
-        List<OrganizationToDelete> GetOrganizationToDelete(int batchSize, int retryCount, bool includeErrorRecord);
+        List<OrganizationRemovalQueue> GetOrganizationToDelete(int batchSize, int retryCount, bool includeErrorRecord);
 
         /// <summary>
         /// Used to delete the specified company
@@ -167,5 +167,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="organizationRemovalQueueStatus"></param>
         /// <returns></returns>
         int UpdateOrganizationRemovalQueueStatus(int organizationRemovalQueueId, string organizationRemovalQueueStatus);
+
+        /// <summary>
+        /// Used to insert a new request to remove a UPFM company and data related to it in UDM
+        /// </summary>
+        /// <param name="orgRemovalQueue"></param>
+        /// <returns></returns>
+        OrganizationRemovalQueue InsertOrganizationRemovalQueue(OrganizationRemovalQueue orgRemovalQueue);
     }
 }

@@ -26,6 +26,8 @@ using System.Web.Http;
 using System.Web.Http.Controllers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
+using System.ComponentModel.DataAnnotations;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Maintenance;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -166,7 +168,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             globals.Add(BaseType.RequestParameter, datafilter);
 
-            IList<CustomField> customFieldList = _manageCustomFields.GetCustomField(globals: globals, booksCustomerMasterId: _userClaims.CustomerMasterId, bookMasterTypeId: (int)BookMasterType.CustomerMasterId);
+            IList<CustomField> customFieldList = _manageCustomFields.GetCustomField(globals: globals, booksCustomerMasterId: _userClaims.CustomerMasterId, bookMasterTypeId: (int) BookMasterType.CustomerMasterId);
 
             ListResponse response = new ListResponse()
             {
@@ -213,7 +215,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             if (!organizationDomainList.Any(d => d.Name.Equals(organization.OrganizationDomain, StringComparison.OrdinalIgnoreCase)))
             {
-                RepositoryResponse response = _manageOrganization.CreateOrganizationDomain(new OrganizationDomain() { Name = organization.OrganizationDomain });
+                RepositoryResponse response = _manageOrganization.CreateOrganizationDomain(new OrganizationDomain() {Name = organization.OrganizationDomain});
                 if (response.Id > 0)
                 {
                     organization.OrganizationDomainId = Convert.ToInt32(response.Id);
@@ -223,7 +225,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 organization.OrganizationDomainId = organizationDomainList.FirstOrDefault(p => p.Name.Equals(organization.OrganizationDomain, StringComparison.OrdinalIgnoreCase)).OrganizationDomainId;
             }
-            
+
             var addProductList = new List<int>();
             // verify the products, if any, exist and can be added to the customer
             List<string> invalidProductList = _manageOrganization.ParseProduct(organization.Products, addProductList);
@@ -297,6 +299,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         {
                             addInstance = false;
                         }
+
                         if (i.Domain != null && i.Domain.Equals(companyInstance.CustomerEnvironment, StringComparison.OrdinalIgnoreCase))
                         {
                             addInstance = false;
@@ -336,6 +339,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     }
                 }
             }
+
             return Request.CreateResponse(HttpStatusCode.OK, result.obj);
         }
 
@@ -370,8 +374,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 return Request.CreateResponse(HttpStatusCode.NotFound, "Not found");
             }
-            if(org == null)
-			{
+
+            if (org == null)
+            {
                 return Request.CreateResponse(HttpStatusCode.NotFound, "Not found");
             }
 
@@ -452,7 +457,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 {
                     companyMapResource = _manageBlueBook.GetCompanyMap(companyRealPageId: org.RealPageId, booksCompanyMasterId: org.BooksCustomerMasterId, source: ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform), domain: organization.OrganizationDomainName, includeGreenBookCares: false);
                 }
-                catch (Exception ex) { }
+                catch (Exception ex)
+                {
+                }
 
                 if (companyMapResource != null && companyMapResource.Any(c => c.CompanyInstanceSourceId == org.RealPageId.ToString()))
                 {
@@ -482,9 +489,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     return Request.CreateResponse(HttpStatusCode.BadRequest, $"Unified Login company was updated successfully but MDM data failed because the {ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)} company instance could not be found");
                 }
             }
+
             org = _manageOrganization.GetOrganization(org.RealPageId);
-           
-           return Request.CreateResponse(HttpStatusCode.OK, org);
+
+            return Request.CreateResponse(HttpStatusCode.OK, org);
         }
 
         /// <summary>
@@ -540,7 +548,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         public HttpResponseMessage SyncBooksOrganizations(bool commit = false)
         {
-            var productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
+            var productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int) ProductEnum.UnifiedPlatform);
             var booksUrl = productInternalSettingList.First(a => a.Name.Equals("BlueBookAPIEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
             if (booksUrl.Contains("booksapi.realpage.com"))
             {
@@ -569,7 +577,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 {
                     companyMapResource = _manageBlueBook.GetCompanyMap(companyRealPageId: organization.RealPageId, booksCompanyMasterId: organization.BooksCustomerMasterId, source: ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform), domain: "", includeGreenBookCares: false);
                 }
-                catch (Exception ex) { }
+                catch (Exception ex)
+                {
+                }
 
                 // add the missing company to books
                 var companyInstance = new CompanyInstanceAdd()
@@ -629,7 +639,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     result.Add(organization.BooksCustomerMasterId.ToString(), companyInstance);
                 }
             }
-            catch (Exception ex) { }
+            catch (Exception ex)
+            {
+            }
 
             return result;
         }
@@ -675,7 +687,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     }
                 }
 
-                ObjectListOutput<Organization, IErrorData> output = new ObjectListOutput<Organization, IErrorData>() { list = organizationList };
+                ObjectListOutput<Organization, IErrorData> output = new ObjectListOutput<Organization, IErrorData>() {list = organizationList};
                 return Request.CreateResponse(HttpStatusCode.OK, output);
             }
 
@@ -841,10 +853,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "organizationPartyId not supplied");
             }
+
             if (productId == 0)
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "productId not supplied");
-            }           
+            }
+
             _repositoryResponse = _manageOrganization.UpdateUsePrimaryPropertyForOrganizationProduct(organizationPartyId, productId, usePrimaryProperty);
             if (_repositoryResponse.Id == 0)
             {
@@ -1038,6 +1052,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         #endregion
 
         #region Get Organizations
+
         /// <summary>
         /// Get List of Organizations
         /// </summary>
@@ -1060,6 +1075,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "organizationName/Domain/BlueId not supplied ");
             }
+
             IDictionary<object, object> globals = new Dictionary<object, object>();
             ObjectListOutput<CompanySetup, IErrorData> output = new ObjectListOutput<CompanySetup, IErrorData>();
             Status<IErrorData> errorStatus = new Status<IErrorData>();
@@ -1079,9 +1095,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             PagingSummary pagingSummary = new PagingSummary()
             {
                 TotalRecords = totalRecords,
-                TotalPages = (resultsPerPage == 0) ? 0 : (int)Math.Ceiling(totalRecords / resultsPerPage)
+                TotalPages = (resultsPerPage == 0) ? 0 : (int) Math.Ceiling(totalRecords / resultsPerPage)
             };
-            output = new ObjectListOutput<CompanySetup, IErrorData>() { list = companyList, Status = errorStatus };
+            output = new ObjectListOutput<CompanySetup, IErrorData>() {list = companyList, Status = errorStatus};
             output.pagingSummary = pagingSummary;
             return Request.CreateResponse(HttpStatusCode.OK, output);
         }
@@ -1102,6 +1118,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "CompanyMasterId not supplied");
             }
+
             var companyMaster = _manageOrganization.SearchCompanyDetailsByCustomerCompanyId(customerCompanyId);
 
 
@@ -1137,6 +1154,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 datafilter = new RequestParameter();
             }
+
             globals.Add(BaseType.RequestParameter, datafilter);
 
             List<CompanySetup> companyList = _manageOrganization.GetCompanyList(organizationName, domain ?? 0, blueId, organizationId ?? 0, globals);
@@ -1148,15 +1166,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 {
                     List<ExportDataFileConfiguration> exportConfigurations = new List<ExportDataFileConfiguration>
                     {
-                        new ExportDataFileConfiguration { Header = "Company", MappedField = "OrganizationName", PDFColumnWidth = "2.85", Preference = 1 },
-                        new ExportDataFileConfiguration { Header = "Contracted Name", MappedField = "ContractedName", PDFColumnWidth = "2.85", Preference = 2 },
-                        new ExportDataFileConfiguration { Header = "Domain", MappedField = "Domain", PDFColumnWidth = "0.85", Preference = 3 },
-                        new ExportDataFileConfiguration { Header = "Address", MappedField = "Address", PDFColumnWidth = "3.25", Preference = 4 },
-                        new ExportDataFileConfiguration { Header = "Blue Id", MappedField = "BooksCustomerMasterId", PDFColumnWidth = "0.70", Preference = 5 },
-                        new ExportDataFileConfiguration { Header = "Type", MappedField = "OrganizationType", PDFColumnWidth = "1.00", Preference = 6 },
-                        new ExportDataFileConfiguration { Header = "Products", MappedField = "Products", PDFColumnWidth = "0.50", Preference = 7 },
-                        new ExportDataFileConfiguration { Header = "Company ID", MappedField = "RealPageId", PDFColumnWidth = "3.25", Preference = 8 },
-                        new ExportDataFileConfiguration { Header = "Status", MappedField = "Status", PDFColumnWidth = "2.25", Preference = 9 }
+                        new ExportDataFileConfiguration {Header = "Company", MappedField = "OrganizationName", PDFColumnWidth = "2.85", Preference = 1},
+                        new ExportDataFileConfiguration {Header = "Contracted Name", MappedField = "ContractedName", PDFColumnWidth = "2.85", Preference = 2},
+                        new ExportDataFileConfiguration {Header = "Domain", MappedField = "Domain", PDFColumnWidth = "0.85", Preference = 3},
+                        new ExportDataFileConfiguration {Header = "Address", MappedField = "Address", PDFColumnWidth = "3.25", Preference = 4},
+                        new ExportDataFileConfiguration {Header = "Blue Id", MappedField = "BooksCustomerMasterId", PDFColumnWidth = "0.70", Preference = 5},
+                        new ExportDataFileConfiguration {Header = "Type", MappedField = "OrganizationType", PDFColumnWidth = "1.00", Preference = 6},
+                        new ExportDataFileConfiguration {Header = "Products", MappedField = "Products", PDFColumnWidth = "0.50", Preference = 7},
+                        new ExportDataFileConfiguration {Header = "Company ID", MappedField = "RealPageId", PDFColumnWidth = "3.25", Preference = 8},
+                        new ExportDataFileConfiguration {Header = "Status", MappedField = "Status", PDFColumnWidth = "2.25", Preference = 9}
                     };
 
                     plainBytes = DataExport.ExportDataToFile<CompanySetup>(exportConfigurations.OrderBy(p => p.Preference).ToList(), companyList, dataFormat);
@@ -1182,11 +1200,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.OK, output);
             }
         }
+
         #endregion
 
         #region Property
 
         #region Get Properties for a Organization
+
         /// <summary>
         /// Get Properties for a Organization
         /// </summary>
@@ -1212,6 +1232,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Company Instance Id not supplied");
             }
+
             IDictionary<object, object> globals = new Dictionary<object, object>();
             ObjectListOutput<CompanyPropertySetup, IErrorData> output = new ObjectListOutput<CompanyPropertySetup, IErrorData>();
             Status<IErrorData> errorStatus = new Status<IErrorData>();
@@ -1230,21 +1251,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             if (companyPropertySetup.Count > 0)
             {
                 totalRecords = companyPropertySetup[0]?.Property.Count > 0 ? companyPropertySetup[0].Property[0].TotalRecords : 0;
-            };
+            }
+
+            ;
             decimal resultsPerPage = ((datafilter.Pages.ResultsPerPage == 100) && (totalRecords > 0)) ? totalRecords : datafilter.Pages.ResultsPerPage;
             resultsPerPage = (resultsPerPage == 0) ? totalRecords : resultsPerPage;
             PagingSummary pagingSummary = new PagingSummary()
             {
                 TotalRecords = totalRecords,
-                TotalPages = (resultsPerPage == 0) ? 0 : (int)Math.Ceiling(totalRecords / resultsPerPage)
+                TotalPages = (resultsPerPage == 0) ? 0 : (int) Math.Ceiling(totalRecords / resultsPerPage)
             };
-            output = new ObjectListOutput<CompanyPropertySetup, IErrorData>() { list = companyPropertySetup, Status = errorStatus };
+            output = new ObjectListOutput<CompanyPropertySetup, IErrorData>() {list = companyPropertySetup, Status = errorStatus};
             output.pagingSummary = pagingSummary;
             return Request.CreateResponse(HttpStatusCode.OK, output);
         }
+
         #endregion
 
         #region AuditCompanyProperties
+
         /// <summary>
         /// Audit the given product properties to UPFM properties
         /// </summary>
@@ -1295,18 +1320,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             _userClaims.UserRealPageGuid = adminUserGuid;
             var auditResult = GetAuditProductProperties(companyInstanceId, productId, adminUserGuid, orgDetails.PartyId);
-            ObjectListOutput<PropertyAudit, IErrorData> output = new ObjectListOutput<PropertyAudit, IErrorData> { list = auditResult, Status = errorStatus, pagingSummary = new PagingSummary() { TotalRecords = auditResult.Count, TotalPages = 1 } };
+            ObjectListOutput<PropertyAudit, IErrorData> output = new ObjectListOutput<PropertyAudit, IErrorData> {list = auditResult, Status = errorStatus, pagingSummary = new PagingSummary() {TotalRecords = auditResult.Count, TotalPages = 1}};
             return Request.CreateResponse(HttpStatusCode.OK, output);
         }
 
         /// <summary>
-		/// Audit the given product properties to UPFM properties to export
-		/// </summary>
-		/// <param name="companyInstanceId"></param>
-		/// <param name="productId"></param>
+        /// Audit the given product properties to UPFM properties to export
+        /// </summary>
+        /// <param name="companyInstanceId"></param>
+        /// <param name="productId"></param>
         /// <param name="dataFormat">Retrun data in this format (default = CSV)</param>
-		/// <returns></returns>
-		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about the properties for the given company and their mapping to UPFM instances", Type = typeof(PropertyAudit))]
         [SwaggerResponseExamples(typeof(PropertyAudit), typeof(PropertyAuditExample))]
@@ -1359,10 +1384,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 {
                     List<ExportDataFileConfiguration> exportConfigurations = new List<ExportDataFileConfiguration>
                     {
-                        new ExportDataFileConfiguration { Header = "Property", MappedField = "Name", PDFColumnWidth = "3.85", Preference = 1 },
-                        new ExportDataFileConfiguration { Header = "Instance ID", MappedField = "ProductInstanceId", PDFColumnWidth = "2.85", Preference = 2 },
-                        new ExportDataFileConfiguration { Header = "Platform Property name", MappedField = "UPFMName", PDFColumnWidth = "3.25", Preference = 3 },
-                        new ExportDataFileConfiguration { Header = "Status", MappedField = "Status", PDFColumnWidth = "1.25", Preference = 4 }
+                        new ExportDataFileConfiguration {Header = "Property", MappedField = "Name", PDFColumnWidth = "3.85", Preference = 1},
+                        new ExportDataFileConfiguration {Header = "Instance ID", MappedField = "ProductInstanceId", PDFColumnWidth = "2.85", Preference = 2},
+                        new ExportDataFileConfiguration {Header = "Platform Property name", MappedField = "UPFMName", PDFColumnWidth = "3.25", Preference = 3},
+                        new ExportDataFileConfiguration {Header = "Status", MappedField = "Status", PDFColumnWidth = "1.25", Preference = 4}
                     };
                     plainBytes = DataExport.ExportDataToFile<PropertyAudit>(exportConfigurations.OrderBy(p => p.Preference).ToList(), propertyAudit, dataFormat);
                     output = new ObjectOutput<string, IErrorData>()
@@ -1387,9 +1412,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.OK, output);
             }
         }
+
         #endregion
 
         #region Update Property
+
         /// <summary>
         ///Update Properties for a Organization
         /// </summary>
@@ -1400,7 +1427,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [Route("CompanySetup/CompanyPropertyList")]
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         [HttpPut]
-        public HttpResponseMessage UpdatePropertyForOrganization([FromBody] UPFMPropertyInstance property, Guid companyInstanceId )
+        public HttpResponseMessage UpdatePropertyForOrganization([FromBody] UPFMPropertyInstance property, Guid companyInstanceId)
         {
             if ((companyInstanceId == Guid.Empty) || (companyInstanceId == null))
             {
@@ -1416,9 +1443,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Null parameter: propertyName");
             }
+
             var currentProperty = _manageOrganization.GetPropertyByInstanceId(property.InstanceId);
 
-            if (currentProperty != null )
+            if (currentProperty != null)
             {
                 _repositoryResponse = _manageOrganization.UpdateProperty(property, companyInstanceId);
                 if (_repositoryResponse.Id == 0)
@@ -1426,6 +1454,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     return Request.CreateResponse(HttpStatusCode.BadRequest, _repositoryResponse.ErrorMessage);
                 }
             }
+
             return Request.CreateResponse(HttpStatusCode.OK, property.InstanceId);
         }
 
@@ -1458,10 +1487,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Company Instance Id not supplied");
             }
+
             if (datafilter == null)
             {
                 datafilter = new RequestParameter();
             }
+
             globals.Add(BaseType.RequestParameter, datafilter);
             var cacheKey = $"getPropertyInstanceForCompany_{companyInstanceId}";
             RPObjectCache.RemoveFromCache(cacheKey);
@@ -1474,13 +1505,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 {
                     List<ExportDataFileConfiguration> exportConfigurations = new List<ExportDataFileConfiguration>
                     {
-                        new ExportDataFileConfiguration { Header = "Property", MappedField = "Name", PDFColumnWidth = "2.85", Preference = 1 },
-                        new ExportDataFileConfiguration { Header = "Contracted Name", MappedField = "ContractedName", PDFColumnWidth = "2.85", Preference = 2 },
-                        new ExportDataFileConfiguration { Header = "Blue Id", MappedField = "CustomerPropertyId", PDFColumnWidth = "0.70", Preference = 3 },
-                        new ExportDataFileConfiguration { Header = "Domain", MappedField = "Domain", PDFColumnWidth = "0.85", Preference = 4 },
-                        new ExportDataFileConfiguration { Header = "Address", MappedField = "PropertyAddress", PDFColumnWidth = "3.25", Preference = 5 },
-                        new ExportDataFileConfiguration { Header = "Property ID", MappedField = "InstanceId", PDFColumnWidth = "3.25", Preference = 6 },
-                        new ExportDataFileConfiguration { Header = "Status", MappedField = "IsActive", PDFColumnWidth = "2.25", Preference = 7 }
+                        new ExportDataFileConfiguration {Header = "Property", MappedField = "Name", PDFColumnWidth = "2.85", Preference = 1},
+                        new ExportDataFileConfiguration {Header = "Contracted Name", MappedField = "ContractedName", PDFColumnWidth = "2.85", Preference = 2},
+                        new ExportDataFileConfiguration {Header = "Blue Id", MappedField = "CustomerPropertyId", PDFColumnWidth = "0.70", Preference = 3},
+                        new ExportDataFileConfiguration {Header = "Domain", MappedField = "Domain", PDFColumnWidth = "0.85", Preference = 4},
+                        new ExportDataFileConfiguration {Header = "Address", MappedField = "PropertyAddress", PDFColumnWidth = "3.25", Preference = 5},
+                        new ExportDataFileConfiguration {Header = "Property ID", MappedField = "InstanceId", PDFColumnWidth = "3.25", Preference = 6},
+                        new ExportDataFileConfiguration {Header = "Status", MappedField = "IsActive", PDFColumnWidth = "2.25", Preference = 7}
                     };
 
                     plainBytes = DataExport.ExportDataToFile<PropertySetup>(exportConfigurations.OrderBy(p => p.Preference).ToList(), propertyList[0]?.Property, dataFormat);
@@ -1506,9 +1537,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.OK, output);
             }
         }
+
         #endregion
 
         #region AddPropertyInstance
+
         /// <summary>
         ///Add Properties for a Organization
         /// </summary>
@@ -1525,19 +1558,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: companyInstanceID");
             }
+
             if (property == null)
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Null parameter: Property Object");
             }
+
             if (((string.IsNullOrEmpty(property.Name)) || (property.Name.Trim().Length == 0))
                 || ((string.IsNullOrEmpty(property.Domain)) || (property.Domain.Trim().Length == 0)))
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "PropertyName,Domain should not be empty");
             }
+
             if ((string.IsNullOrEmpty(property.CustomerPropertyId)) || (property.CustomerPropertyId.Trim().Length == 0))
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "CustomerPropertyId should not be empty or null");
             }
+
             if ((Convert.ToInt64(property.CustomerPropertyId.Trim()) == 0)
                 || (Convert.ToInt64(property.CustomerPropertyId.Trim()) <= 0))
             {
@@ -1551,6 +1588,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         #endregion
 
         #region Delete Property
+
         /// <summary>
         ///Delete Properties for a Organization
         /// </summary>
@@ -1566,9 +1604,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: propertyInstanceID");
             }
+
             _repositoryResponse = _manageOrganization.DeletePropertyForOrganization(propertyInstanceID);
             return Request.CreateResponse(HttpStatusCode.OK, _repositoryResponse);
         }
+
         #endregion
 
         #region SearchPropertyByBlueId
@@ -1589,16 +1629,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: companyInstanceID");
             }
+
             if ((string.IsNullOrEmpty(booksCustomerMasterId)) || (booksCustomerMasterId == "0"))
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: companyInstanceID");
             }
+
             PropertyInstanceSearch _propertySearchList = _manageOrganization.SearchPropertyDetailsByCustomerPropertyId(customerPropertyId, booksCustomerMasterId);
             return Request.CreateResponse(HttpStatusCode.OK, _propertySearchList);
         }
+
         #endregion
 
         #region GetProductStatusDetails
+
         /// <summary>
         /// Get Product Status Details
         /// </summary>
@@ -1618,14 +1662,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: companyInstanceID");
             }
+
             if ((string.IsNullOrEmpty(source)))
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: source");
             }
+
             ProductPropertyDetails _productPropertyDetails = _manageOrganization.GetSourceProductDetails(productInstanceId, source);
             return Request.CreateResponse(HttpStatusCode.OK, _productPropertyDetails);
         }
+
         #endregion
+
         #endregion
 
         /// <summary>
@@ -1644,15 +1692,62 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             return Request.CreateResponse(HttpStatusCode.OK);
         }
-        
+
+        /// <summary>
+        /// Insert the Organization into the delete queuing table
+        /// </summary>
+        /// <param name="orgToDelete">The organization to add to the queue to be deleted</param>
+        /// <param name="removeUPFMInstanceInUDM">Should the UPFM instance in UDM be removed</param>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request (when Organization object has missing data)")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.Created, Description = "Organization queued", Type = typeof(OrganizationDelete))]
+        [SwaggerOperation("InsertOrganizationToDelete")]
+        [Route("companysetup/cleanup")]
+        [HttpPost]
+        [AuthorizeScope("companyfunctions", "rplandingapi")]
+        public HttpResponseMessage InsertOrganizationToDelete([FromBody] OrganizationDelete orgToDelete, bool removeUPFMInstanceInUDM = true)
+        {
+            var errorList = ValidateObject(orgToDelete).ToList();
+
+            if (errorList.Count > 0)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, errorList);
+            }
+
+            var org = _manageOrganization.GetOrganization(realPageId: orgToDelete.OrganizationRealPageId);
+            if (org == null)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Unknown Organization Id.");
+            }
+
+            OrganizationRemovalQueue organizationRemovalQueue = new OrganizationRemovalQueue()
+            {
+                OrganizationRealPageId = org.RealPageId,
+                OrganizationCustomerMasterId = org.BooksCustomerMasterId,
+                OrganizationPartyId = org.PartyId,
+                OrganizationName = org.Name,
+                OrganizationDomain = org.OrganizationDomain.Name,
+                OrganizationRemovalQueueStatusId = 0,
+                OrganizationRemovalRetryCount = 0,
+                OrganizationRemoveUDMData = removeUPFMInstanceInUDM,
+                RequestedBy = orgToDelete.RequestedBy
+            };
+
+            var result = _manageOrganization.InsertOrganizationRemovalQueue(organizationRemovalQueue);
+
+            return Request.CreateResponse(HttpStatusCode.Created, result);
+        }
+
         #region Private functions
 
-            /// <summary>
-            /// Used to delete products from an organization
-            /// </summary>
-            /// <param name="addProductList"></param>
-            /// <param name="org"></param>
-            private IRepositoryResponse DeleteProductsFromOrganization(List<int> addProductList, Organization org)
+        /// <summary>
+        /// Used to delete products from an organization
+        /// </summary>
+        /// <param name="addProductList"></param>
+        /// <param name="org"></param>
+        private IRepositoryResponse DeleteProductsFromOrganization(List<int> addProductList, Organization org)
         {
             IRepositoryResponse response = new RepositoryResponse();
             foreach (ProductEnum product in addProductList)
@@ -1675,7 +1770,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     response.ErrorMessage = "Unable to delete product in UDM";
                     return response;
                 }
-                
+
                 response = _manageOrganizationProduct.DeleteOrganizationProduct(partyId: org.PartyId, product: product, org: org);
                 if (!string.IsNullOrEmpty(response.ErrorMessage))
                 {
@@ -1719,6 +1814,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             return _manageOrganization.AuditCompanyProductPropertiesToUPFM(companyInstanceId, productId);
         }
 
+        private IEnumerable<ValidationResult> ValidateObject(object source)
+        {
+            var result = new List<ValidationResult>();
+
+            if (source == null)
+            {
+                result.Add(new ValidationResult("Request object is null."));
+                return result;
+            }
+
+            // Dto Validation
+            var valContext = new ValidationContext(source, null, null);
+            Validator.TryValidateObject(source, valContext, result, true);
+            return result;
+        }
+
         #endregion
 
         #region Output results for documentation
@@ -1740,7 +1851,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     AuthenticationType = "ID3"
                 };
 
-                IdentityProviderTypeOutput output = new IdentityProviderTypeOutput() { identityProviderType = example };
+                IdentityProviderTypeOutput output = new IdentityProviderTypeOutput() {identityProviderType = example};
 
                 return output;
             }
@@ -1804,7 +1915,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 productList.Add(product);
 
                 Status<IErrorData> errorStatus = new Status<IErrorData>();
-                ObjectListOutput<ProductUI, IErrorData> output = new ObjectListOutput<ProductUI, IErrorData>() { list = productList, Status = errorStatus };
+                ObjectListOutput<ProductUI, IErrorData> output = new ObjectListOutput<ProductUI, IErrorData>() {list = productList, Status = errorStatus};
 
                 return output;
             }
@@ -1966,20 +2077,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 List<PropertySetup> propertySetupExample = new List<PropertySetup>()
                 {
                     new PropertySetup()
-                {
-                    PropertyInstanceId = 105294,
-                    Name = "WOODVILLE VILLAGE",
-                    ContractedName = "WOODVILLE VILLAGE",
-                    Address = "151 CO. RD. 63",
-                    City = "WOODVILLE",
-                    State = "AL",
-                    PostalCode = "35776",
-                    Country = "UNITED STATES",
-                    County = null,
-                    InstanceId = Guid.Parse("1e38a88a-b986-416e-b0cf-5944935a92be"),
-                    CustomerPropertyId = "1409051",
-                    Domain = "Primary",
-                    TotalRecords = 573
+                    {
+                        PropertyInstanceId = 105294,
+                        Name = "WOODVILLE VILLAGE",
+                        ContractedName = "WOODVILLE VILLAGE",
+                        Address = "151 CO. RD. 63",
+                        City = "WOODVILLE",
+                        State = "AL",
+                        PostalCode = "35776",
+                        Country = "UNITED STATES",
+                        County = null,
+                        InstanceId = Guid.Parse("1e38a88a-b986-416e-b0cf-5944935a92be"),
+                        CustomerPropertyId = "1409051",
+                        Domain = "Primary",
+                        TotalRecords = 573
                     }
                 };
 
@@ -2072,7 +2183,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 ProductPropertyDetails propertyProductExample = new ProductPropertyDetails
                 {
                     ProductStatusDetail = new ProductStatusDetail()
-                    {                        
+                    {
                         CustomerPropertyId = "1234567",
                         ProductInstanceId = "1234567",
                         ContractedName = "Property 1",
@@ -2082,10 +2193,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     PropertyDetails = new List<PropertySetup>()
                     {
                         new PropertySetup()
-                        {                           
+                        {
                             Name = "WOODVILLE VILLAGE",
-                            ContractedName = "WOODVILLE VILLAGE",                           
-                            InstanceId = Guid.Parse("1e38a88a-b986-416e-b0cf-5944935a92be"),                           
+                            ContractedName = "WOODVILLE VILLAGE",
+                            InstanceId = Guid.Parse("1e38a88a-b986-416e-b0cf-5944935a92be"),
                             Domain = "Primary",
                             IsActive = "true "
                         }
@@ -2103,7 +2214,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return output;
             }
         }
-        #endregion
 
+        #endregion
     }
 }

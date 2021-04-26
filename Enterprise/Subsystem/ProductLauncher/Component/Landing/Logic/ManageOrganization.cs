@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Runtime.Remoting.Messaging;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using PropertySetup = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.PropertySetup;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
@@ -28,6 +29,7 @@ using Serilog.Events;
 using Serilog;
 using Newtonsoft.Json;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Maintenance;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -120,6 +122,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _defaultUserClaim = userClaim;
             _manageUnifiedSettings = new ManageUnifiedSettings(userClaim);
             _manageOrganizationProduct = new ManageOrganizationProduct(userClaim);
+            _manageProduct = new ManageProduct(userClaim);
         }
 
         #endregion
@@ -811,9 +814,35 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         #region Organization Delete
 
+        /// <summary>
+        /// Used to add a new organization into the queue to be deleted
+        /// </summary>
+        /// <param name="organizationRemovalQueue"></param>
+        /// <returns></returns>
+        public OrganizationRemovalQueue InsertOrganizationRemovalQueue(OrganizationRemovalQueue organizationRemovalQueue)
+        {
+            return _organizationRepository.InsertOrganizationRemovalQueue(organizationRemovalQueue);
+        }
+
+        /// <summary>
+        /// Delete any organizations available to be deleted
+        /// </summary>
         public void DeleteQueuedOrganizations()
         {
-            var orgsToDelete = _organizationRepository.GetOrganizationToDelete(5, 3, false);
+            var productInternalSettings = _manageProduct.GetProductInternalSettings(3);
+            int batchSize = 5;
+            int retryCount = 3;
+
+            if (productInternalSettings.Any(p => p.Name.Equals("OrganizationRemovalBatchSize", StringComparison.OrdinalIgnoreCase)))
+            {
+                batchSize = Convert.ToInt32(productInternalSettings.First(p => p.Name.Equals("OrganizationRemovalBatchSize", StringComparison.OrdinalIgnoreCase)).Value);
+            }
+            if (productInternalSettings.Any(p => p.Name.Equals("OrganizationRemovalRetryCount", StringComparison.OrdinalIgnoreCase)))
+            {
+                retryCount = Convert.ToInt32(productInternalSettings.First(p => p.Name.Equals("OrganizationRemovalRetryCount", StringComparison.OrdinalIgnoreCase)).Value);
+            }
+
+            var orgsToDelete = _organizationRepository.GetOrganizationToDelete(batchSize, retryCount, false);
 
             orgsToDelete.ForEach(p =>
             {
