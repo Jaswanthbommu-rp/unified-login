@@ -164,10 +164,12 @@ BEGIN
 				WHEN @SCName = ('StartDate') THEN ' > '
 				WHEN @SCName = 'EndDate' THEN ' <= '
 				WHEN @SCName IN ('FromRealPageId', 'ToRealPageId') THEN ' = '
+				WHEN @SCName IN ('LogCategoryTypeId') THEN  ' IN '
 				ELSE ' = '
 			END +
 			CASE
 				WHEN @SCName IN ('StartDate','EndDate','SourceId','MappingKey') THEN ''''
+				WHEN @SCName IN ('LogCategoryTypeId') THEN ' ('
 				ELSE ''
 			END +
 			CASE
@@ -182,6 +184,7 @@ BEGIN
 				WHEN @SCName = 'Message' THEN ' > 0'
 				WHEN @SCName IN ('StartDate', 'EndDate','SourceId','MappingKey')
 				THEN ''''
+				WHEN @SCName IN ('LogCategoryTypeId') THEN ')'
 				ELSE ''
 			END;
 
