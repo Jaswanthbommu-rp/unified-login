@@ -24,13 +24,13 @@
         public const string EMAIL_RESENT = "Email resent";
         public const string SIGNOUT = "Signout";
 		public const string USER_EXPIRED = "User Expired";
-        public const string COMPANY_CREATED = "Company Created";
-        public const string COMPANY_UPDATED = "Company Updated";
-        public const string PRODUCT_ENABLED_FOR_COMPANY = "Product enabled for company";
-        public const string PRODUCT_DISABLED_FOR_COMPANY = "Product disabled for company";
-        public const string PROPERTY_CREATED = "Property Created";
-        public const string PROPERTY_DELETED = "Property deleted for company";
-        public const string PROPERTY_UPDATED = "Property updated ro company";
+        public const string COMPANY_CREATED = "Company Create";
+        public const string COMPANY_UPDATED = "Company Update";
+        public const string PRODUCT_ENABLED_FOR_COMPANY = "Product Enablement";
+        public const string PRODUCT_DISABLED_FOR_COMPANY = "Product Disablement";
+        public const string PROPERTY_CREATED = "Property Create";
+        public const string PROPERTY_DELETED = "Property Delete";
+        public const string PROPERTY_UPDATED = "Property Update";
     }
 
     //public static class SecurityActivityMessageConstants

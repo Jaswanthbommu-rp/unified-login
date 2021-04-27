@@ -216,5 +216,10 @@ BEGIN
 		WHERE LogcategoryTypeId = @logCategoryTypeId AND [Name] = 'Product Enablement')
 	INSERT INTO [Logging].[LogType] (LogcategoryTypeId, [Name], [Description])
 	VALUES (@logCategoryTypeId, 'Product Enablement', 'Product Enablement')
+
+	IF NOT EXISTS (SELECT * FROM [Logging].[LogType]
+		WHERE LogcategoryTypeId = @logCategoryTypeId AND [Name] = 'Product Disablement')
+	INSERT INTO [Logging].[LogType] (LogcategoryTypeId, [Name], [Description])
+	VALUES (@logCategoryTypeId, 'Product Disablement', 'Product Disablement')
 END
 GO
