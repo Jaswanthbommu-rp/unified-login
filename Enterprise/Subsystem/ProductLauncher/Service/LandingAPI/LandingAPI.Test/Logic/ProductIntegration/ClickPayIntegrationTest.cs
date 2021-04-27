@@ -99,7 +99,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.ProductI
 			var productLogic =
 				ManageProductFactory.GetProductLogic(productType, editorPersonaId, subjectPersonaId, userClaims,
 					dataCollector.Object, managePersona.Object, productInternalSettingRepository.Object);
-			var result = productLogic.GetProductOrganizations("0", "owner", null);
+			var result = productLogic.GetProductOrganizations("0", "owner");
 
 			Assert.True(result.Records.Count > 2);
 		}
@@ -110,7 +110,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.ProductI
 			var productLogic =
 				ManageProductFactory.GetProductLogic(productType, editorPersonaId, subjectPersonaId, userClaims,
 					dataCollector.Object, managePersona.Object, productInternalSettingRepository.Object);
-			var result = productLogic.GetProductOrganizations("0", "site", null);
+			var result = productLogic.GetProductOrganizations("0", "site");
 
 			Assert.True(result.Records.Count > 2);
 		}

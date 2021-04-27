@@ -1,10 +1,13 @@
 ﻿using Newtonsoft.Json;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Migration;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UPFMProduct;
 using System;
+using System.Collections.Generic;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Types
 {
@@ -33,7 +36,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public ListResponse GetEnterpriseProperties(long userPersonaId, string include) =>
             _manageUPFMProductIntegration.GetEnterpriseUPFMProperties(_userClaims.PersonaId, _productId, include);
 
-        public ListResponse GetRightsForRole(long editorPersonaId, int roleId, long partyId, bool assignedToRoleOnly, RequestParameter dataFilter) =>
+        public ListResponse GetRightsForRole(long editorPersonaId, long userPersonaId, long roleId, long partyId, bool assignedToRoleOnly, RequestParameter dataFilter) =>
             _manageUPFMProductIntegration.GetRightsByRole(editorPersonaId, partyId, roleId);
 
         public string CreateUser(ProductUserProperitiesRoles productUser)
@@ -48,6 +51,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var productPropertiesRoles = DeserializeJSON<UPFMProductPropertyRole>(batchRecord.InputJson);
             return _upfmProductIntegration.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId,
                batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
+        }
+
+        public ListResponse GetAllRights(long editorPersonaId, long userPersonaId, RequestParameter dataFilter)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ListResponse GetPropertyGroups(long editorPersonaId, long userPersonaId, RequestParameter datafilter, string userLoginName = "")
+        {
+            throw new NotImplementedException();
         }
 
         private T DeserializeJSON<T>(string productUserInputJson)
@@ -65,6 +78,36 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 return default(T);
             }
+        }
+
+        public ListResponse GetPropertiesByGroup(long editorPersonaId, long userPersonaId, string propertyGroupId, RequestParameter dataFilter)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ListResponse GetOrganizations(long editorPersonaId, long userPersonaId, string organizationRoleId, string organizationType)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ListResponse GetMigrationUsers(long editorPersonaId, RequestParameter dataFilter)
+        {
+            throw new NotImplementedException();
+        }
+
+        public MigrateResponse UpdateUsersMigrationStatus(long editorPersonaId, IList<MigrateUser> migrateUsers)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool ExternalUserProfileChange(long editorPersonaId, ProductUserProfile productUserProfile)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string UpdateUserProfile(ProductUserProperitiesRoles productUser)
+        {
+            throw new NotImplementedException();
         }
     }
 }

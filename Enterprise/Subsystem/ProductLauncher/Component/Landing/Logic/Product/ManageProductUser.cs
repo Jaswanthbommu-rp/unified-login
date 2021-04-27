@@ -74,9 +74,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _propertyRepository = new PropertyRepository();
             _defaultUserClaim = userClaims;
 
+            var manageProduct = new ManageProduct(_defaultUserClaim);
             var manageUnifiedLogin = new ManageUnifiedLogin(_defaultUserClaim);
             var manageProductOneSite = new ManageProductOneSite(_defaultUserClaim);
-            _integrationTypeFactory = new DefaultIntegrationTypeFactory(_productInternalSettingRepository, manageUnifiedLogin, manageProductOneSite, _defaultUserClaim);
+            _integrationTypeFactory = new IntegrationTypeFactory(manageProduct, manageUnifiedLogin, manageProductOneSite, _productRepository, _defaultUserClaim);
         }
         #endregion
 
@@ -315,132 +316,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public string UpdateProductUserProfile(ProductUserProperitiesRoles productUser)
         {
             string result = string.Empty;
-            IProduct product;
 
             try
             {
-                switch (productUser.ProductName)
-                {
-                    case (int)ProductEnum.OneSite:
-                        product = new OneSiteProduct(_defaultUserClaim);
-                        result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
-                        break;
-                    case (int)ProductEnum.MarketingCenter:
-                        product = new MarketingCenterProduct(_defaultUserClaim);
-                        result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
-                        break;
-                    case (int)ProductEnum.FinancialSuite:
-                        product = new OneSiteAccountingProduct(_defaultUserClaim);
-                        result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
-                        break;
-                    case (int)ProductEnum.OpsBuyer:
-                        product = new OpsProduct(_defaultUserClaim);
-                        result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
-                        break;
-                    case (int)ProductEnum.VendorServices:
-                        product = new VendorServicesProduct(_defaultUserClaim);
-                        result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
-                        break;
-                    case (int)ProductEnum.ClientPortal:
-                        product = new ClientPortalProduct(_defaultUserClaim);
-                        result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
-                        break;
-                    case (int)ProductEnum.SalesForce:
-                        product = new SalesForceProduct(_defaultUserClaim);
-                        result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
-                        break;
-                    case (int)ProductEnum.ProspectContactCenter:
-                        product = new ProspectContactCenterProduct(_defaultUserClaim);
-                        result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
-                        break;
-                    case (int)ProductEnum.Lead2Lease:
-                        product = new Lead2LeaseProduct(_defaultUserClaim);
-                        result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
-                        break;
-                    case (int)ProductEnum.ResidentPortal:
-                        product = new ResidentPortalProduct(_defaultUserClaim);
-                        result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
-                        break;
-                    case (int)ProductEnum.OnSite:
-                        product = new OnSiteProduct(_defaultUserClaim);
-                        result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
-                        break;
-                    case (int)ProductEnum.Insurance:
-                        product = new RentersInsuranceProduct(_defaultUserClaim);
-                        result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
-                        break;
-                    case (int)ProductEnum.UtilityManagement:
-                        product = new UtilityManagementProduct(_defaultUserClaim);
-                        result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
-                        break;
-                    case (int)ProductEnum.ResearchApplication:
-                        product = new ResearchApplicationProduct(_defaultUserClaim);
-                        result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
-                        break;
-                    case (int)ProductEnum.SelfProvisioningPortal:
-                        product = new SelfProvisioningPortalProduct(_defaultUserClaim);
-                        result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
-                        break;
-                    case (int)ProductEnum.UnifiedAmenities:
-                        product = new UnifiedAmenitiesProduct(_defaultUserClaim);
-                        result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
-                        break;
-                    case (int)ProductEnum.AssetOptimizer:
-                        product = new AssetOptimizerProduct(_defaultUserClaim);
-                        result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
-                        break;
-                    case (int)ProductEnum.LeadManagement:
-                        product = new LeadManagementProduct((ProductEnum)productUser.ProductName);
-                        result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
-                        break;
-                    case (int)ProductEnum.LeadAnalytics:
-                        product = new LeadManagementProduct((ProductEnum)productUser.ProductName);
-                        result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
-                        break;
-                    case (int)ProductEnum.RPDocumentManagement:
-                        product = new RPDocumentManagementProduct(_defaultUserClaim);
-                        result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
-                        break;
-                    case (int)ProductEnum.PortfolioManagement:
-                        product = new PortfolioManagementProduct((ProductEnum)productUser.ProductName);
-                        result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
-                        break;
-                    case (int)ProductEnum.IntegrationMarketplace:
-                        _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Stop, null, "Batch Process stopped since IntegrationMarketplace doesn't required update profile.");
-                        return string.Empty;
-                    case (int)ProductEnum.DepositAlternative:
-                        product = new DepositAlternativeProduct((ProductEnum)productUser.ProductName);
-                        result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
-                        break;
-                    case (int)ProductEnum.ClickPay:
-                        product = new ClickPayProduct((ProductEnum)productUser.ProductName);
-                        result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
-                        break;
-                    case (int)ProductEnum.SeniorLeadManagement:
-                        product = new SeniorLeadManagementProduct(_defaultUserClaim, (ProductEnum)productUser.ProductName);
-                        result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
-                        break;
-                    case (int)ProductEnum.RenovationManager:
-                        product = new RenovationManagerProduct((ProductEnum)productUser.ProductName);
-                        result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
-                        break;
-                    //case ProductEnum.IntelligentBuilding:
-                    //    product = new IntelligentBuildingProduct(_defaultUserClaim);
-                    //    result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
-                    //    break;
-                    case (int)ProductEnum.IntelligentBuildingEnergy:
-                    case (int)ProductEnum.IntelligentBuildingTrash:
-                    case (int)ProductEnum.IntelligentBuildingWater:
-                    case (int)ProductEnum.HandsOnTrainingSystem:
-                    case (int)ProductEnum.LeaseLabs:
-                    case (int)ProductEnum.HospitalityService:
-                    case (int)ProductEnum.SelfGuidedTour:
-                        result = "User Profile Change not implemented for this Product.";
-                        break;
-                    default:
-                        result = "Product code does not exist.";
-                        break;
-                }
+                var integrationType = _integrationTypeFactory.GetIntegration(productUser.ProductName);
+                result = integrationType.UpdateUserProfile(productUser);
             }
             catch (Exception ex)
             {
@@ -1042,19 +922,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     changeProductUserTypeResponse += lead2leaseresult;
                 }
                 productLead2Lease.WriteToDiagnosticLog("OneSite.ChangeProductUserType.Lead2Lease result:" + lead2leaseresult);
-            }
-
-            var slmresult = "";
-            if (combinedRoleProp.Any(p => p.Key == ProductEnum.SeniorLeadManagement.ToString()))
-            {
-                rpList = combinedRoleProp.Where(p => p.Key == ProductEnum.SeniorLeadManagement.ToString()).First().Value;
-                var productLogic = ManageProductFactory.GetProductLogic((ProductEnum)_productId, createUserPersonaId, assignUserPersonaId, this.UserClaim);
-
-                // Unassign User
-                // need to finish
-
-                // assign user
-                // need to finish
             }
 
             return changeProductUserTypeResponse;
@@ -2837,7 +2704,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
 
             var userClaims = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
-            var productLogic = ManageProductFactory.GetProductLogic((ProductEnum)_productId, createUserPersonaId, assignUserPersonaId, userClaims);
+            var productLogic = ManageProductFactory.GetProductLogic(_productId, createUserPersonaId, assignUserPersonaId, userClaims);
 
             // Create-update user
             if (rpList.IsAssigned)
@@ -2859,7 +2726,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public string UpdateProductUserProfile(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId)
         {
             var userClaims = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
-            var productLogic = ManageProductFactory.GetProductLogic((ProductEnum)_productId, createUserPersonaId, assignUserPersonaId, userClaims);
+            var productLogic = ManageProductFactory.GetProductLogic(_productId, createUserPersonaId, assignUserPersonaId, userClaims);
 
             return productLogic.UpdateProductUserProfile();
         }
@@ -2882,7 +2749,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
 
             var userClaims = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
-            var productLogic = ManageProductFactory.GetProductLogic((ProductEnum)_productId, createUserPersonaId, assignUserPersonaId, userClaims);
+            var productLogic = ManageProductFactory.GetProductLogic(_productId, createUserPersonaId, assignUserPersonaId, userClaims);
 
             return productLogic.ChangeProductUserType(rpList, batchProcessType);
         }
@@ -3032,7 +2899,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
 
             var userClaims = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
-            var productLogic = ManageProductFactory.GetProductLogic((ProductEnum)_productId, createUserPersonaId, assignUserPersonaId, userClaims);
+            var productLogic = ManageProductFactory.GetProductLogic(_productId, createUserPersonaId, assignUserPersonaId, userClaims);
 
             // Create-update user
             if (rpList.IsAssigned)
@@ -3055,7 +2922,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public string UpdateProductUserProfile(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId)
         {
             var userClaims = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
-            var productLogic = ManageProductFactory.GetProductLogic((ProductEnum)_productId, createUserPersonaId, assignUserPersonaId, userClaims);
+            var productLogic = ManageProductFactory.GetProductLogic(_productId, createUserPersonaId, assignUserPersonaId, userClaims);
 
             return productLogic.UpdateProductUserProfile();
         }
@@ -3078,7 +2945,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
 
             var userClaims = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
-            var productLogic = ManageProductFactory.GetProductLogic((ProductEnum)_productId, createUserPersonaId, assignUserPersonaId, userClaims);
+            var productLogic = ManageProductFactory.GetProductLogic(_productId, createUserPersonaId, assignUserPersonaId, userClaims);
 
             return productLogic.ChangeProductUserType(rpList, batchProcessType);
         }
@@ -3201,7 +3068,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
 
             var userClaims = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
-            var productLogic = ManageProductFactory.GetProductLogic((ProductEnum)_productId, createUserPersonaId, assignUserPersonaId, userClaims);
+            var productLogic = ManageProductFactory.GetProductLogic(_productId, createUserPersonaId, assignUserPersonaId, userClaims);
 
             // Create-update user
             if (rpList.IsAssigned)
@@ -3224,7 +3091,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public string UpdateProductUserProfile(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId)
         {
             var userClaims = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
-            var productLogic = ManageProductFactory.GetProductLogic((ProductEnum)_productId, createUserPersonaId, assignUserPersonaId, userClaims);
+            var productLogic = ManageProductFactory.GetProductLogic(_productId, createUserPersonaId, assignUserPersonaId, userClaims);
 
             return productLogic.UpdateProductUserProfile();
         }
@@ -3247,7 +3114,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
 
             var userClaims = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
-            var productLogic = ManageProductFactory.GetProductLogic((ProductEnum)_productId, createUserPersonaId, assignUserPersonaId, userClaims);
+            var productLogic = ManageProductFactory.GetProductLogic(_productId, createUserPersonaId, assignUserPersonaId, userClaims);
 
             return productLogic.ChangeProductUserType(rpList, batchProcessType);
         }
@@ -3286,7 +3153,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
 
             var userClaims = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
-            var productLogic = ManageProductFactory.GetProductLogic((ProductEnum)_productId, createUserPersonaId, assignUserPersonaId, userClaims);
+            var productLogic = ManageProductFactory.GetProductLogic(_productId, createUserPersonaId, assignUserPersonaId, userClaims);
 
             // Create-update user
             if (rpList.IsAssigned)
@@ -3309,7 +3176,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public string UpdateProductUserProfile(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId)
         {
             var userClaims = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
-            var productLogic = ManageProductFactory.GetProductLogic((ProductEnum)_productId, createUserPersonaId, assignUserPersonaId, userClaims);
+            var productLogic = ManageProductFactory.GetProductLogic(_productId, createUserPersonaId, assignUserPersonaId, userClaims);
 
             return productLogic.UpdateProductUserProfile();
         }
@@ -3332,7 +3199,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
 
             var userClaims = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
-            var productLogic = ManageProductFactory.GetProductLogic((ProductEnum)_productId, createUserPersonaId, assignUserPersonaId, userClaims);
+            var productLogic = ManageProductFactory.GetProductLogic(_productId, createUserPersonaId, assignUserPersonaId, userClaims);
 
             return productLogic.ChangeProductUserType(rpList, batchProcessType);
         }
@@ -3367,7 +3234,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             //Try to cast as ProductUserRolePropertiesGroups
             var productUserRolePropertiesGroups = rolePropList as ProductUserRolePropertiesGroups;
 
-            var productLogic = ManageProductFactory.GetProductLogic((ProductEnum)_productId, createUserPersonaId, assignUserPersonaId, this.UserClaim);
+            var productLogic = ManageProductFactory.GetProductLogic(_productId, createUserPersonaId, assignUserPersonaId, this.UserClaim);
 
             if (productUserRolePropertiesGroups == null)
             {
@@ -3435,7 +3302,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public string UpdateProductUserProfile(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId)
         {
             var userClaims = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
-            var productLogic = ManageProductFactory.GetProductLogic((ProductEnum)_productId, createUserPersonaId, assignUserPersonaId, userClaims);
+            var productLogic = ManageProductFactory.GetProductLogic(_productId, createUserPersonaId, assignUserPersonaId, userClaims);
 
             return productLogic.UpdateProductUserProfile();
         }
@@ -3458,7 +3325,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
 
             var userClaims = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
-            var productLogic = ManageProductFactory.GetProductLogic((ProductEnum)_productId, createUserPersonaId, assignUserPersonaId, userClaims);
+            var productLogic = ManageProductFactory.GetProductLogic(_productId, createUserPersonaId, assignUserPersonaId, userClaims);
 
             return productLogic.ChangeProductUserType(rpList, batchProcessType);
         }
@@ -3519,7 +3386,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
 
             var userClaims = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
-            var productLogic = ManageProductFactory.GetProductLogic((ProductEnum)_productId, createUserPersonaId, assignUserPersonaId, userClaims);
+            var productLogic = ManageProductFactory.GetProductLogic(_productId, createUserPersonaId, assignUserPersonaId, userClaims);
 
             // Create-update user
             if (rpList.IsAssigned)
@@ -3542,7 +3409,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public string UpdateProductUserProfile(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId)
         {
             var userClaims = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
-            var productLogic = ManageProductFactory.GetProductLogic((ProductEnum)_productId, createUserPersonaId, assignUserPersonaId, userClaims);
+            var productLogic = ManageProductFactory.GetProductLogic(_productId, createUserPersonaId, assignUserPersonaId, userClaims);
 
             return productLogic.UpdateProductUserProfile();
         }
@@ -3565,7 +3432,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
 
             var userClaims = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
-            var productLogic = ManageProductFactory.GetProductLogic((ProductEnum)_productId, createUserPersonaId, assignUserPersonaId, userClaims);
+            var productLogic = ManageProductFactory.GetProductLogic(_productId, createUserPersonaId, assignUserPersonaId, userClaims);
 
             return productLogic.ChangeProductUserType(rpList, batchProcessType);
         }

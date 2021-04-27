@@ -8,9 +8,6 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityCo
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.ProductIntegration.Factory
@@ -18,21 +15,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.ProductI
     public class DefaultIntegrationTypeFactoryTests
     {
         private IIntegrationTypeFactory MakeInstance(
-            Mock<IProductInternalSettingRepository> productInternalSettingRepositoryMock = null,
+            Mock<IManageProduct> manageProductMock = null,
             Mock<IManageUnifiedLogin> manageUnifiedLoginMock = null,
             Mock<IManageProductOneSite> manageProductOneSiteMock = null,
+            Mock<IProductRepository> productRepositoryMock = null,
             DefaultUserClaim defaultUserClaim = null)
         {
-            productInternalSettingRepositoryMock = productInternalSettingRepositoryMock ?? new Mock<IProductInternalSettingRepository>();
+            manageProductMock = manageProductMock ?? new Mock<IManageProduct>();
             manageUnifiedLoginMock = manageUnifiedLoginMock ?? new Mock<IManageUnifiedLogin>();
             manageProductOneSiteMock = manageProductOneSiteMock ?? new Mock<IManageProductOneSite>();
+            productRepositoryMock = productRepositoryMock ?? new Mock<IProductRepository>();
 
             defaultUserClaim = defaultUserClaim ?? new DefaultUserClaim()
             {
                 CorrelationId = new Guid()
             };
 
-            return new DefaultIntegrationTypeFactory(productInternalSettingRepositoryMock.Object, manageUnifiedLoginMock.Object, manageProductOneSiteMock.Object, defaultUserClaim);
+            return new IntegrationTypeFactory(manageProductMock.Object, manageUnifiedLoginMock.Object, manageProductOneSiteMock.Object, productRepositoryMock.Object, defaultUserClaim);
         }
 
         [Fact]
@@ -40,8 +39,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.ProductI
         {
             var productId = 1;
 
-            var productInternalSettingRepositoryMock = new Mock<IProductInternalSettingRepository>();
-            productInternalSettingRepositoryMock.Setup(s => s.GetProductSettingByType("ProductIntegrationType")).Returns(new List<ProductInternalSettingByType>()
+            var manageProductMock = new Mock<IManageProduct>();
+            manageProductMock.Setup(s => s.GetProductSettingByType("ProductIntegrationType")).Returns(new List<ProductInternalSettingByType>()
             {
                 new ProductInternalSettingByType()
                 {
@@ -51,7 +50,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.ProductI
                 }
             });
 
-            var instance = MakeInstance(productInternalSettingRepositoryMock: productInternalSettingRepositoryMock);
+            var instance = MakeInstance(manageProductMock: manageProductMock);
 
             var result = instance.GetIntegration(productId);
 
@@ -64,8 +63,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.ProductI
         {
             var productId = 1;
 
-            var productInternalSettingRepositoryMock = new Mock<IProductInternalSettingRepository>();
-            productInternalSettingRepositoryMock.Setup(s => s.GetProductSettingByType("ProductIntegrationType")).Returns(new List<ProductInternalSettingByType>()
+            var manageProductMock = new Mock<IManageProduct>();
+            manageProductMock.Setup(s => s.GetProductSettingByType("ProductIntegrationType")).Returns(new List<ProductInternalSettingByType>()
             {
                 new ProductInternalSettingByType()
                 {
@@ -75,7 +74,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.ProductI
                 }
             });
 
-            var instance = MakeInstance(productInternalSettingRepositoryMock: productInternalSettingRepositoryMock);
+            var instance = MakeInstance(manageProductMock: manageProductMock);
 
             var result = instance.GetIntegration(productId);
 
@@ -88,8 +87,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.ProductI
         {
             var productId = 1;
 
-            var productInternalSettingRepositoryMock = new Mock<IProductInternalSettingRepository>();
-            productInternalSettingRepositoryMock.Setup(s => s.GetProductSettingByType("ProductIntegrationType")).Returns(new List<ProductInternalSettingByType>()
+            var manageProductMock = new Mock<IManageProduct>();
+            manageProductMock.Setup(s => s.GetProductSettingByType("ProductIntegrationType")).Returns(new List<ProductInternalSettingByType>()
             {
                 new ProductInternalSettingByType()
                 {
@@ -99,7 +98,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.ProductI
                 }
             });
 
-            var instance = MakeInstance(productInternalSettingRepositoryMock: productInternalSettingRepositoryMock);
+            var instance = MakeInstance(manageProductMock: manageProductMock);
 
             var result = instance.GetIntegration(productId);
 
@@ -112,8 +111,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.ProductI
         {
             var productId = 1;
 
-            var productInternalSettingRepositoryMock = new Mock<IProductInternalSettingRepository>();
-            productInternalSettingRepositoryMock.Setup(s => s.GetProductSettingByType("ProductIntegrationType")).Returns(new List<ProductInternalSettingByType>()
+            var manageProductMock = new Mock<IManageProduct>();
+            manageProductMock.Setup(s => s.GetProductSettingByType("ProductIntegrationType")).Returns(new List<ProductInternalSettingByType>()
             {
                 new ProductInternalSettingByType()
                 {
@@ -123,7 +122,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.ProductI
                 }
             });
 
-            var instance = MakeInstance(productInternalSettingRepositoryMock: productInternalSettingRepositoryMock);
+            var instance = MakeInstance(manageProductMock: manageProductMock);
 
             var result = instance.GetIntegration(productId);
 
@@ -132,12 +131,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.ProductI
         }
 
         [Fact]
-        public void GetIntegration_InvalidTypeValue()
+        public void GetIntegration_InvalidTypeValueDefaultsToLegacy()
         {
             var productId = 1;
 
-            var productInternalSettingRepositoryMock = new Mock<IProductInternalSettingRepository>();
-            productInternalSettingRepositoryMock.Setup(s => s.GetProductSettingByType("ProductIntegrationType")).Returns(new List<ProductInternalSettingByType>()
+            var manageProductMock = new Mock<IManageProduct>();
+            manageProductMock.Setup(s => s.GetProductSettingByType("ProductIntegrationType")).Returns(new List<ProductInternalSettingByType>()
             {
                 new ProductInternalSettingByType()
                 {
@@ -147,11 +146,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.ProductI
                 }
             });
 
-            var instance = MakeInstance(productInternalSettingRepositoryMock: productInternalSettingRepositoryMock);
+            var instance = MakeInstance(manageProductMock: manageProductMock);
 
             var result = instance.GetIntegration(productId);
 
-            Assert.Null(result);
+            Assert.NotNull(result);
+            Assert.IsType<LegacyIntegrationType>(result);
         }
     }
 }

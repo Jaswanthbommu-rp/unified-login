@@ -78,7 +78,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 		}
 
-		public override ListResponse GetProductPropertyGroups(RequestParameter dataFilter, string baseUrlAndQuery = null , string tabName = null)
+		public override ListResponse GetProductPropertyGroups(RequestParameter dataFilter, string baseUrlAndQuery = null)
 		{
 			try
 			{
@@ -134,21 +134,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				{
 					IsError = true
 				};
-
-				if (!string.IsNullOrEmpty(tabName))
-				{
-					if (tabName == TabEnum.Area.ToString())
-					{
-						response.ErrorReason = CommonMessageConstants.AreaErrorMessage;
-						return response;
-					}
-
-					if (tabName == TabEnum.Region.ToString())
-					{
-						response.ErrorReason = CommonMessageConstants.RegionErrorMessage;
-						return response;
-					}
-				}
 
 				response.ErrorReason = ex.Message;
 				return response;

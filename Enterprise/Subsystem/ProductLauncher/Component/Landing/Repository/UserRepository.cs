@@ -262,7 +262,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     if (userProducts.Count > 0)
                     {
                         long createUserPersonaId = 0L;
-                        ManageCloneProductBatch manageProductBatch = new ManageCloneProductBatch();
+                        ManageCloneProductBatch manageProductBatch = new ManageCloneProductBatch(userClaim);
                         //Get the logged in user Current Persona Id
                         if (userClaim.UserRealPageGuid != Guid.Empty)
                         {
@@ -285,7 +285,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         var personaProductSettings = personaRepository.GetPersonaProductSettings(cloneUserPersonaId);
                        
                         //Then Get Product Batch Data
-                        IList<ProductBatch> pbData = manageProductBatch.GetUserProductBatchData(cloneUserPersonaId, userClaim, userProducts, createUserPersonaId, upfmProperty, personaProductSettings,isExternalUser, usePropertyInstanceUnifiedAmenities);
+                        IList<ProductBatch> pbData = manageProductBatch.GetUserProductBatchData(cloneUserPersonaId, userProducts, createUserPersonaId, upfmProperty, personaProductSettings,isExternalUser, usePropertyInstanceUnifiedAmenities);
 
                         foreach (ProductBatch pb in pbData)
                         {
@@ -5811,7 +5811,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             if (userProducts.Count > 0)
             {
                 DefaultUserClaim userClaim = new DefaultUserClaim(ClaimsPrincipal.Current);
-                ManageCloneProductBatch manageProductBatch = new ManageCloneProductBatch();
+                ManageCloneProductBatch manageProductBatch = new ManageCloneProductBatch(userClaim);
 
                 UPFMProperty upfmProperty = new UPFMProperty();
                 var userPersona = _managePersona.GetPersona(userPersonaId);
@@ -5844,7 +5844,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     IPersonaRepository personaRepository = new PersonaRepository();
                     var personaProductSettings = personaRepository.GetPersonaProductSettings(userPersonaId);
                     //Then Get Product Batch Data
-                    IList<ProductBatch> pbData = manageProductBatch.GetUserProductBatchData(userPersonaId, userClaim, userProducts, editorPersonaId, upfmProperty, personaProductSettings, isExternalUser, usePropertyInstanceUnifiedAmenities);
+                    IList<ProductBatch> pbData = manageProductBatch.GetUserProductBatchData(userPersonaId, userProducts, editorPersonaId, upfmProperty, personaProductSettings, isExternalUser, usePropertyInstanceUnifiedAmenities);
 
                     foreach (ProductBatch pb in pbData)
                     {

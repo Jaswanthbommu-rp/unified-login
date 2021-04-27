@@ -200,6 +200,7 @@
     <Compile Include="Enum\ParentUserRoleType.cs" />
     <Compile Include="Enum\PersonaType.cs" />
     <Compile Include="Enum\ProductBatchStatusType.cs" />
+    <Compile Include="Enum\ProductIntegrationTypeEnum.cs" />
     <Compile Include="Enum\RoleCategoryType.cs" />
     <Compile Include="Enum\TabEnum.cs" />
     <Compile Include="Enum\UserStatusType.cs" />

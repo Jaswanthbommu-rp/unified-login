@@ -27,7 +27,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         ListResponse GetOneSitePropertyList(long editorPersonaId, long userPersonaId, bool assignedOnly, RequestParameter datafilter);
         ListResponse GetOneSitePropertyListAll(Persona persona, RequestParameter datafilter);
         PropertyList GetOneSitePropertyListMain(Dictionary<string, string> args, RequestParameter datafilter, string uniqueIdentifier);
-        ListResponse GetOneSiteRights(long editorPersonaId, RequestParameter datafilter, int roleId = 0, bool assignedToRoleOnly = false);
+        ListResponse GetOneSiteRights(long editorPersonaId, RequestParameter datafilter, long roleId = 0, bool assignedToRoleOnly = false);
         ListResponse GetOneSiteRightsCenters(long editorPersonaId);
         RightList GetOneSiteRightsMain(Dictionary<string, string> args, RequestParameter datafilter, string uniqueIdentifier);
         ListResponse GetOneSiteRoleList(long editorPersonaId, long userPersonaId, bool AssignedOnly, RequestParameter datafilter);

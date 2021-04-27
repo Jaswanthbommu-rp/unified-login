@@ -81,7 +81,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <summary>
         /// Default Constructor
         /// </summary>
-        public ManageProduct(DefaultUserClaim userClaim)
+        public ManageProduct(DefaultUserClaim userClaim, IManageProductPanel manageProductPanel = null)
         {
             _productRepository = new ProductRepository(userClaim);
             _productInternalSettingRepository = new ProductInternalSettingRepository();

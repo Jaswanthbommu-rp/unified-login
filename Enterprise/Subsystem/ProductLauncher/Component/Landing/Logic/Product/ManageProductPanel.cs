@@ -23,7 +23,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
     {
         #region Private Variables		
         private DefaultUserClaim _userClaims;
-        readonly IProductInternalSettingRepository _productInternalSettingRepository;
+        //readonly IProductInternalSettingRepository _productInternalSettingRepository;
         readonly IManageUnifiedLogin _manageUnifiedLogin;
         private readonly IManageProductOneSite _manageProductOneSite;
         protected IPropertyRepository _propertyRepository;
@@ -42,14 +42,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public ManageProductPanel(DefaultUserClaim userClaims)
         {
             _userClaims = userClaims;
-            _productInternalSettingRepository = new ProductInternalSettingRepository();
+            var manageProduct = new ManageProduct(_userClaims, this);
             _manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
             _manageProductOneSite = new ManageProductOneSite(_userClaims);
             _propertyRepository = new PropertyRepository();
             _manageBlueBook = new ManageBlueBook(_userClaims);
 
-            _integrationTypeFactory = new DefaultIntegrationTypeFactory(_productInternalSettingRepository, _manageUnifiedLogin, _manageProductOneSite, _userClaims);
             _productRepository = new ProductRepository(_userClaims);
+            _integrationTypeFactory = new IntegrationTypeFactory(manageProduct, _manageUnifiedLogin, _manageProductOneSite, _productRepository, _userClaims);
         }
 
 		/// <summary>
@@ -63,15 +63,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		public ManageProductPanel(DefaultUserClaim userClaims, IRepository repository, IManageBlueBook manageBlueBook, HttpMessageHandler messageHandler, IManageProductOneSite manageProductOneSite)
         {
             _userClaims = userClaims;
-            _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
-            ProductRepository productRepository = new ProductRepository(repository, userClaims);
-            _manageUnifiedLogin = new ManageUnifiedLogin(_userClaims, _productInternalSettingRepository, productRepository, manageBlueBook);
+            var productInternalSettingRepository = new ProductInternalSettingRepository(repository);
+            var productRepository = new ProductRepository(repository, userClaims);
+            var manageProduct = new ManageProduct(repository, _userClaims, messageHandler);
+
+            _manageUnifiedLogin = new ManageUnifiedLogin(_userClaims, productInternalSettingRepository, productRepository, manageBlueBook);
             _manageProductOneSite = manageProductOneSite;
             _propertyRepository = new PropertyRepository(repository);
-            _manageBlueBook = new ManageBlueBook(_userClaims, repository, _productInternalSettingRepository, messageHandler);
-
-            _integrationTypeFactory = new DefaultIntegrationTypeFactory(_productInternalSettingRepository, _manageUnifiedLogin, _manageProductOneSite, _userClaims);
+            _manageBlueBook = new ManageBlueBook(_userClaims, repository, productInternalSettingRepository, messageHandler);
             _productRepository = new ProductRepository(repository, _userClaims);
+
+            _integrationTypeFactory = new IntegrationTypeFactory(manageProduct, _manageUnifiedLogin, _manageProductOneSite, _productRepository, _userClaims);
         }
 
         #endregion
@@ -240,7 +242,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public ListResponse GetProductRightsForRole(long editorPersonaId, int roleId, long partyId, int productId, RequestParameter datafilter, bool assignedToRoleOnly = false)
         {
             var integration = _integrationTypeFactory.GetIntegration(productId);
-            return integration.GetRightsForRole(editorPersonaId, roleId, partyId, assignedToRoleOnly, datafilter);
+            return integration.GetRightsForRole(editorPersonaId, 0, roleId, partyId, assignedToRoleOnly, datafilter);
         }
 
         public ListResponse GetProductPropertyGroups(long editorPersonaId, long userPersonaId, int productId, RequestParameter datafilter, bool assignedOnly = false, string userLoginName = "")
@@ -248,61 +250,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             ListResponse result = new ListResponse();
             try
             {
-                switch (productId)
-                {
-                    case (int)ProductEnum.OnSite:
-                        var manageProductOnSite = new ManageProductOnSite(_userClaims);
-                        result = manageProductOnSite.GetRegions(editorPersonaId, userPersonaId, datafilter);
-                        break;
-                    case (int)ProductEnum.ResidentPortal:
-                        List<IMessagingGroups> messageGroupsList = new List<IMessagingGroups>();
-                        ManageProductResidentPortal manageProductResidentPortal = new ManageProductResidentPortal(_userClaims);
-                        messageGroupsList = manageProductResidentPortal.ListMessageGroups(editorPersonaId, userPersonaId);
-                        if (messageGroupsList?.Count > 0)
-                        {
-                            result.Records = messageGroupsList.Cast<object>().ToList();
-                            result.TotalRows = messageGroupsList.Count;
-                            result.RowsPerPage = messageGroupsList.Count;
-                            result.TotalPages = 1;
-                            result.ErrorReason = string.Empty;
-                            result.Additional = null;
-                        }
-                        break;
-                    case (int)ProductEnum.VendorServices:
-                        IManageProductVendorServices manageProductVendorServices = new ManageProductVendorServices(_userClaims);
-                        result = manageProductVendorServices.GetPropertyGroups(editorPersonaId, userPersonaId, datafilter);
-                        break;
-                    case (int)ProductEnum.AoBusinessIntelligence:
-                    case (int)ProductEnum.AoInvestmentAnalytics:
-                    case (int)ProductEnum.AoPerformanceAnalytics:
-                    case (int)ProductEnum.AoRevenueManagement:
-                    case (int)ProductEnum.AoBenchmarking:
-                    case (int)ProductEnum.AoLeaseRentOption:
-                    case (int)ProductEnum.AoAmenityOptimization:
-                    case (int)ProductEnum.AoAIRevenueManagement:
-                    case (int)ProductEnum.AoRentControl:
-                    case (int)ProductEnum.AoMarketAnalytics:
-                    case (int)ProductEnum.AoAxiometrics:
-                        var manageProductAo = new ManageProductAssetOptimization(_userClaims);
-                        var productList = _productRepository.GetAllProducts();
-                        string productcode = ProductEnumHelper.GetProductCodeByProductId(productId, productList);
-                        result = manageProductAo.GetProductPropertyGroups(editorPersonaId, userPersonaId, productcode, userLoginName);
-                        break;
-                    case (int)ProductEnum.UtilityManagement:
-                        var manageProductRum = new ManageProductRum(_userClaims);
-                        result = manageProductRum.GetPropertyGroups(editorPersonaId, userPersonaId, datafilter);
-                        break;
-                    case (int)ProductEnum.DepositAlternative:
-                        var productDALogic = ManageProductFactory.GetProductLogic(ProductEnum.DepositAlternative, editorPersonaId, userPersonaId, _userClaims);
-                        result = productDALogic.GetProductPropertyGroups(datafilter);
-                        break;
-                    case (int)ProductEnum.FinancialSuite:
-                        var manageProductOneSiteAccounting = new ManageProductOneSiteAccounting(_userClaims);
-                        result = manageProductOneSiteAccounting.GetUserCompanies(editorPersonaId, userPersonaId, datafilter);
-                        break;
-                    default:
-                        break;
-                }
+                var integrationType = _integrationTypeFactory.GetIntegration(productId);
+                result = integrationType.GetPropertyGroups(editorPersonaId, userPersonaId, datafilter, userLoginName);
                 if (result.IsError)
                 {
                     throw new Exception(result.ErrorReason);
@@ -362,33 +311,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         public ListResponse GetProductGroupProperties(long editorPersonaId, long userPersonaId, int productId, string propertyGroupId, RequestParameter datafilter)
         {
-            ListResponse result = new ListResponse();
-            switch (productId)
-            {
-                case (int)ProductEnum.AoBusinessIntelligence:
-                case (int)ProductEnum.AoInvestmentAnalytics:
-                case (int)ProductEnum.AoPerformanceAnalytics:
-                case (int)ProductEnum.AoRevenueManagement:
-                case (int)ProductEnum.AoBenchmarking:
-                case (int)ProductEnum.AoLeaseRentOption:
-                case (int)ProductEnum.AoAmenityOptimization:
-                case (int)ProductEnum.AoAIRevenueManagement:
-                case (int)ProductEnum.AoRentControl:
-                    var manageProductAo = new ManageProductAssetOptimization(_userClaims);
-                    result = manageProductAo.GetGroupProperties(editorPersonaId, userPersonaId, Convert.ToInt32(propertyGroupId));
-                    break;
-                case (int)ProductEnum.PortfolioManagement:
-                    var productPMLogic = ManageProductFactory.GetProductLogic(ProductEnum.PortfolioManagement, editorPersonaId, userPersonaId, _userClaims);
-                    result = productPMLogic.GetProductPropertiesByGroup(propertyGroupId, datafilter);
-                    break;
-                case (int)ProductEnum.FinancialSuite:
-                    var manageProductOneSiteAccounting = new ManageProductOneSiteAccounting(_userClaims);
-                    result = manageProductOneSiteAccounting.GetPropertyGroupEntities(editorPersonaId, userPersonaId, propertyGroupId, datafilter);
-                    break;
-                default:
-                    break;
-            }
-            return result;
+            var integrationType = _integrationTypeFactory.GetIntegration(productId);
+            return integrationType.GetPropertiesByGroup(editorPersonaId, userPersonaId, propertyGroupId, datafilter);
         }
 
         public ListResponse GetProductRights(long editorPersonaId, long userPersonaId, long partyId, int productId, RequestParameter datafilter)
@@ -409,16 +333,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         public ListResponse GetProductOrganizations(long editorPersonaId, long userPersonaId, int productId, string organizationRoleId, string organizationType)
         {
-            ListResponse result = new ListResponse();
-            switch (productId)
-            {
-                case (int)ProductEnum.ClickPay:
-                    var productLogic = ManageProductFactory.GetProductLogic(ProductEnum.ClickPay, editorPersonaId, userPersonaId, _userClaims);
-                    result = productLogic.GetProductOrganizations(organizationRoleId, organizationType, null);
-                    break;
-                default:
-                    break;
-            }
+            ListResponse result;
+
+            var integrationType = _integrationTypeFactory.GetIntegration(productId);
+            result = integrationType.GetOrganizations(editorPersonaId, userPersonaId, organizationRoleId, organizationType);
+
             return result;
         }
 

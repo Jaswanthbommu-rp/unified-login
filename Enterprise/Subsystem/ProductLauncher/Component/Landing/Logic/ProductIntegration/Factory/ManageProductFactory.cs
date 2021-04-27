@@ -48,6 +48,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         #region Public Members - NO CHANGES REQUIRED FOR NEW PRODUCT
 
+        // Handles the conversion of int to ProductEnum to ease future removal of ProductEnum references
+        public static IManageProductIntegration GetProductLogic(int productType, long editorPersonaId, long subjectPersonaId, DefaultUserClaim userClaims) =>
+            GetProductLogic((ProductEnum)productType, editorPersonaId, subjectPersonaId, userClaims);
+
         /// <summary>
         /// Returns instance of class for execution based on process type
         /// NO CHANGES REQUIRED FOR NEW PRODUCT

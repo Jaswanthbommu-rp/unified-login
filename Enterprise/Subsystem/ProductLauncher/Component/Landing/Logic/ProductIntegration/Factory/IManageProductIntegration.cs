@@ -31,7 +31,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <summary>
 		/// Get Product Regions
 		/// </summary>
-		ListResponse GetProductPropertyGroups(RequestParameter datafilter, string baseUrlAndQuery = null , string tabName = null);
+		ListResponse GetProductPropertyGroups(RequestParameter datafilter, string baseUrlAndQuery = null);
 
 		/// <summary>
 		/// UnassignUser
@@ -71,8 +71,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <summary>
 		/// For a product, returns all organizations or by given organizationId -used in ClickPay
 		/// </summary>
-		ListResponse GetProductOrganizations(string organizationRoleId, string organizationType, 
-			RequestParameter dataFilter, string baseUrlAndQuery = null);
+		ListResponse GetProductOrganizations(string organizationRoleId, string organizationType, string baseUrlAndQuery = null);
 
 		/// <summary>
 		/// Gets the migration users.

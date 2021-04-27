@@ -29,21 +29,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 	/// </summary>
 	public class ManageCloneProductBatch
 	{
+		private readonly DefaultUserClaim _userClaim;
+
+		private readonly IntegrationTypeFactory _integrationTypeFactory;
+
 		/// <summary>
 		/// Default Constructor
 		/// </summary>
-		public ManageCloneProductBatch()
+		public ManageCloneProductBatch(DefaultUserClaim userClaim)
 		{
+			_userClaim = userClaim;
 
+			var manageProduct = new ManageProduct(_userClaim);
+			var manageUnifiedLogin = new ManageUnifiedLogin(_userClaim);
+			var manageProductOneSite = new ManageProductOneSite(_userClaim);
+			var productRepository = new ProductRepository(_userClaim);
+			
+			_integrationTypeFactory = new IntegrationTypeFactory(manageProduct, manageUnifiedLogin,
+				manageProductOneSite, productRepository, _userClaim);
 		}
 
 		/// <summary>
 		/// Gets Product Batch
 		/// </summary> 
-		public IList<ProductBatch> GetUserProductBatchData(long personaId, DefaultUserClaim userClaim, List<PersonaProductUserDetails> userProducts, long createUserPersonaId, UPFMProperty upfmProperty, List<ProductSettingList> productSettingList, bool externalUser = false, bool usePropertyInstanceUnifiedAmenities = false)
+		public IList<ProductBatch> GetUserProductBatchData(long personaId, List<PersonaProductUserDetails> userProducts, long createUserPersonaId, UPFMProperty upfmProperty, List<ProductSettingList> productSettingList, bool externalUser = false, bool usePropertyInstanceUnifiedAmenities = false)
 		{
 			IList<ProductBatch> productListToCreate = new List<ProductBatch>();
-			IManageBlueBook manageBlueBook = new ManageBlueBook(userClaim);
+			IManageBlueBook manageBlueBook = new ManageBlueBook(_userClaim);
 			ListResponse propertiesResponse = new ListResponse();
 			ListResponse propertyGroupResponse = new ListResponse();
 			ListResponse rolesResponse = new ListResponse();
@@ -68,7 +80,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 					if (product.ProductId == (int)ProductEnum.OneSite)
 					{
-						ManageProductOneSite mg = new ManageProductOneSite(userClaim);
+						ManageProductOneSite mg = new ManageProductOneSite(_userClaim);
 						propertiesResponse = mg.GetOneSitePropertyList(createUserPersonaId, personaId, true, null);
 						if (translateProperties)
 						{
@@ -79,7 +91,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					}
 					else if (product.ProductId == (int)ProductEnum.FinancialSuite)
 					{
-						ManageProductOneSiteAccounting accounting = new ManageProductOneSiteAccounting(userClaim);
+						ManageProductOneSiteAccounting accounting = new ManageProductOneSiteAccounting(_userClaim);
 						propertiesResponse = accounting.GetUserProperties(createUserPersonaId, personaId, null);
 						if (translateProperties)
 						{
@@ -92,7 +104,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					}
 					else if (product.ProductId == (int)ProductEnum.MarketingCenter)
 					{
-						ManageProductMarketingCenter marketing = new ManageProductMarketingCenter(userClaim);
+						ManageProductMarketingCenter marketing = new ManageProductMarketingCenter(_userClaim);
 						propertiesResponse = marketing.GetProperties(createUserPersonaId, personaId, null);
 						if (translateProperties)
 						{
@@ -103,7 +115,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					}
 					else if (product.ProductId == (int)ProductEnum.OpsBuyer)
 					{
-						ManageProductOps opsbuyer = new ManageProductOps(userClaim);
+						ManageProductOps opsbuyer = new ManageProductOps(_userClaim);
 						propertiesResponse = opsbuyer.GetCompanyAssets(createUserPersonaId, personaId, false, null);
 						if (translateProperties)
 						{
@@ -114,7 +126,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					}
 					else if (product.ProductId == (int)ProductEnum.VendorServices)
 					{
-						ManageProductVendorServices vs = new ManageProductVendorServices(userClaim);
+						ManageProductVendorServices vs = new ManageProductVendorServices(_userClaim);
 						propertiesResponse = vs.GetProperties(createUserPersonaId, personaId, null);
 						if (translateProperties)
 						{
@@ -127,7 +139,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					}
 					else if (product.ProductId == (int)ProductEnum.ClientPortal)
 					{
-						ManageProductClientPortal cp = new ManageProductClientPortal(userClaim);
+						ManageProductClientPortal cp = new ManageProductClientPortal(_userClaim);
 						propertiesResponse = cp.GetProperties(createUserPersonaId, personaId, null);
 						if (translateProperties)
 						{
@@ -138,7 +150,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					}
 					else if (product.ProductId == (int)ProductEnum.ProspectContactCenter)
 					{
-						ManageProductProspectContact prospContact = new ManageProductProspectContact(userClaim);
+						ManageProductProspectContact prospContact = new ManageProductProspectContact(_userClaim);
 						propertiesResponse = prospContact.GetProperties(createUserPersonaId, personaId, null);
 						if (translateProperties)
 						{
@@ -148,7 +160,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					}
 					else if (product.ProductId == (int)ProductEnum.Lead2Lease)
 					{
-						ManageProductLead2Lease l2l = new ManageProductLead2Lease(userClaim);
+						ManageProductLead2Lease l2l = new ManageProductLead2Lease(_userClaim);
 						propertiesResponse = l2l.GetProperties(createUserPersonaId, personaId, null);
 						if (translateProperties)
 						{
@@ -159,7 +171,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					}
 					else if (product.ProductId == (int)ProductEnum.ResidentPortal)
 					{
-						ManageProductResidentPortal manageProductResidentPortal = new ManageProductResidentPortal(userClaim);
+						ManageProductResidentPortal manageProductResidentPortal = new ManageProductResidentPortal(_userClaim);
 						propertiesResponse = manageProductResidentPortal.ListProperties(createUserPersonaId, personaId, null);
 						if (translateProperties)
 						{
@@ -172,7 +184,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					}
 					else if (product.ProductId == (int)ProductEnum.Insurance)
 					{
-						ManageProductRentersInsurance manageProductRentersInsurance = new ManageProductRentersInsurance(userClaim);
+						ManageProductRentersInsurance manageProductRentersInsurance = new ManageProductRentersInsurance(_userClaim);
 						propertiesResponse = manageProductRentersInsurance.ListProperties(createUserPersonaId, personaId, null);
 						if (translateProperties)
 						{
@@ -183,7 +195,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					}
 					else if (product.ProductId == (int)ProductEnum.OnSite)
 					{
-						ManageProductOnSite manageProductOnSite = new ManageProductOnSite(userClaim);
+						ManageProductOnSite manageProductOnSite = new ManageProductOnSite(_userClaim);
 						propertiesResponse = manageProductOnSite.GetProperties(createUserPersonaId, personaId, null);
 						if (translateProperties)
 						{
@@ -195,7 +207,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					}
 					else if (product.ProductId == (int)ProductEnum.UtilityManagement)
 					{
-						ManageProductRum manageProductrum = new ManageProductRum(userClaim);
+						ManageProductRum manageProductrum = new ManageProductRum(_userClaim);
 						propertiesResponse = manageProductrum.GetProperties(createUserPersonaId, personaId, null);
 						if (translateProperties)
 						{
@@ -208,12 +220,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					}
 					else if (product.ProductId == (int)ProductEnum.SelfProvisioningPortal)
 					{
-						ManageProductSelfProvisioningPortal manageProductSelfProvisioningPortal = new ManageProductSelfProvisioningPortal(userClaim);
+						ManageProductSelfProvisioningPortal manageProductSelfProvisioningPortal = new ManageProductSelfProvisioningPortal(_userClaim);
 						productListToCreate.Add(CreateSelfProvisioningPortalProductBatchRecord(product.ProductId));
 					}
 					else if (product.ProductId == (int)ProductEnum.UnifiedAmenities)
 					{
-						ManageUnifiedAmenities manageUnifiedAmenities = new ManageUnifiedAmenities(userClaim);
+						ManageUnifiedAmenities manageUnifiedAmenities = new ManageUnifiedAmenities(_userClaim);
 						if (!usePropertyInstanceUnifiedAmenities)
 						{
 							propertiesResponse = manageUnifiedAmenities.GetProperties(createUserPersonaId, personaId, true, null);
@@ -224,7 +236,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 						}
 						else
 						{
-							ManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(userClaim);
+							ManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(_userClaim);
 							propertiesResponse = manageUnifiedLogin.GetUPFMProperties(createUserPersonaId, personaId, true, ProductEnum.UnifiedAmenities, null);
 						}
 
@@ -234,7 +246,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					}
 					else if (product.ProductId == (int)ProductEnum.LeadManagement)
 					{
-						var productLogic = ManageProductFactory.GetProductLogic(ProductEnum.LeadManagement, createUserPersonaId, personaId, userClaim);
+						var productLogic = ManageProductFactory.GetProductLogic(product.ProductId, createUserPersonaId, personaId, _userClaim);
 						var productUser = productLogic.GetProductUser();
 
 						productListToCreate.Add(CreateILMProductBatchRecord(ProductEnum.LeadManagement, productUser.Properties,
@@ -242,7 +254,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					}
 					else if (product.ProductId == (int)ProductEnum.LeadAnalytics)
 					{
-						var productLogic = ManageProductFactory.GetProductLogic(ProductEnum.LeadAnalytics, createUserPersonaId, personaId, userClaim);
+						var productLogic = ManageProductFactory.GetProductLogic(product.ProductId, createUserPersonaId, personaId, _userClaim);
 						var productUser = productLogic.GetProductUser();
 
 						productListToCreate.Add(CreateILMProductBatchRecord(ProductEnum.LeadAnalytics, productUser.Properties,
@@ -250,11 +262,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					}
 					else if (product.ProductId == (int)ProductEnum.RPDocumentManagement)
 					{
-						productListToCreate.Add(CreateDocManagementBatchRecords(userClaim, createUserPersonaId, personaId, usePrimaryProperties));
+						productListToCreate.Add(CreateDocManagementBatchRecords(_userClaim, createUserPersonaId, personaId, usePrimaryProperties));
 					}
 					else if (product.ProductId == (int)ProductEnum.PortfolioManagement)
 					{
-						var productLogic = ManageProductFactory.GetProductLogic(ProductEnum.PortfolioManagement, createUserPersonaId, personaId, userClaim);
+						var productLogic = ManageProductFactory.GetProductLogic(product.ProductId, createUserPersonaId, personaId, _userClaim);
 						var productUser = productLogic.GetProductUser();
 						var propertyRoles = productUser.PropertyRoleList;
 						var roles = productUser.RoleList.ConvertAll<string>(i => i.ToString());
@@ -270,7 +282,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 						if (productAttributes.Any(a => a.Name.ToUpper() == SamlAttributeEnum.RoleCode.ToString().ToUpperInvariant()))
 						{
-							var imLogic = new ManageProductIntegrationMarketplace(userClaim);
+							var imLogic = new ManageProductIntegrationMarketplace(_userClaim);
 							List<IntegrationMarketplaceRole> allImRoles = imLogic.GetIntegrationMarketplaceRoles();
 
 							var existingRoleCode = (from a in productAttributes where a.Name.ToUpper() == SamlAttributeEnum.RoleCode.ToString().ToUpperInvariant() select a.Value).FirstOrDefault();
@@ -282,14 +294,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					}
 					else if (product.ProductId == (int)ProductEnum.DepositAlternative)
 					{
-						var productLogic = ManageProductFactory.GetProductLogic(ProductEnum.DepositAlternative, createUserPersonaId, personaId, userClaim);
+						var productLogic = ManageProductFactory.GetProductLogic(product.ProductId, createUserPersonaId, personaId, _userClaim);
 						var productUser = productLogic.GetProductUser();
 
 						productListToCreate.Add(CreateProductBatchRecordForDepositIQ(productUser, usePrimaryProperties));
 					}
 					else if (product.ProductId == (int)ProductEnum.ClickPay)
 					{
-						var productLogic = ManageProductFactory.GetProductLogic(ProductEnum.ClickPay, createUserPersonaId, personaId, userClaim);
+						var productLogic = ManageProductFactory.GetProductLogic(product.ProductId, createUserPersonaId, personaId, _userClaim);
 						var productUser = productLogic.GetProductUser();
 						var organizationRoles = productUser.OrganizationRoles;
 
@@ -297,25 +309,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					}
 					else if (product.ProductId == (int)ProductEnum.RenovationManager)
 					{
-						var productLogic = ManageProductFactory.GetProductLogic(ProductEnum.RenovationManager, createUserPersonaId, personaId, userClaim);
+						var productLogic = ManageProductFactory.GetProductLogic(product.ProductId, createUserPersonaId, personaId, _userClaim);
 						var productUser = productLogic.GetProductUser();
 
 						productListToCreate.Add(CreateProductBatchRecordForRenovationManager(productUser));
 					}
+					else
+                    {
+						var integrationType = _integrationTypeFactory.GetIntegration(product.ProductId);
+						propertiesResponse = integrationType.GetProperties(createUserPersonaId, personaId, null);
+						rolesResponse = integrationType.GetRoles(createUserPersonaId, personaId, _userClaim.OrganizationPartyId, null, null);
 
-					else if (product.ProductId == (int)ProductEnum.IntelligentBuildingTrash ||
-							 product.ProductId == (int)ProductEnum.IntelligentBuildingEnergy ||
-							 product.ProductId == (int)ProductEnum.IntelligentBuildingWater ||
-							 product.ProductId == (int)ProductEnum.HospitalityService ||
-							 product.ProductId == (int)ProductEnum.SelfGuidedTour ||
-							 product.ProductId == (int)ProductEnum.HandsOnTrainingSystem ||
-							 product.ProductId == (int)ProductEnum.LeaseLabs)
-					{
-						ManageUPFMProductsIntegration upfmProductIntegration = new ManageUPFMProductsIntegration(product.ProductId, userClaim);
-						propertiesResponse = upfmProductIntegration.GetUPFMProperties(createUserPersonaId, personaId, false, null);
-						rolesResponse = upfmProductIntegration.GetRoles(createUserPersonaId, personaId, userClaim.OrganizationPartyId);
-						productListToCreate.Add(CreateProductBatchRecord(propertiesResponse, rolesResponse, product.ProductId, usePrimaryProperties));
-					}
+						var productBatchRecord = CreateProductBatchRecord(propertiesResponse, rolesResponse, product.ProductId, usePrimaryProperties);
+						productListToCreate.Add(productBatchRecord);
+                    }
 				}
 				catch (Exception ex)
 				{
@@ -329,7 +336,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			var aoProductList = userProducts.Where(y => ProductEnumHelper.GetAoProductList().Contains((ProductEnum)y.ProductId)).ToList();
 			if (aoProductList.Any())
 			{
-				var batches = CreateAoBatchRecords(userClaim, createUserPersonaId, personaId, externalUser);
+				var batches = CreateAoBatchRecords(_userClaim, createUserPersonaId, personaId, externalUser);
 				foreach (var productBatch in batches)
 				{
 					// add only if userProducts has productId else product is modified after clone
@@ -581,13 +588,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 			if (allProperties)
 			{
-
 				if (productID == (int)ProductEnum.ClientPortal ||
-					productID == (int)ProductEnum.IntelligentBuildingTrash ||
-					productID == (int)ProductEnum.IntelligentBuildingEnergy ||
-					productID == (int)ProductEnum.IntelligentBuildingWater ||
-					productID == (int)ProductEnum.HospitalityService ||
-					productID == (int)ProductEnum.SelfGuidedTour)
+					_integrationTypeFactory.GetIntegrationTypeForProductId(productID) == ProductIntegrationTypeEnum.UPFM)
 				{
 					PropertyList.Add("-1");
 				}
@@ -612,11 +614,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					}
 					else if (((ProductProperty)item).IsAssigned.Value)
 					{
-						if (productID == (int)ProductEnum.IntelligentBuildingTrash ||
-							productID == (int)ProductEnum.IntelligentBuildingEnergy ||
-							productID == (int)ProductEnum.IntelligentBuildingWater ||
-							productID == (int)ProductEnum.HospitalityService ||
-							productID == (int)ProductEnum.SelfGuidedTour)
+						if (_integrationTypeFactory.GetIntegrationTypeForProductId(productID) == ProductIntegrationTypeEnum.UPFM)
 						{
 							PropertyList.Add(((ProductProperty)item).Alias);
 						}

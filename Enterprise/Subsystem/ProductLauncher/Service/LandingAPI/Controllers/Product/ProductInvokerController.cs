@@ -13,6 +13,11 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductInt
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Attributes;
+using System.Web.Http.Controllers;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers.Product
 {
@@ -21,21 +26,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 	/// </summary>
 	public class ProductInvokerController : BaseApiController
 	{
-		/// <summary>
-		/// Returns Roles for given product and user
-		/// </summary>
-		/// <param name="editorPersonaId">Editor user persona Id</param>
-		/// <param name="subjectPersonaId">Subject user persona id</param>
-		/// <param name="productType">Product Type</param>
-		/// <param name="dataFilter">A dataFilter used to filter the roles.</param>
-		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		private IntegrationTypeFactory _integrationTypeFactory;
+
+		protected override void Initialize(HttpControllerContext controllerContext)
+        {
+            base.Initialize(controllerContext);
+
+			var manageProduct = new ManageProduct(_userClaims);
+			var manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
+			var manageProductOneSite = new ManageProductOneSite(_userClaims);
+			var productRepository = new ProductRepository(_userClaims);
+
+			_integrationTypeFactory = new IntegrationTypeFactory(manageProduct, manageUnifiedLogin, manageProductOneSite, productRepository, _userClaims);
+		}
+
+        /// <summary>
+        /// Returns Roles for given product and user
+        /// </summary>
+        /// <param name="editorPersonaId">Editor user persona Id</param>
+        /// <param name="subjectPersonaId">Subject user persona id</param>
+        /// <param name="productType">Product Type</param>
+        /// <param name="dataFilter">A dataFilter used to filter the roles.</param>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
 		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
 		[SwaggerResponse(HttpStatusCode.OK, Description = "Operation successful", Type = typeof(HttpResponseMessage))]
 		[SwaggerResponse(HttpStatusCode.BadRequest, Description =
 			 "Bad request(when data filter have invalid entries / when information is out of sync with the server)")
 		]
-		[ProductAllowed(ProductEnum.LeadManagement, ProductEnum.LeadAnalytics, ProductEnum.PortfolioManagement,
-			ProductEnum.ClickPay, ProductEnum.DepositAlternative, ProductEnum.SeniorLeadManagement, ProductEnum.RenovationManager)]
 		[Route("products/roles")]
 		[HttpGet]
 		public HttpResponseMessage GetRoles(ProductEnum productType, long editorPersonaId, long subjectPersonaId,
@@ -50,9 +67,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				if (_realpageUserId == Guid.Empty)
 					return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
 
-				var productLogic =
-					ManageProductFactory.GetProductLogic(productType, editorPersonaId, subjectPersonaId, _userClaims);
-				result = productLogic.GetProductRoles(dataFilter);
+				int productId = (int)productType;
+				var integrationType = _integrationTypeFactory.GetIntegration(productId);
+				result = integrationType.GetRoles(editorPersonaId, subjectPersonaId, 0, null, dataFilter);
 
 				if (result.IsError)
 					Request.CreateResponse(HttpStatusCode.Forbidden, result);
@@ -88,13 +105,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [SwaggerResponse(HttpStatusCode.BadRequest, Description =
              "Bad request(when data filter have invalid entries / when information is out of sync with the server)")
         ]
-        [ProductAllowed(ProductEnum.LeadManagement, ProductEnum.LeadAnalytics, ProductEnum.PortfolioManagement,
-            ProductEnum.ClickPay, ProductEnum.DepositAlternative, ProductEnum.SeniorLeadManagement)]
         [Route("products/role/rights")]
 		[HttpGet]
         public HttpResponseMessage GetRightsForRole(ProductEnum productType, long editorPersonaId, long subjectPersonaId, long roleId,
             [FromUri] RequestParameter dataFilter)
         {
+			// TODO: This method doesn't appear to be in use
             ListResponse result;
             try
             {
@@ -107,11 +123,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 if (_realpageUserId == Guid.Empty)
                     return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
 
-                var productLogic =
-                    ManageProductFactory.GetProductLogic(productType, editorPersonaId, subjectPersonaId, _userClaims);
-                result = productLogic.GetProductRightsForRole(dataFilter, roleId);
+				int productId = (int)productType;
+				var integrationType = _integrationTypeFactory.GetIntegration(productId);
+				result = integrationType.GetRightsForRole(editorPersonaId, subjectPersonaId, roleId, 0, false, dataFilter);
 
-                if (result.IsError)
+				if (result.IsError)
                     Request.CreateResponse(HttpStatusCode.Forbidden, result);
 
                 return Request.CreateResponse(HttpStatusCode.OK, result);
@@ -144,12 +160,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		[SwaggerResponse(HttpStatusCode.BadRequest, Description =
 			 "Bad request(when data filter have invalid entries / when information is out of sync with the server)")
 		]
-		[ProductAllowed(ProductEnum.LeadManagement, ProductEnum.LeadAnalytics, ProductEnum.PortfolioManagement,
-			ProductEnum.ClickPay, ProductEnum.DepositAlternative, ProductEnum.SeniorLeadManagement)]
 		[Route("products/company/rights")]
 		[HttpGet]
 		public HttpResponseMessage GetAllRights(ProductEnum productType, long editorPersonaId, long subjectPersonaId, [FromUri] RequestParameter dataFilter)
 		{
+			// TODO: This endpoint appears to not be in use
 			ListResponse result;
 			try
 			{
@@ -159,10 +174,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				if (_realpageUserId == Guid.Empty)
 					return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
 
-				var productLogic =
-					ManageProductFactory.GetProductLogic(productType, editorPersonaId, subjectPersonaId, _userClaims);
-
-				result = productLogic.GetAllRights(dataFilter);
+				int productId = (int)productType;
+				var integrationType = _integrationTypeFactory.GetIntegration(productId);
+				result = integrationType.GetAllRights(editorPersonaId, subjectPersonaId, dataFilter);
 
 				if (result.IsError)
 					Request.CreateResponse(HttpStatusCode.Forbidden, result);
@@ -196,8 +210,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		[SwaggerResponse(HttpStatusCode.OK, Description = "Operation successful", Type = typeof(HttpResponseMessage))]
 		[SwaggerResponse(HttpStatusCode.BadRequest, Description =
 			 "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
-		[ProductAllowed(ProductEnum.LeadAnalytics, ProductEnum.LeadManagement, ProductEnum.PortfolioManagement, ProductEnum.DepositAlternative
-            , ProductEnum.SeniorLeadManagement, ProductEnum.RenovationManager)]
 		[Route("products/properties")]
 		[HttpGet]
 		public HttpResponseMessage GetProperties(ProductEnum productType, long editorPersonaId, long subjectPersonaId,
@@ -212,8 +224,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				if (_realpageUserId == Guid.Empty)
 					return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
 
-				var productLogic = ManageProductFactory.GetProductLogic(productType, editorPersonaId, subjectPersonaId, _userClaims);
-				result = productLogic.GetProductProperties(dataFilter);
+				int productId = (int)productType;
+				var integrationType = _integrationTypeFactory.GetIntegration(productId);
+				result = integrationType.GetProperties(editorPersonaId, subjectPersonaId, dataFilter);
 
 				if (result.IsError)
 					Request.CreateResponse(HttpStatusCode.Forbidden, result);
@@ -246,17 +259,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		/// <param name="subjectPersonaId">Subject user persona id</param>
 		/// <param name="productType">Product Type</param>
 		/// <param name="dataFilter">A dataFilter used to filter the roles.</param>
-		/// <param name="TabName">Tab Name</param>
+		/// <param name="tabName">Tab Name</param>
 		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
 		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
 		[SwaggerResponse(HttpStatusCode.OK, Description = "Operation successful", Type = typeof(HttpResponseMessage))]
 		[SwaggerResponse(HttpStatusCode.BadRequest, Description =
 			 "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
-		[ProductAllowed(ProductEnum.LeadAnalytics, ProductEnum.DepositAlternative)]
 		[Route("products/propertygroups")]
 		[HttpGet]
 		public HttpResponseMessage GetPropertyGroups(ProductEnum productType, long editorPersonaId, long subjectPersonaId,
-			[FromUri] RequestParameter dataFilter , string TabName = null)
+			[FromUri] RequestParameter dataFilter , string tabName = null)
 		{
 			ListResponse result;
 			try
@@ -267,11 +279,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				if (_realpageUserId == Guid.Empty)
 					return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
 
-				var productLogic = ManageProductFactory.GetProductLogic(productType, editorPersonaId, subjectPersonaId, _userClaims);
-				result = productLogic.GetProductPropertyGroups(dataFilter , null, TabName);
+				int productId = (int)productType;
+				var integrationType = _integrationTypeFactory.GetIntegration(productId);
+				result = integrationType.GetPropertyGroups(editorPersonaId, subjectPersonaId, dataFilter);
 
 				if (result.IsError)
+                {
+					if (!string.IsNullOrEmpty(tabName))
+					{
+						if (tabName == TabEnum.Area.ToString())
+						{
+							result.ErrorReason = CommonMessageConstants.AreaErrorMessage;
+						}
+
+						if (tabName == TabEnum.Region.ToString())
+						{
+							result.ErrorReason = CommonMessageConstants.RegionErrorMessage;
+						}
+					}
+
 					Request.CreateResponse(HttpStatusCode.Forbidden, result);
+				}
 
 				return Request.CreateResponse(HttpStatusCode.OK, result);
 			}
@@ -321,8 +349,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				if (string.IsNullOrEmpty(groupId))
 					return Request.CreateResponse(HttpStatusCode.BadRequest, "Group Id is required.");
 
-				var productLogic = ManageProductFactory.GetProductLogic(productType, editorPersonaId, subjectPersonaId, _userClaims);
-				result = productLogic.GetProductPropertiesByGroup(groupId, dataFilter);
+				int productId = (int)productType;
+				var integrationType = _integrationTypeFactory.GetIntegration(productId);
+				result = integrationType.GetPropertiesByGroup(editorPersonaId, subjectPersonaId, groupId, dataFilter);
 
 				if (result.IsError)
 					Request.CreateResponse(HttpStatusCode.Forbidden, result);
@@ -358,11 +387,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		[SwaggerResponse(HttpStatusCode.OK, Description = "Operation successful", Type = typeof(HttpResponseMessage))]
 		[SwaggerResponse(HttpStatusCode.BadRequest, Description =
 			 "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
-		[ProductAllowed(ProductEnum.ClickPay)]
 		[Route("products/organizations/")]
 		[HttpGet]
-		public HttpResponseMessage GetProductOrganizations(string organizationRoleId, string organizationType, ProductEnum productType, long editorPersonaId, long subjectPersonaId,
-			[FromUri] RequestParameter dataFilter)
+		public HttpResponseMessage GetProductOrganizations(string organizationRoleId, string organizationType, ProductEnum productType, long editorPersonaId, long subjectPersonaId)
 		{
 			ListResponse result;
 
@@ -374,8 +401,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				if (_realpageUserId == Guid.Empty)
 					return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
 
-				var productLogic = ManageProductFactory.GetProductLogic(productType, editorPersonaId, subjectPersonaId, _userClaims);
-				result = productLogic.GetProductOrganizations(organizationRoleId, organizationType, dataFilter);
+				int productId = (int)productType;
+				var integrationType = _integrationTypeFactory.GetIntegration(productId);
+				result = integrationType.GetOrganizations(editorPersonaId, subjectPersonaId, organizationRoleId, organizationType);
 
 				if (result.IsError)
 					Request.CreateResponse(HttpStatusCode.Forbidden, result);
@@ -402,7 +430,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		/// </summary>
 		/// <param name="editorPersonaId">Editor user persona Id</param>
 		/// <param name="productType">Product Type</param>
-		/// <param name="datafilter">A datafilter used to filter the roles.</param>
+		/// <param name="dataFilter">A datafilter used to filter the roles.</param>
 		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
 		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
 		[SwaggerResponse(HttpStatusCode.OK, Description = "List users", Type = typeof(HttpResponseMessage))]
@@ -410,7 +438,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			 "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
 		[Route("products/users/migration")]
 		[HttpGet]
-		public HttpResponseMessage ListMigrationUsers(ProductEnum productType, long editorPersonaId, [FromUri] RequestParameter datafilter)
+		public HttpResponseMessage ListMigrationUsers(ProductEnum productType, long editorPersonaId, [FromUri] RequestParameter dataFilter)
 		{
 			ListResponse result;
 			try
@@ -418,8 +446,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				if (editorPersonaId == 0)
 					return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
 
-				var productLogic = ManageProductFactory.GetProductLogic(productType, editorPersonaId, editorPersonaId, _userClaims);
-				result = productLogic.GetMigrationUsers(datafilter);
+				int productId = (int)productType;
+				var integrationType = _integrationTypeFactory.GetIntegration(productId);
+				result = integrationType.GetMigrationUsers(editorPersonaId, dataFilter);
 
 				if (result.IsError)
 					Request.CreateResponse(HttpStatusCode.Forbidden, result);
@@ -462,8 +491,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			if (_realpageUserId == Guid.Empty)
 				return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
 
-			var productLogic = ManageProductFactory.GetProductLogic(productType, _personaId, _personaId, _userClaims);
-			var result = productLogic.UpdateUsersMigrationStatus(migrateUsers);
+			int productId = (int)productType;
+			var integrationType = _integrationTypeFactory.GetIntegration(productId);
+			var result = integrationType.UpdateUsersMigrationStatus(_personaId, migrateUsers);
 
 			if (!result.Status)
 				Request.CreateResponse(HttpStatusCode.Forbidden, result);
@@ -489,9 +519,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			if (_realpageUserId == Guid.Empty)
 				return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
 
-			var productLogic = ManageProductFactory.GetProductLogic(productType, _personaId, _personaId, _userClaims);
-
-			var result = productLogic.ExternalProductUserProfileChange(productUserProfile);
+			int productId = (int)productType;
+			var integrationType = _integrationTypeFactory.GetIntegration(productId);
+			var result = integrationType.ExternalUserProfileChange(_personaId, productUserProfile);
 
 			if (result)
 				return Request.CreateResponse(HttpStatusCode.OK, "Successfully disabled product user.");

@@ -2,6 +2,7 @@
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Types;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using System;
 using System.Collections.Generic;
@@ -9,57 +10,70 @@ using System.Linq;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Factory
 {
-    public class DefaultIntegrationTypeFactory : IIntegrationTypeFactory
+    public class IntegrationTypeFactory : IIntegrationTypeFactory
     {
-        private readonly IProductInternalSettingRepository _productInternalSettingRepository;
+        private readonly IManageProduct _manageProduct;
 
         private readonly IManageUnifiedLogin _manageUnifiedLogin;
 
         private readonly IManageProductOneSite _manageProductOneSite;
 
+        private readonly IProductRepository _productRepository;
+
         private readonly DefaultUserClaim _userClaims;
 
-        public DefaultIntegrationTypeFactory(IProductInternalSettingRepository productInternalSettingRepository, IManageUnifiedLogin manageUnifiedLogin,
-            IManageProductOneSite manageProductOneSite, DefaultUserClaim userClaims)
+        public IntegrationTypeFactory(IManageProduct manageProduct, IManageUnifiedLogin manageUnifiedLogin,
+            IManageProductOneSite manageProductOneSite, IProductRepository productRepository, DefaultUserClaim userClaims)
         {
-            _productInternalSettingRepository = productInternalSettingRepository;
+            _manageProduct = manageProduct;
             _manageUnifiedLogin = manageUnifiedLogin;
             _manageProductOneSite = manageProductOneSite;
+            _productRepository = productRepository;
             _userClaims = userClaims;
         }
 
         private delegate IIntegrationType FactoryInitMethod(int productId, DefaultUserClaim userClaims, IManageUnifiedLogin manageUnifiedLogin,
-            IManageProductOneSite manageProductOneSite, IProductInternalSettingRepository productInternalSettingRepository);
+            IManageProductOneSite manageProductOneSite, IManageProduct manageProduct, IProductRepository productRepository);
 
-        private readonly IReadOnlyDictionary<string, FactoryInitMethod> _integrationTypeMap =
-            new Dictionary<string, FactoryInitMethod>(StringComparer.OrdinalIgnoreCase)
+        private static readonly IReadOnlyDictionary<ProductIntegrationTypeEnum, FactoryInitMethod> _integrationTypeMap =
+            new Dictionary<ProductIntegrationTypeEnum, FactoryInitMethod>()
             {
-                ["Legacy"] = (productId, userClaims, manageUnifiedLogin, manageProductOneSite, productInternalSettingRepository) =>
-                    new LegacyIntegrationType(productId, userClaims, manageUnifiedLogin, manageProductOneSite, productInternalSettingRepository),
-                ["UPFM"] = (productId, userClaims, _1, _2, _3) => new UPFMIntegrationType(productId, userClaims),
-                ["Standard v1"] = (_1, _2, _3, _4, _5) => new StandardV1IntegrationType()
+                [ProductIntegrationTypeEnum.Legacy] = (productId, userClaims, manageUnifiedLogin, manageProductOneSite, manageProduct, productRepository) =>
+                    new LegacyIntegrationType(productId, userClaims, manageUnifiedLogin, manageProductOneSite, manageProduct, productRepository),
+                [ProductIntegrationTypeEnum.UPFM] = (productId, userClaims, _1, _2, _3, _4) => new UPFMIntegrationType(productId, userClaims),
+                [ProductIntegrationTypeEnum.StandardV1] = (productId, userClaims, _1, _2, _3, _4) => new StandardV1IntegrationType(productId, userClaims)
             };
 
         public IIntegrationType GetIntegration(int productId)
         {
-            string integrationType = GetIntegrationTypeForProductId(productId);
+            var integrationType = GetIntegrationTypeForProductId(productId);
 
             IIntegrationType ret = null;
             if (_integrationTypeMap.ContainsKey(integrationType))
             {
-                ret = _integrationTypeMap[integrationType](productId, _userClaims, _manageUnifiedLogin, _manageProductOneSite, _productInternalSettingRepository);
+                ret = _integrationTypeMap[integrationType](productId, _userClaims, _manageUnifiedLogin, _manageProductOneSite, _manageProduct, _productRepository);
             }
             return ret;
         }
 
-        private string GetIntegrationTypeForProductId(int productId)
-        {
-            var productIntegrationTypeList = _productInternalSettingRepository.GetProductSettingByType("ProductIntegrationType");
-            var integrationType = productIntegrationTypeList.FirstOrDefault(w => w.ProductId == productId)?.Value;
-
-            if (string.IsNullOrWhiteSpace(integrationType))
+        private static readonly IReadOnlyDictionary<string, ProductIntegrationTypeEnum> _integrationTypeEnumMap =
+            new Dictionary<string, ProductIntegrationTypeEnum>(StringComparer.OrdinalIgnoreCase)
             {
-                integrationType = "Legacy";
+                ["Legacy"] = ProductIntegrationTypeEnum.Legacy,
+                ["UPFM"] = ProductIntegrationTypeEnum.UPFM,
+                ["Standard v1"] = ProductIntegrationTypeEnum.StandardV1
+            };
+
+        public ProductIntegrationTypeEnum GetIntegrationTypeForProductId(int productId)
+        {
+            var productIntegrationTypeList = _manageProduct.GetProductSettingByType("ProductIntegrationType");
+            var integrationTypeSettingValue = productIntegrationTypeList.FirstOrDefault(w => w.ProductId == productId)?.Value;
+
+            var integrationType = ProductIntegrationTypeEnum.Legacy;
+            if (integrationTypeSettingValue != null
+                && _integrationTypeEnumMap.ContainsKey(integrationTypeSettingValue))
+            {
+                integrationType = _integrationTypeEnumMap[integrationTypeSettingValue];
             }
 
             return integrationType;

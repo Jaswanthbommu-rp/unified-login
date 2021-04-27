@@ -118,10 +118,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _propertyRepository = new PropertyRepository();
             _configurationSettingRepository = new ConfigurationSettingRepository();
             _manageBlueBook = new ManageBlueBook(userClaim);
-            _manageProductPanel = new ManageProductPanel(userClaim);
             _defaultUserClaim = userClaim;
             _manageUnifiedSettings = new ManageUnifiedSettings(userClaim);
             _manageOrganizationProduct = new ManageOrganizationProduct(userClaim);
+            _manageProductPanel = new ManageProductPanel(userClaim);
             _manageProduct = new ManageProduct(userClaim);
         }
 

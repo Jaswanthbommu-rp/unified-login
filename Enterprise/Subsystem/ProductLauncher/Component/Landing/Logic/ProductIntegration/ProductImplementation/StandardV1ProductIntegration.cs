@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Factory;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Helpers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
@@ -18,14 +19,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 
-namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration
+namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.ProductImplementation
 {
     /// <summary>
     /// Manage Product Invoker Abstract Base Class
     /// Purpose of this class is ONLY product integration
     /// Do not add any other methods which do not make product API calls
     /// </summary>
-    public class StandardV1ProductIntegration
+    public class StandardV1ProductIntegration : IManageProductIntegration
     {
         #region Private Variables
 
@@ -81,7 +82,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Ctor for normal execution
         /// </summary>
-        protected StandardV1ProductIntegration(int productId, long editorPersonaId, long subjectPersonaId, DefaultUserClaim userClaims)
+        public StandardV1ProductIntegration(int productId, long editorPersonaId, long subjectPersonaId, DefaultUserClaim userClaims)
         {
             _dataCollector = new DataCollector();
             Init(productId, editorPersonaId, subjectPersonaId, userClaims);
@@ -90,7 +91,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         ///  Used for unit testing
         /// </summary>
-        protected StandardV1ProductIntegration(int productId, long editorPersonaId, long subjectPersonaId,
+        public StandardV1ProductIntegration(int productId, long editorPersonaId, long subjectPersonaId,
             DefaultUserClaim userClaims, IDataCollector injectedDataCollector, IManagePersona injectedManagePersona,
             IProductInternalSettingRepository injectedProductInternalSettingRepository)
         {
@@ -422,7 +423,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Returns Product Property Groups / Regions
         /// </summary>
-        public virtual ListResponse GetProductPropertyGroups(RequestParameter dataFilter, string baseUrlAndQuery = null , string tabName = null)
+        public virtual ListResponse GetProductPropertyGroups(RequestParameter dataFilter, string baseUrlAndQuery = null)
         {
             try
             {
@@ -711,7 +712,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Returns companies for a product
         /// </summary>
-        public virtual ListResponse GetProductOrganizations(string roleOrganizationId, string organizationType, RequestParameter dataFilter, string baseUrlAndQuery = null)
+        public virtual ListResponse GetProductOrganizations(string roleOrganizationId, string organizationType, string baseUrlAndQuery = null)
         {
             throw new NotImplementedException();
         }

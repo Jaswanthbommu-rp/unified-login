@@ -70,7 +70,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 							if (item.OrgsAssignedCount > 0)
 							{
 								item.IsAssigned = true;
-								var selectedItemsObj = GetProductOrganizations(item.Id, item.OrgType, null).Records;
+								var selectedItemsObj = GetProductOrganizations(item.Id, item.OrgType).Records;
 								//item.SelectedItems = new List<ClickPaySelectedItems>();
 								item.SelectedItems = selectedItemsObj.Cast<ClickPayOrganization>().Where(x => x.IsAssigned == true)
 													.Select(y => new ClickPaySelectedItems() { Id = y.Id, Value = y.IsAssigned })
@@ -102,7 +102,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				};
 			}
 		}
-		public override ListResponse GetProductOrganizations(string organizationRoleId, string organizationType, RequestParameter dataFilter, string baseUrlAndQuery = null)
+		public override ListResponse GetProductOrganizations(string organizationRoleId, string organizationType, string baseUrlAndQuery = null)
 		{
 			try
 			{

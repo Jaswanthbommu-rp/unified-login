@@ -315,7 +315,7 @@
     <Compile Include="Logic\ProductIntegration\Helpers\DataCollector.cs" />
     <Compile Include="Logic\ProductIntegration\Helpers\IDataCollector.cs" />
     <Compile Include="Logic\ProductIntegration\Helpers\ProductActivityLogger.cs" />
-    <Compile Include="Logic\ProductIntegration\StandardV1ProductIntegration.cs" />
+    <Compile Include="Logic\ProductIntegration\ProductImplementation\StandardV1ProductIntegration.cs" />
     <Compile Include="Logic\ProductIntegration\Model\IntegrationProductUser.cs" />
     <Compile Include="Logic\ProductIntegration\Model\ProductEntityEnum.cs" />
     <Compile Include="Logic\ProductIntegration\Model\ProductProperties.cs" />

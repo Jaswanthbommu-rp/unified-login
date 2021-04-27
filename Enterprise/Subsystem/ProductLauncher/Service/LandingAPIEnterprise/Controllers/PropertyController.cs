@@ -50,12 +50,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         protected override void Initialize(HttpControllerContext controllerContext)
         {
             base.Initialize(controllerContext);
-            var productInternalSettingRepository = new ProductInternalSettingRepository();
+            var manageProduct = new ManageProduct(_userClaims);
             var manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
             var manageProductOneSite = new ManageProductOneSite(_userClaims);
 
-            _integrationTypeFactory = new DefaultIntegrationTypeFactory(productInternalSettingRepository, manageUnifiedLogin, manageProductOneSite, _userClaims);
             _productRepository = new ProductRepository(_userClaims);
+            _integrationTypeFactory = new IntegrationTypeFactory(manageProduct, manageUnifiedLogin, manageProductOneSite, _productRepository, _userClaims);
         }
 
         /// <summary>

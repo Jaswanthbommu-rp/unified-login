@@ -803,7 +803,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="roleId">Default to null. If passed, returns which rights are assigned to the given role id.</param>
         /// <param name="assignedToRoleOnly">Only return rights assigned to the requested role</param>
         /// <returns></returns>
-        public ListResponse GetOneSiteRights(long editorPersonaId, RequestParameter datafilter, int roleId = 0, bool assignedToRoleOnly = false)
+        public ListResponse GetOneSiteRights(long editorPersonaId, RequestParameter datafilter, long roleId = 0, bool assignedToRoleOnly = false)
         {
             ListResponse response = new ListResponse();
             response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
