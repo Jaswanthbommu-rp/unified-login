@@ -2,7 +2,7 @@
 	@ContactMechanismId INT,
 	@CountryCode VARCHAR(10) = 1,
 	@AreaCode VARCHAR(10),
-	@Phonenumber VARCHAR(10)
+	@Phonenumber VARCHAR(15)
 )
 AS
 BEGIN
