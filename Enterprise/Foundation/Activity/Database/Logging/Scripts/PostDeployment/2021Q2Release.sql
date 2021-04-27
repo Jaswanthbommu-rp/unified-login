@@ -152,10 +152,10 @@ END
 --SEED ACTIVITY LOG TYPES
 BEGIN
    IF NOT EXISTS (SELECT * FROM [Logging].[LogCategoryType] 
-                   WHERE [Name] = 'Company Setup')
+                   WHERE [Name] = 'CompanySetup')
    BEGIN
        INSERT INTO [Logging].[LogCategoryType] ([Name], [Description])
-		VALUES ('Company Setup', 'Company activities, such as create and product enablement')
+		VALUES ('CompanySetup', 'Company activities, such as create and product enablement')
    END
 END
 GO
@@ -165,7 +165,7 @@ BEGIN
 
 	SELECT @logCategoryTypeId = LogCategoryTypeId
 	FROM [Logging].[LogCategoryType]
-	WHERE [Name] = 'Company Setup'
+	WHERE [Name] = 'CompanySetup'
 	
 	IF NOT EXISTS (SELECT * FROM [Logging].[LogType]
 		WHERE LogcategoryTypeId = @logCategoryTypeId AND [Name] = 'Company Create')

@@ -387,8 +387,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     //Is company status being updated
                     if (oldOrganization.IsActive != organization.IsActive)
                     {
-                        var newStatus = "";
-                        var prevStatus = "";
+                        string newStatus;
+                        string prevStatus;
+
                         if (oldOrganization.IsActive == 1)
                         {
                             newStatus = "Inactive";
