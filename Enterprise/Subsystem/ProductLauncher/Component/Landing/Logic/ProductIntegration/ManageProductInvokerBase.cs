@@ -562,11 +562,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 $"ManageProductInvokerBase.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of method.");
 
             // Get product user object 
+            bool isProductUser = false;
             var newProductUser = GenerateProductUserObject(userRolePropertiesRegion);
             var productUser = GetBaseUserDataFromProduct(newProductUser.LoginName);
-            bool isProductUser = productUser != null && !string.IsNullOrEmpty(productUser.LoginName);
+            isProductUser = productUser != null && !string.IsNullOrEmpty(productUser.LoginName);
+            if (isProductUser)
+            {
+                newProductUser.UserId = productUser.UserId;
+                newProductUser.LoginName = productUser.LoginName;
+            }
 
-            if (string.IsNullOrEmpty(SubjectUserDetails.ProductUserName) && !isProductUser)
+            if (!isProductUser && string.IsNullOrEmpty(SubjectUserDetails.ProductUserName))
             {
                 WriteToDiagnosticLog(
                     $"ManageProductInvokerBase.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling CreateUser.");
@@ -585,25 +591,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 result = CreateUser(newProductUser);
 
             }
-            else if (string.IsNullOrEmpty(SubjectUserDetails.ProductUserName) && isProductUser && CreateUpdateMultiCompanyUserRequiresPMC)
+            else if (isProductUser && CreateUpdateMultiCompanyUserRequiresPMC)
             {
-                result = CreateMultiCompanyUser(productUser);
+                result = CreateMultiCompanyUser(newProductUser);
             }
             else
             {
                 WriteToDiagnosticLog(
-                    $"ManageProductInvokerBase.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling UpdateUser.");
-                // Update user with Id/Login from product
-                if (isProductUser)
-                {
-                    newProductUser.UserId = productUser.UserId;
-                    newProductUser.LoginName = productUser.LoginName;
-                }
-                else
-                {
-                    newProductUser.UserId = SubjectUserDetails.ProductUserId;
-                    newProductUser.LoginName = SubjectUserDetails.ProductUserName;
-                }
+                    $"ManageProductInvokerBase.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling UpdateUser.");                                
                 result = UpdateUser(newProductUser, batchProcessType);
             }
 
