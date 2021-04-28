@@ -1308,15 +1308,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 _httpClient = new HttpClient();
                 _httpClient.DefaultRequestHeaders.Clear();
 
-                string apiUser = ProductInternalSettingList.First(a => a.Name.ToUpper() == "APIUSERNAME")?.Value;
-                string apiPassword = ProductInternalSettingList.First(a => a.Name.ToUpper() == "APIPASSWORD")?.Value;
+                string apiUser = ProductInternalSettingList.FirstOrDefault(a => a.Name.ToUpper() == "APIUSERNAME")?.Value;
+                string apiPassword = ProductInternalSettingList.FirstOrDefault(a => a.Name.ToUpper() == "APIPASSWORD")?.Value;
                 if (!string.IsNullOrWhiteSpace(apiUser)
                     && !string.IsNullOrWhiteSpace(apiPassword))
                 {
                     _httpClient.SetBasicAuthentication(apiUser, apiPassword);
                 }
 
-                string apiKey = ProductInternalSettingList.First(a => a.Name.ToUpper() == "APIKEY")?.Value;
+                string apiKey = ProductInternalSettingList.FirstOrDefault(a => a.Name.ToUpper() == "APIKEY")?.Value;
                 if (!string.IsNullOrWhiteSpace(apiKey))
                 {
                     _httpClient.DefaultRequestHeaders.Add("apikey", apiKey);
