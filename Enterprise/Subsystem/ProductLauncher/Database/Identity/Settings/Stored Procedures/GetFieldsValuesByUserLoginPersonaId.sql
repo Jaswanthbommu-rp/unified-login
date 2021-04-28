@@ -90,6 +90,8 @@
 					,MinCharLength
 					,MaxCharLength
 					,@UserLoginPersonaId AS 'UserLoginPersonaId'
+					,srv.Value
+					,srv.SettingTableRowValueId AS 'FieldValueId'
 		FROM	@CustomFields cf
 		left outer Join Settings.SettingTableRowValue srv on
 			cf.FieldId = srv.SettingTableRowId 
