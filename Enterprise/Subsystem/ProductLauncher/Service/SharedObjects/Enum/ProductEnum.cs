@@ -16,8 +16,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		public static string StringValueOf(ProductEnum value)
 		{
 			if(value != ProductEnum.UnifiedPlatform
-				&& value != ProductEnum.AoAxiometrics
-				&& value != ProductEnum.AoRentControl
 				&& value != ProductEnum.OneSite)
             {
 				throw new Exception($"This function is obsolute, use {nameof(GetProductCodeByProductId)} instead");
