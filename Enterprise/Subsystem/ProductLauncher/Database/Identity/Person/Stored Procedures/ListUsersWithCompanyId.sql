@@ -114,13 +114,12 @@ AS
                       INNER JOIN Products AS cp ON cp.PersonaId = p2.PersonaId
                       LEFT JOIN Ident.SamlUserAttribute AS sua ON sua.PersonaId = p2.PersonaId
                                                                   AND sua.ProductId = cp.ProductId
-                                                                  AND sua.SamlAttributeId = 1
-                      INNER JOIN Enterprise.DataImportMapping AS dim ON ULP.OrganizationPartyId = dim.PartyId
-                      INNER JOIN Enterprise.DataImportApplication AS dia ON dim.DataImportApplicationId = dia.DataImportApplicationId
+                                                                  AND sua.SamlAttributeId = 1                      
+                      INNER JOIN enterprise.VW_DataImportMapping VDIM ON VDIM.PartyID = ULP.OrganizationPartyId
                       LEFT JOIN Emails AS e ON e.partyid = pa.partyid
                  WHERE ulp.StatusTypeId = 1
                        AND ((@CompanyIdCount IS NULL)
-                            OR dim.sourceId IN
+                            OR VDIM.CompanyMasterId IN
                  (
                      SELECT *
                      FROM @CompanyIdList AS cil
@@ -162,9 +161,8 @@ AS
                             --INNER JOIN Enterprise.PersonaConfiguration pc ON p.PersonaId = pc.PersonaId
                             INNER JOIN Enterprise.Role r ON R.RoleID = ppv.RoleID
                             INNER JOIN Enterprise.[Right] r2 ON r.RoleID = r2.RoleID
-                            INNER JOIN Enterprise.RightValueType rvt ON r2.RightValueTypeId = rvt.RightValueTypeId
-							 INNER JOIN Enterprise.DataImportMapping AS dim ON ULP.OrganizationPartyId = dim.PartyId
-                      INNER JOIN Enterprise.DataImportApplication AS dia ON dim.DataImportApplicationId = dia.DataImportApplicationId
+                            INNER JOIN Enterprise.RightValueType rvt ON r2.RightValueTypeId = rvt.RightValueTypeId							
+                            INNER JOIN enterprise.VW_DataImportMapping VDIM ON VDIM.PartyID = ULP.OrganizationPartyId
                             LEFT JOIN
                        (
                            SELECT p.PartyId, 
@@ -195,7 +193,7 @@ AS
                            WHERE mct.Name = 'Organization'
                                  AND mst.Name = 'RealPageEmployeeAccessID'
                        )  AND ((@CompanyIdCount IS NULL)
-                            OR dim.sourceId IN
+                            OR VDIM.CompanyMasterId IN
 						 (
 							 SELECT *
 							 FROM @CompanyIdList AS cil
