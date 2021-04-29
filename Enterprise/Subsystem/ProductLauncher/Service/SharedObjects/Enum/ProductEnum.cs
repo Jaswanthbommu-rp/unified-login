@@ -222,6 +222,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 				case 63: return ProductEnum.HandsOnTrainingSystem;
 				case 68: return ProductEnum.LeaseLabs;
 				case 65: return ProductEnum.SelfGuidedTour;
+				case 45: return ProductEnum.CIMPL;
+				case 56: return ProductEnum.UnifiedSettings;
 			}
 
 			throw new Exception($"UPFM product with Id - {productID} is not supported in green book.");
