@@ -118,7 +118,7 @@ BEGIN
 	IF NOT EXISTS
 	(
 		SELECT	1
-		FROM		Ident.OrganizationSettings
+		FROM	Settings.OrganizationSettings
 		WHERE	PartyId = @OrganizationId
 	)
 	BEGIN
@@ -128,9 +128,9 @@ BEGIN
 		FROM	Ident.UserLogin
 		WHERE	LoginName LIKE 'realpagead@%'
 		
-		INSERT INTO Ident.OrganizationSettings (PartyId,SettingCategoryTypeId,MappingName,MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
+		INSERT INTO Settings.OrganizationSettings (PartyId,SettingCategoryTypeId,MappingName,MappingValue,Editable,[Hidden],CreatedBy,CreatedDate)
 		SELECT @OrganizationId,SettingCategoryTypeId,MappingName,MappingValue,Editable,[Hidden],@UserId,GETDATE()
-		FROM [Ident].[OrganizationSettings]
+		FROM [Settings].[OrganizationSettings]
 		WHERE	PartyId = 3				
 	END;
 
