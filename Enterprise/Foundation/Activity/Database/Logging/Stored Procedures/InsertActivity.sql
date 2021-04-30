@@ -24,7 +24,8 @@
 	@ActivityId BIGINT OUTPUT,
 	@SourceId NVARCHAR(50) = NULL,
 	@MappingKey NVARCHAR(200) = NULL,
-	@ContextId INT = NULL --Property = 1,Company = 2,GlobalUpdate = 3,Template = 4
+	@ContextId INT = NULL, --Property = 1,Company = 2,GlobalUpdate = 3,Template = 4
+	@InstanceId UNIQUEIDENTIFIER = NULL
 )
 AS
 BEGIN
@@ -262,7 +263,8 @@ BEGIN
 					IsSystemAdminActivity,
 					SourceId,
 					MappingKey,
-					ContextId
+					ContextId,
+					InstanceId
 				)
 			VALUES
 				(@LogTypeId,
@@ -284,7 +286,8 @@ BEGIN
 					@IsSystemAdminActivity,
 					@SourceId,
 					@MappingKey,
-					@ContextId					
+					@ContextId,
+					@InstanceId					
 				);
 			IF @@ROWCOUNT > 0
 			BEGIN

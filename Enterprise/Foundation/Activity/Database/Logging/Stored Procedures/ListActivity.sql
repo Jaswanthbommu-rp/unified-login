@@ -72,7 +72,8 @@ BEGIN
 					FORMAT(DATEADD(minute, ' + @OffsetMinutes + ', A.ApplicationTimeStamp), ''MM/dd/yyyy hh:mm:s tt'') AS ''ApplicationTimestampOffset'',
 					A.SourceId,
 					A.MappingKey,
-					A.ContextId
+					A.ContextId,
+					A.InstanceId
 	FROM		Logging.Activity A
 					INNER JOIN Logging.LogType LT ON A.LogTypeId = LT.LogTypeId
 					INNER JOIN Logging.LogCategoryType LCT ON LCT.LogCategoryTypeId = LT.LogCategoryTypeId
@@ -168,7 +169,7 @@ BEGIN
 				ELSE ' = '
 			END +
 			CASE
-				WHEN @SCName IN ('StartDate','EndDate','SourceId','MappingKey') THEN ''''
+				WHEN @SCName IN ('StartDate','EndDate','SourceId','MappingKey','InstanceId') THEN ''''
 				WHEN @SCName IN ('LogCategoryTypeId') THEN ' ('
 				ELSE ''
 			END +
@@ -182,7 +183,7 @@ BEGIN
 				--WHEN @ScName IN ('FromRealPageId') THEN ''''
 				WHEN @ScName IN ('ToRealPageId') THEN ')'
 				WHEN @SCName = 'Message' THEN ' > 0'
-				WHEN @SCName IN ('StartDate', 'EndDate','SourceId','MappingKey')
+				WHEN @SCName IN ('StartDate', 'EndDate','SourceId','MappingKey','InstanceId')
 				THEN ''''
 				WHEN @SCName IN ('LogCategoryTypeId') THEN ')'
 				ELSE ''
