@@ -609,8 +609,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             if (string.IsNullOrEmpty(baseUrlAndQuery))
                 baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserEndpoint);
-            bool isCompanyIdRequiredToQuery = baseUrlAndQuery.Contains("{0}");
-            if (isCompanyIdRequiredToQuery)
+            if (baseUrlAndQuery.Contains("{1}"))
             {
                 baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, loginNameToCheck);
             }
@@ -618,6 +617,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 baseUrlAndQuery = string.Format(baseUrlAndQuery, loginNameToCheck);
             }
+
             WriteToDiagnosticLog(
               $"ManageProductInvokerBase.GetProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method.");
             var productUser = GetResultFromApi<IntegrationProductUser>(baseUrlAndQuery, false);
@@ -673,7 +673,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             WriteToDiagnosticLog(
                 $"ManageProductInvokerBase.GetProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling API - {baseUrlAndQuery}.");
 
-            if (baseUrlAndQuery.Contains("{0}"))
+            if (baseUrlAndQuery.Contains("{1}"))
                 baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, SubjectUserDetails.ProductUserName);
             else
                 baseUrlAndQuery = string.Format(baseUrlAndQuery, SubjectUserDetails.ProductUserName);
@@ -828,11 +828,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             if (baseUrlAndQuery == null)
                 baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserEndpoint);
-
-            if (baseUrlAndQuery.Contains("{0}"))
+            
+            if (baseUrlAndQuery.Contains("{1}"))
+            {
                 baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, loginNameToCheck);
+            }
             else
+            {
                 baseUrlAndQuery = string.Format(baseUrlAndQuery, loginNameToCheck);
+            }
 
             var productUser = GetProductUser(baseUrlAndQuery, false);
 
