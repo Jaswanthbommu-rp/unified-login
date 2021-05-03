@@ -1086,6 +1086,11 @@
     <Build Include="Maintenance\Stored Procedures\InsertOrganizationRemovalQueue.sql" />
     <Build Include="Settings\Stored Procedures\GetFieldsValuesByUserLoginPersonaId.sql" />
     <Build Include="Settings\Stored Procedures\GetFieldsByPartyId.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\GetRoleTemplate.sql" />
+    <Build Include="RoleRightsManagement\Tables\RoleTemplate.sql" />
+    <Build Include="RoleRightsManagement\Tables\RoleTemplateAdditionalProductRoleMapping.sql" />
+    <Build Include="RoleRightsManagement\Tables\RoleTemplateProduct.sql" />
+    <Build Include="RoleRightsManagement\Tables\RoleTemplateProductRoleMapping.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
