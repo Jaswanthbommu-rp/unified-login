@@ -1444,6 +1444,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         productInternalSetting = productInternalSettingList.FirstOrDefault(item => item.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase));
                         s.UsePrimaryProperties = (productInternalSetting != null) ? productInternalSetting.Value.Trim() == "1" : true;
 
+                        productInternalSetting = productInternalSettingList.FirstOrDefault(item => item.Name.Equals("ShowInRoleTemplate", StringComparison.OrdinalIgnoreCase));
+                        s.ShowInRoleTemplate = (productInternalSetting != null) && (productInternalSetting.Value.Trim() == "1" ? true : false) ;
+
                         if (setIsAssigned == true)
                         {
                             s.IsAssigned = userProducts.Any(item => item.ProductId == s.ProductId);
@@ -1546,6 +1549,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         foreach (var soln in p.Solutions.ToList())
                         {
                             if (!soln.ShowInRolesAndRights)
+                            {
+                                p.Solutions.Remove(soln);
+                            }
+                        }
+                    }
+
+                    if (accessFilter.Equals("RoleTemplate", StringComparison.OrdinalIgnoreCase))
+                    {
+                        foreach (var soln in p.Solutions.ToList())
+                        {
+                            if (!soln.ShowInRoleTemplate)
                             {
                                 p.Solutions.Remove(soln);
                             }
