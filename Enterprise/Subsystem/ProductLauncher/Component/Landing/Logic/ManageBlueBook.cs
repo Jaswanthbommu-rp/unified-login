@@ -6,11 +6,13 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
@@ -739,10 +741,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// Used to update an existing company instance
         /// </summary>
         /// <param name="companyInstance"></param>
+        /// <param name="oldCompanyLocation"></param>
         /// <returns></returns>
-        public string UpdateBooksGreenBookCompanyInstance(CompanyInstance companyInstance)
+        public string UpdateBooksGreenBookCompanyInstance(CompanyInstance companyInstance, CompanyLocation oldCompanyLocation)
         {
             string uri = $"companyinstance/{companyInstance.CompanyInstanceSourceId}/{ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)}";
+            var newCompanyLocation = companyInstance.CompanyInstanceLocation.FirstOrDefault();
 
             Dictionary<string, object> logData = new Dictionary<string, object>() {{"uri", _httpClient.BaseAddress + uri}, {"companyInstance", companyInstance}};
             WriteToLog(LogEventLevel.Debug, "UpdateBooksGreenBookCompanyInstance - Updating info.", logData);
@@ -755,6 +759,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 RequestUri = new Uri(_httpClient.BaseAddress + uri)
             };
             var response = _httpClient.SendAsync(request).Result;
+
             if (response != null && !response.IsSuccessStatusCode)
             {
                 if (response.StatusCode == HttpStatusCode.NotFound)
@@ -763,6 +768,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
 
                 return "an unknown error occurred. " + response.StatusCode;
+            }
+
+            var oldCompanyAddress = $"{oldCompanyLocation?.Address}, {oldCompanyLocation?.City}, {oldCompanyLocation?.County}, {oldCompanyLocation?.State}, {oldCompanyLocation?.Country}, {oldCompanyLocation?.PostalCode}";
+            var newCompanyAddress = $"{newCompanyLocation?.Address}, {newCompanyLocation?.City}, {newCompanyLocation?.County}, {newCompanyLocation?.State}, {newCompanyLocation?.Country}, {newCompanyLocation?.PostalCode}";
+
+            //Was address changed
+            if (string.Compare(oldCompanyAddress, newCompanyAddress, StringComparison.OrdinalIgnoreCase) != 0)
+            {
+                string message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} updated the company address for {companyInstance.CompanyName} from {oldCompanyAddress} to {newCompanyAddress}";
+                LogAuditActivity(LogActivityTypeConstants.COMPANY_UPDATED, LogActivityCategoryType.CompanySetup, message);
             }
 
             return "";
@@ -2060,6 +2075,41 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
 
             return false;
+        }
+
+        private void LogAuditActivity(string logActivityType, LogActivityCategoryType logActivityCategoryType, string message)
+        {
+            try
+            {
+                LogActivity.WriteActivity(new ActivityDetails
+                {
+                    LogActivityTypeName = logActivityType,
+                    LogCategoryName = logActivityCategoryType.ToString(),
+                    CorrelationId = _defaultUserClaim.CorrelationId.ToString(),
+                    BooksMasterOrganizationId = _defaultUserClaim.OrganizationMasterId,
+                    OrganizationPartyId = _defaultUserClaim.OrganizationPartyId,
+                    Message = message,
+
+                    FromUserLoginName = _defaultUserClaim.LoginName,
+                    FromUserLoginId = _defaultUserClaim.UserId,
+                    FromUserRealpageId = _defaultUserClaim.UserRealPageGuid.ToString(),
+                    FromUserFirstName = _defaultUserClaim.FirstName,
+                    FromUserLastName = _defaultUserClaim.LastName,
+
+                    ToUserLoginName = null,
+                    ToUserLoginId = null,
+                    ToUserFirstName = null,
+                    ToUserLastName = null,
+                    ToUserRealpageId = null
+                });
+            }
+            catch (Exception ex)
+            {
+                WriteToLog(LogEventLevel.Error,
+                    $"Error while adding activity message." +
+                    $" BooksMasterOrganizationId{_defaultUserClaim.OrganizationName}, " +
+                    $"author user login name {_defaultUserClaim.LoginName}", exception: ex);
+            }
         }
 
     }

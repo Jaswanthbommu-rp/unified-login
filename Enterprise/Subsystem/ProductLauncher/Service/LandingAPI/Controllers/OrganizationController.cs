@@ -511,7 +511,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         updateCompanyInstance.CompanyInstanceLocation = new List<CompanyInstanceAddress>() { address };
                     }
 
-                    var booksResult = _manageBlueBook.UpdateBooksGreenBookCompanyInstance(updateCompanyInstance);
+                    var booksResult = _manageBlueBook.UpdateBooksGreenBookCompanyInstance(updateCompanyInstance, oldAddress);
                     if (!string.IsNullOrEmpty(booksResult))
                     {
                         return Request.CreateResponse(HttpStatusCode.BadRequest, $"Unified Login company was updated successfully but MDM data update failed. Error: " + booksResult);

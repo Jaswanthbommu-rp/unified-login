@@ -103,10 +103,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <summary>
         /// Update Property
         /// </summary>
-        /// <param name="instanceId">instanceId</param>
-        /// <param name="name">name</param>
+        /// <param name="property"></param>
         /// <returns></returns>
-        RepositoryResponse UpdateProperty(Guid instanceId, string name, bool active);
+        RepositoryResponse UpdateProperty(UPFMPropertyInstance property);
 
         /// <summary>
         /// Delete Property instance

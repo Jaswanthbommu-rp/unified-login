@@ -995,7 +995,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
 
             var oldProperty = GetPropertyByInstanceId(property.InstanceId)?.FirstOrDefault();
-            var _repositoryResponse = _propertyRepository.UpdateProperty(property.InstanceId, property.Name, property.IsActive);           
+            var _repositoryResponse = _propertyRepository.UpdateProperty(property);           
             
             if (_repositoryResponse.Id > 0)
             {
