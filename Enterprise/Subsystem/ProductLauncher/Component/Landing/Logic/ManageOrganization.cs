@@ -484,7 +484,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 //Is company type being updated
                 if (oldOrganization.OrganizationTypeId != organization.OrganizationTypeId)
                 {
-                    var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} updated the company type for {oldOrganization.Name} to {organization.Name}";
+                    var companyTypes = ListOrganizationType();
+                    var oldType = companyTypes?.FirstOrDefault(t => t.OrganizationTypeId == oldOrganization.OrganizationTypeId).Name;
+                    var newType = companyTypes?.FirstOrDefault(t => t.OrganizationTypeId == organization.OrganizationTypeId).Name;
+                    var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} updated the company type for {oldOrganization.Name} from {oldType} to {newType}";
                     LogAuditActivity(LogActivityTypeConstants.COMPANY_UPDATED, LogActivityCategoryType.CompanySetup, message);
                 }
                 //Is company status being updated
