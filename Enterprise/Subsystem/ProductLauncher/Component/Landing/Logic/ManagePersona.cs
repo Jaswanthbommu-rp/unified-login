@@ -16,6 +16,8 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+using RealPage.UnifiedNotifications;
+using System.Threading.Tasks;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -310,44 +312,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <returns></returns>
         public Guid ChangeCompanyNotification(long personaId)
         {
+            var guid = Guid.Empty;
+
             var productInternalSettingList = GetProductInternalSettings(ProductEnum.UnifiedPlatform);
             var notificationsEventChangeCompany = productInternalSettingList.First(a => a.Name.Equals("NotificationsEventChangeCompany", StringComparison.OrdinalIgnoreCase)).Value;
             var notificationsApiEndPoint = productInternalSettingList.First(a => a.Name.Equals("NotificationsApiEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
             var notificationsEventsEndPoint = productInternalSettingList.First(a => a.Name.Equals("NotificationsEventsEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
             
-            var ulClientToken = _tokenHelper.GetUnifiedLoginServerToken("notificationsapi");
+            var issueUri = ConfigReader.GetIssuerUri;
+            var clientId = productInternalSettingList.First(a => a.Name.Equals("UnifiedLoginServerClientName", StringComparison.OrdinalIgnoreCase)).Value;
+            var apiSecret = Encoding.UTF8.GetString(Convert.FromBase64String(productInternalSettingList.First(a => a.Name.Equals("UnifiedLoginServerClientSecret", StringComparison.OrdinalIgnoreCase)).Value));
 
             NotificationEvent nEvent = new NotificationEvent()
             {
                 Method = notificationsEventChangeCompany,
                 ProductCode = "UL",
-                Users = new List<string>() {personaId.ToString()},
-                Data = new NotificationEventData() {PersonaId = personaId}
+                Users = new List<string>() { personaId.ToString() },
+                Data = new NotificationEventData() { PersonaId = personaId }
             };
 
-            Dictionary<string, object> logData = new Dictionary<string, object>() {{"notificationsApiEndPoint", notificationsApiEndPoint}, {"nEvent", nEvent}};
-            //WriteToLog(LogType.Diagnostic, "AddBooksGreenBookCompanyInstance - Adding info.", logData);
-            using (var httpClient = new HttpClient())
-            {
-                httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", ulClientToken);
-                httpClient.BaseAddress = new Uri(notificationsApiEndPoint);
-                var jsonToSave = JsonConvert.SerializeObject(nEvent);
-                var request = new HttpRequestMessage
-                {
-                    Method = HttpMethod.Post,
-                    Content = new StringContent(jsonToSave, Encoding.UTF8, "application/json"),
-                    RequestUri = new Uri(httpClient.BaseAddress + notificationsEventsEndPoint),
-                };
-                var response = httpClient.SendAsync(request).Result;
-                if (response != null && response.IsSuccessStatusCode)
-                {
-                    var clientResponse = JsonConvert.DeserializeObject<dynamic>(response.Content.ReadAsStringAsync().Result);
-                    return new Guid(clientResponse);
-                }
-                //Dictionary<string, object> logData = new Dictionary<string, object>() {{"uri", _httpClient.BaseAddress + uri}, {"companyInstance", companyInstance}};
-                //WriteToLog(LogType.Diagnostic, "AddBooksGreenBookCompanyInstance - Adding info.", logData);
-                return Guid.Empty;
-            }
+            Dictionary<string, object> logData = new Dictionary<string, object>() { { "notificationsApiEndPoint", notificationsApiEndPoint }, { "nEvent", nEvent } };
+
+            Notification notification = new Notification(clientId, apiSecret, issueUri, notificationsApiEndPoint + "/v1/notifications", notificationsApiEndPoint + "/" + notificationsEventsEndPoint);
+            var result = Task.Run(async () => await notification.SendEvent(nEvent.ProductCode, nEvent.Users.ToList(), nEvent.Method, nEvent.Data)).Result;
+
+            if (!string.IsNullOrWhiteSpace(result.Id))
+                guid = new Guid(result.Id);
+
+            return guid;
         }
 
         #endregion
