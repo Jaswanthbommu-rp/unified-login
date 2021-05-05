@@ -13,6 +13,11 @@
         /// <summary>
         /// Unlocking an Account
         /// </summary>
-        UnlockAccount = 3
+        UnlockAccount = 3,
+
+        /// <summary>
+        /// Account recovery
+        /// </summary>
+        AccountRecovery = 4
     }
 }

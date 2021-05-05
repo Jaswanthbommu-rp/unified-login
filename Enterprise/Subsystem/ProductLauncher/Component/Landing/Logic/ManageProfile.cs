@@ -43,7 +43,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _profileRepository = new ProfileRepository(repository, userClaim);
             _productRepository = new ProductRepository(repository, userClaim);
             _personLogic = new ManagePerson(repository);
-            _userLoginLogic = new ManageUserLogin(userClaim);
+            _userLoginLogic = new ManageUserLogin(repository, userClaim, null);
             _partyRelationshipLogic = new ManagePartyRelationship(repository);
             _contactMechanismLogic = new ManageContactMechanism(repository);
             _partyRoleLogic = new ManagePartyRole(repository);

@@ -12,6 +12,7 @@ using System.Diagnostics.CodeAnalysis;
 using Castle.Components.DictionaryAdapter;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers;
 using Xunit;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
@@ -565,6 +566,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             Assert.IsType<Exception>(exception);
             Assert.Equal("Missing Contact Mechanism Id.", exception.Message);
         }
+
         #endregion
     }
 }

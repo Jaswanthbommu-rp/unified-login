@@ -13,6 +13,7 @@ using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using RP.Enterprise.Foundation.DataAccess.Component;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -71,6 +72,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _productInternalSettingRepository = productInternalSettingRepository;
             _userClaim = userClaim;
         }
+
+        /// <summary>
+        /// Unit test constructor
+        /// </summary>
+        /// <param name="userClaim"></param>
+        /// <param name="repository"></param>
+        public ManageUserRegistrationEmail(DefaultUserClaim userClaim, IRepository repository)
+        {
+            _emailLogic = new ManageEmail(userClaim, repository);
+            _contactMechanismRepository = new ContactMechanismRepository(repository);
+            _communicationEventsLogic = new ManageCommunicationEvents(repository);
+            _userTokenRepository = new UserTokenRepository(repository);
+            _personManager = new ManagePerson(repository);
+            _userLoginRepository = new UserLoginRepository(repository);
+            _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
+            _userClaim = userClaim;
+        }
+
         #endregion
 
         #region Public methods
@@ -199,68 +218,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 #endif
                     if (string.IsNullOrEmpty(emailStatus))
                     {
-                        IList<ProductInternalSetting> productSettingList = _productInternalSettingRepository.GetProductInternalSettings(productId: (int)ProductEnum.UnifiedPlatform);
-                        if ((productSettingList.Count > 0) && (productSettingList.ToList().Any(s => s.Name.Equals("IsSendGridEnabled", StringComparison.OrdinalIgnoreCase))))
-                        {
-                            IsSendGridEnabled = productSettingList.ToList().FirstOrDefault(s => s.Name.Equals("IsSendGridEnabled", StringComparison.OrdinalIgnoreCase)).Value.Equals("1");
-                        }
-
-                        if ((productSettingList.Count > 0) && productSettingList.ToList().Any(s=>s.Name.Equals("IsUnifiedEmailEnabled", StringComparison.OrdinalIgnoreCase)))
-                        {
-                            var UnifiedEmailSettings = productSettingList.FirstOrDefault(s => s.Name.Equals("IsUnifiedEmailEnabled", StringComparison.OrdinalIgnoreCase));
-                            IsUnifiedEmailEnabled = (UnifiedEmailSettings != null) ? UnifiedEmailSettings.Value.Trim() == "1" : true;
-                        }
-
-                        if (IsUnifiedEmailEnabled)
-                        {
-                            var emailModel = new EmailModel();
-                            emailModel.Subject = cesEmail.EmailSubject;
-                            emailModel.To = new List<UserEmail>
-                            {
-                                new UserEmail
-                                {
-                                    Email =cesEmail.EmailTo,
-                                    Name = firstName
-                                }
-                            };
-
-                            emailModel.Body = cesEmail.EmailBody;
-                            emailModel.Bcc = new List<UserEmail>();
-                            emailStatus = _emailLogic.SendEmailAsync(emailModel)? "success" : "";
-                        }
-                        else
-                        {
-                            if (IsSendGridEnabled)
-                            {
-                                ISendGridEmail sendGridEmail = new SendGridEmail()
-                                {
-                                    emailSubject = cesEmail.EmailSubject,
-                                    fromAddress = new EmailAddress()
-                                    {
-                                        email = cesEmail.EmailFrom,
-                                        name = cesEmail.EmailFrom
-                                    },
-                                    toAddress = new List<EmailAddress>()
-                                {
-                                    new EmailAddress()
-                                    {
-                                        email = cesEmail.EmailTo,
-                                        name = cesEmail.EmailTo
-                                    }
-                                },
-                                    message = cesEmail.EmailBody,
-                                    transId = userLoginOnly.UserId.ToString(),
-                                    category = "RegistrationEmail"
-                                };
-                                emailStatus = _emailLogic.SendGridEmail(sendGridEmail);
-                            }
-                            else
-                            {
-                                emailStatus = _emailLogic.SendEmail(cesEmail);
-                            }
-                        }
-                        
+                        emailStatus = EmailStatus(userLoginOnly, IsUnifiedEmailEnabled, cesEmail, firstName, ref IsSendGridEnabled);
                     }
+
                     DateTime utcEnded = DateTime.UtcNow;
 
                     //Save Communication Event
@@ -307,6 +267,192 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             return true;
         }
+
+        private string EmailStatus(UserLoginOnly userLoginOnly, bool IsUnifiedEmailEnabled, Email cesEmail, string firstName, ref bool isSendGridEnabled)
+        {
+            string emailStatus;
+            IList<ProductInternalSetting> productSettingList = _productInternalSettingRepository.GetProductInternalSettings(productId: (int) ProductEnum.UnifiedPlatform);
+            if ((productSettingList.Count > 0) && (productSettingList.ToList().Any(s => s.Name.Equals("IsSendGridEnabled", StringComparison.OrdinalIgnoreCase))))
+            {
+                isSendGridEnabled = productSettingList.ToList().FirstOrDefault(s => s.Name.Equals("IsSendGridEnabled", StringComparison.OrdinalIgnoreCase)).Value.Equals("1");
+            }
+
+            if ((productSettingList.Count > 0) && productSettingList.ToList().Any(s => s.Name.Equals("IsUnifiedEmailEnabled", StringComparison.OrdinalIgnoreCase)))
+            {
+                var UnifiedEmailSettings = productSettingList.FirstOrDefault(s => s.Name.Equals("IsUnifiedEmailEnabled", StringComparison.OrdinalIgnoreCase));
+                IsUnifiedEmailEnabled = (UnifiedEmailSettings != null) ? UnifiedEmailSettings.Value.Trim() == "1" : true;
+            }
+
+            if (IsUnifiedEmailEnabled)
+            {
+                var emailModel = new EmailModel
+                {
+                    Subject = cesEmail.EmailSubject,
+                    To = new List<UserEmail>
+                {
+                    new UserEmail
+                    {
+                        Email = cesEmail.EmailTo,
+                        Name = firstName
+                    }
+                },
+
+                    Body = cesEmail.EmailBody,
+                    Bcc = new List<UserEmail>()
+                };
+                emailStatus = _emailLogic.SendEmailAsync(emailModel) ? "success" : "";
+            }
+            else
+            {
+                if (isSendGridEnabled)
+                {
+                    ISendGridEmail sendGridEmail = new SendGridEmail()
+                    {
+                        emailSubject = cesEmail.EmailSubject,
+                        fromAddress = new EmailAddress()
+                        {
+                            email = cesEmail.EmailFrom,
+                            name = cesEmail.EmailFrom
+                        },
+                        toAddress = new List<EmailAddress>()
+                        {
+                            new EmailAddress()
+                            {
+                                email = cesEmail.EmailTo,
+                                name = cesEmail.EmailTo
+                            }
+                        },
+                        message = cesEmail.EmailBody,
+                        transId = userLoginOnly.UserId.ToString(),
+                        category = "RegistrationEmail"
+                    };
+                    emailStatus = _emailLogic.SendGridEmail(sendGridEmail);
+                }
+                else
+                {
+                    emailStatus = _emailLogic.SendEmail(cesEmail);
+                }
+            }
+
+            return emailStatus;
+        }
+
+        /// <summary>
+        /// Used to send the password reset email to the given user
+        /// </summary>
+        /// <param name="profileDetail"></param>
+        /// <returns></returns>
+        public bool SendPasswordResetEmail(ProfileDetail profileDetail)
+        {
+            bool IsSendGridEnabled = false;
+            bool IsUnifiedEmailEnabled = false;
+            var userPerson = _personManager.GetPerson(profileDetail.RealPageId);
+            var userLoginOnly = _userLoginRepository.GetUserLoginOnly(profileDetail.RealPageId);
+            
+            var firstName = userPerson.FirstName;
+            
+            var emailAddress = userLoginOnly.LoginName;
+            
+            if (profileDetail.UserTypeId != UserTypeConstants.RegularUserNoEmail // not UserNoEmailRole
+                && !userLoginOnly.Is3rdPartyIDP // Not a user using 3rd party IDP
+                && EmailFormatValidation.IsValidEmail(emailAddress) // the email address appears to be valid
+            )
+            {
+                try
+                {
+                    //Generate a Token, build the Email, then Send if UserLogin is an Email
+                    //Create an activity token for user validation
+                    int activityId = (int) ActivityType.NewUserRegistration;
+                    
+                    var organizationList = _userLoginRepository.ListOrganizationByEnterpriseUserId(userLoginOnly.RealPageId, null);
+
+                    var primaryOrgStatus = _userLoginRepository.GetUserOrganizationWithStatus(userLoginOnly.UserId, profileDetail.userLogin.LastLogin, 0, true);
+                    var userToken = _userTokenRepository.GetUserActivityToken(userLoginOnly.RealPageId, activityId, _userClaim.OrganizationPartyId);
+
+                    var audienceTypeId = (int) CommunicationEventAudienceType.RegularUser;
+                    var purposeTypeId = (int) CommunicationEventPurposeType.PasswordReset;
+                    var emailTemplate = _emailLogic.GetEmailTemplate(audienceTypeId, purposeTypeId);
+
+                    string message = $"SendPasswordResetEmail - email template generated - {userLoginOnly.RealPageId}";
+                    var logger = Log.Logger;
+                    logger = logger.ForContext("CorrelationId", _userClaim.CorrelationId);
+                    logger.Write(LogEventLevel.Information, message);
+
+                    IList<CommonAddress> contactMechanismList = _contactMechanismRepository.ListContactMechanismForPerson(_userClaim.OrganizationRealPageGuid, "Email Notification");
+                    IList<CommonAddress> contactMechanismToList = _contactMechanismRepository.ListContactMechanismForPerson(userLoginOnly.RealPageId, "Email Notification");
+                    var senderEmailAddress = contactMechanismList[0].AddressString;
+                    var PartyContactMechanismIdFrom = contactMechanismList[0].PartyContactMechanismId;
+                    var PartyContactMechanismIdTo = contactMechanismToList[0].PartyContactMechanismId;
+
+                    var cesEmail = _emailLogic.CreateWelcomeEmail(userLoginOnly.LoginName, firstName, _userClaim.OrganizationName, _userClaim.OrganizationPartyId, emailTemplate, userToken, senderEmailAddress, emailAddress);
+                    Dictionary<string, object> logData = new Dictionary<string, object> {{"userToken", userToken}, {"cesEmail", cesEmail}, {"audienceTypeId", audienceTypeId}};
+                    if (cesEmail.EmailBody != null)
+                    {
+                        message = $"SendPasswordResetEmail - email body generated - {userLoginOnly.RealPageId}";
+
+                        logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
+                        logger = logger.ForContext("ProductModule", this.GetType());
+                        logger = logger.ForContext("CorrelationId", _userClaim.CorrelationId);
+                        logger.Write(LogEventLevel.Information, message);
+                    }
+
+                    DateTime utcStarted = DateTime.UtcNow;
+                    string emailStatus = "";
+#if (DEBUG)
+                    emailStatus = "success";
+#endif
+                    if (string.IsNullOrEmpty(emailStatus))
+                    {
+                        emailStatus = EmailStatus(userLoginOnly, IsUnifiedEmailEnabled, cesEmail, firstName, ref IsSendGridEnabled);
+                    }
+
+                    DateTime utcEnded = DateTime.UtcNow;
+
+                    //Save Communication Event
+                    RepositoryResponse communicationEventResponse = new RepositoryResponse();
+                    message = "";
+                    if (emailStatus.Contains("success"))
+                    {
+                        communicationEventResponse = _communicationEventsLogic.CreateCommunicationEvent((int) EmailStatusType.EmailSuccess, PartyContactMechanismIdFrom, PartyContactMechanismIdTo, utcStarted, utcEnded, emailStatus);
+                        message = $"SendPasswordResetEmail - email sent - {userLoginOnly.RealPageId}";
+                    }
+                    else
+                    {
+                        communicationEventResponse = _communicationEventsLogic.CreateCommunicationEvent((int) EmailStatusType.EmailError, PartyContactMechanismIdFrom, PartyContactMechanismIdTo, utcStarted, utcEnded, emailStatus);
+                        message = $"SendPasswordResetEmail - email generation failed - {userLoginOnly.RealPageId}";
+                        return false;
+                    }
+
+                    logger = logger.ForContext("CorrelationId", _userClaim.CorrelationId);
+                    logger.Write(LogEventLevel.Information, message);
+
+                    long communicationEventId = communicationEventResponse.Id;
+                    if (communicationEventResponse.Id != 0)
+                    {
+                        communicationEventResponse = _communicationEventsLogic.CreateCommunicationEventEmail(emailTemplate.CommunicationEmailTemplateId, communicationEventId);
+                    }
+
+                    if ((communicationEventResponse.Id != 0) && (!IsSendGridEnabled))
+                    {
+                        communicationEventResponse = _communicationEventsLogic.CreateCESCommunicationEventEmail(cesEmail.ClientUniqueID.ToString().ToUpper(), communicationEventId);
+                    }
+
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    string message = $"SendPasswordResetEmail - email generation failed - {userLoginOnly.RealPageId}";
+                    var logger = Log.Logger;
+                    logger = logger.ForContext("CorrelationId", _userClaim.CorrelationId);
+                    logger.Write(LogEventLevel.Error, ex, message);
+
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         #endregion
     }
 }

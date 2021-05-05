@@ -1,4 +1,5 @@
 ﻿using System;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
@@ -16,6 +17,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// Communication Event Base Constructor
         /// </summary>
         public CommunicationEventRepository() : base(DbConnectionEnum.IdpConfigurationDb)
+        {
+        }
+
+        public CommunicationEventRepository(IRepository repository) : base(repository)
         {
         }
         #endregion

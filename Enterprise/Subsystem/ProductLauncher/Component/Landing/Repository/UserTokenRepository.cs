@@ -1,4 +1,5 @@
 ﻿using System;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
@@ -18,16 +19,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         public UserTokenRepository() : base(DbConnectionEnum.IdpConfigurationDb)
         {
         }
-		#endregion
 
-		/// <summary>
-		/// Get User Activity token By RealPageId
-		/// </summary>
-		/// <param name="realPageId">RealPageId</param>
-		/// <param name="activityTypeId">ActivityId</param>
-		/// <param name="partyId">Org partyId</param>
-		/// <returns>UserProduct object</returns>
-		public string GetUserActivityToken( Guid realPageId, int activityTypeId, long partyId)
+        public UserTokenRepository(IRepository repository) : base(repository)
+        {
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Get User Activity token By RealPageId
+        /// </summary>
+        /// <param name="realPageId">RealPageId</param>
+        /// <param name="activityTypeId">ActivityId</param>
+        /// <param name="partyId">Org partyId</param>
+        /// <returns>UserProduct object</returns>
+        public string GetUserActivityToken( Guid realPageId, int activityTypeId, long partyId)
         {
             string userActivityToken = "";
             if (realPageId != Guid.Empty && activityTypeId > 0)

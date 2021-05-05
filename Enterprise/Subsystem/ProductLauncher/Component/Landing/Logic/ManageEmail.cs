@@ -19,6 +19,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using System.Xml;
+using RP.Enterprise.Foundation.DataAccess.Component;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -47,6 +48,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _emailRepository = emailRepository;
             _productInternalSettingRepository = productInternalSettingRepository;
             _tokenHelper = new TokenHelper();
+        }
+
+        /// <summary>
+        /// Unit test constructor
+        /// </summary>
+        /// <param name="defaultUserClaim"></param>
+        /// <param name="repository"></param>
+        public ManageEmail(DefaultUserClaim defaultUserClaim, IRepository repository)
+        {
+            _defaultUserClaim = defaultUserClaim;
+            _emailRepository = new EmailRepository(repository);
+            _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
+            _tokenHelper = new TokenHelper(repository);
         }
 
         /// <summary>
@@ -95,27 +109,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 throw new ArgumentNullException("FirstName name is missing.");
             }
-            else if (string.IsNullOrEmpty(companyName))
+
+            if (string.IsNullOrEmpty(companyName))
             {
                 throw new ArgumentNullException("Organization name is missing.");
             }
-            else if (orgPartyId == 0)
+            
+            if (orgPartyId == 0)
             {
                 throw new ArgumentNullException("Organization id is missing.");
             }
-            else if (emailTemplate == null)
+            
+            if (emailTemplate == null)
             {
                 throw new ArgumentNullException(nameof(emailTemplate), "Email template is missing.");
             }
-            else if (string.IsNullOrEmpty(notificationEmail) == true)
+            
+            if (string.IsNullOrEmpty(notificationEmail) == true)
             {
                 throw new ArgumentNullException(nameof(notificationEmail), "Notification Email is missing.");
             }
-            else if (!EmailFormatValidation.IsValidEmail(senderEmailAddress))
+            
+            if (!EmailFormatValidation.IsValidEmail(senderEmailAddress))
             {
                 throw new ArgumentNullException(nameof(senderEmailAddress), "Email Sender has an invalid email format.");
             }
-            else if (!EmailFormatValidation.IsValidEmail(notificationEmail))
+            
+            if (!EmailFormatValidation.IsValidEmail(notificationEmail))
             {
                 throw new ArgumentNullException(nameof(notificationEmail), "Notification Email has an invalid email format.");
             }
@@ -242,17 +262,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     }
                     else
                     {
-                        return "An error occured when sending the email.";
+                        return "An error occurred when sending the email.";
                     }
                 }
                 else
                 {
-                    return "An error occured when sending the email.";
+                    return "An error occurred when sending the email.";
                 }
             }
             catch (Exception ex)
             {
-                return "An error occured when sending the email.";
+                return "An error occurred when sending the email.";
             }
         }
 

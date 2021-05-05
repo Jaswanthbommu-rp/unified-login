@@ -35,6 +35,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private IRoleTypeRepository _roleTypeRepository;
         private IPersonRepository _personRepository;
         private DefaultUserClaim _defaultUserClaim;
+
         private static readonly Guid EmployeeCompanyRealPageId = new Guid("0D018E46-C20E-477D-ADED-4E5A35FB8F99");
         #endregion
 
@@ -78,6 +79,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _personRepository = new PersonRepository();
             _roleTypeRepository = new RoleTypeRepository();
             _organizationRepository = new OrganizationRepository();
+            
             _defaultUserClaim = userClaim;
         }
 
@@ -563,6 +565,85 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 Log.Write(LogEventLevel.Error, ex, ex.Message);
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Used to reset the password and send an email to the request user with the given RealPageId
+        /// </summary>
+        /// <param name="realPageId"></param>
+        /// <returns></returns>
+        public bool ClearPasswordAndQuestions(Guid realPageId)
+        {
+            var manageProfile = new ManageProfile(_defaultUserClaim);
+            var profileDetail = (ProfileDetail)manageProfile.GetProfileDetail(realPageId, _defaultUserClaim.OrganizationPartyId);
+            var userLogin = profileDetail.userLogin;
+            bool emailSentSuccessfully = false;
+
+            if (userLogin != null && userLogin.UserRoleType != UserRoleType.UserNoEmail)
+            {
+                // clear the user password and security questions
+                var spResponse = _credentialRepository.ResetEnterpriseUserCredential(realPageId, null, null, _defaultUserClaim.OrganizationPartyId);
+                if (spResponse.Id == 0)
+                {
+                    return false;
+                }
+                DateTime thruUtcDateTime = DateTime.UtcNow.Date.AddHours(72);
+                var newUserRegistrationActivity = GetActivities(_defaultUserClaim.OrganizationPartyId);
+                thruUtcDateTime = newUserRegistrationActivity != null ? DateTime.UtcNow.Date.AddMinutes(newUserRegistrationActivity.ActivityTokenExpirationMinutes) : thruUtcDateTime;
+                userLogin.PasswordHash = null;
+                userLogin.PasswordSalt = null;
+
+                //update user login
+                RepositoryResponse response = _userLoginRepository.UpdateUserLogin(realPageId, userLogin, _defaultUserClaim.OrganizationPartyId);
+                //Send email notification
+                if (!string.IsNullOrEmpty(response.ErrorMessage))
+                {
+                    LogResetPasswordActivity(false, profileDetail);
+                    return false;
+                }
+                var manageUserRegistrationEmail = new ManageUserRegistrationEmail(_defaultUserClaim);
+                emailSentSuccessfully = manageUserRegistrationEmail.SendPasswordResetEmail(profileDetail);
+
+                if (emailSentSuccessfully)
+                {
+                    //set to pending status
+                    int statusTypeId = (int) MapUiStatusToDb(UserUiStatusType.Pending);
+
+                    _userLoginRepository.UpdateUserStatusByCompany(userLogin.RealPageId, _defaultUserClaim.OrganizationPartyId, statusTypeId, userLogin.FromDate.Value, thruUtcDateTime);
+                }
+
+                LogResetPasswordActivity(emailSentSuccessfully, profileDetail);
+            }
+
+            return emailSentSuccessfully;
+        }
+
+        private void LogResetPasswordActivity(bool isSuccess, ProfileDetail profileDetail)
+        {
+            string message;
+            if (isSuccess)
+            {
+                message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} successfully initiated password reset for {profileDetail.FirstName} {profileDetail.LastName}.";
+            }
+            else
+            {
+                message = $"An exception occurred when {_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} was updating the password for {profileDetail.FirstName} {profileDetail.LastName}.";
+            }
+
+            //Log Activity
+            LogActivity.WriteActivity(new ActivityDetails
+            {
+                LogActivityTypeName = LogActivityTypeConstants.EMAIL_RESETPASSWORDSENT,
+                LogCategoryName = LogActivityCategoryType.Email.ToString(),
+                CorrelationId = _defaultUserClaim.CorrelationId.ToString(),
+                BooksMasterOrganizationId = _defaultUserClaim.OrganizationMasterId,
+                OrganizationPartyId = _defaultUserClaim.OrganizationPartyId,
+                Message = message,
+                FromUserLoginName = _defaultUserClaim.LoginName,
+                FromUserLoginId = _defaultUserClaim.UserId,
+                ToUserLoginName = profileDetail.userLogin.LoginName,
+                ToUserLoginId = profileDetail.userLogin.UserId
+            });
         }
 
         /// <summary>
