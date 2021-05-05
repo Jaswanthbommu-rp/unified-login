@@ -10,7 +10,7 @@ CREATE TABLE [Security].[RoleTemplate] (
     ,CONSTRAINT [PK_RoleTemplateId] PRIMARY KEY CLUSTERED ([RoleTemplateId] ASC)
     ,CONSTRAINT [FK_RoleTemplate_PartyID] FOREIGN KEY ([PartyID]) REFERENCES [Enterprise].[Organization] ([PartyID])
 )
-WITH (SYSTEM_VERSIONING = ON (HISTORY_TABLE=[Enterprise].[RoleTemplateHistory], DATA_CONSISTENCY_CHECK=ON));
+WITH (SYSTEM_VERSIONING = ON (HISTORY_TABLE=[Security].[RoleTemplateHistory], DATA_CONSISTENCY_CHECK=ON));
 GO
 
 EXECUTE sp_addextendedproperty
