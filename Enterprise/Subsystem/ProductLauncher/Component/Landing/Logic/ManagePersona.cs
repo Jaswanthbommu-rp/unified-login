@@ -18,6 +18,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RealPage.UnifiedNotifications;
 using System.Threading.Tasks;
+using Serilog;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -318,8 +319,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var notificationsEventChangeCompany = productInternalSettingList.First(a => a.Name.Equals("NotificationsEventChangeCompany", StringComparison.OrdinalIgnoreCase)).Value;
             var notificationsApiEndPoint = productInternalSettingList.First(a => a.Name.Equals("NotificationsApiEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
             var notificationsEventsEndPoint = productInternalSettingList.First(a => a.Name.Equals("NotificationsEventsEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
-            
-            var issueUri = ConfigReader.GetIssuerUri;
+            var tokenEndpoint = productInternalSettingList.First(a => a.Name.Equals("TokenEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
+
             var clientId = productInternalSettingList.First(a => a.Name.Equals("UnifiedLoginServerClientName", StringComparison.OrdinalIgnoreCase)).Value;
             var apiSecret = Encoding.UTF8.GetString(Convert.FromBase64String(productInternalSettingList.First(a => a.Name.Equals("UnifiedLoginServerClientSecret", StringComparison.OrdinalIgnoreCase)).Value));
 
@@ -333,11 +334,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             Dictionary<string, object> logData = new Dictionary<string, object>() { { "notificationsApiEndPoint", notificationsApiEndPoint }, { "nEvent", nEvent } };
 
-            Notification notification = new Notification(clientId, apiSecret, issueUri, notificationsApiEndPoint + "/v1/notifications", notificationsApiEndPoint + "/" + notificationsEventsEndPoint);
+            var logger = Log.Logger;
+            if (logData?.Keys != null)
+                logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
+
+            logger = logger.ForContext("ProductModule", this.GetType());
+            logger.Write(Serilog.Events.LogEventLevel.Debug, "ChangeCompany Event Before...");
+
+            Notification notification = new Notification(clientId, apiSecret, tokenEndpoint, notificationsApiEndPoint + "/v1/notifications", notificationsApiEndPoint + "/" + notificationsEventsEndPoint);
             var result = Task.Run(async () => await notification.SendEvent(nEvent.ProductCode, nEvent.Users.ToList(), nEvent.Method, nEvent.Data)).Result;
 
             if (!string.IsNullOrWhiteSpace(result.Id))
                 guid = new Guid(result.Id);
+
+            logger.Write(Serilog.Events.LogEventLevel.Debug, $"ChangeCompany Event Complete. Guid: {guid}");
 
             return guid;
         }
