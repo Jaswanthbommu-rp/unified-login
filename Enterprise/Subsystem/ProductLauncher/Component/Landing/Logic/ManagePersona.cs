@@ -319,8 +319,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var notificationsEventChangeCompany = productInternalSettingList.First(a => a.Name.Equals("NotificationsEventChangeCompany", StringComparison.OrdinalIgnoreCase)).Value;
             var notificationsApiEndPoint = productInternalSettingList.First(a => a.Name.Equals("NotificationsApiEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
             var notificationsEventsEndPoint = productInternalSettingList.First(a => a.Name.Equals("NotificationsEventsEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
+            var tokenEndpoint = productInternalSettingList.First(a => a.Name.Equals("TokenEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
 
-            var issueUri = ConfigReader.GetIssuerUri + "/connect/token";
             var clientId = productInternalSettingList.First(a => a.Name.Equals("UnifiedLoginServerClientName", StringComparison.OrdinalIgnoreCase)).Value;
             var apiSecret = Encoding.UTF8.GetString(Convert.FromBase64String(productInternalSettingList.First(a => a.Name.Equals("UnifiedLoginServerClientSecret", StringComparison.OrdinalIgnoreCase)).Value));
 
@@ -341,7 +341,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             logger = logger.ForContext("ProductModule", this.GetType());
             logger.Write(Serilog.Events.LogEventLevel.Debug, "ChangeCompany Event Before...");
 
-            Notification notification = new Notification(clientId, apiSecret, issueUri, notificationsApiEndPoint + "/v1/notifications", notificationsApiEndPoint + "/" + notificationsEventsEndPoint);
+            Notification notification = new Notification(clientId, apiSecret, tokenEndpoint, notificationsApiEndPoint + "/v1/notifications", notificationsApiEndPoint + "/" + notificationsEventsEndPoint);
             var result = Task.Run(async () => await notification.SendEvent(nEvent.ProductCode, nEvent.Users.ToList(), nEvent.Method, nEvent.Data)).Result;
 
             if (!string.IsNullOrWhiteSpace(result.Id))
