@@ -565,7 +565,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var productUser = GetBaseUserDataFromProduct(newProductUser.LoginName);
             isProductUser = productUser != null && !string.IsNullOrEmpty(productUser.LoginName);
 
-            if (string.IsNullOrEmpty(SubjectUserDetails.ProductUserName) && !isProductUser)
+            if (isProductUser)
+            {
+                newProductUser.UserId = productUser.UserId;
+                newProductUser.LoginName = productUser.LoginName;
+            }
+
+            if (!isProductUser && string.IsNullOrEmpty(SubjectUserDetails.ProductUserName))
             {
                 WriteToDiagnosticLog(
                     $"{nameof(StandardV1ProductIntegration)}.CreateUpdateProductUser - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling CreateUser.");
@@ -584,35 +590,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 result = CreateUser(newProductUser);
 
             }
-            else if (string.IsNullOrEmpty(SubjectUserDetails.ProductUserName) && isProductUser && CreateUpdateMultiCompanyUserRequiresPMC)
+            else if (isProductUser && CreateUpdateMultiCompanyUserRequiresPMC)
             {
-                result = CreateMultiCompanyUser(productUser);
+                result = CreateMultiCompanyUser(newProductUser);
             }
             else
             {
                 WriteToDiagnosticLog(
                     $"{nameof(StandardV1ProductIntegration)}.CreateUpdateProductUser - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling UpdateUser.");
-
-                // Update user with Id/Login from product
-                if (isProductUser)
-                {
-                    newProductUser.UserId = productUser.UserId;
-                    newProductUser.LoginName = productUser.LoginName;
-                }
-                else
-                {
-                    newProductUser.UserId = SubjectUserDetails.ProductUserId;
-                    newProductUser.LoginName = SubjectUserDetails.ProductUserName;
-                }
-
+                
                 result = UpdateUser(newProductUser, batchProcessType);
-
-
             }
 
             // Get product user object 
-
-
             return result;
         }
 
