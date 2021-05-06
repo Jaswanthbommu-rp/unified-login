@@ -595,21 +595,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return _productRepository.GetAllProductsByPersona(personaId, statusType);
         }
 
-        public IList<ProductUI> AddProductSourceAndGreenBookCareFlagToProducts(Guid upfmCompanyId, IList<ProductUI> products)
+        public IList<ProductUI> AddProductSourceAndGreenBookCareFlagToProducts(Guid upfmCompanyId, long organizationPartyId, IList<ProductUI> products)
         {
             var booksCompanyInstance = _manageBlueBook.GetCompanyInstanceByUPFMCompanyId(upfmCompanyId.ToString().ToLower());
             int customerCompanyId = booksCompanyInstance?.Attributes?.CustomerCompanyMap.FirstOrDefault()?.CustomerCompanyId ?? 0;
             string domain = booksCompanyInstance?.Attributes?.Domain;
             var productInternalSettingType = _productInternalSettingRepository.GetProductSettingByType("UsePrimaryProperties");
+
+            int organizationUsePrimaryProperties = -1;
+            int.TryParse(_organizationRepository.GetOrganizationSettingValue("UsePrimaryProperties", organizationPartyId), out organizationUsePrimaryProperties);
+
             foreach (var product in products)
             {
-                //Assign PrimaryProperty flag for Product               
-                string UsePrimaryProperties = productInternalSettingType?
-                                                        .Where(p => p.BooksProductCode == product.ProductCode
-                                                            && p.ProductId == product.ProductId
-                                                            && p.Name.ToLower() == "useprimaryproperties")
-                                                            ?.FirstOrDefault()?.Value;
-                product.UsePrimaryProperties = UsePrimaryProperties != null && (UsePrimaryProperties !="0");
+                if(organizationUsePrimaryProperties > 0)
+                {
+                    //Assign PrimaryProperty flag for Product
+                    string productUsePrimaryPropertiesStr = productInternalSettingType?.Where(p => p.BooksProductCode == product.ProductCode
+                        && p.ProductId == product.ProductId
+                        && p.Name.ToLower() == "useprimaryproperties")
+                        ?.FirstOrDefault()?.Value?.Trim();
+
+                    int productUsePrimaryProperties;
+                    if (int.TryParse(productUsePrimaryPropertiesStr, out productUsePrimaryProperties)
+                        && productUsePrimaryProperties > 0)
+                    {
+                        product.UsePrimaryProperties = organizationUsePrimaryProperties != 0;
+                    }
+                }
+
                 /*
                  * Not found" when:
                     Product instance does not exist in UDM

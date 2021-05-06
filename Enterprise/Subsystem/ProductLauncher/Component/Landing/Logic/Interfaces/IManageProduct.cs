@@ -123,8 +123,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// Add ProductSource And GreenBookCareFlag To Products
         /// </summary>
         /// <param name="upfmCompanyId"></param>
+        /// <param name="organizationPartyId"></param>
         /// <param name="productUI"></param>
         /// <returns></returns>
-        IList<ProductUI> AddProductSourceAndGreenBookCareFlagToProducts(Guid upfmCompanyId, IList<ProductUI> productUI);
+        IList<ProductUI> AddProductSourceAndGreenBookCareFlagToProducts(Guid upfmCompanyId, long organizationPartyId, IList<ProductUI> productUI);
     }
 }

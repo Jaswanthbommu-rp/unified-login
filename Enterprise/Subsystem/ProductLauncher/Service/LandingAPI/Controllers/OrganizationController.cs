@@ -794,7 +794,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 IList<ProductUI> productList = _manageProduct.GetProducts(org.RealPageId, personaId, (allProducts.HasValue ? allProducts.Value : false));
                 if (allProducts.HasValue && allProducts.Value)
                 {
-                    output.list = _manageProduct.AddProductSourceAndGreenBookCareFlagToProducts(org.RealPageId, productList);
+                    output.list = _manageProduct.AddProductSourceAndGreenBookCareFlagToProducts(org.RealPageId, org.PartyId, productList);
                 }
                 else
                 {

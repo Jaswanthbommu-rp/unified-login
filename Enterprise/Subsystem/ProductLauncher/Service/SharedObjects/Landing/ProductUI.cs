@@ -187,6 +187,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
 		/// <summary>
 		/// [JsonProperty(PropertyName = "usePrimaryProperties")]
 		/// </summary>
-		public bool UsePrimaryProperties { get; set; }
+		public bool? UsePrimaryProperties { get; set; }
 	}
 }
