@@ -1,8 +1,8 @@
 CREATE TABLE [Security].[RoleTemplateProductRoleMapping] (
 	[RoleTemplateProductRoleMappingId]		INT	NOT NULL  IDENTITY
 	,[RoleTemplateProductId]				INT	NOT NULL
-	,[ProductRoleId]						INT	NOT NULL
-	,[ProductRoleName]						NVARCHAR(510)	NOT NULL
+	,[ProductRoleId]						VARCHAR(100)	NOT NULL
+	,[ProductRoleName]						VARCHAR(510)	NOT NULL
 	,[SysStartDateTime]						DATETIME2 GENERATED ALWAYS AS ROW START NOT NULL
 	,[SysEndDateTime]						DATETIME2 GENERATED ALWAYS AS ROW END NOT NULL
 	,PERIOD FOR SYSTEM_TIME (SysStartDateTime,SysEndDateTime)

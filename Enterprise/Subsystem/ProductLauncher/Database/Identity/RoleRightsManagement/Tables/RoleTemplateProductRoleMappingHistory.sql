@@ -1,8 +1,8 @@
 CREATE TABLE [Security].[RoleTemplateProductRoleMappingHistory] (
 	[RoleTemplateProductRoleMappingId]		INT	NOT NULL
 	,[RoleTemplateProductId]				INT	NOT NULL
-	,[ProductRoleId]						INT	NOT NULL
-	,[ProductRoleName]						NVARCHAR(510) NOT NULL
+	,[ProductRoleId]						VARCHAR(100)	NOT NULL
+	,[ProductRoleName]						VARCHAR(510) NOT NULL
 	,[SysStartDateTime]						DATETIME2 NOT NULL
 	,[SysEndDateTime]						DATETIME2 NOT NULL
 )
