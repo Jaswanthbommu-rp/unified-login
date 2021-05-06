@@ -159,8 +159,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		/// <summary>
 		/// Reset Enterprise User Credential
 		/// </summary>
-		public RepositoryResponse ResetEnterpriseUserCredential(Guid realPageId, string newPasswordHash,
-			string newPasswordSalt, long partyId)
+		public RepositoryResponse ResetEnterpriseUserCredential(Guid realPageId, string newPasswordHash, string newPasswordSalt, long partyId)
 		{
 			using (var repository = GetRepository())
 			{

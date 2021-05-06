@@ -1,4 +1,5 @@
 ﻿using System;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
@@ -22,9 +23,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         public ManageCommunicationEvents(ICommunicationEventRepository communicationEventRepository)
         {
             _communicationEventRepository = communicationEventRepository;
-            
         }
 
+        /// <summary>
+        /// Unit test constructor
+        /// </summary>
+        /// <param name="repository"></param>
+        public ManageCommunicationEvents(IRepository repository)
+        {
+            _communicationEventRepository = new CommunicationEventRepository(repository);
+        }
+        
         /// <summary>
         /// 
         /// </summary>

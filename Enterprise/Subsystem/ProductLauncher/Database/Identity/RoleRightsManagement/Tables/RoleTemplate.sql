@@ -4,13 +4,13 @@ CREATE TABLE [Security].[RoleTemplate] (
     ,[RoleTemplateDescription]		VARCHAR(255)	NOT NULL
     ,[PartyID]						BIGINT			NULL
 	,[RoleType]						VARCHAR(50)		DEFAULT  'Custom'
-	,[SysStartTime]					DATETIME2 GENERATED ALWAYS AS ROW START NOT NULL
-	,[SysEndTime]					DATETIME2 GENERATED ALWAYS AS ROW END NOT NULL
-	,PERIOD FOR SYSTEM_TIME (SysStartTime,SysEndTime)
+	,[SysStartDateTime]				DATETIME2 GENERATED ALWAYS AS ROW START NOT NULL
+	,[SysEndDateTime]				DATETIME2 GENERATED ALWAYS AS ROW END NOT NULL
+	,PERIOD FOR SYSTEM_TIME (SysStartDateTime,SysEndDateTime)
     ,CONSTRAINT [PK_RoleTemplateId] PRIMARY KEY CLUSTERED ([RoleTemplateId] ASC)
     ,CONSTRAINT [FK_RoleTemplate_PartyID] FOREIGN KEY ([PartyID]) REFERENCES [Enterprise].[Organization] ([PartyID])
 )
-WITH (SYSTEM_VERSIONING = ON (HISTORY_TABLE=[Enterprise].[RoleTemplateHistory], DATA_CONSISTENCY_CHECK=ON));
+WITH (SYSTEM_VERSIONING = ON (HISTORY_TABLE=[Security].[RoleTemplateHistory], DATA_CONSISTENCY_CHECK=ON));
 GO
 
 EXECUTE sp_addextendedproperty

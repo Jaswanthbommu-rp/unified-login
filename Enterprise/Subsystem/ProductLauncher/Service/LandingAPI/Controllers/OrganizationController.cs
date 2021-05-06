@@ -385,6 +385,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             bool orgNameChanged = org.Name != organization.Name ? true : false;
             bool orgStatusChanged = org.IsActive != organization.IsActive ? true : false;
+            bool orgTypeChanged = org.OrganizationTypeId != organization.OrganizationTypeId ? true : false;
             bool orgAddressChanged = false;
             
             //Did the address change
@@ -455,7 +456,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Missing organization domain");
             }
 
-            org.organizationType.OrganizationTypeId = organization.OrganizationTypeId;
+            org.OrganizationTypeId = organization.OrganizationTypeId;
+            org.organizationType = _manageOrganization.ListOrganizationType()?.FirstOrDefault(t => t.OrganizationTypeId == organization.OrganizationTypeId);
             org.OrganizationDomain.OrganizationDomainId = organization.OrganizationDomainId;
 
             _repositoryResponse = _manageOrganization.UpdateOrganization(org);
@@ -467,7 +469,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             _manageOrganization.UpdateOrganizationUsePrimaryPropertySetting(org);
             //orgNameChanged = false;
-            if (orgNameChanged || orgStatusChanged || orgAddressChanged)
+            if (orgNameChanged || orgStatusChanged || orgAddressChanged || orgTypeChanged)
             {
                 // update the name in MDM
                 IList<CustomerCompanyMap> companyMapResource = null;
@@ -511,7 +513,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         updateCompanyInstance.CompanyInstanceLocation = new List<CompanyInstanceAddress>() { address };
                     }
 
-                    var booksResult = _manageBlueBook.UpdateBooksGreenBookCompanyInstance(updateCompanyInstance);
+                    var booksResult = _manageBlueBook.UpdateBooksGreenBookCompanyInstance(updateCompanyInstance, oldAddress);
                     if (!string.IsNullOrEmpty(booksResult))
                     {
                         return Request.CreateResponse(HttpStatusCode.BadRequest, $"Unified Login company was updated successfully but MDM data update failed. Error: " + booksResult);

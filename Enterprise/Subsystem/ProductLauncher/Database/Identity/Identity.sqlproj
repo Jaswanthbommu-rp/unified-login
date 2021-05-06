@@ -1091,6 +1091,10 @@
     <Build Include="RoleRightsManagement\Tables\RoleTemplateAdditionalProductRoleMapping.sql" />
     <Build Include="RoleRightsManagement\Tables\RoleTemplateProduct.sql" />
     <Build Include="RoleRightsManagement\Tables\RoleTemplateProductRoleMapping.sql" />
+    <Build Include="RoleRightsManagement\Tables\RoleTemplateAdditionalProductRoleMappingHistory.sql" />
+    <Build Include="RoleRightsManagement\Tables\RoleTemplateHistory.sql" />
+    <Build Include="RoleRightsManagement\Tables\RoleTemplateProductHistory.sql" />
+    <Build Include="RoleRightsManagement\Tables\RoleTemplateProductRoleMappingHistory.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

@@ -24,5 +24,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <param name="organizationPartyId"></param>
         /// <returns></returns>
         bool SendNewUserRegistrationEmail(UserLoginOnly userLoginOnly, string companyName, int userTypeId, long organizationPartyId);
+
+        /// <summary>
+        /// Used to send the password reset email to the given user
+        /// </summary>
+        /// <param name="profileDetail"></param>
+        /// <returns></returns>
+        bool SendPasswordResetEmail(ProfileDetail profileDetail);
     }
 }

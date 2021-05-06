@@ -133,8 +133,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// Used to update an existing company instance
         /// </summary>
         /// <param name="companyInstance"></param>
+        /// <param name="oldAddress"></param>
         /// <returns></returns>
-        string UpdateBooksGreenBookCompanyInstance(CompanyInstance companyInstance);
+        string UpdateBooksGreenBookCompanyInstance(CompanyInstance companyInstance, CompanyLocation oldAddress);
        
         TranslatePropertyInstance GetTranslatePropertiesFromUPFMToProductv3(UPFMProperty upfmProperties, string productSource);
 

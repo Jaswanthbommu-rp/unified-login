@@ -154,5 +154,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <param name="getPrimaryOrg"></param>
         /// <returns>Organization status</returns>
         OrganizationStatus GetUserOrganizationWithStatus(long userId, DateTime lastLogin, long orgPartyId, bool getPrimaryOrg);
+
+        /// <summary>
+        /// Used to resend email invitation to users
+        /// </summary>		
+        /// <param name="userLogins"></param> 	
+        /// <param name="isCalledFromService"></param> 
+        /// <returns></returns>
+        bool ResendInvitation(IList<UserLogin> userLogins, bool isCalledFromService = false);
+        bool ClearPasswordAndQuestions(Guid realPageId);
     }
 }

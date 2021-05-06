@@ -86,6 +86,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             if (userLogin != null)
             {
                 OrganizationStatus orgStatus = GetUserOrganizationWithStatus(userLogin.UserId, userLogin.LastLogin, orgPartyId, false);
+                if (orgStatus == null)
+                {
+                    return null;
+                }
+
                 // remap the orgStatus to the userStatus
                 userLogin = MapCompanyStatusToUserStatus(userLogin, orgStatus);
                 userLogin = UserLoginStatus.SetUserLoginStatus(userLogin);

@@ -6,6 +6,7 @@ BEGIN
 	SELECT
 		PI1.[PropertyInstanceId]
 		,[Name]
+		,[IsActive]
 		,[Address]
 		,[City]
 		,[State]

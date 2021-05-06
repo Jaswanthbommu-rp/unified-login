@@ -484,7 +484,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 //Is company type being updated
                 if (oldOrganization.OrganizationTypeId != organization.OrganizationTypeId)
                 {
-                    var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} updated the company type for {oldOrganization.Name} to {organization.Name}";
+                    var companyTypes = ListOrganizationType();
+                    var oldType = companyTypes?.FirstOrDefault(t => t.OrganizationTypeId == oldOrganization.OrganizationTypeId).Name;
+                    var newType = companyTypes?.FirstOrDefault(t => t.OrganizationTypeId == organization.OrganizationTypeId).Name;
+                    var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} updated the company type for {oldOrganization.Name} from {oldType} to {newType}";
                     LogAuditActivity(LogActivityTypeConstants.COMPANY_UPDATED, LogActivityCategoryType.CompanySetup, message);
                 }
                 //Is company status being updated
@@ -995,7 +998,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
 
             var oldProperty = GetPropertyByInstanceId(property.InstanceId)?.FirstOrDefault();
-            var _repositoryResponse = _propertyRepository.UpdateProperty(property.InstanceId, property.Name, property.IsActive);           
+            var _repositoryResponse = _propertyRepository.UpdateProperty(property);           
             
             if (_repositoryResponse.Id > 0)
             {
@@ -1019,8 +1022,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 //Is property status being updated
                 if (oldProperty.IsActive != property.IsActive)
                 {
-                    var newStatus = "";
-                    var prevStatus = "";
+                    string newStatus = "";
+                    string prevStatus = "";
                     
                     if (oldProperty.IsActive == true)
                     {
@@ -1032,7 +1035,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         newStatus = "Active";
                         prevStatus = "Inactive";
                     }
-                    var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} updated the property status for {property.Name} from {prevStatus} to {newStatus}";
+                    var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} updated the property status for {property.Name} from {prevStatus} to {newStatus} for {orgName}";
                     LogAuditActivity(LogActivityTypeConstants.PROPERTY_UPDATED, LogActivityCategoryType.CompanySetup, message);
                 }
 

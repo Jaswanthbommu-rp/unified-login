@@ -339,22 +339,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 return repository.GetMany<PropertySetup>(StoredProcNameConstants.SP_GetPropertyInstanceListByIdWithPaging, param);
             }
         }
-		#endregion
+        #endregion
 
-		#region Update Property
-		/// <summary>
-		/// Update property
-		/// </summary>
-		/// <param name="instanceId">propertyInstanceId</param>
-		/// <param name="name">name</param>
-		/// <returns>Repository response object</returns>
-		public RepositoryResponse UpdateProperty(Guid instanceId, string name, bool active)
+        #region Update Property
+        /// <summary>
+        /// Update property
+        /// </summary>
+        /// <param name="property"></param>
+        /// <returns></returns>
+        public RepositoryResponse UpdateProperty(UPFMPropertyInstance property)
         {
             dynamic param = new
             {
-                instanceId,
-                name,
-                active
+                InstanceId = property.InstanceId,
+                Name = property.Name,
+                Active = property.IsActive,
+                Address = property.Address,
+                City = property.City,
+                State = property.State,
+                PostalCode = property.PostalCode,
+                Country = property.Country,
+                County = property.County
             };
 
             using (var repository = GetRepository())

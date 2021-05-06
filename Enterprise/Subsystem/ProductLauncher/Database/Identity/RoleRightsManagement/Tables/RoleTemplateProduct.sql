@@ -2,9 +2,9 @@ CREATE TABLE [Security].[RoleTemplateProduct] (
 	[RoleTemplateProductId]					INT		NOT NULL	IDENTITY
 	,[RoleTemplateId]						INT		NOT NULL
 	,[ProductId]							INT		NOT NULL
-	,[SysStartTime]							DATETIME2 GENERATED ALWAYS AS ROW START NOT NULL
-	,[SysEndTime]							DATETIME2 GENERATED ALWAYS AS ROW END NOT NULL
-	,PERIOD FOR SYSTEM_TIME (SysStartTime,SysEndTime)
+	,[SysStartDateTime]						DATETIME2 GENERATED ALWAYS AS ROW START NOT NULL
+	,[SysEndDateTime]						DATETIME2 GENERATED ALWAYS AS ROW END NOT NULL
+	,PERIOD FOR SYSTEM_TIME (SysStartDateTime,SysEndDateTime)
 	,CONSTRAINT [PK_RoleTemplateProduct] PRIMARY KEY CLUSTERED ([RoleTemplateProductId] ASC)
 	,CONSTRAINT [FK_RoleTemplateProduct_RoleTemplateId] FOREIGN KEY ([RoleTemplateId]) REFERENCES [Security].[RoleTemplate] ([RoleTemplateId])
 	,CONSTRAINT [FK_RoleTemplateProduct_ProductId] FOREIGN KEY ([ProductId]) REFERENCES [Enterprise].[Product] ([ProductId])

@@ -1,7 +1,13 @@
 CREATE PROCEDURE [Enterprise].[UpdatePropertyInstance] (  
  @InstanceId UNIQUEIDENTIFIER ,  
  @Name NVARCHAR(50),
- @Active TINYINT
+ @Active TINYINT,
+ @Address NVARCHAR(200),
+ @City nvarchar(60),
+ @State nvarchar(20),
+ @PostalCode nvarchar(25),
+ @Country nvarchar(25),
+ @County nvarchar(60)
 )  
 AS  
 BEGIN    
@@ -9,7 +15,13 @@ BEGIN
   BEGIN TRANSACTION;  
   UPDATE  Enterprise.PropertyInstance 
   SET     Name = ISNULL(@Name, Name) ,
-  IsActive = @Active
+  IsActive = @Active,
+  Address = ISNULL(@Address, Address),
+  City = ISNULL(@City, City),
+  State = ISNULL(@State, State),
+  PostalCode = ISNULL(@PostalCode, PostalCode),
+  Country = ISNULL(@Country, Country),
+  County = ISNULL(@County, County)
   OUTPUT inserted.PropertyInstanceId AS Id,  
     '' AS ErrorMessage  
   FROM    Enterprise.PropertyInstance 

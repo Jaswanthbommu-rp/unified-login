@@ -1448,3 +1448,297 @@ begin
 end
 GO
 --END : script for userstory #771257
+GO
+
+
+IF NOT EXISTS
+(
+	SELECT 1
+	FROM Enterprise.CommunicationEmailTemplate CET
+	INNER JOin Enterprise.CommunicationEventAudienceType CAT ON CET.CommunicationEventAudienceTypeId = CAT.CommunicationEventAudienceTypeId
+	WHERE 
+		cat.Description = 'Regular User'
+		AND 
+		  CommunicationEventPurposeTypeId = 2
+)
+BEGIN
+	INSERT INTO [Enterprise].[CommunicationEmailTemplate]( CommunicationEventAudienceTypeId, CommunicationEventPurposeTypeId, [Subject], [Body] )
+	SELECT CommunicationEventAudienceTypeId, 2, 'RealPage Password Reset', '<!DOCTYPE html>
+<html dir="ltr" lang="en">
+	<body>
+		<table border="0" cellspacing="0" cellpadding="0" width="100%" style="table-layout:fixed; font-size:16px;">
+			<tbody>
+				<tr>
+					<td>
+						<center>
+							<table border="0" cellspacing="0" cellpadding="0" width="600" style="margin:0 auto; max-width:535px; width:inherit;">
+								<tbody>
+									<tr>
+										<td align="left">
+											<table border="0" cellspacing="0" cellpadding="0" width="100%">
+												<tbody>
+													<tr>
+														<td width="100%">
+															<table border="0" cellspacing="0" cellpadding="0" width="100%">
+																<tbody>
+																	<tr>
+																		<td style="padding:18px 0 0 0;">
+																			<tbody>
+																				<tr>
+																					<td style="padding:0 10px"
+																					    align="center">
+																						<div style="display:none;color:#fff;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;">
+																							<span>Hi {FIRST NAME},                                                                                 Your administrator has reset the password on your account. Click the link below to set your new password. You have {EXPIRYDAYS} days to set your new password before the link expires.</span>
+																						</div>
+																						<a href="https://www.realpage.com"
+																						   style="text-decoration:none;">
+																							<img src="{IMAGES}/RealPage-Logo.png" alt="RealPage" width="270" height="80" style="margin: 0; border: 0; padding: 0; display: block;"/>
+																						</a>
+																					</td>
+																				</tr>
+																			</tbody>
+																		</td>
+																	</tr>
+																</tbody>
+															</table>
+															<table border="0" cellspacing="0" cellpadding="0" width="100%">
+																<tbody>
+																	<tr>
+																		<td width="100%"
+																		    style="padding:24px 24px 32px 24px; border-style:none;">
+																			<table border="0" cellspacing="1" cellpadding="1" width="100%">
+																				<tbody>
+																					<tr>
+																						<td width="100%" style="padding:18px 0 0 0">
+																							<table border="0" cellspacing="0" cellpadding="0" width="100%">
+																								<tbody>
+																									<tr>
+																										<td style="padding:0 10px; color:#757575; font-family: ''Roboto'',''Helvetica Neue'', Helvetica, Arial, sans-serif;">
+																											<span>Hi {FIRST NAME},</span>
+																										</td>
+																									</tr>
+																								</tbody>
+																							</table>
+																						</td>
+																					</tr>
+																					<tr>
+																						<td width="100%"
+																						    style="padding:18px 0 0 0">
+																							<table border="0" cellspacing="2" cellpadding="0" width="100%">
+																								<tbody>
+																									<tr>
+																										<td style="padding:0 10px; line-height:27px; color:#757575; font-family: ''Roboto'',''Helvetica Neue'', Helvetica, Arial, sans-serif;">
+																											<span>Your administrator has reset the password on your account. Click the link below to set your new password. You have {EXPIRYDAYS} days to set your new password before the link expires.</span>
+																										</td>
+																									</tr>
+																									<tr>
+																										<td>
+																											<table width="100%" border="0" cellspacing="2" cellpadding="2">
+																												<tr>
+																													<td align="center" style="-webkit-border-radius: 25px; -moz-border-radius: 25px; border-radius: 25px;" bgcolor="#42a5f6">
+																														<a href="{LINK}" style="font-family: ''Roboto'',''Helvetica Neue'', Helvetica, Arial, sans-serif; color: #ffffff; text-decoration: none; -webkit-border-radius: 25px; -moz-border-radius: 25px; border-radius: 25px; padding: 9px 28px; border: 1px solid #42a5f6; display: inline-block;">Set New Password</a>
+																													</td>
+																												</tr>
+																											</table>
+																										</td>
+																									</tr>
+																								</tbody>
+																							</table>
+																						</td>
+																					</tr>
+																					<tr>
+																						<td align="center" style="padding:18px 0 0 0">
+																							<table border="0" cellpadding="0" cellspacing="0" align="center">
+																								<tbody>
+																									<tr>
+																										<td>
+																											<table width="100%" border="0" cellspacing="0" cellpadding="0">
+																												<tr>
+																													<td style="padding:0 10px; line-height:27px; color:#757575; font-family: ''Roboto'',''Helvetica Neue'', Helvetica, Arial, sans-serif;">
+																														<span>If you have trouble accessing your profile, please contact your system administrator.</span>
+																													</td>
+																												</tr>
+																											</table>
+																										</td>
+																									</tr>
+																								</tbody>
+																							</table>
+																						</td>
+																					</tr>
+																					<tr>
+																						<td width="100%" style="padding:18px 0 0 0">
+																							<table border="0" cellspacing="0" cellpadding="0" width="100%">
+																								<tbody>
+																									<tr>
+																										<td style="padding:0 10px; line-height:27px; color:#757575; font-family: ''Roboto'',''Helvetica Neue'', Helvetica, Arial, sans-serif; font-size:9px;">This email and any files transmitted with it are confidential and intended solely for the use of the individual or entity to whom they are addressed.  If you’ve received this email in error, please notify <a href="https://www.realpage.com/support/"
+																											   style="color:#42A5F5; font-family: ''Roboto'',''Helvetica Neue'', Helvetica, Arial, sans-serif;">RealPage Support</a> by forwarding this email to <a href="mailto:support@realpage.com?subject=support">support@realpage.com</a>.  This message contains confidential information and is intended only for the individual named.</td>
+																									</tr>
+																								</tbody>
+																							</table>
+																						</td>
+																					</tr>
+																				</tbody>
+																			</table>
+																		</td>
+																	</tr>
+																</tbody>
+															</table>
+														</td>
+													</tr>
+												</tbody>
+											</table>
+										</td>
+									</tr>
+									<tr>
+										<td align="left">
+											<table border="0" cellspacing="0" cellpadding="0" width="100%" style="padding:0 24px;">
+												<tbody>
+													<tr>
+														<td align="center"
+														    width="100%">
+															<table border="0" cellspacing="0" cellpadding="0" width="100%">
+																<tbody>
+																	<tr>
+																		<td align="center" width="100%" style="border-top:1px solid #757575; padding:16px 0;font-size:11px;">
+																			<a href="https://www.realpage.com/privacy-policy"
+																			   style="color:#757575;text-decoration:none; font-family: ''Roboto'',''Helvetica Neue'', Helvetica, Arial, sans-serif;">
+																				<span>Privacy Policy</span>
+																			</a>
+																			<span style="color:#757575; font-family: ''Roboto'',''Helvetica Neue'', Helvetica, Arial, sans-serif;">|</span>
+																			<a href="https://www.realpage.com/"
+																			   style="color:#757575;text-decoration:none; font-family: ''Roboto'',''Helvetica Neue'', Helvetica, Arial, sans-serif;">
+																				<span>Contact Us</span>
+																			</a>
+																			<span style="color:#757575; font-family: ''Roboto'',''Helvetica Neue'', Helvetica, Arial, sans-serif;">|</span>
+																			<span style="color:#757575; font-family: ''Roboto'',''Helvetica Neue'', Helvetica, Arial, sans-serif;">&copy; 2021 RealPage, Inc.</span>
+																		</td>
+																	</tr>
+																</tbody>
+															</table>
+														</td>
+													</tr>
+												</tbody>
+											</table>
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						</center>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</body>
+</html>'
+FROM
+	Enterprise.CommunicationEventAudienceType WHERE Description = 'Regular User'
+
+END;
+GO
+
+--START : script for userstory #802024
+--ShowInRoleTemplate 
+if not exists ( select top 1 1 from Enterprise.ProductSettingType where name = 'ShowInRoleTemplate' )
+begin
+	insert into enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'ShowInRoleTemplate', 'Show Product For RoleTemplate', 0)
+end
+
+DECLARE @NOW DATETIME = GETUTCDATE(); 
+declare @productlist table ( entid int identity, productid int, productsettingtype varchar(500), productsettingvalue varchar(2000))
+insert into @productlist values 
+	(1,	 'ShowInRoleTemplate', '1' ),
+	(3,	 'ShowInRoleTemplate', '1' ),
+	(6,	 'ShowInRoleTemplate', '1' ),
+	(8,	 'ShowInRoleTemplate', '1' ),
+	(9,	 'ShowInRoleTemplate', '1' ),	
+	(13, 'ShowInRoleTemplate', '1' ),
+	(14, 'ShowInRoleTemplate', '1' ),
+	(15, 'ShowInRoleTemplate', '1' ),
+	(16, 'ShowInRoleTemplate', '1' ),
+	(17, 'ShowInRoleTemplate', '1' ),
+	(18, 'ShowInRoleTemplate', '1' ),
+	(20, 'ShowInRoleTemplate', '1' ),	
+	(23, 'ShowInRoleTemplate', '1' ),
+	(26, 'ShowInRoleTemplate', '1' ),
+	(29, 'ShowInRoleTemplate', '1' ),
+	(30, 'ShowInRoleTemplate', '1' ),
+	(31, 'ShowInRoleTemplate', '1' ),
+	(32, 'ShowInRoleTemplate', '1' ),
+	(33, 'ShowInRoleTemplate', '1' ),
+	(34, 'ShowInRoleTemplate', '1' ),
+	(39, 'ShowInRoleTemplate', '1' ),
+	(40, 'ShowInRoleTemplate', '1' ),
+	(41, 'ShowInRoleTemplate', '1' ),
+	(44, 'ShowInRoleTemplate', '1' ),
+	(47, 'ShowInRoleTemplate', '1' ),
+	(48, 'ShowInRoleTemplate', '1' ),	
+	(51, 'ShowInRoleTemplate', '1' ),
+	(52, 'ShowInRoleTemplate', '1' ),
+	(53, 'ShowInRoleTemplate', '1' ),
+	(54, 'ShowInRoleTemplate', '1' ),	
+	(57, 'ShowInRoleTemplate', '1' ),
+	(58, 'ShowInRoleTemplate', '1' ),
+	(59, 'ShowInRoleTemplate', '1' ),
+	(60, 'ShowInRoleTemplate', '1' ),
+	(63, 'ShowInRoleTemplate', '1' ),
+	(65, 'ShowInRoleTemplate', '1' ),
+	(66, 'ShowInRoleTemplate', '1' )
+	
+--select * from @productlist
+
+declare @MAX_ID INT
+declare @Current_ID INT = 1
+declare @CurrentProductId INT = 1
+
+select @MAX_ID = max(entid) from @productlist
+
+while @Current_ID <= @MAX_ID
+begin
+	declare @currentSettingType varchar(500)
+	declare @currentsettingValue varchar(2000)
+
+	select @CurrentProductId = productid , @currentSettingType = productsettingtype, @currentSettingValue = productsettingvalue
+		from @productlist where entid = @Current_ID
+
+	--print 'productid = ' + convert(varchar,@currentproductid)
+
+	if not exists (
+	select top 1 1 
+		FROM Enterprise.GlobalProductConfiguration gpc  
+		JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId  
+		JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId  
+		JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId  
+			WHERE  gpc.ProductId = @CurrentProductId  
+		AND ((@NOW BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@NOW >= gpc.FromDate AND gpc.ThruDate IS NULL))  
+		AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))  
+		AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))  
+		AND pst.Name = @currentSettingType
+		AND ps.Value = @currentsettingValue
+	)
+	begin
+		declare @currentproductconfigurationid INT
+		select distinct top 1 @currentproductconfigurationid = pc.configurationid
+			FROM Enterprise.GlobalProductConfiguration gpc  
+			JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId  
+			JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId  
+			JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId  
+				WHERE  gpc.ProductId = @CurrentProductId
+			AND ((@NOW BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@NOW >= gpc.FromDate AND gpc.ThruDate IS NULL))  
+			AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))  
+			AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))  
+		order by pc.ConfigurationId desc
+
+		if (@currentproductconfigurationid is not null)
+		begin
+			insert into enterprise.ProductSetting ( productid, ProductSettingTypeId, value, FromDate )
+				select @CurrentProductId, productsettingtypeid, @currentSettingValue, GETUTCDATE()
+					from enterprise.ProductSettingType where name = @currentSettingType
+			insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate, ThruDate )
+				values ( @currentproductconfigurationid, @@IDENTITY, GETUTCDATE(), null )
+		end
+	end
+	
+	set @Current_ID = @Current_ID + 1
+end
+GO
+--END : script for userstory #802024

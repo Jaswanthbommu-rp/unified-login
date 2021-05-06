@@ -104,5 +104,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		/// </summary>
 		[JsonProperty(PropertyName = "PersonaUsedPrimaryProperties")]
 		public bool PersonaUsedPrimaryProperties { get; set; } = false;
+
+		/// <summary>
+		/// Show product In RoleTemplate
+		/// </summary>
+		[JsonProperty(PropertyName = "ShowInRoleTemplate")]
+		public bool ShowInRoleTemplate { get; set; } = false;
 	}
 }

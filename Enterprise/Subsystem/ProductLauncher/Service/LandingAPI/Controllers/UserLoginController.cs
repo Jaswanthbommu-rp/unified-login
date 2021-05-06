@@ -1,5 +1,6 @@
 ﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Attributes;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Attribute;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
@@ -12,26 +13,52 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using System.Web.Http.Controllers;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RepositoryResponse = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.RepositoryResponse;
 using UserLogin = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.UserLogin;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
-	/// <summary>
-	/// UserLogin Controller to hold all user management related APIs
-	/// </summary>
-	public class UserLoginController : BaseApiController
+    /// <summary>
+    /// UserLogin Controller to hold all user management related APIs
+    /// </summary>
+    public class UserLoginController : BaseApiController
     {
         #region Private variables
         IRepositoryResponse repositoryResponse = new RepositoryResponse();
+        private IManageUserLogin _manageUserLogin;
+        private IRepository _repository;
+
         #endregion
 
         #region Constructor
+
         /// <summary>
         /// Default constructor
         /// </summary>
-        public UserLoginController() : base() { }
+        public UserLoginController()
+        {
+            // DONT USE USERCLAIM IN BASE, IT IS NULL AT THIS POINT. MOVE TO Initialize FUNCTION
+        }
+
+        public UserLoginController(DefaultUserClaim defaultUserClaim, IRepository repository)
+        {
+            _userClaims = defaultUserClaim;
+            _repository = repository;
+            _manageUserLogin = new ManageUserLogin(repository, _userClaims, null);
+        }
+
+        /// <summary>
+        /// Used to initialize DI classes with userclaim
+        /// </summary>
+        /// <param name="controllerContext"></param>
+        protected override void Initialize(HttpControllerContext controllerContext)
+        {
+            base.Initialize(controllerContext);
+            _manageUserLogin = new ManageUserLogin(_userClaims);
+        }
+
         #endregion
 
         #region Public Methods
@@ -370,12 +397,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             ObjectListOutput<UserLogin, IErrorData> output = new ObjectListOutput<UserLogin, IErrorData>();
             Status<IErrorData> errorStatus = new Status<IErrorData>();
             bool response = true;
-            IManageUserLogin manageUserLogin = new ManageUserLogin();
 
             if (userLogins.Count > 0)
             {
-                ManageUserLogin userLoginLogic = new ManageUserLogin(_userClaims);
-                response = userLoginLogic.ResendInvitation(userLogins,false);
+                response = _manageUserLogin.ResendInvitation(userLogins,false);
 
                 if (response)
                 {
@@ -389,12 +414,43 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             return Request.CreateResponse(HttpStatusCode.OK, response);
         }
 
-		/// <summary>
-		/// Process Future User Login Status
-		/// </summary>        
-		/// <param name="userLogins">Array of user realpage Ids</param>
-		/// <returns>List of patched UserLogins</returns>		
-		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+
+        /// <summary>
+        /// Clear user password and security questions
+        /// </summary>        
+        /// <param name="realPageId">The guid of the user to reset</param>
+        /// <returns>List of patched UserLogins</returns>		
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [Route("userlogins/clearpasswordandquestions")]
+        [AuthorizeRight("resendinvitation")]
+        [HttpPut]
+        public HttpResponseMessage ClearPasswordAndQuestions(Guid realPageId)
+        {
+            var userLogin = _manageUserLogin.GetUserLogin(realPageId, _orgPartyId);
+            if (userLogin == null)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid company");
+            }
+
+            var response = _manageUserLogin.ClearPasswordAndQuestions(realPageId);
+
+            if (response)
+            {
+                return Request.CreateResponse(HttpStatusCode.NoContent);
+            }
+
+            return Request.CreateResponse(HttpStatusCode.ExpectationFailed);
+        }
+
+
+        /// <summary>
+        /// Process Future User Login Status
+        /// </summary>        
+        /// <param name="userLogins">Array of user realpage Ids</param>
+        /// <returns>List of patched UserLogins</returns>		
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
 		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
 		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
 		[Route("userlogins/processfutureuserlogins")]
