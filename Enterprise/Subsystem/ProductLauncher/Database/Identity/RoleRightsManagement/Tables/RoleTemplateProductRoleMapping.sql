@@ -3,9 +3,9 @@ CREATE TABLE [Security].[RoleTemplateProductRoleMapping] (
 	,[RoleTemplateProductId]				INT	NOT NULL
 	,[ProductRoleId]						INT	NOT NULL
 	,[ProductRoleName]						NVARCHAR(510)	NOT NULL
-	,[SysStartTime]							DATETIME2 GENERATED ALWAYS AS ROW START NOT NULL
-	,[SysEndTime]							DATETIME2 GENERATED ALWAYS AS ROW END NOT NULL
-	,PERIOD FOR SYSTEM_TIME (SysStartTime,SysEndTime)
+	,[SysStartDateTime]						DATETIME2 GENERATED ALWAYS AS ROW START NOT NULL
+	,[SysEndDateTime]						DATETIME2 GENERATED ALWAYS AS ROW END NOT NULL
+	,PERIOD FOR SYSTEM_TIME (SysStartDateTime,SysEndDateTime)
 	,CONSTRAINT [PK_RoleTemplateProductRoleMapping] PRIMARY KEY CLUSTERED ([RoleTemplateProductRoleMappingId] ASC)
 	,CONSTRAINT [FK_RoleTemplateProductRoleMapping_RoleTemplateProductId] FOREIGN KEY ([RoleTemplateProductId]) REFERENCES [Security].[RoleTemplateProduct] ([RoleTemplateProductId])
 )
