@@ -19,6 +19,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using Newtonsoft.Json;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UPFMProduct;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -424,6 +425,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				//var booksPropertyList = _blueBook.GetUPFMPropertyInstances(_userClaims.OrganizationRealPageGuid.ToString());
 
+				_blueBook.GetCompanyMap(_editorPersona.Organization.RealPageId, _editorPersona.Organization.BooksCustomerMasterId, source: _udmSourceCode.ToUpper(), domain: _editorPersona.Organization.OrganizationDomain.Name);
+
 				var booksPropertyList = _blueBook.GetPropertiesPerProductCenter(_userClaims.OrganizationRealPageGuid.ToString(), _upfmProductId);
 				var customerPropertyList = ListUPFMPropertyInstanceIdByInstanceIds(booksPropertyList);
 
@@ -436,7 +439,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			catch (Exception ex)
 			{
 				result.IsError = true;
-				result.ErrorReason = $"ManageUPFMProductUser.GetProperties - There was a problem getting the properties.";
+				if (ex is BlueBookException)
+                {
+					result.ErrorReason = CommonMessageConstants.CompanyErrorMessage;
+				}
+				else
+                {
+					result.ErrorReason = $"ManageUPFMProductUser.GetProperties - There was a problem getting the properties.";
+				}
+
 				WriteToErrorLog($"ManageUPFMProductUser.GetProperties - There was a problem getting the properties for user with editorPersona id - {editorPersonaId}.",
 					exception: ex);
 			}
