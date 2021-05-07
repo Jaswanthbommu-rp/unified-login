@@ -827,6 +827,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     productInternalSetting = productInternalSettingList.FirstOrDefault(item => item.Name.Equals("IsResource", StringComparison.OrdinalIgnoreCase));
                     p.IsResource = (productInternalSetting != null) ? (productInternalSetting.Value.Trim() == "1") : false;
                 }
+
+                p.IsInUDM = productInternalSettingList.FirstOrDefault(item => item.Name.Equals("UpdateProductinUDM", StringComparison.OrdinalIgnoreCase))?.Value?.Trim() == "1";
             });
 
             if (allProducts)
