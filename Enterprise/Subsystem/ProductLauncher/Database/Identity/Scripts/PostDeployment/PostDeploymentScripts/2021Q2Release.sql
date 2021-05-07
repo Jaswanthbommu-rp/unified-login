@@ -1742,3 +1742,2223 @@ begin
 end
 GO
 --END : script for userstory #802024
+
+--start : script for userstory #804806
+
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].ProductPageType WHERE value = 'RoleTemplate')
+BEGIN
+Insert into UserManagement.ProductPageType (value, Description)
+select 'RoleTemplate', 'Role Template page'
+END
+
+GO
+Declare @RoleTemplateProductPageTypeId bigint
+SELECT @RoleTemplateProductPageTypeId = ProductPageTypeId FROM[UserManagement].ProductPageType WHERE value = 'RoleTemplate'
+
+--OneSite
+DECLARE @UserId bigint,
+	@ProductId int ,
+	@ControlId int,
+	@Now datetime = GETDATE()
+
+Declare @ControlAttributeId int
+Declare @ProductPageId int
+Declare @ProductPageControlId int
+
+SELECT	@UserId = UserId
+FROM	Ident.UserLogin
+WHERE	LoginName LIKE 'realpagead@%'
+SET @ProductId  = 1
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId and ProductPageTypeId = 3)
+BEGIN
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	Select @ControlId = MAX(controlid) +1 from [UserManagement].[Control]
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId, NULL, 8, N'OnesiteRoleTemplateTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+1, @ControlId, 9, N'OnesiteRoleTemplateRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)
+	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+2, @ControlId+1, 3, N'OnesiteRoleTemplateRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+3, @ControlId+2, 10, N'OnesiteRoleTemplateCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+4, @ControlId+2, 5, N'OnesiteRoleTemplateRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+5, @ControlId+2, 5, N'OnesiteRoleTemplateRoleTypeLabelUIId', N'Role Type', N'roletype', 3, @UserId, @Now)
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+	
+	Select @ControlAttributeId = MAX(ControlAttributeId) +1 from [UserManagement].[ControlAttribute]
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId, @ControlId+1, N'Default', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+1, @ControlId+1, N'Hide', N'False', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+2, @ControlId+2, N'ShowSelectAll', N'True', @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+	
+	Select @ProductPageId = MAX(ProductPageId) +1 from [UserManagement].[ProductPage]
+
+	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName],[ProductPageTypeId], [CreatedBy], [CreatedDate], [IsActive])
+	VALUES (@ProductPageId, @ProductId, N'OneSite Roles',@RoleTemplateProductPageTypeId, @UserId, @Now, 1)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+	
+	Select @ProductPageControlId = MAX(ProductPageControlId) +1 from [UserManagement].[ProductPageControl]
+
+	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate])
+	VALUES (@ProductPageControlId, @ProductPageId, @ControlId, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+END
+
+--Spend Management
+SET @ProductId  = 13
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId and ProductPageTypeId = 3)
+BEGIN
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	Select @ControlId = MAX(controlid) +1 from [UserManagement].[Control]
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId, NULL, 8, N'SpendManagementRoleTemplateTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+1, @ControlId, 9, N'SpendManagementRoleTemplateRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)
+	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+2, @ControlId+1, 2, N'SpendManagementRoleTemplateRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+3, @ControlId+2, 7, N'SpendManagementRoleTemplateRoleRadioUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+4, @ControlId+2, 5, N'SpendManagementRoleTemplateRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)	
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+	
+	Select @ControlAttributeId = MAX(ControlAttributeId) +1 from [UserManagement].[ControlAttribute]
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId, @ControlId+1, N'Default', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+1, @ControlId+1, N'Hide', N'False', @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+	
+	Select @ProductPageId = MAX(ProductPageId) +1 from [UserManagement].[ProductPage]
+
+	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName],[ProductPageTypeId], [CreatedBy], [CreatedDate], [IsActive])
+	VALUES (@ProductPageId, @ProductId, N'Spend Management Roles',@RoleTemplateProductPageTypeId, @UserId, @Now, 1)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+	
+	Select @ProductPageControlId = MAX(ProductPageControlId) +1 from [UserManagement].[ProductPageControl]
+
+	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate])
+	VALUES (@ProductPageControlId, @ProductPageId, @ControlId, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+END
+
+--Unified Platform
+SET @ProductId  = 3
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId and ProductPageTypeId = 3)
+BEGIN
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	Select @ControlId = MAX(controlid) +1 from [UserManagement].[Control]
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId, NULL, 8, N'UnifiedPlatformRoleTemplateTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+1, @ControlId, 9, N'UnifiedPlatformRoleTemplateRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)
+	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+2, @ControlId+1, 2, N'UnifiedPlatformRoleTemplateRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+3, @ControlId+2, 7, N'UnifiedPlatformRoleTemplateRoleRadioUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+4, @ControlId+2, 5, N'UnifiedPlatformRoleTemplateRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)		
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+5, @ControlId+2, 5, N'UnifiedPlatformRoleTemplateRoleTypeLabelUIId', N'Role Type', N'roletype', 3, @UserId, @Now)
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+	
+	Select @ControlAttributeId = MAX(ControlAttributeId) +1 from [UserManagement].[ControlAttribute]
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId, @ControlId+1, N'Default', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+1, @ControlId+1, N'Hide', N'False', @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+	
+	Select @ProductPageId = MAX(ProductPageId) +1 from [UserManagement].[ProductPage]
+
+	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName],[ProductPageTypeId], [CreatedBy], [CreatedDate], [IsActive])
+	VALUES (@ProductPageId, @ProductId, N'Unified Platform Roles',@RoleTemplateProductPageTypeId, @UserId, @Now, 1)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+	
+	Select @ProductPageControlId = MAX(ProductPageControlId) +1 from [UserManagement].[ProductPageControl]
+
+	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate])
+	VALUES (@ProductPageControlId, @ProductPageId, @ControlId, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+END
+
+--MarketingCenter
+SET @ProductId  = 9
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId and ProductPageTypeId = 3)
+BEGIN
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	Select @ControlId = MAX(controlid) +1 from [UserManagement].[Control]
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId, NULL, 8, N'MarketingCenterRoleTemplateTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+1, @ControlId, 9, N'MarketingCenterRoleTemplateRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)
+	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+2, @ControlId+1, 2, N'MarketingCenterRoleTemplateRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+3, @ControlId+2, 7, N'MarketingCenterRoleTemplateRoleRadioUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+4, @ControlId+2, 5, N'MarketingCenterRoleTemplateRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)	
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+	
+	Select @ControlAttributeId = MAX(ControlAttributeId) +1 from [UserManagement].[ControlAttribute]
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId, @ControlId+1, N'Default', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+1, @ControlId+1, N'Hide', N'False', @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+	
+	Select @ProductPageId = MAX(ProductPageId) +1 from [UserManagement].[ProductPage]
+
+	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName],[ProductPageTypeId], [CreatedBy], [CreatedDate], [IsActive])
+	VALUES (@ProductPageId, @ProductId, N'Marketing Center Roles',@RoleTemplateProductPageTypeId, @UserId, @Now, 1)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+	
+	Select @ProductPageControlId = MAX(ProductPageControlId) +1 from [UserManagement].[ProductPageControl]
+
+	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate])
+	VALUES (@ProductPageControlId, @ProductPageId, @ControlId, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+END
+
+--RentersInsurance
+SET @ProductId  = 15
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId and ProductPageTypeId = 3)
+BEGIN
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	Select @ControlId = MAX(controlid) +1 from [UserManagement].[Control]
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId, NULL, 8, N'RentersInsuranceRoleTemplateTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+1, @ControlId, 9, N'RentersInsuranceRoleTemplateRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)
+	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+2, @ControlId+1, 2, N'RentersInsuranceRoleTemplateRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+3, @ControlId+2, 7, N'RentersInsuranceRoleTemplateRoleRadioUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+4, @ControlId+2, 5, N'RentersInsuranceRoleTemplateRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)	
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+	
+	Select @ControlAttributeId = MAX(ControlAttributeId) +1 from [UserManagement].[ControlAttribute]
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId, @ControlId+1, N'Default', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+1, @ControlId+1, N'Hide', N'False', @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+	
+	Select @ProductPageId = MAX(ProductPageId) +1 from [UserManagement].[ProductPage]
+
+	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName],[ProductPageTypeId], [CreatedBy], [CreatedDate], [IsActive])
+	VALUES (@ProductPageId, @ProductId, N'Renters Insurance Roles',@RoleTemplateProductPageTypeId, @UserId, @Now, 1)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+	
+	Select @ProductPageControlId = MAX(ProductPageControlId) +1 from [UserManagement].[ProductPageControl]
+
+	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate])
+	VALUES (@ProductPageControlId, @ProductPageId, @ControlId, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+END
+
+--ResidentPortals
+SET @ProductId  = 17
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId and ProductPageTypeId = 3)
+BEGIN
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	Select @ControlId = MAX(controlid) +1 from [UserManagement].[Control]
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId, NULL, 8, N'ResidentPortalsRoleTemplateTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+1, @ControlId, 9, N'ResidentPortalsRoleTemplateRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)
+	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+2, @ControlId+1, 2, N'ResidentPortalsRoleTemplateRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+3, @ControlId+2, 7, N'ResidentPortalsRoleTemplateRoleRadioUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+4, @ControlId+2, 5, N'ResidentPortalsRoleTemplateRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)	
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+	
+	Select @ControlAttributeId = MAX(ControlAttributeId) +1 from [UserManagement].[ControlAttribute]
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId, @ControlId+1, N'Default', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+1, @ControlId+1, N'Hide', N'False', @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+	
+	Select @ProductPageId = MAX(ProductPageId) +1 from [UserManagement].[ProductPage]
+
+	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName],[ProductPageTypeId], [CreatedBy], [CreatedDate], [IsActive])
+	VALUES (@ProductPageId, @ProductId, N'Resident Portals Roles',@RoleTemplateProductPageTypeId, @UserId, @Now, 1)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+	
+	Select @ProductPageControlId = MAX(ProductPageControlId) +1 from [UserManagement].[ProductPageControl]
+
+	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate])
+	VALUES (@ProductPageControlId, @ProductPageId, @ControlId, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+END
+
+--On-Site 
+SET @ProductId  = 23
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId and ProductPageTypeId = 3)
+BEGIN
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	Select @ControlId = MAX(controlid) +1 from [UserManagement].[Control]
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId, NULL, 8, N'OnSiteRoleTemplateTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+1, @ControlId, 9, N'OnSiteRoleTemplateRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)
+	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+2, @ControlId+1, 2, N'OnSiteRoleTemplateRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+3, @ControlId+2, 7, N'OnSiteRoleTemplateRoleRadioUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+4, @ControlId+2, 5, N'OnSiteRoleTemplateRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)	
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+	
+	Select @ControlAttributeId = MAX(ControlAttributeId) +1 from [UserManagement].[ControlAttribute]
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId, @ControlId+1, N'Default', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+1, @ControlId+1, N'Hide', N'False', @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+	
+	Select @ProductPageId = MAX(ProductPageId) +1 from [UserManagement].[ProductPage]
+
+	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName],[ProductPageTypeId], [CreatedBy], [CreatedDate], [IsActive])
+	VALUES (@ProductPageId, @ProductId, N'On-Site Roles',@RoleTemplateProductPageTypeId, @UserId, @Now, 1)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+	
+	Select @ProductPageControlId = MAX(ProductPageControlId) +1 from [UserManagement].[ProductPageControl]
+
+	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate])
+	VALUES (@ProductPageControlId, @ProductPageId, @ControlId, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+END
+
+--UnifiedAmenities
+SET @ProductId  = 26
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId and ProductPageTypeId = 3)
+BEGIN
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	Select @ControlId = MAX(controlid) +1 from [UserManagement].[Control]
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId, NULL, 8, N'UnifiedAmenitiesRoleTemplateTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+1, @ControlId, 9, N'UnifiedAmenitiesRoleTemplateRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)
+	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+2, @ControlId+1, 2, N'UnifiedAmenitiesRoleTemplateRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+3, @ControlId+2, 7, N'UnifiedAmenitiesRoleTemplateRoleRadioUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+4, @ControlId+2, 5, N'UnifiedAmenitiesRoleTemplateRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)		
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+5, @ControlId+2, 5, N'UnifiedAmenitiesRoleTemplateRoleTypeLabelUIId', N'Role Type', N'roletype', 3, @UserId, @Now)
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+	
+	Select @ControlAttributeId = MAX(ControlAttributeId) +1 from [UserManagement].[ControlAttribute]
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId, @ControlId+1, N'Default', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+1, @ControlId+1, N'Hide', N'False', @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+	
+	Select @ProductPageId = MAX(ProductPageId) +1 from [UserManagement].[ProductPage]
+
+	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName],[ProductPageTypeId], [CreatedBy], [CreatedDate], [IsActive])
+	VALUES (@ProductPageId, @ProductId, N'Unified Amenities Roles',@RoleTemplateProductPageTypeId, @UserId, @Now, 1)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+	
+	Select @ProductPageControlId = MAX(ProductPageControlId) +1 from [UserManagement].[ProductPageControl]
+
+	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate])
+	VALUES (@ProductPageControlId, @ProductPageId, @ControlId, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+END
+
+--IntegrationMarketplace
+SET @ProductId  = 39
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId and ProductPageTypeId = 3)
+BEGIN
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	Select @ControlId = MAX(controlid) +1 from [UserManagement].[Control]
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId, NULL, 8, N'IntegrationMarketplaceRoleTemplateTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+1, @ControlId, 9, N'IntegrationMarketplaceRoleTemplateRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)
+	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+2, @ControlId+1, 2, N'IntegrationMarketplaceRoleTemplateRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+3, @ControlId+2, 7, N'IntegrationMarketplaceRoleTemplateRoleRadioUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+4, @ControlId+2, 5, N'IntegrationMarketplaceRoleTemplateRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)	
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+	
+	Select @ControlAttributeId = MAX(ControlAttributeId) +1 from [UserManagement].[ControlAttribute]
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId, @ControlId+1, N'Default', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+1, @ControlId+1, N'Hide', N'False', @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+	
+	Select @ProductPageId = MAX(ProductPageId) +1 from [UserManagement].[ProductPage]
+
+	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName],[ProductPageTypeId], [CreatedBy], [CreatedDate], [IsActive])
+	VALUES (@ProductPageId, @ProductId, N'Integration Marketplace Roles',@RoleTemplateProductPageTypeId, @UserId, @Now, 1)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+	
+	Select @ProductPageControlId = MAX(ProductPageControlId) +1 from [UserManagement].[ProductPageControl]
+
+	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate])
+	VALUES (@ProductPageControlId, @ProductPageId, @ControlId, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+END
+
+--ILMLeadManagement
+SET @ProductId  = 40
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId and ProductPageTypeId = 3)
+BEGIN
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	Select @ControlId = MAX(controlid) +1 from [UserManagement].[Control]
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId, NULL, 8, N'ILMLeadManagementRoleTemplateTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+1, @ControlId, 9, N'ILMLeadManagementRoleTemplateRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)
+	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+2, @ControlId+1, 2, N'ILMLeadManagementRoleTemplateRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+3, @ControlId+2, 7, N'ILMLeadManagementRoleTemplateRoleRadioUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+4, @ControlId+2, 5, N'ILMLeadManagementRoleTemplateRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)		
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+5, @ControlId+2, 5, N'ILMLeadManagementRoleTemplateRoleTypeLabelUIId', N'Role Type', N'roletype', 3, @UserId, @Now)	
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+	
+	Select @ControlAttributeId = MAX(ControlAttributeId) +1 from [UserManagement].[ControlAttribute]
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId, @ControlId+1, N'Default', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+1, @ControlId+1, N'Hide', N'False', @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+	
+	Select @ProductPageId = MAX(ProductPageId) +1 from [UserManagement].[ProductPage]
+
+	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName],[ProductPageTypeId], [CreatedBy], [CreatedDate], [IsActive])
+	VALUES (@ProductPageId, @ProductId, N'ILM Lead Management Roles',@RoleTemplateProductPageTypeId, @UserId, @Now, 1)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+	
+	Select @ProductPageControlId = MAX(ProductPageControlId) +1 from [UserManagement].[ProductPageControl]
+
+	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate])
+	VALUES (@ProductPageControlId, @ProductPageId, @ControlId, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+END
+
+--ILMLeasingAnalytics
+SET @ProductId  = 41
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId and ProductPageTypeId = 3)
+BEGIN
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	Select @ControlId = MAX(controlid) +1 from [UserManagement].[Control]
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId, NULL, 8, N'ILMLeasingAnalyticsRoleTemplateTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+1, @ControlId, 9, N'ILMLeasingAnalyticsRoleTemplateRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)
+	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+2, @ControlId+1, 2, N'ILMLeasingAnalyticsRoleTemplateRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+3, @ControlId+2, 7, N'ILMLeasingAnalyticsRoleTemplateRoleRadioUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+4, @ControlId+2, 5, N'ILMLeasingAnalyticsRoleTemplateRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)			
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+5, @ControlId+2, 5, N'ILMLeasingAnalyticsRoleTemplateRoleTypeLabelUIId', N'Role Type', N'roletype', 3, @UserId, @Now)
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+	
+	Select @ControlAttributeId = MAX(ControlAttributeId) +1 from [UserManagement].[ControlAttribute]
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId, @ControlId+1, N'Default', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+1, @ControlId+1, N'Hide', N'False', @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+	
+	Select @ProductPageId = MAX(ProductPageId) +1 from [UserManagement].[ProductPage]
+
+	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName],[ProductPageTypeId], [CreatedBy], [CreatedDate], [IsActive])
+	VALUES (@ProductPageId, @ProductId, N'ILM Leasing Analytics Roles',@RoleTemplateProductPageTypeId, @UserId, @Now, 1)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+	
+	Select @ProductPageControlId = MAX(ProductPageControlId) +1 from [UserManagement].[ProductPageControl]
+
+	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate])
+	VALUES (@ProductPageControlId, @ProductPageId, @ControlId, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+END
+
+--WasteManagementSolution
+SET @ProductId  = 57
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId and ProductPageTypeId = 3)
+BEGIN
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	Select @ControlId = MAX(controlid) +1 from [UserManagement].[Control]
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId, NULL, 8, N'WasteManagementSolutionRoleTemplateTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+1, @ControlId, 9, N'WasteManagementSolutionRoleTemplateRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)
+	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+2, @ControlId+1, 2, N'WasteManagementSolutionRoleTemplateRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+3, @ControlId+2, 7, N'WasteManagementSolutionRoleTemplateRoleRadioUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+4, @ControlId+2, 5, N'WasteManagementSolutionRoleTemplateRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)			
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+5, @ControlId+2, 5, N'WasteManagementSolutionRoleTemplateRoleTypeLabelUIId', N'Role Type', N'roletype', 3, @UserId, @Now)	
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+	
+	Select @ControlAttributeId = MAX(ControlAttributeId) +1 from [UserManagement].[ControlAttribute]
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId, @ControlId+1, N'Default', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+1, @ControlId+1, N'Hide', N'False', @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+	
+	Select @ProductPageId = MAX(ProductPageId) +1 from [UserManagement].[ProductPage]
+
+	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName],[ProductPageTypeId], [CreatedBy], [CreatedDate], [IsActive])
+	VALUES (@ProductPageId, @ProductId, N'Waste Management Solution Roles',@RoleTemplateProductPageTypeId, @UserId, @Now, 1)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+	
+	Select @ProductPageControlId = MAX(ProductPageControlId) +1 from [UserManagement].[ProductPageControl]
+
+	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate])
+	VALUES (@ProductPageControlId, @ProductPageId, @ControlId, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+END
+
+--IntelligentBuildingEnergy
+SET @ProductId  = 58
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId and ProductPageTypeId = 3)
+BEGIN
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	Select @ControlId = MAX(controlid) +1 from [UserManagement].[Control]
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId, NULL, 8, N'IntelligentBuildingEnergyRoleTemplateTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+1, @ControlId, 9, N'IntelligentBuildingEnergyRoleTemplateRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)
+	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+2, @ControlId+1, 2, N'IntelligentBuildingEnergyRoleTemplateRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+3, @ControlId+2, 7, N'IntelligentBuildingEnergyRoleTemplateRoleRadioUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+4, @ControlId+2, 5, N'IntelligentBuildingEnergyRoleTemplateRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)		
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+5, @ControlId+2, 5, N'IntelligentBuildingEnergyRoleTemplateRoleTypeLabelUIId', N'Role Type', N'roletype', 3, @UserId, @Now)	
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+	
+	Select @ControlAttributeId = MAX(ControlAttributeId) +1 from [UserManagement].[ControlAttribute]
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId, @ControlId+1, N'Default', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+1, @ControlId+1, N'Hide', N'False', @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+	
+	Select @ProductPageId = MAX(ProductPageId) +1 from [UserManagement].[ProductPage]
+
+	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName],[ProductPageTypeId], [CreatedBy], [CreatedDate], [IsActive])
+	VALUES (@ProductPageId, @ProductId, N'Intelligent Building Energy Roles',@RoleTemplateProductPageTypeId, @UserId, @Now, 1)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+	
+	Select @ProductPageControlId = MAX(ProductPageControlId) +1 from [UserManagement].[ProductPageControl]
+
+	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate])
+	VALUES (@ProductPageControlId, @ProductPageId, @ControlId, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+END
+
+--SmartWater
+SET @ProductId  = 59
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId and ProductPageTypeId = 3)
+BEGIN
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	Select @ControlId = MAX(controlid) +1 from [UserManagement].[Control]
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId, NULL, 8, N'SmartWaterRoleTemplateTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+1, @ControlId, 9, N'SmartWaterRoleTemplateRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)
+	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+2, @ControlId+1, 2, N'SmartWaterRoleTemplateRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+3, @ControlId+2, 7, N'SmartWaterRoleTemplateRoleRadioUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+4, @ControlId+2, 5, N'SmartWaterRoleTemplateRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)			
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+5, @ControlId+2, 5, N'SmartWaterRoleTemplateRoleTypeLabelUIId', N'Role Type', N'roletype', 3, @UserId, @Now)
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+	
+	Select @ControlAttributeId = MAX(ControlAttributeId) +1 from [UserManagement].[ControlAttribute]
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId, @ControlId+1, N'Default', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+1, @ControlId+1, N'Hide', N'False', @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+	
+	Select @ProductPageId = MAX(ProductPageId) +1 from [UserManagement].[ProductPage]
+
+	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName],[ProductPageTypeId], [CreatedBy], [CreatedDate], [IsActive])
+	VALUES (@ProductPageId, @ProductId, N'Smart Water Roles',@RoleTemplateProductPageTypeId, @UserId, @Now, 1)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+	
+	Select @ProductPageControlId = MAX(ProductPageControlId) +1 from [UserManagement].[ProductPageControl]
+
+	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate])
+	VALUES (@ProductPageControlId, @ProductPageId, @ControlId, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+END
+
+--HomeSharing
+SET @ProductId  = 60
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId and ProductPageTypeId = 3)
+BEGIN
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	Select @ControlId = MAX(controlid) +1 from [UserManagement].[Control]
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId, NULL, 8, N'HomeSharingRoleTemplateTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+1, @ControlId, 9, N'HomeSharingRoleTemplateRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)
+	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+2, @ControlId+1, 2, N'HomeSharingRoleTemplateRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+3, @ControlId+2, 7, N'HomeSharingRoleTemplateRoleRadioUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+4, @ControlId+2, 5, N'HomeSharingRoleTemplateRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)	
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+	
+	Select @ControlAttributeId = MAX(ControlAttributeId) +1 from [UserManagement].[ControlAttribute]
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId, @ControlId+1, N'Default', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+1, @ControlId+1, N'Hide', N'False', @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+	
+	Select @ProductPageId = MAX(ProductPageId) +1 from [UserManagement].[ProductPage]
+
+	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName],[ProductPageTypeId], [CreatedBy], [CreatedDate], [IsActive])
+	VALUES (@ProductPageId, @ProductId, N'Home Sharing Roles',@RoleTemplateProductPageTypeId, @UserId, @Now, 1)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+	
+	Select @ProductPageControlId = MAX(ProductPageControlId) +1 from [UserManagement].[ProductPageControl]
+
+	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate])
+	VALUES (@ProductPageControlId, @ProductPageId, @ControlId, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+END
+
+--HandsOnTrainingSystem
+SET @ProductId  = 63
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId and ProductPageTypeId = 3)
+BEGIN
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	Select @ControlId = MAX(controlid) +1 from [UserManagement].[Control]
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId, NULL, 8, N'HandsOnTrainingSystemRoleTemplateTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+1, @ControlId, 9, N'HandsOnTrainingSystemRoleTemplateRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)
+	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+2, @ControlId+1, 2, N'HandsOnTrainingSystemRoleTemplateRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+3, @ControlId+2, 7, N'HandsOnTrainingSystemRoleTemplateRoleRadioUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+4, @ControlId+2, 5, N'HandsOnTrainingSystemRoleTemplateRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)	
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+	
+	Select @ControlAttributeId = MAX(ControlAttributeId) +1 from [UserManagement].[ControlAttribute]
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId, @ControlId+1, N'Default', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+1, @ControlId+1, N'Hide', N'False', @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+	
+	Select @ProductPageId = MAX(ProductPageId) +1 from [UserManagement].[ProductPage]
+
+	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName],[ProductPageTypeId], [CreatedBy], [CreatedDate], [IsActive])
+	VALUES (@ProductPageId, @ProductId, N'Hands-On Training System Roles',@RoleTemplateProductPageTypeId, @UserId, @Now, 1)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+	
+	Select @ProductPageControlId = MAX(ProductPageControlId) +1 from [UserManagement].[ProductPageControl]
+
+	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate])
+	VALUES (@ProductPageControlId, @ProductPageId, @ControlId, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+END
+
+--SelfGuidedTour
+SET @ProductId  = 65
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId and ProductPageTypeId = 3)
+BEGIN
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	Select @ControlId = MAX(controlid) +1 from [UserManagement].[Control]
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId, NULL, 8, N'SelfGuidedTourRoleTemplateTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+1, @ControlId, 9, N'SelfGuidedTourRoleTemplateRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)
+	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+2, @ControlId+1, 2, N'SelfGuidedTourRoleTemplateRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+3, @ControlId+2, 7, N'SelfGuidedTourRoleTemplateRoleRadioUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+4, @ControlId+2, 5, N'SelfGuidedTourRoleTemplateRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)			
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+5, @ControlId+2, 5, N'SelfGuidedTourRoleTemplateRoleTypeLabelUIId', N'Role Type', N'roletype', 3, @UserId, @Now)	
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+	
+	Select @ControlAttributeId = MAX(ControlAttributeId) +1 from [UserManagement].[ControlAttribute]
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId, @ControlId+1, N'Default', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+1, @ControlId+1, N'Hide', N'False', @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+	
+	Select @ProductPageId = MAX(ProductPageId) +1 from [UserManagement].[ProductPage]
+
+	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName],[ProductPageTypeId], [CreatedBy], [CreatedDate], [IsActive])
+	VALUES (@ProductPageId, @ProductId, N'Self-Guided Tour Roles',@RoleTemplateProductPageTypeId, @UserId, @Now, 1)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+	
+	Select @ProductPageControlId = MAX(ProductPageControlId) +1 from [UserManagement].[ProductPageControl]
+
+	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate])
+	VALUES (@ProductPageControlId, @ProductPageId, @ControlId, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+END
+
+--Lead2Lease
+SET @ProductId  = 6
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId and ProductPageTypeId = 3)
+BEGIN
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	Select @ControlId = MAX(controlid) +1 from [UserManagement].[Control]
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId, NULL, 8, N'Lead2LeaseRoleTemplateTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+1, @ControlId, 9, N'Lead2LeaseRoleTemplateRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)
+	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+2, @ControlId+1, 3, N'Lead2LeaseRoleTemplateRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+3, @ControlId+2, 10, N'Lead2LeaseRoleTemplateCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+4, @ControlId+2, 5, N'Lead2LeaseRoleTemplateRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+	
+	Select @ControlAttributeId = MAX(ControlAttributeId) +1 from [UserManagement].[ControlAttribute]
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId, @ControlId+1, N'Default', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+1, @ControlId+1, N'Hide', N'False', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+2, @ControlId+2, N'ShowSelectAll', N'True', @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+	
+	Select @ProductPageId = MAX(ProductPageId) +1 from [UserManagement].[ProductPage]
+
+	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName],[ProductPageTypeId], [CreatedBy], [CreatedDate], [IsActive])
+	VALUES (@ProductPageId, @ProductId, N'Lead2Lease Roles',@RoleTemplateProductPageTypeId, @UserId, @Now, 1)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+	
+	Select @ProductPageControlId = MAX(ProductPageControlId) +1 from [UserManagement].[ProductPageControl]
+
+	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate])
+	VALUES (@ProductPageControlId, @ProductPageId, @ControlId, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+END
+
+--FinancialSuite
+SET @ProductId  = 8
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId and ProductPageTypeId = 3)
+BEGIN
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	Select @ControlId = MAX(controlid) +1 from [UserManagement].[Control]
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId, NULL, 8, N'FinancialSuiteRoleTemplateTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+1, @ControlId, 9, N'FinancialSuiteRoleTemplateRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)	
+	
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (@ControlId+2, @ControlId+1, 5, N'FinancialSuiteRoleTemplateOptions:LabelUIId', N'Options:', N'', 1, @UserId, @Now)
+	
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (@ControlId+3, @ControlId+1, 1, N'FinancialSuiteRoleTemplateAccesstoSiteSpendManagementonlySwitchUIId', N'Access to Site Spend Management only', N'hasAccessToSiteSpendManagementOnly', 2, @UserId, @Now)
+	
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (@ControlId+4, @ControlId+1, 1, N'FinancialSuiteRoleTemplateAllowaccesstoallcurrentandfutureentitiesSwitchUIId', N'Allow access to all current and future entities', N'hasAccessToAllCurrentFutureProperties', 3, @UserId, @Now)
+	
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (@ControlId+5, @ControlId+1, 1, N'FinancialSuiteRoleTemplateAccountingAdminSwitchUIId', N'Accounting Admin', N'isAccountingAdmin', 4, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+6, @ControlId+1, 3, N'FinancialSuiteRoleTemplateRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+7, @ControlId+6, 10, N'FinancialSuiteRoleTemplateCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+8, @ControlId+6, 5, N'FinancialSuiteRoleTemplateRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+	
+	Select @ControlAttributeId = MAX(ControlAttributeId) +1 from [UserManagement].[ControlAttribute]
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId, @ControlId+1, N'Default', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+1, @ControlId+1, N'Hide', N'False', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+2, @ControlId+2, N'ShowSelectAll', N'True', @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+	
+	Select @ProductPageId = MAX(ProductPageId) +1 from [UserManagement].[ProductPage]
+
+	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName],[ProductPageTypeId], [CreatedBy], [CreatedDate], [IsActive])
+	VALUES (@ProductPageId, @ProductId, N'Financial Suite Roles',@RoleTemplateProductPageTypeId, @UserId, @Now, 1)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+	
+	Select @ProductPageControlId = MAX(ProductPageControlId) +1 from [UserManagement].[ProductPageControl]
+
+	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate])
+	VALUES (@ProductPageControlId, @ProductPageId, @ControlId, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+END
+
+--DocumentDirector
+SET @ProductId  = 20
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId and ProductPageTypeId = 3)
+BEGIN
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	Select @ControlId = MAX(controlid) +1 from [UserManagement].[Control]
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId, NULL, 8, N'DocumentDirectorRoleTemplateTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+1, @ControlId, 9, N'DocumentDirectorRoleTemplateRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)
+	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+2, @ControlId+1, 3, N'DocumentDirectorRoleTemplateRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+3, @ControlId+2, 10, N'DocumentDirectorRoleTemplateCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+4, @ControlId+2, 5, N'DocumentDirectorRoleTemplateRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+	
+	Select @ControlAttributeId = MAX(ControlAttributeId) +1 from [UserManagement].[ControlAttribute]
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId, @ControlId+1, N'Default', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+1, @ControlId+1, N'Hide', N'False', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+2, @ControlId+2, N'ShowSelectAll', N'True', @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+	
+	Select @ProductPageId = MAX(ProductPageId) +1 from [UserManagement].[ProductPage]
+
+	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName],[ProductPageTypeId], [CreatedBy], [CreatedDate], [IsActive])
+	VALUES (@ProductPageId, @ProductId, N'Document Director Roles',@RoleTemplateProductPageTypeId, @UserId, @Now, 1)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+	
+	Select @ProductPageControlId = MAX(ProductPageControlId) +1 from [UserManagement].[ProductPageControl]
+
+	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate])
+	VALUES (@ProductPageControlId, @ProductPageId, @ControlId, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+END
+
+--BusinessIntelligence
+SET @ProductId  = 29
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId and ProductPageTypeId = 3)
+BEGIN
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	Select @ControlId = MAX(controlid) +1 from [UserManagement].[Control]
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId, NULL, 8, N'BusinessIntelligenceRoleTemplateTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+1, @ControlId, 9, N'BusinessIntelligenceRoleTemplateRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)
+	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+2, @ControlId+1, 3, N'BusinessIntelligenceRoleTemplateRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+3, @ControlId+2, 10, N'BusinessIntelligenceRoleTemplateCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+4, @ControlId+2, 5, N'BusinessIntelligenceRoleTemplateRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+	
+	Select @ControlAttributeId = MAX(ControlAttributeId) +1 from [UserManagement].[ControlAttribute]
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId, @ControlId+1, N'Default', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+1, @ControlId+1, N'Hide', N'False', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+2, @ControlId+2, N'ShowSelectAll', N'True', @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+	
+	Select @ProductPageId = MAX(ProductPageId) +1 from [UserManagement].[ProductPage]
+
+	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName],[ProductPageTypeId], [CreatedBy], [CreatedDate], [IsActive])
+	VALUES (@ProductPageId, @ProductId, N'Business Intelligence Roles',@RoleTemplateProductPageTypeId, @UserId, @Now, 1)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+	
+	Select @ProductPageControlId = MAX(ProductPageControlId) +1 from [UserManagement].[ProductPageControl]
+
+	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate])
+	VALUES (@ProductPageControlId, @ProductPageId, @ControlId, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+END
+
+--InvestmentAnalytics
+SET @ProductId  = 31
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId and ProductPageTypeId = 3)
+BEGIN
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	Select @ControlId = MAX(controlid) +1 from [UserManagement].[Control]
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId, NULL, 8, N'InvestmentAnalyticsRoleTemplateTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+1, @ControlId, 9, N'InvestmentAnalyticsRoleTemplateRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)
+	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+2, @ControlId+1, 3, N'InvestmentAnalyticsRoleTemplateRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+3, @ControlId+2, 10, N'InvestmentAnalyticsRoleTemplateCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+4, @ControlId+2, 5, N'InvestmentAnalyticsRoleTemplateRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+	
+	Select @ControlAttributeId = MAX(ControlAttributeId) +1 from [UserManagement].[ControlAttribute]
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId, @ControlId+1, N'Default', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+1, @ControlId+1, N'Hide', N'False', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+2, @ControlId+2, N'ShowSelectAll', N'True', @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+	
+	Select @ProductPageId = MAX(ProductPageId) +1 from [UserManagement].[ProductPage]
+
+	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName],[ProductPageTypeId], [CreatedBy], [CreatedDate], [IsActive])
+	VALUES (@ProductPageId, @ProductId, N'Investment Analytics Roles',@RoleTemplateProductPageTypeId, @UserId, @Now, 1)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+	
+	Select @ProductPageControlId = MAX(ProductPageControlId) +1 from [UserManagement].[ProductPageControl]
+
+	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate])
+	VALUES (@ProductPageControlId, @ProductPageId, @ControlId, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+END
+
+--YieldStar
+SET @ProductId  = 32
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId and ProductPageTypeId = 3)
+BEGIN
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	Select @ControlId = MAX(controlid) +1 from [UserManagement].[Control]
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId, NULL, 8, N'YieldStarRoleTemplateTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+1, @ControlId, 9, N'YieldStarRoleTemplateRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)
+	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+2, @ControlId+1, 3, N'YieldStarRoleTemplateRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+3, @ControlId+2, 10, N'YieldStarRoleTemplateCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+4, @ControlId+2, 5, N'YieldStarRoleTemplateRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+	
+	Select @ControlAttributeId = MAX(ControlAttributeId) +1 from [UserManagement].[ControlAttribute]
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId, @ControlId+1, N'Default', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+1, @ControlId+1, N'Hide', N'False', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+2, @ControlId+2, N'ShowSelectAll', N'True', @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+	
+	Select @ProductPageId = MAX(ProductPageId) +1 from [UserManagement].[ProductPage]
+
+	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName],[ProductPageTypeId], [CreatedBy], [CreatedDate], [IsActive])
+	VALUES (@ProductPageId, @ProductId, N'YieldStar Roles',@RoleTemplateProductPageTypeId, @UserId, @Now, 1)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+	
+	Select @ProductPageControlId = MAX(ProductPageControlId) +1 from [UserManagement].[ProductPageControl]
+
+	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate])
+	VALUES (@ProductPageControlId, @ProductPageId, @ControlId, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+END
+
+--Benchmarking
+SET @ProductId  = 34
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId and ProductPageTypeId = 3)
+BEGIN
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	Select @ControlId = MAX(controlid) +1 from [UserManagement].[Control]
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId, NULL, 8, N'BenchmarkingRoleTemplateTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+1, @ControlId, 9, N'BenchmarkingRoleTemplateRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)
+	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+2, @ControlId+1, 3, N'BenchmarkingRoleTemplateRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+3, @ControlId+2, 10, N'BenchmarkingRoleTemplateCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+4, @ControlId+2, 5, N'BenchmarkingRoleTemplateRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+	
+	Select @ControlAttributeId = MAX(ControlAttributeId) +1 from [UserManagement].[ControlAttribute]
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId, @ControlId+1, N'Default', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+1, @ControlId+1, N'Hide', N'False', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+2, @ControlId+2, N'ShowSelectAll', N'True', @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+	
+	Select @ProductPageId = MAX(ProductPageId) +1 from [UserManagement].[ProductPage]
+
+	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName],[ProductPageTypeId], [CreatedBy], [CreatedDate], [IsActive])
+	VALUES (@ProductPageId, @ProductId, N'Benchmarking Roles',@RoleTemplateProductPageTypeId, @UserId, @Now, 1)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+	
+	Select @ProductPageControlId = MAX(ProductPageControlId) +1 from [UserManagement].[ProductPageControl]
+
+	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate])
+	VALUES (@ProductPageControlId, @ProductPageId, @ControlId, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+END
+
+--DepositAlternative
+SET @ProductId  = 47
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId and ProductPageTypeId = 3)
+BEGIN
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	Select @ControlId = MAX(controlid) +1 from [UserManagement].[Control]
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId, NULL, 8, N'DepositAlternativeRoleTemplateTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+1, @ControlId, 9, N'DepositAlternativeRoleTemplateRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)
+	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+2, @ControlId+1, 3, N'DepositAlternativeRoleTemplateRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+3, @ControlId+2, 10, N'DepositAlternativeRoleTemplateCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+4, @ControlId+2, 5, N'DepositAlternativeRoleTemplateRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+	
+	Select @ControlAttributeId = MAX(ControlAttributeId) +1 from [UserManagement].[ControlAttribute]
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId, @ControlId+1, N'Default', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+1, @ControlId+1, N'Hide', N'False', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+2, @ControlId+2, N'ShowSelectAll', N'True', @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+	
+	Select @ProductPageId = MAX(ProductPageId) +1 from [UserManagement].[ProductPage]
+
+	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName],[ProductPageTypeId], [CreatedBy], [CreatedDate], [IsActive])
+	VALUES (@ProductPageId, @ProductId, N'Deposit Alternative Roles',@RoleTemplateProductPageTypeId, @UserId, @Now, 1)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+	
+	Select @ProductPageControlId = MAX(ProductPageControlId) +1 from [UserManagement].[ProductPageControl]
+
+	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate])
+	VALUES (@ProductPageControlId, @ProductPageId, @ControlId, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+END
+
+--ClickPay
+SET @ProductId  = 48
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId and ProductPageTypeId = 3)
+BEGIN
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	Select @ControlId = MAX(controlid) +1 from [UserManagement].[Control]
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId, NULL, 8, N'ClickPayRoleTemplateTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+1, @ControlId, 9, N'ClickPayRoleTemplateRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)
+	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+2, @ControlId+1, 3, N'ClickPayRoleTemplateRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+3, @ControlId+2, 10, N'ClickPayRoleTemplateCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+4, @ControlId+2, 5, N'ClickPayRoleTemplateRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+	
+	Select @ControlAttributeId = MAX(ControlAttributeId) +1 from [UserManagement].[ControlAttribute]
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId, @ControlId+1, N'Default', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+1, @ControlId+1, N'Hide', N'False', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+2, @ControlId+2, N'ShowSelectAll', N'True', @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+	
+	Select @ProductPageId = MAX(ProductPageId) +1 from [UserManagement].[ProductPage]
+
+	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName],[ProductPageTypeId], [CreatedBy], [CreatedDate], [IsActive])
+	VALUES (@ProductPageId, @ProductId, N'ClickPay Roles',@RoleTemplateProductPageTypeId, @UserId, @Now, 1)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+	
+	Select @ProductPageControlId = MAX(ProductPageControlId) +1 from [UserManagement].[ProductPageControl]
+
+	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate])
+	VALUES (@ProductPageControlId, @ProductPageId, @ControlId, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+END
+
+--LRO
+SET @ProductId  = 51
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId and ProductPageTypeId = 3)
+BEGIN
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	Select @ControlId = MAX(controlid) +1 from [UserManagement].[Control]
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId, NULL, 8, N'LRORoleTemplateTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+1, @ControlId, 9, N'LRORoleTemplateRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)
+	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+2, @ControlId+1, 3, N'LRORoleTemplateRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+3, @ControlId+2, 10, N'LRORoleTemplateCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+4, @ControlId+2, 5, N'LRORoleTemplateRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+	
+	Select @ControlAttributeId = MAX(ControlAttributeId) +1 from [UserManagement].[ControlAttribute]
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId, @ControlId+1, N'Default', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+1, @ControlId+1, N'Hide', N'False', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+2, @ControlId+2, N'ShowSelectAll', N'True', @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+	
+	Select @ProductPageId = MAX(ProductPageId) +1 from [UserManagement].[ProductPage]
+
+	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName],[ProductPageTypeId], [CreatedBy], [CreatedDate], [IsActive])
+	VALUES (@ProductPageId, @ProductId, N'LRO Roles',@RoleTemplateProductPageTypeId, @UserId, @Now, 1)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+	
+	Select @ProductPageControlId = MAX(ProductPageControlId) +1 from [UserManagement].[ProductPageControl]
+
+	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate])
+	VALUES (@ProductPageControlId, @ProductPageId, @ControlId, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+END
+
+--AmenityOptimization
+SET @ProductId  = 52
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId and ProductPageTypeId = 3)
+BEGIN
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	Select @ControlId = MAX(controlid) +1 from [UserManagement].[Control]
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId, NULL, 8, N'AmenityOptimizationRoleTemplateTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+1, @ControlId, 9, N'AmenityOptimizationRoleTemplateRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)
+	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+2, @ControlId+1, 3, N'AmenityOptimizationRoleTemplateRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+3, @ControlId+2, 10, N'AmenityOptimizationRoleTemplateCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+4, @ControlId+2, 5, N'AmenityOptimizationRoleTemplateRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+	
+	Select @ControlAttributeId = MAX(ControlAttributeId) +1 from [UserManagement].[ControlAttribute]
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId, @ControlId+1, N'Default', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+1, @ControlId+1, N'Hide', N'False', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+2, @ControlId+2, N'ShowSelectAll', N'True', @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+	
+	Select @ProductPageId = MAX(ProductPageId) +1 from [UserManagement].[ProductPage]
+
+	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName],[ProductPageTypeId], [CreatedBy], [CreatedDate], [IsActive])
+	VALUES (@ProductPageId, @ProductId, N'Amenity Optimization Roles',@RoleTemplateProductPageTypeId, @UserId, @Now, 1)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+	
+	Select @ProductPageControlId = MAX(ProductPageControlId) +1 from [UserManagement].[ProductPageControl]
+
+	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate])
+	VALUES (@ProductPageControlId, @ProductPageId, @ControlId, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+END
+
+--AIRevenueManagement
+SET @ProductId  = 53
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId and ProductPageTypeId = 3)
+BEGIN
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	Select @ControlId = MAX(controlid) +1 from [UserManagement].[Control]
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId, NULL, 8, N'AIRevenueManagementRoleTemplateTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+1, @ControlId, 9, N'AIRevenueManagementRoleTemplateRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)
+	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+2, @ControlId+1, 3, N'AIRevenueManagementRoleTemplateRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+3, @ControlId+2, 10, N'AIRevenueManagementRoleTemplateCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+4, @ControlId+2, 5, N'AIRevenueManagementRoleTemplateRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+	
+	Select @ControlAttributeId = MAX(ControlAttributeId) +1 from [UserManagement].[ControlAttribute]
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId, @ControlId+1, N'Default', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+1, @ControlId+1, N'Hide', N'False', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+2, @ControlId+2, N'ShowSelectAll', N'True', @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+	
+	Select @ProductPageId = MAX(ProductPageId) +1 from [UserManagement].[ProductPage]
+
+	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName],[ProductPageTypeId], [CreatedBy], [CreatedDate], [IsActive])
+	VALUES (@ProductPageId, @ProductId, N'AI Revenue Management Roles',@RoleTemplateProductPageTypeId, @UserId, @Now, 1)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+	
+	Select @ProductPageControlId = MAX(ProductPageControlId) +1 from [UserManagement].[ProductPageControl]
+
+	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate])
+	VALUES (@ProductPageControlId, @ProductPageId, @ControlId, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+END
+
+--RentControl
+SET @ProductId  = 54
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId and ProductPageTypeId = 3)
+BEGIN
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	Select @ControlId = MAX(controlid) +1 from [UserManagement].[Control]
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId, NULL, 8, N'RentControlRoleTemplateTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+1, @ControlId, 9, N'RentControlRoleTemplateRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)
+	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+2, @ControlId+1, 3, N'RentControlRoleTemplateRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+3, @ControlId+2, 10, N'RentControlRoleTemplateCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+4, @ControlId+2, 5, N'RentControlRoleTemplateRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+	
+	Select @ControlAttributeId = MAX(ControlAttributeId) +1 from [UserManagement].[ControlAttribute]
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId, @ControlId+1, N'Default', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+1, @ControlId+1, N'Hide', N'False', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+2, @ControlId+2, N'ShowSelectAll', N'True', @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+	
+	Select @ProductPageId = MAX(ProductPageId) +1 from [UserManagement].[ProductPage]
+
+	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName],[ProductPageTypeId], [CreatedBy], [CreatedDate], [IsActive])
+	VALUES (@ProductPageId, @ProductId, N'Rent Control Roles',@RoleTemplateProductPageTypeId, @UserId, @Now, 1)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+	
+	Select @ProductPageControlId = MAX(ProductPageControlId) +1 from [UserManagement].[ProductPageControl]
+
+	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate])
+	VALUES (@ProductPageControlId, @ProductPageId, @ControlId, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+END
+
+--MarketAnalytics
+SET @ProductId  = 66
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId and ProductPageTypeId = 3)
+BEGIN
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	Select @ControlId = MAX(controlid) +1 from [UserManagement].[Control]
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId, NULL, 8, N'MarketAnalyticsRoleTemplateTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+1, @ControlId, 9, N'MarketAnalyticsRoleTemplateRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)
+	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+2, @ControlId+1, 3, N'MarketAnalyticsRoleTemplateRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+3, @ControlId+2, 10, N'MarketAnalyticsRoleTemplateCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+4, @ControlId+2, 5, N'MarketAnalyticsRoleTemplateRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+	
+	Select @ControlAttributeId = MAX(ControlAttributeId) +1 from [UserManagement].[ControlAttribute]
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId, @ControlId+1, N'Default', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+1, @ControlId+1, N'Hide', N'False', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+2, @ControlId+2, N'ShowSelectAll', N'True', @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+	
+	Select @ProductPageId = MAX(ProductPageId) +1 from [UserManagement].[ProductPage]
+
+	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName],[ProductPageTypeId], [CreatedBy], [CreatedDate], [IsActive])
+	VALUES (@ProductPageId, @ProductId, N'Market Analytics Roles',@RoleTemplateProductPageTypeId, @UserId, @Now, 1)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+	
+	Select @ProductPageControlId = MAX(ProductPageControlId) +1 from [UserManagement].[ProductPageControl]
+
+	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate])
+	VALUES (@ProductPageControlId, @ProductPageId, @ControlId, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+END
+
+--PerformanceAnalytics
+SET @ProductId  = 30
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId and ProductPageTypeId = 3)
+BEGIN
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	Select @ControlId = MAX(controlid) +1 from [UserManagement].[Control]
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId, NULL, 8, N'PerformanceAnalyticsRoleTemplateTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+1, @ControlId, 9, N'PerformanceAnalyticsRoleTemplateRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)
+	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+2, @ControlId+1, 3, N'PerformanceAnalyticsRoleTemplateRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+3, @ControlId+2, 10, N'PerformanceAnalyticsRoleTemplateCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+4, @ControlId+2, 5, N'PerformanceAnalyticsRoleTemplateRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+	
+	Select @ControlAttributeId = MAX(ControlAttributeId) +1 from [UserManagement].[ControlAttribute]
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId, @ControlId+1, N'Default', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+1, @ControlId+1, N'Hide', N'False', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+2, @ControlId+2, N'ShowSelectAll', N'True', @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+	
+	Select @ProductPageId = MAX(ProductPageId) +1 from [UserManagement].[ProductPage]
+
+	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName],[ProductPageTypeId], [CreatedBy], [CreatedDate], [IsActive])
+	VALUES (@ProductPageId, @ProductId, N'Performance Analytics Roles',@RoleTemplateProductPageTypeId, @UserId, @Now, 1)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+	
+	Select @ProductPageControlId = MAX(ProductPageControlId) +1 from [UserManagement].[ProductPageControl]
+
+	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate])
+	VALUES (@ProductPageControlId, @ProductPageId, @ControlId, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+END
+
+--ClientPortal
+SET @ProductId  = 14
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId and ProductPageTypeId = 3)
+BEGIN
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	Select @ControlId = MAX(controlid) +1 from [UserManagement].[Control]
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId, NULL, 8, N'ClientPortalRoleTemplateTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+1, @ControlId, 9, N'ClientPortalRoleTemplateRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)
+	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+2, @ControlId+1, 3, N'ClientPortalRoleTemplateRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+3, @ControlId+2, 10, N'ClientPortalRoleTemplateCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+4, @ControlId+2, 5, N'ClientPortalRoleTemplateRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+5, @ControlId+2, 5, N'ClientPortalRoleTemplateRoleTypeLabelUIId', N'Role Type', N'roletype', 3, @UserId, @Now)
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+	
+	Select @ControlAttributeId = MAX(ControlAttributeId) +1 from [UserManagement].[ControlAttribute]
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId, @ControlId+1, N'Default', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+1, @ControlId+1, N'Hide', N'False', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+2, @ControlId+2, N'ShowSelectAll', N'True', @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+	
+	Select @ProductPageId = MAX(ProductPageId) +1 from [UserManagement].[ProductPage]
+
+	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName],[ProductPageTypeId], [CreatedBy], [CreatedDate], [IsActive])
+	VALUES (@ProductPageId, @ProductId, N'Client Portal Roles',@RoleTemplateProductPageTypeId, @UserId, @Now, 1)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+	
+	Select @ProductPageControlId = MAX(ProductPageControlId) +1 from [UserManagement].[ProductPageControl]
+
+	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate])
+	VALUES (@ProductPageControlId, @ProductPageId, @ControlId, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+END
+
+--VendorCredentialing
+SET @ProductId  = 16
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId and ProductPageTypeId = 3)
+BEGIN
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	Select @ControlId = MAX(controlid) +1 from [UserManagement].[Control]
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId, NULL, 8, N'VendorCredentialingRoleTemplateTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+1, @ControlId, 9, N'VendorCredentialingRoleTemplateAccessTypeTabUIId', N'Access Type', NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+2, @ControlId+1, 5, N'VendorCredentialingRoleTemplateAccessTypeRolesLabelUIId', N'Access Type', NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+3, @ControlId+1, 7, N'VendorCredentialingRoleTemplateSpecificPropertyRolesRadioUIId', N'Specific Property', N'property', 2, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+4, @ControlId+1, 7, N'VendorCredentialingRoleTemplatePropertyGroupRolesRadioUIId', N'Property Group', N'propertyGroup', 3, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+5, @ControlId+1, 7, N'VendorCredentialingRoleTemplateAllPropertiesRolesRadioUIId', N'All Properties', N'allProperties', 4, @UserId, @Now)
+
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+6, @ControlId, 9, N'VendorCredentialingRoleTemplateRolesTabUIId', N'Roles', NULL, 2, @UserId, @Now)
+	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+7, @ControlId+6, 3, N'VendorCredentialingRoleTemplateRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+8, @ControlId+6, 10, N'VendorCredentialingRoleTemplateCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+9, @ControlId+6, 5, N'VendorCredentialingRoleTemplateRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+10, @ControlId+6, 5, N'VendorCredentialingRoleTemplateDescriptionLabelUIId', N'Description', N'description', 3, @UserId, @Now)	
+
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+	
+	Select @ControlAttributeId = MAX(ControlAttributeId) +1 from [UserManagement].[ControlAttribute]
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId, @ControlId+1, N'Default', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+1, @ControlId+1, N'Hide', N'False', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+2, @ControlId+6, N'Default', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+3, @ControlId+6, N'Hide', N'False', @UserId, @Now)
+
+	
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+2, @ControlId+7, N'ShowSelectAll', N'True', @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+	
+	Select @ProductPageId = MAX(ProductPageId) +1 from [UserManagement].[ProductPage]
+
+	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName],[ProductPageTypeId], [CreatedBy], [CreatedDate], [IsActive])
+	VALUES (@ProductPageId, @ProductId, N'Vendor Credentialing Roles',@RoleTemplateProductPageTypeId, @UserId, @Now, 1)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+	
+	Select @ProductPageControlId = MAX(ProductPageControlId) +1 from [UserManagement].[ProductPageControl]
+
+	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate])
+	VALUES (@ProductPageControlId, @ProductPageId, @ControlId, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+END
+
+--UtilityManagement
+SET @ProductId  = 18
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId and ProductPageTypeId = 3)
+BEGIN
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	Select @ControlId = MAX(controlid) +1 from [UserManagement].[Control]
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId, NULL, 8, N'UtilityManagementRoleTemplateTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+1, @ControlId, 9, N'UtilityManagementRoleTemplateAccessTypeTabUIId', N'Access Type', NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+2, @ControlId+1, 2, N'UtilityManagementRoleTemplateAccessTypeSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+3, @ControlId+2, 7, N'UtilityManagementRoleTemplateAccessTypeRadioUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+4, @ControlId+2, 5, N'UtilityManagementRoleTemplateAccessTypeLabelUIId', N'Access Type', N'name', 2, @UserId, @Now)
+	
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+5, @ControlId, 9, N'UtilityManagementRoleTemplateRolesTabUIId', N'Roles', NULL, 2, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+6, @ControlId+5, 3, N'UtilityManagementRoleTemplateRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+8, @ControlId+6, 10, N'UtilityManagementRoleTemplateRolesSelectGridCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+9, @ControlId+6, 5, N'UtilityManagementRoleTemplateRolesSelectGridRoleLabelUIId', N'Role', N'roleName', 2, @UserId, @Now)	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+10, @ControlId+6, 5, N'UtilityManagementRoleTemplateRolesSelectGridDescriptionLabelUIId', N'Description', N'roleDescription', 3, @UserId, @Now)	
+	
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+	
+	Select @ControlAttributeId = MAX(ControlAttributeId) +1 from [UserManagement].[ControlAttribute]
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId, @ControlId+1, N'Default', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+1, @ControlId+1, N'Hide', N'False', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId, @ControlId+5, N'Default', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+1, @ControlId+5, N'Hide', N'False', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+2, @ControlId+2, N'ShowSelectAll', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+3, @ControlId+6, N'ShowSelectAll', N'True', @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+	
+	Select @ProductPageId = MAX(ProductPageId) +1 from [UserManagement].[ProductPage]
+
+	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName],[ProductPageTypeId], [CreatedBy], [CreatedDate], [IsActive])
+	VALUES (@ProductPageId, @ProductId, N'Utility Management Roles',@RoleTemplateProductPageTypeId, @UserId, @Now, 1)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+	
+	Select @ProductPageControlId = MAX(ProductPageControlId) +1 from [UserManagement].[ProductPageControl]
+
+	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate])
+	VALUES (@ProductPageControlId, @ProductPageId, @ControlId, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+END
+
+--Portfolio Management
+SET @ProductId  = 44
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId and ProductPageTypeId = 3)
+BEGIN
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	Select @ControlId = MAX(controlid) +1 from [UserManagement].[Control]
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId, NULL, 8, N'PortfolioManagementRoleTemplateTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+1, @ControlId, 9, N'PortfolioManagementRoleTemplateEntityRolesTabUIId', N'Entity Roles', NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+2, @ControlId+1, 3, N'PortfolioManagementRoleTemplateEntityRolesMultiSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+3, @ControlId+2, 10, N'PortfolioManagementRoleTemplateCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+4, @ControlId+2, 5, N'PortfolioManagementRoleTemplateRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)
+	
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+5, @ControlId, 9, N'PortfolioManagementRoleTemplateGlobalRolesTabUIId', N'Global Roles', NULL, 2, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+6, @ControlId+5, 3, N'PortfolioManagementRoleTemplateGlobalRolesMultiSelectGridUIId', NULL, NULL, 1, @UserId, @Now)	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+8, @ControlId+6, 10, N'PortfolioManagementRoleTemplateCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+9, @ControlId+6, 5, N'PortfolioManagementRoleTemplateRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)	
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+10, @ControlId+6, 5, N'PortfolioManagementRoleTemplateRoleTypeLabelUIId', N'Role Type', N'roleType', 3, @UserId, @Now)	
+	
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+	
+	Select @ControlAttributeId = MAX(ControlAttributeId) +1 from [UserManagement].[ControlAttribute]
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId, @ControlId+1, N'Default', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+1, @ControlId+1, N'Hide', N'False', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+2, @ControlId+5, N'Default', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+3, @ControlId+5, N'Hide', N'False', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+4, @ControlId+2, N'ShowSelectAll', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+5, @ControlId+6, N'ShowSelectAll', N'True', @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+	
+	Select @ProductPageId = MAX(ProductPageId) +1 from [UserManagement].[ProductPage]
+
+	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName],[ProductPageTypeId], [CreatedBy], [CreatedDate], [IsActive])
+	VALUES (@ProductPageId, @ProductId, N'Portfolio Management Roles',@RoleTemplateProductPageTypeId, @UserId, @Now, 1)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+	
+	Select @ProductPageControlId = MAX(ProductPageControlId) +1 from [UserManagement].[ProductPageControl]
+
+	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate])
+	VALUES (@ProductPageControlId, @ProductPageId, @ControlId, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+END
+
+--END : script for userstory #804806
