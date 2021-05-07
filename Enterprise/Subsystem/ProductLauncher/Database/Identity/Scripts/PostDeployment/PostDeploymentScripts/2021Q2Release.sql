@@ -3846,16 +3846,16 @@ BEGIN
 	VALUES (@ControlAttributeId+1, @ControlId+1, N'Hide', N'False', @UserId, @Now)
 
 	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
-	VALUES (@ControlAttributeId, @ControlId+5, N'Default', N'True', @UserId, @Now)
+	VALUES (@ControlAttributeId+2, @ControlId+5, N'Default', N'True', @UserId, @Now)
 
 	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
-	VALUES (@ControlAttributeId+1, @ControlId+5, N'Hide', N'False', @UserId, @Now)
+	VALUES (@ControlAttributeId+3, @ControlId+5, N'Hide', N'False', @UserId, @Now)
 
 	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
-	VALUES (@ControlAttributeId+2, @ControlId+2, N'ShowSelectAll', N'True', @UserId, @Now)
+	VALUES (@ControlAttributeId+4, @ControlId+2, N'ShowSelectAll', N'True', @UserId, @Now)
 
 	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
-	VALUES (@ControlAttributeId+3, @ControlId+6, N'ShowSelectAll', N'True', @UserId, @Now)
+	VALUES (@ControlAttributeId+5, @ControlId+6, N'ShowSelectAll', N'True', @UserId, @Now)
 
 	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
 
