@@ -167,5 +167,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 		/// </summary>
 		[JsonProperty("UserEmployee", NullValueHandling = NullValueHandling.Ignore)]
 		public int UserEmployeeId { get; set; }
-	}
+
+		/// <summary>
+		/// SuggestedPropertyList
+		/// </summary>
+		[JsonProperty("SuggestedPropertyList", NullValueHandling = NullValueHandling.Ignore)]
+		public List<ProductSuggestedProperties> SuggestedProductPropertyList { get; set; }
+    }
 }

@@ -299,6 +299,7 @@
     <Compile Include="IdentityConfig\UserLoginPersona.cs" />
     <Compile Include="Landing\ApiError.cs" />
     <Compile Include="Landing\OrganizationDelete.cs" />
+    <Compile Include="Landing\ProductSuggestedProperties.cs" />
     <Compile Include="Landing\SettingPickList.cs" />
     <Compile Include="Landing\EmailModel.cs" />
     <Compile Include="Landing\ProductSamlDetails.cs" />
@@ -356,6 +357,8 @@
     <Compile Include="BlackBook\CompanyMap.cs" />
     <Compile Include="Landing\SendGridEmail.cs" />
     <Compile Include="Landing\Picklist.cs" />
+    <Compile Include="Landing\SuggestedProperty.cs" />
+    <Compile Include="Landing\SuggestedPropertyResult.cs" />
     <Compile Include="Landing\UnifiedSettingPropertyInstance.cs" />
     <Compile Include="Landing\Setting.cs" />
     <Compile Include="Landing\SecuritySettings.cs" />

@@ -243,6 +243,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             bool usePropertyInstanceUnifiedLogin = getPropertyInstanceUnifiedLogin();
             bool usePropertyInstanceUnifiedAmenities = getPropertyInstanceUnifiedAmenities();
             primaryPropertiesBatch = newProfile.productBatch?.FirstOrDefault<ProductBatch>((Func<ProductBatch, bool>)(p => p.ProductId == (int)ProductEnum.UnifiedUI));
+            var productSuggestedProperties = newProfile.SuggestedProductPropertyList;
 
             //NOTE TO DEVELOPERS
             //Any new products are added down the line,we need to update the logic in "getProductBatchForUserClone" to get new products to clone.
@@ -1197,6 +1198,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                     createUserResponse.Status = errorStatus;
                                     createUserResponse.UserStatus = errorStatus.ErrorMsg;
                                     return createUserResponse;
+                                }
+                            }
+
+                            if (productSuggestedProperties != null && (productSuggestedProperties?.Count > 0))
+                            {
+                                foreach (var product in productSuggestedProperties)
+                                {
+                                    if (product.SuggestedProperiesList != null && product?.SuggestedProperiesList.Count > 0)
+                                    {
+                                        string suggestedPropertiesForProductJSON = JsonConvert.SerializeObject(product.SuggestedProperiesList);
+
+                                        repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddPersonaSuggestedProperties, new { PersonaId = personaId, ProductId = product.ProductId, ModifiedBy = _userClaim.UserId, PropertyInstanceJSON = suggestedPropertiesForProductJSON });
+
+                                        if (repositoryResponse.Id == 0)
+                                        {
+                                            repository.UnitOfWork.Rollback();
+                                            errorStatus.Success = false;
+                                            errorStatus.ErrorCode = "User.CreateUser.30";
+                                            errorStatus.ErrorMsg = $"There was an error assigning suggested properties to persona: {personaId}, and product: {product.ProductId}.";
+                                            createUserResponse.Status = errorStatus;
+                                            createUserResponse.UserStatus = errorStatus.ErrorMsg;
+                                            return createUserResponse;
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -2580,6 +2605,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 };
 
                 return repository.GetOne<UserEmployee>(StoredProcNameConstants.SP_GetEmployeeId, param);
+            }
+        }
+
+        /// <summary>
+        /// return list of suggested properties for persona<
+        /// </summary>
+        /// <param name="personaId"></param>
+        /// <returns>list of suggested properties for persona</returns>
+        public IList<SuggestedPropertyResult> GetSuggetedPropertiesForUserByPersona(long? personaId = null)
+        {
+            using (var repository = GetRepository())
+            {
+                return repository.GetMany<SuggestedPropertyResult>(StoredProcNameConstants.SP_ListSuggestedPropertiesForPersona, new { personaId }).ToList();
             }
         }
 
@@ -5662,6 +5700,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                             { "-1"}
                                         }
                                     };
+                                }
+                            }
+                        }
+
+                        var suggestedProperties = ((ProfileDetail)updateUserProfileEntity.NewProfile).SuggestedProductPropertyList;
+                        var personaId = updateUserProfileEntity.OldProfile.Persona[0].PersonaId;
+                        repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_DeletePersonaSuggestedProperties, new { PersonaId = personaId }); ;
+
+                        if (suggestedProperties != null && suggestedProperties?.Count > 0){
+                            foreach (var product in suggestedProperties)
+                            {
+                                if (product.SuggestedProperiesList != null && product?.SuggestedProperiesList.Count > 0)
+                                {
+                                    string suggestedPropertiesForProductJSON = JsonConvert.SerializeObject(suggestedProperties.Where(p => p.ProductId == product.ProductId).ToList());
+                                    repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddPersonaSuggestedProperties, new { PersonaId = personaId, ProductId = product.ProductId, CreatedBy = _userClaim.UserId, PropertyInstanceJSON = suggestedPropertiesForProductJSON });
                                 }
                             }
                         }

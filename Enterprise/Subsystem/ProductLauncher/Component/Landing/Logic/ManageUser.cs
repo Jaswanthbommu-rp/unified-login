@@ -742,6 +742,40 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		{
 			return _userRepository.GetUserEmployeeId(UserLoginPersonaId, OrganizationPartyId);
 		}
+
+		public List<ProductSuggestedProperties> GetSuggetedPropertiesForUserByPersona(long? personaId = null)
+        {
+			var suggestedProperties = _userRepository.GetSuggetedPropertiesForUserByPersona(personaId);
+			var suggestedPropertiesByProductId = new List<ProductSuggestedProperties>();
+
+			var productIds = suggestedProperties?.Select(p => p.ProductId).Distinct().ToList();
+
+			if (productIds != null && productIds?.Count > 0)
+			{
+				foreach (var id in productIds)
+				{
+					var suggestedPropertiesForProduct = new ProductSuggestedProperties();
+					suggestedPropertiesForProduct.ProductId = id;
+
+					if (suggestedProperties != null && suggestedProperties?.Count > 0)
+                    {
+						foreach (var suggestedProperty in suggestedProperties.Where(p => p.ProductId == id).ToList())
+						{
+							suggestedPropertiesForProduct.SuggestedProperiesList.Add(new SuggestedProperty
+							{
+								ProductPropertyId = suggestedProperty.ProductPropertyId,
+								PropertyInstanceId = suggestedProperty.PropertyInstanceId
+							});
+						}
+
+						suggestedPropertiesByProductId.Add(suggestedPropertiesForProduct);
+					}
+				}
+			}
+
+			return suggestedPropertiesByProductId;
+		}
+
 		#endregion
 
 		#region Private Methods

@@ -202,6 +202,11 @@
         
         public const string SP_GetProductsByPersonaId = "Security.GetProductsByPersonaId";
 
+        //SuggestedProperties 
+        public const string SP_AddPersonaSuggestedProperties = "Enterprise.AddPersonaSuggestedProperties";
+        public const string SP_DeletePersonaSuggestedProperties = "Enterprise.DeletePersonaSuggestedProperties";
+        public const string SP_ListSuggestedPropertiesForPersona = "Enterprise.ListSuggestedPropertiesForPersona";
+
         //Remove
         public const string SP_ListProductTypes = "Enterprise.ListProductTypes";
 

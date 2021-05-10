@@ -344,6 +344,34 @@ AS
 						INNER JOIN Ident.UserLogin iul ON (iul.UserId = iulp.UserLoginId)
 						INNER JOIN @Person p ON (p.PartyID = iul.PersonPartyId)
 			
+			DELETE strv
+			FROM	Settings.SettingTableRowValue strv
+						INNER JOIN Settings.SettingTableRow str1 ON str1.SettingTableRowId = strv.SettingTableRowId
+						INNER JOIN Settings.SettingTable st ON st.SettingTableId = str1.SettingTableId
+						INNER JOIN @Organization o ON (o.PartyId = st.PartyId)
+
+			DELETE str1
+			FROM	Settings.SettingTableRow str1
+						INNER JOIN Settings.SettingTable st ON st.SettingTableId = str1.SettingTableId
+						INNER JOIN @Organization o ON (o.PartyId = st.PartyId)
+
+			DELETE str2
+			FROM	Settings.SettingTable str2
+					INNER JOIN @Organization o ON (o.PartyId = str2.PartyId)
+
+			DELETE rtp
+			FROM	Security.RoleTemplateProduct rtp
+					INNER JOIN Security.RoleTemplate rt ON rt.RoleTemplateId = rtp.RoleTemplateId
+					INNER JOIN @Organization o ON (o.PartyId = rt.PartyID)
+
+			DELETE rt
+			FROM	Security.RoleTemplate rt
+					INNER JOIN @Organization o ON (o.PartyId = rt.PartyID)
+
+			DELETE oor
+			FROM	Security.OrganizationOverRideRight oor
+					INNER JOIN @Organization o ON (o.PartyId = oor.OrgPartyId)
+
 			DELETE	iulp
 			FROM		Ident.UserLoginPersona iulp
 							INNER JOIN Ident.UserLogin iul ON (iul.UserId = iulp.UserLoginId)

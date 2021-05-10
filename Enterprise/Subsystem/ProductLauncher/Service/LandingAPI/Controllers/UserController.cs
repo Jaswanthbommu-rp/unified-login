@@ -1,4 +1,5 @@
-﻿using RP.Enterprise.Foundation.DataAccess.Component;
+﻿using Newtonsoft.Json;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Attributes;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
@@ -622,7 +623,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		[AuthorizeScope("companyfunctions", "rplandingapi")]
 		public CreateUserResponse<IErrorData> CreateUser([FromBody] ProfileDetail newProfile)
         {
-            CreateUserResponse<IErrorData> response = new CreateUserResponse<IErrorData>();
+			CreateUserResponse<IErrorData> response = new CreateUserResponse<IErrorData>();
             Status<IErrorData> errorStatus = new Status<IErrorData>();
 
 			IList<Persona> personaList = new List<Persona>();
@@ -963,7 +964,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
 			return Request.CreateResponse(HttpStatusCode.OK, userRights);
 		}
-		
+
+		/// <summary>
+		/// Gets list of suggested properties for a user, by his persona
+		/// </summary>
+		/// <returns>A list of the suggested properties for a user</returns>
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "Get the suggested properties for a user")]
+		[Route("suggestedProperties")]
+		[HttpGet]
+		public HttpResponseMessage GetSuggetedPropertiesForUserByPersona(long? userLoginPersonaId = null)
+		{
+			ManageUser manageUser = new ManageUser(_userClaims);
+			List<ProductSuggestedProperties> suggestedPropertiesByProductsList = manageUser.GetSuggetedPropertiesForUserByPersona(userLoginPersonaId);
+			return Request.CreateResponse(HttpStatusCode.OK, suggestedPropertiesByProductsList);
+		}
+
 		#endregion
 	}
 
