@@ -2761,7 +2761,7 @@ BEGIN
 	VALUES (@ControlId, NULL, 8, N'Lead2LeaseRoleTemplateTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
 
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
-	VALUES (@ControlId+1, @ControlId, 9, N'Lead2LeaseRoleTemplateRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)
+	VALUES (@ControlId+1, @ControlId, 9, N'Lead2LeaseRoleTemplateRolesTabUIId', N'Rights', NULL, 1, @UserId, @Now)
 	
 
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
