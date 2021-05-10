@@ -26,8 +26,8 @@ BEGIN
    EXEC [Enterprise].[SetProductType]  @ProductTypeId = @ProductTypeId OUTPUT, @ParentProductTypeId = @ParentProductTypeId,                   
      @Name = @ProductName, @Description = @ProductName, @ProductTypeGUID = @productTypeGUID, @PropertyManagementName = null                      
  
-	if(@ProductId is null) SELECT @ProductId = (SELECT MAX(ProductId)+1 from Enterprise.Product)            
-                      
+	if(isnull(@ProductId,0)<1) SELECT @ProductId = (SELECT MAX(ProductId)+1 from Enterprise.Product)
+	
    --New product                
    if (not exists(select top 1 1 from Enterprise.Product where ProductId=@ProductId))                  
    begin             
