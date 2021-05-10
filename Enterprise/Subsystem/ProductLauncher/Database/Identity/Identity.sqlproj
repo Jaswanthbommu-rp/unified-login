@@ -1095,6 +1095,10 @@
     <Build Include="RoleRightsManagement\Tables\RoleTemplateHistory.sql" />
     <Build Include="RoleRightsManagement\Tables\RoleTemplateProductHistory.sql" />
     <Build Include="RoleRightsManagement\Tables\RoleTemplateProductRoleMappingHistory.sql" />
+    <Build Include="Enterprise\Stored Procedures\DeletePersonaSuggestedProperties.sql" />
+    <Build Include="Enterprise\Stored Procedures\AddPersonaSuggestedProperties.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListSuggestedPropertiesForPersona.sql" />
+    <Build Include="Enterprise\Tables\PersonaSuggestedProperties.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
