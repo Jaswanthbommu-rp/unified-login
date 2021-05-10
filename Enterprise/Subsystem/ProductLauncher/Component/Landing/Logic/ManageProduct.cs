@@ -607,7 +607,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             foreach (var product in products)
             {
-                if(organizationUsePrimaryProperties > 0)
+                if(organizationUsePrimaryProperties >= 0)
                 {
                     //Assign PrimaryProperty flag for Product
                     string productUsePrimaryPropertiesStr = productInternalSettingType?.Where(p => p.BooksProductCode == product.ProductCode
@@ -617,9 +617,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                     int productUsePrimaryProperties;
                     if (int.TryParse(productUsePrimaryPropertiesStr, out productUsePrimaryProperties)
-                        && productUsePrimaryProperties > 0)
+                        && productUsePrimaryProperties >= 0)
                     {
-                        product.UsePrimaryProperties = organizationUsePrimaryProperties != 0;
+                        product.UsePrimaryProperties = organizationUsePrimaryProperties == 1
+                            && productUsePrimaryProperties == 1;
                     }
                 }
 

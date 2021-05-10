@@ -3962,3 +3962,33 @@ BEGIN
 END
 
 --END : script for userstory #804806
+
+-- Update default unsupported products for UsePrimaryProperties
+
+BEGIN TRAN;
+
+UPDATE ps SET [Value] = '-1'
+FROM Enterprise.GlobalProductConfiguration gpc
+	JOIN Enterprise.Product P ON gpc.ProductId = P.ProductId
+	JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId
+	JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId
+	JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId
+WHERE pst.Name = 'UsePrimaryProperties'
+	AND ((GETUTCDATE() BETWEEN gpc.FromDate AND gpc.ThruDate) OR (GETUTCDATE() >= gpc.FromDate AND gpc.ThruDate IS NULL))
+	AND ((GETUTCDATE() BETWEEN pc.FromDate AND pc.ThruDate) OR (GETUTCDATE() >= pc.FromDate AND pc.ThruDate IS NULL))
+	AND ((GETUTCDATE() BETWEEN ps.FromDate AND ps.ThruDate) OR (GETUTCDATE() >= ps.FromDate AND ps.ThruDate IS NULL))
+	AND gpc.ProductId NOT IN (4, 40, 41, 6, 9, 1, 23, 15, 17, 16, 58, 57, 59, 65, 60);
+
+SELECT ps.*
+FROM Enterprise.GlobalProductConfiguration gpc
+	JOIN Enterprise.Product P ON gpc.ProductId = P.ProductId
+	JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId
+	JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId
+	JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId
+WHERE pst.Name = 'UsePrimaryProperties'
+	AND ((GETUTCDATE() BETWEEN gpc.FromDate AND gpc.ThruDate) OR (GETUTCDATE() >= gpc.FromDate AND gpc.ThruDate IS NULL))
+	AND ((GETUTCDATE() BETWEEN pc.FromDate AND pc.ThruDate) OR (GETUTCDATE() >= pc.FromDate AND pc.ThruDate IS NULL))
+	AND ((GETUTCDATE() BETWEEN ps.FromDate AND ps.ThruDate) OR (GETUTCDATE() >= ps.FromDate AND ps.ThruDate IS NULL))
+	AND gpc.ProductId NOT IN (4, 40, 41, 6, 9, 1, 23, 15, 17, 16, 58, 57, 59, 65, 60)
+
+COMMIT TRAN;
