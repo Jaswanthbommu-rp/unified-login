@@ -1465,170 +1465,175 @@ BEGIN
 	INSERT INTO [Enterprise].[CommunicationEmailTemplate]( CommunicationEventAudienceTypeId, CommunicationEventPurposeTypeId, [Subject], [Body] )
 	SELECT CommunicationEventAudienceTypeId, 2, 'RealPage Password Reset', '<!DOCTYPE html>
 <html dir="ltr" lang="en">
-	<body>
-		<table border="0" cellspacing="0" cellpadding="0" width="100%" style="table-layout:fixed; font-size:16px;">
-			<tbody>
-				<tr>
-					<td>
-						<center>
-							<table border="0" cellspacing="0" cellpadding="0" width="600" style="margin:0 auto; max-width:535px; width:inherit;">
-								<tbody>
-									<tr>
-										<td align="left">
-											<table border="0" cellspacing="0" cellpadding="0" width="100%">
-												<tbody>
-													<tr>
-														<td width="100%">
-															<table border="0" cellspacing="0" cellpadding="0" width="100%">
-																<tbody>
-																	<tr>
-																		<td style="padding:18px 0 0 0;">
-																			<tbody>
-																				<tr>
-																					<td style="padding:0 10px"
-																					    align="center">
-																						<div style="display:none;color:#fff;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;">
-																							<span>Hi {FIRST NAME},                                                                                 Your administrator has reset the password on your account. Click the link below to set your new password. You have {EXPIRYDAYS} days to set your new password before the link expires.</span>
-																						</div>
-																						<a href="https://www.realpage.com"
-																						   style="text-decoration:none;">
-																							<img src="{IMAGES}/RealPage-Logo.png" alt="RealPage" width="270" height="80" style="margin: 0; border: 0; padding: 0; display: block;"/>
-																						</a>
-																					</td>
-																				</tr>
-																			</tbody>
-																		</td>
-																	</tr>
-																</tbody>
-															</table>
-															<table border="0" cellspacing="0" cellpadding="0" width="100%">
-																<tbody>
-																	<tr>
-																		<td width="100%"
-																		    style="padding:24px 24px 32px 24px; border-style:none;">
-																			<table border="0" cellspacing="1" cellpadding="1" width="100%">
-																				<tbody>
-																					<tr>
-																						<td width="100%" style="padding:18px 0 0 0">
-																							<table border="0" cellspacing="0" cellpadding="0" width="100%">
-																								<tbody>
-																									<tr>
-																										<td style="padding:0 10px; color:#757575; font-family: ''Roboto'',''Helvetica Neue'', Helvetica, Arial, sans-serif;">
-																											<span>Hi {FIRST NAME},</span>
-																										</td>
-																									</tr>
-																								</tbody>
-																							</table>
-																						</td>
-																					</tr>
-																					<tr>
-																						<td width="100%"
-																						    style="padding:18px 0 0 0">
-																							<table border="0" cellspacing="2" cellpadding="0" width="100%">
-																								<tbody>
-																									<tr>
-																										<td style="padding:0 10px; line-height:27px; color:#757575; font-family: ''Roboto'',''Helvetica Neue'', Helvetica, Arial, sans-serif;">
-																											<span>Your administrator has reset the password on your account. Click the link below to set your new password. You have {EXPIRYDAYS} days to set your new password before the link expires.</span>
-																										</td>
-																									</tr>
-																									<tr>
-																										<td>
-																											<table width="100%" border="0" cellspacing="2" cellpadding="2">
-																												<tr>
-																													<td align="center" style="-webkit-border-radius: 25px; -moz-border-radius: 25px; border-radius: 25px;" bgcolor="#42a5f6">
-																														<a href="{LINK}" style="font-family: ''Roboto'',''Helvetica Neue'', Helvetica, Arial, sans-serif; color: #ffffff; text-decoration: none; -webkit-border-radius: 25px; -moz-border-radius: 25px; border-radius: 25px; padding: 9px 28px; border: 1px solid #42a5f6; display: inline-block;">Set New Password</a>
-																													</td>
-																												</tr>
-																											</table>
-																										</td>
-																									</tr>
-																								</tbody>
-																							</table>
-																						</td>
-																					</tr>
-																					<tr>
-																						<td align="center" style="padding:18px 0 0 0">
-																							<table border="0" cellpadding="0" cellspacing="0" align="center">
-																								<tbody>
-																									<tr>
-																										<td>
-																											<table width="100%" border="0" cellspacing="0" cellpadding="0">
-																												<tr>
-																													<td style="padding:0 10px; line-height:27px; color:#757575; font-family: ''Roboto'',''Helvetica Neue'', Helvetica, Arial, sans-serif;">
-																														<span>If you have trouble accessing your profile, please contact your system administrator.</span>
-																													</td>
-																												</tr>
-																											</table>
-																										</td>
-																									</tr>
-																								</tbody>
-																							</table>
-																						</td>
-																					</tr>
-																					<tr>
-																						<td width="100%" style="padding:18px 0 0 0">
-																							<table border="0" cellspacing="0" cellpadding="0" width="100%">
-																								<tbody>
-																									<tr>
-																										<td style="padding:0 10px; line-height:27px; color:#757575; font-family: ''Roboto'',''Helvetica Neue'', Helvetica, Arial, sans-serif; font-size:9px;">This email and any files transmitted with it are confidential and intended solely for the use of the individual or entity to whom they are addressed.  If you’ve received this email in error, please notify <a href="https://www.realpage.com/support/"
-																											   style="color:#42A5F5; font-family: ''Roboto'',''Helvetica Neue'', Helvetica, Arial, sans-serif;">RealPage Support</a> by forwarding this email to <a href="mailto:support@realpage.com?subject=support">support@realpage.com</a>.  This message contains confidential information and is intended only for the individual named.</td>
-																									</tr>
-																								</tbody>
-																							</table>
-																						</td>
-																					</tr>
-																				</tbody>
-																			</table>
-																		</td>
-																	</tr>
-																</tbody>
-															</table>
-														</td>
-													</tr>
-												</tbody>
-											</table>
-										</td>
-									</tr>
-									<tr>
-										<td align="left">
-											<table border="0" cellspacing="0" cellpadding="0" width="100%" style="padding:0 24px;">
-												<tbody>
-													<tr>
-														<td align="center"
-														    width="100%">
-															<table border="0" cellspacing="0" cellpadding="0" width="100%">
-																<tbody>
-																	<tr>
-																		<td align="center" width="100%" style="border-top:1px solid #757575; padding:16px 0;font-size:11px;">
-																			<a href="https://www.realpage.com/privacy-policy"
-																			   style="color:#757575;text-decoration:none; font-family: ''Roboto'',''Helvetica Neue'', Helvetica, Arial, sans-serif;">
-																				<span>Privacy Policy</span>
-																			</a>
-																			<span style="color:#757575; font-family: ''Roboto'',''Helvetica Neue'', Helvetica, Arial, sans-serif;">|</span>
-																			<a href="https://www.realpage.com/"
-																			   style="color:#757575;text-decoration:none; font-family: ''Roboto'',''Helvetica Neue'', Helvetica, Arial, sans-serif;">
-																				<span>Contact Us</span>
-																			</a>
-																			<span style="color:#757575; font-family: ''Roboto'',''Helvetica Neue'', Helvetica, Arial, sans-serif;">|</span>
-																			<span style="color:#757575; font-family: ''Roboto'',''Helvetica Neue'', Helvetica, Arial, sans-serif;">&copy; 2021 RealPage, Inc.</span>
-																		</td>
-																	</tr>
-																</tbody>
-															</table>
-														</td>
-													</tr>
-												</tbody>
-											</table>
-										</td>
-									</tr>
-								</tbody>
-							</table>
-						</center>
-					</td>
-				</tr>
-			</tbody>
-		</table>
-	</body>
+<body>
+    <table border="0" cellspacing="0" cellpadding="0" width="100%" style="table-layout:fixed; font-size:16px;">
+        <tbody>
+            <tr>
+                <td>
+                    <center>
+                        <table border="0" cellspacing="0" cellpadding="0" width="600" style="margin:0 auto; max-width:535px; width:inherit;">
+                            <tbody>
+                                <tr>
+                                    <td align="left">
+                                        <table border="0" cellspacing="0" cellpadding="0" width="100%">
+                                            <tbody>
+                                                <tr>
+                                                    <td width="100%">
+                                                        <table border="0" cellspacing="0" cellpadding="0" width="100%">
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td style="padding:18px 0 0 0;">
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td style="padding:0 10px" align="center">
+                                                                        <div style="display:none;color:#fff;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;">                                                                            
+                                                                            <span>Hi {FIRST NAME}, 
+
+                                                                            Your administrator has reset the password on your account. Click the link below to set your new password. You have {EXPIRYDAYS} days to set your new password before the link expires.</span>
+                                                                        </div>
+                                                                        <a href="https://www.realpage.com" style="text-decoration:none;">
+                                                                            <img src="{IMAGES}/RealPage-Logo.png" alt="RealPage" width="270" height="80" style="margin: 0; border: 0; padding: 0; display: block;" />
+                                                                        </a>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        <table border="0" cellspacing="0" cellpadding="0" width="100%">
+                                            <tbody>
+                                                <tr>
+                                                    <td width="100%" style="padding:24px 24px 32px 24px; border-style:none;">
+                                                        <table border="0" cellspacing="0" cellpadding="0" width="100%">
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td width="100%" style="padding:18px 0 0 0">
+                                                                        <table border="0" cellspacing="0" cellpadding="0" width="100%">
+                                                                            <tbody>
+                                                                                <tr>
+                                                                                    <td style="padding:0 10px; color:#757575; font-family: ''Roboto'',''Helvetica Neue'', Helvetica, Arial, sans-serif;">
+                                                                                        <span>Hi {FIRST NAME},</span>
+                                                                                    </td>
+                                                                                </tr>
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td width="100%" style="padding:18px 0 0 0">
+                                                                        <table border="0" cellspacing="0" cellpadding="0" width="100%">
+                                                                            <tbody>
+                                                                                <tr>
+                                                                                    <td style="padding:0 10px; line-height:27px; color:#757575; font-family: ''Roboto'',''Helvetica Neue'', Helvetica, Arial, sans-serif;">
+                                                                                        <span>
+                                                                                             Your administrator has reset the password on your account. Click the link below to set your new password. You have {EXPIRYDAYS} days to set your new password before the link expires.
+                                                                                        </span>
+                                                                                    </td>
+                                                                                </tr>
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </td>
+                                                                </tr>                                                                
+                                                                <tr>
+                                                                    <td align="center" style="padding:18px 0 0 0">
+                                                                        <table border="0" cellpadding="0" cellspacing="0" align="center">
+                                                                            <tbody>
+                                                                                <tr>
+                                                                                    <td>
+                                                                                        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                                                                            <tr>
+                                                                                                <td align="center" style="-webkit-border-radius: 25px; -moz-border-radius: 25px; border-radius: 25px;" bgcolor="#42a5f6">
+                                                                                                    <a href="{LINK}" style="font-family: ''Roboto'',''Helvetica Neue'', Helvetica, Arial, sans-serif; color: #ffffff; text-decoration: none; -webkit-border-radius: 25px; -moz-border-radius: 25px; border-radius: 25px; padding: 9px 28px; border: 1px solid #42a5f6; display: inline-block;">Set New Password</a>
+                                                                                                </td>
+                                                                                            </tr>
+                                                                                        </table>
+                                                                                    </td>
+                                                                                </tr>
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </td>
+                                                                </tr>                                                                
+                                                                <tr>
+                                                                    <td align="center" style="padding:18px 0 0 0">
+                                                                        <table border="0" cellpadding="0" cellspacing="0" align="center">
+                                                                            <tbody>
+                                                                                <tr>
+                                                                                    <td>
+                                                                                        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                                                                            <tr>
+                                                                                                <td style="padding:0 10px; line-height:27px; color:#757575; font-family: ''Roboto'',''Helvetica Neue'', Helvetica, Arial, sans-serif;">
+                                                                                                    <span>
+                                                                                                        If you have trouble accessing your profile, please contact your system administrator.
+                                                                                                    </span>
+                                                                                                </td>                   
+                                                                                            </tr>          
+                                                                                        </table>
+                                                                                    </td>
+                                                                                </tr>
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td width="100%" style="padding:18px 0 0 0">
+                                                                        <table border="0" cellspacing="0" cellpadding="0" width="100%">
+                                                                            <tbody>
+                                                                                <tr>
+                                                                                    <td style="padding:0 10px; line-height:27px; color:#757575; font-family: ''Roboto'',''Helvetica Neue'', Helvetica, Arial, sans-serif; font-size:9px;">
+
+                                                                                        This email and any files transmitted with it are confidential and intended solely for the use of the individual or entity to whom they are addressed.  If you’ve received this email in error, please notify <a href="https://www.realpage.com/support/" style="color:#42A5F5; font-family: ''Roboto'',''Helvetica Neue'', Helvetica, Arial, sans-serif;">RealPage Support</a> by forwarding this email to <a href="mailto:support@realpage.com?subject=support">support@realpage.com</a>.  This message contains confidential information and is intended only for the individual named.
+                                                                                    </td>
+                                                                                </tr>
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                </td>
+            </tr>
+            <tr>
+                <td align="left">
+                    <table border="0" cellspacing="0" cellpadding="0" width="100%" style="padding:0 24px;">
+                        <tbody>
+                            <tr>
+                                <td align="center" width="100%">
+                                    <table border="0" cellspacing="0" cellpadding="0" width="100%">
+                                        <tbody>
+                                            <tr>
+                                                <td align="center" width="100%" style="border-top:1px solid #757575; padding:16px 0;font-size:11px;">
+                                                    <a href="https://www.realpage.com/privacy-policy" style="color:#757575;text-decoration:none; font-family: ''Roboto'',''Helvetica Neue'', Helvetica, Arial, sans-serif;"><span>Privacy Policy</span></a>
+                                                    <span style="color:#757575; font-family: ''Roboto'',''Helvetica Neue'', Helvetica, Arial, sans-serif;">|</span>
+                                                    <a href="https://www.realpage.com/" style="color:#757575;text-decoration:none; font-family: ''Roboto'',''Helvetica Neue'', Helvetica, Arial, sans-serif;"><span>Contact Us</span></a>
+                                                    <span style="color:#757575; font-family: ''Roboto'',''Helvetica Neue'', Helvetica, Arial, sans-serif;">|</span>
+                                                    <span style="color:#757575; font-family: ''Roboto'',''Helvetica Neue'', Helvetica, Arial, sans-serif;">&copy; 2021 RealPage, Inc.</span>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    </center>
+    </td>
+    </tr>
+    </tbody>
+    </table>
+</body>
 </html>'
 FROM
 	Enterprise.CommunicationEventAudienceType WHERE Description = 'Regular User'
