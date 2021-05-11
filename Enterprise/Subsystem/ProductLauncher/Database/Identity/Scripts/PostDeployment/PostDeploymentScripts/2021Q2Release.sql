@@ -3982,18 +3982,83 @@ WHERE pst.Name = 'UsePrimaryProperties'
 	AND ((GETUTCDATE() BETWEEN gpc.FromDate AND gpc.ThruDate) OR (GETUTCDATE() >= gpc.FromDate AND gpc.ThruDate IS NULL))
 	AND ((GETUTCDATE() BETWEEN pc.FromDate AND pc.ThruDate) OR (GETUTCDATE() >= pc.FromDate AND pc.ThruDate IS NULL))
 	AND ((GETUTCDATE() BETWEEN ps.FromDate AND ps.ThruDate) OR (GETUTCDATE() >= ps.FromDate AND ps.ThruDate IS NULL))
-	AND gpc.ProductId NOT IN (4, 40, 41, 6, 9, 1, 23, 15, 17, 16, 58, 57, 59, 65, 60);
+	AND gpc.ProductId NOT IN (3, 4, 40, 41, 6, 9, 1, 23, 15, 17, 16, 56, 58, 57, 59, 65, 60);
 
-SELECT ps.*
-FROM Enterprise.GlobalProductConfiguration gpc
-	JOIN Enterprise.Product P ON gpc.ProductId = P.ProductId
-	JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId
-	JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId
-	JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId
-WHERE pst.Name = 'UsePrimaryProperties'
-	AND ((GETUTCDATE() BETWEEN gpc.FromDate AND gpc.ThruDate) OR (GETUTCDATE() >= gpc.FromDate AND gpc.ThruDate IS NULL))
-	AND ((GETUTCDATE() BETWEEN pc.FromDate AND pc.ThruDate) OR (GETUTCDATE() >= pc.FromDate AND pc.ThruDate IS NULL))
-	AND ((GETUTCDATE() BETWEEN ps.FromDate AND ps.ThruDate) OR (GETUTCDATE() >= ps.FromDate AND ps.ThruDate IS NULL))
-	AND gpc.ProductId NOT IN (4, 40, 41, 6, 9, 1, 23, 15, 17, 16, 58, 57, 59, 65, 60)
+DECLARE @NOW DATETIME = GETUTCDATE();
+DECLARE @supportedProductList as table (productid int)
+insert into @supportedProductList values
+(3),(4),(40),(41),(6),(9),(1),(23),(15),(17),(16),(56),(58),(57),(59),(65),(60);
+
+DECLARE @productlist as table (entid int identity, productid int, productsettingtype varchar(500), productsettingvalue varchar(2000))
+insert into @productlist
+SELECT pl.productid, 'UsePrimaryProperties', '0'
+FROM @supportedProductList pl
+WHERE NOT EXISTS (SELECT ps.*
+	FROM Enterprise.GlobalProductConfiguration gpc
+		JOIN Enterprise.Product P ON gpc.ProductId = P.ProductId
+		JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId
+		JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId
+		JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId
+	WHERE pst.Name = 'UsePrimaryProperties'
+		AND ((GETUTCDATE() BETWEEN gpc.FromDate AND gpc.ThruDate) OR (GETUTCDATE() >= gpc.FromDate AND gpc.ThruDate IS NULL))
+		AND ((GETUTCDATE() BETWEEN pc.FromDate AND pc.ThruDate) OR (GETUTCDATE() >= pc.FromDate AND pc.ThruDate IS NULL))
+		AND ((GETUTCDATE() BETWEEN ps.FromDate AND ps.ThruDate) OR (GETUTCDATE() >= ps.FromDate AND ps.ThruDate IS NULL))
+		AND gpc.ProductId IN (3, 4, 40, 41, 6, 9, 1, 23, 15, 17, 16, 56, 58, 57, 59, 65, 60)
+		AND pl.productid = gpc.ProductId);
+
+declare @MAX_ID INT
+declare @Current_ID INT = 1
+declare @CurrentProductId INT = 1
+
+select @MAX_ID = max(entid) from @productlist
+
+while @Current_ID <= @MAX_ID
+begin
+	declare @currentSettingType varchar(500)
+	declare @currentsettingValue varchar(2000)
+
+	select @CurrentProductId = productid , @currentSettingType = productsettingtype, @currentSettingValue = productsettingvalue
+		from @productlist where entid = @Current_ID
+
+	--print 'productid = ' + convert(varchar,@currentproductid)
+
+	if not exists (
+	select top 1 1 
+		FROM Enterprise.GlobalProductConfiguration gpc  
+		JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId  
+		JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId  
+		JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId  
+			WHERE  gpc.ProductId = @CurrentProductId  
+		AND ((@NOW BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@NOW >= gpc.FromDate AND gpc.ThruDate IS NULL))  
+		AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))  
+		AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))  
+		AND pst.Name = @currentSettingType
+		AND ps.Value = @currentsettingValue
+	)
+	begin
+		declare @currentproductconfigurationid INT
+		select distinct top 1 @currentproductconfigurationid = pc.configurationid
+			FROM Enterprise.GlobalProductConfiguration gpc  
+			JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId  
+			JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId  
+			JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId  
+				WHERE  gpc.ProductId = @CurrentProductId
+			AND ((@NOW BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@NOW >= gpc.FromDate AND gpc.ThruDate IS NULL))  
+			AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))  
+			AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))  
+		order by pc.ConfigurationId desc
+
+		if (@currentproductconfigurationid is not null)
+		begin
+			insert into enterprise.ProductSetting ( productid, ProductSettingTypeId, value, FromDate )
+				select @CurrentProductId, productsettingtypeid, @currentSettingValue, GETUTCDATE()
+					from enterprise.ProductSettingType where name = @currentSettingType
+			insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate, ThruDate )
+				values ( @currentproductconfigurationid, @@IDENTITY, GETUTCDATE(), null )
+		end
+	end
+	
+	set @Current_ID = @Current_ID + 1
+end
 
 COMMIT TRAN;
