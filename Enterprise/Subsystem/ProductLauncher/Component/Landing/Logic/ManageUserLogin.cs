@@ -585,6 +585,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 var spResponse = _credentialRepository.ResetEnterpriseUserCredential(realPageId, null, null, _defaultUserClaim.OrganizationPartyId);
                 if (spResponse.Id == 0)
                 {
+                    LogResetPasswordActivity(false, profileDetail);
                     return false;
                 }
                 DateTime thruUtcDateTime = DateTime.UtcNow.Date.AddHours(72);
@@ -611,10 +612,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                     _userLoginRepository.UpdateUserStatusByCompany(userLogin.RealPageId, _defaultUserClaim.OrganizationPartyId, statusTypeId, userLogin.FromDate.Value, thruUtcDateTime);
                 }
-
-                LogResetPasswordActivity(emailSentSuccessfully, profileDetail);
             }
 
+            LogResetPasswordActivity(emailSentSuccessfully, profileDetail);
             return emailSentSuccessfully;
         }
 
