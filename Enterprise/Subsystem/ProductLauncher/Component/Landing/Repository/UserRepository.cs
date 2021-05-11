@@ -1205,9 +1205,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             {
                                 foreach (var product in productSuggestedProperties)
                                 {
-                                    if (product.SuggestedProperiesList != null && product?.SuggestedProperiesList.Count > 0)
+                                    if (product.SuggestedPropertiesList != null && product?.SuggestedPropertiesList.Count > 0)
                                     {
-                                        string suggestedPropertiesForProductJSON = JsonConvert.SerializeObject(product.SuggestedProperiesList);
+                                        string suggestedPropertiesForProductJSON = JsonConvert.SerializeObject(product.SuggestedPropertiesList);
 
                                         repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddPersonaSuggestedProperties, new { PersonaId = personaId, ProductId = product.ProductId, ModifiedBy = _userClaim.UserId, PropertyInstanceJSON = suggestedPropertiesForProductJSON });
 
@@ -5711,10 +5711,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         if (suggestedProperties != null && suggestedProperties?.Count > 0){
                             foreach (var product in suggestedProperties)
                             {
-                                if (product.SuggestedProperiesList != null && product?.SuggestedProperiesList.Count > 0)
+                                if (product.SuggestedPropertiesList != null && product?.SuggestedPropertiesList.Count > 0)
                                 {
-                                    string suggestedPropertiesForProductJSON = JsonConvert.SerializeObject(suggestedProperties.Where(p => p.ProductId == product.ProductId).ToList());
-                                    repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddPersonaSuggestedProperties, new { PersonaId = personaId, ProductId = product.ProductId, CreatedBy = _userClaim.UserId, PropertyInstanceJSON = suggestedPropertiesForProductJSON });
+                                    string suggestedPropertiesForProductJSON = JsonConvert.SerializeObject(product.SuggestedPropertiesList);
+
+                                    repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddPersonaSuggestedProperties, new { PersonaId = personaId, ProductId = product.ProductId, ModifiedBy = _userClaim.UserId, PropertyInstanceJSON = suggestedPropertiesForProductJSON });
                                 }
                             }
                         }

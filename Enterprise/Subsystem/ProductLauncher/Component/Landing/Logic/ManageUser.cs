@@ -761,7 +761,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     {
 						foreach (var suggestedProperty in suggestedProperties.Where(p => p.ProductId == id).ToList())
 						{
-							suggestedPropertiesForProduct.SuggestedProperiesList.Add(new SuggestedProperty
+							suggestedPropertiesForProduct.SuggestedPropertiesList.Add(new SuggestedProperty
 							{
 								ProductPropertyId = suggestedProperty.ProductPropertyId,
 								PropertyInstanceId = suggestedProperty.PropertyInstanceId

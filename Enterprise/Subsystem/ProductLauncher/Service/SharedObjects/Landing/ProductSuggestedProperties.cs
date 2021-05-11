@@ -12,7 +12,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 
         public ProductSuggestedProperties()
         {
-			SuggestedProperiesList = new List<SuggestedProperty>();
+			SuggestedPropertiesList = new List<SuggestedProperty>();
 		}
 		/// <summary>
 		/// productId
@@ -23,7 +23,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		/// <summary>
 		/// List of suggested properties for the product
 		/// </summary>
-		[JsonProperty(PropertyName = "suggestedProperiesList")]
-		public List<SuggestedProperty> SuggestedProperiesList { get; set; }
+		[JsonProperty(PropertyName = "suggestedPropertiesList")]
+		public List<SuggestedProperty> SuggestedPropertiesList { get; set; }
 	}
 }
