@@ -1095,6 +1095,9 @@
     <Build Include="RoleRightsManagement\Tables\RoleTemplateHistory.sql" />
     <Build Include="RoleRightsManagement\Tables\RoleTemplateProductHistory.sql" />
     <Build Include="RoleRightsManagement\Tables\RoleTemplateProductRoleMappingHistory.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\GetRoleTemplateProductRolesMappings.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\InsertUpdateRoleTemplate.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\SaveRoleTemplateProductRoles.sql" />
     <Build Include="Enterprise\Stored Procedures\DeletePersonaSuggestedProperties.sql" />
     <Build Include="Enterprise\Stored Procedures\AddPersonaSuggestedProperties.sql" />
     <Build Include="Enterprise\Stored Procedures\ListSuggestedPropertiesForPersona.sql" />
