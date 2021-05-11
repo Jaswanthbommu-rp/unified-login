@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.ServiceProcess;
 using RealPage.Logging.Serilog;
 using Serilog;
@@ -12,6 +13,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
         /// </summary>
         static void Main()
         {
+            System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
+
             var productAssignService = new BatchProcessorService();
 
             SerilogHelpers.ConfigureSerilog("Unified Login");
