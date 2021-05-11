@@ -1,0 +1,2 @@
+﻿CREATE SCHEMA [Hots]
+    AUTHORIZATION [dbo];

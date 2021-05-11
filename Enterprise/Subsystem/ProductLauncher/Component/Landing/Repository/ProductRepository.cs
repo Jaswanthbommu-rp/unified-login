@@ -77,13 +77,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <returns></returns>
         public IList<PersonaProduct> GetAllProductsByPersona(long personaId, ProductBatchStatusType statusType)
         {
-            string schemaName = getRoleRightsSchemaName();
             var procName = StoredProcNameConstants.SP_GetProductsByPersonaId;
-            if (schemaName?.Length > 0 && schemaName == "Security")
-            {
-                procName = $"{schemaName}.GetProductsByPersonaId";
-            }
-
+           
             dynamic param = new
             {
                 PersonaId = personaId,
@@ -93,6 +88,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             using (var repository = GetRepository())
             {
                 var result = repository.GetMany<PersonaProduct>(procName, param);
+                return result;
+            }
+        }
+
+        /// Used to get a list of products for the given persona id
+        /// </summary>
+        /// <param name="personaId"></param>
+        /// <param name="statusType"></param>
+        /// <returns></returns>
+        public IList<PersonaProductUserDetails> ListProductsByPersonaId(long personaId, int statusType)
+        {            
+            var procName = StoredProcNameConstants.SP_ListProductsByPersonaId;
+            
+            dynamic param = new
+            {
+                PersonaId = personaId,
+                StatusTypeId = statusType
+            };
+
+            using (var repository = GetRepository())
+            {
+                var result = repository.GetMany<PersonaProductUserDetails>(procName, param);
                 return result;
             }
         }

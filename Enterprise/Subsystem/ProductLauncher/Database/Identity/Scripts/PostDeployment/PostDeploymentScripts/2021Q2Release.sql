@@ -4062,3 +4062,75 @@ begin
 end
 
 COMMIT TRAN;
+GO
+-- ADD ALLOW Clone users process For HOTS
+IF NOT EXISTS (SELECT TOP(1) 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'IsCloneUsersProcessEnabledForHOTS')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
+	VALUES ('IsCloneUsersProcessEnabledForHOTS', 'Does the environment support the Clone Users Process For HOTS', 0);
+END
+
+GO
+-- HOTS Create user source type
+DECLARE @statustypecategoryid INT
+DECLARE @ident INT
+DECLARE @statusTypeId INT
+
+SELECT @statustypecategoryid = StatusTypeCategoryId
+FROM Enterprise.StatusTypeCategory
+WHERE name = 'Create User Source';
+
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM Enterprise.StatusType
+    WHERE name = 'HOTS'
+)
+    BEGIN
+        INSERT INTO Enterprise.StatusType(name)
+        VALUES('HOTS');
+        SELECT @ident = @@IDENTITY;
+        INSERT INTO Enterprise.StatusTypeCategoryClassification
+        (StatusTypeId,
+         StatusTypeCategoryId,
+         FromDate,
+         ThruDate
+        )
+        VALUES
+        (@ident, -- StatusTypeId - int
+         @statustypecategoryid, -- StatusTypeCategoryId - int
+         GETDATE(), -- FromDate - datetime
+         NULL  -- ThruDate - datetime
+        );
+END;
+ELSE
+BEGIN
+    SELECT @statusTypeId = Enterprise.StatusType.StatusTypeId
+    FROM Enterprise.StatusType
+            INNER JOIN Enterprise.StatusTypeCategoryClassification ON Enterprise.StatusType.StatusTypeId = Enterprise.StatusTypeCategoryClassification.StatusTypeId
+            INNER JOIN Enterprise.StatusTypeCategory ON Enterprise.StatusTypeCategoryClassification.StatusTypeCategoryId = Enterprise.StatusTypeCategory.StatusTypeCategoryId
+            INNER JOIN Enterprise.StatusTypeCategoryType ON Enterprise.StatusTypeCategory.StatusTypeCategoryTypeId = Enterprise.StatusTypeCategoryType.StatusTypeCategoryTypeId
+    WHERE Enterprise.StatusTypeCategoryType.name = 'Unified Platform'
+            AND Enterprise.StatusType.Name = 'HOTS';
+	IF NOT EXISTS
+	(
+		SELECT 1
+		FROM Enterprise.StatusTypeCategoryClassification
+		WHERE StatusTypeId = @statusTypeId
+	)
+	BEGIN
+		INSERT INTO Enterprise.StatusTypeCategoryClassification
+		(StatusTypeId,
+			StatusTypeCategoryId,
+			FromDate,
+			ThruDate
+		)
+		VALUES
+		(@StatusTypeId, -- StatusTypeId - int
+			@statustypecategoryid, -- StatusTypeCategoryId - int
+			GETDATE(), -- FromDate - datetime
+			NULL  -- ThruDate - datetime
+		);
+	END
+END;
+GO

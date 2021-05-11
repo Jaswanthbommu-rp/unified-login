@@ -237,6 +237,9 @@
     <Compile Include="Helper\RegexUtilities.cs" />
     <Compile Include="Helper\UserLoginStatus.cs" />
     <Compile Include="Helper\ValidateJson.cs" />
+    <Compile Include="Hots\BaseLineCustomerCompanyUser.cs" />
+    <Compile Include="Hots\ClonedUsers.cs" />
+    <Compile Include="Hots\CloneUsers.cs" />
     <Compile Include="IdentityConfig\Client.cs" />
     <Compile Include="IdentityConfig\ClientClaim.cs" />
     <Compile Include="IdentityConfig\ClientClaimMapping.cs" />

@@ -162,7 +162,7 @@
         public const string SP_DisableUsersForProduct = "Enterprise.DisableUsersForProduct";
         public const string SP_CreateOrganizationProductConfiguration = "Enterprise.CreateOrganizationProductConfiguration";
         public const string SP_CreateOrganizationProductConfigurationbyPartyId = "Enterprise.CreateOrganizationProductConfigurationbyPartyId";
-        public const string SP_GetOrganizationSettingValue = "Enterprise.GetOrganizationSettingValue";
+        public const string SP_GetOrganizationSettingValue = "Enterprise.GetOrganizationSettingValue";        
         //PartyRelationship
         public const string SP_GetPartyRelationshipByRealPageId = "Enterprise.GetPartyRelationshipByRealPageId";
 
@@ -414,6 +414,10 @@
         public const string SP_ListOrganizationToDelete = "Maintenance.ListOrganizationToDelete";
         public const string SP_DeleteOrganization = "Maintenance.DeleteOrganization";
         public const string SP_UpdateOrganizationRemovalQueueStatus = "Maintenance.UpdateOrganizationRemovalQueueStatus";
+
+        //HOTS
+        public const string SP_GetBaseCompanyUPFMId = "Hots.GetBaseCompanyRealpageId";
+        public const string SP_ListHotsBaseOrganizationUsers = "Hots.ListHotsBaseOrganizationUsers";
     }
 
     public static class EnterpriseStoredProcNameConstants

@@ -183,6 +183,7 @@
     <Compile Include="Logic\DynamicContractResolver.cs" />
     <Compile Include="Logic\Enterprise\User\Models\EntUserStatus.cs" />
     <Compile Include="Logic\Enterprise\User\UserManagement.cs" />
+    <Compile Include="Logic\IManageHotsCloneUsers.cs" />
     <Compile Include="Logic\IManageUserLoginPersona.cs" />
     <Compile Include="Logic\Interfaces\IManageCustomFields.cs" />
     <Compile Include="Logic\Interfaces\IManageIntelligentBuilding.cs" />
@@ -214,6 +215,7 @@
     <Compile Include="Logic\Interfaces\IManageUPFMProductsIntegration.cs" />
     <Compile Include="Logic\Interfaces\ITwoFactorLogic.cs" />
     <Compile Include="Logic\Interfaces\IUnifiedSettingsRepository.cs" />
+    <Compile Include="Logic\ManageHotsCloneUsers.cs" />
     <Compile Include="Logic\ManageUnifiedSettings.cs" />
     <Compile Include="Logic\ManageUserLoginPersona.cs" />
     <Compile Include="Logic\ProductIntegration\Factory\IIntegrationTypeFactory.cs" />
@@ -369,7 +371,9 @@
     <Compile Include="Repository\Enterprise\IEntUserRepository.cs" />
     <Compile Include="Repository\GeographicBoundaryRepository.cs" />
     <Compile Include="Repository\GlobalSettingRepository.cs" />
+    <Compile Include="Repository\HOTSCloneUserRepository.cs" />
     <Compile Include="Repository\ICustomFieldsRepository.cs" />
+    <Compile Include="Repository\IHOTSCloneUserRepository.cs" />
     <Compile Include="Repository\Interfaces\ICommunicationEventRepository.cs" />
     <Compile Include="Repository\Interfaces\IConfigurationSettingRepository.cs" />
     <Compile Include="Repository\Interfaces\IContactMechanismRepository.cs" />
