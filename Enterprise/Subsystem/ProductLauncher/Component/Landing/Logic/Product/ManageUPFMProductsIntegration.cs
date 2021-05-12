@@ -99,6 +99,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					return result;
 				}
 
+				_blueBook.GetCompanyMap(_editorPersona.Organization.RealPageId, _editorPersona.Organization.BooksCustomerMasterId, source: _udmSourceCode.ToUpper(), domain: _editorPersona.Organization.OrganizationDomain.Name);
+
 				// get roles from DB for UnifiedAmenities product
 				WriteToDiagnosticLog($"ManageUPFMProductUser -GetRoles  Getting all GB roles from GB DB - ocr.ListRolesByParty with party id - {partyId} and product {_upfmProductId}");
 				IList<int> productIdList = _productRepository.GetProductIdsByCompany(partyId);
@@ -138,7 +140,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			catch (Exception ex)
 			{
 				response.IsError = true;
-				response.ErrorReason = CommonMessageConstants.RoleErrorMessage;
+
+				if(ex is BlueBookException)
+                {
+					response.ErrorReason = ex.Message;
+				}
+                else
+                {
+					response.ErrorReason = CommonMessageConstants.RoleErrorMessage;
+				}
 				WriteToErrorLog($"ManageUPFMProductUser -GetRoles Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
 			}
 
