@@ -76,6 +76,7 @@ BEGIN
 		IsActive				TINYINT,
 		Products				INT,
 		RealPageAccessUser NVARCHAR(100),
+		RealPageAccessUserId    UNIQUEIDENTIFIER,
 		UsePrimaryProperties TINYINT)	
 
 	INSERT INTO #tempOrganizations(OrganizationPartyId,		
@@ -91,6 +92,7 @@ BEGIN
 								   IsActive,
 								   Products,
 								   RealPageAccessUser,
+								   RealPageAccessUserId,
 								   UsePrimaryProperties)
 	SELECT O.PartyId as OrganizationPartyId,    
 		   O.Name as OrganizationName,    
@@ -109,6 +111,7 @@ BEGIN
 		   Products = (select count(distinct productid) 
 						from Enterprise.OrganizationProduct op where o.PartyId= op.PartyId and ThruDate is null),
 		   UL.LoginName,
+		   UL.RealPageId as RealPageAccessUserId,
 		   0
 	FROM [Enterprise].Organization AS o    
 		INNER JOIN [Enterprise].Party P ON P.PartyId = O.PartyId
@@ -178,6 +181,7 @@ BEGIN
 			IsActive,
 			Products,
 			RealPageAccessUser,
+			RealPageAccessUserId,
 			UsePrimaryProperties,
 			TotalRecords, 
 			RowNumber
@@ -198,6 +202,7 @@ BEGIN
 			IsActive,
 			Products,
 			RealPageAccessUser,
+			RealPageAccessUserId,
 			UsePrimaryProperties,
 			COUNT(1) OVER () AS [TotalRecords],
 			CASE @sortValue
@@ -223,6 +228,7 @@ BEGIN
 		IsActive,
 		Products,
 		RealPageAccessUser,
+		RealPageAccessUserId,
 		UsePrimaryProperties,
 		TotalRecords
 	FROM cteFilterOrganizations

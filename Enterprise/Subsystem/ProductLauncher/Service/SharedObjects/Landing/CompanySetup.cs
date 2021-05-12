@@ -93,6 +93,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         /// </summary>
         public string RealPageAccessUser { get; set; }
 
+        /// <summary>
+        /// RealPageAccessUserId
+        /// </summary>
+        public Guid RealPageAccessUserId { get; set; }
+
 
         /// <summary>  
         /// CompanyLocation
