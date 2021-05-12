@@ -3968,6 +3968,8 @@ END
 
 --END : script for userstory #804806
 
+GO
+
 -- Update default unsupported products for UsePrimaryProperties
 
 BEGIN TRAN;
