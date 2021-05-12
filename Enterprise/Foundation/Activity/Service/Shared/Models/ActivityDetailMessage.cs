@@ -99,6 +99,6 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Shared.Models
 
         public int ContextId { get; set; }
 
-        public int InstanceId { get; set; }
+        public Guid? InstanceId { get; set; }
     }
 }
