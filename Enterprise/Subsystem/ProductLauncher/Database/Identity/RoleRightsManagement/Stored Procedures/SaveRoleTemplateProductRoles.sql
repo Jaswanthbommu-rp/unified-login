@@ -233,33 +233,32 @@ BEGIN
 
 		--To Remove Role Template Product( To Remove product, Roles and Additional Roles from child tables should be deleted first)
 		--Remove Roles
-		DELETE RTM 		
+		DELETE RTM
 		FROM Security.RoleTemplateProductRoleMapping RTM
 				INNER JOIN @RemoveRoleTemplateProduct TempRoleDelete 
 					on RTM.RoleTemplateProductId = TempRoleDelete.RoleTemplateProductId
 
 		--Remove Additional Roles
-		DELETE RTM 
+		DELETE RTM		
 		FROM Security.RoleTemplateAdditionalProductRoleMapping RTM
 				INNER JOIN @RemoveRoleTemplateProduct TempRoleDelete 
 					on RTM.RoleTemplateProductId = TempRoleDelete.RoleTemplateProductId
 
 		--Remove Role Template Product
-		DELETE RTP 
+		DELETE RTP		
 		FROM Security.RoleTemplateProduct RTP
 				INNER JOIN @RemoveRoleTemplateProduct TempRoleDelete 
-					on RTP.RoleTemplateProductId = TempRoleDelete.RoleTemplateProductId		
-
-
-		SELECT	@RoleTemplateProductId AS Id ,
-            '' AS ErrorMessage
+					on RTP.RoleTemplateProductId = TempRoleDelete.RoleTemplateProductId
+		
+		SELECT	@RoleTemplateId AS Id ,
+				'' AS ErrorMessage
 	END	
 	COMMIT;  
 	END TRY    
 	BEGIN CATCH  
 		ROLLBACK;  
 		EXEC dbo.LogError @ErrorLogID = @ErrorLogID OUTPUT;
-		SELECT @RoleTemplateProductId AS RoleTemplateProductId, ErrorMessage
+		SELECT 0 AS Id, ErrorMessage
 		FROM dbo.ErrorLog
 		WHERE ErrorLogID = @ErrorLogID;
 	END CATCH  
