@@ -55,6 +55,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Command.Repository
             dparm.Add("SourceId", activityLog.SourceId, DbType.String);
             dparm.Add("MappingKey", activityLog.MappingKey, DbType.String);
             dparm.Add("ContextId", activityLog.ContextId, DbType.Int32);
+            dparm.Add("InstanceId", activityLog.InstanceId, DbType.String);
 
             using (var repository = GetRepository())
             {

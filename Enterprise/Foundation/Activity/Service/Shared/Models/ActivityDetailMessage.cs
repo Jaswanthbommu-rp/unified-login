@@ -98,5 +98,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Shared.Models
         public string MappingKey { get; set; }
 
         public int ContextId { get; set; }
+
+        public int InstanceId { get; set; }
     }
 }
