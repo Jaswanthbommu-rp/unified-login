@@ -2776,7 +2776,7 @@ BEGIN
 	VALUES (@ControlId+3, @ControlId+2, 10, N'Lead2LeaseRoleTemplateCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
 
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
-	VALUES (@ControlId+4, @ControlId+2, 5, N'Lead2LeaseRoleTemplateRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)
+	VALUES (@ControlId+4, @ControlId+2, 5, N'Lead2LeaseRoleTemplateRoleLabelUIId', N'Right', N'name', 2, @UserId, @Now)
 	
 	SET IDENTITY_INSERT [UserManagement].[Control] OFF
 
