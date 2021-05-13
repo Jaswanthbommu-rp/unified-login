@@ -1202,14 +1202,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 {
                     List<ExportDataFileConfiguration> exportConfigurations = new List<ExportDataFileConfiguration>
                     {
-                        new ExportDataFileConfiguration {Header = "Company", MappedField = "OrganizationName", PDFColumnWidth = "2.85", Preference = 1},
+                        new ExportDataFileConfiguration {Header = "UPFM Company Name", MappedField = "OrganizationName", PDFColumnWidth = "2.85", Preference = 1},
                         new ExportDataFileConfiguration {Header = "Contracted Name", MappedField = "ContractedName", PDFColumnWidth = "2.85", Preference = 2},
                         new ExportDataFileConfiguration {Header = "Domain", MappedField = "Domain", PDFColumnWidth = "0.85", Preference = 3},
                         new ExportDataFileConfiguration {Header = "Address", MappedField = "Address", PDFColumnWidth = "3.25", Preference = 4},
-                        new ExportDataFileConfiguration {Header = "Blue Id", MappedField = "BooksCustomerMasterId", PDFColumnWidth = "0.70", Preference = 5},
+                        new ExportDataFileConfiguration {Header = "RPUP ID", MappedField = "BooksCustomerMasterId", PDFColumnWidth = "0.70", Preference = 5},
                         new ExportDataFileConfiguration {Header = "Type", MappedField = "OrganizationType", PDFColumnWidth = "1.00", Preference = 6},
                         new ExportDataFileConfiguration {Header = "Products", MappedField = "Products", PDFColumnWidth = "0.50", Preference = 7},
-                        new ExportDataFileConfiguration {Header = "Company ID", MappedField = "RealPageId", PDFColumnWidth = "3.25", Preference = 8},
+                        new ExportDataFileConfiguration {Header = "UPFM Company ID", MappedField = "RealPageId", PDFColumnWidth = "3.25", Preference = 8},
                         new ExportDataFileConfiguration {Header = "Status", MappedField = "Status", PDFColumnWidth = "2.25", Preference = 9}
                     };
 
@@ -1541,12 +1541,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 {
                     List<ExportDataFileConfiguration> exportConfigurations = new List<ExportDataFileConfiguration>
                     {
-                        new ExportDataFileConfiguration {Header = "Property", MappedField = "Name", PDFColumnWidth = "2.85", Preference = 1},
+                        new ExportDataFileConfiguration {Header = "UPFM Property Name", MappedField = "Name", PDFColumnWidth = "2.85", Preference = 1},
                         new ExportDataFileConfiguration {Header = "Contracted Name", MappedField = "ContractedName", PDFColumnWidth = "2.85", Preference = 2},
-                        new ExportDataFileConfiguration {Header = "Blue Id", MappedField = "CustomerPropertyId", PDFColumnWidth = "0.70", Preference = 3},
+                        new ExportDataFileConfiguration {Header = "RPUP Id", MappedField = "CustomerPropertyId", PDFColumnWidth = "0.70", Preference = 3},
                         new ExportDataFileConfiguration {Header = "Domain", MappedField = "Domain", PDFColumnWidth = "0.85", Preference = 4},
                         new ExportDataFileConfiguration {Header = "Address", MappedField = "PropertyAddress", PDFColumnWidth = "3.25", Preference = 5},
-                        new ExportDataFileConfiguration {Header = "Property ID", MappedField = "InstanceId", PDFColumnWidth = "3.25", Preference = 6},
+                        new ExportDataFileConfiguration {Header = "UPFM Property ID", MappedField = "InstanceId", PDFColumnWidth = "3.25", Preference = 6},
                         new ExportDataFileConfiguration {Header = "Status", MappedField = "IsActive", PDFColumnWidth = "2.25", Preference = 7}
                     };
 
