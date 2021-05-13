@@ -431,7 +431,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Used to add/update a list of product settings for the given product and persona
         /// </summary> 
-        internal void UpdateSamlUserAttributes(long personaId, Dictionary<SamlAttributeEnum, string> settingList, int productId)
+        public void UpdateSamlUserAttributes(long personaId, Dictionary<SamlAttributeEnum, string> settingList, int productId)
         {
             IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(personaId, productId);
             if (settingList.Count > 0)
