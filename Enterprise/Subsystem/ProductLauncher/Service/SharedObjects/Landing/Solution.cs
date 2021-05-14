@@ -110,5 +110,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		/// </summary>
 		[JsonProperty(PropertyName = "ShowInRoleTemplate")]
 		public bool ShowInRoleTemplate { get; set; } = false;
+		/// <summary>
+		/// Product Enabled in Product Access Panel For Admin User Edit
+		/// </summary>
+		[JsonProperty(PropertyName = "EnableProductForAdminUserEdit")]
+		public bool EnableProductForAdminUserEdit { get; set; } = false;
 	}
 }

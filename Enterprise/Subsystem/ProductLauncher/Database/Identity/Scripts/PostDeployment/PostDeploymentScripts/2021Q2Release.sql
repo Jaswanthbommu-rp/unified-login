@@ -4134,3 +4134,117 @@ BEGIN
 	END
 END;
 GO
+BEGIN TRAN
+
+-- Add ProductIcon product settings
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'EnableProductForAdminUserEdit')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
+	VALUES ('EnableProductForAdminUserEdit', 'Enable Product in Product Access Panel For Admin User to Edit', 0);
+END
+
+DECLARE @NOW DATETIME = GETUTCDATE();
+DECLARE @productlist as table (entid int identity, productid int, productsettingtype varchar(500), productsettingvalue varchar(2000))
+insert into @productlist values
+(1,  'EnableProductForAdminUserEdit', '0'),
+(3,  'EnableProductForAdminUserEdit', '0'),
+(4,  'EnableProductForAdminUserEdit', '0'),
+(6,  'EnableProductForAdminUserEdit', '0'),
+(8,  'EnableProductForAdminUserEdit', '1'),
+(9,  'EnableProductForAdminUserEdit', '0'),
+(10, 'EnableProductForAdminUserEdit', '0'),
+(13, 'EnableProductForAdminUserEdit', '0'),
+(14, 'EnableProductForAdminUserEdit', '0'),
+(15, 'EnableProductForAdminUserEdit', '0'),
+(16, 'EnableProductForAdminUserEdit', '0'),
+(17, 'EnableProductForAdminUserEdit', '0'),
+(18, 'EnableProductForAdminUserEdit', '0'),
+(19, 'EnableProductForAdminUserEdit', '0'),
+(20, 'EnableProductForAdminUserEdit', '0'),
+(23, 'EnableProductForAdminUserEdit', '0'),
+(26, 'EnableProductForAdminUserEdit', '0'),
+(29, 'EnableProductForAdminUserEdit', '0'),
+(30, 'EnableProductForAdminUserEdit', '0'),
+(31, 'EnableProductForAdminUserEdit', '0'),
+(32, 'EnableProductForAdminUserEdit', '0'),
+(33, 'EnableProductForAdminUserEdit', '0'),
+(38, 'EnableProductForAdminUserEdit', '0'),
+(39, 'EnableProductForAdminUserEdit', '0'),
+(40, 'EnableProductForAdminUserEdit', '0'),
+(41, 'EnableProductForAdminUserEdit', '0'),
+(44, 'EnableProductForAdminUserEdit', '0'),
+(45, 'EnableProductForAdminUserEdit', '0'),
+(47, 'EnableProductForAdminUserEdit', '0'),
+(48, 'EnableProductForAdminUserEdit', '0'),
+(49, 'EnableProductForAdminUserEdit', '0'),
+(50, 'EnableProductForAdminUserEdit', '0'),
+(51, 'EnableProductForAdminUserEdit', '0'),
+(52, 'EnableProductForAdminUserEdit', '0'),
+(53, 'EnableProductForAdminUserEdit', '0'),
+(54, 'EnableProductForAdminUserEdit', '0'),
+(56, 'EnableProductForAdminUserEdit', '0'),
+(57, 'EnableProductForAdminUserEdit', '0'),
+(58, 'EnableProductForAdminUserEdit', '0'),
+(59, 'EnableProductForAdminUserEdit', '0'),
+(60, 'EnableProductForAdminUserEdit', '0'),
+(63, 'EnableProductForAdminUserEdit', '0');
+
+declare @MAX_ID INT
+declare @Current_ID INT = 1
+declare @CurrentProductId INT = 1
+
+select @MAX_ID = max(entid) from @productlist
+
+while @Current_ID <= @MAX_ID
+begin
+	declare @currentSettingType varchar(500)
+	declare @currentsettingValue varchar(2000)
+
+	select @CurrentProductId = productid , @currentSettingType = productsettingtype, @currentSettingValue = productsettingvalue
+		from @productlist where entid = @Current_ID
+
+	--print 'productid = ' + convert(varchar,@currentproductid)
+
+	if not exists (
+	select top 1 1 
+		FROM Enterprise.GlobalProductConfiguration gpc  
+		JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId  
+		JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId  
+		JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId  
+			WHERE  gpc.ProductId = @CurrentProductId  
+		AND ((@NOW BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@NOW >= gpc.FromDate AND gpc.ThruDate IS NULL))  
+		AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))  
+		AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))  
+		AND pst.Name = @currentSettingType
+		AND ps.Value = @currentsettingValue
+	)
+	begin
+		declare @currentproductconfigurationid INT
+		select distinct top 1 @currentproductconfigurationid = pc.configurationid
+			FROM Enterprise.GlobalProductConfiguration gpc  
+			JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId  
+			JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId  
+			JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId  
+				WHERE  gpc.ProductId = @CurrentProductId
+			AND ((@NOW BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@NOW >= gpc.FromDate AND gpc.ThruDate IS NULL))  
+			AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))  
+			AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))  
+		order by pc.ConfigurationId desc
+
+		if (@currentproductconfigurationid is not null)
+		begin
+			insert into enterprise.ProductSetting ( productid, ProductSettingTypeId, value, FromDate )
+				select @CurrentProductId, productsettingtypeid, @currentSettingValue, GETUTCDATE()
+					from enterprise.ProductSettingType where name = @currentSettingType
+			insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate, ThruDate )
+				values ( @currentproductconfigurationid, @@IDENTITY, GETUTCDATE(), null )
+		end
+	end
+	
+	set @Current_ID = @Current_ID + 1
+end
+
+COMMIT TRAN;
+--settings data transfer from passwordpolicy table to orgsettings  table
+GO

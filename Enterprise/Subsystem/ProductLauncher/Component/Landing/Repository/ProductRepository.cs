@@ -1466,6 +1466,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         productInternalSetting = productInternalSettingList.FirstOrDefault(item => item.Name.Equals("ShowInRoleTemplate", StringComparison.OrdinalIgnoreCase));
                         s.ShowInRoleTemplate = (productInternalSetting != null) && (productInternalSetting.Value.Trim() == "1" ? true : false) ;
 
+                        productInternalSetting = productInternalSettingList.FirstOrDefault(item => item.Name.Equals("EnableProductForAdminUserEdit", StringComparison.OrdinalIgnoreCase));
+                        s.EnableProductForAdminUserEdit = (productInternalSetting != null) && (productInternalSetting.Value.Trim() == "1" ? true : false);
+
                         if (setIsAssigned == true)
                         {
                             s.IsAssigned = userProducts.Any(item => item.ProductId == s.ProductId);
