@@ -2824,23 +2824,23 @@ BEGIN
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
 	VALUES (@ControlId, NULL, 8, N'FinancialSuiteRoleTemplateTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
 
-	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
-	VALUES (@ControlId+1, @ControlId, 9, N'FinancialSuiteRoleTemplateRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)	
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (@ControlId+1, @ControlId, 5, N'FinancialSuiteRoleTemplateOptions:LabelUIId', N'Options:', N'', 1, @UserId, @Now)
 	
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
-	VALUES (@ControlId+2, @ControlId+1, 5, N'FinancialSuiteRoleTemplateOptions:LabelUIId', N'Options:', N'', 1, @UserId, @Now)
+	VALUES (@ControlId+2, @ControlId, 1, N'FinancialSuiteRoleTemplateAccesstoSiteSpendManagementonlySwitchUIId', N'Site user', N'hasAccessToSiteSpendManagementOnly', 2, @UserId, @Now)
 	
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
-	VALUES (@ControlId+3, @ControlId+1, 1, N'FinancialSuiteRoleTemplateAccesstoSiteSpendManagementonlySwitchUIId', N'Access to Site Spend Management only', N'hasAccessToSiteSpendManagementOnly', 2, @UserId, @Now)
+	VALUES (@ControlId+3, @ControlId, 1, N'FinancialSuiteRoleTemplateAllowaccesstoallcurrentandfutureentitiesSwitchUIId', N'Assign current and new entities automatically', N'hasAccessToAllCurrentFutureProperties', 3, @UserId, @Now)
 	
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
-	VALUES (@ControlId+4, @ControlId+1, 1, N'FinancialSuiteRoleTemplateAllowaccesstoallcurrentandfutureentitiesSwitchUIId', N'Allow access to all current and future entities', N'hasAccessToAllCurrentFutureProperties', 3, @UserId, @Now)
-	
-	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
-	VALUES (@ControlId+5, @ControlId+1, 1, N'FinancialSuiteRoleTemplateAccountingAdminSwitchUIId', N'Accounting Admin', N'isAccountingAdmin', 4, @UserId, @Now)
+	VALUES (@ControlId+4, @ControlId, 1, N'FinancialSuiteRoleTemplateAccountingAdminSwitchUIId', N'Accounting Admin', N'isAccountingAdmin', 4, @UserId, @Now)
 
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
-	VALUES (@ControlId+6, @ControlId+1, 3, N'FinancialSuiteRoleTemplateRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+	VALUES (@ControlId+5, @ControlId, 9, N'FinancialSuiteRoleTemplateRolesTabUIId', N'Roles', NULL, 5, @UserId, @Now)	
+	
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+6, @ControlId+5, 3, N'FinancialSuiteRoleTemplateRolesMultiSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
 
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
 	VALUES (@ControlId+7, @ControlId+6, 10, N'FinancialSuiteRoleTemplateCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
@@ -2854,14 +2854,23 @@ BEGIN
 	
 	Select @ControlAttributeId = MAX(ControlAttributeId) +1 from [UserManagement].[ControlAttribute]
 
-	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
-	VALUES (@ControlAttributeId, @ControlId+1, N'Default', N'True', @UserId, @Now)
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+	VALUES (@ControlAttributeId, @ControlId+2, N'Default', N'True', @UserId, @Now)
+	
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+	VALUES (@ControlAttributeId + 1, @ControlId+3, N'Default', N'True', @UserId, @Now)
+	
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+	VALUES (@ControlAttributeId +2, @ControlId+4, N'Default', N'True', @UserId, @Now)
 
 	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
-	VALUES (@ControlAttributeId+1, @ControlId+1, N'Hide', N'False', @UserId, @Now)
+	VALUES (@ControlAttributeId + 3 , @ControlId+5, N'Default', N'True', @UserId, @Now)
 
 	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
-	VALUES (@ControlAttributeId+2, @ControlId+2, N'ShowSelectAll', N'True', @UserId, @Now)
+	VALUES (@ControlAttributeId+4, @ControlId+5, N'Hide', N'False', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+5, @ControlId+6, N'ShowSelectAll', N'True', @UserId, @Now)
 
 	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
 
