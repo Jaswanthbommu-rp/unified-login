@@ -1081,6 +1081,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
         }
 
+        /// <summary>
+        /// Gets the list of rights for the current authenticated user
+        /// </summary>
+        /// <returns>A list of the users rights</returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get the users UnifiedLogin rights")]
+        [Route("user/rights/current")]
+        [HttpGet]
+        [AuthorizeScope("userinfoapi", "landingapi")]
+        public HttpResponseMessage GetCurrentUserRights()
+        {
+            List<string> userRights = _userClaims.Rights;
+
+            return Request.CreateResponse(HttpStatusCode.OK, userRights);
+        }
+
         #region Private Methods
 
 
