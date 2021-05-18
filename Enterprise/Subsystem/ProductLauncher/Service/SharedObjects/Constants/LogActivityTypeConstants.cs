@@ -32,6 +32,7 @@
         public const string PROPERTY_CREATED = "Property Create";
         public const string PROPERTY_DELETED = "Property Delete";
         public const string PROPERTY_UPDATED = "Property Update";
+        public const string USER_REQUESTED_NEW_ACTIVATION_LINK = "User requested new activation link";
     }
 
     //public static class SecurityActivityMessageConstants

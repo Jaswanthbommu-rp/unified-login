@@ -163,5 +163,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <returns></returns>
         bool ResendInvitation(IList<UserLogin> userLogins, bool isCalledFromService = false);
         bool ClearPasswordAndQuestions(Guid realPageId);
+
+        /// <summary>
+        /// Gets user claims for non user
+        /// </summary>
+        /// <param name="userRealPageId"></param>
+        /// <returns></returns>
+        DefaultUserClaim GetUserClaimsFromNonUser(Guid userRealPageId);
     }
 }

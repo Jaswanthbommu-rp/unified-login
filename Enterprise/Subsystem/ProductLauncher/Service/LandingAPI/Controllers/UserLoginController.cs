@@ -17,6 +17,7 @@ using System.Web.Http.Controllers;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RepositoryResponse = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.RepositoryResponse;
 using UserLogin = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.UserLogin;
+using System.Security.Claims;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -412,6 +413,58 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             }
             return Request.CreateResponse(HttpStatusCode.OK, response);
+        }
+
+        /// <summary>
+        /// Resend Email Invitations For Extermal
+        /// </summary>
+        /// <param name="userLogins"></param>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [Route("userlogins/resendinvitationexternal/{realpageId}")]
+        [AuthorizeScope("enterpriseapi")]
+        [HttpPost]
+        public HttpResponseMessage ResendInvitationExternal(Guid realpageId)
+        {
+            ObjectListOutput<UserLogin, IErrorData> output = new ObjectListOutput<UserLogin, IErrorData>();
+            Status<IErrorData> errorStatus = new Status<IErrorData>();
+            bool response = true;
+            var userList = new List<UserLogin>() { new UserLogin() { RealPageId = realpageId } };
+
+            ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
+            if (!currentClaimPrincipal.Claims.Any(a => a.Type == "sub"))
+            {
+                var userClaim = _manageUserLogin.GetUserClaimsFromNonUser(realpageId);
+
+                if (userClaim == null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.ExpectationFailed, false);
+                }
+
+
+                var identity = (ClaimsIdentity)currentClaimPrincipal.Identity;
+                identity.AddClaim(new Claim("orgPartyId", userClaim.OrganizationPartyId.ToString()));
+                identity.AddClaim(new Claim("ORGID", userClaim.OrganizationRealPageGuid.ToString()));
+                identity.AddClaim(new Claim("sub", userClaim.UserId.ToString()));
+                identity.AddClaim(new Claim("LOGINNAME", userClaim.LoginName));
+                identity.AddClaim(new Claim("ORGMASTERID", userClaim.OrganizationMasterId.ToString()));
+                identity.AddClaim(new Claim("ORGNAME", userClaim.OrganizationName));
+                identity.AddClaim(new Claim("FIRSTNAME", userClaim.FirstName));
+                identity.AddClaim(new Claim("LASTNAME", userClaim.LastName));
+                identity.AddClaim(new Claim("PERSONAID", userClaim.PersonaId.ToString()));
+
+                _manageUserLogin = new ManageUserLogin(userClaim);
+            }
+            response = _manageUserLogin.ResendInvitation(userList, false);
+
+            if (response)
+            {
+                return Request.CreateResponse(HttpStatusCode.OK, response);
+            }
+
+            return Request.CreateResponse(HttpStatusCode.ExpectationFailed, false);
         }
 
 

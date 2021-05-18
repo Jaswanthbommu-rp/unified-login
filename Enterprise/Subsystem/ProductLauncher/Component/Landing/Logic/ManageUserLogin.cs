@@ -729,6 +729,54 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return primaryOrgStatus;
         }
 
+        /// <summary>
+        /// Gets claims by GUID, for user that requested to resend an activation link
+        /// </summary>
+        /// <param name="userRealPageId"></param>
+        /// <returns></returns>
+        public DefaultUserClaim GetUserClaimsFromNonUser(Guid userRealPageId)
+        {
+            DefaultUserClaim currentUserClaim = GetDefaultUserClaim();
+            //IManagePerson _managePerson = new ManagePerson();
+            var profileLogic = new ManageProfile(_defaultUserClaim);
+
+            // Get Userlogin to pass Data
+            var userLogin = _userLoginRepository.GetUserLoginOnly(userRealPageId);
+            var orgWithoutStatus = _userLoginRepository.GetPrimaryOrgWithoutStatusByUserId(userLogin.UserId);
+
+            if (orgWithoutStatus == null)
+            {
+                return null;
+            }
+            var org = _organizationRepository.GetOrganization(realPageId: orgWithoutStatus.RealPageId);
+
+            if (org == null)
+            {
+                return null;
+            }
+
+            var orgWithStatus = _userLoginRepository.GetUserOrganizationWithStatus(userLogin.UserId, userLogin.LastLogin, orgWithoutStatus.PartyId, false);
+
+            if (orgWithStatus == null)
+            {
+                return null;
+            }
+            var orgList = _userLoginRepository.ListOrganizationByEnterpriseUserId(userRealPageId, null);
+
+            //Get User Profile			
+            var profileDetail = profileLogic.GetProfileDetail(userRealPageId, orgWithStatus.PartyId);
+
+            //since windows service doesn't have editor persona,Get RealPageEmployeeAccessID to use in to get editor persona
+            currentUserClaim = GetCurrentUserClaim(profileLogic, org);
+            
+            if (currentUserClaim != null)
+            {
+                var message = $"User {currentUserClaim.FirstName} {currentUserClaim.LastName} requested a new activation link";
+                LogAuditActivity(LogActivityTypeConstants.USER_REQUESTED_NEW_ACTIVATION_LINK, LogActivityCategoryType.Email, message, null,profileDetail);
+            }
+            return currentUserClaim;
+
+        }
 
         /// <summary>
         /// 
