@@ -1254,6 +1254,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// <param name="datafilter">datafilter</param>
         /// <param name="userPersonaId">userPersonaId</param>
         /// <param name="editorPersonaId">editorPersonaId</param>
+        /// <param name="isSelectedProperties">isSelectedProperties</param>
         /// <returns>List of Properties for a company </returns>
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
@@ -1262,7 +1263,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [Route("CompanySetup/CompanyPropertyList")]
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         [HttpGet]
-        public HttpResponseMessage GetPropertiesForCompany(Guid companyInstanceId, string domain = null, string propertyName = null, int? blueId = null, int? status = null, [FromUri] RequestParameter datafilter = null, long userPersonaId = 0, long editorPersonaId = 0)
+        public HttpResponseMessage GetPropertiesForCompany(Guid companyInstanceId, string domain = null, string propertyName = null, int? blueId = null, int? status = null, [FromUri] RequestParameter datafilter = null, long userPersonaId = 0, long editorPersonaId = 0, bool? isSelectedProperties = null)
         {
             if (companyInstanceId == Guid.Empty)
             {
@@ -1281,7 +1282,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             globals.Add(BaseType.RequestParameter, datafilter);
             var cacheKey = $"getPropertyInstanceForCompany_{companyInstanceId}";
             RPObjectCache.RemoveFromCache(cacheKey);
-            List<CompanyPropertySetup> companyPropertySetup = _manageOrganization.GetPropertiesForCompany(companyInstanceId, propertyName, domain, blueId, status, globals, editorPersonaId, userPersonaId);
+            List<CompanyPropertySetup> companyPropertySetup = _manageOrganization.GetPropertiesForCompany(companyInstanceId, propertyName, domain, blueId, status, globals, editorPersonaId, userPersonaId, isSelectedProperties);
 
             int totalRecords = 0;
             if (companyPropertySetup.Count > 0)
@@ -1543,7 +1544,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     {
                         new ExportDataFileConfiguration {Header = "UPFM Property Name", MappedField = "Name", PDFColumnWidth = "2.85", Preference = 1},
                         new ExportDataFileConfiguration {Header = "Contracted Name", MappedField = "ContractedName", PDFColumnWidth = "2.85", Preference = 2},
-                        new ExportDataFileConfiguration {Header = "RPUP Id", MappedField = "CustomerPropertyId", PDFColumnWidth = "0.70", Preference = 3},
+                        new ExportDataFileConfiguration {Header = "RPUP ID", MappedField = "CustomerPropertyId", PDFColumnWidth = "0.70", Preference = 3},
                         new ExportDataFileConfiguration {Header = "Domain", MappedField = "Domain", PDFColumnWidth = "0.85", Preference = 4},
                         new ExportDataFileConfiguration {Header = "Address", MappedField = "PropertyAddress", PDFColumnWidth = "3.25", Preference = 5},
                         new ExportDataFileConfiguration {Header = "UPFM Property ID", MappedField = "InstanceId", PDFColumnWidth = "3.25", Preference = 6},

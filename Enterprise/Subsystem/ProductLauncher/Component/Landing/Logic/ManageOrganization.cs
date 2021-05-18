@@ -920,26 +920,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         #endregion
 
         #region GetPropertiesForCompany
-        public List<CompanyPropertySetup> GetPropertiesForCompany(Guid companyInstanceId, string propertyName = null, string domain = null, int? blueId = null, int? status = null, IDictionary<object, object> globals=null, long editorPersonaId=0, long userPersonaId = 0)
+        public List<CompanyPropertySetup> GetPropertiesForCompany(Guid companyInstanceId, string propertyName = null, string domain = null, int? blueId = null, int? status = null, IDictionary<object, object> globals = null, long editorPersonaId = 0, long userPersonaId = 0, bool? isSelectedProperties = null)
         {
             RequestParameter dataFilter = new RequestParameter();
-           
+
             if (globals.ContainsKey(BaseType.RequestParameter))
             {
                 dataFilter = globals[BaseType.RequestParameter] as RequestParameter;
-            }            
+            }
             List<Guid> propertyInstanceIds;
             List<PropertySetup> propertyDetails = new List<PropertySetup>();
             List<UPFMPropertyInstance> selectedPropertyInstances = new List<UPFMPropertyInstance>();
             List<int> userProperties = null;
-            List<BooksPropertyInstance> booksPropertyInstance = GetPropertyInstanceFromBooks(companyInstanceId);            
-            if (userPersonaId > 0)
-            {
-                status = 1; //Hardcoding status to 1, because primary properties tab should only get active properties
-                userProperties = new List<int>();
-                userProperties = _propertyRepository.ListUPFMPropertyInstanceIdByPersona(userPersonaId, ProductEnum.UnifiedUI);
-                selectedPropertyInstances = _propertyRepository.ListUPFMPropertyInstanceByPersona(userPersonaId, ProductEnum.UnifiedUI);
-            }
+            List<BooksPropertyInstance> booksPropertyInstance = GetPropertyInstanceFromBooks(companyInstanceId);
+
             if (domain != null)
             {
                 string[] domainFilter = domain.Split(',');
@@ -949,7 +943,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 propertyInstanceIds = booksPropertyInstance?.Select(p => p.attributes.propertyInstanceSourceId)?.Select(Guid.Parse).ToList();
             }
-            if(propertyInstanceIds != null)
+            if (userPersonaId > 0)
+            {
+                status = 1; //Hardcoding status to 1, because primary properties tab should only get active properties
+                userProperties = new List<int>();
+                userProperties = _propertyRepository.ListUPFMPropertyInstanceIdByPersona(userPersonaId, ProductEnum.UnifiedUI);
+                selectedPropertyInstances = _propertyRepository.ListUPFMPropertyInstanceByPersona(userPersonaId, ProductEnum.UnifiedUI);
+                List<Guid> selectedPropertyInstanceIds = selectedPropertyInstances?.Select(p => p.InstanceId).ToList();
+                if (isSelectedProperties == true)
+                {
+                    propertyInstanceIds = selectedPropertyInstanceIds;
+                }
+                else if (isSelectedProperties == false)
+                {
+                    propertyInstanceIds = propertyInstanceIds.Except(selectedPropertyInstanceIds).ToList<Guid>();
+                }
+            }
+            if (propertyInstanceIds != null)
             {
                 propertyDetails = _propertyRepository.GetPropertiesForCompany(propertyInstanceIds, propertyName, blueId, status, dataFilter);
                 propertyDetails = AddContractedNameToPropertyList(booksPropertyInstance, propertyDetails, userProperties);
@@ -957,7 +967,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             List<CompanyPropertySetup> companyPropertySetup = new List<CompanyPropertySetup>()
             {
                 new CompanyPropertySetup()
-				{
+                {
                     Domain = booksPropertyInstance?.Where(p=>p.attributes.domain != null).Select(p => p.attributes.domain).Distinct().ToList(),
                     Property = propertyDetails,
                     SelectedPropertyIds = selectedPropertyInstances?.Select(p=>p.InstanceId).ToList<Guid>()
