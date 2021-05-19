@@ -3285,8 +3285,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             };
                             productListToCreate.Add(pb);
                         }
-                    }
+                    }                   
                 }
+
+                // add edited products for admin with other list
+                foreach (var product in productList)
+                {
+                    if (!productListToCreate.Any(p => p.ProductId == product.ProductId))
+                    {
+                        productListToCreate.Add(product);
+					}
+				}
 
                 productList = productListToCreate;
             }
@@ -3748,8 +3757,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 //Do we have the Create & Assign PersonaIds
                 if (createUserPersonaId > 0 && assignUserPersonaId > 0)
                 {
-                    if (!(userTypeId == (int)UserRoleType.SuperUser)
-                        && productListToCreate.Any(a => a.ProductId == (int)ProductEnum.OneSite)
+                    if (!(userTypeId == (int)UserRoleType.SuperUser) 
+                        &&productListToCreate.Any(a => a.ProductId == (int)ProductEnum.OneSite)
                         && (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.Lead2Lease) || productListToCreate.Any(a => a.ProductId == (int)ProductEnum.SeniorLeadManagement)))
                     {
                         // need to combine the Lead2Lease and OneSite product details so they can run synchronously

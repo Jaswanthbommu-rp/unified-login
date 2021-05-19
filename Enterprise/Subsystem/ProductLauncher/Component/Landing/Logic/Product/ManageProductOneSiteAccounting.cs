@@ -1420,11 +1420,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             else
             {
-                //if (!superUser && !isAccountingAdmin)
-                if (!superUser)
+				if (superUser && string.IsNullOrEmpty(_productUserId))
+				{
+					List<ProductRole> currentList = currentRoleList.Records.Cast<ProductRole>().ToList();
+					foreach (ProductRole role in currentList)
+					{
+						if (role.Name.ToUpper().Contains("ADMIN") && role.IsAssigned == false)
+						{
+							rolesToAssign.Add(role.ID);
+						}
+					}
+				}
+                else
                 {
-                    // compare the current role list to what was passed to determine what is new and what was removed.
-                    foreach (ProductRole role in currentRoleList.Records)
+					bool isSuperExistsInProduct = superUser && !string.IsNullOrEmpty(_productUserId);
+					// compare the current role list to what was passed to determine what is new and what was removed.
+					foreach (ProductRole role in currentRoleList.Records)
                     {
                         if (!(rolesToAssign.Contains(role.ID)))
                         {
@@ -1438,34 +1449,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         {
                             rolesToAssign.Remove(role.ID);
                         }
-                    }
 
-                    if (rolesToAssign.Count > 0)
-                    {
-                        roleIDAddList = string.Join(",", rolesToAssign);
-                    }
-                    if (rolesToRemove.Count > 0)
-                    {
-                        roleIDRemoveList = string.Join(",", rolesToRemove);
-                    }
-                    WriteToDiagnosticLog($"UpdateRolesToUser - roleIDAddList = {roleIDAddList}");
-                    WriteToDiagnosticLog($"UpdateRolesToUser - roleIDRemoveList = {roleIDRemoveList}");
+						if (role.Name.ToUpper().Contains("ADMIN") && !role.IsAssigned && isSuperExistsInProduct)
+						{
+							rolesToAssign.Add(role.ID);
+						}
+					}                    
                 }
-                else
-                {
-                    // get any roles containing the word ADMIN and add them to the administrator
-                    List<ProductRole> currentList = currentRoleList.Records.Cast<ProductRole>().ToList();
-                    rolesToAssign = new List<string>();
-                    foreach (ProductRole role in currentList)
-                    {
-                        if (role.Name.ToUpper().Contains("ADMIN") && role.IsAssigned == false)
-                        {
-                            rolesToAssign.Add(role.ID);
-                        }
-                    }
-                    roleIDAddList = string.Join(",", rolesToAssign);
-                }
-            }
+				if (rolesToAssign.Count > 0)
+				{
+					roleIDAddList = string.Join(",", rolesToAssign);
+				}
+				if (rolesToRemove.Count > 0)
+				{
+					roleIDRemoveList = string.Join(",", rolesToRemove);
+				}
+				WriteToDiagnosticLog($"UpdateRolesToUser - roleIDAddList = {roleIDAddList}");
+				WriteToDiagnosticLog($"UpdateRolesToUser - roleIDRemoveList = {roleIDRemoveList}");				
+			}
 
 			NameValuePair[] user = new NameValuePair[4]
 			{
@@ -1775,7 +1776,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 // For SuperUser users -  Accounting sets the Admin related roles - no need to clear prev roles
-                if ((!isSuperUser) && RoleList.Count > 0)
+                if (RoleList.Count > 0)
                 {
                     string updateResultRoles = UpdateRolesToUser(editorPersonaId, userPersonaId, RoleList, isAccountingAdmin, batchProcessType);
                     if (!string.IsNullOrEmpty(updateResultRoles))
