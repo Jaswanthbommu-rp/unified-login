@@ -4257,3 +4257,35 @@ end
 COMMIT TRAN;
 --settings data transfer from passwordpolicy table to orgsettings  table
 GO
+Declare @controlId INT
+Declare @accesstabcontrolId INT
+
+select @controlId = ControlId from UserManagement.Control where UIID = 'VendorCredentialiProductAccessRolesTabUIId'
+select @accesstabcontrolId = ControlId from UserManagement.Control where UIID = 'VendorCredentialiProductAccessTypeTabUIId'
+
+IF EXISTS (select top 1 1 from UserManagement.ControlAttribute where ControlId = @controlId)
+BEGIN
+ update UserManagement.ControlAttribute set ControlId = @accesstabcontrolId where ControlId = @controlId
+END
+
+IF EXISTS (SELECT TOP 1 1 FROM UserManagement.Control where UIID = 'VendorCredentialiProductAccessTypeTabUIId' AND [Sequence] = 2)
+BEGIN
+ update UserManagement.Control set Sequence = 1  where UIID = 'VendorCredentialiProductAccessTypeTabUIId' AND [Sequence] = 2
+END
+
+IF EXISTS (SELECT TOP 1 1 FROM UserManagement.Control where UIID = 'VendorCredentialiProductAccessRolesTabUIId' AND [Sequence] = 1)
+BEGIN
+ update UserManagement.Control set Sequence = 4  where UIID = 'VendorCredentialiProductAccessRolesTabUIId' AND [Sequence] = 1
+END
+
+IF EXISTS (SELECT TOP 1 1 FROM UserManagement.Control where UIID = 'VendorCredentialiProductAccessPropertiesTabUIId' AND [Sequence] = 3)
+BEGIN
+ update UserManagement.Control set Sequence = 2  where UIID = 'VendorCredentialiProductAccessPropertiesTabUIId' AND [Sequence] = 3
+END
+
+IF EXISTS (SELECT TOP 1 1 FROM UserManagement.Control where UIID = 'VendorCredentialiProductAccessPropertyGroupTabUIId' AND [Sequence] = 4)
+BEGIN
+ update UserManagement.Control set Sequence = 3  where UIID = 'VendorCredentialiProductAccessPropertyGroupTabUIId' AND [Sequence] = 4
+END
+
+Go
