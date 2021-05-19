@@ -1,35 +1,35 @@
-﻿using RP.Enterprise.Foundation.DataAccess.Component;
+﻿using Newtonsoft.Json;
+using RP.Enterprise.Foundation.DataAccess.Component;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterprise.Helpers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Maintenance;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Accounting;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ops;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Rum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
+using Serilog;
+using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Runtime.Remoting.Messaging;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using PropertySetup = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.PropertySetup;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
-using Serilog.Events;
-using Serilog;
-using Newtonsoft.Json;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Maintenance;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -53,6 +53,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private IConfigurationSettingRepository _configurationSettingRepository ;
         private IManageOrganizationProduct _manageOrganizationProduct;
         private IManageProduct _manageProduct;
+        private ITokenHelper _tokenHelper;
 
         private DefaultUserClaim _defaultUserClaim;
         #endregion
@@ -79,6 +80,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _manageUnifiedSettings = new ManageUnifiedSettings(repository, userClaim, messageHandler);
             _manageProduct = new ManageProduct(repository, userClaim, messageHandler);
             _manageOrganizationProduct = new ManageOrganizationProduct(userClaim, repository, _manageBlueBook, _manageProduct);
+            _tokenHelper = new TokenHelper(repository);
         }
 
         /// <summary>
@@ -101,6 +103,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _manageUnifiedSettings = new ManageUnifiedSettings(repository, userClaim, messageHandler);
             _manageProduct = new ManageProduct(repository, userClaim, messageHandler);
             _manageOrganizationProduct = new ManageOrganizationProduct(userClaim, repository, _manageBlueBook, _manageProduct);
+            _tokenHelper = new TokenHelper(repository);
         }
 
         /// <summary>
@@ -123,6 +126,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _manageOrganizationProduct = new ManageOrganizationProduct(userClaim);
             _manageProductPanel = new ManageProductPanel(userClaim);
             _manageProduct = new ManageProduct(userClaim);
+            _tokenHelper = new TokenHelper();
         }
 
         #endregion
@@ -856,7 +860,42 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     var deleteResult = _organizationRepository.DeleteOrganization(p.OrganizationRemovalQueueId, p.OrganizationPartyId, p.OrganizationRealPageId);
                     if (deleteResult == p.OrganizationPartyId)
                     {
-                        // success
+                        // delete activity log data
+                        try
+                        {
+                            if (productInternalSettings.Any(setting => setting.Name.Equals("ActivityLogUri", StringComparison.OrdinalIgnoreCase)))
+                            {
+                                var activityDeleteResult = 1;
+                                var activityUri = productInternalSettings.First(setting => setting.Name.Equals("ActivityLogUri", StringComparison.OrdinalIgnoreCase)).Value;
+                                if (!string.IsNullOrEmpty(activityUri))
+                                {
+                                    var ulClientToken = _tokenHelper.GetUnifiedLoginServerToken("activityreader companyfunctions");
+                                    using (var httpClient = new HttpClient())
+                                    {
+                                        httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", ulClientToken);
+                                        var deleteUri = new Uri(activityUri + $"api/activity/organization/{p.OrganizationPartyId}");
+                                        Dictionary<string, object> logData = new Dictionary<string, object>() {{"deleteUri", deleteUri}};
+                                        logData.Add("UlClientToken", ulClientToken);
+                                        WriteToLog(LogEventLevel.Debug, $"{GetType()} - Posting to ActivityLog.Delete", logData);
+                                        var response = httpClient.DeleteAsync(deleteUri).Result;
+
+                                        if (!response.IsSuccessStatusCode)
+                                        {
+                                            WriteToLog(LogEventLevel.Error, $"{GetType()} - Error while executing ActivityLog.Delete StatusCode:{response.StatusCode} Company {p.OrganizationRealPageId} , " + $" OrganizationRemovalQueueId {p.OrganizationRemovalQueueId}");
+                                            activityDeleteResult = 0;
+                                        }
+                                    }
+
+                                    _organizationRepository.UpdateOrganizationRemovalQueueStatus(p.OrganizationRemovalQueueId, activityDeleteResult == 1 ? "ActivityLog Removed" : "ActivityLog Removal Failed");
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            WriteToLog(LogEventLevel.Error,
+                                $"{GetType()} - Error while executing ActivityLog.Delete " + $" Company {p.OrganizationRealPageId} , " + $" OrganizationRemovalQueueId {p.OrganizationRemovalQueueId}", exception: ex);
+                        }
+
                         if (p.OrganizationRemoveUDMData)
                         {
                             // post to UDM to remove 

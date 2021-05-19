@@ -9,7 +9,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI
 {
     /// <summary>
-    /// Assigns OAuth2S ettings; required for Swagger
+    /// Assigns OAuth2 Settings; required for Swagger
     /// </summary>
     public class AssignOAuth2Settings : IOperationFilter
     {

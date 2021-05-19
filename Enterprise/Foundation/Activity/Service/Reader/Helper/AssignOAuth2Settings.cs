@@ -33,11 +33,11 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Helper
                 {
                     operation.security = new List<IDictionary<string, IEnumerable<string>>>();
                 }
-                var oAuthRequirements = new Dictionary<string, IEnumerable<string>>
+                var oAuthRequirements = new Dictionary<string, IEnumerable<string>>()
                 {
-                    { "oauth2", new List<string> { ConfigReader.GetRequiredScope } }
+                    {"oauth2", ConfigReader.GetRequiredScope.Split(null)},
+                    {"Token", new List<string>()} 
                 };
-
 
                 operation.security.Add(oAuthRequirements);
             }

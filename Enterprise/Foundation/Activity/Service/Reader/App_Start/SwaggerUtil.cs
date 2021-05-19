@@ -3,7 +3,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader
     /// <summary>
     /// swagger api
     /// </summary>
-    public class Swagger
+    public class SwaggerUtil
     {
         /// <summary>
         /// Used to get the url for the swagger api document.

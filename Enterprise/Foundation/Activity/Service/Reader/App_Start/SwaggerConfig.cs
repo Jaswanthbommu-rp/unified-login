@@ -13,6 +13,8 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader
 
         public static void Register(HttpConfiguration config)
         {
+            var thisAssembly = typeof(SwaggerConfig).Assembly;
+
             config
                 .EnableSwagger(c =>
                     {
@@ -21,7 +23,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader
                         // resolve correctly. You can workaround this by providing your own code to determine the root URL.
                         //
                         //c.RootUrl(req => GetRootUrlFromAppConfig());
-                        c.RootUrl((req) => new Swagger().GetUrl(req, routePath));
+                        c.RootUrl((req) => new SwaggerUtil().GetUrl(req, routePath));
 
                         // If schemes are not explicitly provided in a Swagger 2.0 document, then the scheme used to access
                         // the docs is taken as the default. If your API supports multiple schemes and you want to be explicit
@@ -83,11 +85,16 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader
                         c.OAuth2("oauth2")
                             .Description("OAuth2 Implicit Grant")
                             .Flow("implicit")
-                            .AuthorizationUrl(string.Format("{0}/connect/authorize", ConfigReader.GetIssuerUri))
+                            .AuthorizationUrl($"{ConfigReader.GetIssuerUri}/connect/authorize")
                             .Scopes(scopes =>
                             {
                                 scopes.Add("activityreader", "Access to the RealPage Activity API");
+                                scopes.Add("companyfunctions", "Access to the delete activity function");
                             });
+                        c.ApiKey("Token")
+                            .Description("Enter client bearer token here")
+                            .Name("Authorization")
+                            .In("header");
 
                         // Set this flag to omit descriptions for any actions decorated with the Obsolete attribute
                         //c.IgnoreObsoleteActions();
@@ -261,12 +268,12 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader
                         //    //additionalQueryStringParams: new Dictionary<string, string>() { { "foo", "bar" } }
                         //);
 
-                        c.EnableOAuth2Support("activityreader", "Real Page", "Swagger UI");
-
+                        c.EnableOAuth2Support("activityreader", "RealPage", "Swagger UI");
+                        c.EnableApiKeySupport("Authorization", "header");
+                        
                         // If your API supports ApiKey, you can override the default values.
                         // "apiKeyIn" can either be "query" or "header"
                         //
-                        //c.EnableApiKeySupport("apiKey", "header");
                     });
         }
 

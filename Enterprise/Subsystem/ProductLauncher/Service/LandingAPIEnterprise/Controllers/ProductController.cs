@@ -152,7 +152,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
-        [SwaggerResponse(HttpStatusCode.OK, Description = "Get list of users by company and product codess", Type = typeof(ProductUsers))]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get list of users by company and product codes", Type = typeof(ProductUsers))]
         [SwaggerResponseExamples(typeof(ProductUsers), typeof(UserCompanyProductCodeExample))]
 
         [Route("users")]

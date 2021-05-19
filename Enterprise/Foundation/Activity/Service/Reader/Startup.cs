@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Web.Http;
 using System.Web.Http.Cors;
 using Microsoft.Owin;
@@ -33,7 +34,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader
             config.MessageHandlers.Add(new NoCacheHandler());
             WebApiConfig.Register(config);
 
-            if (!(ConfigReader.Environment == "PROD" || ConfigReader.Environment == "SAT"))
+            if (!ConfigReader.Environment.Equals("PROD", StringComparison.OrdinalIgnoreCase))
             {
                     SwaggerConfig.Register(config);
             }

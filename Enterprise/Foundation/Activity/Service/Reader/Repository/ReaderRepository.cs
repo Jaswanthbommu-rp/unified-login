@@ -129,5 +129,23 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Repository
 				return repository.GetMany<AdditionalParameters>("Logging.ListActivityDetails", new { activityId }).ToList();
 			} 
 		}
+
+
+        /// <summary>
+        /// Used to delete the specified companies activity log records
+        /// </summary>
+        /// <param name="partyId"></param>
+        /// <returns></returns>
+        public long DeleteOrganizationActivityLog(long partyId)
+        {
+            dynamic param = new
+            {
+                OrganizationPartyId = partyId
+            };
+            using (var repository = GetRepository())
+            {
+                return repository.GetOne<long>("[Logging].[DeleteCompanyActivityData]", param, 300);
+            }
+        }
 	}
 }

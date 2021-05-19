@@ -21,6 +21,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
     public class ActivityController : BaseApiController
     {
         #region Public Methods
+
         /// <summary>
         /// List diffrent search metadata to populate drop-down boxes on UI
         /// </summary>  
@@ -36,7 +37,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
             {
                 var readerRepository = new ReaderRepository();
                 var result = readerRepository.GetSearchMetadata();
-                
+
                 return Request.CreateResponse(HttpStatusCode.OK, result);
             }
             catch (Exception ex)
@@ -79,7 +80,9 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
                                 Name = "OrganizationPartyId",
                                 Value = _userClaims.OrganizationPartyId.ToString()
                             });
-                    };
+                    }
+
+                    ;
                 }
 
                 var readerRepository = new ReaderRepository();
@@ -87,7 +90,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
 
                 if (result != null)
                 {
-                    ObjectListOutput<ActivityDetailMessage, IErrorData> output = new ObjectListOutput<ActivityDetailMessage, IErrorData>() { list = result };
+                    ObjectListOutput<ActivityDetailMessage, IErrorData> output = new ObjectListOutput<ActivityDetailMessage, IErrorData>() {list = result};
                     return Request.CreateResponse(HttpStatusCode.OK, output);
                 }
 
@@ -134,7 +137,9 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
                             Name = "OrganizationPartyId",
                             Value = _userClaims.OrganizationPartyId.ToString()
                         });
-                };
+                }
+
+                ;
 
                 ReaderRepository readerRepository = new ReaderRepository();
                 IList<ActivityDetailMessage> listActivityDetailMessage = readerRepository.ListActivityLog(filterCriteria);
@@ -207,7 +212,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
                 }
 
                 activityDetailMessage.ApplicationTimestamp = DateTime.UtcNow;
-                
+
                 if (string.IsNullOrEmpty(ConfigReader.ActivityMQName))
                 {
                     throw new Exception($"ActivityMQName is missing check config file.");
@@ -232,7 +237,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
 
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
-        [SwaggerResponse(HttpStatusCode.OK, Description = "Returns additional details (key-value) data for particular activity.", Type = typeof(List<RP.Enterprise.Foundation.Activity.Service.Logging.Shared.Models.AdditionalParameters>))]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Returns additional details (key-value) data for particular activity.", Type = typeof(List<Shared.Models.AdditionalParameters>))]
         [Route("api/additionalparams")]
         [HttpGet]
         public HttpResponseMessage ListActivityAdditionalParams(long activityId)
@@ -254,9 +259,47 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
             }
         }
 
+        /// <summary>
+        /// Used to delete all activity information for the given organization party id
+        /// </summary>
+        /// <param name="organizationPartyId"></param>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Invalid request made")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Log removed")]
+        [Route("api/activity/organization/{OrganizationPartyId}")]
+        [HttpDelete]
+        [AuthorizeScope("companyfunctions")]
+        public HttpResponseMessage DeleteActivityLogForCompany(long organizationPartyId)
+        {
+            try
+            {
+                if (organizationPartyId == 0)
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid company id.");
+
+                if (ConfigReader.Environment.Equals("PROD", StringComparison.OrdinalIgnoreCase) || ConfigReader.Environment.Equals("PRODUCTION", StringComparison.OrdinalIgnoreCase))
+                {
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, "Environment not supported");
+                }
+                Log.Information($"Deleting Activity Log for company {organizationPartyId}");
+
+                var readerRepository = new ReaderRepository();
+                var result = readerRepository.DeleteOrganizationActivityLog(organizationPartyId);
+
+                return Request.CreateResponse(HttpStatusCode.OK, result);
+            }
+            catch (Exception ex)
+            {
+                WriteToErrorLog(exception: ex);
+                throw new HttpResponseException(HttpStatusCode.InternalServerError);
+            }
+        }
+
         #endregion
 
         #region Migration Tool
+
         /// <summary>
         /// List activity log based on search criteria to send data related to Pagination
         /// </summary>
@@ -312,6 +355,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
         #endregion
 
         #region Private Methods
+
         /// <summary>
         /// Set Aspose License
         /// </summary>
@@ -393,7 +437,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
             pageSetup.TopMarginInch = 0.5;
 
             worksheet.Cells.ImportCustomObjects(
-                (System.Collections.ICollection)listActivityDetailMessage,
+                (System.Collections.ICollection) listActivityDetailMessage,
                 propertyNames,
                 false, //Don't show the field names
                 1, //Start at second row
@@ -451,6 +495,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
                         sheet.PageSetup.FitToPagesWide = 1;
                         sheet.PageSetup.FitToPagesTall = 0;
                     }
+
                     break;
                 default:
                     break;
@@ -474,6 +519,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
 
             return bytes;
         }
+
         #endregion
     }
 }

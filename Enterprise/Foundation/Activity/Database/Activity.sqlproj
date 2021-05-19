@@ -114,6 +114,7 @@
     <Build Include="Logging\Stored Procedures\ListLogCategoryTypes.sql" />
     <Build Include="Logging\Stored Procedures\ListCategoryWiseLogTypes.sql" />
     <None Include="Logging\Scripts\PostDeployment\2021Q2Release.sql" />
+    <Build Include="Logging\Stored Procedures\DeleteCompanyActivityData.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Logging\Scripts\PostDeployment\Data.Logging.LogType.sql" />
@@ -146,10 +147,10 @@
     <None Include="AuditDB.UAT.publish.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-	<None Include="AuditDB.EUSAT.publish.xml">
+    <None Include="AuditDB.EUSAT.publish.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-	<None Include="AuditDB.EUPROD.publish.xml">
+    <None Include="AuditDB.EUPROD.publish.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Logging\Scripts\PostDeployment\2020-February-Release.sql" />

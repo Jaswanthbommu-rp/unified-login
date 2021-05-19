@@ -1342,6 +1342,12 @@ BEGIN
 	VALUES ('OrganizationRemovalBatchSize', 'How many organizations should be deleted in a batch during the organization removal process', 0);
 END
 
+IF NOT EXISTS (SELECT TOP(1) 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'ActivityLogUri')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
+	VALUES ('ActivityLogUri', 'The api uri for ActivityLog', 0);
+END
+
 GO
 
 IF NOT EXISTS ( SELECT TOP (1) 1 FROM Maintenance.OrganizationRemovalQueueStatus )
@@ -1360,9 +1366,23 @@ BEGIN
 	( 5, N'UDMData Removed' ),
 	( 6, N'UDMData Not Found' ),
 	( 7, N'Database Removal Failed' ),
-	( 8, N'UDMData Removal Failed' )
+	( 8, N'UDMData Removal Failed' ),
+	( 9, N'ActivityLog Removed' ),
+	( 10, N'ActivityLog Removal Failed' )
 END
 GO
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Maintenance.OrganizationRemovalQueueStatus WHERE Name = 'ActivityLog Removed' )
+BEGIN
+	INSERT INTO Maintenance.OrganizationRemovalQueueStatus ( OrganizationRemovalQueueStatusId,Name ) VALUES (9, 'ActivityLog Removed' )
+END
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Maintenance.OrganizationRemovalQueueStatus WHERE Name = 'ActivityLog Removal Failed' )
+BEGIN
+	INSERT INTO Maintenance.OrganizationRemovalQueueStatus ( OrganizationRemovalQueueStatusId,Name ) VALUES (10, 'ActivityLog Removal Failed' )
+END
+GO
+
 --START : script for userstory #771257
 --AlwaysEnableProductForOrgType 
 if not exists ( select top 1 1 from Enterprise.ProductSettingType where name = 'AlwaysEnableProductForOrgType' )
