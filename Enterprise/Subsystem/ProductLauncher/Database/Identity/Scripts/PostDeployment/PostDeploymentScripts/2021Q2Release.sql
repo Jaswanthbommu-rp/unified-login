@@ -4309,3 +4309,19 @@ BEGIN
 END
 
 Go
+--Allowing RegularUser(No Email) for ILM and ILMLA
+
+Declare @NotificationRequiredfoRegularUserNoEmail INT;
+Declare @ProductNotAvailableforRegularNoEMail INT;
+Select @NotificationRequiredfoRegularUserNoEmail = ProductSettingTypeId from Enterprise.ProductSettingType where Name like 'NotificationEmailRequiredForUserWithNoEmail';
+Select @ProductNotAvailableforRegularNoEMail = ProductSettingTypeId from Enterprise.ProductSettingType where Name like 'ProductNotAvailableForRegularUserNoEmail';
+IF  EXISTS (SELECT TOP 1 1 FROM  Enterprise.ProductSetting where ProductSettingTypeId =@ProductNotAvailableforRegularNoEMail and ProductId in (40,41))
+BEGIN
+ UPDATE Enterprise.ProductSetting Set Value=0 where ProductSettingTypeId=@ProductNotAvailableforRegularNoEMail and ProductId in (40,41)
+END
+IF  EXISTS (SELECT TOP 1 1 FROM  Enterprise.ProductSetting where ProductSettingTypeId =@NotificationRequiredfoRegularUserNoEmail and ProductId in (40,41))
+BEGIN
+ UPDATE Enterprise.ProductSetting Set Value=0 where ProductSettingTypeId=@NotificationRequiredfoRegularUserNoEmail and ProductId in (40,41)
+END
+
+GO
