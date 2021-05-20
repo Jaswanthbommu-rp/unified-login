@@ -170,5 +170,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <param name="userRealPageId"></param>
         /// <returns></returns>
         DefaultUserClaim GetUserClaimsFromNonUser(Guid userRealPageId);
+
+        /// <summary>
+        /// Log that an existing user requested to resemd an email link
+        /// </summary>
+        /// <param name="userRealPageId"></param>
+        void LogUserRequestedEmailLinkResent(Guid userRealPageId);
     }
 }

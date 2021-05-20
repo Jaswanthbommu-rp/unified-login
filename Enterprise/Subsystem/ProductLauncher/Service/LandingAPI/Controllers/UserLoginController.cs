@@ -457,6 +457,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
                 _manageUserLogin = new ManageUserLogin(userClaim);
             }
+
+            _manageUserLogin.LogUserRequestedEmailLinkResent(realpageId);
+
             response = _manageUserLogin.ResendInvitation(userList, false);
 
             if (response)

@@ -769,11 +769,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             //since windows service doesn't have editor persona,Get RealPageEmployeeAccessID to use in to get editor persona
             currentUserClaim = GetCurrentUserClaim(profileLogic, org);
             
-            if (currentUserClaim != null)
-            {
-                var message = $"User {currentUserClaim.FirstName} {currentUserClaim.LastName} requested a new activation link";
-                LogAuditActivity(LogActivityTypeConstants.USER_REQUESTED_NEW_ACTIVATION_LINK, LogActivityCategoryType.Email, message, null,profileDetail);
-            }
             return currentUserClaim;
 
         }
@@ -1519,6 +1514,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         public OrganizationStatus GetUserOrganizationWithStatus(long userId, DateTime lastLogin, long orgPartyId, bool getPrimaryOrg)
         {
             return _userLoginRepository.GetUserOrganizationWithStatus(userId, lastLogin, orgPartyId, getPrimaryOrg);
+        }
+
+        /// <summary>
+        /// Log that an existing user requested to resemd an email link
+        /// </summary>
+        /// <param name="userRealPageId"></param>
+        public void LogUserRequestedEmailLinkResent(Guid userRealPageId)
+        {
+            var profileLogic = new ManageProfile(_defaultUserClaim);
+
+            // Get Userlogin to pass Data
+            var userLogin = _userLoginRepository.GetUserLoginOnly(userRealPageId);
+            var orgWithoutStatus = _userLoginRepository.GetPrimaryOrgWithoutStatusByUserId(userLogin.UserId);
+            var orgWithStatus = _userLoginRepository.GetUserOrganizationWithStatus(userLogin.UserId, userLogin.LastLogin, orgWithoutStatus.PartyId, false);
+            var profileDetail = profileLogic.GetProfileDetail(userRealPageId, orgWithStatus.PartyId);
+
+            var message = $"User {profileDetail.FirstName} {profileDetail.LastName} requested a new activation link";
+            LogAuditActivity(LogActivityTypeConstants.USER_REQUESTED_NEW_ACTIVATION_LINK, LogActivityCategoryType.Email, message, null, profileDetail);
         }
 
         #endregion
