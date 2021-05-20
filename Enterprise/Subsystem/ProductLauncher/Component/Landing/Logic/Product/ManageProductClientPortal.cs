@@ -11,6 +11,7 @@ using Newtonsoft.Json.Linq;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
@@ -45,16 +46,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private static string _authToken;
         private static string _instanceUrl;
         private DefaultUserClaim _userClaims;
+        public bool isMultiCompanyUser = false;
 
-		#endregion
+        #endregion
 
-		#region Ctor
+        #region Ctor
 
-		/// <summary>
-		/// Ctor
-		/// </summary>
-		/// <param name="userClaims">Real page Id of user who is creating new user</param>
-		public ManageProductClientPortal(DefaultUserClaim userClaims) : base((int)ProductEnum.ClientPortal, userClaims, null, null)
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        /// <param name="userClaims">Real page Id of user who is creating new user</param>
+        public ManageProductClientPortal(DefaultUserClaim userClaims) : base((int)ProductEnum.ClientPortal, userClaims, null, null)
         {
             WriteToDiagnosticLog("ManageProductClientPortal.Ctor - Getting Product settings.");
 
@@ -255,6 +257,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var person = _managePerson.GetPerson(realPageId);
                 var userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
 
+                IList<Organization> organizationList = _userLoginRepository.ListOrganizationByEnterpriseUserId(realPageId, null);
+                persona.Organization = organizationList.FirstOrDefault(i => i.PartyId == persona.OrganizationPartyId);
+
+                var personaOrganization = persona.Organization;
+                bool isExternalUser = personaOrganization.RelationshipType.Equals("User Type", StringComparison.OrdinalIgnoreCase) && personaOrganization.RoleNameFrom.Equals("External User", StringComparison.OrdinalIgnoreCase);
+
                 string productLoginName;
                 if (string.IsNullOrEmpty(_productUsername))
                 {
@@ -314,9 +322,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 var contactId = string.Empty;
                 string accountId = string.Empty;
+                isMultiCompanyUser = isExternalUser || string.IsNullOrEmpty(_productUsername) || clientPortalContactResults.Count > 0;
+                var uniqueProductLoginName = isMultiCompanyUser ? IterateUserNameIfExists(productLoginName) : productLoginName;
 
                 // If no contact then create new contact in salesforce
-                if (clientPortalContactResults == null || clientPortalContactResults.Count == 0)
+                if (clientPortalContactResults == null || clientPortalContactResults.Count == 0 || isMultiCompanyUser)
                 {
                     // Find Account Id in salesforce for oms Id
                     accountId = GetClientPortalContactAccountId(searchOmsId);
@@ -329,7 +339,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                       CreateClientPortalContact(new ClientPortalContact
                       {
                           AccountId = accountId,
-                          Email = userLogin.LoginName,
+                          Email = uniqueProductLoginName,
                           FirstName = person.FirstName,
                           LastName = person.LastName,
                           Unified_Platform_User__c = true
@@ -363,7 +373,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         
                     }
 
-                }
+                }                
 
                 var clientPortalUser = new ClientPortalUser
                 {
@@ -374,10 +384,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     EmailEncodingKey = "UTF-8",
                     LanguageLocaleKey = "en_US",
                     TimeZoneSidKey = "America/Chicago",
-                    Username = productLoginName,
+                    Username = uniqueProductLoginName,
                     LocaleSidKey = "en_US",
-                    CommunityNickname = userLogin.LoginName,
-                    Alias = GetAliasFromLogin(userLogin.LoginName),
+                    CommunityNickname = uniqueProductLoginName,
+                    Alias = GetAliasFromLogin(uniqueProductLoginName),
                     ProfileId = clientPortalPropertyRole.RoleList[0],
                     IsActive = true
                 };
@@ -425,10 +435,37 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
-		/// <summary>
-		/// Updates user profile  
-		/// </summary>
-		public string UpdateClientPortalUserProfile (long editorPersonaId, long userPersonaId)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="productLoginName"></param>
+        private string IterateUserNameIfExists(string productLoginName)
+        {
+            bool foundUserName = false;
+            int incrementor = 0;
+            string clientPortalLoginName = productLoginName;
+
+            while (!foundUserName)
+            {
+                if (CheckClientPortalContactsExists(clientPortalLoginName).Count > 0)
+                {
+                    incrementor++;
+                    clientPortalLoginName = productLoginName.Split('@')[0] + incrementor.ToString() + "@" + productLoginName.Split('@')[1];
+                }
+                else
+                {
+                    foundUserName = true;
+                    productLoginName = clientPortalLoginName;
+                }
+            }
+            WriteToDiagnosticLog($"ManageClientPortalUser - generated iterated clinetPortalLoginName = {clientPortalLoginName}");
+            return productLoginName;
+        }
+
+        /// <summary>
+        /// Updates user profile  
+        /// </summary>
+        public string UpdateClientPortalUserProfile (long editorPersonaId, long userPersonaId)
 		{
 			var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
 			if (listResponse.IsError)
