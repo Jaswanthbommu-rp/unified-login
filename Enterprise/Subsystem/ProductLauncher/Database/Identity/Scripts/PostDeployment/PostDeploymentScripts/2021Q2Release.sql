@@ -2159,7 +2159,7 @@ BEGIN
 	VALUES (@ControlId+3, @ControlId+2, 7, N'OnSiteRoleTemplateRoleRadioUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
 
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
-	VALUES (@ControlId+4, @ControlId+2, 5, N'OnSiteRoleTemplateRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)	
+	VALUES (@ControlId+4, @ControlId+2, 5, N'OnSiteRoleTemplateRoleLabelUIId', N'Role', N'title', 2, @UserId, @Now)	
 	
 	SET IDENTITY_INSERT [UserManagement].[Control] OFF
 
@@ -2472,7 +2472,7 @@ BEGIN
 	Select @ProductPageId = MAX(ProductPageId) +1 from [UserManagement].[ProductPage]
 
 	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName],[ProductPageTypeId], [CreatedBy], [CreatedDate], [IsActive])
-	VALUES (@ProductPageId, @ProductId, N'Waste Management Solution Roles',@RoleTemplateProductPageTypeId, @UserId, @Now, 1)
+	VALUES (@ProductPageId, @ProductId, N'Smart Waste Roles',@RoleTemplateProductPageTypeId, @UserId, @Now, 1)
 
 	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
 
@@ -2531,7 +2531,7 @@ BEGIN
 	Select @ProductPageId = MAX(ProductPageId) +1 from [UserManagement].[ProductPage]
 
 	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName],[ProductPageTypeId], [CreatedBy], [CreatedDate], [IsActive])
-	VALUES (@ProductPageId, @ProductId, N'Intelligent Building Energy Roles',@RoleTemplateProductPageTypeId, @UserId, @Now, 1)
+	VALUES (@ProductPageId, @ProductId, N'Smart Energy Roles',@RoleTemplateProductPageTypeId, @UserId, @Now, 1)
 
 	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
 
@@ -3776,13 +3776,13 @@ BEGIN
 	VALUES (@ControlId+7, @ControlId+6, 3, N'VendorCredentialingRoleTemplateRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
 
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
-	VALUES (@ControlId+8, @ControlId+6, 10, N'VendorCredentialingRoleTemplateCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
+	VALUES (@ControlId+8, @ControlId+7, 10, N'VendorCredentialingRoleTemplateCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
 
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
-	VALUES (@ControlId+9, @ControlId+6, 5, N'VendorCredentialingRoleTemplateRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)	
+	VALUES (@ControlId+9, @ControlId+7, 5, N'VendorCredentialingRoleTemplateRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)	
 
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
-	VALUES (@ControlId+10, @ControlId+6, 5, N'VendorCredentialingRoleTemplateDescriptionLabelUIId', N'Description', N'description', 3, @UserId, @Now)	
+	VALUES (@ControlId+10, @ControlId+7, 5, N'VendorCredentialingRoleTemplateDescriptionLabelUIId', N'Description', N'description', 3, @UserId, @Now)	
 
 	
 	SET IDENTITY_INSERT [UserManagement].[Control] OFF
