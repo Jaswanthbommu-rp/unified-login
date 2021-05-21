@@ -8,6 +8,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Inter
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
@@ -562,9 +563,45 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 $"{nameof(StandardV1ProductIntegration)}.CreateUpdateProductUser - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of method.");
             bool isProductUser = false;
             var newProductUser = GenerateProductUserObject(userRolePropertiesRegion);
-            if (SubjectUserDetails.UserRoleTypeId == (int)UserRoleType.UserNoEmail)
+            if (SubjectUserDetails.UserRoleTypeId == (int)UserRoleType.UserNoEmail && _udmSourceCode == "ILMLA")
             {
                 newProductUser.LoginName = newProductUser.Email;
+                if (string.IsNullOrEmpty(SubjectUserDetails.ProductUserName))
+                {
+                    WriteToDiagnosticLog(
+                        $"SeniorLeadManagement.CreateUpdateProductUser - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling CreateUser.");
+
+                    // get a login name that isn't in use for the new user
+                    bool foundUserName = false;
+                    int incrementor = 0;
+                    string lastNameNoWhiteSpace = SubjectUserDetails.LastName.TrimWhiteSpace();
+                    string newproductUsername = (SubjectUserDetails.FirstName.TrimWhiteSpace().Substring(0, 1) + lastNameNoWhiteSpace.Substring(0, (lastNameNoWhiteSpace.Length >= 19 ? 19 : lastNameNoWhiteSpace.Length))).ToLower();
+                    string accountingLoginName = newproductUsername;
+
+                    // give up after 10 tries
+                    while (!foundUserName)
+                    {
+                        if (CheckUserExistInProduct(accountingLoginName))
+                        {
+                            incrementor++;
+                            accountingLoginName = newproductUsername.Substring(0, (newproductUsername.Length >= 48 ? 48 : newproductUsername.Length)) + incrementor.ToString();
+                        }
+                        else
+                        {
+                            foundUserName = true;
+                            newProductUser.LoginName = accountingLoginName;
+
+                            WriteToDiagnosticLog($"SeniorLeadManagement - generated accountingLoginName = {accountingLoginName}");
+                        }
+
+                        if (incrementor == 10)
+                        {
+                            // after 10 tries something might be wrong, so bail out.
+                            WriteToErrorLog($"SeniorLeadManagement - Error checking for username in use {accountingLoginName}");
+                            return "An error occurred. Unable to get username.";
+                        }
+                    }
+                }
             }
             var productUser = GetBaseUserDataFromProduct(newProductUser.LoginName);
             isProductUser = productUser != null && !string.IsNullOrEmpty(productUser.LoginName);
