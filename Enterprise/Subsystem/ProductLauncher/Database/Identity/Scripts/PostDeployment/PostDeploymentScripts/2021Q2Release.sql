@@ -2324,16 +2324,13 @@ BEGIN
 	
 
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
-	VALUES (@ControlId+2, @ControlId+1, 2, N'ILMLeadManagementRoleTemplateRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+	VALUES (@ControlId+2, @ControlId+1, 3, N'ILMLeadManagementRoleTemplateRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
 
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
-	VALUES (@ControlId+3, @ControlId+2, 7, N'ILMLeadManagementRoleTemplateRoleRadioUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
+	VALUES (@ControlId+3, @ControlId+2, 10, N'ILMLeadManagementRoleTemplateRoleCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
 
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
-	VALUES (@ControlId+4, @ControlId+2, 5, N'ILMLeadManagementRoleTemplateRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)		
-
-	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
-	VALUES (@ControlId+5, @ControlId+2, 5, N'ILMLeadManagementRoleTemplateRoleTypeLabelUIId', N'Role Type', N'roletype', 3, @UserId, @Now)	
+	VALUES (@ControlId+4, @ControlId+2, 5, N'ILMLeadManagementRoleTemplateRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)
 	
 	SET IDENTITY_INSERT [UserManagement].[Control] OFF
 
@@ -2379,20 +2376,16 @@ BEGIN
 	VALUES (@ControlId, NULL, 8, N'ILMLeasingAnalyticsRoleTemplateTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
 
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
-	VALUES (@ControlId+1, @ControlId, 9, N'ILMLeasingAnalyticsRoleTemplateRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)
-	
+	VALUES (@ControlId+1, @ControlId, 9, N'ILMLeasingAnalyticsRoleTemplateRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)	
 
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
-	VALUES (@ControlId+2, @ControlId+1, 2, N'ILMLeasingAnalyticsRoleTemplateRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+	VALUES (@ControlId+2, @ControlId+1, 3, N'ILMLeasingAnalyticsRoleTemplateRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
 
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
-	VALUES (@ControlId+3, @ControlId+2, 7, N'ILMLeasingAnalyticsRoleTemplateRoleRadioUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
+	VALUES (@ControlId+3, @ControlId+2, 10, N'ILMLeasingAnalyticsRoleTemplateRoleCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
 
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
-	VALUES (@ControlId+4, @ControlId+2, 5, N'ILMLeasingAnalyticsRoleTemplateRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)			
-
-	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
-	VALUES (@ControlId+5, @ControlId+2, 5, N'ILMLeasingAnalyticsRoleTemplateRoleTypeLabelUIId', N'Role Type', N'roletype', 3, @UserId, @Now)
+	VALUES (@ControlId+4, @ControlId+2, 5, N'ILMLeasingAnalyticsRoleTemplateRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)
 	
 	SET IDENTITY_INSERT [UserManagement].[Control] OFF
 
@@ -2788,15 +2781,17 @@ BEGIN
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
 	VALUES (@ControlId+1, @ControlId, 9, N'Lead2LeaseRoleTemplateRolesTabUIId', N'Rights', NULL, 1, @UserId, @Now)
 	
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+2, @ControlId+1, 13, N'Lead2LeaseRoleTemplateSelectaPresetRoleRightsSelectUIId', 'Select a Preset Role', 'roles', 1, @UserId, @Now)
 
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
-	VALUES (@ControlId+2, @ControlId+1, 3, N'Lead2LeaseRoleTemplateRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+	VALUES (@ControlId+3, @ControlId+1, 3, N'Lead2LeaseRoleTemplateRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
 
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
-	VALUES (@ControlId+3, @ControlId+2, 10, N'Lead2LeaseRoleTemplateCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
+	VALUES (@ControlId+4, @ControlId+3, 10, N'Lead2LeaseRoleTemplateCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)	
 
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
-	VALUES (@ControlId+4, @ControlId+2, 5, N'Lead2LeaseRoleTemplateRoleLabelUIId', N'Right', N'name', 2, @UserId, @Now)
+	VALUES (@ControlId+5, @ControlId+3, 5, N'Lead2LeaseRoleTemplateRoleLabelUIId', N'Right', N'name', 2, @UserId, @Now)
 	
 	SET IDENTITY_INSERT [UserManagement].[Control] OFF
 
@@ -2811,7 +2806,7 @@ BEGIN
 	VALUES (@ControlAttributeId+1, @ControlId+1, N'Hide', N'False', @UserId, @Now)
 
 	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
-	VALUES (@ControlAttributeId+2, @ControlId+2, N'ShowSelectAll', N'True', @UserId, @Now)
+	VALUES (@ControlAttributeId+2, @ControlId+3, N'ShowSelectAll', N'True', @UserId, @Now)
 
 	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
 
@@ -2924,8 +2919,7 @@ BEGIN
 	VALUES (@ControlId, NULL, 8, N'DocumentDirectorRoleTemplateTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
 
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
-	VALUES (@ControlId+1, @ControlId, 9, N'DocumentDirectorRoleTemplateRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)
-	
+	VALUES (@ControlId+1, @ControlId, 9, N'DocumentDirectorRoleTemplateRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)	
 
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
 	VALUES (@ControlId+2, @ControlId+1, 3, N'DocumentDirectorRoleTemplateRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
@@ -2935,6 +2929,9 @@ BEGIN
 
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
 	VALUES (@ControlId+4, @ControlId+2, 5, N'DocumentDirectorRoleTemplateRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (@ControlId+5, @ControlId+2, 5, N'DocumentDirectorRoleTemplateRoleTypeLabelUIId', N'Type', N'roletype', 3, @UserId, @Now)
 	
 	SET IDENTITY_INSERT [UserManagement].[Control] OFF
 
@@ -3884,7 +3881,7 @@ BEGIN
 	VALUES (@ControlAttributeId+3, @ControlId+5, N'Hide', N'False', @UserId, @Now)
 
 	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
-	VALUES (@ControlAttributeId+4, @ControlId+2, N'ShowSelectAll', N'True', @UserId, @Now)
+	VALUES (@ControlAttributeId+4, @ControlId+2, N'ShowSelectAll', N'False', @UserId, @Now)
 
 	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
 	VALUES (@ControlAttributeId+5, @ControlId+6, N'ShowSelectAll', N'True', @UserId, @Now)
