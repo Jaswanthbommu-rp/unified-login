@@ -314,15 +314,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 						productListToCreate.Add(CreateProductBatchRecordForRenovationManager(productUser));
 					}
-					else
-                    {
+					else if (!ProductEnumHelper.GetAoProductList().Contains((ProductEnum)product.ProductId))
+					{
 						var integrationType = _integrationTypeFactory.GetIntegration(product.ProductId);
 						propertiesResponse = integrationType.GetProperties(createUserPersonaId, personaId, null);
 						rolesResponse = integrationType.GetRoles(createUserPersonaId, personaId, _userClaim.OrganizationPartyId, null, null);
 
 						var productBatchRecord = CreateProductBatchRecord(propertiesResponse, rolesResponse, product.ProductId, usePrimaryProperties);
 						productListToCreate.Add(productBatchRecord);
-                    }
+					}
 				}
 				catch (Exception ex)
 				{
