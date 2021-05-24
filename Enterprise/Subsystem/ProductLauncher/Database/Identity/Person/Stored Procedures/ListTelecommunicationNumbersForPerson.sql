@@ -10,7 +10,8 @@ BEGIN
 			tm.PhoneNumber,
 			'Telecommunications Number' AS AddressType,
 			cmu.ContactMechanismUsageTypeID AS ContactMechanismUsageTypeID,
-			Ispreferred = case when cmp.ContactMechanismID is not null then 1 else 0 end
+			Ispreferred = case when cmp.ContactMechanismID is not null then 1 else 0 end,
+			tm.ISOCode
 	FROM    Enterprise.ContactMechanismUsage cmu
 			JOIN Enterprise.PartyContactMechanism pcm ON pcm.PartyContactMechanismId = cmu.PartyContactMechanismID
 			JOIN Enterprise.ContactMechanism cm ON cm.ContactMechanismID = pcm.ContactMechanismId

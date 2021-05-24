@@ -2716,6 +2716,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             telecommunicationNumber.AreaCode = phone.AreaCode;
                             telecommunicationNumber.CountryCode = phone.CountryCode;
                             telecommunicationNumber.PhoneNumber = phone.PhoneNumber;
+                            telecommunicationNumber.ISOCode = phone.ISOCode;
                             //New Telecommunication number
                             if (phone.ContactMechanismId == 0)
                             {
@@ -2812,7 +2813,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                     ContactMechanismId = telecommunicationNumber.ContactMechanismId,
                                     AreaCode = telecommunicationNumber.AreaCode,
                                     CountryCode = telecommunicationNumber.CountryCode,
-                                    PhoneNumber = telecommunicationNumber.PhoneNumber
+                                    PhoneNumber = telecommunicationNumber.PhoneNumber,
+                                    ISOCode = telecommunicationNumber.ISOCode
                                 };
                                 repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateTelecommunicationNumber, param);
                                 if (repositoryResponse.Id == 0)
@@ -2910,6 +2912,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             telecommunicationNumber.AreaCode = phone.AreaCode;
                             telecommunicationNumber.CountryCode = phone.CountryCode;
                             telecommunicationNumber.PhoneNumber = phone.PhoneNumber;
+                            telecommunicationNumber.ISOCode = phone.ISOCode;
                             //New Telecommunication number
                             if (phone.ContactMechanismId == 0)
                             {
@@ -3006,7 +3009,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                     ContactMechanismId = telecommunicationNumber.ContactMechanismId,
                                     AreaCode = telecommunicationNumber.AreaCode,
                                     CountryCode = telecommunicationNumber.CountryCode,
-                                    telecommunicationNumber.PhoneNumber
+                                    telecommunicationNumber.PhoneNumber,
+                                    telecommunicationNumber.ISOCode
                                 };
                                 repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateTelecommunicationNumber, param);
                                 if (repositoryResponse.Id == 0)

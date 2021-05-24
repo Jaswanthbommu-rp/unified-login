@@ -1,8 +1,9 @@
 ﻿CREATE TABLE [Enterprise].[TelecommunicationsNumber] (
-    [ContactMechanismID] INT          NOT NULL,
-    [CountryCode]        VARCHAR (10) NOT NULL,
-    [AreaCode]           VARCHAR (10) NOT NULL,
-    [PhoneNumber]        VARCHAR (15) NOT NULL,
+    [ContactMechanismID] INT			NOT NULL,
+    [CountryCode]        VARCHAR (10)	NOT NULL,
+    [AreaCode]           VARCHAR (10)	NOT NULL,
+    [PhoneNumber]        VARCHAR (15)	NOT NULL,
+	[ISOCode]			 VARCHAR (5)	NOT NULL,
     CONSTRAINT [PK_TelecommunicationsNumber] PRIMARY KEY CLUSTERED ([ContactMechanismID] ASC),
     CONSTRAINT [FK_TelecommunicationsNumber_ContactMechanism] FOREIGN KEY ([ContactMechanismID]) REFERENCES [Enterprise].[ContactMechanism] ([ContactMechanismID]) ON DELETE CASCADE ON UPDATE CASCADE
 );
@@ -59,4 +60,15 @@ EXECUTE sp_addextendedproperty
 	@level1name = N'TelecommunicationsNumber',
 	@level2type = N'COLUMN',
 	@level2name = N'AreaCode';
+GO
+
+EXECUTE sp_addextendedproperty
+	@name = N'MS_Description',
+	@value = N'ISO code of the Telecommunications number',
+	@level0type = N'SCHEMA',
+	@level0name = N'Enterprise',
+	@level1type = N'TABLE',
+	@level1name = N'TelecommunicationsNumber',
+	@level2type = N'COLUMN',
+	@level2name = N'ISOCode';
 GO

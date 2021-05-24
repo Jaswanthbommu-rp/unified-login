@@ -56,6 +56,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 		public int ContactMechanismUsageTypeId { get; set; }
 
 		/// <summary>
+		/// ISOCode
+		/// </summary>
+		[JsonProperty(PropertyName = "ISOCode")]
+		public string ISOCode { get; set; } = "";
+
+		/// <summary>
 		/// Contact Mechanism usage type detail
 		/// </summary>
 		[JsonProperty("contactMechanismUsageType", NullValueHandling = NullValueHandling.Ignore)]

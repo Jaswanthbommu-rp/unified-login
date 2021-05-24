@@ -2,7 +2,8 @@
 	@ContactMechanismId INT,
 	@CountryCode VARCHAR(10) = 1,
 	@AreaCode VARCHAR(10),
-	@Phonenumber VARCHAR(15)
+	@Phonenumber VARCHAR(15),
+	@ISOCode Varchar(5)
 )
 AS
 BEGIN
@@ -13,7 +14,8 @@ BEGIN
         UPDATE  t
         SET     t.CountryCode = @CountryCode,
                 t.AreaCode = @AreaCode,
-                t.PhoneNumber = @Phonenumber
+                t.PhoneNumber = @Phonenumber,
+				t.ISOCode = @ISOCode
         FROM    Enterprise.TelecommunicationsNumber t
         WHERE   ContactMechanismID = @ContactMechanismId;
 
@@ -23,13 +25,15 @@ BEGIN
 				ContactMechanismID ,
 				CountryCode ,
 				AreaCode ,
-				PhoneNumber
+				PhoneNumber,
+				ISOCode
 			)
 			VALUES (
 				@ContactMechanismId , -- ContactMechanismID - int
 				@CountryCode , -- CountryCode - varchar(10)
 				@AreaCode , -- AreaCode - varchar(10)
-				@Phonenumber  -- PhoneNumber - varchar(10)
+				@Phonenumber,  -- PhoneNumber - varchar(10)
+				@ISOCode
 			);		    
         END;
 

@@ -46,6 +46,11 @@
 		int ContactMechanismUsageTypeId { get; set; }
 
 		/// <summary>
+		/// ISOCode
+		/// </summary>		
+		string ISOCode { get; set; }
+
+		/// <summary>
 		/// Contact Mechanism usage type detail
 		/// </summary>
 		ContactMechanismUsageType contactMechanismUsageType { get; set; }
