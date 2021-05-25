@@ -632,18 +632,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             //Log Activity
             LogActivity.WriteActivity(new ActivityDetails
-            {
-                LogActivityTypeName = LogActivityTypeConstants.EMAIL_RESETPASSWORDSENT,
-                LogCategoryName = LogActivityCategoryType.Email.ToString(),
-                CorrelationId = _defaultUserClaim.CorrelationId.ToString(),
-                BooksMasterOrganizationId = _defaultUserClaim.OrganizationMasterId,
-                OrganizationPartyId = _defaultUserClaim.OrganizationPartyId,
-                Message = message,
-                FromUserLoginName = _defaultUserClaim.LoginName,
-                FromUserLoginId = _defaultUserClaim.UserId,
-                ToUserLoginName = profileDetail.userLogin.LoginName,
-                ToUserLoginId = profileDetail.userLogin.UserId
-            });
+            {
+                LogActivityTypeName = LogActivityTypeConstants.EMAIL_RESETPASSWORDSENT,
+                LogCategoryName = LogActivityCategoryType.Email.ToString(),
+                CorrelationId = _defaultUserClaim.CorrelationId.ToString(),
+                BooksMasterOrganizationId = _defaultUserClaim.OrganizationMasterId,
+                OrganizationPartyId = _defaultUserClaim.OrganizationPartyId,
+                Message = message,
+                BooksProductCode = "UPFM",
+ 
+                FromUserLoginName = _defaultUserClaim.LoginName,
+                FromUserLoginId = _defaultUserClaim.UserId,
+                FromUserRealpageId = _defaultUserClaim.UserRealPageGuid.ToString(),
+                FromUserFirstName = _defaultUserClaim.FirstName,
+                FromUserLastName = _defaultUserClaim.LastName,
+ 
+                ToUserLoginName = profileDetail.userLogin.LoginName,
+                ToUserLoginId = profileDetail.userLogin.UserId,
+                ToUserFirstName = profileDetail.FirstName,
+                ToUserLastName = profileDetail.LastName,
+                ToUserRealpageId = profileDetail.userLogin.RealPageId.ToString()
+            });
         }
 
         /// <summary>
