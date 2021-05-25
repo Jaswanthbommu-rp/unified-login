@@ -1706,7 +1706,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             /*
              * If All property selection is true, then upfmProperty == -1
              */
-            if (upfmProperty?.id == null || upfmProperty.id[0] == "-1")
+            if (upfmProperty?.id == null || (upfmProperty.id.Count > 0  && upfmProperty.id[0] == "-1"))
             {
                 upfmProperty = new UPFMProperty();
                 //nullInstanceResultFlag = upfmProperty?.id[0] == "-1";
