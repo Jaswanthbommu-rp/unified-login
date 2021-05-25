@@ -63,6 +63,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         protected GbProductMap BlueBookGbProductMap { get; set; }
         public bool ProductNotAvailableForRegularUserNoEmail { get; set; }
 
+        public bool ProductAcceptsUniqueProductUserName { get; set; }
+
         /// <summary>
         /// Productudm source code
         /// </summary>
@@ -962,7 +964,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 _dataCollector.UpdateProductSettingProductStatus(SubjectUserDetails.PersonaId, PRODUCT_SETTINGTYPE_STATUS, ProductId, (int) ProductBatchStatusType.Success);
 
-                UpdateSamlUserAttribute(SubjectUserDetails.PersonaId, ProductId, productUserProfile.UserId, productUserProfile.LoginName, productUserProfile.Email);
+                if (!ProductAcceptsUniqueProductUserName)
+                    UpdateSamlUserAttribute(SubjectUserDetails.PersonaId, ProductId, productUserProfile.UserId, productUserProfile.LoginName, productUserProfile.Email);
 
                 return string.Empty;
             }
@@ -1333,6 +1336,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 var productInternalSettingProductNotAvailable = ProductInternalSettingList.FirstOrDefault(item => item.Name.Equals("ProductNotAvailableForRegularUserNoEmail", StringComparison.OrdinalIgnoreCase));
                 ProductNotAvailableForRegularUserNoEmail = (productInternalSettingProductNotAvailable != null) ? productInternalSettingProductNotAvailable.Value.Trim() == "1" : false;
+
+                var productInternalSettingacceptsUniqueProductUserName = ProductInternalSettingList.FirstOrDefault(item => item.Name.Equals("ProductAcceptsUniqueProductUserName", StringComparison.OrdinalIgnoreCase));
+                ProductAcceptsUniqueProductUserName = (productInternalSettingacceptsUniqueProductUserName != null) ? productInternalSettingacceptsUniqueProductUserName.Value.Trim() == "1" : false;
             }
             catch (Exception ex)
             {
