@@ -1412,7 +1412,6 @@ insert into @productlist values
 	
 --select * from @productlist
 
-GO
 
 declare @MAX_ID INT
 declare @Current_ID INT = 1
