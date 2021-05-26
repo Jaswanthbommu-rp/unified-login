@@ -547,10 +547,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             BooksMasterOrganizationId = defaultUserClaim.OrganizationMasterId,
                             OrganizationPartyId = defaultUserClaim.OrganizationPartyId,
                             Message = message,
+                            
                             FromUserLoginName = userName,
                             FromUserLoginId = defaultUserClaim.UserId,
+                            FromUserRealpageId = _defaultUserClaim.UserRealPageGuid.ToString(),
+                            FromUserFirstName = _defaultUserClaim.FirstName,
+                            FromUserLastName = _defaultUserClaim.LastName,
+
                             ToUserLoginName = profileDetail.userLogin.LoginName,
-                            ToUserLoginId = profileDetail.userLogin.UserId
+                            ToUserLoginId = profileDetail.userLogin.UserId,
+                            ToUserFirstName = profileDetail.FirstName,
+                            ToUserLastName = profileDetail.LastName,
+                            ToUserRealpageId = profileDetail.userLogin.RealPageId.ToString()
                         });
                         //set to pending status
                         //DateTime fromDate = DateTime.UtcNow.Date;
