@@ -1112,6 +1112,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.LeaseLabs:
                 case (int)ProductEnum.HospitalityService:
                 case (int)ProductEnum.SelfGuidedTour:
+                case (int)ProductEnum.LeadScoring:
                     result = "User Profile Change not implemented for this Product.";
                     break;
                 default:

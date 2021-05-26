@@ -138,6 +138,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 new GbProductMap() {BooksProductCode = "LeaseLabs", Name = "LeaseLabs", ProductId = 68, UDMSourceCode = null},
                 new GbProductMap() {BooksProductCode = "RPT", Name = "Reporting", ProductId = 67, UDMSourceCode = null},
                 new GbProductMap() {BooksProductCode = "6247", Name = "Self-Guided Tour", ProductId = 65, UDMSourceCode = null},
+                new GbProductMap() {BooksProductCode = "LST", Name = "Lead Scoring", ProductId = 69, UDMSourceCode = null},
 
             };
             

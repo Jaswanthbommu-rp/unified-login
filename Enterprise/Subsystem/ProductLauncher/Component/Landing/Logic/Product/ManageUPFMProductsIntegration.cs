@@ -608,6 +608,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
 						superUserRoleId = gbAllRoles.First(a => a.Name.Equals("Creator", StringComparison.OrdinalIgnoreCase)).ID;
 					}
+					else if (_productId == (int)ProductEnum.LeadScoring)
+					{
+						superUserRoleId = gbAllRoles.First(a => a.Name.Equals("Admin", StringComparison.OrdinalIgnoreCase)).ID;
+					}
 					else
 					{
 						superUserRoleId = gbAllRoles.First(a => a.Name.Equals("Portfolio Manager", StringComparison.OrdinalIgnoreCase)).ID;

@@ -298,6 +298,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case ProductEnum.HandsOnTrainingSystem:
                 case ProductEnum.LeaseLabs:
                 case ProductEnum.HospitalityService:
+                case ProductEnum.LeadScoring:
                     result = "User details Change not implemented for this Product.";
                     break;
                 default:

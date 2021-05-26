@@ -306,5 +306,9 @@
 		/// Self-Guided Tour
 		/// </summary>
 		public const string SelfGuidedTour = "6247";
+		/// <summary>
+		/// Lead Scoring
+		/// </summary>
+		public const string LeadScoring = "LST";
 	}
 }

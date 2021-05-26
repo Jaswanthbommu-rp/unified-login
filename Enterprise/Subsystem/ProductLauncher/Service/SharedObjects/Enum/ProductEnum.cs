@@ -561,7 +561,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// SelfGuidedTour
 		/// </summary>
 		[Description("6247")]
-		SelfGuidedTour = 65
+		SelfGuidedTour = 65,
+		/// <summary>
+		/// Lead Scoring
+		/// </summary>
+		[Description("LST")]
+		LeadScoring = 69,
 	}
 
 	/// <summary>
@@ -834,7 +839,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// SelfGuidedTour
 		/// </summary>
 		[Description("6247")]
-		ManageSGTourProductAccess = 65
+		ManageSGTourProductAccess = 65,
+
+		/// <summary>
+		/// Hospitality As A Service
+		/// </summary>
+		[Description("LST")]
+		ManageLeadScoringProductAccess = 69,
 
 	}
 	public enum ProductProcVersion
