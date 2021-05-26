@@ -616,12 +616,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             bool isProductUser = false;
             var productUser = GetBaseUserDataFromProduct(newProductUser.LoginName);
             isProductUser = productUser != null && !string.IsNullOrEmpty(productUser.LoginName);
-
-            if (isProductUser)
-            {
-                newProductUser.UserId = productUser.UserId;
-                newProductUser.LoginName = productUser.LoginName;
-            }
+            
+            newProductUser.UserId = isProductUser ? productUser.UserId : SubjectUserDetails.ProductUserId;
+            newProductUser.LoginName = isProductUser ? productUser.LoginName : SubjectUserDetails.ProductUserName;            
 
             if (!isProductUser && string.IsNullOrEmpty(SubjectUserDetails.ProductUserName))
             {
@@ -861,7 +858,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 _dataCollector.UpdateProductSettingProductStatus(SubjectUserDetails.PersonaId, PRODUCT_SETTINGTYPE_STATUS, ProductId, (int) ProductBatchStatusType.Success);
 
-                UpdateSamlUserAttribute(SubjectUserDetails.PersonaId, ProductId, productUser.UserId, productUser.LoginName, productUser.Email);
+                if (!ProductAcceptsUniqueProductUserName)
+                    UpdateSamlUserAttribute(SubjectUserDetails.PersonaId, ProductId, productUser.UserId, productUser.LoginName, productUser.Email);
 
                 return string.Empty;
             }

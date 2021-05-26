@@ -118,8 +118,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             bool isUpdateUser = false;
             bool usePrimaryProperties = false;
             try
-            {
-                IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(productUser.AssignUserPersonaId, productId);
+            {                
+                IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(productUser.AssignUserPersonaId, (int)productUser.ProductName);
                 if (productAttributes.Any())
                 {
                     isUpdateUser = true;
