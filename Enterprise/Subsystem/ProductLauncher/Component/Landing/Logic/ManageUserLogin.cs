@@ -910,10 +910,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     OrganizationMasterId = org.BooksMasterId,
                     OrganizationPartyId = org.PartyId,
-                    FirstName = "Automated", //adminProfileDetail.FirstName,
-                    LastName = "System", //adminProfileDetail.LastName,
+                    FirstName = adminProfileDetail.FirstName,
+                    LastName = adminProfileDetail.LastName,
                     UserId = Convert.ToInt32(adminUserLogin.UserId),
-                    LoginName = "automatedsystem", //adminUserLogin.LoginName,
+                    LoginName = adminUserLogin.LoginName,
                     UserRealPageGuid = adminUserLogin.RealPageId,
                     CorrelationId = _defaultUserClaim.CorrelationId
                 };
