@@ -1398,19 +1398,21 @@ end
 DECLARE @NOW DATETIME = GETUTCDATE(); 
 declare @productlist table ( entid int identity, productid int, productsettingtype varchar(500), productsettingvalue varchar(2000))
 insert into @productlist values 
-	(3, 'AlwaysEnableProductForOrgType', 'Multifamily,Vendor,Other'),
-	(19, 'AlwaysEnableProductForOrgType', 'Multifamily,Vendor,Other'),
-	(28, 'AlwaysEnableProductForOrgType', 'Multifamily,Vendor,Other'),
-	(45, 'AlwaysEnableProductForOrgType', 'Multifamily,Vendor,Other'),
-	(49, 'AlwaysEnableProductForOrgType', 'Multifamily,Vendor,Other'),
-	(56, 'AlwaysEnableProductForOrgType', 'Multifamily,Vendor,Other'),
+	(3, 'AlwaysEnableProductForOrgType', 'Multifamily,Vendor,Other,AppPartner,Supplier'),
+	(19, 'AlwaysEnableProductForOrgType', 'Multifamily,Vendor,Other,AppPartner,Supplier'),
+	(28, 'AlwaysEnableProductForOrgType', 'Multifamily,Vendor,Other,AppPartner,Supplier'),
+	(45, 'AlwaysEnableProductForOrgType', 'Multifamily,Vendor,Other,AppPartner,Supplier'),
+	(49, 'AlwaysEnableProductForOrgType', 'Multifamily,Vendor,Other,AppPartner,Supplier'),
+	(56, 'AlwaysEnableProductForOrgType', 'Multifamily,Vendor,Other,AppPartner,Supplier'),
 	(27, 'AlwaysEnableProductForOrgType', 'Multifamily,Other'),
-	(14, 'AlwaysEnableProductForOrgType', 'Multifamily,Other'),
+	(14, 'AlwaysEnableProductForOrgType', 'Multifamily,Other,AppPartner,Supplier'),
 	(38, 'AlwaysEnableProductForOrgType', 'Vendor'),
 
 	(39, 'EnableProductOnOtherProductsActivation', '1')
 	
 --select * from @productlist
+
+GO
 
 declare @MAX_ID INT
 declare @Current_ID INT = 1
@@ -4396,6 +4398,7 @@ begin
 end
 
 COMMIT TRAN;
+GO
 
-
+UPDATE Enterprise.OrganizationType SET ThruDate = NULL WHERE name IN ( 'AppPartner', 'Supplier' ) AND ThruDate IS NOT NULL
 GO
