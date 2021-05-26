@@ -617,8 +617,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var productUser = GetBaseUserDataFromProduct(newProductUser.LoginName);
             isProductUser = productUser != null && !string.IsNullOrEmpty(productUser.LoginName);
             
-            newProductUser.UserId = isProductUser ? productUser.UserId : SubjectUserDetails.ProductUserId;
-            newProductUser.LoginName = isProductUser ? productUser.LoginName : SubjectUserDetails.ProductUserName;            
+            if (isProductUser)
+            {
+                newProductUser.UserId = productUser.UserId;
+                newProductUser.LoginName = productUser.LoginName;
+            }                      
 
             if (!isProductUser && string.IsNullOrEmpty(SubjectUserDetails.ProductUserName))
             {
@@ -647,6 +650,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 WriteToDiagnosticLog(
                     $"{nameof(StandardV1ProductIntegration)}.CreateUpdateProductUser - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling UpdateUser.");
+
+                newProductUser.UserId = SubjectUserDetails.ProductUserId;
+                newProductUser.LoginName = SubjectUserDetails.ProductUserName;
 
                 result = UpdateUser(newProductUser, batchProcessType);
             }
