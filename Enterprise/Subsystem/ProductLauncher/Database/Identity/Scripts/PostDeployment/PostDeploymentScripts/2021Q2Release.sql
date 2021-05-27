@@ -4401,3 +4401,173 @@ GO
 
 UPDATE Enterprise.OrganizationType SET ThruDate = NULL WHERE name IN ( 'AppPartner', 'Supplier' ) AND ThruDate IS NOT NULL
 GO
+
+---Script to add KongApiEndPoint configuration
+DECLARE @LoginURL NVARCHAR(500) = 'https://internalapi-dev.realpage.com',
+@ServerName SYSNAME = @@SERVERNAME
+IF @ServerName IN ('RCDUSODBSQL001') --DEV
+BEGIN
+	SET @LoginURL = 'https://internalapi-dev.realpage.com';
+END
+IF @ServerName IN ('RCTUSODBSQL001') --QA
+BEGIN
+	SET @LoginURL = 'https://internalapi-qa.realpage.com';
+END
+IF @ServerName IN ('RCQUSODBSQL001') --SAT
+BEGIN
+	SET @LoginURL = 'https://internalapi-sat.realpage.com';
+END
+IF @ServerName IN ('RCTUSODBSQL001A','RCTUSODBSQL001B') --UAT
+BEGIN
+	SET @LoginURL = 'https://internalapi-uat.realpage.com';
+END
+IF @ServerName IN ('RCIUSODBSQL002') --PREPROD
+BEGIN
+	SET @LoginURL = 'https://internalapi-ppd.realpage.com';
+END
+IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B') --PROD
+BEGIN
+	SET @LoginURL = 'https://internalapi.realpage.com';
+END
+
+IF NOT EXISTS ( select top (1) 1 from Enterprise.ProductSettingType where name = 'KongApiEndPoint')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'KongApiEndPoint', 'The api endpoint for Kong APIs', 0 )
+END
+
+IF NOT EXISTS(Select top (1) 1 from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'KongApiEndPoint' and ps.ProductId= 3)
+BEGIN
+	Insert into Enterprise.ProductSetting (ProductId, ProductSettingTypeId, Value, FromDate)
+	Select 3, ProductSettingTypeId, @LoginURL, GETUTCDATE()
+	from Enterprise.ProductSettingType
+	where Name = 'KongApiEndPoint'
+
+	declare @productsettingid int
+	select @productsettingid = productsettingid from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'KongApiEndPoint' and ps.ProductId= 3
+
+	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
+				select TOP (1) ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is NULL ORDER BY GlobalProductConfigurationId DESC
+END
+GO
+
+---Script to add Kong-Vanity-url configuration
+DECLARE @kongVanityURL NVARCHAR(500) = '',
+@ServerName SYSNAME = @@SERVERNAME
+IF @ServerName IN ('RCVGBKDBSQL001') --DEMO
+BEGIN
+	SET @kongVanityURL = '';
+END
+IF @ServerName IN ('RCTUSODBTUL001') --TRAINING
+BEGIN
+	SET @kongVanityURL = '';
+END
+
+IF NOT EXISTS ( select top (1) 1 from Enterprise.ProductSettingType where name = 'Kong-Vanity-url')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'Kong-Vanity-url', 'Kong Vanity url', 0 )
+END
+
+IF NOT EXISTS(Select top (1) 1 from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'Kong-Vanity-url' and ps.ProductId= 3)
+BEGIN
+	Insert into Enterprise.ProductSetting (ProductId, ProductSettingTypeId, Value, FromDate)
+	Select 3, ProductSettingTypeId, @kongVanityURL, GETUTCDATE()
+	from Enterprise.ProductSettingType
+	where Name = 'Kong-Vanity-url'
+
+	declare @productsettingid int
+	select @productsettingid = productsettingid from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'Kong-Vanity-url' and ps.ProductId= 3
+
+	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
+				select TOP (1) ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is NULL ORDER BY GlobalProductConfigurationId DESC
+END
+GO
+
+---Script to add Kong Key configuration
+DECLARE @kongKey NVARCHAR(500) = '3Bb8btMTLdJqEoVwbfX4H1NudH0GGgd1',
+@ServerName SYSNAME = @@SERVERNAME
+IF @ServerName IN ('RCDUSODBSQL001') --DEV
+BEGIN
+	SET @kongKey = '3Bb8btMTLdJqEoVwbfX4H1NudH0GGgd1';
+END
+IF @ServerName IN ('RCTUSODBSQL001') --QA
+BEGIN
+	SET @kongKey = 'OllyBPXnfpBW5dDioB6cWFUC7dB8xEeF';
+END
+IF @ServerName IN ('RCQUSODBSQL001') --SAT
+BEGIN
+	SET @kongKey = 'gCUWs2pcJ0frVzjHdMQce2PdWAKR03C5';
+END
+IF @ServerName IN ('RCTUSODBSQL001A','RCTUSODBSQL001B') --UAT
+BEGIN
+	SET @kongKey = 'JNss4MQgawAUUc9HIunfZKWbYgq1c7a8';
+END
+IF @ServerName IN ('RCIUSODBSQL002') --PREPROD
+BEGIN
+	SET @kongKey = '9KVoiVYybJaUdECJiAZ2fEtlSPON6FxZ';
+END
+
+IF NOT EXISTS ( select top (1) 1 from Enterprise.ProductSettingType where name = 'KONG_KEY')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'KONG_KEY', 'Kong key for Unifiedlogin', 0 )
+END
+
+IF NOT EXISTS(Select top (1) 1 from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'KONG_KEY' and ps.ProductId= 3)
+BEGIN
+	Insert into Enterprise.ProductSetting (ProductId, ProductSettingTypeId, Value, FromDate)
+	Select 3, ProductSettingTypeId, @kongKey, GETUTCDATE()
+	from Enterprise.ProductSettingType
+	where Name = 'KONG_KEY'
+
+	declare @productsettingid int
+	select @productsettingid = productsettingid from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'KONG_KEY' and ps.ProductId= 3
+
+	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
+				select TOP (1) ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is NULL ORDER BY GlobalProductConfigurationId DESC
+END
+GO
+
+---Script to add international setting API
+IF NOT EXISTS ( select top (1) 1 from Enterprise.ProductSettingType where name = 'CompanyInternationalSettingsAPI')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'CompanyInternationalSettingsAPI', 'API to get International settings from Unified setting', 0 )
+END
+
+IF NOT EXISTS(Select top (1) 1 from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'CompanyInternationalSettingsAPI' and ps.ProductId= 3)
+BEGIN
+	Insert into Enterprise.ProductSetting (ProductId, ProductSettingTypeId, Value, FromDate)
+	Select 3, ProductSettingTypeId, '/settings/v1/{0}/companies/{1}?category={2}', GETUTCDATE()
+	from Enterprise.ProductSettingType
+	where Name = 'CompanyInternationalSettingsAPI'
+
+	declare @productsettingid int
+	select @productsettingid = productsettingid from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'CompanyInternationalSettingsAPI' and ps.ProductId= 3
+
+	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
+				select TOP (1) ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is NULL ORDER BY GlobalProductConfigurationId DESC
+END
+GO
+
