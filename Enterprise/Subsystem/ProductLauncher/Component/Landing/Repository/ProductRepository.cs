@@ -1354,6 +1354,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                             .FirstOrDefault()
                                 });
                             }
+                            if(accessFilter == "RoleTemplate" && aoProduct == "BM")
+                            {
+                                var aoProductEnum = ProductEnumHelper.GetAoProductEnum(aoProduct);
+                                var prodDetails = GetBooksMasterProductDetail((int)aoProductEnum);
+                                personaProductUserDetails.Add(new Solution
+                                {
+                                    FamilyId = 400,
+                                    IsAssigned = false,
+                                    ProductId = (int)aoProductEnum,
+                                    ProductCode = prodDetails.BooksProductCode,
+                                    ProductName = prodDetails.Name,
+                                    SolutionId =
+                                        productTypes.Where(x => x.Name.Trim() == prodDetails.Name.Trim())
+                                            .Select(z => z.ProductTypeId)
+                                            .FirstOrDefault()
+                                });
+
+                            }
                         }
                     }
                     personaProductUserDetails = personaProductUserDetails.OrderBy(n => n.ProductName).ToList();
