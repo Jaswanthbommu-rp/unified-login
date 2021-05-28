@@ -375,7 +375,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns></returns>
         public ListResponse CompareProductAndPrimaryProperties(UPFMProperty upfmProperty, int productId, ListResponse productResult)
         {
-            if (productResult == null || productResult.Records.Count == 0)
+            if (productResult == null || productResult.Records == null || productResult?.Records?.Count == 0 )
             {
                 return productResult;
             }

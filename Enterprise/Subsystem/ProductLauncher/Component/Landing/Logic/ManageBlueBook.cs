@@ -69,11 +69,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             string bbUri = "";
 
             #region GetSettings
-
-            productInternalSettingList = _manageBlueBookCache["productInternalSetting_" + (int)ProductEnum.UnifiedPlatform] as List<ProductInternalSetting>;
-            if (productInternalSettingList == null)
+            if (_productInternalSettingRepository == null)
             {
                 _productInternalSettingRepository = new ProductInternalSettingRepository();
+            }   
+            productInternalSettingList = _manageBlueBookCache["productInternalSetting_" + (int)ProductEnum.UnifiedPlatform] as List<ProductInternalSetting>;
+            if (productInternalSettingList == null)
+            {                
                 productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
                 CacheItemPolicy policy = new CacheItemPolicy();
                 policy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(CacheTimeSeconds);
@@ -100,11 +102,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             string bbUri = "";
 
             #region GetSettings
-
+            if (_productInternalSettingRepository == null)
+            {
+                _productInternalSettingRepository = new ProductInternalSettingRepository();
+            }
             productInternalSettingList = _manageBlueBookCache["productInternalSetting_" + (int)ProductEnum.UnifiedPlatform] as List<ProductInternalSetting>;
             if (productInternalSettingList == null)
             {
-                _productInternalSettingRepository = new ProductInternalSettingRepository();
                 productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
                 CacheItemPolicy policy = new CacheItemPolicy();
                 policy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(CacheTimeSeconds);
@@ -1697,7 +1701,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         public ListResponse TranslateProductPrimaryPropertiesData(UPFMProperty upfmProperty, int productId, ListResponse productResult)
         {
-            TranslatePropertyInstance translatedData = new TranslatePropertyInstance();
+            TranslatePropertyInstance translatedData = new TranslatePropertyInstance();            
+            var productInternalSettingsByType = _productInternalSettingRepository.GetProductSettingByType("ProductIntegrationType");
+            var productType = productInternalSettingsByType?.FirstOrDefault(p => p.ProductId == productId)?.Value;
             //IManageBlueBook _manageBlueBook = new ManageBlueBook(_userClaims);
             List<UPFMPropertyInstance> _upfmPropertyInstance = new List<UPFMPropertyInstance>();
             IPropertyRepository propertyRepository = new PropertyRepository();
@@ -1731,6 +1737,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     var upfmPropertyList = productResult.Records.Cast<ProductProperty>();
                     upfmPropertyList.Where(p => primaryPropertyIds.id.Contains(p.ID)).ToList().ForEach(c => c.IsAssigned = true);
                     upfmPropertyList.Where(p => !primaryPropertyIds.id.Contains(p.ID)).ToList().ForEach(c => c.IsAssigned = false);
+                }
+            }
+            else if (productType == "UPFM")
+            {
+                var upfmProeprtiesType = productResult.Records[0].GetType();
+                if (upfmProeprtiesType == typeof(ProductProperty))
+                {
+                    var upfmPropertyList = productResult.Records.Cast<ProductProperty>();
+                    upfmPropertyList.Where(p => primaryPropertyIds.id.Contains(p.InstanceId)).ToList().ForEach(c => c.IsAssigned = true);
+                    upfmPropertyList.Where(p => !primaryPropertyIds.id.Contains(p.InstanceId)).ToList().ForEach(c => c.IsAssigned = false);
                 }
             }
             else
