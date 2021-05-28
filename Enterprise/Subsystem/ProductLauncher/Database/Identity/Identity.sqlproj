@@ -1111,6 +1111,7 @@
     <Build Include="Hots\Stored Procedures\GetBaseCompanyRealpageId.sql" />
     <Build Include="Hots\Stored Procedures\ListHotsBaseOrganizationUsers.sql" />
     <Build Include="RoleRightsManagement\Tables\RoleTemplateUserMapping.sql" />
+    <Build Include="RoleRightsManagement\Tables\RoleTemplateUserMappingHistory.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
