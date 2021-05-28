@@ -1880,6 +1880,31 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return productResult;
 		}
 
+        /// <summary>
+        /// Used to get a list of UDM Sources
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<UDMSource> GetUDMSourceList()
+        {
+            string uri = $"/source";
+
+            WriteToLog(LogEventLevel.Debug, "BooksCompanyInstance - Getting info.");
+            try
+            {
+                var response = GetAsync(uri).Result;
+                if (response.IsSuccessStatusCode)
+                {
+                    WriteToLog(LogEventLevel.Debug, "BooksCompanyInstance - Success.");
+                    return JsonConvert.DeserializeObject<IEnumerable<UDMSource>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings()).OrderBy(p => p.Id);
+                }
+            }
+            catch (Exception ex)
+            {
+                WriteToLog(LogEventLevel.Error, "BooksCompanyInstance - Error.", exception: ex);
+            }
+
+            return new List<UDMSource>();
+        }
 
         #region Privates
 

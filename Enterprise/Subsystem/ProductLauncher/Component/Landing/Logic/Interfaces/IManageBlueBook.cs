@@ -283,5 +283,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <param name="productSource"></param>
         /// <returns></returns>
         CustomerCompanyMap GetCompanyInstanceBySourceAndInstanceId(string instanceId, string productSource);
+
+        /// <summary>
+        /// Used to get a list of UDM Sources
+        /// </summary>
+        /// <returns></returns>
+        IEnumerable<UDMSource> GetUDMSourceList();
     }
 }

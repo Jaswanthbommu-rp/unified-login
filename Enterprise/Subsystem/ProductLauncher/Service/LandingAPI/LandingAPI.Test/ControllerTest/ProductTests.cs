@@ -1,6 +1,8 @@
 ﻿using Moq;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI;
@@ -9,23 +11,57 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.Dispatcher;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+using RP.Enterprise.Foundation.DataAccess.Component;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
+using RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Extensions;
 using Xunit;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 {
-	/// <summary>
+    /// <summary>
     /// Product xUnit tests
     /// </summary>
     [ExcludeFromCodeCoverage]
 	public class ProductTests
 	{
 		private static Guid _realPageId = new Guid("C802694D-5553-4527-8616-3C0F434AE62D");
+        private readonly IList<ProductInternalSetting> _product3InternalSettings;
+		private readonly Mock<IRepository> _mockRepository;
+		private readonly Mock<HttpMessageHandler> _mockHttpMessageHandler;
+        private readonly Mock<HttpMessageHandler> _mockHttpMessageHandlerError;
+
+		public ProductTests()
+        {
+			_product3InternalSettings = new List<ProductInternalSetting>()
+            {
+                new ProductInternalSetting() {Name = "BooksUseDomains", Value = "1"},
+                new ProductInternalSetting() {Name = "BooksUseUPFMId", Value = "1"}
+            };
+
+            var booksSourceListJson = "{\"data\":[{\"type\":\"source\",\"id\":\"SB\",\"attributes\":{\"source\":\"SB\",\"description\":\"SimpleBills\",\"AKA\":null,\"isActive\":true,\"priority\":99,\"isMigratable\":true,\"propertyInstanceKnownId\":true,\"companyInstanceKnownId\":true,\"propertyInstanceKnownIdDomain\":true,\"companyInstanceKnownIdDomain\":true,\"allowEnablement\":false,\"allowCancellation\":false,\"cancellationCompanyLevel\":false,\"dashboardCares\":false},\"links\":{\"self\":\"/source/SB\"}},{\"type\":\"source\",\"id\":\"INDATUS\",\"attributes\":{\"source\":\"INDATUS\",\"description\":\"Indatus\",\"AKA\":null,\"isActive\":true,\"priority\":29,\"isMigratable\":false,\"propertyInstanceKnownId\":true,\"companyInstanceKnownId\":true,\"propertyInstanceKnownIdDomain\":true,\"companyInstanceKnownIdDomain\":true,\"allowEnablement\":false,\"allowCancellation\":false,\"cancellationCompanyLevel\":false,\"dashboardCares\":false},\"links\":{\"self\":\"/source/INDATUS\"}},{\"type\":\"source\",\"id\":\"PW\",\"attributes\":{\"source\":\"PW\",\"description\":\"PropertyWare\",\"AKA\":null,\"isActive\":true,\"priority\":40,\"isMigratable\":true,\"propertyInstanceKnownId\":true,\"companyInstanceKnownId\":true,\"propertyInstanceKnownIdDomain\":true,\"companyInstanceKnownIdDomain\":true,\"allowEnablement\":false,\"allowCancellation\":false,\"cancellationCompanyLevel\":false,\"dashboardCares\":false},\"links\":{\"self\":\"/source/PW\"}}]}";
+            HttpResponseMessage booksSourceListResponse = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(booksSourceListJson)
+            };
+            HttpResponseMessage booksSourceListErrorResponse = new HttpResponseMessage(HttpStatusCode.NotFound);
+
+
+			_mockHttpMessageHandler = new Mock<HttpMessageHandler>();
+            _mockHttpMessageHandlerError = new Mock<HttpMessageHandler>();
+
+			_mockRepository = new Mock<IRepository>();
+            _mockRepository
+                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.Is<object>(d => TestProductIdTrue(d, 3))))
+                .Returns(_product3InternalSettings);
+
+            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/source", booksSourceListResponse);
+            _mockHttpMessageHandlerError.Setup(HttpMethod.Get, $"http://localhost/source", booksSourceListErrorResponse);
+		}
 
 		#region Controller Unit Tests
 		[Fact]
@@ -136,15 +172,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				Description = "Resident Services",
 				Solutions = solutionList
 			});
-
-			var mockRepository = new Mock<IProductRepository>();
-			mockRepository
+            
+			var mockProductRepository = new Mock<IProductRepository>();
+			mockProductRepository
                 .Setup(m => m.GetProductFamilies(organizationRealPageId, editorRealpageUserId, userRealPageId, null, null))
                 .Returns(() => expectedProductFamilyList);
 
             DefaultUserClaim userClaim = new DefaultUserClaim() {PersonaId = 1234, OrganizationRealPageGuid = new Guid(), UserRealPageGuid = new Guid()};
 
-			ProductController controller = new ProductController(userClaim, mockRepository.Object, null);
+			ProductController controller = new ProductController(userClaim,  _mockRepository.Object, mockProductRepository.Object, _mockHttpMessageHandler.Object);
 			controller.Request = new HttpRequestMessage();
 			controller.Configuration = new HttpConfiguration();
 
@@ -262,15 +298,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				Description = "Resident Services",
 				Solutions = solutionList
 			});
-
-			var mockRepository = new Mock<IProductRepository>();
-			mockRepository
+            
+			var mockProductRepository = new Mock<IProductRepository>();
+			mockProductRepository
                 .Setup(m => m.GetProductFamilies(organizationRealPageId, editorRealpageUserId, userRealPageId, "userdetails",null))
                 .Returns(() => expectedProductFamilyList);
 
             DefaultUserClaim userClaim = new DefaultUserClaim() { PersonaId = 1234, OrganizationRealPageGuid = new Guid(), UserRealPageGuid = new Guid() };
 
-            ProductController controller = new ProductController(userClaim, mockRepository.Object, null);
+            ProductController controller = new ProductController(userClaim, _mockRepository.Object, mockProductRepository.Object, _mockHttpMessageHandler.Object);
 			controller.Request = new HttpRequestMessage();
 			controller.Configuration = new HttpConfiguration();
 
@@ -353,38 +389,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			Assert.IsType<ArgumentNullException>(exception);
 		}
 
-        [Fact]
+		[Fact]
         public void GetProductNonSensitiveSettings_OK()
         {
-            IList<ProductInternalSetting> productInternalSettings = new List<ProductInternalSetting>()
-            {
-                new ProductInternalSetting() {Name = "BooksUseDomains", Value = "1"}, 
-                new ProductInternalSetting() {Name = "BooksUseUPFMId", Value = "1"}
-            };
-			
-            var mockRepository = new Mock<IProductInternalSettingRepository>();
-            mockRepository
-                .Setup(m => m.GetProductInternalSettings(
-                    It.Is<int>(l => l == 1)
-                    ))
-                .Returns(productInternalSettings);
-
             DefaultUserClaim userClaim = new DefaultUserClaim() {PersonaId = 1234, OrganizationRealPageGuid = new Guid(), UserRealPageGuid = new Guid()};
 
             new RPObjectCache().BustCache();
 
-            ProductController controller = new ProductController(userClaim, null, mockRepository.Object);
-            controller.Request = new HttpRequestMessage();
-            controller.Configuration = new HttpConfiguration();
-			
+            ProductController controller = new ProductController(userClaim, _mockRepository.Object, null, _mockHttpMessageHandler.Object)
+            {
+                Request = new HttpRequestMessage(),
+                Configuration = new HttpConfiguration()
+            };
+
             //Act
-            var result = controller.GetProductNonSensitiveSettings(1);
+            var result = controller.GetProductNonSensitiveSettings(3);
 
             //Assert
-            Assert.True(result.Count == productInternalSettings.Count);
+            Assert.True(result.Count == _product3InternalSettings.Count);
         }
 
-        [Fact]
+		[Fact]
         public void GetProductSettingByType_OK()
         {
             IList<ProductInternalSettingByType> settings = new List<ProductInternalSettingByType>()
@@ -440,29 +465,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                     ProductSettingTypeId = 2, Name = "ApiSecret", SensitiveData = true
                 }
             };
-			
-            var mockProductRepository = new Mock<IProductRepository>();
+            
+			var mockProductRepository = new Mock<IProductRepository>();
             mockProductRepository
                 .Setup(m => m.ListProductSettingType())
                 .Returns(() => productSettingTypes);
-
-            var mockProductInternalSettingRepository = new Mock<IProductInternalSettingRepository>();
-            mockProductInternalSettingRepository
-                .Setup(m => m.GetProductSettingByType(
-                    It.Is<string>(l => l == "ProductStatus")
-                ))
+			
+            _mockRepository
+                .Setup(m => m.GetMany<ProductInternalSettingByType>(StoredProcNameConstants.SP_ListProductGlobalSettingsBySettingType, It.Is<object>(l => TestProductSettingType(l, "ProductStatus"))))
                 .Returns(settings.Where(p => p.Name == "ProductStatus").ToList());
 
-            mockProductInternalSettingRepository
-                .Setup(m => m.GetProductSettingByType(
-                    It.Is<string>(l => l == "ApiSecret")
-                ))
+            _mockRepository
+                .Setup(m => m.GetMany<ProductInternalSettingByType>(StoredProcNameConstants.SP_ListProductGlobalSettingsBySettingType, It.Is<object>(l => TestProductSettingType(l, "ApiSecret"))))
                 .Returns(settings.Where(p => p.Name == "ApiSecret").ToList());
 
-            DefaultUserClaim userClaim = new DefaultUserClaim() {PersonaId = 1234, OrganizationRealPageGuid = new Guid(), UserRealPageGuid = new Guid()};
+			DefaultUserClaim userClaim = new DefaultUserClaim() {PersonaId = 1234, OrganizationRealPageGuid = new Guid(), UserRealPageGuid = new Guid()};
             new RPObjectCache().BustCache();
 
-            ProductController controller = new ProductController(userClaim, mockProductRepository.Object, mockProductInternalSettingRepository.Object);
+            ProductController controller = new ProductController(userClaim, _mockRepository.Object, mockProductRepository.Object, _mockHttpMessageHandler.Object);
             controller.Request = new HttpRequestMessage();
             controller.Configuration = new HttpConfiguration();
 
@@ -487,9 +507,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             //Assert
             Assert.True(responseResult.list.Count == 0);
         }
-
-        
-
+		
         [Fact]
         public void ListProductSettingType_OK()
         {
@@ -500,16 +518,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                     ProductSettingTypeId = 1, Name = "ProductStatus"
                 }
             };
-			
+
             var mockProductRepository = new Mock<IProductRepository>();
-            mockProductRepository
+			mockProductRepository
                 .Setup(m => m.ListProductSettingType())
                 .Returns(() => productSettingTypes);
 
             DefaultUserClaim userClaim = new DefaultUserClaim() {PersonaId = 1234, OrganizationRealPageGuid = new Guid(), UserRealPageGuid = new Guid()};
             new RPObjectCache().BustCache();
 
-            ProductController controller = new ProductController(userClaim, mockProductRepository.Object, null);
+            ProductController controller = new ProductController(userClaim, _mockRepository.Object, mockProductRepository.Object, _mockHttpMessageHandler.Object);
             controller.Request = new HttpRequestMessage();
             controller.Configuration = new HttpConfiguration();
 
@@ -519,6 +537,60 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             //Assert
             Assert.True(response.Count == productSettingTypes.Count);
         }
+
+		[Fact]
+        public void GetUDMSourceList_OK()
+        {
+            var mockProductRepository = new Mock<IProductRepository>();
+            DefaultUserClaim userClaim = new DefaultUserClaim() { PersonaId = 1234, OrganizationRealPageGuid = new Guid(), UserRealPageGuid = new Guid() };
+
+            new RPObjectCache().BustCache();
+
+            ProductController controller = new ProductController(userClaim, _mockRepository.Object, mockProductRepository.Object, _mockHttpMessageHandler.Object)
+            {
+                Request = new HttpRequestMessage(), Configuration = new HttpConfiguration()
+            };
+
+            //Act
+            var response = controller.GetUDMSourceList();
+
+            //Assert
+            Assert.True(response.Count() == 3);
+
+			// check sorting
+			Assert.True(response.ToArray()[1].Id == "PW");
+        }
+
+        [Fact]
+        public void GetUDMSourceList_Error()
+        {
+            var mockProductRepository = new Mock<IProductRepository>();
+            DefaultUserClaim userClaim = new DefaultUserClaim() { PersonaId = 1234, OrganizationRealPageGuid = new Guid(), UserRealPageGuid = new Guid() };
+            new RPObjectCache().BustCache();
+
+            ProductController controller = new ProductController(userClaim, _mockRepository.Object, mockProductRepository.Object, _mockHttpMessageHandlerError.Object)
+            {
+                Request = new HttpRequestMessage(),
+                Configuration = new HttpConfiguration()
+            };
+
+            //Act
+            var response = controller.GetUDMSourceList();
+
+            //Assert
+            Assert.True(!response.Any());
+
+        }
 		#endregion
+
+		private bool TestProductIdTrue(object obj, int value)
+        {
+            return obj.ToString().Equals($"{{ ProductId = {value} }}");
+        }
+
+        private bool TestProductSettingType(object obj, string value)
+        {
+            return obj.ToString().Equals($"{{ ProductSettingType = {value} }}");
+        }
 	}
 }

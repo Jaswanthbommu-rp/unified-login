@@ -22,7 +22,8 @@ using System.Net.Http;
 using System.Security.Claims;
 using System.Web.Http;
 using System.Web.Http.Controllers;
-using Microsoft.Owin.Security.Provider;
+using RP.Enterprise.Foundation.DataAccess.Component;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using Thinktecture.IdentityModel.Client;
 using static RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.SAML.RealPageSAML;
 
@@ -39,7 +40,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         private Guid emptyGuid = Guid.Empty;
         private string _key = "4AD12A31-680A-476F-863E-26749D2E7DD4";
 
+        private IRepository _repository;
         private IProductRepository _productRepository;
+        private IManageBlueBook _manageBlueBook;
 
         #endregion
 
@@ -57,12 +60,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// Testing Constructor
         /// </summary>
         /// <param name="userClaim"></param>
+        /// <param name="repository"></param>
         /// <param name="productRepository"></param>
-        /// <param name="productInternalSettingRepository"></param>
-        public ProductController(DefaultUserClaim userClaim, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository)
+        /// <param name="messageHandler"></param>
+        public ProductController(DefaultUserClaim userClaim, IRepository repository, IProductRepository productRepository, HttpMessageHandler messageHandler)
         {
             _userClaims = userClaim;
-            _manageProduct = new ManageProduct(productRepository, productInternalSettingRepository, null, null, null, null, null, null, _userClaims);
+            _repository = repository;
+            var productInternalSettingRepository = new ProductInternalSettingRepository(repository);
+            _manageBlueBook = new ManageBlueBook(userClaim, repository, productInternalSettingRepository, messageHandler);
+            _manageProduct = new ManageProduct(productRepository, productInternalSettingRepository, null, _manageBlueBook, null, null, null, null, _userClaims);
             _productRepository = productRepository;
         }
 
@@ -75,6 +82,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             base.Initialize(controllerContext);
             _manageProduct = new ManageProduct(_userClaims);
             _productRepository = new ProductRepository(_userClaims);
+            _manageBlueBook = new ManageBlueBook(_userClaims);
         }
         #endregion
 
@@ -372,6 +380,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             return booksProductMap;
         }
 
+        /// <summary>
+        /// Get the list of UDM Sources
+        /// </summary>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when Information is out of sync with the server)")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about the books products", Type = typeof(UDMSource))]
+        [Route("udmsources")]
+        [Authorize]
+        [HttpGet]
+        public IEnumerable<UDMSource> GetUDMSourceList()
+        {
+            return _manageBlueBook.GetUDMSourceList();
+        }
 
         [Route("product/{productId:int}/persona/{personaId}")]
         [Authorize]
