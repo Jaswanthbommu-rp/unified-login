@@ -1450,9 +1450,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             rolesToAssign.Remove(role.ID);
                         }
 
-						if (role.Name.ToUpper().Contains("ADMIN") && !role.IsAssigned && isSuperExistsInProduct)
+						if (role.Name.ToUpper().Contains("ADMIN") &&  isSuperExistsInProduct)
 						{
-							rolesToAssign.Add(role.ID);
+							rolesToRemove.Remove(role.ID);
+							if (!role.IsAssigned)
+							{
+								rolesToAssign.Add(role.ID);
+							}							
 						}
 					}                    
                 }
