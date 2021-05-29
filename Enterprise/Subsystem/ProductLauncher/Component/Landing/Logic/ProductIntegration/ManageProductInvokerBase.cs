@@ -62,6 +62,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         protected GbProductMap BlueBookGbProductMap { get; set; }
 
         /// <summary>
+        /// 
+        /// </summary>
+        public bool ProductAcceptsUniqueProductUserName { get; set; }
+
+        /// <summary>
         /// Productudm source code
         /// </summary>
         protected string _udmSourceCode = "";
@@ -598,7 +603,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             else
             {
                 WriteToDiagnosticLog(
-                    $"ManageProductInvokerBase.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling UpdateUser.");                
+                    $"ManageProductInvokerBase.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling UpdateUser.");
+
+                newProductUser.UserId = SubjectUserDetails.ProductUserId;
+                newProductUser.LoginName = SubjectUserDetails.ProductUserName;
+
                 result = UpdateUser(newProductUser, batchProcessType);
             }
             return result;
@@ -792,7 +801,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 _dataCollector.UpdateProductSettingProductStatus(SubjectUserDetails.PersonaId, PRODUCT_SETTINGTYPE_STATUS, ProductId, (int) ProductBatchStatusType.Success);
 
-                UpdateSamlUserAttribute(SubjectUserDetails.PersonaId, ProductId, productUser.UserId, productUser.LoginName, productUser.Email);
+                if (!ProductAcceptsUniqueProductUserName)
+                    UpdateSamlUserAttribute(SubjectUserDetails.PersonaId, ProductId, productUser.UserId, productUser.LoginName, productUser.Email);
 
                 return string.Empty;
             }
@@ -899,7 +909,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 _dataCollector.UpdateProductSettingProductStatus(SubjectUserDetails.PersonaId, PRODUCT_SETTINGTYPE_STATUS, ProductId, (int) ProductBatchStatusType.Success);
 
-                UpdateSamlUserAttribute(SubjectUserDetails.PersonaId, ProductId, productUserProfile.UserId, productUserProfile.LoginName, productUserProfile.Email);
+                if (!ProductAcceptsUniqueProductUserName)
+                    UpdateSamlUserAttribute(SubjectUserDetails.PersonaId, ProductId, productUserProfile.UserId, productUserProfile.LoginName, productUserProfile.Email);
 
                 return string.Empty;
             }
@@ -1267,6 +1278,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 var productInternalSetting = ProductInternalSettingList.FirstOrDefault(item => item.Name.Equals("CreateUpdateMultiCompanyUserRequiresPMC", StringComparison.OrdinalIgnoreCase));
                 CreateUpdateMultiCompanyUserRequiresPMC = (productInternalSetting != null) ? productInternalSetting.Value.Trim() == "1" : false;
+
+                var productInternalSettingacceptsUniqueProductUserName = ProductInternalSettingList.FirstOrDefault(item => item.Name.Equals("ProductAcceptsUniqueProductUserName", StringComparison.OrdinalIgnoreCase));
+                ProductAcceptsUniqueProductUserName = (productInternalSettingacceptsUniqueProductUserName != null) ? productInternalSettingacceptsUniqueProductUserName.Value.Trim() == "1" : false;
             }
             catch (Exception ex)
             {
