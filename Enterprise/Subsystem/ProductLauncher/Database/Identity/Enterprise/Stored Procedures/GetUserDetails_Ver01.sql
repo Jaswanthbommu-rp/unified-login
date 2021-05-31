@@ -61,7 +61,7 @@ BEGIN
 						OD.Name AS OrganizationDomain,
 						RT.PartyRoleTypeId AS UserRoleTypeId,
 						RT.Name UserRoleType,
-						CASE WHEN ULP.StatusTypeId <> 1 THEN 'false' ELSE 'true' END AS IsActive
+						CASE WHEN ULP.StatusTypeId not in ( 1,2 ) THEN 'false' ELSE 'true' END AS IsActive
 		FROM	Enterprise.Party P
 					INNER JOIN Person.Person PER ON PER.PartyId = P.PartyId
 					INNER JOIN Ident.UserLogin UL ON UL.PersonPartyId = P.PartyId
@@ -132,7 +132,7 @@ BEGIN
 						OD.Name AS OrganizationDomain,
 						RT.PartyRoleTypeId AS UserRoleTypeId,
 						RT.Name UserRoleType,
-						CASE WHEN ULP.StatusTypeId <> 1 THEN 'false' ELSE 'true' END AS IsActive
+						CASE WHEN ULP.StatusTypeId not in ( 1,2 ) THEN 'false' ELSE 'true' END AS IsActive
 		FROM	Enterprise.Party P
 					INNER JOIN Person.Person PER ON PER.PartyId = P.PartyId
 					INNER JOIN Ident.UserLogin UL ON UL.PersonPartyId = P.PartyId
