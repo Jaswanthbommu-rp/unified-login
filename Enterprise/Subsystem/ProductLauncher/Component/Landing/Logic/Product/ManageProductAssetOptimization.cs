@@ -2228,8 +2228,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						}
 						else if (loginNameChanged)
 						{
-							UpdateSamlUserAttribute(userPersonaId, (int)ProductEnumHelper.GetAoProductEnum(product), SamlAttributeEnum.productUsername, productLoginName);
-							UpdateSamlUserAttribute(userPersonaId, (int)ProductEnumHelper.GetAoProductEnum(product), SamlAttributeEnum.UserId, productLoginName);
+							Dictionary<SamlAttributeEnum, string> settingList = new Dictionary<SamlAttributeEnum, string>();
+							settingList.Add(SamlAttributeEnum.productUsername, productLoginName);
+							settingList.Add(SamlAttributeEnum.UserId, productLoginName);
+
+							UpdateSamlUserAttributes(userPersonaId, settingList, (int)ProductEnumHelper.GetAoProductEnum(product));
 							// add activity log
 							WriteActivityLogWithMessageByProduct(editorPersonaId, userPersonaId, (int)ProductEnumHelper.GetAoProductEnum(product), "{0} {1} was assigned {2} by {3} {4}.");
 						}
