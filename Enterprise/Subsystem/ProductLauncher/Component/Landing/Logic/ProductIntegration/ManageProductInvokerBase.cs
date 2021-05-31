@@ -570,6 +570,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // Get product user object 
             bool isProductUser = false;
             var newProductUser = GenerateProductUserObject(userRolePropertiesRegion);
+            if (SubjectUserDetails.UserRoleTypeId == (int)UserRoleType.UserNoEmail)
+            {
+                newProductUser.LoginName = newProductUser.Email;
+            }
             var productUser = GetBaseUserDataFromProduct(newProductUser.LoginName);
             isProductUser = productUser != null && !string.IsNullOrEmpty(productUser.LoginName);
             if (isProductUser)
