@@ -192,7 +192,7 @@ BEGIN
 		FROM	Person.Persona p
 					INNER JOIN Ident.UserLoginPersona ulp ON p.UserLoginPersonaId = ulp.UserLoginPersonaId
 					INNER JOIN Ident.UserLogin ul ON ulp.UserLoginId = ul.UserId
-					INNER JOIN Enterprise.PartyRelationship pr ON pr.PartyIdFrom = ul.PersonPartyId and pr.ThruDate is null
+					INNER JOIN Enterprise.PartyRelationship pr ON pr.PartyIdFrom = ul.PersonPartyId and pr.PartyIdTo = ulp.OrganizationPartyId and pr.ThruDate is null
 					INNER JOIN Enterprise.RoleType rt ON rt.PartyRoleTYpeId = pr.RoleTypeIdFrom
 		WHERE	rt.Name = 'SuperUser'
 		AND		ulp.OrganizationPartyId = @PartyId
