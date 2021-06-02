@@ -182,6 +182,7 @@
     <Compile Include="Controllers\ProductController.cs" />
     <Compile Include="Controllers\PropertyController.cs" />
     <Compile Include="Controllers\RoleController.cs" />
+    <Compile Include="Controllers\ShellController.cs" />
     <Compile Include="Controllers\UserController.cs" />
     <Compile Include="Dto\OpsAssetGroupDto.cs" />
     <Compile Include="Dto\OpsUserDataDto.cs" />

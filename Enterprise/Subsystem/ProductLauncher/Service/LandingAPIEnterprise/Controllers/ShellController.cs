@@ -1,0 +1,100 @@
+﻿using RP.Enterprise.Foundation.DataAccess.Component;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Attributes;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Security;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Security;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using Swashbuckle.Swagger.Annotations;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Web.Http;
+using System.Web.Http.Controllers;
+
+namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Controllers
+{
+    [RoutePrefix("shell")]
+    public class ShellController : BaseApiController
+    {
+        private IUserRepository _userRepository;
+
+        private IManageSecurity _manangeSecurityLogic;
+
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        public ShellController()
+        {
+            // DONT USE USERCLAIM IN BASE, IT IS NULL AT THIS POINT. MOVE TO Initialize FUNCTION
+        }
+
+        /// <summary>
+        /// Unit test constructor
+        /// </summary>
+        /// <param name="repository"></param>
+        /// <param name="messageHandler"></param>
+        /// <param name="userClaims"></param>
+        public ShellController(IRepository repository, HttpMessageHandler messageHandler, DefaultUserClaim userClaims)
+        {
+            var personaRightRepository = new PersonaRightRepository(repository);
+
+            _userRepository = new UserRepository(repository, userClaims, messageHandler);
+            _manangeSecurityLogic = new ManageSecurity(userClaims, personaRightRepository);
+            _userClaims = userClaims;
+        }
+
+        /// <summary>
+        /// Used to initialize DI classes with userclaim
+        /// </summary>
+        /// <param name="controllerContext"></param>
+        protected override void Initialize(HttpControllerContext controllerContext)
+        {
+            base.Initialize(controllerContext);
+            _userRepository = new UserRepository(_userClaims);
+            _manangeSecurityLogic = new ManageSecurity(_userClaims);
+        }
+
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get the side menu navigation items")]
+        [Route("sidemenu")]
+        [HttpGet]
+        [AuthorizeScope("enterpriseapi")]
+        public List<NavigationMenuTree> GetSideMenuNavigation()
+        {
+            var rights = _manangeSecurityLogic.GetPersonaRightsAndActionsByRoute(_personaId, "sidemenu")?.obj?.Rights;
+
+            var navigationMenu = _userRepository.GetNavigationMenu();
+            var navigationMenuRights = _userRepository.GetNavigationMenuRights();
+
+            var filteredMenuEntries = navigationMenu.Where(
+                nmw => !navigationMenuRights.Any(w => w.NavigationMenuId == nmw.Id)
+                    || navigationMenuRights.Where(w => w.NavigationMenuId == nmw.Id).Any(a => rights.Contains(a.RightName))
+                ).ToList();
+
+            return BuildNavigationMenuTree(filteredMenuEntries);
+        }
+
+        private List<NavigationMenuTree> BuildNavigationMenuTree(List<NavigationMenuEntry> entries, int? parentId = null)
+        {
+            var ret = new List<NavigationMenuTree>();
+
+            foreach (var entry in entries.Where(w => w.ParentId == parentId).OrderBy(o => o.OrderIndex))
+            {
+                ret.Add(new NavigationMenuTree()
+                {
+                    Title = entry.Title,
+                    Icon = entry.Icon,
+                    PageId = entry.PageId,
+                    URL = entry.URL,
+                    Items = BuildNavigationMenuTree(entries, entry.Id)
+                });
+            }
+
+            return ret.Count > 0 ? ret : null;
+        }
+    }
+}

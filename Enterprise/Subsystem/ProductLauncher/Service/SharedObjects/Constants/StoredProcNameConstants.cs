@@ -418,6 +418,10 @@
         //HOTS
         public const string SP_GetBaseCompanyUPFMId = "Hots.GetBaseCompanyRealpageId";
         public const string SP_ListHotsBaseOrganizationUsers = "Hots.ListHotsBaseOrganizationUsers";
+
+        // Navigation Menu
+        public const string SP_GetNavigationMenu = "Enterprise.GetNavigationMenu";
+        public const string SP_GetNavigationMenuRights = "Enterprise.GetNavigationMenuRights";
     }
 
     public static class EnterpriseStoredProcNameConstants

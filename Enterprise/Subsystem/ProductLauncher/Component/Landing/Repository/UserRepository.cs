@@ -10,6 +10,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Dtos
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
@@ -2619,6 +2620,42 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 return repository.GetMany<SuggestedPropertyResult>(StoredProcNameConstants.SP_ListSuggestedPropertiesForPersona, new { personaId }).ToList();
             }
+        }
+
+        /// <summary>
+        /// Gets the list of possible navigation menu entries
+        /// </summary>
+        /// <returns>A list of navigation menu entries</returns>
+        public IList<NavigationMenuEntry> GetNavigationMenu()
+        {
+            RPObjectCache rpCache = new RPObjectCache();
+            var cacheKey = $"navigationMenuEntries";
+
+            return rpCache.GetFromCache(cacheKey, 180, () =>
+            {
+                using (var repository = GetRepository())
+                {
+                    return repository.GetMany<NavigationMenuEntry>(StoredProcNameConstants.SP_GetNavigationMenu, null).ToList();
+                }
+            });
+        }
+
+        /// <summary>
+        /// Gets the list of rights for specific navigation menu entries
+        /// </summary>
+        /// <returns>A list of rights/menu ids</returns>
+        public IList<NavigationMenuRightEntry> GetNavigationMenuRights()
+        {
+            RPObjectCache rpCache = new RPObjectCache();
+            var cacheKey = $"navigationMenuRightEntries";
+
+            return rpCache.GetFromCache(cacheKey, 180, () =>
+            {
+                using (var repository = GetRepository())
+                {
+                    return repository.GetMany<NavigationMenuRightEntry>(StoredProcNameConstants.SP_GetNavigationMenuRights, null).ToList();
+                }
+            });
         }
 
         #endregion

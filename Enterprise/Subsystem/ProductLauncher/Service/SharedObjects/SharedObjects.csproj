@@ -179,6 +179,9 @@
     <Compile Include="DapperMappingGuides\IProductSettingList.cs" />
     <Compile Include="DapperMappingGuides\ProductSettingList.cs" />
     <Compile Include="Enterprise\MappedUnifiedLoginUserDetails.cs" />
+    <Compile Include="Enterprise\NavigationMenuEntry.cs" />
+    <Compile Include="Enterprise\NavigationMenuRightEntry.cs" />
+    <Compile Include="Enterprise\NavigationMenuTree.cs" />
     <Compile Include="Enterprise\ProductDetail.cs" />
     <Compile Include="Enterprise\ProductUserIDMappingRequest.cs" />
     <Compile Include="Enterprise\ProductUsers.cs" />

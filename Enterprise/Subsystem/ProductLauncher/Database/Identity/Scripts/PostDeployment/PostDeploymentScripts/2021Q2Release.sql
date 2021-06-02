@@ -4571,3 +4571,88 @@ BEGIN
 END
 GO
 
+-- Navigation Menu seed data
+
+SET IDENTITY_INSERT Enterprise.NavigationMenu ON;
+
+MERGE INTO Enterprise.NavigationMenu t
+	USING 
+	(
+		VALUES
+			(1, N'Home', N'home', N'places-home-1', N'/', 10, NULL),
+
+			(2, N'People', N'people', N'user', NULL, 20, NULL),
+			(3, N'Users', N'users', NULL, N'/people/users', 30, 2),
+			(4, N'User Activity Log', N'activity-log', NULL, N'/settings/activity-log', 40, 2),
+
+			(5, N'Reporting', N'reporting', N'file-new-2', N'/reporting', 50, NULL),
+
+			(6, N'Roles & Rights', N'rolesRights', N'key-1', NULL, 60, NULL),
+			(7, N'Roles & Rights', N'productsRolesRights', NULL, N'https://www-dev.realpage.com/home/v1/#/roles-and-rights/roles', 70, 6),
+			(8, N'Role Templates', N'roleTemplates', NULL, N'/roles-rights/role-templates', 80, 6),
+
+			(9, N'Configurations', N'Configurations', N'wrench-screwdriver', NULL, 90, NULL),
+			(10, N'Company Setup', N'company-setup', NULL, N'/company-setup', 100, 9),
+			(11, N'Company Setup Activity Log', N'company-setup-activity-log', NULL, N'/company-setup-activity-log', 110, 9),
+			(12, N'Notifications', N'notifications', NULL, N'/notifications/configuration', 120, 9),
+			(13, N'Products', N'products-configuration', NULL, N'/products-configuration', 130, 9),
+			(14, N'Client Settings', N'client-settings', NULL, N'/client-settings', 140, 9),
+
+			--(15, N'Platform Alerts', N'platformalerts', N'alarm-timeout', N'/notifications/platformalerts', 150, NULL),
+
+			(16, N'Settings', N'settings', N'cog-gear-settings', NULL, 160, NULL),
+			(17, N'Manage Settings', N'manage-settings', NULL, N'/settings', 170, 16),
+			(18, N'Manage Templates', N'manage-templates', NULL, N'/settings/templates', 180, 16),
+			(19, N'Settings Activity Log', N'settings-activity', NULL, N'/settings/activity-log', 190, 16)
+	) 
+	AS 
+	s (Id, Title, PageId, Icon, [URL], OrderIndex, ParentId) on t.Id = s.Id
+	WHEN MATCHED THEN
+		UPDATE SET Title = s.Title,
+			PageId = s.PageId,
+			Icon = s.Icon,
+			[URL] = s.[URL],
+			OrderIndex = s.OrderIndex,
+			ParentId = s.ParentId
+	WHEN NOT MATCHED BY TARGET THEN
+		INSERT(Id, Title, PageId, Icon, [URL], OrderIndex, ParentId) VALUES (s.Id, s.Title, s.PageId, s.Icon, s.[URL], s.OrderIndex, s.ParentId)
+	WHEN NOT MATCHED BY SOURCE THEN
+		DELETE
+;
+
+SET IDENTITY_INSERT Enterprise.NavigationMenu OFF;
+DECLARE @maxId int = (SELECT MAX(Id) FROM Enterprise.NavigationMenu);
+DBCC CHECKIDENT ('Enterprise.NavigationMenu', RESEED, @maxId);
+
+MERGE INTO Enterprise.NavigationMenuRights t
+	USING 
+	(
+		SELECT 1 NavigationMenuId, RightId FROM [Security].[Right] WHERE RightName = 'Dashboard' UNION ALL
+		SELECT 2 NavigationMenuId, RightId FROM [Security].[Right] WHERE RightName = 'ViewUsers' UNION ALL
+		SELECT 3 NavigationMenuId, RightId FROM [Security].[Right] WHERE RightName = 'ViewUsers' UNION ALL
+		SELECT 4 NavigationMenuId, RightId FROM [Security].[Right] WHERE RightName = 'ViewAuditTrailUserData' UNION ALL
+		SELECT 5 NavigationMenuId, RightId FROM [Security].[Right] WHERE RightName = 'AccessUnifiedReporting' UNION ALL
+		SELECT 5 NavigationMenuId, RightId FROM [Security].[Right] WHERE RightName = 'EmployeeAccessUnifiedReportingAdminConsole' UNION ALL
+		SELECT 6 NavigationMenuId, RightId FROM [Security].[Right] WHERE RightName = 'ViewRoleRight' UNION ALL
+		SELECT 9 NavigationMenuId, RightId FROM [Security].[Right] WHERE RightName = 'ManageNotifications' UNION ALL
+		SELECT 9 NavigationMenuId, RightId FROM [Security].[Right] WHERE RightName = 'EmployeeAccessToCompanySetup' UNION ALL
+		SELECT 9 NavigationMenuId, RightId FROM [Security].[Right] WHERE RightName = 'AbilityToAddProducts' UNION ALL
+		SELECT 10 NavigationMenuId, RightId FROM [Security].[Right] WHERE RightName = 'EmployeeAccessToCompanySetup' UNION ALL
+		SELECT 11 NavigationMenuId, RightId FROM [Security].[Right] WHERE RightName = 'EmployeeAccessToCompanySetup' UNION ALL
+		SELECT 12 NavigationMenuId, RightId FROM [Security].[Right] WHERE RightName = 'ManageNotifications' UNION ALL
+		SELECT 13 NavigationMenuId, RightId FROM [Security].[Right] WHERE RightName = 'AbilityToAddProducts' UNION ALL
+		SELECT 14 NavigationMenuId, RightId FROM [Security].[Right] WHERE RightName = 'EmployeeAccessToCompanySetup' UNION ALL
+		SELECT 16 NavigationMenuId, RightId FROM [Security].[Right] WHERE RightName = 'Settings' UNION ALL
+		SELECT 16 NavigationMenuId, RightId FROM [Security].[Right] WHERE RightName = 'ViewUnifiedSettings' UNION ALL
+		SELECT 18 NavigationMenuId, RightId FROM [Security].[Right] WHERE RightName = 'ManageSettingsTemplates'
+	) 
+	AS 
+	s (NavigationMenuId, RightId) on t.NavigationMenuId = s.NavigationMenuId
+		AND t.RightId = s.RightId
+	WHEN NOT MATCHED BY TARGET THEN
+		INSERT(NavigationMenuId, RightId) VALUES (s.NavigationMenuId, s.RightId)
+	WHEN NOT MATCHED BY SOURCE THEN
+		DELETE
+;
+
+GO

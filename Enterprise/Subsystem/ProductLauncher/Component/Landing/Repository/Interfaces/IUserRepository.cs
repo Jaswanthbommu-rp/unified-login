@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using SO = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
@@ -169,5 +170,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		/// <param name="personaId"></param>
 		/// <returns>list of suggested properties for persona</returns>
 		IList<SuggestedPropertyResult> GetSuggetedPropertiesForUserByPersona(long? personaId = null);
+
+		IList<NavigationMenuEntry> GetNavigationMenu();
+
+		IList<NavigationMenuRightEntry> GetNavigationMenuRights();
 	}
 }
