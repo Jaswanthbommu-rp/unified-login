@@ -634,12 +634,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 if (!string.IsNullOrEmpty(domain) && customerCompanyId != 0)
                 {
                     var booksCustomerCompanyMap = _manageBlueBook.GetCustomerCompanyMapByCustomerCompanyId(customerCompanyId, domain);
-                    var findBooksProductCode = booksCustomerCompanyMap?.Where(p => p.Source == product.ProductCode);
+                    var findBooksProductCode = booksCustomerCompanyMap?.Where(p => p.Source == (!string.IsNullOrEmpty(product.UDMSourceCode) ? product.UDMSourceCode : product.ProductCode));
                     if (findBooksProductCode != null && findBooksProductCode.Count() == 1)
                     {
                         product.ProductInstance = findBooksProductCode.FirstOrDefault().CompanyInstanceSourceId;
                         product.GreenBookCares = findBooksProductCode.FirstOrDefault().CompanyInstance.FirstOrDefault().GreenBookCares;
                     }
+
+                    product.ProductCode = !string.IsNullOrEmpty(product.UDMSourceCode) ? product.UDMSourceCode + $" ( {product.ProductCode} )" : product.ProductCode;
                 }
             }
             return products;

@@ -776,6 +776,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             products.ToList().ForEach(p =>
             {
                 p.ProductCode = ProductEnumHelper.GetProductCodeByProductId(p.ProductId, productList);
+                p.UDMSourceCode = ProductEnumHelper.GetUDMSourceCodeByProductId(p.ProductId, productList);
 
                 var personaSetting = personaProductSettings.Where(i => i.ProductId == p.ProductId);
 

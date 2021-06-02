@@ -172,6 +172,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
 		[JsonProperty(PropertyName = "ProductCode")]
 		public string ProductCode { get; set; } = string.Empty;
 
+        /// <summary>
+        /// UDM Source Code
+        /// </summary>
+        [JsonProperty(PropertyName = "UDMSourceCode")]
+		public string UDMSourceCode;
+
 		/// <summary>
 		/// Product Unique Id
 		/// </summary>

@@ -166,6 +166,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 
 		public static string GetProductCodeByProductId(int productId, IList<GbProductMap> products) =>
 			products.FirstOrDefault(a => a.ProductId == productId)?.BooksProductCode;
+
+        public static string GetUDMSourceCodeByProductId(int productId, IList<GbProductMap> products) =>
+            products.FirstOrDefault(a => a.ProductId == productId)?.UDMSourceCode;
+		
 	}
 
 	/// <summary>
