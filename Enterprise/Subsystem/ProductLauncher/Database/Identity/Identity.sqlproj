@@ -1114,6 +1114,8 @@
     <Build Include="Enterprise\Tables\NavigationMenuRights.sql" />
     <Build Include="Enterprise\Stored Procedures\GetNavigationMenu.sql" />
     <Build Include="Enterprise\Stored Procedures\GetNavigationMenuRights.sql" />
+    <Build Include="RoleRightsManagement\Tables\RoleTemplateUserMapping.sql" />
+    <Build Include="RoleRightsManagement\Tables\RoleTemplateUserMappingHistory.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
