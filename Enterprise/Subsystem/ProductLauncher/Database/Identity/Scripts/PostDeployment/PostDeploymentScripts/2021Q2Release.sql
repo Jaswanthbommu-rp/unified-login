@@ -4735,7 +4735,78 @@ MERGE INTO Enterprise.NavigationMenuRights t
 	WHEN NOT MATCHED BY TARGET THEN
 		INSERT(NavigationMenuId, RightId) VALUES (s.NavigationMenuId, s.RightId)
 	WHEN NOT MATCHED BY SOURCE THEN
-		DELETE
-;
+		DELETE;
+GO
+Declare @ProductId int,@PartyId bigint,@roleId int,@UserId bigint, @RoleTypeId int
 
+SELECT	@UserId = UserId
+FROM	Ident.UserLogin
+WHERE	LoginName LIKE 'realpagead@%'
+
+SELECT @ProductId = ProductId FROM Enterprise.Product WHERE Name = 'Self-Guided Tour'
+select @PartyId = PartyId from Enterprise.Organization where name = 'RealPage Employee'
+SELECT @RoleTypeId=RoleTypeId from [Security].RoleType WHERE [Value]='Product'
+
+--SGT
+Select @roleId = RoleId from Security.Role where ProductId = @ProductId and OrgPartyID IS NULL and RoleName = 'Property Manager'
+IF (@roleId > 0 AND NOT EXISTS (Select 1 From Security.OrganizationOverRideRole Where OrgPartyId = @PartyId And RoleId = @roleId))
+BEGIN
+	insert into [Security].[OrganizationOverRideRole] (roleid,OrgPartyId,CreatedBy,CreatedDate)
+	select @roleId,@PartyId,@UserId,GETUTCDATE()
+END
+
+Select @roleId = RoleId from Security.Role where ProductId = @ProductId and OrgPartyID IS NULL and RoleName = 'Regional Manager'
+IF (@roleId > 0 AND NOT EXISTS (Select 1 From Security.OrganizationOverRideRole Where OrgPartyId = @PartyId And RoleId = @roleId))
+BEGIN
+	insert into [Security].[OrganizationOverRideRole] (roleid,OrgPartyId,CreatedBy,CreatedDate)
+	select @roleId,@PartyId,@UserId,GETUTCDATE()
+END
+
+Select @roleId = RoleId from Security.Role where ProductId = @ProductId and OrgPartyID IS NULL and RoleName = 'Corporate Manager'
+IF (@roleId > 0 AND NOT EXISTS (Select 1 From Security.OrganizationOverRideRole Where OrgPartyId = @PartyId And RoleId = @roleId))
+BEGIN
+	insert into [Security].[OrganizationOverRideRole] (roleid,OrgPartyId,CreatedBy,CreatedDate)
+	select @roleId,@PartyId,@UserId,GETUTCDATE()
+END
+
+--Home Sharing
+SELECT @ProductId = ProductId FROM Enterprise.Product WHERE Name = 'Home Sharing'
+
+IF NOT EXISTS (Select 1 from Security.Role where ProductId = @ProductId  and RoleName = 'Customer Support Manager')
+BEGIN
+	INSERT INTO [Security].[Role](	RoleName,Shortname,Description,RoleTypeID,OrgPartyID,ProductId,CreatedBy,createdDate)
+	Select	'Customer Support Manager','Customer Support Manager','Customer Support Manager',@RoleTypeId,@PartyId,@ProductId,@UserId,GETUTCDATE()
+END
+
+IF NOT EXISTS (Select 1 from Security.Role where ProductId = @ProductId  and RoleName = 'Customer Support Representative')
+BEGIN
+	INSERT INTO [Security].[Role](	RoleName,Shortname,Description,RoleTypeID,OrgPartyID,ProductId,CreatedBy,createdDate)
+	Select	'Customer Support Representative','Customer Support Representative','Customer Support Representative',@RoleTypeId,@PartyId,@ProductId,@UserId,GETUTCDATE()
+END
+
+IF NOT EXISTS (Select 1 from Security.Role where ProductId = @ProductId  and RoleName = 'Implementations')
+BEGIN
+	INSERT INTO [Security].[Role](	RoleName,Shortname,Description,RoleTypeID,OrgPartyID,ProductId,CreatedBy,createdDate)
+	Select	'Implementations','Implementations','Implementations',@RoleTypeId,@PartyId,@ProductId,@UserId,GETUTCDATE()
+END
+
+IF NOT EXISTS (Select 1 from Security.Role where ProductId = @ProductId  and RoleName = 'Systems Admin')
+BEGIN
+	INSERT INTO [Security].[Role](	RoleName,Shortname,Description,RoleTypeID,OrgPartyID,ProductId,CreatedBy,createdDate)
+	Select	'Systems Admin','Systems Admin','Systems Admin',@RoleTypeId,@PartyId,@ProductId,@UserId,GETUTCDATE()
+END
+
+Select @roleId = RoleId from Security.Role where ProductId = @ProductId and OrgPartyID IS NULL and RoleName = 'Property Admin'
+IF (@roleId > 0 AND NOT EXISTS (Select 1 From Security.OrganizationOverRideRole Where OrgPartyId = @PartyId And RoleId = @roleId))
+BEGIN
+	insert into [Security].[OrganizationOverRideRole] (roleid,OrgPartyId,CreatedBy,CreatedDate)
+	select @roleId,@PartyId,@UserId,GETUTCDATE()
+END
+
+Select @roleId = RoleId from Security.Role where ProductId = @ProductId and OrgPartyID IS NULL and RoleName = 'Property User'
+IF (@roleId > 0 AND NOT EXISTS (Select 1 From Security.OrganizationOverRideRole Where OrgPartyId = @PartyId And RoleId = @roleId))
+BEGIN
+	insert into [Security].[OrganizationOverRideRole] (roleid,OrgPartyId,CreatedBy,CreatedDate)
+	select @roleId,@PartyId,@UserId,GETUTCDATE()
+END
 GO

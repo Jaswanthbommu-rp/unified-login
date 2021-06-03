@@ -1058,7 +1058,6 @@
     <Build Include="Enterprise\Stored Procedures\GetOrganizationMasterConfiguration.sql" />
     <Build Include="Enterprise\Stored Procedures\CreateUsePrimaryPropertyMasterConfigurationSetting.sql" />
     <Build Include="Enterprise\Stored Procedures\GetOrganizationSettingValue.sql" />
-    <Build Include="Enterprise\Stored Procedures\SetupSGTRoles.sql" />
     <Build Include="Settings\Stored Procedures\CreateSettingTable.sql" />
     <Build Include="Settings\Stored Procedures\CreateSettingTableRowColumn.sql" />
     <Build Include="Settings\Stored Procedures\DeleteSettingTableRowColumn.sql" />
@@ -1116,6 +1115,7 @@
     <Build Include="Enterprise\Stored Procedures\GetNavigationMenuRights.sql" />
     <Build Include="RoleRightsManagement\Tables\RoleTemplateUserMapping.sql" />
     <Build Include="RoleRightsManagement\Tables\RoleTemplateUserMappingHistory.sql" />
+    <Build Include="RoleRightsManagement\Tables\OrganizationOverRideRole.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

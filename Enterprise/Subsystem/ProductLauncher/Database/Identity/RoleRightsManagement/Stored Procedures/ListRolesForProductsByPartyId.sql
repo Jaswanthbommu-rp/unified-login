@@ -39,7 +39,7 @@ AS
                       WHERE O.PartyId = @PartyId
                             AND (R.ProductId = @ProductId
                                  OR @ProductId IS NULL)
-                            --AND (RG.TargetProductId IS NULL OR RG.TargetProductId IN (SELECT ProductId	FROM @TargetProductId))
+                            AND R.RoleID NOT IN (SELECT ORR.RoleId FROM Security.OrganizationOverRideRole ORR Where OrgPartyID = @PartyId)
 					 UNION
 					 SELECT 
                              R.RoleName 'value',
@@ -55,5 +55,6 @@ AS
 							OD.RoleId = R.RoleId
 					 WHERE R.OrgPartyID IS NULL
 					 AND R.ProductId = @ProductId 
+                     AND R.RoleID NOT IN (SELECT ORR.RoleId FROM Security.OrganizationOverRideRole ORR Where OrgPartyID = @PartyId)
              END;
      END;
