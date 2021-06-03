@@ -164,7 +164,7 @@ GO
 DECLARE	@ProductSettingTypeId int,
 		@ServerName SYSNAME = @@SERVERNAME
 
-IF @ServerName IN ('RCDUSODBSQL001','rctusodbsql001','RCQUSODBSQL001')
+IF @ServerName IN ('RCDUSODBSQL001','rctusodbsql001','RCAUSODBSQL001','','')
 BEGIN
 	IF NOT EXISTS(SELECT * FROM Enterprise.ProductSettingType WHERE [NAME]='IsUnifiedEmailEnabled')
 	BEGIN
@@ -676,7 +676,7 @@ BEGIN
 	UPDATE Ident.SamlProductSettings SET LoginUri = 'https://qa-boss-energy.realpage.com/' WHERE ProductId = 58 
 END
 
-IF (@ServerName ='RCQUSODBSQL001' AND EXISTS(SELECT 1 FROM Ident.SamlProductSettings where ProductId = 58 and LoginUri ='www.sat-abcenergy.realpage.com'))
+IF (@ServerName ='RCAUSODBSQL001' AND EXISTS(SELECT 1 FROM Ident.SamlProductSettings where ProductId = 58 and LoginUri ='www.sat-abcenergy.realpage.com'))
 BEGIN
 	UPDATE Ident.SamlProductSettings SET LoginUri = ' https://sat-boss-energy.realpage.com/' WHERE ProductId = 58 
 END
@@ -1349,6 +1349,78 @@ BEGIN
 END
 
 GO
+
+
+---Script to add ActivityLogUri configuration
+DECLARE @ActivityURL NVARCHAR(500) = 'https://unknownenvironment-fixthis',
+@ServerName SYSNAME = @@SERVERNAME
+IF @ServerName IN ('RCDUSODBSQL001') --DEV
+BEGIN
+	SET @ActivityURL = 'https://myactivitydev.realpage.com/';
+END
+IF @ServerName IN ('RCTUSODBSQL001') --QA
+BEGIN
+	SET @ActivityURL = 'https://myactivityqa.realpage.com/';
+END
+IF @ServerName IN ('RCAUSODBSQL001') --SAT
+BEGIN
+	SET @ActivityURL = 'https://myactivitySAT.realpage.com/';
+END
+IF @ServerName IN ('RCTUSODBSQL001A','RCTUSODBSQL001B') --UAT
+BEGIN
+	SET @ActivityURL = 'https://myactivityuat.realpage.com/';
+END
+IF @ServerName IN ('RCIUSODBSQL002') --PREPROD
+BEGIN
+	SET @ActivityURL = 'https://myactivitypreprod.realpage.com/';
+END
+
+IF @ServerName IN ('RCVGBKDBSQL001') --DEMO
+BEGIN
+	SET @ActivityURL = 'https://myactivitydemo.realpage.com/';
+END
+
+IF @ServerName IN ('RCTUSODBTUL001') --TRAINING
+BEGIN
+	SET @ActivityURL = 'https://myactivitytraining.realpage.com/';
+END
+
+IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B') --PROD
+BEGIN
+	SET @ActivityURL = 'https://myactivity.realpage.com/';
+END
+
+IF @ServerName IN ('reagbkdbsql001') --EUSAT
+BEGIN
+	SET @ActivityURL = 'https://myactivitysat.realpage.co.uk/';
+END
+
+IF @ServerName IN ('repgbkdbsql001a','repgbkdbsql001b') --EUPROD
+BEGIN
+	SET @ActivityURL = 'https://myactivity.realpage.co.uk/';
+END
+
+IF NOT EXISTS(Select top (1) 1 from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'ActivityLogUri' and ps.ProductId= 3)
+BEGIN
+	Insert into Enterprise.ProductSetting (ProductId, ProductSettingTypeId, Value, FromDate)
+	Select 3, ProductSettingTypeId, @ActivityURL, GETUTCDATE()
+	from Enterprise.ProductSettingType
+	where Name = 'ActivityLogUri'
+
+	declare @productsettingid int
+	select @productsettingid = productsettingid from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'ActivityLogUri' and ps.ProductId= 3
+
+	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
+				select TOP (1) ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is NULL ORDER BY GlobalProductConfigurationId DESC
+END
+GO
+
 
 IF NOT EXISTS ( SELECT TOP (1) 1 FROM Maintenance.OrganizationRemovalQueueStatus )
 BEGIN
@@ -4413,7 +4485,7 @@ IF @ServerName IN ('RCTUSODBSQL001') --QA
 BEGIN
 	SET @LoginURL = 'https://internalapi-qa.realpage.com';
 END
-IF @ServerName IN ('RCQUSODBSQL001') --SAT
+IF @ServerName IN ('RCAUSODBSQL001') --SAT
 BEGIN
 	SET @LoginURL = 'https://internalapi-sat.realpage.com';
 END
@@ -4425,6 +4497,17 @@ IF @ServerName IN ('RCIUSODBSQL002') --PREPROD
 BEGIN
 	SET @LoginURL = 'https://internalapi-ppd.realpage.com';
 END
+
+IF @ServerName IN ('RCVGBKDBSQL001') --DEMO
+BEGIN
+	SET @LoginURL = 'https://internalapi-uat.realpage.com';
+END
+
+IF @ServerName IN ('RCTUSODBTUL001') --TRAINING
+BEGIN
+	SET @LoginURL = 'https://internalapi-uat.realpage.com';
+END
+
 IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B') --PROD
 BEGIN
 	SET @LoginURL = 'https://internalapi.realpage.com';
@@ -4505,7 +4588,7 @@ IF @ServerName IN ('RCTUSODBSQL001') --QA
 BEGIN
 	SET @kongKey = 'OllyBPXnfpBW5dDioB6cWFUC7dB8xEeF';
 END
-IF @ServerName IN ('RCQUSODBSQL001') --SAT
+IF @ServerName IN ('RCAUSODBSQL001') --SAT
 BEGIN
 	SET @kongKey = 'gCUWs2pcJ0frVzjHdMQce2PdWAKR03C5';
 END
