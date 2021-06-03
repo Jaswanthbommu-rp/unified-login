@@ -7,6 +7,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Inter
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
@@ -65,6 +66,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// 
         /// </summary>
         public bool ProductAcceptsUniqueProductUserName { get; set; }
+        public bool ProductNotAvailableForRegularUserNoEmail { get; set; }
 
         /// <summary>
         /// Productudm source code
@@ -558,6 +560,39 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         }
 
         /// <summary>
+        /// </summary>
+        private string GetUniqueProductLoginName(UserDetails SubjectUserDetails)
+        {
+            WriteToDiagnosticLog(
+                $"{nameof(ManageProductInvokerBase)}.GetUniqueProductLoginName - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling CreateUser.");
+            // get a login name that isn't in use for the new user
+            bool foundUserName = false;
+            int incrementor = 0;
+            string updatedproductUsername = (SubjectUserDetails.FirstName.TrimWhiteSpace().Substring(0, 1) + SubjectUserDetails.LastName.TrimWhiteSpace()).ToLower();
+            string newLoginName = updatedproductUsername;
+            // give up after 10 tries
+            while (!foundUserName)
+            {
+                if (CheckUserExistInProduct(newLoginName))
+                {
+                    incrementor++;
+                    newLoginName = updatedproductUsername + incrementor.ToString();
+                }
+                else
+                {
+                    foundUserName = true;
+                    WriteToDiagnosticLog($"{nameof(ManageProductInvokerBase)} - generated accountingLoginName = {newLoginName}");
+                }
+                if (incrementor == 10)
+                {
+                    // after 10 tries something might be wrong, so bail out.
+                    WriteToErrorLog($"{nameof(ManageProductInvokerBase)} - Error checking for username in use {newLoginName}");
+                    return "An error occurred. Unable to get username.";
+                }
+            }
+            return newLoginName;
+        }
+        /// <summary>
         /// Create or update product user
         /// Gets called from Product-Batch
         /// </summary> 
@@ -570,9 +605,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // Get product user object 
             bool isProductUser = false;
             var newProductUser = GenerateProductUserObject(userRolePropertiesRegion);
-            if (SubjectUserDetails.UserRoleTypeId == (int)UserRoleType.UserNoEmail)
+            if (SubjectUserDetails.UserRoleTypeId == (int)UserRoleType.UserNoEmail && !ProductNotAvailableForRegularUserNoEmail && string.IsNullOrEmpty(SubjectUserDetails.ProductUserName))
             {
                 newProductUser.LoginName = newProductUser.Email;
+                var newLoginName = GetUniqueProductLoginName(SubjectUserDetails);
+                if (string.IsNullOrEmpty(newLoginName))
+                {
+                    return "An error occurred. Unable to get username.";
+                }
+                newProductUser.LoginName = newLoginName;
             }
             var productUser = GetBaseUserDataFromProduct(newProductUser.LoginName);
             isProductUser = productUser != null && !string.IsNullOrEmpty(productUser.LoginName);
@@ -1285,6 +1326,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 var productInternalSettingacceptsUniqueProductUserName = ProductInternalSettingList.FirstOrDefault(item => item.Name.Equals("ProductAcceptsUniqueProductUserName", StringComparison.OrdinalIgnoreCase));
                 ProductAcceptsUniqueProductUserName = (productInternalSettingacceptsUniqueProductUserName != null) ? productInternalSettingacceptsUniqueProductUserName.Value.Trim() == "1" : false;
+
+                var productInternalSettingProductNotAvailable = ProductInternalSettingList.FirstOrDefault(item => item.Name.Equals("ProductNotAvailableForRegularUserNoEmail", StringComparison.OrdinalIgnoreCase));
+                ProductNotAvailableForRegularUserNoEmail = (productInternalSettingProductNotAvailable != null) ? productInternalSettingProductNotAvailable.Value.Trim() == "1" : false;
             }
             catch (Exception ex)
             {
