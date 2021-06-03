@@ -4583,12 +4583,12 @@ MERGE INTO Enterprise.NavigationMenu t
 
 			(2, N'People', N'people', N'user', NULL, 20, NULL),
 			(3, N'Users', N'users', NULL, N'/people/users', 30, 2),
-			(4, N'User Activity Log', N'activity-log', NULL, N'/settings/activity-log', 40, 2),
+			(4, N'User Activity Log', N'activity-log', NULL, N'/people/activity-log', 40, 2),
 
 			(5, N'Reporting', N'reporting', N'file-new-2', N'/reporting', 50, NULL),
 
 			(6, N'Roles & Rights', N'rolesRights', N'key-1', NULL, 60, NULL),
-			(7, N'Roles & Rights', N'productsRolesRights', NULL, N'https://www-dev.realpage.com/home/v1/#/roles-and-rights/roles', 70, 6),
+			(7, N'Roles & Rights', N'productsRolesRights', NULL, N'/roles-rights', 70, 6),
 			(8, N'Role Templates', N'roleTemplates', NULL, N'/roles-rights/role-templates', 80, 6),
 
 			(9, N'Configurations', N'Configurations', N'wrench-screwdriver', NULL, 90, NULL),

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise
 {
@@ -12,6 +13,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterp
 
         public string URL { get; set; }
 
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public List<NavigationMenuTree> Items { get; set; }
     }
 }
