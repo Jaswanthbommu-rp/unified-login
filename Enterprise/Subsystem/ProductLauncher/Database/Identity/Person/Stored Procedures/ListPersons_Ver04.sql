@@ -19,15 +19,21 @@ BEGIN
 		@filterName nvarchar(512),
 		@filterProductId int = NULL,
 		@filterStatusTypeId int = 0,
+		@filterEnterpriseRoleCount int = 0,
 		@filterPartyRoleTypeId int = NULL,
 		@minSequence smallint,
 		@csvAssignedProducts varchar(max),
 		@csvStatus varchar(max),
+		@csvEnterpriseRole varchar(max),
 		@ProductSettingTypeId int,
 		@OffsetMinutes smallint;  
 
 	DECLARE @filterStatus TABLE (
 		StatusTypeId int PRIMARY KEY
+	)
+
+	DECLARE @filterEnterpriseRole TABLE (
+		RoleTemplateId int PRIMARY KEY
 	)
 	
 	DECLARE @HoldPersona TABLE (
@@ -95,6 +101,7 @@ BEGIN
 				WHEN N'LoginName' THEN 103
 				WHEN N'Status' THEN 104
 				WHEN N'EmployeeId' THEN 105
+				WHEN N'EnterpriseRoleName' THEN 106
 				ELSE 100
 			END * CASE SortDirection WHEN N'ASC' THEN 1 ELSE -1 END 
 	FROM	OPENJSON (JSON_QUERY(@SortBy, '$.sortBy'))
@@ -143,14 +150,31 @@ BEGIN
 	WHERE	ColumnName = 'Status'
 	AND			SearchValue NOT IN ( '%', '')
 
+	SELECT	@csvEnterpriseRole = SearchValue
+	FROM		@tblFilterBy
+	WHERE	ColumnName = 'EnterpriseRole'
+	AND			SearchValue NOT IN ( '%', '')
+
 	IF (LEN(@csvStatus) > 0)
 	BEGIN
 		INSERT INTO @filterStatus (
 			StatusTypeId
 		)
 		SELECT	CONVERT(int, value)
-		FROM		STRING_SPLIT(@csvStatus, ',');
+		FROM	STRING_SPLIT(@csvStatus, ',');
 	END
+
+	IF (LEN(@csvEnterpriseRole) > 0)
+	BEGIN
+		INSERT INTO @filterEnterpriseRole (
+			RoleTemplateId
+		)
+		SELECT	CONVERT(int, value)
+		FROM	STRING_SPLIT(@csvEnterpriseRole, ',');
+	END
+
+	SELECT @filterEnterpriseRoleCount = COUNT(RoleTemplateId)
+	FROM @filterEnterpriseRole
 
 	SELECT	@filterStatusTypeId = COUNT(StatusTypeId)
 	FROM		@filterStatus
@@ -383,6 +407,29 @@ BEGIN
 	)  
 	AND  ((@filterStatusTypeId = 0) OR (NOT fs.StatusTypeId IS NULL))  
 
+	DROP TABLE IF EXISTS #UserEnterpriseRole
+
+	CREATE TABLE #UserEnterpriseRole
+	(
+		PersonaId BIGINT PRIMARY KEY,  
+		RoleTemplateId INT NULL,
+		RoleTemplateName Varchar(100) NULL
+	)
+
+	INSERT INTO #UserEnterpriseRole
+	SELECT UL.PersonaId, RTUM.RoleTemplateId, SRT.RoleTemplateName
+	FROM #UserLogin UL
+	INNER JOIN [Security].[RoleTemplateUserMapping] RTUM  ON UL.PersonaId  = RTUM.PersonaId
+	INNER JOIN [Security].[RoleTemplate] SRT ON SRT.RoleTemplateId = RTUM.RoleTemplateId
+	
+	IF(@filterEnterpriseRoleCount > 0)
+	BEGIN
+		DELETE FROM #UserEnterpriseRole 
+		Where RoleTemplateId NOT IN (SELECT RoleTemplateId FROM @filterEnterpriseRole)
+
+		DELETE FROM #UserLogin 
+		Where PersonaId NOT IN (SELECT PersonaId FROM #UserEnterpriseRole)
+	END 
 
 	DROP TABLE IF EXISTS #ProductCount
 
@@ -452,6 +499,8 @@ BEGIN
 		UserType,
 		PartyRoleTypeId,
 		PasswordModifiedDate,
+		EntepriseRoleName,
+		EntepriseRoleId,
 		OffsetMinutes,
 		TotalRecords,
 		RowNumber
@@ -487,7 +536,9 @@ BEGIN
 			 0 AS Properties,  
 			 ISNULL(rt.Name, '') AS UserType,  
 			 prs.RoleTypeIdFrom AS PartyRoleTypeId,  
-			 ulp.PasswordModifiedDate,  
+			 ulp.PasswordModifiedDate, 
+			 UER.RoleTemplateName,
+			 UER.RoleTemplateId,
 			 @OffsetMinutes,  
 			 COUNT(1) OVER () AS TotalRecords,
 			 CASE @sortValue  
@@ -496,13 +547,15 @@ BEGIN
 				  WHEN 102 THEN ROW_NUMBER() OVER (ORDER BY ulp.LastLogin ASC, p.FirstName + ' ' + p.LastName ASC)  
 				  WHEN 103 THEN ROW_NUMBER() OVER (ORDER BY ulp.LoginName ASC, p.FirstName + ' ' + p.LastName ASC)  
 				  WHEN 104 THEN ROW_NUMBER() OVER (ORDER BY ulp.StatusName ASC, p.FirstName + ' ' + p.LastName ASC)  
-				  WHEN 105 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(UE.Employee,'') ASC, p.FirstName + ' ' + p.LastName ASC)  
+				  WHEN 105 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(UE.Employee,'') ASC, p.FirstName + ' ' + p.LastName ASC)
+				  WHEN 106 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(UER.RoleTemplateName,'') ASC, p.FirstName + ' ' + p.LastName ASC) 
 				  WHEN -100 THEN ROW_NUMBER() OVER (ORDER BY p.FirstName + ' ' + p.LastName DESC)  
 				  WHEN -101 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(pct.ProductCount,0)  DESC, p.FirstName + ' ' + p.LastName DESC)  
 				  WHEN -102 THEN ROW_NUMBER() OVER (ORDER BY ulp.LastLogin DESC, p.FirstName + ' ' + p.LastName DESC)  
 				  WHEN -103 THEN ROW_NUMBER() OVER (ORDER BY ulp.LoginName DESC, p.FirstName + ' ' + p.LastName DESC)  
 				  WHEN -104 THEN ROW_NUMBER() OVER (ORDER BY ulp.StatusName DESC, p.FirstName + ' ' + p.LastName DESC)  
 				  WHEN -105 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(UE.Employee,'') DESC, p.FirstName + ' ' + p.LastName DESC)  
+				  WHEN -106 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(UER.RoleTemplateName,'') ASC, p.FirstName + ' ' + p.LastName DESC) 
 				 END AS RowNumber
 		  FROM #UserLogin ulp  
 			 INNER JOIN Person.Person p ON p.PartyId = ulp.PersonPartyId  
@@ -516,6 +569,7 @@ BEGIN
 			 LEFT OUTER JOIN #ProductCount pct ON pct.PersonaId = ulp.PersonaId  
 			 LEFT OUTER JOIN #CustomFields cf ON (cf.UserLoginPersonaId = ulp.UserLoginPersonaId)  
 			 LEFT OUTER JOIN Enterprise.UserEmployeeId UE ON ulp.UserLoginPersonaId = UE.UserLoginPersonaId  
+			 LEFT OUTER JOIN #UserEnterpriseRole UER  ON ulp.PersonaId  = UER.PersonaId
 		  WHERE  (  
 				(@filterName IS NULL)  
 				OR (CHARINDEX(@filterName, FirstName + ' ' + LastName, 1) > 0)  
@@ -526,7 +580,7 @@ BEGIN
 			   )  
 		  AND  ((@NOW BETWEEN prs.FromDate AND prs.ThruDate) OR (@NOW >= prs.FromDate AND prs.ThruDate IS NULL))  
 		  AND  ((@ParentPartyRoleTypeId IS NULL) OR (rt.ParentPartyRoleTypeId = @ParentPartyRoleTypeId))  
-		  AND  ((@filterPartyRoleTypeId IS NULL) OR (prs.RoleTypeIdFrom = @filterPartyRoleTypeId))  
+		  AND  ((@filterPartyRoleTypeId IS NULL) OR (prs.RoleTypeIdFrom = @filterPartyRoleTypeId))  		 
 	)
 	SELECT	TotalRecords,
 				RealPageID,
@@ -538,6 +592,8 @@ BEGIN
 				Title,
 				Suffix,
 				CustomField,
+				EntepriseRoleName,
+				EntepriseRoleId,
 				UserId,
 				LoginName,
 				LastLogin,
@@ -549,10 +605,12 @@ BEGIN
 				Is3rdPartyIDP,
 				PasswordModifiedDate,
 				OffsetMinutes,
+				EntepriseRoleName,
+				EntepriseRoleId,
 				Products,
 				Properties,
 				UserType,
-				PartyRoleTypeId				
+				PartyRoleTypeId					
 	FROM	cteUsersFinal
 	ORDER BY RowNumber
 	OFFSET ((@PageNumber - 1) * @RowsPerPage) ROWS

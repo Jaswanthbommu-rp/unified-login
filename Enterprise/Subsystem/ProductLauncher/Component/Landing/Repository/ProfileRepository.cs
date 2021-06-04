@@ -556,7 +556,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 					(f.Key.Equals("ProductId", StringComparison.OrdinalIgnoreCase)) ||
 					(f.Key.Equals("Status", StringComparison.OrdinalIgnoreCase)) ||
 					(f.Key.Equals("UserType", StringComparison.OrdinalIgnoreCase)) ||
-					(f.Key.Equals("OffsetMinutes", StringComparison.OrdinalIgnoreCase))
+					(f.Key.Equals("OffsetMinutes", StringComparison.OrdinalIgnoreCase)) ||
+					(f.Key.Equals("EnterpriseRoleName", StringComparison.OrdinalIgnoreCase))
 					)
 				{
 					filterBy.Add(
@@ -636,6 +637,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 						profiledetail.userLogin.IsActive = true;
 						profiledetail.userLogin.IsLocked = false;
 						profiledetail.userLogin.Status = UserUiStatusType.Active;
+						//profiledetail.EnterpriseRoleName = 
 
 						profiledetail.userLogin = _manageUserLogin.GetUserLogin((UserLogin)profiledetail.userLogin, _userClaim.OrganizationPartyId);
 						return profiledetail;

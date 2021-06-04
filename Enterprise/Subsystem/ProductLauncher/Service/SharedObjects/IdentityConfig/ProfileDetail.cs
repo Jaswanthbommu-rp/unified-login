@@ -173,5 +173,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 		/// </summary>
 		[JsonProperty("SuggestedPropertyList", NullValueHandling = NullValueHandling.Ignore)]
 		public List<ProductSuggestedProperties> SuggestedProductPropertyList { get; set; }
-    }
+
+		/// <summary>
+		/// User Enterprise Role Name
+		/// </summary>		
+		public string EntepriseRoleName { get; set; }
+		/// <summary>
+		/// User Enterprise Role Template Id
+		/// </summary>
+		[JsonProperty("RoleTemplateId", NullValueHandling = NullValueHandling.Ignore)]
+		public int EntepriseRoleId { get; set; }
+	}
 }
