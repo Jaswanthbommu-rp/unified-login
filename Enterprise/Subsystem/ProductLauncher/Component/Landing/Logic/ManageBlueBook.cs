@@ -1744,9 +1744,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 var upfmProeprtiesType = productResult.Records[0].GetType();
                 if (upfmProeprtiesType == typeof(ProductProperty))
                 {
-                    var upfmPropertyList = productResult.Records.Cast<ProductProperty>();
-                    upfmPropertyList.Where(p => primaryPropertyIds.id.Contains(p.InstanceId)).ToList().ForEach(c => c.IsAssigned = true);
-                    upfmPropertyList.Where(p => !primaryPropertyIds.id.Contains(p.InstanceId)).ToList().ForEach(c => c.IsAssigned = false);
+                    var products = _productRepository.GetAllProducts();
+                    string productcode = ProductEnumHelper.GetProductCodeByProductId(productId, products);
+                    translatedData = GetTranslatePropertiesFromUPFMToProductv3(primaryPropertyIds, productcode);
+                    var productPropertyType = productResult.Records[0].GetType();
+                    var foundProductPropertyIdList = new List<string>();
+
+                    if (productPropertyType == typeof(ProductProperty))
+                    {
+                        var productList = productResult.Records.Cast<ProductProperty>();
+                        foreach (var property in productList)
+                        {
+                            var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.PropertyInstanceSourceId == property.InstanceId);
+                            if (instanceExists != null)
+                            {
+                                if (isPrimaryProperty)
+                                {
+                                    property.IsAssigned = true;
+                                }
+                                property.InstanceId = instanceExists.PropertyInstanceSourceId;
+                            }
+                            else if (isPrimaryProperty)
+                            {
+                                property.IsAssigned = false;
+                            }
+                        }
+                    }
                 }
             }
             else
