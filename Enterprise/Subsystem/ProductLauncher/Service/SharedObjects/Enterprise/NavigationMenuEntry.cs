@@ -21,5 +21,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterp
         public int OrderIndex { get; set; }
 
         public int? ParentId { get; set; }
+
+        public string Origin { get; set; }
     }
 }

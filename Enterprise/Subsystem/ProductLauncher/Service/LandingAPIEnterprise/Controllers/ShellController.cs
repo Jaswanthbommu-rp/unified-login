@@ -90,6 +90,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     Icon = entry.Icon,
                     PageId = entry.PageId,
                     URL = entry.URL,
+                    Origin = entry.Origin,
                     Items = BuildNavigationMenuTree(entries, entry.Id)
                 });
             }

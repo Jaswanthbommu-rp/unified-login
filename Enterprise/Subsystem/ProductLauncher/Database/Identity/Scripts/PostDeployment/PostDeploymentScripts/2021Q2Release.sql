@@ -4662,43 +4662,44 @@ MERGE INTO Enterprise.NavigationMenu t
 	USING 
 	(
 		VALUES
-			(1, N'Home', N'home', N'places-home-1', N'/', 10, NULL),
+			(1, N'Home', N'home', N'places-home-1', N'/', 10, NULL, 'unified-login'),
 
-			(2, N'People', N'people', N'user', NULL, 20, NULL),
-			(3, N'Users', N'users', NULL, N'/people/users', 30, 2),
-			(4, N'User Activity Log', N'activity-log', NULL, N'/people/activity-log', 40, 2),
+			(2, N'People', N'people', N'user', NULL, 20, NULL, 'unified-login'),
+			(3, N'Users', N'users', NULL, N'/people/users', 30, 2, 'unified-login'),
+			(4, N'User Activity Log', N'activity-log', NULL, N'/people/activity-log', 40, 2, 'unified-login'),
 
-			(5, N'Reporting', N'reporting', N'file-new-2', N'/reporting', 50, NULL),
+			(5, N'Reporting', N'reporting', N'file-new-2', N'/reporting', 50, NULL, 'unified-reporting'),
 
-			(6, N'Roles & Rights', N'rolesRights', N'key-1', NULL, 60, NULL),
-			(7, N'Roles & Rights', N'productsRolesRights', NULL, N'/roles-rights', 70, 6),
-			(8, N'Role Templates', N'roleTemplates', NULL, N'/roles-rights/role-templates', 80, 6),
+			(6, N'Roles & Rights', N'rolesRights', N'key-1', NULL, 60, NULL, 'unified-login'),
+			(7, N'Roles & Rights', N'productsRolesRights', NULL, N'/roles-rights', 70, 6, 'unified-login'),
+			--(8, N'Role Templates', N'roleTemplates', NULL, N'/roles-rights/role-templates', 80, 6, 'unified-login'),
 
-			(9, N'Configurations', N'Configurations', N'wrench-screwdriver', NULL, 90, NULL),
-			(10, N'Company Setup', N'company-setup', NULL, N'/company-setup', 100, 9),
-			(11, N'Company Setup Activity Log', N'company-setup-activity-log', NULL, N'/company-setup-activity-log', 110, 9),
-			(12, N'Notifications', N'notifications', NULL, N'/notifications/configuration', 120, 9),
-			(13, N'Products', N'products-configuration', NULL, N'/products-configuration', 130, 9),
-			(14, N'Client Settings', N'client-settings', NULL, N'/client-settings', 140, 9),
+			(9, N'Configurations', N'Configurations', N'wrench-screwdriver', NULL, 90, NULL, 'unified-login'),
+			(10, N'Company Setup', N'company-setup', NULL, N'/company-setup', 100, 9, 'unified-login'),
+			(11, N'Company Setup Activity Log', N'company-setup-activity-log', NULL, N'/company-setup-activity-log', 110, 9, 'unified-login'),
+			(12, N'Notifications', N'notifications', NULL, N'/notifications/configuration', 120, 9, 'unified-login'),
+			(13, N'Products', N'products-configuration', NULL, N'/products-configuration', 130, 9, 'unified-login'),
+			(14, N'Client Settings', N'client-settings', NULL, N'/client-settings', 140, 9, 'unified-login'),
 
-			--(15, N'Platform Alerts', N'platformalerts', N'alarm-timeout', N'/notifications/platformalerts', 150, NULL),
+			--(15, N'Platform Alerts', N'platformalerts', N'alarm-timeout', N'/notifications/platformalerts', 150, NULL, 'unified-login'),
 
-			(16, N'Settings', N'settings', N'cog-gear-settings', NULL, 160, NULL),
-			(17, N'Manage Settings', N'manage-settings', NULL, N'/settings', 170, 16),
-			(18, N'Manage Templates', N'manage-templates', NULL, N'/settings/templates', 180, 16),
-			(19, N'Settings Activity Log', N'settings-activity', NULL, N'/settings/activity-log', 190, 16)
+			(16, N'Settings', N'settings', N'cog-gear-settings', NULL, 160, NULL, 'unified-settings'),
+			(17, N'Manage Settings', N'manage-settings', NULL, N'/settings', 170, 16, 'unified-settings'),
+			(18, N'Manage Templates', N'manage-templates', NULL, N'/settings/templates', 180, 16, 'unified-settings'),
+			(19, N'Settings Activity Log', N'settings-activity', NULL, N'/settings/activity-log', 190, 16, 'unified-settings')
 	) 
 	AS 
-	s (Id, Title, PageId, Icon, [URL], OrderIndex, ParentId) on t.Id = s.Id
+	s (Id, Title, PageId, Icon, [URL], OrderIndex, ParentId, Origin) on t.Id = s.Id
 	WHEN MATCHED THEN
 		UPDATE SET Title = s.Title,
 			PageId = s.PageId,
 			Icon = s.Icon,
 			[URL] = s.[URL],
 			OrderIndex = s.OrderIndex,
-			ParentId = s.ParentId
+			ParentId = s.ParentId,
+			Origin = s.Origin
 	WHEN NOT MATCHED BY TARGET THEN
-		INSERT(Id, Title, PageId, Icon, [URL], OrderIndex, ParentId) VALUES (s.Id, s.Title, s.PageId, s.Icon, s.[URL], s.OrderIndex, s.ParentId)
+		INSERT(Id, Title, PageId, Icon, [URL], OrderIndex, ParentId, Origin) VALUES (s.Id, s.Title, s.PageId, s.Icon, s.[URL], s.OrderIndex, s.ParentId, s.Origin)
 	WHEN NOT MATCHED BY SOURCE THEN
 		DELETE
 ;

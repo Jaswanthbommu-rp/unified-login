@@ -13,6 +13,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterp
 
         public string URL { get; set; }
 
+        public string Origin { get; set; }
+
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public List<NavigationMenuTree> Items { get; set; }
     }

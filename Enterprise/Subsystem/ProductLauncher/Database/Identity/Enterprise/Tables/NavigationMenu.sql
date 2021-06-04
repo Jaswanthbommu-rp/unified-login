@@ -6,5 +6,6 @@
 	Icon nvarchar(30),
 	[URL] nvarchar(255),
 	OrderIndex int not null,
-	ParentId int
+	ParentId int, 
+    [Origin] NVARCHAR(20) NOT NULL
 )
