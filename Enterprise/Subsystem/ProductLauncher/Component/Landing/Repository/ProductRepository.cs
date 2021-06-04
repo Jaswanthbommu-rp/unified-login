@@ -1844,9 +1844,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="roles"></param>
         /// <param name="rights"></param>
         /// <param name="propertyIds"></param>
+        /// <param name="companyDomain"></param>
         /// <returns>List of Users by product or company</returns>
         public IList<EnterpriseProductUser> GetUsersByCompanyorProducts(string companyId, IList<int> products, int rowsPerPage, int pageNumber,
-                                                                IList<string> roles, IList<string> rights, List<string> propertyIds = null)
+                                                                IList<string> roles, IList<string> rights, List<string> propertyIds = null, string companyDomain = null)
         {
 
             dynamic param = new  
@@ -1857,7 +1858,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 PageNumber = pageNumber,
                 Roles = roles.Any() ? string.Join(",", roles) : null,
                 Rights = rights.Any() ? string.Join(",", rights) : null,
-                Properties = propertyIds.Any() ? string.Join(",", propertyIds) : null
+                Properties = propertyIds.Any() ? string.Join(",", propertyIds) : null,
+                CompanyDomain = companyDomain
             };
 
             using (var repository = GetRepository())
