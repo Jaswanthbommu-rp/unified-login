@@ -4811,3 +4811,100 @@ BEGIN
 	select @roleId,@PartyId,@UserId,GETUTCDATE()
 END
 GO
+
+
+
+IF NOT EXISTS (SELECT TOP(1) 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'TextingServiceAppId')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
+	VALUES ('TextingServiceAppId', 'Application Id for texting service', 0);
+END
+GO
+
+IF NOT EXISTS (SELECT TOP(1) 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'TextingServiceUrl')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
+	VALUES ('TextingServiceUrl', 'Url for texting service', 0);
+END
+
+GO
+
+IF NOT EXISTS (SELECT TOP(1) 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'TextingServiceAPIKey')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
+	VALUES ('TextingServiceAPIKey', 'Api key for texting service', 1);
+END
+
+GO
+
+DECLARE @TextingServiceAppId NVARCHAR(500) = 'b98287e5-cd9c-4d23-b29d-998bac8e5d1a',
+@TextingServiceUrl NVARCHAR(500) = 'uc-admin-sat.realpage.com',
+@TextingServiceAPIKey NVARCHAR(500) = 'cf99e970-bdf5-11eb-a55e-75ea9a67c725',
+@ServerName SYSNAME = @@SERVERNAME
+
+IF @ServerName IN ('RCDUSODBSQL001', 'RCTUSODBSQL001') --DEV, QA
+BEGIN
+	SET @TextingServiceAppId = '75ebb6e9-0657-4982-ad96-668a9cbf583b';
+	SET @TextingServiceUrl = 'https://uc-admin-qa.realpage.com/';
+	SET @TextingServiceAPIKey = '437e00f0-bdf5-11eb-a29d-eb9d1f91c321';
+END
+
+IF NOT EXISTS(Select top (1) 1 from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'TextingServiceAppId' and ps.ProductId= 3)
+BEGIN
+	Insert into Enterprise.ProductSetting (ProductId, ProductSettingTypeId, Value, FromDate)
+	Select 3, ProductSettingTypeId, @TextingServiceAppId, GETUTCDATE()
+	from Enterprise.ProductSettingType
+	where Name = 'TextingServiceAppId'
+
+	declare @productsettingid int
+	select @productsettingid = productsettingid from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'TextingServiceAppId' and ps.ProductId= 3
+
+	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
+				select TOP (1) ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is NULL ORDER BY GlobalProductConfigurationId DESC
+END
+
+
+IF NOT EXISTS(Select top (1) 1 from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'TextingServiceUrl' and ps.ProductId= 3)
+BEGIN
+	Insert into Enterprise.ProductSetting (ProductId, ProductSettingTypeId, Value, FromDate)
+	Select 3, ProductSettingTypeId, @TextingServiceUrl, GETUTCDATE()
+	from Enterprise.ProductSettingType
+	where Name = 'TextingServiceUrl'
+
+	select @productsettingid = productsettingid from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'TextingServiceUrl' and ps.ProductId= 3
+
+	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
+				select TOP (1) ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is NULL ORDER BY GlobalProductConfigurationId DESC
+END
+
+IF NOT EXISTS(Select top (1) 1 from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'TextingServiceAPIKey' and ps.ProductId= 3)
+BEGIN
+	Insert into Enterprise.ProductSetting (ProductId, ProductSettingTypeId, Value, FromDate)
+	Select 3, ProductSettingTypeId, @TextingServiceAPIKey, GETUTCDATE()
+	from Enterprise.ProductSettingType
+	where Name = 'TextingServiceAPIKey'
+
+	select @productsettingid = productsettingid from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'TextingServiceAPIKey' and ps.ProductId= 3
+
+	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
+				select TOP (1) ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is NULL ORDER BY GlobalProductConfigurationId DESC
+END
+GO

@@ -1115,6 +1115,10 @@
     <Build Include="Enterprise\Stored Procedures\GetNavigationMenuRights.sql" />
     <Build Include="RoleRightsManagement\Tables\RoleTemplateUserMapping.sql" />
     <Build Include="RoleRightsManagement\Tables\RoleTemplateUserMappingHistory.sql" />
+    <Build Include="Ident\Tables\SMSAuthenticationCode.sql" />
+    <Build Include="Ident\Stored Procedures\AddSMSAuthenticationCode.sql" />
+    <Build Include="Ident\Stored Procedures\DeleteSMSAuthenticationCode.sql" />
+    <Build Include="Ident\Stored Procedures\GetSMSAuthenticationCode.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\InsertUpdateRoleTemplateUserMapping.sql" />
     <Build Include="RoleRightsManagement\Tables\OrganizationOverRideRole.sql" />
   </ItemGroup>
