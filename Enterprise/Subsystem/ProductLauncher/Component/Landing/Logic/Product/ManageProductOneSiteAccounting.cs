@@ -2874,7 +2874,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				if (output[0].Name.IndexOf("Error") != -1)
 				{
 					//error = output[0].Value;
-					error = "Role cannot be deleted because it is currently in use";
+					error = "Role cannot be deleted because it is currently assigned to users";
 					isError = true;
 				}
 
