@@ -1062,6 +1062,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
 
                         personaId = repositoryResponse.Id;
+
+                        //Link persona to enterprise Role ID
+                        if (primaryPropertiesBatch?.InputJson?.RoleList != null && primaryPropertiesBatch?.InputJson?.RoleList.Count > 0)
+                        {
+                            int roleTemplateId = Convert.ToInt32(primaryPropertiesBatch.InputJson.RoleList.FirstOrDefault());
+                            repositoryResponse = InsertUpdateEnterpriseRoleToUser(repository, roleTemplateId, personaId);
+                            if (repositoryResponse.Id == 0)
+                            {
+                                repository.UnitOfWork.Rollback();
+                                errorStatus.Success = false;
+                                errorStatus.ErrorCode = "User.CreateUser.9";
+                                errorStatus.ErrorMsg = "User not assigned to Enterprise Role.";
+                                createUserResponse.Status = errorStatus;
+                                createUserResponse.UserStatus = errorStatus.ErrorMsg;
+                                return createUserResponse;
+                            }
+                        }
+
                         if (organizationPartyId == currentOrg.OrganizationPartyId)
                         {
                             // get the new persona for the company the user is being added to so it can be used later in the product batch calls
@@ -5670,6 +5688,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         #endregion
 
                         var primaryPropertyBatch = updateUserProfileEntity.NewProfile.productBatch.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedUI);
+                        //Update Enterprise role template to persona                        
+                        if (primaryPropertyBatch?.InputJson?.RoleList != null && primaryPropertyBatch?.InputJson?.RoleList.Count > 0)
+                        {
+                                int roleTemplateId = Convert.ToInt32(primaryPropertyBatch.InputJson.RoleList.FirstOrDefault());
+                                repositoryResponse = InsertUpdateEnterpriseRoleToUser(repository, roleTemplateId, updateUserProfileEntity.OldProfile.Persona[0].PersonaId);
+                                if (repositoryResponse.Id == 0)
+                                {
+                                    repositoryResponse.ErrorMessage = "Unable to update enterprise role to the Persona.";
+                                    throw new Exception(repositoryResponse.ErrorMessage);
+                                }                           
+                        }
+
                         bool notificationEmailChanged = isNotificationEmailChanged(priorNotificationEmail, updateUserProfileEntity.NewProfile.NotificationEmail);
 
                         if ((updateUserProfileEntity.NewProfile.userLogin.Status != UserUiStatusType.Disabled) && (profileChanged || loginNamechanged || notificationEmailChanged || employeeIdChanged))
@@ -5962,6 +5992,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
 
             return productBatch;
+        }
+
+        /// <summary>
+        /// Map enterprise role to Persona
+        /// </summary>
+        /// <param name="repository">IRepository Object</param>
+        /// <param name="roleTemplateId">RoleTemplateId</param>
+        /// <param name="personaId">PersonaId</param>
+        /// <returns>RepositoryResponse Object</returns>
+        private RepositoryResponse InsertUpdateEnterpriseRoleToUser(IRepository repository, int roleTemplateId, long? personaId)
+        {
+           var param = new
+            {
+                RoleTemplateId = roleTemplateId,
+                PersonaId = personaId
+            };
+            return repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_InsertUpdateRoleTemplateUserMapping, param);
         }
         #endregion
 

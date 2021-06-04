@@ -122,7 +122,7 @@
         public const string SP_RemovePersona = "Person.RemovePersona";
         public const string SP_UpdatePersona = "Person.UpdatePersona";
         public const string SP_CreatePersonaConfiguration = "Enterprise.CreatePersonaConfiguration";
-		public const string SP_ListPersonaToDisableUserProduct = "Person.ListPersonaToDisableUserProduct";
+		public const string SP_ListPersonaToDisableUserProduct = "Person.ListPersonaToDisableUserProduct";        
 
 		//Set Password
 		public const string SP_SaveSecurityQuestionAnswers = "Ident.CreateSecurityQuestionAnswers";
@@ -318,6 +318,7 @@
         public const string SP_ListAllRights = "Security.ListAllRights";
         public const string SP_ListSecurityStatus = "Security.ListSecurityStatus";
         public const string SP_SetDefaulteRole = "Security.SetDefaultRole";
+        public const string SP_InsertUpdateRoleTemplateUserMapping = "Security.InsertUpdateRoleTemplateUserMapping";
 
         //Configuration Settings
         public const string SP_ListUserLoginSettings = "Enterprise.ListUserLoginSettings";
