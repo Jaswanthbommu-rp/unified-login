@@ -705,6 +705,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 					List<string> assignedPropertyList = userAssignProductPropertyRole.PropertyList;
 					List<string> unAssignedPropertyList = userAssignProductPropertyRole.RemovedPropertyList;
+					/*
+					 *Unassign all the individual properties if property list has -1(all properties selection is true)
+					 */
+					if (userAssignProductPropertyRole.PropertyList.Contains("-1"))
+					{
+						List<string> removePropList = new List<string>();
+						foreach (var propId in userPropertyIdList)
+						{
+							if (propId != -1)
+							{
+								removePropList.Add(propId.ToString());
+							}
+						}
+						unAssignedPropertyList.AddRange(removePropList);
+					}
 
 					List<string> unassignedProperties = new List<string>();
 					List<string> assignedProperties = new List<string>();
