@@ -77,6 +77,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                     It.IsAny<object>()))
                 .Returns(1);
 
+            _mockRepository
+                .Setup(m => m.ExecuteNonQuery(StoredProcNameConstants.SP_UpdateUserLoginTwoFactor,
+                    It.IsAny<object>()))
+                .Returns(1);
+
             //Arrange
             MultiFactorAuthController controller = new MultiFactorAuthController(
                 _mockRepository.Object

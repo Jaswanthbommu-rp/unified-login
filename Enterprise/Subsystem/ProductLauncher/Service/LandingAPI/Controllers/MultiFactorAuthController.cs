@@ -82,7 +82,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "No records deleted");
             }
-        
+
+            //Make sure to reset authentication two factor state to pending
+            result = _twoFactorLogic.UpdateUserTwoFactorStatus(realPageId, 2);
+            if (result == 0)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "No records updated");
+            }
+
             return Request.CreateResponse(HttpStatusCode.NoContent);
         }
     }
