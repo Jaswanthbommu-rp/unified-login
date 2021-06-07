@@ -4681,7 +4681,7 @@ MERGE INTO Enterprise.NavigationMenu t
 			(13, N'Products', N'products-configuration', NULL, N'/products-configuration', 130, 9, 'unified-login'),
 			(14, N'Client Settings', N'client-settings', NULL, N'/client-settings', 140, 9, 'unified-login'),
 
-			--(15, N'Platform Alerts', N'platformalerts', N'alarm-timeout', N'/notifications/platformalerts', 150, NULL, 'unified-login'),
+			(15, N'Platform Alerts', N'platformalerts', N'alarm-timeout', N'/notifications/platformalerts', 150, NULL, 'unified-login'),
 
 			(16, N'Settings', N'settings', N'cog-gear-settings', NULL, 160, NULL, 'unified-settings'),
 			(17, N'Manage Settings', N'manage-settings', NULL, N'/settings', 170, 16, 'unified-settings'),
@@ -4726,6 +4726,7 @@ MERGE INTO Enterprise.NavigationMenuRights t
 		SELECT 12 NavigationMenuId, RightId FROM [Security].[Right] WHERE RightName = 'ManageNotifications' UNION ALL
 		SELECT 13 NavigationMenuId, RightId FROM [Security].[Right] WHERE RightName = 'AbilityToAddProducts' UNION ALL
 		SELECT 14 NavigationMenuId, RightId FROM [Security].[Right] WHERE RightName = 'EmployeeAccessToCompanySetup' UNION ALL
+		SELECT 15 NavigationMenuId, RightId FROM [Security].[Right] WHERE RightName = 'CreatePlatformAlerts' UNION ALL
 		SELECT 16 NavigationMenuId, RightId FROM [Security].[Right] WHERE RightName = 'Settings' UNION ALL
 		SELECT 16 NavigationMenuId, RightId FROM [Security].[Right] WHERE RightName = 'ViewUnifiedSettings' UNION ALL
 		SELECT 18 NavigationMenuId, RightId FROM [Security].[Right] WHERE RightName = 'ManageSettingsTemplates'
