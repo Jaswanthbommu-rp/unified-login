@@ -1708,11 +1708,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             List<UPFMPropertyInstance> _upfmPropertyInstance = new List<UPFMPropertyInstance>();
             IPropertyRepository propertyRepository = new PropertyRepository();
             bool isPrimaryProperty = !(upfmProperty?.id == null);
+            bool isAllPropertiesSelected = upfmProperty?.id.Count > 1 ? upfmProperty.id[0] == "-1" : false;
 
             /*
              * If All property selection is true, then upfmProperty == -1
              */
-            if (upfmProperty?.id == null || (upfmProperty.id.Count > 0  && upfmProperty.id[0] == "-1"))
+            if (upfmProperty?.id == null || isAllPropertiesSelected)
             {
                 upfmProperty = new UPFMProperty();
                 //nullInstanceResultFlag = upfmProperty?.id[0] == "-1";
