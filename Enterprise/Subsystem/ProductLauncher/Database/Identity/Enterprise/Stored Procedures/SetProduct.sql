@@ -10,7 +10,8 @@
  @AssignToAllUsers bit, -- Assign to all users          
  @UDMSourceCode nvarchar(20),          
  @LoginURI NVARCHAR(100),     --Product login page (Product Responsibility)                  
- @SigningCertificateThumbprint NVARCHAR(50)   -- for SAML products (UL Responsibility)                  
+ @SigningCertificateThumbprint NVARCHAR(50),   -- for SAML products (UL Responsibility)                  
+ @Active bit
   --@LoginURL NVARCHAR(500),    -- Same as @LoginURI                  
  --@SubjectIdSamlAttribute NVARCHAR(50), --Needed for saml auth (UL Responsibility)                     
                  
@@ -41,7 +42,8 @@ BEGIN
      ProductTypeId,                    
      BooksProductCode,          
   AssignToAllUsers,          
-  UDMSourceCode          
+  UDMSourceCode,
+  [Active]
     )                    
     OUTPUT Inserted.ProductId AS Id, '' AS ErrorMessage                    
     VALUES (                    
@@ -52,7 +54,8 @@ BEGIN
      @ProductTypeID,                    
      @BooksProductCode,          
   @AssignToAllUsers,          
-  @UDMSourceCode          
+  @UDMSourceCode,
+  @Active
     );                    
    end                  
    -- Update product                
@@ -64,7 +67,8 @@ BEGIN
       ProductTypeId=@ProductTypeID,                    
       BooksProductCode=@BooksProductCode,          
       AssignToAllUsers=@AssignToAllUsers,              
-      UDMSourceCode=@UDMSourceCode                  
+      UDMSourceCode=@UDMSourceCode,
+      [Active] = @Active
      WHERE ProductId=@ProductId                  
    end                  
                 
