@@ -105,10 +105,7 @@ AS
                      FROM @PartyIdList AS cil 
                  ));    
     
-	select *
-	from @NotificationEmail
-
-        ;WITH Products    
+        WITH Products    
              AS (SELECT     
                         p.PersonaID,     
                         pp.ProductId    

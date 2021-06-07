@@ -10,10 +10,11 @@ CREATE PROCEDURE [Person].[ListUsersWithCompanyId_Ver3]
  @Roles    NVARCHAR(1000) = NULL,  
  @Rights   NVARCHAR(1000) = NULL,  
  @Properties  NVARCHAR(MAX) = NULL,
- @CompanyDomain NVARCHAR(20) = 'primary'
+ @CompanyDomain NVARCHAR(20) = NULL
 )AS  
 BEGIN  
    
+ SET @companyDomain = ISNULL(NULLIF(@companyDomain, ''), 'Primary'); -- set to primary if null or empty string
 
  DECLARE @domainId INT = 0
  DECLARE @Now DATETIME= GETUTCDATE();  
