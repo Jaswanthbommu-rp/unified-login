@@ -10,6 +10,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.In
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Security;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Security;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Attribute;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
@@ -57,6 +58,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
         private IProductRepository _productRepository;
 
+        private IUserRepository _userRepository;
+
+        private IManageSecurity _manangeSecurityLogic;
+
         #endregion
 
         #region Constructor
@@ -99,6 +104,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
             _messageHandler = messageHandler;
             _userClaims = userClaims;
+
+            var personaRightRepository = new PersonaRightRepository(repository);
+
+            _userRepository = new UserRepository(repository, userClaims, messageHandler);
+            _manangeSecurityLogic = new ManageSecurity(userClaims, personaRightRepository);
         }
 
         /// <summary>
@@ -115,6 +125,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             _manageOrganization = new ManageOrganization(_userClaims);
             _manageSettings = new ManageUnifiedSettings(_userClaims);
             _productRepository = new ProductRepository(_userClaims);
+            _userRepository = new UserRepository(_userClaims);
+            _manangeSecurityLogic = new ManageSecurity(_userClaims);
         }
 
         #endregion
@@ -926,6 +938,50 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                         {
                             productResult.Resources.Add(up);
                         }
+                    }
+
+                    var rights = _manangeSecurityLogic.GetPersonaRightsAndActionsByRoute(_personaId, "sidemenu")?.obj?.Rights;
+
+                    var navigationMenu = _userRepository.GetNavigationMenu();
+                    var navigationMenuRights = _userRepository.GetNavigationMenuRights();
+
+                    var filteredMenuEntries = navigationMenu.Where(
+                        nmw => !navigationMenuRights.Any(w => w.NavigationMenuId == nmw.Id)
+                            || navigationMenuRights.Where(w => w.NavigationMenuId == nmw.Id).Any(a => rights.Contains(a.RightName))
+                        ).ToList();
+
+                    var reportingMenuEntry = filteredMenuEntries.FirstOrDefault(f => f.PageId == "reporting");
+                    if (reportingMenuEntry != null)
+                    {
+                        var reportsUrl = new Uri(new Uri(ConfigReader.GetLandingUri), reportingMenuEntry.URL);
+
+                        productResult.Resources.Add(new UserProducts()
+                        {
+                            Name = "Reports",
+                            Description = reportingMenuEntry.Title,
+                            Url = reportsUrl.ToString(),
+                            Label = "reports",
+                            IsNewTab = true,
+                            IsResource = true,
+                            ShowInAppSwitcher = true
+                        });
+                    }
+
+                    var settingsMenuEntry = filteredMenuEntries.FirstOrDefault(f => f.PageId == "manage-settings");
+                    if (settingsMenuEntry != null)
+                    {
+                        var settingsUri = new Uri(new Uri(ConfigReader.GetLandingUri), settingsMenuEntry.URL);
+
+                        productResult.Resources.Add(new UserProducts()
+                        {
+                            Name = "Settings",
+                            Description = settingsMenuEntry.Title,
+                            Url = settingsUri.ToString(),
+                            Label = "settings",
+                            IsNewTab = true,
+                            IsResource = true,
+                            ShowInAppSwitcher = true
+                        });
                     }
 
                     // Support Tool User should not have access to Client Portal
