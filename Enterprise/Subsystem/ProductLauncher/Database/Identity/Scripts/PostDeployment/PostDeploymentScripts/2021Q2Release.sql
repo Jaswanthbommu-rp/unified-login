@@ -4668,7 +4668,7 @@ MERGE INTO Enterprise.NavigationMenu t
 			(3, N'Users', N'users', NULL, N'/people/users', 30, 2, 'unified-login'),
 			(4, N'User Activity Log', N'activity-log', NULL, N'/people/activity-log', 40, 2, 'unified-login'),
 
-			(5, N'Reporting', N'reporting', N'file-new-2', N'/reporting', 50, NULL, 'unified-reporting'),
+			(5, N'Reports', N'reporting', N'file-new-2', N'/reporting', 50, NULL, 'unified-reporting'),
 
 			(6, N'Roles & Rights', N'rolesRights', N'key-1', NULL, 60, NULL, 'unified-login'),
 			(7, N'Roles & Rights', N'productsRolesRights', NULL, N'/roles-rights', 70, 6, 'unified-login'),
