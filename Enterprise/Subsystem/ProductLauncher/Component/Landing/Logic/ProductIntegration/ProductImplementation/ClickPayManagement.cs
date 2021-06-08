@@ -544,10 +544,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					//Multi Company user. Get the user from product and combine old new and old company roles
 					string baseUrlAndQuery = string.Format(GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserEndpoint), newProductUser.LoginName, CompanyInstanceSourceId);
 					var productUser = GetProductUser(baseUrlAndQuery, false);
-					if (productUser != null && productUser.OrganizationRoles != null && productUser.OrganizationRoles.Count > 0)
+					if (productUser != null && productUser.UserId != null)
 					{
 						newProductUser.UserId = productUser.UserId;
-						newProductUser.OrganizationRoles.AddRange(productUser.OrganizationRoles);
 					}
 					result = UpdateUser(newProductUser, batchProcessType);
 				}
