@@ -4909,3 +4909,22 @@ BEGIN
 				select TOP (1) ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is NULL ORDER BY GlobalProductConfigurationId DESC
 END
 GO
+
+MERGE INTO [Security].[RightRoute] t
+	USING 
+	(
+		SELECT ri.RightId, ro.RouteId, ri.RightName, N'' CreatedBy, GETUTCDATE() CreatedDate
+		FROM [Security].[Route] ro
+			INNER JOIN [Security].[Right] ri on ri.RightName = 'CreatePlatformAlerts'
+		WHERE ro.RouteValue = 'SideMenu'
+	) 
+	AS 
+	s (RightId, RouteId, RightName, CreatedBy, CreatedDate) on t.RightId = s.RightId
+		AND t.RouteId = s.RouteId
+	WHEN MATCHED THEN
+		UPDATE SET
+			RightName = s.RightName
+	WHEN NOT MATCHED BY TARGET THEN
+		INSERT(RightId, RouteId, RightName, CreatedBy, CreatedDate) VALUES (s.RightId, s.RouteId, s.RightName, s.CreatedBy, s.CreatedDate);
+
+GO
