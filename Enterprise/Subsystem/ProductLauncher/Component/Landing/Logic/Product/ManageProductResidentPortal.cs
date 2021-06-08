@@ -486,7 +486,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 else
                 {
                     createUpdateUser = "update";
-                    userEmailAddress = _productUsername;
+                    if(!string.IsNullOrEmpty(_productUsername) && _productUsername.Equals(userEmailAddress))
+                    {
+                        userEmailAddress = _productUsername;
+                    }
+                   
 
                     _residentPortalUser = GetUserDetails(editorPersonaId, userPersonaId, _productUsername, 0);
 
@@ -709,10 +713,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         }
 
                         AddCommunityIDToClient();
-                        HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Post, url)
+                        HttpRequestMessage req; ;
+                        if (batchProcessType == BatchProcessType.ProfileUpdate && !string.IsNullOrEmpty(_productUsername) &&
+                            !_productUsername.Equals(userEmailAddress))
                         {
-                            Content = new StringContent(JsonConvert.SerializeObject(dataObject), System.Text.Encoding.Default, "application/json")
-                        };
+                            string userIdOrName = (!string.IsNullOrWhiteSpace(_productUsername)) ? _productUsername : userEmailAddress;
+                            url = url+ "/" + userIdOrName;
+                            //Ignoring fileds
+                            dataObject.data.AllProperties= default(bool);
+                            dataObject.data.Groups = null;
+
+                            req = new HttpRequestMessage
+                            {
+                                Method = new HttpMethod("PATCH"),
+                                Content = new StringContent(JsonConvert.SerializeObject(dataObject), System.Text.Encoding.Default, "application/json"),
+                                RequestUri = new Uri(url)
+                            };
+                        }
+                        else
+                        {
+                             req = new HttpRequestMessage(HttpMethod.Post, url)
+                            {
+                                Content = new StringContent(JsonConvert.SerializeObject(dataObject), System.Text.Encoding.Default, "application/json")
+                            };
+                        }
 
                         isCommunityAssigned = true;
 
@@ -797,7 +821,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                 }
 
-                _residentPortalUser = GetUserDetails(editorPersonaId, userPersonaId, _productUsername, 0);
+                _residentPortalUser = GetUserDetails(editorPersonaId, userPersonaId, userEmailAddress, 0);
                 if (_residentPortalUser != null)
                 {
                     userId = (IsEnterprise) ? _residentPortalUser.EnterpriseUserId.ToString() : _residentPortalUser.ManagerId.ToString();
@@ -2435,5 +2459,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             return listProductProperty;
         }
+    }
+
+    public class EmailUpdateOnly
+    {
+        /// <summary>
+        /// The email address of the user
+        /// </summary>
+        [JsonProperty("email", NullValueHandling = NullValueHandling.Ignore)]
+        public string Email { get; set; } = null;
     }
 }

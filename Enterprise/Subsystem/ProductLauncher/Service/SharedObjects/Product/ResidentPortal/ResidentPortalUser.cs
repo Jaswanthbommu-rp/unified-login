@@ -75,7 +75,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
 		/// <summary>
 		/// Does the enterprise user have access to all properties in OneSite
 		/// </summary>
-		[JsonProperty("AllProperties")]
+		[JsonProperty("AllProperties", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Ignore)]
 		public bool AllProperties { get; set; } = false;
 
 		/// <summary>
