@@ -181,6 +181,7 @@
     <Compile Include="Logic\BatchProcessor\Process\ChangeProductUserType.cs" />
     <Compile Include="Logic\Clients\ManageClientsSetup.cs" />
     <Compile Include="Logic\DynamicContractResolver.cs" />
+    <Compile Include="Logic\Enterprise\Settings\SettingsManagement.cs" />
     <Compile Include="Logic\Enterprise\User\Models\EntUserStatus.cs" />
     <Compile Include="Logic\Enterprise\User\UserManagement.cs" />
     <Compile Include="Logic\IManageHotsCloneUsers.cs" />
@@ -369,6 +370,8 @@
     <Compile Include="Repository\EmailRepository.cs" />
     <Compile Include="Repository\Enterprise\EntUserRepository.cs" />
     <Compile Include="Repository\Enterprise\IEntUserRepository.cs" />
+    <Compile Include="Repository\Enterprise\ISettingRepository.cs" />
+    <Compile Include="Repository\Enterprise\SettingsRepository.cs" />
     <Compile Include="Repository\GeographicBoundaryRepository.cs" />
     <Compile Include="Repository\GlobalSettingRepository.cs" />
     <Compile Include="Repository\HOTSCloneUserRepository.cs" />

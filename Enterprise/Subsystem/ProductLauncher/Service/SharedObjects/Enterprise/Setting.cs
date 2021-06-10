@@ -1,0 +1,51 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise
+{
+	public class Setting
+	{
+		/// <summary>
+		/// Setting constructor
+		/// </summary>
+		public Setting()
+		{
+			Name = string.Empty;
+			Value = null;
+			Editable = true;
+			Hidden = false;
+			Category = string.Empty;
+		}
+		/// <summary>
+		/// SecuritySetting Name
+		/// </summary>
+		public string Name { get; set; }
+
+		/// <summary>
+		/// SecuritySetting Value
+		/// </summary>
+		public string Value { get; set; }
+
+		/// <summary>
+		/// Access right (0-Read-Write Access, 1-Read Only Access, 2- No Access)
+		/// </summary>
+		public int Right { get; set; } = 0;
+
+		/// <summary>
+		/// Is Setting Editable
+		/// </summary>
+		public bool Editable { get; set; } = true;
+		/// <summary>
+		/// Is Setting Hidden
+		/// </summary>
+		public bool Hidden { get; set; } = false;
+
+		/// <summary>
+		/// Category
+		/// </summary>
+		public string Category { get; set; } = string.Empty;
+	}
+}
