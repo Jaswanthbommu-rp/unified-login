@@ -4668,7 +4668,7 @@ MERGE INTO Enterprise.NavigationMenu t
 			(3, N'Users', N'users', NULL, N'/people/users', 30, 2, 'unified-login'),
 			(4, N'User Activity Log', N'activity-log', NULL, N'/people/activity-log', 40, 2, 'unified-login'),
 
-			(5, N'Reporting', N'reporting', N'file-new-2', N'/reporting', 50, NULL, 'unified-reporting'),
+			(5, N'Reports', N'reporting', N'file-new-2', N'/reporting', 50, NULL, 'unified-reporting'),
 
 			(6, N'Roles & Rights', N'rolesRights', N'key-1', NULL, 60, NULL, 'unified-login'),
 			(7, N'Roles & Rights', N'productsRolesRights', NULL, N'/roles-rights', 70, 6, 'unified-login'),
@@ -4908,4 +4908,23 @@ BEGIN
 	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
 				select TOP (1) ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is NULL ORDER BY GlobalProductConfigurationId DESC
 END
+GO
+
+MERGE INTO [Security].[RightRoute] t
+	USING 
+	(
+		SELECT ri.RightId, ro.RouteId, ri.RightName, N'' CreatedBy, GETUTCDATE() CreatedDate
+		FROM [Security].[Route] ro
+			INNER JOIN [Security].[Right] ri on ri.RightName = 'CreatePlatformAlerts'
+		WHERE ro.RouteValue = 'SideMenu'
+	) 
+	AS 
+	s (RightId, RouteId, RightName, CreatedBy, CreatedDate) on t.RightId = s.RightId
+		AND t.RouteId = s.RouteId
+	WHEN MATCHED THEN
+		UPDATE SET
+			RightName = s.RightName
+	WHEN NOT MATCHED BY TARGET THEN
+		INSERT(RightId, RouteId, RightName, CreatedBy, CreatedDate) VALUES (s.RightId, s.RouteId, s.RightName, s.CreatedBy, s.CreatedDate);
+
 GO
