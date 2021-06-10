@@ -4739,6 +4739,72 @@ MERGE INTO Enterprise.NavigationMenuRights t
 	WHEN NOT MATCHED BY SOURCE THEN
 		DELETE;
 GO
+--SGT Roles
+DECLARE @RightValue nvarchar(200),
+		 @UserId bigint,
+		 @Now datetime = GETDATE(),
+		 @RightId int,
+		 @RoleId INT,
+		 @OrgPartyId int,
+		 @RoleTypeId int,
+		 @ProductId int =65,
+		 @RoleName nvarchar(100),
+		 @OrgVisibilityStatusId INT = 9,
+		 @RightVisibilityStatusId INT = 9,
+		 @StatusTypeId int=13;
+
+IF Exists (Select 1 From Enterprise.Product Where ProductId = 65)
+BEGIN		
+	DECLARE @TargetRoleValue TABLE (RoleName nvarchar(100))
+	INSERT INTO @TargetRoleValue VALUES('Property Manager'),('Regional Manager'),('Implementations'),('Corporate Manager');	
+			--UserId
+	SELECT	@UserId = UserId
+	FROM	Ident.UserLogin
+	WHERE	LoginName LIKE 'realpagead@%'
+
+	SELECT @RoleTypeId=RoleTypeId from [Security].RoleType WHERE [Value]='Product'
+ 
+--Cursor Mapping Role with Right
+	DECLARE curCreateNewRole CURSOR FOR
+	SELECT RoleName
+	FROM @TargetRoleValue
+
+	OPEN curCreateNewRole
+	FETCH NEXT FROM curCreateNewRole INTO @RoleName
+
+		WHILE @@FETCH_STATUS = 0
+		BEGIN
+			IF NOT EXISTS (SELECT TOP 1 1 FROM [Security].[Role] WHERE RoleName = @RoleName And ProductId = @ProductId )
+			BEGIN
+				INSERT INTO [Security].[Role]
+				(	RoleName,
+					Shortname, 
+					Description,
+					RoleTypeID,
+					OrgPartyID,
+					ProductId,
+					CreatedBy,
+					createdDate
+				)
+				VALUES ( 
+						@RoleName,
+						@RoleName,
+						@RoleName,
+						@RoleTypeId,
+						NULL,
+						@ProductId,
+						@UserId,
+						@Now
+				)
+			END																
+							
+			FETCH NEXT FROM curCreateNewRole INTO @RoleName
+		END
+		CLOSE curCreateNewRole
+		DEALLOCATE curCreateNewRole				
+		
+ END
+ GO
 Declare @ProductId int,@PartyId bigint,@roleId int,@UserId bigint, @RoleTypeId int
 
 SELECT	@UserId = UserId
@@ -4927,4 +4993,20 @@ MERGE INTO [Security].[RightRoute] t
 	WHEN NOT MATCHED BY TARGET THEN
 		INSERT(RightId, RouteId, RightName, CreatedBy, CreatedDate) VALUES (s.RightId, s.RouteId, s.RightName, s.CreatedBy, s.CreatedDate);
 
+GO
+	declare @productId int, @rightId int
+	select @productId = ProductId from Enterprise.Product where Name ='Self-Guided Tour'
+
+	IF NOT EXISTS (Select 1 From Security.[Right] Where RightName = 'ManageSGTourProductAccess')
+	BEGIN
+		insert into Security.[Right](RightName,Description,Value,StatusTypeId,VisibilityStatusId,ProductId,TargetProductId,CreatedBy,CreatedDate)
+		select 'ManageSGTourProductAccess','Manage Self-Guided Tour Product Access','Manage Self-Guided Tour Product Access',    13,    9,    3,    @productId,    6357, GETUTCDATE()
+	END
+
+	select @rightId = RightId from Security.[Right] where RightName='ManageSGTourProductAccess'
+	IF NOT EXISTS (Select 1 From Security.[RoleRight] Where RightId = @rightId And RoleId = 1)
+	BEGIN
+		insert into Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+		select 1,@rightId,6357,GETUTCDATE()
+	END
 GO
