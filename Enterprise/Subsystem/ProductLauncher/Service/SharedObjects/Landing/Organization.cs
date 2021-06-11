@@ -104,7 +104,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
 		/// <summary>
 		/// Use primary properties
 		/// </summary>		
-		public int UsePrimaryProperties { get; set; } = 0;
+		public int EnablePrimaryPropertiesAndEnterpriseRoles { get; set; } = 0;
 
 		#region Examples
 		/// <summary>
@@ -116,7 +116,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
             OrganizationCreate result = new OrganizationCreate()
 			{
 				Name = "Some company",
-				UsePrimaryProperties = 0,
+				EnablePrimaryPropertiesAndEnterpriseRoles = 0,
 				OrganizationTypeId = 6,
 				OrganizationDomainId = 1,
 				OrganizationDomain = "Primary",

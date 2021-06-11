@@ -961,7 +961,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                             Description = reportingMenuEntry.Title,
                             Url = reportsUrl.ToString(),
                             Label = "reports",
-                            IsNewTab = true,
+                            IsNewTab = false,
                             IsResource = true,
                             ShowInAppSwitcher = true
                         });
@@ -978,7 +978,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                             Description = settingsMenuEntry.Title,
                             Url = settingsUri.ToString(),
                             Label = "settings",
-                            IsNewTab = true,
+                            IsNewTab = false,
                             IsResource = true,
                             ShowInAppSwitcher = true
                         });

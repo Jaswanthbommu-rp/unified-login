@@ -113,7 +113,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         /// <summary>  
         /// Use Primary Properties
         /// </summary>
-        [JsonProperty(PropertyName = "UsePrimaryProperties")]
-        public bool UsePrimaryProperties { get; set; } = false;
+        [JsonProperty(PropertyName = "EnablePrimaryPropertiesAndEnterpriseRoles")]
+        public bool EnablePrimaryPropertiesAndEnterpriseRoles { get; set; } = false;
     }
 }

@@ -67,7 +67,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		/// <summary>
 		/// Use primary properties
 		/// </summary>		
-		public int UsePrimaryProperties { get; set; } = 0;
+		public int EnablePrimaryPropertiesAndEnterpriseRoles { get; set; } = 0;
 		
 		/// <summary>
 		/// Company Address

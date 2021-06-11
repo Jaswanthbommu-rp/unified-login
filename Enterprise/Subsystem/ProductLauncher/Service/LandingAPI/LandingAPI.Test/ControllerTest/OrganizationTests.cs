@@ -939,7 +939,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 OrganizationTypeId = 6,
                 Name = "New Company",
                 OrganizationDomain = "Primary",
-                UsePrimaryProperties = 0,
+                EnablePrimaryPropertiesAndEnterpriseRoles = 0,
                 Products = new List<string>()
                 {
                     "OS"
@@ -1042,7 +1042,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 OrganizationDomainId = 0,
                 OrganizationDomainName = "Primary",
                 Name = "New Company",
-                UsePrimaryProperties = 0,
+                EnablePrimaryPropertiesAndEnterpriseRoles = 0,
                 CompanyAddress = new CompanyInstanceAddress() { Address = "1234 Address", City = "Some City", State = "State", Country = "USA", PostalCode = "12345" }
             };
 

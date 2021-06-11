@@ -404,7 +404,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             org.Name = organization.Name;
             org.IsActive = organization.IsActive;
-            org.UsePrimaryProperties = organization.UsePrimaryProperties;
+            org.EnablePrimaryPropertiesAndEnterpriseRoles = organization.EnablePrimaryPropertiesAndEnterpriseRoles;
 
             var orgTypes = _manageOrganization.ListOrganizationType();
             if (organization.OrganizationTypeId != 0)
