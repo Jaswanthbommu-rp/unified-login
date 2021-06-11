@@ -40,7 +40,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.NotFound, Description = "Not Found")]
-        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(200, type: typeof(SettingResponse))]
+        [SwaggerResponse(500, type: typeof(ApiError))]
         [SwaggerResponse(HttpStatusCode.OK, Description = "Get internal settings")]
         [Route("setting/internationalsetting")]
         [HttpGet]
@@ -51,9 +52,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 			{
 				return Request.CreateResponse(HttpStatusCode.BadRequest	, "Invalid settingType.");
 			}
-            SettingsManagement settingManagement = new SettingsManagement(_userClaims);
-
-            return Request.CreateResponse(HttpStatusCode.OK, settingManagement.GetCompanyInternationalSettings(_userClaims.OrganizationRealPageGuid, settingType));
+            try
+            {
+                SettingsManagement settingManagement = new SettingsManagement(_userClaims);
+                var settings = settingManagement.GetCompanyInternationalSettings(_userClaims.OrganizationRealPageGuid, settingType);
+                
+                return Request.CreateResponse(HttpStatusCode.OK, settingManagement.GetCompanyInternationalSettings(_userClaims.OrganizationRealPageGuid, settingType));
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, ex.Message);
+            }
 		}
 	}
 }

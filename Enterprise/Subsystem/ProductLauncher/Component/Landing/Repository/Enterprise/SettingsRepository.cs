@@ -29,17 +29,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.E
 		/// <summary>
 		/// Ctor
 		/// </summary>
-		public SettingsRepository(DefaultUserClaim userClaim, IRepository repository)
-        {
-			_userClaim = userClaim;
-			_httpClient = new HttpClient();
-            _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
-            
-		}
         public SettingsRepository(DefaultUserClaim userClaim)
         {
             _userClaim = userClaim;
-            _httpClient = new HttpClient();
             _productInternalSettingRepository = new ProductInternalSettingRepository();
         }
         #endregion
@@ -63,27 +55,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.E
                
                 if (!string.IsNullOrEmpty(kongUri) && !string.IsNullOrEmpty(kongKey) && !string.IsNullOrEmpty(companyInternationalSettingsAPI))
                 {
-                    _httpClient.BaseAddress = new Uri(kongUri);
-                    string uri = string.Format(companyInternationalSettingsAPI, source, companyId, settingType);
-                    uri = _httpClient.BaseAddress + uri;
-                    var logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
-                    WriteToLog(LogEventLevel.Debug, $"GetCompanySettings using Kong API - Getting info", logData);
-                  
-                    _httpClient.DefaultRequestHeaders.Add("apikey", kongKey);
-                    if (!string.IsNullOrEmpty(kongVanityUrl))
+                    using (var _httpClient = new HttpClient())
                     {
-                        _httpClient.DefaultRequestHeaders.Add("vanity-host", kongVanityUrl);
-                    }
-                    var response = _httpClient.GetAsync(uri).Result;
-                    if (response.IsSuccessStatusCode)
-                    {
-                        internationalSetting = JsonConvert.DeserializeObject<SettingResponse>(response.Content.ReadAsStringAsync().Result);
-                        logData = new Dictionary<string, object>() { { "InternationalCompanySetting", internationalSetting } };
-                        WriteToLog(LogEventLevel.Debug, $"GetCompanySettings using Kong API - Got info - ", logData);
-                        return internationalSetting;
-                    }
-                    logData = new Dictionary<string, object>() { { "response", response } };
-                    WriteToLog(LogEventLevel.Debug, $"GetCompanySettings using Kong API - No info found", logData);
+                        _httpClient.BaseAddress = new Uri(kongUri);
+                        string uri = string.Format(companyInternationalSettingsAPI, source, companyId, settingType);
+                        uri = _httpClient.BaseAddress + uri;
+                        var logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
+                        WriteToLog(LogEventLevel.Debug, $"GetCompanySettings using Kong API - Getting info", logData);
+
+                        _httpClient.DefaultRequestHeaders.Add("apikey", kongKey);
+                        if (!string.IsNullOrEmpty(kongVanityUrl))
+                        {
+                            _httpClient.DefaultRequestHeaders.Add("vanity-host", kongVanityUrl);
+                        }
+                        var response = _httpClient.GetAsync(uri).Result;
+                        if (response.IsSuccessStatusCode)
+                        {
+                            internationalSetting = JsonConvert.DeserializeObject<SettingResponse>(response.Content.ReadAsStringAsync().Result);
+                            logData = new Dictionary<string, object>() { { "InternationalCompanySetting", internationalSetting } };
+                            WriteToLog(LogEventLevel.Debug, $"GetCompanySettings using Kong API - Got info - ", logData);
+                            return internationalSetting;
+                        }
+                        logData = new Dictionary<string, object>() { { "response", response } };
+                        WriteToLog(LogEventLevel.Debug, $"GetCompanySettings using Kong API - No info found", logData);
+                    }        
                 }
                 else
                 {
