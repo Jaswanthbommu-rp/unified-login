@@ -6,6 +6,7 @@
         GetRightEndpoint,
         GetPropertyGroupsEndpoint,
         GetUserEndpoint,
+        GetUserRoleEndpoint,
         PostUserEndpoint,
         PutUserEndpoint,
         PatchProfileEndpoint,
