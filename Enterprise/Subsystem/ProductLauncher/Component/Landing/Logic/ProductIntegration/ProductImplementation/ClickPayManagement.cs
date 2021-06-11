@@ -57,7 +57,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     WriteToDiagnosticLog(
                         $"ClickPayManagement.GetProductRoles - editorPersona id - {EditorUserDetails.PersonaId}. Calling GetProductUser for subject persona Id -{SubjectUserDetails.PersonaId}");
 
-                    var user = GetProductUser();
+					baseUrlAndQuery = string.Format(GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserRoleEndpoint), SubjectUserDetails.ProductUserName, CompanyInstanceSourceId);
+					var user = GetProductUser(baseUrlAndQuery, false);
 
                     if (user != null)
                     {
@@ -226,7 +227,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			// Get partial api query based on end point
 			if (string.IsNullOrEmpty(baseUrlAndQuery))
-				baseUrlAndQuery = string.Format(GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserEndpoint), SubjectUserDetails.ProductUserName, CompanyInstanceSourceId);
+				baseUrlAndQuery = string.Format(GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserEndpoint), SubjectUserDetails.ProductUserName);
 
 			WriteToDiagnosticLog(
 				$"ClickPayManagement.GetProductUser - editorPersona id - {EditorUserDetails.PersonaId}. Calling API - {baseUrlAndQuery}.");
@@ -239,7 +240,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		}
 		protected override bool CheckUserExistInProduct(string loginNameToCheck, string baseUrlAndQuery = null)
 		{
-			baseUrlAndQuery = string.Format(GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserEndpoint), loginNameToCheck, CompanyInstanceSourceId);
+			baseUrlAndQuery = string.Format(GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserEndpoint), loginNameToCheck);
 			return base.CheckUserExistInProduct("", baseUrlAndQuery);
 		}
 		protected override IntegrationProductUser GenerateProductUserObject(ProductUserRolePropertiesGroups changedUserRolePropertiesRegion)
