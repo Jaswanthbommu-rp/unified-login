@@ -213,8 +213,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             org = GetOrganization(organizationRealPageId);
 
             //create/update use promaryproperty setting
-            createUsePrimaryPropertyMasterConfigurationSetting(org.PartyId, organization.UsePrimaryProperties);
-            org.UsePrimaryProperties = organization.UsePrimaryProperties;
+            createUsePrimaryPropertyMasterConfigurationSetting(org.PartyId, organization.EnablePrimaryPropertiesAndEnterpriseRoles);
+            org.EnablePrimaryPropertiesAndEnterpriseRoles = organization.EnablePrimaryPropertiesAndEnterpriseRoles;
 
             // add the given products to the new company
             var productResponse = AddProductsToOrganization(addProductList, org.PartyId, organization.OrganizationTypeId, organization.Name);
@@ -530,7 +530,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
 
             //create/update use primaryproperty setting
-            createUsePrimaryPropertyMasterConfigurationSetting(organization.PartyId, organization.UsePrimaryProperties);           
+            createUsePrimaryPropertyMasterConfigurationSetting(organization.PartyId, organization.EnablePrimaryPropertiesAndEnterpriseRoles);           
         }
 
         /// <summary>
@@ -552,7 +552,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 throw new Exception("Invalid parameter productId.");
             }
             var organizationDetails = _organizationRepository.GetOrganization(null, organizationPartyId);
-            if (organizationDetails.UsePrimaryProperties == 1)
+            if (organizationDetails.EnablePrimaryPropertiesAndEnterpriseRoles == 1)
             {
                 var productSettingTypeId = _productRepository.GetProductSettingType("UsePrimaryProperties");
                 return _organizationProductRepository.CreateOrganizationProductSetting(organizationPartyId, productId, productSettingTypeId, usePrimaryProperty == true ? "1" : "0");
@@ -1719,7 +1719,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             MasterConfigurationSetting masterConfigurationSetting = new MasterConfigurationSetting
             {
                 ConfigurationType = "Organization",
-                SettingType = "UsePrimaryProperties",
+                SettingType = "EnablePrimaryPropertiesAndEnterpriseRoles",
                 PartyId = partyId.ToString(),
                 Value = value.ToString()
             };

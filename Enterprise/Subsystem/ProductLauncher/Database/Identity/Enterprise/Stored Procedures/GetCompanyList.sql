@@ -1,5 +1,5 @@
 -- EXEC  [Enterprise].[GetCompanyList] null,0,0,7,@RowsPerPage=3
--- EXEC  [Enterprise].[GetCompanyList] 'c',0,0,null,@FilterByProduct='26,45',@FilterByType='6',@FilterByDomain='1,2',@FilterByStatus=null
+-- EXEC  [Enterprise].[GetCompanyList] 'cf re',0,0,null,@FilterByProduct='26,45',@FilterByType='6',@FilterByDomain='1,2',@FilterByStatus=null
 -- EXEC Enterprise.GetCompanyList
 CREATE PROCEDURE [Enterprise].[GetCompanyList] 
 (	
@@ -77,7 +77,7 @@ BEGIN
 		Products				INT,
 		RealPageAccessUser NVARCHAR(100),
 		RealPageAccessUserId    UNIQUEIDENTIFIER,
-		UsePrimaryProperties TINYINT)	
+		EnablePrimaryPropertiesAndEnterpriseRoles TINYINT)	
 
 	INSERT INTO #tempOrganizations(OrganizationPartyId,		
 								   OrganizationName,		
@@ -93,7 +93,7 @@ BEGIN
 								   Products,
 								   RealPageAccessUser,
 								   RealPageAccessUserId,
-								   UsePrimaryProperties)
+								   EnablePrimaryPropertiesAndEnterpriseRoles)
 	SELECT O.PartyId as OrganizationPartyId,    
 		   O.Name as OrganizationName,    
 		   P.RealPageId,    
@@ -148,7 +148,7 @@ BEGIN
 			)		
 		)
 
-	UPDATE t SET t.UsePrimaryProperties = MS.Value
+	UPDATE t SET t.EnablePrimaryPropertiesAndEnterpriseRoles = MS.Value
 	FROM #tempOrganizations t
 	INNER JOIN Enterprise.MasterConfiguration MC ON MC.AttributeId = t.OrganizationPartyId  
     INNER JOIN Enterprise.MasterConfigurationSetting MCS ON MC.MasterConfigurationId = MCS.MasterConfigurationId  
@@ -156,7 +156,7 @@ BEGIN
     INNER JOIN Enterprise.MasterSettingType MST ON MST.MasterSettingTypeId = MS.MasterSettingTypeId  
     INNER JOIN Enterprise.MasterConfigurationType MCT ON MCT.MasterConfigurationTypeId = MST.MasterConfigurationTypeId  
 	WHERE MCT.Name = 'Organization'  
-	AND MST.Name = 'UsePrimaryProperties'
+	AND MST.Name = 'EnablePrimaryPropertiesAndEnterpriseRoles'
 
 	SELECT @sortValue =
 		CASE @SortColumn
@@ -182,7 +182,7 @@ BEGIN
 			Products,
 			RealPageAccessUser,
 			RealPageAccessUserId,
-			UsePrimaryProperties,
+			EnablePrimaryPropertiesAndEnterpriseRoles,
 			TotalRecords, 
 			RowNumber
 		)
@@ -203,7 +203,7 @@ BEGIN
 			Products,
 			RealPageAccessUser,
 			RealPageAccessUserId,
-			UsePrimaryProperties,
+			EnablePrimaryPropertiesAndEnterpriseRoles,
 			COUNT(1) OVER () AS [TotalRecords],
 			CASE @sortValue
 				WHEN 100 THEN ROW_NUMBER() OVER (ORDER BY OrganizationName ASC)
@@ -229,7 +229,7 @@ BEGIN
 		Products,
 		RealPageAccessUser,
 		RealPageAccessUserId,
-		UsePrimaryProperties,
+		EnablePrimaryPropertiesAndEnterpriseRoles,
 		TotalRecords
 	FROM cteFilterOrganizations
 	ORDER BY RowNumber

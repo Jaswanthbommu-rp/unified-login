@@ -36,4 +36,8 @@ MERGE INTO Enterprise.NavigationMenuRights t
 		AND t.RightId = s.RightId
 	WHEN NOT MATCHED BY TARGET THEN
 		INSERT(NavigationMenuId, RightId) VALUES (s.NavigationMenuId, s.RightId);
+
+
+--Rename UsePrimaryProperties to 
+UPDATE Enterprise.MasterSettingType  SET NAME='EnablePrimaryPropertiesAndEnterpriseRoles' WHERE name ='UsePrimaryProperties'
 GO
