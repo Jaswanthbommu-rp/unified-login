@@ -227,7 +227,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			// Get partial api query based on end point
 			if (string.IsNullOrEmpty(baseUrlAndQuery))
-				baseUrlAndQuery = string.Format(GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserEndpoint), SubjectUserDetails.ProductUserName, CompanyInstanceSourceId);
+				baseUrlAndQuery = string.Format(GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserEndpoint), SubjectUserDetails.ProductUserName);
 
 			WriteToDiagnosticLog(
 				$"ClickPayManagement.GetProductUser - editorPersona id - {EditorUserDetails.PersonaId}. Calling API - {baseUrlAndQuery}.");
