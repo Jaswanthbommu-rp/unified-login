@@ -15,9 +15,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
     {
         #region Private variables
         private DefaultUserClaim _userClaims;
-        private string _greenBookAccessToken;
 		private ISettingRepository _settingRepository;
-		IProductInternalSettingRepository productInternalSettingRepository;
 		#endregion
 
 		#region Ctor
@@ -25,11 +23,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 		/// UserManagement Constructor
 		/// </summary>
 		/// <param name="userClaims"></param>
-		/// <param name="greenBookAccessToken"></param>
-		public SettingsManagement(DefaultUserClaim userClaims, string greenBookAccessToken)
+		public SettingsManagement(DefaultUserClaim userClaims)
 		{
 			_userClaims = userClaims;
-			_greenBookAccessToken = greenBookAccessToken;
 			_settingRepository = new SettingsRepository(userClaims);
 		}
 		#endregion
@@ -37,19 +33,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 		/// <summary>
 		/// Get Company International Settings
 		/// </summary>
-		/// <param name="loggedInUser"></param>
+		/// <param name="companyId"></param>
 		/// <param name="settingType"></param>
 		/// <returns></returns>
 		public SettingResponse GetCompanyInternationalSettings(Guid companyId, string settingType)
 		{
-			//SettingsRepository settingRepository = new SettingsRepository(_userClaims);
-			//string companyId = OrganizationGuid(loggedInUser);
 			return _settingRepository.GetCompanyInternationalSettings(companyId.ToString(), "UPFM", settingType);
 		}
-		//public string OrganizationGuid(DefaultUserClaim cp)
-		//{
-		//	return (cp.Claims.FirstOrDefault(c => c.Type == "orgId")?.Value
-		//					  ?? throw new System.Exception("No orgId claim was present!"));
-		//}
 	}
 }

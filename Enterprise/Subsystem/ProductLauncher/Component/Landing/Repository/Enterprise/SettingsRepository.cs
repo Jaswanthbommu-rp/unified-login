@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterprise.Helpers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise;
@@ -22,21 +23,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.E
 	{
 		private DefaultUserClaim _userClaim;
 		private HttpClient _httpClient;
-		readonly ITokenHelper _tokenHelper;
-		IProductInternalSettingRepository _productInternalSettingRepository;
+        private IProductInternalSettingRepository _productInternalSettingRepository;
 
 		#region Ctor
 		/// <summary>
 		/// Ctor
 		/// </summary>
-		public SettingsRepository(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository){
+		public SettingsRepository(DefaultUserClaim userClaim, IRepository repository)
+        {
 			_userClaim = userClaim;
 			_httpClient = new HttpClient();
-			_productInternalSettingRepository = productInternalSettingRepository;
+            _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
+            
 		}
         public SettingsRepository(DefaultUserClaim userClaim)
         {
             _userClaim = userClaim;
+            _httpClient = new HttpClient();
+            _productInternalSettingRepository = new ProductInternalSettingRepository();
         }
         #endregion
 
@@ -56,6 +60,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.E
                     kongVanityUrl = productInternalSettingList.First(a => a.Name.Equals("Kong-Vanity-url", StringComparison.OrdinalIgnoreCase)).Value;
                 }
                 string companyInternationalSettingsAPI = productInternalSettingList.First(a => a.Name.Equals("CompanyInternationalSettingsAPI", StringComparison.OrdinalIgnoreCase)).Value;
+               
                 if (!string.IsNullOrEmpty(kongUri) && !string.IsNullOrEmpty(kongKey) && !string.IsNullOrEmpty(companyInternationalSettingsAPI))
                 {
                     _httpClient.BaseAddress = new Uri(kongUri);
@@ -63,11 +68,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.E
                     uri = _httpClient.BaseAddress + uri;
                     var logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
                     WriteToLog(LogEventLevel.Debug, $"GetCompanySettings using Kong API - Getting info", logData);
-                    //var options = new JsonSerializerOptions
-                    //{
-                    //    PropertyNameCaseInsensitive = true
-                    //};
-                    _httpClient = new HttpClient { BaseAddress = new Uri(kongUri) };
+                  
                     _httpClient.DefaultRequestHeaders.Add("apikey", kongKey);
                     if (!string.IsNullOrEmpty(kongVanityUrl))
                     {

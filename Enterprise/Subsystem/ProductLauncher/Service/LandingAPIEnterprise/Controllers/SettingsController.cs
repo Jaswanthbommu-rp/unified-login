@@ -1,4 +1,5 @@
 ﻿using RP.Enterprise.Foundation.DataAccess.Component;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Attributes;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterprise.Settings;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Attribute;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise;
@@ -22,9 +23,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         /// <param name="repository"></param>
         /// <param name="messageHandler"></param>
         /// <param name="userClaims"></param>
-        public SettingsController(IRepository repository, HttpMessageHandler messageHandler, DefaultUserClaim userClaims)
+        public SettingsController()
         {
-            _userClaims = userClaims;
+           
         }
 
         /// <summary>
@@ -35,21 +36,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         {
             base.Initialize(controllerContext);
         }
-        
-		[SwaggerOperation("Gets a list of all settings for an organization")]
-		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when Profile object have invalid entries)")]
-		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
-		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
-		[SwaggerResponse(HttpStatusCode.OK, Description = "Gets a list of all settings for an organization", Type = typeof(SettingResponse))]
+
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.NotFound, Description = "Not Found")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get internal settings")]
         [Route("setting/internationalsetting")]
         [HttpGet]
+        [AuthorizeScope("enterpriseapi")]
         public HttpResponseMessage GetCompanyInternationalSettings(string settingType)
 		{
 			if (string.IsNullOrEmpty(settingType))
 			{
 				return Request.CreateResponse(HttpStatusCode.BadRequest	, "Invalid settingType.");
 			}
-            SettingsManagement settingManagement = new SettingsManagement(_userClaims, _greenBookAccessToken);
+            SettingsManagement settingManagement = new SettingsManagement(_userClaims);
 
             return Request.CreateResponse(HttpStatusCode.OK, settingManagement.GetCompanyInternationalSettings(_userClaims.OrganizationRealPageGuid, settingType));
 		}
