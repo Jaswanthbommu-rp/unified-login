@@ -4839,7 +4839,7 @@ END
 GO
 
 DECLARE @TextingServiceAppId NVARCHAR(500) = 'b98287e5-cd9c-4d23-b29d-998bac8e5d1a',
-@TextingServiceUrl NVARCHAR(500) = 'uc-admin-sat.realpage.com',
+@TextingServiceUrl NVARCHAR(500) = 'https://uc-admin-sat.realpage.com/',
 @TextingServiceAPIKey NVARCHAR(500) = 'cf99e970-bdf5-11eb-a55e-75ea9a67c725',
 @ServerName SYSNAME = @@SERVERNAME
 
