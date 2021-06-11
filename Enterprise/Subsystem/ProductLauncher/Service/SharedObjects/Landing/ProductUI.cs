@@ -197,5 +197,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
 
 		[JsonProperty(PropertyName = "isInUDM")]
 		public bool IsInUDM { get; set; }
+
+		[JsonProperty(PropertyName = "active")]
+		public bool Active { get; set; }
 	}
 }
