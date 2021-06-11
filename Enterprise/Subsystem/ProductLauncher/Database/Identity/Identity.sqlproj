@@ -1121,6 +1121,7 @@
     <Build Include="Ident\Stored Procedures\GetSMSAuthenticationCode.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\InsertUpdateRoleTemplateUserMapping.sql" />
     <Build Include="RoleRightsManagement\Tables\OrganizationOverRideRole.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\DeleteRoleTemplate.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
