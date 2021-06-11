@@ -18,11 +18,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
     public class SettingsController : BaseApiController
     {
         /// <summary>
-        /// Unit test constructor
+        ///
         /// </summary>
-        /// <param name="repository"></param>
-        /// <param name="messageHandler"></param>
-        /// <param name="userClaims"></param>
         public SettingsController()
         {
            
