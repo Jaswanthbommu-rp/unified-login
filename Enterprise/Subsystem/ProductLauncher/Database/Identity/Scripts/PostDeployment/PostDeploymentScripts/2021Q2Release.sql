@@ -5013,7 +5013,7 @@ GO
 
 
 	------Create Product Setting type for GetUserRoleEndpoint -------------
-
+	DECLARE	@ProductSettingTypeId int
 	IF NOT EXISTS(SELECT * FROM Enterprise.ProductSettingType WHERE [NAME]='GetUserRoleEndpoint')
 	BEGIN
 	EXEC	[Enterprise].[CreateProductSettingType]
