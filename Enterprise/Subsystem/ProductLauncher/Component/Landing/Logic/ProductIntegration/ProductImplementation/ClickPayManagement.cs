@@ -57,9 +57,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     WriteToDiagnosticLog(
                         $"ClickPayManagement.GetProductRoles - editorPersona id - {EditorUserDetails.PersonaId}. Calling GetProductUser for subject persona Id -{SubjectUserDetails.PersonaId}");
 
-                    var user = GetProductUser();
+					baseUrlAndQuery = string.Format(GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserRoleEndpoint), SubjectUserDetails.ProductUserName, CompanyInstanceSourceId);
+					var user = GetProductUser(baseUrlAndQuery, false);
 
-                    if (user != null)
+					if (user != null)
                     {
                         WriteToDiagnosticLog(
                             $"ClickPayManagement.GetProductRoles - editorPersona id - {EditorUserDetails.PersonaId}. Calling Merge OrgsAssignedCount for subject persona Id -{SubjectUserDetails.PersonaId}");
@@ -239,7 +240,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		}
 		protected override bool CheckUserExistInProduct(string loginNameToCheck, string baseUrlAndQuery = null)
 		{
-			baseUrlAndQuery = string.Format(GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserEndpoint), loginNameToCheck, CompanyInstanceSourceId);
+			baseUrlAndQuery = string.Format(GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserEndpoint), loginNameToCheck);
 			return base.CheckUserExistInProduct("", baseUrlAndQuery);
 		}
 		protected override IntegrationProductUser GenerateProductUserObject(ProductUserRolePropertiesGroups changedUserRolePropertiesRegion)

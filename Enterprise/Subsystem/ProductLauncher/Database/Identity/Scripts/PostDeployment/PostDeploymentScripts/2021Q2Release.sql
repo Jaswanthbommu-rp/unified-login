@@ -5010,3 +5010,19 @@ GO
 		select 1,@rightId,6357,GETUTCDATE()
 	END
 GO
+
+
+	------Create Product Setting type for GetUserRoleEndpoint -------------
+
+	IF NOT EXISTS(SELECT * FROM Enterprise.ProductSettingType WHERE [NAME]='GetUserRoleEndpoint')
+	BEGIN
+	EXEC	[Enterprise].[CreateProductSettingType]
+			@ProductSettingTypeName = N'GetUserRoleEndpoint',
+			@ProductSettingTypeDescription = N'Get user specific role',
+			@ProductSettingTypeSensitiveData = 0,
+			@ProductSettingTypeId = @ProductSettingTypeId OUTPUT
+
+	SELECT	@ProductSettingTypeId as N'@ProductSettingTypeId'
+
+	END
+GO
