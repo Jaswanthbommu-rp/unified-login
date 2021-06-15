@@ -1092,13 +1092,13 @@ begin
 	Select @SettingTableId = SettingTableId From  [Settings].[SettingTable] 
 	Where PartyId = @partyid 
 	AND SettingCategoryTypeId = @SettingCategoryTypeId
-	AND TableName = 'CustomFields'
+	AND TableName = 'customfields'
 
 	IF (@SettingTableId IS NULL)
 	BEGIN
 		INSERT INTO [Settings].[SettingTable]([SettingCategoryTypeId],[PartyId],
 				[TableName],[ModifiedBy],[CreatedDate])
-		Select @SettingCategoryTypeId,@partyid,'CustomFields',@CreatedBy,@NOW
+		Select @SettingCategoryTypeId,@partyid,'customfields',@CreatedBy,@NOW
 
 		set @SettingTableId = SCOPE_IDENTITY();
 	END
