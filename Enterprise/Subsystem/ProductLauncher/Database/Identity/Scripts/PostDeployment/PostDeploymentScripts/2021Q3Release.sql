@@ -6,7 +6,7 @@ MERGE INTO Enterprise.NavigationMenu t
 	USING 
 	(
 		VALUES
-			(8, N'Enterprise Roles', N'enterpriseRoles', NULL, N'/roles-rights/enterprise-roles', 80, 6, 'unified-login')
+			(8, N'Enterprise Roles', N'enterpriseRoles', NULL, N'/home/roles-rights/enterprise-roles', 80, 6, 'unified-login')
 	) 
 	AS 
 	s (Id, Title, PageId, Icon, [URL], OrderIndex, ParentId, Origin) on t.Id = s.Id
@@ -37,6 +37,7 @@ MERGE INTO Enterprise.NavigationMenuRights t
 	WHEN NOT MATCHED BY TARGET THEN
 		INSERT(NavigationMenuId, RightId) VALUES (s.NavigationMenuId, s.RightId);
 
+GO
 
 --Rename UsePrimaryProperties to 
 UPDATE Enterprise.MasterSettingType  SET NAME='EnablePrimaryPropertiesAndEnterpriseRoles' WHERE name ='UsePrimaryProperties'

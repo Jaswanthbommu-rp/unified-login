@@ -4839,7 +4839,7 @@ END
 GO
 
 DECLARE @TextingServiceAppId NVARCHAR(500) = 'b98287e5-cd9c-4d23-b29d-998bac8e5d1a',
-@TextingServiceUrl NVARCHAR(500) = 'uc-admin-sat.realpage.com',
+@TextingServiceUrl NVARCHAR(500) = 'https://uc-admin-sat.realpage.com/',
 @TextingServiceAPIKey NVARCHAR(500) = 'cf99e970-bdf5-11eb-a55e-75ea9a67c725',
 @ServerName SYSNAME = @@SERVERNAME
 
@@ -4942,3 +4942,89 @@ GO
 	SELECT	@ProductSettingTypeId as N'@ProductSettingTypeId'
 
 	END
+
+	--Add roles and rights to Self guided tour
+DECLARE @RoleRights TABLE (
+	RoleId int,
+	RightId int,
+	IsProcessed bit default(0)
+)
+--Roles
+declare @productid bigint, @UserId bigint
+select @productid = productid from Enterprise.Product where Name='Self-Guided Tour'
+SELECT	@UserId = UserId FROM	Ident.UserLogin WHERE	LoginName LIKE 'realpagead@%'
+if not exists(select 1  from Security.Role where RoleName='Implementations' and ProductId =@productid)
+begin 
+insert into Security.Role(RoleName,ShortName,Description,RoleTypeID,OrgPartyID,ProductId,CreatedBy,CreatedDate)
+select 'Implementations','Implementations','Implementations',1,NULL,@productid, @UserId, getUTCDate()
+end
+if not exists(select 1  from Security.Role where RoleName='Property Manager' and ProductId =@productid)
+begin 
+insert into Security.Role(RoleName,ShortName,Description,RoleTypeID,OrgPartyID,ProductId,CreatedBy,CreatedDate)
+select 'Property Manager','Property Manager','Property Manager',1,NULL,@productid, @UserId, getUTCDate()
+end
+if not exists(select 1  from Security.Role where RoleName='Regional Manager' and ProductId =@productid)
+begin 
+insert into Security.Role(RoleName,ShortName,Description,RoleTypeID,OrgPartyID,ProductId,CreatedBy,CreatedDate)
+select 'Regional Manager','Regional Manager','Regional Manager',1,NULL,@productid, @UserId, getUTCDate()
+end
+if not exists(select 1  from Security.Role where RoleName='Corporate Manager' and ProductId =@productid)
+begin 
+insert into Security.Role(RoleName,ShortName,Description,RoleTypeID,OrgPartyID,ProductId,CreatedBy,CreatedDate)
+select 'Corporate Manager','Corporate Manager','Corporate Manager',1,NULL,@productid, @UserId, getUTCDate()
+end
+--Rights
+if not exists(select 1  from Security.[Right] where RightName='Implementations' 
+		and ProductId =@productid and VisibilityStatusId = 9  and TargetProductId = @productid)
+begin 
+insert into Security.[Right](RightName,Description,Value,StatusTypeId,VisibilityStatusId,ProductId,TargetProductId, CreatedBy, CreatedDate)
+select 'Implementations', N'Implementations', N'Implementations', 13, 9, @productid, @productid, @UserId, getUTCDate()
+end
+if not exists(select 1  from Security.[Right] where RightName='Property Manager' 
+		and ProductId =@productid and VisibilityStatusId = 9  and TargetProductId = @productid)
+begin 
+insert into Security.[Right](RightName,Description,Value,StatusTypeId,VisibilityStatusId,ProductId,TargetProductId, CreatedBy, CreatedDate)
+select 'Property Manager', N'Property Manager', N'Property Manager', 13, 9, @productid, @productid, @UserId, getUTCDate()
+end
+if not exists(select 1  from Security.[Right] where RightName='Regional Manager' 
+		and ProductId =@productid and VisibilityStatusId = 9  and TargetProductId = @productid)
+begin 
+insert into Security.[Right](RightName,Description,Value,StatusTypeId,VisibilityStatusId,ProductId,TargetProductId, CreatedBy, CreatedDate)
+select 'Regional Manager', N'Regional Manager', N'Regional Manager', 13, 9, @productid, @productid, @UserId, getUTCDate()
+end
+if not exists(select 1  from Security.[Right] where RightName='Corporate Manager' 
+		and ProductId =@productid and VisibilityStatusId = 9 and TargetProductId = @productid)
+begin 
+insert into Security.[Right](RightName,Description,Value,StatusTypeId,VisibilityStatusId,ProductId,TargetProductId, CreatedBy, CreatedDate)
+select 'Corporate Manager', N'Corporate Manager', N'Corporate Manager', 13, 9, @productid, @productid, @UserId, getUTCDate()
+end
+insert into @RoleRights(RoleId,RightId,IsProcessed)
+select rle.RoleId,rgt.RightId ,0--getUTCDate() as CreatedDate--,@UserId as CreatedBy
+	from Security.Role rle 
+		inner join Security.[Right] rgt on rle.RoleName = rgt.Value		
+	where rle.ProductId = @productid and rgt.ProductId = @productid	
+	WHILE(1 = 1) -- Loop For Rights
+	BEGIN		
+		DECLARE @RightID INT;
+		DECLARE @RoleID INT;
+		SET @RightID = NULL;
+		SELECT TOP 1 
+			@RightID = RightId,
+			@RoleID = RoleId
+		FROM 
+			@RoleRights
+		WHERE IsProcessed = 0;
+		IF (@RightID IS NULL) 
+		BEGIN
+			BREAK;
+		END;
+		if not exists(select 1 from Security.RoleRight where RoleId=@RoleID and RightId=@RightID)
+		begin
+			insert into Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+			select RoleId,RightId,@UserId,getUTCDate() from @RoleRights where RightId = @RightID	 	
+		end	
+		UPDATE @RoleRights
+		SET    IsProcessed = 1
+		WHERE  RightId = @RightID;
+	END;
+GO

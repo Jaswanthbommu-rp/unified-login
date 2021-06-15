@@ -1122,6 +1122,7 @@
     <Build Include="RoleRightsManagement\Stored Procedures\InsertUpdateRoleTemplateUserMapping.sql" />
     <Build Include="RoleRightsManagement\Tables\OrganizationOverRideRole.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\DeleteRoleTemplate.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\2021Q3Release.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
