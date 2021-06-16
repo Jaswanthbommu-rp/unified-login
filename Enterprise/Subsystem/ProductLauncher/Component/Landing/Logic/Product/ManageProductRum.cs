@@ -504,24 +504,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 globalRoles.Add(new ProductRole
                 {
                     ID ="PR",
-                    Name = "Select Properties",
-                    Description = "Select Properties",
+                    Name = "Property Manager",
+                    Description = "Property Manager",
                     IsAssigned = false
                 });
 
                 globalRoles.Add(new ProductRole
                 {
                     ID = "GM",
-                    Name = "Groups",
-                    Description = "Groups",
+                    Name = "Group Manager",
+                    Description = "Group Manager",
                     IsAssigned = false
                 });
 
                 globalRoles.Add(new ProductRole
                 {
                     ID = "PM",
-                    Name = "All Properties",
-                    Description = "All Properties",
+                    Name = "Portfolio Manager",
+                    Description = "Portfolio Manager",
                     IsAssigned = false
                 });
 
@@ -1398,6 +1398,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 		private ListResponse MergeRumPropertiesWithGreenbook(IList<RumPropertyGroup> allPropertyGroups, long userPersonaID)
         {
+            var accessType = new Dictionary<string, string>();
 
             RumUserClaims rumUser = GetRumUserClaims(userPersonaID);
 
@@ -1414,22 +1415,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             if (userAccessLevel == "RM")
             {
+                accessType.Add("accessType", "regional");
                 type = "regionid";
                 WriteToDiagnosticLog($"ManageProductRum.MergeRumPropertiesWithGreenbook accessType - regionalGroup");
             }
             else if (userAccessLevel == "GM")
             {
+                accessType.Add("accessType", "propertyGroup");
                 type = "groupid";
                 WriteToDiagnosticLog($"ManageProductRum.MergeRumPropertiesWithGreenbook accessType - propertyGroup");
             }
             else if (userAccessLevel == "PR")
             {
+                accessType.Add("accessType", "specificProperties");
                 type = "propid";
                 WriteToDiagnosticLog($"ManageProductRum.MergeRumPropertiesWithGreenbook accessType - specificProperties");
             }
 			else if (userAccessLevel == "PM")
 			{
-				type = "propid";
+                accessType.Add("accessType", "portfolio");
+                type = "propid";
 				WriteToDiagnosticLog($"ManageProductRum.MergeRumPropertiesWithGreenbook accessType - portfolio");
 			}
 
@@ -1458,7 +1463,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 TotalRows = allPropertyGroups.Count(),
                 RowsPerPage = 9999,
                 ErrorReason = string.Empty,
-                TotalPages = 1 
+                TotalPages = 1,
+                Additional = accessType
             };
         }
 
