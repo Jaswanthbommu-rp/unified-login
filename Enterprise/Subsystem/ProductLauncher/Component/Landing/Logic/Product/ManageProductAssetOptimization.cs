@@ -681,17 +681,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					return "Valid Email Address Error: Please Contact Support.";
 				}
 
-				if (aoGbUserCompanyPropertyRoleDetails.Count(c => c.IsAssigned == false) == aoGbUserCompanyPropertyRoleDetails.Count())
-				{
-					//Deactivate User if IsAssigned flag for all products is false.
-					bool result = ChangeUserStatus(editorPersonaId, productUserGbLogin.LoginName.ToLower(), person.FirstName, person.LastName, false);
-					return result ? "" : "Error";
-				}
+				bool isEnabled = aoGbUserCompanyPropertyRoleDetails.Count(c => c.IsAssigned == false) == aoGbUserCompanyPropertyRoleDetails.Count() ? false : true;
 
 				var aoUser = new AOUser
 				{
 					IsInternalUser = false, // Initial release is w/o internal user
-					IsEnabled = true,
+					IsEnabled = isEnabled,
 					IsSuperUser = false,
 					Email = userEmailAddress.ToLower(),
 
