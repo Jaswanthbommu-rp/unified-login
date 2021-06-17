@@ -399,55 +399,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         }
 
         [Fact]
-        public void InsertOrganization_DuplicateBookMasterId_BadRequest()
-        {
-            _mockRepository
-                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
-                    It.IsAny<object>()))
-                .Returns(_gbProductMap);
-
-            //Arrange
-            OrganizationCreate organizationCreate = new OrganizationCreate()
-            {
-                BooksCompanyId = _BooksCompanyMasterId,
-                BooksCustomerMasterId = _BooksCompanyMasterId,
-                OrganizationTypeId = 1,
-                Name = "CF Real Estate Services",
-                Products = new List<string>()
-                {
-                    "AB"
-                },
-                AdminUser = new OrganizationAdminUser()
-                {
-                    FirstName = "Jack",
-                    LastName = "Doe",
-                    Email = "jack.doe@example.com",
-                    Suffix = string.Empty,
-                    Title = string.Empty
-                }
-            };
-
-            //Act
-            RPObjectCache rPObjectCache = new RPObjectCache();
-            rPObjectCache.BustCache();
-
-            OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
-                , _mockHttpMessageHandler.Object
-                , _defaultUserClaim
-            ) {Request = new HttpRequestMessage(), Configuration = new HttpConfiguration()};
-
-            HttpResponseMessage response = organizationController.InsertOrganization(organizationCreate);
-            string message = response.Content.ReadAsStringAsync().Result;
-            string expectedValue = "{\"Message\":\"Duplicate master ids\"}";
-
-            //Assert
-            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
-            Assert.True(expectedValue == message);
-        }
-
-        [Fact]
         public void InsertOrganization_InvalidOrganizationType_BadRequest()
         {
             _mockRepository

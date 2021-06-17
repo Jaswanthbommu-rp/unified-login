@@ -2,6 +2,7 @@
 <%@ Import Namespace="System.Collections.Concurrent" %>
 <%@ Import Namespace="System.Threading.Tasks" %>
 <%@ Import Namespace="Newtonsoft.Json" %>
+<%@ Import Namespace="RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper" %>
 <%@ Import Namespace="RP.Enterprise.Subsystem.ProductLauncher.Web.Landing" %>
 <!DOCTYPE html>
 <html lang="en">
@@ -83,7 +84,7 @@
 
 	ConcurrentDictionary<string, object> envStatus = new ConcurrentDictionary<string, object>();
 	ConcurrentDictionary<string, Dictionary<string, Dictionary<string, string>>> serviceStatus = new ConcurrentDictionary<string, Dictionary<string, Dictionary<string, string>>>();
-	List<string> sortedServerList = new List<string>();
+	var sortedServerList = new List<string>();
 	string collapseSetting = "";
 
 	var watch = System.Diagnostics.Stopwatch.StartNew();
@@ -158,14 +159,14 @@
 
 
 	//foreach (KeyValuePair<string, object> environment in envStatus)
-	foreach (string sortedEnv in sortedServerList)
+	foreach (var sortedEnv in sortedServerList)
 	{
 		KeyValuePair<string, object> environment = envStatus.FirstOrDefault(p => p.Key.Equals(sortedEnv, StringComparison.OrdinalIgnoreCase));
 		somethingDown = false;
 		serviceListByEnvironment = new List<string>();
 
 		string status = "envUp";
-		foreach (KeyValuePair<string, string> server in environment.Value as ConcurrentDictionary<string, string>)
+		foreach (var server in environment.Value as ConcurrentDictionary<string, string>)
 		{
 			if (!server.Value.Equals("ONLINE", StringComparison.OrdinalIgnoreCase))
 			{
@@ -179,10 +180,10 @@
 			KeyValuePair<string, Dictionary<string, Dictionary<string, string>>> env2 = serviceStatus.FirstOrDefault(p => p.Key.Equals(server.Key, StringComparison.OrdinalIgnoreCase));
 			if (env2.Key != null && server.Key.Equals(env2.Key, StringComparison.OrdinalIgnoreCase))
 			{
-				Dictionary<string, Dictionary<string, string>> serverDetails = env2.Value as Dictionary<string, Dictionary<string, string>>;
+				var serverDetails = env2.Value;
 				if (serverDetails.ContainsKey("services"))
 				{
-					foreach (KeyValuePair<string, string> serverServiceList in serverDetails["services"] as Dictionary<string, string>)
+					foreach (KeyValuePair<string, string> serverServiceList in serverDetails["services"])
 					{
 						serviceListByEnvironment.Add(serverServiceList.Key);
 						if (!serverServiceList.Value.Equals("RUNNING", StringComparison.OrdinalIgnoreCase))
@@ -193,7 +194,7 @@
 				}
 				if (serverDetails.ContainsKey("logmessages"))
 				{
-					foreach (KeyValuePair<string, string> serverLogs in serverDetails["logmessages"] as Dictionary<string, string>)
+					foreach (KeyValuePair<string, string> serverLogs in serverDetails["logmessages"])
 					{
 						if (!serverLogs.Value.Equals("0", StringComparison.OrdinalIgnoreCase))
 						{
@@ -242,8 +243,10 @@
 		Response.Write("</thead>" + Environment.NewLine);
 		Response.Write("<tbody>" + Environment.NewLine);
 
-		foreach (KeyValuePair<string, string> server in environment.Value as ConcurrentDictionary<string, string>)
+		foreach (var server in environment.Value as ConcurrentDictionary<string, string>)
 		{
+		    var serverName = MaskServerName(server);
+		    
 			string serverStatus = "success";
 			if (!server.Value.Equals("ONLINE", StringComparison.OrdinalIgnoreCase))
 			{
@@ -251,10 +254,10 @@
 			}
 
 			Response.Write("<tr>" + Environment.NewLine);
-			Response.Write("<td>" + server.Key + "</td>" + Environment.NewLine);
+			Response.Write("<td>" + serverName + "</td>" + Environment.NewLine);
 			Response.Write("<td><span class='badge badge-" + serverStatus + "'>" + server.Value + "</span></td>" + Environment.NewLine);
 
-			KeyValuePair<string, Dictionary<string, Dictionary<string, string>>> env2 = serviceStatus.FirstOrDefault(p => p.Key.Equals(server.Key, StringComparison.OrdinalIgnoreCase));
+			var env2 = serviceStatus.FirstOrDefault(p => p.Key.Equals(server.Key, StringComparison.OrdinalIgnoreCase));
 			//foreach (KeyValuePair<string, Dictionary<string, Dictionary<string, string>>> env2 in serviceStatus)
 			{
 				if (env2.Key != null)

@@ -138,12 +138,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var repositoryResponse = new RepositoryResponse();
             var outputResult = new ObjectOutput<OrganizationCreateResult, IErrorData>() {Status = new Status<IErrorData>() {Success = false}};
            
-
-            if (organization.BooksCompanyId == organization.BooksCustomerMasterId)
-            {
-                outputResult.Status.ErrorMsg = "Duplicate master ids";
-                return outputResult;
-			}
+            //if (organization.BooksCompanyId == organization.BooksCustomerMasterId)
+            //{
+            //    outputResult.Status.ErrorMsg = "Duplicate master ids";
+            //    return outputResult;
+			//}
 
 			if (organization.OrganizationTypeId == 0)
 			{
