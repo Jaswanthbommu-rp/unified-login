@@ -53,6 +53,18 @@ BEGIN
 
 	SET @OffsetMinutes = ISNULL(@OffsetMinutes, '0');
 
+	DECLARE @InternationaDateFormat VARCHAR(100) = 'mm/dd/yyyy'
+	SELECT  @InternationaDateFormat = Value  
+	FROM  @SearchCriteriaTPV  
+	WHERE Name = 'InternationaDateFormat'
+
+	SET @InternationaDateFormat = CASE @InternationaDateFormat
+										WHEN 'mm/dd/yyyy' THEN 'MM/dd/yyyy hh:mm:s tt'
+										WHEN 'dd/mm/yyyy' THEN 'dd/MM/yyyy hh:mm:s tt'
+										WHEN 'yyyy/mm/dd' THEN 'yyyy/MM/dd hh:mm:s tt'
+										ELSE 'MM/dd/yyyy hh:mm:s tt'
+									END
+
 	SET @Cmd01 = '
 	SELECT		A.ActivityId,
 					LT.Name AS ''LogActivityTypeName'',
@@ -69,7 +81,7 @@ BEGIN
 					A.BooksMasterPropertyId AS ''PropertyId'',
 					A.IsSystemAdminActivity AS ''IsSystemAdminActivity'',
 					A.ApplicationTimeStamp,
-					FORMAT(DATEADD(minute, ' + @OffsetMinutes + ', A.ApplicationTimeStamp), ''MM/dd/yyyy hh:mm:s tt'') AS ''ApplicationTimestampOffset'',
+					FORMAT(DATEADD(minute, ' + @OffsetMinutes + ', A.ApplicationTimeStamp), '''+ @InternationaDateFormat +''') AS ''ApplicationTimestampOffset'',
 					A.SourceId,
 					A.MappingKey,
 					A.ContextId,
