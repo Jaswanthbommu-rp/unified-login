@@ -1354,7 +1354,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return vCompanyPropertyMap;
         }
 
-        public IList<ProductProperty> GetCustomerProperty(long booksCompanyMasterId = 0, string include = null, string filter = null)
+        public IList<ProductProperty> GetCustomerProperty(long booksCompanyMasterId = 0, string include = null, string filter = null, bool getCached = true)
         {
             if (booksCompanyMasterId == 0)
             {
@@ -1368,7 +1368,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             string includeFields = string.Empty;
 
-            bool bIncludeFields = ((!string.IsNullOrWhiteSpace(include)) && (include.Split(new char[] {','}).Length > 0));
+            bool bIncludeFields = ((!string.IsNullOrWhiteSpace(include)) && (include.Split(new char[] { ',' }).Length > 0));
 
             if (bIncludeFields)
             {
@@ -1383,37 +1383,51 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             RPObjectCache rpcache = new RPObjectCache();
             var cacheKey = $"getCustomerProperty_{booksCompanyMasterId}" + (bIncludeFields ? "_" + include.Replace(",", string.Empty) : string.Empty);
 
-            productPropertyList = rpcache.GetFromCache<List<ProductProperty>>(cacheKey, CacheTimeSeconds, () =>
+            if (getCached)
             {
-                string uri = $"customerproperty?{includeFields}filter[customerCompanyId]={booksCompanyMasterId.ToString()}{filter}";
-                Dictionary<string, object> logData = new Dictionary<string, object>() {{"uri", _httpClient.BaseAddress + uri}};
-                WriteToLog(LogEventLevel.Debug, "ManageBlueBook.GetCustomerProperty - Getting info.", logData);
-                var response = GetAsync(uri).Result;
-                if (response.IsSuccessStatusCode)
+                productPropertyList = rpcache.GetFromCache<List<ProductProperty>>(cacheKey, CacheTimeSeconds, () =>
                 {
-                    customerPropertyList = JsonConvert.DeserializeObject<List<CustomerProperty>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
-                    productPropertyList = customerPropertyList.Select(p => new ProductProperty
-                    {
-                        ID = p.attributes != null ? p.attributes.customerPropertyId : null,
-                        Name = p.attributes.propertyName,
-                        Street1 = p.attributes.address != null ? p.attributes.address.address : null,
-                        City = p.attributes.address != null ? p.attributes.address.city : null,
-                        State = p.attributes.address != null ? p.attributes.address.state : null,
-                        Zip = p.attributes.address != null ? p.attributes.address.postalCode : null
-                    }).OrderBy(p => p.Name).ToList();
+                    return GetCustomerPropertyInternal(booksCompanyMasterId, filter, includeFields, ref customerPropertyList, ref productPropertyList);
+                });
+            }
+            else
+            {
 
-                    logData = new Dictionary<string, object>() {{"ManageBlueBook.GetCustomerProperty", customerPropertyList}};
-                    WriteToLog(LogEventLevel.Debug, "ManageBlueBook.GetCustomerProperty - Got info.", logData);
-                }
-                else
+                productPropertyList = GetCustomerPropertyInternal(booksCompanyMasterId, filter, includeFields, ref customerPropertyList, ref productPropertyList); ;
+            }
+
+            return productPropertyList;
+        }
+
+        private List<ProductProperty> GetCustomerPropertyInternal(long booksCompanyMasterId, string filter, string includeFields, ref List<CustomerProperty> customerPropertyList, ref List<ProductProperty> productPropertyList)
+        {
+            string uri = $"customerproperty?{includeFields}filter[customerCompanyId]={booksCompanyMasterId.ToString()}{filter}";
+            Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
+            WriteToLog(LogEventLevel.Debug, "ManageBlueBook.GetCustomerProperty - Getting info.", logData);
+            var response = GetAsync(uri).Result;
+            if (response.IsSuccessStatusCode)
+            {
+                customerPropertyList = JsonConvert.DeserializeObject<List<CustomerProperty>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
+                productPropertyList = customerPropertyList.Select(p => new ProductProperty
                 {
-                    logData = new Dictionary<string, object>() {{"response", response}};
-                    WriteToLog(LogEventLevel.Debug, "ManageBlueBook.GetCustomerProperty - No info found.", logData);
-                    return null;
-                }
+                    ID = p.attributes != null ? p.attributes.customerPropertyId : null,
+                    Name = p.attributes.propertyName,
+                    Street1 = p.attributes.address != null ? p.attributes.address.address : null,
+                    City = p.attributes.address != null ? p.attributes.address.city : null,
+                    State = p.attributes.address != null ? p.attributes.address.state : null,
+                    Zip = p.attributes.address != null ? p.attributes.address.postalCode : null
+                }).OrderBy(p => p.Name).ToList();
 
-                return productPropertyList;
-            });
+                logData = new Dictionary<string, object>() { { "ManageBlueBook.GetCustomerProperty", customerPropertyList } };
+                WriteToLog(LogEventLevel.Debug, "ManageBlueBook.GetCustomerProperty - Got info.", logData);
+            }
+            else
+            {
+                logData = new Dictionary<string, object>() { { "response", response } };
+                WriteToLog(LogEventLevel.Debug, "ManageBlueBook.GetCustomerProperty - No info found.", logData);
+                return null;
+            }
+
             return productPropertyList;
         }
 
@@ -1701,6 +1715,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         public ListResponse TranslateProductPrimaryPropertiesData(UPFMProperty upfmProperty, int productId, ListResponse productResult)
         {
+            if (productId == 3) 
+            {
+                var _productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings(productId);
+
+                if (_productInternalSettingList.Any(s => s.Name.Equals("UsePropertyInstanceUnifiedLogin", StringComparison.OrdinalIgnoreCase)))
+                {
+                    if (!(_productInternalSettingList.FirstOrDefault(s =>
+                        s.Name.Equals("UsePropertyInstanceUnifiedLogin", StringComparison.OrdinalIgnoreCase))?.Value == "1"))
+                        return productResult;
+                }
+            }
+
             TranslatePropertyInstance translatedData = new TranslatePropertyInstance();            
             var productInternalSettingsByType = _productInternalSettingRepository.GetProductSettingByType("ProductIntegrationType");
             var productType = productInternalSettingsByType?.FirstOrDefault(p => p.ProductId == productId)?.Value;
