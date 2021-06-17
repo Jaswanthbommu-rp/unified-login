@@ -434,7 +434,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     WriteToDiagnosticLog(
                          $"ManageProductRum.GetRoles-MergeUserRolesWithProductRoles calling....for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
-                    response = MergeUserRolesWithProductRoles(allRoles, userPersonaId);
+                    if (!_editorPersona.Organization.Name.Equals("RealPage Employee"))
+                    {
+                        response = MergeUserRolesWithProductRoles(allRoles, userPersonaId);
+                    }
+                    else
+                    {
+                        //var submeterRole = GetRumRoles(companyInstanceSourceId).Select(a => a.Name == "Submeter Approver").ToList();
+                        //response = MergeUserRolesWithProductRoles(submeterRole, userPersonaId);
+                    }
                     WriteToDiagnosticLog(
                            $"ManageProductRum.GetRoles-MergeUserRolesWithProductRoles completed for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
                 }
@@ -490,40 +498,52 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     return result;
                 }
 
-                //int companyInstanceSourceId = 279; // to get sample groups 
-                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
-                if (companyInstanceSourceId == 0)
-                {
-                    WriteToErrorLog(
-                        $"ManageProductRum.GetUMGlobalRoles.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
-                    return new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
-                }
-
                 // get roles from rum product
                 List<ProductRole> globalRoles = new List<ProductRole>();
-                globalRoles.Add(new ProductRole
+                if (!_editorPersona.Organization.Name.Equals("RealPage Employee"))
                 {
-                    ID ="PR",
-                    Name = "Select Properties",
-                    Description = "Select Properties",
-                    IsAssigned = false
-                });
+                    //int companyInstanceSourceId = 279; // to get sample groups 
+                    int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
+                    if (companyInstanceSourceId == 0)
+                    {
+                        WriteToErrorLog(
+                            $"ManageProductRum.GetUMGlobalRoles.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
+                        return new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
+                    }
+                    globalRoles.Add(new ProductRole
+                    {
+                        ID = "PR",
+                        Name = "Select Properties",
+                        Description = "Select Properties",
+                        IsAssigned = false
+                    });
 
-                globalRoles.Add(new ProductRole
-                {
-                    ID = "GM",
-                    Name = "Groups",
-                    Description = "Groups",
-                    IsAssigned = false
-                });
+                    globalRoles.Add(new ProductRole
+                    {
+                        ID = "GM",
+                        Name = "Groups",
+                        Description = "Groups",
+                        IsAssigned = false
+                    });
 
-                globalRoles.Add(new ProductRole
+                    globalRoles.Add(new ProductRole
+                    {
+                        ID = "PM",
+                        Name = "All Properties",
+                        Description = "All Properties",
+                        IsAssigned = false
+                    });
+                }
+                else 
                 {
-                    ID = "PM",
-                    Name = "All Properties",
-                    Description = "All Properties",
-                    IsAssigned = false
-                });
+                    globalRoles.Add(new ProductRole
+                    {
+                        ID = "SU",
+                        Name = "Subcontractor",
+                        Description = "Subcontractor",
+                        IsAssigned = false
+                    });
+                }
 
                 if (userPersonaId != 0 && !string.IsNullOrEmpty(_productUserId)) // Called during updating Existing User
                 {
