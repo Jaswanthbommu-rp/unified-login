@@ -3349,13 +3349,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 }
 
                 // add edited products for admin with other list
-                foreach (var product in productList)
+                if (productList != null)
                 {
-                    if (!productListToCreate.Any(p => p.ProductId == product.ProductId))
+                    foreach (var product in productList)
                     {
-                        productListToCreate.Add(product);
-					}
-				}
+                        if (!productListToCreate.Any(p => p.ProductId == product.ProductId))
+                        {
+                            productListToCreate.Add(product);
+                        }
+                    }
+                }
 
                 productList = productListToCreate;
             }
