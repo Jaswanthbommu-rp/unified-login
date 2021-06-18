@@ -950,11 +950,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                             || navigationMenuRights.Where(w => w.NavigationMenuId == nmw.Id).Any(a => rights.Contains(a.RightName))
                         ).ToList();
 
+                    
                     var reportingMenuEntry = filteredMenuEntries.FirstOrDefault(f => f.PageId == "reporting");
                     if (reportingMenuEntry != null)
                     {
-                        var reportsUrl = new Uri(new Uri(ConfigReader.GetLandingUri), reportingMenuEntry.URL);
+                        var products = _productRepository.GetAllProducts();
+                        string productcode = ProductEnumHelper.GetProductCodeByProductId(67, products);
 
+                        var reportsUrl = new Uri(new Uri(ConfigReader.GetLandingUri), reportingMenuEntry.URL);
+                        
                         productResult.Resources.Add(new UserProducts()
                         {
                             Name = "Reports",
@@ -963,13 +967,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                             Label = "reports",
                             IsNewTab = false,
                             IsResource = true,
-                            ShowInAppSwitcher = true
+                            ShowInAppSwitcher = true,
+                            ProductCode = productcode,
+                            Status = 8,
+                            Id = 67
                         });
                     }
 
                     var settingsMenuEntry = filteredMenuEntries.FirstOrDefault(f => f.PageId == "manage-settings");
                     if (settingsMenuEntry != null)
                     {
+                        var products = _productRepository.GetAllProducts();
+                        string productcode = ProductEnumHelper.GetProductCodeByProductId(56, products);
+
                         var settingsUri = new Uri(new Uri(ConfigReader.GetLandingUri), settingsMenuEntry.URL);
 
                         productResult.Resources.Add(new UserProducts()
@@ -980,7 +990,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                             Label = "settings",
                             IsNewTab = false,
                             IsResource = true,
-                            ShowInAppSwitcher = true
+                            ShowInAppSwitcher = true,
+                            ProductCode = productcode,
+                            Status = 8,
+                            Id = 56
                         });
                     }
 
