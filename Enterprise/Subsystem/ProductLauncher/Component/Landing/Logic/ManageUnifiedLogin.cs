@@ -90,7 +90,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     return new ListResponse {IsError = true, ErrorReason = CommonMessageConstants.CompanyErrorMessage};
                 }
 
-                IList<ProductProperty> customerPropertyList = _blueBook.GetCustomerProperty(companyMasterId, null, null);
+                IList<ProductProperty> customerPropertyList = _blueBook.GetCustomerProperty(companyMasterId, null, null, false);
 
                 WriteToDiagnosticLog($"ManageUnifiedLogin.GetProperties-FromBlueBookToGBProperties() completed for user with editorPersona id -{editorPersonaId}.");
 
@@ -1927,7 +1927,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private ListResponse MergeProductPropertiesWithGreenbook(IList<ProductProperty> blueBookPropertyList, long userPersonaId, bool assignedOnly)
         {
             // merge the given user details with the list
-            List<ProductProperty> propertyList = GetAssignedPropertyForPersona(userPersonaId, (int)ProductEnum.UnifiedPlatform);
+            List<ProductProperty> propertyList = GetAssignedPropertyForPersona(userPersonaId, (int)ProductEnum.UnifiedPlatform).ToList();
             var propertyOption = new Dictionary<string, bool>();
             propertyOption.Add("allProperties", false); // Single Property
 

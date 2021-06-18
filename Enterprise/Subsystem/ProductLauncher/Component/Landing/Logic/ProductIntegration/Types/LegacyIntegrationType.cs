@@ -126,7 +126,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 case (int)ProductEnum.UtilityManagement:
                     var manageProductRum = new ManageProductRum(_userClaims);
-                    result = manageProductRum.GetRoles(editorPersonaId, userPersonaId, dataFilter);
+                    result = manageProductRum.GetUMGlobalRoles(editorPersonaId, userPersonaId, dataFilter);
                     break;
 
                 case (int)ProductEnum.UnifiedAmenities:
@@ -869,6 +869,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     messageGroupsList = manageProductResidentPortal.ListMessageGroups(editorPersonaId, userPersonaId);
                     if (messageGroupsList?.Count > 0)
                     {
+                        result = new ListResponse();
                         result.Records = messageGroupsList.Cast<object>().ToList();
                         result.TotalRows = messageGroupsList.Count;
                         result.RowsPerPage = messageGroupsList.Count;

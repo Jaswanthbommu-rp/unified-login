@@ -5,7 +5,7 @@ using System.Net.Http;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing
 {
-	public partial class StatusCheck : System.Web.UI.Page
+    public partial class StatusCheck : System.Web.UI.Page
 	{
 		protected void Page_Load(object sender, EventArgs e)
 		{
@@ -46,7 +46,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing
                             // restart commandreader
                             using (HttpClient msmq = new HttpClient())
                             {
-                                msmq.DefaultRequestHeaders.Host = $"mylogcommand{serverSetting.Name.ToLower()}.realpage.com";
+                                if (serverSetting.Name.Equals("EUSAT", StringComparison.OrdinalIgnoreCase) || serverSetting.Name.Equals("EUPROD", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    msmq.DefaultRequestHeaders.Host = $"mylogcommand{serverSetting.Name.ToLower()}.realpage.co.uk";
+								}
+                                else
+                                {
+                                    msmq.DefaultRequestHeaders.Host = $"mylogcommand{serverSetting.Name.ToLower()}.realpage.com";
+								}
+                                
                                 msmq.BaseAddress = client.BaseAddress;
                                 var msmqResponse = msmq.GetAsync($"{uriExtra}/Writer.svc").Result;
                             }
@@ -109,7 +117,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing
 
 			return "offline";
 		}
-	}
+
+        protected static string MaskServerName(KeyValuePair<string, string> server)
+        {
+			var serverName = server.Key.Split('.')[0];
+            serverName = new string('X', serverName.Length - 5) + serverName.Substring(serverName.Length - 5);
+            return serverName;
+        }
+    }
 
 	public class StatusCheckServerSettings
 	{

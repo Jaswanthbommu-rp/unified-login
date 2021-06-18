@@ -15,7 +15,8 @@
  ,@ProductPages [UserManagement].[ProductPageType] READONLY  
  ,@ProductControls [UserManagement].[ProductControlType] READONLY  
  ,@ProductControlsAttribute [UserManagement].[ProductControlAttributeType] READONLY  
- ,@CreatedBy BIGINT  
+ ,@CreatedBy BIGINT,
+ @Active bit
 AS        
             
 BEGIN        
@@ -43,7 +44,8 @@ BEGIN
       @AssignToAllUsers,  
       @UDMSourceCode,  
       @LoginURI,          
-      @SigningCertificateThumbprint  
+      @SigningCertificateThumbprint,
+      @Active
    ----------------------------------  
     --Set Product Settings       
    ----------------------------------  
