@@ -5145,7 +5145,7 @@ DECLARE @Now DATETIME = GetDate(),
 		BEGIN
 			SET @ProductUrl = 'https://qa.novelpay.com';
 		END
-		IF @ServerName IN ('RCQUSODBSQL001')
+		IF @ServerName IN ('RCAUSODBSQL001')
 		BEGIN
 			SET @ProductUrl = 'https://sat.novelpay.com';
 		END
