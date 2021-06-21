@@ -5127,3 +5127,67 @@ select rle.RoleId,rgt.RightId ,0--getUTCDate() as CreatedDate--,@UserId as Creat
 	END;
 GO
 
+
+DECLARE @Now DATETIME = GetDate(),
+		@MasterSettingId INT,
+		@MasterConfigurationId INT,
+		@IdentityServerCorsAllowedOrigins INT,
+		@LandingApiCorsAllowedOrigins INT,
+		@ProductUrl NVARCHAR(256), 
+		@ServerName SYSNAME = @@SERVERNAME;
+
+		SET @ProductUrl = '';
+		IF @ServerName IN ('RCDUSODBSQL001')
+		BEGIN
+			SET @ProductUrl = 'https://dev.novelpay.com';
+		END
+		IF @ServerName IN ('rctusodbsql001')
+		BEGIN
+			SET @ProductUrl = 'https://qa.novelpay.com';
+		END
+		IF @ServerName IN ('RCAUSODBSQL001')
+		BEGIN
+			SET @ProductUrl = 'https://sat.novelpay.com';
+		END
+		IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B')
+		BEGIN
+			SET @ProductUrl = 'https://www.clickpay.com';
+		END
+
+	IF NOT EXISTS(SELECT * FROM Enterprise.MasterSetting WHERE Value=@ProductUrl)
+	BEGIN
+													
+		   SELECT @MasterConfigurationId=MasterConfigurationId FROM Enterprise.MasterConfiguration MC JOIN  
+				Enterprise.MasterConfigurationType MCT   ON MCT.MasterConfigurationTypeId=MC.MasterConfigurationTypeId
+				WHERE MCT.Name='Global'
+
+			SELECT @IdentityServerCorsAllowedOrigins=MasterSettingTypeId FROM 
+			Enterprise.MasterSettingType WHERE Name='IdentityServerCorsAllowedOrigins'
+
+			SELECT @LandingApiCorsAllowedOrigins=MasterSettingTypeId 
+			FROM Enterprise.MasterSettingType WHERE Name='LandingApiCorsAllowedOrigins'
+
+			INSERT INTO Enterprise.MasterSetting VALUES(@IdentityServerCorsAllowedOrigins,@ProductUrl,@Now, Null),
+													(@LandingApiCorsAllowedOrigins,@ProductUrl,@Now, Null)
+
+			IF EXISTS(SELECT * FROM Enterprise.MasterSetting WHERE Value=@ProductUrl and MasterSettingTypeId=@IdentityServerCorsAllowedOrigins)
+			BEGIN
+				SELECT @MasterSettingId=MasterSettingId FROM Enterprise.MasterSetting WHERE
+				 Value=@ProductUrl and MasterSettingTypeId=@IdentityServerCorsAllowedOrigins
+
+				INSERT INTO Enterprise.MasterConfigurationSetting 
+				   VALUES(@MasterConfigurationId, @MasterSettingId, Null);
+
+			END
+
+			IF EXISTS(SELECT * FROM Enterprise.MasterSetting WHERE Value=@ProductUrl and MasterSettingTypeId=@LandingApiCorsAllowedOrigins)
+			BEGIN
+				SELECT @MasterSettingId=MasterSettingId FROM Enterprise.MasterSetting WHERE
+				 Value=@ProductUrl and MasterSettingTypeId=@LandingApiCorsAllowedOrigins
+
+				INSERT INTO Enterprise.MasterConfigurationSetting 
+				   VALUES(@MasterConfigurationId, @MasterSettingId, Null);									
+			END
+
+	END
+GO
