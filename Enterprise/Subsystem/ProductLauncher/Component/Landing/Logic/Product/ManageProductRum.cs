@@ -440,8 +440,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                     else
                     {
-                        //var submeterRole = GetRumRoles(companyInstanceSourceId).Select(a => a.Name == "Submeter Approver").ToList();
-                        //response = MergeUserRolesWithProductRoles(submeterRole, userPersonaId);
+                        
+                        var submeterRole = allRoles.Where(a=>a.Name == "Submeter Approver").ToList();
+                        response = MergeUserRolesWithProductRoles(submeterRole, userPersonaId);
                     }
                     WriteToDiagnosticLog(
                            $"ManageProductRum.GetRoles-MergeUserRolesWithProductRoles completed for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
@@ -1169,7 +1170,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             IList<Role> roles = new List<Role>();
 
-            string baseUrlAndQuery = $"{_apiEndPoint}/roleoptions/get?companyId={companyInstanceSourceId}";
+            string baseUrlAndQuery = null;
+            if (!_editorPersona.Organization.Name.Equals("RealPage Employee"))
+            {
+                baseUrlAndQuery = $"{_apiEndPoint}/roleoptions/get?companyId={companyInstanceSourceId}";
+            }
+            else
+            {
+                baseUrlAndQuery = $"{_apiEndPoint}/roleoptions/GetRolesForType?userType=su";
+            }
             var result = GetResultFromApi<IList<dynamic>>(_accessToken, baseUrlAndQuery, false);
 
             WriteToDiagnosticLog($"ManageProductRum.GetRumRoles - Base Uri - {baseUrlAndQuery}");
@@ -1180,6 +1189,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     if (!x.Item.InternalOnly.Value)
                     {
                         roles.Add(new Role { Id = x.Index + 101, Description = x.Item.RoleDescription.Value, Name = x.Item.RoleName.Value, IsAssigned = false });
+                    }
+                    else
+                    {
+                        roles.Add(new Role { Id = x.Item.RoleId, Description = x.Item.RoleDescription.Value, Name = x.Item.RoleName.Value, IsAssigned = false });
                     }
                 }
             }
