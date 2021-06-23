@@ -72,13 +72,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
 
                 Log.Information("Launched polling task...");
 
-                Task assignRetryProductsTask = new Task(RunRetryProcess, _cts.Token, TaskCreationOptions.LongRunning);
-                assignRetryProductsTask.Start();
+//                Task assignRetryProductsTask = new Task(RunRetryProcess, _cts.Token, TaskCreationOptions.LongRunning);
+//                assignRetryProductsTask.Start();
 
-                Log.Information("Launched retry polling task...");
-#if (DEBUG)
-                Console.WriteLine("-------------------------------------------------------------------------------");
-#endif
+//                Log.Information("Launched retry polling task...");
+//#if (DEBUG)
+//                Console.WriteLine("-------------------------------------------------------------------------------");
+//#endif
             }
             catch (Exception ex)
             {
