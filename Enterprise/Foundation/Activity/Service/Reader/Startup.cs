@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Net;
+using System.Security;
+using System.Security.Cryptography.X509Certificates;
 using System.Web.Http;
 using System.Web.Http.Cors;
 using Microsoft.Owin;
@@ -29,6 +31,11 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader
                 Authority = ConfigReader.GetIssuerUri,
                 DelayLoadMetadata = true,
                 RequiredScopes = new[] { ConfigReader.GetRequiredScope },
+                EnableValidationResultCache = true,
+                PreserveAccessToken = true,
+                SigningCertificate = GetSigningCertificate(),
+                IssuerName = ConfigReader.GetIssuerUri,
+
             });
 
             config.MessageHandlers.Add(new NoCacheHandler());
@@ -53,6 +60,28 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader
             json.SerializerSettings.DateFormatHandling = Newtonsoft.Json.DateFormatHandling.MicrosoftDateFormat;
             json.SerializerSettings.Formatting = Newtonsoft.Json.Formatting.Indented;
             json.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+        }
+
+        private static X509Certificate2 GetSigningCertificate()
+        {
+            //#if DEBUG
+            //            return new X509Certificate2(AppDomain.CurrentDomain.BaseDirectory + "\\bin\\SomeCert.pfx", "idsrv3test");
+            //#endif
+            var certStore = new X509Store(StoreName.My, StoreLocation.LocalMachine);
+            certStore.Open(OpenFlags.ReadOnly);
+            // IF THE CERT CAN'T BE FOUND MAKE SURE IT DOESN'T HAVE THE HIDDEN UNICODE CHARACTER IN THE BEGINNING IN THE WEB.CONFIG!
+            var certCollection = certStore.Certificates.Find(
+                X509FindType.FindByThumbprint, ConfigReader.GetIdentityServerSigningCertThumbprint, false);
+            // Get the first cert with the thumbprint
+            if (certCollection.Count > 0)
+            {
+                var cert = certCollection[0];
+                certStore.Close();
+                // Use certificate
+                return cert;
+            }
+            certStore.Close();
+            throw new SecurityException("No certificate specified or found for IdentityServer-" + certCollection.Count.ToString() + "-" + ConfigReader.GetIdentityServerSigningCertThumbprint);
         }
     }
 }
