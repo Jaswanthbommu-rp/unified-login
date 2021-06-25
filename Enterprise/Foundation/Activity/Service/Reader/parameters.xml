@@ -37,6 +37,11 @@
              defaultValue="#{IssuerUri}#">
     <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/IdentityConfig/add[@key='IssuerUri']/@value" />
   </parameter>
+  <parameter name="IdentityServerSigningCertThumbprint"
+             description="The thumbprint of the SSL certificate to use with IdentityServer"
+             defaultValue="#{IdentityServerSigningCertThumbprint}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/IdentityConfig/add[@key='IdentityServerSigningCertThumbprint']/@value" />
+  </parameter>
   <parameter name="CorsUrls"
              description="Urls for servers allowed to post to the api"
              defaultValue="#{ActivityCorsUrls}#">

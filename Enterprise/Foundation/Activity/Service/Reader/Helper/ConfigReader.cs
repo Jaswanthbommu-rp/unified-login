@@ -45,5 +45,10 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Helper
         /// ActivityMQName
         /// </summary>
         public static string ActivityMQName { get; } = ConfigurationManager.AppSettings["ActivityMQName"];
+
+        /// <summary>
+        /// Get the Identity server signing certificate thumbprint
+        /// </summary>
+        public static string GetIdentityServerSigningCertThumbprint => ConfigSection["IdentityServerSigningCertThumbprint"];
     }
 }
