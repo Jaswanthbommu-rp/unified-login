@@ -179,3 +179,26 @@ BEGIN
            VALUES	(@RightId, @PartyId, 9, @CreatedById, @Now)
 END
 GO
+
+-- Create side menu navigation entry for Login Page Setup
+
+IF NOT EXISTS(SELECT TOP 1 1 FROM Enterprise.NavigationMenu WHERE PageId = 'login-page-setup')
+BEGIN 
+	BEGIN TRAN
+
+	DECLARE @parentId int;
+	SELECT TOP 1 @parentId = Id FROM Enterprise.NavigationMenu WHERE PageId = N'Configurations';
+
+	DECLARE @menuEntryId int;
+	INSERT INTO Enterprise.NavigationMenu(Title, PageId, Icon, [URL], OrderIndex, ParentId, Origin)
+	VALUES (N'Login Page Setup', N'login-page-setup', NULL, '/home/login-page-setup', 141, @parentId, 'unified-login');
+
+	SET @menuEntryId = SCOPE_IDENTITY();
+
+	INSERT INTO Enterprise.NavigationMenuRights(NavigationMenuId, RightId)
+	SELECT @menuEntryId, RightId FROM [Security].[Right] WHERE RightName = 'EmployeeAccessToLoginPageSetup'
+
+	COMMIT TRAN
+END
+
+GO
