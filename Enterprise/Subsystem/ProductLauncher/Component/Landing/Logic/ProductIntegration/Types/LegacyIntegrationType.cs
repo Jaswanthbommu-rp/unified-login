@@ -126,7 +126,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 case (int)ProductEnum.UtilityManagement:
                     var manageProductRum = new ManageProductRum(_userClaims);
-                    result = manageProductRum.GetUMGlobalRoles(editorPersonaId, userPersonaId, dataFilter);
+                    result = manageProductRum.GetRoles(editorPersonaId, userPersonaId, dataFilter);
                     break;
 
                 case (int)ProductEnum.UnifiedAmenities:

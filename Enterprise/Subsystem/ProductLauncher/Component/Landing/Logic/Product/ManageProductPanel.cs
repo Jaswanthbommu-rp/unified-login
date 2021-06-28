@@ -351,6 +351,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     var manageProductOneSiteAccounting = new ManageProductOneSiteAccounting(_userClaims);
                     result = manageProductOneSiteAccounting.GetUserPropertyGroups(editorPersonaId, userPersonaId, datafilter);
                     break;
+                case (int)ProductEnum.UtilityManagement:
+                    var manageProductRum = new ManageProductRum(_userClaims);
+                    result = manageProductRum.GetUMGlobalRoles(editorPersonaId, userPersonaId, datafilter);
+                    break;
                 default:
                     break;
             }

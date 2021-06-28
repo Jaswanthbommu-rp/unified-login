@@ -504,24 +504,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 globalRoles.Add(new ProductRole
                 {
                     ID ="PR",
-                    Name = "Property Manager",
-                    Description = "Property Manager",
+                    Name = "Select Properties",
+                    Description = "Select Properties",
                     IsAssigned = false
                 });
 
                 globalRoles.Add(new ProductRole
                 {
                     ID = "GM",
-                    Name = "Group Manager",
-                    Description = "Group Manager",
+                    Name = "Groups",
+                    Description = "Groups",
                     IsAssigned = false
                 });
 
                 globalRoles.Add(new ProductRole
                 {
                     ID = "PM",
-                    Name = "Portfolio Manager",
-                    Description = "Portfolio Manager",
+                    Name = "All Properties",
+                    Description = "All Properties",
                     IsAssigned = false
                 });
 
@@ -1463,8 +1463,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 TotalRows = allPropertyGroups.Count(),
                 RowsPerPage = 9999,
                 ErrorReason = string.Empty,
-                TotalPages = 1,
-                Additional = accessType
+                TotalPages = 1
             };
         }
 
