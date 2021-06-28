@@ -134,6 +134,7 @@
     <Folder Include="Hots" />
     <Folder Include="Hots\Tables" />
     <Folder Include="Hots\Stored Procedures" />
+    <Folder Include="Scripts\PostDeployment\PostDeploymentScripts\Previous" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="Auth\Tables\ClientClaims.sql" />
@@ -1121,6 +1122,7 @@
     <Build Include="Ident\Stored Procedures\GetSMSAuthenticationCode.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\InsertUpdateRoleTemplateUserMapping.sql" />
     <Build Include="RoleRightsManagement\Tables\OrganizationOverRideRole.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\2021.06.Q2.07.WMU.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

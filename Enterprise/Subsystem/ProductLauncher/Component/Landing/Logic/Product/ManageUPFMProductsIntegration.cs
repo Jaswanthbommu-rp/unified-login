@@ -1,29 +1,27 @@
-﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
+﻿using Newtonsoft.Json;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
+//using UserAssignProductPropertyRole = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.IntelligentBuilding.UserAssignProductPropertyRole;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UPFMProduct;
 //using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.IntelligentBuilding;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using UL = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
-//using UserAssignProductPropertyRole = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.IntelligentBuilding.UserAssignProductPropertyRole;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
-using Newtonsoft.Json;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UPFMProduct;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
-	public class ManageUPFMProductsIntegration : ManageProductBase, IManageUPFMProductsIntegration
+    public class ManageUPFMProductsIntegration : ManageProductBase, IManageUPFMProductsIntegration
 	{
 		private DefaultUserClaim _userClaims;
 		public int _upfmProductId;
@@ -304,13 +302,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			ListResponse response = new ListResponse();
 			/*
 				Updating product code to ProductEnum.UnifiedPlatform for CIMPL and Settings 
-				becuase these two products properties saved as productid 3 in UP database
+				because these two products properties saved as productid 3 in UP database
 			*/
 			if (product == (int)ProductEnum.CIMPL || product == (int)ProductEnum.UnifiedSettings)
 			{
 				_upfmProductId = (int)ProductEnum.UnifiedPlatform;
-				_udmSourceCode = productCode;
-			}
+                _udmSourceCode = !string.IsNullOrEmpty(productCode) ? productCode : _udmSourceCode;
+            }
 
 			var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, _upfmProductId);
 			List<ProductProperty> userPropertyList = new List<ProductProperty>();
@@ -318,34 +316,31 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			List<UPFMPropertyInstance> customerPropertyList = new List<UPFMPropertyInstance>();
 			int upfmProductId = (int)product;
 
-			if (userPropertyIdList != null)
+            if (userPropertyIdList != null)
+            {
+                var organizationRealPageId = isMultiCompany ? multiCompanyRealPageId : _userClaims.OrganizationRealPageGuid.ToString();
+
+                if (userPropertyIdList.Count == 1 && userPropertyIdList[0] == -1)
+                {
+                    customerPropertyList = GetProductPropertyInstancesBasedOnUPFMProperties();
+                    customerPropertyList.ForEach(cp => { userPropertyList.Add(ConvertUPFMPropertyInstanceToProductProperty(cp, true)); });
+                }
+                else
+                {
+                    var booksPropertyList = _blueBook.GetUPFMPropertyInstances(organizationRealPageId);
+                    if (booksPropertyList != null)
+                    {
+                        customerPropertyList = ListUPFMPropertyInstanceIdByInstanceIds(booksPropertyList);
+                    }
+
+                    customerPropertyList.ToList().FindAll(b => userPropertyIdList.Any(p => p == b.PropertyInstanceId)).ForEach(cp => { userPropertyList.Add(ConvertUPFMPropertyInstanceToProductProperty(cp, true)); });
+                }
+            }
+
+
+            if (userPropertyIdList?.Count > 0)
 			{
-				var organizationRealPageId = isMultiCompany ? multiCompanyRealPageId : _userClaims.OrganizationRealPageGuid.ToString();				
-
-				if (userPropertyIdList.Count == 1 && userPropertyIdList[0] == -1)
-				{
-					var booksPropertyList = _blueBook.GetPropertiesPerProductCenter(organizationRealPageId, _upfmProductId);
-					customerPropertyList = ListUPFMPropertyInstanceIdByInstanceIds(booksPropertyList);
-					customerPropertyList.ForEach(cp =>
-					{
-						userPropertyList.Add(ConvertUPFMPropertyInstanceToProductProperty(cp, true));
-					});
-				}
-				else
-				{
-					var booksPropertyList = _blueBook.GetUPFMPropertyInstances(organizationRealPageId);
-					if (booksPropertyList != null)
-					{
-						customerPropertyList = ListUPFMPropertyInstanceIdByInstanceIds(booksPropertyList);
-					}
-					customerPropertyList.ToList().FindAll(b => userPropertyIdList.Any(p => p == b.PropertyInstanceId)).ForEach(cp => { userPropertyList.Add(ConvertUPFMPropertyInstanceToProductProperty(cp, true)); });
-				}
-			}
-
-
-			if (userPropertyIdList?.Count > 0)
-			{
-				// call translate with upfm properties to get ib properety id and merges propertyinstanceid with translated id
+				// call translate with upfm properties to get ib property id and merges propertyinstanceid with translated id
 				//note save upfmid into alias field before updating with translated id
 				UPFMProperty upfmProperties = new UPFMProperty();
 				List<string> instanceids = new List<string>();
@@ -360,13 +355,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				if (translatedData?.Data != null)
 				{
 					var booksProductCode = booksProductDetail.UDMSourceCode == null ? booksProductDetail.BooksProductCode : booksProductDetail.UDMSourceCode;
-					foreach (var attributs in translatedData.Data.Attributes)
+					foreach (var attributes in translatedData.Data.Attributes)
 					{
-						foreach (var propertyData in attributs.TranslatedPropertyInstances)
+						foreach (var propertyData in attributes.TranslatedPropertyInstances)
 						{
 							if (propertyData.Source == booksProductCode)
 							{
-								var translatedProductProperty = userPropertyList.FirstOrDefault(u => u.InstanceId == attributs.PropertyInstanceSourceId);
+								var translatedProductProperty = userPropertyList.FirstOrDefault(u => u.InstanceId == attributes.PropertyInstanceSourceId);
 								if (translatedProductProperty != null)
 								{
 									translatedProductProperty.ID = propertyData.PropertyInstanceSourceId;
@@ -433,14 +428,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					return result;
 				}
 
-				//var booksPropertyList = _blueBook.GetUPFMPropertyInstances(_userClaims.OrganizationRealPageGuid.ToString());
+                var customerPropertyList = GetProductPropertyInstancesBasedOnUPFMProperties();
 
-				_blueBook.GetCompanyMap(_editorPersona.Organization.RealPageId, _editorPersona.Organization.BooksCustomerMasterId, source: _udmSourceCode.ToUpper(), domain: _editorPersona.Organization.OrganizationDomain.Name);
-
-				var booksPropertyList = _blueBook.GetPropertiesPerProductCenter(_userClaims.OrganizationRealPageGuid.ToString(), _upfmProductId);
-				var customerPropertyList = ListUPFMPropertyInstanceIdByInstanceIds(booksPropertyList);
-
-				WriteToDiagnosticLog($"ManageUPFMProductUser.ListUPFMPropertyInstanceIdByInstanceIds() completed for user with editorPersona id -{editorPersonaId}.");
+                WriteToDiagnosticLog($"ManageUPFMProductUser.ListUPFMPropertyInstanceIdByInstanceIds() completed for user with editorPersona id -{editorPersonaId}.");
 				WriteToDiagnosticLog($"ManageUPFMProductUser.GetProperties- calling MergeUPFMBooksPropertiesWithUPFMProperties....for user with editorPersona id -{editorPersonaId} & userPersonaId-{userPersonaId}.");
 				result = MergeUPFMBooksPropertiesWithProductProperty(customerPropertyList, userPersonaId, assignedOnly);
 				WriteToDiagnosticLog($"ManageUPFMProductUser.GetProperties-MergeUPFMBooksPropertiesWithUPFMProperties completed for user with editorPersona id -{editorPersonaId}.");
@@ -465,8 +455,56 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			return result;
 		}
 
+        private List<UPFMPropertyInstance> GetProductPropertyInstancesBasedOnUPFMProperties()
+        {
+            var productSettingList = GetProductSetting(_productId);
+            bool directUDMTranslateProperty = false;
+            if (productSettingList.Any(p => p.Name.Equals("DirectUDMTranslateProperty", StringComparison.OrdinalIgnoreCase)))
+            {
+                directUDMTranslateProperty = Convert.ToBoolean(int.Parse(productSettingList.First(a => a.Name.Equals("DirectUDMTranslateProperty", StringComparison.OrdinalIgnoreCase)).Value));
+            }
 
-		/// <summary>
+            List<Guid> booksPropertyList;
+            List<UPFMPropertyInstance> customerPropertyList = new List<UPFMPropertyInstance>();
+
+            if (directUDMTranslateProperty)
+            {
+                var booksUPFMPropertyList = _blueBook.GetUPFMPropertyInstances(_userClaims.OrganizationRealPageGuid.ToString());
+                booksPropertyList = new List<Guid>();
+
+                UPFMProperty properties = new UPFMProperty {id = new List<string>()};
+
+                booksUPFMPropertyList.ForEach(c => properties.id.Add(c.ToString()));
+
+                var translatedProperties = _blueBook.GetTranslatePropertiesFromUPFMToProductv3(properties, _udmSourceCode.ToUpper());
+                if (translatedProperties?.Data?.Attributes.Count > 0)
+                {
+                    foreach (var t in translatedProperties.Data.Attributes)
+                    {
+                        booksPropertyList.Add(new Guid(t.PropertyInstanceSourceId));
+                    }
+
+                    customerPropertyList = ListUPFMPropertyInstanceIdByInstanceIds(booksPropertyList);
+                    customerPropertyList.ForEach(cp =>
+                    {
+                        if (translatedProperties.Data.Attributes.Any(tp => tp.PropertyInstanceSourceId.Equals(cp.InstanceId.ToString(), StringComparison.OrdinalIgnoreCase)))
+                        {
+                            cp.CustomerPropertyId = translatedProperties?.Data?.Attributes?.FirstOrDefault(p => p.PropertyInstanceSourceId.Equals(cp.InstanceId.ToString(), StringComparison.OrdinalIgnoreCase))?.TranslatedPropertyInstances[0].PropertyInstanceSourceId;
+                        }
+                    });
+                }
+            }
+            else
+            {
+                booksPropertyList = _blueBook.GetPropertiesPerProductCenter(_userClaims.OrganizationRealPageGuid.ToString(), _upfmProductId);
+                customerPropertyList = ListUPFMPropertyInstanceIdByInstanceIds(booksPropertyList);
+            }
+
+            return customerPropertyList;
+        }
+
+
+        /// <summary>
 		/// Used to convert a UPFM property instance to a Product Property 
 		/// </summary>
 		/// <param name="upfmPropertyInstance"></param>
