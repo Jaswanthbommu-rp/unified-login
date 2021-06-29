@@ -1291,6 +1291,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     translatedData = _manageBlueBook.GetTranslatePropertiesFromUPFMToProductv3(upfmProperties, booksProductDetail.BooksProductCode);
                 }
+                else if (booksProductDetail.ProductId != (int)ProductEnum.UnifiedPlatform && !string.IsNullOrEmpty(booksProductDetail.UDMSourceCode))
+                {
+                    translatedData = _manageBlueBook.GetTranslatePropertiesFromUPFMToProductv3(upfmProperties, booksProductDetail.UDMSourceCode);
+                }
                 else
                 {
                     translatedData = new TranslatePropertyInstance() {Data = new TranslatePropertyInstanceData() { Attributes = new List<TranslatePropertyInstanceAttribute>()}};
