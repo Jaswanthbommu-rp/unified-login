@@ -5,10 +5,10 @@ using System.Collections.Generic;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing
 {
-	/// <summary>
-	/// Security Setting
-	/// </summary>
-	public class UnifiedSettingProperty
+    /// <summary>
+    /// UnifiedSetting CompanyProperty
+    /// </summary>
+    public class UnifiedSettingCompanyProperty
 	{
 		/// <summary>
 		/// Source Name
@@ -23,7 +23,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		/// <summary>
 		/// UnifiedSettingPropertyInstance
 		/// </summary>
-		public List<UnifiedSettingPropertyInstance> Properties { get; set; }
+		public List<UnifiedSettingCompanyPropertyInstance> Properties { get; set; }
 
 		/// <summary>
 		/// CustomerEnvironment
@@ -31,9 +31,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		public string CustomerEnvironment { get; set; }
 	}
 
-    public class UnifiedSettingPropertyPayload
+    public class UnifiedSettingCompanyPropertyPayload
 	{
-        public UnifiedSettingProperty Payload { get; set; }
+        public UnifiedSettingCompanyProperty Payload { get; set; }
 	}
 
 	public class UnifiedSettingCompanyInstance
@@ -44,7 +44,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		public string CompanyInstanceSourceId { get; set; }
 	}
 
-	public class UnifiedSettingPropertyInstance
+	public class UnifiedSettingCompanyPropertyInstance
 	{       
 
         /// <summary>

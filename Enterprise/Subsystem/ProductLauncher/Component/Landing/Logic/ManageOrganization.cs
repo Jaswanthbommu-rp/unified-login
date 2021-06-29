@@ -1508,6 +1508,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         #endregion
 
 
+        public bool AddUpdateCompanyToUnifiedSettings(string companyInstanceID, string trasactionType, string customerEnvironment = null)
+        {
+            UnifiedSettingCompanyPropertyPayload payload = new UnifiedSettingCompanyPropertyPayload
+            {
+                Payload = new UnifiedSettingCompanyProperty
+                {
+                    Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
+                    Company = new UnifiedSettingCompanyInstance
+                    {
+                        CompanyInstanceSourceId = companyInstanceID.ToString().ToLower()
+                    },
+                    Properties = new List<UnifiedSettingCompanyPropertyInstance>(),
+                    CustomerEnvironment = customerEnvironment
+                }
+            };
+            return _manageUnifiedSettings.CreateUpdateCompanyInSetting(payload, trasactionType.ToLower() == "create" ? HttpMethod.Post : HttpMethod.Put);
+        }
+
+
         #region Private Methods
 
 
@@ -1635,7 +1654,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         private bool AddPropertyToUnifiedSettings(UPFMPropertyInstance property, Guid companyInstanceID)
         {
-            UnifiedSettingPropertyPayload payload = PreparePropertyObjectToUnifiedSetting(property, companyInstanceID);
+            UnifiedSettingCompanyPropertyPayload payload = PreparePropertyObjectToUnifiedSetting(property, companyInstanceID);
             return _manageUnifiedSettings.CreateUpdatePropertyInSetting(payload, HttpMethod.Post);
         }
 
@@ -1646,7 +1665,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 propertyInstanceId
             };
             UPFMPropertyInstance _propertyInstance = _propertyRepository.ListUPFMPropertyInstanceIdByInstanceIds(propGuidList).FirstOrDefault();
-            UnifiedSettingPropertyPayload payload = PreparePropertyObjectToUnifiedSetting(_propertyInstance, companyInstanceID);
+            UnifiedSettingCompanyPropertyPayload payload = PreparePropertyObjectToUnifiedSetting(_propertyInstance, companyInstanceID);
             return _manageUnifiedSettings.CreateUpdatePropertyInSetting(payload, HttpMethod.Put);
         }
         private bool DeletePropertyFromUnifiedSetting(Guid propertyInstanceID)
@@ -1654,18 +1673,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return _manageUnifiedSettings.DeletePropertyInSetting(propertyInstanceID);
         }
 
-        private UnifiedSettingPropertyPayload PreparePropertyObjectToUnifiedSetting(UPFMPropertyInstance property, Guid companyInstanceID)
+        private UnifiedSettingCompanyPropertyPayload PreparePropertyObjectToUnifiedSetting(UPFMPropertyInstance property, Guid companyInstanceID)
         {
-            UnifiedSettingProperty usp = new UnifiedSettingProperty
+            UnifiedSettingCompanyProperty usp = new UnifiedSettingCompanyProperty
             {
                 Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
                 Company = new UnifiedSettingCompanyInstance
                 {
                     CompanyInstanceSourceId = companyInstanceID.ToString().ToLower()
                 },
-                Properties = new List<UnifiedSettingPropertyInstance>()
+                Properties = new List<UnifiedSettingCompanyPropertyInstance>()
                 {
-                    new UnifiedSettingPropertyInstance()
+                    new UnifiedSettingCompanyPropertyInstance()
                         {
                             PropertyName = property.Name,
                             PropertyInstanceSourceId = property.InstanceId,
@@ -1681,7 +1700,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 },
                 CustomerEnvironment = property.Domain
             };
-            return new UnifiedSettingPropertyPayload
+            return new UnifiedSettingCompanyPropertyPayload
             {
                 Payload = usp
             };

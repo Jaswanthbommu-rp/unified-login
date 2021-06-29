@@ -134,15 +134,51 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
 
-		#region Send Property to Settings
+        #region Send Property and Company to Settings
 
-		/// <summary>
-		///Send Property Instance to Unified settings to add/update property
-		/// </summary>
-		/// <param name="upfmProperties"></param>
-		/// <param name="requestType"></param>
-		/// <returns></returns>
-		public bool CreateUpdatePropertyInSetting(UnifiedSettingPropertyPayload upfmProperties, HttpMethod requestType)
+        /// <summary>
+        ///Send Company Instance to Unified settings to add/update Company
+        /// </summary>
+        /// <param name="upfmCompany"></param>
+        /// <param name="requestType"></param>
+        /// <returns></returns>
+        public bool CreateUpdateCompanyInSetting(UnifiedSettingCompanyPropertyPayload upfmCompany, HttpMethod requestType)
+        {
+            GetConfigurationSetting();
+            string ulClientToken = string.Empty;
+            if (!_ignoreUnitTest)
+            {
+                ulClientToken = _tokenHelper.GetUnifiedLoginServerToken("unifiedsettingsapi");
+            }
+            Guid correlationId = Guid.NewGuid();
+            //https://settingsapi-dev.realpage.com/v2/provisioning/company         
+            string uri = $"v2/provisioning/company";
+            Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "upfmCompany", upfmCompany } };
+            WriteToLog(LogEventLevel.Debug, "CreateCompanyInSetting - Adding info.", correlationId, logData);
+
+            var jsonToSave = JsonConvert.SerializeObject(upfmCompany);
+            var request = new HttpRequestMessage
+            {
+                Method = requestType,
+                Content = new StringContent(jsonToSave, Encoding.UTF8, "application/json"),
+                RequestUri = new Uri(_httpClient.BaseAddress + uri)
+            };
+            _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", ulClientToken);
+            var response = _httpClient.SendAsync(request).Result;
+            if (response != null && response.IsSuccessStatusCode)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        ///Send Property Instance to Unified settings to add/update property
+        /// </summary>
+        /// <param name="upfmProperties"></param>
+        /// <param name="requestType"></param>
+        /// <returns></returns>
+        public bool CreateUpdatePropertyInSetting(UnifiedSettingCompanyPropertyPayload upfmProperties, HttpMethod requestType)
         {
             GetConfigurationSetting();
             string ulClientToken = string.Empty;
@@ -171,6 +207,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
             return false;
         }
+
+       
 
         /// <summary>
 		///Send Property Instance to Unified settings to delete instance
