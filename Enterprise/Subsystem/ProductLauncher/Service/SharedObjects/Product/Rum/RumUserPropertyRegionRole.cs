@@ -34,5 +34,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         public string UserAccessType { get; set; }
 
         public bool IsAssigned { get; set; } = true;
+
     }
 }
