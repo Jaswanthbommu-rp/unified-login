@@ -1914,6 +1914,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
+        public IList<PersonaProductUserDetails> GetAllAOProducts(long personaId)
+        {
+            using (var repository = GetRepository())
+            {
+                return repository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_GetAllAOProductsForAdminUser, new { PersonaId = personaId }).ToList();
+            }
+        }
+
         #endregion
 
         #region Private Methods

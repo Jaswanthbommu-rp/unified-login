@@ -20,7 +20,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <param name="realPageId">realPageId</param>
         /// <param name="personaId">personaId</param>
         /// <param name="allProducts">Return all product types</param>
-        IList<ProductUI> GetProducts(Guid realPageId, long personaId = 0, bool allProducts = false);
+        IList<ProductUI> GetProducts(Guid realPageId, long personaId = 0, bool allProducts = false, bool fromUserlist = false);
 
         ///// <summary>
         ///// Used to return a list of productfamilies

@@ -238,5 +238,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <returns></returns>
         bool isProductAssigned(long PersonaId, int ProductStatus, int productId);
         IList<PersonaProductUserDetails> ListProductsByPersonaId(long personaId, int statusType);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="personaId">User PersonaId</param>
+        /// <returns></returns>
+        IList<PersonaProductUserDetails> GetAllAOProducts(long personaId);
     }
 }
