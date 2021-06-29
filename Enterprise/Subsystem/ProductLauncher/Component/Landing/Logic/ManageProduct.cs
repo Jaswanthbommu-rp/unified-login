@@ -230,9 +230,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="realPageId">realPageId</param>
         /// <param name="personaId">personaId</param>
         /// <param name="allProducts">Return all product types</param>
-        /// <param name="fromUserlist">Return all AO products</param>
+        /// <param name="fromUserList">Return all ao products</param>
         /// <returns></returns>
-        public IList<ProductUI> GetProducts(Guid realPageId, long personaId = 0, bool allProducts = false, bool fromUserlist = false)
+        public IList<ProductUI> GetProducts(Guid realPageId, long personaId = 0, bool allProducts = false, bool fromUserList = false)
         {
             var listResponse = new ListResponse();
 
@@ -282,7 +282,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     if (productList.Any(x => x.ProductId == (int) ProductEnum.AssetOptimizer))
                     {
                         IList<PersonaProductUserDetails> aoProductList;
-                        if (fromUserlist && persona.UserTypeId == (int)UserRoleType.SuperUser)
+                        if (fromUserList && persona.UserTypeId == (int)UserRoleType.SuperUser)
                         {
                             var AllAoProductResult = _productRepository.GetAllAOProducts(persona.PersonaId).ToList();
                             foreach (var productresult in AllAoProductResult)
@@ -328,7 +328,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                                         TitleId = aoProduct.TitleId,
                                         TitleUniqueId = aoProduct.TitleUniqueId,
 										ShowInAppSwitcher = aoProduct.ShowInAppSwitcher,
-                                        ShowInUserListFilter = fromUserlist && persona.UserTypeId == (int)UserRoleType.SuperUser ? true : aoProduct.ShowInUserListFilter
+                                        ShowInUserListFilter = fromUserList && persona.UserTypeId == (int)UserRoleType.SuperUser ? true : aoProduct.ShowInUserListFilter
                                 }
                                 );
                             }
