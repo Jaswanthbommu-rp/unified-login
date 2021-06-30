@@ -198,8 +198,7 @@
         public const string SP_ListProductFamilies = "Enterprise.ListProductFamilies";
         public const string SP_ListProduct = "Enterprise.ListProduct";
         public const string SP_ListProductsByPersonaId = "Enterprise.ListProductsByPersonaId";
-        public const string SP_GetUserProductBatchJsonData = "Enterprise.GetUserProductBatchJsonData";
-        public const string SP_GetAllAOProductsForAdminUser = "Enterprise.GetAllAOProductsForAdminUser";
+        public const string SP_GetUserProductBatchJsonData = "Enterprise.GetUserProductBatchJsonData";        
 
         public const string SP_GetProductsByPersonaId = "Security.GetProductsByPersonaId";
 
