@@ -1287,9 +1287,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                 TranslatePropertyInstance translatedData;
 
-                if (booksProductDetail.ProductId != (int) ProductEnum.UnifiedPlatform && string.IsNullOrEmpty(booksProductDetail.UDMSourceCode))
+                if (booksProductDetail.ProductId != (int) ProductEnum.UnifiedPlatform)
                 {
-                    translatedData = _manageBlueBook.GetTranslatePropertiesFromUPFMToProductv3(upfmProperties, booksProductDetail.BooksProductCode);
+                    if (string.IsNullOrEmpty(booksProductDetail.UDMSourceCode))
+                    {
+                        translatedData = _manageBlueBook.GetTranslatePropertiesFromUPFMToProductv3(upfmProperties, booksProductDetail.BooksProductCode);
+                    }
+                    else
+                    {
+                        translatedData = _manageBlueBook.GetTranslatePropertiesFromUPFMToProductv3(upfmProperties, booksProductDetail.UDMSourceCode);
+                    }
                 }
                 else
                 {

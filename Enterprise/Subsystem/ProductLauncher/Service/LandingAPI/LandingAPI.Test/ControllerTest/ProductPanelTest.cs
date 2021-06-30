@@ -65,7 +65,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 		{
             _gbProductMap = new List<GbProductMap>
             {
-                new GbProductMap() {BooksProductCode = "OS", Name = "OneSite", ProductId = 1, UDMSourceCode = "null"},
+                new GbProductMap() {BooksProductCode = "OS", Name = "OneSite", ProductId = 1},
                 new GbProductMap() {BooksProductCode = "UI", Name = "UnifiedUI", ProductId = 2, UDMSourceCode = "null"},
                 new GbProductMap() {BooksProductCode = "UPFM", Name = "Unified Platform", ProductId = 3, UDMSourceCode = "null"},
                 new GbProductMap() {BooksProductCode = "AO", Name = "Asset Optimization", ProductId = 4, UDMSourceCode = "null"},
