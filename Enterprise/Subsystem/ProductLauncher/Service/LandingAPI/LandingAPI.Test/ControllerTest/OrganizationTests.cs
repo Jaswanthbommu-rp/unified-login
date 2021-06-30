@@ -815,6 +815,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             List<ProductInternalSetting> productInternalSettings = new List<ProductInternalSetting>()
             {
                 new ProductInternalSetting() {Name = "UpdateProductInUDM", Value = "1"},
+                new ProductInternalSetting() {Name = "SettingsApiEndPoint", Value = "http://localhost"}
             };
 
             var mockRepository = new Mock<IRepository>();
@@ -875,7 +876,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             mockHttpMessageHandler.Setup(HttpMethod.Put, $"http://localhost/companyinstance/" + _RealPageId.ToString().ToLower() + "/UPFM", new HttpResponseMessage(HttpStatusCode.OK) {Content = new StringContent("{ \"result\" : \"success\"}")});
             mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/systemproductcenter", new HttpResponseMessage(HttpStatusCode.OK) {Content = new StringContent("{ \"result\" : \"success\"}")});
             mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/companyinstance/1051412/OS", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("\r\n{\"data\":{\"type\":\"companyinstance\",\"id\":\"651250\",\"attributes\":{\"companyInstanceId\":651250,\"source\":\"OS\",\"companyInstanceSourceId\":\"1051412\",\"companyName\":\"Camden\",\"phoneNumber\":\"(713) 354-2500\",\"formerlyKnownAs\":null,\"legalEntityName\":null,\"companyType\":null,\"website\":\"camdenproperty.onesite.realpage.com\",\"isActive\":true,\"isUat\":false,\"createdAt\":\"2017-04-13 11:56:12.000000-0500\",\"modifiedAt\":\"2020-09-14 16:35:16.000000-0500\",\"createdBy\":null,\"modifiedBy\":\"x - API\",\"deletedAt\":null,\"nrrReason\":null,\"deletedBy\":null,\"greenBookCares\":true,\"marketSegment\":[],\"nrr\":false,\"modifiedSource\":null,\"isAcquired\":false,\"customerEnvironment\":\"Primary\",\"domain\":\"Primary\",\"deletedReason\":\"Deprecated Field\"},\"links\":{\"self\":\"\\/companyinstance\\/651250\"}}}") });
-
+            mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/v2/provisioning/company", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
             OrganizationController organizationController = new OrganizationController(
                 mockRepository.Object
                 , _mockRepositoryResponse.Object
@@ -1017,7 +1018,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompany?filter[customerCompanyId]=in:{_BooksCompanyMasterId}&include=customerCompanyLocation&fields[customercompany]=customerCompanyId,companyName,phoneNumber&fields[customerCompanyLocation]=customerCompanyLocationId,customerCompanyId,address,city,state,country,postalCode,isPrimary&page[size]=9999", responseMapResource);
             _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/companyinstance?filter[source]=UPFM&include=companyInstanceLocation&filter[companyInstanceSourceId]=in:daf71f77-4558-4cb0-91b8-29d8b0e62f15", upfmCompanyInstancesResponse);
-
+            _mockHttpMessageHandler.Setup(HttpMethod.Put, $"http://localhost/v2/provisioning/company", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
             HttpResponseMessage response = organizationController.UpdateOrganization(organizationUpdate);
             OrganizationCreateResult orgResult = JsonConvert.DeserializeObject<OrganizationCreateResult>(response.Content.ReadAsStringAsync().Result);
 

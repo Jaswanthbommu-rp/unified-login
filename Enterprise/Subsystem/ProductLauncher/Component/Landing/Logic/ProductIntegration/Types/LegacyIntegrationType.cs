@@ -326,7 +326,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.AoRentControl:
                     var manageProductAo = new ManageProductAssetOptimization(_userClaims);
                     var productList = _productRepository.GetAllProducts();
-                    string productcode = ProductEnumHelper.GetProductCodeByProductId(_productId, productList);
+                    string productcode = ProductEnumHelper.GetBooksSourceCodeByProductId(_productId, productList);
                     result = manageProductAo.GetProductProperties(editorPersonaId, userPersonaId, productcode, dataFilter, userLoginName);
                     break;
 
