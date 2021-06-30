@@ -229,10 +229,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// </summary>
         /// <param name="realPageId">realPageId</param>
         /// <param name="personaId">personaId</param>
-        /// <param name="allProducts">Return all product types</param>
-        /// <param name="fromUserList">Return all ao products</param>
+        /// <param name="allProducts">Return all product types</param>        
         /// <returns></returns>
-        public IList<ProductUI> GetProducts(Guid realPageId, long personaId = 0, bool allProducts = false, bool fromUserList = false)
+        public IList<ProductUI> GetProducts(Guid realPageId, long personaId = 0, bool allProducts = false)
         {
             var listResponse = new ListResponse();
 
@@ -281,20 +280,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     // if AO products then include from personaProducts
                     if (productList.Any(x => x.ProductId == (int) ProductEnum.AssetOptimizer))
                     {
-                        IList<PersonaProductUserDetails> aoProductList;
-                        if (fromUserList && persona.UserTypeId == (int)UserRoleType.SuperUser)
-                        {
-                            var AllAoProductResult = _productRepository.GetAllAOProducts(persona.PersonaId).ToList();
-                            foreach (var productresult in AllAoProductResult)
-                            {
-                                if (personaProducts.Where(x => x.ProductId == productresult.ProductId).ToList().Count == 0)
-                                {
-                                    personaProducts.Add(productresult);
-                                }
-                            }                        
-                        }
-
-                        aoProductList =
+                      var  aoProductList =
                             personaProducts.Where(
                                 y => ProductEnumHelper.GetAoProductList().Contains((ProductEnum)y.ProductId)).ToList();
 
@@ -328,7 +314,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                                         TitleId = aoProduct.TitleId,
                                         TitleUniqueId = aoProduct.TitleUniqueId,
 										ShowInAppSwitcher = aoProduct.ShowInAppSwitcher,
-                                        ShowInUserListFilter = fromUserList && persona.UserTypeId == (int)UserRoleType.SuperUser ? true : aoProduct.ShowInUserListFilter
+                                        ShowInUserListFilter = aoProduct.ShowInUserListFilter
                                 }
                                 );
                             }
