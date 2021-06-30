@@ -5,7 +5,7 @@
 AS
           BEGIN
          DECLARE @NOW DATETIME= GETUTCDATE();
-		 DECLARE @CompanyOrganizationProduct TABLE ( ProductId INT ) 		 
+		 declare @CompanyOrganizationProduct TABLE ( ProductId INT ) 		 
 
 		 INSERT INTO @CompanyOrganizationProduct ( ProductId )
 			SELECT ProductId from Enterprise.OrganizationProduct OP 

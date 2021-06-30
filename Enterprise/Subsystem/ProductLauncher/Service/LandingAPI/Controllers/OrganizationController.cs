@@ -752,8 +752,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// </summary>
         /// <param name="realPageId">The unique identitifier for the organization</param>
         /// <param name="mergePersonaAccess">Merge persona product access</param>
-        /// <param name="allProducts">Return all product types</param>
-        /// /// <param name="fromUserList">Return all ao products</param>
+        /// <param name="allProducts">Return all product types</param>        
         /// <returns></returns>
         [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when Information is out of sync with the server)")]
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
@@ -763,7 +762,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [Route("organization/{realPageId}/products")]
         [Authorize]
         [HttpGet]
-        public HttpResponseMessage GetProductsByOrganization([FromUri] Guid? realPageId, [FromUri] bool? mergePersonaAccess, [FromUri] bool? allProducts, [FromUri] bool? fromUserList)
+        public HttpResponseMessage GetProductsByOrganization([FromUri] Guid? realPageId, [FromUri] bool? mergePersonaAccess, [FromUri] bool? allProducts)
         {
             ObjectListOutput<ProductUI, IErrorData> output = new ObjectListOutput<ProductUI, IErrorData>();
             Status<IErrorData> errorStatus = new Status<IErrorData>();
@@ -809,7 +808,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 var cacheKey = $"getListProductsByOrganization_{org.RealPageId}";
                 MemoryCache.Default.Remove(cacheKey);
 
-                IList<ProductUI> productList = _manageProduct.GetProducts(org.RealPageId, personaId, (allProducts.HasValue ? allProducts.Value : false), (fromUserList.HasValue ? fromUserList.Value : false));
+                IList<ProductUI> productList = _manageProduct.GetProducts(org.RealPageId, personaId, (allProducts.HasValue ? allProducts.Value : false));
                 if (allProducts.HasValue && allProducts.Value)
                 {
                     output.list = _manageProduct.AddProductSourceAndGreenBookCareFlagToProducts(org.RealPageId, org.PartyId, productList);

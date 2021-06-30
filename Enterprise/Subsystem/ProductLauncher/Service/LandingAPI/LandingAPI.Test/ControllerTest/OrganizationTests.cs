@@ -1491,7 +1491,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             //Assert
             Assert.True("GetProductsByOrganization" == baseTest.VerifyRouteToAction(
                     HttpMethod.Get,
-                    "http://localhost/api/organization/C802694D-5553-4527-8616-3C0F434AE62D/products?mergePersonaAccess=false&allProducts=false&fromUserList=true"
+                    "http://localhost/api/organization/C802694D-5553-4527-8616-3C0F434AE62D/products?mergePersonaAccess=false&allProducts=false"
                 )
             );
         }

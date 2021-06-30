@@ -280,9 +280,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     // if AO products then include from personaProducts
                     if (productList.Any(x => x.ProductId == (int) ProductEnum.AssetOptimizer))
                     {
-                        var  aoProductList =
+                        var aoProductList =
                             personaProducts.Where(
-                                y => ProductEnumHelper.GetAoProductList().Contains((ProductEnum)y.ProductId)).ToList();
+                                y => ProductEnumHelper.GetAoProductList().Contains((ProductEnum) y.ProductId)).ToList();
                         if (aoProductList.Any())
                         {
                             foreach (var aoProduct in aoProductList)
