@@ -283,7 +283,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         var  aoProductList =
                             personaProducts.Where(
                                 y => ProductEnumHelper.GetAoProductList().Contains((ProductEnum)y.ProductId)).ToList();
-
                         if (aoProductList.Any())
                         {
                             foreach (var aoProduct in aoProductList)
