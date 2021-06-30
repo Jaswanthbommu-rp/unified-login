@@ -171,4 +171,11 @@ if NOT EXISTS (
 		end
 	END
 GO
-
+ -- Utility Superuser for RUM Admin User
+ DECLARE @ProductsettingTypeId int;
+ Select @ProductsettingTypeId= ProductSettingTypeId from Enterprise.ProductSettingTYpe where Name = 'UtilitySuperUser';
+ IF EXISTS ( Select Top 1 1 from ENterprise.ProductSetting where ProductSettingTypeId = @ProductsettingTypeId and ProductId = 18)
+ BEGIN
+     Update ENterprise.ProductSetting Set Value ='Utility Superuser' where ProductSettingTypeId = @ProductsettingTypeId and ProductId =18;
+ END
+ Go
