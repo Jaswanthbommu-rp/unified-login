@@ -1696,7 +1696,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             PropertyName = property.Name,
                             PropertyInstanceSourceId = property.InstanceId,
                             CustomerPropertyId = !string.IsNullOrEmpty(property.CustomerPropertyId) ? property.CustomerPropertyId : "0",
-                            IsActive = true,
+                            IsActive = property.IsActive,
                             Address = property.Address,
                             City = property.City,
                             State = property.State,
