@@ -259,5 +259,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="addProductList">ProductsList</param>
 		/// <returns></returns>
 		List<int> EnableProductOnOtherProductsActivation(List<int> addProductList);
+
+		/// <summary>
+		///AddUpdateCompanyToUnifiedSettings
+		/// </summary>
+		/// <param name="companyInstanceID"></param>
+		/// <param name="trasactionType"></param>
+		/// <param name="customerEnvironment"></param>
+		/// <returns></returns>
+		bool AddUpdateCompanyToUnifiedSettings(string companyInstanceID, string trasactionType, string customerEnvironment = null);
 	}
 }
