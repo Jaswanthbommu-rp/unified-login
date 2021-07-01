@@ -89,6 +89,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
 
 					AddRemoveRightForCIMPL(identity, impersonateUserRights, userRights, "CIMPLManagePII");
 					AddRemoveRightForCIMPL(identity, impersonateUserRights, userRights, "CIMPLManageSensitiveFinancialData");
+
+                    if (!impersonateUserRights.Contains("MigrationTool"))
+                    {
+						userRights.Remove("MigrationTool");
+					}
 				}
             }
 

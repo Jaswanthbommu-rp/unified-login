@@ -1715,16 +1715,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         public ListResponse TranslateProductPrimaryPropertiesData(UPFMProperty upfmProperty, int productId, ListResponse productResult)
         {
-            if (productId == 3) 
+            if (productId == 3)
             {
-                var _productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings(productId);
-
-                if (_productInternalSettingList.Any(s => s.Name.Equals("UsePropertyInstanceUnifiedLogin", StringComparison.OrdinalIgnoreCase)))
-                {
-                    if (!(_productInternalSettingList.FirstOrDefault(s =>
-                        s.Name.Equals("UsePropertyInstanceUnifiedLogin", StringComparison.OrdinalIgnoreCase))?.Value == "1"))
-                        return productResult;
-                }
+                return productResult;
             }
 
             TranslatePropertyInstance translatedData = new TranslatePropertyInstance();            

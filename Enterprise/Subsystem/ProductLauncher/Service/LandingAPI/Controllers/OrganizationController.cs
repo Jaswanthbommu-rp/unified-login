@@ -313,7 +313,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 var companyCreatedSuccessfully = _manageBlueBook.AddUPFMCompanyFromCompanySetup(companyInstance);
 
-                if (!companyCreatedSuccessfully) return Request.CreateResponse(HttpStatusCode.BadRequest, "There was a problem adding the UPFM instance to UDM");
+                if (!companyCreatedSuccessfully)
+				{
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, "There was a problem adding the UPFM instance to UDM");
+                }
+                else
+                {
+                    if (!_manageOrganization.AddUpdateCompanyToUnifiedSettings(companyInstance.CompanyInstanceSourceId, "Create", companyInstance.CustomerEnvironment))
+                    {
+                        return Request.CreateResponse(HttpStatusCode.BadRequest, $"Unified Login and MDM company was updated successfully but Settings data update failed.");
+                    }
+                }
 
                 // add the products assigned to the new company
                 var cacheKey = $"getListProductsByOrganization_{result.obj.Org.RealPageId}";
@@ -517,6 +527,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     if (!string.IsNullOrEmpty(booksResult))
                     {
                         return Request.CreateResponse(HttpStatusCode.BadRequest, $"Unified Login company was updated successfully but MDM data update failed. Error: " + booksResult);
+                    }
+					else
+					{
+                        if (!_manageOrganization.AddUpdateCompanyToUnifiedSettings(org.RealPageId.ToString(), "Update", null))
+                        {
+                            return Request.CreateResponse(HttpStatusCode.BadRequest, $"Unified Login and MDM company was updated successfully but Settings data update failed.");
+                        }
                     }
                 }
                 else
@@ -1486,7 +1503,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             if (currentProperty != null)
             {
                 _repositoryResponse = _manageOrganization.UpdateProperty(property, companyInstanceId);
-                if (_repositoryResponse.Id == 0)
+                if (_repositoryResponse.Id == 0 || !string.IsNullOrEmpty(_repositoryResponse.ErrorMessage))
                 {
                     return Request.CreateResponse(HttpStatusCode.BadRequest, _repositoryResponse.ErrorMessage);
                 }

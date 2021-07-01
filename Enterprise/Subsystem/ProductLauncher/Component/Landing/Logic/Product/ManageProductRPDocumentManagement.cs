@@ -17,6 +17,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -182,6 +183,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			Dictionary<string, object> logData = new Dictionary<string, object>();
 
 			Person person = _managePerson.GetPerson(realPageId);
+
+			//Removing Special Characters for First Name and Last Name
+			person.FirstName = Regex.Replace(person.FirstName, @"[^A-Za-z0-9]+", "");
+			person.LastName = Regex.Replace(person.LastName, @"[^A-Za-z0-9]+", "");
 
 			var userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
 

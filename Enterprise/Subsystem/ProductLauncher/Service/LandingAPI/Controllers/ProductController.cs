@@ -611,8 +611,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     return productLoginResponse;
                 }
             }
+            else if (productId == (int)ProductEnum.MigrationTool)
+            {
+                if (!CheckForMigrationToolAccess())
+                {
+                    productLoginResponse.ErrorMessage = "ReadOnly";
+                    return productLoginResponse;
+                }
+            }
             else if (CheckForViewOnlyAccess() && !(productId == (int)ProductEnum.ResearchApplication || productId == (int)ProductEnum.ProductUpdates || productId == (int)ProductEnum.HelpCenter
-                     || productId ==(int)ProductEnum.VendorMarketplace || productId ==(int)ProductEnum.ProductLearningPortal || productId == (int)ProductEnum.MigrationTool))
+                     || productId ==(int)ProductEnum.VendorMarketplace || productId ==(int)ProductEnum.ProductLearningPortal))
             {
                 productLoginResponse.ErrorMessage = "ReadOnly";
                 return productLoginResponse;
@@ -648,6 +656,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         {
             return (_userClaims.Rights.All(p => !p.Equals("ViewCIMPLQuestions", StringComparison.OrdinalIgnoreCase) &&
                                                 !p.Equals("EmployeeViewCIMPLQuestions", StringComparison.OrdinalIgnoreCase)));
+        }
+
+        private bool CheckForMigrationToolAccess()
+        {
+            if(_userClaims.Rights.Any(p => p.Equals("MigrationTool", StringComparison.OrdinalIgnoreCase)))
+            {
+                string[] rightsRequired = new string[2] { "ViewOnlySupportToolAccess", "AccessToUnifiedPlatform" };
+                return _userClaims.Rights.Any(p => rightsRequired.Contains(p));
+            }
+            return false;
         }
 
         private bool CheckForViewOnlyAccess()
