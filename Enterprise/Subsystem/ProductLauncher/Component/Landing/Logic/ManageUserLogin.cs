@@ -1128,6 +1128,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             DateTime fromUtcDateTime = DateTime.UtcNow;
             DateTime? thruUtcDateTime = null; // default for AccountCreationSuccessful; Unlocked; Active
+            OrganizationStatus orgStatus = new OrganizationStatus();
+            UserLoginOnly userLoginOnly = null;
+            bool newUserWithFeatureDate = false;
+            bool isUserExpired = false;
+            bool newUserwithActiveStatus = false;
+            bool? isNotified = null;
 
             int statusTypeId = 0;
             if (userLogins.Count > 0)
@@ -1178,6 +1184,46 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     if (userLoginStatusType == UserUiStatusType.Active)
                     {
                         _userRepository.ActivateSalesForceUser(_defaultUserClaim.UserRealPageGuid, _defaultUserClaim.PersonaId, ul, isAssigned);
+                        foreach (UserLoginOnly userLogin in userLogins)
+                        {
+                            userLoginOnly = _userLoginRepository.GetUserLoginOnly(userLogin.RealPageId);
+                            var userLoginInfo = GetUserLogin(userLogin.RealPageId, _defaultUserClaim.OrganizationPartyId); // keep for now
+                            orgStatus = _userLoginRepository.GetUserOrganizationWithStatus(userLoginOnly.UserId, userLoginOnly.LastLogin, _defaultUserClaim.OrganizationPartyId, false);
+                            if (orgStatus.ThruDate != null)
+                            {
+                                if (DateTime.UtcNow > orgStatus.ThruDate)
+                                {
+                                    isUserExpired = true;
+                                }
+                            }
+                            if (orgStatus.StatusThruDate != null)
+                            {
+                                if (DateTime.UtcNow > orgStatus.StatusThruDate)
+                                {
+                                    isUserExpired = true;
+                                }
+                            }
+
+                            if (userLoginOnly.LastLogin == null && userLoginOnly.PasswordModifiedDate != null && !isUserExpired)
+                                newUserwithActiveStatus = true;
+
+
+                            fromUtcDateTime = orgStatus.FromDate;
+                            orgStatus.ThruDate = new DateTime(9999, 12, 31);
+                            if (orgStatus.FromDate > DateTime.UtcNow)
+                            {
+                                DateTime fromDate = DateTime.UtcNow;
+                                orgStatus.FromDate = fromDate;
+                                newUserWithFeatureDate = true;
+                            }
+                            if (orgStatus.PrimaryOrganization && (newUserWithFeatureDate || (userLoginOnly.LastLogin == null && !userLoginOnly.Is3rdPartyIDP && orgStatus.Status != UserUiStatusType.Locked)) && !newUserwithActiveStatus)
+                            {
+                                IManageUserRegistrationEmail manageUserRegistrationEmail = new ManageUserRegistrationEmail(_defaultUserClaim);
+                                isNotified = manageUserRegistrationEmail.SendNewUserRegistrationEmail(userLoginOnly, orgStatus.Name, (int)userLoginInfo.UserRoleType, orgStatus.PartyId);
+                                statusTypeId = (int)UserUiStatusType.Pending;
+                            }
+                        }
+                            
                     }
 
                     foreach (UserLoginOnly userLogin in userLogins)
