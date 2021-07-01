@@ -1217,6 +1217,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <returns></returns>
         public RepositoryResponse DeletePropertyForOrganization(Guid propertyInstanceID, Guid companyInstanceId)
         {
+            var upfmProperties = new UPFMProperty();
+            var instanceIds = new List<string>
+            {
+                propertyInstanceID.ToString().ToLower()
+            };
+            upfmProperties.id = instanceIds;
+            TranslatePropertyInstance translatedData;
+            //Hard coding this as SET, because we need to get trasalated property for settings and
+            //we don't have other way to get product code from company setup property delete.
+            translatedData = _manageBlueBook.GetTranslatePropertiesFromUPFMToProductv3(upfmProperties, "SET");
+            var settingPropertyInstance = translatedData.Data?.Attributes
+                    ?.FirstOrDefault(p => p.PropertyInstanceSourceId == propertyInstanceID.ToString())
+                    ?.TranslatedPropertyInstances?.FirstOrDefault();
+
             var response = _propertyRepository.DeleteUPFMPropertyInstance(propertyInstanceID);
 
             if (response.ErrorMessage.Length == 0)
@@ -1227,10 +1241,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 LogAuditActivity(LogActivityTypeConstants.PROPERTY_DELETED, LogActivityCategoryType.CompanySetup, message);
 
                 bool booksResponse = DeletePropertyFromBooks(propertyInstanceID);
-                bool settingsResponse = false;
-                if (booksResponse)
+                bool settingsResponse = settingPropertyInstance != null ? false : true;
+                if (booksResponse && settingPropertyInstance != null)
                 {
-                    settingsResponse = DeletePropertyFromUnifiedSetting(propertyInstanceID);
+                    settingsResponse = DeletePropertyFromUnifiedSetting(settingPropertyInstance.PropertyInstanceSourceId.ToString().ToLower());
                 }
                 response = HandleErrorMessage(booksResponse, settingsResponse, "Error while deleting property", response);
             }
@@ -1668,9 +1682,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             UnifiedSettingCompanyPropertyPayload payload = PreparePropertyObjectToUnifiedSetting(_propertyInstance, companyInstanceID);
             return _manageUnifiedSettings.CreateUpdatePropertyInSetting(payload, HttpMethod.Put);
         }
-        private bool DeletePropertyFromUnifiedSetting(Guid propertyInstanceID)
+        private bool DeletePropertyFromUnifiedSetting(string settingsPropertyInstanceID)
         {
-            return _manageUnifiedSettings.DeletePropertyInSetting(propertyInstanceID);
+            return _manageUnifiedSettings.DeletePropertyInSetting(settingsPropertyInstanceID);
         }
 
         private UnifiedSettingCompanyPropertyPayload PreparePropertyObjectToUnifiedSetting(UPFMPropertyInstance property, Guid companyInstanceID)

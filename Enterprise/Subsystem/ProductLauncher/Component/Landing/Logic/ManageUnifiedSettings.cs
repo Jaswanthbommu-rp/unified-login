@@ -208,14 +208,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return false;
         }
 
-       
+
 
         /// <summary>
-		///Send Property Instance to Unified settings to delete instance
-		/// </summary>
-		/// <param name="propertyInstance">UPFM PropertyInstance</param>
-		/// <returns></returns>
-		public bool DeletePropertyInSetting(Guid propertyInstance)
+        ///Send Property Instance to Unified settings to delete instance
+        /// </summary>
+        /// <param name="settingsPropertyInstanceID">Settings PropertyInstance</param>
+        /// <returns></returns>
+        public bool DeletePropertyInSetting(string settingsPropertyInstanceID)
         {
             GetConfigurationSetting();
             string ulClientToken = string.Empty;
@@ -225,9 +225,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
             Guid correlationId = Guid.NewGuid();
             //https://settingsapi-dev.realpage.com/v2/provisioning/property/{propertyId}         
-            string uri = $"v2/provisioning/property/{propertyInstance}";
-            Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "propertyInstance", propertyInstance } };
-            WriteToLog(LogEventLevel.Debug, "CreatePropertyInSetting - Adding info.", correlationId, logData);           
+            string uri = $"v2/provisioning/property/{settingsPropertyInstanceID}";
+            Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "propertyInstance", settingsPropertyInstanceID } };
+            WriteToLog(LogEventLevel.Debug, "Delete PropertyInSetting - Delete info.", correlationId, logData);           
             var request = new HttpRequestMessage
             {
                 Method = HttpMethod.Delete,

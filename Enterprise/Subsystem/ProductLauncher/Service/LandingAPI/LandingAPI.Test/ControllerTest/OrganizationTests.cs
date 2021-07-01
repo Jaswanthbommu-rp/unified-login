@@ -2912,6 +2912,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_DeletePropertyInstance,
                    It.IsAny<object>()))
                .Returns(repository);
+
+            var booksTranslateOneSiteJson = "{\n\t\"data\": {\n\t\t\"type\": \"propertyinstancetranslations\",\n\t\t\"attributes\": [\n\t\t\t{\n\t\t\t\t\"propertyInstanceSourceId\": \"a1ef0ac9-2f84-4288-b369-e59b1d6c13de\",\n\t\t\t\t\"source\": \"UPFM\",\n\t\t\t\t\"translatedPropertyInstances\": [\n\t\t\t\t\t{\n\t\t\t\t\t\t\"source\": \"SET\",\n\t\t\t\t\t\t\"propertyInstanceSourceId\": \"e89233ef-6fae-4da6-8953-8a2b6814c960\"\n\t\t\t\t\t}\n\t\t\t\t]\n\t\t\t},\n\t\t\t{\n\t\t\t\t\"propertyInstanceSourceId\": \"a5192995-aaaa-bbbb-8df2-f30f1b8dc752\",\n\t\t\t\t\"source\": \"UPFM\",\n\t\t\t\t\"translatedPropertyInstances\": [\n\t\t\t\t\t{\n\t\t\t\t\t\t\"source\": \"AB\",\n\t\t\t\t\t\t\"propertyInstanceSourceId\": \"7654321\"\n\t\t\t\t\t}\n\t\t\t\t]\n\t\t\t}\n\t\t]\n\t}\n}";
+            HttpResponseMessage booksTranslateOneSiteResponse = new HttpResponseMessage(HttpStatusCode.OK);
+            booksTranslateOneSiteResponse.Content = new StringContent(booksTranslateOneSiteJson);
+            _mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/translate/v3/propertyinstance/UPFM/SET", booksTranslateOneSiteResponse);
             _mockHttpMessageHandler.Setup(HttpMethod.Delete, $"http://localhost/propertyinstance/a1ef0ac9-2f84-4288-b369-e59b1d6c13de/UPFM?modifiedBy=UnifiedPlatform", new HttpResponseMessage(HttpStatusCode.NoContent) { Content = new StringContent("{ \"result\" : \"success\"}") });
             OrganizationController organizationController = new OrganizationController(
                 _mockRepository.Object
@@ -2975,12 +2980,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             {
                 new UPFMPropertyInstance(){InstanceId = new Guid("a5192995-aaaa-bbbb-8df2-f30f1b8dc752"), Name = "test property 1"}
             };
+            var booksTranslateOneSiteJson = "{\n\t\"data\": {\n\t\t\"type\": \"propertyinstancetranslations\",\n\t\t\"attributes\": [\n\t\t\t{\n\t\t\t\t\"propertyInstanceSourceId\": \"a1ef0ac9-2f84-4288-b369-e59b1d6c13de\",\n\t\t\t\t\"source\": \"UPFM\",\n\t\t\t\t\"translatedPropertyInstances\": [\n\t\t\t\t\t{\n\t\t\t\t\t\t\"source\": \"SET\",\n\t\t\t\t\t\t\"propertyInstanceSourceId\": \"e89233ef-6fae-4da6-8953-8a2b6814c960\"\n\t\t\t\t\t}\n\t\t\t\t]\n\t\t\t},\n\t\t\t{\n\t\t\t\t\"propertyInstanceSourceId\": \"a5192995-aaaa-bbbb-8df2-f30f1b8dc752\",\n\t\t\t\t\"source\": \"UPFM\",\n\t\t\t\t\"translatedPropertyInstances\": [\n\t\t\t\t\t{\n\t\t\t\t\t\t\"source\": \"AB\",\n\t\t\t\t\t\t\"propertyInstanceSourceId\": \"7654321\"\n\t\t\t\t\t}\n\t\t\t\t]\n\t\t\t}\n\t\t]\n\t}\n}";
+            HttpResponseMessage booksTranslateOneSiteResponse = new HttpResponseMessage(HttpStatusCode.OK);
+            booksTranslateOneSiteResponse.Content = new StringContent(booksTranslateOneSiteJson);
 
             _mockRepository.Setup(m => m.GetMany<UPFMPropertyInstance>(StoredProcNameConstants.SP_GetPropertyInstanceListById,
                     It.Is<object>(data => TestSqlParameter(data, "{ InstanceList = Dapper.TableValuedParameter }"))))
                 .Returns(upfmPropertyInstances);
             _mockHttpMessageHandler.Setup(HttpMethod.Delete, $"http://localhost/propertyinstance/a1ef0ac9-2f84-4288-b369-e59b1d6c13de/UPFM?modifiedBy=UnifiedPlatform", new HttpResponseMessage(HttpStatusCode.NoContent) { Content = new StringContent("{ \"result\" : \"success\"}") });
-            _mockHttpMessageHandler.Setup(HttpMethod.Delete, $"http://localhost/v2/provisioning/property/a1ef0ac9-2f84-4288-b369-e59b1d6c13de", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
+            _mockHttpMessageHandler.Setup(HttpMethod.Delete, $"http://localhost/v2/provisioning/property/e89233ef-6fae-4da6-8953-8a2b6814c960", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
+            _mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/translate/v3/propertyinstance/UPFM/SET", booksTranslateOneSiteResponse);
             OrganizationController organizationController = new OrganizationController(
                 _mockRepository.Object
                 , _mockRepositoryResponse.Object
