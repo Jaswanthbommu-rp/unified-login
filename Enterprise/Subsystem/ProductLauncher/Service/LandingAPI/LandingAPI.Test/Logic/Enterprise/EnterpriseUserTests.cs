@@ -23,11 +23,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Enterpri
     [ExcludeFromCodeCoverage]
     public class EnterpriseUserTests
     {
-        Mock<IRepository> _mockRepository = new Mock<IRepository>();
-        Mock<IUnitOfWork> _mockUnitofWork = new Mock<IUnitOfWork>();
-        Mock<IRepositoryResponse> _mockRepositoryResponse = new Mock<IRepositoryResponse>();
-        Mock<HttpMessageHandler> _mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-
         private static DefaultUserClaim _defaultUserClaim = new DefaultUserClaim();
         private static int _PartyId = 54321;
         private static long _BooksMasterId = 2116;
@@ -44,6 +39,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Enterpri
 
         }
         #endregion
+
+        private UserController MakeInstance(
+            Mock<IRepository> repository = null,
+            Mock<IRepositoryResponse> repositoryResponse = null,
+            Mock<HttpMessageHandler> httpMessageHandler = null)
+        {
+            repository = repository != null ? repository : new Mock<IRepository>();
+            repositoryResponse = repositoryResponse != null ? repositoryResponse : new Mock<IRepositoryResponse>();
+            httpMessageHandler = httpMessageHandler != null ? httpMessageHandler : new Mock<HttpMessageHandler>();
+
+            Mock<IUnitOfWork> mockUnitofWork = new Mock<IUnitOfWork>();
+            repository
+                .Setup(m => m.UnitOfWork)
+                .Returns(mockUnitofWork.Object);
+
+            return new UserController(
+                repository.Object,
+                repositoryResponse.Object,
+                httpMessageHandler.Object,
+                _defaultUserClaim,
+                null
+            )
+            { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
+        }
 
         [Fact(Skip = "Issues with route tests")]
         public void GetUserProductsByPersonaId_ValidPersonaId_ReturnProductList()
@@ -126,31 +145,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Enterpri
             var jsonToSave = JsonConvert.SerializeObject(mapResource, new JsonApiSerializerSettings());
             responseMapResource.Content = new StringContent(jsonToSave);
 
-            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompanymap?filter[companyInstance.greenBookCares]=true&filter[customerCompanyId]={_BooksCompanyMasterId}&include=companyInstance&include=companyInstance.attributes", responseMapResource);
+            var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
+            mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompanymap?filter[companyInstance.greenBookCares]=true&filter[customerCompanyId]={_BooksCompanyMasterId}&include=companyInstance&include=companyInstance.attributes", responseMapResource);
 
-            _mockRepository
+            var mockRepository = new Mock<IRepository>();
+            mockRepository
                 .Setup(m => m.GetOne<Persona>(StoredProcNameConstants.SP_GetPersona, It.Is<object>(
                     d => d.ToString().Contains($"personaId = {persona.PersonaId}"))))
                 .Returns(persona);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetOne<Person>(StoredProcNameConstants.SP_GetPerson, It.Is<object>(
                     d => d.ToString().Contains($"{persona.RealPageId}"))))
                 .Returns(person);
 
-            _mockRepository
-                .Setup(m => m.UnitOfWork)
-                .Returns(_mockUnitofWork.Object);
+            var userController = MakeInstance(repository: mockRepository, httpMessageHandler: mockHttpMessageHandler);
 
-            UserController userController = new UserController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
-                , _mockHttpMessageHandler.Object
-                , _defaultUserClaim
-            )
-            { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
-
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<PersonaProduct>(StoredProcNameConstants.SP_GetProductsByPersonaId, It.Is<object>(
                     d => d.ToString().Contains($"PersonaId = {persona.PersonaId}, StatusTypeId = 8"))))
                 .Returns(productList);
@@ -164,6 +175,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Enterpri
             Assert.True(result?.Resources.Count == 1 && result?.Resources[0].Id == (int)ProductEnum.ProductUpdates);
             Assert.True(result?.Products.Count == 3 && result.Products.ContainsKey("Favorites") && result?.Products["Favorites"].Count == 1);
             Assert.Equal(result.User.FullName, person.FirstName + " " + person.LastName);
+        }
+
+        [Fact]
+        public void GetProductUserProperties_InvalidProductCode()
+        {
+            var userController = MakeInstance();
+
+            var response = userController.GetProductUserProperties("invalid product code", null);
+            var result = response.Content?.ReadAsAsync<ListResponse>().Result;
+
+            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+            Assert.True(result.IsError);
         }
     }
 }

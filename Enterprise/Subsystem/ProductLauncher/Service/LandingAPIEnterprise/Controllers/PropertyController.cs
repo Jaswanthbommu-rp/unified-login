@@ -35,6 +35,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
         private IProductRepository _productRepository;
 
+        private IManageUnifiedLogin _manageUnifiedLogin;
+
         /// <summary>
         /// Default constructor
         /// </summary>
@@ -51,11 +53,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         {
             base.Initialize(controllerContext);
             var manageProduct = new ManageProduct(_userClaims);
-            var manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
             var manageProductOneSite = new ManageProductOneSite(_userClaims);
 
+            _manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
             _productRepository = new ProductRepository(_userClaims);
-            _integrationTypeFactory = new IntegrationTypeFactory(manageProduct, manageUnifiedLogin, manageProductOneSite, _productRepository, _userClaims);
+            _integrationTypeFactory = new IntegrationTypeFactory(manageProduct, _manageUnifiedLogin, manageProductOneSite, _productRepository, _userClaims);
         }
 
         /// <summary>
@@ -145,6 +147,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 	    [SwaggerResponseExamples(typeof(ProductProperty), typeof(ProductProperty.PropertySimpleExample))]
 	    [Route("product/{productCode}/properties")]
 	    [AuthorizeScope("enterpriseapi")]
+        [Obsolete]
 	    [HttpGet]
 	    public HttpResponseMessage GetProductProperties(string productCode, string include = null)
 	    {
@@ -156,8 +159,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             var productList = _productRepository.GetAllProducts();
             int productId = ProductEnumHelper.GetProductIdByProductCode(productCode, productList);
 
-            var integration = _integrationTypeFactory.GetIntegration(productId);
-            ListResponse productResponse = integration.GetEnterpriseProperties(_userClaims.PersonaId, include);
+            ListResponse productResponse;
+
+            // default to old logic, fallback to new logic when no case match
+            switch (productId)
+            {
+                case (int)ProductEnum.OpsBuyer:
+                    IManageProductOps manageProductOps = new ManageProductOps(_userClaims);
+                    productResponse = manageProductOps.GetCompanyAssets(_userClaims.PersonaId, 0, false, null);
+                    break;
+                case (int)ProductEnum.UnifiedPlatform:
+                    productResponse = _manageUnifiedLogin.GetEnterpriseProperties(_userClaims.PersonaId, include);
+                    break;
+                default:
+                    var integration = _integrationTypeFactory.GetIntegration(productId);
+                    productResponse = integration.GetEnterpriseProperties(_userClaims.PersonaId);
+                    break;
+            }
 
             if (!productResponse.IsError)
             {
