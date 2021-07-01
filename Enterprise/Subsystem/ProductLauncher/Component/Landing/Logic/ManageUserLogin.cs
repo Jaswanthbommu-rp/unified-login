@@ -1129,6 +1129,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             DateTime fromUtcDateTime = DateTime.UtcNow;
             DateTime? thruUtcDateTime = null; // default for AccountCreationSuccessful; Unlocked; Active
             OrganizationStatus orgStatus = new OrganizationStatus();
+            UserLoginOnly userLoginOnly = null;
+            bool newUserWithFeatureDate = false;
+            bool isUserExpired = false;
+            bool newUserwithActiveStatus = false;
+            bool? isNotified = null;
 
             int statusTypeId = 0;
             if (userLogins.Count > 0)
@@ -1178,11 +1183,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     bool isAssigned = true;
                     if (userLoginStatusType == UserUiStatusType.Active)
                     {
-                        UserLoginOnly userLoginOnly = null;
-                        bool newUserWithFeatureDate = false;
-                        bool isUserExpired = false;
-                        bool newUserwithActiveStatus = false;
-                        bool? isNotified = null;
                         _userRepository.ActivateSalesForceUser(_defaultUserClaim.UserRealPageGuid, _defaultUserClaim.PersonaId, ul, isAssigned);
                         foreach (UserLoginOnly userLogin in userLogins)
                         {
