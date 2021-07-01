@@ -1188,7 +1188,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         {
                             userLoginOnly = _userLoginRepository.GetUserLoginOnly(userLogin.RealPageId);
                             var userLoginInfo = GetUserLogin(userLogin.RealPageId, _defaultUserClaim.OrganizationPartyId); // keep for now
-                            orgStatus = _userLoginRepository.GetUserOrganizationWithStatus(userLogin.UserId, userLogin.LastLogin, _defaultUserClaim.OrganizationPartyId, false);
+                            orgStatus = _userLoginRepository.GetUserOrganizationWithStatus(userLoginOnly.UserId, userLoginOnly.LastLogin, _defaultUserClaim.OrganizationPartyId, false);
                             if (orgStatus.ThruDate != null)
                             {
                                 if (DateTime.UtcNow > orgStatus.ThruDate)
