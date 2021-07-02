@@ -1,6 +1,7 @@
 ﻿using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.EnterpriseRole;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.Security;
@@ -242,5 +243,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         IList<UserBatchProductDetail> GetUserBatchDetails(int batchGroupId, long editorUserPersonId, long subjectUserPersonId, BatchProcessType batchProcessType);
 
         void UpdateBatchGroupStatus(int groupId, bool isLogged);
+        int GetUserEnterpriseRoleTemplateID(long personaId);
+        /// <summary>
+        /// GetRoleTemplateProductRoleMapping
+        /// </summary>
+        /// <param name="roleTemplateId"></param>
+        /// <param name="partyId"></param>
+        /// <returns></returns>
+        List<RoleTemplateProductRole> GetRoleTemplateProductRoleMapping(int roleTemplateId, long partyId);
     }
 }

@@ -429,6 +429,11 @@
         // Navigation Menu
         public const string SP_GetNavigationMenu = "Enterprise.GetNavigationMenu";
         public const string SP_GetNavigationMenuRights = "Enterprise.GetNavigationMenuRights";
+
+        //Enterpriserole
+        public const string SP_GetRoleTemplateProductRoleMappings = "Security.GetRoleTemplateProductRolesMappings";
+        public const string SP_GetEnterpriseRoleProductsByOrganization = "Security.GetEnterpriseRoleProductsByOrganization";
+        public const string SP_GetUserRoleTemplate = "Security.GetUserRoleTemplate";
     }
 
     public static class EnterpriseStoredProcNameConstants

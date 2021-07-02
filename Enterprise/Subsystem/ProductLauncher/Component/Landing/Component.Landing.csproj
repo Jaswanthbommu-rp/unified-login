@@ -177,6 +177,7 @@
     <Compile Include="Logic\BatchProcessor\Factory\ProcessExecutionFactory.cs" />
     <Compile Include="Logic\BatchProcessor\Process\CreateUpdateProductUser.cs" />
     <Compile Include="Logic\BatchProcessor\Process\DeactivateProductUser.cs" />
+    <Compile Include="Logic\BatchProcessor\Process\EnterpriseCreateUpdateProductUser.cs" />
     <Compile Include="Logic\BatchProcessor\Process\UpdateProductUserProfile.cs" />
     <Compile Include="Logic\BatchProcessor\Process\ChangeProductUserType.cs" />
     <Compile Include="Logic\Clients\ManageClientsSetup.cs" />

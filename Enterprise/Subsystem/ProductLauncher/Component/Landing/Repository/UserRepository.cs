@@ -13,6 +13,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Batch;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.EnterpriseRole;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
@@ -1089,6 +1090,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
 
                         personaId = repositoryResponse.Id;
+                        if (organizationPartyId == currentOrg.OrganizationPartyId)
+                        {
+                            // get the new persona for the company the user is being added to so it can be used later in the product batch calls
+                            AssignUserPersonaId = repositoryResponse.Id;
+                            createUserResponse.PersonaId = repositoryResponse.Id;
+                        }
 
                         //Link persona to enterprise Role ID
                         if (primaryPropertiesBatch?.InputJson?.RoleList != null && primaryPropertiesBatch?.InputJson?.RoleList.Count > 0)
@@ -1105,14 +1112,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 createUserResponse.UserStatus = errorStatus.ErrorMsg;
                                 return createUserResponse;
                             }
-                        }
-
-                        if (organizationPartyId == currentOrg.OrganizationPartyId)
-                        {
-                            // get the new persona for the company the user is being added to so it can be used later in the product batch calls
-                            AssignUserPersonaId = repositoryResponse.Id;
-                            createUserResponse.PersonaId = repositoryResponse.Id;
-                        }
+                        }                       
 
                         // Linking Persona to a Role based on user type
                         var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesByRealPageID" : StoredProcNameConstants.SP_ListRolesByRealPageID;
@@ -2447,12 +2447,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             emailUsageType = contactMechanismUsageTypeRepository.ListContactMechanismUsageType(ContactMechanismUsageTypeName: "Email Notification");
 
+            var primaryPropertyBatch = newProfile.productBatch.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedUI);
+            int enterpriseRoleId = 0;
+            if (primaryPropertyBatch?.InputJson?.RoleList != null && primaryPropertyBatch?.InputJson?.RoleList.Count > 0)
+            {
+                enterpriseRoleId = Convert.ToInt32(primaryPropertyBatch.InputJson.RoleList.FirstOrDefault());              
+            }
+
             //TODO:CG.WE CAN DELETEDE DE USERDETAILS BECAUSE WE ARE SENDING THE OLDPROFILE
             //Get User Details before save
             var userDetails = GetUserDetails(oldProfile.Persona[0].PersonaId);
 
             //If user is activated from deactivate status ,get all products data which are previously assigned to user
-            if (newProfile.userLogin.Status == UserUiStatusType.Disabled)
+            if (newProfile.userLogin.Status == UserUiStatusType.Disabled && enterpriseRoleId == 0)
             {
                 productBatchData = GetActivatedUserProductBatchData(oldProfile.Persona[0].PersonaId, newProfile.productBatch);
             }
@@ -2493,9 +2500,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 }
             });
 
-            var primaryPropertyBatch = productBatchData.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedUI);
+            
             // primary properties selected
-            if (primaryPropertyBatch != null)
+            if (primaryPropertyBatch != null && enterpriseRoleId == 0)
             {
                 IPropertyRepository propertyRepository = new PropertyRepository();
                 // get persona primary properties
@@ -3356,11 +3363,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         private int SaveProductDetails(IRepository repository, IList<ProductBatch> productList, CreateUserResponse<IErrorData> createUserResponse, long CreateUserPersonaId, long AssignUserPersonaId, Guid realPageId, Guid organizationRealPageId, Status<IErrorData> errorStatus, int userTypeId, bool userIsActive, IList<string> aoProducts = null, bool migratedUser = false, bool isCreateUser = false)
         {
             int productCount = 0;
+            int enterpriseRoleId = 0;
+            int batchProcessTypeId = (int)BatchProcessType.CreateUpdateProductUser;
             string saveProductBatchError = "Save Product(s) Error: ";
+            List<RoleTemplateProductRole> roleTemplateProductRole = new List<RoleTemplateProductRole>();
 
             if (errorStatus == null)
             {
                 errorStatus = new Status<IErrorData>();
+            }
+           
+            ProductBatch primaryPropertyBatch = productList.ToList().FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedUI);
+            if (primaryPropertyBatch?.InputJson?.RoleList != null && primaryPropertyBatch?.InputJson?.RoleList.Count > 0)
+            {
+                enterpriseRoleId = Convert.ToInt32(primaryPropertyBatch.InputJson.RoleList.FirstOrDefault());
+                productList.Remove(primaryPropertyBatch);
+            }
+           
+            if (enterpriseRoleId > 0 )
+            {
+                batchProcessTypeId = (int)BatchProcessType.EnterpriseRoleCreateUpdateProductUser;
+               
+                object param = new
+                {
+                    RoleTemplateId = enterpriseRoleId,
+                    OrganizationRealPageId = organizationRealPageId
+                };
+
+                roleTemplateProductRole = repository.GetMany<RoleTemplateProductRole>(StoredProcNameConstants.SP_GetRoleTemplateProductRoleMappings, param).ToList();               
             }
 
             // if superuser do all products that currently support user creation;
@@ -3409,13 +3439,60 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 productList = productListToCreate;
             }
 
+
+            if (userIsActive && userTypeId != (int)UserRoleType.SuperUser && !migratedUser && enterpriseRoleId > 0)
+            {
+                object param = new
+                {
+                    RoleTemplateId = enterpriseRoleId,
+                    OrganizationRealPageId = organizationRealPageId
+                };
+                var roleTemplateProducts = repository.GetMany<int>(StoredProcNameConstants.SP_GetEnterpriseRoleProductsByOrganization, param).ToList();
+
+                foreach (var product in roleTemplateProducts)
+                {
+                    var productRoleData = roleTemplateProductRole?.Where(p => p.ProductId == product);
+
+                    var roleTemplateRoles = productRoleData?.Select(p => new
+                    {
+                        p.RoleTemplateProductRoleMappingId,
+                        p.ProductRoleId,
+                        p.ProductRoleName
+                    }).Distinct();
+
+
+                    //Roles
+                    List<string> productRoles = new List<string>();
+                    foreach (var roles in roleTemplateRoles)
+                    {
+                        if (roles.RoleTemplateProductRoleMappingId != 0)
+                        {
+                            productRoles.Add(roles.ProductRoleId);
+                        }
+                    }
+
+                    ProductBatch pb = new ProductBatch()
+                    {
+                        ProductId = product,
+                        StatusTypeId = 5,
+                        RetryCount = 0,
+                        InputJson = new RolePropertyList() 
+                        { 
+                            PropertyRoleList = new List<PropertyRoleList>(), 
+                            PropertyList = new List<string>(),
+                            RoleList = productRoles, 
+                            IsAssigned = true ,
+                            IsAssignedNewPropertyByDefault = false,
+                            UsePrimaryProperties = true
+                        }
+                    };
+                    productList.Add(pb);
+                }
+            }
+
             if (productList != null)
             {
-                ProductBatch primaryPropertyBatch = productList.ToList().FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedUI);
-                if (primaryPropertyBatch != null)
-                {
-                    productList.Remove(primaryPropertyBatch);
-                }
+              
                 //Product EasyLMS is assigned and the tile is display for all users if it's assigned to the Organization 
                 //No need to add an EasyLMS ProductPatch eventhough it's included in the ProductBatch product list from the UI
                 ProductBatch easyLMSProductBatch = productList.ToList().FirstOrDefault(p => p.ProductId == (int)ProductEnum.EasyLMS);
@@ -3504,7 +3581,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             oneSiteAndOtherProducts.Add(ProductEnum.Lead2Lease.ToString(), pbSeniorLead.InputJson);
                         }
 
-                        SaveProductBatch(repository, pbOneSite, createUserResponse, saveProductBatchError, CreateUserPersonaId, AssignUserPersonaId, realPageId, errorStatus, JsonConvert.SerializeObject(oneSiteAndOtherProducts));
+                        SaveProductBatch(repository, pbOneSite, createUserResponse, saveProductBatchError, CreateUserPersonaId, AssignUserPersonaId, realPageId, errorStatus, JsonConvert.SerializeObject(oneSiteAndOtherProducts), batchProcessTypeId);
 
                         if (errorStatus.Success == false)
                         {
@@ -3539,11 +3616,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         if (product.ProductId == (int)ProductEnum.AssetOptimizer)
                         {
                             // special treatment for bundled AO products
-                            SaveProductBatch(repository, product, createUserResponse, saveProductBatchError, CreateUserPersonaId, AssignUserPersonaId, realPageId, errorStatus, aoInputJsonString);
+                            SaveProductBatch(repository, product, createUserResponse, saveProductBatchError, CreateUserPersonaId, AssignUserPersonaId, realPageId, errorStatus, aoInputJsonString, batchProcessTypeId);
                         }
                         else
                         {
-                            SaveProductBatch(repository, product, createUserResponse, saveProductBatchError, CreateUserPersonaId, AssignUserPersonaId, realPageId, errorStatus, JsonConvert.SerializeObject(product.InputJson));
+                            SaveProductBatch(repository, product, createUserResponse, saveProductBatchError, CreateUserPersonaId, AssignUserPersonaId, realPageId, errorStatus, JsonConvert.SerializeObject(product.InputJson), batchProcessTypeId);
                         }
                     }
 
@@ -5772,16 +5849,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         if (updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue() && !userBatchEntity.UserTypeChanged)
                         {
-                            //// primary properties selected
-                            //if (primaryPropertyBatch != null)
-                            //{
-                            //    List<string> currentprimaryProperties = repository.GetMany<string>(StoredProcNameConstants.SP_GetPropertyInstanceIdsByPersonaId, new { PersonaId = updateUserProfileEntity.OldProfile.Persona[0].PersonaId, ProductId = (int)ProductEnum.UnifiedUI }).ToList(); //.ConvertAll<string>(x => x.ToString());
-                            //    IList<PersonaProductUserDetails> userProductList = repository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = updateUserProfileEntity.OldProfile.Persona[0].PersonaId, ProductStatusValue = ((Int32)UserUiStatusType.AccountCreationSuccessful).ToString() }).ToList();
-                            //    updateUserProfileEntity.ProductBatchData = updateProductBatchDataWithPrimaryProperties(updateUserProfileEntity.CreateUserPersonaId, updateUserProfileEntity.OldProfile.Persona[0].PersonaId, primaryPropertyBatch, updateUserProfileEntity.ProductBatchData.ToList(), userProductList.ToList(), currentprimaryProperties);
-
-                            //}
-
-                            int productCount = SaveProductDetails(repository, updateUserProfileEntity.ProductBatchData, null, updateUserProfileEntity.CreateUserPersonaId, updateUserProfileEntity.OldProfile.Persona[0].PersonaId, updateUserProfileEntity.LoggedInUserRealPageId, updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId, null, updateUserProfileEntity.NewProfile.UserTypeId, updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue(), updateUserProfileEntity.AoProductsAvailableForUser);
+                           int productCount = SaveProductDetails(repository, updateUserProfileEntity.ProductBatchData, null, updateUserProfileEntity.CreateUserPersonaId, updateUserProfileEntity.OldProfile.Persona[0].PersonaId, updateUserProfileEntity.LoggedInUserRealPageId, updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId, null, updateUserProfileEntity.NewProfile.UserTypeId, updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue(), updateUserProfileEntity.AoProductsAvailableForUser,false,false);
                         }
 
                         if (!updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue())

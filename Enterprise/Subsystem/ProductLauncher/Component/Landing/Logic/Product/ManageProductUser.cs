@@ -30,6 +30,10 @@ using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
+using System.Threading.Tasks;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.EnterpriseRole;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
@@ -175,6 +179,151 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 WriteActivityLog(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, productUser.BatchProcessorGroupId);
             }
 
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// Creates Product User
+        /// </summary> 
+        /// <param name="productUser">Product details for a user</param>
+        /// <returns>String.empty if success else error</returns>
+        public string CreateEnterpriseRoleProductUser(ProductUserProperitiesRoles productUser)
+        {
+            string result = string.Empty;
+            int productId = 0;
+
+            bool isUpdateUser = false;
+            bool usePrimaryProperties = false;
+            bool isRolesExists = false;
+            RolePropertyList roleProp = new RolePropertyList();
+            try
+            {
+                IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(productUser.AssignUserPersonaId, (int)productUser.ProductName);
+                if (productAttributes.Any())
+                {
+                    isUpdateUser = true;
+                }
+
+                //First get enterprise role id for user persona
+                int userRoleTemplateId = _productRepository.GetUserEnterpriseRoleTemplateID(productUser.AssignUserPersonaId);
+
+                if (userRoleTemplateId > 0)
+                {
+                    IManagePersona _managePersona = new ManagePersona();
+                    var persona = _managePersona.GetPersona(productUser.AssignUserPersonaId);
+
+                    var properties = getEnterpriseRoleUserPrimaryPropertiesData(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId,(int)productUser.ProductName);
+                 
+                    if (properties?.Count > 0)
+                    {
+                        if (ValidateDictionaryMapping(productUser.InputJson) && (int)productUser.ProductName == (int)ProductEnum.OneSite)
+                        {
+                            object productPropertiesRoles = JsonConvert.DeserializeObject<Dictionary<string, RolePropertyList>>(productUser.InputJson.Trim());
+                            var combinedRoleProp = new Dictionary<string, RolePropertyList>();
+                            combinedRoleProp = productPropertiesRoles as Dictionary<string, RolePropertyList>;
+                            if (combinedRoleProp.Any(p => p.Key == ProductEnum.OneSite.ToString()))
+                            {
+                                var osproperties = combinedRoleProp.Where(p => p.Key == ProductEnum.OneSite.ToString()).First().Value;
+                                osproperties.PropertyList = properties;
+                                isRolesExists = roleProp.RoleList?.Count > 0;
+                            }
+                            //Lead2Lease
+                            if (combinedRoleProp.Any(p => p.Key == ProductEnum.Lead2Lease.ToString()))
+                            {
+                                // RolePropertyList lead2Lease
+                                var l2lproperties = getEnterpriseRoleUserPrimaryPropertiesData(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, (int)ProductEnum.Lead2Lease);
+                                var l2lroleProp = combinedRoleProp.Where(p => p.Key == ProductEnum.Lead2Lease.ToString()).First().Value;
+                                l2lroleProp.PropertyList = l2lproperties;
+                                isRolesExists = l2lroleProp.RoleList?.Count > 0;
+                            }
+
+                            //SeniorLeadManagement
+                            if (combinedRoleProp.Any(p => p.Key == ProductEnum.SeniorLeadManagement.ToString()))
+                            {
+                                // RolePropertyList slm
+                                var slmproperties = getEnterpriseRoleUserPrimaryPropertiesData(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, (int)ProductEnum.SeniorLeadManagement);
+                                var slmroleProp = combinedRoleProp.Where(p => p.Key == ProductEnum.SeniorLeadManagement.ToString()).First().Value;
+                                slmroleProp.PropertyList = slmproperties;
+                                isRolesExists = slmroleProp.RoleList?.Count > 0;
+                            }
+                            //roleProp = combinedRoleProp;
+                            productUser.InputJson = JsonConvert.SerializeObject(combinedRoleProp);
+                        }
+                        else
+                        {
+                            roleProp = JsonConvert.DeserializeObject<RolePropertyList>(productUser.InputJson);
+                            roleProp.PropertyList = properties;
+                            isRolesExists = roleProp.RoleList?.Count > 0;
+                            productUser.InputJson = JsonConvert.SerializeObject(roleProp);
+                        }
+                    }                    
+
+                    usePrimaryProperties = roleProp.UsePrimaryProperties;
+                    if (!isRolesExists)
+                    {
+                        result = "No Product Roles are found for Enterprise Role";
+					}
+                    else if (properties?.Count == 0 && !(productId == 63 || productId == 39))
+                    {
+                        result = "No Product Properties are found for Enterprise Role";
+                    }
+                    else
+                    {
+                        var integration = _integrationTypeFactory.GetIntegration(productUser.ProductName);
+                        result = integration.CreateUser(productUser);
+                    }
+                    
+                }
+                else
+                {
+                    result = $"No Enterprise Role found for persona - {productUser.AssignUserPersonaId}";
+                }
+              
+            }
+            catch (Exception ex)
+            {
+                Exception realError = ex;
+                while (realError.InnerException != null)
+                    realError = realError.InnerException;
+
+                result = realError.Message;
+            }
+            var isBatchCompleted = false;
+            // If result OK then update Success status else Error
+            if (string.IsNullOrEmpty(result))
+            {
+                isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Success);
+                UpdateProductPrimaryPropertyProductStatus(productUser.AssignUserPersonaId, (int)productUser.ProductName, usePrimaryProperties == true ? 1 : 0);
+            }
+            else
+            {
+                if (result.ToUpper() == ProductBatchStatusType.Stop.ToString().ToUpper())
+                {
+                    isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Stop, null, "Batch Process stoped due to internal error for this product.");
+                }
+                else
+                {
+                    isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Error, null, result);
+
+                    if (!isUpdateUser)
+                    {
+                        _productRepository.UpdateProductSettingProductStatus(productUser.AssignUserPersonaId, productId, "ProductStatus", (int)ProductBatchStatusType.Error);
+                    }
+                    else
+                    {
+                        //Activity log
+                        result = "An error occurred during the update process";
+                        WriteActivityLogWithMessage(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, result, productId);
+                    }
+                }
+            }
+
+            if (isBatchCompleted)
+            {
+                WriteActivityLog(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, productUser.BatchProcessorGroupId);
+            }
 
             return result;
         }
@@ -687,6 +836,107 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			logger = logger.ForContext("ProductModule", this.GetType());
             logger = logger.ForContext("CorrelationId", correlationId);
             logger.Write(logType, exception, message );
+        }
+
+        private List<string> getEnterpriseRoleUserPrimaryPropertiesData(long editorPersonaId, long userPersonaId,int productId)
+        {
+            var productPropertyIdList = new List<string>();
+            IManageProductPanel manageProductPanel = new ManageProductPanel(_defaultUserClaim);
+            ListResponse result = new ListResponse();
+
+            var userProperties = _propertyRepository.ListUPFMPropertyInstanceByPersona(userPersonaId, ProductEnum.UnifiedUI);
+            result = manageProductPanel.GetProductProperties(editorPersonaId, userPersonaId, productId, null);
+            if (!result.IsError)
+            {
+                UPFMProperty upfmProperty = new UPFMProperty();
+                upfmProperty.id = userProperties?.Select(p => p.InstanceId.ToString()).ToList();
+
+                result = manageProductPanel.CompareProductAndPrimaryProperties(upfmProperty, productId, result);
+                if (result.Records.Count > 0)
+                {
+                    productPropertyIdList = getSelectedProperties(result);
+                }
+            }
+            return productPropertyIdList;
+        }
+
+        private List<string> getSelectedProperties(ListResponse productResult)
+        {
+            List<string> selectedProperties = new List<string>();
+            var productPropertyType = productResult.Records[0].GetType();
+
+            if (productPropertyType == typeof(ProductProperty))
+            {
+                var productList = productResult.Records.Cast<ProductProperty>();
+                foreach (var property in productList)
+                {
+                    if (property.IsAssigned == true)
+                    {
+                        selectedProperties.Add(property.ID);
+                    }
+                }
+            }
+            else if (productPropertyType == typeof(ACProperty))
+            {
+                foreach (var property in productResult.Records.Cast<ACProperty>())
+                {
+                    if (property.IsAssigned == true)
+                    {
+                        selectedProperties.Add(property.Id);
+                    }
+                }
+            }
+            else if (productPropertyType == typeof(AssetGroup))
+            {
+                foreach (var property in productResult.Records.Cast<AssetGroup>())
+                {
+                    if (property.IsAssigned == true)
+                    {
+                        selectedProperties.Add(property.ID);
+                    }
+                }
+            }
+            else if (productPropertyType == typeof(OnSiteProperty))
+            {
+                foreach (var property in productResult.Records.Cast<OnSiteProperty>())
+                {
+                    if (property.IsAssigned == true)
+                    {
+                        selectedProperties.Add(property.GetPropertyId.ToString());
+                    }
+                }
+            }
+            else if (productPropertyType == typeof(RumPropertyGroup))
+            {
+                foreach (var property in productResult.Records.Cast<RumPropertyGroup>())
+                {
+                    if (property.IsAssigned == true)
+                    {
+                        selectedProperties.Add(property.Id.ToString());
+                    }
+                }
+            }
+            else if (productPropertyType == typeof(ProductProperties))
+            {
+                foreach (var property in productResult.Records.Cast<ProductProperties>())
+                {
+                    if (property.IsAssigned == true)
+                    {
+                        selectedProperties.Add(property.GetPropertyId.ToString());
+                    }
+                }
+            }
+            else if (productPropertyType == typeof(Portfolio))
+            {
+                foreach (var property in productResult.Records.Cast<Portfolio>())
+                {
+                    if (property.IsAssigned == true)
+                    {
+                        selectedProperties.Add(property.ID);
+                    }
+                }
+            }
+            return selectedProperties;
         }
     }
 

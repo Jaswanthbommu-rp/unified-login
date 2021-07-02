@@ -9,6 +9,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Inter
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.EnterpriseRole;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
@@ -1915,6 +1916,40 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             using (var repository = GetRepository())
             {
                 return repository.GetMany<EnterpriseProductUser>(EnterpriseStoredProcNameConstants.SP_ListUsersWithCompanyId, param);
+            }
+        }
+
+        /// <summary>
+        /// Returns  persona enterprise role template id.		
+        /// </summary> 
+        public int GetUserEnterpriseRoleTemplateID(long personaId)
+        {
+            int userRoleTemplateId = 0;
+            using (var repository = GetRepository())
+            {
+                userRoleTemplateId = repository.GetOne<int>(StoredProcNameConstants.SP_GetUserRoleTemplate, new { PersonaId = personaId });               
+            }
+
+            return userRoleTemplateId;
+        }
+
+        /// <summary>
+		/// GetRoleTemplateProductRoleMapping
+		/// </summary>
+		/// <param name="roleTemplateId"></param>
+		/// <param name="partyId"></param>
+		/// <returns></returns>
+		public List<RoleTemplateProductRole> GetRoleTemplateProductRoleMapping(int roleTemplateId, long partyId)
+        {
+            object param = new
+            {
+                RoleTemplateId = roleTemplateId,
+                PartyId = partyId
+            };
+            using (var repository = GetRepository())
+            {
+                return repository.GetMany<RoleTemplateProductRole>(StoredProcNameConstants.SP_GetRoleTemplateProductRoleMappings, param).ToList();
+
             }
         }
 

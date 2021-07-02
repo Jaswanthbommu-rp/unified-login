@@ -181,7 +181,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 		/// <summary>
 		/// User Enterprise Role Template Id
 		/// </summary>
-		[JsonProperty("RoleTemplateId", NullValueHandling = NullValueHandling.Ignore)]
-		public int EntepriseRoleId { get; set; }
+		public int RoleTemplateId { get; set; }
 	}
 }
