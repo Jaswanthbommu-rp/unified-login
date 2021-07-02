@@ -121,8 +121,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <summary>
 		/// Used to create/update a user in IntegrationMarketplace
 		/// </summary>
-		public string ManageIntegrationMarketplaceUser(long editorPersonaId, long userPersonaId, IntegrationMarketplacePropertyRole userAssignProductPropertyRole,
-			BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser)
+		public string ManageIntegrationMarketplaceUser(long editorPersonaId, long userPersonaId, IntegrationMarketplacePropertyRole userAssignProductPropertyRole, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser)
 		{
 			WriteToDiagnosticLog($"ManageIntegrationMarketplaceUser - Begin create/update user for user with userPersonaId id - {userPersonaId}.");
 
@@ -237,9 +236,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						}
 
                         UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
-                        WriteCreateUserActivityLog(editorPersonaId, person, (UserLoginOnly)userLogin);
 
-                        return string.Empty;
+						return string.Empty;
                     }
 				}
 				else
@@ -315,8 +313,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			WriteToInformationLog($"UnassignUser success userPersonaId:{userPersonaId}");
 			UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
-			// Activity Logging
-			WriteUnassignActivityLog(editorPersonaId, userPersonaId);
 
 			return string.Empty;
 		}

@@ -596,8 +596,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 WriteToDiagnosticLog($"ManageProductRum.UnassignUser userPersonaId:{userPersonaId}");
 				UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
 
-				// Activity Logging
-				WriteUnassignActivityLog(editorPersonaId, userPersonaId);
 			}			
 
             return result;
@@ -861,12 +859,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     WriteToDiagnosticLog($"ManageProductRum.ManageOnSiteUse - trying to CREATE user with editorPersona id - {editorPersonaId}.");
                     var insertResult = InsertRumProductUser(userPersonaId, editorPersonaId, productLoginName, rumUser, companyId);
 
-                    // add activity log
-                    if (string.IsNullOrEmpty(insertResult))
-                    {
-                        // add activity log
-                        WriteCreateUserActivityLog(editorPersonaId, person, userLogin);
-                    }
                     return insertResult;
                 }
 				

@@ -1209,12 +1209,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// Update a Product Batch
         /// </summary>
         /// <returns>Repository response object</returns>
-        public RepositoryResponse UpdateProductBatch(int productBatchId, int statusTypeId, string inputJson = null, string errorDetails = null)
+        public bool UpdateProductBatch(int productBatchId, int statusTypeId, string inputJson = null, string errorDetails = null)
         {
             using (var repository = GetRepository())
             {
-                var result = repository.Execute<RepositoryResponse>(StoredProcNameConstants.SP_UpdateProductBatch,
-                    new { productBatchId, statusTypeId, inputJson, errorDetails });
+                //var result = repository.Execute<RepositoryResponse>(StoredProcNameConstants.SP_UpdateProductBatch,
+                //    new { productBatchId, statusTypeId, inputJson, errorDetails });
+                
+                var result = repository.Execute<bool>(StoredProcNameConstants.SP_UpdateProductBatch,
+                   new { productBatchId, statusTypeId, inputJson, errorDetails });
+                
                 return result;
             }
         }
@@ -2103,6 +2107,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             using (var repository = GetRepository())
             {
                 return repository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = personaId, ProductStatusValue = productStatus.ToString() }).ToList().Any(x => x.ProductId == productId);
+            }
+        }
+
+        public IList<UserBatchProductDetail> GetUserBatchDetails(int batchGroupId, long editorUserPersonId, long subjectUserPersonId, BatchProcessType batchProcessType)
+        {
+            using (var repo = GetRepository()) 
+            {
+                var data = repo.GetMany<UserBatchProductDetail>(StoredProcNameConstants.SP_GetUserBatchRecords, new 
+                {
+                    batchProcessorGroupId = batchGroupId,
+                    editorUserPersonId = editorUserPersonId,
+                    subjectUserPersonId = subjectUserPersonId,
+                    batchProcessType = (int)batchProcessType
+
+                }).ToList();
+                return data;
+            }
+        }
+
+        public void UpdateBatchGroupStatus(int groupId, bool isLogged) 
+        {
+            using (var repo = GetRepository()) 
+            {
+                repo.ExecuteNonQuery(StoredProcNameConstants.SP_UpdateProcessorGroupStatus, new
+                {
+                    groupId = groupId,
+                    activiityLogged = isLogged
+                });
             }
         }
         #endregion

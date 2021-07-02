@@ -371,7 +371,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 							WriteToDiagnosticLog($"ManageRPDMUser - Create user. newid={newid}, login={newUser.Name}");
 							UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
 							WriteToDiagnosticLog("ManageRPDMUser - Create user success. Set product status to Success");
-							WriteCreateUserActivityLog(editorPersonaId, person, userLogin);
 
 							//Update the user in Spend Management as a migrated user
 							MigrateResponse migrateResponse = new MigrateResponse();
@@ -581,8 +580,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				return "Error";
 			}
 			
-			// Activity Logging
-			WriteUnassignActivityLog(editorPersonaId, userPersonaId);
 			
 			WriteToDiagnosticLog($"ManageRPDMUser - UnassignUser - Successfully Disabled user userPersonaId:{userPersonaId}");
 			UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);

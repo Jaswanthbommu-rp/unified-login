@@ -71,5 +71,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		/// Product Batch Status (Waiting, Running, Error, and Success)
 		/// </summary>
 		int StatusTypeId { get; set; }
+
+		/// <summary>
+		/// Batch Group GUID
+		/// </summary>
+		int BatchProcessorGroupId { get; set; }
 	}
 }

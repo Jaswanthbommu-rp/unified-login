@@ -272,7 +272,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
                     InputJson = batch.InputJson,
                     CorrelationId = batch.CorrelationId,
                     BatchProcessType = batch.BatchProcessTypeId,
-                    ProcessApiEndPoint = processEndpoint
+                    ProcessApiEndPoint = processEndpoint,
+                    BatchProcessorGroupId = batch.BatchProcessorGroupId
                 };
 
                 var landingApiCaller = new ProductApiCaller();

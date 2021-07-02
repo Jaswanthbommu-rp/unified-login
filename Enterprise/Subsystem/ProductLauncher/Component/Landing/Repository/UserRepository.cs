@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Dapper;
+using Newtonsoft.Json;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
@@ -8,6 +9,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Dtos;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Batch;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise;
@@ -22,6 +24,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Dynamic;
 using System.Linq;
 using System.Net.Http;
@@ -163,6 +166,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 EnterpriseUserName = starterProfileOptions.EnterpriseUserName,
                 IsSuccess = true
             };
+        }
+
+        private BatchProcessorGroup CreateBatchProcessGroup(IRepository repo)
+        {
+            {
+                DynamicParameters param = new DynamicParameters();
+                int groupID = 0;
+                param.Add("@BatchProcessorGroupID", groupID, dbType: DbType.Int32, direction: ParameterDirection.Output);
+
+                try
+                {
+                    var a = repo.Execute(StoredProcNameConstants.SP_CreateBatchProcessorGroup, param);
+                    groupID = param.Get<int>("@BatchProcessorGroupID");
+                }
+                catch (Exception ex)
+                {
+                }
+
+                return new BatchProcessorGroup()
+                {
+                    BatchProcessorGroupId = groupID,
+                    BatchProcessorGroupActivityLogged = false
+                };
+            }
         }
 
         /// <summary>
@@ -1501,6 +1528,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
                     }
 
+
+                    if (newProfile.productBatch != null)
+                    {
+                        var batchGroup = CreateBatchProcessGroup(repository);
+                        foreach (var item in newProfile.productBatch)
+                        {
+                            item.BatchProcessorGroupId = batchGroup.BatchProcessorGroupId;
+                        }
+                    }
+
                     int productCount = SaveProductDetails(repository, newProfile.productBatch, createUserResponse, CreateUserPersonaId, AssignUserPersonaId, userClaim.UserRealPageGuid, organizationRealPageId, errorStatus, newProfile.UserTypeId, true, aoProductsAvailableForUser, newProfile.MigratedUser, true);
 
                     #endregion
@@ -2227,6 +2264,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     //Use RealPage Employee Access PersonaId when creating the Product Patches.
                     createUserPersonaId = repository.GetOne<long>(StoredProcNameConstants.SP_GetActivePersona, new { RealPageId = RealPageEmployeeAccessID });
 
+                    
+                    if (productList != null)
+                    {
+                        var batchGroup = CreateBatchProcessGroup(repository);
+                        foreach (var item in productList)
+                        {
+                            item.BatchProcessorGroupId = batchGroup.BatchProcessorGroupId;
+                        }
+                    }
                     personaList.ToList().ForEach(o =>
                         productCount = SaveProductDetails(repository, productList, null, createUserPersonaId, o.PersonaId, RealPageEmployeeAccessID, organizationRealPageId, null, (int)UserRoleType.SuperUser, true, aoProductsAvailableForUser, false, false)
                     );
@@ -3388,6 +3434,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             ProductId = (int)ProductEnum.SalesForce,
                             StatusTypeId = 5,
                             RetryCount = 0,
+                            BatchProcessorGroupId = productList[0].BatchProcessorGroupId,
                             InputJson = new RolePropertyList() { PropertyList = new List<string>(), RoleList = new List<string>(), IsAssigned = (isCreateUser || userIsActive) }
                         };
                         productList.Add(pb);
@@ -3999,6 +4046,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     CreateUserPersonaId = product.CreateUserPersonaId,
                     AssignUserPersonaId = product.AssignUserPersonaId,
                     ProductId = product.ProductId,
+                    BatchProcessorGroupId = product.BatchProcessorGroupId,
                     StatusTypeId = product.StatusTypeId,
                     RetryCount = product.RetryCount,
                     InputJson = inputJson,
@@ -5704,6 +5752,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
 
                         bool notificationEmailChanged = isNotificationEmailChanged(priorNotificationEmail, updateUserProfileEntity.NewProfile.NotificationEmail);
+
+                        if (updateUserProfileEntity.ProductBatchData != null)
+                        {
+                            var batchGroup = CreateBatchProcessGroup(repository);
+                            foreach (var item in updateUserProfileEntity.ProductBatchData)
+                            {
+                                item.BatchProcessorGroupId = batchGroup.BatchProcessorGroupId;
+                            }
+                        }
 
                         if ((updateUserProfileEntity.NewProfile.userLogin.Status != UserUiStatusType.Disabled) && (profileChanged || loginNamechanged || notificationEmailChanged || employeeIdChanged))
                         {

@@ -401,13 +401,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         $"ManageProductClientPortal.ManageClientPortalUser - trying to CREATE user with editorPersona id - {editorPersonaId}.");
                     string insertResult = CreateClientPortalUser(userPersonaId, clientPortalUser);
 
-                    // add activity log
-                    if (string.IsNullOrEmpty(insertResult))
-                    {
-                        // add activity log
-                        WriteCreateUserActivityLog(editorPersonaId, person, userLogin);
-                    }
-
                     return insertResult;
                 }
 
@@ -666,7 +659,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
 
                 UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
-                WriteUnassignActivityLog(editorPersonaId, userPersonaId);
+                
                 return "";
             }
 

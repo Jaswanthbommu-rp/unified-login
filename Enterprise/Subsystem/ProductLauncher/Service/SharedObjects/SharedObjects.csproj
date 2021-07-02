@@ -140,6 +140,7 @@
     <Compile Include="Base\RPObjectCache.cs" />
     <Compile Include="Base\RequestParameter.cs" />
     <Compile Include="Base\RequestParameterModelBinder.cs" />
+    <Compile Include="Batch\BatchProcessorGroup.cs" />
     <Compile Include="BlackBook\BooksPropertyInstance.cs" />
     <Compile Include="BlackBook\Company.cs" />
     <Compile Include="BlackBook\CompanyInstance.cs" />
@@ -372,6 +373,7 @@
     <Compile Include="Landing\SortTableType.cs" />
     <Compile Include="Landing\StatusType.cs" />
     <Compile Include="Landing\UnifiedSetting.cs" />
+    <Compile Include="Landing\UserBatchProductDetail.cs" />
     <Compile Include="Landing\UserCompaniesProperties.cs" />
     <Compile Include="Landing\UserEmail.cs" />
     <Compile Include="Landing\UserEmployee.cs" />

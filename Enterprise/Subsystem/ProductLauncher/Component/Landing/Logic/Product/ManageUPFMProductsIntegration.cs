@@ -806,9 +806,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
 
-				// add activity log
-				WriteUserActivityLogWithMessage(editorPersonaId, person, userLogin, "Access is granted for user {0} {1} in product {2} by user {3} {4}.");
-
 				return string.Empty;
 			}
 			catch (Exception ex)
@@ -863,8 +860,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			WriteToInformationLog($"ManageUPFMProductUser-UnassignUser userPersonaId:{userPersonaId}");
 			UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
 
-			// Activity Logging
-			WriteUnassignActivityLog(editorPersonaId, userPersonaId);
 
 			return string.Empty;
 		}

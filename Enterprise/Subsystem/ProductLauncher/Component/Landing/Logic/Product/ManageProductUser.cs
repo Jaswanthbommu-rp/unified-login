@@ -30,8 +30,7 @@ using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
-using System.Threading.Tasks;
+
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -118,7 +117,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             bool isUpdateUser = false;
             bool usePrimaryProperties = false;
             try
-            {                
+            {
                 IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(productUser.AssignUserPersonaId, (int)productUser.ProductName);
                 if (productAttributes.Any())
                 {
@@ -140,21 +139,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 result = realError.Message;
             }
 
+            var isBatchCompleted = false;
+
             // If result OK then update Success status else Error
             if (string.IsNullOrEmpty(result))
             {
-                _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Success);
-                UpdateProductPrimaryPropertyProductStatus(productUser.AssignUserPersonaId, (int)productUser.ProductName, usePrimaryProperties == true ? 1 : 0);                
+                isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Success);
+                UpdateProductPrimaryPropertyProductStatus(productUser.AssignUserPersonaId, (int)productUser.ProductName, usePrimaryProperties == true ? 1 : 0);
             }
             else
             {
                 if (result.ToUpper() == ProductBatchStatusType.Stop.ToString().ToUpper())
                 {
-                    _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Stop, null, "Batch Process stoped due to internal error for this product.");
+                    isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Stop, null, "Batch Process stoped due to internal error for this product.");
                 }
                 else
                 {
-                    _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Error, null, result);
+                    isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Error, null, result);
 
                     if (!isUpdateUser)
                     {
@@ -168,6 +169,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                 }
             }
+
+            if (isBatchCompleted)
+            {
+                WriteActivityLog(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, productUser.BatchProcessorGroupId);
+            }
+
 
             return result;
         }
@@ -530,6 +537,132 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
+        private void WriteActivityLog(long fromPersonaId, long toPersonaId, int batchGroupId)
+        {
+            var fromUserLogInfo = GetUserActivityLogInfo(fromPersonaId);
+            var toUserLogInfo = GetUserActivityLogInfo(toPersonaId);
+
+            var data = _productRepository.GetUserBatchDetails(batchGroupId, fromPersonaId, toPersonaId, BatchProcessType.CreateUpdateProductUser);
+
+            if (data != null & data.Count > 0) 
+            {
+                foreach (var item in data)
+                {
+                    var role = JsonConvert.DeserializeObject<UPFMProductPropertyRole>(item.InputJSON.Trim());
+                    item.IsAssigned = role.IsAssigned;
+                }
+
+                bool activityLogged = data[0].BatchProcessorGroupActivityLogged;
+                if (!activityLogged) 
+                {
+                    var successRecords = data.Where(x => x.StatusTypeId == 8).ToList();
+                    if (successRecords != null)
+                    {
+                        var message = GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, successRecords, true);
+                        PushToQueue(fromUserLogInfo, toUserLogInfo, message);
+                    }
+
+                    var failedRecords = data.Where(x => x.StatusTypeId == 7).ToList();
+                    if (failedRecords != null)
+                    {
+                        var message = GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, failedRecords, false);
+                        PushToQueue(fromUserLogInfo, toUserLogInfo, message);
+                    }
+
+                    //update status
+                    _productRepository.UpdateBatchGroupStatus(batchGroupId, true);
+                }
+            }
+        }
+
+        private void PushToQueue(UserActivityLogInfo fromUserLogInfo, UserActivityLogInfo toUserLogInfo, String message) 
+        {
+            try
+            {
+                LogActivity.WriteActivity(new ActivityDetails
+                {
+                    LogActivityTypeName = LogActivityTypeConstants.PRODUCT_ACCESS,
+                    LogCategoryName = LogActivityCategoryType.ProductAccess.ToString(),
+                    CorrelationId = Guid.NewGuid().ToString(),
+                    BooksMasterOrganizationId = toUserLogInfo.BooksOrganizationMasterId,
+                    OrganizationPartyId = toUserLogInfo.OrganizationPartyId,
+                    Message = message,
+
+                    FromUserLoginName = fromUserLogInfo.LoginName,
+                    FromUserLoginId = fromUserLogInfo.UserId,
+                    FromUserFirstName = fromUserLogInfo.FirstName,
+                    FromUserLastName = fromUserLogInfo.LastName,
+                    FromUserRealpageId = fromUserLogInfo.RealPageId.ToString(),
+
+                    ToUserLoginId = toUserLogInfo.UserId,
+                    ToUserLoginName = toUserLogInfo.LoginName,
+                    ToUserFirstName = toUserLogInfo.FirstName,
+                    ToUserLastName = toUserLogInfo.LastName,
+                    ToUserRealpageId = toUserLogInfo.RealPageId.ToString(),
+                });
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        private string GenerateQueueMessage(UserActivityLogInfo fromUserLogInfo, UserActivityLogInfo toUserLogInfo, List<UserBatchProductDetail> userBatchProductDetails, bool IsSuccess) 
+        {
+            string message = "";
+
+            List<string> assinedProducts = new List<string>();
+            List<string> unassignedProducts= new List<string>();
+
+            string assignedMessage = "";
+            string unassignedMessage = "";
+
+            if (IsSuccess) 
+            {
+                message = $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} updated product access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName}:";
+                foreach (var item in userBatchProductDetails)
+                {
+                    if (item.IsAssigned)
+                        assinedProducts.Add(item.Name);
+
+                    if (!item.IsAssigned)
+                        unassignedProducts.Add(item.Name);
+                }
+
+                if (assinedProducts.Count > 0)
+                    assignedMessage = " Access was granted to " + string.Join(", ", assinedProducts) + ".";
+
+
+                if (unassignedProducts.Count > 0)
+                    unassignedMessage = " Access was unassigned from " + string.Join(", ", unassignedProducts) + ".";
+
+                message += assignedMessage;
+                message += unassignedMessage;
+            }
+
+            else
+            {
+                message = $"An exception occured when {fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} attempted to update product access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName} in ";
+                string[] products = new string[userBatchProductDetails.Count];
+
+                for (int i = 0; i < userBatchProductDetails.Count; i++)
+                {
+                    products[i] = userBatchProductDetails[i].Name;
+                }
+
+                var commaString = string.Join(", ", products);
+                var lastComma = commaString.LastIndexOf(',');
+
+                if (lastComma != -1)
+                    commaString = commaString.Remove(lastComma, 1).Insert(lastComma, " and");
+
+                message += commaString + ".";
+            }
+
+           
+
+            return message;
+        }
+
         #endregion
         /// <summary>
         /// Used to write to the log
@@ -564,7 +697,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
     /// </summary>
     interface IProduct
     {
-        string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolepropList);       
+        string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolepropList); 
+        
         string UpdateUserDetails(ProductUserAccountDetails productUserAccountDetails);
 
         /// <summary>
@@ -3546,6 +3680,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         }
     }
     #endregion
+
     #region UPFM Product Integration
     /// <summary>
     /// A 'Concrete Product Intelligent Building' class

@@ -103,7 +103,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// Update a Product Batch
         /// </summary> 
         /// <returns>Repository response object</returns>
-        RepositoryResponse UpdateProductBatch(int productBatchId, int statusTypeId, string inputJson = null, string errorDetails = null);
+        bool UpdateProductBatch(int productBatchId, int statusTypeId, string inputJson = null, string errorDetails = null);
 
         /// <summary>
         /// Returns List of Product Batch Statuses
@@ -238,5 +238,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <returns></returns>
         bool isProductAssigned(long PersonaId, int ProductStatus, int productId);
         IList<PersonaProductUserDetails> ListProductsByPersonaId(long personaId, int statusType);
+
+        IList<UserBatchProductDetail> GetUserBatchDetails(int batchGroupId, long editorUserPersonId, long subjectUserPersonId, BatchProcessType batchProcessType);
+
+        void UpdateBatchGroupStatus(int groupId, bool isLogged);
     }
 }

@@ -831,7 +831,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         WriteToDiagnosticLog("ManageOpsUser - Create user. newid=" + newid);
                         UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
                         WriteToDiagnosticLog("ManageOpsUser - Create user success. Set product status to Success");
-                        WriteCreateUserActivityLog(editorPersonaId, person, userLogin);
 
                         //Update the user in Spend Management as a migrated user
                         MigrateResponse migrateResponse = new MigrateResponse();
@@ -1019,8 +1018,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
 
-            // Activity Logging
-            WriteUnassignActivityLog(editorPersonaId, userPersonaId);
 
             return "";
         }

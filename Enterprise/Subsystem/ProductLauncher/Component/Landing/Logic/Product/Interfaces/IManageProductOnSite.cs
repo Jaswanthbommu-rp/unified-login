@@ -21,7 +21,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <summary>
 		/// Updated to create/update a user in On Site 
 		/// </summary>
-		string ManageOnSiteUser(long editorPersonaId, long userPersonaId, OnSiteUserPropertyRegionRole userPropertyRegionRole,BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser);
+		string ManageOnSiteUser(long editorPersonaId, long userPersonaId, OnSiteUserPropertyRegionRole userPropertyRegionRole, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser);
 
 		/// <summary>
 		/// Do more stuff in the product manager if needed to set up the product

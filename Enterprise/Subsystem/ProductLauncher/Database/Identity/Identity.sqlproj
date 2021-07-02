@@ -660,6 +660,7 @@
     <Build Include="Batch\Procedure\CreateProductBatch.sql" />
     <Build Include="Batch\Procedure\UpdateProductBatch.sql" />
     <Build Include="Batch\Procedure\ListBatchProcessor.sql" />
+    <Build Include="Batch\Procedure\GetUserBatchRecords.sql" />
     <Build Include="Enterprise\Stored Procedures\ListBatchProcessor.sql" />
     <Build Include="Security\Batch.sql" />
     <Build Include="Person\Stored Procedures\ListPersonsForSupportTool.sql" />
@@ -1123,6 +1124,9 @@
     <Build Include="RoleRightsManagement\Tables\OrganizationOverRideRole.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\DeleteRoleTemplate.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2021Q3Release.sql" />
+    <Build Include="Batch\Table\BatchProcessorGroup.sql" />
+    <Build Include="Batch\Procedure\CreateBatchProcessorGroup.sql" />
+    <Build Include="Batch\Procedure\UpdateBatchProcessorGroupStatus.sql" />
     <Build Include="Enterprise\Stored Procedures\GetProductValidationRules.sql" />
     <Build Include="Enterprise\Tables\ProductRuleType.sql" />
     <Build Include="Enterprise\Tables\ProductValidationRule.sql" />
