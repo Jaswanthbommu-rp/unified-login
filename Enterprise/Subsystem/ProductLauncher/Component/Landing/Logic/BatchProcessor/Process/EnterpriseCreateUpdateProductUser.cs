@@ -2,6 +2,7 @@
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using System;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
+using System.Security.Claims;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.BatchProcessor.Process
 {
@@ -12,7 +13,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.BatchP
 		/// </summary>
 		public string ExecuteProcess(ProductUserProperitiesRoles batchRecord)
 		{
-			ManageProductUser manageProduct = new ManageProductUser(new DefaultUserClaim { CorrelationId = Guid.NewGuid() });
+			ManageProductUser manageProduct = new ManageProductUser(new DefaultUserClaim(ClaimsPrincipal.Current));
 			return manageProduct.CreateEnterpriseRoleProductUser(batchRecord);
 		}
 	}
