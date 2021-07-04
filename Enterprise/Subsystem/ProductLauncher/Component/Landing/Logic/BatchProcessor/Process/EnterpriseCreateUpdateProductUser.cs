@@ -13,7 +13,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.BatchP
 		/// </summary>
 		public string ExecuteProcess(ProductUserProperitiesRoles batchRecord)
 		{
-			ManageProductUser manageProduct = new ManageProductUser(new DefaultUserClaim(ClaimsPrincipal.Current));
+			ManageProductUser manageProduct = new ManageProductUser(new DefaultUserClaim { CorrelationId = Guid.NewGuid() });
 			return manageProduct.CreateEnterpriseRoleProductUser(batchRecord);
 		}
 	}

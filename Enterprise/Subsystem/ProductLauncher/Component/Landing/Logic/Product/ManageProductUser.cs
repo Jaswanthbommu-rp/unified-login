@@ -214,7 +214,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     IManagePersona _managePersona = new ManagePersona();
                     var persona = _managePersona.GetPersona(productUser.AssignUserPersonaId);
 
-                    var properties = getEnterpriseRoleUserPrimaryPropertiesData(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId,(int)productUser.ProductName);
+                    var properties = getEnterpriseRoleUserPrimaryPropertiesData(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId,(int)productUser.ProductName, productUser.RealPageId);
                  
                     if (properties?.Count > 0)
                     {
@@ -233,7 +233,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             if (combinedRoleProp.Any(p => p.Key == ProductEnum.Lead2Lease.ToString()))
                             {
                                 // RolePropertyList lead2Lease
-                                var l2lproperties = getEnterpriseRoleUserPrimaryPropertiesData(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, (int)ProductEnum.Lead2Lease);
+                                var l2lproperties = getEnterpriseRoleUserPrimaryPropertiesData(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, (int)ProductEnum.Lead2Lease, productUser.RealPageId);
                                 var l2lroleProp = combinedRoleProp.Where(p => p.Key == ProductEnum.Lead2Lease.ToString()).First().Value;
                                 l2lroleProp.PropertyList = l2lproperties;
                                 isRolesExists = l2lroleProp.RoleList?.Count > 0;
@@ -243,7 +243,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             if (combinedRoleProp.Any(p => p.Key == ProductEnum.SeniorLeadManagement.ToString()))
                             {
                                 // RolePropertyList slm
-                                var slmproperties = getEnterpriseRoleUserPrimaryPropertiesData(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, (int)ProductEnum.SeniorLeadManagement);
+                                var slmproperties = getEnterpriseRoleUserPrimaryPropertiesData(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, (int)ProductEnum.SeniorLeadManagement, productUser.RealPageId);
                                 var slmroleProp = combinedRoleProp.Where(p => p.Key == ProductEnum.SeniorLeadManagement.ToString()).First().Value;
                                 slmroleProp.PropertyList = slmproperties;
                                 isRolesExists = slmroleProp.RoleList?.Count > 0;
@@ -261,14 +261,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }                    
 
                     usePrimaryProperties = true;
-                    if (!isRolesExists)
-                    {
-                        result = "No Product Roles are found for Enterprise Role";
-					}
-                    else if (properties?.Count == 0 && !(productId == 63 || productId == 39))
+                    if (properties?.Count == 0 && !(productId == 63 || productId == 39))
                     {
                         result = "No Product Properties are found for Enterprise Role";
                     }
+                    else if (!isRolesExists)
+                    {
+                        result = "No Product Roles are found for Enterprise Role";
+					}                  
                     else
                     {
                         var integration = _integrationTypeFactory.GetIntegration(productUser.ProductName);
@@ -838,8 +838,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             logger.Write(logType, exception, message );
         }
 
-        private List<string> getEnterpriseRoleUserPrimaryPropertiesData(long editorPersonaId, long userPersonaId,int productId)
+        private List<string> getEnterpriseRoleUserPrimaryPropertiesData(long editorPersonaId, long userPersonaId,int productId, Guid editorRealpageId)
         {
+            _defaultUserClaim.UserRealPageGuid = editorRealpageId;
+            //var os = new ManageProductOneSite(base.UserClaim);
             var productPropertyIdList = new List<string>();
             IManageProductPanel manageProductPanel = new ManageProductPanel(_defaultUserClaim);
             ListResponse result = new ListResponse();
