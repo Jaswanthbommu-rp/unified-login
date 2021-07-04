@@ -260,7 +260,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         }
                     }                    
 
-                    usePrimaryProperties = roleProp.UsePrimaryProperties;
+                    usePrimaryProperties = true;
                     if (!isRolesExists)
                     {
                         result = "No Product Roles are found for Enterprise Role";
