@@ -1134,7 +1134,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             bool isUserExpired = false;
             bool newUserwithActiveStatus = false;
             bool? isNotified = null;
-
+            string message = string.Empty;
             int statusTypeId = 0;
             if (userLogins.Count > 0)
             {
@@ -1218,13 +1218,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             }
                             if (orgStatus.PrimaryOrganization && (newUserWithFeatureDate || (userLoginOnly.LastLogin == null && !userLoginOnly.Is3rdPartyIDP && orgStatus.Status != UserUiStatusType.Locked)) && !newUserwithActiveStatus)
                             {
+                                message = string.Empty;
+                                isNotified = null;
                                 IManageUserRegistrationEmail manageUserRegistrationEmail = new ManageUserRegistrationEmail(_defaultUserClaim);
                                 isNotified = manageUserRegistrationEmail.SendNewUserRegistrationEmail(userLoginOnly, orgStatus.Name, (int)userLoginInfo.UserRoleType, orgStatus.PartyId);
                                 statusTypeId = (int)UserUiStatusType.Pending;
+                                var userDetailsInfo = _userRepository.GetUserDetails(userRealPageId: userLogin.RealPageId.ToString());
+                                IProfileDetail profile = new ProfileDetail();
+                                profile.FirstName = userDetailsInfo.FirstName;
+                                profile.LastName = userDetailsInfo.LastName;
+                                profile.userLogin.LoginName = userDetailsInfo.LoginName;
+                                profile.userLogin.UserId = userDetailsInfo.UserId;
+                                profile.userLogin.RealPageId = userDetailsInfo.UserRealPageId;
+                                if (isNotified == true)
+                                {
+                                    message = "Welcome Email sent to user {0} {1} by user {2} {3}.";
+                                    LogAuditActivity(LogActivityTypeConstants.EMAIL_SENT, LogActivityCategoryType.Email, message, "UpdateUser", profile);
+                                }
+                                else if (isNotified == false)
+                                {
+                                    message = "Unable to Resend Welcome Email to user {0} {1} by user {2} {3}.";
+                                    LogAuditActivity(LogActivityTypeConstants.EMAIL_RESENT, LogActivityCategoryType.Email, message, "UpdateUser", profile);
+                                }
+
                             }
                         }
-                            
+
                     }
+
 
                     foreach (UserLoginOnly userLogin in userLogins)
                     {
@@ -1255,7 +1276,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 case "active":
                     activity = "Activated";
                     logActivityTypeName.Add(LogActivityTypeConstants.LOGIN_ENABLED);
-                    logActivityTypeName.Add(LogActivityTypeConstants.EMAIL_SENT);
                     break;
                 case "disabled":
                     activity = "Deactivated";
@@ -1284,11 +1304,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     foreach (string logType in logActivityTypeName)
                     {
-
-                        if(logType == LogActivityTypeConstants.EMAIL_SENT)
-                        {
-                            message = string.Format("Welcome Email sent to user {0} {1} by user {2} {3}.", person.FirstName, person.LastName, defaultUserClaim.FirstName, defaultUserClaim.LastName);
-                        }
 
                         LogActivity.WriteActivity(new ActivityDetails
                         {
