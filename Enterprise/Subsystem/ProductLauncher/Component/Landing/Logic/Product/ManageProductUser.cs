@@ -706,14 +706,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (!activityLogged) 
                 {
                     var successRecords = data.Where(x => x.StatusTypeId == 8).ToList();
-                    if (successRecords != null)
+                    if (successRecords != null && successRecords.Count > 0)
                     {
                         var message = GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, successRecords, true);
                         PushToQueue(fromUserLogInfo, toUserLogInfo, message);
                     }
 
                     var failedRecords = data.Where(x => x.StatusTypeId == 7).ToList();
-                    if (failedRecords != null)
+                    if (failedRecords != null && failedRecords.Count > 0)
                     {
                         var message = GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, failedRecords, false);
                         PushToQueue(fromUserLogInfo, toUserLogInfo, message);
