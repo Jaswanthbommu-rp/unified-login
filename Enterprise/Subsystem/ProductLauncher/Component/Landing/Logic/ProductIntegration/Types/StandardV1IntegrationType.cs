@@ -59,10 +59,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return productIntegration.GetProductProperties(dataFilter);
         }
 
-        public ListResponse GetEnterpriseProperties(long userPersonaId, string include)
-        {
-            throw new NotImplementedException();
-        }
+        public ListResponse GetEnterpriseProperties(long userPersonaId) => GetProperties(userPersonaId, userPersonaId, new RequestParameter());
 
         public ListResponse GetRightsForRole(long editorPersonaId, long userPersonaId, long roleId, long partyId, bool assignedToRoleOnly, RequestParameter dataFilter)
         {

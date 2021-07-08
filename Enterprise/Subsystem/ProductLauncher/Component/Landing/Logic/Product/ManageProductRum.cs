@@ -151,7 +151,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 var allPropertyGroups = groups as IList<RumPropertyGroup> ?? groups.ToList();
 
-                if (allPropertyGroups == null)
+                if (allPropertyGroups == null || allPropertyGroups.Count == 0)
                 {
                     WriteToErrorLog($"ManageProductRum.GetPropertyGroups-no properties received from product for user with editorPersona id - {editorPersonaId}.");
 
@@ -251,43 +251,52 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				var propertyList = GetResultFromApi<IList<ProductPropertyMap>>(_accessToken, url);
 
-				if (propertyList != null && propertyList.Count > 0)
-				{
-					WriteToDiagnosticLog($"ManageProductRum.GetProperties-GetPropertyInstance - Found total {propertyList.Count} properties with blue book company instance id {rumCompanyId} for user with editorPersona id - {editorPersonaId}.");
-					
-					foreach (var property in propertyList)
-					{
-						RumPropertyGroup rpg = new RumPropertyGroup
-						{
-							Id = Convert.ToInt32(property.PropertyId),
-							Name = property.PropertyName,
-							State = property.State,
-							IsAssigned = false
-						};
-						rumProperties.Add(rpg);
-					}
-					// need to do a filter on the result
-					if (userPersonaId != 0 && (_productUserId != null && _productUserId.Length > 0)) // Called during updating Existing User
-					{
-						WriteToDiagnosticLog(
-							$"ManageProductRum.GetProperties- calling MergeProductPropertiesWithGreenbook....for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
-						result = MergeRumPropertiesWithGreenbook(rumProperties, userPersonaId);
-						WriteToDiagnosticLog(
-							 $"ManageProductRum.GetProperties-MergeProductPropertiesWithGreenbook completed for user with editorPersona id -{editorPersonaId}.");
-					}
-					else
-					{
-						result = new ListResponse() // Called during creating a new User
-						{
-							Records = rumProperties.Cast<object>().ToList(),
-							TotalRows = rumProperties.Count,
-							RowsPerPage = rumProperties.Count,
-							TotalPages = 1,
-							ErrorReason = string.Empty
-						};
-					}
-				}
-			}
+                if (propertyList != null && propertyList.Count > 0)
+                {
+                    WriteToDiagnosticLog($"ManageProductRum.GetProperties-GetPropertyInstance - Found total {propertyList.Count} properties with blue book company instance id {rumCompanyId} for user with editorPersona id - {editorPersonaId}.");
+
+                    foreach (var property in propertyList)
+                    {
+                        RumPropertyGroup rpg = new RumPropertyGroup
+                        {
+                            Id = Convert.ToInt32(property.PropertyId),
+                            Name = property.PropertyName,
+                            State = property.State,
+                            IsAssigned = false
+                        };
+                        rumProperties.Add(rpg);
+                    }
+                    // need to do a filter on the result
+                    if (userPersonaId != 0 && (_productUserId != null && _productUserId.Length > 0)) // Called during updating Existing User
+                    {
+                        WriteToDiagnosticLog(
+                            $"ManageProductRum.GetProperties- calling MergeProductPropertiesWithGreenbook....for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
+                        result = MergeRumPropertiesWithGreenbook(rumProperties, userPersonaId);
+                        WriteToDiagnosticLog(
+                             $"ManageProductRum.GetProperties-MergeProductPropertiesWithGreenbook completed for user with editorPersona id -{editorPersonaId}.");
+                    }
+                    else
+                    {
+                        result = new ListResponse() // Called during creating a new User
+                        {
+                            Records = rumProperties.Cast<object>().ToList(),
+                            TotalRows = rumProperties.Count,
+                            RowsPerPage = rumProperties.Count,
+                            TotalPages = 1,
+                            ErrorReason = string.Empty
+                        };
+                    }
+                }
+                else 
+                {
+                    result = new ListResponse
+                    {
+                        IsError = true,
+                        ErrorReason = CommonMessageConstants.PropertyErrorMessage
+                    };
+
+                }
+            }
 			catch (Exception ex)
 			{
                 result = new ListResponse
@@ -587,8 +596,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 WriteToDiagnosticLog($"ManageProductRum.UnassignUser userPersonaId:{userPersonaId}");
 				UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
 
-				// Activity Logging
-				WriteUnassignActivityLog(editorPersonaId, userPersonaId);
 			}			
 
             return result;
@@ -852,12 +859,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     WriteToDiagnosticLog($"ManageProductRum.ManageOnSiteUse - trying to CREATE user with editorPersona id - {editorPersonaId}.");
                     var insertResult = InsertRumProductUser(userPersonaId, editorPersonaId, productLoginName, rumUser, companyId);
 
-                    // add activity log
-                    if (string.IsNullOrEmpty(insertResult))
-                    {
-                        // add activity log
-                        WriteCreateUserActivityLog(editorPersonaId, person, userLogin);
-                    }
                     return insertResult;
                 }
 				

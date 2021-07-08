@@ -1560,7 +1560,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="isUnRestrictedAccessToProp"></param>
         /// <param name="batchProcessType"></param>
         /// <returns></returns>
-        public string ManageAccountingUser(long editorPersonaId, long userPersonaId, List<string> RoleList, List<string> PropertyList, List<string> CompanyList, bool isAccountingAdmin, bool isSiteSpendManagementUser, bool isUnRestrictedAccessToProp,  BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser)
+        public string ManageAccountingUser(long editorPersonaId, long userPersonaId, List<string> RoleList, List<string> PropertyList, List<string> CompanyList, bool isAccountingAdmin, bool isSiteSpendManagementUser, bool isUnRestrictedAccessToProp, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser)
         {
             WriteToDiagnosticLog("Beginning ManageAccountingUser");
 
@@ -1714,11 +1714,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                                 _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.UserId, pmcuserlogin);
                                 _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.productUsername, pmcuserlogin.Split('|')[1]);
                                 WriteToDiagnosticLog($"ManageAccountingUser - Created user. saving product login = {pmcuserlogin}");
-                                if (batchProcessType == BatchProcessType.CreateUpdateProductUser)
-                                {
-                                    WriteCreateUserActivityLog(editorPersonaId, person, userLogin);
-                                }
-                                var loginInfo = new NameValuePair[4]
+
+								var loginInfo = new NameValuePair[4]
                                 {
                                 new NameValuePair { Name = "CompanyID", Value = _companyName },
                                 new NameValuePair { Name = "Login", Value = _intactLogin },
@@ -3149,8 +3146,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
 				WriteToDiagnosticLog($"UnassignUser success userPersonaId:{userPersonaId}");
 
-				// Activity Logging
-				WriteUnassignActivityLog(editorPersonaId, userPersonaId);
 			}
 			else
 			{

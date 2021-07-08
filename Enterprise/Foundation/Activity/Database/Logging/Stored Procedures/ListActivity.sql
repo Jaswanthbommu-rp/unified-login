@@ -53,17 +53,28 @@ BEGIN
 
 	SET @OffsetMinutes = ISNULL(@OffsetMinutes, '0');
 
+	DECLARE @InternationalTimeFormat VARCHAR(100) = 'hh:mm:s tt'  
+	SELECT  @InternationalTimeFormat = Value    
+	FROM  @SearchCriteriaTPV    
+	WHERE Name = 'InternationalTimeFormat'  
+
+	SET @InternationalTimeFormat = CASE @InternationalTimeFormat  
+										WHEN '12Hours' THEN 'hh:mm:s tt' 
+										WHEN '24Hours' THEN 'HH:mm:s'           
+										ELSE 'hh:mm:s tt'  
+									END
+
 	DECLARE @InternationalDateFormat VARCHAR(100) = 'mm/dd/yyyy'
 	SELECT  @InternationalDateFormat = Value  
 	FROM  @SearchCriteriaTPV  
 	WHERE Name = 'InternationalDateFormat'
 
-	SET @InternationalDateFormat = CASE @InternationalDateFormat
-										WHEN 'mm/dd/yyyy' THEN 'MM/dd/yyyy hh:mm:s tt'
-										WHEN 'dd/mm/yyyy' THEN 'dd/MM/yyyy hh:mm:s tt'
-										WHEN 'yyyy/mm/dd' THEN 'yyyy/MM/dd hh:mm:s tt'
-										ELSE 'MM/dd/yyyy hh:mm:s tt'
-									END
+	SET @InternationalDateFormat = CASE @InternationalDateFormat  
+										WHEN 'mm/dd/yyyy' THEN CONVERT(varchar,'MM/dd/yyyy ' + @InternationalTimeFormat)  
+										WHEN 'dd/mm/yyyy' THEN CONVERT(varchar,'dd/MM/yyyy ' + @InternationalTimeFormat) 
+										WHEN 'yyyy/mm/dd' THEN CONVERT(varchar,'yyyy/MM/dd ' + @InternationalTimeFormat)  
+										ELSE 'MM/dd/yyyy hh:mm:s tt'  
+									END 
 
 	SET @Cmd01 = '
 	SELECT		A.ActivityId,
@@ -106,7 +117,7 @@ BEGIN
 						0 AS PStatus
 		INTO		#HoldSearchCriteria
 		FROM		@SearchCriteriaTPV
-		WHERE	Name NOT IN ('OffsetMinutes', 'SaveFormat', 'InternationalDateFormat');
+		WHERE	Name NOT IN ('OffsetMinutes', 'SaveFormat', 'InternationalDateFormat', 'InternationalTimeFormat');
 
 		IF EXISTS	(SELECT TOP 1 1 FROM #HoldSearchCriteria WHERE name = 'RealPageId')
 		BEGIN

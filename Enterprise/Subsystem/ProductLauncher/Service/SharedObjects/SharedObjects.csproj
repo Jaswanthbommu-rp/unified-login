@@ -140,6 +140,7 @@
     <Compile Include="Base\RPObjectCache.cs" />
     <Compile Include="Base\RequestParameter.cs" />
     <Compile Include="Base\RequestParameterModelBinder.cs" />
+    <Compile Include="Batch\BatchProcessorGroup.cs" />
     <Compile Include="BlackBook\BooksPropertyInstance.cs" />
     <Compile Include="BlackBook\Company.cs" />
     <Compile Include="BlackBook\CompanyInstance.cs" />
@@ -178,6 +179,14 @@
     <Compile Include="Constants\UserTypeConstants.cs" />
     <Compile Include="DapperMappingGuides\IProductSettingList.cs" />
     <Compile Include="DapperMappingGuides\ProductSettingList.cs" />
+    <Compile Include="EnterpriseRole\AdditionalAttributes.cs" />
+    <Compile Include="EnterpriseRole\RemovedAdditionalAttributes.cs" />
+    <Compile Include="EnterpriseRole\RemovedRoles.cs" />
+    <Compile Include="EnterpriseRole\RemovedRoleTemplateProducts.cs" />
+    <Compile Include="EnterpriseRole\RoleTemplateProduct.cs" />
+    <Compile Include="EnterpriseRole\RoleTemplateProductRole.cs" />
+    <Compile Include="EnterpriseRole\RoleTemplateProductRoleMapping.cs" />
+    <Compile Include="EnterpriseRole\RoleTemplateRoles.cs" />
     <Compile Include="Enterprise\MappedUnifiedLoginUserDetails.cs" />
     <Compile Include="Enterprise\NavigationMenuEntry.cs" />
     <Compile Include="Enterprise\NavigationMenuRightEntry.cs" />
@@ -372,6 +381,7 @@
     <Compile Include="Landing\SortTableType.cs" />
     <Compile Include="Landing\StatusType.cs" />
     <Compile Include="Landing\UnifiedSetting.cs" />
+    <Compile Include="Landing\UserBatchProductDetail.cs" />
     <Compile Include="Landing\UserCompaniesProperties.cs" />
     <Compile Include="Landing\UserEmail.cs" />
     <Compile Include="Landing\UserEmployee.cs" />

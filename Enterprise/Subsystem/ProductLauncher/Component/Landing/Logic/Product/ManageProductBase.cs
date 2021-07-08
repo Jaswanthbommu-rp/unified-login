@@ -1057,7 +1057,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             WriteActivityLog(fromUserLogDetail, toUserLogDetail,
                booksProductDetail.BooksProductCode, logMessage);
         }
-
+        
         private void WriteActivityLog(long fromPersonaId, IC.Person toPerson, UserLoginOnly toUserGbLogin, string message)
         {
             // log product user created activity

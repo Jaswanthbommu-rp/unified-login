@@ -409,8 +409,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             WriteToInformationLog($"ManageProductOmniChannel.UnassignUser userPersonaId:{userPersonaId}");
             UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
 
-            // Activity Logging
-            WriteUnassignActivityLog(editorPersonaId, userPersonaId);
 
             return "";
         }

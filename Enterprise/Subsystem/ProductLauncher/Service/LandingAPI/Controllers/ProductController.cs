@@ -26,6 +26,7 @@ using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using Thinktecture.IdentityModel.Client;
 using static RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.SAML.RealPageSAML;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -613,7 +614,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
             else if (productId == (int)ProductEnum.MigrationTool)
             {
-                if (!CheckForMigrationToolAccess())
+                if (CheckForMigrationToolAccess())
                 {
                     productLoginResponse.ErrorMessage = "ReadOnly";
                     return productLoginResponse;
@@ -660,12 +661,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
         private bool CheckForMigrationToolAccess()
         {
-            if(_userClaims.Rights.Any(p => p.Equals("MigrationTool", StringComparison.OrdinalIgnoreCase)))
+            if(_userClaims.Rights.Any(p => p == "ViewOnlySupportToolAccess"))
             {
-                string[] rightsRequired = new string[2] { "ViewOnlySupportToolAccess", "AccessToUnifiedPlatform" };
-                return _userClaims.Rights.Any(p => rightsRequired.Contains(p));
+                List<string> impersonatedUserRights = BaseUserRights.GetImpersonatedUserRights(_userClaims.ImpersonatedBy, _userClaims);
+                return !impersonatedUserRights.Any(p => p.Equals("MigrationTool", StringComparison.OrdinalIgnoreCase));
             }
-            return false;
+            else if(_userClaims.Rights.Any(p => p == "AccessToUnifiedPlatform"))
+            {
+                return false;
+            }
+            return true;
         }
 
         private bool CheckForViewOnlyAccess()

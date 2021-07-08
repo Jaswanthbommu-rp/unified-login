@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Dapper;
+using Newtonsoft.Json;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
@@ -8,9 +9,11 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Dtos;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Batch;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.EnterpriseRole;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
@@ -22,6 +25,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Dynamic;
 using System.Linq;
 using System.Net.Http;
@@ -163,6 +167,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 EnterpriseUserName = starterProfileOptions.EnterpriseUserName,
                 IsSuccess = true
             };
+        }
+
+        private BatchProcessorGroup CreateBatchProcessGroup(IRepository repo)
+        {
+            {
+                DynamicParameters param = new DynamicParameters();
+                int groupID = 0;
+                param.Add("@BatchProcessorGroupID", groupID, dbType: DbType.Int32, direction: ParameterDirection.Output);
+
+                try
+                {
+                    var a = repo.Execute(StoredProcNameConstants.SP_CreateBatchProcessorGroup, param);
+                    groupID = param.Get<int>("@BatchProcessorGroupID");
+                }
+                catch (Exception ex)
+                {
+                }
+
+                return new BatchProcessorGroup()
+                {
+                    BatchProcessorGroupId = groupID,
+                    BatchProcessorGroupActivityLogged = false
+                };
+            }
         }
 
         /// <summary>
@@ -1062,6 +1090,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
 
                         personaId = repositoryResponse.Id;
+                        if (organizationPartyId == currentOrg.OrganizationPartyId)
+                        {
+                            // get the new persona for the company the user is being added to so it can be used later in the product batch calls
+                            AssignUserPersonaId = repositoryResponse.Id;
+                            createUserResponse.PersonaId = repositoryResponse.Id;
+                        }
 
                         //Link persona to enterprise Role ID
                         if (primaryPropertiesBatch?.InputJson?.RoleList != null && primaryPropertiesBatch?.InputJson?.RoleList.Count > 0)
@@ -1078,14 +1112,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 createUserResponse.UserStatus = errorStatus.ErrorMsg;
                                 return createUserResponse;
                             }
-                        }
-
-                        if (organizationPartyId == currentOrg.OrganizationPartyId)
-                        {
-                            // get the new persona for the company the user is being added to so it can be used later in the product batch calls
-                            AssignUserPersonaId = repositoryResponse.Id;
-                            createUserResponse.PersonaId = repositoryResponse.Id;
-                        }
+                        }                       
 
                         // Linking Persona to a Role based on user type
                         var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesByRealPageID" : StoredProcNameConstants.SP_ListRolesByRealPageID;
@@ -1500,6 +1527,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             return createUserResponse;
                         }
                     }
+
 
                     int productCount = SaveProductDetails(repository, newProfile.productBatch, createUserResponse, CreateUserPersonaId, AssignUserPersonaId, userClaim.UserRealPageGuid, organizationRealPageId, errorStatus, newProfile.UserTypeId, true, aoProductsAvailableForUser, newProfile.MigratedUser, true);
 
@@ -2227,6 +2255,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     //Use RealPage Employee Access PersonaId when creating the Product Patches.
                     createUserPersonaId = repository.GetOne<long>(StoredProcNameConstants.SP_GetActivePersona, new { RealPageId = RealPageEmployeeAccessID });
 
+                    
                     personaList.ToList().ForEach(o =>
                         productCount = SaveProductDetails(repository, productList, null, createUserPersonaId, o.PersonaId, RealPageEmployeeAccessID, organizationRealPageId, null, (int)UserRoleType.SuperUser, true, aoProductsAvailableForUser, false, false)
                     );
@@ -2401,12 +2430,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             emailUsageType = contactMechanismUsageTypeRepository.ListContactMechanismUsageType(ContactMechanismUsageTypeName: "Email Notification");
 
+            var primaryPropertyBatch = newProfile.productBatch.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedUI);
+            int enterpriseRoleId = 0;
+            if (primaryPropertyBatch?.InputJson?.RoleList != null && primaryPropertyBatch?.InputJson?.RoleList.Count > 0)
+            {
+                enterpriseRoleId = Convert.ToInt32(primaryPropertyBatch.InputJson.RoleList.FirstOrDefault());              
+            }
+
             //TODO:CG.WE CAN DELETEDE DE USERDETAILS BECAUSE WE ARE SENDING THE OLDPROFILE
             //Get User Details before save
             var userDetails = GetUserDetails(oldProfile.Persona[0].PersonaId);
 
             //If user is activated from deactivate status ,get all products data which are previously assigned to user
-            if (newProfile.userLogin.Status == UserUiStatusType.Disabled)
+            if (newProfile.userLogin.Status == UserUiStatusType.Disabled && enterpriseRoleId == 0)
             {
                 productBatchData = GetActivatedUserProductBatchData(oldProfile.Persona[0].PersonaId, newProfile.productBatch);
             }
@@ -2447,9 +2483,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 }
             });
 
-            var primaryPropertyBatch = productBatchData.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedUI);
+            
             // primary properties selected
-            if (primaryPropertyBatch != null)
+            if (primaryPropertyBatch != null && enterpriseRoleId == 0)
             {
                 IPropertyRepository propertyRepository = new PropertyRepository();
                 // get persona primary properties
@@ -3310,11 +3346,36 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         private int SaveProductDetails(IRepository repository, IList<ProductBatch> productList, CreateUserResponse<IErrorData> createUserResponse, long CreateUserPersonaId, long AssignUserPersonaId, Guid realPageId, Guid organizationRealPageId, Status<IErrorData> errorStatus, int userTypeId, bool userIsActive, IList<string> aoProducts = null, bool migratedUser = false, bool isCreateUser = false)
         {
             int productCount = 0;
+            int enterpriseRoleId = 0;
+            int batchProcessTypeId = (int)BatchProcessType.CreateUpdateProductUser;
             string saveProductBatchError = "Save Product(s) Error: ";
+            List<RoleTemplateProductRole> roleTemplateProductRole = new List<RoleTemplateProductRole>();
 
             if (errorStatus == null)
             {
                 errorStatus = new Status<IErrorData>();
+            }
+
+            var batchGroup = CreateBatchProcessGroup(repository);
+
+            ProductBatch primaryPropertyBatch = productList.ToList().FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedUI);
+            if (primaryPropertyBatch?.InputJson?.RoleList != null && primaryPropertyBatch?.InputJson?.RoleList.Count > 0)
+            {
+                enterpriseRoleId = Convert.ToInt32(primaryPropertyBatch.InputJson.RoleList.FirstOrDefault());
+                productList.Remove(primaryPropertyBatch);
+            }
+           
+            if (enterpriseRoleId > 0 )
+            {
+                batchProcessTypeId = (int)BatchProcessType.EnterpriseRoleCreateUpdateProductUser;
+               
+                object param = new
+                {
+                    RoleTemplateId = enterpriseRoleId,
+                    OrganizationRealPageId = organizationRealPageId
+                };
+
+                roleTemplateProductRole = repository.GetMany<RoleTemplateProductRole>(StoredProcNameConstants.SP_GetRoleTemplateProductRoleMappings, param).ToList();               
             }
 
             // if superuser do all products that currently support user creation;
@@ -3341,6 +3402,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 ProductId = prod.ProductId,
                                 StatusTypeId = 5,
                                 RetryCount = 0,
+                                BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
                                 InputJson = new RolePropertyList() { PropertyRoleList = new List<PropertyRoleList>(), PropertyList = new List<string>(), RoleList = new List<string>(), IsAssigned = true }
                             };
                             productListToCreate.Add(pb);
@@ -3363,13 +3425,61 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 productList = productListToCreate;
             }
 
+
+            if (userIsActive && userTypeId != (int)UserRoleType.SuperUser && !migratedUser && enterpriseRoleId > 0)
+            {
+                object param = new
+                {
+                    RoleTemplateId = enterpriseRoleId,
+                    OrganizationRealPageId = organizationRealPageId
+                };
+                var roleTemplateProducts = repository.GetMany<int>(StoredProcNameConstants.SP_GetEnterpriseRoleProductsByOrganization, param).ToList();
+
+                foreach (var product in roleTemplateProducts)
+                {
+                    var productRoleData = roleTemplateProductRole?.Where(p => p.ProductId == product);
+
+                    var roleTemplateRoles = productRoleData?.Select(p => new
+                    {
+                        p.RoleTemplateProductRoleMappingId,
+                        p.ProductRoleId,
+                        p.ProductRoleName
+                    }).Distinct();
+
+
+                    //Roles
+                    List<string> productRoles = new List<string>();
+                    foreach (var roles in roleTemplateRoles)
+                    {
+                        if (roles.RoleTemplateProductRoleMappingId != 0)
+                        {
+                            productRoles.Add(roles.ProductRoleId);
+                        }
+                    }
+
+                    ProductBatch pb = new ProductBatch()
+                    {
+                        ProductId = product,
+                        StatusTypeId = 5,
+                        RetryCount = 0,
+                        BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
+                        InputJson = new RolePropertyList() 
+                        { 
+                            PropertyRoleList = new List<PropertyRoleList>(), 
+                            PropertyList = new List<string>(),
+                            RoleList = productRoles, 
+                            IsAssigned = true ,
+                            IsAssignedNewPropertyByDefault = false,
+                            UsePrimaryProperties = true
+                        }
+                    };
+                    productList.Add(pb);
+                }
+            }
+
             if (productList != null)
             {
-                ProductBatch primaryPropertyBatch = productList.ToList().FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedUI);
-                if (primaryPropertyBatch != null)
-                {
-                    productList.Remove(primaryPropertyBatch);
-                }
+              
                 //Product EasyLMS is assigned and the tile is display for all users if it's assigned to the Organization 
                 //No need to add an EasyLMS ProductPatch eventhough it's included in the ProductBatch product list from the UI
                 ProductBatch easyLMSProductBatch = productList.ToList().FirstOrDefault(p => p.ProductId == (int)ProductEnum.EasyLMS);
@@ -3388,6 +3498,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             ProductId = (int)ProductEnum.SalesForce,
                             StatusTypeId = 5,
                             RetryCount = 0,
+                            BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
                             InputJson = new RolePropertyList() { PropertyList = new List<string>(), RoleList = new List<string>(), IsAssigned = (isCreateUser || userIsActive) }
                         };
                         productList.Add(pb);
@@ -3407,6 +3518,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         ProductId = (int)ProductEnum.AoBenchmarking,
                         StatusTypeId = 5,
                         RetryCount = 0,
+                        BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
                         InputJson = new RolePropertyList() { PropertyList = new List<string>(), RoleList = new List<string>(), IsAssigned = false }
                     };
                     productList.Add(pb);
@@ -3457,7 +3569,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             oneSiteAndOtherProducts.Add(ProductEnum.Lead2Lease.ToString(), pbSeniorLead.InputJson);
                         }
 
-                        SaveProductBatch(repository, pbOneSite, createUserResponse, saveProductBatchError, CreateUserPersonaId, AssignUserPersonaId, realPageId, errorStatus, JsonConvert.SerializeObject(oneSiteAndOtherProducts));
+                        pbOneSite.BatchProcessorGroupId = batchGroup.BatchProcessorGroupId;
+
+                        SaveProductBatch(repository, pbOneSite, createUserResponse, saveProductBatchError, CreateUserPersonaId, AssignUserPersonaId, realPageId, errorStatus, JsonConvert.SerializeObject(oneSiteAndOtherProducts), batchProcessTypeId);
 
                         if (errorStatus.Success == false)
                         {
@@ -3479,12 +3593,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     }
 
                     // Handle Ao Products if any
-                    var aoInputJsonString = BundleAoProducts(productList);
+                    var aoInputJsonString = BundleAoProducts(productList, batchGroup.BatchProcessorGroupId);
+
+                    //Loop through the rest of the products list and create the Batch records
 
                     //Loop through the rest of the products list and create the Batch records
                     foreach (IProductBatch product in productList)
                     {
-                        if (product.ProductId == (int)ProductEnum.UnifiedPlatform)
+                        if (product.ProductId == (int)ProductEnum.UnifiedPlatform || product.ProductId == (int)ProductEnum.UnifiedUI)
                         {
                             continue;
                         }
@@ -3492,11 +3608,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         if (product.ProductId == (int)ProductEnum.AssetOptimizer)
                         {
                             // special treatment for bundled AO products
-                            SaveProductBatch(repository, product, createUserResponse, saveProductBatchError, CreateUserPersonaId, AssignUserPersonaId, realPageId, errorStatus, aoInputJsonString);
+                            SaveProductBatch(repository, product, createUserResponse, saveProductBatchError, CreateUserPersonaId, AssignUserPersonaId, realPageId, errorStatus, aoInputJsonString, batchProcessTypeId);
                         }
                         else
                         {
-                            SaveProductBatch(repository, product, createUserResponse, saveProductBatchError, CreateUserPersonaId, AssignUserPersonaId, realPageId, errorStatus, JsonConvert.SerializeObject(product.InputJson));
+                            product.BatchProcessorGroupId = batchGroup.BatchProcessorGroupId;
+                            SaveProductBatch(repository, product, createUserResponse, saveProductBatchError, CreateUserPersonaId, AssignUserPersonaId, realPageId, errorStatus, JsonConvert.SerializeObject(product.InputJson), batchProcessTypeId);
                         }
                     }
 
@@ -3545,6 +3662,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 errorStatus = new Status<IErrorData>();
             }
 
+            var batchGroup = CreateBatchProcessGroup(repository);
+           
             IList<PersonaProductUserDetails> userProducts = repository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = assignUserPersonaId, ProductStatusValue = ((Int32)UserUiStatusType.AccountCreationSuccessful).ToString() }).ToList();
             IList<ProductBatch> productListToCreate = new List<ProductBatch>();
             var primaryPropertyBatch = productBatchData.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedUI);
@@ -3573,6 +3692,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                     ProductId = prod.ProductId,
                                     StatusTypeId = 5,
                                     RetryCount = 0,
+                                    BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
                                     InputJson = new RolePropertyList()
                                     {
                                         PropertyList = new List<string>(),
@@ -3596,6 +3716,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                         ProductId = prod.ProductId,
                                         StatusTypeId = 5,
                                         RetryCount = 0,
+                                        BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
                                         InputJson = new RolePropertyList()
                                         {
                                             PropertyList = batchRecord.InputJson.PropertyList,
@@ -3641,6 +3762,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             ProductId = (int)ProductEnum.AssetOptimizer,
                             StatusTypeId = 5,
                             RetryCount = 0,
+                            BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
                             InputJson = null
                         };
 
@@ -3722,6 +3844,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 ProductId = (int)ProductEnum.SalesForce,
                                 StatusTypeId = 5,
                                 RetryCount = 0,
+                                BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
                                 InputJson = new RolePropertyList()
                                 { PropertyList = new List<string>(), RoleList = new List<string>(), IsAssigned = false }
                             };
@@ -3761,6 +3884,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             ProductId = prod.ProductId,
                             StatusTypeId = 5,
                             RetryCount = 0,
+                            BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
                             InputJson = new RolePropertyList()
                             {
                                 PropertyRoleList = new List<PropertyRoleList>(),
@@ -3774,7 +3898,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     }
 
                     // AO product handling - removes AO products from list & returns JSON string
-                    aoInputJsonString = BundleAoProducts(productListToCreate);
+                    aoInputJsonString = BundleAoProducts(productListToCreate, batchGroup.BatchProcessorGroupId);
                 }
             }
             else if (batchProcessTypeId == (int)BatchProcessType.ProfileUpdate)
@@ -3788,6 +3912,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             ProductId = product.ProductId,
                             StatusTypeId = 5,
                             RetryCount = 0,
+                            BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
                             InputJson = new RolePropertyList() { PropertyList = new List<string>(), RoleList = new List<string>(), IsAssigned = true }
                         };
                         productListToCreate.Add(pb);
@@ -3807,6 +3932,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             ProductId = (int)ProductEnum.SalesForce,
                             StatusTypeId = 5,
                             RetryCount = 0,
+                            BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
                             InputJson = new RolePropertyList() { PropertyList = new List<string>(), RoleList = new List<string>(), IsAssigned = true }
                         };
                         productListToCreate.Add(pb);
@@ -3854,6 +3980,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             oneSiteAndOtherProducts.Add(ProductEnum.Lead2Lease.ToString(), pbSeniorLead.InputJson);
                         }
 
+                        pbOneSite.BatchProcessorGroupId = batchGroup.BatchProcessorGroupId;
                         if (userProducts.Any(pr => pr.ProductId == (int)ProductEnum.OneSite))
                         {
                             SaveProductBatch(repository, pbOneSite, createUserResponse, saveProductBatchError, createUserPersonaId, assignUserPersonaId, realPageId, errorStatus, JsonConvert.SerializeObject(oneSiteAndOtherProducts), batchProcessTypeId);
@@ -3919,7 +4046,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
-        private string BundleAoProducts(IList<ProductBatch> productList)
+        private string BundleAoProducts(IList<ProductBatch> productList, int batchProcessorGroupId = 0)
         {
             StringBuilder sb = new StringBuilder();
 
@@ -3933,6 +4060,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     ProductId = (int)ProductEnum.AssetOptimizer,
                     StatusTypeId = 5,
                     RetryCount = 0,
+                    BatchProcessorGroupId = batchProcessorGroupId,
                     InputJson = null
                 };
 
@@ -3999,6 +4127,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     CreateUserPersonaId = product.CreateUserPersonaId,
                     AssignUserPersonaId = product.AssignUserPersonaId,
                     ProductId = product.ProductId,
+                    BatchProcessorGroupId = product.BatchProcessorGroupId,
                     StatusTypeId = product.StatusTypeId,
                     RetryCount = product.RetryCount,
                     InputJson = inputJson,
@@ -4208,6 +4337,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             //Save latest previous product batch to process again when user is re activated.
 
             IList<ProductBatch> productListToDisable = GetListOfProductsToRemoveByPersonaId(repository, assignUserPersonaId);
+            var batchGroup = CreateBatchProcessGroup(repository);
 
             if (productListToDisable != null)
             {
@@ -4219,6 +4349,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         ProductId = (int)ProductEnum.SalesForce,
                         StatusTypeId = 5,
                         RetryCount = 0,
+                        BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
                         InputJson = new RolePropertyList() { PropertyList = new List<string>(), RoleList = new List<string>(), IsAssigned = false }
                     };
                     productListToDisable.Add(pb);
@@ -4247,7 +4378,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     if (aoProductList.Any())
                     {
                         // Bundle AO products
-                        aoInputJsonString = BundleAoProducts(productListToDisable);
+                        aoInputJsonString = BundleAoProducts(productListToDisable, batchGroup.BatchProcessorGroupId);
                     }
 
                     //Loop through the rest of the products list and create the Batch records
@@ -4265,6 +4396,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
                         else
                         {
+                            product.BatchProcessorGroupId = batchGroup.BatchProcessorGroupId;
                             SaveProductBatch(repository, product, createUserResponse, saveProductBatchError, createUserPersonaId, assignUserPersonaId, createUserRealPageId, errorStatus, JsonConvert.SerializeObject(product.InputJson));
                         }
                     }
@@ -4895,6 +5027,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 {
                     //Then Get Product Batch Data
                     productBatch = GetActivatedUserProductBatchData(personaId, productBatch);
+                    var batchGroup = CreateBatchProcessGroup(pbRepository);
 
                     // If any AO product
                     string aoInputJsonString = string.Empty;
@@ -4902,7 +5035,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     if (aoProductList.Any())
                     {
                         // Bundle AO products
-                        aoInputJsonString = BundleAoProducts(productBatch);
+                        aoInputJsonString = BundleAoProducts(productBatch, batchGroup.BatchProcessorGroupId);
                     }
 
                     //Loop through the rest of the products list and create the Batch records
@@ -4922,6 +5055,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
                         else
                         {
+                            product.BatchProcessorGroupId = batchGroup.BatchProcessorGroupId;
                             SaveProductBatch(pbRepository, product, createUserResponse, saveProductBatchError,
                                 createUserPersonaId, personaId, createUserRealPageId, errorStatus,
                                 JsonConvert.SerializeObject(product.InputJson));
@@ -5705,6 +5839,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         bool notificationEmailChanged = isNotificationEmailChanged(priorNotificationEmail, updateUserProfileEntity.NewProfile.NotificationEmail);
 
+                        if (updateUserProfileEntity.ProductBatchData != null)
+                        {
+                            var batchGroup = CreateBatchProcessGroup(repository);
+                            foreach (var item in updateUserProfileEntity.ProductBatchData)
+                            {
+                                item.BatchProcessorGroupId = batchGroup.BatchProcessorGroupId;
+                            }
+                        }
+
                         if ((updateUserProfileEntity.NewProfile.userLogin.Status != UserUiStatusType.Disabled) && (profileChanged || loginNamechanged || notificationEmailChanged || employeeIdChanged))
                         {
                             updateUserProfileEntity.EditorAssignedPersonaList.ToList().ForEach(p =>
@@ -5715,16 +5858,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         if (updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue() && !userBatchEntity.UserTypeChanged)
                         {
-                            //// primary properties selected
-                            //if (primaryPropertyBatch != null)
-                            //{
-                            //    List<string> currentprimaryProperties = repository.GetMany<string>(StoredProcNameConstants.SP_GetPropertyInstanceIdsByPersonaId, new { PersonaId = updateUserProfileEntity.OldProfile.Persona[0].PersonaId, ProductId = (int)ProductEnum.UnifiedUI }).ToList(); //.ConvertAll<string>(x => x.ToString());
-                            //    IList<PersonaProductUserDetails> userProductList = repository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = updateUserProfileEntity.OldProfile.Persona[0].PersonaId, ProductStatusValue = ((Int32)UserUiStatusType.AccountCreationSuccessful).ToString() }).ToList();
-                            //    updateUserProfileEntity.ProductBatchData = updateProductBatchDataWithPrimaryProperties(updateUserProfileEntity.CreateUserPersonaId, updateUserProfileEntity.OldProfile.Persona[0].PersonaId, primaryPropertyBatch, updateUserProfileEntity.ProductBatchData.ToList(), userProductList.ToList(), currentprimaryProperties);
-
-                            //}
-
-                            int productCount = SaveProductDetails(repository, updateUserProfileEntity.ProductBatchData, null, updateUserProfileEntity.CreateUserPersonaId, updateUserProfileEntity.OldProfile.Persona[0].PersonaId, updateUserProfileEntity.LoggedInUserRealPageId, updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId, null, updateUserProfileEntity.NewProfile.UserTypeId, updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue(), updateUserProfileEntity.AoProductsAvailableForUser);
+                           int productCount = SaveProductDetails(repository, updateUserProfileEntity.ProductBatchData, null, updateUserProfileEntity.CreateUserPersonaId, updateUserProfileEntity.OldProfile.Persona[0].PersonaId, updateUserProfileEntity.LoggedInUserRealPageId, updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId, null, updateUserProfileEntity.NewProfile.UserTypeId, updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue(), updateUserProfileEntity.AoProductsAvailableForUser,false,false);
                         }
 
                         if (!updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue())

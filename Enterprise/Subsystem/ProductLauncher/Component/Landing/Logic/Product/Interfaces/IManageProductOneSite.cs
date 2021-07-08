@@ -42,14 +42,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         string UpdateRightToRoles(long editorPersonaId, int rightId, List<string> roles, bool assignRight);
         string UpdateRoleToRights(long editorPersonaId, int roleId, List<string> rightsToAdd, List<string> rightsToRemove);
 
-		/// <summary>
-		/// Unassign User
-		/// </summary>
-		/// <param name="editorPersonaId">Logged-in user PersonaId</param>
-		/// <param name="userPersonaId">new user PersonaId</param>
-		/// <param name="deleteSamlUserProductInfoAndStatus">Optional paramter: Delete all SAML product information and status for the OneSite user when changing the usertype from Admin to Regular user</param>
-		/// <returns>String.empty if success else error</returns>
-		string UnassignUser(long editorPersonaId, long userPersonaId, bool deleteSamlUserProductInfoAndStatus = false);
+        /// <summary>
+        /// Unassign User
+        /// </summary>
+        /// <param name="editorPersonaId">Logged-in user PersonaId</param>
+        /// <param name="userPersonaId">new user PersonaId</param>
+        /// <param name="deleteSamlUserProductInfoAndStatus">Optional paramter: Delete all SAML product information and status for the OneSite user when changing the usertype from Admin to Regular user</param>
+        /// <returns>String.empty if success else error</returns>
+        string UnassignUser(long editorPersonaId, long userPersonaId, bool deleteSamlUserProductInfoAndStatus = false);
 
 		bool UserInLeasingAgentList(long editorPersonaId, long userPersonaId, int siteId);
         PMCInfo GetPMCURL(long userPersonaId);

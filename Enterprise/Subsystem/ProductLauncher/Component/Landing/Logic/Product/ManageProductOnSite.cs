@@ -374,8 +374,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus,
                     (int)ProductBatchStatusType.Deleted);
 
-                // Activity Logging
-                WriteUnassignActivityLog(editorPersonaId, userPersonaId);
             }
 
             return result;
@@ -526,11 +524,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     WriteToDiagnosticLog($"ManageProductOnSite.ManageOnSiteUser - trying to CREATE user with editorPersona id - {editorPersonaId}.");
 
                     string insertResult = InsertOnSiteProductUser(userPersonaId, editorPersonaId, productLoginName, onSiteUser, companyId);
-                    if (string.IsNullOrEmpty(insertResult))
-                    {
-                        // add activity log
-                        WriteCreateUserActivityLog(editorPersonaId, person, userLogin);
-                    }
 
                     return insertResult;
                 }

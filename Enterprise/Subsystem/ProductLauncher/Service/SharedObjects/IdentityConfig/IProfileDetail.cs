@@ -122,5 +122,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 		/// EmployeeId
 		/// </summary>
 		int UserEmployeeId { get; set; }
+		/// <summary>
+		/// User Enterprise Role Template Id
+		/// </summary>
+		int RoleTemplateId { get; set; }
 	}
 }

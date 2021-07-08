@@ -402,8 +402,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus,
                     (int)ProductBatchStatusType.Deleted);
 
-                // Activity Logging
-                WriteUnassignActivityLog(editorPersonaId, userPersonaId);
             }
 
             return result;
@@ -680,12 +678,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                     WriteToDiagnosticLog($"ManageProductVendorServices.ManageVendorServicesUser - trying to CREATE user with editorPersona id - {editorPersonaId}.");
                     string insertResult = InsertVendorServicesProductUser($"{_apiEndPoint}/api/Users", productUserPersonaId, editorPersonaId, productLoginName, vendorServicesUser);
-
-                    // add activity log
-                    if (string.IsNullOrEmpty(insertResult))
-                    {
-                        WriteCreateUserActivityLog(editorPersonaId, person, userLogin);
-                    }
 
                     return insertResult;
                 }

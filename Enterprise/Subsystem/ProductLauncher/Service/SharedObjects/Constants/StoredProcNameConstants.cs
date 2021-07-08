@@ -287,6 +287,12 @@
         public const string SP_CreateProductBatch = "Enterprise.CreateProductBatch";
         public const string SP_UpdateProductBatch = "Enterprise.UpdateProductBatch";
 
+        //BatchProcessor
+        public const string SP_GetUserBatchRecords = "Batch.GetUserBatchRecords";
+        public const string SP_CreateBatchProcessorGroup = "Batch.CreateBatchProcessorGroup";
+        public const string SP_UpdateProcessorGroupStatus = "Batch.UpdateBatchProcessorGroupStatus";
+
+
         //Green Book
         public const string SP_CreatePropertyMapping = "Enterprise.CreatePropertyMapping";
         public const string SP_ListPropertyMapping = "Enterprise.ListPropertyMapping";
@@ -423,6 +429,11 @@
         // Navigation Menu
         public const string SP_GetNavigationMenu = "Enterprise.GetNavigationMenu";
         public const string SP_GetNavigationMenuRights = "Enterprise.GetNavigationMenuRights";
+
+        //Enterpriserole
+        public const string SP_GetRoleTemplateProductRoleMappings = "Security.GetRoleTemplateProductRolesMappings";
+        public const string SP_GetEnterpriseRoleProductsByOrganization = "Security.GetEnterpriseRoleProductsByOrganization";
+        public const string SP_GetUserRoleTemplate = "Security.GetUserRoleTemplate";
     }
 
     public static class EnterpriseStoredProcNameConstants

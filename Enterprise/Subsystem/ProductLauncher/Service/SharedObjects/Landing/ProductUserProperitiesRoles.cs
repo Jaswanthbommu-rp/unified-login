@@ -47,5 +47,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 	    /// </summary>
 	    public Guid CorrelationId { get; set; }
 
-	}
+        /// <summary>
+	    /// BatchprocessGroup GUID
+	    /// </summary>
+        public int BatchProcessorGroupId { get; set; }
+    }
 }

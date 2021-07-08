@@ -1264,4 +1264,18 @@
     <Property Name="ParentElementType" Value="SqlTable" />
     <Property Name="NewName" Value="PropertyInstanceId" />
   </Operation>
+  <Operation Name="Rename Refactor" Key="f6709e9d-d7eb-439f-b9ef-536f89f6f48a" ChangeDateTime="06/25/2021 22:15:28">
+    <Property Name="ElementName" Value="[Batch].[BatchProcessorGroup].[Id]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[Batch].[BatchProcessorGroup]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="BatchProcessorGroupId" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="7ce8df6c-df74-4f0d-a73c-f0ad3ab1926f" ChangeDateTime="06/26/2021 03:16:19">
+    <Property Name="ElementName" Value="[Batch].[BatchProcessorGroup].[ActivityLogged]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[Batch].[BatchProcessorGroup]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="BatchProcessorGroupActivityLogged" />
+  </Operation>
 </Operations>
