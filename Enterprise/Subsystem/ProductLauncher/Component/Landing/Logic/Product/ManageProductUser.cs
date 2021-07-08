@@ -34,7 +34,9 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using System.Threading.Tasks;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.EnterpriseRole;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
-
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+using System.Text;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -811,6 +813,36 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
            
 
             return message;
+        }
+
+        private void SendNotification(string title, string message, List<string> users) 
+        {
+            var productInternalSettingList = GetProductInternalSettings(ProductEnum.UnifiedPlatform);
+
+            var notificationsApiEndPoint = productInternalSettingList.First(a => a.Name.Equals("NotificationsApiEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
+            var notificationsEventsEndPoint = productInternalSettingList.First(a => a.Name.Equals("NotificationsEventsEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
+            var tokenEndpoint = productInternalSettingList.First(a => a.Name.Equals("TokenEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
+
+            var clientId = productInternalSettingList.First(a => a.Name.Equals("UnifiedLoginServerClientName", StringComparison.OrdinalIgnoreCase)).Value;
+            var apiSecret = Encoding.UTF8.GetString(Convert.FromBase64String(productInternalSettingList.First(a => a.Name.Equals("UnifiedLoginServerClientSecret", StringComparison.OrdinalIgnoreCase)).Value));
+
+
+            RealPage.UnifiedNotifications.Notification notification = new RealPage.UnifiedNotifications.Notification(clientId, apiSecret, tokenEndpoint, notificationsApiEndPoint + "/v1/notifications", notificationsApiEndPoint + "/" + notificationsEventsEndPoint);
+            notification.SendNotification(title, message, users, "ULUUS");
+        }
+
+        private IList<ProductInternalSetting> GetProductInternalSettings(ProductEnum product)
+        {
+            var rpcache = new RPObjectCache();
+            var cacheKey = $"productInternalSetting_{(int)product}";
+            IList<ProductInternalSetting> productInternalSettingList = rpcache.GetFromCache<IList<ProductInternalSetting>>(cacheKey, 600, () =>
+            {
+                // load from database
+
+                return _productInternalSettingRepository.GetProductInternalSettings((int)product).ToList();
+            });
+
+            return productInternalSettingList;
         }
 
         #endregion
