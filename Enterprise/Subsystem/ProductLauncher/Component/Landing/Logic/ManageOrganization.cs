@@ -968,7 +968,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 dataFilter = globals[BaseType.RequestParameter] as RequestParameter;
             }
-            List<Guid> propertyInstanceIds;
+            List<Guid> propertyInstanceIds = new List<Guid>();
             List<PropertySetup> propertyDetails = new List<PropertySetup>();
             List<UPFMPropertyInstance> selectedPropertyInstances = new List<UPFMPropertyInstance>();
             List<int> userProperties = null;
@@ -995,6 +995,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     selectedPropertyInstanceIds = selectedProperties;
                 }
                 propertyInstanceIds = isSelectedProperties == true ? selectedPropertyInstanceIds : propertyInstanceIds.Except(selectedPropertyInstanceIds).ToList<Guid>();                
+            }
+            if (userPersonaId == 0 && (selectedProperties == null || selectedProperties.Count == 0) && isSelectedProperties == true)
+            {
+                propertyInstanceIds = new List<Guid>();
             }
             if (propertyInstanceIds != null)
             {
