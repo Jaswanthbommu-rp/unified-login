@@ -770,7 +770,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             if (IsSuccess) 
             {
-                message = $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} updated product access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName}:";
+                message = $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} updated access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName}:";
                 foreach (var item in userBatchProductDetails)
                 {
                     if (item.IsAssigned)
