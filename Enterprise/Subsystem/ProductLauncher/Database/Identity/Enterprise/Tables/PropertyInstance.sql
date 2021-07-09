@@ -22,3 +22,9 @@
 GO
 
 CREATE INDEX [IX_PropertyInstance_InstanceId] ON [Enterprise].[PropertyInstance] ([InstanceId])
+
+GO
+CREATE NONCLUSTERED INDEX [NCIX_PropertyInstance_InstanceId]
+ON [Enterprise].[PropertyInstance] ([IsDeleted])
+INCLUDE ([PropertyInstanceId],[InstanceId])
+GO

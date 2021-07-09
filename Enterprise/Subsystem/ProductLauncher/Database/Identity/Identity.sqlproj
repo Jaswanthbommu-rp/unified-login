@@ -1132,6 +1132,7 @@
     <Build Include="Enterprise\Tables\ProductValidationRule.sql" />
     <Build Include="UserManagement\Stored Procedures\GetEnterpriseRoleProductsByOrganization.sql" />
     <Build Include="UserManagement\Stored Procedures\GetUserRoleTemplate.sql" />
+    <Build Include="Ident\Stored Procedures\GetAllActivityTokenCounts.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

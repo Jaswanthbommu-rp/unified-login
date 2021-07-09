@@ -850,7 +850,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						WriteToDiagnosticLog("ManageMarketingCenterUser - Update user. newid=" + newid);
 						UpdateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.UserId, newid.ToString());
 						WriteToDiagnosticLog("ManageMarketingCenterUser - Update user success. Saved user id");
-						WriteUpdateUserActivityLog(editorPersonaId, (Person)person, (UserLoginOnly)userLogin);
 
 						if (!IsUserIdValid(Convert.ToInt64(_editorProductUserId)))
 						{

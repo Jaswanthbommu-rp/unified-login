@@ -18,3 +18,7 @@ GO
 CREATE INDEX [IX_OrganizationSettings_PartyId]
 ON [Settings].[OrganizationSettings]
 ( [OrganizationSettingsId],[PartyId], [SettingCategoryTypeId], [MappingName] );
+GO
+CREATE NONCLUSTERED INDEX [NCIX_OrganizationSettings_PartyId]
+ON [Settings].[OrganizationSettings] ([PartyId])
+GO

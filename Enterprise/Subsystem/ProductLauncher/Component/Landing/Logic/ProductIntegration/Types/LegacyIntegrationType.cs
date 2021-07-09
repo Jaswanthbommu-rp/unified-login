@@ -152,7 +152,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.AoAxiometrics:
                     var manageProductAo = new ManageProductAssetOptimization(_userClaims);
                     var products = _productRepository.GetAllProducts();
-                    string productCode = ProductEnumHelper.GetProductCodeByProductId(_productId, products);
+                    string productCode = ProductEnumHelper.GetBooksSourceCodeByProductId(_productId, products);
                     result = manageProductAo.GetProductRoles(editorPersonaId, userPersonaId, productCode, dataFilter, userLoginName);
                     break;
 
@@ -879,7 +879,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.AoAxiometrics:
                     var manageProductAo = new ManageProductAssetOptimization(_userClaims);
                     var productList = _productRepository.GetAllProducts();
-                    string productcode = ProductEnumHelper.GetProductCodeByProductId(_productId, productList);
+                    string productcode = ProductEnumHelper.GetBooksSourceCodeByProductId(_productId, productList);
                     result = manageProductAo.GetProductPropertyGroups(editorPersonaId, userPersonaId, productcode, userLoginName);
                     break;
                 case (int)ProductEnum.UtilityManagement:
