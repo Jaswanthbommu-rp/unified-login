@@ -1480,10 +1480,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 WriteToDiagnosticLog("ManageOneSiteUser - Finished update to roles and properties");
 
-                if (existingUser) 
-                {
-                    WriteUpdateUserActivityLog(editorPersonaId, person, userLogin);
-                }
             }
             else
             {

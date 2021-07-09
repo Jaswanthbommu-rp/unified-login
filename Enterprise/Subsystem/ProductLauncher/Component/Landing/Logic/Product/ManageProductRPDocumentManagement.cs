@@ -1111,7 +1111,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					if (postEnableResponse.IsSuccessStatusCode || postEnableResponse.StatusCode == System.Net.HttpStatusCode.NotModified)
 					{
 						WriteToDiagnosticLog($"ManageRPDMUser - Update user {_productUserId}, enable disabled user success", logData);
-						WriteUpdateUserActivityLog(editorPersonaId, person, userLogin);
 					}
 					else
 					{
@@ -1132,7 +1131,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
 					logData = new Dictionary<string, object>() { { "postResponse.Content", postUpdateResponse.Content.ReadAsStringAsync().Result } };
 					WriteToDiagnosticLog("ManageRPDMUser - Update user success. Set product status to Success", logData);
-					WriteUpdateUserActivityLog(editorPersonaId, person, userLogin);
 					return string.Empty;
 
 				}

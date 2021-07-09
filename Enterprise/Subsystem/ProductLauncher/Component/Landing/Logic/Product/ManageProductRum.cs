@@ -865,11 +865,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				WriteToDiagnosticLog($"ManageProductRum.ManageRumUser - trying to UPDATE user with editorPersona id - {editorPersonaId}.");
 				var updateResult = UpdateRumProductUser(userPersonaId, editorPersonaId, rumUser);
 
-				if (string.IsNullOrEmpty(updateResult))
-				{
-					// add activity log
-					WriteUpdateUserActivityLog(editorPersonaId, person, userLogin);
-				}
 				return updateResult;				
                 
             }

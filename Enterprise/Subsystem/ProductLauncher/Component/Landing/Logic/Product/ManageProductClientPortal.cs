@@ -413,12 +413,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 var updateResult = UpdateClientPortalUser(clientPortalUser, _productUserId, userPersonaId);
 
-                if (string.IsNullOrEmpty(updateResult))
-                {
-                    // add activity log
-                    WriteUpdateUserActivityLog(editorPersonaId, person, userLogin);
-                }
-
                 return updateResult;
             }
             catch (Exception ex)

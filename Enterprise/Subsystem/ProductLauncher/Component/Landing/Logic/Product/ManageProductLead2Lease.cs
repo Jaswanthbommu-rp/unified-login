@@ -641,7 +641,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         WriteToDiagnosticLog($"ManageLead2LeaseUser - Updating user errored. userPersonaId = {userPersonaId} baseUrlAndQuery = {baseUrlAndQuery}");
                         return "Error";
                     }
-                    WriteUpdateUserActivityLog(editorPersonaId, (Person)person, userLogin);
                 }
 
                 UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
