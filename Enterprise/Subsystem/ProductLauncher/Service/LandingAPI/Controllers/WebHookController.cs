@@ -279,7 +279,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                             Latitude = Convert.ToDecimal(property?["latitude"] == null || property["latitude"].Type == JTokenType.Null ? 0 : property["latitude"]),
                                             CustomerPropertyId = property["customerPropertyId"] == null || property["customerPropertyId"].Type == JTokenType.Null ? null : property["customerPropertyId"].ToString(),
                                             InstanceId = existingUPFMPropertyInstanceId == null ? Guid.Empty : new Guid(existingUPFMPropertyInstanceId),
-                                            Domain = customerDomain, // not sure how this can be correct
+                                            Domain = property["customerEnvironment"] == null || property["customerEnvironment"].Type == JTokenType.Null ? customerDomain : property["customerEnvironment"].ToString(),
                                             ProductList = currentProductList,
                                         };
 
