@@ -34,7 +34,10 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using System.Threading.Tasks;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.EnterpriseRole;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
-
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+using System.Text;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using System.Net;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -717,6 +720,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         var message = GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, failedRecords, false);
                         PushToQueue(fromUserLogInfo, toUserLogInfo, message);
+                        SendNotification(message, fromPersonaId);
                     }
 
                     //update status
@@ -808,9 +812,39 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 message += commaString + ".";
             }
 
-           
-
             return message;
+        }
+
+        private void SendNotification(string message, long notificationTo) 
+        {
+            string title = "User Update Exception";
+            List<string> users = new List<string>() { notificationTo.ToString() };
+
+            var productInternalSettingList = GetProductInternalSettings(ProductEnum.UnifiedPlatform);
+
+            var notificationsApiEndPoint = productInternalSettingList.First(a => a.Name.Equals("NotificationsApiEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
+            var notificationsEventsEndPoint = productInternalSettingList.First(a => a.Name.Equals("NotificationsEventsEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
+            var tokenEndpoint = productInternalSettingList.First(a => a.Name.Equals("TokenEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
+
+            var clientId = productInternalSettingList.First(a => a.Name.Equals("UnifiedLoginServerClientName", StringComparison.OrdinalIgnoreCase)).Value;
+            var apiSecret = Encoding.UTF8.GetString(Convert.FromBase64String(productInternalSettingList.First(a => a.Name.Equals("UnifiedLoginServerClientSecret", StringComparison.OrdinalIgnoreCase)).Value));
+
+            RealPage.UnifiedNotifications.Notification notification = new RealPage.UnifiedNotifications.Notification(clientId, apiSecret, tokenEndpoint, notificationsApiEndPoint + "/v1/notifications", notificationsApiEndPoint + "/" + notificationsEventsEndPoint);
+            var result = Task.Run(() => notification.SendNotification(title, message, users, "ULUUS")).Result;
+        }
+
+        private IList<ProductInternalSetting> GetProductInternalSettings(ProductEnum product)
+        {
+            var rpcache = new RPObjectCache();
+            var cacheKey = $"productInternalSetting_{(int)product}";
+            IList<ProductInternalSetting> productInternalSettingList = rpcache.GetFromCache<IList<ProductInternalSetting>>(cacheKey, 600, () =>
+            {
+                // load from database
+
+                return _productInternalSettingRepository.GetProductInternalSettings((int)product).ToList();
+            });
+
+            return productInternalSettingList;
         }
 
         #endregion
