@@ -270,6 +270,9 @@ BEGIN
 			AND     ((@NOW >= ps.FromDate AND ps.ThruDate IS NULL) OR (@NOW BETWEEN ps.FromDate AND ps.ThruDate))
 
 	END
+
+	DROP INDEX IF EXISTS [NCI_Temp_PersonaProduct_ProductId] ON [dbo].[#PersonaProduct]
+	CREATE NONCLUSTERED INDEX [NCI_Temp_PersonaProduct_ProductId]	ON [dbo].[#PersonaProduct] ([ProductId]) INCLUDE ([PersonaId])
 	
 	DROP TABLE IF EXISTS #CustomFields
 
@@ -429,6 +432,10 @@ BEGIN
 	) X
 	WHERE X.RowNo = 1
 
+	DROP INDEX IF EXISTS [NCI_cteUserLogin_PersonPartyId] ON [dbo].[#UserLogin]
+	CREATE NONCLUSTERED INDEX [NCI_cteUserLogin_PersonPartyId]  ON [dbo].[#UserLogin] ([PersonPartyId])
+	INCLUDE ([UserLoginPersonaId],[PersonaId],[UserId],[LoginName],[LastLogin],[FromDate],[ThruDate],[IdentityProviderTypeId],[StatusId],[StatusName],[StatusThruDate],[PasswordModifiedDate])
+
 	;WITH cteUsersFinal
 	(
 		RealPageID,
@@ -572,6 +579,7 @@ BEGIN
 	FETCH NEXT(@RowsPerPage) ROWS ONLY
 	OPTION (RECOMPILE)
 
+	DROP INDEX IF EXISTS [NCI_cteUserLogin_PersonPartyId] ON [dbo].[#UserLogin]
 	DROP TABLE IF EXISTS #ProductCount	
 	DROP TABLE IF EXISTS #UserLogin
 	DROP TABLE IF EXISTS #PersonaProduct

@@ -314,7 +314,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			PersonaProductUserDetails productDetail = new PersonaProductUserDetails();
 
-            var productSamlSettings = GetProductSamlSettings(productId);
+			var productSamlSettings = GetProductSamlSettings(productId);
 
 			samlEndpointURL = productSamlSettings.LoginUri;
 
@@ -385,15 +385,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					productId = (int)ProductEnum.OneSite;
 					//productType = "IsResource";
 					break;
-                case (int)ProductEnum.PropertyPhotos:
-                    productId = (int)ProductEnum.MarketingCenter;
-                    break;
-                default:
+				case (int)ProductEnum.PropertyPhotos:
+					productId = (int)ProductEnum.MarketingCenter;
+					break;
+				default:
 					break;
 			}
 
-            SamlRepository samlRepository = new SamlRepository();
-            var samlList = samlRepository.GetProductSamlDetails(personaId, productId);
+			SamlRepository samlRepository = new SamlRepository();
+			var samlList = samlRepository.GetProductSamlDetails(personaId, productId);
 
 			if (getOneSitePMCURL)
 			{
@@ -406,14 +406,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				samlEndpointURL = GetDocManagementDomainURL(samlEndpointURL, personaId, samlList);
 			}
 
-            if (getMarketingCenterUrl)
-            {
-                var marketingCenterSettings = GetProductSamlSettings((int)ProductEnum.MarketingCenter);
-                samlList.Add(new SamlAttributes() { Name = "RedirectUrl", SamlAttributeId = 0, Type = SAML.RealPageSAML.AttributeURIs.Basic, Value = samlEndpointURL });
-                samlEndpointURL = marketingCenterSettings.LoginUri;
-            }
+			if (getMarketingCenterUrl)
+			{
+				var marketingCenterSettings = GetProductSamlSettings((int)ProductEnum.MarketingCenter);
+				samlList.Add(new SamlAttributes() { Name = "RedirectUrl", SamlAttributeId = 0, Type = SAML.RealPageSAML.AttributeURIs.Basic, Value = samlEndpointURL });
+				samlEndpointURL = marketingCenterSettings.LoginUri;
+			}
 
-            if (isProductReport)
+			if (isProductReport)
 			{
 				// extend SAML URL with product params
 				//if (!string.IsNullOrEmpty(reportParams))
@@ -435,51 +435,51 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			return response;
 		}
 
-        /// <summary>
-        /// Used to get SAML settings for the specified product
-        /// </summary>
-        /// <param name="productId"></param>
-        /// <returns></returns>
-        private static ProductSamlSettings GetProductSamlSettings(int productId)
-        {
-            // get the SAML settings for the given product
-            ProductSamlSettings productSamlSettings = new ProductSamlSettings();
-            SamlRepository samlRepository = new SamlRepository();
+		/// <summary>
+		/// Used to get SAML settings for the specified product
+		/// </summary>
+		/// <param name="productId"></param>
+		/// <returns></returns>
+		private static ProductSamlSettings GetProductSamlSettings(int productId)
+		{
+			// get the SAML settings for the given product
+			ProductSamlSettings productSamlSettings = new ProductSamlSettings();
+			SamlRepository samlRepository = new SamlRepository();
 
-            RPObjectCache rpcache = new RPObjectCache();
-            var cacheKey = $"productSamlSettings_{(int)productId}";
-            productSamlSettings = rpcache.GetFromCache<ProductSamlSettings>(cacheKey, 600, () =>
-            {
-                // load from api
+			RPObjectCache rpcache = new RPObjectCache();
+			var cacheKey = $"productSamlSettings_{(int)productId}";
+			productSamlSettings = rpcache.GetFromCache<ProductSamlSettings>(cacheKey, 600, () =>
+			{
+				// load from api
 
-                if (ProductEnumHelper.GetAoProductList().Contains((ProductEnum)productId))
-                {
-                    return samlRepository.GetProductSamlSettingsByProductId((int)ProductEnum.AssetOptimizer);
-                }
+				if (ProductEnumHelper.GetAoProductList().Contains((ProductEnum)productId))
+				{
+					return samlRepository.GetProductSamlSettingsByProductId((int)ProductEnum.AssetOptimizer);
+				}
 
-                return samlRepository.GetProductSamlSettingsByProductId(productId);
-            });
-            return productSamlSettings;
-        }
+				return samlRepository.GetProductSamlSettingsByProductId(productId);
+			});
+			return productSamlSettings;
+		}
 
-        /// <summary>
-        /// Used to get various settings for the product being logged into
-        /// </summary>
-        /// <param name="productId"></param>
-        /// <param name="persona"></param>
-        /// <param name="getOneSitePMCURL"></param>
-        /// <param name="getDocMgtDomain"></param>
-        /// <param name="getMarketingCenterURL"></param>
-        /// <param name="productList"></param>
-        /// <returns></returns>
-        public static bool ProductDetails(int productId, Persona persona, out bool getOneSitePMCURL, out bool getDocMgtDomain, out bool getMarketingCenterURL, out IList<PersonaProductUserDetails> productList)
+		/// <summary>
+		/// Used to get various settings for the product being logged into
+		/// </summary>
+		/// <param name="productId"></param>
+		/// <param name="persona"></param>
+		/// <param name="getOneSitePMCURL"></param>
+		/// <param name="getDocMgtDomain"></param>
+		/// <param name="getMarketingCenterURL"></param>
+		/// <param name="productList"></param>
+		/// <returns></returns>
+		public static bool ProductDetails(int productId, Persona persona, out bool getOneSitePMCURL, out bool getDocMgtDomain, out bool getMarketingCenterURL, out IList<PersonaProductUserDetails> productList)
 		{
 			string productType = null;
 			getOneSitePMCURL = false;
 			getDocMgtDomain = false;
-            getMarketingCenterURL = false;
+			getMarketingCenterURL = false;
 
-            switch (productId)
+			switch (productId)
 			{
 				case (int)ProductEnum.OneSite:
 					getOneSitePMCURL = true;
@@ -507,11 +507,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				case (int)ProductEnum.RPDocumentManagement:
 					getDocMgtDomain = true;
 					break;
-                case (int)ProductEnum.PropertyPhotos:
-                    productId = (int)ProductEnum.MarketingCenter;
-                    getMarketingCenterURL = true;
-                    break;
-                default:
+				case (int)ProductEnum.PropertyPhotos:
+					productId = (int)ProductEnum.MarketingCenter;
+					getMarketingCenterURL = true;
+					break;
+				default:
 					break;
 			}
 
@@ -605,10 +605,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 			}
 
-            if (string.IsNullOrEmpty(samlSubject))
-            {
-                throw new Exception("Empty SAML Subject");
-            }
+			if (string.IsNullOrEmpty(samlSubject))
+			{
+				throw new Exception("Empty SAML Subject");
+			}
 
 			X509Certificate2 signingCert = GetSigningCertificate(signingCertThumbprint);
 			RealPageSAML saml = new RealPageSAML(signingCert, issuer, productInternalSettingList)
@@ -649,8 +649,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				try
 				{
 					//persona = personaManager.GetActivePersona(RealPageId);
-                    PersonaId = _userClaims.PersonaId;
-                }
+					PersonaId = _userClaims.PersonaId;
+				}
 				catch (Exception ex)
 				{
 					return null;
