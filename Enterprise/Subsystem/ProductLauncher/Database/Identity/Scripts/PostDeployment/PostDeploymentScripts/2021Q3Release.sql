@@ -452,4 +452,10 @@ BEGIN
            ,[CreatedDate]) 
            VALUES	(@RightId, @PartyId, 9, @CreatedById, @Now)
 END
+
+ declare @NavigationMenuId bigint, @previousRightId bigint
+ select @previousRightId = RightId from Security.RightRoute  where RightName='Employee Access to Company Setup'
+ select @NavigationMenuId=id from Enterprise.NavigationMenu where PageId='client-settings' and url='/home/client-settings'
+ update Enterprise.NavigationMenuRights set rightid = @RightId where  navigationmenuid=@NavigationMenuId and RightId = @previousRightId
 GO
+
