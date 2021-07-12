@@ -1008,10 +1008,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 message = "{0} {1} user type changed from external user to admin in product {2} by user {3} {4}.";
             }
-            else if (batchProcessType == BatchProcessType.ProfileUpdate)
-            {
-                message = "{0} {1} user profile updated in product {2} by user {3} {4}.";
-            }
 
             WriteActivityLog(fromPersonaId, toPerson, toUserGbLogin, message);
         }

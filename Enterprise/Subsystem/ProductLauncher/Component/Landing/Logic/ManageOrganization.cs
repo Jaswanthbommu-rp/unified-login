@@ -989,12 +989,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 userProperties = new List<int>();
                 userProperties = _propertyRepository.ListUPFMPropertyInstanceIdByPersona(userPersonaId, ProductEnum.UnifiedUI);
                 selectedPropertyInstances = _propertyRepository.ListUPFMPropertyInstanceByPersona(userPersonaId, ProductEnum.UnifiedUI);
-                List<Guid> selectedPropertyInstanceIds = selectedPropertyInstanceIds = selectedPropertyInstances?.Select(p => p.InstanceId).ToList();
+                List<Guid> selectedPropertyInstanceIds = selectedPropertyInstances?.Select(p => p.InstanceId).ToList();
                 if ((selectedProperties != null && selectedProperties.Count > 0))
                 {
                     selectedPropertyInstanceIds = selectedProperties;
                 }
-                propertyInstanceIds = isSelectedProperties == true ? selectedPropertyInstanceIds : propertyInstanceIds.Except(selectedPropertyInstanceIds).ToList<Guid>();                
+                if (isSelectedProperties == true)
+                {
+                    propertyInstanceIds = selectedPropertyInstanceIds;
+                }
+                else if (isSelectedProperties == false)
+                {
+                    propertyInstanceIds = propertyInstanceIds.Except(selectedPropertyInstanceIds).ToList<Guid>();
+                }
             }
             if (userPersonaId == 0 && (selectedProperties == null || selectedProperties.Count == 0) && isSelectedProperties == true)
             {

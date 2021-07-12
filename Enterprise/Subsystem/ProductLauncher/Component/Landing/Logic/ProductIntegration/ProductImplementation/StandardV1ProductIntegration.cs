@@ -535,9 +535,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // Update product status in green book
                 _dataCollector.UpdateProductSettingProductStatus(SubjectUserDetails.PersonaId, PRODUCT_SETTINGTYPE_STATUS, ProductId, statusValue);
 
-                // Activity Logging
-                ProductActivityLogger.WriteUnassignUserActivityLog(EditorUserDetails, SubjectUserDetails, BlueBookGbProductMap.Name, BlueBookGbProductMap.BooksProductCode, CorrelationId);
-
                 return string.Empty;
             }
 
@@ -848,13 +845,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 WriteToDiagnosticLog(
                     $"{nameof(StandardV1ProductIntegration)}.UpdateUser - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Received success. Updating Greenbook mapping.");
 
-                if (batchProcessType == BatchProcessType.CreateUpdateProductUser)
-                {
-                    // activity logging
-                    ProductActivityLogger.WriteUpdateUserActivityLog(EditorUserDetails, SubjectUserDetails,
-                        BlueBookGbProductMap.Name, BlueBookGbProductMap.BooksProductCode, CorrelationId);
-                }
-                else if (batchProcessType == BatchProcessType.UserTypeAdminToRegular || batchProcessType ==
+                if (batchProcessType == BatchProcessType.UserTypeAdminToRegular || batchProcessType ==
                     BatchProcessType.UserTypeRegularToAdmin || batchProcessType == BatchProcessType.UserTypeAdminToExternal || batchProcessType == BatchProcessType.UserTypeExternalToAdmin)
                 {
                     // activity logging
@@ -961,10 +952,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 WriteToDiagnosticLog(
                     $"{nameof(StandardV1ProductIntegration)}.UpdateUserProfile - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId} subjectPersonaId - {SubjectUserDetails.PersonaId}. Received success. Updating Greenbook mapping.");
-
-                // activity logging
-                ProductActivityLogger.WriteUpdateUserActivityLog(EditorUserDetails, SubjectUserDetails, BlueBookGbProductMap.Name, BlueBookGbProductMap.BooksProductCode,
-                    CorrelationId);
 
                 _dataCollector.UpdateProductSettingProductStatus(SubjectUserDetails.PersonaId, PRODUCT_SETTINGTYPE_STATUS, ProductId, (int) ProductBatchStatusType.Success);
 
