@@ -179,10 +179,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <summary>
         /// Get a list of persons 
         /// </summary>
-
         /// <param name="globals">Parameter for filter and sort</param>
         /// <param name="organizationRealPageId">Organization's realPageId</param>
-        
         /// <returns>List of Persons</returns>
         public IList<ProfileDetail> ListProfileDetails(IDictionary<object, object> globals, Guid? organizationRealPageId = null)
         {

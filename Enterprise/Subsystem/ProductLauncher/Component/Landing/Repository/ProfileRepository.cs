@@ -648,8 +648,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 						profiledetail.userLogin = _manageUserLogin.GetUserLogin((UserLogin)profiledetail.userLogin, _userClaim.OrganizationPartyId);
 						return profiledetail;
 					},
-					new
-					{
+					new	{
 						RealPageId = realPageId,
 						ParentPartyRoleTypeId = parentPartyRoleTypeId,
 						UserListFilterType = (int)filterUserList,
@@ -711,8 +710,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 						profiledetail.userLogin = _manageUserLogin.GetUserLogin((UserLogin)profiledetail.userLogin, _userClaim.OrganizationPartyId);
 						return profiledetail;
 					},
-					new
-					{
+					new	{
 						RealPageId = realPageId,
 						ParentPartyRoleTypeId = parentPartyRoleTypeId,
 						UserListFilterType = (int)filterUserList,
