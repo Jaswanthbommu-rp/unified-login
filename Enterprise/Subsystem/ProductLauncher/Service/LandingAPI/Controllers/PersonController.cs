@@ -279,7 +279,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             IManageProfile manageProfile = new ManageProfile(_userClaims);
 			IList<ProfileDetail> profileDetailList = manageProfile.ListProfileDetails(globals);
-            List<string> propertyNamesList = new List<string>();
             bool isProperties = false;
             List<KeyValuePair<string, object>> ProductList = new List<KeyValuePair<string, object>>();
 

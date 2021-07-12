@@ -189,16 +189,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 		[JsonProperty("PlatformRoles", NullValueHandling = NullValueHandling.Ignore)]
 		public string PlatformRoles { get; set; }
 
-
-
 		/// <summary>
 		/// MFAFlag
 		/// </summary>
 		[JsonProperty("MFAFlag", NullValueHandling = NullValueHandling.Ignore)]
 		public string MFAFlag { get; set; }
 
-
-
+		/// <summary>
+		/// Product List
+		/// </summary>
+		[JsonProperty("ProductList", NullValueHandling = NullValueHandling.Ignore)]
 		public List<KeyValuePair<string, object>> ProductList = new List<KeyValuePair<string, object>>();
 
 
