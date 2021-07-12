@@ -605,16 +605,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
 			using (var repository = GetRepository())
 			{
-				string spname = isExport ? StoredProcNameConstants.SP_ListPersons1 : StoredProcNameConstants.SP_ListPersons;
-				var items = repository.GetManyWithSpliOn<ProfileDetail, UserLogin, int, string, dynamic,ProfileDetail>(
-					spname,
-					(profiledetail, userlogin, userproductcount, userType, list) =>
+				
+				if (isExport)
+				{
+					var items = repository.GetManyWithSpliOn<ProfileDetail, UserLogin, int, string, dynamic, ProfileDetail>(
+					StoredProcNameConstants.SP_ListPersons1,
+					(profiledetail, userlogin, userproductcount, userType, productslist) =>
 					{
-						if (isExport)
-						{
-							var abc = ((IDictionary<string, object>)list).ToList();
-							profiledetail.kpProductList = abc;
-						}
+						var productList = ((IDictionary<string, object>)productslist).ToList();
+						profiledetail.kpProductList = productList;
 						profiledetail.userLogin = userlogin;
 						profiledetail.userLogin.PartyId = profiledetail.PartyId;
 						profiledetail.userLogin.RealPageId = profiledetail.RealPageId;
@@ -649,7 +648,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 						profiledetail.userLogin = _manageUserLogin.GetUserLogin((UserLogin)profiledetail.userLogin, _userClaim.OrganizationPartyId);
 						return profiledetail;
 					},
-					new {
+					new
+					{
 						RealPageId = realPageId,
 						ParentPartyRoleTypeId = parentPartyRoleTypeId,
 						UserListFilterType = (int)filterUserList,
@@ -659,16 +659,81 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 						RowsPerPage = dataFilterSort.Pages.ResultsPerPage == 100 ? 0 : dataFilterSort.Pages.ResultsPerPage, //ResultsPerPage == 100 ? Current Shell : New Shell
 						PageNumber = ((dataFilterSort.Pages.ResultsPerPage == 100) || (dataFilterSort.Pages.StartRow <= 0)) ? 1 : dataFilterSort.Pages.StartRow
 					},
-					splitOn: isExport ? "UserId, Products, UserType, RowNumber" : "UserId, Products, UserType");
+					splitOn: "UserId, Products, UserType, RowNumber");
 
-				//Set the product count to 0 when the user status is disabled.
-				items.ToList().FindAll(i => i.userLogin.Status == UserUiStatusType.Disabled).ForEach(d =>
+					//Set the product count to 0 when the user status is disabled.
+					items.ToList().FindAll(i => i.userLogin.Status == UserUiStatusType.Disabled).ForEach(d =>
+					{
+						d.SummaryCount.TotalAssignedProducts = 0;
+						d.userLogin.Status = UserUiStatusType.Deactivated;
+					});
+
+					return items.ToList();
+
+				}
+				else
 				{
-					d.SummaryCount.TotalAssignedProducts = 0;
-                    d.userLogin.Status = UserUiStatusType.Deactivated;
-				});
+					var items = repository.GetManyWithSpliOn<ProfileDetail, UserLogin, int, string, ProfileDetail>(
+					StoredProcNameConstants.SP_ListPersons,
+					(profiledetail, userlogin, userproductcount, userType) =>
+					{
+						profiledetail.userLogin = userlogin;
+						profiledetail.userLogin.PartyId = profiledetail.PartyId;
+						profiledetail.userLogin.RealPageId = profiledetail.RealPageId;
+						profiledetail.userLogin.LoginNameType = EmailFormatValidation.IsValidEmail(profiledetail.userLogin.LoginName) ? "email" : "";
+						profiledetail.SummaryCount.TotalAssignedProducts = userproductcount;
+						profiledetail.AssignedProducts = null;
+						profiledetail.contactMechanism = null;
+						profiledetail.organization = null;
+						profiledetail.PartyRole = null;
+						profiledetail.TelecommunicationNumber = null;
+						profiledetail.InactivePersona = null;
+						profiledetail.Persona = null;
 
-				return items.ToList();
+						if (userType != null)
+						{
+							string userTypeEnum = Regex.Replace(userType, @"[^A-Za-z0-9]+", "");
+							UserRoleType userRoleType;
+
+							if (Enum.TryParse(userTypeEnum, true, out userRoleType))
+							{
+								profiledetail.userLogin.UserRoleType = userRoleType;
+							}
+						}
+
+						profiledetail.userLogin.IsPending = false;
+						profiledetail.userLogin.IsExpired = false;
+						profiledetail.userLogin.IsActive = true;
+						profiledetail.userLogin.IsLocked = false;
+						profiledetail.userLogin.Status = UserUiStatusType.Active;
+						//profiledetail.EnterpriseRoleName = 
+
+						profiledetail.userLogin = _manageUserLogin.GetUserLogin((UserLogin)profiledetail.userLogin, _userClaim.OrganizationPartyId);
+						return profiledetail;
+					},
+					new
+					{
+						RealPageId = realPageId,
+						ParentPartyRoleTypeId = parentPartyRoleTypeId,
+						UserListFilterType = (int)filterUserList,
+						AssignedProducts = assignedProductsJson,
+						FilterBy = filterByJson,
+						SortBy = sortByJson,
+						RowsPerPage = dataFilterSort.Pages.ResultsPerPage == 100 ? 0 : dataFilterSort.Pages.ResultsPerPage, //ResultsPerPage == 100 ? Current Shell : New Shell
+						PageNumber = ((dataFilterSort.Pages.ResultsPerPage == 100) || (dataFilterSort.Pages.StartRow <= 0)) ? 1 : dataFilterSort.Pages.StartRow
+					},
+					splitOn: "UserId, Products, UserType");
+
+					//Set the product count to 0 when the user status is disabled.
+					items.ToList().FindAll(i => i.userLogin.Status == UserUiStatusType.Disabled).ForEach(d =>
+					{
+						d.SummaryCount.TotalAssignedProducts = 0;
+						d.userLogin.Status = UserUiStatusType.Deactivated;
+					});
+
+					return items.ToList();
+				}
+				
 			}
 		}
 
