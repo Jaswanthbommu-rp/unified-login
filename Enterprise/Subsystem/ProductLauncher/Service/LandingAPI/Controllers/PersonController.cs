@@ -318,43 +318,43 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 						object[] userRoleAttributes = fieldInfoUserRole.GetCustomAttributes(typeof(DescriptionAttribute), false);
 						userType = userRoleAttributes.Length == 0 ? enumUserRole.ToString() : ((DescriptionAttribute)userRoleAttributes[0]).Description;
 					}
-                    dynamic row = new ExpandoObject();
-                    row.UserType = userType;
-                    row.FirstName = p.FirstName;
-                    row.LastName = p.LastName;
-                    row.EmployeeId = p.EmployeeId;
-                    row.LoginName = p.userLogin.LoginName;
+                    dynamic userInfo = new ExpandoObject();
+                    userInfo.UserType = userType;
+                    userInfo.FirstName = p.FirstName;
+                    userInfo.LastName = p.LastName;
+                    userInfo.EmployeeId = p.EmployeeId;
+                    userInfo.LoginName = p.userLogin.LoginName;
                     if (dataFormat.Equals(SaveFormat.CSV))
                     {
-                        row.Notificationemail = p.NotificationEmail;
-                        row.PlatformRoles = p.PlatformRoles;
+                        userInfo.Notificationemail = p.NotificationEmail;
+                        userInfo.PlatformRoles = p.PlatformRoles;
                     }
                     
-                    row.Products = p.SummaryCount.TotalAssignedProducts;
-                    row.LastLogin = p.userLogin.LastLogin != null ? p.userLogin.LastLogin?.ToString(dateFormat) : string.Empty;
-                    row.Status = p.userLogin.Status.ToString().Equals("disabled", StringComparison.OrdinalIgnoreCase) ? "Deactivated" : p.userLogin.Status.ToString();
-                    row.IDP = p.userLogin.Is3rdPartyIDP ? "Yes" : "No";
-                    row.EffectiveDate = p.userLogin.FromDate != null ? p.userLogin.FromDate?.ToString(dateFormat) : string.Empty;
-                    row.ExpireDate = ((p.userLogin.ThruDate == null) || (DateTime.Compare(p.userLogin.ThruDate.Value, parsedMaxValueDate) == 0)) ? string.Empty : p.userLogin.ThruDate?.ToString(dateFormat);
+                    userInfo.Products = p.SummaryCount.TotalAssignedProducts;
+                    userInfo.LastLogin = p.userLogin.LastLogin != null ? p.userLogin.LastLogin?.ToString(dateFormat) : string.Empty;
+                    userInfo.Status = p.userLogin.Status.ToString().Equals("disabled", StringComparison.OrdinalIgnoreCase) ? "Deactivated" : p.userLogin.Status.ToString();
+                    userInfo.IDP = p.userLogin.Is3rdPartyIDP ? "Yes" : "No";
+                    userInfo.EffectiveDate = p.userLogin.FromDate != null ? p.userLogin.FromDate?.ToString(dateFormat) : string.Empty;
+                    userInfo.ExpireDate = ((p.userLogin.ThruDate == null) || (DateTime.Compare(p.userLogin.ThruDate.Value, parsedMaxValueDate) == 0)) ? string.Empty : p.userLogin.ThruDate?.ToString(dateFormat);
                     if (dataFormat.Equals(SaveFormat.CSV))
                     {
-                        row.MFAFlag = p.MFAFlag;
+                        userInfo.MFAFlag = p.MFAFlag;
                     }   
                     
                     
-                    foreach (var item in p.kpProductList)
+                    foreach (var item in p.ProductList)
                     {
                         //var x = new ExpandoObject();
                         if (!item.Key.Equals("RowNumber") && !item.Key.Equals("PEUserId")&& dataFormat.Equals(SaveFormat.CSV))
                         {
-                            AddProperty(row, item.Key.Replace(" ",string.Empty).Trim(), item.Value);
+                            AddProperty(userInfo, item.Key.Replace(" ",string.Empty).Trim(), item.Value);
                         }
                     }
                     if(!isProperties)
-                        ProductList = p.kpProductList;
+                        ProductList = p.ProductList;
                     isProperties = ProductList.Count > 0 ? true : false;
-                    row.CustomField = p.CustomField;
-                    listUsers.Add(row);
+                    userInfo.CustomField = p.CustomField;
+                    listUsers.Add(userInfo);
       
 				});				
 				errorStatus = DataExport.SetAsposeLicense();

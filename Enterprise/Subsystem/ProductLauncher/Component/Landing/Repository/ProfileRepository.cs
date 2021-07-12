@@ -609,11 +609,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 				if (isExport)
 				{
 					var items = repository.GetManyWithSpliOn<ProfileDetail, UserLogin, int, string, dynamic, ProfileDetail>(
-					StoredProcNameConstants.SP_ListPersons1,
+					StoredProcNameConstants.SP_ListPersons_CSV,
 					(profiledetail, userlogin, userproductcount, userType, productslist) =>
 					{
 						var productList = ((IDictionary<string, object>)productslist).ToList();
-						profiledetail.kpProductList = productList;
+						profiledetail.ProductList = productList;
 						profiledetail.userLogin = userlogin;
 						profiledetail.userLogin.PartyId = profiledetail.PartyId;
 						profiledetail.userLogin.RealPageId = profiledetail.RealPageId;
