@@ -1757,10 +1757,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     //WriteToDiagnosticLog($"ManageAccountingUser - Updating user. userPersonaId = {userPersonaId}", logData);
                     WriteToDiagnosticLog($"ManageAccountingUser - JSON input - UpdateUser " + JsonConvert.SerializeObject(logData));
                     userResultString = _service.UpdateUser(user);
-                    if (batchProcessType == BatchProcessType.CreateUpdateProductUser)
-                    {
-                        WriteUpdateUserActivityLog(editorPersonaId, person, userLogin);
-                    }
+                    
                     ChangeStatusAccountingUser(editorPersonaId, userPersonaId, true);
                 }
 

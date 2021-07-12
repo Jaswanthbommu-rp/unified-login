@@ -2255,6 +2255,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     //Use RealPage Employee Access PersonaId when creating the Product Patches.
                     createUserPersonaId = repository.GetOne<long>(StoredProcNameConstants.SP_GetActivePersona, new { RealPageId = RealPageEmployeeAccessID });
 
+                    
                     personaList.ToList().ForEach(o =>
                         productCount = SaveProductDetails(repository, productList, null, createUserPersonaId, o.PersonaId, RealPageEmployeeAccessID, organizationRealPageId, null, (int)UserRoleType.SuperUser, true, aoProductsAvailableForUser, false, false)
                     );
@@ -2607,12 +2608,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 StatusTypeId = UserUiStatusType.Disabled,
                                 FromDate = ul.FromDate
                             });
-                        }
-                        //remove products
-                        if (editorPersona != null && (ul.OrganizationRealPageId == primaryCompanyGuid || ul.OrganizationRealPageId == org.OrganizationRealPageId))
-                        {
-                            ProcessDisableUserProductData(repository, persona.PersonaId, editorPersona.RealPageId, editorPersona.PersonaId, persona.UserTypeId);
-                        }
+
+                            //remove products
+                            if (editorPersona != null && (ul.OrganizationRealPageId == primaryCompanyGuid || ul.OrganizationRealPageId == org.OrganizationRealPageId))
+                            {
+                                ProcessDisableUserProductData(repository, persona.PersonaId, editorPersona.RealPageId, editorPersona.PersonaId, persona.UserTypeId);
+                            }
+                        }                         
                     }
                 }
             }
@@ -3595,9 +3597,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     var aoInputJsonString = BundleAoProducts(productList, batchGroup.BatchProcessorGroupId);
 
                     //Loop through the rest of the products list and create the Batch records
+
+                    //Loop through the rest of the products list and create the Batch records
                     foreach (IProductBatch product in productList)
                     {
-                        if (product.ProductId == (int)ProductEnum.UnifiedPlatform)
+                        if (product.ProductId == (int)ProductEnum.UnifiedPlatform || product.ProductId == (int)ProductEnum.UnifiedUI)
                         {
                             continue;
                         }
@@ -3609,6 +3613,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
                         else
                         {
+                            product.BatchProcessorGroupId = batchGroup.BatchProcessorGroupId;
                             SaveProductBatch(repository, product, createUserResponse, saveProductBatchError, CreateUserPersonaId, AssignUserPersonaId, realPageId, errorStatus, JsonConvert.SerializeObject(product.InputJson), batchProcessTypeId);
                         }
                     }

@@ -391,3 +391,71 @@ GO
 	SELECT 10,1,'Batch to create EnterpriseRole Create-Update User','EnterpriseRoleCreateUpdateProductUser'
   END
 GO
+
+--Userstory - 795122
+-- Employee Access to Internal Client Settings
+DECLARE @CreatedById bigint,
+		@RouteId bigint,
+		@RightId bigint,
+		@Now datetime = GETDATE(),
+		@PartyId bigint,
+		@RoleId bigint
+
+SELECT @CreatedById = UserId
+FROM Ident.UserLogin
+WHERE LoginName like 'realpagead@%'
+
+IF NOT EXISTS (SELECT 1 FROM [Security].[Right] WHERE RightName = 'EmployeeAccessToInternalClientSettings')
+BEGIN
+	INSERT INTO [Security].[Right](	RightName,Description, Value,StatusTypeId,VisibilityStatusId,ProductId,TargetProductId,	CreatedBy,CreatedDate)
+    VALUES ('EmployeeAccessToInternalClientSettings', 'Employee Access to Internal Client Settings','Employee Access to Internal Client Settings', 13,10, 3, 3, @CreatedById, @Now)
+END
+
+--RightRoute
+SELECT @RightId = RightId
+FROM [Security].[Right]
+WHERE RightName = 'EmployeeAccessToInternalClientSettings'
+
+SELECT @RouteId = RouteId
+FROM [Security].[Route]
+WHERE RouteValue = 'SideMenu'
+
+IF NOT EXISTS (SELECT 1 FROM [Security].[RightRoute] WHERE RightId = @RightId AND RouteId = @RouteId)
+BEGIN
+	INSERT INTO [Security].[RightRoute] (RightId,RouteId,RightName,CreatedBy,CreatedDate)
+	VALUES (@RightId, @RouteId, 'Employee Access to Internal Client Settings', @CreatedById, @Now)
+END
+--RoleRight
+SELECT @RoleId = RoleId 
+FROM [Security].[Role]
+WHERE RoleName = 'User Administrator' AND ShortName = 'SuperUser' and OrgPartyID IS NULL
+
+IF NOT EXISTS (SELECT 1 FROM [Security].[RoleRight] WHERE RoleId = @RoleId AND RightId = @RightId)
+BEGIN
+	INSERT INTO [Security].[RoleRight]( RoleId,RightId,CreatedBy,CreatedDate)
+	VALUES (@RoleId, @RightId, @CreatedById, @Now)
+END
+
+--OrganizationOverRideRight
+SELECT @PartyId = O.PartyId
+FROM [Enterprise].[Organization] O
+    INNER JOIN [Enterprise].[Party] P ON P.PartyId = O.PartyId
+WHERE p.RealPageId = '0D018E46-C20E-477D-ADED-4E5A35FB8F99'
+
+IF NOT EXISTS (SELECT 1 FROM [Security].[OrganizationOverRideRight]  WHERE RightId = @RightId AND OrgPartyId = @PartyId)
+BEGIN
+	INSERT INTO [Security].[OrganizationOverRideRight]
+           ([RightId]
+           ,[OrgPartyId]
+           ,[VisibilityStatusId]
+           ,[CreatedBy]
+           ,[CreatedDate]) 
+           VALUES	(@RightId, @PartyId, 9, @CreatedById, @Now)
+END
+
+ declare @NavigationMenuId bigint, @previousRightId bigint
+ select @previousRightId = RightId from Security.RightRoute  where RightName='Employee Access to Company Setup'
+ select @NavigationMenuId=id from Enterprise.NavigationMenu where PageId='client-settings' and url='/home/client-settings'
+ update Enterprise.NavigationMenuRights set rightid = @RightId where  navigationmenuid=@NavigationMenuId and RightId = @previousRightId
+GO
+

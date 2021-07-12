@@ -958,7 +958,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         #endregion
 
         #region GetPropertiesForCompany
-        public List<CompanyPropertySetup> GetPropertiesForCompany(Guid companyInstanceId, string propertyName = null, string domain = null, int? blueId = null, int? status = null, IDictionary<object, object> globals = null, long editorPersonaId = 0, long userPersonaId = 0, bool? isSelectedProperties = null)
+        public List<CompanyPropertySetup> GetPropertiesForCompany(Guid companyInstanceId, string propertyName = null, string domain = null, 
+                        int? blueId = null, int? status = null, IDictionary<object, object> globals = null, long editorPersonaId = 0, 
+                        long userPersonaId = 0, bool? isSelectedProperties = null, List<Guid> selectedProperties = null)
         {
             RequestParameter dataFilter = new RequestParameter();
 
@@ -966,7 +968,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 dataFilter = globals[BaseType.RequestParameter] as RequestParameter;
             }
-            List<Guid> propertyInstanceIds;
+            List<Guid> propertyInstanceIds = new List<Guid>();
             List<PropertySetup> propertyDetails = new List<PropertySetup>();
             List<UPFMPropertyInstance> selectedPropertyInstances = new List<UPFMPropertyInstance>();
             List<int> userProperties = null;
@@ -981,21 +983,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 propertyInstanceIds = booksPropertyInstance?.Select(p => p.attributes.propertyInstanceSourceId)?.Select(Guid.Parse).ToList();
             }
-            if (userPersonaId > 0)
+            if (userPersonaId > 0 || (selectedProperties != null && selectedProperties.Count > 0))
             {
                 status = 1; //Hardcoding status to 1, because primary properties tab should only get active properties
                 userProperties = new List<int>();
                 userProperties = _propertyRepository.ListUPFMPropertyInstanceIdByPersona(userPersonaId, ProductEnum.UnifiedUI);
                 selectedPropertyInstances = _propertyRepository.ListUPFMPropertyInstanceByPersona(userPersonaId, ProductEnum.UnifiedUI);
-                List<Guid> selectedPropertyInstanceIds = selectedPropertyInstances?.Select(p => p.InstanceId).ToList();
-                if (isSelectedProperties == true)
+                List<Guid> selectedPropertyInstanceIds = selectedPropertyInstanceIds = selectedPropertyInstances?.Select(p => p.InstanceId).ToList();
+                if ((selectedProperties != null && selectedProperties.Count > 0))
                 {
-                    propertyInstanceIds = selectedPropertyInstanceIds;
+                    selectedPropertyInstanceIds = selectedProperties;
                 }
-                else if (isSelectedProperties == false)
-                {
-                    propertyInstanceIds = propertyInstanceIds.Except(selectedPropertyInstanceIds).ToList<Guid>();
-                }
+                propertyInstanceIds = isSelectedProperties == true ? selectedPropertyInstanceIds : propertyInstanceIds.Except(selectedPropertyInstanceIds).ToList<Guid>();                
+            }
+            if (userPersonaId == 0 && (selectedProperties == null || selectedProperties.Count == 0) && isSelectedProperties == true)
+            {
+                propertyInstanceIds = new List<Guid>();
             }
             if (propertyInstanceIds != null)
             {

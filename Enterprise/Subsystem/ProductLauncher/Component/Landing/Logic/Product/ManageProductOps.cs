@@ -888,7 +888,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         UpdateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.UserId, newid);
                         UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
                         WriteToDiagnosticLog("ManageOpsUser - Update user success. Set product status to Success");
-                        WriteUpdateUserActivityLog(editorPersonaId, person, userLogin);
                     }
                     else
                     {

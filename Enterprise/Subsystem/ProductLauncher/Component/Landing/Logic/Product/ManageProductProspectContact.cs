@@ -370,12 +370,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				prospectContactCenterUser.User.LoginName = _productUsername;
 				var updateResult = UpdateProspectContactCenterPropertyUser(userPersonaId, editorPersonaId, prospectContactCenterUser);
 
-				if (string.IsNullOrEmpty(updateResult))
-				{
-					// add activity log
-					WriteUpdateUserActivityLog(editorPersonaId, person, userLogin);
-				}
-
 				return updateResult;
 			}
 			catch (Exception ex)

@@ -1,4 +1,4 @@
-﻿CREATE PROCEDURE [Person].[ListPersons_Ver04] (
+﻿Create PROCEDURE [Person].[ListPersons_Ver04] (
 	@RealPageId uniqueidentifier = NULL,
 	@ParentPartyRoleTypeId int = NULL,
 	@UserListFilterType tinyint = 0,
@@ -11,7 +11,6 @@
 AS
 BEGIN
 	DECLARE @PartyId bigint,
-		@schemavalue varchar(30),
 		@NOW datetime= GETUTCDATE(),
 		@sortOrder nvarchar(128),
 		@sortDirection nvarchar(4),
@@ -69,12 +68,6 @@ BEGIN
 		SET @FilterBy = NULL
 	END
 	
-	SELECT	@schemavalue = Value
-	FROM Enterprise.ProductSetting PS
-		INNER Join Enterprise.ProductSettingType PST ON PST.ProductSettingTypeId = PS.ProductSettingTypeId
-	WHERE PST.Name = 'RolesRightsSchemaName'
-	AND ps.ProductId = 3
-
 	SELECT	@ProductSettingTypeId = ProductSettingTypeId
 	FROM		Enterprise.ProductSettingType
 	WHERE	Name = 'ProductStatus'
@@ -152,7 +145,7 @@ BEGIN
 
 	SELECT	@csvEnterpriseRole = SearchValue
 	FROM		@tblFilterBy
-	WHERE	ColumnName = 'EnterpriseRole'
+	WHERE	ColumnName = 'RoleTemplateId'
 	AND			SearchValue NOT IN ( '%', '')
 
 	IF (LEN(@csvStatus) > 0)
@@ -229,16 +222,13 @@ BEGIN
 	IF(@filterProductId = 37) -- 37 Property Photos product Id
 	BEGIN
 
-	SET @filterProductId = 9  -- Marketing Center product Id
+		SET @filterProductId = 9  -- Marketing Center product Id
 	
-	IF(@schemavalue = 'Security')
-		BEGIN
 		INSERT INTO #PersonaProduct (
 		PersonaId,
-		ProductId
-	)
+		ProductId)
 	
-	SELECT	p.PersonaID,
+	   SELECT	p.PersonaID,
 			pec.ProductId
 		FROM	
 			Person.Persona p
@@ -255,62 +245,35 @@ BEGIN
 		AND		((@NOW >= p.FromDate AND p.ThruDate IS NULL) OR (@NOW BETWEEN p.FromDate AND p.ThruDate))
         AND     ((@NOW >= pec.FromDate AND pec.ThruDate IS NULL) OR (@NOW BETWEEN pec.FromDate AND pec.ThruDate))
         AND     ((@NOW >= prc.FromDate AND prc.ThruDate IS NULL) OR (@NOW BETWEEN prc.FromDate AND prc.ThruDate))
-        AND     ((@NOW >= ps.FromDate AND ps.ThruDate IS NULL) OR (@NOW BETWEEN ps.FromDate AND ps.ThruDate))
-		END
-		ELSE
-		BEGIN
-			SELECT	p.PersonaID,
-			pec.ProductId
-		FROM	
-			Person.Persona p
-			INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginPersonaId = p.UserLoginPersonaId
-			INNER JOIN Enterprise.PersonaConfiguration pec ON p.PersonaId = pec.PersonaId
-			INNER JOIN Enterprise.ProductConfiguration prc ON pec.ConfigurationId = prc.ConfigurationId
-			INNER JOIN Enterprise.ProductSetting ps ON prc.ProductSettingId = ps.ProductSettingId AND ps.Value = '8' AND ps.ProductSettingTypeId = @ProductSettingTypeId
-			INNER JOIN [Enterprise].[PersonaPrivilege] pp ON pp.PersonaId = p.PersonaId  
-			INNER JOIN [Enterprise].[Right] r ON r.roleid = pp.roleid 
-			INNER JOIN Enterprise.[RightValueType] rv ON RV.RightValueTypeId = rv.RightValueTypeId AND rv.ShortName = 'AccessPropertyPhotos' --- Access to Property Photos (requires Marketing Center access)
-		WHERE
-				ULP.OrganizationPartyId = @PartyId
-		AND		pec.ProductId = 9  
-		AND		((@NOW >= p.FromDate AND p.ThruDate IS NULL) OR (@NOW BETWEEN p.FromDate AND p.ThruDate))
-        AND     ((@NOW >= pec.FromDate AND pec.ThruDate IS NULL) OR (@NOW BETWEEN pec.FromDate AND pec.ThruDate))
-        AND     ((@NOW >= prc.FromDate AND prc.ThruDate IS NULL) OR (@NOW BETWEEN prc.FromDate AND prc.ThruDate))
-        AND     ((@NOW >= ps.FromDate AND ps.ThruDate IS NULL) OR (@NOW BETWEEN ps.FromDate AND ps.ThruDate))
-		END
-
+        AND     ((@NOW >= ps.FromDate AND ps.ThruDate IS NULL) OR (@NOW BETWEEN ps.FromDate AND ps.ThruDate))	
 	END
 	ELSE
 	BEGIN
-		INSERT INTO #PersonaProduct (
-		PersonaId,
-		ProductId
-	)
-	SELECT	p.PersonaID,
-			pec.ProductId
-		FROM	
-			Person.Persona p
-			INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginPersonaId = p.UserLoginPersonaId
-			INNER JOIN Enterprise.PersonaConfiguration pec ON p.PersonaId = pec.PersonaId
-			INNER JOIN Enterprise.ProductConfiguration prc ON pec.ConfigurationId = prc.ConfigurationId
-			INNER JOIN Enterprise.ProductSetting ps ON prc.ProductSettingId = ps.ProductSettingId AND ps.Value = '8' AND ps.ProductSettingTypeId = @ProductSettingTypeId
-		WHERE
-				ULP.OrganizationPartyId = @PartyId
-		AND		pec.ProductId NOT IN (14, 19, 24, 25, 34, 39) --Client Portal, Product Learning Portal, Black Book, Self-provisioning portal, Benchmarking, Integration Marketplace
-		AND		((@NOW >= p.FromDate AND p.ThruDate IS NULL) OR (@NOW BETWEEN p.FromDate AND p.ThruDate))
-        AND     ((@NOW >= pec.FromDate AND pec.ThruDate IS NULL) OR (@NOW BETWEEN pec.FromDate AND pec.ThruDate))
-        AND     ((@NOW >= prc.FromDate AND prc.ThruDate IS NULL) OR (@NOW BETWEEN prc.FromDate AND prc.ThruDate))
-        AND     ((@NOW >= ps.FromDate AND ps.ThruDate IS NULL) OR (@NOW BETWEEN ps.FromDate AND ps.ThruDate))
+			INSERT INTO #PersonaProduct (
+			PersonaId,
+			ProductId
+		)
+		SELECT	p.PersonaID,
+				pec.ProductId
+			FROM	
+				Person.Persona p
+				INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginPersonaId = p.UserLoginPersonaId
+				INNER JOIN Enterprise.PersonaConfiguration pec ON p.PersonaId = pec.PersonaId
+				INNER JOIN Enterprise.ProductConfiguration prc ON pec.ConfigurationId = prc.ConfigurationId
+				INNER JOIN Enterprise.ProductSetting ps ON prc.ProductSettingId = ps.ProductSettingId AND ps.Value = '8' AND ps.ProductSettingTypeId = @ProductSettingTypeId
+			WHERE
+					ULP.OrganizationPartyId = @PartyId
+			AND		pec.ProductId NOT IN (14, 19, 24, 25, 34, 39) --Client Portal, Product Learning Portal, Black Book, Self-provisioning portal, Benchmarking, Integration Marketplace
+			AND		((@NOW >= p.FromDate AND p.ThruDate IS NULL) OR (@NOW BETWEEN p.FromDate AND p.ThruDate))
+			AND     ((@NOW >= pec.FromDate AND pec.ThruDate IS NULL) OR (@NOW BETWEEN pec.FromDate AND pec.ThruDate))
+			AND     ((@NOW >= prc.FromDate AND prc.ThruDate IS NULL) OR (@NOW BETWEEN prc.FromDate AND prc.ThruDate))
+			AND     ((@NOW >= ps.FromDate AND ps.ThruDate IS NULL) OR (@NOW BETWEEN ps.FromDate AND ps.ThruDate))
 
 	END
-	
+
 	DROP INDEX IF EXISTS [NCI_Temp_PersonaProduct_ProductId] ON [dbo].[#PersonaProduct]
 	CREATE NONCLUSTERED INDEX [NCI_Temp_PersonaProduct_ProductId]	ON [dbo].[#PersonaProduct] ([ProductId]) INCLUDE ([PersonaId])
 	
-    DROP INDEX IF EXISTS [NCI_CustomField_Org_Seq_Enabled] ON [CustomField].[Field]
-	CREATE NONCLUSTERED INDEX [NCI_CustomField_Org_Seq_Enabled] ON [CustomField].[Field]([FieldId],OrganizationId) include ([Sequence]) where [Enabled] = 1 
-
-
 	DROP TABLE IF EXISTS #CustomFields
 
 	SELECT  Id,UserLoginPersonaId,FieldValue,Enabled,Name,Value,Sequence
@@ -413,7 +376,7 @@ BEGIN
 	(
 		PersonaId BIGINT PRIMARY KEY,  
 		RoleTemplateId INT NULL,
-		RoleTemplateName Varchar(100) NULL
+		EnterpriseRoleName Varchar(256) NULL
 	)
 
 	INSERT INTO #UserEnterpriseRole
@@ -472,7 +435,6 @@ BEGIN
 	DROP INDEX IF EXISTS [NCI_cteUserLogin_PersonPartyId] ON [dbo].[#UserLogin]
 	CREATE NONCLUSTERED INDEX [NCI_cteUserLogin_PersonPartyId]  ON [dbo].[#UserLogin] ([PersonPartyId])
 	INCLUDE ([UserLoginPersonaId],[PersonaId],[UserId],[LoginName],[LastLogin],[FromDate],[ThruDate],[IdentityProviderTypeId],[StatusId],[StatusName],[StatusThruDate],[PasswordModifiedDate])
-
 
 	;WITH cteUsersFinal
 	(
@@ -537,7 +499,7 @@ BEGIN
 			 ISNULL(rt.Name, '') AS UserType,  
 			 prs.RoleTypeIdFrom AS PartyRoleTypeId,  
 			 ulp.PasswordModifiedDate, 
-			 UER.RoleTemplateName,
+			 UER.EnterpriseRoleName,
 			 UER.RoleTemplateId,
 			 @OffsetMinutes,  
 			 COUNT(1) OVER () AS TotalRecords,
@@ -548,14 +510,14 @@ BEGIN
 				  WHEN 103 THEN ROW_NUMBER() OVER (ORDER BY ulp.LoginName ASC, p.FirstName + ' ' + p.LastName ASC)  
 				  WHEN 104 THEN ROW_NUMBER() OVER (ORDER BY ulp.StatusName ASC, p.FirstName + ' ' + p.LastName ASC)  
 				  WHEN 105 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(UE.Employee,'') ASC, p.FirstName + ' ' + p.LastName ASC)
-				  WHEN 106 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(UER.RoleTemplateName,'') ASC, p.FirstName + ' ' + p.LastName ASC) 
+				  WHEN 106 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(UER.EnterpriseRoleName,'') ASC, p.FirstName + ' ' + p.LastName ASC) 
 				  WHEN -100 THEN ROW_NUMBER() OVER (ORDER BY p.FirstName + ' ' + p.LastName DESC)  
 				  WHEN -101 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(pct.ProductCount,0)  DESC, p.FirstName + ' ' + p.LastName DESC)  
 				  WHEN -102 THEN ROW_NUMBER() OVER (ORDER BY ulp.LastLogin DESC, p.FirstName + ' ' + p.LastName DESC)  
 				  WHEN -103 THEN ROW_NUMBER() OVER (ORDER BY ulp.LoginName DESC, p.FirstName + ' ' + p.LastName DESC)  
 				  WHEN -104 THEN ROW_NUMBER() OVER (ORDER BY ulp.StatusName DESC, p.FirstName + ' ' + p.LastName DESC)  
 				  WHEN -105 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(UE.Employee,'') DESC, p.FirstName + ' ' + p.LastName DESC)  
-				  WHEN -106 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(UER.RoleTemplateName,'') ASC, p.FirstName + ' ' + p.LastName DESC) 
+				  WHEN -106 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(UER.EnterpriseRoleName,'') DESC, p.FirstName + ' ' + p.LastName DESC) 
 				 END AS RowNumber
 		  FROM #UserLogin ulp  
 			 INNER JOIN Person.Person p ON p.PartyId = ulp.PersonPartyId  
@@ -617,10 +579,8 @@ BEGIN
 	FETCH NEXT(@RowsPerPage) ROWS ONLY
 	OPTION (RECOMPILE)
 
-	
-	DROP INDEX IF EXISTS [NCI_CustomField_Org_Seq_Enabled] ON [CustomField].[Field]
-	DROP TABLE IF EXISTS #ProductCount
 	DROP INDEX IF EXISTS [NCI_cteUserLogin_PersonPartyId] ON [dbo].[#UserLogin]
+	DROP TABLE IF EXISTS #ProductCount	
 	DROP TABLE IF EXISTS #UserLogin
 	DROP TABLE IF EXISTS #PersonaProduct
 	DROP TABLE IF EXISTS #PartyContactMechanism

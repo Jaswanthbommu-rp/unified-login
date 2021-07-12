@@ -256,12 +256,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
 
-				// add activity log
-				if (batchProcessType == BatchProcessType.CreateUpdateProductUser)
-				{
-					WriteUpdateUserActivityLog(editorPersonaId, person, userLogin);
-				}
-				else if (batchProcessType == BatchProcessType.UserTypeRegularToAdmin || batchProcessType == BatchProcessType.UserTypeAdminToRegular || batchProcessType == BatchProcessType.UserTypeAdminToExternal || batchProcessType == BatchProcessType.UserTypeExternalToAdmin)
+				if (batchProcessType == BatchProcessType.UserTypeRegularToAdmin || batchProcessType == BatchProcessType.UserTypeAdminToRegular || batchProcessType == BatchProcessType.UserTypeAdminToExternal || batchProcessType == BatchProcessType.UserTypeExternalToAdmin)
 				{
 					WriteUpdateUserTypeActivityLog(editorPersonaId, person, userLogin, batchProcessType);
 				}

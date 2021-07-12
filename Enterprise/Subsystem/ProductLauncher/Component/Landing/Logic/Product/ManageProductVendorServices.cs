@@ -690,11 +690,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (string.IsNullOrEmpty(updateResult))
                 {
-                    if (batchProcessType == BatchProcessType.CreateUpdateProductUser)
-                    {
-                        WriteUpdateUserActivityLog(editorPersonaId, person, userLogin);
-                    }
-                    else if (batchProcessType == BatchProcessType.UserTypeRegularToAdmin || batchProcessType == BatchProcessType.UserTypeAdminToRegular || batchProcessType == BatchProcessType.UserTypeAdminToExternal || batchProcessType == BatchProcessType.UserTypeExternalToAdmin)
+                    if (batchProcessType == BatchProcessType.UserTypeRegularToAdmin || batchProcessType == BatchProcessType.UserTypeAdminToRegular || batchProcessType == BatchProcessType.UserTypeAdminToExternal || batchProcessType == BatchProcessType.UserTypeExternalToAdmin)
                     {
                         WriteUpdateUserTypeActivityLog(editorPersonaId, person, userLogin, batchProcessType);
                     }
