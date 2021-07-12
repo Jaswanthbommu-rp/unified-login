@@ -26,6 +26,7 @@ using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using Thinktecture.IdentityModel.Client;
 using static RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.SAML.RealPageSAML;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -611,7 +612,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     return productLoginResponse;
                 }
             }
-            else if (CheckForViewOnlyAccess() && !(productId == (int)ProductEnum.ResearchApplication || productId == (int)ProductEnum.ProductUpdates))
+            else if (productId == (int)ProductEnum.MigrationTool)
+            {
+                if (CheckForMigrationToolAccess())
+                {
+                    productLoginResponse.ErrorMessage = "ReadOnly";
+                    return productLoginResponse;
+                }
+            }
+            else if (CheckForViewOnlyAccess() && !(productId == (int)ProductEnum.ResearchApplication || productId == (int)ProductEnum.ProductUpdates || productId == (int)ProductEnum.HelpCenter
+                     || productId ==(int)ProductEnum.VendorMarketplace || productId ==(int)ProductEnum.ProductLearningPortal))
             {
                 productLoginResponse.ErrorMessage = "ReadOnly";
                 return productLoginResponse;
@@ -647,6 +657,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         {
             return (_userClaims.Rights.All(p => !p.Equals("ViewCIMPLQuestions", StringComparison.OrdinalIgnoreCase) &&
                                                 !p.Equals("EmployeeViewCIMPLQuestions", StringComparison.OrdinalIgnoreCase)));
+        }
+
+        private bool CheckForMigrationToolAccess()
+        {
+            if(_userClaims.Rights.Any(p => p == "ViewOnlySupportToolAccess"))
+            {
+                List<string> impersonatedUserRights = BaseUserRights.GetImpersonatedUserRights(_userClaims.ImpersonatedBy, _userClaims);
+                return !impersonatedUserRights.Any(p => p.Equals("MigrationTool", StringComparison.OrdinalIgnoreCase));
+            }
+            else if(_userClaims.Rights.Any(p => p == "AccessToUnifiedPlatform"))
+            {
+                return false;
+            }
+            return true;
         }
 
         private bool CheckForViewOnlyAccess()

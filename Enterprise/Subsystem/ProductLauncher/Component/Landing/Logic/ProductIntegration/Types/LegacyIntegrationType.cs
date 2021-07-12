@@ -152,7 +152,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.AoAxiometrics:
                     var manageProductAo = new ManageProductAssetOptimization(_userClaims);
                     var products = _productRepository.GetAllProducts();
-                    string productCode = ProductEnumHelper.GetProductCodeByProductId(_productId, products);
+                    string productCode = ProductEnumHelper.GetBooksSourceCodeByProductId(_productId, products);
                     result = manageProductAo.GetProductRoles(editorPersonaId, userPersonaId, productCode, dataFilter, userLoginName);
                     break;
 
@@ -326,7 +326,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.AoRentControl:
                     var manageProductAo = new ManageProductAssetOptimization(_userClaims);
                     var productList = _productRepository.GetAllProducts();
-                    string productcode = ProductEnumHelper.GetProductCodeByProductId(_productId, productList);
+                    string productcode = ProductEnumHelper.GetBooksSourceCodeByProductId(_productId, productList);
                     result = manageProductAo.GetProductProperties(editorPersonaId, userPersonaId, productcode, dataFilter, userLoginName);
                     break;
 
@@ -390,23 +390,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return result;
         }
 
-        public ListResponse GetEnterpriseProperties(long userPersonaId, string include)
-        {
-            ListResponse productResponse = null;
-
-            switch (_productId)
-            {
-                case (int)ProductEnum.OpsBuyer:
-                    IManageProductOps manageProductOps = new ManageProductOps(_userClaims);
-                    productResponse = manageProductOps.GetCompanyAssets(_userClaims.PersonaId, 0, false, null);
-                    break;
-                case (int)ProductEnum.UnifiedPlatform:
-                    productResponse = _manageUnifiedLogin.GetEnterpriseProperties(_userClaims.PersonaId, include);
-                    break;
-            }
-
-            return productResponse;
-        }
+        public ListResponse GetEnterpriseProperties(long userPersonaId) => GetProperties(userPersonaId, userPersonaId, new RequestParameter());
 
         public ListResponse GetRightsForRole(long editorPersonaId, long userPersonaId, long roleId, long partyId, bool assignedToRoleOnly, RequestParameter dataFilter)
         {
@@ -869,6 +853,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     messageGroupsList = manageProductResidentPortal.ListMessageGroups(editorPersonaId, userPersonaId);
                     if (messageGroupsList?.Count > 0)
                     {
+                        result = new ListResponse();
                         result.Records = messageGroupsList.Cast<object>().ToList();
                         result.TotalRows = messageGroupsList.Count;
                         result.RowsPerPage = messageGroupsList.Count;
@@ -894,7 +879,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.AoAxiometrics:
                     var manageProductAo = new ManageProductAssetOptimization(_userClaims);
                     var productList = _productRepository.GetAllProducts();
-                    string productcode = ProductEnumHelper.GetProductCodeByProductId(_productId, productList);
+                    string productcode = ProductEnumHelper.GetBooksSourceCodeByProductId(_productId, productList);
                     result = manageProductAo.GetProductPropertyGroups(editorPersonaId, userPersonaId, productcode, userLoginName);
                     break;
                 case (int)ProductEnum.UtilityManagement:

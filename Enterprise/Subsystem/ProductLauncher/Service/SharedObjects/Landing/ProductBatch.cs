@@ -75,7 +75,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		/// Error details
 		/// </summary>
 		public string ErrorDetails { get; set; }
-	}
+
+		/// <summary>
+        /// Batch Group GUID
+        /// </summary>
+        public int BatchProcessorGroupId { get; set; }
+
+    }
 
 	/// <summary>
 	/// Product API (List of Properties and Roles) input JSON

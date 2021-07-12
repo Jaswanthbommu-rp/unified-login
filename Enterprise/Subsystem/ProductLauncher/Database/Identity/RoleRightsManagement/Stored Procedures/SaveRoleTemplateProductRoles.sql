@@ -145,7 +145,19 @@ BEGIN
 	select * from @RoleTemplateRemoveAdditionalProductRoleMapping
 	select * from @RemoveRoleTemplateProduct
 	*/
-	--END - INSERT DATA FROM JSON TO TEMP TABLES
+	--END - INSERT DATA FROM JSON TO TEMP TABLES	
+
+	--Remove Roles
+	DELETE RTM 		
+	FROM Security.RoleTemplateProductRoleMapping RTM
+			INNER JOIN @RoleTemplateRemoveProductRoles TempRoleDelete 
+				on RTM.RoleTemplateProductRoleMappingId = TempRoleDelete.RoleTemplateProductRoleMappingID
+
+	--Remove Additional Roles
+	DELETE RTM 
+	FROM Security.RoleTemplateAdditionalProductRoleMapping RTM
+			INNER JOIN @RoleTemplateRemoveAdditionalProductRoleMapping TempRoleDelete 
+				on RTM.RoleTemplateAdditionalProductRoleMappingId = TempRoleDelete.RoleTemplateAdditionalProductRoleMappingId
 
 	--INSERT PRODUCTS
 	IF(@RoleTemplateId IS NOT NULL AND @RoleTemplateId > 0)
@@ -217,19 +229,7 @@ BEGIN
 			UPDATE @RoleTemplateProduct
 				SET    ProcessedFlag = 1
 				WHERE  ProductId = @ProductId;
-		END	
-
-		--Remove Roles
-		DELETE RTM 		
-		FROM Security.RoleTemplateProductRoleMapping RTM
-				INNER JOIN @RoleTemplateRemoveProductRoles TempRoleDelete 
-					on RTM.RoleTemplateProductRoleMappingId = TempRoleDelete.RoleTemplateProductRoleMappingID
-
-		--Remove Additional Roles
-		DELETE RTM 
-		FROM Security.RoleTemplateAdditionalProductRoleMapping RTM
-				INNER JOIN @RoleTemplateRemoveAdditionalProductRoleMapping TempRoleDelete 
-					on RTM.RoleTemplateAdditionalProductRoleMappingId = TempRoleDelete.RoleTemplateAdditionalProductRoleMappingId
+		END
 
 		--To Remove Role Template Product( To Remove product, Roles and Additional Roles from child tables should be deleted first)
 		--Remove Roles

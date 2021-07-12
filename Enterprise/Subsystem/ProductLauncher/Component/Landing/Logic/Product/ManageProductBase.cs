@@ -980,15 +980,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Write Update User activity log
         /// </summary> 
-        protected void WriteUpdateUserActivityLog(long fromPersonaId, IC.Person toPerson, UserLoginOnly toUserGbLogin)
-        {
-            WriteActivityLog(fromPersonaId, toPerson, toUserGbLogin,
-                 "{0} {1} updated in product {2} by user {3} {4}.");
-        }
-
-        /// <summary>
-        /// Write Update User activity log
-        /// </summary> 
         protected void WriteResetVerificationCodeActivityLog(long fromPersonaId, IC.Person toPerson, UserLoginOnly toUserGbLogin)
         {
             WriteActivityLog(fromPersonaId, toPerson, toUserGbLogin,
@@ -1057,7 +1048,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             WriteActivityLog(fromUserLogDetail, toUserLogDetail,
                booksProductDetail.BooksProductCode, logMessage);
         }
-
+        
         private void WriteActivityLog(long fromPersonaId, IC.Person toPerson, UserLoginOnly toUserGbLogin, string message)
         {
             // log product user created activity

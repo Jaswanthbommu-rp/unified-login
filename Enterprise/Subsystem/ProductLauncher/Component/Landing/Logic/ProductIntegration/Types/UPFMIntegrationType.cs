@@ -1,6 +1,8 @@
 ﻿using Newtonsoft.Json;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
@@ -8,6 +10,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Mi
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UPFMProduct;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Types
 {
@@ -17,6 +20,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         private readonly DefaultUserClaim _userClaims;
 
+        private IProductRepository _productRepository;
+
         private ManageUPFMProductsIntegration _manageUPFMProductIntegration => new ManageUPFMProductsIntegration(_productId, _userClaims);
 
         private IUPFMProduct _upfmProductIntegration => new UPFMProductIntegration(_productId, _userClaims);
@@ -25,6 +30,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             _productId = productId;
             _userClaims = userClaims;
+
+            _productRepository = new ProductRepository(_userClaims);
         }
 
         public ListResponse GetRoles(long editorPersonaId, long userPersonaId, long partyId, AccessType? accessType, RequestParameter dataFilter) =>
@@ -33,8 +40,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public ListResponse GetProperties(long editorPersonaId, long userPersonaId, RequestParameter dataFilter) =>
             _manageUPFMProductIntegration.GetUPFMProperties(editorPersonaId, userPersonaId, false, dataFilter);
 
-        public ListResponse GetEnterpriseProperties(long userPersonaId, string include) =>
-            _manageUPFMProductIntegration.GetEnterpriseUPFMProperties(_userClaims.PersonaId, _productId, include);
+        public ListResponse GetEnterpriseProperties(long userPersonaId)
+        {
+            var products = _productRepository.GetAllProducts();
+            var productCode = products.FirstOrDefault(a => a.ProductId == _productId)?.BooksProductCode;
+            return _manageUPFMProductIntegration.GetEnterpriseUPFMProperties(userPersonaId, _productId, productCode);
+        }
 
         public ListResponse GetRightsForRole(long editorPersonaId, long userPersonaId, long roleId, long partyId, bool assignedToRoleOnly, RequestParameter dataFilter) =>
             _manageUPFMProductIntegration.GetRightsByRole(editorPersonaId, partyId, roleId);

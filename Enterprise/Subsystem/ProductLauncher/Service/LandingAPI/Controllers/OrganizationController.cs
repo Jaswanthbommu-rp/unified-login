@@ -313,7 +313,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 var companyCreatedSuccessfully = _manageBlueBook.AddUPFMCompanyFromCompanySetup(companyInstance);
 
-                if (!companyCreatedSuccessfully) return Request.CreateResponse(HttpStatusCode.BadRequest, "There was a problem adding the UPFM instance to UDM");
+                if (!companyCreatedSuccessfully)
+				{
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, "There was a problem adding the UPFM instance to UDM");
+                }
+                else
+                {
+                    if (!_manageOrganization.AddUpdateCompanyToUnifiedSettings(companyInstance.CompanyInstanceSourceId, "Create", companyInstance.CustomerEnvironment))
+                    {
+                        return Request.CreateResponse(HttpStatusCode.BadRequest, $"Unified Login and MDM company was updated successfully but Settings data update failed.");
+                    }
+                }
 
                 // add the products assigned to the new company
                 var cacheKey = $"getListProductsByOrganization_{result.obj.Org.RealPageId}";
@@ -404,7 +414,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             org.Name = organization.Name;
             org.IsActive = organization.IsActive;
-            org.UsePrimaryProperties = organization.UsePrimaryProperties;
+            org.EnablePrimaryPropertiesAndEnterpriseRoles = organization.EnablePrimaryPropertiesAndEnterpriseRoles;
 
             var orgTypes = _manageOrganization.ListOrganizationType();
             if (organization.OrganizationTypeId != 0)
@@ -517,6 +527,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     if (!string.IsNullOrEmpty(booksResult))
                     {
                         return Request.CreateResponse(HttpStatusCode.BadRequest, $"Unified Login company was updated successfully but MDM data update failed. Error: " + booksResult);
+                    }
+					else
+					{
+                        if (!_manageOrganization.AddUpdateCompanyToUnifiedSettings(org.RealPageId.ToString(), "Update", null))
+                        {
+                            return Request.CreateResponse(HttpStatusCode.BadRequest, $"Unified Login and MDM company was updated successfully but Settings data update failed.");
+                        }
                     }
                 }
                 else
@@ -1237,33 +1254,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
         }
 
-        #endregion
+		#endregion
 
-        #region Property
+		#region Property
 
-        #region Get Properties for a Organization
+		#region Get Properties for a Organization
 
-        /// <summary>
-        /// Get Properties for a Organization
-        /// </summary>
-        /// <param name="companyInstanceId">companyInstanceId</param>
-        /// <param name="propertyName">PropertyName</param>
-        /// <param name="domain">Domain</param>
-        /// <param name="blueId">blueId</param>
-        /// <param name="status"></param>
-        /// <param name="datafilter">datafilter</param>
-        /// <param name="userPersonaId">userPersonaId</param>
-        /// <param name="editorPersonaId">editorPersonaId</param>
-        /// <param name="isSelectedProperties">isSelectedProperties</param>
-        /// <returns>List of Properties for a company </returns>
-        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		/// <summary>
+		/// Get Properties for a Organization
+		/// </summary>
+		/// <param name="companyInstanceId">companyInstanceId</param>
+		/// <param name="propertyName">PropertyName</param>
+		/// <param name="domain">Domain</param>
+		/// <param name="blueId">blueId</param>
+		/// <param name="status"></param>
+		/// <param name="datafilter">datafilter</param>
+		/// <param name="userPersonaId">userPersonaId</param>
+		/// <param name="editorPersonaId">editorPersonaId</param>
+		/// <param name="isSelectedProperties">isSelectedProperties</param>
+		/// <param name="selectedProperties"></param>
+		/// <returns>List of Properties for a company </returns>
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about a list of Properties for an Organization", Type = typeof(CompanyPropertySetup))]
         [SwaggerResponseExamples(typeof(CompanyPropertySetup), typeof(PropertyListExample))]
         [Route("CompanySetup/CompanyPropertyList")]
         [AuthorizeScope("companyfunctions", "rplandingapi")]
-        [HttpGet]
-        public HttpResponseMessage GetPropertiesForCompany(Guid companyInstanceId, string domain = null, string propertyName = null, int? blueId = null, int? status = null, [FromUri] RequestParameter datafilter = null, long userPersonaId = 0, long editorPersonaId = 0, bool? isSelectedProperties = null)
+        [HttpPost]
+        public HttpResponseMessage GetPropertiesForCompany(Guid companyInstanceId, [FromBody] List<Guid> selectedProperties, string domain = null, string propertyName = null, int? blueId = null, int? status = null, [FromUri] RequestParameter datafilter = null, long userPersonaId = 0, long editorPersonaId = 0, bool? isSelectedProperties = null)
         {
             if (companyInstanceId == Guid.Empty)
             {
@@ -1282,7 +1300,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             globals.Add(BaseType.RequestParameter, datafilter);
             var cacheKey = $"getPropertyInstanceForCompany_{companyInstanceId}";
             RPObjectCache.RemoveFromCache(cacheKey);
-            List<CompanyPropertySetup> companyPropertySetup = _manageOrganization.GetPropertiesForCompany(companyInstanceId, propertyName, domain, blueId, status, globals, editorPersonaId, userPersonaId, isSelectedProperties);
+            List<CompanyPropertySetup> companyPropertySetup = _manageOrganization.GetPropertiesForCompany(companyInstanceId, propertyName, domain, blueId, status, globals, editorPersonaId, userPersonaId, isSelectedProperties, selectedProperties);
 
             int totalRecords = 0;
             if (companyPropertySetup.Count > 0)
@@ -1486,7 +1504,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             if (currentProperty != null)
             {
                 _repositoryResponse = _manageOrganization.UpdateProperty(property, companyInstanceId);
-                if (_repositoryResponse.Id == 0)
+                if (_repositoryResponse.Id == 0 || !string.IsNullOrEmpty(_repositoryResponse.ErrorMessage))
                 {
                     return Request.CreateResponse(HttpStatusCode.BadRequest, _repositoryResponse.ErrorMessage);
                 }

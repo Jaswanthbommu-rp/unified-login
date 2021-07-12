@@ -557,7 +557,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 					(f.Key.Equals("Status", StringComparison.OrdinalIgnoreCase)) ||
 					(f.Key.Equals("UserType", StringComparison.OrdinalIgnoreCase)) ||
 					(f.Key.Equals("OffsetMinutes", StringComparison.OrdinalIgnoreCase)) ||
-					(f.Key.Equals("EnterpriseRoleName", StringComparison.OrdinalIgnoreCase))
+					(f.Key.Equals("RoleTemplateId", StringComparison.OrdinalIgnoreCase))
 					)
 				{
 					filterBy.Add(

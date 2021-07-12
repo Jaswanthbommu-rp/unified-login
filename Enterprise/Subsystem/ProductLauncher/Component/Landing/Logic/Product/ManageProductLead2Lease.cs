@@ -599,7 +599,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.productUsername, userResult.UserName);
                         _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.UserId, userResult.UserId.ToString());
                         WriteToDiagnosticLog($"ManageLead2LeaseUser - Created user. UserLogin:{userResult.UserName} UserId:{userResult.UserId}");
-                        WriteCreateUserActivityLog(editorPersonaId, (Person)person, (UserLoginOnly)userLogin);
 
                         //update user migration status
                         // Update UL flag in product
@@ -642,7 +641,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         WriteToDiagnosticLog($"ManageLead2LeaseUser - Updating user errored. userPersonaId = {userPersonaId} baseUrlAndQuery = {baseUrlAndQuery}");
                         return "Error";
                     }
-                    WriteUpdateUserActivityLog(editorPersonaId, (Person)person, userLogin);
                 }
 
                 UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);

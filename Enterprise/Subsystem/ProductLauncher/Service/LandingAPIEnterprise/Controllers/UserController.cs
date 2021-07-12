@@ -7,6 +7,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterprise
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Factory;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Security;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
@@ -62,6 +63,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
         private IManageSecurity _manangeSecurityLogic;
 
+        private IManageProductPanel _manageProductPanel;
+
+        private IIntegrationTypeFactory _integrationTypeFactory;
+
         #endregion
 
         #region Constructor
@@ -81,7 +86,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         /// <param name="repositoryResponse"></param>
         /// <param name="messageHandler"></param>
         /// <param name="userClaims"></param>
-        public UserController(IRepository repository, IRepositoryResponse repositoryResponse, HttpMessageHandler messageHandler, DefaultUserClaim userClaims)
+        /// <param name="manageProductOneSite"></param>
+        public UserController(IRepository repository, IRepositoryResponse repositoryResponse, HttpMessageHandler messageHandler, DefaultUserClaim userClaims, IManageProductOneSite manageProductOneSite)
         {
             _repositoryResponse = repositoryResponse;
             _managePersona = new ManagePersona(repository, userClaims, messageHandler);
@@ -96,9 +102,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
             ManageBlueBook manageBlueBook = new ManageBlueBook(userClaims, repository, productInternalSettingRepository, messageHandler);
             ManageProfile manageProfile = new ManageProfile(userClaims);
-            _manageSettings = new ManageUnifiedSettings(repository, _userClaims, messageHandler);
+            _manageSettings = new ManageUnifiedSettings(repository, userClaims, messageHandler);
 
             _manageProduct = new ManageProduct(productRepository, productInternalSettingRepository, _managePersona, manageBlueBook, managePartyRelationship, _manageOrganization, manageProfile, manageUserRoleRight, userClaims);
+            _manageProductPanel = new ManageProductPanel(userClaims, repository, manageBlueBook, messageHandler, manageProductOneSite);
 
             _productRepository = new ProductRepository(repository, userClaims);
 
@@ -109,6 +116,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
             _userRepository = new UserRepository(repository, userClaims, messageHandler);
             _manangeSecurityLogic = new ManageSecurity(userClaims, personaRightRepository);
+
+            var manageUnifiedLogin = new ManageUnifiedLogin(userClaims, productInternalSettingRepository, productRepository, manageBlueBook);
+            _integrationTypeFactory = new IntegrationTypeFactory(_manageProduct, manageUnifiedLogin, manageProductOneSite, _productRepository, _userClaims);
         }
 
         /// <summary>
@@ -122,11 +132,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             _managePersona = new ManagePersona(_userClaims);
             _personLogic = new ManagePerson();
             _manageProduct = new ManageProduct(_userClaims);
+            _manageProductPanel = new ManageProductPanel(_userClaims);
             _manageOrganization = new ManageOrganization(_userClaims);
             _manageSettings = new ManageUnifiedSettings(_userClaims);
             _productRepository = new ProductRepository(_userClaims);
             _userRepository = new UserRepository(_userClaims);
             _manangeSecurityLogic = new ManageSecurity(_userClaims);
+
+            var manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
+            var manageProductOneSite = new ManageProductOneSite(_userClaims);
+            _integrationTypeFactory = new IntegrationTypeFactory(_manageProduct, manageUnifiedLogin, manageProductOneSite, _productRepository, _userClaims);
         }
 
         #endregion
@@ -834,6 +849,41 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
         }
 
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Operation successful", Type = typeof(HttpResponseMessage))]
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description =
+             "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
+        [Route("user/product/{productCode}/properties")]
+        [AuthorizeScope("enterpriseapi")]
+        [HttpGet]
+        public HttpResponseMessage GetProductUserProperties(string productCode, [FromUri] RequestParameter dataFilter)
+        {
+            ListResponse result;
+            var status = HttpStatusCode.OK;
+
+            try
+            {
+                var productList = _productRepository.GetAllProducts();
+                int productId = ProductEnumHelper.GetProductIdByProductCode(productCode, productList);
+
+                var integration = _integrationTypeFactory.GetIntegration(productId);
+                result = integration.GetEnterpriseProperties(_userClaims.PersonaId);
+
+                if (result.IsError)
+                {
+                    status = HttpStatusCode.Forbidden;
+                }
+            }
+            catch
+            {
+                status = HttpStatusCode.InternalServerError;
+                result = new ListResponse { IsError = true, ErrorReason = "Internal server error." };
+            }
+
+            return Request.CreateResponse(status, result);
+        }
+
         /// <summary>
         /// Get a specific users product detail
         /// </summary>
@@ -950,26 +1000,36 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                             || navigationMenuRights.Where(w => w.NavigationMenuId == nmw.Id).Any(a => rights.Contains(a.RightName))
                         ).ToList();
 
+                    
                     var reportingMenuEntry = filteredMenuEntries.FirstOrDefault(f => f.PageId == "reporting");
                     if (reportingMenuEntry != null)
                     {
-                        var reportsUrl = new Uri(new Uri(ConfigReader.GetLandingUri), reportingMenuEntry.URL);
+                        var products = _productRepository.GetAllProducts();
+                        string productcode = ProductEnumHelper.GetProductCodeByProductId(67, products);
 
+                        var reportsUrl = new Uri(new Uri(ConfigReader.GetLandingUri), reportingMenuEntry.URL);
+                        
                         productResult.Resources.Add(new UserProducts()
                         {
                             Name = "Reports",
                             Description = reportingMenuEntry.Title,
                             Url = reportsUrl.ToString(),
                             Label = "reports",
-                            IsNewTab = true,
+                            IsNewTab = false,
                             IsResource = true,
-                            ShowInAppSwitcher = true
+                            ShowInAppSwitcher = true,
+                            ProductCode = productcode,
+                            Status = 8,
+                            Id = 67
                         });
                     }
 
                     var settingsMenuEntry = filteredMenuEntries.FirstOrDefault(f => f.PageId == "manage-settings");
                     if (settingsMenuEntry != null)
                     {
+                        var products = _productRepository.GetAllProducts();
+                        string productcode = ProductEnumHelper.GetProductCodeByProductId(56, products);
+
                         var settingsUri = new Uri(new Uri(ConfigReader.GetLandingUri), settingsMenuEntry.URL);
 
                         productResult.Resources.Add(new UserProducts()
@@ -978,9 +1038,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                             Description = settingsMenuEntry.Title,
                             Url = settingsUri.ToString(),
                             Label = "settings",
-                            IsNewTab = true,
+                            IsNewTab = false,
                             IsResource = true,
-                            ShowInAppSwitcher = true
+                            ShowInAppSwitcher = true,
+                            ProductCode = productcode,
+                            Status = 8,
+                            Id = 56
                         });
                     }
 

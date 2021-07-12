@@ -12,7 +12,8 @@ BEGIN
 			pst.SensitiveData,
 			p.ProductId,
 			p.name [ProductName],
-			p.BooksProductCode
+			p.BooksProductCode,
+			P.Active ProductActive
     FROM	Enterprise.GlobalProductConfiguration gpc
 			JOIN Enterprise.Product P ON gpc.ProductId = P.ProductId
 			JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId

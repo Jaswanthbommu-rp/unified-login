@@ -1,0 +1,16 @@
+﻿Create Procedure [Batch].[GetUserBatchRecords]            
+ @batchProcessorGroupId bigint,           
+ @editorUserPersonId bigint,         
+ @subjectUserPersonId bigint,        
+ @batchProcessType int            
+As            
+Begin            
+ select bp.StatusTypeId, p.Name, bg.BatchProcessorGroupActivityLogged, bp.InputJSON          
+ from Batch.BatchProcessor bp            
+ join Enterprise.Product p on p.ProductId = bp.ProductId     
+ join Batch.BatchProcessorGroup bg on bg.BatchProcessorGroupId = bp.BatchProcessorGroupId                   
+ where bp.BatchProcessorGroupId = @batchProcessorGroupId    
+ and SubjectUserPersonaId = @subjectUserPersonId        
+ and EditorUserPersonaId = @editorUserPersonId        
+ and BatchProcessTypeId = @batchProcessType            
+End 

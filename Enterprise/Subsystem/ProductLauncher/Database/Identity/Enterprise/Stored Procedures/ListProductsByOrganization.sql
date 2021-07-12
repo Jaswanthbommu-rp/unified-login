@@ -17,7 +17,8 @@ BEGIN
             pts.[Name] AS Solution ,  
             ptf.ProductTypeId AS FamilyId ,  
             ptf.[Name] AS Family ,  
-            pr.Description AS ProductDescription  
+            pr.Description AS ProductDescription,
+            pr.[Active]
     FROM [Enterprise].Organization o  
             JOIN [Enterprise].OrganizationProduct op ON op.PartyId = o.PartyId  
             JOIN [Enterprise].[Product] pr ON pr.ProductId = op.ProductId  

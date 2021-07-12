@@ -603,7 +603,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var productInternalSettingType = _productInternalSettingRepository.GetProductSettingByType("UsePrimaryProperties");
 
             int organizationUsePrimaryProperties = -1;
-            int.TryParse(_organizationRepository.GetOrganizationSettingValue("UsePrimaryProperties", organizationPartyId), out organizationUsePrimaryProperties);
+            int.TryParse(_organizationRepository.GetOrganizationSettingValue("EnablePrimaryPropertiesAndEnterpriseRoles", organizationPartyId), out organizationUsePrimaryProperties);
 
             foreach (var product in products)
             {

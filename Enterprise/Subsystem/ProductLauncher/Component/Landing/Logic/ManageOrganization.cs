@@ -138,12 +138,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var repositoryResponse = new RepositoryResponse();
             var outputResult = new ObjectOutput<OrganizationCreateResult, IErrorData>() {Status = new Status<IErrorData>() {Success = false}};
            
-
-            if (organization.BooksCompanyId == organization.BooksCustomerMasterId)
-            {
-                outputResult.Status.ErrorMsg = "Duplicate master ids";
-                return outputResult;
-			}
+            //if (organization.BooksCompanyId == organization.BooksCustomerMasterId)
+            //{
+            //    outputResult.Status.ErrorMsg = "Duplicate master ids";
+            //    return outputResult;
+			//}
 
 			if (organization.OrganizationTypeId == 0)
 			{
@@ -213,8 +212,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             org = GetOrganization(organizationRealPageId);
 
             //create/update use promaryproperty setting
-            createUsePrimaryPropertyMasterConfigurationSetting(org.PartyId, organization.UsePrimaryProperties);
-            org.UsePrimaryProperties = organization.UsePrimaryProperties;
+            createUsePrimaryPropertyMasterConfigurationSetting(org.PartyId, organization.EnablePrimaryPropertiesAndEnterpriseRoles);
+            org.EnablePrimaryPropertiesAndEnterpriseRoles = organization.EnablePrimaryPropertiesAndEnterpriseRoles;
 
             // add the given products to the new company
             var productResponse = AddProductsToOrganization(addProductList, org.PartyId, organization.OrganizationTypeId, organization.Name);
@@ -530,7 +529,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
 
             //create/update use primaryproperty setting
-            createUsePrimaryPropertyMasterConfigurationSetting(organization.PartyId, organization.UsePrimaryProperties);           
+            createUsePrimaryPropertyMasterConfigurationSetting(organization.PartyId, organization.EnablePrimaryPropertiesAndEnterpriseRoles);           
         }
 
         /// <summary>
@@ -552,7 +551,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 throw new Exception("Invalid parameter productId.");
             }
             var organizationDetails = _organizationRepository.GetOrganization(null, organizationPartyId);
-            if (organizationDetails.UsePrimaryProperties == 1)
+            if (organizationDetails.EnablePrimaryPropertiesAndEnterpriseRoles == 1)
             {
                 var productSettingTypeId = _productRepository.GetProductSettingType("UsePrimaryProperties");
                 return _organizationProductRepository.CreateOrganizationProductSetting(organizationPartyId, productId, productSettingTypeId, usePrimaryProperty == true ? "1" : "0");
@@ -959,7 +958,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         #endregion
 
         #region GetPropertiesForCompany
-        public List<CompanyPropertySetup> GetPropertiesForCompany(Guid companyInstanceId, string propertyName = null, string domain = null, int? blueId = null, int? status = null, IDictionary<object, object> globals = null, long editorPersonaId = 0, long userPersonaId = 0, bool? isSelectedProperties = null)
+        public List<CompanyPropertySetup> GetPropertiesForCompany(Guid companyInstanceId, string propertyName = null, string domain = null, 
+                        int? blueId = null, int? status = null, IDictionary<object, object> globals = null, long editorPersonaId = 0, 
+                        long userPersonaId = 0, bool? isSelectedProperties = null, List<Guid> selectedProperties = null)
         {
             RequestParameter dataFilter = new RequestParameter();
 
@@ -967,7 +968,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 dataFilter = globals[BaseType.RequestParameter] as RequestParameter;
             }
-            List<Guid> propertyInstanceIds;
+            List<Guid> propertyInstanceIds = new List<Guid>();
             List<PropertySetup> propertyDetails = new List<PropertySetup>();
             List<UPFMPropertyInstance> selectedPropertyInstances = new List<UPFMPropertyInstance>();
             List<int> userProperties = null;
@@ -982,21 +983,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 propertyInstanceIds = booksPropertyInstance?.Select(p => p.attributes.propertyInstanceSourceId)?.Select(Guid.Parse).ToList();
             }
-            if (userPersonaId > 0)
+            if (userPersonaId > 0 || (selectedProperties != null && selectedProperties.Count > 0))
             {
                 status = 1; //Hardcoding status to 1, because primary properties tab should only get active properties
                 userProperties = new List<int>();
                 userProperties = _propertyRepository.ListUPFMPropertyInstanceIdByPersona(userPersonaId, ProductEnum.UnifiedUI);
                 selectedPropertyInstances = _propertyRepository.ListUPFMPropertyInstanceByPersona(userPersonaId, ProductEnum.UnifiedUI);
-                List<Guid> selectedPropertyInstanceIds = selectedPropertyInstances?.Select(p => p.InstanceId).ToList();
-                if (isSelectedProperties == true)
+                List<Guid> selectedPropertyInstanceIds = selectedPropertyInstanceIds = selectedPropertyInstances?.Select(p => p.InstanceId).ToList();
+                if ((selectedProperties != null && selectedProperties.Count > 0))
                 {
-                    propertyInstanceIds = selectedPropertyInstanceIds;
+                    selectedPropertyInstanceIds = selectedProperties;
                 }
-                else if (isSelectedProperties == false)
-                {
-                    propertyInstanceIds = propertyInstanceIds.Except(selectedPropertyInstanceIds).ToList<Guid>();
-                }
+                propertyInstanceIds = isSelectedProperties == true ? selectedPropertyInstanceIds : propertyInstanceIds.Except(selectedPropertyInstanceIds).ToList<Guid>();                
+            }
+            if (userPersonaId == 0 && (selectedProperties == null || selectedProperties.Count == 0) && isSelectedProperties == true)
+            {
+                propertyInstanceIds = new List<Guid>();
             }
             if (propertyInstanceIds != null)
             {
@@ -1218,6 +1220,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <returns></returns>
         public RepositoryResponse DeletePropertyForOrganization(Guid propertyInstanceID, Guid companyInstanceId)
         {
+            var upfmProperties = new UPFMProperty();
+            var instanceIds = new List<string>
+            {
+                propertyInstanceID.ToString().ToLower()
+            };
+            upfmProperties.id = instanceIds;
+            TranslatePropertyInstance translatedData;
+            //Hard coding this as SET, because we need to get trasalated property for settings and
+            //we don't have other way to get product code from company setup property delete.
+            translatedData = _manageBlueBook.GetTranslatePropertiesFromUPFMToProductv3(upfmProperties, "SET");
+            var settingPropertyInstance = translatedData.Data?.Attributes
+                    ?.FirstOrDefault(p => p.PropertyInstanceSourceId == propertyInstanceID.ToString())
+                    ?.TranslatedPropertyInstances?.FirstOrDefault();
+
             var response = _propertyRepository.DeleteUPFMPropertyInstance(propertyInstanceID);
 
             if (response.ErrorMessage.Length == 0)
@@ -1228,10 +1244,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 LogAuditActivity(LogActivityTypeConstants.PROPERTY_DELETED, LogActivityCategoryType.CompanySetup, message);
 
                 bool booksResponse = DeletePropertyFromBooks(propertyInstanceID);
-                bool settingsResponse = false;
-                if (booksResponse)
+                bool settingsResponse = settingPropertyInstance != null ? false : true;
+                if (booksResponse && settingPropertyInstance != null)
                 {
-                    settingsResponse = DeletePropertyFromUnifiedSetting(propertyInstanceID);
+                    settingsResponse = DeletePropertyFromUnifiedSetting(settingPropertyInstance.PropertyInstanceSourceId.ToString().ToLower());
                 }
                 response = HandleErrorMessage(booksResponse, settingsResponse, "Error while deleting property", response);
             }
@@ -1288,9 +1304,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                 TranslatePropertyInstance translatedData;
 
-                if (booksProductDetail.ProductId != (int) ProductEnum.UnifiedPlatform && string.IsNullOrEmpty(booksProductDetail.UDMSourceCode))
+                if (booksProductDetail.ProductId != (int) ProductEnum.UnifiedPlatform)
                 {
-                    translatedData = _manageBlueBook.GetTranslatePropertiesFromUPFMToProductv3(upfmProperties, booksProductDetail.BooksProductCode);
+                    if (string.IsNullOrEmpty(booksProductDetail.UDMSourceCode))
+                    {
+                        translatedData = _manageBlueBook.GetTranslatePropertiesFromUPFMToProductv3(upfmProperties, booksProductDetail.BooksProductCode);
+                    }
+                    else
+                    {
+                        translatedData = _manageBlueBook.GetTranslatePropertiesFromUPFMToProductv3(upfmProperties, booksProductDetail.UDMSourceCode);
+                    }
                 }
                 else
                 {
@@ -1509,6 +1532,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         #endregion
 
 
+        public bool AddUpdateCompanyToUnifiedSettings(string companyInstanceID, string trasactionType, string customerEnvironment = null)
+        {
+            UnifiedSettingCompanyPropertyPayload payload = new UnifiedSettingCompanyPropertyPayload
+            {
+                Payload = new UnifiedSettingCompanyProperty
+                {
+                    Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
+                    Company = new UnifiedSettingCompanyInstance
+                    {
+                        CompanyInstanceSourceId = companyInstanceID.ToString().ToLower()
+                    },
+                    Properties = new List<UnifiedSettingCompanyPropertyInstance>(),
+                    CustomerEnvironment = customerEnvironment
+                }
+            };
+            return _manageUnifiedSettings.CreateUpdateCompanyInSetting(payload, trasactionType.ToLower() == "create" ? HttpMethod.Post : HttpMethod.Put);
+        }
+
+
         #region Private Methods
 
 
@@ -1636,7 +1678,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         private bool AddPropertyToUnifiedSettings(UPFMPropertyInstance property, Guid companyInstanceID)
         {
-            UnifiedSettingPropertyPayload payload = PreparePropertyObjectToUnifiedSetting(property, companyInstanceID);
+            UnifiedSettingCompanyPropertyPayload payload = PreparePropertyObjectToUnifiedSetting(property, companyInstanceID);
             return _manageUnifiedSettings.CreateUpdatePropertyInSetting(payload, HttpMethod.Post);
         }
 
@@ -1647,31 +1689,31 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 propertyInstanceId
             };
             UPFMPropertyInstance _propertyInstance = _propertyRepository.ListUPFMPropertyInstanceIdByInstanceIds(propGuidList).FirstOrDefault();
-            UnifiedSettingPropertyPayload payload = PreparePropertyObjectToUnifiedSetting(_propertyInstance, companyInstanceID);
+            UnifiedSettingCompanyPropertyPayload payload = PreparePropertyObjectToUnifiedSetting(_propertyInstance, companyInstanceID);
             return _manageUnifiedSettings.CreateUpdatePropertyInSetting(payload, HttpMethod.Put);
         }
-        private bool DeletePropertyFromUnifiedSetting(Guid propertyInstanceID)
+        private bool DeletePropertyFromUnifiedSetting(string settingsPropertyInstanceID)
         {
-            return _manageUnifiedSettings.DeletePropertyInSetting(propertyInstanceID);
+            return _manageUnifiedSettings.DeletePropertyInSetting(settingsPropertyInstanceID);
         }
 
-        private UnifiedSettingPropertyPayload PreparePropertyObjectToUnifiedSetting(UPFMPropertyInstance property, Guid companyInstanceID)
+        private UnifiedSettingCompanyPropertyPayload PreparePropertyObjectToUnifiedSetting(UPFMPropertyInstance property, Guid companyInstanceID)
         {
-            UnifiedSettingProperty usp = new UnifiedSettingProperty
+            UnifiedSettingCompanyProperty usp = new UnifiedSettingCompanyProperty
             {
                 Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
                 Company = new UnifiedSettingCompanyInstance
                 {
                     CompanyInstanceSourceId = companyInstanceID.ToString().ToLower()
                 },
-                Properties = new List<UnifiedSettingPropertyInstance>()
+                Properties = new List<UnifiedSettingCompanyPropertyInstance>()
                 {
-                    new UnifiedSettingPropertyInstance()
+                    new UnifiedSettingCompanyPropertyInstance()
                         {
                             PropertyName = property.Name,
                             PropertyInstanceSourceId = property.InstanceId,
                             CustomerPropertyId = !string.IsNullOrEmpty(property.CustomerPropertyId) ? property.CustomerPropertyId : "0",
-                            IsActive = true,
+                            IsActive = property.IsActive,
                             Address = property.Address,
                             City = property.City,
                             State = property.State,
@@ -1682,7 +1724,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 },
                 CustomerEnvironment = property.Domain
             };
-            return new UnifiedSettingPropertyPayload
+            return new UnifiedSettingCompanyPropertyPayload
             {
                 Payload = usp
             };
@@ -1719,7 +1761,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             MasterConfigurationSetting masterConfigurationSetting = new MasterConfigurationSetting
             {
                 ConfigurationType = "Organization",
-                SettingType = "UsePrimaryProperties",
+                SettingType = "EnablePrimaryPropertiesAndEnterpriseRoles",
                 PartyId = partyId.ToString(),
                 Value = value.ToString()
             };

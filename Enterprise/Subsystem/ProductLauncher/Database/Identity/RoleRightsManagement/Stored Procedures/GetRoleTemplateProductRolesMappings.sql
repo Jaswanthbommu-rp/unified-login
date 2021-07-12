@@ -1,7 +1,8 @@
 CREATE PROCEDURE [Security].[GetRoleTemplateProductRolesMappings]
 (
 	@RoleTemplateId int, 
-	@PartyId int
+	@OrganizationRealPageId UNIQUEIDENTIFIER = NULL,
+    @PartyId BIGINT = NULL
 )
 AS
 SELECT 
@@ -18,10 +19,13 @@ SELECT
 	,rtprm.AttributeName
 	,rtprm.AttributeValue
 FROM Security.RoleTemplate rt
+	INNER JOIN Enterprise.Party P ON
+		P.PartyId = rt.PartyID
 	LEFT OUTER  JOIN Security.RoleTemplateProduct rtp ON rt.RoleTemplateId = rtp.RoleTemplateId
 	LEFT OUTER JOIN Security.RoleTemplateProductRoleMapping rprm ON rprm.RoleTemplateProductId = rtp.RoleTemplateProductId
 	LEFT OUTER JOIN Security.RoleTemplateAdditionalProductRoleMapping rtprm ON rtprm.RoleTemplateProductId = rtp.RoleTemplateProductId
 
 WHERE rt.RoleTemplateId = @RoleTemplateId 
-	AND rt.PartyID = @PartyId
+	AND (P.RealPageId = @OrganizationRealPageId OR @OrganizationRealPageId IS NULL)
+	AND (P.PartyId = @PartyId OR @PartyId IS NULL)
 ORDER BY rtp.ProductId

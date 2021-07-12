@@ -49,6 +49,10 @@
         /// <summary>
         /// User Type changed from Admin To External
         /// </summary>
-        UserTypeAdminToExternal = 9
-    }
+        UserTypeAdminToExternal = 9,
+		/// <summary>
+		/// Enterprise Role Create Update Product User
+		/// </summary>
+		EnterpriseRoleCreateUpdateProductUser = 10
+	}
 }

@@ -53,6 +53,29 @@ BEGIN
 
 	SET @OffsetMinutes = ISNULL(@OffsetMinutes, '0');
 
+	DECLARE @InternationalTimeFormat VARCHAR(100) = 'hh:mm:s tt'  
+	SELECT  @InternationalTimeFormat = Value    
+	FROM  @SearchCriteriaTPV    
+	WHERE Name = 'InternationalTimeFormat'  
+
+	SET @InternationalTimeFormat = CASE @InternationalTimeFormat  
+										WHEN '12Hours' THEN 'hh:mm:s tt' 
+										WHEN '24Hours' THEN 'HH:mm:s'           
+										ELSE 'hh:mm:s tt'  
+									END
+
+	DECLARE @InternationalDateFormat VARCHAR(100) = 'mm/dd/yyyy'
+	SELECT  @InternationalDateFormat = Value  
+	FROM  @SearchCriteriaTPV  
+	WHERE Name = 'InternationalDateFormat'
+
+	SET @InternationalDateFormat = CASE @InternationalDateFormat  
+										WHEN 'mm/dd/yyyy' THEN CONVERT(varchar,'MM/dd/yyyy ' + @InternationalTimeFormat)  
+										WHEN 'dd/mm/yyyy' THEN CONVERT(varchar,'dd/MM/yyyy ' + @InternationalTimeFormat) 
+										WHEN 'yyyy/mm/dd' THEN CONVERT(varchar,'yyyy/MM/dd ' + @InternationalTimeFormat)  
+										ELSE 'MM/dd/yyyy hh:mm:s tt'  
+									END 
+
 	SET @Cmd01 = '
 	SELECT		A.ActivityId,
 					LT.Name AS ''LogActivityTypeName'',
@@ -69,7 +92,7 @@ BEGIN
 					A.BooksMasterPropertyId AS ''PropertyId'',
 					A.IsSystemAdminActivity AS ''IsSystemAdminActivity'',
 					A.ApplicationTimeStamp,
-					FORMAT(DATEADD(minute, ' + @OffsetMinutes + ', A.ApplicationTimeStamp), ''MM/dd/yyyy hh:mm:s tt'') AS ''ApplicationTimestampOffset'',
+					FORMAT(DATEADD(minute, ' + @OffsetMinutes + ', A.ApplicationTimeStamp), '''+ @InternationalDateFormat +''') AS ''ApplicationTimestampOffset'',
 					A.SourceId,
 					A.MappingKey,
 					A.ContextId,
@@ -94,7 +117,7 @@ BEGIN
 						0 AS PStatus
 		INTO		#HoldSearchCriteria
 		FROM		@SearchCriteriaTPV
-		WHERE	Name NOT IN ('OffsetMinutes', 'SaveFormat');
+		WHERE	Name NOT IN ('OffsetMinutes', 'SaveFormat', 'InternationalDateFormat', 'InternationalTimeFormat');
 
 		IF EXISTS	(SELECT TOP 1 1 FROM #HoldSearchCriteria WHERE name = 'RealPageId')
 		BEGIN

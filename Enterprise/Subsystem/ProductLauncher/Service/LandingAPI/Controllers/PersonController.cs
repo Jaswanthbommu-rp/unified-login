@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -243,20 +244,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			return Request.CreateResponse(HttpStatusCode.OK, output);
 	    }
 
-		/// <summary>
-		/// Export Users
-		/// </summary>
-		/// <param name="datafilter">Filter, Sort, Paginate</param>
-		/// <param name="dataFormat">Retrun data in this format (default = CSV)</param>
-		/// <returns>List of Person object</returns>
-		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        /// <summary>
+        /// Export Users
+        /// </summary>
+        /// <param name="datafilter">Filter, Sort, Paginate</param>
+        /// <param name="dataFormat">Retrun data in this format (default = CSV)</param>
+        /// <param name="internationalDateFormat">InternationalDateFormat</param>
+        /// <returns>List of Person object</returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
 		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
 		[SwaggerResponse(HttpStatusCode.OK, Description = "Get information about a list of person profiles", Type = typeof(IProfileDetail))]
 		[SwaggerResponseExamples(typeof(IProfileDetail), typeof(ListPersonsExample))]
 		[Route("persons/export")]
 		[AuthorizeRight("viewusers")]
 		[HttpGet]
-		public HttpResponseMessage ListUsersExport([FromUri]RequestParameter datafilter, SaveFormat dataFormat = SaveFormat.CSV)
+		public HttpResponseMessage ListUsersExport([FromUri]RequestParameter datafilter, SaveFormat dataFormat = SaveFormat.CSV, string internationalDateFormat = "mmddyyyy")
 		{
 			string jsonString = string.Empty;
 			byte[] plainBytes;
@@ -280,8 +282,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
 			ManageUserLogin manageUserLogin = new ManageUserLogin(_userClaims);
 			var userLogin = manageUserLogin.GetUserLogin(_realpageUserId, _orgPartyId); // keep for now
+            string dateFormat =string.Empty;
+            switch (internationalDateFormat.Trim().ToLower())
+            {
+                case "mmddyyyy":
+                    dateFormat = "MM/dd/yyyy";
+                    break;
+                case "ddmmyyyy":
+                    dateFormat = "dd/MM/yyyy";
+                    break;
+                case "yyyymmdd":
+                    dateFormat = "yyyy/MM/dd";
+                    break;
+                default:
+                    dateFormat = "MM/dd/yyyy";
+                    break;
+            }
 
-			if (profileDetailList != null)
+            if (profileDetailList != null)
 			{
 				profileDetailList.ToList().ForEach(p =>
 				{
@@ -295,7 +313,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 						object[] userRoleAttributes = fieldInfoUserRole.GetCustomAttributes(typeof(DescriptionAttribute), false);
 						userType = userRoleAttributes.Length == 0 ? enumUserRole.ToString() : ((DescriptionAttribute)userRoleAttributes[0]).Description;
 					}
-
 					listUsers.Add(
 						new LE.User()
 						{
@@ -305,11 +322,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 							LastName = p.LastName,
 							LoginName = p.userLogin.LoginName,
 							Products = p.SummaryCount.TotalAssignedProducts,
-							LastLogin = p.userLogin.LastLogin != null ? p.userLogin.LastLogin.Value.ToShortDateString() : string.Empty,
+							LastLogin = p.userLogin.LastLogin != null ? p.userLogin.LastLogin?.ToString(dateFormat) : string.Empty,
                             Status = p.userLogin.Status.ToString().Equals("disabled", StringComparison.OrdinalIgnoreCase) ? "Deactivated" : p.userLogin.Status.ToString(),
                             IDP = p.userLogin.Is3rdPartyIDP ? "Yes" : "No",
-							EffectiveDate = p.userLogin.FromDate != null ? p.userLogin.FromDate.Value.ToShortDateString() : string.Empty,
-							ExpireDate = ((p.userLogin.ThruDate == null) || (DateTime.Compare(p.userLogin.ThruDate.Value, parsedMaxValueDate) == 0)) ? string.Empty : p.userLogin.ThruDate.Value.ToShortDateString(),
+							EffectiveDate = p.userLogin.FromDate != null ? p.userLogin.FromDate?.ToString(dateFormat) : string.Empty,
+							ExpireDate = ((p.userLogin.ThruDate == null) || (DateTime.Compare(p.userLogin.ThruDate.Value, parsedMaxValueDate) == 0)) ? string.Empty : p.userLogin.ThruDate?.ToString(dateFormat),
 							CustomField = p.CustomField,
 							EmployeeId = p.EmployeeId
 						}

@@ -766,11 +766,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                 }
 
-                if (isCommunityAssigned)
-                {
-                    WriteUserActivityLogWithMessage(editorPersonaId, person as Person, userLogin, "User {0} {1} access to communities has been granted in {2} by user {3} {4}.");
-                }
-
                 WriteToDiagnosticLog($"ManageProductResidentPortal.ManageResidentPortalUser - End create/update user userPersonaId - {userPersonaId} and loop through total communities - {communityIds.Count}");
 
                 //Updating a Staff User and removing access to communities
@@ -814,11 +809,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         }
                     }
 
-                    if (isCommunityRemoved)
-                    {
-                        // write activity log
-                        WriteUserActivityLogWithMessage(editorPersonaId, person as Person, userLogin, "User {0} {1} access to communities has been removed in {2} by user {3} {4}.");
-                    }
                 }
 
                 _residentPortalUser = GetUserDetails(editorPersonaId, userPersonaId, userEmailAddress, 0);
@@ -1028,8 +1018,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                                 errorStatus.ErrorMsg = "";
                                 output.obj = _residentPortalUser;
                                 output.Status = errorStatus;
-                                // Activity Logging
-                                WriteUnassignActivityLog(editorPersonaId, userPersonaId);
                             }
                             else
                             {

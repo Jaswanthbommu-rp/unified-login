@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Diagnostics;
 using System.Linq;
 using System.Messaging;
 using System.ServiceProcess;
@@ -10,7 +9,7 @@ using System.Text;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing
 {
-	public partial class ServiceCheck : System.Web.UI.Page
+    public partial class ServiceCheck : System.Web.UI.Page
 	{
 		protected void Page_Load(object sender, EventArgs e)
 		{

@@ -21,19 +21,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 
         IList<Setting> GetUnifiedSettingsCached(string category, long partyId);
 
-			/// <summary>
+		/// <summary>
+		/// Send Company Instance to Unified settings
+		/// </summary>
+		/// <param name="upfmCompany"></param>
+		/// <param name="requestType"></param>
+		/// <returns></returns>
+		bool CreateUpdateCompanyInSetting(UnifiedSettingCompanyPropertyPayload upfmCompany, HttpMethod requestType);
+
+		/// <summary>
 		///Send Property Instance to Unified settings
 		/// </summary>
 		/// <param name="upfmProperties">upfmProperties</param>
 		/// <param name="requestType">requestType</param>
 		/// <returns></returns>
-		bool CreateUpdatePropertyInSetting(UnifiedSettingPropertyPayload upfmProperties, HttpMethod requestType);
+		bool CreateUpdatePropertyInSetting(UnifiedSettingCompanyPropertyPayload upfmProperties, HttpMethod requestType);
 
 		/// <summary>
 		/// Delete Property In Setting
 		/// </summary>
 		/// <param name="propertyInstance"></param>
 		/// <returns></returns>
-		bool DeletePropertyInSetting(Guid propertyInstance);
+		bool DeletePropertyInSetting(string propertyInstance);
 	}
 }

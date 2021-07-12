@@ -264,6 +264,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 bool isExternalUser = personaOrganization.RelationshipType.Equals("User Type", StringComparison.OrdinalIgnoreCase) && personaOrganization.RoleNameFrom.Equals("External User", StringComparison.OrdinalIgnoreCase);
 
                 string productLoginName;
+                bool isUserUpdate = false;
                 if (string.IsNullOrEmpty(_productUsername))
                 {
                     if (!IsUserWithEmail(userPersonaId) || !RegexUtilities.IsValidEmail(userLogin.LoginName))
@@ -278,6 +279,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 else
                 {
                     productLoginName = _productUsername;
+                    isUserUpdate = true;
                 }
 
                 WriteToDiagnosticLog(
@@ -322,7 +324,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 var contactId = string.Empty;
                 string accountId = string.Empty;
-                isMultiCompanyUser = isExternalUser || string.IsNullOrEmpty(_productUsername) || clientPortalContactResults.Count > 0;
+                isMultiCompanyUser = (isExternalUser || string.IsNullOrEmpty(_productUsername) || clientPortalContactResults.Count > 0) && !isUserUpdate;
                 var uniqueProductLoginName = isMultiCompanyUser ? IterateUserNameIfExists(productLoginName) : productLoginName;
 
                 // If no contact then create new contact in salesforce
@@ -399,13 +401,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         $"ManageProductClientPortal.ManageClientPortalUser - trying to CREATE user with editorPersona id - {editorPersonaId}.");
                     string insertResult = CreateClientPortalUser(userPersonaId, clientPortalUser);
 
-                    // add activity log
-                    if (string.IsNullOrEmpty(insertResult))
-                    {
-                        // add activity log
-                        WriteCreateUserActivityLog(editorPersonaId, person, userLogin);
-                    }
-
                     return insertResult;
                 }
 
@@ -417,12 +412,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 clientPortalUser.ContactId = null;
 
                 var updateResult = UpdateClientPortalUser(clientPortalUser, _productUserId, userPersonaId);
-
-                if (string.IsNullOrEmpty(updateResult))
-                {
-                    // add activity log
-                    WriteUpdateUserActivityLog(editorPersonaId, person, userLogin);
-                }
 
                 return updateResult;
             }
@@ -664,7 +653,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
 
                 UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
-                WriteUnassignActivityLog(editorPersonaId, userPersonaId);
+                
                 return "";
             }
 

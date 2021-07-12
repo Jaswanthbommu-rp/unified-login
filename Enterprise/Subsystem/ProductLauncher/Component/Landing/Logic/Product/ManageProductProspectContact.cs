@@ -225,8 +225,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus,
 						(int)ProductBatchStatusType.Deleted);
 
-					// Activity Logging
-					WriteUnassignActivityLog(editorPersonaId, userPersonaId);
 				}
 			}
 			catch (Exception ex)
@@ -357,15 +355,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					// for new user insert record in green prospectContactCenterUserbook
 					CreateProductUserInGreenBook(userPersonaId, newProductUserId, productLoginName);
 
-					// add activity log 
-					if (batchProcessType == BatchProcessType.CreateUpdateProductUser)
-					{
-						WriteCreateUserActivityLog(editorPersonaId, person, userLogin);
-					}
-					else if (batchProcessType == BatchProcessType.UserTypeRegularToAdmin || batchProcessType == BatchProcessType.UserTypeAdminToRegular || batchProcessType == BatchProcessType.UserTypeAdminToExternal || batchProcessType == BatchProcessType.UserTypeExternalToAdmin)
+
+					if (batchProcessType == BatchProcessType.UserTypeRegularToAdmin || batchProcessType == BatchProcessType.UserTypeAdminToRegular || batchProcessType == BatchProcessType.UserTypeAdminToExternal || batchProcessType == BatchProcessType.UserTypeExternalToAdmin)
 					{
 						WriteUpdateUserTypeActivityLog(editorPersonaId, person, userLogin, batchProcessType);
-					}				
+					}
 
 					return string.Empty;
 				}
@@ -375,12 +369,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				prospectContactCenterUser.User.SystemIdentifier = _productUserId;
 				prospectContactCenterUser.User.LoginName = _productUsername;
 				var updateResult = UpdateProspectContactCenterPropertyUser(userPersonaId, editorPersonaId, prospectContactCenterUser);
-
-				if (string.IsNullOrEmpty(updateResult))
-				{
-					// add activity log
-					WriteUpdateUserActivityLog(editorPersonaId, person, userLogin);
-				}
 
 				return updateResult;
 			}

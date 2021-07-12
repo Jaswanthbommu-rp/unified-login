@@ -34,3 +34,6 @@ CREATE NONCLUSTERED INDEX [IX_Security_RoleRight_RightID]
 ON [Security].[RoleRight] ([RightId])
 INCLUDE ([RoleId])
 GO
+CREATE NONCLUSTERED INDEX [NCIX_Security_RoleRight_RoleID]
+ON [Security].[RoleRight] ([RoleId])
+GO

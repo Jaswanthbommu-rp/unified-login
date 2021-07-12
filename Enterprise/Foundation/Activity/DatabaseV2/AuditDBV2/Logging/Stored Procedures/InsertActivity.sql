@@ -1,0 +1,112 @@
+﻿
+
+CREATE PROCEDURE [Logging].[InsertActivity] 
+(
+	@LogTypeId INT = NULL,
+	@LogType NVARCHAR(100) = NULL, 
+	@Message NVARCHAR(400),
+	@FromUserLoginName NVARCHAR(200),
+	@FromUserFirstName NVARCHAR(50),
+	@FromUserLastName NVARCHAR(50),
+	@FromUserRealpageId UNIQUEIDENTIFIER, 
+	@OrganizationPartyId INT,
+	@Timestamp DATETIME,
+	@AdditionalInformationTPV ADDITIONALINFO READONLY,
+	@ActivityId BIGINT OUTPUT,
+	@ContextId NVARCHAR(200) = NULL, 
+	@ContextReferenceId NVARCHAR(400) = NULL 
+
+)
+AS
+BEGIN
+SET NOCOUNT ON;
+
+	/*
+		,@ContextId --Unified Login:- NULL, since all activities are at company level. Unified Settings:-	Company Level: NULL or Setting’s Company id ,Property Level: Setting’s Property Id,	Template Level: Setting’s Template Id
+		,@ContextReferenceId  --Unified Login:-	Store User RealPageId,Unified Settings:- Store Setting {SourceId}_{MappingKey}_{InstanceId},Unified Reporting:-	Store Reporting Key
+	*/	
+
+	DECLARE @Now datetime= GETUTCDATE();
+	DECLARE @FromUserId bigint;
+	
+	SELECT @LogTypeId = LogTypeId
+	FROM Logging.LogType AS LT
+	WHERE 
+		(@LogType IS NULL AND LogTypeId = @LogTypeId)
+		OR 
+		LT.[Name] = @LogType 
+
+	IF (@LogTypeId IS NULL OR  @FromUserRealpageId IS NULL)
+		RETURN
+			
+	SELECT @FromUserId = [UserId]
+	FROM Logging.UserLogin
+	WHERE RealPageId = @FromUserRealpageId;
+		
+	IF (@FromUserId IS NOT NULL)
+	BEGIN
+
+		UPDATE Logging.UserLogin 
+		SET FirstName = @FromUserFirstName, LastName = @FromUserLastName,LoginName = @FromUserLoginname
+		WHERE
+			RealPageId = @FromUserRealpageId
+
+	END
+	ELSE
+	BEGIN
+				
+		INSERT INTO Logging.UserLogin(LoginName,  FirstName, LastName, RealPageId)
+		VALUES( @FromUserLoginname,  @FromUserFirstName, @FromUserLastName, @FromUserRealpageId );
+
+		SELECT @FromUserId = SCOPE_IDENTITY()
+			
+	END;
+	
+	--Process Activity Table
+	BEGIN TRY
+
+		INSERT INTO Logging.Activity
+		(
+					
+			OrganizationPartyId
+			,LogTypeId
+			,[Message]
+			,ContextId
+			,ContextReferenceId
+			,ApplicationTimeStamp
+			,CreatedBy
+			,CreatedDate
+		)
+		VALUES
+		(
+					
+			ISNULL(@OrganizationPartyId, 0)
+			,@LogTypeId
+			,@Message
+			,@ContextId 
+			,@ContextReferenceId  
+			,@Timestamp
+			,@FromUserId
+			,@Now
+		)
+			
+		SET @ActivityId = SCOPE_IDENTITY();				
+			
+		--Process Additional information if there is any
+		INSERT INTO Logging.ActivityDetail( ActivityId, [Key], Value )
+		SELECT 
+			@ActivityId,[Key],[Value]
+		FROM
+			@AdditionalInformationTPV			
+		
+		SELECT @ActivityId AS Id, '' AS ErrorMessage;
+
+	END TRY
+	BEGIN CATCH
+		
+		SELECT 0 AS Id,ERROR_MESSAGE() AS ErrorMessage
+	
+	END CATCH;
+
+END;
+

@@ -399,55 +399,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         }
 
         [Fact]
-        public void InsertOrganization_DuplicateBookMasterId_BadRequest()
-        {
-            _mockRepository
-                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
-                    It.IsAny<object>()))
-                .Returns(_gbProductMap);
-
-            //Arrange
-            OrganizationCreate organizationCreate = new OrganizationCreate()
-            {
-                BooksCompanyId = _BooksCompanyMasterId,
-                BooksCustomerMasterId = _BooksCompanyMasterId,
-                OrganizationTypeId = 1,
-                Name = "CF Real Estate Services",
-                Products = new List<string>()
-                {
-                    "AB"
-                },
-                AdminUser = new OrganizationAdminUser()
-                {
-                    FirstName = "Jack",
-                    LastName = "Doe",
-                    Email = "jack.doe@example.com",
-                    Suffix = string.Empty,
-                    Title = string.Empty
-                }
-            };
-
-            //Act
-            RPObjectCache rPObjectCache = new RPObjectCache();
-            rPObjectCache.BustCache();
-
-            OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
-                , _mockHttpMessageHandler.Object
-                , _defaultUserClaim
-            ) {Request = new HttpRequestMessage(), Configuration = new HttpConfiguration()};
-
-            HttpResponseMessage response = organizationController.InsertOrganization(organizationCreate);
-            string message = response.Content.ReadAsStringAsync().Result;
-            string expectedValue = "{\"Message\":\"Duplicate master ids\"}";
-
-            //Assert
-            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
-            Assert.True(expectedValue == message);
-        }
-
-        [Fact]
         public void InsertOrganization_InvalidOrganizationType_BadRequest()
         {
             _mockRepository
@@ -864,6 +815,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             List<ProductInternalSetting> productInternalSettings = new List<ProductInternalSetting>()
             {
                 new ProductInternalSetting() {Name = "UpdateProductInUDM", Value = "1"},
+                new ProductInternalSetting() {Name = "SettingsApiEndPoint", Value = "http://localhost"}
             };
 
             var mockRepository = new Mock<IRepository>();
@@ -924,7 +876,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             mockHttpMessageHandler.Setup(HttpMethod.Put, $"http://localhost/companyinstance/" + _RealPageId.ToString().ToLower() + "/UPFM", new HttpResponseMessage(HttpStatusCode.OK) {Content = new StringContent("{ \"result\" : \"success\"}")});
             mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/systemproductcenter", new HttpResponseMessage(HttpStatusCode.OK) {Content = new StringContent("{ \"result\" : \"success\"}")});
             mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/companyinstance/1051412/OS", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("\r\n{\"data\":{\"type\":\"companyinstance\",\"id\":\"651250\",\"attributes\":{\"companyInstanceId\":651250,\"source\":\"OS\",\"companyInstanceSourceId\":\"1051412\",\"companyName\":\"Camden\",\"phoneNumber\":\"(713) 354-2500\",\"formerlyKnownAs\":null,\"legalEntityName\":null,\"companyType\":null,\"website\":\"camdenproperty.onesite.realpage.com\",\"isActive\":true,\"isUat\":false,\"createdAt\":\"2017-04-13 11:56:12.000000-0500\",\"modifiedAt\":\"2020-09-14 16:35:16.000000-0500\",\"createdBy\":null,\"modifiedBy\":\"x - API\",\"deletedAt\":null,\"nrrReason\":null,\"deletedBy\":null,\"greenBookCares\":true,\"marketSegment\":[],\"nrr\":false,\"modifiedSource\":null,\"isAcquired\":false,\"customerEnvironment\":\"Primary\",\"domain\":\"Primary\",\"deletedReason\":\"Deprecated Field\"},\"links\":{\"self\":\"\\/companyinstance\\/651250\"}}}") });
-
+            mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/v2/provisioning/company", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
             OrganizationController organizationController = new OrganizationController(
                 mockRepository.Object
                 , _mockRepositoryResponse.Object
@@ -939,7 +891,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 OrganizationTypeId = 6,
                 Name = "New Company",
                 OrganizationDomain = "Primary",
-                UsePrimaryProperties = 0,
+                EnablePrimaryPropertiesAndEnterpriseRoles = 0,
                 Products = new List<string>()
                 {
                     "OS"
@@ -1042,7 +994,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 OrganizationDomainId = 0,
                 OrganizationDomainName = "Primary",
                 Name = "New Company",
-                UsePrimaryProperties = 0,
+                EnablePrimaryPropertiesAndEnterpriseRoles = 0,
                 CompanyAddress = new CompanyInstanceAddress() { Address = "1234 Address", City = "Some City", State = "State", Country = "USA", PostalCode = "12345" }
             };
 
@@ -1066,7 +1018,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompany?filter[customerCompanyId]=in:{_BooksCompanyMasterId}&include=customerCompanyLocation&fields[customercompany]=customerCompanyId,companyName,phoneNumber&fields[customerCompanyLocation]=customerCompanyLocationId,customerCompanyId,address,city,state,country,postalCode,isPrimary&page[size]=9999", responseMapResource);
             _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/companyinstance?filter[source]=UPFM&include=companyInstanceLocation&filter[companyInstanceSourceId]=in:daf71f77-4558-4cb0-91b8-29d8b0e62f15", upfmCompanyInstancesResponse);
-
+            _mockHttpMessageHandler.Setup(HttpMethod.Put, $"http://localhost/v2/provisioning/company", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
             HttpResponseMessage response = organizationController.UpdateOrganization(organizationUpdate);
             OrganizationCreateResult orgResult = JsonConvert.DeserializeObject<OrganizationCreateResult>(response.Content.ReadAsStringAsync().Result);
 
@@ -2960,6 +2912,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_DeletePropertyInstance,
                    It.IsAny<object>()))
                .Returns(repository);
+
+            var booksTranslateOneSiteJson = "{\n\t\"data\": {\n\t\t\"type\": \"propertyinstancetranslations\",\n\t\t\"attributes\": [\n\t\t\t{\n\t\t\t\t\"propertyInstanceSourceId\": \"a1ef0ac9-2f84-4288-b369-e59b1d6c13de\",\n\t\t\t\t\"source\": \"UPFM\",\n\t\t\t\t\"translatedPropertyInstances\": [\n\t\t\t\t\t{\n\t\t\t\t\t\t\"source\": \"SET\",\n\t\t\t\t\t\t\"propertyInstanceSourceId\": \"e89233ef-6fae-4da6-8953-8a2b6814c960\"\n\t\t\t\t\t}\n\t\t\t\t]\n\t\t\t},\n\t\t\t{\n\t\t\t\t\"propertyInstanceSourceId\": \"a5192995-aaaa-bbbb-8df2-f30f1b8dc752\",\n\t\t\t\t\"source\": \"UPFM\",\n\t\t\t\t\"translatedPropertyInstances\": [\n\t\t\t\t\t{\n\t\t\t\t\t\t\"source\": \"AB\",\n\t\t\t\t\t\t\"propertyInstanceSourceId\": \"7654321\"\n\t\t\t\t\t}\n\t\t\t\t]\n\t\t\t}\n\t\t]\n\t}\n}";
+            HttpResponseMessage booksTranslateOneSiteResponse = new HttpResponseMessage(HttpStatusCode.OK);
+            booksTranslateOneSiteResponse.Content = new StringContent(booksTranslateOneSiteJson);
+            _mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/translate/v3/propertyinstance/UPFM/SET", booksTranslateOneSiteResponse);
             _mockHttpMessageHandler.Setup(HttpMethod.Delete, $"http://localhost/propertyinstance/a1ef0ac9-2f84-4288-b369-e59b1d6c13de/UPFM?modifiedBy=UnifiedPlatform", new HttpResponseMessage(HttpStatusCode.NoContent) { Content = new StringContent("{ \"result\" : \"success\"}") });
             OrganizationController organizationController = new OrganizationController(
                 _mockRepository.Object
@@ -3023,12 +2980,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             {
                 new UPFMPropertyInstance(){InstanceId = new Guid("a5192995-aaaa-bbbb-8df2-f30f1b8dc752"), Name = "test property 1"}
             };
+            var booksTranslateOneSiteJson = "{\n\t\"data\": {\n\t\t\"type\": \"propertyinstancetranslations\",\n\t\t\"attributes\": [\n\t\t\t{\n\t\t\t\t\"propertyInstanceSourceId\": \"a1ef0ac9-2f84-4288-b369-e59b1d6c13de\",\n\t\t\t\t\"source\": \"UPFM\",\n\t\t\t\t\"translatedPropertyInstances\": [\n\t\t\t\t\t{\n\t\t\t\t\t\t\"source\": \"SET\",\n\t\t\t\t\t\t\"propertyInstanceSourceId\": \"e89233ef-6fae-4da6-8953-8a2b6814c960\"\n\t\t\t\t\t}\n\t\t\t\t]\n\t\t\t},\n\t\t\t{\n\t\t\t\t\"propertyInstanceSourceId\": \"a5192995-aaaa-bbbb-8df2-f30f1b8dc752\",\n\t\t\t\t\"source\": \"UPFM\",\n\t\t\t\t\"translatedPropertyInstances\": [\n\t\t\t\t\t{\n\t\t\t\t\t\t\"source\": \"AB\",\n\t\t\t\t\t\t\"propertyInstanceSourceId\": \"7654321\"\n\t\t\t\t\t}\n\t\t\t\t]\n\t\t\t}\n\t\t]\n\t}\n}";
+            HttpResponseMessage booksTranslateOneSiteResponse = new HttpResponseMessage(HttpStatusCode.OK);
+            booksTranslateOneSiteResponse.Content = new StringContent(booksTranslateOneSiteJson);
 
             _mockRepository.Setup(m => m.GetMany<UPFMPropertyInstance>(StoredProcNameConstants.SP_GetPropertyInstanceListById,
                     It.Is<object>(data => TestSqlParameter(data, "{ InstanceList = Dapper.TableValuedParameter }"))))
                 .Returns(upfmPropertyInstances);
             _mockHttpMessageHandler.Setup(HttpMethod.Delete, $"http://localhost/propertyinstance/a1ef0ac9-2f84-4288-b369-e59b1d6c13de/UPFM?modifiedBy=UnifiedPlatform", new HttpResponseMessage(HttpStatusCode.NoContent) { Content = new StringContent("{ \"result\" : \"success\"}") });
-            _mockHttpMessageHandler.Setup(HttpMethod.Delete, $"http://localhost/v2/provisioning/property/a1ef0ac9-2f84-4288-b369-e59b1d6c13de", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
+            _mockHttpMessageHandler.Setup(HttpMethod.Delete, $"http://localhost/v2/provisioning/property/e89233ef-6fae-4da6-8953-8a2b6814c960", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
+            _mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/translate/v3/propertyinstance/UPFM/SET", booksTranslateOneSiteResponse);
             OrganizationController organizationController = new OrganizationController(
                 _mockRepository.Object
                 , _mockRepositoryResponse.Object

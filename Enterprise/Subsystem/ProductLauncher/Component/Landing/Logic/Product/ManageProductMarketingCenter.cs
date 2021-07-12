@@ -355,8 +355,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				{
 					WriteToDiagnosticLog($"ManageMarketingCenterUser.UnassignUser - userPersonaId: {userPersonaId}");
 					UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
-					// Activity Logging
-					WriteUnassignActivityLog(editorPersonaId, userPersonaId);
 				}
 				else
 				{
@@ -753,7 +751,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						WriteToDiagnosticLog("ManageMarketingCenterUser - Create user success. Saved user id");
 						UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
 						WriteToDiagnosticLog("ManageMarketingCenterUser - Create user success. Set product status to Success");
-						WriteCreateUserActivityLog(editorPersonaId, (Person)person, (UserLoginOnly)userLogin);
 
 						//update user migration status
 						// Update UL flag in product
@@ -853,7 +850,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						WriteToDiagnosticLog("ManageMarketingCenterUser - Update user. newid=" + newid);
 						UpdateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.UserId, newid.ToString());
 						WriteToDiagnosticLog("ManageMarketingCenterUser - Update user success. Saved user id");
-						WriteUpdateUserActivityLog(editorPersonaId, (Person)person, (UserLoginOnly)userLogin);
 
 						if (!IsUserIdValid(Convert.ToInt64(_editorProductUserId)))
 						{

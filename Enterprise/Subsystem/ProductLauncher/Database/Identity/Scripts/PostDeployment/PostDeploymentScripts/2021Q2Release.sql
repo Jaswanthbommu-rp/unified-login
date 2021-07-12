@@ -2022,6 +2022,9 @@ BEGIN
 	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
 	VALUES (@ControlAttributeId+1, @ControlId+1, N'Hide', N'False', @UserId, @Now)
 
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (@ControlAttributeId+2, @ControlId+5, N'FilterType', N'menu', @UserId, @Now)
+
 	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
 
 	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
@@ -4662,26 +4665,26 @@ MERGE INTO Enterprise.NavigationMenu t
 	USING 
 	(
 		VALUES
-			(1, N'Home', N'home', N'places-home-1', N'/', 10, NULL, 'unified-login'),
+			(1, N'Home', N'home', N'places-home-1', N'/home', 10, NULL, 'unified-login'),
 
 			(2, N'People', N'people', N'user', NULL, 20, NULL, 'unified-login'),
-			(3, N'Users', N'users', NULL, N'/people/users', 30, 2, 'unified-login'),
-			(4, N'User Activity Log', N'activity-log', NULL, N'/people/activity-log', 40, 2, 'unified-login'),
+			(3, N'Users', N'users', NULL, N'/home/people/users', 30, 2, 'unified-login'),
+			(4, N'User Activity Log', N'activity-log', NULL, N'/home/people/activity-log', 40, 2, 'unified-login'),
 
-			(5, N'Reporting', N'reporting', N'file-new-2', N'/reporting', 50, NULL, 'unified-reporting'),
+			(5, N'Reports', N'reporting', N'file-new-2', N'/reporting', 50, NULL, 'unified-reporting'),
 
 			(6, N'Roles & Rights', N'rolesRights', N'key-1', NULL, 60, NULL, 'unified-login'),
-			(7, N'Roles & Rights', N'productsRolesRights', NULL, N'/roles-rights', 70, 6, 'unified-login'),
-			--(8, N'Role Templates', N'roleTemplates', NULL, N'/roles-rights/role-templates', 80, 6, 'unified-login'),
+			(7, N'Roles & Rights', N'productsRolesRights', NULL, N'/home/roles-rights', 70, 6, 'unified-login'),
+			--(8, N'Role Templates', N'roleTemplates', NULL, N'/home/roles-rights/role-templates', 80, 6, 'unified-login'),
 
 			(9, N'Configurations', N'Configurations', N'wrench-screwdriver', NULL, 90, NULL, 'unified-login'),
-			(10, N'Company Setup', N'company-setup', NULL, N'/company-setup', 100, 9, 'unified-login'),
-			(11, N'Company Setup Activity Log', N'company-setup-activity-log', NULL, N'/company-setup-activity-log', 110, 9, 'unified-login'),
-			(12, N'Notifications', N'notifications', NULL, N'/notifications/configuration', 120, 9, 'unified-login'),
-			(13, N'Products', N'products-configuration', NULL, N'/products-configuration', 130, 9, 'unified-login'),
-			(14, N'Client Settings', N'client-settings', NULL, N'/client-settings', 140, 9, 'unified-login'),
+			(10, N'Company Setup', N'company-setup', NULL, N'/home/company-setup', 100, 9, 'unified-login'),
+			(11, N'Company Setup Activity Log', N'company-setup-activity-log', NULL, N'/home/company-setup-activity-log', 110, 9, 'unified-login'),
+			(12, N'Notifications', N'notifications', NULL, N'/home/notifications/configuration', 120, 9, 'unified-login'),
+			(13, N'Products', N'products-configuration', NULL, N'/home/products-configuration', 130, 9, 'unified-login'),
+			(14, N'Client Settings', N'client-settings', NULL, N'/home/client-settings', 140, 9, 'unified-login'),
 
-			(15, N'Platform Alerts', N'platformalerts', N'alarm-timeout', N'/notifications/platformalerts', 150, NULL, 'unified-login'),
+			(15, N'Platform Alerts', N'platformalerts', N'alarm-timeout', N'/home/notifications/platformalerts', 150, NULL, 'unified-login'),
 
 			(16, N'Settings', N'settings', N'cog-gear-settings', NULL, 160, NULL, 'unified-settings'),
 			(17, N'Manage Settings', N'manage-settings', NULL, N'/settings', 170, 16, 'unified-settings'),
@@ -4839,7 +4842,7 @@ END
 GO
 
 DECLARE @TextingServiceAppId NVARCHAR(500) = 'b98287e5-cd9c-4d23-b29d-998bac8e5d1a',
-@TextingServiceUrl NVARCHAR(500) = 'uc-admin-sat.realpage.com',
+@TextingServiceUrl NVARCHAR(500) = 'https://uc-admin-sat.realpage.com/',
 @TextingServiceAPIKey NVARCHAR(500) = 'cf99e970-bdf5-11eb-a55e-75ea9a67c725',
 @ServerName SYSNAME = @@SERVERNAME
 
@@ -4908,4 +4911,123 @@ BEGIN
 	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
 				select TOP (1) ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is NULL ORDER BY GlobalProductConfigurationId DESC
 END
+GO
+
+MERGE INTO [Security].[RightRoute] t
+	USING 
+	(
+		SELECT ri.RightId, ro.RouteId, ri.RightName, N'' CreatedBy, GETUTCDATE() CreatedDate
+		FROM [Security].[Route] ro
+			INNER JOIN [Security].[Right] ri on ri.RightName = 'CreatePlatformAlerts'
+		WHERE ro.RouteValue = 'SideMenu'
+	) 
+	AS 
+	s (RightId, RouteId, RightName, CreatedBy, CreatedDate) on t.RightId = s.RightId
+		AND t.RouteId = s.RouteId
+	WHEN MATCHED THEN
+		UPDATE SET
+			RightName = s.RightName
+	WHEN NOT MATCHED BY TARGET THEN
+		INSERT(RightId, RouteId, RightName, CreatedBy, CreatedDate) VALUES (s.RightId, s.RouteId, s.RightName, s.CreatedBy, s.CreatedDate);
+
+GO
+
+	------Create Product Setting type for GetUserRoleEndpoint -------------
+
+	IF NOT EXISTS(SELECT * FROM Enterprise.ProductSettingType WHERE [NAME]='GetUserRoleEndpoint')
+	BEGIN
+	EXEC	[Enterprise].[CreateProductSettingType]
+			@ProductSettingTypeName = N'GetUserRoleEndpoint',
+			@ProductSettingTypeDescription = N'Get user specific role',
+			@ProductSettingTypeSensitiveData = 0,
+			@ProductSettingTypeId = @ProductSettingTypeId OUTPUT
+
+	SELECT	@ProductSettingTypeId as N'@ProductSettingTypeId'
+
+	END
+
+	--Add roles and rights to Self guided tour
+DECLARE @RoleRights TABLE (
+	RoleId int,
+	RightId int,
+	IsProcessed bit default(0)
+)
+--Roles
+declare @productid bigint, @UserId bigint
+select @productid = productid from Enterprise.Product where Name='Self-Guided Tour'
+SELECT	@UserId = UserId FROM	Ident.UserLogin WHERE	LoginName LIKE 'realpagead@%'
+if not exists(select 1  from Security.Role where RoleName='Implementations' and ProductId =@productid)
+begin 
+insert into Security.Role(RoleName,ShortName,Description,RoleTypeID,OrgPartyID,ProductId,CreatedBy,CreatedDate)
+select 'Implementations','Implementations','Implementations',1,NULL,@productid, @UserId, getUTCDate()
+end
+if not exists(select 1  from Security.Role where RoleName='Property Manager' and ProductId =@productid)
+begin 
+insert into Security.Role(RoleName,ShortName,Description,RoleTypeID,OrgPartyID,ProductId,CreatedBy,CreatedDate)
+select 'Property Manager','Property Manager','Property Manager',1,NULL,@productid, @UserId, getUTCDate()
+end
+if not exists(select 1  from Security.Role where RoleName='Regional Manager' and ProductId =@productid)
+begin 
+insert into Security.Role(RoleName,ShortName,Description,RoleTypeID,OrgPartyID,ProductId,CreatedBy,CreatedDate)
+select 'Regional Manager','Regional Manager','Regional Manager',1,NULL,@productid, @UserId, getUTCDate()
+end
+if not exists(select 1  from Security.Role where RoleName='Corporate Manager' and ProductId =@productid)
+begin 
+insert into Security.Role(RoleName,ShortName,Description,RoleTypeID,OrgPartyID,ProductId,CreatedBy,CreatedDate)
+select 'Corporate Manager','Corporate Manager','Corporate Manager',1,NULL,@productid, @UserId, getUTCDate()
+end
+--Rights
+if not exists(select 1  from Security.[Right] where RightName='Implementations' 
+		and ProductId =@productid and VisibilityStatusId = 9  and TargetProductId = @productid)
+begin 
+insert into Security.[Right](RightName,Description,Value,StatusTypeId,VisibilityStatusId,ProductId,TargetProductId, CreatedBy, CreatedDate)
+select 'Implementations', N'Implementations', N'Implementations', 13, 9, @productid, @productid, @UserId, getUTCDate()
+end
+if not exists(select 1  from Security.[Right] where RightName='Property Manager' 
+		and ProductId =@productid and VisibilityStatusId = 9  and TargetProductId = @productid)
+begin 
+insert into Security.[Right](RightName,Description,Value,StatusTypeId,VisibilityStatusId,ProductId,TargetProductId, CreatedBy, CreatedDate)
+select 'Property Manager', N'Property Manager', N'Property Manager', 13, 9, @productid, @productid, @UserId, getUTCDate()
+end
+if not exists(select 1  from Security.[Right] where RightName='Regional Manager' 
+		and ProductId =@productid and VisibilityStatusId = 9  and TargetProductId = @productid)
+begin 
+insert into Security.[Right](RightName,Description,Value,StatusTypeId,VisibilityStatusId,ProductId,TargetProductId, CreatedBy, CreatedDate)
+select 'Regional Manager', N'Regional Manager', N'Regional Manager', 13, 9, @productid, @productid, @UserId, getUTCDate()
+end
+if not exists(select 1  from Security.[Right] where RightName='Corporate Manager' 
+		and ProductId =@productid and VisibilityStatusId = 9 and TargetProductId = @productid)
+begin 
+insert into Security.[Right](RightName,Description,Value,StatusTypeId,VisibilityStatusId,ProductId,TargetProductId, CreatedBy, CreatedDate)
+select 'Corporate Manager', N'Corporate Manager', N'Corporate Manager', 13, 9, @productid, @productid, @UserId, getUTCDate()
+end
+insert into @RoleRights(RoleId,RightId,IsProcessed)
+select rle.RoleId,rgt.RightId ,0--getUTCDate() as CreatedDate--,@UserId as CreatedBy
+	from Security.Role rle 
+		inner join Security.[Right] rgt on rle.RoleName = rgt.Value		
+	where rle.ProductId = @productid and rgt.ProductId = @productid	
+	WHILE(1 = 1) -- Loop For Rights
+	BEGIN		
+		DECLARE @RightID INT;
+		DECLARE @RoleID INT;
+		SET @RightID = NULL;
+		SELECT TOP 1 
+			@RightID = RightId,
+			@RoleID = RoleId
+		FROM 
+			@RoleRights
+		WHERE IsProcessed = 0;
+		IF (@RightID IS NULL) 
+		BEGIN
+			BREAK;
+		END;
+		if not exists(select 1 from Security.RoleRight where RoleId=@RoleID and RightId=@RightID)
+		begin
+			insert into Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+			select RoleId,RightId,@UserId,getUTCDate() from @RoleRights where RightId = @RightID	 	
+		end	
+		UPDATE @RoleRights
+		SET    IsProcessed = 1
+		WHERE  RightId = @RightID;
+	END;
 GO

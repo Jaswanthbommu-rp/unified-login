@@ -51,5 +51,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
         /// API Endpoint to execute process
         /// </summary>
         public string ProcessApiEndPoint { get; set; }
+
+        /// <summary>
+        /// Batch Process Group
+        /// </summary>
+        public int BatchProcessorGroupId { get; set; }
     }
 }

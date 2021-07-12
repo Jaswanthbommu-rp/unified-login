@@ -32,6 +32,12 @@ using System.Collections.Generic;
 using System.Linq;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using System.Threading.Tasks;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.EnterpriseRole;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+using System.Text;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using System.Net;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -118,7 +124,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             bool isUpdateUser = false;
             bool usePrimaryProperties = false;
             try
-            {                
+            {
                 IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(productUser.AssignUserPersonaId, (int)productUser.ProductName);
                 if (productAttributes.Any())
                 {
@@ -140,21 +146,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 result = realError.Message;
             }
 
+            var isBatchCompleted = false;
+
             // If result OK then update Success status else Error
             if (string.IsNullOrEmpty(result))
             {
-                _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Success);
-                UpdateProductPrimaryPropertyProductStatus(productUser.AssignUserPersonaId, (int)productUser.ProductName, usePrimaryProperties == true ? 1 : 0);                
+                isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Success);
+                UpdateProductPrimaryPropertyProductStatus(productUser.AssignUserPersonaId, (int)productUser.ProductName, usePrimaryProperties == true ? 1 : 0);
             }
             else
             {
                 if (result.ToUpper() == ProductBatchStatusType.Stop.ToString().ToUpper())
                 {
-                    _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Stop, null, "Batch Process stoped due to internal error for this product.");
+                    isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Stop, null, "Batch Process stoped due to internal error for this product.");
                 }
                 else
                 {
-                    _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Error, null, result);
+                    isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Error, null, result);
 
                     if (!isUpdateUser)
                     {
@@ -168,6 +176,158 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                 }
             }
+
+            if (isBatchCompleted)
+            {
+                WriteActivityLog(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, productUser.BatchProcessorGroupId);
+            }
+
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// Creates Product User
+        /// </summary> 
+        /// <param name="productUser">Product details for a user</param>
+        /// <returns>String.empty if success else error</returns>
+        public string CreateEnterpriseRoleProductUser(ProductUserProperitiesRoles productUser)
+        {
+            string result = string.Empty;
+            int productId = 0;
+
+            bool isUpdateUser = false;
+            bool usePrimaryProperties = false;
+            bool isRolesExists = false;
+            RolePropertyList roleProp = new RolePropertyList();
+            try
+            {
+                IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(productUser.AssignUserPersonaId, (int)productUser.ProductName);
+                if (productAttributes.Any())
+                {
+                    isUpdateUser = true;
+                }
+
+                //First get enterprise role id for user persona
+                int userRoleTemplateId = _productRepository.GetUserEnterpriseRoleTemplateID(productUser.AssignUserPersonaId);
+
+                if (userRoleTemplateId > 0)
+                {
+                    IManagePersona _managePersona = new ManagePersona();
+                    var persona = _managePersona.GetPersona(productUser.AssignUserPersonaId);
+
+                    var properties = getEnterpriseRoleUserPrimaryPropertiesData(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId,(int)productUser.ProductName, productUser.RealPageId);
+                 
+                    if (properties?.Count > 0)
+                    {
+                        if (ValidateDictionaryMapping(productUser.InputJson) && (int)productUser.ProductName == (int)ProductEnum.OneSite)
+                        {
+                            object productPropertiesRoles = JsonConvert.DeserializeObject<Dictionary<string, RolePropertyList>>(productUser.InputJson.Trim());
+                            var combinedRoleProp = new Dictionary<string, RolePropertyList>();
+                            combinedRoleProp = productPropertiesRoles as Dictionary<string, RolePropertyList>;
+                            if (combinedRoleProp.Any(p => p.Key == ProductEnum.OneSite.ToString()))
+                            {
+                                var osproperties = combinedRoleProp.Where(p => p.Key == ProductEnum.OneSite.ToString()).First().Value;
+                                osproperties.PropertyList = properties;
+                                isRolesExists = roleProp.RoleList?.Count > 0;
+                            }
+                            //Lead2Lease
+                            if (combinedRoleProp.Any(p => p.Key == ProductEnum.Lead2Lease.ToString()))
+                            {
+                                // RolePropertyList lead2Lease
+                                var l2lproperties = getEnterpriseRoleUserPrimaryPropertiesData(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, (int)ProductEnum.Lead2Lease, productUser.RealPageId);
+                                var l2lroleProp = combinedRoleProp.Where(p => p.Key == ProductEnum.Lead2Lease.ToString()).First().Value;
+                                l2lroleProp.PropertyList = l2lproperties;
+                                isRolesExists = l2lroleProp.RoleList?.Count > 0;
+                            }
+
+                            //SeniorLeadManagement
+                            if (combinedRoleProp.Any(p => p.Key == ProductEnum.SeniorLeadManagement.ToString()))
+                            {
+                                // RolePropertyList slm
+                                var slmproperties = getEnterpriseRoleUserPrimaryPropertiesData(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, (int)ProductEnum.SeniorLeadManagement, productUser.RealPageId);
+                                var slmroleProp = combinedRoleProp.Where(p => p.Key == ProductEnum.SeniorLeadManagement.ToString()).First().Value;
+                                slmroleProp.PropertyList = slmproperties;
+                                isRolesExists = slmroleProp.RoleList?.Count > 0;
+                            }
+                            //roleProp = combinedRoleProp;
+                            productUser.InputJson = JsonConvert.SerializeObject(combinedRoleProp);
+                        }
+                        else
+                        {
+                            roleProp = JsonConvert.DeserializeObject<RolePropertyList>(productUser.InputJson);
+                            roleProp.PropertyList = properties;
+                            isRolesExists = roleProp.RoleList?.Count > 0;
+                            productUser.InputJson = JsonConvert.SerializeObject(roleProp);
+                        }
+                    }                    
+
+                    usePrimaryProperties = true;
+                    if (properties?.Count == 0 && !(productId == 63 || productId == 39))
+                    {
+                        result = "No Product Properties are found for Enterprise Role";
+                    }
+                    else if (!isRolesExists)
+                    {
+                        result = "No Product Roles are found for Enterprise Role";
+					}                  
+                    else
+                    {
+                        var integration = _integrationTypeFactory.GetIntegration(productUser.ProductName);
+                        result = integration.CreateUser(productUser);
+                    }
+                    
+                }
+                else
+                {
+                    result = $"No Enterprise Role found for persona - {productUser.AssignUserPersonaId}";
+                }
+              
+            }
+            catch (Exception ex)
+            {
+                Exception realError = ex;
+                while (realError.InnerException != null)
+                    realError = realError.InnerException;
+
+                result = realError.Message;
+            }
+            var isBatchCompleted = false;
+            // If result OK then update Success status else Error
+            if (string.IsNullOrEmpty(result))
+            {
+                isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Success);
+                UpdateProductPrimaryPropertyProductStatus(productUser.AssignUserPersonaId, (int)productUser.ProductName, usePrimaryProperties == true ? 1 : 0);
+            }
+            else
+            {
+                if (result.ToUpper() == ProductBatchStatusType.Stop.ToString().ToUpper())
+                {
+                    isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Stop, null, "Batch Process stoped due to internal error for this product.");
+                }
+                else
+                {
+                    isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Error, null, result);
+
+                    if (!isUpdateUser)
+                    {
+                        _productRepository.UpdateProductSettingProductStatus(productUser.AssignUserPersonaId, productId, "ProductStatus", (int)ProductBatchStatusType.Error);
+                    }
+                    else
+                    {
+                        //Activity log
+                        result = "An error occurred during the update process";
+                        WriteActivityLogWithMessage(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, result, productId);
+                    }
+                }
+            }
+
+            if (isBatchCompleted)
+            {
+                WriteActivityLog(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, productUser.BatchProcessorGroupId);
+            }
+
 
             return result;
         }
@@ -530,6 +690,163 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
+        private void WriteActivityLog(long fromPersonaId, long toPersonaId, int batchGroupId)
+        {
+            var fromUserLogInfo = GetUserActivityLogInfo(fromPersonaId);
+            var toUserLogInfo = GetUserActivityLogInfo(toPersonaId);
+
+            var data = _productRepository.GetUserBatchDetails(batchGroupId, fromPersonaId, toPersonaId, BatchProcessType.CreateUpdateProductUser);
+
+            if (data != null & data.Count > 0) 
+            {
+                foreach (var item in data)
+                {
+                    var role = JsonConvert.DeserializeObject<UPFMProductPropertyRole>(item.InputJSON.Trim());
+                    item.IsAssigned = role.IsAssigned;
+                }
+
+                bool activityLogged = data[0].BatchProcessorGroupActivityLogged;
+                if (!activityLogged) 
+                {
+                    var successRecords = data.Where(x => x.StatusTypeId == 8).ToList();
+                    if (successRecords != null && successRecords.Count > 0)
+                    {
+                        var message = GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, successRecords, true);
+                        PushToQueue(fromUserLogInfo, toUserLogInfo, message);
+                    }
+
+                    var failedRecords = data.Where(x => x.StatusTypeId == 7).ToList();
+                    if (failedRecords != null && failedRecords.Count > 0)
+                    {
+                        var message = GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, failedRecords, false);
+                        PushToQueue(fromUserLogInfo, toUserLogInfo, message);
+                        SendNotification(message, fromPersonaId);
+                    }
+
+                    //update status
+                    _productRepository.UpdateBatchGroupStatus(batchGroupId, true);
+                }
+            }
+        }
+
+        private void PushToQueue(UserActivityLogInfo fromUserLogInfo, UserActivityLogInfo toUserLogInfo, String message) 
+        {
+            try
+            {
+                LogActivity.WriteActivity(new ActivityDetails
+                {
+                    LogActivityTypeName = LogActivityTypeConstants.PRODUCT_ACCESS,
+                    LogCategoryName = LogActivityCategoryType.ProductAccess.ToString(),
+                    CorrelationId = Guid.NewGuid().ToString(),
+                    BooksMasterOrganizationId = toUserLogInfo.BooksOrganizationMasterId,
+                    OrganizationPartyId = toUserLogInfo.OrganizationPartyId,
+                    Message = message,
+
+                    FromUserLoginName = fromUserLogInfo.LoginName,
+                    FromUserLoginId = fromUserLogInfo.UserId,
+                    FromUserFirstName = fromUserLogInfo.FirstName,
+                    FromUserLastName = fromUserLogInfo.LastName,
+                    FromUserRealpageId = fromUserLogInfo.RealPageId.ToString(),
+
+                    ToUserLoginId = toUserLogInfo.UserId,
+                    ToUserLoginName = toUserLogInfo.LoginName,
+                    ToUserFirstName = toUserLogInfo.FirstName,
+                    ToUserLastName = toUserLogInfo.LastName,
+                    ToUserRealpageId = toUserLogInfo.RealPageId.ToString(),
+                });
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        private string GenerateQueueMessage(UserActivityLogInfo fromUserLogInfo, UserActivityLogInfo toUserLogInfo, List<UserBatchProductDetail> userBatchProductDetails, bool IsSuccess) 
+        {
+            string message = "";
+
+            List<string> assinedProducts = new List<string>();
+            List<string> unassignedProducts= new List<string>();
+
+            string assignedMessage = "";
+            string unassignedMessage = "";
+
+            if (IsSuccess) 
+            {
+                message = $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} updated access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName}:";
+                foreach (var item in userBatchProductDetails)
+                {
+                    if (item.IsAssigned)
+                        assinedProducts.Add(item.Name);
+
+                    if (!item.IsAssigned)
+                        unassignedProducts.Add(item.Name);
+                }
+
+                if (assinedProducts.Count > 0)
+                    assignedMessage = " Access was granted to " + string.Join(", ", assinedProducts) + ".";
+
+
+                if (unassignedProducts.Count > 0)
+                    unassignedMessage = " Access was unassigned from " + string.Join(", ", unassignedProducts) + ".";
+
+                message += assignedMessage;
+                message += unassignedMessage;
+            }
+
+            else
+            {
+                message = $"An exception occured when {fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} attempted to update product access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName} in ";
+                string[] products = new string[userBatchProductDetails.Count];
+
+                for (int i = 0; i < userBatchProductDetails.Count; i++)
+                {
+                    products[i] = userBatchProductDetails[i].Name;
+                }
+
+                var commaString = string.Join(", ", products);
+                var lastComma = commaString.LastIndexOf(',');
+
+                if (lastComma != -1)
+                    commaString = commaString.Remove(lastComma, 1).Insert(lastComma, " and");
+
+                message += commaString + ".";
+            }
+
+            return message;
+        }
+
+        private void SendNotification(string message, long notificationTo) 
+        {
+            string title = "User Update Exception";
+            List<string> users = new List<string>() { notificationTo.ToString() };
+
+            var productInternalSettingList = GetProductInternalSettings(ProductEnum.UnifiedPlatform);
+
+            var notificationsApiEndPoint = productInternalSettingList.First(a => a.Name.Equals("NotificationsApiEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
+            var notificationsEventsEndPoint = productInternalSettingList.First(a => a.Name.Equals("NotificationsEventsEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
+            var tokenEndpoint = productInternalSettingList.First(a => a.Name.Equals("TokenEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
+
+            var clientId = productInternalSettingList.First(a => a.Name.Equals("UnifiedLoginServerClientName", StringComparison.OrdinalIgnoreCase)).Value;
+            var apiSecret = Encoding.UTF8.GetString(Convert.FromBase64String(productInternalSettingList.First(a => a.Name.Equals("UnifiedLoginServerClientSecret", StringComparison.OrdinalIgnoreCase)).Value));
+
+            RealPage.UnifiedNotifications.Notification notification = new RealPage.UnifiedNotifications.Notification(clientId, apiSecret, tokenEndpoint, notificationsApiEndPoint + "/v1/notifications", notificationsApiEndPoint + "/" + notificationsEventsEndPoint);
+            var result = Task.Run(() => notification.SendNotification(title, message, users, "ULUUS")).Result;
+        }
+
+        private IList<ProductInternalSetting> GetProductInternalSettings(ProductEnum product)
+        {
+            var rpcache = new RPObjectCache();
+            var cacheKey = $"productInternalSetting_{(int)product}";
+            IList<ProductInternalSetting> productInternalSettingList = rpcache.GetFromCache<IList<ProductInternalSetting>>(cacheKey, 600, () =>
+            {
+                // load from database
+
+                return _productInternalSettingRepository.GetProductInternalSettings((int)product).ToList();
+            });
+
+            return productInternalSettingList;
+        }
+
         #endregion
         /// <summary>
         /// Used to write to the log
@@ -555,6 +872,109 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             logger = logger.ForContext("CorrelationId", correlationId);
             logger.Write(logType, exception, message );
         }
+
+        private List<string> getEnterpriseRoleUserPrimaryPropertiesData(long editorPersonaId, long userPersonaId,int productId, Guid editorRealpageId)
+        {
+            _defaultUserClaim.UserRealPageGuid = editorRealpageId;
+            //var os = new ManageProductOneSite(base.UserClaim);
+            var productPropertyIdList = new List<string>();
+            IManageProductPanel manageProductPanel = new ManageProductPanel(_defaultUserClaim);
+            ListResponse result = new ListResponse();
+
+            var userProperties = _propertyRepository.ListUPFMPropertyInstanceByPersona(userPersonaId, ProductEnum.UnifiedUI);
+            result = manageProductPanel.GetProductProperties(editorPersonaId, userPersonaId, productId, null);
+            if (!result.IsError)
+            {
+                UPFMProperty upfmProperty = new UPFMProperty();
+                upfmProperty.id = userProperties?.Select(p => p.InstanceId.ToString()).ToList();
+
+                result = manageProductPanel.CompareProductAndPrimaryProperties(upfmProperty, productId, result);
+                if (result.Records.Count > 0)
+                {
+                    productPropertyIdList = getSelectedProperties(result);
+                }
+            }
+            return productPropertyIdList;
+        }
+
+        private List<string> getSelectedProperties(ListResponse productResult)
+        {
+            List<string> selectedProperties = new List<string>();
+            var productPropertyType = productResult.Records[0].GetType();
+
+            if (productPropertyType == typeof(ProductProperty))
+            {
+                var productList = productResult.Records.Cast<ProductProperty>();
+                foreach (var property in productList)
+                {
+                    if (property.IsAssigned == true)
+                    {
+                        selectedProperties.Add(property.ID);
+                    }
+                }
+            }
+            else if (productPropertyType == typeof(ACProperty))
+            {
+                foreach (var property in productResult.Records.Cast<ACProperty>())
+                {
+                    if (property.IsAssigned == true)
+                    {
+                        selectedProperties.Add(property.Id);
+                    }
+                }
+            }
+            else if (productPropertyType == typeof(AssetGroup))
+            {
+                foreach (var property in productResult.Records.Cast<AssetGroup>())
+                {
+                    if (property.IsAssigned == true)
+                    {
+                        selectedProperties.Add(property.ID);
+                    }
+                }
+            }
+            else if (productPropertyType == typeof(OnSiteProperty))
+            {
+                foreach (var property in productResult.Records.Cast<OnSiteProperty>())
+                {
+                    if (property.IsAssigned == true)
+                    {
+                        selectedProperties.Add(property.GetPropertyId.ToString());
+                    }
+                }
+            }
+            else if (productPropertyType == typeof(RumPropertyGroup))
+            {
+                foreach (var property in productResult.Records.Cast<RumPropertyGroup>())
+                {
+                    if (property.IsAssigned == true)
+                    {
+                        selectedProperties.Add(property.Id.ToString());
+                    }
+                }
+            }
+            else if (productPropertyType == typeof(ProductProperties))
+            {
+                foreach (var property in productResult.Records.Cast<ProductProperties>())
+                {
+                    if (property.IsAssigned == true)
+                    {
+                        selectedProperties.Add(property.GetPropertyId.ToString());
+                    }
+                }
+            }
+            else if (productPropertyType == typeof(Portfolio))
+            {
+                foreach (var property in productResult.Records.Cast<Portfolio>())
+                {
+                    if (property.IsAssigned == true)
+                    {
+                        selectedProperties.Add(property.ID);
+                    }
+                }
+            }
+            return selectedProperties;
+        }
     }
 
 
@@ -564,7 +984,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
     /// </summary>
     interface IProduct
     {
-        string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolepropList);       
+        string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolepropList); 
+        
         string UpdateUserDetails(ProductUserAccountDetails productUserAccountDetails);
 
         /// <summary>
@@ -3546,6 +3967,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         }
     }
     #endregion
+
     #region UPFM Product Integration
     /// <summary>
     /// A 'Concrete Product Intelligent Building' class

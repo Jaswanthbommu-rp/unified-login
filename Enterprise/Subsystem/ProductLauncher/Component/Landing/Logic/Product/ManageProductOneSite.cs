@@ -1082,8 +1082,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             WriteToDiagnosticLog($"UnassignUser userPersonaId:{userPersonaId}");
             UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
 
-            // Activity Logging
-            WriteUnassignActivityLog(editorPersonaId, userPersonaId);
 
             return "";
         }
@@ -1481,14 +1479,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     UpdatePropertiesForUser(editorPersonaId, userPersonaId, PropertyList);
                 }
                 WriteToDiagnosticLog("ManageOneSiteUser - Finished update to roles and properties");
-                if (!existingUser)
-                {
-                    WriteCreateUserActivityLog(editorPersonaId, person, userLogin);
-                }
-                else
-                {
-                    WriteUpdateUserActivityLog(editorPersonaId, person, userLogin);
-                }
 
             }
             else

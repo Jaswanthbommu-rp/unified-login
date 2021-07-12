@@ -150,8 +150,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="editorPersonaId">editorPersonaId</param>
 		/// <param name="userPersonaId">userPersonaId</param>
 		/// <param name="isSelectedProperties">isSelectedProperties</param>
+		/// <param name="selectedProperties">selected/Unselected Properties</param>
 		/// <returns>List of Properties for a company </returns>
-		List<CompanyPropertySetup> GetPropertiesForCompany(Guid companyInstanceId, string propertyName = null, string domain = null, int? blueId = null, int? status = null, IDictionary<object, object> globals = null, long editorPersonaId = 0, long userPersonaId = 0, bool? isSelectedProperties = null);
+		List<CompanyPropertySetup> GetPropertiesForCompany(Guid companyInstanceId, string propertyName = null, string domain = null, int? blueId = null, 
+							int? status = null, IDictionary<object, object> globals = null, long editorPersonaId = 0, long userPersonaId = 0, 
+							bool? isSelectedProperties = null, List<Guid> selectedProperties = null);
 
 		/// <summary>
 		/// Get Property By PeropertyId
@@ -259,5 +262,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="addProductList">ProductsList</param>
 		/// <returns></returns>
 		List<int> EnableProductOnOtherProductsActivation(List<int> addProductList);
+
+		/// <summary>
+		///AddUpdateCompanyToUnifiedSettings
+		/// </summary>
+		/// <param name="companyInstanceID"></param>
+		/// <param name="trasactionType"></param>
+		/// <param name="customerEnvironment"></param>
+		/// <returns></returns>
+		bool AddUpdateCompanyToUnifiedSettings(string companyInstanceID, string trasactionType, string customerEnvironment = null);
 	}
 }

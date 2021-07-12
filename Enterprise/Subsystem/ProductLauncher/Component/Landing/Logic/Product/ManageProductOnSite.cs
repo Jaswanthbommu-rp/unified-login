@@ -374,8 +374,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus,
                     (int)ProductBatchStatusType.Deleted);
 
-                // Activity Logging
-                WriteUnassignActivityLog(editorPersonaId, userPersonaId);
             }
 
             return result;
@@ -526,11 +524,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     WriteToDiagnosticLog($"ManageProductOnSite.ManageOnSiteUser - trying to CREATE user with editorPersona id - {editorPersonaId}.");
 
                     string insertResult = InsertOnSiteProductUser(userPersonaId, editorPersonaId, productLoginName, onSiteUser, companyId);
-                    if (string.IsNullOrEmpty(insertResult))
-                    {
-                        // add activity log
-                        WriteCreateUserActivityLog(editorPersonaId, person, userLogin);
-                    }
 
                     return insertResult;
                 }
@@ -555,12 +548,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var updateResult = UpdateOnSiteProductUser(userPersonaId, editorPersonaId, onSiteUser);
                 if (string.IsNullOrEmpty(updateResult))
                 {
-                    // add activity log
-                    if (batchProcessType == BatchProcessType.CreateUpdateProductUser)
-                    {
-                        WriteUpdateUserActivityLog(editorPersonaId, person, userLogin);
-                    }
-                    else if (batchProcessType == BatchProcessType.UserTypeRegularToAdmin || batchProcessType == BatchProcessType.UserTypeAdminToRegular || batchProcessType == BatchProcessType.UserTypeAdminToExternal || batchProcessType == BatchProcessType.UserTypeExternalToAdmin)
+                    if (batchProcessType == BatchProcessType.UserTypeRegularToAdmin || batchProcessType == BatchProcessType.UserTypeAdminToRegular || batchProcessType == BatchProcessType.UserTypeAdminToExternal || batchProcessType == BatchProcessType.UserTypeExternalToAdmin)
                     {
                         WriteUpdateUserTypeActivityLog(editorPersonaId, person, userLogin, batchProcessType);
                     }

@@ -51,5 +51,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="productUser">Product details for a user</param>
 		/// <returns>String.empty if success else error</returns>
 		string UpdateProductUserProfile(ProductUserProperitiesRoles productUser);
+
+		/// <summary>
+		/// Creates Enterprise Role Product User
+		/// </summary> 
+		/// <param name="productUser">Product details for a user</param>
+		/// <returns>String.empty if success else error</returns>
+		string CreateEnterpriseRoleProductUser(ProductUserProperitiesRoles productUser);
 	}
 }

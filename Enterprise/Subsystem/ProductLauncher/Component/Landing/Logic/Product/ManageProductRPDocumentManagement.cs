@@ -17,6 +17,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -182,6 +183,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			Dictionary<string, object> logData = new Dictionary<string, object>();
 
 			Person person = _managePerson.GetPerson(realPageId);
+
+			//Removing Special Characters for First Name and Last Name
+			person.FirstName = Regex.Replace(person.FirstName, @"[^A-Za-z0-9]+", "");
+			person.LastName = Regex.Replace(person.LastName, @"[^A-Za-z0-9]+", "");
 
 			var userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
 
@@ -366,7 +371,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 							WriteToDiagnosticLog($"ManageRPDMUser - Create user. newid={newid}, login={newUser.Name}");
 							UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
 							WriteToDiagnosticLog("ManageRPDMUser - Create user success. Set product status to Success");
-							WriteCreateUserActivityLog(editorPersonaId, person, userLogin);
 
 							//Update the user in Spend Management as a migrated user
 							MigrateResponse migrateResponse = new MigrateResponse();
@@ -576,8 +580,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				return "Error";
 			}
 			
-			// Activity Logging
-			WriteUnassignActivityLog(editorPersonaId, userPersonaId);
 			
 			WriteToDiagnosticLog($"ManageRPDMUser - UnassignUser - Successfully Disabled user userPersonaId:{userPersonaId}");
 			UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
@@ -1109,7 +1111,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					if (postEnableResponse.IsSuccessStatusCode || postEnableResponse.StatusCode == System.Net.HttpStatusCode.NotModified)
 					{
 						WriteToDiagnosticLog($"ManageRPDMUser - Update user {_productUserId}, enable disabled user success", logData);
-						WriteUpdateUserActivityLog(editorPersonaId, person, userLogin);
 					}
 					else
 					{
@@ -1130,7 +1131,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
 					logData = new Dictionary<string, object>() { { "postResponse.Content", postUpdateResponse.Content.ReadAsStringAsync().Result } };
 					WriteToDiagnosticLog("ManageRPDMUser - Update user success. Set product status to Success", logData);
-					WriteUpdateUserActivityLog(editorPersonaId, person, userLogin);
 					return string.Empty;
 
 				}

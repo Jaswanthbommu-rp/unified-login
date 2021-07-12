@@ -1,6 +1,7 @@
 ﻿using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.EnterpriseRole;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.Security;
@@ -103,7 +104,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// Update a Product Batch
         /// </summary> 
         /// <returns>Repository response object</returns>
-        RepositoryResponse UpdateProductBatch(int productBatchId, int statusTypeId, string inputJson = null, string errorDetails = null);
+        bool UpdateProductBatch(int productBatchId, int statusTypeId, string inputJson = null, string errorDetails = null);
 
         /// <summary>
         /// Returns List of Product Batch Statuses
@@ -238,5 +239,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <returns></returns>
         bool isProductAssigned(long PersonaId, int ProductStatus, int productId);
         IList<PersonaProductUserDetails> ListProductsByPersonaId(long personaId, int statusType);
+
+        IList<UserBatchProductDetail> GetUserBatchDetails(int batchGroupId, long editorUserPersonId, long subjectUserPersonId, BatchProcessType batchProcessType);
+
+        void UpdateBatchGroupStatus(int groupId, bool isLogged);
+        int GetUserEnterpriseRoleTemplateID(long personaId);
+        /// <summary>
+        /// GetRoleTemplateProductRoleMapping
+        /// </summary>
+        /// <param name="roleTemplateId"></param>
+        /// <param name="partyId"></param>
+        /// <returns></returns>
+        List<RoleTemplateProductRole> GetRoleTemplateProductRoleMapping(int roleTemplateId, long partyId);
     }
 }

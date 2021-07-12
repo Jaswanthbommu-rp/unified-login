@@ -817,10 +817,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         WriteUpdateUserTypeActivityLog(editorPersonaId, (Person)person, userLogin, batchProcessType);
                     }
-                    else
-                    {
-                        WriteCreateUserActivityLog(editorPersonaId, person as Person, userLogin);
-                    }
                 }
                 else
                 {
@@ -903,8 +899,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 return output;
             }
 
-            // Activity Logging
-            WriteUnassignActivityLog(editorPersonaId, userPersonaId);
 
             errorStatus.Success = true;
             errorStatus.ErrorMsg = "";
