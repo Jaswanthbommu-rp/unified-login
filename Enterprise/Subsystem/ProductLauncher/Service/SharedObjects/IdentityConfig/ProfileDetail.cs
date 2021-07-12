@@ -199,7 +199,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 
 
 
-		public List<KeyValuePair<string, object>> kpProductList = new List<KeyValuePair<string, object>>();
+		public List<KeyValuePair<string, object>> ProductList = new List<KeyValuePair<string, object>>();
 
 
 	}
