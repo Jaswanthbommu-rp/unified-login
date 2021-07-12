@@ -33,18 +33,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <summary>
         /// Get a list of persons 
         /// </summary>
+
         /// <param name="globals">Parameter for filter and sort</param>
         /// <param name="organizationRealPageId">Organization's realPageId</param>
-        /// <param name="isExport">is Excel import</param>
+        
         /// <returns>List of Persons</returns>
-        IList<ProfileDetail> ListProfileDetails(IDictionary<object, object> globals, Guid? organizationRealPageId = null, bool isExport = false);
+        IList<ProfileDetail> ListProfileDetails(IDictionary<object, object> globals, Guid? organizationRealPageId = null);
 
         /// <summary>
         /// Returns a list of persons by ProductId
         /// </summary>
         /// <param name="productId">Single product to search by product id</param>
         /// <param name="organizationRealPageId">Optional Organization realpage uniqueidentifier</param>
-        /// <param name="personaId">Optional personaId</param>
+        /// <param name="personaId">Optional personaId</param> 
         /// <returns>List of Person</returns>
         IList<ProductUsers> ListPersonsByProductId(int productId, Guid? organizationRealPageId = null, long? personaId = null);
 	}

@@ -504,7 +504,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		/// <param name="realPageId">Organization realpage uniqueidentifier</param>
 		/// <param name="parentPartyRoleTypeId">PartyRole parentId</param>
 		/// <param name="dataFilterSort">Data Filtering and Sorting</param>
-		/// <param name="isExport">is Exporting Data</param>
+		/// <param name="isExport">Data Filtering and Sorting</param>
 		/// <returns>List of Person</returns>
 		public IList<ProfileDetail> ListPersons(IList<int> organizationActiveProductIdList, Guid? realPageId = null, int? parentPartyRoleTypeId = null, RequestParameter dataFilterSort = null, bool isExport = false)
 		{
@@ -659,7 +659,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 						RowsPerPage = dataFilterSort.Pages.ResultsPerPage == 100 ? 0 : dataFilterSort.Pages.ResultsPerPage, //ResultsPerPage == 100 ? Current Shell : New Shell
 						PageNumber = ((dataFilterSort.Pages.ResultsPerPage == 100) || (dataFilterSort.Pages.StartRow <= 0)) ? 1 : dataFilterSort.Pages.StartRow
 					},
-					splitOn: "UserId, Products, UserType, RowNumber");
+					splitOn: isExport ? "UserId, Products, UserType, RowNumber" : "UserId, Products, UserType");
 
 				//Set the product count to 0 when the user status is disabled.
 				items.ToList().FindAll(i => i.userLogin.Status == UserUiStatusType.Disabled).ForEach(d =>

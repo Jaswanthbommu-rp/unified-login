@@ -275,8 +275,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			}
 
 			globals.Add(BaseType.RequestParameter, datafilter);
+            globals.Add("isExport", true);
 
-			IManageProfile manageProfile = new ManageProfile(_userClaims);
+            IManageProfile manageProfile = new ManageProfile(_userClaims);
 			IList<ProfileDetail> profileDetailList = manageProfile.ListProfileDetails(globals);
             List<string> propertyNamesList = new List<string>();
             bool isProperties = false;
