@@ -1,6 +1,8 @@
 ﻿using Aspose.Cells;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -56,7 +58,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         /// <param name="DataList">List of Records to export</param>
         /// <param name="dataFormat">Retrun data in this format (default = CSV)</param>
         /// <returns>Array of bytes</returns>
-        public static byte[] ExportDataToFile<T>(List<ExportDataFileConfiguration> exportConfigurations, List<T> DataList, SaveFormat dataFormat = SaveFormat.CSV)
+        public static byte[] ExportDataToFile<T>(List<ExportDataFileConfiguration> exportConfigurations, List<T> DataList, SaveFormat dataFormat = SaveFormat.CSV, bool isDynamicList = false)
         {
             byte[] bytes;
             Workbook workbook;
@@ -66,7 +68,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
             IList<string> propertyNamesList = exportConfigurations.Select(p => p.MappedField).ToList<string>();
 
             CreateExcelWorkSheet(out workbook, out worksheet);
-
+            
             //Manually add the row titles
             int col = 0;
             Cells cells = worksheet.Cells;
@@ -91,17 +93,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
             pageSetup.TopMarginInch = 0.5;
 
             string[] propertyNames = propertyNamesList.ToArray();
-            worksheet.Cells.ImportCustomObjects(
-                (System.Collections.ICollection)DataList,
-                propertyNames,
-                false, //Don't show the field names
-                1, //Start at second row
-                0,
-                DataList.Count,
-                true,
-                "",
-                false
-            );
+            if (isDynamicList)
+            {
+                DataTable dataTable = (DataTable)JsonConvert.DeserializeObject(JsonConvert.SerializeObject(DataList), (typeof(DataTable)));
+                worksheet.Cells.ImportDataTable(dataTable, false, "A2");
+            }
+            else 
+            {
+                worksheet.Cells.ImportCustomObjects(
+                    (System.Collections.ICollection)DataList,
+                    propertyNames,
+                    false, //Don't show the field names
+                    1, //Start at second row
+                    0,
+                    DataList.Count,
+                    true,
+                    "",
+                    false
+                );
+
+            }
+
 
             switch (dataFormat)
             {
@@ -116,7 +128,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
                     {
                         if(result.PDFColumnWidth != "")
                         {
-                            worksheet.Cells.SetColumnWidthInch(col++, Convert.ToDouble(result.PDFColumnWidth));
+                           worksheet.Cells.SetColumnWidthInch(col++, Convert.ToDouble(result.PDFColumnWidth));
                         }
                     }
 

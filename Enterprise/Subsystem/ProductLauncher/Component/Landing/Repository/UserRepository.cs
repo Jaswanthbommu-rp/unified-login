@@ -2663,7 +2663,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
 
         /// <summary>
-        /// return list of suggested properties for persona<
+        /// return list of suggested properties for persona
         /// </summary>
         /// <param name="personaId"></param>
         /// <returns>list of suggested properties for persona</returns>

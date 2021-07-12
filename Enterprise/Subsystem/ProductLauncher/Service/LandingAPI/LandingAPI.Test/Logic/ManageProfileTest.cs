@@ -108,7 +108,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             });
 
             _mockProfileRepository
-                .Setup(m => m.ListPersons(null, null, null, null))
+                .Setup(m => m.ListPersons(null, null, null, null,false))
                 .Returns(expectedProfileDetailList);
 
             //_profileLogic = new ManageProfile(_mockProfileRepository.Object, _mockProductRepository.Object, _mockPersonaLogic.Object, _mockPersonLogic.Object, _mockUserLoginLogic.Object, _mockOrganizationLogic.Object, _mockPartyRelationshipLogic.Object, _mockContactMechanismLogic.Object, _mockPartyRoleLogic.Object, _userUserClaim);

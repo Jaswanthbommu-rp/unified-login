@@ -504,8 +504,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		/// <param name="realPageId">Organization realpage uniqueidentifier</param>
 		/// <param name="parentPartyRoleTypeId">PartyRole parentId</param>
 		/// <param name="dataFilterSort">Data Filtering and Sorting</param>
+		/// <param name="isExport">is Exporting Data</param>
 		/// <returns>List of Person</returns>
-		public IList<ProfileDetail> ListPersons(IList<int> organizationActiveProductIdList, Guid? realPageId = null, int? parentPartyRoleTypeId = null, RequestParameter dataFilterSort = null)
+		public IList<ProfileDetail> ListPersons(IList<int> organizationActiveProductIdList, Guid? realPageId = null, int? parentPartyRoleTypeId = null, RequestParameter dataFilterSort = null, bool isExport = false)
 		{
 			UserListTypeFilter filterUserList = UserListTypeFilter.ExcludeSupportAndSuperUsers;
 			if (_userClaim.UserRealPageGuid != Guid.Empty)
@@ -604,10 +605,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
 			using (var repository = GetRepository())
 			{
-				var items = repository.GetManyWithSpliOn<ProfileDetail, UserLogin, int, string, ProfileDetail>(
-					StoredProcNameConstants.SP_ListPersons,
-					(profiledetail, userlogin, userproductcount, userType) =>
+				string spname = isExport ? StoredProcNameConstants.SP_ListPersons1 : StoredProcNameConstants.SP_ListPersons;
+				var items = repository.GetManyWithSpliOn<ProfileDetail, UserLogin, int, string, dynamic,ProfileDetail>(
+					spname,
+					(profiledetail, userlogin, userproductcount, userType, list) =>
 					{
+						if (isExport)
+						{
+							var abc = ((IDictionary<string, object>)list).ToList();
+							profiledetail.kpProductList = abc;
+						}
 						profiledetail.userLogin = userlogin;
 						profiledetail.userLogin.PartyId = profiledetail.PartyId;
 						profiledetail.userLogin.RealPageId = profiledetail.RealPageId;
@@ -652,7 +659,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 						RowsPerPage = dataFilterSort.Pages.ResultsPerPage == 100 ? 0 : dataFilterSort.Pages.ResultsPerPage, //ResultsPerPage == 100 ? Current Shell : New Shell
 						PageNumber = ((dataFilterSort.Pages.ResultsPerPage == 100) || (dataFilterSort.Pages.StartRow <= 0)) ? 1 : dataFilterSort.Pages.StartRow
 					},
-					splitOn: "UserId, Products, UserType");
+					splitOn: "UserId, Products, UserType, RowNumber");
 
 				//Set the product count to 0 when the user status is disabled.
 				items.ToList().FindAll(i => i.userLogin.Status == UserUiStatusType.Disabled).ForEach(d =>

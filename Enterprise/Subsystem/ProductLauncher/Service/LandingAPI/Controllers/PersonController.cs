@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Dynamic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -277,8 +278,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
 			IManageProfile manageProfile = new ManageProfile(_userClaims);
 			IList<ProfileDetail> profileDetailList = manageProfile.ListProfileDetails(globals);
+            List<string> propertyNamesList = new List<string>();
+            bool isProperties = false;
+            List<KeyValuePair<string, object>> ProductList = new List<KeyValuePair<string, object>>();
 
-			List<LE.User> listUsers = new List<LE.User>();
+            List<dynamic> listUsers = new List<dynamic>();
 
 			ManageUserLogin manageUserLogin = new ManageUserLogin(_userClaims);
 			var userLogin = manageUserLogin.GetUserLogin(_realpageUserId, _orgPartyId); // keep for now
@@ -313,24 +317,44 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 						object[] userRoleAttributes = fieldInfoUserRole.GetCustomAttributes(typeof(DescriptionAttribute), false);
 						userType = userRoleAttributes.Length == 0 ? enumUserRole.ToString() : ((DescriptionAttribute)userRoleAttributes[0]).Description;
 					}
-					listUsers.Add(
-						new LE.User()
-						{
-							UserType = userType,
-							FirstName = p.FirstName,
-							MiddleName = p.MiddleName,
-							LastName = p.LastName,
-							LoginName = p.userLogin.LoginName,
-							Products = p.SummaryCount.TotalAssignedProducts,
-							LastLogin = p.userLogin.LastLogin != null ? p.userLogin.LastLogin?.ToString(dateFormat) : string.Empty,
-                            Status = p.userLogin.Status.ToString().Equals("disabled", StringComparison.OrdinalIgnoreCase) ? "Deactivated" : p.userLogin.Status.ToString(),
-                            IDP = p.userLogin.Is3rdPartyIDP ? "Yes" : "No",
-							EffectiveDate = p.userLogin.FromDate != null ? p.userLogin.FromDate?.ToString(dateFormat) : string.Empty,
-							ExpireDate = ((p.userLogin.ThruDate == null) || (DateTime.Compare(p.userLogin.ThruDate.Value, parsedMaxValueDate) == 0)) ? string.Empty : p.userLogin.ThruDate?.ToString(dateFormat),
-							CustomField = p.CustomField,
-							EmployeeId = p.EmployeeId
-						}
-					);
+                    dynamic row = new ExpandoObject();
+                    row.UserType = userType;
+                    row.FirstName = p.FirstName;
+                    row.LastName = p.LastName;
+                    row.EmployeeId = p.EmployeeId;
+                    row.LoginName = p.userLogin.LoginName;
+                    if (dataFormat.Equals(SaveFormat.CSV))
+                    {
+                        row.Notificationemail = p.NotificationEmail;
+                        row.PlatformRoles = p.PlatformRoles;
+                    }
+                    
+                    row.Products = p.SummaryCount.TotalAssignedProducts;
+                    row.LastLogin = p.userLogin.LastLogin != null ? p.userLogin.LastLogin?.ToString(dateFormat) : string.Empty;
+                    row.Status = p.userLogin.Status.ToString().Equals("disabled", StringComparison.OrdinalIgnoreCase) ? "Deactivated" : p.userLogin.Status.ToString();
+                    row.IDP = p.userLogin.Is3rdPartyIDP ? "Yes" : "No";
+                    row.EffectiveDate = p.userLogin.FromDate != null ? p.userLogin.FromDate?.ToString(dateFormat) : string.Empty;
+                    row.ExpireDate = ((p.userLogin.ThruDate == null) || (DateTime.Compare(p.userLogin.ThruDate.Value, parsedMaxValueDate) == 0)) ? string.Empty : p.userLogin.ThruDate?.ToString(dateFormat);
+                    if (dataFormat.Equals(SaveFormat.CSV))
+                    {
+                        row.MFAFlag = p.MFAFlag;
+                    }   
+                    
+                    
+                    foreach (var item in p.kpProductList)
+                    {
+                        //var x = new ExpandoObject();
+                        if (!item.Key.Equals("RowNumber") && !item.Key.Equals("PEUserId")&& dataFormat.Equals(SaveFormat.CSV))
+                        {
+                            AddProperty(row, item.Key.Replace(" ",string.Empty).Trim(), item.Value);
+                        }
+                    }
+                    if(!isProperties)
+                        ProductList = p.kpProductList;
+                    isProperties = ProductList.Count > 0 ? true : false;
+                    row.CustomField = p.CustomField;
+                    listUsers.Add(row);
+      
 				});				
 				errorStatus = DataExport.SetAsposeLicense();
 				if (errorStatus.Success)
@@ -342,33 +366,48 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 						new ExportDataFileConfiguration { Header = "Last Name", MappedField = "LastName", PDFColumnWidth = "0.85", Preference = 3 },
 						new ExportDataFileConfiguration { Header = "Employee ID", MappedField = "EmployeeId", PDFColumnWidth = "0.85", Preference = 4 },
 						new ExportDataFileConfiguration { Header = "Username", MappedField = "LoginName", PDFColumnWidth = "2.25", Preference = 5 },
-						new ExportDataFileConfiguration { Header = "Products", MappedField = "Products", PDFColumnWidth = "0.60", Preference = 6 },
-						new ExportDataFileConfiguration { Header = "Last Login", MappedField = "LastLogin", PDFColumnWidth = "1.00", Preference = 7 },
-						new ExportDataFileConfiguration { Header = "Status", MappedField = "Status", PDFColumnWidth = "0.50", Preference = 8 },
-						new ExportDataFileConfiguration { Header = "IDP Flag", MappedField = "IDP", PDFColumnWidth = "0.55", Preference = 9 },
-						new ExportDataFileConfiguration { Header = "User Effective", MappedField = "EffectiveDate", PDFColumnWidth = "0.95", Preference = 10 },
-						new ExportDataFileConfiguration { Header = "User Expires", MappedField = "ExpireDate", PDFColumnWidth = "0.90", Preference = 11 }
-					};
+						new ExportDataFileConfiguration { Header = "Products", MappedField = "Products", PDFColumnWidth = "0.60", Preference = 8 },
+						new ExportDataFileConfiguration { Header = "Last Login", MappedField = "LastLogin", PDFColumnWidth = "1.00", Preference = 9 },
+						new ExportDataFileConfiguration { Header = "Status", MappedField = "Status", PDFColumnWidth = "0.50", Preference = 10 },
+						new ExportDataFileConfiguration { Header = "IDP Flag", MappedField = "IDP", PDFColumnWidth = "0.55", Preference = 11 },
+						new ExportDataFileConfiguration { Header = "User Effective", MappedField = "EffectiveDate", PDFColumnWidth = "0.95", Preference = 12 },
+						new ExportDataFileConfiguration { Header = "User Expires", MappedField = "ExpireDate", PDFColumnWidth = "0.90", Preference = 13 },
+                    };
 
 					IDictionary<object, object> CFglobals = new Dictionary<object, object>();
 					//get the enabled custom field with the smallest sequence
 					RequestParameter customFieldsDataFilter = new RequestParameter();
-					customFieldsDataFilter.Pages.ResultsPerPage = 1;
+                    int PreferenceCount = 15;
+                    customFieldsDataFilter.Pages.ResultsPerPage = 1;
 					customFieldsDataFilter.Pages.StartRow = 1;
 					customFieldsDataFilter.SortBy.Add("Sequence", "ASC");
 					customFieldsDataFilter.FilterBy.Add("Enabled", "1");
 					CFglobals.Add(BaseType.RequestParameter, customFieldsDataFilter);
 
-					ManageCustomFields manageCustomFields = new ManageCustomFields(_userClaims);
+                    if (dataFormat.Equals(SaveFormat.CSV))
+                    {
+                        exportConfigurations.Add(new ExportDataFileConfiguration { Header = "Notification Email", MappedField = "Notificationemail", PDFColumnWidth = "2.25", Preference = 6 });
+                        exportConfigurations.Add(new ExportDataFileConfiguration { Header = "Platform Roles", MappedField = "PlatformRoles", PDFColumnWidth = "0.85", Preference = 7 });
+                        exportConfigurations.Add(new ExportDataFileConfiguration { Header = "MFA Flag", MappedField = "MFAFlag", PDFColumnWidth = "0.60", Preference = 14 });
+                        foreach (var item in ProductList)
+                        {
+                            if (!item.Key.Equals("RowNumber") && !item.Key.Equals("PEUserId"))
+                            {
+                                exportConfigurations.Add(new ExportDataFileConfiguration { Header = item.Key, MappedField = item.Key.Replace(" ", string.Empty).Trim(), PDFColumnWidth = "", Preference = ++PreferenceCount});
+                            }
+                        }
+                    }
+                    
+                    ManageCustomFields manageCustomFields = new ManageCustomFields(_userClaims);
 					IList<CustomField> customFieldList = manageCustomFields.GetCustomField(globals: CFglobals, partyId: _userClaims.OrganizationPartyId);
                     bool customFieldsEnabled = ((customFieldList != null) && (customFieldList.Count > 0));
 					if (customFieldsEnabled)
 					{
 						string customFieldName = customFieldList[0].Name;
-						exportConfigurations.Add(new ExportDataFileConfiguration { Header = customFieldName, MappedField = "CustomField", PDFColumnWidth = "", Preference = 12 });
+						exportConfigurations.Add(new ExportDataFileConfiguration { Header = customFieldName, MappedField = "CustomField", PDFColumnWidth = "0.85", Preference = ++PreferenceCount });
 					}
-
-					plainBytes = DataExport.ExportDataToFile<LE.User>(exportConfigurations.OrderBy(p => p.Preference).ToList(), listUsers, dataFormat);
+                    
+					plainBytes = DataExport.ExportDataToFile<dynamic>(exportConfigurations.OrderBy(p => p.Preference).ToList(), listUsers, dataFormat, true);
 					output = new ObjectOutput<string, IErrorData>()
 					{
 						obj = Convert.ToBase64String(plainBytes),
@@ -402,15 +441,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				return Request.CreateResponse(HttpStatusCode.OK, output);
 			}
 		}
-		#endregion
+        bool AddProperty(ExpandoObject obj, string key, object value)
+        {
+            var dynamicDict = obj as IDictionary<string, object>;
+            if (dynamicDict.ContainsKey(key))
+                return false;
+            else
+                dynamicDict.Add(key, value);
+            return true;
+        }
 
-		#region Persona
-		/// <summary>
-		/// Used to get a persons active persona by realpageId
-		/// </summary>
-		/// <param name="realPageId">User personaId</param>
-		/// <returns>A list of personas for the give user id</returns>
-		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when Person object have invalid entries)")]
+        #endregion
+
+        #region Persona
+        /// <summary>
+        /// Used to get a persons active persona by realpageId
+        /// </summary>
+        /// <param name="realPageId">User personaId</param>
+        /// <returns>A list of personas for the give user id</returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when Person object have invalid entries)")]
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [SwaggerResponse(HttpStatusCode.OK, Description = "Newly created Person Id", Type = typeof(Persona))]

@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.Export
 {
@@ -84,5 +85,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		/// </summary>
 		[JsonProperty(PropertyName = "EmployeeId")]
 		public string EmployeeId { get; set; } = "";
+
+		/// <summary>
+		/// Notification Email
+		/// </summary>
+		[JsonProperty(PropertyName = "Notificationemail")]
+		public string Notificationemail { get; set; }
+		 
+		/// <summary>
+		/// PlatformRoles
+		/// </summary>
+		[JsonProperty(PropertyName = "PlatformRoles")]
+		public string PlatformRoles { get; set; }
+		 
+		/// <summary>
+		/// MFAFlag
+		/// </summary>
+		[JsonProperty(PropertyName = "MFAFlag")]
+		public string MFAFlag { get; set; }
+
+		[JsonProperty(PropertyName = "ProdList")]
+		public List<KeyValuePair<string, object>> ProdList = new List<KeyValuePair<string, object>>();
+
+		public User(string value)
+		{
+			this.Value = value;
+		}
+		public string Value { get; set; }
 	}
 }

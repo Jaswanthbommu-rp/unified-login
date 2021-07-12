@@ -26,8 +26,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		/// <param name="realPageId">Organization realpage uniqueidentifier</param>
 		/// <param name="parentPartyRoleTypeId">PartyRole parentId</param>
 		/// <param name="dataFilterSort">Data Filtering and Sorting</param>
+		/// <param name="isExport">is Excel Export</param>
 		/// <returns>List of Person</returns>
-		IList<ProfileDetail> ListPersons(IList<int> organizationActiveProductIdList, Guid? realPageId = null, int? parentPartyRoleTypeId = null, RequestParameter dataFilterSort = null);
+		IList<ProfileDetail> ListPersons(IList<int> organizationActiveProductIdList, Guid? realPageId = null, int? parentPartyRoleTypeId = null, RequestParameter dataFilterSort = null, bool isExport = false);
 
 		/// <summary>
 		/// Returns a list of persons by ProductId

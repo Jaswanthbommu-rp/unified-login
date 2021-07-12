@@ -182,5 +182,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 		/// User Enterprise Role Template Id
 		/// </summary>
 		public int RoleTemplateId { get; set; }
+
+		/// <summary>
+		/// PlatformRoles
+		/// </summary>
+		[JsonProperty("PlatformRoles", NullValueHandling = NullValueHandling.Ignore)]
+		public string PlatformRoles { get; set; }
+
+
+
+		/// <summary>
+		/// MFAFlag
+		/// </summary>
+		[JsonProperty("MFAFlag", NullValueHandling = NullValueHandling.Ignore)]
+		public string MFAFlag { get; set; }
+
+
+
+		public List<KeyValuePair<string, object>> kpProductList = new List<KeyValuePair<string, object>>();
+
+
 	}
 }

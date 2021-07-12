@@ -104,6 +104,7 @@
         public const string SP_GetPerson = "Person.GetPerson";
         public const string SP_UpdatePerson = "Person.UpdatePerson";
         public const string SP_ListPersons = "Person.ListPersons_Ver04";
+        public const string SP_ListPersons1 = "Person.ListPersons_CSV";
         public const string SP_ListPersonsByProductId = "Person.ListPersonsByProductId";
         public const string SP_GetDefaultPersona = "Person.GetDefaultPersona";
         public const string SP_ListUsers = "Person.ListPersonsForSupportTool";

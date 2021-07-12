@@ -1230,7 +1230,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         new ExportDataFileConfiguration {Header = "Status", MappedField = "Status", PDFColumnWidth = "2.25", Preference = 9}
                     };
 
-                    plainBytes = DataExport.ExportDataToFile<CompanySetup>(exportConfigurations.OrderBy(p => p.Preference).ToList(), companyList, dataFormat);
+                    plainBytes = DataExport.ExportDataToFile<CompanySetup>(exportConfigurations.OrderBy(p => p.Preference).ToList(), companyList, dataFormat, false);
                     output = new ObjectOutput<string, IErrorData>()
                     {
                         obj = Convert.ToBase64String(plainBytes),
@@ -1443,7 +1443,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         new ExportDataFileConfiguration {Header = "Platform Property name", MappedField = "UPFMName", PDFColumnWidth = "3.25", Preference = 3},
                         new ExportDataFileConfiguration {Header = "Status", MappedField = "Status", PDFColumnWidth = "1.25", Preference = 4}
                     };
-                    plainBytes = DataExport.ExportDataToFile<PropertyAudit>(exportConfigurations.OrderBy(p => p.Preference).ToList(), propertyAudit, dataFormat);
+                    plainBytes = DataExport.ExportDataToFile<PropertyAudit>(exportConfigurations.OrderBy(p => p.Preference).ToList(), propertyAudit, dataFormat, false);
                     output = new ObjectOutput<string, IErrorData>()
                     {
                         obj = Convert.ToBase64String(plainBytes),
@@ -1568,7 +1568,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         new ExportDataFileConfiguration {Header = "Status", MappedField = "IsActive", PDFColumnWidth = "2.25", Preference = 7}
                     };
 
-                    plainBytes = DataExport.ExportDataToFile<PropertySetup>(exportConfigurations.OrderBy(p => p.Preference).ToList(), propertyList[0]?.Property, dataFormat);
+                    plainBytes = DataExport.ExportDataToFile<PropertySetup>(exportConfigurations.OrderBy(p => p.Preference).ToList(), propertyList[0]?.Property, dataFormat, false);
                     output = new ObjectOutput<string, IErrorData>()
                     {
                         obj = Convert.ToBase64String(plainBytes),

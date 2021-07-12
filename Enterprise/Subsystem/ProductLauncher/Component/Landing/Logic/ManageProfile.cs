@@ -181,8 +181,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// </summary>
         /// <param name="globals">Parameter for filter and sort</param>
         /// <param name="organizationRealPageId">Organization's realPageId</param>
+        /// <param name="isExport">is Excel import</param>
         /// <returns>List of Persons</returns>
-        public IList<ProfileDetail> ListProfileDetails(IDictionary<object, object> globals, Guid? organizationRealPageId = null)
+        public IList<ProfileDetail> ListProfileDetails(IDictionary<object, object> globals, Guid? organizationRealPageId = null, bool isExport = false)
         {
 			IList<ProfileDetail> profileDetailList = new List<ProfileDetail>();
             RequestParameter dataFilter = new RequestParameter();           
@@ -222,7 +223,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				organizationActiveProductIdList: organizationActiveProductIdList,
 				realPageId: organizationRealPageId,
 				parentPartyRoleTypeId: _parentPartyRoleTypeId,
-				dataFilterSort: dataFilter);
+				dataFilterSort: dataFilter,isExport);
 	
             return profileDetailList;
         }

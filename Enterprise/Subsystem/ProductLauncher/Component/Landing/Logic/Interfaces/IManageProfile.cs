@@ -35,8 +35,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// </summary>
         /// <param name="globals">Parameter for filter and sort</param>
         /// <param name="organizationRealPageId">Organization's realPageId</param>
+        /// <param name="isExport">is Excel import</param>
         /// <returns>List of Persons</returns>
-        IList<ProfileDetail> ListProfileDetails(IDictionary<object, object> globals, Guid? organizationRealPageId = null);
+        IList<ProfileDetail> ListProfileDetails(IDictionary<object, object> globals, Guid? organizationRealPageId = null, bool isExport = false);
 
         /// <summary>
         /// Returns a list of persons by ProductId
