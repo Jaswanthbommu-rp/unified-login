@@ -473,7 +473,6 @@ BEGIN
 	SELECT @typeId = ProductSettingTypeId from Enterprise.ProductSettingType
 	WHERE NAME = 'NotificationCategoryCode'
 	
-	INSERT INTO Enterprise.ProductSetting(ProductId, ProductSettingTypeId, Value, FromDate)
-	VALUES (3, @typeId, 'ULUUS', GETDATE())
+	EXEC Enterprise.SetProductSetting @ProductSettingId=0,  @ProductId =3,  @ProductSettingTypeId = @typeId,  @Value = 'ULUUS'
 End
 GO
