@@ -172,7 +172,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         }
                         else
                         {
-                            audienceTypeId = (int)CommunicationEventAudienceType.MultiCompanyUser;
+                            audienceTypeId = (int)CommunicationEventAudienceType.RegularUser;
                         }
                     }
                     else
