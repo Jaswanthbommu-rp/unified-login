@@ -154,7 +154,8 @@ r =1
   INNER JOIN Ident.UserLoginPersona ULP ON OP.PartyId = ULP.OrganizationPartyId  
   INNER JOIN Person.Persona p ON ULP.UserLoginPersonaId = p.UserLoginPersonaId  
   WHERE  
-   PartyId = @PartyId   
+   OP.ThruDate IS NULL  
+  AND OP.PartyId = @PartyId   
  )  
  ,CTE_Persona_Products AS   
  (  
