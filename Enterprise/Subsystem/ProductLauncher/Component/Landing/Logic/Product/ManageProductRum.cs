@@ -1108,11 +1108,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _accessToken);				
 				var response = client.PostAsJsonAsync(baseUrl,new { }).Result;
 
-				if (response.IsSuccessStatusCode)
-				{
-					WriteReActivatedActivityLog(editorPersonaId, userPersonaId);
-				}
-				else
+				if (!response.IsSuccessStatusCode)
 				{
 					logData = new Dictionary<string, object>();
 					var erroMessage = response.Content.ReadAsStringAsync().Result.ToString();
