@@ -828,9 +828,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             var clientId = productInternalSettingList.First(a => a.Name.Equals("UnifiedLoginServerClientName", StringComparison.OrdinalIgnoreCase)).Value;
             var apiSecret = Encoding.UTF8.GetString(Convert.FromBase64String(productInternalSettingList.First(a => a.Name.Equals("UnifiedLoginServerClientSecret", StringComparison.OrdinalIgnoreCase)).Value));
+            var categoryCode = productInternalSettingList.First(a => a.Name.Equals("NotificationCategoryCode", StringComparison.OrdinalIgnoreCase)).Value;
 
             RealPage.UnifiedNotifications.Notification notification = new RealPage.UnifiedNotifications.Notification(clientId, apiSecret, tokenEndpoint, notificationsApiEndPoint + "/v1/notifications", notificationsApiEndPoint + "/" + notificationsEventsEndPoint);
-            var result = Task.Run(() => notification.SendNotification(title, message, users, "ULUUS")).Result;
+            var result = Task.Run(() => notification.SendNotification(title, message, users, categoryCode)).Result;
         }
 
         private IList<ProductInternalSetting> GetProductInternalSettings(ProductEnum product)

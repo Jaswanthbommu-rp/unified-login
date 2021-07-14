@@ -459,3 +459,20 @@ END
  update Enterprise.NavigationMenuRights set rightid = @RightId where  navigationmenuid=@NavigationMenuId and RightId = @previousRightId
 GO
 
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType where Name = 'NotificationCategoryCode')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType (Name, Description, SensitiveData) values ('NotificationCategoryCode', 'Category code that needs to be passed to notifications', 0)
+END
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSetting ps	
+	JOIN Enterprise.ProductSettingType pst on pst.ProductSettingTypeId = ps.ProductSettingTypeId	
+	WHERE ProductId = 3 	
+	AND pst.Name = 'NotificationCategoryCode')
+BEGIN 
+	DECLARE @typeId int;
+	SELECT @typeId = ProductSettingTypeId from Enterprise.ProductSettingType
+	WHERE NAME = 'NotificationCategoryCode'
+	
+	EXEC Enterprise.SetProductSetting @ProductSettingId=0,  @ProductId =3,  @ProductSettingTypeId = @typeId,  @Value = 'ULUUS'
+End
+GO

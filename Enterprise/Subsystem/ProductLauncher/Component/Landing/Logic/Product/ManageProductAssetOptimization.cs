@@ -2140,9 +2140,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			_samlRepository.CreateSamlUserAttribute(userPersonaId, (int)ProductEnum.AssetOptimizer, SamlAttributeEnum.UserId, productLoginName);
 			UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductEnum.AssetOptimizer, (int)ProductBatchStatusType.Success);
 
-			// add activity log
-			WriteActivityLogWithMessage(editorPersonaId, userPersonaId, "User account for {0} {1} is created in product {2} by user {3} {4}.");
-
 			// AoDivisionType
 			foreach (var product in aoProductList)
 			{

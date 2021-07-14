@@ -1012,7 +1012,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var response = UpdateL2LUserstatus();
             if (response.IsSuccessStatusCode)
             {
-                WriteDeActivatedActivityLog(editorPersonaId, userPersonaId);
                 return result;
             }
             else
