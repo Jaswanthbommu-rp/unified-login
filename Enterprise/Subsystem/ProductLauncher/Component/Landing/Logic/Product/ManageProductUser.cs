@@ -720,7 +720,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         var message = GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, failedRecords, false);
                         PushToQueue(fromUserLogInfo, toUserLogInfo, message);
-                        SendNotification(message, fromPersonaId);
+                        SendNotification(message + " Please contact RealPage support for assistance.", fromPersonaId);
                     }
 
                     //update status
