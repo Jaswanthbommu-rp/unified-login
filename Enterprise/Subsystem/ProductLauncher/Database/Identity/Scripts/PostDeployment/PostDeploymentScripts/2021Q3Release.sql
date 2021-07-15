@@ -477,6 +477,261 @@ BEGIN
 End
 GO
 
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'GetUserProductCenterEndPoint')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
+	VALUES ('GetUserProductCenterEndPoint', 'Get user product center end point', 0);
+END
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'GetUserProductCenterEndPoint')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
+	VALUES ('GetUserProductCenterSyncType', 'Get user product center sync type (push or pull)', 0);
+END
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'GetUserProductCenterEndPoint')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
+	VALUES ('GetUserProductCenterEnabled', 'Get user product center enabled (0 or 1)', 0);
+END
+
+DECLARE @NOW DATETIME = GETUTCDATE();
+DECLARE @productlist as table (entid int identity, productid int, productsettingtype varchar(500), productsettingvalue varchar(2000))
+insert into @productlist values
+(1,  'GetUserProductCenterEndPoint', '/os/core/common/user/v2/product-centers?loginName={0}'),
+(2,  'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(3,  'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(4,  'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(6,  'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(8,  'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(9,  'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(10, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(11, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(13, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(14, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(15, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(16, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(17, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(18, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(19, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(20, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(21, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(23, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(24, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(25, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(26, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(27, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(28, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(29, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(30, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(31, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(32, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(33, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(35, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(36, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(37, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(38, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(39, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(40, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(41, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(44, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(45, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(47, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(48, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(49, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(50, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(51, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(52, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(53, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(54, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(57, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(58, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(59, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(60, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(62, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(63, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(64, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(65, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(66, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(67, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(68, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}'),
+(69, 'GetUserProductCenterEndPoint', '/user/product-centers?loginName={}')
+
+insert into @productlist values
+(1,  'GetUserProductCenterSyncType', 'Push'),
+(2,  'GetUserProductCenterSyncType', 'Push'),
+(3,  'GetUserProductCenterSyncType', 'Push'),
+(4,  'GetUserProductCenterSyncType', 'Push'),
+(6,  'GetUserProductCenterSyncType', 'Push'),
+(8,  'GetUserProductCenterSyncType', 'Push'),
+(9,  'GetUserProductCenterSyncType', 'Push'),
+(10, 'GetUserProductCenterSyncType', 'Push'),
+(11, 'GetUserProductCenterSyncType', 'Push'),
+(13, 'GetUserProductCenterSyncType', 'Push'),
+(14, 'GetUserProductCenterSyncType', 'Push'),
+(15, 'GetUserProductCenterSyncType', 'Push'),
+(16, 'GetUserProductCenterSyncType', 'Push'),
+(17, 'GetUserProductCenterSyncType', 'Push'),
+(18, 'GetUserProductCenterSyncType', 'Push'),
+(19, 'GetUserProductCenterSyncType', 'Push'),
+(20, 'GetUserProductCenterSyncType', 'Push'),
+(21, 'GetUserProductCenterSyncType', 'Push'),
+(23, 'GetUserProductCenterSyncType', 'Push'),
+(24, 'GetUserProductCenterSyncType', 'Push'),
+(25, 'GetUserProductCenterSyncType', 'Push'),
+(26, 'GetUserProductCenterSyncType', 'Push'),
+(27, 'GetUserProductCenterSyncType', 'Push'),
+(28, 'GetUserProductCenterSyncType', 'Push'),
+(29, 'GetUserProductCenterSyncType', 'Push'),
+(30, 'GetUserProductCenterSyncType', 'Push'),
+(31, 'GetUserProductCenterSyncType', 'Push'),
+(32, 'GetUserProductCenterSyncType', 'Push'),
+(33, 'GetUserProductCenterSyncType', 'Push'),
+(35, 'GetUserProductCenterSyncType', 'Push'),
+(36, 'GetUserProductCenterSyncType', 'Push'),
+(37, 'GetUserProductCenterSyncType', 'Push'),
+(38, 'GetUserProductCenterSyncType', 'Push'),
+(39, 'GetUserProductCenterSyncType', 'Push'),
+(40, 'GetUserProductCenterSyncType', 'Push'),
+(41, 'GetUserProductCenterSyncType', 'Push'),
+(44, 'GetUserProductCenterSyncType', 'Push'),
+(45, 'GetUserProductCenterSyncType', 'Push'),
+(47, 'GetUserProductCenterSyncType', 'Push'),
+(48, 'GetUserProductCenterSyncType', 'Push'),
+(49, 'GetUserProductCenterSyncType', 'Push'),
+(50, 'GetUserProductCenterSyncType', 'Push'),
+(51, 'GetUserProductCenterSyncType', 'Push'),
+(52, 'GetUserProductCenterSyncType', 'Push'),
+(53, 'GetUserProductCenterSyncType', 'Push'),
+(54, 'GetUserProductCenterSyncType', 'Push'),
+(57, 'GetUserProductCenterSyncType', 'Push'),
+(58, 'GetUserProductCenterSyncType', 'Push'),
+(59, 'GetUserProductCenterSyncType', 'Push'),
+(60, 'GetUserProductCenterSyncType', 'Push'),
+(62, 'GetUserProductCenterSyncType', 'Push'),
+(63, 'GetUserProductCenterSyncType', 'Push'),
+(64, 'GetUserProductCenterSyncType', 'Push'),
+(65, 'GetUserProductCenterSyncType', 'Push'),
+(66, 'GetUserProductCenterSyncType', 'Push'),
+(67, 'GetUserProductCenterSyncType', 'Push'),
+(68, 'GetUserProductCenterSyncType', 'Push'),
+(69, 'GetUserProductCenterSyncType', 'Push')
+
+insert into @productlist values
+(1,  'GetUserProductCenterEnabled', '0'),
+(2,  'GetUserProductCenterEnabled', '0'),
+(3,  'GetUserProductCenterEnabled', '0'),
+(4,  'GetUserProductCenterEnabled', '0'),
+(6,  'GetUserProductCenterEnabled', '0'),
+(8,  'GetUserProductCenterEnabled', '0'),
+(9,  'GetUserProductCenterEnabled', '0'),
+(10, 'GetUserProductCenterEnabled', '0'),
+(11, 'GetUserProductCenterEnabled', '0'),
+(13, 'GetUserProductCenterEnabled', '0'),
+(14, 'GetUserProductCenterEnabled', '0'),
+(15, 'GetUserProductCenterEnabled', '0'),
+(16, 'GetUserProductCenterEnabled', '0'),
+(17, 'GetUserProductCenterEnabled', '0'),
+(18, 'GetUserProductCenterEnabled', '0'),
+(19, 'GetUserProductCenterEnabled', '0'),
+(20, 'GetUserProductCenterEnabled', '0'),
+(21, 'GetUserProductCenterEnabled', '0'),
+(23, 'GetUserProductCenterEnabled', '0'),
+(24, 'GetUserProductCenterEnabled', '0'),
+(25, 'GetUserProductCenterEnabled', '0'),
+(26, 'GetUserProductCenterEnabled', '0'),
+(27, 'GetUserProductCenterEnabled', '0'),
+(28, 'GetUserProductCenterEnabled', '0'),
+(29, 'GetUserProductCenterEnabled', '0'),
+(30, 'GetUserProductCenterEnabled', '0'),
+(31, 'GetUserProductCenterEnabled', '0'),
+(32, 'GetUserProductCenterEnabled', '0'),
+(33, 'GetUserProductCenterEnabled', '0'),
+(35, 'GetUserProductCenterEnabled', '0'),
+(36, 'GetUserProductCenterEnabled', '0'),
+(37, 'GetUserProductCenterEnabled', '0'),
+(38, 'GetUserProductCenterEnabled', '0'),
+(39, 'GetUserProductCenterEnabled', '0'),
+(40, 'GetUserProductCenterEnabled', '0'),
+(41, 'GetUserProductCenterEnabled', '0'),
+(44, 'GetUserProductCenterEnabled', '0'),
+(45, 'GetUserProductCenterEnabled', '0'),
+(47, 'GetUserProductCenterEnabled', '0'),
+(48, 'GetUserProductCenterEnabled', '0'),
+(49, 'GetUserProductCenterEnabled', '0'),
+(50, 'GetUserProductCenterEnabled', '0'),
+(51, 'GetUserProductCenterEnabled', '0'),
+(52, 'GetUserProductCenterEnabled', '0'),
+(53, 'GetUserProductCenterEnabled', '0'),
+(54, 'GetUserProductCenterEnabled', '0'),
+(57, 'GetUserProductCenterEnabled', '0'),
+(58, 'GetUserProductCenterEnabled', '0'),
+(59, 'GetUserProductCenterEnabled', '0'),
+(60, 'GetUserProductCenterEnabled', '0'),
+(62, 'GetUserProductCenterEnabled', '0'),
+(63, 'GetUserProductCenterEnabled', '0'),
+(64, 'GetUserProductCenterEnabled', '0'),
+(65, 'GetUserProductCenterEnabled', '0'),
+(66, 'GetUserProductCenterEnabled', '0'),
+(67, 'GetUserProductCenterEnabled', '0'),
+(68, 'GetUserProductCenterEnabled', '0'),
+(69, 'GetUserProductCenterEnabled', '0')
+
+declare @MAX_ID INT
+declare @Current_ID INT = 1
+declare @CurrentProductId INT = 1
+
+select @MAX_ID = max(entid) from @productlist
+
+while @Current_ID <= @MAX_ID
+begin
+	declare @currentSettingType varchar(500)
+	declare @currentsettingValue varchar(2000)
+
+	select @CurrentProductId = productid , @currentSettingType = productsettingtype, @currentSettingValue = productsettingvalue
+		from @productlist where entid = @Current_ID
+
+	--print 'productid = ' + convert(varchar,@currentproductid)
+
+	if not exists (
+	select top 1 1 
+		FROM Enterprise.GlobalProductConfiguration gpc  
+		JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId  
+		JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId  
+		JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId  
+			WHERE  gpc.ProductId = @CurrentProductId  
+		AND ((@NOW BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@NOW >= gpc.FromDate AND gpc.ThruDate IS NULL))  
+		AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))  
+		AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))  
+		AND pst.Name = @currentSettingType
+		AND ps.Value = @currentsettingValue
+	)
+	begin
+		declare @currentproductconfigurationid INT
+		select distinct top 1 @currentproductconfigurationid = pc.configurationid
+			FROM Enterprise.GlobalProductConfiguration gpc  
+			JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId  
+			JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId  
+			JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId  
+				WHERE  gpc.ProductId = @CurrentProductId
+			AND ((@NOW BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@NOW >= gpc.FromDate AND gpc.ThruDate IS NULL))  
+			AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))  
+			AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))  
+		order by pc.ConfigurationId desc
+
+		if (@currentproductconfigurationid is not null)
+		begin
+			insert into enterprise.ProductSetting ( productid, ProductSettingTypeId, value, FromDate )
+				select @CurrentProductId, productsettingtypeid, @currentSettingValue, GETUTCDATE()
+					from enterprise.ProductSettingType where name = @currentSettingType
+			insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate, ThruDate )
+				values ( @currentproductconfigurationid, @@IDENTITY, GETUTCDATE(), null )
+		end
+	end
+	
+	set @Current_ID = @Current_ID + 1
+end
+go
 DECLARE @PartyId INT
 select @PartyId = PartyId from Enterprise.Organization where Name = 'RealPage Employee'
 
