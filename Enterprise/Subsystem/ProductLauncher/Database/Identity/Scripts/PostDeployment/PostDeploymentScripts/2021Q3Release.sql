@@ -476,3 +476,13 @@ BEGIN
 	EXEC Enterprise.SetProductSetting @ProductSettingId=0,  @ProductId =3,  @ProductSettingTypeId = @typeId,  @Value = 'ULUUS'
 End
 GO
+
+DECLARE @PartyId INT
+select @PartyId = PartyId from Enterprise.Organization where Name = 'RealPage Employee'
+
+IF NOT EXISTS (select TOP 1 1 from Enterprise.PartyRole where PartyId = @PartyId AND RoleTypeId = 405)
+BEGIN
+ INSERT INTO Enterprise.PartyRole VALUES(@PartyId, 405)
+END
+
+GO
