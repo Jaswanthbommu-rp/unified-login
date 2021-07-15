@@ -483,13 +483,13 @@ BEGIN
 	VALUES ('GetUserProductCenterEndPoint', 'Get user product center end point', 0);
 END
 
-IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'GetUserProductCenterEndPoint')
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'GetUserProductCenterSyncType')
 BEGIN
 	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
 	VALUES ('GetUserProductCenterSyncType', 'Get user product center sync type (push or pull)', 0);
 END
 
-IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'GetUserProductCenterEndPoint')
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'GetUserProductCenterEnabled')
 BEGIN
 	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
 	VALUES ('GetUserProductCenterEnabled', 'Get user product center enabled (0 or 1)', 0);
