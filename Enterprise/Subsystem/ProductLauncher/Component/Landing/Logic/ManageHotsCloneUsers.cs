@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using RP.Enterprise.Foundation.DataAccess.Component;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterprise.Helpers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
@@ -7,6 +8,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise;
@@ -25,6 +27,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -44,14 +47,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		private IManageProfile _manageProfile;
 		private DefaultUserClaim _defaultUserClaim;
 		private IManageProduct _manageProduct;
-
+		readonly ITokenHelper _tokenHelper;
 		#region Ctor
 
 		/// <summary>
 		/// Used for dependency injection
 		/// </summary> 
 		public ManageHotsCloneUsers(IProductRepository productRepository,
-									IProductInternalSettingRepository productInternalSettingRepository, 
+									IProductInternalSettingRepository productInternalSettingRepository,
 									IManagePersona managePersona,
 									IHOTSCloneUserRepository hotsCloneUserRepository,
 									IManageOrganization manageOrganization,
@@ -65,6 +68,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			_organizationRepository = new OrganizationRepository();
 			_manageProfile = manageProfile;
 			_defaultUserClaim = userClaim;
+			_tokenHelper = new TokenHelper();
 		}
 
 		/// <summary>
@@ -95,7 +99,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		}
 		#endregion
 
-		public ClonedUsers CloneUsersFromBaseLineCompany (CloneUsers cloneUsers, long basePartyId, long clonePartyId )
+		public ClonedUsers CloneUsersFromBaseLineCompany(CloneUsers cloneUsers, long basePartyId, long clonePartyId)
 		{
 			ClonedUsers clonedUsers = new ClonedUsers();
 			clonedUsers.Status = "InComplete";
@@ -113,7 +117,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 				if (basePartyId > 0 && clonePartyId > 0 && isCloneUsersProcessEnabledForHOTS)
 				{
-					ManageCloneProductBatch manageProductBatch = new ManageCloneProductBatch(_defaultUserClaim);					
+					ManageCloneProductBatch manageProductBatch = new ManageCloneProductBatch(_defaultUserClaim);
 					UPFMProperty upfmProperty = new UPFMProperty();
 					var usersToBeCloned = _hotsCloneUserRepository.ListUsers(basePartyId);
 
@@ -126,35 +130,38 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 						// get product batch data
 						IPersonaRepository personaRepository = new PersonaRepository();
 						var personaProductSettings = personaRepository.GetPersonaProductSettings(user.PersonaId);
-						List<ProductBatch> pbData = manageProductBatch.GetUserProductBatchData(user.PersonaId, userProducts,_defaultUserClaim.PersonaId, upfmProperty, personaProductSettings, false, false).ToList();
+						List<ProductBatch> pbData = manageProductBatch.GetUserProductBatchData(user.PersonaId, userProducts, _defaultUserClaim.PersonaId, upfmProperty, personaProductSettings, false, false).ToList();
 
-						
+
 						//	get base company product properties
 						//	get clone company product properties
 						//	Compare base assigned properties with clone properties by name
 						//	then add it in array list and use it to replcae in batch properties data
-						
+
 						foreach (var productData in pbData)
 						{
 							var propertyList = productData.InputJson.PropertyList.ToList();
 							//find and reaplace baseline customer property with clone customer property
-							if (propertyList?.Count > 0) {
+							if (propertyList?.Count > 0)
+							{
 								var baseCompanyProperties = GetProductProperties(user.AdminUserPersonaId, user.PersonaId, productData.ProductId);
 								var cloneCompanyProperties = GetProductProperties(_defaultUserClaim.PersonaId, 0, productData.ProductId);
 
 								var matchedProperties = CompareBaseAndCloneProductProperties(baseCompanyProperties, cloneCompanyProperties);
-								
+
 								if (matchedProperties?.Count > 0)
 								{
 									productData.InputJson.PropertyList = matchedProperties;
-								}								
-							}							
+								}
+							}
 						}
 
 						var hotsuser = _hotsCloneUserRepository.CreateUser(clonePartyId, user, profileDetail, pbData);
 						clonedUsers.Users.Add(hotsuser);
 					}
 					clonedUsers.Status = "Complete";
+				
+					PostToHOTS(clonedUsers);
 				}
 				return clonedUsers;
 			}
@@ -166,7 +173,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					   $" BaseLine Customer Company PartyId {basePartyId}", exception: ex);
 				return clonedUsers;
 			}
-			
+
 		}
 
 		public Guid GetBaseCompanyUPFMId(Guid cloneUpfmId)
@@ -174,7 +181,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			return _hotsCloneUserRepository.GetBaseCompanyUPFMId(cloneUpfmId);
 		}
 
-		private IProfileDetail getUserProfile (BaseLineCustomerCompanyUser user , long partyId)
+		private IProfileDetail getUserProfile(BaseLineCustomerCompanyUser user, long partyId)
 		{
 			var profileLogic = new ManageProfile(_defaultUserClaim);
 			IProfileDetail profileDetail = new ProfileDetail();
@@ -312,6 +319,59 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			}
 
 			return matchedProductPropertyIdList;
+		}
+
+		private void PostToHOTS(ClonedUsers clonedUsers) 
+		{
+            try
+            {
+				var ulClientToken = _tokenHelper.GetUnifiedLoginServerToken("hotsapi");
+				var productInternalSettingList = GetProductInternalSettings(ProductEnum.UnifiedPlatform);
+				var hotsEndpoint = productInternalSettingList.First(a => a.Name.Equals("HOTSCloneUserCallBackEnpoint", StringComparison.OrdinalIgnoreCase)).Value;
+
+				using (var httpClient = new HttpClient())
+				{
+					httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", ulClientToken);
+					httpClient.BaseAddress = new Uri(hotsEndpoint);
+					var payloadToPost = JsonConvert.SerializeObject(clonedUsers);
+					var request = new HttpRequestMessage
+					{
+						Method = HttpMethod.Post,
+						Content = new StringContent(payloadToPost, Encoding.UTF8, "application/json"),
+						RequestUri = new Uri(httpClient.BaseAddress.ToString()),
+					};
+
+					Dictionary<string, object> logData = new Dictionary<string, object>() { { "ClonnedUsers", clonedUsers } };
+					WriteToLog(LogEventLevel.Information, "Users to be posted to HOTS", logData);
+
+					var response = httpClient.SendAsync(request).Result;
+					if (response != null && response.IsSuccessStatusCode)
+						WriteToLog(LogEventLevel.Information, "Clonedusers Posted to HOTS succesfully.");
+					else
+						WriteToLog(LogEventLevel.Information, "Hots callback Failed. Response Message: " + response.Content.ToString());
+
+				}
+			}
+            catch (Exception ex)
+            {
+				Dictionary<string, object> logData = new Dictionary<string, object>() { { "Exception", ex.ToString() } };
+				WriteToLog(LogEventLevel.Error, "PostToHOTS", logData);
+            }
+			
+		}
+
+		private IList<ProductInternalSetting> GetProductInternalSettings(ProductEnum product)
+		{
+			var rpcache = new RPObjectCache();
+			var cacheKey = $"productInternalSetting_{(int)product}";
+			IList<ProductInternalSetting> productInternalSettingList = rpcache.GetFromCache<IList<ProductInternalSetting>>(cacheKey, 600, () =>
+			{
+				// load from database
+
+				return _productInternalSettingRepository.GetProductInternalSettings((int)product).ToList();
+			});
+
+			return productInternalSettingList;
 		}
 	}
 }

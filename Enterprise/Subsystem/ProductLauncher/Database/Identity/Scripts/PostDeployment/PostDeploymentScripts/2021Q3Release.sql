@@ -742,3 +742,47 @@ BEGIN
 END
 
 GO
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType where Name = 'HOTSCloneUserCallBackEnpoint')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType (Name, Description, SensitiveData) values ('HOTSCloneUserCallBackEnpoint', 'Endpoint to be called by UL once HOTS clone user request is completed.', 0)
+END
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSetting ps	
+	JOIN Enterprise.ProductSettingType pst on pst.ProductSettingTypeId = ps.ProductSettingTypeId	
+	WHERE ProductId = 3 	
+	AND pst.Name = 'HOTSCloneUserCallBackEnpoint')
+BEGIN 
+	DECLARE @typeId int;
+	SELECT @typeId = ProductSettingTypeId from Enterprise.ProductSettingType
+	WHERE NAME = 'HOTSCloneUserCallBackEnpoint'
+	
+	DECLARE @serverName VARCHAR(50);
+	SELECT @serverName = @@SERVERNAME 
+	
+	DECLARE @endpoint VARCHAR(100)
+
+	IF(@serverName = 'RCDUSODBSQL001') -- dev
+	BEGIN 
+		Set @endpoint = 'https://training-api-dev.realpage.com/v1/cloning/userclone';
+	END
+	ELSE IF(@serverName = 'RCTUSODBSQL001') -- qa
+	BEGIN 
+		Set @endpoint = 'https://training-api-qa.realpage.com/v1/cloning/userclone';
+	END
+	ELSE IF(@serverName = 'RCAUSODBSQL001' OR @serverName = 'REAGBKDBSQL001') -- sat
+	BEGIN 
+		Set @endpoint = 'https://training-api-sat.realpage.com/v1/cloning/userclone';
+	END
+	ELSE IF(@serverName = 'RCTUSODBTUL001') -- training 
+	BEGIN 
+		Set @endpoint = 'https://training-api.realpage.com/v1/cloning/userclone';
+	END
+	ELSE IF(@serverName = 'RCPGBKDBSQL005A' OR @serverName = 'RCPGBKDBSQL005B' OR @serverName = 'REPGBKDBSQL001A' OR @serverName = 'REPGBKDBSQL002A') -- prod 
+	BEGIN 
+		Set @endpoint = 'https://training-api.realpage.com/v1/cloning/userclone';
+	END
+
+	EXEC Enterprise.SetProductSetting @ProductSettingId=0,  @ProductId =3,  @ProductSettingTypeId = @typeId,  @Value = @endpoint
+End
+GO

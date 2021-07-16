@@ -59,14 +59,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             ProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository(repository);
 
             // ManagePersona managePersona = new ManagePersona(repository, userClaims);
-            _manageOrganization = new ManageOrganization(repository, userClaims, messageHandler);                    
+            _manageOrganization = new ManageOrganization(repository, userClaims, messageHandler);
             ManageProfile manageProfile = new ManageProfile(userClaims);
-          // _manageProduct = new ManageProduct(productRepository, productInternalSettingRepository, _managePersona, manageBlueBook, managePartyRelationship, _manageOrganization, manageProfile, manageUserRoleRight, userClaims);
+            // _manageProduct = new ManageProduct(productRepository, productInternalSettingRepository, _managePersona, manageBlueBook, managePartyRelationship, _manageOrganization, manageProfile, manageUserRoleRight, userClaims);
 
             _productRepository = new ProductRepository(repository, userClaims);
             _messageHandler = messageHandler;
             _hotsCloneUserRepository = new HOTSCloneUserRepository(repository);
-          //  _manageHotsCloneUsers = new ManageHotsCloneUsers(_productRepository, productInternalSettingRepository, _managePersona, _hotsCloneUserRepository, _manageOrganization, manageProfile, userClaims);
+            //  _manageHotsCloneUsers = new ManageHotsCloneUsers(_productRepository, productInternalSettingRepository, _managePersona, _hotsCloneUserRepository, _manageOrganization, manageProfile, userClaims);
             _userClaims = userClaims;
         }
 
@@ -81,7 +81,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             _managePersona = new ManagePersona(_userClaims);
             _manageProduct = new ManageProduct(_userClaims);
             _manageOrganization = new ManageOrganization(_userClaims);
-         //   _manageHotsCloneUsers = new ManageHotsCloneUsers(_userClaims);
+            //   _manageHotsCloneUsers = new ManageHotsCloneUsers(_userClaims);
             _productRepository = new ProductRepository(_userClaims);
         }
         #endregion
@@ -90,13 +90,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         /// Create a user in RealPage Unified platform and assign product(s).
         /// </summary>
         /// <returns>If success then returns real page id for newly created user else error object.</returns>
-        [SwaggerResponse(HttpStatusCode.BadRequest, Description =
-            "Bad request when Request object have invalid entries.")]
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request when Request object have invalid entries.")]
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
-        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error.", Type = typeof(ClonedUsers))]
-        [SwaggerResponse(HttpStatusCode.OK,
-            Description = "Create a user in RealPage Unified platform and allocate product(s).",
-            Type = typeof(ClonedUsers))]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error.")]
+        [SwaggerResponse(HttpStatusCode.Accepted, Description = "Request has been accepted for further processing.")]
         [Route("userclone")]
         [HttpPost]
         public HttpResponseMessage HOTCloneUsers(CloneUsers cloneUsers)
@@ -167,7 +164,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             var baseUpfmId = _manageHotsCloneUsers.GetBaseCompanyUPFMId(cloneUsers.CloneCustomerUPFMId);
 
             Organization baseOrg = _manageOrganization.GetOrganization(baseUpfmId);
-            
+
             if (baseOrg == null)
             {
                 var errorResponse = new ErrorResponse { Errors = new List<Error>() };
@@ -177,10 +174,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 // return errors with bad request
                 return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
             }
-            
+
 
             var cloneOrg = _manageOrganization.GetOrganization(cloneUsers.CloneCustomerUPFMId);
-           
+
             if (cloneOrg == null)
             {
                 var errorResponse = new ErrorResponse { Errors = new List<Error>() };
@@ -192,8 +189,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             }
 
             _manageHotsCloneUsers = new ManageHotsCloneUsers(_userClaims);
-            var clonedUsers = _manageHotsCloneUsers.CloneUsersFromBaseLineCompany(cloneUsers, baseOrg.PartyId, cloneOrg.PartyId);
-            return Request.CreateResponse(HttpStatusCode.OK, clonedUsers);
+            _manageHotsCloneUsers.CloneUsersFromBaseLineCompany(cloneUsers, baseOrg.PartyId, cloneOrg.PartyId);
+            return Request.CreateResponse(HttpStatusCode.Accepted);
         }
 
         private void RecreateClaimsForClient(Guid _realpageUserId)
