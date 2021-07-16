@@ -1653,6 +1653,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 },
                 ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Property Creation"
             };
+            if (!string.IsNullOrEmpty(property.PropertyInstancePartner) && !string.IsNullOrEmpty(property.PropertyInstancePartnerSourceId))
+            {
+                pi.PropertyInstancePartners = new List<PropertyInstancePartner>() { new PropertyInstancePartner() { TargetSource = property.PropertyInstancePartner, TargetPropertyInstanceSourceId = property.PropertyInstancePartnerSourceId } };
+            }
             return _manageBlueBook.AddBooksGreenBookPropertyInstanceFromProvisioning(pi);
         }
 
