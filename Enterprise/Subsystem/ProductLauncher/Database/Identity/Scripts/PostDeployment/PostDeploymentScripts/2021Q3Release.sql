@@ -477,6 +477,85 @@ BEGIN
 End
 GO
 
+
+DECLARE @AdminUserId INT
+SELECT @AdminUserId = UserId FROM Ident.Userlogin WHERE LoginName LIKE 'realpagead@%'
+
+-- RIGHTS
+IF NOT EXISTS ( SELECT TOP(1) 1 FROM Security.[Right] WHERE RightName = 'CustomerSupportManager' AND ProductId = 60 )
+BEGIN
+	INSERT INTO security.[Right] ( RightName, Description, Value, StatusTypeId, VisibilityStatusId, ProductId, TargetProductId, CreatedBy, CreatedDate )
+	VALUES
+		(   N'CustomerSupportManager', 'Customer Support Manager', 'Customer Support Manager', 13, 9, 60, 60, @AdminUserId, GETUTCDATE() )
+END
+
+IF NOT EXISTS ( SELECT TOP(1) 1 FROM Security.[Right] WHERE RightName = 'CustomerSupportRepresentative' AND ProductId = 60 )
+BEGIN
+	INSERT INTO security.[Right] ( RightName, Description, Value, StatusTypeId, VisibilityStatusId, ProductId, TargetProductId, CreatedBy, CreatedDate )
+	VALUES
+		(   N'CustomerSupportRepresentative', 'Customer Support Representative', 'Customer Support Representative', 13, 9, 60, 60, @AdminUserId, GETUTCDATE() )
+END
+
+IF NOT EXISTS ( SELECT TOP(1) 1 FROM Security.[Right] WHERE RightName = 'Implementations' AND ProductId = 60 )
+BEGIN
+	INSERT INTO security.[Right] ( RightName, Description, Value, StatusTypeId, VisibilityStatusId, ProductId, TargetProductId, CreatedBy, CreatedDate )
+	VALUES
+		(   N'Implementations', 'Implementations', 'Implementations', 13, 9, 60, 60, @AdminUserId, GETUTCDATE() )
+END
+
+IF NOT EXISTS ( SELECT TOP(1) 1 FROM Security.[Right] WHERE RightName = 'SystemsAdmin' AND ProductId = 60 )
+BEGIN
+	INSERT INTO security.[Right] ( RightName, Description, Value, StatusTypeId, VisibilityStatusId, ProductId, TargetProductId, CreatedBy, CreatedDate )
+	VALUES
+		(   N'SystemsAdmin', 'Systems Admin', 'Systems Admin', 13, 9, 60, 60, @AdminUserId, GETUTCDATE() )
+END
+
+-- ROLERIGHTS
+IF EXISTS ( SELECT TOP(1) 1 FROM Security.Role r WHERE r.RoleName = 'Customer Support Manager' AND r.ProductId = 60 )
+BEGIN
+	IF NOT EXISTS ( SELECT TOP(1) 1 FROM Security.Role R INNER JOIN Security.RoleRight RR ON RR.RoleId = R.RoleId INNER JOIN Security.[Right] R2 ON R2.RightId = RR.RightId
+		WHERE r.RoleName = 'Customer Support Manager' AND r2.RightName = 'CustomerSupportManager' AND r.ProductId = 60 AND r2.ProductId = 60 )
+	BEGIN
+		INSERT INTO Security.RoleRight (RoleId, RightId, CreatedBy, CreatedDate )
+		SELECT R.RoleId, R2.RightId, @AdminUserId, GETUTCDATE() FROM Security.Role R CROSS JOIN Security.[Right] R2 
+			WHERE r.RoleName = 'Customer Support Manager' AND R2.RightName = 'CustomerSupportManager' AND r.ProductId = 60 AND r2.ProductId = 60
+	END
+END
+
+IF EXISTS ( SELECT TOP(1) 1 FROM Security.Role r WHERE r.RoleName = 'Customer Support Representative' AND r.ProductId = 60 )
+BEGIN
+	IF NOT EXISTS ( SELECT TOP(1) 1 FROM Security.Role R INNER JOIN Security.RoleRight RR ON RR.RoleId = R.RoleId INNER JOIN Security.[Right] R2 ON R2.RightId = RR.RightId
+		WHERE r.RoleName = 'Customer Support Representative' AND r2.RightName = 'CustomerSupportRepresentative' AND r.ProductId = 60 AND r2.ProductId = 60 )
+	BEGIN
+		INSERT INTO Security.RoleRight (RoleId, RightId, CreatedBy, CreatedDate )
+		SELECT R.RoleId, R2.RightId, @AdminUserId, GETUTCDATE() FROM Security.Role R CROSS JOIN Security.[Right] R2 
+			WHERE r.RoleName = 'Customer Support Representative' AND R2.RightName = 'CustomerSupportRepresentative' AND r.ProductId = 60 AND r2.ProductId = 60
+	END
+END
+
+IF EXISTS ( SELECT TOP(1) 1 FROM Security.Role r WHERE r.RoleName = 'Implementations' AND r.ProductId = 60 )
+BEGIN
+	IF NOT EXISTS ( SELECT TOP(1) 1 FROM Security.Role R INNER JOIN Security.RoleRight RR ON RR.RoleId = R.RoleId INNER JOIN Security.[Right] R2 ON R2.RightId = RR.RightId
+		WHERE r.RoleName = 'Implementations' AND r2.RightName = 'Implementations' AND r.ProductId = 60 AND r2.ProductId = 60 )
+	BEGIN
+		INSERT INTO Security.RoleRight (RoleId, RightId, CreatedBy, CreatedDate )
+		SELECT R.RoleId, R2.RightId, @AdminUserId, GETUTCDATE() FROM Security.Role R CROSS JOIN Security.[Right] R2 
+			WHERE r.RoleName = 'Implementations' AND R2.RightName = 'Implementations' AND r.ProductId = 60 AND r2.ProductId = 60
+	END
+END
+
+IF EXISTS ( SELECT TOP(1) 1 FROM Security.Role r WHERE r.RoleName = 'Systems Admin' AND r.ProductId = 60 )
+BEGIN
+	IF NOT EXISTS ( SELECT TOP(1) 1 FROM Security.Role R INNER JOIN Security.RoleRight RR ON RR.RoleId = R.RoleId INNER JOIN Security.[Right] R2 ON R2.RightId = RR.RightId
+		WHERE r.RoleName = 'Systems Admin' AND r2.RightName = 'SystemsAdmin' AND r.ProductId = 60 AND r2.ProductId = 60 )
+	BEGIN
+		INSERT INTO Security.RoleRight (RoleId, RightId, CreatedBy, CreatedDate )
+		SELECT R.RoleId, R2.RightId, @AdminUserId, GETUTCDATE() FROM Security.Role R CROSS JOIN Security.[Right] R2 
+			WHERE r.RoleName = 'Systems Admin' AND R2.RightName = 'SystemsAdmin' AND r.ProductId = 60 AND r2.ProductId = 60
+	END
+END
+
+GO
 IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'GetUserProductCenterEndPoint')
 BEGIN
 	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
