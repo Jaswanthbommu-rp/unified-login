@@ -33,6 +33,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
 			}
 		}
 
+		public IList<EnterpriseRoleBatch> GetEnterpriseRoleProductUpdateBatchToProcess(int batchSize)
+		{
+			using (var repository = GetRepository())
+			{
+				var result = repository.GetMany<EnterpriseRoleBatch>(StoredProcNameConstants.SP_EnterpriseRoleListBatch,
+					new { batchSize = batchSize }).ToList();
+
+				return result;
+			}
+		}
+
 		public int UpdateBatchRecord(int productBatchId, BatchStatusType batchStatusType, string inputJson = null, string errorDetails = null)
 		{
 			using (var repository = GetRepository())

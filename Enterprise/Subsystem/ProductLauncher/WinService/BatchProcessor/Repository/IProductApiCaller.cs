@@ -6,5 +6,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
     public interface IProductApiCaller
     {
         Task<string> ProcessBatchRecord(BatchProcessorInput batchProcessorInput);
+        Task<string> ProcessEnterpriseRoleBatchRecord(EnterpriseRoleBatch batchProcessorInput, string processApiEndPoint);
     }
 }

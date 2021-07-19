@@ -1,0 +1,73 @@
+﻿CREATE PROCEDURE [Batch].[ListEnterpriseRoleBatchProcessor] ( @BatchSize INT)
+AS  
+BEGIN  
+  
+    SET NOCOUNT ON;  
+     DECLARE @PBFiltered TABLE  
+    (  
+        [EnterpriseRoleBatchProcessId] [BIGINT] NOT NULL,  
+        [EditorUserPersonaId] [BIGINT] NOT NULL,  
+        [SubjectUserPersonaId] [BIGINT] NOT NULL,  
+        [EnterpriseRoleTemplateId] [INT] NOT NULL,  
+        [StatusTypeId] [INT] NOT NULL,  
+        [CreatedDateTime] [SMALLDATETIME] NOT NULL,  
+        [BatchProcessTypeId] [TINYINT] NOT NULL  
+    );  
+
+    BEGIN TRANSACTION; -- HAve to lock the tables so that another process can't come in and scoop up our waiting processes  
+  
+ ;with batchtoprocess as (  
+  SELECT  
+      [EnterpriseRoleBatchProcessId],  
+      [EditorUserPersonaId],  
+      [SubjectUserPersonaId],  
+      [EnterpriseRoleTemplateId],  
+      [StatusTypeId],  
+      [CreatedDateTime],  
+      [BatchProcessTypeId],
+      row_number() over (partition by subjectuserpersonaid, EnterpriseRoleTemplateId order by EnterpriseRoleBatchProcessId asc ) as rn,  
+      row_number() over (partition by editoruserpersonaid order by EnterpriseRoleBatchProcessId asc ) as rn2    
+  FROM Batch.[EnterpriseRoleBatchProcess] BP  
+  WHERE BP.StatusTypeID = 5  )  
+ 
+    INSERT INTO @PBFiltered  
+    (  
+      [EnterpriseRoleBatchProcessId],  
+      [EditorUserPersonaId],  
+      [SubjectUserPersonaId] ,  
+      [EnterpriseRoleTemplateId],  
+      [StatusTypeId],  
+      [CreatedDateTime],  
+      [BatchProcessTypeId]
+    )  
+ SELECT TOP (@BatchSize)  
+      [EnterpriseRoleBatchProcessId],  
+      [EditorUserPersonaId],  
+      [SubjectUserPersonaId] ,  
+      [EnterpriseRoleTemplateId],  
+      [StatusTypeId],  
+      [CreatedDateTime],  
+      [BatchProcessTypeId]
+  From batchtoprocess   
+  WHERE   rn = 1   
+  And    rn2 = 5  
+  
+    UPDATE Batch.EnterpriseRoleBatchProcess  
+    SET StatusTypeId = 6 --Running  
+    FROM Batch.EnterpriseRoleBatchProcess BP  
+        JOIN @PBFiltered F  
+            ON F.[EnterpriseRoleBatchProcessId] = BP.[EnterpriseRoleBatchProcessId];  
+  
+    SELECT [EnterpriseRoleBatchProcessId],  
+      [EditorUserPersonaId],  
+      [SubjectUserPersonaId] ,  
+      [EnterpriseRoleTemplateId],  
+      [StatusTypeId],  
+      [CreatedDateTime],  
+      [BatchProcessTypeId]
+    FROM @PBFiltered;  
+  
+    COMMIT TRANSACTION;  
+
+END
+

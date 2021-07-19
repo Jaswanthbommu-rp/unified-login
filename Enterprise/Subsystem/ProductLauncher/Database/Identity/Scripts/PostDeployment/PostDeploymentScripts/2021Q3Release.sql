@@ -382,13 +382,21 @@ GO
  BEGIN
      Update ENterprise.ProductSetting Set Value ='Utility Superuser' where ProductSettingTypeId = @ProductsettingTypeId and ProductId =18;
  END
- Go
 GO
-
   IF NOT EXISTS (SELECT 1 FROM [Batch].[BatchProcessType] WHERE Name = 'EnterpriseRoleCreateUpdateProductUser')
   BEGIN
 	INSERT INTO [Batch].[BatchProcessType]
 	SELECT 10,1,'Batch to create EnterpriseRole Create-Update User','EnterpriseRoleCreateUpdateProductUser'
+  END
+  IF NOT EXISTS (SELECT 1 FROM [Batch].[BatchProcessType] WHERE Name = 'EnterpriseRoleBulkUpdateProductUser')
+  BEGIN
+	INSERT INTO [Batch].[BatchProcessType]
+	SELECT 11,1,'Batch to create EnterpriseRole Bulk Update Users','EnterpriseRoleBulkUpdateProductUser'
+  END
+  IF NOT EXISTS (SELECT 1 FROM [Batch].[BatchProcessType] WHERE Name = 'CreateEnterpriseRoleFromUserProduct')
+  BEGIN
+	INSERT INTO [Batch].[BatchProcessType]
+	SELECT 12,1,'Batch to create EnterpriseRole based on User Products','CreateEnterpriseRoleFromUserProduct'
   END
 GO
 
@@ -857,3 +865,67 @@ BEGIN
 	EXEC Enterprise.SetProductSetting @ProductSettingId=0,  @ProductId =3,  @ProductSettingTypeId = @typeId,  @Value = @endpoint
 End
 GO
+IF NOT EXISTS (SELECT 1 FROM [Batch].[BatchProcessConfigurationType] Where Name = 'EnterpriseRoleProcessApiEndpoint')
+Begin
+    Insert Into [Batch].[BatchProcessConfigurationType](BatchProcessConfigurationTypeId,[Name],[Description])
+	Select 2,'EnterpriseRoleProcessApiEndpoint', 'API Endpoint to be invoked by batch processor'
+End
+GO
+IF NOT EXISTS(Select 1 From [Batch].[BatchProcessConfiguration] Where BatchProcessConfigurationId = 2)
+  BEGIN
+  
+	DECLARE @serverName VARCHAR(50);
+	SELECT @serverName = @@SERVERNAME 
+	
+	DECLARE @endpoint VARCHAR(100)
+	SET @endpoint = '';
+
+	IF(@serverName = 'RCDUSODBSQL001') -- dev
+	BEGIN 
+		Set @endpoint = 'https://my2dev.realpage.com/api/erpbatchprocessor';
+	END
+	IF(@serverName = 'RCTUSODBSQL001') -- qa
+	BEGIN 
+		Set @endpoint = 'https://my2qa.realpage.com/api/erpbatchprocessor';
+	END
+	IF @ServerName IN ('RCAUSODBSQL001') --SAT
+	BEGIN
+		Set @endpoint = 'https://my2sat.realpage.com/api/erpbatchprocessor';
+	END
+	IF @ServerName IN ('RCTUSODBSQL001A','RCTUSODBSQL001B') --UAT
+	BEGIN
+		Set @endpoint = 'https://my2uat.realpage.com/api/erpbatchprocessor';
+	END
+	IF @ServerName IN ('RCIUSODBSQL002') --PREPROD
+	BEGIN
+		Set @endpoint = 'https://my2preprod.realpage.com/api/erpbatchprocessor';
+	END
+
+	IF @ServerName IN ('RCVGBKDBSQL001') --DEMO
+	BEGIN
+		Set @endpoint = 'https://my2demo.realpage.com/api/erpbatchprocessor';
+	END
+
+	IF @ServerName IN ('RCTUSODBTUL001') --TRAINING
+	BEGIN
+		Set @endpoint = 'https://my2qa.realpage.com/api/erpbatchprocessor';
+	END
+
+	IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B') --PROD
+	BEGIN
+		Set @endpoint = 'https://my2.realpage.com/api/erpbatchprocessor';
+	END
+
+	IF @ServerName IN ('reagbkdbsql001') --EUSAT
+	BEGIN
+		SET @ActivityURL = 'https://my2sat.realpage.co.uk/api/erpbatchprocessor';
+	END
+
+	IF @ServerName IN ('repgbkdbsql001a','repgbkdbsql001b') --EUPROD
+	BEGIN
+		SET @ActivityURL = 'https://my2.realpage.co.uk/api/erpbatchprocessor';
+	END
+	Insert Into Batch.BatchProcessConfiguration(BatchProcessConfigurationId,BatchProcessConfigurationTypeId,Value)
+	Select 2,2,@endpoint
+  END
+  GO

@@ -5,6 +5,7 @@
 	/// </summary>
 	public enum ConfigurationType
 	{
-		ProcessApiEndpoint
+		ProcessApiEndpoint = 1,
+		EnterpriseRoleProcessApiEndpoint = 2
 	}
 }
