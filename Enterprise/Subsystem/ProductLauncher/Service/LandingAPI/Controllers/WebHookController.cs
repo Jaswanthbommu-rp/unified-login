@@ -486,7 +486,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             CompanyInstanceSourceId = unifiedLoginInstanceId,
                             PropertyInstanceSourceId = property.InstanceId.ToString(),
                             CustomerPropertyId = Convert.ToInt32(!string.IsNullOrEmpty(property.CustomerPropertyId) ? property.CustomerPropertyId : "0"),
-                            CustomerEnvironment = customerCompanyDomain,
+                            CustomerEnvironment = property.Domain,
                             Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
                             IsActive = true,
                             Address = new InstanceAddress()
