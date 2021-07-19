@@ -132,13 +132,15 @@
     <Compile Include="Constants\StoredProcNameConstants.cs" />
     <Compile Include="Helper\ApiCaller.cs" />
     <Compile Include="Helper\ConfigReader.cs" />
+	
     <Compile Include="Model\BatchConfiguration.cs" />
     <Compile Include="Model\ConfigurationType.cs" />
     <Compile Include="Model\DbConnectionEnum.cs" />
     <Compile Include="Model\Batch.cs" />
     <Compile Include="Model\BatchStatusType.cs" />
-    <Compile Include="Model\BatchProcessorInput.cs" />
+    <Compile Include="Model\BatchProcessorInput.cs" />	
     <Compile Include="Model\EnterpriseRoleBatch.cs" />
+	
     <Compile Include="Program.cs" />
     <Compile Include="ProjectInstaller.cs">
       <SubType>Component</SubType>

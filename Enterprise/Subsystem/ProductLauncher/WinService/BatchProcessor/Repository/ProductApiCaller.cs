@@ -12,6 +12,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
             return result;
         }
 
+
         public async Task<string> ProcessEnterpriseRoleBatchRecord(EnterpriseRoleBatch batchProcessorInput, string processApiEndPoint)
         {
             var result = await ApiCaller.PostApi<string, EnterpriseRoleBatch>(batchProcessorInput, processApiEndPoint);

@@ -8,7 +8,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
 {
 	public class EnterpriseRoleBatch
 	{
-		public int BatchProcessEnterpriseRoleProductUpdateId { get; set; }
+		public int EnterpriseRoleBatchProcessId { get; set; }
 		public long EditorUserPersonaId { get; set; }
 		public long SubjectUserPersonaId { get; set; }
 		public int EnterpriseRoleTemplateId { get; set; }

@@ -375,7 +375,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
                 {
                     {"EditorUserPersonaId", batch.EditorUserPersonaId},
                     {"SubjectUserPersonaId", batch.SubjectUserPersonaId},
-                    {"BatchProcessorId", batch.BatchProcessEnterpriseRoleProductUpdateId},
+                    {"BatchProcessorId", batch.EnterpriseRoleBatchProcessId},
                     {"EnterpriseRoleTemplateId", batch.EnterpriseRoleTemplateId},
                     {"StatusTypeId", batch.StatusTypeId},
                     {"BatchProcessTypeId",batch.BatchProcessTypeId},                  
