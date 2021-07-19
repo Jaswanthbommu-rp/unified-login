@@ -230,6 +230,72 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
 
         #endregion
 
+        #region Normal Polling Tasks-Threads
+
+        private void RunEnterpriseRoleUpdateProcess()
+        {
+            Log.Debug($"RunEnterpriseRoleUpdateProcess - Starting in polling main task :threadCount - {ThreadCount}, batchSize - {BatchSize}, pollingInterval - {PollingInterval}");
+            #if (DEBUG)
+                Console.WriteLine("-------------------------------------------------------------------------------");
+            #endif
+            CancellationToken cancellation = _cts.Token;
+            TimeSpan interval = TimeSpan.Zero;
+            IList<EnterpriseRoleBatch> batch = null;
+
+            while (!cancellation.WaitHandle.WaitOne(interval))
+            {
+                try
+                {
+                    Log.Debug("RunEnterpriseRoleUpdateProcess - Getting product batch to process.");
+
+                    // Get Db data by batchSize
+                    var repository = new BatchRepository();
+                    batch = repository.GetEnterpriseRoleBatchToProcess(BatchSize);
+
+                    if (batch == null || batch.Count <= 0)
+                    {
+                        Log.Debug("RunEnterpriseRoleUpdateProcess - No items to process in the batch.");
+                        interval = _waitAfterSuccessInterval;
+                        continue;
+                    }
+
+                    Log.Debug($"RunEnterpriseRoleUpdateProcess - Launching threads to process {batch.Count} products.");
+
+                    // Launch threads
+                    Parallel.ForEach(batch, new ParallelOptions { MaxDegreeOfParallelism = ThreadCount }, CallApiToProcessEnterpriseRoleBatchRecord);
+
+                    Log.Debug("RunEnterpriseRoleUpdateProcess - All threads processed.");
+
+                    // Occasionally check the cancellation state.
+                    if (cancellation.IsCancellationRequested)
+                    {
+                        Log.Information("RunEnterpriseRoleUpdateProcess - Thread cancellation requested.");
+                        break;
+                    }
+                    interval = _waitAfterSuccessInterval;
+                }
+                catch (Exception ex)
+                {
+                    // Log the exception. 
+                    Log.Error(ex, "RunEnterpriseRoleUpdateProcess - Exception in main task.");
+
+                    //// update complete batch with error status
+                    //if (batch != null && batch.Count > 0)
+                    //{
+                    //    Exception realError = ex;
+                    //    while (realError.InnerException != null)
+                    //        realError = realError.InnerException;
+
+                    //   // new BatchRepository().UpdateBatch(batch, BatchStatusType.Error, null, realError.Message);
+                    //}
+
+                    interval = _waitAfterErrorInterval;
+                }
+            }
+        }
+
+        #endregion
+
         #region Assign Product by calling API
 
         private void CallApiToProcessBatchRecord(Batch batch)
@@ -299,6 +365,51 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
 
                     new BatchRepository().UpdateBatchRecord(batch.BatchProcessorId, BatchStatusType.Error, null, realError.Message);
                 }
+            }
+        }
+
+        private void CallApiToProcessEnterpriseRoleBatchRecord(EnterpriseRoleBatch batch)
+        {
+            var additionalInfo = new Dictionary<string, object>();
+
+            try
+            {
+                var processEndpoint = GetBatchConfigurationByType(new Guid(), batch.BatchProcessTypeId, ConfigurationType.EnterpriseRoleProcessApiEndpoint.ToString());
+
+                additionalInfo = new Dictionary<string, object>
+                {
+                    {"EditorUserPersonaId", batch.EditorUserPersonaId},
+                    {"SubjectUserPersonaId", batch.SubjectUserPersonaId},
+                    {"BatchProcessorId", batch.BatchProcessEnterpriseRoleProductUpdateId},
+                    {"EnterpriseRoleTemplateId", batch.EnterpriseRoleTemplateId},
+                    {"StatusTypeId", batch.StatusTypeId},
+                    {"BatchProcessTypeId",batch.BatchProcessTypeId},                  
+                    {"processEndpoint",processEndpoint }
+                };
+
+                //Log.Debug($"CallApiToAssignProducts-Working to assign product {batch.ProductId} to user {batch.SubjectUserPersonaId}.", additionalInfo);
+                var logger = Log.Logger;
+                logger = logger.ForContext($"AdditionalInfo", JsonConvert.SerializeObject(additionalInfo, Formatting.Indented), true);
+                logger = logger.ForContext("ProductModule", this.GetType());
+                logger.Debug($"CallApiToProcessEnterpriseRoleBatchRecord -Working to assign products to user from enterprise role template {batch.EnterpriseRoleTemplateId} to user {batch.SubjectUserPersonaId}.");
+
+                var landingApiCaller = new ProductApiCaller();
+                var result = landingApiCaller.ProcessEnterpriseRoleBatchRecord(batch, processEndpoint);
+
+                logger.Information($"CallApiToProcessEnterpriseRoleBatchRecord-Result received for User {batch.SubjectUserPersonaId} - {result.Result}.");
+            }
+            catch (Exception ex)
+            {
+                Exception realError = ex;
+                while (realError.InnerException != null)
+                    realError = realError.InnerException;
+                // Log the exception. 
+                //Log.Error(ex, $"Exception while calling API for ProductId {batch.ProductId}.", additionalInfo);
+                var logger = Log.Logger;
+                logger = logger.ForContext($"AdditionalInfo", JsonConvert.SerializeObject(additionalInfo, Formatting.Indented), true);
+                logger = logger.ForContext("ProductModule", this.GetType());
+                logger = logger.ForContext("InnerException", realError);
+                logger.Error(ex, $"Exception while CallApiToProcessEnterpriseRoleBatchRecord {batch.EnterpriseRoleTemplateId}.");                
             }
         }
 

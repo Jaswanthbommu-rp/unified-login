@@ -184,6 +184,7 @@
     <Compile Include="Logic\DynamicContractResolver.cs" />
     <Compile Include="Logic\Enterprise\User\Models\EntUserStatus.cs" />
     <Compile Include="Logic\Enterprise\User\UserManagement.cs" />
+    <Compile Include="Logic\Helper\BatchHelper.cs" />
     <Compile Include="Logic\IManageHotsCloneUsers.cs" />
     <Compile Include="Logic\IManageUserLoginPersona.cs" />
     <Compile Include="Logic\Interfaces\IManageCustomFields.cs" />
@@ -216,6 +217,7 @@
     <Compile Include="Logic\Interfaces\IManageUPFMProductsIntegration.cs" />
     <Compile Include="Logic\Interfaces\ITwoFactorLogic.cs" />
     <Compile Include="Logic\Interfaces\IUnifiedSettingsRepository.cs" />
+    <Compile Include="Logic\ManageEnterpriseRoleProductBatch.cs" />
     <Compile Include="Logic\ManageHotsCloneUsers.cs" />
     <Compile Include="Logic\ManageUnifiedSettings.cs" />
     <Compile Include="Logic\ManageUserLoginPersona.cs" />
@@ -368,6 +370,7 @@
     <Compile Include="Repository\CustomFieldsRepository.cs" />
     <Compile Include="Repository\ElectronicAddressRepository.cs" />
     <Compile Include="Repository\EmailRepository.cs" />
+    <Compile Include="Repository\EnterpriseRoleProductRepository.cs" />
     <Compile Include="Repository\Enterprise\EntUserRepository.cs" />
     <Compile Include="Repository\Enterprise\IEntUserRepository.cs" />
     <Compile Include="Repository\GeographicBoundaryRepository.cs" />

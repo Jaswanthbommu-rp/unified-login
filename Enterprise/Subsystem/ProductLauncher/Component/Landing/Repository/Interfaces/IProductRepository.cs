@@ -251,5 +251,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="partyId"></param>
         /// <returns></returns>
         List<RoleTemplateProductRole> GetRoleTemplateProductRoleMapping(int roleTemplateId, long partyId);
+        List<int> GetEnterpriseRoleProductsByOrganization(int roleTemplateId, Guid organizationRealPageId)
     }
 }

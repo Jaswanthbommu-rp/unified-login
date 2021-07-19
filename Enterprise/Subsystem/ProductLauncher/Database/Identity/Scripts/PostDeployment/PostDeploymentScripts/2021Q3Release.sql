@@ -382,13 +382,22 @@ GO
  BEGIN
      Update ENterprise.ProductSetting Set Value ='Utility Superuser' where ProductSettingTypeId = @ProductsettingTypeId and ProductId =18;
  END
- Go
+ 
 GO
-
   IF NOT EXISTS (SELECT 1 FROM [Batch].[BatchProcessType] WHERE Name = 'EnterpriseRoleCreateUpdateProductUser')
   BEGIN
 	INSERT INTO [Batch].[BatchProcessType]
 	SELECT 10,1,'Batch to create EnterpriseRole Create-Update User','EnterpriseRoleCreateUpdateProductUser'
+  END
+  IF NOT EXISTS (SELECT 1 FROM [Batch].[BatchProcessType] WHERE Name = 'EnterpriseRoleBulkUpdateProductUser')
+  BEGIN
+	INSERT INTO [Batch].[BatchProcessType]
+	SELECT 11,1,'Batch to create EnterpriseRole Bulk Update Users','EnterpriseRoleBulkUpdateProductUser'
+  END
+  IF NOT EXISTS (SELECT 1 FROM [Batch].[BatchProcessType] WHERE Name = 'CreateEnterpriseRoleFromUserProduct')
+  BEGIN
+	INSERT INTO [Batch].[BatchProcessType]
+	SELECT 12,1,'Batch to create EnterpriseRole based on User Products','CreateEnterpriseRoleFromUserProduct'
   END
 GO
 
