@@ -795,7 +795,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             else
             {
-                message = $"An exception occured when {fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} attempted to update product access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName} in ";
+                message = $"An exception occurred when {fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} attempted to update product access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName} in ";
                 string[] products = new string[userBatchProductDetails.Count];
 
                 for (int i = 0; i < userBatchProductDetails.Count; i++)
