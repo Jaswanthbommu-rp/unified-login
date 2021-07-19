@@ -240,7 +240,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         bool isProductAssigned(long PersonaId, int ProductStatus, int productId);
         IList<PersonaProductUserDetails> ListProductsByPersonaId(long personaId, int statusType);
 
-        IList<UserBatchProductDetail> GetUserBatchDetails(int batchGroupId, long editorUserPersonId, long subjectUserPersonId, BatchProcessType batchProcessType);
+        IList<UserBatchProductDetail> GetUserBatchDetails(int batchGroupId, long editorUserPersonId, long subjectUserPersonId);
 
         void UpdateBatchGroupStatus(int groupId, bool isLogged);
         int GetUserEnterpriseRoleTemplateID(long personaId);

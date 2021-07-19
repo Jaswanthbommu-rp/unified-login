@@ -2145,7 +2145,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
-        public IList<UserBatchProductDetail> GetUserBatchDetails(int batchGroupId, long editorUserPersonId, long subjectUserPersonId, BatchProcessType batchProcessType)
+        public IList<UserBatchProductDetail> GetUserBatchDetails(int batchGroupId, long editorUserPersonId, long subjectUserPersonId)
         {
             using (var repo = GetRepository()) 
             {
@@ -2153,8 +2153,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 {
                     batchProcessorGroupId = batchGroupId,
                     editorUserPersonId = editorUserPersonId,
-                    subjectUserPersonId = subjectUserPersonId,
-                    batchProcessType = (int)batchProcessType
+                    subjectUserPersonId = subjectUserPersonId
 
                 }).ToList();
                 return data;

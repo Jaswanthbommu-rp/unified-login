@@ -1,8 +1,7 @@
 ﻿Create Procedure [Batch].[GetUserBatchRecords]            
  @batchProcessorGroupId bigint,           
  @editorUserPersonId bigint,         
- @subjectUserPersonId bigint,        
- @batchProcessType int            
+ @subjectUserPersonId bigint      
 As            
 Begin            
  select bp.StatusTypeId, p.Name, bg.BatchProcessorGroupActivityLogged, bp.InputJSON          
@@ -12,5 +11,4 @@ Begin
  where bp.BatchProcessorGroupId = @batchProcessorGroupId    
  and SubjectUserPersonaId = @subjectUserPersonId        
  and EditorUserPersonaId = @editorUserPersonId        
- and BatchProcessTypeId = @batchProcessType            
 End 

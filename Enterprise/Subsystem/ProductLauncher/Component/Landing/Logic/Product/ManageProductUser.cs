@@ -695,7 +695,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var fromUserLogInfo = GetUserActivityLogInfo(fromPersonaId);
             var toUserLogInfo = GetUserActivityLogInfo(toPersonaId);
 
-            var data = _productRepository.GetUserBatchDetails(batchGroupId, fromPersonaId, toPersonaId, BatchProcessType.CreateUpdateProductUser);
+            var data = _productRepository.GetUserBatchDetails(batchGroupId, fromPersonaId, toPersonaId);
 
             if (data != null & data.Count > 0) 
             {
