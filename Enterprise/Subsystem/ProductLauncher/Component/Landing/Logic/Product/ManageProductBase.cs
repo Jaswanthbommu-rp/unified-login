@@ -212,7 +212,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         protected IManageContactMechanism _manageContactMechanism = new ManageContactMechanism();
 
         protected GbProductMap _productDetails = new GbProductMap();
-        
+
+        public static readonly Guid _employeeCompanyRealPageId = new Guid("0D018E46-C20E-477D-ADED-4E5A35FB8F99");
+
         /// <summary>
         /// Default constructor
         /// </summary>
@@ -1007,10 +1009,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             else if (batchProcessType == BatchProcessType.UserTypeExternalToAdmin)
             {
                 message = "{0} {1} user type changed from external user to admin in product {2} by user {3} {4}.";
-            }
-            else if (batchProcessType == BatchProcessType.ProfileUpdate)
-            {
-                message = "{0} {1} user profile updated in product {2} by user {3} {4}.";
             }
 
             WriteActivityLog(fromPersonaId, toPerson, toUserGbLogin, message);

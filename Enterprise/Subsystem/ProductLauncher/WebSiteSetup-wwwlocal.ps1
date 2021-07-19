@@ -119,7 +119,7 @@ function SetUpWebsiteApplicationAndAppPool
     $newapppool = New-WebAppPool -Name $apppoolname 
     $newapppool | Set-ItemProperty -name "startMode" -Value "AlwaysRunning"
 	
-	if ($appname -eq "apicore" -or $appname -eq "login")
+	if ($appname -eq "apicore" -or $appname -eq "apicoreenterprise" -or $appname -eq "login")
 	{
 		$newapppool | Set-ItemProperty -name "managedRuntimeVersion" -Value ""
 	}
@@ -200,6 +200,7 @@ SetUpWebsiteAndAppPool "wwwlocal2" "web\landingmaster" "" "www-local2.realpage.c
 SetUpWebsiteApplicationAndAppPool "wwwlocal2" "api" "wwwlocal2api" "service\landingapi"
 SetUpWebsiteApplicationAndAppPool "wwwlocal2" "apienterprise" "wwwlocal2apienterprise" "service\landingapienterprise"
 SetUpWebsiteApplicationAndAppPool "wwwlocal2" "apicore" "wwwlocal2apicore" "service\apicore"
+SetUpWebsiteApplicationAndAppPool "wwwlocal2" "apicoreenterprise" "wwwlocal2apicoreenterprise" "service\apicoreenterprise"
 
 
 AddUserToCert -userName ".\IIS_IUSRS" -permission read -certStoreLocation "\LocalMachine\My" -certThumbprint $certthumbprint -certPassword $sspwd

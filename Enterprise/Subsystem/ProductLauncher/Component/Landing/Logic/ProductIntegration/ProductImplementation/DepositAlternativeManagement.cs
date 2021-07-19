@@ -189,9 +189,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				samlRepository.DeleteSamlUserProductInfoAndStatus(SubjectUserDetails.PersonaId, (int)ProductEnum.DepositAlternative);
 				_dataCollector.UpdateProductSettingProductStatus(SubjectUserDetails.PersonaId, "ProductStatus", ProductId, statusValue);
 
-				// Activity Logging
-				ProductActivityLogger.WriteUnassignUserActivityLog(EditorUserDetails, SubjectUserDetails, BlueBookGbProductMap.Name, BlueBookGbProductMap.BooksProductCode, CorrelationId);
-
 				return string.Empty;
 			}
 

@@ -2608,13 +2608,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 StatusTypeId = UserUiStatusType.Disabled,
                                 FromDate = ul.FromDate
                             });
-
-                            //remove products
-                            if (editorPersona != null && (ul.OrganizationRealPageId == primaryCompanyGuid || ul.OrganizationRealPageId == org.OrganizationRealPageId))
-                            {
-                                ProcessDisableUserProductData(repository, persona.PersonaId, editorPersona.RealPageId, editorPersona.PersonaId, persona.UserTypeId);
-                            }
-                        }                         
+                        }
+                        //remove products
+                        if (editorPersona != null && (ul.OrganizationRealPageId == primaryCompanyGuid || ul.OrganizationRealPageId == org.OrganizationRealPageId))
+                        {
+                            ProcessDisableUserProductData(repository, persona.PersonaId, editorPersona.RealPageId, editorPersona.PersonaId, persona.UserTypeId);
+                        }
                     }
                 }
             }

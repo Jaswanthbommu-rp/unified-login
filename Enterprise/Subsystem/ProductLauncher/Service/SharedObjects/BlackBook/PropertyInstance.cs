@@ -99,6 +99,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackB
         /// </summary>
         public List<CompanyPropertyInstanceMap> CompanyPropertyInstanceMap { get; set; }
 
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public List<PropertyInstancePartner> PropertyInstancePartners { get; set; }
+
     }
 
+    public class PropertyInstancePartner
+    {
+        public string TargetPropertyInstanceSourceId { get; set; }
+
+        public string TargetSource { get; set; }
+    }
 }

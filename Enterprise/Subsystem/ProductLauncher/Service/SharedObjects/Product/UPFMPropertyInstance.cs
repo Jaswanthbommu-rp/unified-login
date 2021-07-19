@@ -29,5 +29,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
 
         public string Domain { get; set; }
         public List<int> ProductList { get; set; }
+
+        public string PropertyInstancePartner { get; set; } = null;
+
+        public string PropertyInstancePartnerSourceId { get; set; } = null;
     }
 }

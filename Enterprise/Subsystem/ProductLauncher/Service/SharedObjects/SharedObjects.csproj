@@ -598,6 +598,7 @@
     <Compile Include="Product\ResidentPortal\Community.cs" />
     <Compile Include="Product\ResidentPortal\DataList.cs" />
     <Compile Include="Product\ResidentPortal\DataObject.cs" />
+    <Compile Include="Product\ResidentPortal\EmailUpdateOnly.cs" />
     <Compile Include="Product\ResidentPortal\ICommunity.cs" />
     <Compile Include="Product\ResidentPortal\IDataList.cs" />
     <Compile Include="Product\ResidentPortal\IDataObject.cs" />
