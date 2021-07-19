@@ -76,6 +76,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
                 assignRetryProductsTask.Start();
 
                 Log.Information("Launched retry polling task...");
+
+                Task enterpriseRoleProductUpdateTask = new Task(RunEnterpriseRoleUpdateProcess, _cts.Token, TaskCreationOptions.LongRunning);
+                enterpriseRoleProductUpdateTask.Start();
+
+                Log.Information("Launched retry polling task...");
 #if (DEBUG)
                 Console.WriteLine("-------------------------------------------------------------------------------");
 #endif
@@ -230,7 +235,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
 
         #endregion
 
-        #region Normal Polling Tasks-Threads
+        #region Enterprise Role Product Update Tasks-Threads
 
         private void RunEnterpriseRoleUpdateProcess()
         {
@@ -250,7 +255,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
 
                     // Get Db data by batchSize
                     var repository = new BatchRepository();
-                    batch = repository.GetEnterpriseRoleBatchToProcess(BatchSize);
+                    batch = repository.GetEnterpriseRoleProductUpdateBatchToProcess(BatchSize);
 
                     if (batch == null || batch.Count <= 0)
                     {
@@ -278,16 +283,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
                 {
                     // Log the exception. 
                     Log.Error(ex, "RunEnterpriseRoleUpdateProcess - Exception in main task.");
-
-                    //// update complete batch with error status
-                    //if (batch != null && batch.Count > 0)
-                    //{
-                    //    Exception realError = ex;
-                    //    while (realError.InnerException != null)
-                    //        realError = realError.InnerException;
-
-                    //   // new BatchRepository().UpdateBatch(batch, BatchStatusType.Error, null, realError.Message);
-                    //}
 
                     interval = _waitAfterErrorInterval;
                 }

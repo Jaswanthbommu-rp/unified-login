@@ -5,7 +5,7 @@ BEGIN
     SET NOCOUNT ON;  
      DECLARE @PBFiltered TABLE  
     (  
-        [BatchProcessEnterpriseRoleProductUpdateId] [BIGINT] NOT NULL,  
+        [EnterpriseRoleBatchProcessId] [BIGINT] NOT NULL,  
         [EditorUserPersonaId] [BIGINT] NOT NULL,  
         [SubjectUserPersonaId] [BIGINT] NOT NULL,  
         [EnterpriseRoleTemplateId] [INT] NOT NULL,  
@@ -18,21 +18,21 @@ BEGIN
   
  ;with batchtoprocess as (  
   SELECT  
-      [BatchProcessEnterpriseRoleProductUpdateId],  
+      [EnterpriseRoleBatchProcessId],  
       [EditorUserPersonaId],  
       [SubjectUserPersonaId],  
       [EnterpriseRoleTemplateId],  
       [StatusTypeId],  
       [CreatedDateTime],  
       [BatchProcessTypeId],
-      row_number() over (partition by subjectuserpersonaid, EnterpriseRoleTemplateId order by BatchProcessEnterpriseRoleProductUpdateId asc ) as rn,  
-      row_number() over (partition by editoruserpersonaid order by BatchProcessEnterpriseRoleProductUpdateId asc ) as rn2    
-  FROM Batch.[BatchProcessEnterpriseRoleProductUpdate] BP  
+      row_number() over (partition by subjectuserpersonaid, EnterpriseRoleTemplateId order by EnterpriseRoleBatchProcessId asc ) as rn,  
+      row_number() over (partition by editoruserpersonaid order by EnterpriseRoleBatchProcessId asc ) as rn2    
+  FROM Batch.[EnterpriseRoleBatchProcess] BP  
   WHERE BP.StatusTypeID = 5  )  
  
     INSERT INTO @PBFiltered  
     (  
-      [BatchProcessEnterpriseRoleProductUpdateId],  
+      [EnterpriseRoleBatchProcessId],  
       [EditorUserPersonaId],  
       [SubjectUserPersonaId] ,  
       [EnterpriseRoleTemplateId],  
@@ -41,7 +41,7 @@ BEGIN
       [BatchProcessTypeId]
     )  
  SELECT TOP (@BatchSize)  
-      [BatchProcessEnterpriseRoleProductUpdateId],  
+      [EnterpriseRoleBatchProcessId],  
       [EditorUserPersonaId],  
       [SubjectUserPersonaId] ,  
       [EnterpriseRoleTemplateId],  
@@ -52,13 +52,13 @@ BEGIN
   WHERE   rn = 1   
   And    rn2 = 5  
   
-    UPDATE Batch.BatchProcessEnterpriseRoleProductUpdate  
+    UPDATE Batch.EnterpriseRoleBatchProcess  
     SET StatusTypeId = 6 --Running  
     FROM Batch.BatchProcessEnterpriseRoleProductUpdate BP  
         JOIN @PBFiltered F  
-            ON F.[BatchProcessEnterpriseRoleProductUpdateId] = BP.[BatchProcessEnterpriseRoleProductUpdateId];  
+            ON F.[EnterpriseRoleBatchProcessId] = BP.[EnterpriseRoleBatchProcessId];  
   
-    SELECT [BatchProcessEnterpriseRoleProductUpdateId],  
+    SELECT [EnterpriseRoleBatchProcessId],  
       [EditorUserPersonaId],  
       [SubjectUserPersonaId] ,  
       [EnterpriseRoleTemplateId],  

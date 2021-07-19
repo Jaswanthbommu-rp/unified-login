@@ -32,7 +32,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
 				return result;
 			}
 		}
-		public IList<EnterpriseRoleBatch> GetEnterpriseRoleBatchToProcess(int batchSize)
+		public IList<EnterpriseRoleBatch> GetEnterpriseRoleProductUpdateBatchToProcess(int batchSize)
 		{
 			using (var repository = GetRepository())
 			{
