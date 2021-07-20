@@ -929,3 +929,40 @@ IF NOT EXISTS(Select 1 From [Batch].[BatchProcessConfiguration] Where BatchProce
 	Select 2,2,@endpoint
   END
   GO
+
+  --UserStory 546918
+Declare @R1 varchar(100),@R2 varchar(100),@R3 varchar(100),@R4 varchar(100),@RoleId int,@UserId int;
+
+SELECT @UserId = UserId
+FROM Ident.UserLogin
+WHERE LoginName LIKE 'realpagead@%';
+
+Select @RoleId =RoleId from Security.Role where ShortName ='ROForUnifiedPlatform';
+Select @R1 = RightId from Security.[Right] where RightName = 'ViewUnifiedSettings';
+Select @R2 = RightId from Security.[Right] where RightName = 'Viewallcompanylevelsettings';
+Select @R3 = RightId from Security.[Right] where RightName = 'Viewallpropertylevelsettings';
+Select @R4 = RightId from Security.[Right] where RightName = 'ViewCIMPLQuestions';
+
+IF NOT EXISTS(Select Top 1 1 from Security.RoleRight where RoleId = @RoleId and RightId in (@R1,@R2,@R3,@R4))
+BEGIN TRY
+Insert into Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate) Values(@RoleId,@R1,@UserId,GETDATE());
+
+Insert into Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate) Values(@RoleId,@R2,@UserId,GETDATE());
+
+Insert into Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate) Values(@RoleId,@R3,@UserId,GETDATE());
+
+Insert into Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate) Values(@RoleId,@R4,@UserId,GETDATE());
+END TRY
+Begin Catch 
+ 
+      Declare @ErrorMessage nvarchar(250);
+      Declare @ErrorSeverity int;
+      Declare @ErrorState int;
+      Declare @ErrorLine int;
+      Select @ErrorMessage = ERROR_Message()
+	         ,@ErrorSeverity = ERROR_SEVERITY()
+			 ,@ErrorState = ERROR_STATE()
+			 ,@ErrorLine = ERROR_LINE();
+			 
+		 RAISERROR(@ErrorMessage,@ErrorSeverity,@ErrorState,@ErrorLine); 
+ END Catch 
