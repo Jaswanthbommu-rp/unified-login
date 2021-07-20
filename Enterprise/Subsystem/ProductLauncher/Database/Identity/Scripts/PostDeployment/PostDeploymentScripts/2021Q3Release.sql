@@ -929,3 +929,12 @@ IF NOT EXISTS(Select 1 From [Batch].[BatchProcessConfiguration] Where BatchProce
 	Select 2,2,@endpoint
   END
   GO
+
+DECLARE @ControlId BIGINT, @GridControlId BIGINT
+SELECT @ControlId = ControlId FROM UserManagement.Control WHERE UIId='ClientPortalRoleTemplateCheckboxUIId'
+SELECT @GridControlId = ControlId FROM UserManagement.Control WHERE UIId='ClientPortalRoleTemplateRolesSelectGridUIId'
+UPDATE UserManagement.Control SET ControlTypeId = 7 WHERE ControlId = @ControlId
+UPDATE UserManagement.Control SET ControlTypeId = 2 WHERE ControlId = @GridControlId
+UPDATE UserManagement.ControlAttribute SET Value = 'False'	WHERE ControlId = @GridControlId
+
+GO
