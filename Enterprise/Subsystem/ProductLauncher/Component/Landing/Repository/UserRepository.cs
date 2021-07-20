@@ -3367,8 +3367,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
            
             if (enterpriseRoleId > 0 )
             {
-                batchProcessTypeId = (int)BatchProcessType.EnterpriseRoleCreateUpdateProductUser;
-               
                 object param = new
                 {
                     RoleTemplateId = enterpriseRoleId,
@@ -3437,43 +3435,49 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 foreach (var product in roleTemplateProducts)
                 {
-                    var productRoleData = roleTemplateProductRole?.Where(p => p.ProductId == product);
-
-                    var roleTemplateRoles = productRoleData?.Select(p => new
+                    //First check for any batchdata coming from ui, if no batch data then process for enterprise role batch
+                    var productBatch = productList.FirstOrDefault(p => p.ProductId == product);
+                    if (productBatch == null && product != (int)ProductEnum.UnifiedPlatform)
                     {
-                        p.RoleTemplateProductRoleMappingId,
-                        p.ProductRoleId,
-                        p.ProductRoleName
-                    }).Distinct();
+                        batchProcessTypeId = (int)BatchProcessType.EnterpriseRoleCreateUpdateProductUser;
+                        var productRoleData = roleTemplateProductRole?.Where(p => p.ProductId == product);
 
-
-                    //Roles
-                    List<string> productRoles = new List<string>();
-                    foreach (var roles in roleTemplateRoles)
-                    {
-                        if (roles.RoleTemplateProductRoleMappingId != 0)
+                        var roleTemplateRoles = productRoleData?.Select(p => new
                         {
-                            productRoles.Add(roles.ProductRoleId);
-                        }
-                    }
+                            p.RoleTemplateProductRoleMappingId,
+                            p.ProductRoleId,
+                            p.ProductRoleName
+                        }).Distinct();
 
-                    ProductBatch pb = new ProductBatch()
-                    {
-                        ProductId = product,
-                        StatusTypeId = 5,
-                        RetryCount = 0,
-                        BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
-                        InputJson = new RolePropertyList() 
-                        { 
-                            PropertyRoleList = new List<PropertyRoleList>(), 
-                            PropertyList = new List<string>(),
-                            RoleList = productRoles, 
-                            IsAssigned = true ,
-                            IsAssignedNewPropertyByDefault = false,
-                            UsePrimaryProperties = true
+
+                        //Roles
+                        List<string> productRoles = new List<string>();
+                        foreach (var roles in roleTemplateRoles)
+                        {
+                            if (roles.RoleTemplateProductRoleMappingId != 0)
+                            {
+                                productRoles.Add(roles.ProductRoleId);
+                            }
                         }
-                    };
-                    productList.Add(pb);
+
+                        ProductBatch pb = new ProductBatch()
+                        {
+                            ProductId = product,
+                            StatusTypeId = 5,
+                            RetryCount = 0,
+                            BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
+                            InputJson = new RolePropertyList()
+                            {
+                                PropertyRoleList = new List<PropertyRoleList>(),
+                                PropertyList = new List<string>(),
+                                RoleList = productRoles,
+                                IsAssigned = true,
+                                IsAssignedNewPropertyByDefault = false,
+                                UsePrimaryProperties = true
+                            }
+                        };
+                        productList.Add(pb);
+                    }                    
                 }
             }
 
