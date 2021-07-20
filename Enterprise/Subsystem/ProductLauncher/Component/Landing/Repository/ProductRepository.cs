@@ -1953,6 +1953,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
+        public List<int> GetEnterpriseRoleProductsByOrganization(int roleTemplateId, Guid organizationRealPageId)
+        {
+            object param = new
+            {
+                RoleTemplateId = roleTemplateId,
+                OrganizationRealPageId = organizationRealPageId
+            };
+            using (var repository = GetRepository())
+            {
+                return repository.GetMany<int>(StoredProcNameConstants.SP_GetEnterpriseRoleProductsByOrganization, param).ToList();
+
+            }
+        }
         #endregion
 
         #region Private Methods

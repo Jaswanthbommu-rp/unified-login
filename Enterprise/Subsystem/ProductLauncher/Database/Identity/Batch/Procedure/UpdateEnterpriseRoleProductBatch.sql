@@ -8,6 +8,8 @@ AS
              BEGIN TRAN;
                 UPDATE [Batch].[EnterpriseRoleBatchProcess] SET StatusTypeId = @StatusTypeId
                 WHERE EnterpriseRoleBatchProcessId = @ProductBatchID
+
+                Select 1 AS BIT;
              COMMIT;   
          END TRY  
          BEGIN CATCH  

@@ -286,6 +286,7 @@
         //ProductBatch
         public const string SP_CreateProductBatch = "Enterprise.CreateProductBatch";
         public const string SP_UpdateProductBatch = "Enterprise.UpdateProductBatch";
+        public const string SP_UpdateEnterpriseRoleProductBatch = "Enterprise.UpdateEnterpriseRoleProductBatch";
 
         //BatchProcessor
         public const string SP_GetUserBatchRecords = "Batch.GetUserBatchRecords";

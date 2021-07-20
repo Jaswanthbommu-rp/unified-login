@@ -1,4 +1,6 @@
-﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.BatchProcessor;
+﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.BatchProcessor;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Batch;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using Swashbuckle.Swagger.Annotations;
 using System.Net;
@@ -41,7 +43,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             return Request.CreateResponse(HttpStatusCode.Created, result);
         }
-        
+
+        /// <summary>
+        /// Used to process Entrprise role product update to user batch record by windows service
+        /// </summary>
+        /// <param name="batchRecord">Details to send to Realpage product for a user</param> 
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Update successful", Type = typeof(HttpResponseMessage))]
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
+        [Route("erpbatchprocessor")]
+        [AllowAnonymous]//TODO: Make it authorize by having client id for Windows Service in ID server
+        [HttpPost]
+        public HttpResponseMessage EnterpriseRoleProductProcessBatch(EnterpriseRoleBatch batchRecord)
+        {
+            if (batchRecord == null)
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "enterprise role product batchRecord null.");
+
+            ManageEnterpriseRoleProductBatch manageBatchProcess = new ManageEnterpriseRoleProductBatch(_userClaims);
+            string result = manageBatchProcess.GenerateEnterpriseRoleUserProductBatch(batchRecord);
+
+            if (string.IsNullOrEmpty(result))
+                result = "Success";
+
+            return Request.CreateResponse(HttpStatusCode.Created, result);
+        }
+
+
         #endregion
     }
 } 
