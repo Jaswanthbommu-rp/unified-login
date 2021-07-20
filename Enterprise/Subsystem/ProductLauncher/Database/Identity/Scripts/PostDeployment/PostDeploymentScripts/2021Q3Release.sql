@@ -938,11 +938,11 @@ SELECT @UserId = UserId
 FROM Ident.UserLogin
 WHERE LoginName LIKE 'realpagead@%';
 
-Select @RoleId =RoleId from Security.Role where RoleName ='Read only for Unified Platform';
-Select @R1 = RightId from Security.[Right] where Value = 'Access to Unified Settings';
-Select @R2 = RightId from Security.[Right] where Value = 'View all company-level settings & templates';
-Select @R3 = RightId from Security.[Right] where Value = 'View all property- level settings';
-Select @R4 = RightId from Security.[Right] where Value = 'View CIMPL Implementation Questions';
+Select @RoleId =RoleId from Security.Role where ShortName ='ROForUnifiedPlatform';
+Select @R1 = RightId from Security.[Right] where RightName = 'ViewUnifiedSettings';
+Select @R2 = RightId from Security.[Right] where RightName = 'Viewallcompanylevelsettings';
+Select @R3 = RightId from Security.[Right] where RightName = 'Viewallpropertylevelsettings';
+Select @R4 = RightId from Security.[Right] where RightName = 'ViewCIMPLQuestions';
 
 IF NOT EXISTS(Select Top 1 1 from Security.RoleRight where RoleId = @RoleId and RightId in (@R1,@R2,@R3,@R4))
 BEGIN TRY
