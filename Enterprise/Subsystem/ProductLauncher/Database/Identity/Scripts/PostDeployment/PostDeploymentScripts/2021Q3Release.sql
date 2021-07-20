@@ -918,12 +918,12 @@ IF NOT EXISTS(Select 1 From [Batch].[BatchProcessConfiguration] Where BatchProce
 
 	IF @ServerName IN ('reagbkdbsql001') --EUSAT
 	BEGIN
-		SET @ActivityURL = 'https://my2sat.realpage.co.uk/api/erpbatchprocessor';
+		SET @endpoint = 'https://my2sat.realpage.co.uk/api/erpbatchprocessor';
 	END
 
 	IF @ServerName IN ('repgbkdbsql001a','repgbkdbsql001b') --EUPROD
 	BEGIN
-		SET @ActivityURL = 'https://my2.realpage.co.uk/api/erpbatchprocessor';
+		SET @endpoint = 'https://my2.realpage.co.uk/api/erpbatchprocessor';
 	END
 	Insert Into Batch.BatchProcessConfiguration(BatchProcessConfigurationId,BatchProcessConfigurationTypeId,Value)
 	Select 2,2,@endpoint
