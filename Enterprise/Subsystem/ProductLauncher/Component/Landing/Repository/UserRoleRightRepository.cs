@@ -42,6 +42,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
         }
 
+        /// <summary>
+        /// Unit test constructor
+        /// </summary>
+        /// <param name="repository"></param>
+        /// <param name="userClaim"></param>
+        public UserRoleRightRepository(IRepository repository, DefaultUserClaim userClaim) : base(repository)
+        {
+            _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
+        }
+
         #endregion
 
         /// <summary>

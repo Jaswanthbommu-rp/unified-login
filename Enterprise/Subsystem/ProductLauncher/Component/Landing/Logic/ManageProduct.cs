@@ -45,22 +45,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		/// <summary>
 		/// Used for dependency injection
 		/// </summary> 
-		public ManageProduct(IProductRepository productRepository,
-            IProductInternalSettingRepository productInternalSettingRepository, IManagePersona managePersona,
-            IManageBlueBook manageBlueBook, IManagePartyRelationship managePartyRelationship,
-            IManageOrganization manageOrganization, IManageProfile manageProfile,
-            IManageUserRoleRight manageUserRoleRight, DefaultUserClaim userClaim)
-        {
-            _productRepository = productRepository;
-            _productInternalSettingRepository = productInternalSettingRepository;
-            _managePersona = managePersona;
-            _manageBlueBook = manageBlueBook;
-            _managePartyRelationship = managePartyRelationship;
-            _organizationRepository = new OrganizationRepository();
-            _manageProfile = manageProfile;
-            _manageUserRoleRight = manageUserRoleRight;
-            _defaultUserClaim = userClaim;
-        }
+		//public ManageProduct(IProductRepository productRepository,
+        //    IProductInternalSettingRepository productInternalSettingRepository, IManagePersona managePersona,
+        //    IManageBlueBook manageBlueBook, IManagePartyRelationship managePartyRelationship,
+        //    IManageOrganization manageOrganization, IManageProfile manageProfile,
+        //    IManageUserRoleRight manageUserRoleRight, DefaultUserClaim userClaim)
+        //{
+        //    _productRepository = productRepository;
+        //    _productInternalSettingRepository = productInternalSettingRepository;
+        //    _managePersona = managePersona;
+        //    _manageBlueBook = manageBlueBook;
+        //    _managePartyRelationship = managePartyRelationship;
+        //    _organizationRepository = new OrganizationRepository();
+        //    _manageProfile = manageProfile;
+        //    _manageUserRoleRight = manageUserRoleRight;
+        //    _defaultUserClaim = userClaim;
+        //}
 
         /// <summary>
         /// Repository test Constructor
@@ -73,8 +73,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _manageBlueBook = new ManageBlueBook(userClaim, repository, _productInternalSettingRepository, messageHandler);
             _managePartyRelationship = new ManagePartyRelationship(repository);
             _organizationRepository = new OrganizationRepository(repository);
-            _manageProfile = new ManageProfile(userClaim);
-            _manageUserRoleRight = new ManageUserRoleRight();
+            _manageProfile = new ManageProfile(repository, userClaim);
+            _manageUserRoleRight = new ManageUserRoleRight(repository, userClaim);
             _defaultUserClaim = userClaim;
         }
 
@@ -133,8 +133,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             Organization organization = new Organization();
             long? userPersonaId = null;
             Guid companyRealPageId = Guid.Empty;
-            ;
-
+            
             //Get the UL Organization details by the CompanyInstanceId from BlackBook
             if (blueBookCompanyInstanceId != -1)
             {
@@ -150,7 +149,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 companyRealPageId = EmployeeCompanyRealPageId;
             }
-
+            organization = _organizationRepository.GetOrganization(realPageId: companyRealPageId, organizationPartyId: null);
             if (organization != null)
             {
 				if (_defaultUserClaim.OrganizationRealPageGuid == Guid.Empty) {

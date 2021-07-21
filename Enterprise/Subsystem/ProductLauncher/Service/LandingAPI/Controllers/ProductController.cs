@@ -70,7 +70,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _repository = repository;
             var productInternalSettingRepository = new ProductInternalSettingRepository(repository);
             _manageBlueBook = new ManageBlueBook(userClaim, repository, productInternalSettingRepository, messageHandler);
-            _manageProduct = new ManageProduct(productRepository, productInternalSettingRepository, null, _manageBlueBook, null, null, null, null, _userClaims);
+            _manageProduct = new ManageProduct(_repository, _userClaims, messageHandler);
             _productRepository = productRepository;
         }
 
@@ -177,7 +177,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [HttpGet]
         public HttpResponseMessage GetProductFamilies(Guid? personRealPageId = null, string accessFilter = null, string loginName = null)
         {
-            IManagePersona managePersona = new ManagePersona(_userClaims);
             Status<IErrorData> errorStatus = new Status<IErrorData>();
             ObjectListOutput<ProductFamily, IErrorData> output = new ObjectListOutput<ProductFamily, IErrorData>();
             IList<ProductFamily> productFamilyList = new List<ProductFamily>();

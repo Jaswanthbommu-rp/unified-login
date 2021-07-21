@@ -4,6 +4,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using UL = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
@@ -42,6 +43,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         {
             _userRoleRightRepository = new UserRoleRightRepository(repository);
         }
+
+		/// <summary>
+		/// Unit test constructor
+		/// </summary>
+		/// <param name="repository"></param>
+		/// <param name="userClaim"></param>
+		public ManageUserRoleRight(IRepository repository, DefaultUserClaim userClaim)
+		{
+			_userRoleRightRepository = new UserRoleRightRepository(repository, userClaim);
+		}
 
 		/// <summary>
 		/// Used to get a list of roles assigned to the given persona for the given product id

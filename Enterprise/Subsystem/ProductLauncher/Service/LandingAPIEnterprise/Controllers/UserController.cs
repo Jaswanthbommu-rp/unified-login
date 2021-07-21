@@ -97,14 +97,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             ProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository(repository);
             // ManagePersona managePersona = new ManagePersona(repository, userClaims);
             _manageOrganization = new ManageOrganization(repository, userClaims, messageHandler);
-            ManageUserRoleRight manageUserRoleRight = new ManageUserRoleRight(repository);
+            ManageUserRoleRight manageUserRoleRight = new ManageUserRoleRight(repository, userClaims);
             ManagePartyRelationship managePartyRelationship = new ManagePartyRelationship(repository);
 
             ManageBlueBook manageBlueBook = new ManageBlueBook(userClaims, repository, productInternalSettingRepository, messageHandler);
             ManageProfile manageProfile = new ManageProfile(userClaims);
             _manageSettings = new ManageUnifiedSettings(repository, userClaims, messageHandler);
 
-            _manageProduct = new ManageProduct(productRepository, productInternalSettingRepository, _managePersona, manageBlueBook, managePartyRelationship, _manageOrganization, manageProfile, manageUserRoleRight, userClaims);
+            _manageProduct = new ManageProduct(repository, userClaims, messageHandler);
             _manageProductPanel = new ManageProductPanel(userClaims, repository, manageBlueBook, messageHandler, manageProductOneSite);
 
             _productRepository = new ProductRepository(repository, userClaims);
