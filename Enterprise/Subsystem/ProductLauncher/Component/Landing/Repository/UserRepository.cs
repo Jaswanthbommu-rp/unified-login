@@ -2529,7 +2529,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     var userOrganizationList = userLoginRepository.ListOrganizationByLoginName(userLoginOnly.LoginName);
                     Guid primaryCompanyGuid = userOrganizationList.FirstOrDefault(p => p.PrimaryOrganization).OrganizationRealPageId;
                     List<Guid> organizationsToProcess = new List<Guid>();
-                    long orgPartyId = 0;
                     foreach (var org in userOrganizationList)
                     {
                         Persona editorPersona = null;
@@ -2538,7 +2537,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             //since windows service doesn't have editor persona,Get RealPageEmployeeAccessID to use in to get editor persona and save it for later calls
                             dynamic param = new
                             {
-                                RealPageId = ul.OrganizationRealPageId
+                                RealPageId = org.OrganizationRealPageId
                             };
                             var result = repository.GetMany<dynamic>(StoredProcNameConstants.SP_ListOrganizations, param);
 
@@ -2547,7 +2546,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 foreach (var item in result)
                                 {
                                     Guid realPageEmployeeAccessId = new Guid(item.PersonRealPageId);
-                                    orgPartyId = item.PartyId;
+                                    long orgPartyId = item.PartyId;
                                     editorPersona = managePersona.GetFirstAvailablePersonaByCompany(realPageEmployeeAccessId, orgPartyId);
                                 }
 
@@ -2560,11 +2559,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
 
                         // eventually this will be a list of personas when we start doing multi persona
-                        var persona = managePersona.GetFirstAvailablePersonaByCompany(ul.UserRealPageId, orgPartyId);
+                        var persona = managePersona.GetFirstAvailablePersonaByCompany(ul.UserRealPageId, org.OrganizationPartyId);
 
                         //update user status to disabled
-                        if (org.PrimaryOrganization)
+                        if(userOrganizationList.Any(uo => uo.OrganizationRealPageId == ul.OrganizationRealPageId) && ul.OrganizationRealPageId != org.OrganizationRealPageId)
                         {
+                            long orgPartyId = userOrganizationList.FirstOrDefault(uo => uo.OrganizationRealPageId == ul.OrganizationRealPageId).OrganizationPartyId;
                             var updateUserStatusResponse = repository.Execute<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserStatusByCompany, new
                             {
                                 RealPageId = ul.UserRealPageId,
@@ -2573,8 +2573,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 FromDate = ul.FromDate
                             });
                         }
+                        else if (org.PrimaryOrganization)
+                        {
+                            var updateUserStatusResponse = repository.Execute<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserStatusByCompany, new
+                            {
+                                RealPageId = ul.UserRealPageId,
+                                OrganizationPartyId = org.OrganizationPartyId,
+                                StatusTypeId = UserUiStatusType.Disabled,
+                                FromDate = ul.FromDate
+                            });
+                        }
                         //remove products
-                        if (editorPersona != null)
+                        if (editorPersona != null && (ul.OrganizationRealPageId == primaryCompanyGuid || ul.OrganizationRealPageId == org.OrganizationRealPageId))
                         {
                             ProcessDisableUserProductData(repository, persona.PersonaId, editorPersona.RealPageId, editorPersona.PersonaId, persona.UserTypeId);
                         }
