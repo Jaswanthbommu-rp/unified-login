@@ -1122,7 +1122,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         };
                         IList<EnterpriseRole> enterpriseRoles = repository.GetMany<EnterpriseRole>(procName, param);
 
+                        List<int> greenBookRoles = new List<int>();
                         int greenBookRole = 0;
+
                         gbProductBatch = newProfile.productBatch?.FirstOrDefault<ProductBatch>((Func<ProductBatch, bool>)(p => p.ProductId == (int)ProductEnum.UnifiedPlatform));                        
 
                         if (currentOrg.OrganizationPartyId.Equals(organizationExternalUser.PartyId))
@@ -4250,6 +4252,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
 
             return roleId;
+        }
+
+        /// <summary>
+        /// get list of GB(Unified Login) product Roles 
+        /// </summary>       
+        /// <param name="productBatch"></param>                
+        private List<int> GetGreenBookRoles(ProductBatch productBatch) 
+        {
+            List<int> roleIds = new List<int>();
+
+            foreach (var item in productBatch.InputJson.RoleList)
+            {
+                roleIds.Add(int.Parse(item));
+            }
+
+            return roleIds;
         }
 
         /// <summary>
