@@ -3,17 +3,16 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <Name>AuditDBV2</Name>
+    <Name>AuditArchiveDB</Name>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectVersion>4.1</ProjectVersion>
-    <ProjectGuid>{c54d6f29-b46d-485e-aef5-cb4075b863af}</ProjectGuid>
+    <ProjectGuid>{37f16320-4930-45ec-8631-04492bf366ab}</ProjectGuid>
     <DSP>Microsoft.Data.Tools.Schema.Sql.Sql130DatabaseSchemaProvider</DSP>
     <OutputType>Database</OutputType>
-    <RootPath>
-    </RootPath>
-    <RootNamespace>AuditDBV2</RootNamespace>
-    <AssemblyName>AuditDBV2</AssemblyName>
-    <ModelCollation>1033,CI</ModelCollation>
+    <RootPath />
+    <RootNamespace>AuditArchiveDB</RootNamespace>
+    <AssemblyName>AuditArchiveDB</AssemblyName>
+    <ModelCollation>1033, CI</ModelCollation>
     <DefaultFileStructure>BySchemaAndSchemaType</DefaultFileStructure>
     <DeployToDatabase>True</DeployToDatabase>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
@@ -22,8 +21,6 @@
     <SqlServerVerification>False</SqlServerVerification>
     <IncludeCompositeObjects>True</IncludeCompositeObjects>
     <TargetDatabaseSet>True</TargetDatabaseSet>
-    <DefaultCollation>SQL_Latin1_General_CP1_CI_AS</DefaultCollation>
-    <DefaultFilegroup>PRIMARY</DefaultFilegroup>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>bin\Release\</OutputPath>
@@ -50,7 +47,6 @@
   </PropertyGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">11.0</VisualStudioVersion>
-    <!-- Default to the v11.0 targets path if the targets file for the current VS version is not found -->
     <SSDTExists Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets')">True</SSDTExists>
     <VisualStudioVersion Condition="'$(SSDTExists)' == ''">11.0</VisualStudioVersion>
   </PropertyGroup>
@@ -58,42 +54,27 @@
   <Import Condition="'$(SQLDBExtensionsRefPath)' == ''" Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
   <ItemGroup>
     <Folder Include="Properties" />
-    <Folder Include="Logging\" />
-    <Folder Include="Logging\Tables\" />
-    <Folder Include="Security\" />
-    <Folder Include="Logging\Stored Procedures\" />
-    <Folder Include="dbo\" />
-    <Folder Include="dbo\User Defined Types\" />
+    <Folder Include="Logging" />
+    <Folder Include="Security" />
+    <Folder Include="Logging\Stored Procedures" />
+    <Folder Include="Logging\Tables" />
+    <Folder Include="Security\Schema" />
     <Folder Include="Scripts" />
     <Folder Include="Scripts\PostDeployment" />
     <Folder Include="Scripts\PostDeployment\PostDeploymentScripts" />
-    <Folder Include="Security\Schema" />
-    <Folder Include="Security\Login" />
   </ItemGroup>
   <ItemGroup>
-    <Build Include="Logging\Tables\UserLogin.sql" />
+    <None Include="Development.publish.xml" />
+    <None Include="Production.publish.xml" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\User_Creation.sql" />
+    <PostDeploy Include="Scripts\PostDeployment\Script.PostDeployment.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <Build Include="Logging\Tables\Activity.sql" />
+    <Build Include="Logging\Tables\ActivityDetail.sql" />
     <Build Include="Logging\Tables\LogCategoryType.sql" />
     <Build Include="Logging\Tables\LogType.sql" />
-    <Build Include="Logging\Tables\ActivityDetail.sql" />
-    <Build Include="Logging\Tables\Activity.sql" />
-    <Build Include="Logging\Stored Procedures\ListActivity.sql" />
-    <Build Include="Logging\Stored Procedures\ListActivityDetails.sql" />
-    <Build Include="Logging\Stored Procedures\ListLoggingMetadata.sql" />
-    <Build Include="Logging\Stored Procedures\DeleteCompanyActivityData.sql" />
-    <Build Include="Logging\Stored Procedures\InsertActivity.sql" />
-    <Build Include="dbo\User Defined Types\AdditionalInfo.sql" />
-    <Build Include="dbo\User Defined Types\SearchCriteria.sql" />
-    <PostDeploy Include="Scripts\PostDeployment\Script.PostDeployment.sql" />
+    <Build Include="Logging\Tables\UserLogin.sql" />
     <Build Include="Security\Schema\Logging.sql" />
-    <None Include="Security\Login\RUALogin.sql" />
-    <Build Include="Logging\Stored Procedures\Activity_Archive.sql" />
-    <Build Include="Scripts\PostDeployment\PostDeploymentScripts\Activity_Archiving_Job_Script.sql" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Scripts\PostDeployment\PostDeploymentScripts\LogCategoryType_InsertScript.sql" />
-    <None Include="Scripts\PostDeployment\PostDeploymentScripts\LogType_InsertScript.sql" />
-    <None Include="Scripts\PostDeployment\PostDeploymentScripts\User_Creation.sql" />
-    <None Include="Production.publish.xml" />
-    <None Include="Development.publish.xml" />
   </ItemGroup>
 </Project>

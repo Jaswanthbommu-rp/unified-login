@@ -26,8 +26,8 @@ SET NOCOUNT ON;
 		,@ContextReferenceId  --Unified Login:-	Store User RealPageId,Unified Settings:- Store Setting {SourceId}_{MappingKey}_{InstanceId},Unified Reporting:-	Store Reporting Key
 	*/	
 
-	DECLARE @Now datetime= GETUTCDATE();
-	DECLARE @FromUserId bigint;
+	DECLARE @Now DATETIME= GETUTCDATE();
+	DECLARE @FromUserId BIGINT;
 	
 	SELECT @LogTypeId = LogTypeId
 	FROM Logging.LogType AS LT
