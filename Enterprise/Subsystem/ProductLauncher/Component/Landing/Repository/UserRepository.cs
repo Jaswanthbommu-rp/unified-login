@@ -3377,7 +3377,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
 
             // if superuser do all products that currently support user creation;
-            if (userIsActive && userTypeId == (int)UserRoleType.SuperUser && !migratedUser)
+            if (userIsActive && userTypeId == (int)UserRoleType.SuperUser)
             {
                 IList<ProductBatch> productListToCreate = new List<ProductBatch>();
                 IList<PersonaProductUserDetails> userProducts = repository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = AssignUserPersonaId }).ToList();
