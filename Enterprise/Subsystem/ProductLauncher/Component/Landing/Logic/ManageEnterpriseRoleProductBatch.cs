@@ -24,6 +24,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityCo
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Batch;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.EnterpriseRole;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Helper;
+using Newtonsoft.Json;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -119,6 +120,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 							{
 								ID = role.ProductRoleId.ToString(),
 								Name = role.ProductRoleName,
+								IsAssigned = true
 							});
 						}
 					}
@@ -140,7 +142,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 
 					//Get product specific other info and create product batch
-					if (product == (int)ProductEnum.FinancialSuite)
+					if (product == (int)ProductEnum.UnifiedPlatform)
+					{
+						int platformRole = Convert.ToInt32(productRoles.Select(p => p.ID).FirstOrDefault());
+						enterpriseRoleProductRepository.UpdateUnifiedPlatFormRole(platformRole, editorPersona.UserId, batch.SubjectUserPersonaId);
+					}
+					else if (product == (int)ProductEnum.FinancialSuite)
 					{
 						ManageProductOneSiteAccounting accounting = new ManageProductOneSiteAccounting(_userClaim);
 						propertyGroupResponse = accounting.GetUserPropertyGroups(batch.EditorUserPersonaId, batch.SubjectUserPersonaId, null);
@@ -262,8 +269,45 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			}
 			if (productListToCreate?.Count > 0)
 			{
+				Dictionary<string, RolePropertyList> oneSiteAndOtherProducts = new Dictionary<string, RolePropertyList>();
+				bool isOnesiteMix = false;
+				if (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.OneSite)
+					   && (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.Lead2Lease) || productListToCreate.Any(a => a.ProductId == (int)ProductEnum.SeniorLeadManagement)))
+				{
+					// need to combine the Lead2Lease and OneSite product details so they can run synchronously				
+					isOnesiteMix = true;
+					ProductBatch pbOneSite = (from a in productListToCreate
+											  where a.ProductId == (int)ProductEnum.OneSite
+											  select a).FirstOrDefault();
+
+					ProductBatch pbLead2Lease = null;
+					ProductBatch pbSeniorLead = null;
+
+					oneSiteAndOtherProducts.Add(ProductEnum.OneSite.ToString(), pbOneSite.InputJson);
+
+					if (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.Lead2Lease))
+					{
+						pbLead2Lease = (from a in productListToCreate
+										where a.ProductId == (int)ProductEnum.Lead2Lease
+										select a).FirstOrDefault();
+
+						oneSiteAndOtherProducts.Add(ProductEnum.Lead2Lease.ToString(), pbLead2Lease.InputJson);
+						productListToCreate.Remove(pbLead2Lease);
+					}
+
+					if (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.SeniorLeadManagement))
+					{
+						pbSeniorLead = (from a in productListToCreate
+										where a.ProductId == (int)ProductEnum.SeniorLeadManagement
+										select a).FirstOrDefault();
+
+						oneSiteAndOtherProducts.Add(ProductEnum.Lead2Lease.ToString(), pbSeniorLead.InputJson);
+						productListToCreate.Remove(pbSeniorLead);
+					}					
+				}
+
 				int statusTypeId = (int)ProductBatchStatusType.Success;
-				bool isBatchCompleted =  enterpriseRoleProductRepository.SaveProductBatch(batch.EditorUserPersonaId, batch.SubjectUserPersonaId, editorPersona.RealPageId, productListToCreate);
+				bool isBatchCompleted =  enterpriseRoleProductRepository.SaveProductBatch(batch.EditorUserPersonaId, batch.SubjectUserPersonaId, editorPersona.RealPageId, productListToCreate, JsonConvert.SerializeObject(oneSiteAndOtherProducts), isOnesiteMix);
 				if (!isBatchCompleted)
 				{
 					statusTypeId = (int)ProductBatchStatusType.Error;					
@@ -293,5 +337,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			}
 			return false;
 		}
+
 	}
 }

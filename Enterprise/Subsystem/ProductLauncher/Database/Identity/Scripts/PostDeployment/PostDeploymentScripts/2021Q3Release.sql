@@ -383,23 +383,6 @@ GO
      Update ENterprise.ProductSetting Set Value ='Utility Superuser' where ProductSettingTypeId = @ProductsettingTypeId and ProductId =18;
  END
 GO
-  IF NOT EXISTS (SELECT 1 FROM [Batch].[BatchProcessType] WHERE Name = 'EnterpriseRoleCreateUpdateProductUser')
-  BEGIN
-	INSERT INTO [Batch].[BatchProcessType]
-	SELECT 10,1,'Batch to create EnterpriseRole Create-Update User','EnterpriseRoleCreateUpdateProductUser'
-  END
-  IF NOT EXISTS (SELECT 1 FROM [Batch].[BatchProcessType] WHERE Name = 'EnterpriseRoleBulkUpdateProductUser')
-  BEGIN
-	INSERT INTO [Batch].[BatchProcessType]
-	SELECT 11,1,'Batch to create EnterpriseRole Bulk Update Users','EnterpriseRoleBulkUpdateProductUser'
-  END
-  IF NOT EXISTS (SELECT 1 FROM [Batch].[BatchProcessType] WHERE Name = 'CreateEnterpriseRoleFromUserProduct')
-  BEGIN
-	INSERT INTO [Batch].[BatchProcessType]
-	SELECT 12,1,'Batch to create EnterpriseRole based on User Products','CreateEnterpriseRoleFromUserProduct'
-  END
-GO
-
 --Userstory - 795122
 -- Employee Access to Internal Client Settings
 DECLARE @CreatedById bigint,
@@ -1020,4 +1003,21 @@ BEGIN
            ,[CreatedDate]) 
            VALUES	(@RightId, @PartyId, 9, @CreatedById, @Now)
 END
+GO
+ GO
+ IF NOT EXISTS (SELECT 1 FROM [Batch].[BatchProcessType] WHERE Name = 'EnterpriseRoleCreateUpdateProductUser')
+  BEGIN
+	INSERT INTO [Batch].[BatchProcessType]
+	SELECT 10,1,'Batch to create EnterpriseRole Create-Update User','EnterpriseRoleCreateUpdateProductUser'
+  END
+  IF NOT EXISTS (SELECT 1 FROM [Batch].[BatchProcessType] WHERE Name = 'EnterpriseRoleBulkUpdateProductUser')
+  BEGIN
+	INSERT INTO [Batch].[BatchProcessType]
+	SELECT 11,2,'Batch to create EnterpriseRole Bulk Update Users','EnterpriseRoleBulkUpdateProductUser'
+  END
+  IF NOT EXISTS (SELECT 1 FROM [Batch].[BatchProcessType] WHERE Name = 'CreateEnterpriseRoleFromUserProduct')
+  BEGIN
+	INSERT INTO [Batch].[BatchProcessType]
+	SELECT 12,2,'Batch to create EnterpriseRole based on User Products','CreateEnterpriseRoleFromUserProduct'
+  END
 GO

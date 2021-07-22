@@ -50,7 +50,7 @@ BEGIN
       [BatchProcessTypeId]
   From batchtoprocess   
   WHERE   rn = 1   
-  And    rn2 = 5  
+  And    rn2 <= 5  
   
     UPDATE Batch.EnterpriseRoleBatchProcess  
     SET StatusTypeId = 6 --Running  

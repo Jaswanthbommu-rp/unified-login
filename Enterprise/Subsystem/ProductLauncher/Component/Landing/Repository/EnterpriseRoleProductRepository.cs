@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using Newtonsoft.Json;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Batch;
@@ -32,7 +33,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		}
 		#endregion
 		public bool SaveProductBatch(long editorUserPersonaId, long subjectUserPersonaId, Guid editorUserRealPageId,
-			IList<ProductBatch> userProductList)
+			IList<ProductBatch> userProductList, string onesiteWithOherProductsJson, bool isOnesiteMix)
 		{
 			var batchGroup = CreateBatchProcessGroup();
 
@@ -40,6 +41,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 			{
 				foreach (var prod in userProductList)
 				{
+					string inputJson = JsonConvert.SerializeObject(prod.InputJson);
+					if (prod.ProductId == (int)ProductEnum.OneSite && isOnesiteMix)
+					{
+						inputJson = onesiteWithOherProductsJson;
+					}
 					dynamic productBatch = new
 					{
 						PersonRealPageId = editorUserRealPageId,
@@ -48,7 +54,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 						ProductId = prod.ProductId,
 						StatusTypeId = 5,
 						RetryCount = 0,
-						InputJson = prod.InputJson,
+						InputJson = inputJson,
 						CorrelationId = Guid.NewGuid().ToString(),
 						BatchProcessTypeId = BatchProcessType.CreateUpdateProductUser,
 						BatchProcessorGroupId = batchGroup.BatchProcessorGroupId
@@ -60,9 +66,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 					if (repositoryResponse.Id == 0)
 					{
 						throw new Exception($"Exception while inserting product with code {prod.ProductId} in the product batch.");
-					}
-					return true;
+					}					
 				}
+				return true;
 			}
 			return false;
 		}
@@ -75,13 +81,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		{
 			using (var repository = GetRepository())
 			{
-				//var result = repository.Execute<RepositoryResponse>(StoredProcNameConstants.SP_UpdateProductBatch,
-				//    new { productBatchId, statusTypeId, inputJson, errorDetails });
-
 				var result = repository.Execute<bool>(StoredProcNameConstants.SP_UpdateEnterpriseRoleProductBatch,
 				   new { productBatchId, statusTypeId });
 
 				return result;
+			}
+		}
+
+		public void UpdateUnifiedPlatFormRole(int roleId, long editorUserId, long userPersonaId)
+		{
+			using (var repository = GetRepository())
+			{
+				dynamic param = new
+				{
+					personaID = userPersonaId,
+					roleID = roleId,
+					CreatedBy = editorUserId,
+					personaPrivilgeID = 0
+				};
+				
+				var repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkPersonaToRole, param);
 			}
 		}
 

@@ -285,14 +285,13 @@
 
         //ProductBatch
         public const string SP_CreateProductBatch = "Enterprise.CreateProductBatch";
-        public const string SP_UpdateProductBatch = "Enterprise.UpdateProductBatch";
-        public const string SP_UpdateEnterpriseRoleProductBatch = "Enterprise.UpdateEnterpriseRoleProductBatch";
+        public const string SP_UpdateProductBatch = "Enterprise.UpdateProductBatch";        
 
         //BatchProcessor
         public const string SP_GetUserBatchRecords = "Batch.GetUserBatchRecords";
         public const string SP_CreateBatchProcessorGroup = "Batch.CreateBatchProcessorGroup";
         public const string SP_UpdateProcessorGroupStatus = "Batch.UpdateBatchProcessorGroupStatus";
-
+        public const string SP_UpdateEnterpriseRoleProductBatch = "Batch.UpdateEnterpriseRoleProductBatch";
 
         //Green Book
         public const string SP_CreatePropertyMapping = "Enterprise.CreatePropertyMapping";
