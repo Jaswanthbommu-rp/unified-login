@@ -56,6 +56,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
 			}
 		}
 
+		/// <summary>
+		/// Update a Enterprise Role Product Batch
+		/// </summary>
+		/// <returns>Repository response object</returns>
+		public void UpdateEnterpriseRoleProductBatch(long productBatchId, int statusTypeId)
+		{
+			using (var repository = GetRepository())
+			{
+				var result = repository.Execute<bool>(StoredProcNameConstants.SP_UpdateEnterpriseRoleProductBatch,
+				   new { productBatchId, statusTypeId });
+			}
+		}
+
 		public void UpdateBatch(IList<Batch> batch, BatchStatusType batchStatusType, string inputJson = null, string errorDetails = null)
 		{
 			foreach (var record in batch)

@@ -405,6 +405,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
                 logger = logger.ForContext("ProductModule", this.GetType());
                 logger = logger.ForContext("InnerException", realError);
                 logger.Error(ex, $"Exception while CallApiToProcessEnterpriseRoleBatchRecord {batch.EnterpriseRoleTemplateId}.");
+                if (batch.EnterpriseRoleBatchProcessId > 0)
+                {
+                    new BatchRepository().UpdateEnterpriseRoleProductBatch(batch.EnterpriseRoleBatchProcessId, (int)BatchStatusType.Error);
+                }
             }
         }
 

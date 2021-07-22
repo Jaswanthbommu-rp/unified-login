@@ -77,6 +77,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			var roleTemplateProductRole = _productRepository.GetRoleTemplateProductRoleMapping(batch.EnterpriseRoleTemplateId, editorPersona.OrganizationPartyId);
 			bool isExternalUser = personaOrganization.RelationshipType.Equals("User Type", StringComparison.OrdinalIgnoreCase) && personaOrganization.RoleNameFrom.Equals("External User", StringComparison.OrdinalIgnoreCase);
 
+			string message = $"Enterprise role product update started to user - {batch.SubjectUserPersonaId}";
+			Log.Write(LogEventLevel.Debug, message);
+
 			foreach (var product in roleTemplateProducts)
 			{
 				try
@@ -261,59 +264,72 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				}
 				catch (Exception ex)
 				{
+					string exmessage = $"Exception during enterprise role product updates to user - {batch.SubjectUserPersonaId}  for {product}";
+					Log.Write(LogEventLevel.Error, ex, exmessage);
 					return "Error";
-					string message = $"Exception during enterprise role product updates to user - {product}";
-					Log.Write(LogEventLevel.Error, ex, message);
 				}
 
 			}
-			if (productListToCreate?.Count > 0)
+			try
 			{
-				Dictionary<string, RolePropertyList> oneSiteAndOtherProducts = new Dictionary<string, RolePropertyList>();
-				bool isOnesiteMix = false;
-				if (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.OneSite)
-					   && (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.Lead2Lease) || productListToCreate.Any(a => a.ProductId == (int)ProductEnum.SeniorLeadManagement)))
+				if (productListToCreate?.Count > 0)
 				{
-					// need to combine the Lead2Lease and OneSite product details so they can run synchronously				
-					isOnesiteMix = true;
-					ProductBatch pbOneSite = (from a in productListToCreate
-											  where a.ProductId == (int)ProductEnum.OneSite
-											  select a).FirstOrDefault();
+					string btmessage = $"Enterprise role product batch update started to user - {batch.SubjectUserPersonaId} - product count {productListToCreate.Count}";
+					Log.Write(LogEventLevel.Debug, btmessage);
 
-					ProductBatch pbLead2Lease = null;
-					ProductBatch pbSeniorLead = null;
-
-					oneSiteAndOtherProducts.Add(ProductEnum.OneSite.ToString(), pbOneSite.InputJson);
-
-					if (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.Lead2Lease))
+					Dictionary<string, RolePropertyList> oneSiteAndOtherProducts = new Dictionary<string, RolePropertyList>();
+					bool isOnesiteMix = false;
+					if (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.OneSite)
+						   && (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.Lead2Lease) || productListToCreate.Any(a => a.ProductId == (int)ProductEnum.SeniorLeadManagement)))
 					{
-						pbLead2Lease = (from a in productListToCreate
-										where a.ProductId == (int)ProductEnum.Lead2Lease
-										select a).FirstOrDefault();
+						// need to combine the Lead2Lease and OneSite product details so they can run synchronously				
+						isOnesiteMix = true;
+						ProductBatch pbOneSite = (from a in productListToCreate
+												  where a.ProductId == (int)ProductEnum.OneSite
+												  select a).FirstOrDefault();
 
-						oneSiteAndOtherProducts.Add(ProductEnum.Lead2Lease.ToString(), pbLead2Lease.InputJson);
-						productListToCreate.Remove(pbLead2Lease);
+						ProductBatch pbLead2Lease = null;
+						ProductBatch pbSeniorLead = null;
+
+						oneSiteAndOtherProducts.Add(ProductEnum.OneSite.ToString(), pbOneSite.InputJson);
+
+						if (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.Lead2Lease))
+						{
+							pbLead2Lease = (from a in productListToCreate
+											where a.ProductId == (int)ProductEnum.Lead2Lease
+											select a).FirstOrDefault();
+
+							oneSiteAndOtherProducts.Add(ProductEnum.Lead2Lease.ToString(), pbLead2Lease.InputJson);
+							productListToCreate.Remove(pbLead2Lease);
+						}
+
+						if (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.SeniorLeadManagement))
+						{
+							pbSeniorLead = (from a in productListToCreate
+											where a.ProductId == (int)ProductEnum.SeniorLeadManagement
+											select a).FirstOrDefault();
+
+							oneSiteAndOtherProducts.Add(ProductEnum.Lead2Lease.ToString(), pbSeniorLead.InputJson);
+							productListToCreate.Remove(pbSeniorLead);
+						}
 					}
 
-					if (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.SeniorLeadManagement))
+					int statusTypeId = (int)ProductBatchStatusType.Success;
+					bool isBatchCompleted = enterpriseRoleProductRepository.SaveProductBatch(batch.EditorUserPersonaId, batch.SubjectUserPersonaId, editorPersona.RealPageId, productListToCreate, JsonConvert.SerializeObject(oneSiteAndOtherProducts), isOnesiteMix);
+					if (!isBatchCompleted)
 					{
-						pbSeniorLead = (from a in productListToCreate
-										where a.ProductId == (int)ProductEnum.SeniorLeadManagement
-										select a).FirstOrDefault();
-
-						oneSiteAndOtherProducts.Add(ProductEnum.Lead2Lease.ToString(), pbSeniorLead.InputJson);
-						productListToCreate.Remove(pbSeniorLead);
-					}					
+						statusTypeId = (int)ProductBatchStatusType.Error;
+					}
+					bool status = enterpriseRoleProductRepository.UpdateEnterpriseRoleProductBatch(batch.EnterpriseRoleBatchProcessId, statusTypeId);
 				}
-
-				int statusTypeId = (int)ProductBatchStatusType.Success;
-				bool isBatchCompleted =  enterpriseRoleProductRepository.SaveProductBatch(batch.EditorUserPersonaId, batch.SubjectUserPersonaId, editorPersona.RealPageId, productListToCreate, JsonConvert.SerializeObject(oneSiteAndOtherProducts), isOnesiteMix);
-				if (!isBatchCompleted)
-				{
-					statusTypeId = (int)ProductBatchStatusType.Error;					
-				}
-				bool status = enterpriseRoleProductRepository.UpdateEnterpriseRoleProductBatch(batch.EnterpriseRoleBatchProcessId, statusTypeId);
 			}
+			catch (Exception ex)
+			{
+				string exmessage = $"Exception during enterprise role product batch data insert to user - {batch.SubjectUserPersonaId}";
+				Log.Write(LogEventLevel.Error, ex, exmessage);
+				return "Error";
+			}
+
 			return "";
 		}
 
