@@ -25,6 +25,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Batch;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.EnterpriseRole;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Helper;
 using Newtonsoft.Json;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -65,6 +66,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			var editorPersona = _managePersona.GetPersona(batch.EditorUserPersonaId);
 			var userPersona = _managePersona.GetPersona(batch.SubjectUserPersonaId);
 			_userClaim.UserRealPageGuid = editorPersona.RealPageId;
+			_userClaim.Rights = GetPersonaRoleRights(batch.EditorUserPersonaId, editorPersona.OrganizationPartyId);
 
 			IPersonaRepository personaRepository = new PersonaRepository();
 			IUserLoginRepository userLoginRepository = new UserLoginRepository();
@@ -141,6 +143,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					if (product != (int)ProductEnum.DepositAlternative)
 					{
 						propertiesResponse = GetProductProperties(batch.EditorUserPersonaId, batch.SubjectUserPersonaId, product, _userClaim);
+						if (propertiesResponse.IsError == true)
+						{
+							string PropertyErrorMessage = $"Enterprise role product update - There was a problem getting the list of properties for product {product} - user persona {batch.SubjectUserPersonaId}";
+							Log.Write(LogEventLevel.Error, PropertyErrorMessage);
+							enterpriseRoleProductRepository.UpdateEnterpriseRoleProductBatch(batch.EnterpriseRoleBatchProcessId, (int)ProductBatchStatusType.Error);
+							return "Error";
+						}
 					}
 
 
@@ -266,6 +275,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				{
 					string exmessage = $"Exception during enterprise role product updates to user - {batch.SubjectUserPersonaId}  for {product}";
 					Log.Write(LogEventLevel.Error, ex, exmessage);
+					enterpriseRoleProductRepository.UpdateEnterpriseRoleProductBatch(batch.EnterpriseRoleBatchProcessId, (int)ProductBatchStatusType.Error);
 					return "Error";
 				}
 
@@ -327,6 +337,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			{
 				string exmessage = $"Exception during enterprise role product batch data insert to user - {batch.SubjectUserPersonaId}";
 				Log.Write(LogEventLevel.Error, ex, exmessage);
+				enterpriseRoleProductRepository.UpdateEnterpriseRoleProductBatch(batch.EnterpriseRoleBatchProcessId, (int)ProductBatchStatusType.Error);
 				return "Error";
 			}
 
@@ -352,6 +363,36 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				return productInternalSetting.Value.Trim() == "1" ? true : false;
 			}
 			return false;
+		}
+
+		private List<string> GetPersonaRoleRights(long personaId, long orgPartyId)
+		{
+			List<string> userRights = new List<string>();
+			UserRoleRightRepository urr = new UserRoleRightRepository();
+			List<SharedObjects.Product.UserManagement.Role> userRoles = urr.ListRoleByPersona((int)ProductEnum.UnifiedPlatform, personaId, orgPartyId);
+
+			RPObjectCache rpCache = new RPObjectCache();
+			var cacheKey = $"enterpriseRoleProcessgetRolesByParty_{orgPartyId}_{(int)ProductEnum.UnifiedPlatform}";
+			IList<UserRoleRights> roleList = rpCache.GetFromCache<IList<UserRoleRights>>(cacheKey, 60, () =>
+			{
+				SharedDataRepository sdr = new SharedDataRepository();
+				IList<int> productList = sdr.GetProductIdsByCompany(orgPartyId);
+				UserRoleRightRepository urrCache = new UserRoleRightRepository();
+				return urrCache.GetAllRoleRights(orgPartyId, productList, (int)ProductEnum.UnifiedPlatform);
+			});
+
+			foreach (SharedObjects.Product.UserManagement.Role userRole in userRoles)
+			{
+				foreach (Right right in roleList.FirstOrDefault(r => r.RoleId == userRole.RoleID).UserRights)
+				{
+					if (!string.IsNullOrWhiteSpace(right.RightNickName) && !string.IsNullOrWhiteSpace(right.RightNickName.Trim()) && !userRights.Contains(right.RightNickName))
+					{
+						userRights.Add(right.RightNickName);
+					}
+				}
+			}
+
+			return userRights;
 		}
 
 	}
