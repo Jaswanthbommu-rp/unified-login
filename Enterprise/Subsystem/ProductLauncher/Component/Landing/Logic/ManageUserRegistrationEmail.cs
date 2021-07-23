@@ -148,6 +148,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                     switch (userTypeId)
                     {
+                        case (int)UserRoleType.RealPageEmployee:
                         case (int)UserRoleType.SuperUser:
                             audienceTypeId = (int)CommunicationEventAudienceType.SuperUser;
                             break;
