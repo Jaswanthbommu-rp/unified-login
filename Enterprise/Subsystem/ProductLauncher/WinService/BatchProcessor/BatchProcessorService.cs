@@ -80,7 +80,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
                 Task enterpriseRoleProductUpdateTask = new Task(RunEnterpriseRoleUpdateProcess, _cts.Token, TaskCreationOptions.LongRunning);
                 enterpriseRoleProductUpdateTask.Start();
 
-                Log.Information("Launched retry polling task...");
+                Log.Information("Launched enterprise role product update polling task...");
 #if (DEBUG)
                 Console.WriteLine("-------------------------------------------------------------------------------");
 #endif
@@ -405,6 +405,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
                 logger = logger.ForContext("ProductModule", this.GetType());
                 logger = logger.ForContext("InnerException", realError);
                 logger.Error(ex, $"Exception while CallApiToProcessEnterpriseRoleBatchRecord {batch.EnterpriseRoleTemplateId}.");
+                if (batch.EnterpriseRoleBatchProcessId > 0)
+                {
+                    new BatchRepository().UpdateEnterpriseRoleProductBatch(batch.EnterpriseRoleBatchProcessId, (int)BatchStatusType.Error);
+                }
             }
         }
 

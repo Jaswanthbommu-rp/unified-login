@@ -24,6 +24,8 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityCo
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Batch;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.EnterpriseRole;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Helper;
+using Newtonsoft.Json;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -64,6 +66,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			var editorPersona = _managePersona.GetPersona(batch.EditorUserPersonaId);
 			var userPersona = _managePersona.GetPersona(batch.SubjectUserPersonaId);
 			_userClaim.UserRealPageGuid = editorPersona.RealPageId;
+			_userClaim.Rights = GetPersonaRoleRights(batch.EditorUserPersonaId, editorPersona.OrganizationPartyId);
 
 			IPersonaRepository personaRepository = new PersonaRepository();
 			IUserLoginRepository userLoginRepository = new UserLoginRepository();
@@ -75,6 +78,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			var roleTemplateProducts = _productRepository.GetEnterpriseRoleProductsByOrganization(batch.EnterpriseRoleTemplateId, editorPersona.Organization.RealPageId);
 			var roleTemplateProductRole = _productRepository.GetRoleTemplateProductRoleMapping(batch.EnterpriseRoleTemplateId, editorPersona.OrganizationPartyId);
 			bool isExternalUser = personaOrganization.RelationshipType.Equals("User Type", StringComparison.OrdinalIgnoreCase) && personaOrganization.RoleNameFrom.Equals("External User", StringComparison.OrdinalIgnoreCase);
+
+			string message = $"Enterprise role product update started to user - {batch.SubjectUserPersonaId}";
+			Log.Write(LogEventLevel.Debug, message);
 
 			foreach (var product in roleTemplateProducts)
 			{
@@ -119,6 +125,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 							{
 								ID = role.ProductRoleId.ToString(),
 								Name = role.ProductRoleName,
+								IsAssigned = true
 							});
 						}
 					}
@@ -136,11 +143,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					if (product != (int)ProductEnum.DepositAlternative)
 					{
 						propertiesResponse = GetProductProperties(batch.EditorUserPersonaId, batch.SubjectUserPersonaId, product, _userClaim);
+						if (propertiesResponse.IsError == true)
+						{
+							string PropertyErrorMessage = $"Enterprise role product update - There was a problem getting the list of properties for product {product} - user persona {batch.SubjectUserPersonaId}";
+							Log.Write(LogEventLevel.Error, PropertyErrorMessage);
+							enterpriseRoleProductRepository.UpdateEnterpriseRoleProductBatch(batch.EnterpriseRoleBatchProcessId, (int)ProductBatchStatusType.Error);
+							return "Error";
+						}
 					}
 
 
 					//Get product specific other info and create product batch
-					if (product == (int)ProductEnum.FinancialSuite)
+					if (product == (int)ProductEnum.UnifiedPlatform)
+					{
+						int platformRole = Convert.ToInt32(productRoles.Select(p => p.ID).FirstOrDefault());
+						enterpriseRoleProductRepository.UpdateUnifiedPlatFormRole(platformRole, editorPersona.UserId, batch.SubjectUserPersonaId);
+					}
+					else if (product == (int)ProductEnum.FinancialSuite)
 					{
 						ManageProductOneSiteAccounting accounting = new ManageProductOneSiteAccounting(_userClaim);
 						propertyGroupResponse = accounting.GetUserPropertyGroups(batch.EditorUserPersonaId, batch.SubjectUserPersonaId, null);
@@ -254,22 +273,74 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				}
 				catch (Exception ex)
 				{
+					string exmessage = $"Exception during enterprise role product updates to user - {batch.SubjectUserPersonaId}  for {product}";
+					Log.Write(LogEventLevel.Error, ex, exmessage);
+					enterpriseRoleProductRepository.UpdateEnterpriseRoleProductBatch(batch.EnterpriseRoleBatchProcessId, (int)ProductBatchStatusType.Error);
 					return "Error";
-					string message = $"Exception during enterprise role product updates to user - {product}";
-					Log.Write(LogEventLevel.Error, ex, message);
 				}
 
 			}
-			if (productListToCreate?.Count > 0)
+			try
 			{
-				int statusTypeId = (int)ProductBatchStatusType.Success;
-				bool isBatchCompleted =  enterpriseRoleProductRepository.SaveProductBatch(batch.EditorUserPersonaId, batch.SubjectUserPersonaId, editorPersona.RealPageId, productListToCreate);
-				if (!isBatchCompleted)
+				if (productListToCreate?.Count > 0)
 				{
-					statusTypeId = (int)ProductBatchStatusType.Error;					
+					string btmessage = $"Enterprise role product batch update started to user - {batch.SubjectUserPersonaId} - product count {productListToCreate.Count}";
+					Log.Write(LogEventLevel.Debug, btmessage);
+
+					Dictionary<string, RolePropertyList> oneSiteAndOtherProducts = new Dictionary<string, RolePropertyList>();
+					bool isOnesiteMix = false;
+					if (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.OneSite)
+						   && (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.Lead2Lease) || productListToCreate.Any(a => a.ProductId == (int)ProductEnum.SeniorLeadManagement)))
+					{
+						// need to combine the Lead2Lease and OneSite product details so they can run synchronously				
+						isOnesiteMix = true;
+						ProductBatch pbOneSite = (from a in productListToCreate
+												  where a.ProductId == (int)ProductEnum.OneSite
+												  select a).FirstOrDefault();
+
+						ProductBatch pbLead2Lease = null;
+						ProductBatch pbSeniorLead = null;
+
+						oneSiteAndOtherProducts.Add(ProductEnum.OneSite.ToString(), pbOneSite.InputJson);
+
+						if (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.Lead2Lease))
+						{
+							pbLead2Lease = (from a in productListToCreate
+											where a.ProductId == (int)ProductEnum.Lead2Lease
+											select a).FirstOrDefault();
+
+							oneSiteAndOtherProducts.Add(ProductEnum.Lead2Lease.ToString(), pbLead2Lease.InputJson);
+							productListToCreate.Remove(pbLead2Lease);
+						}
+
+						if (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.SeniorLeadManagement))
+						{
+							pbSeniorLead = (from a in productListToCreate
+											where a.ProductId == (int)ProductEnum.SeniorLeadManagement
+											select a).FirstOrDefault();
+
+							oneSiteAndOtherProducts.Add(ProductEnum.Lead2Lease.ToString(), pbSeniorLead.InputJson);
+							productListToCreate.Remove(pbSeniorLead);
+						}
+					}
+
+					int statusTypeId = (int)ProductBatchStatusType.Success;
+					bool isBatchCompleted = enterpriseRoleProductRepository.SaveProductBatch(batch.EditorUserPersonaId, batch.SubjectUserPersonaId, editorPersona.RealPageId, productListToCreate, JsonConvert.SerializeObject(oneSiteAndOtherProducts), isOnesiteMix);
+					if (!isBatchCompleted)
+					{
+						statusTypeId = (int)ProductBatchStatusType.Error;
+					}
+					bool status = enterpriseRoleProductRepository.UpdateEnterpriseRoleProductBatch(batch.EnterpriseRoleBatchProcessId, statusTypeId);
 				}
-				bool status = enterpriseRoleProductRepository.UpdateEnterpriseRoleProductBatch(batch.EnterpriseRoleBatchProcessId, statusTypeId);
 			}
+			catch (Exception ex)
+			{
+				string exmessage = $"Exception during enterprise role product batch data insert to user - {batch.SubjectUserPersonaId}";
+				Log.Write(LogEventLevel.Error, ex, exmessage);
+				enterpriseRoleProductRepository.UpdateEnterpriseRoleProductBatch(batch.EnterpriseRoleBatchProcessId, (int)ProductBatchStatusType.Error);
+				return "Error";
+			}
+
 			return "";
 		}
 
@@ -293,5 +364,36 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			}
 			return false;
 		}
+
+		private List<string> GetPersonaRoleRights(long personaId, long orgPartyId)
+		{
+			List<string> userRights = new List<string>();
+			UserRoleRightRepository urr = new UserRoleRightRepository();
+			List<SharedObjects.Product.UserManagement.Role> userRoles = urr.ListRoleByPersona((int)ProductEnum.UnifiedPlatform, personaId, orgPartyId);
+
+			RPObjectCache rpCache = new RPObjectCache();
+			var cacheKey = $"enterpriseRoleProcessgetRolesByParty_{orgPartyId}_{(int)ProductEnum.UnifiedPlatform}";
+			IList<UserRoleRights> roleList = rpCache.GetFromCache<IList<UserRoleRights>>(cacheKey, 60, () =>
+			{
+				SharedDataRepository sdr = new SharedDataRepository();
+				IList<int> productList = sdr.GetProductIdsByCompany(orgPartyId);
+				UserRoleRightRepository urrCache = new UserRoleRightRepository();
+				return urrCache.GetAllRoleRights(orgPartyId, productList, (int)ProductEnum.UnifiedPlatform);
+			});
+
+			foreach (SharedObjects.Product.UserManagement.Role userRole in userRoles)
+			{
+				foreach (Right right in roleList.FirstOrDefault(r => r.RoleId == userRole.RoleID).UserRights)
+				{
+					if (!string.IsNullOrWhiteSpace(right.RightNickName) && !string.IsNullOrWhiteSpace(right.RightNickName.Trim()) && !userRights.Contains(right.RightNickName))
+					{
+						userRights.Add(right.RightNickName);
+					}
+				}
+			}
+
+			return userRights;
+		}
+
 	}
 }

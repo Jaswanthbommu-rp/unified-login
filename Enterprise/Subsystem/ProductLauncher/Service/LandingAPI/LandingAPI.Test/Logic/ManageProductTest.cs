@@ -9,8 +9,6 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -18,14 +16,13 @@ using System.Linq;
 using System.Net.Http;
 using Xunit;
 using ProductUsers = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig.ProductUsers;
-using Role = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement.Role;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 {
-	/// <summary>
-	/// ManageProduct xUnit tests
-	/// </summary>
-	[ExcludeFromCodeCoverage]
+    /// <summary>
+    /// ManageProduct xUnit tests
+    /// </summary>
+    [ExcludeFromCodeCoverage]
 	public class ManageProductTest
 	{
 		#region Private Variables
@@ -101,51 +98,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			//Assert
 			Assert.IsType<ArgumentNullException>(exception);
 		}
-
-		//[Fact]
-		//public void GetUserAssignedProductsByPersona_MockInputData_ReturnValidRepositoryResponseObject()
-		//{
-		//	//Arrange
-		//	Guid realPageId = new Guid("C9167175-0676-4546-BBA7-4A49D5809B1F");
-		//	long personaId = 33;
-		//	Persona persona = new Persona()
-		//	{
-		//		FromDate = DateTime.UtcNow,
-		//		Name = "Super User",
-		//		Organization = new Organization() { RealPageId = realPageId },
-		//		PersonaId = personaId,
-		//		RealPageId = realPageId,
-		//		ThruDate = DateTime.UtcNow.AddDays(1)
-		//	};
-		//	IList<PersonaProductUserDetails> expectedUserProducts = new List<PersonaProductUserDetails>();
-		//	expectedUserProducts.Add(new PersonaProductUserDetails()
-		//	{
-		//		PersonaId = 33,
-		//		OrganizationPartyId = 3,
-		//		OrganizationName = "RealPage",
-		//		ProductId = 1,
-		//		ProductName = "OneSite",
-		//		IsFavorite = true,
-		//		HasAccess = true
-		//	});
-		//
-		//	_mockProductRepository
-		//		.Setup(m => m.GetAssignedProductsByPersona(It.IsAny<Persona>(), null, null))
-		//		.Returns(expectedUserProducts);
-		//
-		//	_manageProduct = new ManageProduct(
-		//		_mockRepository.Object,
-		//		editorUserClaim,
-		//		_mockMessageHandler.Object);
-		//
-		//	//Act
-		//	var userProducts = _manageProduct.GetUserAssignedProductsByPersona(persona);
-		//
-		//	//Assert
-		//	Assert.True(userProducts != null
-		//		&& userProducts.Count == 1
-		//	);
-		//}
 
 		[Fact]
 		public void GetProductTypes_MockInputData_ReturnValidRepositoryResponseObject()
@@ -523,64 +475,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				OrganizationDomain = new OrganizationDomain() { OrganizationDomainId = 1, Name = "Primary" }
 			};
 
-			UnifiedLoginCompany ulc = new UnifiedLoginCompany() { CompanyRealPageId = organization.RealPageId.ToString(), CompanyName = organization.Name, BooksCustomerMasterId = blueBookCompanyInstanceId, Domain = organization.OrganizationDomain.Name };
-
-			List<UnifiedLoginCompany> unifiedLoginCompanyList = new List<UnifiedLoginCompany>() { ulc };
-
-			IList<RightRoleDetail> listRightRoleDetail = new List<RightRoleDetail>()
-			{
-				new RightRoleDetail()
-				{
-					RoleId = 81,
-					RoleName = "Black-Book Director",
-					IsAssigned = true,
-					RoleType = "Default",
-					RightName = "Access Reports",
-					RightId = 672,
-					RightValueTypeId = 47
-				},
-				new RightRoleDetail()
-				{
-					RoleId = 81,
-					RoleName = "Black-Book Director",
-					IsAssigned = true,
-					RoleType = "Default",
-					RightName = "Create master properties",
-					RightId = 667,
-					RightValueTypeId = 36
-				}
-			};
-
-			IList<Right> listRight = new List<Right>()
-			{
-				new Right()
-				{
-					RightId = 672,
-					RightName = "Access Reports",
-					RightValueTypeId = 47,
-					RightNickName = "reports.view"
-				},
-				new Right()
-				{
-					RightId = 667,
-					RightName = "Create master properties",
-					RightValueTypeId = 36,
-					RightNickName = "property.create"
-				}
-			};
-
-			IList<Role> listRole = new List<Role>()
-			{
-				new Role()
-				{
-					RoleID = 81,
-					Name = "director",
-					PersonaId = "486",
-					Right = listRight,
-					RoleNickName = "director"
-				}
-			};
-
 			Persona persona = new Persona()
 			{
 				PersonaId = personaId,
@@ -594,7 +488,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				ThruDate = null,
 				IsDefault = false,
 				UserId = 499,
-				Organization = organization
+				//Organization = organization
 			};
 
 			IList<PersonaCommon> listPersonaCommon = new List<PersonaCommon>()
@@ -607,7 +501,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 						OrganizationPartyId = 10639,
 						Name = "primary",
 						UserId = 499,
-						Role = listRole
+						//Role = listRole
 				}
 			};
 
@@ -634,10 +528,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
 			dynamic roleDynamic = new
 			{
-				RoleId = listRole[0].RoleID,
-				Role = listRole[0].Name,
-				PersonaId = listRole[0].PersonaId,
-				RoleNickName = listRole[0].RoleNickName
+				RoleId = 81,
+				Role = "director",
+				PersonaId = 486,
+				RoleNickName = "director"
 			};
 			List<dynamic> roleDynamicList = new List<dynamic>() { roleDynamic };
 			string roleListText = JsonConvert.SerializeObject(roleDynamicList);

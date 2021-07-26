@@ -41,27 +41,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private readonly object rightLock = new object();
 
 		#region Ctor
-
-		/// <summary>
-		/// Used for dependency injection
-		/// </summary> 
-		//public ManageProduct(IProductRepository productRepository,
-        //    IProductInternalSettingRepository productInternalSettingRepository, IManagePersona managePersona,
-        //    IManageBlueBook manageBlueBook, IManagePartyRelationship managePartyRelationship,
-        //    IManageOrganization manageOrganization, IManageProfile manageProfile,
-        //    IManageUserRoleRight manageUserRoleRight, DefaultUserClaim userClaim)
-        //{
-        //    _productRepository = productRepository;
-        //    _productInternalSettingRepository = productInternalSettingRepository;
-        //    _managePersona = managePersona;
-        //    _manageBlueBook = manageBlueBook;
-        //    _managePartyRelationship = managePartyRelationship;
-        //    _organizationRepository = new OrganizationRepository();
-        //    _manageProfile = manageProfile;
-        //    _manageUserRoleRight = manageUserRoleRight;
-        //    _defaultUserClaim = userClaim;
-        //}
-
         /// <summary>
         /// Repository test Constructor
         /// </summary>

@@ -6,6 +6,6 @@
 	public enum ConfigurationType
 	{
 		ProcessApiEndpoint = 1,
-		EnterpriseRoleProcessApiEndpoint = 2
+		EnterpriseRoleProcessApiEndpoint = 11
 	}
 }

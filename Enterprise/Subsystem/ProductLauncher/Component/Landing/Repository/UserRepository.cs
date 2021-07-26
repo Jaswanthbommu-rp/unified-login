@@ -3379,7 +3379,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
 
             // if superuser do all products that currently support user creation;
-            if (userIsActive && userTypeId == (int)UserRoleType.SuperUser && !migratedUser)
+            if (userIsActive && userTypeId == (int)UserRoleType.SuperUser)
             {
                 IList<ProductBatch> productListToCreate = new List<ProductBatch>();
                 IList<PersonaProductUserDetails> userProducts = repository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = AssignUserPersonaId }).ToList();
@@ -3437,30 +3437,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 foreach (var product in roleTemplateProducts)
                 {
+                    var productRoleData = roleTemplateProductRole?.Where(p => p.ProductId == product);
+                    var roleTemplateRoles = productRoleData?.Select(p => new
+                    {
+                        p.RoleTemplateProductRoleMappingId,
+                        p.ProductRoleId,
+                        p.ProductRoleName
+                    }).Distinct();
+
+                    //Roles
+                    List<string> productRoles = new List<string>();
+                    foreach (var roles in roleTemplateRoles)
+                    {
+                        if (roles.RoleTemplateProductRoleMappingId != 0)
+                        {
+                            productRoles.Add(roles.ProductRoleId);
+                        }
+                    }
+
+                    if (product == (int)ProductEnum.UnifiedPlatform)
+                    {
+                        int platformRole = Convert.ToInt32(productRoles.FirstOrDefault());
+                        UpdateEnterpriseUnifiedPlatFormRole(repository,platformRole, _userClaim.UserId, AssignUserPersonaId);
+                    }
                     //First check for any batchdata coming from ui, if no batch data then process for enterprise role batch
                     var productBatch = productList.FirstOrDefault(p => p.ProductId == product);
                     if (productBatch == null && product != (int)ProductEnum.UnifiedPlatform)
                     {
                         batchProcessTypeId = (int)BatchProcessType.EnterpriseRoleCreateUpdateProductUser;
-                        var productRoleData = roleTemplateProductRole?.Where(p => p.ProductId == product);
-
-                        var roleTemplateRoles = productRoleData?.Select(p => new
-                        {
-                            p.RoleTemplateProductRoleMappingId,
-                            p.ProductRoleId,
-                            p.ProductRoleName
-                        }).Distinct();
-
-
-                        //Roles
-                        List<string> productRoles = new List<string>();
-                        foreach (var roles in roleTemplateRoles)
-                        {
-                            if (roles.RoleTemplateProductRoleMappingId != 0)
-                            {
-                                productRoles.Add(roles.ProductRoleId);
-                            }
-                        }
 
                         ProductBatch pb = new ProductBatch()
                         {
@@ -3635,6 +3639,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             return productCount;
         }
 
+        private void UpdateEnterpriseUnifiedPlatFormRole(IRepository repository, int roleId, int editorUserId, long userPersonaId)
+        {       
+            try {
+                dynamic param = new
+                {
+                    personaID = userPersonaId,
+                    roleID = roleId,
+                    CreatedBy = editorUserId,
+                    personaPrivilgeID = 0
+                };
+
+                var repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkPersonaToRole, param);
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message;
+            }
+        }
         /// <summary>
         /// Used to process any information (such as first name or last name or uer email)for a user changed or user type changed
         /// </summary>

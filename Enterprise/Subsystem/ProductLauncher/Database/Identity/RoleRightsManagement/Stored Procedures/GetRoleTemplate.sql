@@ -13,7 +13,7 @@ BEGIN
 			RT.RoleTemplateId as RoleTemplateId 
 			,count(ProductID) as ProductCount
 		FROM Security.RoleTemplate RT
-		LEFT OUTER JOIN Security.RoleTemplateProduct RTP on RTP.RoleTemplateId = RT.roleTemplateId
+		LEFT OUTER JOIN Security.RoleTemplateProduct RTP on RTP.RoleTemplateId = RT.roleTemplateId and rtp.ProductId <> 3
 		GROUP BY RT.RoleTemplateId
 	),
 	RoleTemplateUser 
