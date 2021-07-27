@@ -578,7 +578,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var booksCompanyInstance = _manageBlueBook.GetCompanyInstanceByUPFMCompanyId(upfmCompanyId.ToString().ToLower());
             int customerCompanyId = booksCompanyInstance?.Attributes?.CustomerCompanyMap.FirstOrDefault()?.CustomerCompanyId ?? 0;
             string domain = booksCompanyInstance?.Attributes?.Domain;
-            var productInternalSettingType = _productInternalSettingRepository.GetProductSettingByType("UsePrimaryProperties");
+            var productGlobalSettingType = _productInternalSettingRepository.GetProductSettingByType("UsePrimaryProperties");
+            var companyProductSettings = _productRepository.GetProductSettings(upfmCompanyId);
 
             int organizationUsePrimaryProperties = -1;
             int.TryParse(_organizationRepository.GetOrganizationSettingValue("EnablePrimaryPropertiesAndEnterpriseRoles", organizationPartyId), out organizationUsePrimaryProperties);
@@ -588,17 +589,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 if(organizationUsePrimaryProperties >= 0)
                 {
                     //Assign PrimaryProperty flag for Product
-                    string productUsePrimaryPropertiesStr = productInternalSettingType?.Where(p => p.BooksProductCode == product.ProductCode
+                    string productUsePrimaryPropertiesGlobalStr = productGlobalSettingType?.Where(p => p.BooksProductCode == product.ProductCode
                         && p.ProductId == product.ProductId
                         && p.Name.ToLower() == "useprimaryproperties")
                         ?.FirstOrDefault()?.Value?.Trim();
 
-                    int productUsePrimaryProperties;
-                    if (int.TryParse(productUsePrimaryPropertiesStr, out productUsePrimaryProperties)
-                        && productUsePrimaryProperties >= 0)
+                      int.TryParse(companyProductSettings?.Where(p=>p.Name.ToLower() == "useprimaryproperties"
+                        && p.ProductId == product.ProductId)
+                        ?.FirstOrDefault()?.Value?.Trim(), out int companyProductUsePrimaryPropertySetting);
+
+                    if (int.TryParse(productUsePrimaryPropertiesGlobalStr, out int productUsePrimaryPropertiesGlobal) 
+                            && productUsePrimaryPropertiesGlobal >= 0)
+                       
                     {
-                        product.UsePrimaryProperties = organizationUsePrimaryProperties == 1
-                            && productUsePrimaryProperties == 1;
+                        product.UsePrimaryProperties = productUsePrimaryPropertiesGlobal == 1
+                            && organizationUsePrimaryProperties == 1
+                            && companyProductUsePrimaryPropertySetting == 1;
                     }
                 }
 

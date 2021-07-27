@@ -601,6 +601,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
 
         /// <summary>
+        /// Returns a list of all product settings that an organization has
+        /// </summary>
+        /// <param name="organizationRealPageId">organizationRealPageId</param>
+        /// <returns></returns>
+        public IList<ProductSettingList> GetProductSettings(Guid organizationRealPageId)
+        {
+            using (var repository = GetRepository())
+            {
+                try
+                {
+                    return repository.GetMany<ProductSettingList>(StoredProcNameConstants.SP_ListProductSettingsByOrganization, new { OrganizationRealPageId = organizationRealPageId }).ToList();
+                }
+                catch (Exception ex)
+                {
+                    string test = ex.Message;
+                    return new List<ProductSettingList>();
+                }
+            }
+        }
+
+        /// <summary>
         /// Returns a list of all product settings for persona
         /// </summary>
         /// <param name="personaId">personaId</param>
