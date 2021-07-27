@@ -2561,8 +2561,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         // eventually this will be a list of personas when we start doing multi persona
                         var persona = managePersona.GetFirstAvailablePersonaByCompany(ul.UserRealPageId, org.OrganizationPartyId);
 
-                        //update user status to disabled
-                        if(userOrganizationList.Any(uo => uo.OrganizationRealPageId == ul.OrganizationRealPageId) && ul.OrganizationRealPageId != org.OrganizationRealPageId)
+                        //Check if user primary company and current company in loop are same
+                        if(ul.OrganizationRealPageId == primaryCompanyGuid)
+                        {
+                            var updateUserStatusResponse = repository.Execute<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserStatusByCompany, new
+                            {
+                                RealPageId = ul.UserRealPageId,
+                                OrganizationPartyId = org.OrganizationPartyId,
+                                StatusTypeId = UserUiStatusType.Disabled,
+                                FromDate = ul.FromDate
+                            });
+                        }
+                        else
                         {
                             long orgPartyId = userOrganizationList.FirstOrDefault(uo => uo.OrganizationRealPageId == ul.OrganizationRealPageId).OrganizationPartyId;
                             var updateUserStatusResponse = repository.Execute<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserStatusByCompany, new
@@ -2573,16 +2583,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 FromDate = ul.FromDate
                             });
                         }
-                        else if (org.PrimaryOrganization)
-                        {
-                            var updateUserStatusResponse = repository.Execute<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserStatusByCompany, new
-                            {
-                                RealPageId = ul.UserRealPageId,
-                                OrganizationPartyId = org.OrganizationPartyId,
-                                StatusTypeId = UserUiStatusType.Disabled,
-                                FromDate = ul.FromDate
-                            });
-                        }
+
                         //remove products
                         if (editorPersona != null && (ul.OrganizationRealPageId == primaryCompanyGuid || ul.OrganizationRealPageId == org.OrganizationRealPageId))
                         {
