@@ -217,6 +217,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         /// </summary>
         public bool hasManageIntelligentBuildingWaterProductAccess { get; set; } = true;
         // <summary>
+        /// Persona Has Smart Commerical Trash User Access
+        /// </summary>
+        public bool hasManageSmartWasteCommercialProductAccess { get; set; } = true;
+        // <summary>
         /// Persona Has HospitalityService User Access
         /// </summary>
         public bool hasManageHospitalityServiceAccess { get; set; } = true;

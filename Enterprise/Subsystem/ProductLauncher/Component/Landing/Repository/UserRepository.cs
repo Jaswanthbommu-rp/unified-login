@@ -46,13 +46,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         private IManagePersona _managePersona;
         private IOrganizationRepository _organizationRepository;
         IProductInternalSettingRepository _productInternalSettingRepository;
+       
 
-        #region Ctor
+    #region Ctor
 
-        /// <summary>
-        /// User base Constructor
-        /// </summary>
-        public UserRepository() : base(DbConnectionEnum.IdpConfigurationDb)
+    /// <summary>
+    /// User base Constructor
+    /// </summary>
+    public UserRepository() : base(DbConnectionEnum.IdpConfigurationDb)
         {
             //_userLoginLogic = new ManageUserLogin();
             _userLoginRepository = new UserLoginRepository();
@@ -3308,7 +3309,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     (int) ProductEnum.HandsOnTrainingSystem,
                     (int) ProductEnum.LeaseLabs,
                     (int) ProductEnum.SelfGuidedTour,
-                    (int) ProductEnum.LeadScoring
+                    (int) ProductEnum.LeadScoring,
+                    (int) ProductEnum.SmartWasteCommercial
                 };
             }
 

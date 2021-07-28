@@ -459,6 +459,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case ProductEnum.LeaseLabs:
                 case ProductEnum.HospitalityService:
                 case ProductEnum.LeadScoring:
+                case ProductEnum.SmartWasteCommercial:
                     result = "User details Change not implemented for this Product.";
                     break;
                 default:
