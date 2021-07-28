@@ -2532,6 +2532,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     foreach (var org in userOrganizationList)
                     {
                         Persona editorPersona = null;
+                        long orgPartyId = userOrganizationList.FirstOrDefault(uo => uo.OrganizationRealPageId == ul.OrganizationRealPageId).OrganizationPartyId;
+                        IUserLogin userLogin = userLoginRepository.GetUserLogin(ul.UserRealPageId, orgPartyId);
+                        bool isUserdisabled = userLogin.StatusId == (int)UserUiStatusType.Disabled;
+
                         if (!companyAdminList.ContainsKey(org.OrganizationRealPageId))
                         {
                             //since windows service doesn't have editor persona,Get RealPageEmployeeAccessID to use in to get editor persona and save it for later calls
@@ -2546,8 +2550,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 foreach (var item in result)
                                 {
                                     Guid realPageEmployeeAccessId = new Guid(item.PersonRealPageId);
-                                    long orgPartyId = item.PartyId;
-                                    editorPersona = managePersona.GetFirstAvailablePersonaByCompany(realPageEmployeeAccessId, orgPartyId);
+                                    editorPersona = managePersona.GetFirstAvailablePersonaByCompany(realPageEmployeeAccessId, item.PartyId);
                                 }
 
                                 companyAdminList.Add(org.OrganizationRealPageId, editorPersona);
@@ -2562,7 +2565,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         var persona = managePersona.GetFirstAvailablePersonaByCompany(ul.UserRealPageId, org.OrganizationPartyId);
 
                         //Check if user primary company and current company in loop are same
-                        if(ul.OrganizationRealPageId == primaryCompanyGuid)
+                        if(!isUserdisabled && ul.OrganizationRealPageId == primaryCompanyGuid)
                         {
                             var updateUserStatusResponse = repository.Execute<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserStatusByCompany, new
                             {
@@ -2572,9 +2575,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 FromDate = ul.FromDate
                             });
                         }
-                        else
+                        else if(!isUserdisabled)
                         {
-                            long orgPartyId = userOrganizationList.FirstOrDefault(uo => uo.OrganizationRealPageId == ul.OrganizationRealPageId).OrganizationPartyId;
                             var updateUserStatusResponse = repository.Execute<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserStatusByCompany, new
                             {
                                 RealPageId = ul.UserRealPageId,
