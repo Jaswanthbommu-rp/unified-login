@@ -8,6 +8,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Inter
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.EnterpriseRole;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using Swashbuckle.Swagger.Annotations;
@@ -34,7 +35,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		private ProductInternalSettingRepository _productInternalSettingRepository;
 		private IManageBlueBook _manageBlueBook;
 		private bool _excludeTest = false;
-
+		private IManagePersona _personaManager;
 		public HttpMessageHandler MessageHandler { get; }
 		#endregion
 		#region Constructor
@@ -62,6 +63,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			_manageProductPanel = new ManageProductPanel(_defaultUserClaim, repository, _manageBlueBook, messageHandler, manageProductOneSite);
 			_excludeTest = true;
 			MessageHandler = messageHandler;
+			_personaManager = new ManagePersona(_defaultUserClaim);
 		}
 
 		/// <summary>
@@ -72,6 +74,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		{
 			base.Initialize(controllerContext);		
 			_manageProductPanel = new ManageProductPanel(_userClaims);
+			_personaManager = new ManagePersona(_userClaims);
 
 		}
 		#endregion
@@ -107,6 +110,36 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				Request.CreateResponse(HttpStatusCode.Forbidden, result);
 
 			return Request.CreateResponse(HttpStatusCode.OK, result);
+		}
+
+		/// <summary>
+		/// Returns user product Roles 
+		/// </summary>
+		/// <param name="editorPersonaId">Author user persona id who is creating or editing user</param>
+		/// <param name="realPageId">user realPageId</param>
+		/// <param name="partyId">Organization partyid</param>		
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "Update successful", Type = typeof(HttpResponseMessage))]
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
+		[Route("product/userproductroles")]
+		[HttpGet]
+		public HttpResponseMessage GetUserProductRoles(long editorPersonaId, long partyId, Guid realPageId)
+		{
+			if (editorPersonaId == 0)
+				return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
+
+			if (_realpageUserId == Guid.Empty)
+				return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
+
+			if (realPageId == Guid.Empty)
+				return Request.CreateResponse(HttpStatusCode.BadRequest, "User RealPageId empty.");
+			
+			var personaId = _personaManager.GetActivePersonaId(realPageId);
+			
+			var userProductRoles = _manageProductPanel.GetUserProductRoles(editorPersonaId, personaId, partyId);
+
+			return Request.CreateResponse(HttpStatusCode.OK, userProductRoles);
 		}
 
 		/// <summary>
