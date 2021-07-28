@@ -586,21 +586,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             foreach (var product in products)
             {
-                if(organizationUsePrimaryProperties >= 0)
+                if (organizationUsePrimaryProperties >= 0)
                 {
                     //Assign PrimaryProperty flag for Product
-                    string productUsePrimaryPropertiesGlobalStr = productGlobalSettingType?.Where(p => p.BooksProductCode == product.ProductCode
-                        && p.ProductId == product.ProductId
-                        && p.Name.ToLower() == "useprimaryproperties")
-                        ?.FirstOrDefault()?.Value?.Trim();
+                    string productUsePrimaryPropertiesGlobalStr = productGlobalSettingType?.Where(p => p.Name.ToLower() == "useprimaryproperties"
+                    && p.ProductId == product.ProductId)
+                    ?.FirstOrDefault()?.Value?.Trim();
 
-                      int.TryParse(companyProductSettings?.Where(p=>p.Name.ToLower() == "useprimaryproperties"
-                        && p.ProductId == product.ProductId)
-                        ?.FirstOrDefault()?.Value?.Trim(), out int companyProductUsePrimaryPropertySetting);
+                    int.TryParse(companyProductSettings?.Where(p => p.Name.ToLower() == "useprimaryproperties"
+                      && p.ProductId == product.ProductId)
+                      ?.FirstOrDefault()?.Value?.Trim(), out int companyProductUsePrimaryPropertySetting);
 
-                    if (int.TryParse(productUsePrimaryPropertiesGlobalStr, out int productUsePrimaryPropertiesGlobal) 
-                            && productUsePrimaryPropertiesGlobal >= 0)
-                       
+                    if (productUsePrimaryPropertiesGlobalStr != null
+                            && (int.TryParse(productUsePrimaryPropertiesGlobalStr, out int productUsePrimaryPropertiesGlobal)
+                            && productUsePrimaryPropertiesGlobal >= 0))
+
                     {
                         product.UsePrimaryProperties = productUsePrimaryPropertiesGlobal == 1
                             && organizationUsePrimaryProperties == 1
