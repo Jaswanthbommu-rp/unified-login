@@ -1420,12 +1420,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             };
                             PartyRelationship relationshipType = repository.GetOne<PartyRelationship>(StoredProcNameConstants.SP_GetPartyRelationshipByRealPageId, paramRelType);
 
-                            int unlinkRoleTypeIdFrom = relationshipType.RoleTypeIdFrom;
+                            int unlinkRoleTypeIdFrom = relationshipType != null ? relationshipType.RoleTypeIdFrom : int.MinValue; ;
                             int linkRoleTypeIdFrom = (int)UserRoleType.ExternalUser;
-                            int roleTypeIdTo = relationshipType.RoleTypeIdTo;
+                            int roleTypeIdTo = relationshipType != null ? relationshipType.RoleTypeIdTo : int.MinValue;
 
                             //Update the User Type  
-                            if (unlinkRoleTypeIdFrom != linkRoleTypeIdFrom && relationshipType.RoleTypeIdFrom != (int)UserRoleType.ExternalUser)
+                            if (unlinkRoleTypeIdFrom != linkRoleTypeIdFrom)
                             {
                                 dynamic paramRole = new
                                 {
