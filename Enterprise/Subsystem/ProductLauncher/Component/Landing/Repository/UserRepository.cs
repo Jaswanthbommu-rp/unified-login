@@ -4292,36 +4292,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             return roleIds;
         }
 
-
-        ///// <summary>
-        ///// Used to Update GB(Unified Login) product Role information for a user
-        ///// </summary>
-        ///// <param name="repository"></param>
-        ///// <param name="newRoleId"></param>
-        ///// <param name="assignUserPersonaId"></param>        
-        ///// <param name="loggedInUserRealPageId"></param>
-        ///// <param name="realPageId"></param>
-        ///// <param name="userTypeId"></param>
-        ///// <param name="existingRoleId"></param>
-        //private void UpdateGreenBookRole(IRepository repository, int newRoleId, long assignUserPersonaId, Guid loggedInUserRealPageId, Guid realPageId, int userTypeId, long existingRoleId, long userId)
-        //{
-        //    if (newRoleId > 0)
-        //    {
-        //        IUserRoleRightRepository userRoleRightRepository = new UserRoleRightRepository(repository);
-        //        if (existingRoleId == 0 || newRoleId != existingRoleId)
-        //        {
-        //            if (existingRoleId != 0)
-        //            {
-        //                // Delete existing roleId
-        //                userRoleRightRepository.InsertAssignedRoleToUser(assignUserPersonaId, existingRoleId, Convert.ToInt32(userId), true);
-        //            }
-
-        //            //Insert new roleId to GB
-        //            userRoleRightRepository.InsertAssignedRoleToUser(assignUserPersonaId, newRoleId, Convert.ToInt32(userId));
-        //        }
-        //    }
-        //}
-
         /// <summary>
         /// Used to Update GB(Unified Login) product Role information for a user
         /// </summary>
@@ -4332,6 +4302,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="realPageId"></param>
         /// <param name="userTypeId"></param>
         /// <param name="existingRoleIds"></param>
+        /// <param name="userId"></param>
         private void UpdateGreenBookRole(IRepository repository, List<int> newRoleIds, long assignUserPersonaId, Guid loggedInUserRealPageId, Guid realPageId, int userTypeId, List<long> existingRoleIds, long userId)
         {
             if (newRoleIds.Count > 0)
