@@ -2,16 +2,19 @@
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Factory;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model.ClickPay;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.EnterpriseRole;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ResidentPortal;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -237,6 +240,105 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
 
             return result;
+        }
+
+        public RoleTemplateProductRoleMapping GetUserProductRoles(long editorPersonaId, long userPersonaId, long partyId)
+        {
+            RequestParameter datafilter = new RequestParameter();           
+            RoleTemplateProductRoleMapping enterpriseRoleTemplate = new RoleTemplateProductRoleMapping();
+            List<RoleTemplateProduct> userProducts = new List<RoleTemplateProduct>();
+            try
+            {
+                //First get unified platform product roles
+                var upIntegration = _integrationTypeFactory.GetIntegration((int)ProductEnum.UnifiedPlatform);
+                var upResult = upIntegration.GetRoles(editorPersonaId, userPersonaId, partyId, null, datafilter);
+                if (!upResult.IsError)
+                {
+                    RoleTemplateProduct userProduct = new RoleTemplateProduct();
+                    List<RoleTemplateRoles> roleTemplateRoles = new List<RoleTemplateRoles>();
+                    IList<UnifiedLoginRoleRights> roleList = upResult.Records.Cast<UnifiedLoginRoleRights>().ToList().FindAll(p => p.IsAssigned == true);
+                    foreach (var role in roleList)
+                    {
+                        RoleTemplateRoles templateRole = new RoleTemplateRoles
+                        {
+                            RoleId =  role.RoleId.ToString(),
+                            RoleName = role.Role,
+                            RoleTemplateProductRoleMappingID = 0
+                        };
+                        roleTemplateRoles.Add(templateRole);
+                    }
+                    if (roleList?.Count > 0){
+                        userProduct.ProductId = (int)ProductEnum.UnifiedPlatform;
+                        userProduct.Roles = roleTemplateRoles;
+                        userProduct.RoleTemplateProductId = 0;
+                        userProducts.Add(userProduct);
+                    }                    
+                }
+                //Then get persona assigned products
+                var personaProducts = _productRepository.GetAllProductsByPersona(userPersonaId, ProductBatchStatusType.Success);
+                foreach (var product in personaProducts)
+                {
+                    if (!product.IsResource)
+                    {
+                        ListResponse result;
+                        RoleTemplateProduct userProduct = new RoleTemplateProduct();
+                       
+                        var integration = _integrationTypeFactory.GetIntegration(product.ProductId);
+                        result = integration.GetRoles(editorPersonaId, userPersonaId, partyId, AccessType.Property, datafilter);
+
+                        if (!result.IsError)
+                        {
+                            userProduct.ProductId = product.ProductId;
+
+                            if (result != null && result.Records.Count > 0)
+                            {
+                                List<RoleTemplateRoles> roleTemplateRoles = new List<RoleTemplateRoles>();
+                                if (product.ProductId == (int)ProductEnum.ClickPay)
+                                {
+                                    IList<ClickPayRole> cproleList = result.Records.Cast<ClickPayRole>().ToList().FindAll(p => p.IsAssigned == true);
+                                    foreach (var role in cproleList)
+                                    {
+                                        RoleTemplateRoles templateRole = new RoleTemplateRoles
+                                        {
+                                            RoleId = role.Id,
+                                            RoleName = role.Name,
+                                            RoleTemplateProductRoleMappingID = 0
+                                        };
+                                        roleTemplateRoles.Add(templateRole);
+                                    }
+                                }
+                                else{
+                                    IList<SharedObjects.Product.ProductRole> roleList = result.Records.Cast<SharedObjects.Product.ProductRole>().ToList().FindAll(p => p.IsAssigned == true);
+                                    foreach (var role in roleList)
+                                    {
+                                        RoleTemplateRoles templateRole = new RoleTemplateRoles
+                                        {
+                                            RoleId = role.ID,
+                                            RoleName = role.Name,
+                                            RoleTemplateProductRoleMappingID = 0
+                                        };
+                                        roleTemplateRoles.Add(templateRole);
+                                    }
+                                }                               
+                               
+                                userProduct.Roles = roleTemplateRoles;
+                                userProduct.RoleTemplateProductId = 0;
+                                userProducts.Add(userProduct);
+                            }                                                  
+                        }
+                    }                    
+                }
+                enterpriseRoleTemplate.PartyId = partyId;
+                enterpriseRoleTemplate.RoleTemplateId = 0;
+                enterpriseRoleTemplate.Products = userProducts;
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+
+            return enterpriseRoleTemplate;
         }
 
         public ListResponse GetProductRightsForRole(long editorPersonaId, int roleId, long partyId, int productId, RequestParameter datafilter, bool assignedToRoleOnly = false)

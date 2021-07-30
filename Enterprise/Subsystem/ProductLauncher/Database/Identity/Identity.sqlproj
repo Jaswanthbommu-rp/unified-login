@@ -1132,11 +1132,22 @@
     <Build Include="Enterprise\Tables\ProductValidationRule.sql" />
     <Build Include="UserManagement\Stored Procedures\GetEnterpriseRoleProductsByOrganization.sql" />
     <Build Include="UserManagement\Stored Procedures\GetUserRoleTemplate.sql" />
+    <Build Include="Enterprise\Tables\UserSyncJob.sql" />
+    <Build Include="Enterprise\Tables\UserSyncJobTask.sql" />
+    <Build Include="Enterprise\Tables\ProductCenter.sql" />
+    <Build Include="Enterprise\Tables\PersonaProductCenter.sql" />
+    <Build Include="Enterprise\Stored Procedures\UpdateUserSyncJobTask.sql" />
+    <Build Include="Enterprise\Stored Procedures\CreateUserSyncJob.sql" />
+    <Build Include="Enterprise\SourceList.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetUserSyncJobTask.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetPersonaProductCenterBySource.sql" />
+    <Build Include="Enterprise\Stored Procedures\UpdatePersonaProductCenter.sql" />
     <Build Include="Ident\Stored Procedures\GetAllActivityTokenCounts.sql" />
     <Build Include="Batch\Table\EnterpriseRoleBatchProcess.sql" />
     <Build Include="Batch\Procedure\ListEnterpriseRoleBatchProcessor.sql" />
     <Build Include="Batch\Procedure\UpdateEnterpriseRoleProductBatch.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\InsertPersonaToBatchProcess.sql" />
+    <Build Include="Enterprise\Tables\ProductProductCenter.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

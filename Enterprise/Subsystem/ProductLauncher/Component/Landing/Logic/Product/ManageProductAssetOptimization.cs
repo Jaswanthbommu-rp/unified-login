@@ -398,7 +398,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 							ID = property.PropertyId.ToString(),
 							Name = property.PropertyName,
 							IsAssigned = property.IsAssigned,
-							State = property.State
+							State = property.State,
+							Relationship = property.Relationship
 						});
 					}					
 				}
@@ -2943,7 +2944,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 		[JsonProperty("propertyName")] public string PropertyName { get; set; }
 
-		[JsonIgnore] public string Relationship { get; set; }
+		[JsonProperty("relationship")] public string Relationship { get; set; }
 
 		//[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
 		public IList<AoProduct> Products { get; set; }

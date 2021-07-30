@@ -230,6 +230,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             long userEmailContactMechanismId = 0;
             bool profileChanged = false;
             long booksCustomerMasterId = 0;
+            int greenBookRole = 0;
 
             IUserLoginRepository userLoginRepository = new UserLoginRepository();
             IUserLoginOnly userLoginOnly = userLoginRepository.GetUserLoginOnly(newProfile.userLogin.LoginName);
@@ -1121,9 +1122,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             realPageId = currentOrg.OrganizationRealPageId
                         };
                         IList<EnterpriseRole> enterpriseRoles = repository.GetMany<EnterpriseRole>(procName, param);
-
-                        int greenBookRole = 0;
-                        gbProductBatch = newProfile.productBatch?.FirstOrDefault<ProductBatch>((Func<ProductBatch, bool>)(p => p.ProductId == (int)ProductEnum.UnifiedPlatform));
+                        
+                        gbProductBatch = newProfile.productBatch?.FirstOrDefault<ProductBatch>((Func<ProductBatch, bool>)(p => p.ProductId == (int)ProductEnum.UnifiedPlatform));                        
 
                         if (currentOrg.OrganizationPartyId.Equals(organizationExternalUser.PartyId))
                         {
@@ -1530,7 +1530,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     }
 
 
-                    int productCount = SaveProductDetails(repository, newProfile.productBatch, createUserResponse, CreateUserPersonaId, AssignUserPersonaId, userClaim.UserRealPageGuid, organizationRealPageId, errorStatus, newProfile.UserTypeId, true, aoProductsAvailableForUser, newProfile.MigratedUser, true);
+                    int productCount = SaveProductDetails(repository, newProfile.productBatch, createUserResponse, CreateUserPersonaId, AssignUserPersonaId, userClaim.UserRealPageGuid, organizationRealPageId, errorStatus, newProfile.UserTypeId, true, aoProductsAvailableForUser, newProfile.MigratedUser, true, greenBookRole);
 
                     #endregion
 
@@ -2566,10 +2566,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     var userOrganizationList = userLoginRepository.ListOrganizationByLoginName(userLoginOnly.LoginName);
                     Guid primaryCompanyGuid = userOrganizationList.FirstOrDefault(p => p.PrimaryOrganization).OrganizationRealPageId;
                     List<Guid> organizationsToProcess = new List<Guid>();
-
                     foreach (var org in userOrganizationList)
                     {
                         Persona editorPersona = null;
+                        long orgPartyId = userOrganizationList.FirstOrDefault(uo => uo.OrganizationRealPageId == ul.OrganizationRealPageId).OrganizationPartyId;
+                        IUserLogin userLogin = userLoginRepository.GetUserLogin(ul.UserRealPageId, orgPartyId);
+                        bool isUserdisabled = userLogin.StatusId == (int)UserUiStatusType.Disabled;
+
                         if (!companyAdminList.ContainsKey(org.OrganizationRealPageId))
                         {
                             //since windows service doesn't have editor persona,Get RealPageEmployeeAccessID to use in to get editor persona and save it for later calls
@@ -2584,8 +2587,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 foreach (var item in result)
                                 {
                                     Guid realPageEmployeeAccessId = new Guid(item.PersonRealPageId);
-                                    long orgPartyId = item.PartyId;
-                                    editorPersona = managePersona.GetFirstAvailablePersonaByCompany(realPageEmployeeAccessId, orgPartyId);
+                                    editorPersona = managePersona.GetFirstAvailablePersonaByCompany(realPageEmployeeAccessId, item.PartyId);
                                 }
 
                                 companyAdminList.Add(org.OrganizationRealPageId, editorPersona);
@@ -2599,8 +2601,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         // eventually this will be a list of personas when we start doing multi persona
                         var persona = managePersona.GetFirstAvailablePersonaByCompany(ul.UserRealPageId, org.OrganizationPartyId);
 
-                        //update user status to disabled
-                        if (org.PrimaryOrganization)
+                        //Check if user primary company and current company in loop are same
+                        if(!isUserdisabled && ul.OrganizationRealPageId == primaryCompanyGuid)
                         {
                             var updateUserStatusResponse = repository.Execute<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserStatusByCompany, new
                             {
@@ -2610,6 +2612,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 FromDate = ul.FromDate
                             });
                         }
+                        else if(!isUserdisabled)
+                        {
+                            var updateUserStatusResponse = repository.Execute<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserStatusByCompany, new
+                            {
+                                RealPageId = ul.UserRealPageId,
+                                OrganizationPartyId = orgPartyId,
+                                StatusTypeId = UserUiStatusType.Disabled,
+                                FromDate = ul.FromDate
+                            });
+                        }
+
                         //remove products
                         if (editorPersona != null && (ul.OrganizationRealPageId == primaryCompanyGuid || ul.OrganizationRealPageId == org.OrganizationRealPageId))
                         {
@@ -3344,7 +3357,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="userIsActive">Is the user active</param>
         /// <param name="aoProducts">Applicable if PMC has AO products</param>
         /// <returns>Number of Products</returns>
-        private int SaveProductDetails(IRepository repository, IList<ProductBatch> productList, CreateUserResponse<IErrorData> createUserResponse, long CreateUserPersonaId, long AssignUserPersonaId, Guid realPageId, Guid organizationRealPageId, Status<IErrorData> errorStatus, int userTypeId, bool userIsActive, IList<string> aoProducts = null, bool migratedUser = false, bool isCreateUser = false)
+        private int SaveProductDetails(IRepository repository, IList<ProductBatch> productList, CreateUserResponse<IErrorData> createUserResponse, long CreateUserPersonaId, long AssignUserPersonaId, Guid realPageId, Guid organizationRealPageId, Status<IErrorData> errorStatus, int userTypeId, bool userIsActive, IList<string> aoProducts = null, bool migratedUser = false, bool isCreateUser = false, int unifiedPlatformRole = 0)
         {
             int productCount = 0;
             int enterpriseRoleId = 0;
@@ -3456,8 +3469,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                     if (product == (int)ProductEnum.UnifiedPlatform)
                     {
-                        int platformRole = Convert.ToInt32(productRoles.FirstOrDefault());
-                        UpdateEnterpriseUnifiedPlatFormRole(repository, platformRole, _userClaim.UserId, AssignUserPersonaId);
+                        int enterprisePlatformRole = Convert.ToInt32(productRoles.FirstOrDefault());
+                        if (enterprisePlatformRole > 0 && unifiedPlatformRole > 0)
+                        {
+                            UpdateGreenBookRole(repository, new List<int>() { enterprisePlatformRole }, AssignUserPersonaId,new List<long>() { unifiedPlatformRole }, _userClaim.UserId);
+                        }
                     }
                     //First check for any batchdata coming from ui, if no batch data then process for enterprise role batch
                     var productBatch = productList.FirstOrDefault(p => p.ProductId == product);
@@ -3638,25 +3654,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             return productCount;
         }
 
-        private void UpdateEnterpriseUnifiedPlatFormRole(IRepository repository, int roleId, int editorUserId, long userPersonaId)
-        {
-            try
-            {
-                dynamic param = new
-                {
-                    personaID = userPersonaId,
-                    roleID = roleId,
-                    CreatedBy = editorUserId,
-                    personaPrivilgeID = 0
-                };
-
-                var repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkPersonaToRole, param);
-            }
-            catch (Exception ex)
-            {
-                string errorMessage = ex.Message;
-            }
-        }
         /// <summary>
         /// Used to process any information (such as first name or last name or uer email)for a user changed or user type changed
         /// </summary>
@@ -4298,12 +4295,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="repository"></param>
         /// <param name="newRoleIds"></param>
         /// <param name="assignUserPersonaId"></param>        
-        /// <param name="loggedInUserRealPageId"></param>
-        /// <param name="realPageId"></param>
-        /// <param name="userTypeId"></param>
         /// <param name="existingRoleIds"></param>
         /// <param name="userId"></param>
-        private void UpdateGreenBookRole(IRepository repository, List<int> newRoleIds, long assignUserPersonaId, Guid loggedInUserRealPageId, Guid realPageId, int userTypeId, List<long> existingRoleIds, long userId)
+        private void UpdateGreenBookRole(IRepository repository, List<int> newRoleIds, long assignUserPersonaId, List<long> existingRoleIds, long userId)
         {
             if (newRoleIds.Count > 0)
             {
@@ -6002,7 +5996,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         var duplicateGreenBookroles = new List<int>(greenBookRoles);
                         var duplicateExistingroles = new List<long>(updateUserProfileEntity.ExistingRoleIds);
 
-                        UpdateGreenBookRole(repository, duplicateGreenBookroles, updateUserProfileEntity.OldProfile.Persona[0].PersonaId, updateUserProfileEntity.LoggedInUserRealPageId, updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId, updateUserProfileEntity.NewProfile.UserTypeId, duplicateExistingroles, updateUserProfileEntity.UserLoginOnly.UserId);
+                        UpdateGreenBookRole(repository, duplicateGreenBookroles, updateUserProfileEntity.OldProfile.Persona[0].PersonaId, duplicateExistingroles, updateUserProfileEntity.UserLoginOnly.UserId);
 
                         if (updateUserProfileEntity.SaveProductBatchError != "Save Product(s) Error: ")
                         {

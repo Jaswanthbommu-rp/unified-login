@@ -43,6 +43,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         IList<ProductSettingList> GetProductSettings(Guid organizationRealPageId, int productId);
 
         /// <summary>
+        /// Get Product Settings
+        /// </summary>
+        /// <param name="organizationRealPageId"></param>
+        /// <returns></returns>
+        IList<ProductSettingList> GetProductSettings(Guid organizationRealPageId);
+
+        /// <summary>
         /// Returns a list of all product settings for persona
         /// </summary>
         /// <param name="personaId">personaId</param>

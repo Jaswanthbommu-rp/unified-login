@@ -155,6 +155,7 @@
     </None>
     <None Include="Logging\Scripts\PostDeployment\2020-February-Release.sql" />
     <None Include="Logging\Scripts\PostDeployment\2019-September-Release.sql" />
+    <None Include="Logging\Scripts\PostDeployment\2021Q3Release.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Logging\Scripts\PostDeployment\Data.Logging.LogCategoryType.sql" />

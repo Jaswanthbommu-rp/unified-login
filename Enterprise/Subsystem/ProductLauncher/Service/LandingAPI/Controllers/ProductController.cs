@@ -665,7 +665,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 List<string> impersonatedUserRights = BaseUserRights.GetImpersonatedUserRights(_userClaims.ImpersonatedBy, _userClaims);
                 return !impersonatedUserRights.Any(p => p.Equals("MigrationTool", StringComparison.OrdinalIgnoreCase));
             }
-            else if(_userClaims.Rights.Any(p => p == "AccessToUnifiedPlatform"))
+            else if(_userClaims.Rights.Any(p => p == "AccessToUnifiedPlatform") || _userClaims.Rights.Any(p => p == "MigrationTool"))
             {
                 return false;
             }
