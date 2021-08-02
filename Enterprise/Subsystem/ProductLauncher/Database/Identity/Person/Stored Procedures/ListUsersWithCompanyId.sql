@@ -182,16 +182,10 @@ AS
                        )
                              AND P.PersonaId NOT IN
                        (
-                           SELECT pe.PersonaId
-                           FROM Enterprise.MasterConfigurationType mct
-                                INNER JOIN Enterprise.MasterSettingType MST ON mst.MasterConfigurationTypeId = mct.MasterCOnfigurationTypeId
-                                INNER JOIN Enterprise.MasterSetting ms ON ms.MasterSettingTypeId = mst.MasterSettingTYpeId
-                                INNER JOIN Enterprise.Party p ON CONVERT(NVARCHAR(40), p.RealPageId) = ms.Value
-                                INNER JOIN ident.UserLogin ul ON UL.PersonPartyId = p.PartyId
-                                INNER JOIN Ident.UserLoginPersona ulp ON ul.UserId = ulp.UserLoginId
-                                INNER JOIN Person.Persona pe ON pe.UserLoginPersonaId = ulp.UserLoginPersonaId
-                           WHERE mct.Name = 'Organization'
-                                 AND mst.Name = 'RealPageEmployeeAccessID'
+                           SELECT	pe.PersonaId
+							FROM Enterprise.OrganizationAdminUser OAU
+								INNER JOIN Ident.UserLoginPersona ULP ON OAU.UserLoginPersonaId = ULP.UserLoginPersonaId
+								INNER JOIN Person.Persona PE ON PE.UserLoginPersonaId = ULP.UserLoginPersonaId
                        )  AND ((@CompanyIdCount IS NULL)
                             OR VDIM.CompanyMasterId IN
 						 (

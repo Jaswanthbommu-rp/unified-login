@@ -262,7 +262,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     {
                         foreach (var item in result)
                         {
-                            realPageId = item.PersonRealPageId;
+                            realPageId = item.PersonRealPageId.ToString();
                         }
                     }
                 }

@@ -13,13 +13,10 @@ BEGIN
 			WHERE ContactMechanismId = @ContactMechanismId
 
 		-- SEE IF THE USER BEING UPDATED IS A SUPPORT TOOL USER AND IF IT IS FORCE TO AZURE
-		IF EXISTS ( SELECT TOP 1 1 FROM 
+		IF EXISTS ( SELECT TOP(1) 1 FROM 
 			Ident.UserLogin UL
-			INNER JOIN Enterprise.Party P1 ON UL.PersonPartyId = P1.PartyId
-			INNER JOIN Enterprise.MasterSetting MS ON MS.Value = CONVERT(VARCHAR(MAX),P1.RealPageId)
-			INNER JOIN Enterprise.MasterSettingType MST ON MS.MasterSettingTypeId = MST.MasterSettingTypeId
-			INNER JOIN Enterprise.MasterConfigurationType MCT 
-				ON MST.MasterConfigurationTypeId = MCT.MasterConfigurationTypeId AND MCT.Name = 'Organization' AND MST.Name = 'RealPageEmployeeAccessID'
+			INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginId = UL.UserId
+			INNER JOIN Enterprise.OrganizationAdminUser OAU ON OAU.UserLoginPersonaId = ULP.UserLoginPersonaId
 		WHERE
 			UL.UserId = @UserId
 		)

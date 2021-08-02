@@ -45,17 +45,13 @@ BEGIN
 		SELECT	pe.PersonaId,
 					p.RealPageId,
 					ulp.OrganizationPartyId
-		FROM	Enterprise.MasterConfigurationType mct
-					INNER JOIN Enterprise.MasterSettingType mst ON (mst.MasterConfigurationTypeId = mct.MasterConfigurationTypeId)
-					INNER JOIN Enterprise.MasterSetting ms ON (ms.MasterSettingTypeId = mst.MasterSettingTYpeId)
-					INNER JOIN Enterprise.Party p ON p.RealPageId = ms.Value
-					INNER JOIN Ident.UserLogin ul ON ul.PersonPartyId = p.PartyId
-					INNER JOIN Ident.UserLoginPersona ulp ON ulp.UserLoginId = ul.UserId
-					INNER JOIN Person.Persona pe ON pe.UserLoginPersonaId = ulp.UserLoginPersonaId
-					INNER JOIN cteUserOrganization uo ON (ulp.OrganizationPartyId = uo.OrganizationPartyId)
-		WHERE	mct.Name = 'Organization'
-		AND			mst.Name = 'RealPageEmployeeAccessID'
-		AND			TRY_CAST(ms.Value AS UNIQUEIDENTIFIER) IS NOT NULL
+		FROM Enterprise.OrganizationAdminUser OAU
+			INNER JOIN Ident.UserLoginPersona ULP ON OAU.UserLoginPersonaId = ULP.UserLoginPersonaId AND ulp.PrimaryOrganization = 1
+			INNER JOIN ident.userLogin UL ON UL.UserId = ULP.UserLoginId
+			INNER JOIN Person.Persona PE ON PE.UserLoginPersonaId = ULP.UserLoginPersonaId
+			INNER JOIN Enterprise.Party P ON UL.PersonPartyId = P.PartyId
+		WHERE
+			OAU.OrganizationPartyId = @OrganizationPartyId
 	)
 
 	SELECT		pe.PersonaId,

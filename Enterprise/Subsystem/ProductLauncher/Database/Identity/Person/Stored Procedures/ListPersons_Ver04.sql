@@ -183,17 +183,12 @@ BEGIN
 		INSERT INTO @HoldPersona (
 			PersonaId
 		)
-		SELECT	pe.PersonaId 
-		FROM	Enterprise.MasterConfigurationType mct
-					INNER JOIN Enterprise.MasterSettingType mst ON mst.MasterConfigurationTypeId = mct.MasterCOnfigurationTypeId
-					INNER JOIN Enterprise.MasterSetting ms ON ms.MasterSettingTypeId = mst.MasterSettingTYpeId
-					INNER JOIN Enterprise.Party p ON p.RealPageId = ms.Value
-					INNER JOIN Ident.UserLogin ul ON ul.PersonPartyId = p.PartyId
-					INNER JOIN Ident.UserLoginPersona ulp ON ulp.UserLoginId = ul.UserId
-					INNER JOIN Person.Persona pe ON pe.UserLoginPersonaId = ulp.UserLoginPersonaId
-		WHERE	mct.Name = 'Organization'
-		AND		mst.Name = 'RealPageEmployeeAccessID'
-		AND		ULP.OrganizationPartyId = @PartyId
+		SELECT	pe.PersonaId
+		FROM Enterprise.OrganizationAdminUser OAU
+			INNER JOIN Ident.UserLoginPersona ULP ON OAU.UserLoginPersonaId = ULP.UserLoginPersonaId AND ulp.PrimaryOrganization = 1
+			INNER JOIN Person.Persona PE ON PE.UserLoginPersonaId = ULP.UserLoginPersonaId
+		WHERE
+			OAU.OrganizationPartyId = @PartyId
 	END
 
 	IF (@UserListFilterType = 2)

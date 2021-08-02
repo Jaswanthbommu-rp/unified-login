@@ -141,7 +141,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 						foreach (var productData in pbData)
 						{
 							var propertyList = productData.InputJson.PropertyList.ToList();
-							//find and reaplace baseline customer property with clone customer property
+							//find and replace baseline customer property with clone customer property
 							if (propertyList?.Count > 0)
 							{
 								var baseCompanyProperties = GetProductProperties(user.AdminUserPersonaId, user.PersonaId, productData.ProductId);
