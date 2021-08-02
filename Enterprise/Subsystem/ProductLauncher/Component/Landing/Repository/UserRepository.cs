@@ -6066,7 +6066,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         string joinedOldRoles = string.Join(", ", oldRoles);
                         string joinedNewRoles = string.Join(", ", newRoles);
 
-                        var auditMessage = $"{{2}} {{3}} changed the Unified Platform role for {{0}} {{1}}. Old role/s : {joinedOldRoles}. New role/s : {joinedNewRoles}.";
+                        var auditMessage = $"{{2}} {{3}} changed the Unified Platform role for {{0}} {{1}}. Previous role(s): {joinedOldRoles}. New role(s) : {joinedNewRoles}.";
                         LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, auditMessage, "UpdateUser", updateUserProfileEntity.NewProfile);
                     }
 
@@ -6079,7 +6079,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         {
                             var existingUserRole = enterpriseRoles.ToList().Where(e => e.RoleId == updateUserProfileEntity.ExistingRoleIds[0]).Select(e => e.Role).FirstOrDefault();
                             var newUserRole = enterpriseRoles.ToList().Where(e => e.RoleId == greenBookRole).Select(e => e.Role).FirstOrDefault();
-                            var auditMessage = $"{{2}} {{3}} changed the Unified Platform role for {{0}} {{1}}. Old role: {existingUserRole}. New role : {newUserRole}.";
+                            var auditMessage = $"{{2}} {{3}} changed the Unified Platform role for {{0}} {{1}}. Previous role: {existingUserRole}. New role: {newUserRole}.";
                             LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, auditMessage, "UpdateUser", updateUserProfileEntity.NewProfile);
                         }
                     }
