@@ -163,6 +163,7 @@ AND org.OrganizationDomainId = @domainId
    WHERE    
     mct.Name = 'Organization'    
     AND mst.Name = 'RealPageEmployeeAccessID'  
+	AND ulp.OrganizationPartyId = @PartyId
   )  
   
   

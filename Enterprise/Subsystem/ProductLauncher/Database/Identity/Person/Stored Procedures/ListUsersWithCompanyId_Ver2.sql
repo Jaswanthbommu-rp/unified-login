@@ -127,7 +127,7 @@ AS
                       AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate)    
                            OR (@NOW >= ps.FromDate    
                                AND ps.ThruDate IS NULL))    
-                      AND pec.ProductId NOT IN(14, 19, 24, 25, 34, 39) --Client Portal, Product Learning Portal, Black Book, Self-provisioning portal, Benchmarking, Integration Marketplace    
+                      AND pec.ProductId NOT IN(14, 19, 24, 25, 34) --Client Portal, Product Learning Portal, Black Book, Self-provisioning portal, Benchmarking
        AND ((@ProductCount IS NULL)    
                            OR pp.ProductId IN    
                  (    
