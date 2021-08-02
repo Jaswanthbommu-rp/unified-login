@@ -1468,12 +1468,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
             switch (userTypeDto)
             {
-                case UserTypeDto.Regular
-                :
+                case UserTypeDto.Regular:
                     userType = (int)UserRoleType.User;
                     break;
                 case UserTypeDto.NoEmail:
                     userType = (int)UserRoleType.UserNoEmail; //"Regular User (No Email)";
+                    break;
+                case UserTypeDto.Employee:
+                    userType = (int) UserRoleType.RealPageEmployee;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(userTypeDto), userTypeDto, null);

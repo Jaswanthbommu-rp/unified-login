@@ -1,21 +1,15 @@
-﻿Create PROCEDURE [Hots].[ListHotsBaseOrganizationUsers] (
-	@OrganizationId int
+﻿CREATE PROCEDURE [Hots].[ListHotsBaseOrganizationUsers] (
+	@OrganizationId bigint
 )
 AS
 BEGIN
-	DECLARE @NOW DATETIME = GETUTCDATE();
 	Declare @AdminPersonaID BIGINT;
-
-	SELECT	@AdminPersonaID = ULP.UserLoginPersonaId	
-	FROM	Enterprise.MasterConfigurationType mct
-			INNER JOIN Enterprise.MasterSettingType mst ON mst.MasterConfigurationTypeId = mct.MasterConfigurationTypeId
-			INNER JOIN Enterprise.MasterSetting ms ON MS.MasterSettingTypeId = mst.MasterSettingTYpeId
-			INNER JOIN Enterprise.Party p ON p.RealPageId = ms.Value
-			INNER JOIN Ident.UserLogin UL ON UL.PersonPartyId = P.PartyId
-			INNER JOIN Ident.UserLoginPersona ULP ON UL.UserId = ULP.UserLoginId
-	WHERE mct.Name = 'Organization'	
-	AND mst.Name = 'RealPageEmployeeAccessID'
-	AND ULP.OrganizationPartyId = @OrganizationId
+	
+	SELECT	@AdminPersonaID = P.PersonaId	
+	FROM	Enterprise.OrganizationAdminUser OAU
+			INNER JOIN Ident.UserLoginPersona ULP ON OAU.UserLoginPersonaId = ULP.UserLoginPersonaId
+			INNER JOIN Person.Persona P ON P.UserLoginPersonaId = ULP.UserLoginPersonaId
+	WHERE OAU.OrganizationPartyId = @OrganizationId
 
 	SELECT	ul.UserId AS 'UserId',
 			p.PersonaId AS 'PersonaId',
@@ -29,7 +23,7 @@ BEGIN
 			INNER JOIN Person.Person pe ON pe.PartyId = ul.PersonPartyId
 			INNER JOIN Enterprise.StatusType st ON st.StatusTYpeId = ULP.StatusTypeId 
 	WHERE	o.PartyId = @OrganizationId 		
-	AND		ULP.UserLoginPersonaId NOT IN (@AdminPersonaID)
+	AND		P.PersonaId NOT IN (@AdminPersonaID)
 	And st.Name = 'Active'
 	
 END

@@ -128,7 +128,7 @@ DECLARE @CreatedById bigint,
 
 SELECT @CreatedById = UserId
 FROM Ident.UserLogin
-WHERE LoginName = 'RealPageAd@test.com'
+WHERE LoginName LIKE 'realpagead@%'
 
 IF NOT EXISTS (SELECT 1 FROM [Security].[Right] WHERE RightName = 'EmployeeAccessToLoginPageSetup')
 BEGIN
@@ -1404,6 +1404,45 @@ BEGIN
            VALUES	(@RightId, @PartyId, 9, @CreatedById, @Now)
 END
 GO
+
+
+-- sync new support admin table
+;WITH companyadminusers ( 	OrganizationPartyId, UserLoginPersonaId )
+AS (
+	SELECT O.PartyId,
+				   UL.UserLoginPersonaId
+			 FROM Enterprise.Organization O
+				  INNER JOIN Enterprise.Party P ON O.PartyId = P.PartyId
+				  INNER JOIN Enterprise.VW_DataImportMapping D ON O.PartyId = D.PartyId
+				  INNER JOIN Enterprise.OrganizationDomain OD on O.OrganizationDomainId = OD.OrganizationDomainId
+				  INNER JOIN Enterprise.MasterConfiguration MC ON MC.AttributeId = O.PartyId
+				  INNER JOIN Enterprise.MasterConfigurationSetting MCS ON MC.MasterConfigurationId = MCS.MasterConfigurationId
+				  INNER JOIN Enterprise.MasterSetting MS ON MCS.MasterSettingId = MS.MasterSettingId
+				  INNER JOIN Enterprise.MasterSettingType MST ON MST.MasterSettingTypeId = MS.MasterSettingTypeId
+				  INNER JOIN Enterprise.MasterConfigurationType MCT ON MCT.MasterConfigurationTypeId = MST.MasterConfigurationTypeId
+				  INNER JOIN
+					(
+						SELECT P.RealPageId,
+							   UL.LoginName,
+							   ul.UserId,
+							   ulp.UserLoginPersonaId
+						FROM 
+							Ident.UserLogin UL
+							INNER JOIN Enterprise.Party P ON UL.PersonPartyId = P.PartyId
+							INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginId = UL.UserId AND ULP.PrimaryOrganization = 1
+					) UL ON UL.RealPageId = MS.Value
+			 WHERE MCT.Name = 'Organization'
+				   AND MST.Name = N'RealPageEmployeeAccessID'
+)
+
+INSERT INTO Enterprise.OrganizationAdminUser (OrganizationPartyId, UserLoginPersonaId)
+SELECT CA.OrganizationPartyId, ca.UserLoginPersonaId 
+FROM companyadminusers CA 
+	LEFT OUTER JOIN Enterprise.OrganizationAdminUser OAU ON CA.OrganizationPartyId = OAU.OrganizationPartyId
+WHERE OAU.OrganizationPartyId IS NULL
+-- sync new support admin table
+GO
+
  GO
  IF NOT EXISTS (SELECT 1 FROM [Batch].[BatchProcessType] WHERE Name = 'EnterpriseRoleCreateUpdateProductUser')
   BEGIN
