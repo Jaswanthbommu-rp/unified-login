@@ -89,24 +89,13 @@ BEGIN
 	)
 
 	INSERT INTO #tempAdminUsers ( PartyId, LoginName, RealPageId )
-	SELECT CAST(MC.AttributeId AS BIGINT), 
+	SELECT OAU.OrganizationPartyId, 
 		UL.LoginName,
-		UL.RealPageId as RealPageAccessUserId 
-		FROM Enterprise.MasterConfiguration MC
-        INNER JOIN Enterprise.MasterConfigurationSetting MCS ON MC.MasterConfigurationId = MCS.MasterConfigurationId  
-        INNER JOIN Enterprise.MasterSetting MS ON MCS.MasterSettingId = MS.MasterSettingId  
-        INNER JOIN Enterprise.MasterSettingType MST ON MST.MasterSettingTypeId = MS.MasterSettingTypeId  
-        INNER JOIN Enterprise.MasterConfigurationType MCT ON MCT.MasterConfigurationTypeId = MST.MasterConfigurationTypeId  
-        INNER JOIN  
-				(  
-				 SELECT P.RealPageId,  
-					 UL.LoginName  
-				 FROM   
-				  Ident.UserLogin UL  
-				  INNER JOIN Enterprise.Party P ON UL.PersonPartyId = P.PartyId  
-				) UL ON LEN(MS.Value) = 36 AND UL.RealPageId = CAST(MS.Value AS UNIQUEIDENTIFIER)
-	WHERE MCT.Name = 'Organization'  
-		AND MST.Name = 'RealPageEmployeeAccessID'
+		P2.RealPageId as RealPageAccessUserId
+	FROM Enterprise.OrganizationAdminUser OAU 
+			  INNER JOIN Ident.UserLoginPersona ULP ON oau.UserLoginPersonaId = ulp.UserLoginPersonaId
+			  INNER JOIN Ident.UserLogin UL ON UL.UserId = ulp.UserLoginId
+			  INNER JOIN Enterprise.Party P2 ON P2.PartyId = UL.PersonPartyId
 	UNION
 		SELECT CAST(PartyId AS BIGINT), 'nouser@realpage.com', CAST('00000000-0000-0000-0000-000000000000' AS UNIQUEIDENTIFIER) FROM Enterprise.Party WHERE RealPageId = '0d018e46-c20e-477d-aded-4e5a35fb8f99'
 

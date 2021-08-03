@@ -2565,10 +2565,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     var userOrganizationList = userLoginRepository.ListOrganizationByLoginName(userLoginOnly.LoginName);
                     Guid primaryCompanyGuid = userOrganizationList.FirstOrDefault(p => p.PrimaryOrganization).OrganizationRealPageId;
                     List<Guid> organizationsToProcess = new List<Guid>();
-
                     foreach (var org in userOrganizationList)
                     {
                         Persona editorPersona = null;
+                        long orgPartyId = userOrganizationList.FirstOrDefault(uo => uo.OrganizationRealPageId == ul.OrganizationRealPageId).OrganizationPartyId;
+                        IUserLogin userLogin = userLoginRepository.GetUserLogin(ul.UserRealPageId, orgPartyId);
+                        bool isUserdisabled = userLogin.StatusId == (int)UserUiStatusType.Disabled;
+
                         if (!companyAdminList.ContainsKey(org.OrganizationRealPageId))
                         {
                             //since windows service doesn't have editor persona,Get RealPageEmployeeAccessID to use in to get editor persona and save it for later calls
@@ -2583,8 +2586,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 foreach (var item in result)
                                 {
                                     Guid realPageEmployeeAccessId = new Guid(item.PersonRealPageId);
-                                    long orgPartyId = item.PartyId;
-                                    editorPersona = managePersona.GetFirstAvailablePersonaByCompany(realPageEmployeeAccessId, orgPartyId);
+                                    editorPersona = managePersona.GetFirstAvailablePersonaByCompany(realPageEmployeeAccessId, item.PartyId);
                                 }
 
                                 companyAdminList.Add(org.OrganizationRealPageId, editorPersona);
@@ -2598,8 +2600,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         // eventually this will be a list of personas when we start doing multi persona
                         var persona = managePersona.GetFirstAvailablePersonaByCompany(ul.UserRealPageId, org.OrganizationPartyId);
 
-                        //update user status to disabled
-                        if (org.PrimaryOrganization)
+                        //Check if user primary company and current company in loop are same
+                        if(!isUserdisabled && ul.OrganizationRealPageId == primaryCompanyGuid)
                         {
                             var updateUserStatusResponse = repository.Execute<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserStatusByCompany, new
                             {
@@ -2609,6 +2611,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 FromDate = ul.FromDate
                             });
                         }
+                        else if(!isUserdisabled)
+                        {
+                            var updateUserStatusResponse = repository.Execute<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserStatusByCompany, new
+                            {
+                                RealPageId = ul.UserRealPageId,
+                                OrganizationPartyId = orgPartyId,
+                                StatusTypeId = UserUiStatusType.Disabled,
+                                FromDate = ul.FromDate
+                            });
+                        }
+
                         //remove products
                         if (editorPersona != null && (ul.OrganizationRealPageId == primaryCompanyGuid || ul.OrganizationRealPageId == org.OrganizationRealPageId))
                         {
@@ -3308,7 +3321,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     (int) ProductEnum.HandsOnTrainingSystem,
                     (int) ProductEnum.LeaseLabs,
                     (int) ProductEnum.SelfGuidedTour,
-                    (int) ProductEnum.LeadScoring
+                    (int) ProductEnum.LeadScoring,
+                    (int) ProductEnum.SmartWasteCommercial
                 };
             }
 

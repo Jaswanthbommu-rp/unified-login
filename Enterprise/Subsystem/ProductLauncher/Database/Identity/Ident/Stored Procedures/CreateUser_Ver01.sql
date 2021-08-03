@@ -1,5 +1,5 @@
 ﻿Create PROCEDURE [Ident].[CreateUser_Ver01] (
-	@OrganizationId int,
+	@OrganizationId bigint,
 	@FirstName nvarchar(200),
 	@MiddleName nvarchar(100),
 	@LastName nvarchar(200),
@@ -39,8 +39,7 @@ BEGIN
 		@UserType nvarchar(50),
 		@UserLoginPersonaId bigint,
 		@RoleTypeIdTo int,
-		@ContactMechanismUsageTypeId int,
-		@SchemaName varchar(25);;
+		@ContactMechanismUsageTypeId int
 
 	SELECT	@UserType = Name
 	FROM		Enterprise.RoleType
@@ -50,17 +49,6 @@ BEGIN
 	FROM		Enterprise.Organization O
 					INNER JOIN Enterprise.Party P ON P.PartyId = O.PartyId
 	WHERE	P.PartyId = @OrganizationId;
-
-	SELECT	@SchemaName = ps.Value				
-	FROM	Enterprise.GlobalProductConfiguration gpc
-			JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId
-			JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId
-			JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId
-	WHERE  gpc.ProductId = 3
-	AND (gpc.ThruDate IS NULL)
-	AND ( pc.ThruDate IS NULL)
-	AND ( ps.ThruDate IS NULL)
-	And PST.Name = 'RolesRightsSchemaName'
 
 	IF NOT EXISTS
 	(
@@ -263,63 +251,54 @@ BEGIN
 
 		IF(@UserTypeId = 402)
 		BEGIN
-			SELECT	@RoleId = R.RoleID
-			FROM		Enterprise.Role AS R
-							INNER JOIN Enterprise.RoleValueType AS RVT ON RVT.RoleValueTypeId = R.RoleValueTypeId
-			WHERE	RVT.Value = 'User Administrator'
-			AND			R.PartyID = @OrganizationId;
+			SELECT TOP (1) @RoleId = R.RoleId
+				FROM		Security.Role AS R
+				WHERE	R.RoleName = 'User Administrator' AND R.OrgPartyID IS NULL AND R.ProductId = 3
+				ORDER BY R.RoleId
 		END;
 		ELSE
 		BEGIN
-			SELECT	@RoleId = R.RoleID
-			FROM		Enterprise.Role R
-							INNER JOIN Enterprise.RoleValueType RVT ON RVT.RoleValueTypeId = R.RoleValueTypeId
-			WHERE	R.DefaultRole = 1
-			AND			R.PartyID = @OrganizationId;
-		END;
-
-		Declare @CreatedUserId INT
-		SELECT	TOP 1 @CreatedUserId = UserId
-		FROM	Ident.UserLogin u
-		join Ident.UserLoginPersona up on
-			u.UserId = up.UserLoginId
-		WHERE	LoginName LIKE '%admin@realpage.com'
-		and up.OrganizationPartyId = @OrganizationId
-
-		IF (@SchemaName = 'Enterprise')
-		BEGIN
-			IF NOT EXISTS
-			(
-				SELECT	1
-				FROM		Enterprise.PersonaPrivilege
-				WHERE	PersonaId = @PersonaId
-				AND		RoleID = @RoleId
-			)
+			IF EXISTS (SELECT TOP (1) R.RoleId FROM Security.Role R	INNER JOIN Security.OrganizationDefaultRole ODR ON ODR.RoleId = R.RoleId WHERE odr.OrgPartyId = @OrganizationId AND R.ProductId = 3)
 			BEGIN
-				EXEC Enterprise.LinkPersonaToRole
-				@PersonaID = @PersonaId,
-				@RoleID = @RoleId,
-				@CreatedBy = @CreatedUserId,
-				@PersonaPrivilgeID = @PerPriv OUTPUT;			
-			END;			
-		END
-		ELSE
-		BEGIN
-			IF NOT EXISTS
-			(
-				SELECT	1
-				FROM		Security.PersonaRole
-				WHERE	PersonaId = @PersonaId
-				AND		RoleID = @RoleId
-			)
-			BEGIN
-				EXEC Security.LinkPersonaToRole
-				@PersonaID = @PersonaId,
-				@RoleID = @RoleId,
-				@CreatedBy = @CreatedUserId,
-				@PersonaPrivilgeID = @PerPriv OUTPUT;
+				SELECT TOP (1) @RoleId = R.RoleId
+					FROM Security.Role R
+					INNER JOIN Security.OrganizationDefaultRole ODR ON ODR.RoleId = R.RoleId
+					WHERE odr.OrgPartyId = @OrganizationId AND R.ProductId = 3
+					ORDER BY r.RoleId
 			END
-		END
+			ELSE
+			BEGIN
+				-- IF NOTHING SET AS DEFAULT, DEFAULT TO BASIC END USER
+				SELECT TOP (1) @RoleId = R.RoleId
+					FROM		Security.Role AS R
+					WHERE	R.RoleName = 'Basic End User' AND R.OrgPartyID IS NULL AND R.ProductId = 3
+					ORDER BY R.RoleId
+			END
+		END;
 		
+		DECLARE @CreatedUserId INT
+		SELECT	TOP (1) @CreatedUserId = ulp.UserLoginId
+		FROM	Enterprise.OrganizationAdminUser OAU
+			INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginPersonaId = OAU.UserLoginPersonaId
+		WHERE OAU.OrganizationPartyId = @OrganizationId
+		ORDER BY ulp.UserLoginId
+
+		IF NOT EXISTS
+		(
+			SELECT	1
+			FROM	Security.PersonaRole
+			WHERE	PersonaId = @PersonaId
+			AND		RoleID = @RoleId
+		)
+		BEGIN
+			EXEC Security.LinkPersonaToRole
+			@PersonaID = @PersonaId,
+			@RoleID = @RoleId,
+			@CreatedBy = @CreatedUserId,
+			@PersonaPrivilgeID = @PerPriv OUTPUT;
+		END
 	END;
 END;
+
+
+	

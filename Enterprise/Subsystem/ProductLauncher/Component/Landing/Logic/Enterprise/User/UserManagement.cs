@@ -100,7 +100,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 				WriteToLog(LogEventLevel.Debug, "Received password hash salt info for new user with login name {userProductDetails.UserProfileDetails.LoginName}");
 			}
 
-			WriteToLog(LogEventLevel.Debug, $"Getting custom filed info for new user with login name {userProductDetails.UserProfileDetails.LoginName}");
+			WriteToLog(LogEventLevel.Debug, $"Getting custom field info for new user with login name {userProductDetails.UserProfileDetails.LoginName}");
 
 			// custom fields
 			IList<CustomFieldValue> userCustomFields = null;
@@ -229,7 +229,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 			};
 
 			WriteToLog(LogEventLevel.Debug,
-				$"Getting custom filed info for update user with login name {userProductDetails.UserProfileDetails.LoginName}");
+				$"Getting custom field info for update user with login name {userProductDetails.UserProfileDetails.LoginName}");
 
 			// custom fields
 			IList<CustomFieldValue> userCustomFields = null;
@@ -740,7 +740,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 								// check user supplied custom field else error
 								if (userCustomFields == null || !userCustomFields.Keys.Contains(companyCustomFieldValue.Name))
 								{
-									return $"{companyCustomFieldValue.Name} is required custom filed & not provided.";
+									return $"{companyCustomFieldValue.Name} is required custom field & not provided.";
 								}
 							}
 

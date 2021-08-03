@@ -23,14 +23,6 @@ BEGIN
 
 		INSERT INTO [Logging].[LogType]	VALUES (@LogCategoryTypeId,'Internal Update Settings',NULL)
 
-		INSERT INTO [Logging].[LogType]	VALUES (@LogCategoryTypeId,'Internal Modified Template',NULL)
-
-		INSERT INTO [Logging].[LogType]	VALUES (@LogCategoryTypeId,'Internal Added Template',NULL)
-
-		INSERT INTO [Logging].[LogType]	VALUES (@LogCategoryTypeId,'Internal Deleted Template',NULL)
-
-		INSERT INTO [Logging].[LogType]	VALUES (@LogCategoryTypeId,'Internal Applied Template',NULL)
-
 	END
 	
 
@@ -68,8 +60,32 @@ BEGIN
 
 		INSERT INTO [Logging].[LogType]	VALUES (@LogCategoryTypeId,'Internal Selected Table Actions',NULL)
 
+		INSERT INTO [Logging].[LogType]	VALUES (@LogCategoryTypeId,'Internal Template Error',NULL)
+
 	END
 	
 
 END
+
+
+--Templates
+BEGIN
+
+	IF NOT EXISTS (
+			SELECT TOP 1 1
+			FROM [Logging].[LogType]
+			WHERE [name] = 'Template Error'
+			)
+	BEGIN
+
+		SELECT @LogCategoryTypeId = LogcategoryTypeId 
+		FROM logging.logcategorytype
+		WHERE [Name] = 'Templates'
+
+		INSERT INTO [Logging].[LogType]	VALUES (@LogCategoryTypeId,'Template Error',NULL)
+
+	END
+
+END
+
 

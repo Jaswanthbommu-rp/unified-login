@@ -339,73 +339,17 @@ AS
             SELECT COUNT(1)
             FROM Person.Persona PE
                  INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginPersonaId = PE.UserLoginPersonaId
-            WHERE OrganizationPartyId = @OrganizationId
+            WHERE ULP.OrganizationPartyId = @OrganizationId
         )
-            BEGIN
-                DECLARE @MasterCOnfigurationId INT;
-                DECLARE @AttributeId INT;
-                DECLARE @RealPageId UNIQUEIDENTIFIER;
-                DECLARE @LoginName NVARCHAR(50);
-                DECLARE @OrgId INT;
-                DECLARE @mastersettingtypeid INT;
-                DECLARE @MasterSettingId INT;
-                SELECT @mastersettingtypeid = MasterSettingTypeId
-                FROM Enterprise.MasterSettingType
-                WHERE Name = 'RealPageEmployeeAccessID';
-                SELECT @UserId = UL.UserId, 
-                       @RealPageId = P.RealPageId, 
-                       @LoginName = UL.LoginName, 
-                       @OrgId = ULP.OrganizationPartyId, 
-                       @MasterCOnfigurationId = MC.MasterConfigurationId
-                FROM Enterprise.Party AS P
-                     INNER JOIN Ident.UserLogin AS UL ON UL.PersonPartyId = P.PartyId
-                     INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginId = UL.UserId
-                     INNER JOIN Person.Persona AS PP ON ULP.UserLoginPersonaId = PP.UserLoginPersonaId
-                     INNER JOIN Enterprise.MasterConfiguration AS MC ON MC.AttributeId = ULP.OrganizationPartyId
-                WHERE UL.LoginName IN(@Email)
-                     AND MC.MasterConfigurationTypeId = 2;
-                IF NOT EXISTS
-                (
-                    SELECT 1
-                    FROM Enterprise.MasterSetting
-                    WHERE Value = CONVERT(VARCHAR(36), @RealPageId)
-                )
-                    BEGIN
-                        INSERT INTO Enterprise.MasterSetting
-                        (MasterSettingTypeId, 
-                         Value, 
-                         FromDate
-                        )
-                        VALUES
-                        (@mastersettingtypeid, 
-                         @RealPageId, 
-                         @NOW
-                        );
-                        SELECT @MasterSettingId = SCOPE_IDENTITY();
-                END;
-                    ELSE
-                    BEGIN
-                        SELECT @MasterSettingId = MasterSettingId
-                        FROM Enterprise.MasterSetting
-                        WHERE Value = CONVERT(VARCHAR(36), @RealPageId);
-                END;
-                IF NOT EXISTS
-                (
-                    SELECT 1
-                    FROM Enterprise.MasterConfigurationSetting
-                    WHERE MasterConfigurationId = @MasterCOnfigurationId
-                          AND MasterSettingId = @MasterSettingId
-                )
-                    BEGIN
-                        INSERT INTO Enterprise.MasterConfigurationSetting
-                        (MasterConfigurationId, 
-                         MasterSettingId
-                        )
-                        VALUES
-                        (@MasterCOnfigurationId, 
-                         @MasterSettingId
-                        );
-                END;
-        END;
-                        -- ADD USER TO SUPPORT TOOL LIST IF NO OTHER USERS EXIST FOR THE COMPANY
+        BEGIN
+            IF NOT EXISTS( SELECT TOP(1) 1 FROM Enterprise.OrganizationAdminUser WHERE OrganizationPartyId = @OrganizationId )
+			BEGIN
+				INSERT INTO Enterprise.OrganizationAdminUser ( OrganizationPartyId, UserLoginPersonaId ) 
+					SELECT @OrganizationId, ULP.UserLoginPersonaId 
+						FROM Ident.UserLogin AS UL
+						INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginId = UL.UserId
+					WHERE UL.LoginName IN(@Email)
+			END
+		END;
+		-- ADD USER TO SUPPORT TOOL LIST IF NO OTHER USERS EXIST FOR THE COMPANY
     END;

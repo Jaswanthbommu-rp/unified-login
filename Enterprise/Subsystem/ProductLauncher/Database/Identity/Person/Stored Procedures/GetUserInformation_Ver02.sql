@@ -22,24 +22,7 @@ BEGIN
 				ELSE @RowsPerPage
 			END;
 
-	;WITH cteRealPageEmployeeAccess (
-		UserLoginPersonaId
-	)
-	AS
-	(
-		SELECT	ULP.UserLoginPersonaId
-		FROM	Enterprise.MasterConfigurationType mct
-				INNER JOIN Enterprise.MasterSettingType mst ON mst.MasterConfigurationTypeId = mct.MasterConfigurationTypeId
-				INNER JOIN Enterprise.MasterSetting ms ON MS.MasterSettingTypeId = mst.MasterSettingTYpeId
-				INNER JOIN Enterprise.Party p ON p.RealPageId = ms.Value
-				INNER JOIN Ident.UserLogin UL ON UL.PersonPartyId = P.PartyId
-				INNER JOIN Ident.UserLoginPersona ULP ON UL.UserId = ULP.UserLoginId
-		WHERE mct.Name = 'Organization'
-		AND LEN(ms.Value) = 36
-		AND mst.Name IN ('RealPageEmployeeAccessID')
-		AND ULP.OrganizationPartyId = @OrganizationId
-	),	
-	cteCustomField
+	;WITH cteCustomField
 	(
 		FieldId,
 		OrganizationId,
@@ -266,7 +249,7 @@ BEGIN
 		)
 		AND		(o.PartyId = @OrganizationId )
 		AND		((@RealPageId IS NULL) OR (pa.RealPageId =@RealPageId))
-		AND		ULP.UserLoginPersonaId NOT IN (SELECT UserLoginPersonaId FROM cteRealPageEmployeeAccess)
+		AND		ULP.UserLoginPersonaId NOT IN (SELECT UserLoginPersonaId FROM Enterprise.OrganizationAdminUser WHERE OrganizationPartyId = @OrganizationId)
 		AND		((@NOW BETWEEN pr.FromDate AND pr.ThruDate) OR (@NOW >= pr.FromDate AND pr.ThruDate IS NULL))
 	)
 

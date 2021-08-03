@@ -1147,6 +1147,7 @@
     <Build Include="Batch\Procedure\ListEnterpriseRoleBatchProcessor.sql" />
     <Build Include="Batch\Procedure\UpdateEnterpriseRoleProductBatch.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\InsertPersonaToBatchProcess.sql" />
+    <Build Include="Enterprise\Tables\OrganizationAdminUser.sql" />
     <Build Include="Enterprise\Tables\ProductProductCenter.sql" />
   </ItemGroup>
   <ItemGroup>

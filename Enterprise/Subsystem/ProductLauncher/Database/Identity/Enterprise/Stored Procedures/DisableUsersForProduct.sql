@@ -14,29 +14,13 @@ BEGIN
 	--Query to get Admin PersonaId and PartyId
 		SELECT   
 		@EditorPartyId= UL.PersonPartyId,
-		@EditorPersonaId = UL.PersonaId
-		FROM Enterprise.Organization O   
-			INNER JOIN Enterprise.MasterConfiguration MC ON MC.AttributeId = O.PartyId  
-			INNER JOIN Enterprise.MasterConfigurationSetting MCS ON MC.MasterConfigurationId = MCS.MasterConfigurationId  
-			INNER JOIN Enterprise.MasterSetting MS ON MCS.MasterSettingId = MS.MasterSettingId  
-			INNER JOIN Enterprise.MasterSettingType MST ON MST.MasterSettingTypeId = MS.MasterSettingTypeId  
-			INNER JOIN Enterprise.MasterConfigurationType MCT ON MCT.MasterConfigurationTypeId = MST.MasterConfigurationTypeId  
-			INNER JOIN  
-				(  
-					SELECT P.RealPageId,  
-						UL.LoginName,
-						PA.PersonaId,
-						UL.PersonPartyId
-					FROM   
-					Ident.UserLogin UL  
-					INNER JOIN Enterprise.Party P ON UL.PersonPartyId = P.PartyId 
-					INNER JOIN Ident.UserLoginPersona ULP ON UL.UserId = ULP.UserLoginId AND ULP.OrganizationPartyId = @PartyId
-					INNER JOIN Person.Persona PA ON PA.UserLoginPersonaId = ULP.UserLoginPersonaId
-	  
-				) UL ON CONVERT(VARCHAR(40), UL.RealPageId) = MS.Value  
-		WHERE O.PartyId = @PartyId 
-			AND	 MCT.Name = 'Organization'  
-			AND MST.Name = 'RealPageEmployeeAccessID'
+		@EditorPersonaId = P.PersonaId
+		FROM 
+			Enterprise.OrganizationAdminUser OAU
+			INNER JOIN Ident.UserLoginPersona ULP ON OAU.UserLoginPersonaId = ULP.UserLoginPersonaId
+			INNER JOIN Person.Persona P ON ULP.UserLoginPersonaId = P.UserLoginPersonaId
+			INNER JOIN Ident.UserLogin UL ON UL.UserId = ULP.UserLoginId
+		WHERE OAU.OrganizationPartyId = @PartyId 
 
 	--Query to get Product settings
 		SELECT 		   

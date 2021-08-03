@@ -128,7 +128,7 @@ DECLARE @CreatedById bigint,
 
 SELECT @CreatedById = UserId
 FROM Ident.UserLogin
-WHERE LoginName = 'RealPageAd@test.com'
+WHERE LoginName LIKE 'realpagead@%'
 
 IF NOT EXISTS (SELECT 1 FROM [Security].[Right] WHERE RightName = 'EmployeeAccessToLoginPageSetup')
 BEGIN
@@ -1404,6 +1404,45 @@ BEGIN
            VALUES	(@RightId, @PartyId, 9, @CreatedById, @Now)
 END
 GO
+
+
+-- sync new support admin table
+;WITH companyadminusers ( 	OrganizationPartyId, UserLoginPersonaId )
+AS (
+	SELECT O.PartyId,
+				   UL.UserLoginPersonaId
+			 FROM Enterprise.Organization O
+				  INNER JOIN Enterprise.Party P ON O.PartyId = P.PartyId
+				  INNER JOIN Enterprise.VW_DataImportMapping D ON O.PartyId = D.PartyId
+				  INNER JOIN Enterprise.OrganizationDomain OD on O.OrganizationDomainId = OD.OrganizationDomainId
+				  INNER JOIN Enterprise.MasterConfiguration MC ON MC.AttributeId = O.PartyId
+				  INNER JOIN Enterprise.MasterConfigurationSetting MCS ON MC.MasterConfigurationId = MCS.MasterConfigurationId
+				  INNER JOIN Enterprise.MasterSetting MS ON MCS.MasterSettingId = MS.MasterSettingId
+				  INNER JOIN Enterprise.MasterSettingType MST ON MST.MasterSettingTypeId = MS.MasterSettingTypeId
+				  INNER JOIN Enterprise.MasterConfigurationType MCT ON MCT.MasterConfigurationTypeId = MST.MasterConfigurationTypeId
+				  INNER JOIN
+					(
+						SELECT P.RealPageId,
+							   UL.LoginName,
+							   ul.UserId,
+							   ulp.UserLoginPersonaId
+						FROM 
+							Ident.UserLogin UL
+							INNER JOIN Enterprise.Party P ON UL.PersonPartyId = P.PartyId
+							INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginId = UL.UserId AND ULP.PrimaryOrganization = 1
+					) UL ON UL.RealPageId = MS.Value
+			 WHERE MCT.Name = 'Organization'
+				   AND MST.Name = N'RealPageEmployeeAccessID'
+)
+
+INSERT INTO Enterprise.OrganizationAdminUser (OrganizationPartyId, UserLoginPersonaId)
+SELECT CA.OrganizationPartyId, ca.UserLoginPersonaId 
+FROM companyadminusers CA 
+	LEFT OUTER JOIN Enterprise.OrganizationAdminUser OAU ON CA.OrganizationPartyId = OAU.OrganizationPartyId
+WHERE OAU.OrganizationPartyId IS NULL
+-- sync new support admin table
+GO
+
  GO
  IF NOT EXISTS (SELECT 1 FROM [Batch].[BatchProcessType] WHERE Name = 'EnterpriseRoleCreateUpdateProductUser')
   BEGIN
@@ -1465,4 +1504,123 @@ BEGIN
 END
 GO
 
+Declare @CreatedById bigint
+Declare @ControlId int
 
+SELECT @CreatedById = UserId
+FROM Ident.UserLogin
+WHERE LoginName LIKE 'realpagead@%'; 
+
+-- Business Intelligence (Adding relationship column and rearranging the sequence)
+IF NOT EXISTS(SELECT TOP 1 1 FROM UserManagement.Control Where UIID = 'BusinessIntelligenceProductAccessRelationshipLabelUIId')
+BEGIN
+ select @ControlId = ControlId from UserManagement.Control where UIID = 'BusinessIntelligenceProductAccessPropertiesMultiSelectGridUIId'
+ INSERT INTO UserManagement.Control(ParentControlId, ControlTypeId,UIId,DisplayName,DataSource,[Sequence],CreatedBy,CreatedDate) 
+ Values(@ControlId,5,'BusinessIntelligenceProductAccessRelationshipLabelUIId','Relationship','relationship',3, @CreatedById, GETDATE())
+END
+IF EXISTS(SELECT TOP 1 1 FROM UserManagement.Control Where UIID = 'BusinessIntelligenceProductAccessStateLabelUIId' AND [Sequence] = 3)
+BEGIN
+ UPDATE UserManagement.Control SET Sequence = 4 Where UIID = 'BusinessIntelligenceProductAccessStateLabelUIId' AND [Sequence] = 3
+END
+
+-- Performance Analytics (Adding relationship column and rearranging the sequence)
+IF NOT EXISTS(SELECT TOP 1 1 FROM UserManagement.Control Where UIID = 'PerformanceAnalyticsProductAccessRelationshipLabelUIId')
+BEGIN
+ select @ControlId = ControlId from UserManagement.Control where UIID = 'PerformanceAnalyticsProductAccessPropertiesMultiSelectGridUIId'
+ INSERT INTO UserManagement.Control(ParentControlId, ControlTypeId,UIId,DisplayName,DataSource,[Sequence],CreatedBy,CreatedDate) 
+ Values(@ControlId,5,'PerformanceAnalyticsProductAccessRelationshipLabelUIId','Relationship','relationship',3, @CreatedById, GETDATE())
+END
+IF EXISTS(SELECT TOP 1 1 FROM UserManagement.Control Where UIID = 'PerformanceAnalyticsProductAccessStateLabelUIId' AND [Sequence] = 3)
+BEGIN
+ UPDATE UserManagement.Control SET Sequence = 4 Where UIID = 'PerformanceAnalyticsProductAccessStateLabelUIId'
+END
+
+ -- YieldStar (Adding relationship column and rearranging the sequence)
+
+IF NOT EXISTS(SELECT TOP 1 1 FROM UserManagement.Control Where UIID = 'YieldStarProductAccessRelationshipLabelUIId')
+BEGIN
+ select @ControlId = ControlId from UserManagement.Control where UIID = 'YieldStarProductAccessPropertiesMultiSelectGridUIId'
+ INSERT INTO UserManagement.Control(ParentControlId, ControlTypeId,UIId,DisplayName,DataSource,[Sequence],CreatedBy,CreatedDate) 
+ Values(@ControlId,5,'YieldStarProductAccessRelationshipLabelUIId','Relationship','relationship',3, @CreatedById, GETDATE())
+END
+IF EXISTS(SELECT TOP 1 1 FROM UserManagement.Control Where UIID = 'YieldStarProductAccessStateLabelUIId' AND [Sequence] = 3)
+BEGIN
+ select @ControlId = ControlId from UserManagement.Control where UIID = 'YieldStarProductAccessPropertiesMultiSelectGridUIId'
+ UPDATE UserManagement.Control SET Sequence = 4 Where UIID = 'YieldStarProductAccessStateLabelUIId' AND [Sequence] = 3
+END
+
+
+-- LRO (Adding relationship column and rearranging the sequence)
+IF NOT EXISTS(SELECT TOP 1 1 FROM UserManagement.Control Where UIID = 'LROProductAccessRelationshipLabelUIId')
+BEGIN
+ select @ControlId = ControlId from UserManagement.Control where UIID = 'LROProductAccessPropertiesMultiSelectGridUIId'
+ INSERT INTO UserManagement.Control(ParentControlId, ControlTypeId,UIId,DisplayName,DataSource,[Sequence],CreatedBy,CreatedDate) 
+ Values(@ControlId,5,'LROProductAccessRelationshipLabelUIId','Relationship','relationship',3, @CreatedById, GETDATE())
+END
+IF EXISTS(SELECT TOP 1 1 FROM UserManagement.Control Where UIID = 'LROProductAccessStateLabelUIId' AND [Sequence] = 3)
+BEGIN
+ UPDATE UserManagement.Control SET Sequence = 4 Where UIID = 'LROProductAccessStateLabelUIId' AND [Sequence] = 3
+END
+
+-- AI Revenue Management (Adding relationship column and rearranging the sequence)
+
+IF NOT EXISTS(SELECT TOP 1 1 FROM UserManagement.Control Where UIID = 'AIRevenueManagementProductAccessRelationshipLabelUIId')
+BEGIN
+ select @ControlId = ControlId from UserManagement.Control where UIID = 'AIRevenueManagementProductAccessPropertiesMultiSelectGridUIId'
+ INSERT INTO UserManagement.Control(ParentControlId, ControlTypeId,UIId,DisplayName,DataSource,[Sequence],CreatedBy,CreatedDate) 
+ Values(@ControlId,5,'AIRevenueManagementProductAccessRelationshipLabelUIId','Relationship','relationship',3, @CreatedById, GETDATE())
+END
+IF EXISTS(SELECT TOP 1 1 FROM UserManagement.Control Where UIID = 'AIRevenueManagementProductAccessStateLabelUIId' AND [Sequence] = 3)
+BEGIN
+ UPDATE UserManagement.Control SET Sequence = 4 Where UIID = 'AIRevenueManagementProductAccessStateLabelUIId' AND [Sequence] = 3
+END
+
+-- Rent Control (Adding relationship column and rearranging the sequence)
+IF NOT EXISTS(SELECT TOP 1 1 FROM UserManagement.Control Where UIID = 'RentControlProductAccessRelationshipLabelUIId')
+BEGIN
+ select @ControlId = ControlId from UserManagement.Control where UIID = 'RentControlProductAccessPropertiesMultiSelectGridUIId'
+ INSERT INTO UserManagement.Control(ParentControlId, ControlTypeId,UIId,DisplayName,DataSource,[Sequence],CreatedBy,CreatedDate) 
+ Values(@ControlId,5,'RentControlProductAccessRelationshipLabelUIId','Relationship','relationship',3, @CreatedById, GETDATE())
+END
+IF EXISTS(SELECT TOP 1 1 FROM UserManagement.Control Where UIID = 'RentControlProductAccessStateLabelUIId' AND [Sequence] = 3)
+BEGIN
+ UPDATE UserManagement.Control SET Sequence = 4 Where UIID = 'RentControlProductAccessStateLabelUIId' AND [Sequence] = 3
+END
+
+GO
+
+-- User Story 898054 Smart Waste Commercial Role's and Right
+Declare @UserId bigint;
+SELECT @UserId = UserId
+FROM   Ident.UserLogin
+WHERE  LoginName LIKE 'realpagead@%';
+-- Adding default roles to Smart Waste Commercial Product
+IF NOT EXISTS(SELECT 1 FROM Security.Role WHERE ProductId = 70)
+BEGIN
+	INSERT INTO Security.Role(RoleName, ShortName, Description, RoleTypeID, OrgPartyID, ProductId, CreatedBy, CreatedDate )
+	VALUES('Portfolio Manager','PortfolioManager','Portfolio Manager', 1, NULL, 70, @UserId, GETDATE())	
+	INSERT INTO Security.Role(RoleName, ShortName, Description, RoleTypeID, OrgPartyID, ProductId, CreatedBy, CreatedDate )
+	VALUES('Property Manager','PropertyManager','Property Manager', 1, NULL, 70, @UserId,GETDATE())	
+END
+IF NOT EXISTS(SELECT 1 FROM Security.[Right] WHERE ProductId = 70)
+BEGIN
+	INSERT INTO Security.[Right](RightName, Description, Value, StatusTypeId, VisibilityStatusId, ProductId, TargetProductId, CreatedBy, CreatedDate)
+	VALUES('ReadOnly', NULL, 'Read Only Access',13, 9, 70, 70, @UserId, GETDATE())	
+END
+DECLARE @PortfolioManagerRoleId INT;
+DECLARE @PropertyManagerRoleId INT;
+DECLARE @RightId INT;
+SELECT @PortfolioManagerRoleId = RoleId FROM Security.Role WHERE RoleName = 'Portfolio Manager' AND ProductId = 70
+SELECT @PropertyManagerRoleId = RoleId FROM Security.Role WHERE RoleName = 'Property Manager' AND ProductId = 70
+SELECT @RightId = RightId FROm Security.[Right] WHERE RightName = 'ReadOnly' AND ProductId = 70 AND TargetProductId = 70
+IF NOT EXISTS(SELECT 1 FROM Security.RoleRight WHERE RightId  = @RightId AND RoleId = @PortfolioManagerRoleId)
+BEGIN
+	INSERT INTO Security.RoleRight(RoleId, RightId, CreatedBy, CreatedDate)
+	VALUES(@PortfolioManagerRoleId, @RightId, @UserId, GETDATE())
+END
+IF NOT EXISTS(SELECT 1 FROM Security.RoleRight WHERE RightId  = @RightId AND RoleId = @PropertyManagerRoleId)
+BEGIN
+	INSERT INTO Security.RoleRight(RoleId, RightId, CreatedBy, CreatedDate)
+	VALUES(@PropertyManagerRoleId, @RightId, @UserId, GETDATE())
+END
+GO

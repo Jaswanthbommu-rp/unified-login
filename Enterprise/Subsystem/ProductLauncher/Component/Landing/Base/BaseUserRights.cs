@@ -76,6 +76,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
                     // check for unified settings rights
                     AddRightFromImpersonator(identity, impersonateUserRights, userRights, "VIEWUNIFIEDSETTINGS");
                     AddRightFromImpersonator(identity, impersonateUserRights, userRights, "MANAGEUNIFIEDSETTINGS");
+                    AddRightFromImpersonator(identity, impersonateUserRights, userRights, "SETTINGSINTERNALADMINISTRATOR");
 
                     AddRightFromImpersonator(identity, impersonateUserRights, userRights, "MANAGECUSTOMFIELDS");
                     AddRightFromImpersonator(identity, impersonateUserRights, userRights, "MANAGEPLATFORMSECURITY");
