@@ -104,3 +104,28 @@ END
 
 GO
 
+IF NOT EXISTS ( SELECT TOP (1) 1 FROM Auth.Claim WHERE ClaimName = 'rolealias~im-role' AND ProductId = 39 )
+BEGIN
+	INSERT INTO auth.Claim ( ClaimName, SAMLAttributeName, ProductId )
+VALUES
+	( N'rolealias~im-role', '', 39 )
+END
+
+GO
+IF EXISTS ( SELECT TOP (1) 1 FROM AUTH.ClientUserClaim CC INNER JOIN auth.clients c ON c.ClientId = CC.ClientId INNER JOIN auth.claim c1 ON c1.ClaimId = CC.ClaimId 
+	WHERE c.ClientCode = 'IntegrationMarketplace' AND c1.SAMLAttributeName = 'RoleCode' and c1.ProductId = 39 )
+BEGIN
+	DELETE CC FROM AUTH.ClientUserClaim CC INNER JOIN auth.clients c ON c.ClientId = CC.ClientId INNER JOIN auth.claim c1 ON c1.ClaimId = CC.ClaimId 
+		WHERE c.ClientCode = 'IntegrationMarketplace' AND c1.SAMLAttributeName = 'RoleCode' and c1.ProductId = 39
+END
+GO
+
+IF NOT EXISTS (SELECT TOP (1) 1 FROM AUTH.ClientUserClaim CC INNER JOIN auth.clients c ON c.ClientId = CC.ClientId INNER JOIN auth.claim c1 ON c1.ClaimId = CC.ClaimId 
+	WHERE c.ClientCode = 'IntegrationMarketplace' AND c1.ClaimName = 'rolealias~im-role' and c1.ProductId = 39 )
+BEGIN
+	INSERT INTO Auth.ClientUserClaim ( ClientId, ClaimId )
+	SELECT C.ClientId, c1.ClaimId FROM Auth.Clients C CROSS JOIN Auth.Claim c1 WHERE c.ClientCode = 'IntegrationMarketplace' AND c1.ClaimName = 'rolealias~im-role' and c1.ProductId = 39 
+END
+
+GO
+
