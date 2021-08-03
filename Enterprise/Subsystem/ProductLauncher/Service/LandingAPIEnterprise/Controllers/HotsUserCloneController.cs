@@ -1,13 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Security.Claims;
-using System.Web;
-using System.Web.Http;
-using System.Web.Http.Controllers;
-using RP.Enterprise.Foundation.DataAccess.Component;
+﻿using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
@@ -18,6 +9,13 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityCo
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.ResponseObject;
 using Swashbuckle.Swagger.Annotations;
+using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Net.Http;
+using System.Security.Claims;
+using System.Web.Http;
+using System.Web.Http.Controllers;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Controllers
 {
@@ -34,6 +32,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         IRepositoryResponse _repositoryResponse;
         IManageOrganization _manageOrganization;
         private HttpMessageHandler _messageHandler;
+
         #region Constructor
 
         /// <summary>
@@ -81,9 +80,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             _managePersona = new ManagePersona(_userClaims);
             _manageProduct = new ManageProduct(_userClaims);
             _manageOrganization = new ManageOrganization(_userClaims);
-            //   _manageHotsCloneUsers = new ManageHotsCloneUsers(_userClaims);
+            _manageHotsCloneUsers = new ManageHotsCloneUsers(_userClaims);
             _productRepository = new ProductRepository(_userClaims);
         }
+
         #endregion
 
         /// <summary>
@@ -104,7 +104,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             {
                 var errorResponse = new ErrorResponse { Errors = new List<Error>() };
                 errorResponse.Errors.Add(new Error
-                { Title = "Error", Source = "/HotsCloneUser", Detail = "Null request received.", StatusCode = "" });
+                    { Title = "Error", Source = "/HotsCloneUser", Detail = "Null request received.", StatusCode = "" });
 
                 // return errors with bad request
                 return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
@@ -121,11 +121,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     {
                         var errorResponse = new ErrorResponse { Errors = new List<Error>() };
                         errorResponse.Errors.Add(new Error
-                        { Title = "Error", Source = "/HotsCloneUser", Detail = "Invalid UPFMId.", StatusCode = "" });
+                            { Title = "Error", Source = "/HotsCloneUser", Detail = "Invalid UPFMId.", StatusCode = "" });
 
                         // return errors with bad request
                         return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
                     }
+
                     RecreateClaimsForClient(AdminCreatorRealPageId);
                     _managePersona = new ManagePersona(_userClaims);
                     _manageProduct = new ManageProduct(_userClaims);
@@ -135,7 +136,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 {
                     var errorResponse = new ErrorResponse { Errors = new List<Error>() };
                     errorResponse.Errors.Add(new Error
-                    { Title = "Error", Source = "/HotsCloneUser", Detail = "Invalid UPFMId.", StatusCode = "" });
+                        { Title = "Error", Source = "/HotsCloneUser", Detail = "Invalid UPFMId.", StatusCode = "" });
 
                     // return errors with bad request
                     return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
@@ -145,7 +146,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             {
                 var errorResponse = new ErrorResponse { Errors = new List<Error>() };
                 errorResponse.Errors.Add(new Error
-                { Title = "Error", Source = "/HotsCloneUser", Detail = "Invalid Claim Scope.", StatusCode = "" });
+                    { Title = "Error", Source = "/HotsCloneUser", Detail = "Invalid Claim Scope.", StatusCode = "" });
 
                 // return errors with bad request
                 return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
@@ -155,7 +156,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             {
                 var errorResponse = new ErrorResponse { Errors = new List<Error>() };
                 errorResponse.Errors.Add(new Error
-                { Title = "Error", Source = "/HotsCloneUser", Detail = "Invalid Clone Customer UPFMId.", StatusCode = "" });
+                    { Title = "Error", Source = "/HotsCloneUser", Detail = "Invalid Clone Customer UPFMId.", StatusCode = "" });
 
                 // return errors with bad request
                 return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
@@ -169,7 +170,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             {
                 var errorResponse = new ErrorResponse { Errors = new List<Error>() };
                 errorResponse.Errors.Add(new Error
-                { Title = "Error", Source = "/HotsCloneUser", Detail = "Base Line Organization not found.", StatusCode = "" });
+                    { Title = "Error", Source = "/HotsCloneUser", Detail = "Base Line Organization not found.", StatusCode = "" });
 
                 // return errors with bad request
                 return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
@@ -182,7 +183,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             {
                 var errorResponse = new ErrorResponse { Errors = new List<Error>() };
                 errorResponse.Errors.Add(new Error
-                { Title = "Error", Source = "/HotsCloneUser", Detail = "Clone Customer Organization not found.", StatusCode = "" });
+                    { Title = "Error", Source = "/HotsCloneUser", Detail = "Clone Customer Organization not found.", StatusCode = "" });
 
                 // return errors with bad request
                 return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
@@ -203,6 +204,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 {
                     throw new Exception($"Missing persona information for client_info user while Recreation of Claims For Client.  realPageId: {_realpageUserId}");
                 }
+
                 IManageUserLogin userLoginLogic = new ManageUserLogin();
                 IManageUserRoleRight userRoleRight = new ManageUserRoleRight();
                 var userLogin = userLoginLogic.GetUserLoginOnly(_realpageUserId);
