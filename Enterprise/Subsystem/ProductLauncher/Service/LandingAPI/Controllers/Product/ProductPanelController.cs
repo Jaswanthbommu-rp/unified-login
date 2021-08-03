@@ -241,6 +241,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		}
 
 		/// <summary>
+		/// Get Persona Product Primary Properties
+		/// </summary>
+		/// <param name="userPersonaId"></param>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "Update successful", Type = typeof(HttpResponseMessage))]
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
+		[Route("product/productPrimaryProperties")]
+		[HttpGet]
+		public HttpResponseMessage GetPersonaProductPrimaryProperties(long userPersonaId)
+		{
+			if (userPersonaId == 0)
+				return Request.CreateResponse(HttpStatusCode.BadRequest, "userPersonaId not supplied.");
+
+			List<PersonaProductProperty> result = new List<PersonaProductProperty>();
+			result = _manageProductPanel.GetPersonaProductPrimaryProperties(userPersonaId);
+			return Request.CreateResponse(HttpStatusCode.OK, result);
+		}
+
+		/// <summary>
 		/// Returns Properties  
 		/// </summary>
 		/// <param name="productId">Author user persona id who is creating or editing user</param>

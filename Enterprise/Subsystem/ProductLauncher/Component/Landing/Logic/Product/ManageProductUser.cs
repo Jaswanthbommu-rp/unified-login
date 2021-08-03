@@ -111,6 +111,39 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return string.Empty;
 		}
 
+        private void SavePersonaProductProperties(bool usePrimaryProperties, long assignUserPersonaId, int productId, RolePropertyList roleProp, string inputJson)
+        {
+            if (productId != 4 )
+            {
+                if (usePrimaryProperties == true && roleProp.ProductPrimaryProperties != null)
+                {
+                    string jsonSecuritySettings = JsonConvert.SerializeObject(roleProp.ProductPrimaryProperties);
+                    _productRepository.SavePersonaProductProperties(assignUserPersonaId, productId, jsonSecuritySettings);
+                }
+                UpdateProductPrimaryPropertyProductStatus(assignUserPersonaId, productId, usePrimaryProperties == true ? 1 : 0);
+            }
+            else if (productId == 4)// Handle AO products seperatly
+            {
+                Object productPropertiesRoles =
+                        JsonConvert.DeserializeObject<AoUserCompanyPropertyRoleDetails>(inputJson);
+
+                var aoRoleProp = productPropertiesRoles as AoUserCompanyPropertyRoleDetails;
+                IList<AoUserCompanyPropertyRoleDetail> aoGbUserCompanyPropertyRoleDetails = aoRoleProp.AoUserCompanyPropertyRoleDetailList;
+                foreach (var data in aoGbUserCompanyPropertyRoleDetails)
+                {
+                    if (data.ProductPrimaryProperties != null && data.ProductId != 0)
+                    {
+                        if (data.UsePrimaryProperties == true)
+                        {
+                            string jsonSecuritySettings = JsonConvert.SerializeObject(data.ProductPrimaryProperties);
+                            _productRepository.SavePersonaProductProperties(assignUserPersonaId, data.ProductId, jsonSecuritySettings);
+                        }
+                        UpdateProductPrimaryPropertyProductStatus(assignUserPersonaId, data.ProductId, data.UsePrimaryProperties == true ? 1 : 0);
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Creates Product User
         /// </summary> 
@@ -123,6 +156,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             bool isUpdateUser = false;
             bool usePrimaryProperties = false;
+            RolePropertyList roleProp = new RolePropertyList();
             try
             {
                 IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(productUser.AssignUserPersonaId, (int)productUser.ProductName);
@@ -131,7 +165,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     isUpdateUser = true;
                 }
 
-                var roleProp = GetProductPropertiesRoles<RolePropertyList>(productUser.InputJson) as RolePropertyList;
+                roleProp = GetProductPropertiesRoles<RolePropertyList>(productUser.InputJson) as RolePropertyList;
                 usePrimaryProperties = roleProp.UsePrimaryProperties;
 
                 var integration = _integrationTypeFactory.GetIntegration(productUser.ProductName);
@@ -151,8 +185,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // If result OK then update Success status else Error
             if (string.IsNullOrEmpty(result))
             {
-                isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Success);
-                UpdateProductPrimaryPropertyProductStatus(productUser.AssignUserPersonaId, (int)productUser.ProductName, usePrimaryProperties == true ? 1 : 0);
+                SavePersonaProductProperties(usePrimaryProperties, productUser.AssignUserPersonaId, (int)productUser.ProductName, roleProp, productUser.InputJson);
+                isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Success);                
             }
             else
             {

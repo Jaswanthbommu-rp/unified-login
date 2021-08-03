@@ -1246,6 +1246,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
 
         /// <summary>
+        /// Save Persona product Properties
+        /// </summary>
+        /// <param name="assignUserPersonaId"></param>
+        /// <param name="productId"></param>
+        /// <param name="personaProductProperties"></param>
+        /// <returns></returns>
+        public bool SavePersonaProductProperties(long assignUserPersonaId, int productId, string personaProductProperties)
+        {
+            using (var repository = GetRepository())
+            {
+                object param = new
+                {
+                    PersonaId = assignUserPersonaId,
+                    ProductId = productId,
+                    json = personaProductProperties
+                };
+
+                var result = repository.Execute<bool>(StoredProcNameConstants.SP_SavePersonaProductProperties, param);
+                return result;
+            }
+        }
+
+        /// <summary>
         /// Used to update the persona product setting type for the given user and setting
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -1985,6 +2008,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 return repository.GetMany<int>(StoredProcNameConstants.SP_GetEnterpriseRoleProductsByOrganization, param).ToList();
 
+            }
+        }
+
+        public List<PersonaProductProperty> GetPersonaProductPrimaryProperties(long personaId)
+        {
+            dynamic param = new
+            {
+                PersonaId = personaId
+            };
+            using (var repository = GetRepository())
+            {
+                return repository.GetMany<PersonaProductProperty>(StoredProcNameConstants.SP_GetPersonaProductPrimaryProperties, param);
             }
         }
         #endregion

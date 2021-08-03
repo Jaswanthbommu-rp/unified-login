@@ -4109,6 +4109,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                     expandoAo.IsAssigned = aoProduct.InputJson.IsAssigned;
 
+                    expandoAo.ProductId = aoProduct.ProductId;
+
+                    expandoAo.UsePrimaryProperties = aoProduct.InputJson.UsePrimaryProperties;
+
+                    expandoAo.ProductPrimaryProperties = aoProduct.InputJson.ProductPrimaryProperties;
+
                     // add in collection
                     expandoList.AoUserCompanyPropertyRoleDetailList.Add(expandoAo);
 

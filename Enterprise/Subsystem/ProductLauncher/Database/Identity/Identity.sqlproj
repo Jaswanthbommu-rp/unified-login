@@ -1149,6 +1149,9 @@
     <Build Include="RoleRightsManagement\Stored Procedures\InsertPersonaToBatchProcess.sql" />
     <Build Include="Enterprise\Tables\OrganizationAdminUser.sql" />
     <Build Include="Enterprise\Tables\ProductProductCenter.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetPersonaProductPrimaryProperties.sql" />
+    <Build Include="Enterprise\Tables\PersonaProductProperty.sql" />
+    <Build Include="Enterprise\Stored Procedures\SavePersonaProductProperties.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

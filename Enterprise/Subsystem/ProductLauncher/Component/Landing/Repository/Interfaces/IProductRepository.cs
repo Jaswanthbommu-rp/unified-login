@@ -114,6 +114,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         bool UpdateProductBatch(int productBatchId, int statusTypeId, string inputJson = null, string errorDetails = null);
 
         /// <summary>
+        /// Save Persona Product Properties
+        /// </summary>
+        /// <param name="assignUserPersonaId"></param>
+        /// <param name="productId"></param>
+        /// <param name="personaProductProperties"></param>
+        /// <returns></returns>
+        bool SavePersonaProductProperties(long assignUserPersonaId, int productId, string personaProductProperties);
+
+        /// <summary>
         /// Returns List of Product Batch Statuses
         /// </summary>
         IList<ProductBatchStatus> ListProductBatchStatuses(Guid realPageId, long assignUserPersonaId);
@@ -258,6 +267,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="partyId"></param>
         /// <returns></returns>
         List<RoleTemplateProductRole> GetRoleTemplateProductRoleMapping(int roleTemplateId, long partyId);
+
+        /// <summary>
+        /// GetEnterpriseRoleProductsByOrganization
+        /// </summary>
+        /// <param name="roleTemplateId"></param>
+        /// <param name="organizationRealPageId"></param>
+        /// <returns></returns>
         List<int> GetEnterpriseRoleProductsByOrganization(int roleTemplateId, Guid organizationRealPageId);
+
+        /// <summary>
+        /// GetPersonaProductPrimaryProperties
+        /// </summary>
+        /// <param name="personaId"></param>
+        /// <returns></returns>
+        List<PersonaProductProperty> GetPersonaProductPrimaryProperties(long personaId);
     }
 }
