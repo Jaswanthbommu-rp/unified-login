@@ -574,6 +574,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// </summary>
 		[Description("LST")]
 		LeadScoring = 69,
+		/// <summary>
+		/// Smart Waste Commercial
+		/// </summary>
+		[Description("SMS-TC")]
+		SmartWasteCommercial = 70
 	}
 
 	/// <summary>
@@ -853,6 +858,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// </summary>
 		[Description("LST")]
 		ManageLeadScoringProductAccess = 69,
+
+		/// <summary>
+		/// Smart  Commercial Waste
+		/// </summary>
+		[Description("SMS-TC")]
+		ManageSmartWasteCommercialProductAccess = 70,
 
 	}
 	public enum ProductProcVersion
