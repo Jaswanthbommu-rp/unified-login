@@ -17,7 +17,8 @@ AS
          LoginName     NVARCHAR(255), 
          FirstName     NVARCHAR(50), 
          LastName      NVARCHAR(50), 
-         AddressString NVARCHAR(255)
+         AddressString NVARCHAR(255),
+		 PersonaId	   BIGINT
         );
         INSERT INTO @ProductIdList(ProductId)
                SELECT *
@@ -103,7 +104,8 @@ AS
                         ul.LoginName, 
                         p.FirstName, 
                         p.LastName, 
-                        e.AddressString 
+                        e.AddressString,
+						cp.PersonaId
                  -- ,pa.realpageid 'RealPageId'						
 
                  FROM ident.UserLogin AS ul
@@ -128,12 +130,14 @@ AS
              (UserId, 
               LoginName, 
               FirstName, 
-              LastName
+              LastName,
+			  PersonaId
              )
                     SELECT UserId, 
                            LoginName, 
                            FirstName, 
-                           LastName
+                           LastName,
+						   PersonaId
                     FROM Users AS u;
         IF EXISTS
         (
@@ -146,12 +150,14 @@ AS
                 (UserId, 
                  LoginName, 
                  FirstName, 
-                 LastName
+                 LastName,
+				 PersonaId
                 )
                        SELECT ul.UserId, 
                               ul.LoginName, 
                               pp.FirstName, 
-                              pp.LastName
+                              pp.LastName,
+							  p.PersonaId
                        FROM Ident.UserLogin ul
                             INNER JOIN Ident.UserLoginPersona ulp ON ul.UserId = ulp.UserLoginId
                             INNER JOIN Person.Persona p ON ulp.UserLoginPersonaId = p.UserLoginPersonaId
@@ -197,7 +203,8 @@ AS
                UserId, 
                LoginName, 
                FirstName, 
-               LastName
+               LastName,
+			   PersonaId
         FROM #UserList ul
         ORDER BY UserId
         OFFSET((@PageNumber - 1) * @RowsPerPage) ROWS FETCH NEXT(@RowsPerPage) ROWS ONLY;
