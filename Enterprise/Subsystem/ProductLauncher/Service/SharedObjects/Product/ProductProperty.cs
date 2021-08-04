@@ -49,12 +49,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         public string State { get; set; }
 
         /// <summary>
-        /// The relationship where the property is located
-        /// </summary>
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public string Relationship { get; set; }
-
-        /// <summary>
         /// The zip code where the property is located
         /// </summary>
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
