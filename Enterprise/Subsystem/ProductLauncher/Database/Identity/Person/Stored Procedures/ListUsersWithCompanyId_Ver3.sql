@@ -25,7 +25,6 @@ BEGIN
  DECLARE @RightCount INT= 1;  
  DECLARE @OrganizationPartyId BIGINT  
  DECLARE @ProductIds Enterprise.ProductIdType  
- DECLARE @PartyId INT;
    
   SELECT   
   @RowsPerPage = CASE  
@@ -39,13 +38,11 @@ SELECT @domainId = OrganizationDomainId
 FROM Enterprise.OrganizationDomain
 WHERE NAME = @CompanyDomain
 
-
-SELECT @PartyId = m.PartyId
+SELECT @OrganizationPartyId = m.PartyId
 FROM Enterprise.VW_DataImportMapping m
 JOIN Enterprise.Organization org on org.PartyId = m.PartyId
 Where m.CompanyMasterId = @CompanyId
 AND org.OrganizationDomainId = @domainId
-
 
  IF (@Roles IS NULL AND @Rights IS NULL AND @Properties IS NULL)  
  BEGIN  
@@ -121,7 +118,7 @@ AND org.OrganizationDomainId = @domainId
 		AND (PCM.ThruDate IS NULL OR PCM.ThruDate > GETUTCDATE())  
 	  JOIN Ident.UserLogin ul on ul.PersonPartyId = pcm.PartyId
 	  JOIN Ident.UserLoginPersona ulp on ulp.UserLoginId = ul.UserId
-	  Where ulp.OrganizationPartyId = @PartyId
+	  Where ulp.OrganizationPartyId = @OrganizationPartyId
 
  --Notification Email  
  DECLARE @NotificationEmail TABLE (PartyId BIGINT, Email VARCHAR(255))  
@@ -139,7 +136,7 @@ AND org.OrganizationDomainId = @domainId
  WHERE  
   (pcm.ThruDate IS NULL OR pcm.ThruDate > GETUTCDATE())  
   AND cmu.ContactMechanismUsageTypeID = 301
-  AND ulp.OrganizationPartyId = @PartyId;  
+  AND ulp.OrganizationPartyId = @OrganizationPartyId;  
   
  IF EXISTS (SELECT TOP 1 ProductId FROM @ProductIds)  
     BEGIN  
@@ -155,15 +152,10 @@ AND org.OrganizationDomainId = @domainId
 		FROM Enterprise.OrganizationAdminUser OAU
 			INNER JOIN Ident.UserLoginPersona ULP ON OAU.UserLoginPersonaId = ULP.UserLoginPersonaId
 			INNER JOIN Person.Persona PE ON PE.UserLoginPersonaId = ULP.UserLoginPersonaId  
+		WHERE
+			OAU.OrganizationPartyId = @OrganizationPartyId
   )  
-  
-  
-SELECT @OrganizationPartyId = o.PartyId  
-FROM Enterprise.VW_DataImportMapping m
-JOIN Enterprise.Organization o on o.PartyId = m.PartyId
-WHERE CompanyMasterId = @CompanyId
-AND o.OrganizationDomainId = @domainId
-    
+      
   IF EXISTS(SELECT TOP 1 1 FROM STRING_SPLIT(@Properties,','))  
   BEGIN  
    DECLARE @IDS TABLE(propertyId NVARCHAR(255))   

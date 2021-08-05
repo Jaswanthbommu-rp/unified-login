@@ -11,6 +11,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSiteAccounting;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UPFMProduct;
 //using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.IntelligentBuilding;
 using System;
@@ -95,18 +96,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				{
 					WriteToErrorLog($"ManageUPFMProductUser-GetRoles.GetCompanyEditorAndUserDetails error for product {_upfmProductId}  with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
 					return result;
-				}
+                }
+                var productInternalSettingList = GetProductSetting(_upfmProductId);
+                bool getUDMDetails = true;
+                if (productInternalSettingList.Any(a => a.Name.Equals("UpdateProductInUDM", StringComparison.OrdinalIgnoreCase)))
+                {
+                    getUDMDetails = Convert.ToBoolean("1" == productInternalSettingList.First(p => p.Name.Equals("UpdateProductInUDM")).Value);
+                }
 
-				_blueBook.GetCompanyMap(_editorPersona.Organization.RealPageId, _editorPersona.Organization.BooksCustomerMasterId, source: _udmSourceCode.ToUpper(), domain: _editorPersona.Organization.OrganizationDomain.Name);
+                if (getUDMDetails)
+                {
+                    _blueBook.GetCompanyMap(_editorPersona.Organization.RealPageId, _editorPersona.Organization.BooksCustomerMasterId, source: _udmSourceCode.ToUpper(), domain: _editorPersona.Organization.OrganizationDomain.Name);
+                }
 
-				// get roles from DB for UnifiedAmenities product
+                // get roles from DB for UnifiedAmenities product
 				WriteToDiagnosticLog($"ManageUPFMProductUser -GetRoles  Getting all GB roles from GB DB - ocr.ListRolesByParty with party id - {partyId} and product {_upfmProductId}");
 				IList<int> productIdList = _productRepository.GetProductIdsByCompany(partyId);
 				var gbAllRoles = _productRepository.ListRolesForProductByParty(partyId, productIdList, _upfmProductId) ?? new List<ProductRole>();
 				gbAllRoles = gbAllRoles?.OrderBy(r => r.Name).ToList();
-
-
-
+				
 				WriteToDiagnosticLog($"ManageUPFMProductUser-GetRoles.MapProductAccessGroupsToGB() completed for user with editorPersona id - {editorPersonaId}");
 
 				if (userPersonaId != 0) // Called during updating Existing User
@@ -617,8 +625,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					WriteToErrorLog($"ManageUPFMProductUser Error for user with userPersonaId id - {userPersonaId}. Error - {listResponse.ErrorReason}");
 					return listResponse.ErrorReason;
 				}
-
-
+				
 				var userPersona = _managePersona.GetPersona(userPersonaId);
 				var realPageId = userPersona.RealPageId;
 				var person = _managePerson.GetPerson(realPageId);
@@ -859,7 +866,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			WriteToInformationLog($"ManageUPFMProductUser-UnassignUser userPersonaId:{userPersonaId}");
 			UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
-
 
 			return string.Empty;
 		}
