@@ -1,12 +1,11 @@
 ﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Maintenance;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
 using System;
 using System.Collections.Generic;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Maintenance;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces
 {
@@ -174,5 +173,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="orgRemovalQueue"></param>
         /// <returns></returns>
         OrganizationRemovalQueue InsertOrganizationRemovalQueue(OrganizationRemovalQueue orgRemovalQueue);
+
+        /// <summary>
+        /// Used to get the list of identity provider types
+        /// </summary>
+        /// <returns></returns>
+        IList<IdentityProvider> GetIdentityProviderList();
+
+        /// <summary>
+        /// Used to update the organizations identity provider type
+        /// </summary>
+        /// <param name="organizationPartyId"></param>
+        /// <param name="identityProviderTypeId"></param>
+        /// <returns></returns>
+        int UpdateOrganizationIdentityProvider(long organizationPartyId, int identityProviderTypeId);
     }
 }

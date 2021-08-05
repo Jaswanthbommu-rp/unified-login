@@ -271,5 +271,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="customerEnvironment"></param>
 		/// <returns></returns>
 		bool AddUpdateCompanyToUnifiedSettings(string companyInstanceID, string trasactionType, string customerEnvironment = null);
-	}
+
+        /// <summary>
+        /// Used to get the list of identity provider types
+        /// </summary>
+        /// <returns></returns>
+        IList<IdentityProvider> GetIdentityProviderList();
+
+        /// <summary>
+        /// Used to update the organizations identity provider type
+        /// </summary>
+        /// <param name="organizationPartyId"></param>
+        /// <param name="identityProviderTypeId"></param>
+        /// <returns></returns>
+        int UpdateOrganizationIdentityProvider(long organizationPartyId, int identityProviderTypeId);
+
+    }
 }

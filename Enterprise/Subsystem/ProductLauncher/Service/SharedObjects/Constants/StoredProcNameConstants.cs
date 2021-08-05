@@ -162,7 +162,11 @@
         public const string SP_DisableUsersForProduct = "Enterprise.DisableUsersForProduct";
         public const string SP_CreateOrganizationProductConfiguration = "Enterprise.CreateOrganizationProductConfiguration";
         public const string SP_CreateOrganizationProductConfigurationbyPartyId = "Enterprise.CreateOrganizationProductConfigurationbyPartyId";
-        public const string SP_GetOrganizationSettingValue = "Enterprise.GetOrganizationSettingValue";        
+        public const string SP_GetOrganizationSettingValue = "Enterprise.GetOrganizationSettingValue";
+        
+        public const string SP_GetIdentityProviderList = "Enterprise.GetIdentityProviderList";
+        public const string SP_UpdateOrganizationIdentityProvider = "Enterprise.UpdateOrganizationIdentityProvider";
+
         //PartyRelationship
         public const string SP_GetPartyRelationshipByRealPageId = "Enterprise.GetPartyRelationshipByRealPageId";
 

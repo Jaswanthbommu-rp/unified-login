@@ -677,6 +677,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         #endregion
 
         /// <summary>
+        /// Used to get the list of identity provider types
+        /// </summary>
+        /// <returns></returns>
+        public IList<IdentityProvider> GetIdentityProviderList()
+        {
+            return _organizationRepository.GetIdentityProviderList();
+        }
+
+        /// <summary>
+        /// Used to update the organizations identity provider type
+        /// </summary>
+        /// <param name="organizationPartyId"></param>
+        /// <param name="identityProviderTypeId"></param>
+        /// <returns></returns>
+        public int UpdateOrganizationIdentityProvider(long organizationPartyId, int identityProviderTypeId)
+        {
+            return _organizationRepository.UpdateOrganizationIdentityProvider(organizationPartyId, identityProviderTypeId);
+        }
+
+        /// <summary>
         /// Used to parse the list of valid product codes
         /// </summary>
         /// <param name="productCode"></param>

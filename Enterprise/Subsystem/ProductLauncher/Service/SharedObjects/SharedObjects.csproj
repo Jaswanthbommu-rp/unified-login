@@ -315,6 +315,7 @@
     <Compile Include="IdentityConfig\UserLoginOrganization.cs" />
     <Compile Include="IdentityConfig\UserLoginPersona.cs" />
     <Compile Include="Landing\ApiError.cs" />
+    <Compile Include="Landing\IdentityProvider.cs" />
     <Compile Include="Landing\OrganizationDelete.cs" />
     <Compile Include="Landing\PersonaProductProperty.cs" />
     <Compile Include="Landing\ProductPrimaryProperties.cs" />

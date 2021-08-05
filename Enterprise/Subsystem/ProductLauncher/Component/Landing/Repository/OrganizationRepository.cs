@@ -7,6 +7,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Maintenance;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
 using System;
@@ -694,6 +695,39 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
 
         #endregion
+
+        /// <summary>
+        /// Used to get the list of identity provider types
+        /// </summary>
+        /// <returns>OrganizationDomain list</returns>
+        public IList<IdentityProvider> GetIdentityProviderList()
+        {
+            dynamic param = null;
+
+            using (var repository = GetRepository())
+            {
+                return repository.GetMany<IdentityProvider>(StoredProcNameConstants.SP_GetIdentityProviderList, param);
+            }
+        }
+
+        /// <summary>
+        /// Used to update the organizations identity provider type
+        /// </summary>
+        /// <param name="organizationPartyId"></param>
+        /// <param name="identityProviderTypeId"></param>
+        /// <returns></returns>
+        public int UpdateOrganizationIdentityProvider(long organizationPartyId, int identityProviderTypeId)
+        {
+            dynamic param = new
+            {
+                PartyId = organizationPartyId,
+                NewIdentityProviderTypeId = identityProviderTypeId
+            };
+            using (var repository = GetRepository())
+            {
+                return repository.GetOne<int>(StoredProcNameConstants.SP_UpdateOrganizationIdentityProvider, param);
+            }
+        }
 
         #region private methods
         private string getRoleRightsSchemaName()

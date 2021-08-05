@@ -1254,27 +1254,72 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
         }
 
-		#endregion
+        #endregion
+        
+        /// <summary>
+        /// Get a list of identity providers
+        /// </summary>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get a list of identity providers", Type = typeof(IdentityProvider))]
+        [Route("companysetup/identityprovider")]
+        [AuthorizeScope("companyfunctions", "rplandingapi")]
+        [HttpGet]
+        public HttpResponseMessage GetIdentityProviders()
+        {
+            var result = _manageOrganization.GetIdentityProviderList();
+            return Request.CreateResponse(HttpStatusCode.OK, result);
+        }
 
-		#region Property
+        /// <summary>
+        /// Update the companies identity provider
+        /// </summary>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Company identity provider updated")]
+        [Route("companysetup/party/{organizationPartyId}/identityprovider/{identityProviderTypeId}")]
+        [AuthorizeScope("companyfunctions", "rplandingapi")]
+        [HttpPut]
+        public HttpResponseMessage UpdateOrganizationIdentityProvider(long organizationPartyId, int identityProviderTypeId)
+        {
+            if (organizationPartyId == 0)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "organizationPartyId not supplied");
+            }
 
-		#region Get Properties for a Organization
+            if (identityProviderTypeId == 0)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "identityProviderTypeId not supplied");
+            }
 
-		/// <summary>
-		/// Get Properties for a Organization
-		/// </summary>
-		/// <param name="companyInstanceId">companyInstanceId</param>
-		/// <param name="propertyName">PropertyName</param>
-		/// <param name="domain">Domain</param>
-		/// <param name="blueId">blueId</param>
-		/// <param name="status"></param>
-		/// <param name="datafilter">datafilter</param>
-		/// <param name="userPersonaId">userPersonaId</param>
-		/// <param name="editorPersonaId">editorPersonaId</param>
-		/// <param name="isSelectedProperties">isSelectedProperties</param>
-		/// <param name="selectedProperties"></param>
-		/// <returns>List of Properties for a company </returns>
-		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+            var response = _manageOrganization.UpdateOrganizationIdentityProvider(organizationPartyId, identityProviderTypeId);
+            if (response != organizationPartyId)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Identity provider not updated");
+            }
+
+            return Request.CreateResponse(HttpStatusCode.OK, response);
+        }
+
+        #region Property
+
+        #region Get Properties for a Organization
+
+        /// <summary>
+        /// Get Properties for a Organization
+        /// </summary>
+        /// <param name="companyInstanceId">companyInstanceId</param>
+        /// <param name="propertyName">PropertyName</param>
+        /// <param name="domain">Domain</param>
+        /// <param name="blueId">blueId</param>
+        /// <param name="status"></param>
+        /// <param name="datafilter">datafilter</param>
+        /// <param name="userPersonaId">userPersonaId</param>
+        /// <param name="editorPersonaId">editorPersonaId</param>
+        /// <param name="isSelectedProperties">isSelectedProperties</param>
+        /// <param name="selectedProperties"></param>
+        /// <returns>List of Properties for a company </returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about a list of Properties for an Organization", Type = typeof(CompanyPropertySetup))]
         [SwaggerResponseExamples(typeof(CompanyPropertySetup), typeof(PropertyListExample))]

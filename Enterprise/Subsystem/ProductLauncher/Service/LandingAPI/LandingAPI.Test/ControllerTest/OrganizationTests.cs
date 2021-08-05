@@ -31,6 +31,7 @@ using System.Web.Http;
 using System.Web.Http.Dispatcher;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Maintenance;
 using Xunit;
+using IdentityProvider = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.IdentityProvider;
 using RoleType = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig.RoleType;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
@@ -3314,6 +3315,68 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         }
 
         #endregion
+
+        [Fact]
+        public void GetIdentityProviders()
+        {
+            var identityProviderList = new List<IdentityProvider> { new IdentityProvider() { IdentityProviderTypeId = 4, Description = "IdentityServer" }, new IdentityProvider(){IdentityProviderTypeId = 5, Description = "Azure AD"} };
+
+            _mockRepository.Setup(m => m.GetMany<IdentityProvider>(StoredProcNameConstants.SP_GetIdentityProviderList,
+                    null))
+                .Returns(identityProviderList);
+
+            //Arrange
+            OrganizationController organizationController = new OrganizationController(
+                    _mockRepository.Object
+                    , _mockRepositoryResponse.Object
+                    , _mockHttpMessageHandler.Object
+                    , _defaultUserClaim
+                )
+                { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
+
+            //Act           
+            HttpResponseMessage response = organizationController.GetIdentityProviders();
+            var identityProviders = JsonConvert.DeserializeObject<List<IdentityProvider>>(response.Content.ReadAsStringAsync().Result);
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.OK) && identityProviders.Count == identityProviderList.Count);
+        }
+        [Fact]
+        public void UpdateOrganizationIdentityProvider()
+        {
+            _mockRepository.Setup(m => m.GetOne<int>(StoredProcNameConstants.SP_UpdateOrganizationIdentityProvider,
+                    It.IsAny<object>()))
+                .Returns(_PartyId);
+
+            //Arrange
+            OrganizationController organizationController = new OrganizationController(
+                    _mockRepository.Object
+                    , _mockRepositoryResponse.Object
+                    , _mockHttpMessageHandler.Object
+                    , _defaultUserClaim
+                )
+                { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
+
+            //Act           
+            HttpResponseMessage response = organizationController.UpdateOrganizationIdentityProvider(_PartyId, 4);
+            var result = JsonConvert.DeserializeObject<int>(response.Content.ReadAsStringAsync().Result);
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.OK) && result == _PartyId);
+
+            response = organizationController.UpdateOrganizationIdentityProvider(0, 4);
+            //Assert
+            Assert.True(response.StatusCode == HttpStatusCode.BadRequest);
+
+            response = organizationController.UpdateOrganizationIdentityProvider(_PartyId, 0);
+            //Assert
+            Assert.True(response.StatusCode == HttpStatusCode.BadRequest);
+
+            response = organizationController.UpdateOrganizationIdentityProvider(1234, 4);
+            //Assert
+            Assert.True(response.StatusCode == HttpStatusCode.BadRequest);
+        }
+
     }
 }
        
