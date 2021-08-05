@@ -1152,6 +1152,8 @@
     <Build Include="Enterprise\Stored Procedures\GetPersonaProductPrimaryProperties.sql" />
     <Build Include="Enterprise\Tables\PersonaProductProperty.sql" />
     <Build Include="Enterprise\Stored Procedures\SavePersonaProductProperties.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetIdentityProviderList.sql" />
+    <Build Include="Enterprise\Stored Procedures\UpdateOrganizationIdentityProvider.SQL" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
