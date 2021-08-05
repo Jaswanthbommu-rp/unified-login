@@ -138,8 +138,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             string jsonSecuritySettings = JsonConvert.SerializeObject(data.ProductPrimaryProperties);
                             _productRepository.SavePersonaProductProperties(assignUserPersonaId, data.ProductId, jsonSecuritySettings);
                         }
-                        UpdateProductPrimaryPropertyProductStatus(assignUserPersonaId, data.ProductId, data.UsePrimaryProperties == true ? 1 : 0);
                     }
+                    UpdateProductPrimaryPropertyProductStatus(assignUserPersonaId, data.ProductId, data.UsePrimaryProperties == true ? 1 : 0);
                 }
             }
         }
@@ -244,7 +244,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 //First get enterprise role id for user persona
-                int userRoleTemplateId = _productRepository.GetUserEnterpriseRoleTemplateID(productUser.AssignUserPersonaId);
+                RoleTemplate roleTemplate = _productRepository.GetEnterpriseRoleForPersona(productUser.AssignUserPersonaId);
+                int userRoleTemplateId = roleTemplate?.RoleTemplateId ?? 0;
 
                 if (userRoleTemplateId > 0)
                 {

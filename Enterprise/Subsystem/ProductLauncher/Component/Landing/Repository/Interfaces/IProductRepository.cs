@@ -259,7 +259,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         IList<UserBatchProductDetail> GetUserBatchDetails(int batchGroupId, long editorUserPersonId, long subjectUserPersonId);
 
         void UpdateBatchGroupStatus(int groupId, bool isLogged);
-        int GetUserEnterpriseRoleTemplateID(long personaId);
+
+        /// <summary>
+        /// GetEnterpriseRoleForPersona
+        /// </summary>
+        /// <param name="personaId"></param>
+        /// <returns></returns>
+        RoleTemplate GetEnterpriseRoleForPersona(long personaId);
         /// <summary>
         /// GetRoleTemplateProductRoleMapping
         /// </summary>

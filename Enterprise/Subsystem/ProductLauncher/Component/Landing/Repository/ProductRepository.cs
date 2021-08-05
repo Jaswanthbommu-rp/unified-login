@@ -1964,17 +1964,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
 
         /// <summary>
-        /// Returns  persona enterprise role template id.		
+        /// Returns  persona enterprise role template details.		
         /// </summary> 
-        public int GetUserEnterpriseRoleTemplateID(long personaId)
+        public RoleTemplate GetEnterpriseRoleForPersona(long personaId)
         {
-            int userRoleTemplateId = 0;
+            RoleTemplate roleTemplate = new RoleTemplate();
             using (var repository = GetRepository())
             {
-                userRoleTemplateId = repository.GetOne<int>(StoredProcNameConstants.SP_GetUserRoleTemplate, new { PersonaId = personaId });               
+                roleTemplate = repository.GetOne<RoleTemplate>(StoredProcNameConstants.SP_GetUserRoleTemplate, new { PersonaId = personaId });
             }
-
-            return userRoleTemplateId;
+            return roleTemplate;
         }
 
         /// <summary>

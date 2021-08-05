@@ -182,6 +182,7 @@
     <Compile Include="DapperMappingGuides\ProductSettingList.cs" />
     <Compile Include="EnterpriseRole\AdditionalAttributes.cs" />
     <Compile Include="EnterpriseRole\RemovedAdditionalAttributes.cs" />
+    <Compile Include="EnterpriseRole\RoleTemplate.cs" />
     <Compile Include="EnterpriseRole\RemovedRoles.cs" />
     <Compile Include="EnterpriseRole\RemovedRoleTemplateProducts.cs" />
     <Compile Include="EnterpriseRole\RoleTemplateProduct.cs" />
