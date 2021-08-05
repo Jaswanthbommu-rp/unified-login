@@ -62,7 +62,7 @@ BEGIN
 	)
 	SELECT	CONVERT(tinyint, value)
 	FROM		STRING_SPLIT(@FilterByStatus, ',');
-
+	
 	CREATE TABLE #tempOrganizations
 	(
 		OrganizationPartyId		BIGINT NOT NULL, 
@@ -79,7 +79,10 @@ BEGIN
 		Products				INT,
 		RealPageAccessUser NVARCHAR(100),
 		RealPageAccessUserId    UNIQUEIDENTIFIER,
-		EnablePrimaryPropertiesAndEnterpriseRoles TINYINT)	
+		EnablePrimaryPropertiesAndEnterpriseRoles TINYINT,
+		IdentityProviderType    NVARCHAR(100),
+		IdentityProviderTypeId  INT,
+	)	
 
 	CREATE TABLE #tempAdminUsers
 	(
@@ -113,7 +116,10 @@ BEGIN
 								   Products,
 								   RealPageAccessUser,
 								   RealPageAccessUserId,
-								   EnablePrimaryPropertiesAndEnterpriseRoles)
+								   EnablePrimaryPropertiesAndEnterpriseRoles,
+								   IdentityProviderType,
+								   IdentityProviderTypeId
+				)
 	SELECT O.PartyId as OrganizationPartyId,    
 		   O.Name as OrganizationName,    
 		   P.RealPageId,    
@@ -132,11 +138,14 @@ BEGIN
 						from Enterprise.OrganizationProduct op where o.PartyId= op.PartyId and ThruDate is null),
 		   CA.LoginName,
 		   CA.RealPageId as RealPageAccessUserId,
-		   0
+		   0,
+		   IPT.Description,
+		   o.IdentityProviderTypeId
 	FROM [Enterprise].Organization AS o    
 		INNER JOIN [Enterprise].Party P ON P.PartyId = O.PartyId
 		INNER JOIN Enterprise.OrganizationDomain OD ON OD.OrganizationDomainId = O.OrganizationDomainId
 		INNER JOIN Enterprise.OrganizationType OT ON OT.OrganizationTypeId = O.OrganizationTypeId 
+		INNER JOIN Ident.IdentityProviderType IPT ON IPT.IdentityProviderTypeId = o.IdentityProviderTypeId
 		INNER JOIN Enterprise.VW_DataImportMapping D ON(O.PartyId = D.PartyId)-- and d.CompanyMasterId > 1
 		INNER JOIN #tempAdminUsers CA ON CA.PartyId = o.PartyId
         AND	(@OrganizationName IS NULL OR O.Name LIKE '%' + @OrganizationName + '%')
@@ -163,6 +172,8 @@ BEGIN
     INNER JOIN Enterprise.MasterConfigurationType MCT ON MCT.MasterConfigurationTypeId = MST.MasterConfigurationTypeId  
 	WHERE MCT.Name = 'Organization'  
 	AND MST.Name = 'EnablePrimaryPropertiesAndEnterpriseRoles'
+	AND MC.ThruDate IS NULL
+	AND MS.ThruDate IS NULL
 
 	SELECT @sortValue =
 		CASE @SortColumn
@@ -189,6 +200,8 @@ BEGIN
 			RealPageAccessUser,
 			RealPageAccessUserId,
 			EnablePrimaryPropertiesAndEnterpriseRoles,
+			IdentityProviderType,
+			IdentityProviderTypeId,
 			TotalRecords, 
 			RowNumber
 		)
@@ -210,6 +223,8 @@ BEGIN
 			RealPageAccessUser,
 			RealPageAccessUserId,
 			EnablePrimaryPropertiesAndEnterpriseRoles,
+			IdentityProviderType,
+			IdentityProviderTypeId,
 			COUNT(1) OVER () AS [TotalRecords],
 			CASE @sortValue
 				WHEN 100 THEN ROW_NUMBER() OVER (ORDER BY OrganizationName ASC)
@@ -236,6 +251,8 @@ BEGIN
 		RealPageAccessUser,
 		RealPageAccessUserId,
 		EnablePrimaryPropertiesAndEnterpriseRoles,
+		IdentityProviderType,
+		IdentityProviderTypeId,
 		TotalRecords
 	FROM cteFilterOrganizations
 	ORDER BY RowNumber
