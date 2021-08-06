@@ -2554,7 +2554,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         {
             //IManageUserLogin userLoginLogic = new ManageUserLogin();
             IManagePersona managePersona = new ManagePersona();
+            IManagePerson managePerson = new ManagePerson();
             Dictionary<Guid, Persona> companyAdminList = new Dictionary<Guid, Persona>();
+            RepositoryResponse updateUserStatusResponse = new RepositoryResponse();
 
             using (var repository = GetRepository())
             {
@@ -2562,6 +2564,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 {
                     var userLoginRepository = new UserLoginRepository();
                     IUserLoginOnly userLoginOnly = userLoginRepository.GetUserLoginOnly(ul.UserRealPageId);
+                    IPerson person = managePerson.GetPerson(ul.UserRealPageId);
                     var userOrganizationList = userLoginRepository.ListOrganizationByLoginName(userLoginOnly.LoginName);
                     Guid primaryCompanyGuid = userOrganizationList.FirstOrDefault(p => p.PrimaryOrganization).OrganizationRealPageId;
                     List<Guid> organizationsToProcess = new List<Guid>();
@@ -2603,7 +2606,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         //Check if user primary company and current company in loop are same
                         if(!isUserdisabled && ul.OrganizationRealPageId == primaryCompanyGuid)
                         {
-                            var updateUserStatusResponse = repository.Execute<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserStatusByCompany, new
+                            updateUserStatusResponse = repository.Execute<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserStatusByCompany, new
                             {
                                 RealPageId = ul.UserRealPageId,
                                 OrganizationPartyId = org.OrganizationPartyId,
@@ -2613,7 +2616,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
                         else if(!isUserdisabled)
                         {
-                            var updateUserStatusResponse = repository.Execute<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserStatusByCompany, new
+                            updateUserStatusResponse = repository.Execute<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserStatusByCompany, new
                             {
                                 RealPageId = ul.UserRealPageId,
                                 OrganizationPartyId = orgPartyId,
@@ -2622,6 +2625,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             });
                         }
 
+                        if (updateUserStatusResponse.Id > 0)
+                        {
+                            string message = string.Format("{0} {1} was deactivated by the system due to the scheduled User Expires date {2}", person.FirstName, person.LastName, userLogin.ThruDate);
+                            AddActivityLog(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, message, userLoginOnly, org);
+                        }
                         //remove products
                         if (editorPersona != null && (ul.OrganizationRealPageId == primaryCompanyGuid || ul.OrganizationRealPageId == org.OrganizationRealPageId))
                         {
@@ -4686,6 +4694,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 ToUserFirstName = profile.FirstName,
                 ToUserLastName = profile.LastName,
                 ToUserRealpageId = profile.userLogin.RealPageId.ToString()
+            });
+        }
+
+        private void AddActivityLog(string logActivityType, LogActivityCategoryType logActivityCategoryType, string message, IUserLoginOnly userLogin = null, IUserOrganization userOrg = null)
+        {
+            IManagePerson managePerson = new ManagePerson();
+            IPerson person = managePerson.GetPerson(userLogin.RealPageId);
+
+            LogActivity.WriteActivity(new ActivityDetails
+            {
+                LogActivityTypeName = logActivityType,
+                LogCategoryName = logActivityCategoryType.ToString(),
+                CorrelationId = _userClaim.CorrelationId.ToString(),
+                BooksMasterOrganizationId = userOrg != null ? userOrg.BooksCustomerMasterId :_userClaim.OrganizationMasterId,
+                OrganizationPartyId = userOrg != null ? userOrg.OrganizationPartyId : _userClaim.OrganizationPartyId,
+                Message = message,
+
+                FromUserLoginName = _userClaim.LoginName,
+                FromUserLoginId = _userClaim.UserId,
+                FromUserFirstName = _userClaim.FirstName,
+                FromUserLastName = _userClaim.LastName,
+                FromUserRealpageId = _userClaim.UserRealPageGuid.ToString(),
+
+                ToUserLoginId =  userLogin.UserId,
+                ToUserLoginName = userLogin.LoginName,
+                ToUserFirstName = person.FirstName,
+                ToUserLastName = person.LastName,
+                ToUserRealpageId = userLogin.RealPageId.ToString(),
             });
         }
 
