@@ -1672,3 +1672,11 @@ BEGIN
 END
 
 GO
+
+--Renaming Right from Settings Internal Administrator to  Internal Adminaccess To UnifiedSettings
+IF  EXISTS (SELECT TOP(1) 1 FROM Security.[Right] WHERE RightName = 'SettingsInternalAdministrator')
+BEGIN
+	UPDATE Security.[Right] Set RightName ='InternalAdminaccessToUnifiedSettings',Value = 'Internal Admin Access to Unified Settings'
+	                           ,Description = 'Internal Admin Access to Unified Settings' where RightName = 'SettingsInternalAdministrator'
+END
+GO
