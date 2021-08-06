@@ -119,7 +119,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="productId"></param>
 		/// <returns></returns>
 		UPFMProperty TranslateProductProperties(UPFMProperty upfmProperty, int productId);
-		
+
+		/// <summary>
+		/// GetUserProductRoles
+		/// </summary>
+		/// <param name="editorPersonaId"></param>
+		/// <param name="userPersonaId"></param>
+		/// <param name="partyId"></param>
+		/// <returns></returns>
 		RoleTemplateProductRoleMapping GetUserProductRoles(long editorPersonaId, long userPersonaId, long partyId);
+
+		/// <summary>
+		/// Get Persona Product Primary Properties
+		/// </summary>
+		/// <param name="userPersonaId"></param>
+		/// <returns></returns>
+		List<PersonaProductProperty> GetPersonaProductPrimaryProperties(long userPersonaId);
 	}
 }

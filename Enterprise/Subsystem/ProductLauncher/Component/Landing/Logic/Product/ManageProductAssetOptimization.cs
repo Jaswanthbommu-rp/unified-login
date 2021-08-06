@@ -398,8 +398,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 							ID = property.PropertyId.ToString(),
 							Name = property.PropertyName,
 							IsAssigned = property.IsAssigned,
-							State = property.State,
-							Relationship = property.Relationship
+							State = property.State
 						});
 					}					
 				}
@@ -3012,6 +3011,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		public IList<int> PropertyGroups { get; set; }
 
 		public bool IsAssigned { get; set; }
+
+		public int ProductId { get; set; }
+
+		public bool UsePrimaryProperties { get; set; }
+
+		/// <summary>
+		/// List of Properties to assign to a product with propertyinstanceIds
+		/// </summary>
+		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+		public List<ProductPrimaryProperties> ProductPrimaryProperties { get; set; }
 	}
 
 	public class AoUserCompanyPropertyRoleDetails

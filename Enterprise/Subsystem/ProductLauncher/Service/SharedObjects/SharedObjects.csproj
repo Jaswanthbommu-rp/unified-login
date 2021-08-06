@@ -182,6 +182,7 @@
     <Compile Include="DapperMappingGuides\ProductSettingList.cs" />
     <Compile Include="EnterpriseRole\AdditionalAttributes.cs" />
     <Compile Include="EnterpriseRole\RemovedAdditionalAttributes.cs" />
+    <Compile Include="EnterpriseRole\RoleTemplate.cs" />
     <Compile Include="EnterpriseRole\RemovedRoles.cs" />
     <Compile Include="EnterpriseRole\RemovedRoleTemplateProducts.cs" />
     <Compile Include="EnterpriseRole\RoleTemplateProduct.cs" />
@@ -316,6 +317,8 @@
     <Compile Include="IdentityConfig\UserLoginPersona.cs" />
     <Compile Include="Landing\ApiError.cs" />
     <Compile Include="Landing\OrganizationDelete.cs" />
+    <Compile Include="Landing\PersonaProductProperty.cs" />
+    <Compile Include="Landing\ProductPrimaryProperties.cs" />
     <Compile Include="Landing\ProductSuggestedProperties.cs" />
     <Compile Include="Landing\SettingPickList.cs" />
     <Compile Include="Landing\EmailModel.cs" />

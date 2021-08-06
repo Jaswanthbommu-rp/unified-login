@@ -327,6 +327,46 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             Assert.Equal("1234567", productList.FirstOrDefault().ID.ToString());
             Assert.Equal(true, productList.FirstOrDefault().IsAssigned);
             Assert.Equal("OneSite property 1", productList.FirstOrDefault().Name);
-        } 
+        }
+
+        [Fact]
+        public void GetPersonaProductPrimaryProperties_ValidResponse()
+        {
+            List<PersonaProductProperty> personaProductProperty = new List<PersonaProductProperty>()
+            {
+                new PersonaProductProperty() {PersonaProductPropertyId = 1, PersonaId = 1234, ProductId = 1, PropertyId = "12345",  PropertyInstanceId = "ceb51735-445b-448b-af7a-72f297c1ca16"},
+                 new PersonaProductProperty() {PersonaProductPropertyId = 2, PersonaId = 123, ProductId = 2, PropertyId = "1234",  PropertyInstanceId = "ceb51735-445b-448b-af7a-72f297c1ca16"}
+            };
+            Mock<IManageProductOneSite> mockManageProductOneSite = new Mock<IManageProductOneSite>();
+            IList<ProductProperty> list = new List<ProductProperty>();
+            list.Add(new ProductProperty() { ID = "1234567", Name = "OneSite property 1" });
+            var oneSitePropertyResponse = new ListResponse()
+            {
+                TotalRows = list.Count,
+                Records = list.Cast<object>().ToList(),
+                IsError = false
+            };
+
+            _mockRepository
+                .Setup(m => m.GetMany<PersonaProductProperty>(StoredProcNameConstants.SP_GetPersonaProductPrimaryProperties, It.IsAny<Object>()))
+                .Returns(personaProductProperty);
+
+
+            ProductPanelController productPannelController = new ProductPanelController
+                        (_defaultUserClaim
+                        , _mockRepository.Object
+                        , _mockRepositoryResponse.Object
+                        , _mockHttpMessageHandler.Object
+                        , mockManageProductOneSite.Object)
+            {
+                Request = new HttpRequestMessage(),
+                Configuration = new HttpConfiguration()
+            };
+            RequestParameter datafilter = new RequestParameter();
+            HttpResponseMessage response = productPannelController.GetPersonaProductPrimaryProperties(1234);
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
+        }
     }
 }

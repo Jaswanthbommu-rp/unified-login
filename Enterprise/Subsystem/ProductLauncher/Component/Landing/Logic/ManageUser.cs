@@ -5,6 +5,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Inter
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.EnterpriseRole;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
@@ -25,7 +26,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		IUserRepository _userRepository;
 		ICredentialRepository _credentialRepository;
 		IUserLoginRepository _userLoginRepository;
-        private IManageUserRegistrationEmail _manageUserRegistrationEmail;
+		IProductRepository _productRepository;
+		private IManageUserRegistrationEmail _manageUserRegistrationEmail;
 
         private DefaultUserClaim _userClaim;
 
@@ -57,7 +59,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			_credentialRepository = new CredentialRepository();
 			_userLoginRepository = new UserLoginRepository();
             _manageUserRegistrationEmail = new ManageUserRegistrationEmail(userClaim);
-            _userClaim = userClaim;
+			_productRepository = new ProductRepository();
+			_userClaim = userClaim;
 		}
 
 		#endregion
@@ -685,6 +688,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				};
 
 				IManagePersona managePersona = new ManagePersona(_userClaim);
+				RoleTemplate roleTemplate = new RoleTemplate();
 				var personaList = managePersona.ListPersona(userLogin.RealPageId);
 				if (personaList.Any(p => p.OrganizationPartyId == _userClaim.OrganizationPartyId))
 				{
@@ -693,6 +697,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					{
 						profileDetail.Persona.Add(persona);
 						profileDetail.organization.Add(persona.Organization);
+
+						//Add role template details for persona
+						roleTemplate = _productRepository.GetEnterpriseRoleForPersona(persona.PersonaId);
+						profileDetail.RoleTemplateId = roleTemplate?.RoleTemplateId ?? 0;
+						profileDetail.EntepriseRoleName = roleTemplate?.RoleTemplateName ?? "";
 					}
 				}
 				else

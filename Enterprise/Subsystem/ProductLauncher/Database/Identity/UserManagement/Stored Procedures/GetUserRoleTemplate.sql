@@ -2,13 +2,13 @@
  @PersonaId		 BIGINT
 )  
 AS  
-BEGIN    
+BEGIN
+	SELECT  
+		ISNULL(RT.RoleTemplateId,0) AS RoleTemplateId
+		,RT.RoleTemplateName
+		,userMapping.PersonaId
  
-	DECLARE @RoleTemplateId INT
-	SELECT @RoleTemplateId =  ISNULL(RoleTemplateId,0) 
-	FROM Security.RoleTemplateUserMapping
+	FROM Security.RoleTemplateUserMapping userMapping 
+		INNER JOIN Security.RoleTemplate RT ON RT.RoleTemplateId = userMapping.RoleTemplateId AND userMapping.PersonaId = @PersonaId
 	WHERE PersonaId = @PersonaId
-	
-	SELECT	@RoleTemplateId 
- 
 END;

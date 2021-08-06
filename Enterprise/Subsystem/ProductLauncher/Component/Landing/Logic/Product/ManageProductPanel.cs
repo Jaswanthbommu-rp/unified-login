@@ -486,6 +486,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return productResult;
         }
 
+        /// <summary>
+        /// TranslateProductProperties
+        /// </summary>
+        /// <param name="upfmProperty"></param>
+        /// <param name="productId"></param>
+        /// <returns></returns>
         public UPFMProperty TranslateProductProperties(UPFMProperty upfmProperty, int productId)
         {
             UPFMProperty primaryPropertyIds = new UPFMProperty
@@ -511,6 +517,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 id = translatedUPFMInstances
             };
                 
+        }
+
+        /// <summary>
+        /// Get Persona Product Primary Properties
+        /// </summary>
+        /// <param name="userPersonaId"></param>
+        /// <returns></returns>
+        public List<PersonaProductProperty> GetPersonaProductPrimaryProperties(long userPersonaId)
+        {
+            return _productRepository.GetPersonaProductPrimaryProperties(userPersonaId);
         }
         #endregion
     }

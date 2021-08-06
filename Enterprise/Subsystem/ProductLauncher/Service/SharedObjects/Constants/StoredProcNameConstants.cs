@@ -201,6 +201,7 @@
         public const string SP_GetUserProductBatchJsonData = "Enterprise.GetUserProductBatchJsonData";
         
         public const string SP_GetProductsByPersonaId = "Security.GetProductsByPersonaId";
+        public const string SP_GetPersonaProductPrimaryProperties = "Enterprise.GetPersonaProductPrimaryProperties";
 
         //SuggestedProperties 
         public const string SP_AddPersonaSuggestedProperties = "Enterprise.AddPersonaSuggestedProperties";
@@ -285,7 +286,8 @@
 
         //ProductBatch
         public const string SP_CreateProductBatch = "Enterprise.CreateProductBatch";
-        public const string SP_UpdateProductBatch = "Enterprise.UpdateProductBatch";        
+        public const string SP_UpdateProductBatch = "Enterprise.UpdateProductBatch";
+        public const string SP_SavePersonaProductProperties = "Enterprise.SavePersonaProductProperties";
 
         //BatchProcessor
         public const string SP_GetUserBatchRecords = "Batch.GetUserBatchRecords";

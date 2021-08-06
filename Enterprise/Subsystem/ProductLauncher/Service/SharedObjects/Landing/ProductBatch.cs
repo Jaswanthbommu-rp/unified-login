@@ -215,5 +215,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		/// </summary>
 		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
 		public bool UsePrimaryProperties { get; set; } = false;
+
+		/// <summary>
+		/// List of Properties to assign to a product with propertyinstanceIds
+		/// </summary>
+		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+		public List<ProductPrimaryProperties> ProductPrimaryProperties { get; set; }
 	}
 }

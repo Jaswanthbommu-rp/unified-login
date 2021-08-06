@@ -501,7 +501,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 // get roles from rum product
                 List<ProductRole> globalRoles = new List<ProductRole>();
-                if (!_editorPersona.Organization.RealPageId.Equals(_employeeCompanyRealPageId))
+                if (!_editorPersona.Organization.RealPageId.Equals(_contractCompanyRealPageId))
                 {
                     //int companyInstanceSourceId = 279; // to get sample groups 
                     int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
@@ -776,7 +776,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
                 
-                if (!_editorPersona.Organization.RealPageId.Equals(_employeeCompanyRealPageId))
+                if (!_editorPersona.Organization.RealPageId.Equals(_contractCompanyRealPageId))
                 {
                     
                     if (string.IsNullOrEmpty(company.CompanyInstanceSourceId))
@@ -1168,7 +1168,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             IList<Role> roles = new List<Role>();
             string baseUrlAndQuery = null;
 
-            if (!_editorPersona.Organization.RealPageId.Equals(_employeeCompanyRealPageId))
+            if (!_editorPersona.Organization.RealPageId.Equals(_contractCompanyRealPageId))
             {
                 baseUrlAndQuery = $"{_apiEndPoint}/roleoptions/get?companyId={companyInstanceSourceId}";
             }

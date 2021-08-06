@@ -3322,7 +3322,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     (int) ProductEnum.HandsOnTrainingSystem,
                     (int) ProductEnum.LeaseLabs,
                     (int) ProductEnum.SelfGuidedTour,
-                    (int) ProductEnum.LeadScoring
+                    (int) ProductEnum.LeadScoring,
+                    (int) ProductEnum.SmartWasteCommercial
                 };
             }
 
@@ -4108,6 +4109,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     expandoAo.PropertyGroups = aoProduct.InputJson.PropertyGroupList;
 
                     expandoAo.IsAssigned = aoProduct.InputJson.IsAssigned;
+
+                    expandoAo.ProductId = aoProduct.ProductId;
+
+                    expandoAo.UsePrimaryProperties = aoProduct.InputJson.UsePrimaryProperties;
+
+                    expandoAo.ProductPrimaryProperties = aoProduct.InputJson.ProductPrimaryProperties;
 
                     // add in collection
                     expandoList.AoUserCompanyPropertyRoleDetailList.Add(expandoAo);
