@@ -455,14 +455,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 return new List<ProductInternalSettingByType>();
             }
 
-            RPObjectCache rpcache = new RPObjectCache();
-            var cacheKey = "productInternalSettingByType_" + productSettingType;
-            var productInternalSettingByTypeList = rpcache.GetFromCache<IList<ProductInternalSettingByType>>(cacheKey, 60, () =>
-            {
-                // load from database
-                return _productInternalSettingRepository.GetProductSettingByType(productSettingType);
-            });
-            return productInternalSettingByTypeList;
+            return _productInternalSettingRepository.GetProductSettingByType(productSettingType);
         }
 
         /// <summary>
