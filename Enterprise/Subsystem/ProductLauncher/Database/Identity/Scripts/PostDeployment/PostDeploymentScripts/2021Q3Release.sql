@@ -1588,3 +1588,9 @@ BEGIN
 END
 
 GO
+
+UPDATE Auth.Claim
+SET ClaimName = 'roleid'
+WHERE ClaimName = 'role' AND productid = 3
+
+GO
