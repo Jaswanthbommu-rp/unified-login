@@ -3272,7 +3272,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     (int) ProductEnum.HandsOnTrainingSystem,
                     (int) ProductEnum.LeaseLabs,
                     (int) ProductEnum.SelfGuidedTour,
-                    (int) ProductEnum.LeadScoring
+                    (int) ProductEnum.LeadScoring,
+                    (int) ProductEnum.SmartWasteCommercial
                 };
             }
 

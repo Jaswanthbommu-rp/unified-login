@@ -310,5 +310,9 @@
 		/// Lead Scoring
 		/// </summary>
 		public const string LeadScoring = "LST";
+		/// <summary>
+		///  Smart Waste Commercial
+		/// </summary>
+		public const string SmartWasteCommercial = "SMS-TC";
 	}
 }

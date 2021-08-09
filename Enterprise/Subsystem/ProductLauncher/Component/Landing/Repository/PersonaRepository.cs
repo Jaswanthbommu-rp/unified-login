@@ -224,6 +224,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                                 || editorRights.Contains("ApprovePlatformAlerts", StringComparer.OrdinalIgnoreCase));
 
                 persona.hasImportUsersAccess = editorRights.Contains("AbilityToImportUsers", StringComparer.OrdinalIgnoreCase);
+
+                persona.hasManageSmartWasteCommercialProductAccess = editorRights.Contains
+                    (ProductRightEnum.ManageSmartWasteCommercialProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
             }
 
             if (currentClaimPrincipal.Identity.IsAuthenticated)
