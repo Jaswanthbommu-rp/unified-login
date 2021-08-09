@@ -30,6 +30,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		long GetRoleIdByPersona(long userPersonaId, int productId);
 
 		/// <summary>
+		/// Get list role ids for a given persona and product id
+		/// </summary>
+		/// <param name="userPersonaId">Persona ID</param>   
+		/// <param name="productId">Product ID</param>   
+		/// <returns>Role assigned to Persona</returns>
+		List<long> GetRoleIdsByPersona(long userPersonaId, int productId);
+
+		/// <summary>
 		/// Insert Role to User
 		/// </summary>
 		/// <param name="userPersonaId">User Persona ID</param>             
@@ -37,7 +45,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		/// <param name="deleteRole">isDeleted</param>   
 		/// <param name="userId"
 		/// <returns>List of Roles assigned to Persona</returns>
-		RepositoryResponse InsertAssignedRoleToUser(long userPersonaId, long roleId, int userId, bool deleteRole = false );
+		RepositoryResponse InsertAssignedRoleToUser(long userPersonaId, long roleId, int userId, bool deleteRole = false);
 
 		/// <summary>
 		/// Get all roles and associated rights in master-detail hirerachy 
@@ -57,6 +65,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		/// <returns></returns>
 		IList<UnifiedLoginRoleRights> GetPlatFormRoleRights(long partyId, IList<int> productIdList, int productId);
 
-		
+
 	}
 }
