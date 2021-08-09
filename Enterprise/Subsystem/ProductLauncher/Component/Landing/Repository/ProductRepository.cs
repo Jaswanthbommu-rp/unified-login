@@ -2010,6 +2010,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
+        public List<int> GetEnterpriseRoleUpdatedProductsByRoleTemplateId(int roleTemplateId)
+        {
+            object param = new
+            {
+                RoleTemplateId = roleTemplateId
+            };
+            using (var repository = GetRepository())
+            {
+                return repository.GetMany<int>(StoredProcNameConstants.SP_GetEnterpriseRoleUpdatedProductsByRoleTemplateId, param).ToList();
+
+            }
+        }
+
+        public List<int> GetEnterpriseRoleDeletedProductsByRoleTemplateId(int roleTemplateId)
+        {
+            object param = new
+            {
+                RoleTemplateId = roleTemplateId
+            };
+            using (var repository = GetRepository())
+            {
+                return repository.GetMany<int>(StoredProcNameConstants.SP_GetEnterpriseRoleDeletedProductsByRoleTemplateId, param).ToList();
+
+            }
+        }
+
         public List<PersonaProductProperty> GetPersonaProductPrimaryProperties(long personaId)
         {
             dynamic param = new

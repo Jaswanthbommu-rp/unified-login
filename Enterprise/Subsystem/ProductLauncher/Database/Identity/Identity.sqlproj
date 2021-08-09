@@ -1152,6 +1152,8 @@
     <Build Include="Enterprise\Stored Procedures\GetPersonaProductPrimaryProperties.sql" />
     <Build Include="Enterprise\Tables\PersonaProductProperty.sql" />
     <Build Include="Enterprise\Stored Procedures\SavePersonaProductProperties.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\GetEnterpriseRoleUpdatedProductsByRoleTemplateId.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\GetEnterpriseRoleDeletedProductsByRoleTemplateId.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
