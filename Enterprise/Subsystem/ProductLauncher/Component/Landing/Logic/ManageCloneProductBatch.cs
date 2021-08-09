@@ -989,13 +989,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			}
 
 			IEnumerable<object> regionCollection = (IEnumerable<object>)regionResponse.Records;
-			foreach (object item in regionCollection)
+			if (regionResponse.Records.Count > 0)
 			{
-				if (((RumPropertyGroup)item).IsAssigned)
+				foreach (object item in regionCollection)
 				{
-					regionsList.Add(((RumPropertyGroup)item).Id.ToString());
+					if (((RumPropertyGroup)item).IsAssigned)
+					{
+						regionsList.Add(((RumPropertyGroup)item).Id.ToString());
+					}
 				}
 			}
+			
 
 			IEnumerable<object> groupCollection = (IEnumerable<object>)groupResponse.Records;
 			foreach (object item in groupCollection)
@@ -1007,14 +1011,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			}
 
 			IEnumerable<object> propertiesCollection = (IEnumerable<object>)propertiesResponse.Records;
-			foreach (object item in propertiesCollection)
+			if (propertiesResponse.Records.Count > 0)
 			{
-				if (((RumPropertyGroup)item).IsAssigned)
+				foreach (object item in propertiesCollection)
 				{
-					propertyList.Add(((RumPropertyGroup)item).Id.ToString());
+					if (((RumPropertyGroup)item).IsAssigned)
+					{
+						propertyList.Add(((RumPropertyGroup)item).Id.ToString());
+					}
 				}
 			}
-
 			// Below logic is applied when a user is being cloned from a user that has access to all properties. 
 			if (propertiesCollection != null && propertyGroupList.Count == 0)
 			{
