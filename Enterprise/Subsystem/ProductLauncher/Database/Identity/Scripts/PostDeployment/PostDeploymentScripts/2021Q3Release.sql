@@ -1680,3 +1680,46 @@ BEGIN
 	                           ,Description = 'Internal Admin Access to Unified Settings' where RightName = 'SettingsInternalAdministrator'
 END
 GO
+
+-- Add LockOnProductAccessRight product settings
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'LockOnProductAccessRight')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
+	VALUES ('LockOnProductAccessRight', 'Defines which right to use for the LockOnProductAccess solution property', 0);
+END
+
+GO
+
+-- Add the Manage Relate 24/7 Product Access right
+
+ DECLARE @RightValue nvarchar(200),
+		 @UserId bigint,
+		 @Now datetime = GETDATE(),
+		 @RightId int,
+		 @RoleId INT,
+		 @ProductId int = 3,
+		 @TargetProductId int = 60,
+		 @RoleName nvarchar(100),
+		 @OrgVisibilityStatusId INT = 9,
+		 @RightVisibilityStatusId INT =9,
+		 @StatusTypeId int=13;
+
+SELECT	@UserId = UserId
+	FROM	Ident.UserLogin
+	WHERE	LoginName LIKE 'realpagead@%'
+IF NOT EXISTS(SELECT TOP 1 1 FROM [Security].[Right] WHERE [Value] ='Manage Relate 24/7 Product Access')
+BEGIN 
+		INSERT INTO Security.[Right] (RightName,Description,Value,StatusTypeId,VisibilityStatusId,ProductId,TargetProductId,CreatedBy,CreatedDate)
+		VALUES('ManageRelate247ProductAccess','Manage Relate 24/7 Product Access','Manage Relate 24/7 Product Access',@StatusTypeId,@RightVisibilityStatusId,@ProductId ,@TargetProductId,@UserId,@Now);
+END
+
+SELECT @RoleId = RoleId from [Security].[Role] where RoleName='User Administrator';
+SELECT @RightId =  RightId from [Security].[Right] where [Value] = 'Manage Relate 24/7 Product Access';
+
+IF NOT EXISTS(SELECT TOP 1 1 FROM [Security].[RoleRight] WHERE [RightId]= @RightId)
+BEGIN
+	INSERT INTO Security.RoleRight (RoleId,RightId,CreatedBy,CreatedDate) 
+	VALUES(@RoleId,@RightId,@UserId,@Now);
+END
+
+GO

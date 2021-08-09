@@ -2043,122 +2043,132 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
         private void CheckProductRight(ref ProductFamily productFamily)
         {
+            var lockOnProductAccessRights = _productInternalSettingRepository.GetProductSettingByType("LockOnProductAccessRight");
+
             // check with logged in editors rights
             List<string> editorRights = _userClaim.Rights;
             foreach (var s in productFamily.Solutions)
             {
-                switch (s.ProductId)
+                var productAccessRight = lockOnProductAccessRights.FirstOrDefault(f => f.ProductId == s.ProductId)?.Value;
+                if(!string.IsNullOrWhiteSpace(productAccessRight))
                 {
-                    // set LockOnProductAccess is False if editor has the right (default is true - Lock it in UI)
-                    case (int)ProductRightEnum.ManageAccountingProductAccess:
-                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageAccountingProductAccess.ToString());
-                        break;
-                    case (int)ProductRightEnum.ManageAssetOptimizationProductAccess:
-                    case (int)ProductRightEnum.AoAIRevenueManagement:
-                    case (int)ProductRightEnum.AoAmenityOptimization:
-                    case (int)ProductRightEnum.AoLeaseRentOption:
-                    case (int)ProductRightEnum.AoRentControl:
-                    case (int)ProductRightEnum.AoBusinessIntelligence:
-                    case (int)ProductRightEnum.AoPerformanceAnalytics:
-                    case (int)ProductRightEnum.AoInvestmentAnalytics:
-                    case (int)ProductRightEnum.AoRevenueManagement:
-                    case (int)ProductRightEnum.AoAxiometrics:
-                    case (int)ProductRightEnum.AoBenchmarking:
-                    case (int)ProductRightEnum.AoMarketAnalytics:
-                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageAssetOptimizationProductAccess.ToString());
-                        break;
-                    case (int)ProductRightEnum.ManageClientPortalProductAccess:
-                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageClientPortalProductAccess.ToString());
-                        break;
-                    case (int)ProductRightEnum.ManageDocumentManagementProductAccess:
-                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageDocumentManagementProductAccess.ToString());
-                        break;
-                    case (int)ProductRightEnum.ManageILMLeadManagemementProductAccess:
-                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageILMLeadManagemementProductAccess.ToString());
-                        break;
-                    case (int)ProductRightEnum.ManageILMLeasingAnalyticsProductAccess:
-                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageILMLeasingAnalyticsProductAccess.ToString());
-                        break;
-                    case (int)ProductRightEnum.ManageLead2LeaseProductAccess:
-                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageLead2LeaseProductAccess.ToString());
-                        break;
-                    case (int)ProductRightEnum.ManageMarketingCenterProductAccess:
-                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageMarketingCenterProductAccess.ToString());
-                        break;
-                    case (int)ProductRightEnum.ManageOneSiteProductAccess:
-                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageOneSiteProductAccess.ToString());
-                        break;
-                    case (int)ProductRightEnum.ManageOnSiteProductAccess:
-                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageOnSiteProductAccess.ToString());
-                        break;
-                    case (int)ProductRightEnum.ProspectContactCenterProductAccess:
-                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ProspectContactCenterProductAccess.ToString());
-                        break;
-                    case (int)ProductRightEnum.ManageRentersInsuranceProductAccess:
-                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageRentersInsuranceProductAccess.ToString());
-                        break;
-                    case (int)ProductRightEnum.AddEditResidentPortalUser:
-                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.AddEditResidentPortalUser.ToString());
-                        break;
-                    case (int)ProductRightEnum.ManageSpendManagementProductAccess:
-                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageSpendManagementProductAccess.ToString());
-                        break;
-                    case (int)ProductRightEnum.ManageUnifiedAmenitiesProductAccess:
-                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageUnifiedAmenitiesProductAccess.ToString());
-                        break;
-                    case (int)ProductRightEnum.ManageUtilityManagementProductAccess:
-                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageUtilityManagementProductAccess.ToString());
-                        break;
-                    case (int)ProductRightEnum.ManageVendorComplianceProductAccess:
-                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageVendorComplianceProductAccess.ToString());
-                        break;                  
-                    case (int)ProductRightEnum.ManagePortfolioManagementProductAccess:
-                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManagePortfolioManagementProductAccess.ToString());
-                        break;
-                    case (int)ProductRightEnum.AccessIntegrationMarketplace:
-                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.AccessIntegrationMarketplace.ToString());
-                        break;
-                    case (int)ProductRightEnum.ManagePlatFormSecurity:
-                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManagePlatFormSecurity.ToString());
-                        break;
-                    case (int)ProductRightEnum.ManageCustomFields:
-                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageCustomFields.ToString());
-                        break;
-                    case (int)ProductRightEnum.ManageDepositAlternativeProductAccess:
-                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageDepositAlternativeProductAccess.ToString());
-                        break;
-                    case (int)ProductRightEnum.ManageClickPayProductAccess:
-                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageClickPayProductAccess.ToString());
-                        break;
-                    case (int)ProductRightEnum.ManageRenovationManager:
-                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageRenovationManager.ToString());
-                        break;
-                    case (int)ProductRightEnum.ManageSeniorLeadManagement:
-                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageSeniorLeadManagement.ToString());
-                        break;
-                    case (int)ProductRightEnum.ManageIntelligentBuildingTrashProductAccess:
-                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageIntelligentBuildingTrashProductAccess.ToString());
-                        break;
-                    case (int)ProductRightEnum.ManageIntelligentBuildingEnergyProductAccess:
-                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageIntelligentBuildingEnergyProductAccess.ToString());
-                        break;
-                    case (int)ProductRightEnum.ManageIntelligentBuildingWaterProductAccess:
-                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageIntelligentBuildingWaterProductAccess.ToString());
-                        break;
-                    case (int)ProductRightEnum.ManageHomeSharingProductAccess:
-                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageHomeSharingProductAccess.ToString());
-                        break;
-                    case (int)ProductRightEnum.ManageHandsOnTrainingSystemProductAccess:
-                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageHandsOnTrainingSystemProductAccess.ToString());
-                        break;
-                    case (int)ProductRightEnum.ManageLeaseLabsProductAccess:
-                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageLeaseLabsProductAccess.ToString());
-                        break;
-                    case (int)ProductRightEnum.ManageSGTourProductAccess:
-                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageSGTourProductAccess.ToString());
-                        break;
-                    default:
-                        break;
+                    s.LockOnProductAccess = !editorRights.Contains(productAccessRight, StringComparer.OrdinalIgnoreCase);
+                }
+                else
+                {
+                    switch (s.ProductId)
+                    {
+                        // set LockOnProductAccess is False if editor has the right (default is true - Lock it in UI)
+                        case (int)ProductRightEnum.ManageAccountingProductAccess:
+                            s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageAccountingProductAccess.ToString());
+                            break;
+                        case (int)ProductRightEnum.ManageAssetOptimizationProductAccess:
+                        case (int)ProductRightEnum.AoAIRevenueManagement:
+                        case (int)ProductRightEnum.AoAmenityOptimization:
+                        case (int)ProductRightEnum.AoLeaseRentOption:
+                        case (int)ProductRightEnum.AoRentControl:
+                        case (int)ProductRightEnum.AoBusinessIntelligence:
+                        case (int)ProductRightEnum.AoPerformanceAnalytics:
+                        case (int)ProductRightEnum.AoInvestmentAnalytics:
+                        case (int)ProductRightEnum.AoRevenueManagement:
+                        case (int)ProductRightEnum.AoAxiometrics:
+                        case (int)ProductRightEnum.AoBenchmarking:
+                        case (int)ProductRightEnum.AoMarketAnalytics:
+                            s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageAssetOptimizationProductAccess.ToString());
+                            break;
+                        case (int)ProductRightEnum.ManageClientPortalProductAccess:
+                            s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageClientPortalProductAccess.ToString());
+                            break;
+                        case (int)ProductRightEnum.ManageDocumentManagementProductAccess:
+                            s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageDocumentManagementProductAccess.ToString());
+                            break;
+                        case (int)ProductRightEnum.ManageILMLeadManagemementProductAccess:
+                            s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageILMLeadManagemementProductAccess.ToString());
+                            break;
+                        case (int)ProductRightEnum.ManageILMLeasingAnalyticsProductAccess:
+                            s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageILMLeasingAnalyticsProductAccess.ToString());
+                            break;
+                        case (int)ProductRightEnum.ManageLead2LeaseProductAccess:
+                            s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageLead2LeaseProductAccess.ToString());
+                            break;
+                        case (int)ProductRightEnum.ManageMarketingCenterProductAccess:
+                            s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageMarketingCenterProductAccess.ToString());
+                            break;
+                        case (int)ProductRightEnum.ManageOneSiteProductAccess:
+                            s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageOneSiteProductAccess.ToString());
+                            break;
+                        case (int)ProductRightEnum.ManageOnSiteProductAccess:
+                            s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageOnSiteProductAccess.ToString());
+                            break;
+                        case (int)ProductRightEnum.ProspectContactCenterProductAccess:
+                            s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ProspectContactCenterProductAccess.ToString());
+                            break;
+                        case (int)ProductRightEnum.ManageRentersInsuranceProductAccess:
+                            s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageRentersInsuranceProductAccess.ToString());
+                            break;
+                        case (int)ProductRightEnum.AddEditResidentPortalUser:
+                            s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.AddEditResidentPortalUser.ToString());
+                            break;
+                        case (int)ProductRightEnum.ManageSpendManagementProductAccess:
+                            s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageSpendManagementProductAccess.ToString());
+                            break;
+                        case (int)ProductRightEnum.ManageUnifiedAmenitiesProductAccess:
+                            s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageUnifiedAmenitiesProductAccess.ToString());
+                            break;
+                        case (int)ProductRightEnum.ManageUtilityManagementProductAccess:
+                            s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageUtilityManagementProductAccess.ToString());
+                            break;
+                        case (int)ProductRightEnum.ManageVendorComplianceProductAccess:
+                            s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageVendorComplianceProductAccess.ToString());
+                            break;
+                        case (int)ProductRightEnum.ManagePortfolioManagementProductAccess:
+                            s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManagePortfolioManagementProductAccess.ToString());
+                            break;
+                        case (int)ProductRightEnum.AccessIntegrationMarketplace:
+                            s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.AccessIntegrationMarketplace.ToString());
+                            break;
+                        case (int)ProductRightEnum.ManagePlatFormSecurity:
+                            s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManagePlatFormSecurity.ToString());
+                            break;
+                        case (int)ProductRightEnum.ManageCustomFields:
+                            s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageCustomFields.ToString());
+                            break;
+                        case (int)ProductRightEnum.ManageDepositAlternativeProductAccess:
+                            s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageDepositAlternativeProductAccess.ToString());
+                            break;
+                        case (int)ProductRightEnum.ManageClickPayProductAccess:
+                            s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageClickPayProductAccess.ToString());
+                            break;
+                        case (int)ProductRightEnum.ManageRenovationManager:
+                            s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageRenovationManager.ToString());
+                            break;
+                        case (int)ProductRightEnum.ManageSeniorLeadManagement:
+                            s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageSeniorLeadManagement.ToString());
+                            break;
+                        case (int)ProductRightEnum.ManageIntelligentBuildingTrashProductAccess:
+                            s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageIntelligentBuildingTrashProductAccess.ToString());
+                            break;
+                        case (int)ProductRightEnum.ManageIntelligentBuildingEnergyProductAccess:
+                            s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageIntelligentBuildingEnergyProductAccess.ToString());
+                            break;
+                        case (int)ProductRightEnum.ManageIntelligentBuildingWaterProductAccess:
+                            s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageIntelligentBuildingWaterProductAccess.ToString());
+                            break;
+                        case (int)ProductRightEnum.ManageHomeSharingProductAccess:
+                            s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageHomeSharingProductAccess.ToString());
+                            break;
+                        case (int)ProductRightEnum.ManageHandsOnTrainingSystemProductAccess:
+                            s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageHandsOnTrainingSystemProductAccess.ToString());
+                            break;
+                        case (int)ProductRightEnum.ManageLeaseLabsProductAccess:
+                            s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageLeaseLabsProductAccess.ToString());
+                            break;
+                        case (int)ProductRightEnum.ManageSGTourProductAccess:
+                            s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageSGTourProductAccess.ToString());
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
         }

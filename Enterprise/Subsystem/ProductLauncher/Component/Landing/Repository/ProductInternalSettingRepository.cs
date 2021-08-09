@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using Newtonsoft.Json;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 {
@@ -56,11 +57,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <returns></returns>
         public IList<ProductInternalSettingByType> GetProductSettingByType(string productSettingType)
         {
-            using (var repo = GetRepository())
+            RPObjectCache rpcache = new RPObjectCache();
+            var cacheKey = "productInternalSettingByType_" + productSettingType;
+            var productInternalSettingByTypeList = rpcache.GetFromCache<IList<ProductInternalSettingByType>>(cacheKey, 60, () =>
             {
-                dynamic param = new { ProductSettingType = productSettingType };
-                return repo.GetMany<ProductInternalSettingByType>(StoredProcNameConstants.SP_ListProductGlobalSettingsBySettingType, param);
-            }
+                using (var repo = GetRepository())
+                {
+                    dynamic param = new { ProductSettingType = productSettingType };
+                    return repo.GetMany<ProductInternalSettingByType>(StoredProcNameConstants.SP_ListProductGlobalSettingsBySettingType, param);
+                }
+            });
+            return productInternalSettingByTypeList;
         }
 
         /// <summary>
