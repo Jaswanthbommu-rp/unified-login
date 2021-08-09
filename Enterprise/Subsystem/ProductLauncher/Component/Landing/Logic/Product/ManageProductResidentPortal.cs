@@ -6,12 +6,14 @@ using System.Net.Http;
 using System.Runtime.Caching;
 using System.Threading.Tasks;
 using System.Web;
+using System.Web.Http;
 using Newtonsoft.Json;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Attribute;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
@@ -23,6 +25,8 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Migration;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ResidentPortal;
+using Swashbuckle.Swagger.Annotations;
+
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -336,8 +340,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         /// <param name="editorPersonaId">Logged-in user PersonaId</param>
         /// <param name="userPersonaId">new user PersonaId</param>
+        /// <param name="loginName">new user loginName</param>
         /// <returns>ResidentPortal object</returns>
-        public ResidentPortalUser GetUser(long editorPersonaId, long userPersonaId)
+        public ResidentPortalUser GetUser(long editorPersonaId, long userPersonaId, string loginName)
         {
             WriteToDiagnosticLog($"ManageProductResidentPortal.GetUser - Begin get enterprise user details - {userPersonaId}.");
 
@@ -347,18 +352,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 WriteToErrorLog($"ManageProductResidentPortal.GetUser Error for user with editorPersona id - {editorPersonaId}. Error - {_listResponse.ErrorReason}");
                 return _residentPortalUser;
             }
-            if (IsSuperUser(userPersonaId) == true)
+            if (string.IsNullOrEmpty(loginName))
             {
-                _residentPortalUser.Title = null;
-                _residentPortalUser.OfficePhone = null;
-                _residentPortalUser.MobilePhone = null;
-                _residentPortalUser.DisplayInCorner = null;
-                _residentPortalUser.DateCreated = null;
-                _residentPortalUser.DateUpdated = null;
-                _residentPortalUser.MessageGroups = null;
+                if (IsSuperUser(userPersonaId) == true)
+                {
+                    _residentPortalUser.Title = null;
+                    _residentPortalUser.OfficePhone = null;
+                    _residentPortalUser.MobilePhone = null;
+                    _residentPortalUser.DisplayInCorner = null;
+                    _residentPortalUser.DateCreated = null;
+                    _residentPortalUser.DateUpdated = null;
+                    _residentPortalUser.MessageGroups = null;
+                }
             }
+            
 
-            return GetUserDetails(editorPersonaId, userPersonaId, _productUsername, 0);
+            return GetUserDetails(editorPersonaId, userPersonaId, string.IsNullOrEmpty(loginName) ? _productUsername : loginName, 0);
         }
 
         /// <summary>

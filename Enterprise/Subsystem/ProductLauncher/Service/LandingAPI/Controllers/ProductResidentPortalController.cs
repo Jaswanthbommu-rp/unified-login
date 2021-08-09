@@ -176,7 +176,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			IResidentPortalUser residentPortalUser = new ResidentPortalUser();
 			ManageProductResidentPortal manageProductResidentPortal = new ManageProductResidentPortal(base._userClaims);
 
-			residentPortalUser = manageProductResidentPortal.GetUser(editorPersonaId, userPersonaId);
+			residentPortalUser = manageProductResidentPortal.GetUser(editorPersonaId, userPersonaId, string.Empty);
 			if (residentPortalUser == null)
 			{
 				errorStatus.Success = false;
@@ -293,6 +293,42 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				return Request.CreateResponse(HttpStatusCode.OK, output);
 			}
 			output.list = messageGroupsList;
+			return Request.CreateResponse(HttpStatusCode.OK, output);
+		}
+
+		/// <summary>
+		/// List Messaging groups
+		/// </summary>
+		/// <param name="editorPersonaId">new user editorPersonaId</param>
+		/// <param name="userPersonaId">new user userPersonaId</param>
+		/// <param name="loginName">new user loginName</param>
+		/// <returns>Response with Success Message</returns>
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "List resident portal messaging groups", Type = typeof(IMessagingGroups))]
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
+		[Route("products/residentportal/checkisuserexists")]
+		[Authorize]
+		[HttpGet]
+		public HttpResponseMessage checkisuserexists(long editorPersonaId, long userPersonaId,string loginName)
+		{
+			ObjectOutput<IResidentPortalUser, IErrorData> output = new ObjectOutput<IResidentPortalUser, IErrorData>();
+			Status<IErrorData> errorStatus = new Status<IErrorData>();
+			output.Status = errorStatus;
+			ManageProductResidentPortal manageProductResidentPortal = new ManageProductResidentPortal(base._userClaims);
+
+			IResidentPortalUser residentPortalUser = new ResidentPortalUser();
+			residentPortalUser = manageProductResidentPortal.GetUser(editorPersonaId, userPersonaId, loginName);
+			if (residentPortalUser == null)
+			{
+				errorStatus.Success = false;
+				errorStatus.ErrorCode = "ProductResidentPortal.GetResidentPortalUser.4";
+				errorStatus.ErrorMsg = $"Product Resident Portal - Get user: Invalid User Id for PersonaId- {userPersonaId}";
+				output.Status = errorStatus;
+				return Request.CreateResponse(HttpStatusCode.OK, output);
+			}
+			residentPortalUser = manageProductResidentPortal.SetLevelAndGroupObjects(editorPersonaId, userPersonaId, residentPortalUser);
+			output.obj = residentPortalUser;
 			return Request.CreateResponse(HttpStatusCode.OK, output);
 		}
 

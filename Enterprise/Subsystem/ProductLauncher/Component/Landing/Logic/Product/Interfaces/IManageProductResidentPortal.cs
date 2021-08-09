@@ -26,8 +26,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// </summary>
 		/// <param name="editorPersonaId">Logged-in user PersonaId</param>
 		/// <param name="userPersonaId">new user PersonaId</param>
+		/// <param name="loginName">new user loginName</param>
 		/// <returns>ResidentPortal object</returns>
-		ResidentPortalUser GetUser(long editorPersonaId, long userPersonaId);
+		ResidentPortalUser GetUser(long editorPersonaId, long userPersonaId, string loginName);
 
 		/// <summary>
 		/// Include the MessageGroups and Level objects
