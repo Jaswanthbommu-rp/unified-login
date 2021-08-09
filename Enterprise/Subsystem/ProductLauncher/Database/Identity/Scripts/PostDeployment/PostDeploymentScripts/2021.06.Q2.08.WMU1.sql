@@ -129,3 +129,84 @@ END
 
 GO
 
+--User Story 860157
+
+-- Add Settings Internal Administrator right to RealPage Employee Company
+DECLARE @CreatedById bigint,
+		@RouteId bigint,
+		@RightId bigint,
+		@Now datetime = GETDATE(),
+		@PartyId bigint,
+		@RoleId bigint
+
+SELECT @CreatedById = UserId
+FROM Ident.UserLogin
+WHERE LoginName LIKE 'realpagead@%';
+
+
+IF NOT EXISTS (SELECT 1 FROM [Security].[Right] WHERE RightName = 'InternalAdminaccessToUnifiedSettings')
+BEGIN
+	INSERT INTO [Security].[Right](	RightName,Description, Value,StatusTypeId,VisibilityStatusId,ProductId,TargetProductId,	CreatedBy,CreatedDate)
+    VALUES ('InternalAdminaccessToUnifiedSettings', 'Internal Admin Access to Unified Settings','Internal Admin Access to Unified Settings', 13,10, 3, 56, @CreatedById, @Now)
+END
+
+--OrganizationOverRideRight
+SELECT @RightId = RightId
+FROM [Security].[Right]
+WHERE RightName = 'InternalAdminaccessToUnifiedSettings'
+
+SELECT @PartyId = O.PartyId
+FROM [Enterprise].[Organization] O
+    INNER JOIN [Enterprise].[Party] P ON P.PartyId = O.PartyId
+WHERE p.RealPageId = '0D018E46-C20E-477D-ADED-4E5A35FB8F99'
+
+IF NOT EXISTS (SELECT Top 1 1 FROM [Security].[OrganizationOverRideRight]  WHERE RightId = @RightId AND OrgPartyId = @PartyId)
+BEGIN
+	INSERT INTO [Security].[OrganizationOverRideRight]
+           ([RightId]
+           ,[OrgPartyId]
+           ,[VisibilityStatusId]
+           ,[CreatedBy]
+           ,[CreatedDate]) 
+           VALUES	(@RightId, @PartyId, 9, @CreatedById, @Now)
+END
+GO
+
+--User Story 891301
+-- Add Employee Access to Manage Settings Templates right to RealPage Employee Company
+DECLARE @CreatedById bigint,
+		@RouteId bigint,
+		@RightId bigint,
+		@Now datetime = GETDATE(),
+		@PartyId bigint,
+		@RoleId bigint
+SELECT @CreatedById = UserId
+FROM Ident.UserLogin
+WHERE LoginName LIKE 'realpagead@%';
+
+IF NOT EXISTS (SELECT 1 FROM [Security].[Right] WHERE RightName = 'EmployeeAccesstoManageSettingsTemplates')
+BEGIN
+	INSERT INTO [Security].[Right](	RightName,Description, Value,StatusTypeId,VisibilityStatusId,ProductId,TargetProductId,	CreatedBy,CreatedDate)
+    VALUES ('EmployeeAccesstoManageSettingsTemplates', 'Employee Access to Manage Settings Templates','Employee Access to Manage Settings Templates', 13,10, 3, 56, @CreatedById, @Now)
+END
+--OrganizationOverRideRight
+SELECT @RightId = RightId
+FROM [Security].[Right]
+WHERE RightName = 'EmployeeAccesstoManageSettingsTemplates'
+SELECT @PartyId = O.PartyId
+FROM [Enterprise].[Organization] O
+    INNER JOIN [Enterprise].[Party] P ON P.PartyId = O.PartyId
+WHERE p.RealPageId = '0D018E46-C20E-477D-ADED-4E5A35FB8F99'
+IF NOT EXISTS (SELECT Top 1 1 FROM [Security].[OrganizationOverRideRight]  WHERE RightId = @RightId AND OrgPartyId = @PartyId)
+BEGIN
+	INSERT INTO [Security].[OrganizationOverRideRight]
+           ([RightId]
+           ,[OrgPartyId]
+           ,[VisibilityStatusId]
+           ,[CreatedBy]
+           ,[CreatedDate]) 
+           VALUES	(@RightId, @PartyId, 9, @CreatedById, @Now)
+END
+GO
+
+
