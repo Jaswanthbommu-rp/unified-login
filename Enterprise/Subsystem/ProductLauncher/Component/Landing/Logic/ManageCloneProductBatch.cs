@@ -215,8 +215,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 						}
 						propertyGroupResponse = manageProductrum.GetPropertyGroups(createUserPersonaId, personaId, null);
 						var regionResponse = manageProductrum.GetRegions(createUserPersonaId, personaId, null);
+						var accesstypeResponse = manageProductrum.GetUMGlobalRoles(createUserPersonaId, personaId, null);
 						rolesResponse = manageProductrum.GetRoles(createUserPersonaId, personaId, null);
-						productListToCreate.Add(CreateRumProductBatchRecord(propertiesResponse, propertyGroupResponse, regionResponse, rolesResponse, usePrimaryProperties));
+						productListToCreate.Add(CreateRumProductBatchRecord(propertiesResponse, propertyGroupResponse, regionResponse, rolesResponse, accesstypeResponse, usePrimaryProperties));
 					}
 					else if (product.ProductId == (int)ProductEnum.SelfProvisioningPortal)
 					{
@@ -972,7 +973,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			return productBatchList;
 		}
 
-		private ProductBatch CreateRumProductBatchRecord(ListResponse propertiesResponse, ListResponse groupResponse, ListResponse regionResponse, ListResponse rolesResponse, bool usePrimaryProperties)
+		private ProductBatch CreateRumProductBatchRecord(ListResponse propertiesResponse, ListResponse groupResponse, ListResponse regionResponse, ListResponse rolesResponse, ListResponse accesstypeResponse, bool usePrimaryProperties)
 		{
 			List<string> propertyList = new List<string>();
 			List<string> propertyGroupList = new List<string>();
@@ -989,32 +990,53 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			}
 
 			IEnumerable<object> regionCollection = (IEnumerable<object>)regionResponse.Records;
-			foreach (object item in regionCollection)
+			if (regionResponse.Records != null)
 			{
-				if (((RumPropertyGroup)item).IsAssigned)
+				foreach (object item in regionCollection)
 				{
-					regionsList.Add(((RumPropertyGroup)item).Id.ToString());
+					if (((RumPropertyGroup)item).IsAssigned)
+					{
+						regionsList.Add(((RumPropertyGroup)item).Id.ToString());
+					}
+				}
+			}
+			
+
+			IEnumerable<object> groupCollection = (IEnumerable<object>)groupResponse.Records;
+			if (groupResponse.Records != null)
+			{
+				foreach (object item in groupCollection)
+				{
+					if (((RumPropertyGroup)item).IsAssigned)
+					{
+						propertyGroupList.Add(((RumPropertyGroup)item).Id.ToString());
+					}
 				}
 			}
 
-			IEnumerable<object> groupCollection = (IEnumerable<object>)groupResponse.Records;
-			foreach (object item in groupCollection)
+			IEnumerable<object> accessTypes = (IEnumerable<object>)accesstypeResponse.Records;
+			if (accesstypeResponse.Records != null && propertyGroupList.Count == 0)
 			{
-				if (((RumPropertyGroup)item).IsAssigned)
+				foreach (object item in accessTypes)
 				{
-					propertyGroupList.Add(((RumPropertyGroup)item).Id.ToString());
+					if (((ProductRole)item).IsAssigned)
+					{
+						propertyGroupList.Add(((ProductRole)item).ID.ToString());
+					}
 				}
 			}
 
 			IEnumerable<object> propertiesCollection = (IEnumerable<object>)propertiesResponse.Records;
-			foreach (object item in propertiesCollection)
+			if (propertiesResponse.Records != null)
 			{
-				if (((RumPropertyGroup)item).IsAssigned)
+				foreach (object item in propertiesCollection)
 				{
-					propertyList.Add(((RumPropertyGroup)item).Id.ToString());
+					if (((RumPropertyGroup)item).IsAssigned)
+					{
+						propertyList.Add(((RumPropertyGroup)item).Id.ToString());
+					}
 				}
 			}
-
 			// Below logic is applied when a user is being cloned from a user that has access to all properties. 
 			if (propertiesCollection != null && propertyGroupList.Count == 0)
 			{

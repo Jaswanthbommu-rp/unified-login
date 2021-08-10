@@ -52,20 +52,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
                 }
             }
 
-            //List<int> intUserRoles = userRoles.ConvertAll(x => Convert.ToInt32(x.Value));
-
-            //foreach (var role in intUserRoles)
-            //{
-            //    foreach (var companyRole in companyRoleList)
-            //    {
-            //        if (companyRole.RoleId == role)
-            //        {
-            //            userRights.AddRange(GetRights(companyRoleList, companyRole.RoleId, userClaim.PersonaId, userClaim.OrganizationPartyId));
-            //            break;
-            //        }
-            //    }
-            //}
-
             var distinctUserRights = userRights.Distinct().OrderBy(x => x).ToList();
 
             identity.AddClaims(distinctUserRights.Select(a => new Claim("right", a)).ToList());

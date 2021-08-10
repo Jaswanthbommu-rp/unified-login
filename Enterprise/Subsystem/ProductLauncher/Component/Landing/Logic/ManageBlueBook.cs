@@ -1726,33 +1726,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             //IManageBlueBook _manageBlueBook = new ManageBlueBook(_userClaims);
             List<UPFMPropertyInstance> _upfmPropertyInstance = new List<UPFMPropertyInstance>();
             IPropertyRepository propertyRepository = new PropertyRepository();
-            bool isPrimaryProperty = !(upfmProperty?.id == null);
-            bool isAllPropertiesSelected = upfmProperty?.id.Count > 1 ? upfmProperty.id[0] == "-1" : false;
+            bool isPrimaryProperty = upfmProperty?.id != null;
 
             /*
              * If All property selection is true, then upfmProperty == -1
              */
-            if (upfmProperty?.id == null || isAllPropertiesSelected)
+            var upfmPropertyAll = new UPFMProperty();
+            //nullInstanceResultFlag = upfmProperty?.id[0] == "-1";
+            var booksPropertyList = GetUPFMPropertyInstances(_defaultUserClaim.OrganizationRealPageGuid.ToString());
+            if (booksPropertyList != null)
             {
-                upfmProperty = new UPFMProperty();
-                //nullInstanceResultFlag = upfmProperty?.id[0] == "-1";
-                var booksPropertyList = GetUPFMPropertyInstances(_defaultUserClaim.OrganizationRealPageGuid.ToString());
-                if (booksPropertyList != null)
-                {
-                    _upfmPropertyInstance = propertyRepository.ListUPFMPropertyInstanceIdByInstanceIds(booksPropertyList);
-                    upfmProperty.id = _upfmPropertyInstance.Select(p => p.InstanceId.ToString()).ToList<string>();
-                }
+                _upfmPropertyInstance = propertyRepository.ListUPFMPropertyInstanceIdByInstanceIds(booksPropertyList);
+                upfmPropertyAll.id = _upfmPropertyInstance.Select(p => p.InstanceId.ToString()).ToList<string>();
             }
 
-            UPFMProperty primaryPropertyIds = new UPFMProperty
+            UPFMProperty primaryPropertyIds = new UPFMProperty();
+            if (upfmPropertyAll.id != null)
             {
-                id = upfmProperty.id.ConvertAll(d => d.ToLower())
-            };
+                primaryPropertyIds.id = upfmPropertyAll.id.ConvertAll(d => d.ToLower());
+            }
 
             if (productId == (int)ProductEnum.UnifiedPlatform)
             {
-                var upfmProeprtiesType = productResult.Records[0].GetType();
-                if (upfmProeprtiesType == typeof(ProductProperty))
+                var upfmPropertiesType = productResult.Records[0].GetType();
+                if (upfmPropertiesType == typeof(ProductProperty))
                 {
                     var upfmPropertyList = productResult.Records.Cast<ProductProperty>();
                     upfmPropertyList.Where(p => primaryPropertyIds.id.Contains(p.ID)).ToList().ForEach(c => c.IsAssigned = true);
@@ -1761,14 +1758,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
             else if (productType == "UPFM")
             {
-                var upfmProeprtiesType = productResult.Records[0].GetType();
-                if (upfmProeprtiesType == typeof(ProductProperty))
+                var upfmPropertiesType = productResult.Records[0].GetType();
+                if (upfmPropertiesType == typeof(ProductProperty))
                 {
                     var products = _productRepository.GetAllProducts();
                     string productcode = ProductEnumHelper.GetProductCodeByProductId(productId, products);
                     translatedData = GetTranslatePropertiesFromUPFMToProductv3(primaryPropertyIds, productcode);
                     var productPropertyType = productResult.Records[0].GetType();
-                    var foundProductPropertyIdList = new List<string>();
 
                     if (productPropertyType == typeof(ProductProperty))
                     {
@@ -1778,7 +1774,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.PropertyInstanceSourceId == property.InstanceId);
                             if (instanceExists != null)
                             {
-                                if (isPrimaryProperty)
+                                if (upfmProperty != null && (upfmProperty.id.Contains("-1") || upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
                                 {
                                     property.IsAssigned = true;
                                 }
@@ -1798,7 +1794,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 string productcode = ProductEnumHelper.GetProductCodeByProductId(productId, products);
                 translatedData = GetTranslatePropertiesFromUPFMToProductv3(primaryPropertyIds, productcode);
                 var productPropertyType = productResult.Records[0].GetType();
-                var foundProductPropertyIdList = new List<string>();
 
                 if (productPropertyType == typeof(ProductProperty))
                 {
@@ -1808,7 +1803,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.ID));
                         if (instanceExists != null)
                         {
-                            if (isPrimaryProperty)
+                            if (upfmProperty != null && (upfmProperty.id.Contains("-1") || upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
                             {
                                 property.IsAssigned = true;
                             }
@@ -1827,7 +1822,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.Id));
                         if (instanceExists != null)
                         {
-                            if (isPrimaryProperty)
+                            if (upfmProperty != null && (upfmProperty.id.Contains("-1") || upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
                             {
                                 property.IsAssigned = true;
                             }
@@ -1846,7 +1841,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.ID));
                         if (instanceExists != null)
                         {
-                            if (isPrimaryProperty)
+                            if (upfmProperty != null && (upfmProperty.id.Contains("-1") || upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
                             {
                                 property.IsAssigned = true;
                             }
@@ -1865,7 +1860,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.GetPropertyId.ToString()));
                         if (instanceExists != null)
                         {
-                            if (isPrimaryProperty)
+                            if (upfmProperty != null && (upfmProperty.id.Contains("-1") || upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
                             {
                                 property.IsAssigned = true;
                             }
@@ -1884,7 +1879,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.Id.ToString()));
                         if (instanceExists != null)
                         {
-                            if (isPrimaryProperty)
+                            if (upfmProperty != null && (upfmProperty.id.Contains("-1") || upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
                             {
                                 property.IsAssigned = true;
                             }
@@ -1903,7 +1898,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.GetPropertyId));
                         if (instanceExists != null)
                         {
-                            if (isPrimaryProperty)
+                            if (upfmProperty != null && (upfmProperty.id.Contains("-1") || upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
                             {
                                 property.IsAssigned = true;
                             }
@@ -1922,7 +1917,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.ID));
                         if (instanceExists != null)
                         {
-                            if (isPrimaryProperty)
+                            if (upfmProperty != null && (upfmProperty.id.Contains("-1") || upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
                             {
                                 property.IsAssigned = true;
                             }

@@ -1476,16 +1476,16 @@ FROM Ident.UserLogin
 WHERE LoginName LIKE 'realpagead@%'; 
 
 
-IF NOT EXISTS (SELECT 1 FROM [Security].[Right] WHERE RightName = 'SettingsInternalAdministrator')
+IF NOT EXISTS (SELECT 1 FROM [Security].[Right] WHERE RightName = 'InternalAdminaccessToUnifiedSettings')
 BEGIN
 	INSERT INTO [Security].[Right](	RightName,Description, Value,StatusTypeId,VisibilityStatusId,ProductId,TargetProductId,	CreatedBy,CreatedDate)
-    VALUES ('SettingsInternalAdministrator', 'Settings Internal Administrator','Settings Internal Administrator', 13,10, 3, 56, @CreatedById, @Now)
+    VALUES ('InternalAdminaccessToUnifiedSettings', 'Internal Admin Access to Unified Settings','Internal Admin Access to Unified Settings', 13,10, 3, 56, @CreatedById, @Now)
 END
 
 --OrganizationOverRideRight
 SELECT @RightId = RightId
 FROM [Security].[Right]
-WHERE RightName = 'SettingsInternalAdministrator'
+WHERE RightName = 'InternalAdminaccessToUnifiedSettings'
 
 SELECT @PartyId = O.PartyId
 FROM [Enterprise].[Organization] O
@@ -1540,8 +1540,6 @@ BEGIN
 	INSERT INTO Security.RoleRight(RoleId, RightId, CreatedBy, CreatedDate)
 	VALUES(@PropertyManagerRoleId, @RightId, @UserId, GETDATE())
 END
-GO
-
 GO
 
 DECLARE @UserId bigint
@@ -1671,14 +1669,6 @@ BEGIN
 	SELECT C.ClientId, c1.ClaimId FROM Auth.Clients C CROSS JOIN Auth.Claim c1 WHERE c.ClientCode = 'IntegrationMarketplace' AND c1.ClaimName = 'rolealias~im-role' and c1.ProductId = 39 
 END
 
-GO
-
---Renaming Right from Settings Internal Administrator to  Internal Adminaccess To UnifiedSettings
-IF  EXISTS (SELECT TOP(1) 1 FROM Security.[Right] WHERE RightName = 'SettingsInternalAdministrator')
-BEGIN
-	UPDATE Security.[Right] Set RightName ='InternalAdminaccessToUnifiedSettings',Value = 'Internal Admin Access to Unified Settings'
-	                           ,Description = 'Internal Admin Access to Unified Settings' where RightName = 'SettingsInternalAdministrator'
-END
 GO
 
 -- Add LockOnProductAccessRight product settings

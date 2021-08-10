@@ -288,5 +288,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="personaId"></param>
         /// <returns></returns>
         List<PersonaProductProperty> GetPersonaProductPrimaryProperties(long personaId);
+
+        /// <summary>
+        /// GetEnterpriseRoleUpdatedProductsByRoleTemplateId
+        /// </summary>
+        /// <param name="roleTemplateId"></param>       
+        /// <returns></returns>
+        List<int> GetEnterpriseRoleUpdatedProductsByRoleTemplateId(int roleTemplateId);
+
+        /// <summary>
+        /// GetEnterpriseRoleDeletedProductsByRoleTemplateId
+        /// </summary>
+        /// <param name="roleTemplateId"></param>
+       
+        /// <returns></returns>
+        List<int> GetEnterpriseRoleDeletedProductsByRoleTemplateId(int roleTemplateId);
     }
 }
