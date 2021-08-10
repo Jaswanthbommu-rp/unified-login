@@ -37,5 +37,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterp
 		/// RemovedRoleTemplateProducts
 		/// </summary>
 		public List<RemovedRoleTemplateProducts> RemovedRoleTemplateProducts { get; set; }
+		public List<string> ProductsError { get; set; }
 	}
 }

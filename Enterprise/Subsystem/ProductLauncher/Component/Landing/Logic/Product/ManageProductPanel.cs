@@ -247,6 +247,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             RequestParameter datafilter = new RequestParameter();           
             RoleTemplateProductRoleMapping enterpriseRoleTemplate = new RoleTemplateProductRoleMapping();
             List<RoleTemplateProduct> userProducts = new List<RoleTemplateProduct>();
+            List<string> productError = new List<string>();
             try
             {
                 //First get unified platform product roles
@@ -326,11 +327,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                                 userProducts.Add(userProduct);
                             }                                                  
                         }
+                        else {
+                            productError.Add(product.Name);
+						}
                     }                    
                 }
+               
                 enterpriseRoleTemplate.PartyId = partyId;
                 enterpriseRoleTemplate.RoleTemplateId = 0;
                 enterpriseRoleTemplate.Products = userProducts;
+                enterpriseRoleTemplate.ProductsError = productError;
 
             }
             catch (Exception ex)
