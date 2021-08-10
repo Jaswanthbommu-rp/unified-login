@@ -499,40 +499,53 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     return result;
                 }
 
-                //int companyInstanceSourceId = 279; // to get sample groups 
-                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
-                if (companyInstanceSourceId == 0)
-                {
-                    WriteToErrorLog(
-                        $"ManageProductRum.GetUMGlobalRoles.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
-                    return new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
-                }
-
                 // get roles from rum product
                 List<ProductRole> globalRoles = new List<ProductRole>();
-                globalRoles.Add(new ProductRole
+                if (!_editorPersona.Organization.RealPageId.Equals(_contractCompanyRealPageId))
                 {
-                    ID ="PR",
-                    Name = "Select Properties",
-                    Description = "Select Properties",
-                    IsAssigned = false
-                });
+                    //int companyInstanceSourceId = 279; // to get sample groups 
+                    int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
+                    if (companyInstanceSourceId == 0)
+                    {
+                        WriteToErrorLog(
+                            $"ManageProductRum.GetUMGlobalRoles.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
+                        return new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
+                    }
 
-                globalRoles.Add(new ProductRole
-                {
-                    ID = "GM",
-                    Name = "Groups",
-                    Description = "Groups",
-                    IsAssigned = false
-                });
+                    globalRoles.Add(new ProductRole
+                    {
+                        ID = "PR",
+                        Name = "Select Properties",
+                        Description = "Select Properties",
+                        IsAssigned = false
+                    });
 
-                globalRoles.Add(new ProductRole
+                    globalRoles.Add(new ProductRole
+                    {
+                        ID = "GM",
+                        Name = "Groups",
+                        Description = "Groups",
+                        IsAssigned = false
+                    });
+
+                    globalRoles.Add(new ProductRole
+                    {
+                        ID = "PM",
+                        Name = "All Properties",
+                        Description = "All Properties",
+                        IsAssigned = false
+                    });
+                }
+                else
                 {
-                    ID = "PM",
-                    Name = "All Properties",
-                    Description = "All Properties",
-                    IsAssigned = false
-                });
+                    globalRoles.Add(new ProductRole
+                    {
+                        ID = "SU",
+                        Name = "Subcontractor",
+                        Description = "Subcontractor",
+                        IsAssigned = false
+                    });
+                }
 
                 if (userPersonaId != 0 && !string.IsNullOrEmpty(_productUserId)) // Called during updating Existing User
                 {
@@ -726,7 +739,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     return listResponse.ErrorReason;
                 }
 
-                
+
                 var persona = _managePersona.GetPersona(userPersonaId);
                 var realPageId = persona.RealPageId;
                 var person = _managePerson.GetPerson(realPageId);
@@ -761,58 +774,69 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 var productLoginName = string.IsNullOrEmpty(_productUsername) ? userLogin.LoginName : _productUsername;
+                int companyId = 0;
 
                 CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
 
-                if (string.IsNullOrEmpty(company.CompanyInstanceSourceId))
+                if (!_editorPersona.Organization.RealPageId.Equals(_contractCompanyRealPageId))
                 {
-                    WriteToErrorLog($"ManageProductRum.ManageRumUser- Error for user with editorPersona id - {editorPersonaId} Error - Company not found.");
-                    return "Company Setup Error: Please Contact Support.";
-                }
 
-                int companyId = Convert.ToInt32(company.CompanyInstanceSourceId);
+                    if (string.IsNullOrEmpty(company.CompanyInstanceSourceId))
+                    {
+                        WriteToErrorLog($"ManageProductRum.ManageRumUser- Error for user with editorPersona id - {editorPersonaId} Error - Company not found.");
+                        return "Company Setup Error: Please Contact Support.";
+                    }
 
-                // super user
-                if (IsSuperUser(userPersonaId))
-                {
-                    WriteToDiagnosticLog($"ManageProductRum.ManageRumUser - new user is Super user with editorPersona id - {editorPersonaId}.");
-                    propertiesList.Add(companyId);
-                    userAccessType = UserType.PortfolioManager.ToString();
-                    var SysAdminRoleForRUM = _productInternalSettingList.FirstOrDefault(item => item.Name.Equals("UtilitySuperUser", StringComparison.OrdinalIgnoreCase));
-                    userPropertyRegionRole.RoleList.Add(SysAdminRoleForRUM.Value);
+                    companyId = Convert.ToInt32(company.CompanyInstanceSourceId);
+
+                    // super user
+                    if (IsSuperUser(userPersonaId))
+                    {
+                        WriteToDiagnosticLog($"ManageProductRum.ManageRumUser - new user is Super user with editorPersona id - {editorPersonaId}.");
+                        propertiesList.Add(companyId);
+                        userAccessType = UserType.PortfolioManager.ToString();
+                        var SysAdminRoleForRUM = _productInternalSettingList.FirstOrDefault(item => item.Name.Equals("UtilitySuperUser", StringComparison.OrdinalIgnoreCase));
+                        userPropertyRegionRole.RoleList.Add(SysAdminRoleForRUM.Value);
+                    }
+                    else
+                    {
+
+                        if (userPropertyRegionRole.PropertyGroupList.Count > 0)
+                        {
+                            userAccessType = UserType.GroupManager.ToString();
+
+                            foreach (var group in userPropertyRegionRole.PropertyGroupList)
+                            {
+                                propertiesList.Add(Convert.ToInt32(group));
+                            }
+                        }
+
+                        if (userPropertyRegionRole.PropertyList.Count > 0)
+                        {
+                            if (userPropertyRegionRole.PropertyList[0].ToUpper() != "ALL")
+                            {
+                                userAccessType = UserType.PropertyManager.ToString();
+
+                                foreach (var property in userPropertyRegionRole.PropertyList)
+                                {
+                                    propertiesList.Add(Convert.ToInt32(property));
+                                }
+                            }
+                            else
+                            {
+                                propertiesList.Add(companyId);
+                                userAccessType = UserType.PortfolioManager.ToString();
+                            }
+                        }
+                    }
                 }
                 else
                 {
-                    
                     if (userPropertyRegionRole.PropertyGroupList.Count > 0)
                     {
-                        userAccessType = UserType.GroupManager.ToString();
-
-                        foreach (var group in userPropertyRegionRole.PropertyGroupList)
-                        {
-                            propertiesList.Add(Convert.ToInt32(group));
-                        }
-                    }
-
-                    if (userPropertyRegionRole.PropertyList.Count > 0)
-                    {
-						if (userPropertyRegionRole.PropertyList[0].ToUpper() != "ALL")
-						{
-							userAccessType = UserType.PropertyManager.ToString();
-
-							foreach (var property in userPropertyRegionRole.PropertyList)
-							{
-								propertiesList.Add(Convert.ToInt32(property));
-							}
-						}
-						else
-						{
-							propertiesList.Add(companyId);
-							userAccessType = UserType.PortfolioManager.ToString();
-						}
+                        userAccessType = UserType.SubContractor.ToString();
                     }
                 }
-
 
                 RumUser rumUser = null;
 
@@ -861,25 +885,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     WriteToDiagnosticLog($"ManageProductRum.ManageOnSiteUse - trying to CREATE user with editorPersona id - {editorPersonaId}.");
                     var insertResult = InsertRumProductUser(userPersonaId, editorPersonaId, productLoginName, rumUser, companyId);
 
-                    // add activity log
-                    if (string.IsNullOrEmpty(insertResult))
-                    {
-                        // add activity log
-                        WriteCreateUserActivityLog(editorPersonaId, person, userLogin);
-                    }
                     return insertResult;
                 }
-				
-				WriteToDiagnosticLog($"ManageProductRum.ManageRumUser - trying to UPDATE user with editorPersona id - {editorPersonaId}.");
-				var updateResult = UpdateRumProductUser(userPersonaId, editorPersonaId, rumUser);
 
-				if (string.IsNullOrEmpty(updateResult))
-				{
-					// add activity log
-					WriteUpdateUserActivityLog(editorPersonaId, person, userLogin);
-				}
-				return updateResult;				
-                
+                WriteToDiagnosticLog($"ManageProductRum.ManageRumUser - trying to UPDATE user with editorPersona id - {editorPersonaId}.");
+                var updateResult = UpdateRumProductUser(userPersonaId, editorPersonaId, rumUser);
+
+                return updateResult;
+
             }
             catch (Exception ex)
             {
@@ -1159,8 +1172,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private IList<Role> GetRumRoles(long companyInstanceSourceId)
         {
             IList<Role> roles = new List<Role>();
+            string baseUrlAndQuery = null;
 
-            string baseUrlAndQuery = $"{_apiEndPoint}/roleoptions/get?companyId={companyInstanceSourceId}";
+            if (!_editorPersona.Organization.RealPageId.Equals(_contractCompanyRealPageId))
+            {
+                baseUrlAndQuery = $"{_apiEndPoint}/roleoptions/get?companyId={companyInstanceSourceId}";
+            }
+            else
+            {
+                baseUrlAndQuery = $"{_apiEndPoint}/roleoptions/GetRolesForType?userType=su";
+            }
             var result = GetResultFromApi<IList<dynamic>>(_accessToken, baseUrlAndQuery, false);
 
             WriteToDiagnosticLog($"ManageProductRum.GetRumRoles - Base Uri - {baseUrlAndQuery}");
@@ -1171,6 +1192,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     if (!x.Item.InternalOnly.Value)
                     {
                         roles.Add(new Role { Id = x.Index + 101, Description = x.Item.RoleDescription.Value, Name = x.Item.RoleName.Value, IsAssigned = false });
+                    }
+                    else
+                    {
+                        roles.Add(new Role { Id = x.Item.RoleId, Description = x.Item.RoleDescription.Value, Name = x.Item.RoleName.Value, IsAssigned = false });
                     }
                 }
             }

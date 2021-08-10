@@ -212,7 +212,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         protected IManageContactMechanism _manageContactMechanism = new ManageContactMechanism();
 
         protected GbProductMap _productDetails = new GbProductMap();
-        
+
+        public static readonly Guid _contractCompanyRealPageId = new Guid("10F5A427-4636-4F47-840E-6212BD842BC0");
+
         /// <summary>
         /// Default constructor
         /// </summary>

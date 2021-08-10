@@ -93,5 +93,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         /// Property Manager
         /// </summary>
         public const string PropertyManager = "PR";
+        /// <summary>
+        /// SubContractor
+        /// </summary>
+        public const string SubContractor = "SU";
     }
 }
