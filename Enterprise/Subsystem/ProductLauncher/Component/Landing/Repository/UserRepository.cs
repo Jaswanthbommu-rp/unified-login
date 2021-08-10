@@ -2589,7 +2589,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             {
                                 foreach (var item in result)
                                 {
-                                    Guid realPageEmployeeAccessId = new Guid(item.PersonRealPageId);
+                                    Guid realPageEmployeeAccessId = new Guid(Convert.ToString(item.PersonRealPageId));
                                     editorPersona = managePersona.GetFirstAvailablePersonaByCompany(realPageEmployeeAccessId, item.PartyId);
                                 }
 
