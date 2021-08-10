@@ -1681,7 +1681,6 @@ END
 GO
 
 -- Add the Manage Relate 24/7 Product Access right
-
  DECLARE @RightValue nvarchar(200),
 		 @UserId bigint,
 		 @Now datetime = GETDATE(),
@@ -1693,7 +1692,6 @@ GO
 		 @OrgVisibilityStatusId INT = 9,
 		 @RightVisibilityStatusId INT =9,
 		 @StatusTypeId int=13;
-
 SELECT	@UserId = UserId
 	FROM	Ident.UserLogin
 	WHERE	LoginName LIKE 'realpagead@%'
@@ -1702,20 +1700,218 @@ BEGIN
 		INSERT INTO Security.[Right] (RightName,Description,Value,StatusTypeId,VisibilityStatusId,ProductId,TargetProductId,CreatedBy,CreatedDate)
 		VALUES('ManageRelate247ProductAccess','Manage Relate 24/7 Product Access','Manage Relate 24/7 Product Access',@StatusTypeId,@RightVisibilityStatusId,@ProductId ,@TargetProductId,@UserId,@Now);
 END
-
 SELECT @RoleId = RoleId from [Security].[Role] where RoleName='User Administrator';
 SELECT @RightId =  RightId from [Security].[Right] where [Value] = 'Manage Relate 24/7 Product Access';
-
 IF NOT EXISTS(SELECT TOP 1 1 FROM [Security].[RoleRight] WHERE [RightId]= @RightId)
 BEGIN
 	INSERT INTO Security.RoleRight (RoleId,RightId,CreatedBy,CreatedDate) 
 	VALUES(@RoleId,@RightId,@UserId,@Now);
 END
-
 GO
-
 UPDATE Auth.Claim
 SET ClaimName = 'roleid'
 WHERE ClaimName = 'role' AND productid = 3
-
 GO
+
+--Roles
+declare @productid bigint, @UserId bigint
+select @productid = productid from Enterprise.Product where Name='Unified Platform'
+SELECT	@UserId = UserId FROM	Ident.UserLogin WHERE	LoginName LIKE 'realpagead@%'
+if not exists(select 1  from Security.Role where RoleName='Contributor to CIMPL property-level' and ProductId =@productid)
+begin 
+insert into Security.Role(RoleName,ShortName,Description,RoleTypeID,OrgPartyID,ProductId,CreatedBy,CreatedDate)
+select 'Contributor to CIMPL property-level','Contributor to CIMPL property-level','Contributor to CIMPL property-level',1,NULL,@productid, @UserId, getUTCDate()
+end
+if not exists(select 1  from Security.Role where RoleName='Manage ALL Implementations in CIMPL' and ProductId =@productid)
+begin 
+insert into Security.Role(RoleName,ShortName,Description,RoleTypeID,OrgPartyID,ProductId,CreatedBy,CreatedDate)
+select 'Manage ALL Implementations in CIMPL','Manage ALL Implementations in CIMPL','Manage ALL Implementations in CIMPL',1,NULL,@productid, @UserId, getUTCDate()
+end
+if not exists(select 1  from Security.Role where RoleName='Manage Unified Settings property-level' and ProductId =@productid)
+begin 
+insert into Security.Role(RoleName,ShortName,Description,RoleTypeID,OrgPartyID,ProductId,CreatedBy,CreatedDate)
+select 'Manage Unified Settings property-level','Manage Unified Settings property-level','Manage Unified Settings property-level',1,NULL,@productid, @UserId, getUTCDate()
+end
+if not exists(select 1  from Security.Role where RoleName='Manage ALL Unified Settings' and ProductId =@productid)
+begin 
+insert into Security.Role(RoleName,ShortName,Description,RoleTypeID,OrgPartyID,ProductId,CreatedBy,CreatedDate)
+select 'Manage ALL Unified Settings','Manage ALL Unified Settings','Manage ALL Unified Settings',1,NULL,@productid, @UserId, getUTCDate()
+end
+if not exists(select 1  from Security.Role where RoleName='Standard Reporting' and ProductId =@productid)
+begin 
+insert into Security.Role(RoleName,ShortName,Description,RoleTypeID,OrgPartyID,ProductId,CreatedBy,CreatedDate)
+select 'Standard Reporting','Standard Reporting','Standard Reporting',1,NULL,@productid, @UserId, getUTCDate()
+end
+if not exists(select 1  from Security.Role where RoleName='Manage ALL Reporting' and ProductId =@productid)
+begin 
+insert into Security.Role(RoleName,ShortName,Description,RoleTypeID,OrgPartyID,ProductId,CreatedBy,CreatedDate)
+select 'Manage ALL Reporting','Manage ALL Reporting','Manage ALL Reporting',1,NULL,@productid, @UserId, getUTCDate()
+end
+
+--Link rights to roles above
+declare @roleId int
+declare @rightId int
+
+select @roleId = RoleId  from Security.Role where RoleName='Contributor to CIMPL property-level' and ProductId = @productid
+
+select @rightId = RightId from Security.[Right] WHERE Value = 'Ability to Answer Questions for CIMPL'
+if not exists(select 1 from Security.RoleRight where RoleId=@roleId and RightId = @rightId)
+begin
+insert into Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+select @roleId,@rightId,@UserId,getUTCDate()
+end
+
+select @rightId = RightId from Security.[Right] WHERE Value = 'Access to Submit questionnaires within CIMPL'
+if not exists(select 1 from Security.RoleRight where RoleId=@roleId and RightId = @rightId)
+begin
+insert into Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+select @roleId,@rightId,@UserId,getUTCDate()
+end
+
+select @rightId = RightId from Security.[Right] WHERE Value = 'View CIMPL Implementation Questions'
+if not exists(select 1 from Security.RoleRight where RoleId=@roleId and RightId = @rightId)
+begin
+insert into Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+select @roleId,@rightId,@UserId,getUTCDate()
+end
+
+
+select @roleId = RoleId  from Security.Role where RoleName='Manage ALL Implementations in CIMPL' and ProductId = @productid
+
+select @rightId = RightId from Security.[Right] WHERE Value = 'Ability to Answer Questions for CIMPL'
+if not exists(select 1 from Security.RoleRight where RoleId=@roleId and RightId = @rightId)
+begin
+insert into Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+select @roleId,@rightId,@UserId,getUTCDate()
+end
+
+select @rightId = RightId from Security.[Right] WHERE Value = 'Access to Company-level questionnaires and Portfolio Views in CIMPL '
+if not exists(select 1 from Security.RoleRight where RoleId=@roleId and RightId = @rightId)
+begin
+insert into Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+select @roleId,@rightId,@UserId,getUTCDate()
+end
+
+select @rightId = RightId from Security.[Right] WHERE Value = 'Access to Submit questionnaires within CIMPL '
+if not exists(select 1 from Security.RoleRight where RoleId=@roleId and RightId = @rightId)
+begin
+insert into Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+select @roleId,@rightId,@UserId,getUTCDate()
+end
+
+select @rightId = RightId from Security.[Right] WHERE Value = 'Manage CIMPL Templates '
+if not exists(select 1 from Security.RoleRight where RoleId=@roleId and RightId = @rightId)
+begin
+insert into Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+select @roleId,@rightId,@UserId,getUTCDate()
+end
+
+select @rightId = RightId from Security.[Right] WHERE Value = 'Manage Personally Identifiable Information (PII) in CIMPL '
+if not exists(select 1 from Security.RoleRight where RoleId=@roleId and RightId = @rightId)
+begin
+insert into Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+select @roleId,@rightId,@UserId,getUTCDate()
+end
+
+select @rightId = RightId from Security.[Right] WHERE Value = 'View CIMPL Implementation Questions'
+if not exists(select 1 from Security.RoleRight where RoleId=@roleId and RightId = @rightId)
+begin
+insert into Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+select @roleId,@rightId,@UserId,getUTCDate()
+end
+
+
+select @roleId = RoleId  from Security.Role where RoleName='Manage Unified Settings property-level' and ProductId = @productid
+
+select @rightId = RightId from Security.[Right] WHERE Value = 'Access to Unified Settings'
+if not exists(select 1 from Security.RoleRight where RoleId=@roleId and RightId = @rightId)
+begin
+insert into Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+select @roleId,@rightId,@UserId,getUTCDate()
+end
+
+select @rightId = RightId from Security.[Right] WHERE Value = 'View property-level settings'
+if not exists(select 1 from Security.RoleRight where RoleId=@roleId and RightId = @rightId)
+begin
+insert into Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+select @roleId,@rightId,@UserId,getUTCDate()
+end
+
+select @rightId = RightId from Security.[Right] WHERE Value = 'Manage property-level settings'
+if not exists(select 1 from Security.RoleRight where RoleId=@roleId and RightId = @rightId)
+begin
+insert into Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+select @roleId,@rightId,@UserId,getUTCDate()
+end
+
+
+select @roleId = RoleId  from Security.Role where RoleName='Manage ALL Unified Settings' and ProductId = @productid
+
+select @rightId = RightId from Security.[Right] WHERE Value = 'Access to Unified Settings'
+if not exists(select 1 from Security.RoleRight where RoleId=@roleId and RightId = @rightId)
+begin
+insert into Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+select @roleId,@rightId,@UserId,getUTCDate()
+end
+
+select @rightId = RightId from Security.[Right] WHERE Value = 'View property-level settings'
+if not exists(select 1 from Security.RoleRight where RoleId=@roleId and RightId = @rightId)
+begin
+insert into Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+select @roleId,@rightId,@UserId,getUTCDate()
+end
+
+select @rightId = RightId from Security.[Right] WHERE Value = 'Manage property-level settings'
+if not exists(select 1 from Security.RoleRight where RoleId=@roleId and RightId = @rightId)
+begin
+insert into Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+select @roleId,@rightId,@UserId,getUTCDate()
+end
+
+select @rightId = RightId from Security.[Right] WHERE Value = 'View all company-level settings & templates'
+if not exists(select 1 from Security.RoleRight where RoleId=@roleId and RightId = @rightId)
+begin
+insert into Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+select @roleId,@rightId,@UserId,getUTCDate()
+end
+
+select @rightId = RightId from Security.[Right] WHERE Value = 'Manage company-level settings'
+if not exists(select 1 from Security.RoleRight where RoleId=@roleId and RightId = @rightId)
+begin
+insert into Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+select @roleId,@rightId,@UserId,getUTCDate()
+end
+
+select @rightId = RightId from Security.[Right] WHERE Value = 'Manage Settings Templates'
+if not exists(select 1 from Security.RoleRight where RoleId=@roleId and RightId = @rightId)
+begin
+insert into Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+select @roleId,@rightId,@UserId,getUTCDate()
+end
+
+
+select @roleId = RoleId  from Security.Role where RoleName='Standard Reporting' and ProductId = @productid
+
+select @rightId = RightId from Security.[Right] WHERE Value = 'Access to Unified Reporting'
+if not exists(select 1 from Security.RoleRight where RoleId=@roleId and RightId = @rightId)
+begin
+insert into Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+select @roleId,@rightId,@UserId,getUTCDate()
+end
+
+
+select @roleId = RoleId  from Security.Role where RoleName='Manage ALL Reporting' and ProductId = @productid
+
+select @rightId = RightId from Security.[Right] WHERE Value = 'Access to Unified Reporting'
+if not exists(select 1 from Security.RoleRight where RoleId=@roleId and RightId = @rightId)
+begin
+insert into Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+select @roleId,@rightId,@UserId,getUTCDate()
+end
+
+select @rightId = RightId from Security.[Right] WHERE Value = 'Manage company-level reporting'
+if not exists(select 1 from Security.RoleRight where RoleId=@roleId and RightId = @rightId)
+begin
+insert into Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+select @roleId,@rightId,@UserId,getUTCDate()
+end
