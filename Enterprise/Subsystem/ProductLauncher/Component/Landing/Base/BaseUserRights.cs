@@ -33,16 +33,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
 
             // get user roles
             List<Claim> userRoles = identity.Claims.Where(p => p.Type.Equals("roleid", StringComparison.OrdinalIgnoreCase) || p.Type.Equals("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", StringComparison.OrdinalIgnoreCase)).ToList();
-            List<int> intUserRoles = userRoles.ConvertAll(x => Convert.ToInt32(x.Value));
 
-            foreach (var role in intUserRoles)
+            foreach (var item in userRoles)
             {
-                foreach (var companyRole in companyRoleList)
+                int roleId;
+                bool converted = int.TryParse(item.Value, out roleId);
+                if (converted) 
                 {
-                    if (companyRole.RoleId == role)
+                    foreach (var companyRole in companyRoleList)
                     {
-                        userRights.AddRange(GetRights(companyRoleList, companyRole.RoleId, userClaim.PersonaId, userClaim.OrganizationPartyId));
-                        break;
+                        if (companyRole.RoleId == roleId)
+                        {
+                            userRights.AddRange(GetRights(companyRoleList, companyRole.RoleId, userClaim.PersonaId, userClaim.OrganizationPartyId));
+                            break;
+                        }
                     }
                 }
             }
