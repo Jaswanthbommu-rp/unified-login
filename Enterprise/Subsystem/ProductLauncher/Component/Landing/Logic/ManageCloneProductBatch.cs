@@ -1027,7 +1027,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			}
 
 			IEnumerable<object> propertiesCollection = (IEnumerable<object>)propertiesResponse.Records;
-			if (propertiesResponse.Records.Count > 0)
+			if (propertiesResponse.Records != null)
 			{
 				foreach (object item in propertiesCollection)
 				{
