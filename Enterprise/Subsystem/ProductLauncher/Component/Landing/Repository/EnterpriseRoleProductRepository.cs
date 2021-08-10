@@ -41,7 +41,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 			{
 				foreach (var prod in userProductList)
 				{
+					int statusType = prod.InputJson.IsAssigned ? (int)BatchProcessType.EnterpriseRoleCreateUpdateProductUser : (int)BatchProcessType.CreateUpdateProductUser;
+
 					string inputJson = JsonConvert.SerializeObject(prod.InputJson);
+					
 					if (prod.ProductId == (int)ProductEnum.OneSite && isOnesiteMix)
 					{
 						inputJson = onesiteWithOherProductsJson;
@@ -56,7 +59,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 						RetryCount = 0,
 						InputJson = inputJson,
 						CorrelationId = Guid.NewGuid().ToString(),
-						BatchProcessTypeId = BatchProcessType.CreateUpdateProductUser,
+						BatchProcessTypeId = statusType,
 						BatchProcessorGroupId = batchGroup.BatchProcessorGroupId
 					};
 

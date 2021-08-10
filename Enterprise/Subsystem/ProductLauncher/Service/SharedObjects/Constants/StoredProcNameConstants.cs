@@ -435,6 +435,8 @@
         //Enterpriserole
         public const string SP_GetRoleTemplateProductRoleMappings = "Security.GetRoleTemplateProductRolesMappings";
         public const string SP_GetEnterpriseRoleProductsByOrganization = "Security.GetEnterpriseRoleProductsByOrganization";
+        public const string SP_GetEnterpriseRoleUpdatedProductsByRoleTemplateId = "Security.GetEnterpriseRoleUpdatedProductsByRoleTemplateId";
+        public const string SP_GetEnterpriseRoleDeletedProductsByRoleTemplateId = "Security.GetEnterpriseRoleDeletedProductsByRoleTemplateId";
         public const string SP_GetUserRoleTemplate = "Security.GetUserRoleTemplate";
     }
 

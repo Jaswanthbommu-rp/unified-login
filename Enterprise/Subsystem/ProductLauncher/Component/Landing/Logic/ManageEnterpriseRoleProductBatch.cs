@@ -66,6 +66,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			var editorPersona = _managePersona.GetPersona(batch.EditorUserPersonaId);
 			var userPersona = _managePersona.GetPersona(batch.SubjectUserPersonaId);
 			_userClaim.UserRealPageGuid = editorPersona.RealPageId;
+			_userClaim.OrganizationRealPageGuid = editorPersona.Organization.RealPageId;
 			_userClaim.Rights = GetPersonaRoleRights(batch.EditorUserPersonaId, editorPersona.OrganizationPartyId);
 
 			IPersonaRepository personaRepository = new PersonaRepository();
@@ -75,7 +76,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			IList<Organization> organizationList = userLoginRepository.ListOrganizationByEnterpriseUserId(userPersona.RealPageId, null);
 			var personaOrganization = organizationList.FirstOrDefault(i => i.PartyId == userPersona.OrganizationPartyId);
 			var personaProductSettings = personaRepository.GetPersonaProductSettings(batch.SubjectUserPersonaId);
-			var roleTemplateProducts = _productRepository.GetEnterpriseRoleProductsByOrganization(batch.EnterpriseRoleTemplateId, editorPersona.Organization.RealPageId);
+			var roleTemplateProducts = _productRepository.GetEnterpriseRoleUpdatedProductsByRoleTemplateId(batch.EnterpriseRoleTemplateId);
+			var roleTemplateDeletedProducts = _productRepository.GetEnterpriseRoleDeletedProductsByRoleTemplateId(batch.EnterpriseRoleTemplateId);
 			var roleTemplateProductRole = _productRepository.GetRoleTemplateProductRoleMapping(batch.EnterpriseRoleTemplateId, editorPersona.OrganizationPartyId);
 			bool isExternalUser = personaOrganization.RelationshipType.Equals("User Type", StringComparison.OrdinalIgnoreCase) && personaOrganization.RoleNameFrom.Equals("External User", StringComparison.OrdinalIgnoreCase);
 
@@ -282,13 +284,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			}
 			try
 			{
+				Dictionary<string, RolePropertyList> oneSiteAndOtherProducts = new Dictionary<string, RolePropertyList>();
+				bool isOnesiteMix = false;
 				if (productListToCreate?.Count > 0)
 				{
 					string btmessage = $"Enterprise role product batch update started to user - {batch.SubjectUserPersonaId} - product count {productListToCreate.Count}";
 					Log.Write(LogEventLevel.Debug, btmessage);
-
-					Dictionary<string, RolePropertyList> oneSiteAndOtherProducts = new Dictionary<string, RolePropertyList>();
-					bool isOnesiteMix = false;
+					
 					if (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.OneSite)
 						   && (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.Lead2Lease) || productListToCreate.Any(a => a.ProductId == (int)ProductEnum.SeniorLeadManagement)))
 					{
@@ -322,8 +324,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 							oneSiteAndOtherProducts.Add(ProductEnum.Lead2Lease.ToString(), pbSeniorLead.InputJson);
 							productListToCreate.Remove(pbSeniorLead);
 						}
+					}					
+				}
+				if (roleTemplateDeletedProducts?.Count > 0)
+				{
+					foreach (var product in roleTemplateDeletedProducts)
+					{
+						ProductBatch pb = new ProductBatch()
+						{
+							ProductId = product,
+							StatusTypeId = 5,
+							RetryCount = 0,
+							InputJson = new RolePropertyList() { PropertyList = new List<string>(), RoleList = new List<string>(), IsAssigned = false }
+						};
+						productListToCreate.Add(pb);
 					}
-
+				}
+				if (productListToCreate?.Count > 0)
+				{
 					int statusTypeId = (int)ProductBatchStatusType.Success;
 					bool isBatchCompleted = enterpriseRoleProductRepository.SaveProductBatch(batch.EditorUserPersonaId, batch.SubjectUserPersonaId, editorPersona.RealPageId, productListToCreate, JsonConvert.SerializeObject(oneSiteAndOtherProducts), isOnesiteMix);
 					if (!isBatchCompleted)

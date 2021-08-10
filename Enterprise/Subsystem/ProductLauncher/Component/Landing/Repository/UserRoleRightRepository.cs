@@ -119,6 +119,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
 
         /// <summary>
+        /// Get list of role ids for a given persona and product id
+        /// </summary>
+        /// <param name="userPersonaId">Persona ID</param>   
+        /// <param name="productId">Product ID</param>   
+        /// <returns>Role assigned to Persona</returns>
+        public List<long> GetRoleIdsByPersona(long userPersonaId, int productId)
+        {
+            List<long> roleids = new List<long>();
+            using (var repository = GetRepository())
+            {
+                var procName = StoredProcNameConstants.SP_ListRolesForProductsByPersonaId;
+
+                dynamic param = new
+                {
+                    PersonaID = userPersonaId,
+                    ProductID = productId
+                };
+                var userRoles = repository.GetMany<dynamic>(procName, param);
+
+                foreach (var id in userRoles)
+                {
+                    roleids.Add(Convert.ToInt64(id.RoleId));
+                }
+                return roleids;
+            }
+        }
+
+        /// <summary>
         /// Insert Role to User
         /// </summary>
         /// <param name="userPersonaId">User Persona ID</param>             
@@ -162,7 +190,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <returns></returns>
         public IList<UnifiedLoginRoleRights> GetPlatFormRoleRights(long partyId, IList<int> productIdList, int productId)
         {
-            Dictionary<int, UnifiedLoginRoleRights> userRoles = new Dictionary<int, UnifiedLoginRoleRights>();          
+            Dictionary<int, UnifiedLoginRoleRights> userRoles = new Dictionary<int, UnifiedLoginRoleRights>();
 
             if (productIdList.Count == 0)
             {
@@ -237,22 +265,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                       splitOn: "RoleId,RightId");
                 return userRoles.Values.ToList<UserRoleRights>();
             }
-        }        
+        }
 
         #region Private Methods
         private string getRoleRightsSchemaName()
         {
             RPObjectCache rpcache = new RPObjectCache();
-           
+
             var cacheKey = "getRoleRightsSchemaName_" + (int)ProductEnum.UnifiedPlatform;
             string schemaName = rpcache.GetFromCache<string>(cacheKey, 60, () =>
             {
                 var productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
-                return productInternalSettingList.FirstOrDefault(s => s.Name.Equals("RolesRightsSchemaName", StringComparison.OrdinalIgnoreCase))?.Value;            
+                return productInternalSettingList.FirstOrDefault(s => s.Name.Equals("RolesRightsSchemaName", StringComparison.OrdinalIgnoreCase))?.Value;
             });
 
             return schemaName;
-           
+
         }
         #endregion
     }

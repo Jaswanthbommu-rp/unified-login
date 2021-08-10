@@ -18,7 +18,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         public Organization OrganizationExternalUser { get; set; }
         public IUserLoginOnly UserLoginOnly { get; set; }
         public IList<UserOrganization> UserPersonaOrganizationList { get; set; }
-        public long ExistingRoleId { get; set; }
+        public List<long> ExistingRoleIds { get; set; }
         public OrganizationStatus CurrentPrimaryOrgStatus { get; set; }
         public OrganizationStatus CurrentOrgStatus { get; set; }
         public IList<Persona> PersonaList { get; set; }

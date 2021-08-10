@@ -32,20 +32,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
             IList<UserRoleRights> companyRoleList = GetCompanyRoles(userClaim, userClaim.OrganizationPartyId, userClaim.OrganizationRealPageGuid);
 
             // get user roles
-            List<Claim> userRoles = identity.Claims.Where(p => p.Type.Equals("role", StringComparison.OrdinalIgnoreCase) || p.Type.Equals("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", StringComparison.OrdinalIgnoreCase)).ToList();
+            List<Claim> userRoles = identity.Claims.Where(p => p.Type.Equals("roleid", StringComparison.OrdinalIgnoreCase) || p.Type.Equals("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", StringComparison.OrdinalIgnoreCase)).ToList();
+            List<int> intUserRoles = userRoles.ConvertAll(x => Convert.ToInt32(x.Value));
 
-            foreach (var userRoleClaim in userRoles)
+            foreach (var role in intUserRoles)
             {
                 foreach (var companyRole in companyRoleList)
                 {
-                    if (!string.IsNullOrEmpty(companyRole.Role) && companyRole.Role.Equals(userRoleClaim.Value, StringComparison.OrdinalIgnoreCase))
+                    if (companyRole.RoleId == role)
                     {
                         userRights.AddRange(GetRights(companyRoleList, companyRole.RoleId, userClaim.PersonaId, userClaim.OrganizationPartyId));
-                        identity.AddClaims(userRights.Select(a => new Claim("right", a)).ToList());
                         break;
                     }
                 }
             }
+
+            var distinctUserRights = userRights.Distinct().OrderBy(x => x).ToList();
+
+            identity.AddClaims(distinctUserRights.Select(a => new Claim("right", a)).ToList());
 
             if (userClaim.ImpersonatedBy != Guid.Empty)
             {
@@ -68,33 +72,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
                 {
                     List<string> impersonateUserRights = GetRights(impersonateCompanyRoleList, roleId, impersonateUserPersona.PersonaId, impersonateUserPersona.OrganizationPartyId);
                     // check for impersonator right
-                    AddRightFromImpersonator(identity, impersonateUserRights, userRights, "ACCESSTOUNIFIEDPLATFORM");
+                    AddRightFromImpersonator(identity, impersonateUserRights, distinctUserRights, "ACCESSTOUNIFIEDPLATFORM");
 
                     // check for view only access
-                    AddRightFromImpersonator(identity, impersonateUserRights, userRights, "VIEWONLYSUPPORTTOOLACCESS");
+                    AddRightFromImpersonator(identity, impersonateUserRights, distinctUserRights, "VIEWONLYSUPPORTTOOLACCESS");
 
                     // check for unified settings rights
-                    AddRightFromImpersonator(identity, impersonateUserRights, userRights, "VIEWUNIFIEDSETTINGS");
-                    AddRightFromImpersonator(identity, impersonateUserRights, userRights, "MANAGEUNIFIEDSETTINGS");
-                    AddRightFromImpersonator(identity, impersonateUserRights, userRights, "INTERNALADMINACCESSTOUNIFIEDSETTINGS");
+                    AddRightFromImpersonator(identity, impersonateUserRights, distinctUserRights, "VIEWUNIFIEDSETTINGS");
+                    AddRightFromImpersonator(identity, impersonateUserRights, distinctUserRights, "MANAGEUNIFIEDSETTINGS");
+                    AddRightFromImpersonator(identity, impersonateUserRights, distinctUserRights, "SETTINGSINTERNALADMINISTRATOR");
 
-                    AddRightFromImpersonator(identity, impersonateUserRights, userRights, "MANAGECUSTOMFIELDS");
-                    AddRightFromImpersonator(identity, impersonateUserRights, userRights, "MANAGEPLATFORMSECURITY");
-                    AddRightFromImpersonator(identity, impersonateUserRights, userRights, "MANAGESETTINGSTEMPLATES");
-                    AddRightFromImpersonator(identity, impersonateUserRights, userRights, "ACCESSSETTINGSADMIN");
+                    AddRightFromImpersonator(identity, impersonateUserRights, distinctUserRights, "MANAGECUSTOMFIELDS");
+                    AddRightFromImpersonator(identity, impersonateUserRights, distinctUserRights, "MANAGEPLATFORMSECURITY");
+                    AddRightFromImpersonator(identity, impersonateUserRights, distinctUserRights, "MANAGESETTINGSTEMPLATES");
+                    AddRightFromImpersonator(identity, impersonateUserRights, distinctUserRights, "ACCESSSETTINGSADMIN");
 
                     // check for import user right
-                    AddRightFromImpersonator(identity, impersonateUserRights, userRights, "ABILITYTOIMPORTUSERS");
+                    AddRightFromImpersonator(identity, impersonateUserRights, distinctUserRights, "ABILITYTOIMPORTUSERS");
 
-                    AddRightFromImpersonator(identity, impersonateUserRights, userRights, "MANAGENOTIFICATIONS");
+                    AddRightFromImpersonator(identity, impersonateUserRights, distinctUserRights, "MANAGENOTIFICATIONS");
 
-                    AddRemoveRightForCIMPL(identity, impersonateUserRights, userRights, "CIMPLManagePII");
-                    AddRemoveRightForCIMPL(identity, impersonateUserRights, userRights, "CIMPLManageSensitiveFinancialData");
+                    AddRemoveRightForCIMPL(identity, impersonateUserRights, distinctUserRights, "CIMPLManagePII");
+                    AddRemoveRightForCIMPL(identity, impersonateUserRights, distinctUserRights, "CIMPLManageSensitiveFinancialData");
 
                 }
             }
 
-            return userRights;
+            return distinctUserRights;
         }
 
         public static List<string> GetImpersonatedUserRights(Guid impersonatedBy, DefaultUserClaim userClaims)

@@ -314,9 +314,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         IPersonaRepository personaRepository = new PersonaRepository();
                         var personaProductSettings = personaRepository.GetPersonaProductSettings(cloneUserPersonaId);
-                       
+
                         //Then Get Product Batch Data
-                        IList<ProductBatch> pbData = manageProductBatch.GetUserProductBatchData(cloneUserPersonaId, userProducts, createUserPersonaId, upfmProperty, personaProductSettings,isExternalUser, usePropertyInstanceUnifiedAmenities);
+                        IList<ProductBatch> pbData = manageProductBatch.GetUserProductBatchData(cloneUserPersonaId, userProducts, createUserPersonaId, upfmProperty, personaProductSettings, isExternalUser, usePropertyInstanceUnifiedAmenities);
 
                         foreach (ProductBatch pb in pbData)
                         {
@@ -405,13 +405,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             userOrganizationExists = IsLoginNameExistsAsAdminInOtherDomain(newProfile.userLogin.LoginName, newProfile.organization[0].RealPageId, booksCustomerMasterId);
             bool primaryOrganization = true;
             //if org has mutil domain and user already exists in other domain and not in in this org
-            if ((userOrganizationExists.UserExistsAsAdminInOtherDomain || userOrganizationExists.UserExistsAsRegularUserInOtherDomain ) && !userOrganizationExists.UserExistsInThisOrganization)
+            if ((userOrganizationExists.UserExistsAsAdminInOtherDomain || userOrganizationExists.UserExistsAsRegularUserInOtherDomain) && !userOrganizationExists.UserExistsInThisOrganization)
             {
                 if (!newProfile.organization[0].OrganizationDomain.Name.Equals("Primary"))
                 {
                     primaryOrganization = false;
                 }
-                
+
             }
 
             using (var repository = GetRepository())
@@ -1113,7 +1113,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 createUserResponse.UserStatus = errorStatus.ErrorMsg;
                                 return createUserResponse;
                             }
-                        }                       
+                        }
 
                         // Linking Persona to a Role based on user type
                         var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesByRealPageID" : StoredProcNameConstants.SP_ListRolesByRealPageID;
@@ -1234,7 +1234,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             {
                                 string primaryPropertyJSON = JsonConvert.SerializeObject(primaryPropertiesBatch);
                                 repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdatePropertyInstanceMapping, new { PersonaId = personaId, ProductId = (int)ProductEnum.UnifiedUI, PropertyInstanceJSON = primaryPropertyJSON });
-                              
+
                                 if (repositoryResponse.Id == 0)
                                 {
                                     repository.UnitOfWork.Rollback();
@@ -1399,7 +1399,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         #endregion
                     }
-                    if (!userPersonaOrganizationList.ToList().Any(x => ((x.PartyRoleTypeId.Equals((int)UserRoleType.RealPageEmployee)))) && newProfile.UserTypeId == (int)UserRoleType.RealPageEmployee) {
+                    if (!userPersonaOrganizationList.ToList().Any(x => ((x.PartyRoleTypeId.Equals((int)UserRoleType.RealPageEmployee)))) && newProfile.UserTypeId == (int)UserRoleType.RealPageEmployee)
+                    {
                         foreach (var userPreviousOrg in userPersonaOrganizationList)
                         {
                             #region Update User Type if Realpage Employee
@@ -2255,7 +2256,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     //Use RealPage Employee Access PersonaId when creating the Product Patches.
                     createUserPersonaId = repository.GetOne<long>(StoredProcNameConstants.SP_GetActivePersona, new { RealPageId = RealPageEmployeeAccessID });
 
-                    
+
                     personaList.ToList().ForEach(o =>
                         productCount = SaveProductDetails(repository, productList, null, createUserPersonaId, o.PersonaId, RealPageEmployeeAccessID, organizationRealPageId, null, (int)UserRoleType.SuperUser, true, aoProductsAvailableForUser, false, false)
                     );
@@ -2377,12 +2378,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             IPersonaRepository personaRespository = new PersonaRepository();
             IOrganizationRepository organizationRepository = new OrganizationRepository();
             IContactMechanismUsageTypeRepository contactMechanismUsageTypeRepository = new ContactMechanismUsageTypeRepository();
-          
+
             IManagePersona managePersona = new ManagePersona(_userClaim);
             IList<IdentityProviderType> identityProviderTypeList = new List<IdentityProviderType>();
             IList<ProductBatch> productBatchData = new List<ProductBatch>();
             IList<ContactMechanismUsageType> emailUsageType = new List<ContactMechanismUsageType>();
-          
+
             //Notification Email
             IContactMechanismRepository contactMechanismRepository = new ContactMechanismRepository();
 
@@ -2404,8 +2405,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 identityProviderTypeList = organizationRepository.GetOrganizationIdentityProviderType(oldProfile.Persona[0].Organization.RealPageId);
             }
 
-            // get the users existing UnifiedLogin role
-            long existingRoleId = userRoleRightRepository.GetRoleIdByPersona(oldProfile.Persona[0].PersonaId, (int)ProductEnum.UnifiedPlatform);
+            // get the user's existing List of UnifiedLogin roles
+            var existingRoleIds = userRoleRightRepository.GetRoleIdsByPersona(oldProfile.Persona[0].PersonaId, (int)ProductEnum.UnifiedPlatform);
 
             OrganizationStatus currentPrimaryOrgStatus = userLoginRepository.GetUserOrganizationWithStatus(newProfile.userLogin.UserId, userLoginOnly.LastLogin, 0, true);
             OrganizationStatus currentOrgStatus = userLoginRepository.GetUserOrganizationWithStatus(newProfile.userLogin.UserId, userLoginOnly.LastLogin, oldProfile.Persona[0].OrganizationPartyId, false);
@@ -2434,7 +2435,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             int enterpriseRoleId = 0;
             if (primaryPropertyBatch?.InputJson?.RoleList != null && primaryPropertyBatch?.InputJson?.RoleList.Count > 0)
             {
-                enterpriseRoleId = Convert.ToInt32(primaryPropertyBatch.InputJson.RoleList.FirstOrDefault());              
+                enterpriseRoleId = Convert.ToInt32(primaryPropertyBatch.InputJson.RoleList.FirstOrDefault());
             }
 
             //TODO:CG.WE CAN DELETEDE DE USERDETAILS BECAUSE WE ARE SENDING THE OLDPROFILE
@@ -2483,17 +2484,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 }
             });
 
-            
+
             // primary properties selected
             if (primaryPropertyBatch != null && enterpriseRoleId == 0)
             {
                 IPropertyRepository propertyRepository = new PropertyRepository();
                 // get persona primary properties
                 List<string> currentprimaryProperties = new List<string>();
-              
+
                 List<UPFMPropertyInstance> ulPropertyInstances = new List<UPFMPropertyInstance>();
                 ulPropertyInstances = propertyRepository.ListUPFMPropertyInstanceByPersona(oldProfile.Persona[0].PersonaId, ProductEnum.UnifiedUI);
-              
+
                 foreach (var property in ulPropertyInstances)
                 {
                     currentprimaryProperties.Add(Convert.ToString(property.InstanceId));
@@ -2503,7 +2504,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 if (currentprimaryProperties?.Count > 0)
                 {
                     productBatchData = UpdateProductBatchDataWithPrimaryProperties(createUserPersonaId, oldProfile.Persona[0].PersonaId, primaryPropertyBatch, productBatchData.ToList(), currentprimaryProperties);
-                }               
+                }
 
             }
 
@@ -2521,7 +2522,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 OrganizationExternalUser = organizationExternalUser,
                 UserLoginOnly = userLoginOnly,
                 UserPersonaOrganizationList = userPersonaOrganizationList,
-                ExistingRoleId = existingRoleId,
+                ExistingRoleIds = existingRoleIds,
                 CurrentPrimaryOrgStatus = currentPrimaryOrgStatus,
                 CurrentOrgStatus = currentOrgStatus,
                 PersonaList = personaList,
@@ -2640,11 +2641,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
-      /// <summary>
-      /// Update user Employee Id
-      /// </summary>
-      /// <param name="employeeIdDetail"></param>
-      /// <returns></returns>
+        /// <summary>
+        /// Update user Employee Id
+        /// </summary>
+        /// <param name="employeeIdDetail"></param>
+        /// <returns></returns>
         public RepositoryResponse UpdateUserEmployeeId(IUserEmployeeId employeeIdDetail)
         {
             RepositoryResponse repositoryResponse = new RepositoryResponse();
@@ -2659,7 +2660,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     };
 
                     repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateEmployeeId, param);
-                  
+
                 }
             }
             return repositoryResponse;
@@ -3386,8 +3387,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 enterpriseRoleId = Convert.ToInt32(primaryPropertyBatch.InputJson.RoleList.FirstOrDefault());
                 productList.Remove(primaryPropertyBatch);
             }
-           
-            if (enterpriseRoleId > 0 )
+
+            if (enterpriseRoleId > 0)
             {
                 object param = new
                 {
@@ -3395,7 +3396,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     OrganizationRealPageId = organizationRealPageId
                 };
 
-                roleTemplateProductRole = repository.GetMany<RoleTemplateProductRole>(StoredProcNameConstants.SP_GetRoleTemplateProductRoleMappings, param).ToList();               
+                roleTemplateProductRole = repository.GetMany<RoleTemplateProductRole>(StoredProcNameConstants.SP_GetRoleTemplateProductRoleMappings, param).ToList();
             }
 
             // if superuser do all products that currently support user creation;
@@ -3427,7 +3428,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             };
                             productListToCreate.Add(pb);
                         }
-                    }                   
+                    }
                 }
 
                 // add edited products for admin with other list
@@ -3480,7 +3481,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         int enterprisePlatformRole = Convert.ToInt32(productRoles.FirstOrDefault());
                         if (enterprisePlatformRole > 0 && unifiedPlatformRole > 0)
                         {
-                            UpdateGreenBookRole(repository, enterprisePlatformRole, AssignUserPersonaId, unifiedPlatformRole, _userClaim.UserId);
+                            UpdateGreenBookRole(repository, new List<int>() { enterprisePlatformRole }, AssignUserPersonaId,new List<long>() { unifiedPlatformRole }, _userClaim.UserId);
                         }
                     }
                     //First check for any batchdata coming from ui, if no batch data then process for enterprise role batch
@@ -3506,13 +3507,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             }
                         };
                         productList.Add(pb);
-                    }                    
+                    }
                 }
             }
 
             if (productList != null)
             {
-              
+
                 //Product EasyLMS is assigned and the tile is display for all users if it's assigned to the Organization 
                 //No need to add an EasyLMS ProductPatch eventhough it's included in the ProductBatch product list from the UI
                 ProductBatch easyLMSProductBatch = productList.ToList().FirstOrDefault(p => p.ProductId == (int)ProductEnum.EasyLMS);
@@ -3696,11 +3697,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
 
             var batchGroup = CreateBatchProcessGroup(repository);
-           
+
             IList<PersonaProductUserDetails> userProducts = repository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = assignUserPersonaId, ProductStatusValue = ((Int32)UserUiStatusType.AccountCreationSuccessful).ToString() }).ToList();
             IList<ProductBatch> productListToCreate = new List<ProductBatch>();
             var primaryPropertyBatch = productBatchData.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedUI);
-           
+
             if (primaryPropertyBatch != null)
             {
                 productBatchData.Remove(primaryPropertyBatch);
@@ -3735,7 +3736,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 };
 
                                 productListToRemove.Add(pb);
-                            }                           
+                            }
                             else if (productBatchData.Any(p => p.ProductId == prod.ProductId && p.InputJson.IsAssigned))
                             {
                                 var batchRecord =
@@ -3979,8 +3980,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 //Do we have the Create & Assign PersonaIds
                 if (createUserPersonaId > 0 && assignUserPersonaId > 0)
                 {
-                    if (!(userTypeId == (int)UserRoleType.SuperUser) 
-                        &&productListToCreate.Any(a => a.ProductId == (int)ProductEnum.OneSite)
+                    if (!(userTypeId == (int)UserRoleType.SuperUser)
+                        && productListToCreate.Any(a => a.ProductId == (int)ProductEnum.OneSite)
                         && (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.Lead2Lease) || productListToCreate.Any(a => a.ProductId == (int)ProductEnum.SeniorLeadManagement)))
                     {
                         // need to combine the Lead2Lease and OneSite product details so they can run synchronously
@@ -4288,30 +4289,58 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
 
         /// <summary>
+        /// get list of GB(Unified Login) product Roles 
+        /// </summary>       
+        /// <param name="productBatch"></param>                
+        private List<int> GetGreenBookRoles(ProductBatch productBatch)
+        {
+            List<int> roleIds = new List<int>();
+
+            foreach (var item in productBatch.InputJson.RoleList)
+            {
+                roleIds.Add(int.Parse(item));
+            }
+
+            return roleIds;
+        }
+
+        /// <summary>
         /// Used to Update GB(Unified Login) product Role information for a user
         /// </summary>
         /// <param name="repository"></param>
-        /// <param name="newRoleId"></param>
+        /// <param name="newRoleIds"></param>
         /// <param name="assignUserPersonaId"></param>        
-        /// <param name="loggedInUserRealPageId"></param>
-        /// <param name="realPageId"></param>
-        /// <param name="userTypeId"></param>
-        /// <param name="existingRoleId"></param>
-        private void UpdateGreenBookRole(IRepository repository, int newRoleId, long assignUserPersonaId, long existingRoleId, long userId)
+        /// <param name="existingRoleIds"></param>
+        /// <param name="userId"></param>
+        private void UpdateGreenBookRole(IRepository repository, List<int> newRoleIds, long assignUserPersonaId, List<long> existingRoleIds, long userId)
         {
-            if (newRoleId > 0)
+            if (newRoleIds.Count > 0)
             {
-                IUserRoleRightRepository userRoleRightRepository = new UserRoleRightRepository(repository);
-                if (existingRoleId == 0 || newRoleId != existingRoleId)
-                {
-                    if (existingRoleId != 0)
-                    {
-                        // Delete existing roleId
-                        userRoleRightRepository.InsertAssignedRoleToUser(assignUserPersonaId, existingRoleId, Convert.ToInt32(userId), true);
-                    }
+                //convert int to long
+                List<long> newIds = newRoleIds.ConvertAll(x => (long)x);
 
+                //common between new and existing
+                List<long> commonIds = newIds.Intersect(existingRoleIds).ToList();
+
+                //remove the common from new id 
+                newIds.RemoveAll(x => commonIds.Contains(x));
+
+                //remove the common from old id
+                existingRoleIds.RemoveAll(x => commonIds.Contains(x));
+
+
+                foreach (var id in existingRoleIds)
+                {
+                    IUserRoleRightRepository userRoleRightRepository = new UserRoleRightRepository(repository);
+                    // Delete existing roleId
+                    userRoleRightRepository.InsertAssignedRoleToUser(assignUserPersonaId, id, Convert.ToInt32(userId), true);
+                }
+
+                foreach (var id in newIds)
+                {
+                    IUserRoleRightRepository userRoleRightRepository = new UserRoleRightRepository(repository);
                     //Insert new roleId to GB
-                    userRoleRightRepository.InsertAssignedRoleToUser(assignUserPersonaId, newRoleId, Convert.ToInt32(userId));
+                    userRoleRightRepository.InsertAssignedRoleToUser(assignUserPersonaId, id, Convert.ToInt32(userId));
                 }
             }
         }
@@ -5394,6 +5423,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 IList<UserLoginPersona> userLoginPersonaList = repository.GetMany<UserLoginPersona>(StoredProcNameConstants.SP_GetUserLoginPersona, param);
 
                 int greenBookRole = 0;
+                List<int> greenBookRoles = new List<int>();
 
                 userBatchEntity = GetUserBatch(updateUserProfileEntity.NewProfile, updateUserProfileEntity.OldProfile, updateUserProfileEntity.UserIsExternalEverywhere);
 
@@ -5895,13 +5925,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         //Update Enterprise role template to persona                        
                         if (primaryPropertyBatch?.InputJson?.RoleList != null && primaryPropertyBatch?.InputJson?.RoleList.Count > 0)
                         {
-                                int roleTemplateId = Convert.ToInt32(primaryPropertyBatch.InputJson.RoleList.FirstOrDefault());
-                                repositoryResponse = InsertUpdateEnterpriseRoleToUser(repository, roleTemplateId, updateUserProfileEntity.OldProfile.Persona[0].PersonaId);
-                                if (repositoryResponse.Id == 0)
-                                {
-                                    repositoryResponse.ErrorMessage = "Unable to update enterprise role to the Persona.";
-                                    throw new Exception(repositoryResponse.ErrorMessage);
-                                }                           
+                            int roleTemplateId = Convert.ToInt32(primaryPropertyBatch.InputJson.RoleList.FirstOrDefault());
+                            repositoryResponse = InsertUpdateEnterpriseRoleToUser(repository, roleTemplateId, updateUserProfileEntity.OldProfile.Persona[0].PersonaId);
+                            if (repositoryResponse.Id == 0)
+                            {
+                                repositoryResponse.ErrorMessage = "Unable to update enterprise role to the Persona.";
+                                throw new Exception(repositoryResponse.ErrorMessage);
+                            }
                         }
 
                         bool notificationEmailChanged = isNotificationEmailChanged(priorNotificationEmail, updateUserProfileEntity.NewProfile.NotificationEmail);
@@ -5925,13 +5955,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         if (updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue() && !userBatchEntity.UserTypeChanged)
                         {
-                           int productCount = SaveProductDetails(repository, updateUserProfileEntity.ProductBatchData, null, updateUserProfileEntity.CreateUserPersonaId, updateUserProfileEntity.OldProfile.Persona[0].PersonaId, updateUserProfileEntity.LoggedInUserRealPageId, updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId, null, updateUserProfileEntity.NewProfile.UserTypeId, updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue(), updateUserProfileEntity.AoProductsAvailableForUser,false,false);
+                            int productCount = SaveProductDetails(repository, updateUserProfileEntity.ProductBatchData, null, updateUserProfileEntity.CreateUserPersonaId, updateUserProfileEntity.OldProfile.Persona[0].PersonaId, updateUserProfileEntity.LoggedInUserRealPageId, updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId, null, updateUserProfileEntity.NewProfile.UserTypeId, updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue(), updateUserProfileEntity.AoProductsAvailableForUser, false, false);
                         }
 
                         if (!updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue())
                         {
                             DisableAllCompanyProducts(updateUserProfileEntity.LoggedInUserRealPageId, updateUserProfileEntity.NewProfile, updateUserProfileEntity.CurrentOrg, repository, updateUserProfileEntity.OldProfile.Persona[0].PersonaId, updateUserProfileEntity.CreateUserPersonaId, updateUserProfileEntity.PersonaList);
-                        }  
+                        }
 
                         if (updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue() && userBatchEntity.UserTypeChanged)
                         {
@@ -5939,15 +5969,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
 
                         // GreenBook - UnifiedLogin call updating GB Role
-
                         var gbProdBatch = updateUserProfileEntity.NewProfile.productBatch.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedPlatform);
+
                         if (gbProdBatch != null)
                         {
-                            greenBookRole = GetGreenBookRole(gbProdBatch);
+                            greenBookRoles = GetGreenBookRoles(gbProdBatch);
                         }
                         else
                         {
-                            //This will exceuted when user type changes and no productbatch record for greenbook role is coming from UI
+                            //This will be exceuted when user type changes and no productbatch record for greenbook role is coming from UI
                             if (userBatchEntity.UserTypeChanged)
                             {
                                 IList<RoleType> roleTypes;
@@ -5993,7 +6023,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         var personaId = updateUserProfileEntity.OldProfile.Persona[0].PersonaId;
                         repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_DeletePersonaSuggestedProperties, new { PersonaId = personaId }); ;
 
-                        if (suggestedProperties != null && suggestedProperties?.Count > 0){
+                        if (suggestedProperties != null && suggestedProperties?.Count > 0)
+                        {
                             foreach (var product in suggestedProperties)
                             {
                                 if (product.SuggestedPropertiesList != null && product?.SuggestedPropertiesList.Count > 0)
@@ -6005,7 +6036,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             }
                         }
 
-                        UpdateGreenBookRole(repository, greenBookRole, updateUserProfileEntity.OldProfile.Persona[0].PersonaId, updateUserProfileEntity.ExistingRoleId, updateUserProfileEntity.UserLoginOnly.UserId);
+                        var duplicateGreenBookroles = new List<int>(greenBookRoles);
+                        var duplicateExistingroles = new List<long>(updateUserProfileEntity.ExistingRoleIds);
+
+                        UpdateGreenBookRole(repository, duplicateGreenBookroles, updateUserProfileEntity.OldProfile.Persona[0].PersonaId, duplicateExistingroles, updateUserProfileEntity.UserLoginOnly.UserId);
 
                         if (updateUserProfileEntity.SaveProductBatchError != "Save Product(s) Error: ")
                         {
@@ -6065,18 +6099,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 }
 
                 // Activity logging
-                if (repositoryResponse.Id > 0 || string.IsNullOrWhiteSpace(repositoryResponse.ErrorMessage))
+                if (repositoryResponse.Id > 0 || string.IsNullOrWhiteSpace(repositoryResponse.ErrorMessage)) 
                 {
-                    if (greenBookRole != 0 && greenBookRole != updateUserProfileEntity.ExistingRoleId && updateUserProfileEntity.ExistingRoleId != 0)
+                    if (enterpriseRoles != null)
+                    {
+                        var newRoles = enterpriseRoles.Where(x => greenBookRoles.Contains(x.RoleId)).ToList().Select(e => e.Role).ToList();
+                        var oldRoles = enterpriseRoles.Where(x => updateUserProfileEntity.ExistingRoleIds.Contains(x.RoleId)).ToList().Select(e => e.Role).ToList();
+
+                        string joinedOldRoles = string.Join(", ", oldRoles);
+                        string joinedNewRoles = string.Join(", ", newRoles);
+
+                        var auditMessage = $"{{2}} {{3}} changed the Unified Platform role for {{0}} {{1}}. Previous role(s): {joinedOldRoles}. New role(s) : {joinedNewRoles}.";
+                        LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, auditMessage, "UpdateUser", updateUserProfileEntity.NewProfile);
+                    }
+
+                    if (greenBookRole != 0 &&
+                        updateUserProfileEntity.ExistingRoleIds.Count > 0 &&
+                        greenBookRole != updateUserProfileEntity.ExistingRoleIds[0] 
+                        && updateUserProfileEntity.ExistingRoleIds[0] != 0)
                     {
                         if (enterpriseRoles != null)
                         {
-                            var existingUserRole = enterpriseRoles.ToList().Where(e => e.RoleId == updateUserProfileEntity.ExistingRoleId).Select(e => e.Role).FirstOrDefault();
+                            var existingUserRole = enterpriseRoles.ToList().Where(e => e.RoleId == updateUserProfileEntity.ExistingRoleIds[0]).Select(e => e.Role).FirstOrDefault();
                             var newUserRole = enterpriseRoles.ToList().Where(e => e.RoleId == greenBookRole).Select(e => e.Role).FirstOrDefault();
-                            var auditMessage = $"{{2}} {{3}} changed the Unified Platform role from {existingUserRole} to {newUserRole} for {{0}} {{1}}.";
+                            var auditMessage = $"{{2}} {{3}} changed the Unified Platform role for {{0}} {{1}}. Previous role: {existingUserRole}. New role: {newUserRole}.";
                             LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, auditMessage, "UpdateUser", updateUserProfileEntity.NewProfile);
                         }
                     }
+
                     if (userBatchEntity.IsUserTypeChangedFromNoEmailToRegular)
                     {
                         //Log Activity
@@ -6107,6 +6157,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             return schemaName;
         }
 
+        private bool CompareList(List<long> first, List<long> second) 
+        {
+            bool isequal = false;
+
+            isequal = Enumerable.SequenceEqual(first.OrderBy(e => e), second.OrderBy(e => e));
+
+            return isequal;
+        }
         private bool getPropertyInstanceUnifiedLogin()
         {
             RPObjectCache rpcache = new RPObjectCache();
@@ -6144,7 +6202,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             using (var pbRepository = GetRepository())
             {
                 userProducts = pbRepository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = userPersonaId, ProductStatusValue = ((Int32)ProductBatchStatusType.Success).ToString() }).ToList();
-                
+
             }
 
             if (userProducts.Count > 0)
@@ -6169,7 +6227,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     {
                         isExternalUser = personaOrganization.RelationshipType.Equals("User Type", StringComparison.OrdinalIgnoreCase) && personaOrganization.RoleNameFrom.Equals("External User", StringComparison.OrdinalIgnoreCase);
                     }
-                    
+
                     //Next Remove products which are exists in product batch
                     foreach (var product in productBatch)
                     {
@@ -6207,7 +6265,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <returns>RepositoryResponse Object</returns>
         private RepositoryResponse InsertUpdateEnterpriseRoleToUser(IRepository repository, int roleTemplateId, long? personaId)
         {
-           var param = new
+            var param = new
             {
                 RoleTemplateId = roleTemplateId,
                 PersonaId = personaId
@@ -6234,7 +6292,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             if (userOrganizationExists.UserExists && !userOrganizationExists.UserExistsInThisOrganization)
             {
                 UserOrganization userOrganization = userPersonaOrganizationList.ToList().FirstOrDefault(m => m.PrimaryOrganization.Equals(true));
-              
+
                 isAdminUser = userOrganization != null && userOrganization.PartyRoleTypeId == (int)UserRoleType.SuperUser;
                 isRegularUser = userOrganization != null && userOrganization.PartyRoleTypeId == (int)UserRoleType.User;
 

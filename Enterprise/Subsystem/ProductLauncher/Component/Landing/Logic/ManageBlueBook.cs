@@ -1726,7 +1726,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             //IManageBlueBook _manageBlueBook = new ManageBlueBook(_userClaims);
             List<UPFMPropertyInstance> _upfmPropertyInstance = new List<UPFMPropertyInstance>();
             IPropertyRepository propertyRepository = new PropertyRepository();
-            bool isPrimaryProperty = upfmProperty.id != null;
+            bool isPrimaryProperty = upfmProperty?.id != null;
 
             /*
              * If All property selection is true, then upfmProperty == -1

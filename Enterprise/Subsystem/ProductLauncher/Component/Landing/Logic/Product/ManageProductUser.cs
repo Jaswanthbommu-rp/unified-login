@@ -52,7 +52,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private DefaultUserClaim _defaultUserClaim;
         private ISamlRepository _samlRepository;
         private IPropertyRepository _propertyRepository;
-
+        IManageProduct _manageProduct;
         private readonly IIntegrationTypeFactory _integrationTypeFactory;
 
         #endregion
@@ -62,11 +62,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// Manages Product User constructor
         /// </summary>
         public ManageProductUser(IProductRepository productRepository,
-            IProductInternalSettingRepository productInternalSettingRepository, ISamlRepository samlRepository)
+            IProductInternalSettingRepository productInternalSettingRepository, ISamlRepository samlRepository, IManageProduct manageProduct)
         {
             _productRepository = productRepository;
             _productInternalSettingRepository = productInternalSettingRepository;
             _samlRepository = samlRepository;
+            _manageProduct = manageProduct;
         }
 
         /// <summary>
@@ -80,10 +81,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _propertyRepository = new PropertyRepository();
             _defaultUserClaim = userClaims;
 
-            var manageProduct = new ManageProduct(_defaultUserClaim);
+            _manageProduct = new ManageProduct(_defaultUserClaim);
             var manageUnifiedLogin = new ManageUnifiedLogin(_defaultUserClaim);
             var manageProductOneSite = new ManageProductOneSite(_defaultUserClaim);
-            _integrationTypeFactory = new IntegrationTypeFactory(manageProduct, manageUnifiedLogin, manageProductOneSite, _productRepository, _defaultUserClaim);
+            _integrationTypeFactory = new IntegrationTypeFactory(_manageProduct, manageUnifiedLogin, manageProductOneSite, _productRepository, _defaultUserClaim);
         }
         #endregion
 
@@ -243,82 +244,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     isUpdateUser = true;
                 }
 
-                //First get enterprise role id for user persona
-                RoleTemplate roleTemplate = _productRepository.GetEnterpriseRoleForPersona(productUser.AssignUserPersonaId);
-                int userRoleTemplateId = roleTemplate?.RoleTemplateId ?? 0;
+                var productInternalSettings = _manageProduct.GetProductInternalSettings((int)productUser.ProductName);
+                var updateinUDM = productInternalSettings.Where(x => x.Name.ToUpper() == "UPDATEPRODUCTINUDM").FirstOrDefault();
 
-                if (userRoleTemplateId > 0)
+                roleProp = GetProductPropertiesRoles<RolePropertyList>(productUser.InputJson) as RolePropertyList;
+                usePrimaryProperties = roleProp.UsePrimaryProperties;
+
+                usePrimaryProperties = true;
+                if (roleProp.PropertyList.Count == 0 && (updateinUDM != null && updateinUDM.Value == "1"))
                 {
-                    IManagePersona _managePersona = new ManagePersona();
-                    var persona = _managePersona.GetPersona(productUser.AssignUserPersonaId);
-
-                    var properties = getEnterpriseRoleUserPrimaryPropertiesData(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId,(int)productUser.ProductName, productUser.RealPageId);
-                 
-                    if (properties?.Count > 0)
-                    {
-                        if (ValidateDictionaryMapping(productUser.InputJson) && (int)productUser.ProductName == (int)ProductEnum.OneSite)
-                        {
-                            object productPropertiesRoles = JsonConvert.DeserializeObject<Dictionary<string, RolePropertyList>>(productUser.InputJson.Trim());
-                            var combinedRoleProp = new Dictionary<string, RolePropertyList>();
-                            combinedRoleProp = productPropertiesRoles as Dictionary<string, RolePropertyList>;
-                            if (combinedRoleProp.Any(p => p.Key == ProductEnum.OneSite.ToString()))
-                            {
-                                var osproperties = combinedRoleProp.Where(p => p.Key == ProductEnum.OneSite.ToString()).First().Value;
-                                osproperties.PropertyList = properties;
-                                isRolesExists = roleProp.RoleList?.Count > 0;
-                            }
-                            //Lead2Lease
-                            if (combinedRoleProp.Any(p => p.Key == ProductEnum.Lead2Lease.ToString()))
-                            {
-                                // RolePropertyList lead2Lease
-                                var l2lproperties = getEnterpriseRoleUserPrimaryPropertiesData(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, (int)ProductEnum.Lead2Lease, productUser.RealPageId);
-                                var l2lroleProp = combinedRoleProp.Where(p => p.Key == ProductEnum.Lead2Lease.ToString()).First().Value;
-                                l2lroleProp.PropertyList = l2lproperties;
-                                isRolesExists = l2lroleProp.RoleList?.Count > 0;
-                            }
-
-                            //SeniorLeadManagement
-                            if (combinedRoleProp.Any(p => p.Key == ProductEnum.SeniorLeadManagement.ToString()))
-                            {
-                                // RolePropertyList slm
-                                var slmproperties = getEnterpriseRoleUserPrimaryPropertiesData(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, (int)ProductEnum.SeniorLeadManagement, productUser.RealPageId);
-                                var slmroleProp = combinedRoleProp.Where(p => p.Key == ProductEnum.SeniorLeadManagement.ToString()).First().Value;
-                                slmroleProp.PropertyList = slmproperties;
-                                isRolesExists = slmroleProp.RoleList?.Count > 0;
-                            }
-                            //roleProp = combinedRoleProp;
-                            productUser.InputJson = JsonConvert.SerializeObject(combinedRoleProp);
-                        }
-                        else
-                        {
-                            roleProp = JsonConvert.DeserializeObject<RolePropertyList>(productUser.InputJson);
-                            roleProp.PropertyList = properties;
-                            isRolesExists = roleProp.RoleList?.Count > 0;
-                            productUser.InputJson = JsonConvert.SerializeObject(roleProp);
-                        }
-                    }                    
-
-                    usePrimaryProperties = true;
-                    if (properties?.Count == 0 && !(productId == 63 || productId == 39))
-                    {
-                        result = "No Product Properties are found for Enterprise Role";
-                    }
-                    else if (!isRolesExists)
-                    {
-                        result = "No Product Roles are found for Enterprise Role";
-					}                  
-                    else
-                    {
-                        var integration = _integrationTypeFactory.GetIntegration(productUser.ProductName);
-                        result = integration.CreateUser(productUser);
-                    }
-                    
+                    result = "No Product Properties are found for Enterprise Role";
+                }
+                else if (roleProp.RoleList.Count == 0)
+                {
+                    result = "No Product Roles are found for Enterprise Role";
                 }
                 else
                 {
-                    result = $"No Enterprise Role found for persona - {productUser.AssignUserPersonaId}";
+
+                    var integration = _integrationTypeFactory.GetIntegration(productUser.ProductName);
+                    result = integration.CreateUser(productUser);
                 }
-              
             }
             catch (Exception ex)
             {
@@ -333,7 +279,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (string.IsNullOrEmpty(result))
             {
                 isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Success);
-                UpdateProductPrimaryPropertyProductStatus(productUser.AssignUserPersonaId, (int)productUser.ProductName, usePrimaryProperties == true ? 1 : 0);
+                //UpdateProductPrimaryPropertyProductStatus(productUser.AssignUserPersonaId, (int)productUser.ProductName, usePrimaryProperties == true ? 1 : 0);
             }
             else
             {
@@ -352,7 +298,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     else
                     {
                         //Activity log
-                        result = "An error occurred during the update process";
+                        result = "An error occurred during the enterprise role product update process";
                         WriteActivityLogWithMessage(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, result, productId);
                     }
                 }

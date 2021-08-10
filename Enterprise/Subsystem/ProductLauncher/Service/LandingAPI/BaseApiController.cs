@@ -122,7 +122,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI
 
                     // get the users role so the rights can be retrieved
                     IList<Component.SharedObjects.Product.UserManagement.Role> userRoles = userRoleRight.GetAssignedRoleForPersona(ProductEnum.UnifiedPlatform, persona.PersonaId, persona.Organization.PartyId);
-                    identity.AddClaims((userRoles.Select(a => new Claim("role", a.Name)).ToList()));
+                    identity.AddClaims((userRoles.Select(a => new Claim("roleid", a.Name)).ToList()));
                 }
 
                 _userClaims = new DefaultUserClaim(currentClaimPrincipal);

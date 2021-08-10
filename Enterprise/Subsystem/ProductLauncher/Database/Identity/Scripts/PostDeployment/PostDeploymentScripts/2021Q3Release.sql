@@ -1476,16 +1476,16 @@ FROM Ident.UserLogin
 WHERE LoginName LIKE 'realpagead@%'; 
 
 
-IF NOT EXISTS (SELECT 1 FROM [Security].[Right] WHERE RightName = 'SettingsInternalAdministrator')
+IF NOT EXISTS (SELECT 1 FROM [Security].[Right] WHERE RightName = 'InternalAdminaccessToUnifiedSettings')
 BEGIN
 	INSERT INTO [Security].[Right](	RightName,Description, Value,StatusTypeId,VisibilityStatusId,ProductId,TargetProductId,	CreatedBy,CreatedDate)
-    VALUES ('SettingsInternalAdministrator', 'Settings Internal Administrator','Settings Internal Administrator', 13,10, 3, 56, @CreatedById, @Now)
+    VALUES ('InternalAdminaccessToUnifiedSettings', 'Internal Admin Access to Unified Settings','Internal Admin Access to Unified Settings', 13,10, 3, 56, @CreatedById, @Now)
 END
 
 --OrganizationOverRideRight
 SELECT @RightId = RightId
 FROM [Security].[Right]
-WHERE RightName = 'SettingsInternalAdministrator'
+WHERE RightName = 'InternalAdminaccessToUnifiedSettings'
 
 SELECT @PartyId = O.PartyId
 FROM [Enterprise].[Organization] O
@@ -1540,8 +1540,6 @@ BEGIN
 	INSERT INTO Security.RoleRight(RoleId, RightId, CreatedBy, CreatedDate)
 	VALUES(@PropertyManagerRoleId, @RightId, @UserId, GETDATE())
 END
-GO
-
 GO
 
 DECLARE @UserId bigint
@@ -1673,14 +1671,6 @@ END
 
 GO
 
---Renaming Right from Settings Internal Administrator to  Internal Adminaccess To UnifiedSettings
-IF  EXISTS (SELECT TOP(1) 1 FROM Security.[Right] WHERE RightName = 'SettingsInternalAdministrator')
-BEGIN
-	UPDATE Security.[Right] Set RightName ='InternalAdminaccessToUnifiedSettings',Value = 'Internal Admin Access to Unified Settings'
-	                           ,Description = 'Internal Admin Access to Unified Settings' where RightName = 'SettingsInternalAdministrator'
-END
-GO
-
 -- Add LockOnProductAccessRight product settings
 IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'LockOnProductAccessRight')
 BEGIN
@@ -1721,5 +1711,11 @@ BEGIN
 	INSERT INTO Security.RoleRight (RoleId,RightId,CreatedBy,CreatedDate) 
 	VALUES(@RoleId,@RightId,@UserId,@Now);
 END
+
+GO
+
+UPDATE Auth.Claim
+SET ClaimName = 'roleid'
+WHERE ClaimName = 'role' AND productid = 3
 
 GO
