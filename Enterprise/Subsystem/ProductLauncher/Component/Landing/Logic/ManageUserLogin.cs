@@ -1297,7 +1297,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     break;
                 case "pending":
                     activity = "Pending";
-                    logActivityTypeName.Add(LogActivityTypeConstants.USER_EXPIRED);
+                    logActivityTypeName.Add(LogActivityTypeConstants.LOGIN_ENABLED);
                     break;
                 default:
                     break;
