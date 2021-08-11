@@ -1915,3 +1915,7 @@ begin
 insert into Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
 select @roleId,@rightId,@UserId,getUTCDate()
 end
+
+UPDATE Enterprise.ProductSettingType 
+SET SensitiveData=1 WHERE Name='Kong_key'
+GO
