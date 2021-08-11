@@ -2010,6 +2010,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
+        public List<int> GetEnterpriseRoleNewProductsByRoleTemplateId(int roleTemplateId)
+        {
+            object param = new
+            {
+                RoleTemplateId = roleTemplateId
+            };
+            using (var repository = GetRepository())
+            {
+                return repository.GetMany<int>(StoredProcNameConstants.SP_GetEnterpriseRoleNewProductsByRoleTemplateId, param).ToList();
+
+            }
+        }
+
         public List<int> GetEnterpriseRoleUpdatedProductsByRoleTemplateId(int roleTemplateId)
         {
             object param = new

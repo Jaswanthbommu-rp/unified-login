@@ -284,52 +284,58 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         ListResponse result;
                         RoleTemplateProduct userProduct = new RoleTemplateProduct();
                        
-                        var integration = _integrationTypeFactory.GetIntegration(product.ProductId);
-                        result = integration.GetRoles(editorPersonaId, userPersonaId, partyId, AccessType.Property, datafilter);
-
-                        if (!result.IsError)
-                        {
-                            userProduct.ProductId = product.ProductId;
-
-                            if (result != null && result.Records.Count > 0)
+                        try {
+                            var integration = _integrationTypeFactory.GetIntegration(product.ProductId);
+                            result = integration.GetRoles(editorPersonaId, userPersonaId, partyId, AccessType.Property, datafilter);
+                            if (!result.IsError)
                             {
-                                List<RoleTemplateRoles> roleTemplateRoles = new List<RoleTemplateRoles>();
-                                if (product.ProductId == (int)ProductEnum.ClickPay)
+                                userProduct.ProductId = product.ProductId;
+
+                                if (result != null && result.Records.Count > 0)
                                 {
-                                    IList<ClickPayRole> cproleList = result.Records.Cast<ClickPayRole>().ToList().FindAll(p => p.IsAssigned == true);
-                                    foreach (var role in cproleList)
+                                    List<RoleTemplateRoles> roleTemplateRoles = new List<RoleTemplateRoles>();
+                                    if (product.ProductId == (int)ProductEnum.ClickPay)
                                     {
-                                        RoleTemplateRoles templateRole = new RoleTemplateRoles
+                                        IList<ClickPayRole> cproleList = result.Records.Cast<ClickPayRole>().ToList().FindAll(p => p.IsAssigned == true);
+                                        foreach (var role in cproleList)
                                         {
-                                            RoleId = role.Id,
-                                            RoleName = role.Name,
-                                            RoleTemplateProductRoleMappingID = 0
-                                        };
-                                        roleTemplateRoles.Add(templateRole);
+                                            RoleTemplateRoles templateRole = new RoleTemplateRoles
+                                            {
+                                                RoleId = role.Id,
+                                                RoleName = role.Name,
+                                                RoleTemplateProductRoleMappingID = 0
+                                            };
+                                            roleTemplateRoles.Add(templateRole);
+                                        }
                                     }
+                                    else
+                                    {
+                                        IList<SharedObjects.Product.ProductRole> roleList = result.Records.Cast<SharedObjects.Product.ProductRole>().ToList().FindAll(p => p.IsAssigned == true);
+                                        foreach (var role in roleList)
+                                        {
+                                            RoleTemplateRoles templateRole = new RoleTemplateRoles
+                                            {
+                                                RoleId = role.ID,
+                                                RoleName = role.Name,
+                                                RoleTemplateProductRoleMappingID = 0
+                                            };
+                                            roleTemplateRoles.Add(templateRole);
+                                        }
+                                    }
+
+                                    userProduct.Roles = roleTemplateRoles;
+                                    userProduct.RoleTemplateProductId = 0;
+                                    userProducts.Add(userProduct);
                                 }
-                                else{
-                                    IList<SharedObjects.Product.ProductRole> roleList = result.Records.Cast<SharedObjects.Product.ProductRole>().ToList().FindAll(p => p.IsAssigned == true);
-                                    foreach (var role in roleList)
-                                    {
-                                        RoleTemplateRoles templateRole = new RoleTemplateRoles
-                                        {
-                                            RoleId = role.ID,
-                                            RoleName = role.Name,
-                                            RoleTemplateProductRoleMappingID = 0
-                                        };
-                                        roleTemplateRoles.Add(templateRole);
-                                    }
-                                }                               
-                               
-                                userProduct.Roles = roleTemplateRoles;
-                                userProduct.RoleTemplateProductId = 0;
-                                userProducts.Add(userProduct);
-                            }                                                  
+                            }
+                            else
+                            {
+                                productError.Add(product.Name);
+                            }
                         }
-                        else {
+                        catch{
                             productError.Add(product.Name);
-						}
+                        }                        
                     }                    
                 }
                

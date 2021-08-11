@@ -303,5 +303,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
        
         /// <returns></returns>
         List<int> GetEnterpriseRoleDeletedProductsByRoleTemplateId(int roleTemplateId);
+        List<int> GetEnterpriseRoleNewProductsByRoleTemplateId(int roleTemplateId);
     }
 }
