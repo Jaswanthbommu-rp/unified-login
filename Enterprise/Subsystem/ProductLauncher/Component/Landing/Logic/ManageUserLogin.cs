@@ -738,7 +738,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 if (organization.RealPageId != DefaultUserClaim.ExternalCompanyRealPageId)
                 {
                     DefaultUserClaim currentUserClaim = GetCurrentUserClaim(manageProfile, organization);
-                    AddActivityLog(userLogin, statusType, ProductEnum.UnifiedPlatform.ToEnumDescription(), currentUserClaim);
+                    string message = "{0} {1} was {2} by the system due to the scheduled User effective date "+ userFromDate;
+                    AddActivityLog(userLogin, statusType, ProductEnum.UnifiedPlatform.ToEnumDescription(), currentUserClaim, message);
                 }
                 primaryOrgStatus = _userLoginRepository.GetUserOrganizationWithStatus(userLogin.UserId, lastLoginDate, 0, true);
             }
@@ -889,7 +890,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                                 }
 
                                 _userLoginRepository.UpdateUserStatusByCompany(userLogin.RealPageId, org.PartyId, statusTypeId, userFromDate, thruUtcDateTime);
-                                AddActivityLog(userLogin, statusType, ProductEnum.UnifiedPlatform.ToEnumDescription(), currentUserClaim);
+                                string activityMessage = "{0} {1} was {2} by the system due to the scheduled User effective date " + userFromDate;
+                                AddActivityLog(userLogin, statusType, ProductEnum.UnifiedPlatform.ToEnumDescription(), currentUserClaim, activityMessage);
                             }
                         }
                     }
@@ -1262,7 +1264,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return new DefaultUserClaim(ClaimsPrincipal.Current);
         }
 
-        private void AddActivityLog(UserLoginOnly userLogin, string activityTypeName, string booksProductCode, DefaultUserClaim defaultUserClaim)
+        private void AddActivityLog(UserLoginOnly userLogin, string activityTypeName, string booksProductCode, DefaultUserClaim defaultUserClaim, string activityMessage="")
         {
             var person = _personRepository.GetPerson(userLogin.RealPageId);
             var userLoginTo = GetUserLoginOnly(userLogin.RealPageId);
@@ -1293,11 +1295,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     activity = "Expired";
                     logActivityTypeName.Add(LogActivityTypeConstants.USER_EXPIRED);
                     break;
+                case "pending":
+                    activity = "Pending";
+                    logActivityTypeName.Add(LogActivityTypeConstants.LOGIN_ENABLED);
+                    break;
                 default:
                     break;
             }
 
-            message = $"{defaultUserClaim.FirstName} {defaultUserClaim.LastName} {activity} user {person.FirstName} {person.LastName}.";
+            if (string.IsNullOrEmpty(activityMessage))
+            {
+                message = $"{defaultUserClaim.FirstName} {defaultUserClaim.LastName} {activity} user {person.FirstName} {person.LastName}.";
+            }
+            else
+            {
+                message =string.Format(activityMessage, person.FirstName, person.LastName, activity);
+            }
             if (!string.IsNullOrEmpty(activity))
             {
                 try
