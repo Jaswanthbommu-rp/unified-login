@@ -438,6 +438,7 @@
         public const string SP_GetEnterpriseRoleUpdatedProductsByRoleTemplateId = "Security.GetEnterpriseRoleUpdatedProductsByRoleTemplateId";
         public const string SP_GetEnterpriseRoleDeletedProductsByRoleTemplateId = "Security.GetEnterpriseRoleDeletedProductsByRoleTemplateId";
         public const string SP_GetUserRoleTemplate = "Security.GetUserRoleTemplate";
+        public const string SP_GetEnterpriseRoleNewProductsByRoleTemplateId = "Security.GetEnterpriseRoleNewProductsByRoleTemplateId";
     }
 
     public static class EnterpriseStoredProcNameConstants

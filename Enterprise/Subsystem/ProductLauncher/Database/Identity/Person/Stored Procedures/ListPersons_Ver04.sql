@@ -379,7 +379,8 @@ BEGIN
 	FROM #UserLogin UL
 	INNER JOIN [Security].[RoleTemplateUserMapping] RTUM  ON UL.PersonaId  = RTUM.PersonaId
 	INNER JOIN [Security].[RoleTemplate] SRT ON SRT.RoleTemplateId = RTUM.RoleTemplateId
-	
+	Where SRT.PartyID = @PartyId
+
 	IF(@filterEnterpriseRoleCount > 0)
 	BEGIN
 		DELETE FROM #UserEnterpriseRole 
@@ -457,7 +458,7 @@ BEGIN
 		PartyRoleTypeId,
 		PasswordModifiedDate,
 		EntepriseRoleName,
-		EntepriseRoleId,
+		RoleTemplateId,
 		OffsetMinutes,
 		TotalRecords,
 		RowNumber
@@ -550,7 +551,7 @@ BEGIN
 				Suffix,
 				CustomField,
 				EntepriseRoleName,
-				EntepriseRoleId,
+				RoleTemplateId,
 				UserId,
 				LoginName,
 				LastLogin,
@@ -561,9 +562,7 @@ BEGIN
 				StatusThruDate,
 				Is3rdPartyIDP,
 				PasswordModifiedDate,
-				OffsetMinutes,
-				EntepriseRoleName,
-				EntepriseRoleId,
+				OffsetMinutes,				
 				Products,
 				Properties,
 				UserType,

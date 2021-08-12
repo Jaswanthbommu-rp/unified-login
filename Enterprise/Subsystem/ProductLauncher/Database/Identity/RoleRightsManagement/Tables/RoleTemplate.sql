@@ -13,6 +13,10 @@ CREATE TABLE [Security].[RoleTemplate] (
 WITH (SYSTEM_VERSIONING = ON (HISTORY_TABLE=[Security].[RoleTemplateHistory], DATA_CONSISTENCY_CHECK=ON));
 GO
 
+ALTER TABLE [Security].[RoleTemplate]
+ADD CONSTRAINT UC_RoleTemplate UNIQUE ([RoleTemplateName]);
+GO
+
 EXECUTE sp_addextendedproperty
 	@name = N'MS_Description',
 	@value = N'This table contains Role Templates',

@@ -231,6 +231,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             bool profileChanged = false;
             long booksCustomerMasterId = 0;
             int greenBookRole = 0;
+            List<int> greenBookRoles = new List<int>();
 
             IUserLoginRepository userLoginRepository = new UserLoginRepository();
             IUserLoginOnly userLoginOnly = userLoginRepository.GetUserLoginOnly(newProfile.userLogin.LoginName);
@@ -1139,7 +1140,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             {
                                 if (gbProductBatch != null)
                                 {
-                                    greenBookRole = GetGreenBookRole(gbProductBatch);
+                                    greenBookRoles = GetGreenBookRoles(gbProductBatch);
                                 }
                                 else
                                 {
@@ -1172,17 +1173,49 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             }
                         }
 
-                        param = new
-                        {
-                            personaID = personaId,
-                            roleID = greenBookRole,
-                            CreatedBy = _userClaim.UserId,
-                            personaPrivilgeID = 0
-                        };
-
                         procName = schemaName?.Length > 0 ? $"{schemaName}.LinkPersonaToRole" : StoredProcNameConstants.SP_LinkPersonaToRole;
-                        repositoryResponse = repository.GetOne<RepositoryResponse>(procName, param);
-                        if (repositoryResponse.Id == 0)
+
+                        bool roleisLinked = false;
+
+                        if (greenBookRole > 0)
+                        {
+                            param = new
+                            {
+                                personaID = personaId,
+                                roleID = greenBookRole,
+                                CreatedBy = _userClaim.UserId,
+                                personaPrivilgeID = 0
+                            };
+
+                            repositoryResponse = repository.GetOne<RepositoryResponse>(procName, param);
+                            if (repositoryResponse.Id == 0)
+                                roleisLinked = false;
+                            else
+                                roleisLinked = true;
+                        }
+                        else 
+                        {
+                            foreach (var role in greenBookRoles)
+                            {
+                                param = new
+                                {
+                                    personaID = personaId,
+                                    roleID = role,
+                                    CreatedBy = _userClaim.UserId,
+                                    personaPrivilgeID = 0
+                                };
+                                repositoryResponse = repository.GetOne<RepositoryResponse>(procName, param);
+                                if (repositoryResponse.Id == 0)
+                                {
+                                    roleisLinked = false;
+                                    break;
+                                }
+                                else
+                                    roleisLinked = true;
+                            }
+                        }
+
+                        if (!roleisLinked)
                         {
                             repository.UnitOfWork.Rollback();
                             errorStatus.Success = false;
