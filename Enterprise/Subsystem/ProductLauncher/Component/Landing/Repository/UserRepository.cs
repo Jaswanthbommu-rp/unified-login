@@ -2628,8 +2628,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         if (updateUserStatusResponse.Id > 0)
                         {
-                            string message = string.Format("{0} {1} was deactivated by the system due to the scheduled User Expires date {2}", person.FirstName, person.LastName, userLogin.ThruDate);
-                            AddActivityLog(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, message, userLoginOnly, org);
+                            string message = $"{person.FirstName} {person.LastName} was deactivated by the system due to the scheduled User Expires date {userLogin.ThruDate}";
+                            AddActivityLog(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, message, person, userLoginOnly, org);
                         }
                         //remove products
                         if (editorPersona != null && (ul.OrganizationRealPageId == primaryCompanyGuid || ul.OrganizationRealPageId == org.OrganizationRealPageId))
@@ -4726,11 +4726,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             });
         }
 
-        private void AddActivityLog(string logActivityType, LogActivityCategoryType logActivityCategoryType, string message, IUserLoginOnly userLogin = null, IUserOrganization userOrg = null)
+        private void AddActivityLog(string logActivityType, LogActivityCategoryType logActivityCategoryType, string message, IPerson person, IUserLoginOnly userLogin = null, IUserOrganization userOrg = null)
         {
-            IManagePerson managePerson = new ManagePerson();
-            IPerson person = managePerson.GetPerson(userLogin.RealPageId);
-
             LogActivity.WriteActivity(new ActivityDetails
             {
                 LogActivityTypeName = logActivityType,
