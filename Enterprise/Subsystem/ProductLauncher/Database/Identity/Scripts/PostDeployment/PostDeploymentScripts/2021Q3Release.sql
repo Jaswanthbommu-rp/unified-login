@@ -1830,7 +1830,7 @@ insert into Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
 select @roleId,@rightId,@UserId,getUTCDate()
 end
 
-select @rightId = RightId from Security.[Right] WHERE Value = 'View property-level settings' AND ProductId = 3
+select @rightId = RightId from Security.[Right] WHERE Value = 'View all property-level settings' AND ProductId = 3
 if not exists(select 1 from Security.RoleRight where RoleId=@roleId and RightId = @rightId)
 begin
 insert into Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
@@ -1854,7 +1854,7 @@ insert into Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
 select @roleId,@rightId,@UserId,getUTCDate()
 end
 
-select @rightId = RightId from Security.[Right] WHERE Value = 'View property-level settings' AND ProductId = 3
+select @rightId = RightId from Security.[Right] WHERE Value = 'View all property-level settings' AND ProductId = 3
 if not exists(select 1 from Security.RoleRight where RoleId=@roleId and RightId = @rightId)
 begin
 insert into Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
