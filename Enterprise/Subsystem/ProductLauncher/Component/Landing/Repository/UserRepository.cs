@@ -5956,11 +5956,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         if (primaryPropertyBatch?.InputJson?.RoleList != null && primaryPropertyBatch?.InputJson?.RoleList.Count > 0)
                         {
                             int roleTemplateId = Convert.ToInt32(primaryPropertyBatch.InputJson.RoleList.FirstOrDefault());
-                            repositoryResponse = InsertUpdateEnterpriseRoleToUser(repository, roleTemplateId, updateUserProfileEntity.OldProfile.Persona[0].PersonaId);
-                            if (repositoryResponse.Id == 0)
+                            if (roleTemplateId != 0)
                             {
-                                repositoryResponse.ErrorMessage = "Unable to update enterprise role to the Persona.";
-                                throw new Exception(repositoryResponse.ErrorMessage);
+                                repositoryResponse = InsertUpdateEnterpriseRoleToUser(repository, roleTemplateId, updateUserProfileEntity.OldProfile.Persona[0].PersonaId);
+                                if (repositoryResponse.Id == 0)
+                                {
+                                    repositoryResponse.ErrorMessage = "Unable to update enterprise role to the Persona.";
+                                    throw new Exception(repositoryResponse.ErrorMessage);
+                                }
+                            }
+                            else if (roleTemplateId == 0)
+                            {
+                                //unassign enterprise role from user
+                                UnassignEnterpriseRoleFromUser(repository, updateUserProfileEntity.OldProfile.Persona[0].PersonaId);
                             }
                         }
 
@@ -6301,6 +6309,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 PersonaId = personaId
             };
             return repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_InsertUpdateRoleTemplateUserMapping, param);
+        }
+
+        /// <summary>
+        /// Unassign EnterpriseRole From User
+        /// </summary>
+        /// <param name="repository">IRepository Object</param>
+        /// <param name="personaId">PersonaId</param>
+        /// <returns>RepositoryResponse Object</returns>
+        private RepositoryResponse UnassignEnterpriseRoleFromUser(IRepository repository, long personaId)
+        {
+            var param = new
+            {
+                PersonaId = personaId
+            };
+            return repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UnassignEnterpriseRoleFromUser, param);
         }
         #endregion
 
