@@ -121,8 +121,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 					if (propertiesResponse.Records?.Count > 0)
 					{
-						var productBatchRecord = GetProductBatchRecord(batch.EditorUserPersonaId, batch.SubjectUserPersonaId, productRoles, propertiesResponse, rolesResponse, product, true);
-						productListToCreate.Add(productBatchRecord);
+						if (ProductEnumHelper.GetAoProductList().Contains((ProductEnum)product))
+						{
+							var batchRecords = BatchHelper.CreateAoBatchRecords(_userClaim, batch.EditorUserPersonaId, batch.SubjectUserPersonaId, isExternalUser, true);
+							foreach (var productBatch in batchRecords)
+							{
+								productListToCreate.Add(productBatch);
+							}
+						}
+						else{
+							var productBatchRecord = GetProductBatchRecord(batch.EditorUserPersonaId, batch.SubjectUserPersonaId, productRoles, propertiesResponse, rolesResponse, product, true);
+							productListToCreate.Add(productBatchRecord);
+						}							
 					}
 				}
 				
@@ -183,7 +193,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					}					
 					else if (ProductEnumHelper.GetAoProductList().Contains((ProductEnum)product))
 					{
-						var batchRecords = BatchHelper.CreateAoBatchRecords(_userClaim, batch.EditorUserPersonaId, batch.SubjectUserPersonaId, isExternalUser);
+						var batchRecords = BatchHelper.CreateAoBatchRecords(_userClaim, batch.EditorUserPersonaId, batch.SubjectUserPersonaId, isExternalUser, usePrimaryProperties);
 						foreach (var productBatch in batchRecords)
 						{
 							productListToCreate.Add(productBatch);
