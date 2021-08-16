@@ -1919,3 +1919,34 @@ end
 UPDATE Enterprise.ProductSettingType 
 SET SensitiveData=1 WHERE Name='Kong_key'
 GO
+
+--User Story 881644
+
+IF NOT EXISTS(SELECT TOP 1 1 FROM Enterprise.NavigationMenu WHERE PageId = 'admin console')
+BEGIN 
+	BEGIN TRAN
+	DECLARE @parentId int;
+	SELECT TOP 1 @parentId = Id FROM Enterprise.NavigationMenu WHERE PageId = N'reporting';
+	DECLARE @menuEntryId int;
+	INSERT INTO Enterprise.NavigationMenu(Title, PageId, Icon, [URL], OrderIndex, ParentId, Origin)
+	VALUES (N'Admin Console', N'admin console', NULL, '/reporting/admin', 200, @parentId, 'unified-login');
+	SET @menuEntryId = SCOPE_IDENTITY();
+	INSERT INTO Enterprise.NavigationMenuRights(NavigationMenuId, RightId)
+	SELECT @menuEntryId, RightId FROM [Security].[Right] WHERE RightName = 'EmployeeAccessUnifiedReportingAdminConsole'
+	COMMIT TRAN
+END
+GO
+IF NOT EXISTS(SELECT TOP 1 1 FROM Enterprise.NavigationMenu WHERE PageId = 'manage reports')
+BEGIN 
+	BEGIN TRAN  
+	DECLARE @parentId int;
+	SELECT TOP 1 @parentId = Id FROM Enterprise.NavigationMenu WHERE PageId = N'reporting';
+	DECLARE @menuEntryId int;
+	INSERT INTO Enterprise.NavigationMenu(Title, PageId, Icon, [URL], OrderIndex, ParentId, Origin)
+	VALUES (N'Manage Reports', N'manage reports', NULL, '/reporting/', 210, @parentId, 'unified-login');
+	SET @menuEntryId = SCOPE_IDENTITY();
+	INSERT INTO Enterprise.NavigationMenuRights(NavigationMenuId, RightId)
+	SELECT @menuEntryId, RightId FROM [Security].[Right] WHERE RightName = 'ManageCompanyLevelReporting'
+	COMMIT TRAN
+END
+GO
