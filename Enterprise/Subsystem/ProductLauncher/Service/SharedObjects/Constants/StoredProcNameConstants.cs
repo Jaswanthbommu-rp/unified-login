@@ -326,7 +326,8 @@
         public const string SP_ListAllRights = "Security.ListAllRights";
         public const string SP_ListSecurityStatus = "Security.ListSecurityStatus";
         public const string SP_SetDefaulteRole = "Security.SetDefaultRole";
-        public const string SP_InsertUpdateRoleTemplateUserMapping = "Security.InsertUpdateRoleTemplateUserMapping";       
+        public const string SP_InsertUpdateRoleTemplateUserMapping = "Security.InsertUpdateRoleTemplateUserMapping";
+        public const string SP_UnassignEnterpriseRoleFromUser = "Security.DeleteRoleTemplateUserMappingByPersona";
 
         //Configuration Settings
         public const string SP_ListUserLoginSettings = "Enterprise.ListUserLoginSettings";

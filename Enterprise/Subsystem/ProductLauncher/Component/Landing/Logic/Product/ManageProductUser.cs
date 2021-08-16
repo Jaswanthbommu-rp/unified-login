@@ -279,7 +279,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (string.IsNullOrEmpty(result))
             {
                 isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Success);
-                //UpdateProductPrimaryPropertyProductStatus(productUser.AssignUserPersonaId, (int)productUser.ProductName, usePrimaryProperties == true ? 1 : 0);
+                SavePersonaProductProperties(usePrimaryProperties, productUser.AssignUserPersonaId, (int)productUser.ProductName, roleProp, productUser.InputJson);
             }
             else
             {

@@ -538,7 +538,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Helper
 			return pb;
 		}
 
-		public static IList<ProductBatch> CreateAoBatchRecords(DefaultUserClaim userClaim, long editorPersonaId, long newUserPersonaId, bool externalUser = false)
+		public static IList<ProductBatch> CreateAoBatchRecords(DefaultUserClaim userClaim, long editorPersonaId, long newUserPersonaId, bool externalUser = false, bool usePrimaryProperties = false)
 		{
 			var productBatchList = new List<ProductBatch>();
 			IList<AoUserCompanyPropertyRoleDetail> aoBIUserCompanyPropertyRoleDetails = new List<AoUserCompanyPropertyRoleDetail>();
@@ -589,7 +589,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Helper
 							PropertyList = (from i in aoUserCompanyPropertyRoleDetail.SelectedPortfolioValues select i.ToString()).ToList(),
 							RoleList = (from i in aoUserCompanyPropertyRoleDetail.SelectedRoleValues select i).ToList(),
 							CompanyId = aoUserCompanyPropertyRoleDetail.CompanyId,
-							PropertyGroupList = (from i in aoUserCompanyPropertyRoleDetail.PropertyGroups select i.ToString()).ToList()
+							PropertyGroupList = (from i in aoUserCompanyPropertyRoleDetail.PropertyGroups select i.ToString()).ToList(),
+							UsePrimaryProperties = usePrimaryProperties
 						}
 				};
 
