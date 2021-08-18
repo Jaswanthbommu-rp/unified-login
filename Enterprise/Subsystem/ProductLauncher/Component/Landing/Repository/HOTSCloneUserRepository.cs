@@ -1,19 +1,15 @@
 ﻿using RP.Enterprise.Foundation.DataAccess.Component;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Hots;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
-using Newtonsoft.Json;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 {
-	public class HOTSCloneUserRepository : BaseRepository, IHOTSCloneUserRepository
+    public class HOTSCloneUserRepository : BaseRepository, IHOTSCloneUserRepository
 	{
 		#region Constructor
 		/// <summary>
@@ -81,12 +77,35 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 			}
 		}
 
+        private UserLoginOnly getUserLoginOnly(string enterpriseUserName)
+        {
+            UserLoginOnly userLogin = new UserLoginOnly();
+            dynamic param = new { EnterpriseUserName = enterpriseUserName };
+			
+            using (var repository = GetRepository())
+            {
+                userLogin = repository.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, param);
+            }
+
+            return userLogin;
+        }
 		public HotsUser CreateUser (long partyId,BaseLineCustomerCompanyUser user, IProfileDetail baseUserProfile, List<ProductBatch> productBatch)
 		{
 			HotsUser hotsUser = new HotsUser();
 			string loginName;
 			loginName = getLoginName(partyId, baseUserProfile);
-			dynamic param = new
+
+            UserLoginOnly userLoginOnly = getUserLoginOnly(loginName);
+            if (userLoginOnly != null)
+            {
+                hotsUser.BaselineUserId = baseUserProfile.userLogin.UserId;
+                hotsUser.BaselineUserName = baseUserProfile.userLogin.LoginName;
+                hotsUser.CloneUserId = userLoginOnly.UserId;
+                hotsUser.CloneUserName = userLoginOnly.LoginName;
+                return hotsUser;
+            }
+            
+            dynamic param = new
 			{
 				FirstName = baseUserProfile.FirstName,
 				MiddleName = baseUserProfile.MiddleName,
