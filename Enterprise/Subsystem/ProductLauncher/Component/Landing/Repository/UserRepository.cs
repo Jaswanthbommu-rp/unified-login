@@ -23,6 +23,8 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.Us
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Mappers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
+using Serilog;
+using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -2587,11 +2589,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         public void ProcessDisabledUsers(IList<ProcessUserLogin> userLogins)
         {
             //IManageUserLogin userLoginLogic = new ManageUserLogin();
+            var logData = new Dictionary<string, object>();
             IManagePersona managePersona = new ManagePersona();
             IManagePerson managePerson = new ManagePerson();
             Dictionary<Guid, Persona> companyAdminList = new Dictionary<Guid, Persona>();
             RepositoryResponse updateUserStatusResponse = new RepositoryResponse();
-
+            logData = new Dictionary<string, object> { { "userLogins", userLogins} };
+            WriteToLog(LogEventLevel.Debug, $"UserRepository.ProcessDisabledUsers at beginning of method for user with json", logData);
             using (var repository = GetRepository())
             {
                 foreach (ProcessUserLogin ul in userLogins)
@@ -2602,6 +2606,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     var userOrganizationList = userLoginRepository.ListOrganizationByLoginName(userLoginOnly.LoginName);
                     Guid primaryCompanyGuid = userOrganizationList.FirstOrDefault(p => p.PrimaryOrganization).OrganizationRealPageId;
                     List<Guid> organizationsToProcess = new List<Guid>();
+
+                    logData = new Dictionary<string, object> { { "userLogins", userLoginOnly }, { "userOrganizationList", userOrganizationList } };
+                    WriteToLog(LogEventLevel.Debug, $"UserRepository.ProcessDisabledUsers: Getting info for process to disable User with login name { userLoginOnly.LoginName} and user realpageId {ul.UserRealPageId}", logData);
+                    
                     foreach (var org in userOrganizationList)
                     {
                         Persona editorPersona = null;
@@ -2609,6 +2617,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         IUserLogin userLogin = userLoginRepository.GetUserLogin(ul.UserRealPageId, orgPartyId);
                         bool isUserdisabled = userLogin.StatusId == (int)UserUiStatusType.Disabled;
 
+                        WriteToLog(LogEventLevel.Debug, $"UserRepository.ProcessDisabledUsers: Verifying user status is {isUserdisabled} for OrganizationPartyId {orgPartyId}");
+                        
                         if (!companyAdminList.ContainsKey(org.OrganizationRealPageId))
                         {
                             //since windows service doesn't have editor persona,Get RealPageEmployeeAccessID to use in to get editor persona and save it for later calls
@@ -2659,14 +2669,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             });
                         }
 
+                        logData = new Dictionary<string, object> { { "updateUserStatusResponse", updateUserStatusResponse } };
+                        WriteToLog(LogEventLevel.Debug, $"UserRepository.ProcessDisabledUsers: Verifying update user status response {updateUserStatusResponse.Id}", logData);
+
                         if (updateUserStatusResponse.Id > 0)
                         {
                             string message = $"{person.FirstName} {person.LastName} was deactivated by the system due to the scheduled User Expires date {userLogin.ThruDate}";
+                            WriteToLog(LogEventLevel.Debug, $"UserRepository.ProcessDisabledUsers: calling AddActivityLog method for activity - {message}");
                             AddActivityLog(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, message, person, userLoginOnly, org);
                         }
                         //remove products
                         if (editorPersona != null && (ul.OrganizationRealPageId == primaryCompanyGuid || ul.OrganizationRealPageId == org.OrganizationRealPageId))
                         {
+                            WriteToLog(LogEventLevel.Debug, $"UserRepository.ProcessDisabledUsers: calling ProcessDisableUserProductData");
                             ProcessDisableUserProductData(repository, persona.PersonaId, editorPersona.RealPageId, editorPersona.PersonaId, persona.UserTypeId);
                         }
                     }
@@ -3380,6 +3395,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             return productsAssignedToCompany;
         }
 
+        private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
+        {
+            string correlationId = "";
+            if (_userClaim != null)
+            {
+                correlationId = (_userClaim.CorrelationId != Guid.Empty) ? _userClaim.CorrelationId.ToString() : "";
+            }
+            var logger = Log.Logger;
+            if (logData?.Keys != null)
+            {
+                logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
+            }
+            logger = logger.ForContext("ProductModule", this.GetType());
+            logger = logger.ForContext("CorrelationId", correlationId);
+            logger.Write(logType, exception, message);
+        }
         #endregion
 
         #region Private methods
@@ -4429,6 +4460,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="createUserPersonaId"></param>
         public void ProcessDisableUserProductData(IRepository repository, long assignUserPersonaId, Guid createUserRealPageId, long createUserPersonaId, int? userTypeId)
         {
+            WriteToLog(LogEventLevel.Debug, $"UserRepository.ProcessDisableUserProductData:  at beginning of method with assignUserPersonaId - {assignUserPersonaId} and createUserPersonaId - {createUserPersonaId}");
             CreateUserResponse<IErrorData> createUserResponse = new CreateUserResponse<IErrorData>();
             Status<IErrorData> errorStatus = new Status<IErrorData>();
             IList<ProductSettingType> productSettingTypes = new List<ProductSettingType>();
@@ -4761,6 +4793,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
         private void AddActivityLog(string logActivityType, LogActivityCategoryType logActivityCategoryType, string message, IPerson person, IUserLoginOnly userLogin = null, IUserOrganization userOrg = null)
         {
+            WriteToLog(LogEventLevel.Debug, $"UserRepository.AddActivityLog at beginning of method for for activity - {message} and correlationId is {_userClaim.CorrelationId.ToString()} ");
             LogActivity.WriteActivity(new ActivityDetails
             {
                 LogActivityTypeName = logActivityType,
@@ -4782,6 +4815,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 ToUserLastName = person.LastName,
                 ToUserRealpageId = userLogin.RealPageId.ToString(),
             });
+
+            WriteToLog(LogEventLevel.Debug, $"UserRepository.AddActivityLog at ending of method for for activity - {message} and correlationId is {_userClaim.CorrelationId.ToString()} ");
         }
 
         private string ChangeUserTypeExternal(IRepository repository, Organization organizationExternalUser, OrganizationStatus currentPrimaryOrgStatus, IProfileDetail profile, IPersona persona, IList<UserOrganization> userPersonaOrganizationList, IList<ContactMechanismUsageType> emailUsageType, IUserLoginOnly userLoginOnly, IIdentityProviderType identityProviderType, string userTypeChangedToFromExternal, string schemaName)
