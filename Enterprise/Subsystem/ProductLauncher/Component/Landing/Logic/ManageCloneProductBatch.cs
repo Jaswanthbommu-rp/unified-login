@@ -44,9 +44,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			var manageUnifiedLogin = new ManageUnifiedLogin(_userClaim);
 			var manageProductOneSite = new ManageProductOneSite(_userClaim);
 			var productRepository = new ProductRepository(_userClaim);
-			
+			var productInternalSettingRepository = new ProductInternalSettingRepository();
+
 			_integrationTypeFactory = new IntegrationTypeFactory(manageProduct, manageUnifiedLogin,
-				manageProductOneSite, productRepository, _userClaim);
+				manageProductOneSite, productRepository, productInternalSettingRepository, _userClaim);
 		}
 
 		/// <summary>

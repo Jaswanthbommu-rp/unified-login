@@ -54,10 +54,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             base.Initialize(controllerContext);
             var manageProduct = new ManageProduct(_userClaims);
             var manageProductOneSite = new ManageProductOneSite(_userClaims);
+            var productInternalSettingRepository = new ProductInternalSettingRepository();
 
             _manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
             _productRepository = new ProductRepository(_userClaims);
-            _integrationTypeFactory = new IntegrationTypeFactory(manageProduct, _manageUnifiedLogin, manageProductOneSite, _productRepository, _userClaims);
+            _integrationTypeFactory = new IntegrationTypeFactory(manageProduct, _manageUnifiedLogin, manageProductOneSite, _productRepository,
+                productInternalSettingRepository, _userClaims);
         }
 
         /// <summary>

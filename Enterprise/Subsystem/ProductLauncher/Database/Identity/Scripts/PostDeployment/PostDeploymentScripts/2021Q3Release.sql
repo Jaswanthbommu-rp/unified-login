@@ -1707,6 +1707,13 @@ BEGIN
 	INSERT INTO Security.RoleRight (RoleId,RightId,CreatedBy,CreatedDate) 
 	VALUES(@RoleId,@RightId,@UserId,@Now);
 END
+
+UPDATE Security.[Right]
+SET TargetProductId = 73
+WHERE ProductId = @ProductId
+	AND RightName = 'ManageRelate247ProductAccess'
+	AND TargetProductId= 60;
+
 GO
 UPDATE Auth.Claim
 SET ClaimName = 'roleid'

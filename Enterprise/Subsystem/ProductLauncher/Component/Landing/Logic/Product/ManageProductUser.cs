@@ -84,7 +84,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _manageProduct = new ManageProduct(_defaultUserClaim);
             var manageUnifiedLogin = new ManageUnifiedLogin(_defaultUserClaim);
             var manageProductOneSite = new ManageProductOneSite(_defaultUserClaim);
-            _integrationTypeFactory = new IntegrationTypeFactory(_manageProduct, manageUnifiedLogin, manageProductOneSite, _productRepository, _defaultUserClaim);
+            _integrationTypeFactory = new IntegrationTypeFactory(_manageProduct, manageUnifiedLogin, manageProductOneSite, _productRepository, _productInternalSettingRepository, _defaultUserClaim);
         }
         #endregion
 
@@ -98,9 +98,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             long assignUserPersonaId = productUserAccountDetails.PersonaId;
 
-            var manageProductBase = new ManageProductBase((int)productUserAccountDetails.ProductName, _productInternalSettingRepository, _productRepository);
+            var manageProductBase = new ManageProductBase(productUserAccountDetails.ProductName, _productInternalSettingRepository, _productRepository);
 
-            manageProductBase.DeleteSamlUserProductInfoAndStatus(assignUserPersonaId, (int)productUserAccountDetails.ProductName);
+            manageProductBase.DeleteSamlUserProductInfoAndStatus(assignUserPersonaId, productUserAccountDetails.ProductName);
 
             return string.Empty;
         }
@@ -320,135 +320,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns>String.empty if success else error</returns>
         public string UpdateProductUserAccountDetails(ProductUserAccountDetails productUserAccountDetails)
         {
-            string result = string.Empty;
-            IProduct product;
-
-            switch (productUserAccountDetails.ProductName)
-            {
-                case ProductEnum.OneSite:
-                    product = new OneSiteProduct(_defaultUserClaim, _productInternalSettingRepository,_productRepository);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
-                    break;
-                case ProductEnum.MarketingCenter:
-                    product = new MarketingCenterProduct(_defaultUserClaim, _productInternalSettingRepository, _productRepository);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
-                    break;
-                case ProductEnum.FinancialSuite:
-                    product = new OneSiteAccountingProduct(_defaultUserClaim, _productInternalSettingRepository, _productRepository);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
-                    break;
-                case ProductEnum.OpsBuyer:
-                    product = new OpsProduct(_defaultUserClaim, _productInternalSettingRepository, _productRepository);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
-                    break;
-                case ProductEnum.VendorServices:
-                    product = new VendorServicesProduct(_defaultUserClaim, _productInternalSettingRepository, _productRepository);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
-                    break;
-                case ProductEnum.ClientPortal:
-                    product = new ClientPortalProduct(_defaultUserClaim, _productInternalSettingRepository, _productRepository);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
-                    break;
-                case ProductEnum.SalesForce:
-                    product = new ClientPortalProduct(_defaultUserClaim, _productInternalSettingRepository, _productRepository);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
-                    break;
-                case ProductEnum.ProspectContactCenter:
-                    product = new ProspectContactCenterProduct(_defaultUserClaim, _productInternalSettingRepository, _productRepository);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
-                    break;
-                case ProductEnum.Lead2Lease:
-                    product = new Lead2LeaseProduct(_defaultUserClaim, _productInternalSettingRepository, _productRepository);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
-                    break;
-                case ProductEnum.ResidentPortal:
-                    product = new ResidentPortalProduct(_defaultUserClaim, _productInternalSettingRepository, _productRepository);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
-                    break;
-                case ProductEnum.OnSite:
-                    product = new OnSiteProduct(_defaultUserClaim, _productInternalSettingRepository, _productRepository);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
-                    break;
-                case ProductEnum.Insurance:
-                    product = new RentersInsuranceProduct(_productInternalSettingRepository, _productRepository);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
-                    break;
-                case ProductEnum.ResearchApplication:
-                    product = new ResearchApplicationProduct(_defaultUserClaim, _productInternalSettingRepository, _productRepository);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
-                    break;
-                case ProductEnum.UnifiedAmenities:
-                    product = new UnifiedAmenitiesProduct(_defaultUserClaim, _productInternalSettingRepository, _productRepository);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
-                    break;
-                case ProductEnum.SelfProvisioningPortal:
-                    product = new SelfProvisioningPortalProduct(_defaultUserClaim, _productInternalSettingRepository, _productRepository);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
-                    break;
-                case ProductEnum.UtilityManagement:
-                    product = new UtilityManagementProduct(_defaultUserClaim, _productInternalSettingRepository, _productRepository);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
-                    break;
-                case ProductEnum.AssetOptimizer:
-                    product = new AssetOptimizerProduct(_defaultUserClaim, _productInternalSettingRepository, _productRepository);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
-                    break;
-                case ProductEnum.AoBusinessIntelligence:
-                    product = new AoBusinessIntelligenceProduct(_defaultUserClaim, _productInternalSettingRepository, _productRepository);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
-                    break;
-                case ProductEnum.LeadManagement:
-                    product = new LeadManagementProduct(ProductEnum.LeadManagement);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
-                    break;
-                case ProductEnum.LeadAnalytics:
-                    product = new LeadManagementProduct(ProductEnum.LeadAnalytics);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
-                    break;
-                case ProductEnum.RPDocumentManagement:
-                    product = new RPDocumentManagementProduct(_defaultUserClaim, _productInternalSettingRepository, _productRepository);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
-                    break;
-                case ProductEnum.PortfolioManagement:
-                    product = new PortfolioManagementProduct(ProductEnum.PortfolioManagement);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
-                    break;
-                case ProductEnum.IntegrationMarketplace:
-                    product = new IntegrationMarketplaceProduct(_defaultUserClaim);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
-                    break;
-                case ProductEnum.DepositAlternative:
-                    product = new DepositAlternativeProduct(ProductEnum.DepositAlternative);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
-                    break;
-                case ProductEnum.ClickPay:
-                    product = new ClickPayProduct(ProductEnum.ClickPay);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
-                    break;
-                case ProductEnum.SeniorLeadManagement:
-                    product = new SeniorLeadManagementProduct(_defaultUserClaim, ProductEnum.SeniorLeadManagement);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
-                    break;
-                case ProductEnum.RenovationManager:
-                    product = new RenovationManagerProduct(ProductEnum.RenovationManager);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
-                    break;
-                case ProductEnum.IntelligentBuildingEnergy:
-                case ProductEnum.IntelligentBuildingTrash:
-                case ProductEnum.IntelligentBuildingWater:
-                case ProductEnum.HandsOnTrainingSystem:
-                case ProductEnum.LeaseLabs:
-                case ProductEnum.HospitalityService:
-                case ProductEnum.LeadScoring:
-                case ProductEnum.SmartWasteCommercial:
-                    result = "User details Change not implemented for this Product.";
-                    break;
-                default:
-                    result = "Product code does not exist.";
-                    break;
-            }
-
-            return result;
+            var integration = _integrationTypeFactory.GetIntegration(productUserAccountDetails.ProductName);
+            return integration.UpdateUserDetails(productUserAccountDetails);
         }
 
         /// <summary>

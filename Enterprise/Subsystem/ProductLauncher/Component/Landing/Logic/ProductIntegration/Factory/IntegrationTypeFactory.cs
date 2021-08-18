@@ -20,28 +20,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         private readonly IProductRepository _productRepository;
 
+        private readonly IProductInternalSettingRepository _productInternalSettingRepository;
+
         private readonly DefaultUserClaim _userClaims;
 
         public IntegrationTypeFactory(IManageProduct manageProduct, IManageUnifiedLogin manageUnifiedLogin,
-            IManageProductOneSite manageProductOneSite, IProductRepository productRepository, DefaultUserClaim userClaims)
+            IManageProductOneSite manageProductOneSite, IProductRepository productRepository,
+            IProductInternalSettingRepository productInternalSettingRepository, DefaultUserClaim userClaims)
         {
             _manageProduct = manageProduct;
             _manageUnifiedLogin = manageUnifiedLogin;
             _manageProductOneSite = manageProductOneSite;
             _productRepository = productRepository;
+            _productInternalSettingRepository = productInternalSettingRepository;
             _userClaims = userClaims;
         }
 
         private delegate IIntegrationType FactoryInitMethod(int productId, DefaultUserClaim userClaims, IManageUnifiedLogin manageUnifiedLogin,
-            IManageProductOneSite manageProductOneSite, IManageProduct manageProduct, IProductRepository productRepository);
+            IManageProductOneSite manageProductOneSite, IManageProduct manageProduct, IProductRepository productRepository,
+            IProductInternalSettingRepository productInternalSettingRepository);
 
         private static readonly IReadOnlyDictionary<ProductIntegrationTypeEnum, FactoryInitMethod> _integrationTypeMap =
             new Dictionary<ProductIntegrationTypeEnum, FactoryInitMethod>()
             {
-                [ProductIntegrationTypeEnum.Legacy] = (productId, userClaims, manageUnifiedLogin, manageProductOneSite, manageProduct, productRepository) =>
-                    new LegacyIntegrationType(productId, userClaims, manageUnifiedLogin, manageProductOneSite, manageProduct, productRepository),
-                [ProductIntegrationTypeEnum.UPFM] = (productId, userClaims, _1, _2, _3, _4) => new UPFMIntegrationType(productId, userClaims),
-                [ProductIntegrationTypeEnum.StandardV1] = (productId, userClaims, _1, _2, _3, _4) => new StandardV1IntegrationType(productId, userClaims)
+                [ProductIntegrationTypeEnum.Legacy] = (productId, userClaims, manageUnifiedLogin, manageProductOneSite, manageProduct, productRepository, productInternalSettingRepository) =>
+                    new LegacyIntegrationType(productId, userClaims, manageUnifiedLogin, manageProductOneSite, manageProduct, productRepository, productInternalSettingRepository),
+                [ProductIntegrationTypeEnum.UPFM] = (productId, userClaims, _1, _2, _3, _4, _5) => new UPFMIntegrationType(productId, userClaims),
+                [ProductIntegrationTypeEnum.StandardV1] = (productId, userClaims, _1, _2, _3, productRepository, productInternalSettingRepository) => new StandardV1IntegrationType(productId, userClaims, productRepository, productInternalSettingRepository)
             };
 
         public IIntegrationType GetIntegration(int productId)
@@ -51,7 +56,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             IIntegrationType ret = null;
             if (_integrationTypeMap.ContainsKey(integrationType))
             {
-                ret = _integrationTypeMap[integrationType](productId, _userClaims, _manageUnifiedLogin, _manageProductOneSite, _manageProduct, _productRepository);
+                ret = _integrationTypeMap[integrationType](productId, _userClaims, _manageUnifiedLogin, _manageProductOneSite, _manageProduct, _productRepository, _productInternalSettingRepository);
             }
             return ret;
         }

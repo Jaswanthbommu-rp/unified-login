@@ -118,7 +118,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             _manangeSecurityLogic = new ManageSecurity(userClaims, personaRightRepository);
 
             var manageUnifiedLogin = new ManageUnifiedLogin(userClaims, productInternalSettingRepository, productRepository, manageBlueBook);
-            _integrationTypeFactory = new IntegrationTypeFactory(_manageProduct, manageUnifiedLogin, manageProductOneSite, _productRepository, _userClaims);
+            _integrationTypeFactory = new IntegrationTypeFactory(_manageProduct, manageUnifiedLogin, manageProductOneSite, _productRepository,
+                productInternalSettingRepository, _userClaims);
         }
 
         /// <summary>
@@ -141,7 +142,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
             var manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
             var manageProductOneSite = new ManageProductOneSite(_userClaims);
-            _integrationTypeFactory = new IntegrationTypeFactory(_manageProduct, manageUnifiedLogin, manageProductOneSite, _productRepository, _userClaims);
+            var productInternalSettingRepository = new ProductInternalSettingRepository();
+            _integrationTypeFactory = new IntegrationTypeFactory(_manageProduct, manageUnifiedLogin, manageProductOneSite, _productRepository,
+                productInternalSettingRepository, _userClaims);
         }
 
         #endregion

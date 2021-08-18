@@ -52,7 +52,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _manageBlueBook = new ManageBlueBook(_userClaims);
 
             _productRepository = new ProductRepository(_userClaims);
-            _integrationTypeFactory = new IntegrationTypeFactory(manageProduct, _manageUnifiedLogin, _manageProductOneSite, _productRepository, _userClaims);
+
+            var productInternalSettingRepository = new ProductInternalSettingRepository();
+            _integrationTypeFactory = new IntegrationTypeFactory(manageProduct, _manageUnifiedLogin, _manageProductOneSite, _productRepository, productInternalSettingRepository, _userClaims);
         }
 
 		/// <summary>
@@ -76,7 +78,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _manageBlueBook = new ManageBlueBook(_userClaims, repository, productInternalSettingRepository, messageHandler);
             _productRepository = new ProductRepository(repository, _userClaims);
 
-            _integrationTypeFactory = new IntegrationTypeFactory(manageProduct, _manageUnifiedLogin, _manageProductOneSite, _productRepository, _userClaims);
+            _integrationTypeFactory = new IntegrationTypeFactory(manageProduct, _manageUnifiedLogin, _manageProductOneSite, _productRepository, productInternalSettingRepository, _userClaims);
         }
 
         #endregion
