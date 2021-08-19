@@ -1477,6 +1477,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     }
                 }
             }
+            var rpcache = new RPObjectCache();
+            var cacheKey = $"ProductSettingsByOrganization_{organizationRealPageId}";
+            IList<ProductSettingList> ProductSettingsByOrganizationList = rpcache.GetFromCache<IList<ProductSettingList>>(cacheKey, 120, () =>
+            {
+                return GetProductSettings(organizationRealPageId);
+            });
 
             if (productFamilyList != null)
             {
@@ -1501,7 +1507,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             }
 
                             CacheItemPolicy policy = new CacheItemPolicy();
-                            policy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(600);
+                            policy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(120);
                             productInternalSettingCache.Set("productInternalSetting_" + s.ProductId.ToString(), productInternalSettingList, policy);
                         }
 
@@ -1527,9 +1533,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         productInternalSetting = productInternalSettingList.FirstOrDefault(item => item.Name.Equals("ProductNotAvailableForRegularUserNoEmail", StringComparison.OrdinalIgnoreCase));
                         s.ProductNotAvailableForRegularUserNoEmail = (productInternalSetting != null) ? productInternalSetting.Value.Trim() == "1" : true;
-
-                        productInternalSetting = productInternalSettingList.FirstOrDefault(item => item.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase));
-                        s.UsePrimaryProperties = (productInternalSetting != null) ? productInternalSetting.Value.Trim() == "1" : true;
+                        
+                        var orgProductSetting = ProductSettingsByOrganizationList.FirstOrDefault(item => item.ProductId == s.ProductId && item.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase));
+                        s.UsePrimaryProperties = (orgProductSetting != null) ? orgProductSetting.Value.Trim() == "1" : false;
 
                         productInternalSetting = productInternalSettingList.FirstOrDefault(item => item.Name.Equals("ShowInRoleTemplate", StringComparison.OrdinalIgnoreCase));
                         s.ShowInRoleTemplate = (productInternalSetting != null) && (productInternalSetting.Value.Trim() == "1" ? true : false) ;
