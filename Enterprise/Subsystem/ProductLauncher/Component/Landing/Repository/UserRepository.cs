@@ -2465,7 +2465,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             emailUsageType = contactMechanismUsageTypeRepository.ListContactMechanismUsageType(ContactMechanismUsageTypeName: "Email Notification");
 
             var primaryPropertyBatch = newProfile.productBatch.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedUI);
-            int enterpriseRoleId = 0;
+            int enterpriseRoleId = newProfile.RoleTemplateId;
             if (primaryPropertyBatch?.InputJson?.RoleList != null && primaryPropertyBatch?.InputJson?.RoleList.Count > 0)
             {
                 enterpriseRoleId = Convert.ToInt32(primaryPropertyBatch.InputJson.RoleList.FirstOrDefault());
@@ -5970,6 +5970,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 //unassign enterprise role from user
                                 UnassignEnterpriseRoleFromUser(repository, updateUserProfileEntity.OldProfile.Persona[0].PersonaId);
                             }
+                        }
+                        else if (updateUserProfileEntity.OldProfile.RoleTemplateId > 0 && updateUserProfileEntity.NewProfile.RoleTemplateId == 0)
+                        {
+                            //unassign enterprise role from user
+                            UnassignEnterpriseRoleFromUser(repository, updateUserProfileEntity.OldProfile.Persona[0].PersonaId);
                         }
 
                         bool notificationEmailChanged = isNotificationEmailChanged(priorNotificationEmail, updateUserProfileEntity.NewProfile.NotificationEmail);

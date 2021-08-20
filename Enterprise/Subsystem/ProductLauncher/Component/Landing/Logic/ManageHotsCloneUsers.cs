@@ -308,7 +308,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         }
                     }
                 }
-                else if (baseProductRoleType == typeof(ILevel) && cloneProductRoleType == typeof(ILevel))
+                else if (baseProductRoleType == typeof(Level) && cloneProductRoleType == typeof(Level))
                 {
                     var baseList = baseCompanyRoles.Records.Cast<ILevel>();
                     var cloneList = cloneCompanyRoles.Records.Cast<ILevel>();
