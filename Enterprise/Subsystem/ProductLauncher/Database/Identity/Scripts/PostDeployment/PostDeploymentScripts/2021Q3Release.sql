@@ -1976,3 +1976,29 @@ BEGIN
 	COMMIT TRAN
 END
 GO
+GO
+
+IF EXISTS (SELECT TOP (1) 1 FROM auth.Clients WHERE ClientCode = 'rum' )
+BEGIN
+	IF NOT EXISTS (SELECT TOP (1) 1 FROM Auth.Claim WHERE ClaimName = 'productuserid' AND SAMLAttributeName = 'Userid' AND ProductId = 18 )
+	BEGIN
+		INSERT INTO AUTH.Claim ( ClaimName, SAMLAttributeName, ProductId )
+		VALUES ( N'productuserid', 'UserId', 18 )
+	END
+	
+	IF NOT EXISTS ( SELECT TOP (1) 1 
+			FROM AUTH.ClientUserClaim CUC 
+			INNER JOIN Auth.Clients C ON CUC.ClientId = C.ClientId 
+			INNER JOIN Auth.Claim C1 ON C1.ClaimId = CUC.ClaimId 
+			WHERE C1.ClaimName = 'productuserid' 
+				AND C1.SAMLAttributeName = 'Userid' 
+				AND C1.ProductId = 18 
+				AND C.ClientCode = 'rum' )
+	BEGIN
+		INSERT INTO Auth.ClientUserClaim ( ClientId, ClaimId )
+		SELECT C.ClientId, C1.ClaimId FROM Auth.Clients C CROSS JOIN Auth.Claim C1
+		WHERE C1.ClaimName = 'productuserid' AND C1.SAMLAttributeName = 'Userid' AND C1.ProductId = 18 AND C.ClientCode = 'rum'
+	END
+END
+
+GO
