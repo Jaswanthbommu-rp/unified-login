@@ -1,7 +1,7 @@
 ﻿CREATE PROCEDURE [Enterprise].[ListProductSettingsByOrganization] (
 	@OrganizationRealPageId UNIQUEIDENTIFIER,
 	@ProductId INT = NULL
-)
+) 
 
 AS 
 
@@ -17,12 +17,15 @@ BEGIN
 			pst.[Description],
 			pst.SensitiveData
 	FROM	[Enterprise].[OrganizationProduct] op 
-			JOIN [Enterprise].[ProductConfiguration] pc ON pc.ConfigurationId = op.ConfigurationId
+			JOIN [Enterprise].[ProductConfiguration] pc ON pc.ConfigurationId = op.ConfigurationId 
+				and pc.ConfigurationId not in 
+					(select ConfigurationId from Enterprise.GlobalProductConfiguration 
+					Where (@ProductId IS NULL OR ProductId = @ProductId) and ThruDate IS NULL)
 			JOIN [Enterprise].[ProductSetting] ps ON ps.ProductSettingId = pc.ProductSettingId
 			JOIN [Enterprise].[ProductSettingType] pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId     
 			JOIN [Enterprise].[Party] par ON par.PartyId = op.PartyId
 	WHERE	
-		par.RealPageId = @OrganizationRealPageId
+		par.RealPageId = @OrganizationRealPageId		
 		AND (@productId IS NULL OR op.ProductId = @ProductId) 
 		AND ((@NOW BETWEEN op.FromDate AND op.ThruDate) OR (@NOW >= op.FromDate AND op.ThruDate IS NULL))
 		AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))

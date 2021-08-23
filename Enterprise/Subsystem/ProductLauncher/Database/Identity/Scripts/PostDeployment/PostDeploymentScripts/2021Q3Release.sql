@@ -1707,6 +1707,13 @@ BEGIN
 	INSERT INTO Security.RoleRight (RoleId,RightId,CreatedBy,CreatedDate) 
 	VALUES(@RoleId,@RightId,@UserId,@Now);
 END
+
+UPDATE Security.[Right]
+SET TargetProductId = 73
+WHERE ProductId = @ProductId
+	AND RightName = 'ManageRelate247ProductAccess'
+	AND TargetProductId= 60;
+
 GO
 UPDATE Auth.Claim
 SET ClaimName = 'roleid'
@@ -1920,6 +1927,26 @@ UPDATE Enterprise.ProductSettingType
 SET SensitiveData=1 WHERE Name='Kong_key'
 GO
 
+-- Add more HOTS settings
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'HOTSCloneIssuerUri')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
+	VALUES ('HOTSCloneIssuerUri', 'The Identity Server issuer URI for the HOTS Token request', 0);
+END
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'HOTSCloneClientId')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
+	VALUES ('HOTSCloneClientId', 'The client to use for the HOTS Token request', 0);
+END
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'HOTSCloneClientSecret')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
+	VALUES ('HOTSCloneClientSecret', 'The client secret for the HOTS Token request', 1);
+END
+-- Add more HOTS settings
+GO
 --User Story 881644
 IF NOT EXISTS(SELECT TOP 1 1 FROM Enterprise.NavigationMenu WHERE PageId = 'admin console')
 BEGIN 

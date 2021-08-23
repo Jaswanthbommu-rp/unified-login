@@ -50,10 +50,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			var manageProduct = new ManageProduct(_userClaim);
 			var manageUnifiedLogin = new ManageUnifiedLogin(_userClaim);
 			var manageProductOneSite = new ManageProductOneSite(_userClaim);
+			var productInternalSettingRepository = new ProductInternalSettingRepository();
 			_productRepository = new ProductRepository();
 			_propertyRepository = new PropertyRepository();
 			_integrationTypeFactory = new IntegrationTypeFactory(manageProduct, manageUnifiedLogin,
-				manageProductOneSite, _productRepository, _userClaim);
+				manageProductOneSite, _productRepository, productInternalSettingRepository, _userClaim);
 		}
 		public ManageEnterpriseRoleProductBatch(IProductRepository productRepository, IPropertyRepository propertyRepository)
 		{

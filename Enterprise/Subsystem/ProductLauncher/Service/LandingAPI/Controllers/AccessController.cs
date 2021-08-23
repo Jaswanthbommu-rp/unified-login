@@ -1,8 +1,11 @@
-﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Security;
+﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Security;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Attribute;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.Security;
 using Swashbuckle.Swagger.Annotations;
+using System;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
@@ -20,7 +23,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// 
         /// </summary>
         public AccessController() { }
-            
+
         #endregion
 
         /// <summary>
@@ -40,6 +43,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             IManageSecurity _manangeSecurityLogic = new ManageSecurity(_userClaims);
             var personaId = _personaId;
             var output = _manangeSecurityLogic.GetPersonaRightsAndActionsByRoute(personaId, routeId);
+
+            if (_userClaims.ImpersonatedBy != Guid.Empty && routeId.ToLower().Equals("userslist"))
+            {
+                ManagePersona mp = new ManagePersona();
+                Persona impersonateUserPersona = mp.GetActivePersonaWithoutRights(_userClaims.ImpersonatedBy);
+                output.obj.ImpersonatedRights = _manangeSecurityLogic.GetPersonaRightsAndActionsByRoute(impersonateUserPersona.PersonaId, routeId).obj;
+            }
+
             return Request.CreateResponse(HttpStatusCode.OK, output);
         }
 

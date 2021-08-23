@@ -127,7 +127,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                         return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
                     }
 
-                    RecreateClaimsForClient(AdminCreatorRealPageId);
+                    _userClaims = RecreateClaimsForClient(AdminCreatorRealPageId);
                     _managePersona = new ManagePersona(_userClaims);
                     _manageProduct = new ManageProduct(_userClaims);
 
@@ -175,8 +175,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 // return errors with bad request
                 return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
             }
-
-
+            Guid baseOrgAdminRealPageId = _manageOrganization.GetOrganizationAdminUserRealPageId(baseUpfmId);
+            var baseOrgAdminPersona = _managePersona.GetActivePersonaWithoutRights(baseOrgAdminRealPageId);
+            var baseOrgAdminClaim = RecreateClaimsForClient(baseOrgAdminRealPageId);
             var cloneOrg = _manageOrganization.GetOrganization(cloneUsers.CloneCustomerUPFMId);
 
             if (cloneOrg == null)
@@ -190,30 +191,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             }
 
             _manageHotsCloneUsers = new ManageHotsCloneUsers(_userClaims);
-            _manageHotsCloneUsers.CloneUsersFromBaseLineCompany(cloneUsers, baseOrg.PartyId, cloneOrg.PartyId);
-            return Request.CreateResponse(HttpStatusCode.Accepted);
+
+            var clonedUserResult = _manageHotsCloneUsers.CloneUsersFromBaseLineCompany(cloneUsers, baseOrg.PartyId, cloneOrg.PartyId, baseOrgAdminClaim, baseOrgAdminPersona.PersonaId);
+            return Request.CreateResponse(HttpStatusCode.Accepted, clonedUserResult);
         }
 
-        private void RecreateClaimsForClient(Guid _realpageUserId)
+        private DefaultUserClaim RecreateClaimsForClient(Guid realpageUserId)
         {
-            if (!string.IsNullOrEmpty(_realpageUserId.ToString()))
+            DefaultUserClaim userClaim = new DefaultUserClaim();
+
+            if (!string.IsNullOrEmpty(realpageUserId.ToString()))
             {
                 IManagePerson personLogic = new ManagePerson();
-                Person person = personLogic.GetPerson(_realpageUserId);
+                Person person = personLogic.GetPerson(realpageUserId);
                 if (person == null)
                 {
-                    throw new Exception($"Missing persona information for client_info user while Recreation of Claims For Client.  realPageId: {_realpageUserId}");
+                    throw new Exception($"Missing persona information for client_info user while Recreation of Claims For Client.  realPageId: {realpageUserId}");
                 }
 
                 IManageUserLogin userLoginLogic = new ManageUserLogin();
                 IManageUserRoleRight userRoleRight = new ManageUserRoleRight();
-                var userLogin = userLoginLogic.GetUserLoginOnly(_realpageUserId);
+                var userLogin = userLoginLogic.GetUserLoginOnly(realpageUserId);
 
                 IManagePersona managePersona = new ManagePersona();
                 //Active Persona is linked to one organization
-                Persona persona = managePersona.GetActivePersonaWithoutRights(_realpageUserId); // this user can only be under 1 company to work correctly
+                Persona persona = managePersona.GetActivePersonaWithoutRights(realpageUserId); // this user can only be under 1 company to work correctly
 
-                _userClaims = new DefaultUserClaim
+                userClaim = new DefaultUserClaim
                 {
                     UserId = (int)userLogin.UserId,
                     OrganizationPartyId = persona.Organization.PartyId,
@@ -225,11 +229,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     LastName = person.LastName,
                     PersonaId = persona.PersonaId,
                     OrganizationRealPageGuid = persona.Organization.RealPageId,
-                    UserRealPageGuid = _realpageUserId,
+                    UserRealPageGuid = realpageUserId,
                     CorrelationId = Guid.NewGuid(),
                     RealPageEmployee = persona.Organization.Name.ToUpper() == "REALPAGE EMPLOYEE"
                 };
             }
+
+            return userClaim;
         }
     }
 }

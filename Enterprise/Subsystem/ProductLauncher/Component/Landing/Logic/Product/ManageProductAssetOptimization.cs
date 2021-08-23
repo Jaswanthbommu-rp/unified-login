@@ -2561,7 +2561,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			string productPropertyApiUrl = $"{_apiEndPoint}company/propertiesByDivision/{companyId}/{ProductEnumHelper.GetAoDivisionName(ProductEnumHelper.GetAoProductEnum(productName))}"; //https://aodev.realpage.com/ysconfig/ws/company/propertiesByDivision/6698/BI
 			IList<AoProperty> aoPropertyList = GetPropertiesForNewUser(productPropertyApiUrl);
-
+			aoPropertyList = aoPropertyList.Where(a => a.PropertyProducts.Contains(productName)).ToList();
 			WriteToDiagnosticLog(
 				$"ManageProductAssetOptimization.GetProperties-Received {aoPropertyList.Count} properties for new user with _editorProductUserId{_editorProductUserId} _productUserId {_productUserId}  companyId - {companyId} productName {productName}");
 
@@ -2950,6 +2950,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 		[JsonProperty("statecode", NullValueHandling = NullValueHandling.Ignore)]
 		public string State { get; set; }
+
+		[JsonProperty("propertyproducts", NullValueHandling = NullValueHandling.Ignore)]
+		public List<string> PropertyProducts { get; set; }
 
 		public bool IsAssigned { get; set; }
 	}

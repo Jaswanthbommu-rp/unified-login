@@ -4,22 +4,20 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterprise
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model.ClickPay;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Hots;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Accounting;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ops;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ResidentPortal;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Rum;
 using Serilog;
 using Serilog.Events;
@@ -28,10 +26,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using ProductRole = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ProductRole;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
-	public class ManageHotsCloneUsers : IManageHotsCloneUsers
+    public class ManageHotsCloneUsers : IManageHotsCloneUsers
 	{
 		//step 1 : Get List of users from base line company except employee user
 		//step2 : loop through list of users
@@ -83,7 +82,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			_organizationRepository = new OrganizationRepository(repository);
 			_manageProfile = new ManageProfile(userClaim);
 			_manageProduct = new ManageProduct(repository, userClaim, messageHandler);
-			_defaultUserClaim = userClaim;
+            _tokenHelper = new TokenHelper(repository);
+            _defaultUserClaim = userClaim;
 		}
 
 		public ManageHotsCloneUsers(DefaultUserClaim userClaim)
@@ -95,17 +95,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			_organizationRepository = new OrganizationRepository();
 			_manageProfile = new ManageProfile(userClaim);
 			_manageProduct = new ManageProduct(userClaim);
+            _tokenHelper = new TokenHelper();
 			_defaultUserClaim = userClaim;
 		}
 		#endregion
 
-		public ClonedUsers CloneUsersFromBaseLineCompany(CloneUsers cloneUsers, long basePartyId, long clonePartyId)
+		public ClonedUsers CloneUsersFromBaseLineCompany(CloneUsers cloneUsers, long basePartyId, long clonePartyId, DefaultUserClaim baseOrgAdminClaim, long baseOrgAdminPersonaId)
 		{
-			ClonedUsers clonedUsers = new ClonedUsers();
-			clonedUsers.Status = "InComplete";
-			clonedUsers.CloneCustomerCompanyId = cloneUsers.CloneCustomerUPFMId;
-			clonedUsers.CloneCustomerEnvironment = cloneUsers.CloneCustomerEnvironment;
-			var productInternalSettings = _manageProduct.GetProductInternalSettings(3);
+			ClonedUsers clonedUsers = new ClonedUsers
+            {
+                Status = "InComplete",
+                CloneCustomerCompanyId = cloneUsers.CloneCustomerUPFMId,
+                CloneCustomerEnvironment = cloneUsers.CloneCustomerEnvironment,
+				Users = new List<HotsUser>()
+            };
+
+            var productInternalSettings = _manageProduct.GetProductInternalSettings(3);
 			try
 			{
 				bool isCloneUsersProcessEnabledForHOTS = false;
@@ -115,9 +120,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					isCloneUsersProcessEnabledForHOTS = (productInternalSettings.FirstOrDefault(s => s.Name.Equals("IsCloneUsersProcessEnabledForHOTS", StringComparison.OrdinalIgnoreCase))?.Value == "1");
 				}
 
-				if (basePartyId > 0 && clonePartyId > 0 && isCloneUsersProcessEnabledForHOTS)
+				if (basePartyId > 0 && clonePartyId > 0 && baseOrgAdminPersonaId  > 0 && isCloneUsersProcessEnabledForHOTS)
 				{
-					ManageCloneProductBatch manageProductBatch = new ManageCloneProductBatch(_defaultUserClaim);
+					ManageCloneProductBatch manageProductBatch = new ManageCloneProductBatch(baseOrgAdminClaim);
 					UPFMProperty upfmProperty = new UPFMProperty();
 					var usersToBeCloned = _hotsCloneUserRepository.ListUsers(basePartyId);
 
@@ -130,13 +135,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 						// get product batch data
 						IPersonaRepository personaRepository = new PersonaRepository();
 						var personaProductSettings = personaRepository.GetPersonaProductSettings(user.PersonaId);
-						List<ProductBatch> pbData = manageProductBatch.GetUserProductBatchData(user.PersonaId, userProducts, _defaultUserClaim.PersonaId, upfmProperty, personaProductSettings, false, false).ToList();
+						List<ProductBatch> pbData = manageProductBatch.GetUserProductBatchData(user.PersonaId, userProducts, baseOrgAdminPersonaId, upfmProperty, personaProductSettings, false, false).ToList();
 
 
 						//	get base company product properties
 						//	get clone company product properties
 						//	Compare base assigned properties with clone properties by name
-						//	then add it in array list and use it to replcae in batch properties data
+						//	then add it in array list and use it to replace in batch properties data
 
 						foreach (var productData in pbData)
 						{
@@ -144,8 +149,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 							//find and replace baseline customer property with clone customer property
 							if (propertyList?.Count > 0)
 							{
-								var baseCompanyProperties = GetProductProperties(user.AdminUserPersonaId, user.PersonaId, productData.ProductId);
-								var cloneCompanyProperties = GetProductProperties(_defaultUserClaim.PersonaId, 0, productData.ProductId);
+								var baseCompanyProperties = GetProductProperties(baseOrgAdminClaim, user.AdminUserPersonaId, user.PersonaId, productData.ProductId);
+								var cloneCompanyProperties = GetProductProperties(_defaultUserClaim, _defaultUserClaim.PersonaId, 0, productData.ProductId);
 
 								var matchedProperties = CompareBaseAndCloneProductProperties(baseCompanyProperties, cloneCompanyProperties);
 
@@ -154,11 +159,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 									productData.InputJson.PropertyList = matchedProperties;
 								}
 							}
-						}
+
+                            var roleList = productData.InputJson.RoleList.ToList();
+                            if (roleList?.Count > 0)
+                            {
+                                var baseCompanyRoles = GetProductRoles(baseOrgAdminClaim, user.AdminUserPersonaId, user.PersonaId, basePartyId, productData.ProductId);
+                                var cloneCompanyRoles = GetProductRoles(_defaultUserClaim, _defaultUserClaim.PersonaId, 0, clonePartyId, productData.ProductId);
+
+                                var matchedRoles = CompareBaseAndCloneProductRoles(baseCompanyRoles, cloneCompanyRoles);
+                                if (matchedRoles?.Count > 0)
+                                {
+                                    productData.InputJson.RoleList = matchedRoles;
+                                }
+							}
+                        }
 
 						var hotsuser = _hotsCloneUserRepository.CreateUser(clonePartyId, user, profileDetail, pbData);
-						clonedUsers.Users.Add(hotsuser);
-					}
+                        if (hotsuser != null)
+                        {
+                            clonedUsers.Users.Add(hotsuser);
+                        }
+                    }
 					clonedUsers.Status = "Complete";
 				
 					PostToHOTS(clonedUsers);
@@ -176,7 +197,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 		}
 
-		public Guid GetBaseCompanyUPFMId(Guid cloneUpfmId)
+        public Guid GetBaseCompanyUPFMId(Guid cloneUpfmId)
 		{
 			return _hotsCloneUserRepository.GetBaseCompanyUPFMId(cloneUpfmId);
 		}
@@ -217,13 +238,128 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			}
 		}
 
-		private ListResponse GetProductProperties(long editorPersonaId, long userPersonaId, int productId)
+		private ListResponse GetProductProperties(DefaultUserClaim userClaim, long editorPersonaId, long userPersonaId, int productId)
 		{
-			ManageProductPanel manageProductPanel = new ManageProductPanel(_defaultUserClaim);
+			ManageProductPanel manageProductPanel = new ManageProductPanel(userClaim);
 			var productResult = manageProductPanel.GetProductProperties(editorPersonaId, userPersonaId, productId, null);
 			return productResult;
 		}
 
+        private ListResponse GetProductRoles(DefaultUserClaim userClaim, long editorPersonaId, long userPersonaId, long partyId, int productId)
+        {
+            ManageProductPanel manageProductPanel = new ManageProductPanel(userClaim);
+            var productResult = manageProductPanel.GetProductRoles(editorPersonaId, userPersonaId, partyId, productId, null, null);
+            return productResult;
+        }
+
+        private List<string> CompareBaseAndCloneProductRoles(ListResponse baseCompanyRoles, ListResponse cloneCompanyRoles)
+        {
+            var matchedProductRoleIdList = new List<string>();
+            if (baseCompanyRoles.Records.Count > 0 && cloneCompanyRoles.Records.Count > 0)
+            {
+                var baseProductRoleType = baseCompanyRoles.Records[0].GetType();
+                var cloneProductRoleType = cloneCompanyRoles.Records[0].GetType();
+
+                if (baseProductRoleType == typeof(ProductRole) && cloneProductRoleType == typeof(ProductRole))
+                {
+                    var baseList = baseCompanyRoles.Records.Cast<ProductRole>();
+                    var cloneList = cloneCompanyRoles.Records.Cast<ProductRole>();
+                    foreach (var role in baseList)
+                    {
+                        if (role.IsAssigned)
+                        {
+                            var foundRole = cloneList.FirstOrDefault(b => b.Name.Equals(role.Name, StringComparison.OrdinalIgnoreCase) && b.Roletype.Equals(role.Roletype, StringComparison.OrdinalIgnoreCase));
+                            if (foundRole != null)
+                            {
+                                matchedProductRoleIdList.Add(foundRole.ID);
+                            }
+                        }
+                    }
+                }
+                else if(baseProductRoleType == typeof(ClickPayRole) && cloneProductRoleType == typeof(ClickPayRole))
+                {
+                    var baseList = baseCompanyRoles.Records.Cast<ClickPayRole>();
+                    var cloneList = cloneCompanyRoles.Records.Cast<ClickPayRole>();
+                    foreach (var role in baseList)
+                    {
+                        if (role.IsAssigned)
+                        {
+                            var foundRole = cloneList.FirstOrDefault(b => b.Name.Equals(role.Name, StringComparison.OrdinalIgnoreCase));
+                            if (foundRole != null)
+                            {
+                                matchedProductRoleIdList.Add(foundRole.Id);
+                            }
+                        }
+                    }
+				}
+                else if (baseProductRoleType == typeof(ProductIntegration.Model.ProductRole) && cloneProductRoleType == typeof(ProductIntegration.Model.ProductRole))
+                {
+                    var baseList = baseCompanyRoles.Records.Cast<ProductIntegration.Model.ProductRole>();
+                    var cloneList = cloneCompanyRoles.Records.Cast<ProductIntegration.Model.ProductRole>();
+                    foreach (var role in baseList)
+                    {
+                        if (role.IsAssigned)
+                        {
+                            var foundRole = cloneList.FirstOrDefault(b => b.GetName.Equals(role.GetName, StringComparison.OrdinalIgnoreCase));
+                            if (foundRole != null)
+                            {
+                                matchedProductRoleIdList.Add(foundRole.GetRoleId);
+                            }
+                        }
+                    }
+                }
+                else if (baseProductRoleType == typeof(Level) && cloneProductRoleType == typeof(Level))
+                {
+                    var baseList = baseCompanyRoles.Records.Cast<ILevel>();
+                    var cloneList = cloneCompanyRoles.Records.Cast<ILevel>();
+                    foreach (var role in baseList)
+                    {
+                        if (role.IsAssigned)
+                        {
+                            var foundRole = cloneList.FirstOrDefault(b => b.Name.Equals(role.Name, StringComparison.OrdinalIgnoreCase));
+                            if (foundRole != null)
+                            {
+                                matchedProductRoleIdList.Add(foundRole.Id);
+                            }
+                        }
+                    }
+                }
+                else if (baseProductRoleType == typeof(SharedObjects.Product.Rum.Role) && cloneProductRoleType == typeof(SharedObjects.Product.Rum.Role))
+                {
+                    var baseList = baseCompanyRoles.Records.Cast<SharedObjects.Product.Rum.Role>();
+                    var cloneList = cloneCompanyRoles.Records.Cast<SharedObjects.Product.Rum.Role>();
+                    foreach (var role in baseList)
+                    {
+                        if (role.IsAssigned)
+                        {
+                            var foundRole = cloneList.FirstOrDefault(b => b.Name.Equals(role.Name, StringComparison.OrdinalIgnoreCase));
+                            if (foundRole != null)
+                            {
+                                matchedProductRoleIdList.Add(foundRole.Id.ToString());
+                            }
+                        }
+                    }
+                }
+                else if (baseProductRoleType == typeof(IntegrationMarketplaceRole) && cloneProductRoleType == typeof(IntegrationMarketplaceRole))
+                {
+                    var baseList = baseCompanyRoles.Records.Cast<IntegrationMarketplaceRole>();
+                    var cloneList = cloneCompanyRoles.Records.Cast<IntegrationMarketplaceRole>();
+                    foreach (var role in baseList)
+                    {
+                        if (role.IsAssigned)
+                        {
+                            var foundRole = cloneList.FirstOrDefault(b => b.GetName.Equals(role.GetName, StringComparison.OrdinalIgnoreCase));
+                            if (foundRole != null)
+                            {
+                                matchedProductRoleIdList.Add(foundRole.Id.ToString());
+                            }
+                        }
+                    }
+                }
+			}
+
+            return matchedProductRoleIdList;
+        }
 		private List<string> CompareBaseAndCloneProductProperties(ListResponse baseProductProperties, ListResponse cloneProductProperties)
 		{
 			var matchedProductPropertyIdList = new List<string>();
@@ -236,84 +372,112 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				{
 					var basePropertiesList = baseProductProperties.Records.Cast<ProductProperty>();
 					var clonePropertiesList = cloneProductProperties.Records.Cast<ProductProperty>();
-					foreach (var property in clonePropertiesList)
-					{
-						if (basePropertiesList.Any(b => b.Name.Equals(property.Name) && b.IsAssigned == true))
-						{
-							matchedProductPropertyIdList.Add(property.ID.ToString());
-						}
-					}
-				}
+                    foreach (var property in basePropertiesList)
+                    {
+                        if (property.IsAssigned == true)
+                        {
+                            var foundProperty = clonePropertiesList.FirstOrDefault(b => b.Name.IndexOf(property.Name, StringComparison.OrdinalIgnoreCase) >= 0);
+                            if (foundProperty != null)
+                            {
+                                matchedProductPropertyIdList.Add(foundProperty.ID);
+                            }
+                        }
+                    }
+                }
 				else if (baseProductPropertyType == typeof(ACProperty) && cloneProductPropertyType == typeof(ACProperty))
 				{
 					var basePropertiesList = baseProductProperties.Records.Cast<ACProperty>();
 					var clonePropertiesList = cloneProductProperties.Records.Cast<ACProperty>();
-					foreach (var property in clonePropertiesList)
+                    foreach (var property in basePropertiesList)
 					{
-						if (basePropertiesList.Any(b => b.PropertyName.Equals(property.PropertyName) && b.IsAssigned == true))
-						{
-							matchedProductPropertyIdList.Add(property.PropertyId.ToString());
-						}
+                        if (property.IsAssigned)
+                        {
+                            var foundProperty = clonePropertiesList.FirstOrDefault(b => b.PropertyName.IndexOf(property.PropertyName, StringComparison.OrdinalIgnoreCase) >= 0);
+                            if (foundProperty != null)
+                            {
+                                matchedProductPropertyIdList.Add(foundProperty.PropertyId);
+                            }
+                        }
 					}
 				}
 				else if (baseProductPropertyType == typeof(AssetGroup) && cloneProductPropertyType == typeof(AssetGroup))
 				{
 					var basePropertiesList = baseProductProperties.Records.Cast<AssetGroup>();
 					var clonePropertiesList = cloneProductProperties.Records.Cast<AssetGroup>();
-					foreach (var property in clonePropertiesList)
+                    foreach (var property in basePropertiesList)
 					{
-						if (basePropertiesList.Any(b => b.Name.Equals(property.Name) && b.IsAssigned == true))
-						{
-							matchedProductPropertyIdList.Add(property.ID.ToString());
-						}
+                        if (property.IsAssigned)
+                        {
+                            var foundProperty = clonePropertiesList.FirstOrDefault(b => b.Name.IndexOf(property.Name, StringComparison.OrdinalIgnoreCase) >= 0);
+                            if (foundProperty != null)
+                            {
+                                matchedProductPropertyIdList.Add(foundProperty.ID);
+                            }
+                        }
 					}
 				}
 				else if (baseProductPropertyType == typeof(OnSiteProperty) && cloneProductPropertyType == typeof(OnSiteProperty))
 				{
 					var basePropertiesList = baseProductProperties.Records.Cast<AssetGroup>();
 					var clonePropertiesList = cloneProductProperties.Records.Cast<AssetGroup>();
-					foreach (var property in clonePropertiesList)
+                    foreach (var property in basePropertiesList)
 					{
-						if (basePropertiesList.Any(b => b.Name.Equals(property.Name) && b.IsAssigned == true))
-						{
-							matchedProductPropertyIdList.Add(property.ID.ToString());
-						}
+                        if (property.IsAssigned)
+                        {
+                            var foundProperty = clonePropertiesList.FirstOrDefault(b => b.Name.IndexOf(property.Name, StringComparison.OrdinalIgnoreCase) >= 0);
+                            if (foundProperty != null)
+                            {
+                                matchedProductPropertyIdList.Add(foundProperty.ID);
+                            }
+                        }
 					}
 				}
 				else if (baseProductPropertyType == typeof(RumPropertyGroup) && cloneProductPropertyType == typeof(RumPropertyGroup))
 				{
 					var basePropertiesList = baseProductProperties.Records.Cast<RumPropertyGroup>();
 					var clonePropertiesList = cloneProductProperties.Records.Cast<RumPropertyGroup>();
-					foreach (var property in clonePropertiesList)
+                    foreach (var property in basePropertiesList)
 					{
-						if (basePropertiesList.Any(b => b.Name.Equals(property.Name) && b.IsAssigned == true))
-						{
-							matchedProductPropertyIdList.Add(property.Id.ToString());
-						}
+                        if (property.IsAssigned)
+                        {
+                            var foundProperty = clonePropertiesList.FirstOrDefault(b => b.Name.IndexOf(property.Name, StringComparison.OrdinalIgnoreCase) >= 0);
+                            if (foundProperty != null)
+                            {
+                                matchedProductPropertyIdList.Add(foundProperty.Id.ToString());
+                            }
+                        }
 					}
 				}
 				else if (baseProductPropertyType == typeof(ProductProperties) && baseProductPropertyType == typeof(ProductProperties))
 				{
 					var basePropertiesList = baseProductProperties.Records.Cast<ProductProperties>();
 					var clonePropertiesList = cloneProductProperties.Records.Cast<ProductProperties>();
-					foreach (var property in clonePropertiesList)
+                    foreach (var property in basePropertiesList)
 					{
-						if (basePropertiesList.Any(b => b.GetName.Equals(property.GetName) && b.IsAssigned == true))
-						{
-							matchedProductPropertyIdList.Add(property.GetPropertyId.ToString());
-						}
+                        if (property.IsAssigned)
+                        {
+                            var foundProperty = clonePropertiesList.FirstOrDefault(b => b.GetName.IndexOf(property.GetName, StringComparison.OrdinalIgnoreCase) >= 0);
+                            if (foundProperty != null)
+                            {
+                                matchedProductPropertyIdList.Add(foundProperty.GetPropertyId);
+                            }
+                        }
 					}
 				}
 				else if (baseProductPropertyType == typeof(Portfolio) && cloneProductPropertyType == typeof(Portfolio))
 				{
 					var basePropertiesList = baseProductProperties.Records.Cast<Portfolio>();
 					var clonePropertiesList = cloneProductProperties.Records.Cast<Portfolio>();
-					foreach (var property in clonePropertiesList)
+                    foreach (var property in basePropertiesList)
 					{
-						if (basePropertiesList.Any(b => b.Name.Equals(property.Name) && b.IsAssigned == true))
-						{
-							matchedProductPropertyIdList.Add(property.ID.ToString());
-						}
+                        if (property.IsAssigned)
+                        {
+                            var foundProperty = clonePropertiesList.FirstOrDefault(b => b.Name.IndexOf(property.Name, StringComparison.OrdinalIgnoreCase) >= 0);
+                            if (foundProperty != null)
+                            {
+                                matchedProductPropertyIdList.Add(foundProperty.ID);
+                            }
+                        }
 					}
 				}
 			}
@@ -321,37 +485,59 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			return matchedProductPropertyIdList;
 		}
 
-		private void PostToHOTS(ClonedUsers clonedUsers) 
+ 
+
+        private void PostToHOTS(ClonedUsers clonedUsers) 
 		{
             try
             {
-				var ulClientToken = _tokenHelper.GetUnifiedLoginServerToken("hotsapi");
 				var productInternalSettingList = GetProductInternalSettings(ProductEnum.UnifiedPlatform);
-				var hotsEndpoint = productInternalSettingList.First(a => a.Name.Equals("HOTSCloneUserCallBackEnpoint", StringComparison.OrdinalIgnoreCase)).Value;
+				
+                var hotsEndpoint = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("HOTSCloneUserCallBackEnpoint", StringComparison.OrdinalIgnoreCase))?.Value;
+				var hotsIssuerUri = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("HOTSCloneIssuerUri", StringComparison.OrdinalIgnoreCase))?.Value;
+				var hotsClientId = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("HOTSCloneClientId", StringComparison.OrdinalIgnoreCase))?.Value;
+				var hotsClientSecret = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("HOTSCloneClientSecret", StringComparison.OrdinalIgnoreCase))?.Value;
+                if (!string.IsNullOrEmpty(hotsClientSecret))
+                {
+                    hotsClientSecret = Encoding.UTF8.GetString(Convert.FromBase64String(hotsClientSecret));
+                }
+                string ulClientToken = null;
 
-				using (var httpClient = new HttpClient())
-				{
-					httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", ulClientToken);
-					httpClient.BaseAddress = new Uri(hotsEndpoint);
-					var payloadToPost = JsonConvert.SerializeObject(clonedUsers);
-					var request = new HttpRequestMessage
-					{
-						Method = HttpMethod.Post,
-						Content = new StringContent(payloadToPost, Encoding.UTF8, "application/json"),
-						RequestUri = new Uri(httpClient.BaseAddress.ToString()),
-					};
+                if (!string.IsNullOrEmpty(hotsClientId) && !string.IsNullOrEmpty(hotsClientSecret))
+                {
+                    ulClientToken = _tokenHelper.GetExternalClientCredentialServerToken(hotsIssuerUri, hotsClientId, hotsClientSecret, "hotsapi");
+                }
 
-					Dictionary<string, object> logData = new Dictionary<string, object>() { { "ClonnedUsers", clonedUsers } };
-					WriteToLog(LogEventLevel.Information, "Users to be posted to HOTS", logData);
+                if (ulClientToken != null)
+                {
+                    using (var httpClient = new HttpClient())
+                    {
+                        httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", ulClientToken);
+                        httpClient.BaseAddress = new Uri(hotsEndpoint);
+                        var payloadToPost = JsonConvert.SerializeObject(clonedUsers);
+                        var request = new HttpRequestMessage
+                        {
+                            Method = HttpMethod.Post,
+                            Content = new StringContent(payloadToPost, Encoding.UTF8, "application/json"),
+                            RequestUri = new Uri(httpClient.BaseAddress.ToString()),
+                        };
 
-					var response = httpClient.SendAsync(request).Result;
-					if (response != null && response.IsSuccessStatusCode)
-						WriteToLog(LogEventLevel.Information, "Clonedusers Posted to HOTS succesfully.");
-					else
-						WriteToLog(LogEventLevel.Information, "Hots callback Failed. Response Message: " + response.Content.ToString());
+                        Dictionary<string, object> logData = new Dictionary<string, object>() { { "clonedUsers", clonedUsers } };
+                        WriteToLog(LogEventLevel.Information, "Users to be posted to HOTS", logData);
 
+                        var response = httpClient.SendAsync(request).Result;
+                        if (response != null && response.IsSuccessStatusCode)
+                            WriteToLog(LogEventLevel.Information, "Clonedusers Posted to HOTS successfully.");
+                        else
+                            WriteToLog(LogEventLevel.Information, "Hots callback Failed. Response Message: " + response.Content.ToString());
+
+                    }
+                }
+                else
+                {
+                    WriteToLog(LogEventLevel.Error, "Unable to post update to HOTS.");
 				}
-			}
+            }
             catch (Exception ex)
             {
 				Dictionary<string, object> logData = new Dictionary<string, object>() { { "Exception", ex.ToString() } };

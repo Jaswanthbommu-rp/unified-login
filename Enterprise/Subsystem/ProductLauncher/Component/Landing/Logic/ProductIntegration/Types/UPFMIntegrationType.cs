@@ -120,5 +120,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             throw new NotImplementedException();
         }
+
+        public string UpdateUserDetails(ProductUserAccountDetails productUserAccountDetails) => "User details Change not implemented for this Product.";
     }
 }

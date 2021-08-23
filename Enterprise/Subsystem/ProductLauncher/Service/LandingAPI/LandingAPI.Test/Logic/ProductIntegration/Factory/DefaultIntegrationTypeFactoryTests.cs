@@ -19,19 +19,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.ProductI
             Mock<IManageUnifiedLogin> manageUnifiedLoginMock = null,
             Mock<IManageProductOneSite> manageProductOneSiteMock = null,
             Mock<IProductRepository> productRepositoryMock = null,
+            Mock<IProductInternalSettingRepository> productInternalSettingRepositoryMock = null,
             DefaultUserClaim defaultUserClaim = null)
         {
             manageProductMock = manageProductMock ?? new Mock<IManageProduct>();
             manageUnifiedLoginMock = manageUnifiedLoginMock ?? new Mock<IManageUnifiedLogin>();
             manageProductOneSiteMock = manageProductOneSiteMock ?? new Mock<IManageProductOneSite>();
             productRepositoryMock = productRepositoryMock ?? new Mock<IProductRepository>();
+            productInternalSettingRepositoryMock = productInternalSettingRepositoryMock ?? new Mock<IProductInternalSettingRepository>();
 
             defaultUserClaim = defaultUserClaim ?? new DefaultUserClaim()
             {
                 CorrelationId = new Guid()
             };
 
-            return new IntegrationTypeFactory(manageProductMock.Object, manageUnifiedLoginMock.Object, manageProductOneSiteMock.Object, productRepositoryMock.Object, defaultUserClaim);
+            return new IntegrationTypeFactory(manageProductMock.Object, manageUnifiedLoginMock.Object, manageProductOneSiteMock.Object, productRepositoryMock.Object,
+                productInternalSettingRepositoryMock.Object, defaultUserClaim);
         }
 
         [Fact]

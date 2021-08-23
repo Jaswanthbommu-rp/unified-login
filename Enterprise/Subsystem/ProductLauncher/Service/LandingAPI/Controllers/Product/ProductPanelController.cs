@@ -135,9 +135,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			if (realPageId == Guid.Empty)
 				return Request.CreateResponse(HttpStatusCode.BadRequest, "User RealPageId empty.");
 			
-			var personaId = _personaManager.GetActivePersonaId(realPageId);
-			
-			var userProductRoles = _manageProductPanel.GetUserProductRoles(editorPersonaId, personaId, partyId);
+			var persona = _personaManager.GetFirstAvailablePersonaByCompany(realPageId, partyId);
+			if ((persona == null) || (persona.PersonaId == 0))
+			{				
+				return Request.CreateResponse(HttpStatusCode.Forbidden, "Get active persona: Invalid parameter enterprise User Id");
+			}
+
+			var userProductRoles = _manageProductPanel.GetUserProductRoles(editorPersonaId, persona.PersonaId, partyId);
 
 			return Request.CreateResponse(HttpStatusCode.OK, userProductRoles);
 		}

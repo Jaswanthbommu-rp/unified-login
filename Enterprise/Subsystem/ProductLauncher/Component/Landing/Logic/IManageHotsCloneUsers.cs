@@ -1,15 +1,12 @@
 ﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Hots;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
-	public interface IManageHotsCloneUsers
+    public interface IManageHotsCloneUsers
 	{
-		ClonedUsers CloneUsersFromBaseLineCompany(CloneUsers cloneUsers, long basePartyId, long clonePartyId);
+		ClonedUsers CloneUsersFromBaseLineCompany(CloneUsers cloneUsers, long basePartyId, long clonePartyId, DefaultUserClaim baseOrgAdminClaim, long personaId);
 		Guid GetBaseCompanyUPFMId(Guid cloneUpfmId);
 	}
 }

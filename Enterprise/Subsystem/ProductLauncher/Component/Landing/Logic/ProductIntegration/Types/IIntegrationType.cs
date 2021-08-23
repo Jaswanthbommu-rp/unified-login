@@ -36,5 +36,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         bool ExternalUserProfileChange(long editorPersonaId, ProductUserProfile productUserProfile);
 
         string UpdateUserProfile(ProductUserProperitiesRoles productUser);
+        
+        string UpdateUserDetails(ProductUserAccountDetails productUserAccountDetails);
     }
 }

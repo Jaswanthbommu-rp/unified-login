@@ -1,6 +1,8 @@
 ﻿using Newtonsoft.Json;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.ProductImplementation;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
@@ -14,12 +16,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
     {
         private readonly int _productId;
 
+        private readonly IProductRepository _productRepository;
+
+        private readonly IProductInternalSettingRepository _productInternalSettingRepository;
+
         private readonly DefaultUserClaim _userClaims;
 
-        public StandardV1IntegrationType(int productId, DefaultUserClaim userClaims)
+        public StandardV1IntegrationType(int productId, DefaultUserClaim userClaims, IProductRepository productRepository,
+            IProductInternalSettingRepository productInternalSettingRepository)
         {
             _productId = productId;
             _userClaims = userClaims;
+            _productRepository = productRepository;
+            _productInternalSettingRepository = productInternalSettingRepository;
         }
 
         public string ChangeUserType(ProductUserProperitiesRoles batchRecord)
@@ -134,6 +143,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 return default(T);
             }
+        }
+
+        public string UpdateUserDetails(ProductUserAccountDetails productUserAccountDetails)
+        {
+            var product = new ProductBase(_productId, _userClaims, _productInternalSettingRepository, _productRepository);
+            return product.UpdateUserDetails(productUserAccountDetails);
         }
     }
 }
