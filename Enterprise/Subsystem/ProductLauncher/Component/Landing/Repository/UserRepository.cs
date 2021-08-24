@@ -2589,12 +2589,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         public void ProcessDisabledUsers(IList<ProcessUserLogin> userLogins)
         {
             //IManageUserLogin userLoginLogic = new ManageUserLogin();
+            DefaultUserClaim currentUserClaim = new DefaultUserClaim(ClaimsPrincipal.Current);
             var logData = new Dictionary<string, object>();
             IManagePersona managePersona = new ManagePersona();
             IManagePerson managePerson = new ManagePerson();
             Dictionary<Guid, Persona> companyAdminList = new Dictionary<Guid, Persona>();
             RepositoryResponse updateUserStatusResponse = new RepositoryResponse();
             logData = new Dictionary<string, object> { { "userLogins", userLogins} };
+            var profileLogic = new ManageProfile(_userClaim);
+
             WriteToLog(LogEventLevel.Debug, $"UserRepository.ProcessDisabledUsers at beginning of method for user with json", logData);
             using (var repository = GetRepository())
             {
@@ -2602,10 +2605,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 {
                     var userLoginRepository = new UserLoginRepository();
                     IUserLoginOnly userLoginOnly = userLoginRepository.GetUserLoginOnly(ul.UserRealPageId);
+                    var organization = _organizationRepository.GetOrganization(realPageId: ul.OrganizationRealPageId);
                     IPerson person = managePerson.GetPerson(ul.UserRealPageId);
                     var userOrganizationList = userLoginRepository.ListOrganizationByLoginName(userLoginOnly.LoginName);
                     Guid primaryCompanyGuid = userOrganizationList.FirstOrDefault(p => p.PrimaryOrganization).OrganizationRealPageId;
                     List<Guid> organizationsToProcess = new List<Guid>();
+
+                    //since windows service doesn't have editor persona,Get RealPageEmployeeAccessID to use in to get editor persona
+                    currentUserClaim = GetCurrentUserClaim(profileLogic, organization);
 
                     logData = new Dictionary<string, object> { { "userLogins", userLoginOnly }, { "userOrganizationList", userOrganizationList } };
                     WriteToLog(LogEventLevel.Debug, $"UserRepository.ProcessDisabledUsers: Getting info for process to disable User with login name { userLoginOnly.LoginName} and user realpageId {ul.UserRealPageId}", logData);
@@ -2676,7 +2683,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         {
                             string message = $"{person.FirstName} {person.LastName} was deactivated by the system due to the scheduled User Expires date {userLogin.ThruDate}";
                             WriteToLog(LogEventLevel.Debug, $"UserRepository.ProcessDisabledUsers: calling AddActivityLog method for activity - {message}");
-                            AddActivityLog(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, message, person, userLoginOnly, org);
+                            AddActivityLog(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, message, person, userLoginOnly, org, currentUserClaim);
                         }
                         //remove products
                         if (editorPersona != null && (ul.OrganizationRealPageId == primaryCompanyGuid || ul.OrganizationRealPageId == org.OrganizationRealPageId))
@@ -4791,23 +4798,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             });
         }
 
-        private void AddActivityLog(string logActivityType, LogActivityCategoryType logActivityCategoryType, string message, IPerson person, IUserLoginOnly userLogin = null, IUserOrganization userOrg = null)
+        private void AddActivityLog(string logActivityType, LogActivityCategoryType logActivityCategoryType, string message, IPerson person, IUserLoginOnly userLogin = null, IUserOrganization userOrg = null, DefaultUserClaim defaultUserClaim = null)
         {
             WriteToLog(LogEventLevel.Debug, $"UserRepository.AddActivityLog at beginning of method for for activity - {message} and correlationId is {_userClaim.CorrelationId.ToString()} ");
             LogActivity.WriteActivity(new ActivityDetails
             {
                 LogActivityTypeName = logActivityType,
                 LogCategoryName = logActivityCategoryType.ToString(),
-                CorrelationId = _userClaim.CorrelationId.ToString(),
-                BooksMasterOrganizationId = userOrg != null ? userOrg.BooksCustomerMasterId :_userClaim.OrganizationMasterId,
-                OrganizationPartyId = userOrg != null ? userOrg.OrganizationPartyId : _userClaim.OrganizationPartyId,
+                CorrelationId = defaultUserClaim.CorrelationId.ToString(),
+                BooksMasterOrganizationId = userOrg != null ? userOrg.BooksCustomerMasterId : defaultUserClaim.OrganizationMasterId,
+                OrganizationPartyId = userOrg != null ? userOrg.OrganizationPartyId : defaultUserClaim.OrganizationPartyId,
                 Message = message,
 
-                FromUserLoginName = _userClaim.LoginName,
-                FromUserLoginId = _userClaim.UserId,
-                FromUserFirstName = _userClaim.FirstName,
-                FromUserLastName = _userClaim.LastName,
-                FromUserRealpageId = _userClaim.UserRealPageGuid.ToString(),
+                FromUserLoginName = defaultUserClaim.LoginName,
+                FromUserLoginId = defaultUserClaim.UserId,
+                FromUserFirstName = defaultUserClaim.FirstName,
+                FromUserLastName = defaultUserClaim.LastName,
+                FromUserRealpageId = defaultUserClaim.UserRealPageGuid.ToString(),
 
                 ToUserLoginId =  userLogin.UserId,
                 ToUserLoginName = userLogin.LoginName,
@@ -4817,6 +4824,46 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             });
 
             WriteToLog(LogEventLevel.Debug, $"UserRepository.AddActivityLog at ending of method for for activity - {message} and correlationId is {_userClaim.CorrelationId.ToString()} ");
+        }
+
+        private DefaultUserClaim GetCurrentUserClaim(ManageProfile profileLogic, Organization org)
+        {
+            DefaultUserClaim currentUserClaim;
+            Guid realPageEmployeeAccessID = _organizationRepository.GetOrganizationAdminUserRealPageId(org.RealPageId);
+
+            if (realPageEmployeeAccessID != Guid.Empty)
+            {
+                var adminUserLogin = _userLoginRepository.GetUserLoginOnly(realPageEmployeeAccessID);
+                var adminProfileDetail = profileLogic.GetProfileDetail(realPageEmployeeAccessID, org.PartyId);
+
+                currentUserClaim = new DefaultUserClaim()
+                {
+                    OrganizationMasterId = org.BooksMasterId,
+                    OrganizationPartyId = org.PartyId,
+                    FirstName = adminProfileDetail.FirstName,
+                    LastName = adminProfileDetail.LastName,
+                    UserId = Convert.ToInt32(adminUserLogin.UserId),
+                    LoginName = adminUserLogin.LoginName,
+                    UserRealPageGuid = adminUserLogin.RealPageId,
+                    CorrelationId = _userClaim.CorrelationId
+                };
+            }
+            else
+            {
+                currentUserClaim = new DefaultUserClaim()
+                {
+                    OrganizationMasterId = org.BooksMasterId,
+                    OrganizationPartyId = org.PartyId,
+                    FirstName = "Automated",
+                    LastName = "System",
+                    UserId = 1,
+                    LoginName = "automatedsystem",
+                    UserRealPageGuid = Guid.Empty,
+                    CorrelationId = _userClaim.CorrelationId
+                };
+            }
+
+            return currentUserClaim;
         }
 
         private string ChangeUserTypeExternal(IRepository repository, Organization organizationExternalUser, OrganizationStatus currentPrimaryOrgStatus, IProfileDetail profile, IPersona persona, IList<UserOrganization> userPersonaOrganizationList, IList<ContactMechanismUsageType> emailUsageType, IUserLoginOnly userLoginOnly, IIdentityProviderType identityProviderType, string userTypeChangedToFromExternal, string schemaName)
