@@ -9,8 +9,8 @@ SET NOCOUNT ON;
 		sj.UserSyncJobId,
 		sua.PersonaId, 
 		sua.Value AS LoginName, 
-		ISNULL(p.UDMSourceCode, p.BooksProductCode) AS Source,
-		'https://swaggerhub.realpage.com/virts/Realpage/UnifiedLoginProductIntegration/1.0.2' AS SyncUrl
+		p.ProductId,
+		ISNULL(p.UDMSourceCode, p.BooksProductCode) AS Source
 		FROM	
 			Ident.SamlUserAttribute sua
 			INNER JOIN Ident.SamlAttribute sa ON sua.SamlAttributeId = sa.SamlAttributeId
