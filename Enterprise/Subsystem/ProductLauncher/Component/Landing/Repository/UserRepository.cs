@@ -6378,33 +6378,51 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         {
             IProductRepository _ProductRepository = new ProductRepository(_userClaim);
             IManageBlueBook _manageBlueBook = new ManageBlueBook(_userClaim);
+            IPropertyRepository propertyRepository = new PropertyRepository();
             // Assign Properties based on Primary properties selection for products which opted for usePrimaryProperty
             if (newProfile.productBatch.Any(p => p.ProductId == (int)ProductEnum.UnifiedUI))
-			{
-				var primaryPropertyList = newProfile.productBatch
-												?.Where(p => p.ProductId == (int)ProductEnum.UnifiedUI)
-												?.Select(p => p.InputJson.PropertyList)?.FirstOrDefault()?.ToList<string>();
-				var usePrimaryPropertiesProducts = newProfile.productBatch?.Where(p => p.InputJson.UsePrimaryProperties == true);
-				if (primaryPropertyList.Count() > 0 && usePrimaryPropertiesProducts.Count() > 0)
-				{
-					var products = _ProductRepository.GetAllProducts();
-					TranslatePropertyInstance translatedData = new TranslatePropertyInstance();
-					UPFMProperty primaryPropertyIds = new UPFMProperty();
-					primaryPropertyIds.id = primaryPropertyList.ConvertAll(d => d.ToLower());
-					//call transaltion API
-					foreach (var property in usePrimaryPropertiesProducts)
-					{
-						string productcode = ProductEnumHelper.GetProductCodeByProductId(property.ProductId, products);
-						translatedData = _manageBlueBook.GetTranslatePropertiesFromUPFMToProductv3(primaryPropertyIds, productcode);
-						var propList = translatedData.Data?.Attributes.Select(p => p.TranslatedPropertyInstances.Select(p1 => p1.PropertyInstanceSourceId.ToString()));
-						newProfile.productBatch.FirstOrDefault(p => p.ProductId == property.ProductId).InputJson.PropertyList = new List<string>();
-						foreach (var s in propList)
-						{
-							newProfile.productBatch.FirstOrDefault(p => p.ProductId == property.ProductId).InputJson.PropertyList.Add(s.FirstOrDefault().ToString());
-						}
-					}
-				}
-			}
+            {
+                var primaryPropertyList = newProfile.productBatch
+                                                ?.Where(p => p.ProductId == (int)ProductEnum.UnifiedUI)
+                                                ?.Select(p => p.InputJson.PropertyList)?.FirstOrDefault()?.ToList<string>();
+                var usePrimaryPropertiesProducts = newProfile.productBatch?.Where(p => p.InputJson.UsePrimaryProperties == true);
+                if (primaryPropertyList.Count() > 0 && usePrimaryPropertiesProducts.Count() > 0)
+                {
+                    var products = _ProductRepository.GetAllProducts();
+                    TranslatePropertyInstance translatedData = new TranslatePropertyInstance();
+                    UPFMProperty primaryPropertyIds = new UPFMProperty();
+                    primaryPropertyIds.id = primaryPropertyList.ConvertAll(d => d.ToLower());
+                    //call transaltion API
+                    foreach (var property in usePrimaryPropertiesProducts)
+                    {
+                        List<string> propList = new List<string>();
+                        string productcode = ProductEnumHelper.GetProductCodeByProductId(property.ProductId, products);
+                        var productInternalSettingsByType = _productInternalSettingRepository.GetProductSettingByType("ProductIntegrationType");
+                        var productType = productInternalSettingsByType?.FirstOrDefault(p => p.ProductId == property.ProductId)?.Value;
+                        translatedData = _manageBlueBook.GetTranslatePropertiesFromUPFMToProductv3(primaryPropertyIds, productcode);
+                        if (productType == "UPFM")
+                        {
+                            var upfmInstance = translatedData.Data?.Attributes.Select(p => p.PropertyInstanceSourceId).ToList();
+                            List<Guid> propertyInstanceIds = upfmInstance?.Select(Guid.Parse).ToList();
+                            List<UPFMPropertyInstance> upfmPropInstance = propertyRepository.ListUPFMPropertyInstanceIdByInstanceIds(propertyInstanceIds);
+                            propList = upfmPropInstance?.Select(p => p.PropertyInstanceId.ToString()).ToList<string>();
+                        }
+                        else
+                        {
+                            var transData = translatedData.Data?.Attributes.Select(p => p.TranslatedPropertyInstances.Select(p1 => p1.PropertyInstanceSourceId));
+                            foreach (var prodProperty in transData)
+                            {
+                                propList.Add(prodProperty.FirstOrDefault().ToString());
+                            }
+                        }
+                        newProfile.productBatch.FirstOrDefault(p => p.ProductId == property.ProductId).InputJson.PropertyList = new List<string>();
+                        foreach (var s in propList)
+                        {
+                            newProfile.productBatch.FirstOrDefault(p => p.ProductId == property.ProductId).InputJson.PropertyList.Add(s.ToString());
+                        }
+                    }
+                }
+            }
 			return newProfile;
         }
     }
