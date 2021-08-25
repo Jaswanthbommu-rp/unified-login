@@ -2602,12 +2602,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     var userLoginRepository = new UserLoginRepository();
                     IUserLoginOnly userLoginOnly = userLoginRepository.GetUserLoginOnly(ul.UserRealPageId);
                     IPerson person = managePerson.GetPerson(ul.UserRealPageId);
-                    var userOrganizationList = userLoginRepository.ListOrganizationByLoginName(userLoginOnly.LoginName);
+                    var userOrganizationList = userLoginRepository.ListAllOrganizationByLoginName(userLoginOnly.LoginName);
                     Guid primaryCompanyGuid = userOrganizationList.FirstOrDefault(p => p.PrimaryOrganization).OrganizationRealPageId;
                     List<Guid> organizationsToProcess = new List<Guid>();
                     foreach (var org in userOrganizationList)
                     {
                         Persona editorPersona = null;
+                        updateUserStatusResponse = new RepositoryResponse();
                         long orgPartyId = userOrganizationList.FirstOrDefault(uo => uo.OrganizationRealPageId == ul.OrganizationRealPageId).OrganizationPartyId;
                         IUserLogin userLogin = userLoginRepository.GetUserLogin(ul.UserRealPageId, orgPartyId);
                         bool isUserdisabled = userLogin.StatusId == (int)UserUiStatusType.Disabled;
@@ -2651,7 +2652,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 FromDate = ul.FromDate
                             });
                         }
-                        else if(!isUserdisabled)
+                        else if(!isUserdisabled && ul.OrganizationRealPageId == org.OrganizationRealPageId)
                         {
                             updateUserStatusResponse = repository.Execute<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserStatusByCompany, new
                             {
