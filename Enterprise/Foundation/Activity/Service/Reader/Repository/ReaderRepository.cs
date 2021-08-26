@@ -20,7 +20,6 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Repository
 
 				if (multiResults != null)
 				{
-					searchCriteria.ProductList = multiResults.Read<Product>().ToList();
 					searchCriteria.LogCategoryList = multiResults.Read<LogCategory>().ToList();
 					searchCriteria.LogTypeList = multiResults.Read<LogType>().ToList();
 				}
