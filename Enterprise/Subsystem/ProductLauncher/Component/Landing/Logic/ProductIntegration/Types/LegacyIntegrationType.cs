@@ -4,17 +4,14 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Factory;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Accounting;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ClientPortal;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.IntegrationMarketplace;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.MarketingCenter;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Migration;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ops;
@@ -170,11 +167,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     var productLALogic = ManageProductFactory.GetProductLogic(_productId, editorPersonaId, userPersonaId, _userClaims);
                     result = productLALogic.GetProductRoles(dataFilter);
 
-                    break;
-
-                case (int)ProductEnum.IntegrationMarketplace:
-                    var manageProductIntegartionMarketplace = new ManageProductIntegrationMarketplace(_userClaims);
-                    result = manageProductIntegartionMarketplace.GetRoles(editorPersonaId, userPersonaId, partyId);
                     break;
 
                 case (int)ProductEnum.RPDocumentManagement:
@@ -607,14 +599,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         productUser.AssignUserPersonaId, productPropertiesRoles);
                     break;
 
-                case (int)ProductEnum.IntegrationMarketplace:
-                    product = new IntegrationMarketplaceProduct(_userClaims);
-                    productPropertiesRoles =
-                        DeserializeJSON<IntegrationMarketplacePropertyRole>(productUser.InputJson);
-                    result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
-                        productUser.AssignUserPersonaId, productPropertiesRoles);
-                    break;
-
                 case (int)ProductEnum.DepositAlternative:
                     product = new DepositAlternativeProduct((ProductEnum)productUser.ProductName);
                     productPropertiesRoles =
@@ -795,11 +779,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     product = new PortfolioManagementProduct((ProductEnum)batchRecord.ProductName);
                     productPropertiesRoles =
                         DeserializeJSON<ProductUserRolePropertiesGroups>(batchRecord.InputJson);
-                    result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
-                    break;
-                case (int)ProductEnum.IntegrationMarketplace:
-                    product = new IntegrationMarketplaceProduct(_userClaims);
-                    productPropertiesRoles = DeserializeJSON<IntegrationMarketplacePropertyRole>(batchRecord.InputJson);
                     result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
                     break;
                 case (int)ProductEnum.DepositAlternative:
@@ -1245,10 +1224,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     break;
                 case (int)ProductEnum.PortfolioManagement:
                     product = new PortfolioManagementProduct(ProductEnum.PortfolioManagement);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
-                    break;
-                case (int)ProductEnum.IntegrationMarketplace:
-                    product = new IntegrationMarketplaceProduct(_userClaims);
                     result = product.UpdateUserDetails(productUserAccountDetails);
                     break;
                 case (int)ProductEnum.DepositAlternative:

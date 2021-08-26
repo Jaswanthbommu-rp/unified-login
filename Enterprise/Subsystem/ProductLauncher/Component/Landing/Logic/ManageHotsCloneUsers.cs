@@ -340,22 +340,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         }
                     }
                 }
-                else if (baseProductRoleType == typeof(IntegrationMarketplaceRole) && cloneProductRoleType == typeof(IntegrationMarketplaceRole))
-                {
-                    var baseList = baseCompanyRoles.Records.Cast<IntegrationMarketplaceRole>();
-                    var cloneList = cloneCompanyRoles.Records.Cast<IntegrationMarketplaceRole>();
-                    foreach (var role in baseList)
-                    {
-                        if (role.IsAssigned)
-                        {
-                            var foundRole = cloneList.FirstOrDefault(b => b.GetName.Equals(role.GetName, StringComparison.OrdinalIgnoreCase));
-                            if (foundRole != null)
-                            {
-                                matchedProductRoleIdList.Add(foundRole.Id.ToString());
-                            }
-                        }
-                    }
-                }
 			}
 
             return matchedProductRoleIdList;
