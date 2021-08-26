@@ -29,48 +29,48 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Repository
 			return searchCriteria;
 		}
 
-		public IList<ActivityDetailMessage> ListActivityLog(ActivityLogFilterCriteria filterCriteria)
-		{
-			// Set TVP 
-			var tvp = new TableValueParmInfo
-			{
-				TableVariableName = "SearchCriteriaTPV", // variable in SP for TVP
-				TableParamTypeName = "dbo.SearchCriteria", // TVP name
-				OrderedColumnName = new[] { "Name", "Value" }, // TVP columns
-				StoredProcedureName = "Logging.ListActivity"
-			};
+		//public IList<ActivityDetailMessage> ListActivityLog(ActivityLogFilterCriteria filterCriteria)
+		//{
+		//	// Set TVP 
+		//	var tvp = new TableValueParmInfo
+		//	{
+		//		TableVariableName = "SearchCriteriaTPV", // variable in SP for TVP
+		//		TableParamTypeName = "dbo.SearchCriteria", // TVP name
+		//		OrderedColumnName = new[] { "Name", "Value" }, // TVP columns
+		//		StoredProcedureName = "Logging.ListActivity"
+		//	};
 
-			// Set dynamic param for additional params
-			DynamicParameters param = new DynamicParameters();
-			dynamic p;
-			var rowsPerPage = filterCriteria.RowsPerPage;
-			var pageNumber = filterCriteria.PageNumber;
-			if (rowsPerPage == 0 || pageNumber == 0)
-			{
-				p = new
-				{
-					SortOrder = filterCriteria.SortOrder,
-					SortOrderColumnName = filterCriteria.SortOrderColumnName,
-				};
-			}
-			else
-			{
-				p = new
-				{
-					SortOrder = filterCriteria.SortOrder,
-					SortOrderColumnName = filterCriteria.SortOrderColumnName,
-					RowsPerPage = filterCriteria.RowsPerPage,
-					PageNumber = filterCriteria.PageNumber
-				};
-			}
+		//	// Set dynamic param for additional params
+		//	DynamicParameters param = new DynamicParameters();
+		//	dynamic p;
+		//	var rowsPerPage = filterCriteria.RowsPerPage;
+		//	var pageNumber = filterCriteria.PageNumber;
+		//	if (rowsPerPage == 0 || pageNumber == 0)
+		//	{
+		//		p = new
+		//		{
+		//			SortOrder = filterCriteria.SortOrder,
+		//			SortOrderColumnName = filterCriteria.SortOrderColumnName,
+		//		};
+		//	}
+		//	else
+		//	{
+		//		p = new
+		//		{
+		//			SortOrder = filterCriteria.SortOrder,
+		//			SortOrderColumnName = filterCriteria.SortOrderColumnName,
+		//			RowsPerPage = filterCriteria.RowsPerPage,
+		//			PageNumber = filterCriteria.PageNumber
+		//		};
+		//	}
 
-			param.AddDynamicParams(p);
-			// Execute SP
-			using (var repository = GetRepository())
-			{
-				return repository.GetManyWithTvp<ActivitySearchCriteria, ActivityDetailMessage>(tvp, filterCriteria.ActivitySearchCriteria, param).ToList();
-			}
-		}
+		//	param.AddDynamicParams(p);
+		//	// Execute SP
+		//	using (var repository = GetRepository())
+		//	{
+		//		return repository.GetManyWithTvp<ActivitySearchCriteria, ActivityDetailMessage>(tvp, filterCriteria.ActivitySearchCriteria, param).ToList();
+		//	}
+		//}
 
 		public ListResponse<ActivityDetailMessage> ListActivityLogDetails(ActivityLogFilterCriteria filterCriteria)
 		{

@@ -142,8 +142,9 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
                 ;
 
                 ReaderRepository readerRepository = new ReaderRepository();
-                IList<ActivityDetailMessage> listActivityDetailMessage = readerRepository.ListActivityLog(filterCriteria);
-
+                var results = readerRepository.ListActivityLogDetails(filterCriteria);
+                IList<ActivityDetailMessage> listActivityDetailMessage = results.Records;
+                
                 if (listActivityDetailMessage != null)
                 {
                     errorStatus = SetAsposeLicense();
