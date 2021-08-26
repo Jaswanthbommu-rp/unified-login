@@ -73,6 +73,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		IList<UserOrganization> ListOrganizationByLoginName(string loginName);
 
         /// <summary>
+		/// List all organization for user without thru data condition
+		/// </summary>
+		/// <param name="loginName">User login name</param>        
+		/// <returns>List of User Persona and Organization detail</returns>
+		IList<UserOrganization> ListAllOrganizationByLoginName(string loginName);
+
+        /// <summary>
         /// Get Activity Attempt Exceeds
         /// </summary>
         ActivityAttemptDetails GetActivityAttemptExceeds(long organizationPartyId, string enterpriseUserName, int activityId);
