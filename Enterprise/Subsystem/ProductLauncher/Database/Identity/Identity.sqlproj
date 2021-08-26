@@ -1158,6 +1158,10 @@
     <Build Include="RoleRightsManagement\Stored Procedures\GetEnterpriseRoleNewProductsByRoleTemplateId.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\DeleteRoleTemplateUserMappingByPersona.sql" />
     <Build Include="Enterprise\Stored Procedures\ListAllOrganizationByLoginName.sql" />
+    <Build Include="RoleRightsManagement\Tables\ADGroup.sql" />
+    <Build Include="RoleRightsManagement\Tables\ADGroupProduct.sql" />
+    <Build Include="RoleRightsManagement\Tables\ADGroupRight.sql" />
+    <Build Include="RoleRightsManagement\Tables\ADGroupUser.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
