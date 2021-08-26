@@ -105,7 +105,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             dynamic param = new
             {
                 PersonaId = personaId,
-                StatusTypeId = statusType
+                ProductStatusValue = statusType
             };
 
             using (var repository = GetRepository())

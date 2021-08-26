@@ -278,67 +278,119 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }                    
                 }
                 //Then get persona assigned products
-                var personaProducts = _productRepository.GetAllProductsByPersona(userPersonaId, ProductBatchStatusType.Success);
+                var personaProducts = _productRepository.ListProductsByPersonaId(userPersonaId, (Int32)UserUiStatusType.AccountCreationSuccessful).ToList();
                 foreach (var product in personaProducts)
                 {
-                    if (!product.IsResource)
-                    {
-                        ListResponse result;
-                        RoleTemplateProduct userProduct = new RoleTemplateProduct();
+                    ListResponse result;
+                    RoleTemplateProduct userProduct = new RoleTemplateProduct();
                        
-                        try {
-                            var integration = _integrationTypeFactory.GetIntegration(product.ProductId);
-                            result = integration.GetRoles(editorPersonaId, userPersonaId, partyId, AccessType.Property, datafilter);
-                            if (!result.IsError)
+                    try {
+                        var integration = _integrationTypeFactory.GetIntegration(product.ProductId);
+                        result = integration.GetRoles(editorPersonaId, userPersonaId, partyId, AccessType.Property, datafilter);
+                        if (!result.IsError)
+                        {
+                            userProduct.ProductId = product.ProductId;
+                            if (result != null && result.Records.Count > 0)
                             {
-                                userProduct.ProductId = product.ProductId;
+                                List<RoleTemplateRoles> roleTemplateRoles = new List<RoleTemplateRoles>();
+                                var baseProductRoleType = result.Records[0].GetType();
 
-                                if (result != null && result.Records.Count > 0)
-                                {
-                                    List<RoleTemplateRoles> roleTemplateRoles = new List<RoleTemplateRoles>();
-                                    if (product.ProductId == (int)ProductEnum.ClickPay)
+                                if (baseProductRoleType == typeof(SharedObjects.Product.ProductRole))                                {
+                                    var roleList = result.Records.Cast<SharedObjects.Product.ProductRole>().ToList().FindAll(p => p.IsAssigned == true);                                  
+                                    foreach (var role in roleList)
                                     {
-                                        IList<ClickPayRole> cproleList = result.Records.Cast<ClickPayRole>().ToList().FindAll(p => p.IsAssigned == true);
-                                        foreach (var role in cproleList)
+                                        RoleTemplateRoles templateRole = new RoleTemplateRoles
                                         {
-                                            RoleTemplateRoles templateRole = new RoleTemplateRoles
-                                            {
-                                                RoleId = role.Id,
-                                                RoleName = role.Name,
-                                                RoleTemplateProductRoleMappingID = 0
-                                            };
-                                            roleTemplateRoles.Add(templateRole);
-                                        }
+                                            RoleId = role.ID,
+                                            RoleName = role.Name,
+                                            RoleTemplateProductRoleMappingID = 0
+                                        };
+                                        roleTemplateRoles.Add(templateRole);
                                     }
-                                    else
-                                    {
-                                        IList<SharedObjects.Product.ProductRole> roleList = result.Records.Cast<SharedObjects.Product.ProductRole>().ToList().FindAll(p => p.IsAssigned == true);
-                                        foreach (var role in roleList)
-                                        {
-                                            RoleTemplateRoles templateRole = new RoleTemplateRoles
-                                            {
-                                                RoleId = role.ID,
-                                                RoleName = role.Name,
-                                                RoleTemplateProductRoleMappingID = 0
-                                            };
-                                            roleTemplateRoles.Add(templateRole);
-                                        }
-                                    }
-
-                                    userProduct.Roles = roleTemplateRoles;
-                                    userProduct.RoleTemplateProductId = 0;
-                                    userProducts.Add(userProduct);
                                 }
-                            }
-                            else
-                            {
-                                productError.Add(product.Name);
+                                else if (baseProductRoleType == typeof(ClickPayRole))
+                                {
+                                    var roleList = result.Records.Cast<ClickPayRole>().ToList().FindAll(p => p.IsAssigned == true);
+                                    foreach (var role in roleList)
+                                    {
+                                        RoleTemplateRoles templateRole = new RoleTemplateRoles
+                                        {
+                                            RoleId = role.Id,
+                                            RoleName = role.Name,
+                                            RoleTemplateProductRoleMappingID = 0
+                                        };
+                                        roleTemplateRoles.Add(templateRole);
+                                    }
+                                }
+                                else if (baseProductRoleType == typeof(ProductIntegration.Model.ProductRole) )
+                                {
+                                    var roleList = result.Records.Cast<ProductIntegration.Model.ProductRole>().ToList().FindAll(p => p.IsAssigned == true);
+                                    foreach (var role in roleList)
+                                    {
+                                        RoleTemplateRoles templateRole = new RoleTemplateRoles
+                                        {
+                                            RoleId = role.GetRoleId,
+                                            RoleName = role.GetName,
+                                            RoleTemplateProductRoleMappingID = 0
+                                        };
+                                        roleTemplateRoles.Add(templateRole);
+                                    }
+                                }
+                                else if (baseProductRoleType == typeof(Level))
+                                {
+                                    var roleList = result.Records.Cast<ILevel>().ToList().FindAll(p => p.IsAssigned == true);
+                                    foreach (var role in roleList)
+                                    {
+                                        RoleTemplateRoles templateRole = new RoleTemplateRoles
+                                        {
+                                            RoleId = role.Id,
+                                            RoleName = role.Name,
+                                            RoleTemplateProductRoleMappingID = 0
+                                        };
+                                        roleTemplateRoles.Add(templateRole);
+                                    }
+                                }
+                                else if (baseProductRoleType == typeof(SharedObjects.Product.Rum.Role) )
+                                {
+                                    var roleList = result.Records.Cast<SharedObjects.Product.Rum.Role>().ToList().FindAll(p => p.IsAssigned == true);
+                                    foreach (var role in roleList)
+                                    {
+                                        RoleTemplateRoles templateRole = new RoleTemplateRoles
+                                        {
+                                            RoleId = role.Id.ToString(),
+                                            RoleName = role.Name,
+                                            RoleTemplateProductRoleMappingID = 0
+                                        };
+                                        roleTemplateRoles.Add(templateRole);
+                                    }
+                                }
+                                else if (baseProductRoleType == typeof(IntegrationMarketplaceRole))
+                                {
+                                    var roleList = result.Records.Cast<IntegrationMarketplaceRole>().ToList().FindAll(p => p.IsAssigned == true);
+                                    foreach (var role in roleList)
+                                    {
+                                        RoleTemplateRoles templateRole = new RoleTemplateRoles
+                                        {
+                                            RoleId = role.Id.ToString(),
+                                            RoleName = role.GetName,
+                                            RoleTemplateProductRoleMappingID = 0
+                                        };
+                                        roleTemplateRoles.Add(templateRole);
+                                    }
+                                }
+                                userProduct.Roles = roleTemplateRoles;
+                                userProduct.RoleTemplateProductId = 0;
+                                userProducts.Add(userProduct);
                             }
                         }
-                        catch{
-                            productError.Add(product.Name);
-                        }                        
-                    }                    
+                        else
+                        {
+                            productError.Add(product.ProductName);
+                        }
+                    }
+                    catch{
+                        productError.Add(product.ProductName);
+                    }                  
                 }
                
                 enterpriseRoleTemplate.PartyId = partyId;

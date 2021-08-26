@@ -793,6 +793,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var integration = new ApiIntegration(_httpClient, baseUrlAndQuery);
             var result = integration.PostEntity<IntegrationProductUser>(productUser);
 
+            string response = string.Empty;
+
             if (result.IsSuccessStatusCode)
             {
                 WriteToDiagnosticLog(
@@ -803,14 +805,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 // OPTIONAL - If product needs more attributes than userid or loginName then override in the product (e.g. PAM uses)
                 CreateAdditionalSamlUserAttribute(SubjectUserDetails.PersonaId, ProductId, productUser);
-
-                return string.Empty;
             }
-            Dictionary<string, object> logData = new Dictionary<string, object> {{"result", result}};
-            WriteToErrorLog(
-                $"{nameof(StandardV1ProductIntegration)}.CreateUser - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}.", logData);
+            else
+            {
+                Dictionary<string, object> logData = new Dictionary<string, object> { { "result", result } };
+                WriteToErrorLog(
+                    $"{nameof(StandardV1ProductIntegration)}.CreateUser - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}.", logData);
 
-            return result.Content;
+                response = result.Content as string;
+
+                if(string.IsNullOrWhiteSpace(response))
+                {
+                    response = "Unknown error";
+                }
+            }
+
+            return response;
         }
 
         /// <summary>
