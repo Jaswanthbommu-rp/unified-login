@@ -1163,6 +1163,7 @@
     <Build Include="RoleRightsManagement\Tables\ADGroupRight.sql" />
     <Build Include="RoleRightsManagement\Tables\ADGroupUser.sql" />
     <Build Include="Ident\Stored Procedures\GetAllActivityTokenCountsForLastMonth.sql" />
+    <Build Include="Enterprise\ProductControlDependencyType.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
