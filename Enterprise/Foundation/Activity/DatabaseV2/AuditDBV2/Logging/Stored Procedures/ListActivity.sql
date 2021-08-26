@@ -82,6 +82,7 @@ SET NOCOUNT ON;
 					WHEN [Name] = 'StartDate' THEN 'A.ApplicationTimeStamp  > ' + '''' + [Value] + '''' 
 					WHEN [Name] =  'EndDate' THEN 'A.ApplicationTimeStamp <= ' + '''' + [Value] + '''' 
 					WHEN [Name] = 'FromRealPageId' THEN 'FUL.RealPageId = ' + '''' + [Value] + '''' 
+					WHEN [Name] = 'RealPageId' THEN 'FUL.RealPageId = ' + '''' + [Value] + ''''
 					WHEN [Name] = 'LogCategoryTypeId' THEN 'LCT.LogCategoryTypeId IN (' +  [Value] + ')'
 					WHEN [Name] = 'ToRealPageId' THEN 'A.ContextReferenceId = ' + '''' + [Value] + '''' --In future we can remove it if  from UI passing ContextReferenceId instead of ToRealPageId
 					ELSE 'A.' + [Name] + ' = ' + '''' + [Value] + '''' 
