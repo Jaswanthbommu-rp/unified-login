@@ -19,10 +19,9 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Command
 
                 activity = (ActivityDetailMessage)mqMessage.Body;
 
-                if (activity.BooksMasterOrganizationId == 0)
+                if (string.IsNullOrEmpty(activity.ContextReferenceId) && activity.ToUserRealpageId != null)
                 {
-                    var  logData = new Dictionary<string, object>() { { "ActivityDetailMessage", mqMessage.Body } };
-                    Log.Error( $"Activity Message with no organization. Message -{activity?.Message}", logData);
+                    activity.ContextReferenceId = activity.ToUserRealpageId.ToString();
                 }
 
                 if (activity.OrganizationPartyId == 0)
@@ -36,7 +35,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Command
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Error in Activity Command - {ex.Message}. User: {activity?.FromUserLoginId.ToString()}. PmcId: {activity?.BooksMasterOrganizationId.ToString()}");
+                Log.Error(ex, $"Error in Activity Command - {ex.Message}. User: {activity?.FromUserLoginId.ToString()}. PmcId: {activity?.OrganizationPartyId.ToString()}");
             }
         }
     }

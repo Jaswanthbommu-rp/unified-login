@@ -9,13 +9,12 @@ CREATE PROCEDURE [Logging].[InsertActivity]
 	@FromUserFirstName NVARCHAR(50),
 	@FromUserLastName NVARCHAR(50),
 	@FromUserRealpageId UNIQUEIDENTIFIER, 
-	@OrganizationPartyId INT,
+	@OrganizationPartyId BIGINT,
 	@Timestamp DATETIME,
-	@AdditionalInformationTPV ADDITIONALINFO READONLY,
-	@ActivityId BIGINT OUTPUT,
 	@ContextId NVARCHAR(200) = NULL, 
-	@ContextReferenceId NVARCHAR(400) = NULL 
-
+	@ContextReferenceId NVARCHAR(400) = NULL,
+	@AdditionalInformationTPV ADDITIONALINFO READONLY,
+	@ActivityId BIGINT OUTPUT
 )
 AS
 BEGIN

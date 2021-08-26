@@ -199,13 +199,6 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
                     return Request.CreateResponse(HttpStatusCode.BadRequest, "No activityDetailMessage received.");
                 }
 
-                // IF THIS HAS ISSUES, WE NEED TO FIND WHAT IS SETTING BOOKSMASTERORGID AND ADD PARTY ID AS WELL
-                if (_userClaims.OrganizationMasterId != 0 || activityDetailMessage.BooksMasterOrganizationId == 0)
-                {
-                    // TODO need to find all of these callers and add the orgpartyid to the post
-                    activityDetailMessage.BooksMasterOrganizationId = _userClaims.OrganizationMasterId;
-                }
-
                 if (activityDetailMessage.OrganizationPartyId == 0)
                 {
                     activityDetailMessage.OrganizationPartyId = _userClaims.OrganizationPartyId;
