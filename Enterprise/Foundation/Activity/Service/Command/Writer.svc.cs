@@ -19,11 +19,6 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Command
 
                 activity = (ActivityDetailMessage)mqMessage.Body;
 
-                if (string.IsNullOrEmpty(activity.ContextReferenceId) && activity.ToUserRealpageId != null)
-                {
-                    activity.ContextReferenceId = activity.ToUserRealpageId.ToString();
-                }
-
                 if (activity.OrganizationPartyId == 0)
                 {
                     var  logData = new Dictionary<string, object>() { { "ActivityDetailMessage", mqMessage.Body } };
