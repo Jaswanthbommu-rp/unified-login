@@ -1157,6 +1157,8 @@
     <Build Include="RoleRightsManagement\Stored Procedures\GetRoleTemplateByRoleTemplateName.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\GetEnterpriseRoleNewProductsByRoleTemplateId.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\DeleteRoleTemplateUserMappingByPersona.sql" />
+    <Build Include="Hots\Stored Procedures\InsertHotsCompanyRelationship.sql" />
+    <Build Include="Hots\Stored Procedures\InsertHotsPropertyRelationship.sql" />
     <Build Include="Enterprise\Stored Procedures\ListAllOrganizationByLoginName.sql" />
     <Build Include="RoleRightsManagement\Tables\ADGroup.sql" />
     <Build Include="RoleRightsManagement\Tables\ADGroupProduct.sql" />

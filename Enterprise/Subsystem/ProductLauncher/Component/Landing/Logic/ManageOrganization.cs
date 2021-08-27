@@ -54,6 +54,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private IManageOrganizationProduct _manageOrganizationProduct;
         private IManageProduct _manageProduct;
         private ITokenHelper _tokenHelper;
+        private IHOTSCloneUserRepository _hotsCloneUserRepository;
 
         private DefaultUserClaim _defaultUserClaim;
         #endregion
@@ -81,6 +82,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _manageProduct = new ManageProduct(repository, userClaim, messageHandler);
             _manageOrganizationProduct = new ManageOrganizationProduct(userClaim, repository, _manageBlueBook, _manageProduct);
             _tokenHelper = new TokenHelper(repository);
+            _hotsCloneUserRepository = new HOTSCloneUserRepository(repository);
         }
 
         /// <summary>
@@ -104,6 +106,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _manageProduct = new ManageProduct(repository, userClaim, messageHandler);
             _manageOrganizationProduct = new ManageOrganizationProduct(userClaim, repository, _manageBlueBook, _manageProduct);
             _tokenHelper = new TokenHelper(repository);
+
         }
 
         /// <summary>

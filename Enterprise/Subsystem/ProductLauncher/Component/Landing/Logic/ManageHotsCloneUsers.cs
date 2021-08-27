@@ -197,7 +197,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 		}
 
-        public Guid GetBaseCompanyUPFMId(Guid cloneUpfmId)
+        /// <summary>
+        /// Used to link a cloned company to a baseline company when using HOTS
+        /// </summary>
+        /// <param name="baselineCompanyRealPageId"></param>
+        /// <param name="cloneCompanyRealPageId"></param>
+        /// <param name="userId"></param>
+		public RepositoryResponse InsertHotsCompanyRelationship(Guid baselineCompanyRealPageId, Guid cloneCompanyRealPageId, int userId)
+        {
+            return _hotsCloneUserRepository.InsertHotsCompanyRelationship(baselineCompanyRealPageId, cloneCompanyRealPageId, userId);
+        }
+
+        /// <summary>
+        /// Used to link a cloned property to a baseline property when using HOTS
+        /// </summary>
+        /// <param name="baselinePropertyInstanceId"></param>
+        /// <param name="clonePropertyInstanceId"></param>
+        /// <param name="userId"></param>
+        public RepositoryResponse InsertHotsPropertyRelationship(Guid baselinePropertyInstanceId, Guid clonePropertyInstanceId, int userId)
+        {
+            return _hotsCloneUserRepository.InsertHotsPropertyRelationship(baselinePropertyInstanceId, clonePropertyInstanceId, userId);
+        }
+
+
+		public Guid GetBaseCompanyUPFMId(Guid cloneUpfmId)
 		{
 			return _hotsCloneUserRepository.GetBaseCompanyUPFMId(cloneUpfmId);
 		}

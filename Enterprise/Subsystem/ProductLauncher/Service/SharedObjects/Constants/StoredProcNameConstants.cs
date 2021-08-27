@@ -429,6 +429,8 @@
         //HOTS
         public const string SP_GetBaseCompanyUPFMId = "Hots.GetBaseCompanyRealpageId";
         public const string SP_ListHotsBaseOrganizationUsers = "Hots.ListHotsBaseOrganizationUsers";
+        public const string SP_InsertHotsCompanyRelationship = "Hots.InsertHotsCompanyRelationship";
+        public const string SP_InsertHotsPropertyRelationship = "Hots.InsertHotsPropertyRelationship";
 
         // Navigation Menu
         public const string SP_GetNavigationMenu = "Enterprise.GetNavigationMenu";
