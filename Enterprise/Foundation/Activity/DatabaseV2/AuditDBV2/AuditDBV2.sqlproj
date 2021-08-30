@@ -68,7 +68,6 @@
     <Folder Include="Scripts\PostDeployment" />
     <Folder Include="Scripts\PostDeployment\PostDeploymentScripts" />
     <Folder Include="Security\Schema" />
-    <Folder Include="Security\Login" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="Logging\Tables\UserLogin.sql" />
@@ -85,7 +84,6 @@
     <Build Include="dbo\User Defined Types\SearchCriteria.sql" />
     <PostDeploy Include="Scripts\PostDeployment\Script.PostDeployment.sql" />
     <Build Include="Security\Schema\Logging.sql" />
-    <None Include="Security\Login\RUALogin.sql" />
     <Build Include="Logging\Stored Procedures\Activity_Archive.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\Activity_Archiving_Job_Script.sql" />
   </ItemGroup>
@@ -99,17 +97,5 @@
     <None Include="Development.publish.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <SqlCmdVariable Include="Environment">
-      <DefaultValue>
-      </DefaultValue>
-      <Value>$(SqlCmdVar__1)</Value>
-    </SqlCmdVariable>
-    <SqlCmdVariable Include="Password">
-      <DefaultValue>
-      </DefaultValue>
-      <Value>$(SqlCmdVar__2)</Value>
-    </SqlCmdVariable>
   </ItemGroup>
 </Project>

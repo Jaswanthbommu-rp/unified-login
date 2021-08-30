@@ -62,7 +62,6 @@
     <Folder Include="Scripts" />
     <Folder Include="Scripts\PostDeployment" />
     <Folder Include="Scripts\PostDeployment\PostDeploymentScripts" />
-    <Folder Include="Security\Login" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Development.publish.xml">
@@ -81,18 +80,5 @@
     <Build Include="Logging\Tables\LogType.sql" />
     <Build Include="Logging\Tables\UserLogin.sql" />
     <Build Include="Security\Schema\Logging.sql" />
-    <None Include="Security\Login\RUALogin.sql" />
-  </ItemGroup>
-  <ItemGroup>
-    <SqlCmdVariable Include="Environment">
-      <DefaultValue>
-      </DefaultValue>
-      <Value>$(SqlCmdVar__1)</Value>
-    </SqlCmdVariable>
-    <SqlCmdVariable Include="Password">
-      <DefaultValue>
-      </DefaultValue>
-      <Value>$(SqlCmdVar__2)</Value>
-    </SqlCmdVariable>
   </ItemGroup>
 </Project>
