@@ -11,9 +11,4 @@
 		<DoNotDropRoleMembership>True</DoNotDropRoleMembership>
 		<DoNotDropLogins>True</DoNotDropLogins>
 	</PropertyGroup>
-	<ItemGroup>
-		<SqlCmdVariable Include="Password">
-			<Value></Value>
-		</SqlCmdVariable>
-	</ItemGroup>
 </Project>
