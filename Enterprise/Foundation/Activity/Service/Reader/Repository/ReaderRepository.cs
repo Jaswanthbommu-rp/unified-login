@@ -117,19 +117,17 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Repository
                 param.Add(tvp.TableVariableName, dataTable);
             }
 
-            //param.Add("TotalRows", dbType: DbType.Int32, direction: ParameterDirection.Output);
+            param.Add("TotalRows", dbType: DbType.Int32, direction: ParameterDirection.Output);
 			// Execute SP
 			using (var repository = GetRepository())
             {
-                var result = new ListResponse<ActivityDetailMessage>();
-                var multiResults = repository.QueryMultiple("Logging.ListActivity", param);
-                if (multiResults != null)
+                var list = repository.GetManyWithTvp<ActivitySearchCriteria, ActivityDetailMessage>(tvp, filterCriteria.ActivitySearchCriteria, param).ToList();
+                var rowCount = param.Get<int>("TotalRows");
+                return new ListResponse<ActivityDetailMessage>
                 {
-                    result.Records = multiResults.Read<ActivityDetailMessage>().ToList();
-                    result.TotalRows = multiResults.ReadFirstOrDefault<int>();
-                }
-
-                return result;
+                    Records = list,
+                    TotalRows = rowCount
+                };
 
             }
 		}
