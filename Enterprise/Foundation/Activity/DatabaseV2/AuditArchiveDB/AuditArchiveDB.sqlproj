@@ -83,4 +83,16 @@
     <Build Include="Security\Schema\Logging.sql" />
     <None Include="Security\Login\RUALogin.sql" />
   </ItemGroup>
+  <ItemGroup>
+    <SqlCmdVariable Include="Environment">
+      <DefaultValue>
+      </DefaultValue>
+      <Value>$(SqlCmdVar__1)</Value>
+    </SqlCmdVariable>
+    <SqlCmdVariable Include="Password">
+      <DefaultValue>
+      </DefaultValue>
+      <Value>$(SqlCmdVar__2)</Value>
+    </SqlCmdVariable>
+  </ItemGroup>
 </Project>
