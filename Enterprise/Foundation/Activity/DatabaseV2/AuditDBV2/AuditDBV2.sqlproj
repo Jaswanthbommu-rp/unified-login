@@ -94,6 +94,8 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\LogType_InsertScript.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\User_Creation.sql" />
     <None Include="Production.publish.xml" />
-    <None Include="Development.publish.xml" />
+    <None Include="Development.publish.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>
