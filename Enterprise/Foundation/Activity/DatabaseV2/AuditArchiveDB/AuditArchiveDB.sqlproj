@@ -62,6 +62,7 @@
     <Folder Include="Scripts" />
     <Folder Include="Scripts\PostDeployment" />
     <Folder Include="Scripts\PostDeployment\PostDeploymentScripts" />
+    <Folder Include="Security\Login" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Development.publish.xml" />
@@ -76,5 +77,6 @@
     <Build Include="Logging\Tables\LogType.sql" />
     <Build Include="Logging\Tables\UserLogin.sql" />
     <Build Include="Security\Schema\Logging.sql" />
+    <None Include="Security\Login\RUALogin.sql" />
   </ItemGroup>
 </Project>

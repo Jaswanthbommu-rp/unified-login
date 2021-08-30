@@ -12,7 +12,10 @@
 		<DoNotDropLogins>True</DoNotDropLogins>
 	</PropertyGroup>
 	<ItemGroup>
-		<SqlCmdVariable Include="Password">
+    <SqlCmdVariable Include="Environment">
+      <Value></Value>
+    </SqlCmdVariable>
+    <SqlCmdVariable Include="Password">
 			<Value></Value>
 		</SqlCmdVariable>
 	</ItemGroup>

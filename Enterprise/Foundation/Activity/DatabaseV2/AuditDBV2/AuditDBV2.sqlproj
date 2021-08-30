@@ -87,7 +87,7 @@
     <Build Include="Security\Schema\Logging.sql" />
     <None Include="Security\Login\RUALogin.sql" />
     <Build Include="Logging\Stored Procedures\Activity_Archive.sql" />
-    <Build Include="Scripts\PostDeployment\PostDeploymentScripts\Activity_Archiving_Job_Script.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Activity_Archiving_Job_Script.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\LogCategoryType_InsertScript.sql" />
