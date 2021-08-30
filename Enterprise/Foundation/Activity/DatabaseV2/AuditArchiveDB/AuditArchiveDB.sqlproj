@@ -68,7 +68,9 @@
     <None Include="Development.publish.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Production.publish.xml" />
+    <None Include="Production.publish.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\User_Creation.sql" />
     <PostDeploy Include="Scripts\PostDeployment\Script.PostDeployment.sql" />
   </ItemGroup>
