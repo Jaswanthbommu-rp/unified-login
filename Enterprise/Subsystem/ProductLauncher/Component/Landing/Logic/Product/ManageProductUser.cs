@@ -11,6 +11,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Accounting;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ClientPortal;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.IntelligentBuilding;
@@ -163,6 +164,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 roleProp = GetProductPropertiesRoles<RolePropertyList>(productUser.InputJson) as RolePropertyList;
                 usePrimaryProperties = roleProp.UsePrimaryProperties;
+                roleProp = AssignPrimaryPropertiesToProductBatchOnUserCreate(productUser, roleProp);
 
                 var integration = _integrationTypeFactory.GetIntegration(productUser.ProductId);
                 result = integration.CreateUser(productUser);
@@ -696,6 +698,129 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             });
 
             return productInternalSettingList;
+        }
+
+        private RolePropertyList AssignPrimaryPropertiesToProductBatchOnUserCreate(ProductUserProperitiesRoles productUser, RolePropertyList roleProp)
+        {
+            IManagePersona _managePersona = new ManagePersona();
+            ManageEnterpriseRoleProductBatch manageEnterpriseRoleProductBatch = new ManageEnterpriseRoleProductBatch(_defaultUserClaim);
+            var editorPersona = _managePersona.GetPersona(productUser.CreateUserPersonaId);
+            var userPersona = _managePersona.GetPersona(productUser.AssignUserPersonaId);
+            _defaultUserClaim.UserRealPageGuid = editorPersona.RealPageId;
+            _defaultUserClaim.OrganizationRealPageGuid = editorPersona.Organization.RealPageId;
+            //_defaultUserClaim.Rights = GetPersonaRoleRights(batch.EditorUserPersonaId, editorPersona.OrganizationPartyId);
+            if (productUser.ProductId != 4 && roleProp.UsePrimaryProperties)
+            {
+                ListResponse propertyList = manageEnterpriseRoleProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, productUser.ProductId);
+                if (propertyList.Records.Count > 0)
+                {
+                    roleProp.PropertyList = new List<string>();
+                    roleProp.PropertyList = GetSelectedProperties(propertyList);
+                    productUser.InputJson = JsonConvert.SerializeObject(roleProp);
+                }
+            }
+            else if (productUser.ProductId == 4)
+            {
+                Object productPropertiesRoles =
+                        JsonConvert.DeserializeObject<AoUserCompanyPropertyRoleDetails>(productUser.InputJson);
+
+                var aoRoleProp = productPropertiesRoles as AoUserCompanyPropertyRoleDetails;
+                IList<AoUserCompanyPropertyRoleDetail> aoGbUserCompanyPropertyRoleDetails = aoRoleProp.AoUserCompanyPropertyRoleDetailList;
+                foreach (var data in aoGbUserCompanyPropertyRoleDetails)
+                {
+                    if (data.UsePrimaryProperties == true)
+                    {
+                        ListResponse propertyList = manageEnterpriseRoleProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, data.ProductId);
+                        if (propertyList.Records.Count > 0)
+                        {
+                            List<string> aoPropList = GetSelectedProperties(propertyList);
+                            data.SelectedPortfolioValues = aoPropList.Select(int.Parse).ToList();
+                        }
+                    }
+                }
+                productUser.InputJson = JsonConvert.SerializeObject(aoRoleProp);
+            }
+            return roleProp;
+        }
+
+
+        private List<string> GetSelectedProperties(ListResponse productResult)
+        {
+            List<string> selectedProperties = new List<string>();
+            var productPropertyType = productResult.Records[0].GetType();
+
+            if (productPropertyType == typeof(ProductProperty))
+            {
+                var productList = productResult.Records.Cast<ProductProperty>();
+                foreach (var property in productList)
+                {
+                    if (property.IsAssigned == true)
+                    {
+                        selectedProperties.Add(property.ID);
+                    }
+                }
+            }
+            else if (productPropertyType == typeof(ACProperty))
+            {
+                foreach (var property in productResult.Records.Cast<ACProperty>())
+                {
+                    if (property.IsAssigned == true)
+                    {
+                        selectedProperties.Add(property.Id);
+                    }
+                }
+            }
+            else if (productPropertyType == typeof(AssetGroup))
+            {
+                foreach (var property in productResult.Records.Cast<AssetGroup>())
+                {
+                    if (property.IsAssigned == true)
+                    {
+                        selectedProperties.Add(property.ID);
+                    }
+                }
+            }
+            else if (productPropertyType == typeof(OnSiteProperty))
+            {
+                foreach (var property in productResult.Records.Cast<OnSiteProperty>())
+                {
+                    if (property.IsAssigned == true)
+                    {
+                        selectedProperties.Add(property.GetPropertyId.ToString());
+                    }
+                }
+            }
+            else if (productPropertyType == typeof(RumPropertyGroup))
+            {
+                foreach (var property in productResult.Records.Cast<RumPropertyGroup>())
+                {
+                    if (property.IsAssigned == true)
+                    {
+                        selectedProperties.Add(property.Id.ToString());
+                    }
+                }
+            }
+            else if (productPropertyType == typeof(ProductProperties))
+            {
+                foreach (var property in productResult.Records.Cast<ProductProperties>())
+                {
+                    if (property.IsAssigned == true)
+                    {
+                        selectedProperties.Add(property.GetPropertyId.ToString());
+                    }
+                }
+            }
+            else if (productPropertyType == typeof(Portfolio))
+            {
+                foreach (var property in productResult.Records.Cast<Portfolio>())
+                {
+                    if (property.IsAssigned == true)
+                    {
+                        selectedProperties.Add(property.ID);
+                    }
+                }
+            }
+            return selectedProperties;
         }
 
         #endregion
