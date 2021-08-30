@@ -18,9 +18,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
         public Guid RealPageId { get; set; }
         /// <summary>
         /// Product Id from ProductEnum
-        /// ToDo: rename later 
         /// </summary>
-        public int ProductName { get; set; }
+        public int ProductId { get; set; }
 
         /// <summary>
         /// Person who is creating or editing user

@@ -20,7 +20,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         /// <summary>
         /// Product Name
         /// </summary>
-        public int ProductName { get; set; }
+        public int ProductId { get; set; }
 
         /// <summary>
         /// Person who is creating or editing user

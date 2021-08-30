@@ -37,6 +37,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         private IManageOrganizationProduct _manageOrganizationProduct;
         private IOrganizationProductRepository _organizationProductRepository;
         private IManageProduct _manageProduct;
+        private IManageHotsCloneUsers _manageHotsCloneUsers;
 
         public WebHookController()
         {
@@ -53,6 +54,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _organizationProductRepository = new OrganizationProductRepository(repository);
             _manageProduct = new ManageProduct(repository, userClaim, messageHandler);
             _manageOrganizationProduct = new ManageOrganizationProduct(userClaim, repository, _manageBlueBook, _manageProduct);
+            _manageHotsCloneUsers = new ManageHotsCloneUsers(repository, userClaim, messageHandler);
             _userClaims = userClaim;
         }
 
@@ -85,6 +87,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _organizationProductRepository = new OrganizationProductRepository();
             _manageOrganizationProduct = new ManageOrganizationProduct(_userClaims);
             _manageBlueBook = new ManageBlueBook(_userClaims);
+            _manageHotsCloneUsers = new ManageHotsCloneUsers(_userClaims);
         }
 
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
@@ -114,7 +117,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             if (Request.Properties?["TibcoPostData"] is string requestBody)
             {
-                string signingSecret = GetTiboWebHookSigningSecret();
+                string signingSecret = GetTibcoWebHookSigningSecret();
                 if (string.IsNullOrEmpty(signingSecret))
                 {
                     response = Request.CreateResponse(HttpStatusCode.BadRequest, "Missing Signing Secret.");
@@ -218,9 +221,41 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             break;
 
                         case "provisioning.upfmorder.create":
+                        case "provisioning.upfmclone.create":
                             // get the company info
                             var customerCompanyId = Convert.ToInt32(thinEvent.Payload?["company"]["customerCompanyId"] == null || thinEvent.Payload["company"]["customerCompanyId"].Type == JTokenType.Null ? 0 : thinEvent.Payload?["company"]["customerCompanyId"]);
                             var customerDomain = thinEvent.Payload?["company"]["customerEnvironment"] == null || thinEvent.Payload?["company"]["customerEnvironment"].Type == JTokenType.Null ? thinEvent.Payload?["customerEnvironment"].ToString() : thinEvent.Payload?["company"]["customerEnvironment"].ToString();
+
+                            if (thinEvent.Topic.Equals("provisioning.upfmclone.create", StringComparison.OrdinalIgnoreCase))
+                            {
+                                string hotsCloningEnabled = GetUnifiedPlatformSettings((int)ProductEnum.UnifiedPlatform)?.ToList().FirstOrDefault(s => s.Name.Equals("IsCloneUsersProcessEnabledForHOTS", StringComparison.OrdinalIgnoreCase))?.Value;
+                                if (string.IsNullOrEmpty(hotsCloningEnabled) || !hotsCloningEnabled.Equals("1", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    WriteToLog(LogEventLevel.Debug, $"Environment not enabled for HOTS cloning");
+                                    return Request.CreateResponse(HttpStatusCode.BadRequest, $"Environment not enabled for HOTS cloning");
+                                }
+
+                                var cloneCompanyId = thinEvent.Payload?["company"]["cloneCompanyInstanceSourceId"] == null || thinEvent.Payload?["company"]["cloneCompanyInstanceSourceId"].Type == JTokenType.Null ? null : thinEvent.Payload?["company"]["cloneCompanyInstanceSourceId"].ToString();
+                                if (string.IsNullOrEmpty(cloneCompanyId))
+                                {
+                                    response = Request.CreateResponse(HttpStatusCode.BadRequest, "Missing cloneCompanyInstanceSourceId");
+                                    WriteToLog(LogEventLevel.Error, "Missing cloneCompanyInstanceSourceId");
+                                    return response;
+                                }
+
+                                if (!Guid.TryParse(cloneCompanyId, out var baselineCompanyGuid))
+                                {
+                                    response = Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid cloneCompanyInstanceSourceId, not Guid");
+                                    WriteToLog(LogEventLevel.Error, "Invalid cloneCompanyInstanceSourceId, not Guid");
+                                    return response;
+                                };
+                                var cloneBaselineOrg = _manageOrganization.GetOrganization(baselineCompanyGuid);
+                                if (cloneBaselineOrg == null)
+                                {
+                                    WriteToLog(LogEventLevel.Error, $"HOTS Baseline Company {cloneCompanyId} not found");
+                                    return Request.CreateResponse(HttpStatusCode.BadRequest, $"HOTS Baseline Company {cloneCompanyId} not found");
+                                }
+                            }
 
                             var propertyList = thinEvent.Payload["properties"];
                             string existingUnifiedLoginInstanceId = thinEvent.Payload?["company"]["companyInstanceSourceId"] == null || thinEvent.Payload?["company"]["companyInstanceSourceId"].Type == JTokenType.Null ? null : thinEvent.Payload?["company"]["companyInstanceSourceId"].ToString();
@@ -266,6 +301,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                     }
 
                                     string existingUPFMPropertyInstanceId = property["propertyInstanceSourceId"] == null || property["propertyInstanceSourceId"].Type == JTokenType.Null ? null : property["propertyInstanceSourceId"].ToString();
+                                    string clonePropertyInstanceSourceId = property["clonePropertyInstanceSourceId"] == null || property["clonePropertyInstanceSourceId"].Type == JTokenType.Null ? null : property["clonePropertyInstanceSourceId"].ToString();
+                                    if (string.IsNullOrEmpty(clonePropertyInstanceSourceId) && thinEvent.Topic.Equals("provisioning.upfmclone.create", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        response = Request.CreateResponse(HttpStatusCode.BadRequest, "Missing clonePropertyInstanceSourceId");
+                                        WriteToLog(LogEventLevel.Error, "Missing clonePropertyInstanceSourceId");
+                                        return response;
+                                    }
+
                                     var newProperty =
                                         new UPFMPropertyInstance()
                                         {
@@ -282,6 +325,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                             InstanceId = existingUPFMPropertyInstanceId == null ? Guid.Empty : new Guid(existingUPFMPropertyInstanceId),
                                             Domain = property["customerEnvironment"] == null || property["customerEnvironment"].Type == JTokenType.Null ? customerDomain : property["customerEnvironment"].ToString(),
                                             ProductList = currentProductList,
+                                            ClonePropertyInstanceSourceId = clonePropertyInstanceSourceId == null ? Guid.Empty : new Guid(clonePropertyInstanceSourceId),
                                         };
 
                                     // 
@@ -322,7 +366,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             if (existingUnifiedLoginInstanceId == null)
                             {
                                 //return Request.CreateResponse(HttpStatusCode.BadRequest, "stop");
-                                var createResult = CreateCompanyFromBooks(thinEvent.Payload?["company"], customerCompanyId, customerDomain, uniqueProductIdList);
+                                var createResult = CreateCompanyFromBooks(thinEvent.Payload?["company"], customerCompanyId, customerDomain, uniqueProductIdList, thinEvent.Topic.ToLowerInvariant());
                                 if (!string.IsNullOrEmpty(createResult.Result))
                                 {
                                     propertyInstanceList = new List<UPFMPropertyInstance>();
@@ -502,6 +546,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation"
                         };
                         var resultBooks = _manageBlueBook.AddBooksGreenBookPropertyInstanceFromProvisioning(pi);
+
+                        if (resultBooks && property.ClonePropertyInstanceSourceId != Guid.Empty)
+                        {
+                            var hotsResult = _manageHotsCloneUsers.InsertHotsPropertyRelationship(property.ClonePropertyInstanceSourceId, property.InstanceId, 1);
+                            if (hotsResult?.Id == 0)
+                            {
+                                WriteToLog(LogEventLevel.Error, $"Failed to add HOTS property relationship. baseline {property.ClonePropertyInstanceSourceId} clone {property.InstanceId}");
+                            }
+                        }
                     }
                     else
                     {
@@ -535,13 +588,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// Used to get the signing secret used to validate Tibco WebHook events
         /// </summary>
         /// <returns>The list of settings</returns>
-        private string GetTiboWebHookSigningSecret()
+        private string GetTibcoWebHookSigningSecret()
         {
             string signingSecret = GetUnifiedPlatformSettings((int)ProductEnum.UnifiedPlatform)?.ToList().FirstOrDefault(s => s.Name.Equals("TiboWebHookSigningSecret", StringComparison.OrdinalIgnoreCase))?.Value;
             return signingSecret ?? "";
         }
 
-        private CreateCompanyResult CreateCompanyFromBooks(JToken companyPayload, long booksCustomerMasterId, string domain, List<int> productIdList)
+        private CreateCompanyResult CreateCompanyFromBooks(JToken companyPayload, long booksCustomerMasterId, string domain, List<int> productIdList, string eventTopic)
         {
             bool processBlueBookMessage = false;
             CreateCompanyResult createCompanyResult = new CreateCompanyResult() {RealPageId = Guid.Empty.ToString()};
@@ -575,6 +628,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             var companyPostalCode = companyPayload?["postalCode"] == null || companyPayload?["postalCode"].Type == JTokenType.Null ? "" : companyPayload["postalCode"].ToString();
             var companyCounty = companyPayload?["county"] == null || companyPayload?["county"].Type == JTokenType.Null ? "" : companyPayload["county"].ToString();
             var companyCountry = companyPayload?["country"] == null || companyPayload?["country"].Type == JTokenType.Null ? "" : companyPayload["country"].ToString();
+
+            if (eventTopic.Equals("provisioning.upfmclone.create", StringComparison.OrdinalIgnoreCase))
+            {
+                companyName += $"-{customerCompany.CustomerCompanyId}";
+            }
 
             OrganizationCreate organization = new OrganizationCreate()
             {
@@ -631,6 +689,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
 
             createCompanyResult.RealPageId = result.obj.Org.RealPageId.ToString();
+            if (eventTopic.Equals("provisioning.upfmclone.create", StringComparison.OrdinalIgnoreCase))
+            {
+                var cloneCompanyInstanceSourceId = companyPayload?["cloneCompanyInstanceSourceId"] == null || companyPayload?["cloneCompanyInstanceSourceId"].Type == JTokenType.Null ? null : companyPayload?["cloneCompanyInstanceSourceId"].ToString();
+                if (cloneCompanyInstanceSourceId != null)
+                {
+                    Guid.TryParse(cloneCompanyInstanceSourceId, out var baselineCompanyGuid);
+                    Guid.TryParse(createCompanyResult.RealPageId, out var cloneCompanyGuid);
+                    
+                    var hotsResult = _manageHotsCloneUsers.InsertHotsCompanyRelationship(baselineCompanyGuid, cloneCompanyGuid, 1);
+                    if (hotsResult.Id == 0)
+                    {
+                        createCompanyResult.Result = "Error inserting HOTS company relationship";
+                        return createCompanyResult;
+                    }
+                }
+            }
             
             var companyInstance = new CompanyInstanceAdd()
             {

@@ -364,20 +364,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                                         roleTemplateRoles.Add(templateRole);
                                     }
                                 }
-                                else if (baseProductRoleType == typeof(IntegrationMarketplaceRole))
-                                {
-                                    var roleList = result.Records.Cast<IntegrationMarketplaceRole>().ToList().FindAll(p => p.IsAssigned == true);
-                                    foreach (var role in roleList)
-                                    {
-                                        RoleTemplateRoles templateRole = new RoleTemplateRoles
-                                        {
-                                            RoleId = role.Id.ToString(),
-                                            RoleName = role.GetName,
-                                            RoleTemplateProductRoleMappingID = 0
-                                        };
-                                        roleTemplateRoles.Add(templateRole);
-                                    }
-                                }
                                 userProduct.Roles = roleTemplateRoles;
                                 userProduct.RoleTemplateProductId = 0;
                                 userProducts.Add(userProduct);

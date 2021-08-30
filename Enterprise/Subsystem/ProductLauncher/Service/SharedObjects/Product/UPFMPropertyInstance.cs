@@ -33,5 +33,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         public string PropertyInstancePartner { get; set; } = null;
 
         public string PropertyInstancePartnerSourceId { get; set; } = null;
+
+        public Guid ClonePropertyInstanceSourceId { get; set; }
     }
 }

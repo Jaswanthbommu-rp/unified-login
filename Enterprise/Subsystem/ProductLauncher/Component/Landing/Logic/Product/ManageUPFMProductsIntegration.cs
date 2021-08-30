@@ -23,80 +23,81 @@ using UL = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produ
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
     public class ManageUPFMProductsIntegration : ManageProductBase, IManageUPFMProductsIntegration
-	{
-		private DefaultUserClaim _userClaims;
-		public int _upfmProductId;
+    {
+        private DefaultUserClaim _userClaims;
+        public int _upfmProductId;
 
-		//private int _upfmProductId;
-		/// <summary>
-		/// Default constructor
-		/// </summary>
-		/// <param name="userClaims"></param>
-		public ManageUPFMProductsIntegration(int productId, DefaultUserClaim userClaims) : base(productId, userClaims, null, null)
-		{
-			WriteToDiagnosticLog("ManageUPFMProductsIntegration Ctor - Getting Product settings.");
-			_userClaims = userClaims;
-			_editorRealPageId = userClaims.UserRealPageGuid;
-			_productRepository = new ProductRepository(_userClaims);
-			_blueBook = new ManageBlueBook(userClaims);
-			_upfmProductId = productId;
-		}
+        //private int _upfmProductId;
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        /// <param name="userClaims"></param>
+        public ManageUPFMProductsIntegration(int productId, DefaultUserClaim userClaims) : base(productId, userClaims, null, null)
+        {
+            WriteToDiagnosticLog("ManageUPFMProductsIntegration Ctor - Getting Product settings.");
+            _userClaims = userClaims;
+            _editorRealPageId = userClaims.UserRealPageGuid;
+            _productRepository = new ProductRepository(_userClaims);
+            _blueBook = new ManageBlueBook(userClaims);
+            _upfmProductId = productId;
+        }
 
-		/// <summary>
-		/// Unit test constructor
-		/// </summary>
-		/// <param name="defaultUserClaim"></param>
-		/// <param name="managePersona"></param>
-		/// <param name="managePerson"></param>
-		/// <param name="manageBlueBook"></param>
-		/// <param name="productRepository"></param>
-		/// <param name="samlRepository"></param>
-		/// <param name="productInternalSettingRepository"></param>
-		/// <param name="managePartyRelationship"></param>
-		/// <param name="userRoleRightRepository"></param>
-		/// <param name="manageUserLogin"></param>
-		/// <param name="unifiedLoginRepository"></param>
-		/// <param name="propertyRepository"></param>
-		public ManageUPFMProductsIntegration(int productId, DefaultUserClaim defaultUserClaim, IManagePersona managePersona, IManagePerson managePerson, IManageBlueBook manageBlueBook, IProductRepository productRepository, ISamlRepository samlRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePartyRelationship managePartyRelationship, IUserRoleRightRepository userRoleRightRepository, IManageUserLogin manageUserLogin, IUnifiedLoginRepository unifiedLoginRepository, IPropertyRepository propertyRepository, IUserLoginRepository userLoginRepository) : base(productId, defaultUserClaim, productInternalSettingRepository, productRepository)
-		{
-			_userClaims = defaultUserClaim;
-			_editorRealPageId = defaultUserClaim.UserRealPageGuid;
-			_managePersona = managePersona;
-			_blueBook = manageBlueBook;
-			_productRepository = productRepository;
-			_samlRepository = samlRepository;
-			_productInternalSettingRepository = productInternalSettingRepository;
-			_managePartyRelationship = managePartyRelationship;
-			_userRoleRightRepository = userRoleRightRepository;
-			_manageUserLogin = manageUserLogin;
-			_unifiedLoginRepository = unifiedLoginRepository;
-			_managePerson = managePerson;
-			_propertyRepository = propertyRepository;
-			_userLoginRepository = userLoginRepository;
-			_upfmProductId = productId;
-		}
+        /// <summary>
+        /// Unit test constructor
+        /// </summary>
+        /// <param name="defaultUserClaim"></param>
+        /// <param name="managePersona"></param>
+        /// <param name="managePerson"></param>
+        /// <param name="manageBlueBook"></param>
+        /// <param name="productRepository"></param>
+        /// <param name="samlRepository"></param>
+        /// <param name="productInternalSettingRepository"></param>
+        /// <param name="managePartyRelationship"></param>
+        /// <param name="userRoleRightRepository"></param>
+        /// <param name="manageUserLogin"></param>
+        /// <param name="unifiedLoginRepository"></param>
+        /// <param name="propertyRepository"></param>
+        public ManageUPFMProductsIntegration(int productId, DefaultUserClaim defaultUserClaim, IManagePersona managePersona, IManagePerson managePerson, IManageBlueBook manageBlueBook, IProductRepository productRepository, ISamlRepository samlRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePartyRelationship managePartyRelationship, IUserRoleRightRepository userRoleRightRepository, IManageUserLogin manageUserLogin, IUnifiedLoginRepository unifiedLoginRepository, IPropertyRepository propertyRepository, IUserLoginRepository userLoginRepository) : base(productId, defaultUserClaim, productInternalSettingRepository, productRepository)
+        {
+            _userClaims = defaultUserClaim;
+            _editorRealPageId = defaultUserClaim.UserRealPageGuid;
+            _managePersona = managePersona;
+            _blueBook = manageBlueBook;
+            _productRepository = productRepository;
+            _samlRepository = samlRepository;
+            _productInternalSettingRepository = productInternalSettingRepository;
+            _managePartyRelationship = managePartyRelationship;
+            _userRoleRightRepository = userRoleRightRepository;
+            _manageUserLogin = manageUserLogin;
+            _unifiedLoginRepository = unifiedLoginRepository;
+            _managePerson = managePerson;
+            _propertyRepository = propertyRepository;
+            _userLoginRepository = userLoginRepository;
+            _upfmProductId = productId;
+        }
 
-		#region Roles and Rights
+        #region Roles and Rights
 
-		/// <summary>
-		/// Returns Roles for the given user and company
-		/// </summary>
-		/// <param name="editorPersonaId"></param>
-		/// <param name="userPersonaId"></param>
-		/// <param name="partyId"></param>
-		/// <returns></returns>
-		public ListResponse GetRoles(long editorPersonaId, long userPersonaId, long partyId)
-		{
-			WriteToDiagnosticLog($"ManageUPFMProductUser - GetRoles at beginning of method for user with editorPersona id - {editorPersonaId}");
-		   var response = new ListResponse();
-			try
-			{
-				ListResponse result = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
-				if (result.IsError)
-				{
-					WriteToErrorLog($"ManageUPFMProductUser-GetRoles.GetCompanyEditorAndUserDetails error for product {_upfmProductId}  with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
-					return result;
+        /// <summary>
+        /// Returns Roles for the given user and company
+        /// </summary>
+        /// <param name="editorPersonaId"></param>
+        /// <param name="userPersonaId"></param>
+        /// <param name="partyId"></param>
+        /// <returns></returns>
+        public ListResponse GetRoles(long editorPersonaId, long userPersonaId, long partyId)
+        {
+            WriteToDiagnosticLog($"ManageUPFMProductUser - GetRoles at beginning of method for user with editorPersona id - {editorPersonaId}");
+            var response = new ListResponse();
+            try
+            {
+                ListResponse result = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+                if (result.IsError)
+                {
+                    WriteToErrorLog($"ManageUPFMProductUser-GetRoles.GetCompanyEditorAndUserDetails error for product {_upfmProductId}  with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
+                    return result;
                 }
+
                 var productInternalSettingList = GetProductSetting(_upfmProductId);
                 bool getUDMDetails = true;
                 if (productInternalSettingList.Any(a => a.Name.Equals("UpdateProductInUDM", StringComparison.OrdinalIgnoreCase)))
@@ -110,219 +111,224 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 // get roles from DB for UnifiedAmenities product
-				WriteToDiagnosticLog($"ManageUPFMProductUser -GetRoles  Getting all GB roles from GB DB - ocr.ListRolesByParty with party id - {partyId} and product {_upfmProductId}");
-				IList<int> productIdList = _productRepository.GetProductIdsByCompany(partyId);
-				var gbAllRoles = _productRepository.ListRolesForProductByParty(partyId, productIdList, _upfmProductId) ?? new List<ProductRole>();
-				gbAllRoles = gbAllRoles?.OrderBy(r => r.Name).ToList();
-				
-				WriteToDiagnosticLog($"ManageUPFMProductUser-GetRoles.MapProductAccessGroupsToGB() completed for user with editorPersona id - {editorPersonaId}");
+                WriteToDiagnosticLog($"ManageUPFMProductUser -GetRoles  Getting all GB roles from GB DB - ocr.ListRolesByParty with party id - {partyId} and product {_upfmProductId}");
+                IList<int> productIdList = _productRepository.GetProductIdsByCompany(partyId);
+                var gbAllRoles = _productRepository.ListRolesForProductByParty(partyId, productIdList, _upfmProductId) ?? new List<ProductRole>();
+                gbAllRoles = gbAllRoles?.OrderBy(r => r.Name).ToList();
 
-				if (userPersonaId != 0) // Called during updating Existing User
-				{
-					WriteToDiagnosticLog($"ManageUPFMProductUser-GetRoles-MergeAccessGroupsWithGreenbook calling....for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
-					response = MergeSelRolesWithGreenbook(gbAllRoles, userPersonaId);
-					WriteToDiagnosticLog($"ManageUPFMProductUser-GetRoles-MergeAccessGroupsWithGreenbook completed for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
-				}
-				else // Called during creating a new User
-				{
-					// For new user, set a default role
-					if (gbAllRoles != null)
-					{
-						if (gbAllRoles.Any(s => s.DefaultRole.Equals("True", StringComparison.OrdinalIgnoreCase)))
-						{
-							gbAllRoles.FirstOrDefault(s => s.DefaultRole.Equals("True", StringComparison.OrdinalIgnoreCase)).IsAssigned = true;
-						}
-					}
-					response = new ListResponse()
-					{
-						Records = gbAllRoles.Cast<object>().ToList(),
-						TotalRows = gbAllRoles.Count(),
-						RowsPerPage = 9999,
-						ErrorReason = string.Empty,
-						TotalPages = 1
-					};
-				}
-			}
-			catch (Exception ex)
-			{
-				response.IsError = true;
+                WriteToDiagnosticLog($"ManageUPFMProductUser-GetRoles.MapProductAccessGroupsToGB() completed for user with editorPersona id - {editorPersonaId}");
 
-				if(ex is BlueBookException)
+                if (userPersonaId != 0) // Called during updating Existing User
                 {
-					response.ErrorReason = ex.Message;
-				}
+                    WriteToDiagnosticLog($"ManageUPFMProductUser-GetRoles-MergeAccessGroupsWithGreenbook calling....for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
+                    response = MergeSelRolesWithGreenbook(gbAllRoles, userPersonaId);
+                    WriteToDiagnosticLog($"ManageUPFMProductUser-GetRoles-MergeAccessGroupsWithGreenbook completed for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
+                }
+                else // Called during creating a new User
+                {
+                    // For new user, set a default role
+                    if (gbAllRoles != null)
+                    {
+                        if (gbAllRoles.Any(s => s.DefaultRole.Equals("True", StringComparison.OrdinalIgnoreCase)))
+                        {
+                            gbAllRoles.FirstOrDefault(s => s.DefaultRole.Equals("True", StringComparison.OrdinalIgnoreCase)).IsAssigned = true;
+                        }
+                    }
+
+                    response = new ListResponse()
+                    {
+                        Records = gbAllRoles.Cast<object>().ToList(),
+                        TotalRows = gbAllRoles.Count(),
+                        RowsPerPage = 9999,
+                        ErrorReason = string.Empty,
+                        TotalPages = 1
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                response.IsError = true;
+
+                if (ex is BlueBookException)
+                {
+                    response.ErrorReason = ex.Message;
+                }
                 else
                 {
-					response.ErrorReason = CommonMessageConstants.RoleErrorMessage;
-				}
-				WriteToErrorLog($"ManageUPFMProductUser -GetRoles Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
-			}
+                    response.ErrorReason = CommonMessageConstants.RoleErrorMessage;
+                }
 
-			return response;
-		}
+                WriteToErrorLog($"ManageUPFMProductUser -GetRoles Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+            }
 
-		/// <summary>
-		/// Returns Rights with selected rights for a roleId
-		/// </summary>
-		/// <param name="editorPersonaId"></param>
-		/// <param name="partyId"></param>
-		/// <param name="roleId"></param>
-		/// <returns></returns>
-		public ListResponse GetRightsByRole(long editorPersonaId, long partyId, long roleId)
-		{
-			WriteToDiagnosticLog($"ManageUPFMProductUser.GetRightsByRole at beginning of method for user with editorPersona id - {editorPersonaId}");
-			var response = new ListResponse();
-			try
-			{
-				ListResponse result = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
-				if (result.IsError)
-				{
-					WriteToErrorLog($"ManageUPFMProductUser.GetRightsByRole.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
-					return result;
-				}
+            return response;
+        }
 
-				WriteToDiagnosticLog($"ManageUPFMProductUser.GetRightsByRole Getting all GB roles from GB DB - pr.ListRolesForProductByParty with party id - {partyId}");
-				ProductRepository pr = new ProductRepository();
-				IList<int> productIdList = pr.GetProductIdsByCompany(partyId);
-				var gbAllRights = _unifiedLoginRepository.ListRightsByRole(partyId, productIdList, _productId, roleId) ?? new List<ProductRight>();
+        /// <summary>
+        /// Returns Rights with selected rights for a roleId
+        /// </summary>
+        /// <param name="editorPersonaId"></param>
+        /// <param name="partyId"></param>
+        /// <param name="roleId"></param>
+        /// <returns></returns>
+        public ListResponse GetRightsByRole(long editorPersonaId, long partyId, long roleId)
+        {
+            WriteToDiagnosticLog($"ManageUPFMProductUser.GetRightsByRole at beginning of method for user with editorPersona id - {editorPersonaId}");
+            var response = new ListResponse();
+            try
+            {
+                ListResponse result = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
+                if (result.IsError)
+                {
+                    WriteToErrorLog($"ManageUPFMProductUser.GetRightsByRole.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
+                    return result;
+                }
 
-				gbAllRights = gbAllRights.OrderBy(r => r.Description).ToList();
+                WriteToDiagnosticLog($"ManageUPFMProductUser.GetRightsByRole Getting all GB roles from GB DB - pr.ListRolesForProductByParty with party id - {partyId}");
+                ProductRepository pr = new ProductRepository();
+                IList<int> productIdList = pr.GetProductIdsByCompany(partyId);
+                var gbAllRights = _unifiedLoginRepository.ListRightsByRole(partyId, productIdList, _productId, roleId) ?? new List<ProductRight>();
 
-				WriteToDiagnosticLog($"ManageUPFMProductUser.GetRightsByRole.MapProductAccessGroupsToGB() completed for user with editorPersona id - {editorPersonaId}");
+                gbAllRights = gbAllRights.OrderBy(r => r.Description).ToList();
 
-				response = new ListResponse()
-				{
-					Records = gbAllRights.Cast<object>().ToList(),
-					TotalRows = gbAllRights.Count(),
-					RowsPerPage = 9999,
-					ErrorReason = string.Empty,
-					TotalPages = 1
-				};
-			}
-			catch (Exception ex)
-			{
-				response.IsError = true;
-				response.ErrorReason = CommonMessageConstants.RightErrorMessage;
-				WriteToErrorLog($"ManageUPFMProductUser.GetRightsByRole Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
-			}
+                WriteToDiagnosticLog($"ManageUPFMProductUser.GetRightsByRole.MapProductAccessGroupsToGB() completed for user with editorPersona id - {editorPersonaId}");
 
-			return response;
-		}
+                response = new ListResponse()
+                {
+                    Records = gbAllRights.Cast<object>().ToList(),
+                    TotalRows = gbAllRights.Count(),
+                    RowsPerPage = 9999,
+                    ErrorReason = string.Empty,
+                    TotalPages = 1
+                };
+            }
+            catch (Exception ex)
+            {
+                response.IsError = true;
+                response.ErrorReason = CommonMessageConstants.RightErrorMessage;
+                WriteToErrorLog($"ManageUPFMProductUser.GetRightsByRole Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+            }
 
-		/// <summary>
-		/// Get Product Ids by Org
-		/// </summary>        
-		/// <returns></returns>
-		private List<int> GetProductIdsByOrg()
-		{
-			ProductRepository pr = new ProductRepository();
-			IList<int> productList = pr.GetProductIdsByCompany(_userClaims.OrganizationRealPageGuid);
+            return response;
+        }
 
-			List<int> productIds = new List<int>();
-			foreach (var item in productList)
-			{
-				productIds.Add(item);
-			}
-			return productIds;
-		}
+        /// <summary>
+        /// Get Product Ids by Org
+        /// </summary>        
+        /// <returns></returns>
+        private List<int> GetProductIdsByOrg()
+        {
+            ProductRepository pr = new ProductRepository();
+            IList<int> productList = pr.GetProductIdsByCompany(_userClaims.OrganizationRealPageGuid);
 
-		/// <summary>
-		/// Used to unassign a role assigned to the user
-		/// </summary>
-		/// <param name="userProductPropertyRole"></param>
-		/// <returns></returns>
-		private UPFMProductPropertyRole MapGbObjectToProduct(UPFMProductPropertyRole userProductPropertyRole)
-		{
-			var result = new UPFMProductPropertyRole();
+            List<int> productIds = new List<int>();
+            foreach (var item in productList)
+            {
+                productIds.Add(item);
+            }
 
-			if (userProductPropertyRole.RoleList?.Count > 0)
-			{
-				result.RoleList = new List<string>();
-				foreach (var roleId in userProductPropertyRole.RoleList)
-				{
-					result.RoleList.Add(roleId);
-				}
-			}
+            return productIds;
+        }
 
-			return result;
-		}
+        /// <summary>
+        /// Used to unassign a role assigned to the user
+        /// </summary>
+        /// <param name="userProductPropertyRole"></param>
+        /// <returns></returns>
+        private UPFMProductPropertyRole MapGbObjectToProduct(UPFMProductPropertyRole userProductPropertyRole)
+        {
+            var result = new UPFMProductPropertyRole();
 
-		/// <summary>
-		/// Used to merge product roles to UnifedLogin roles
-		/// </summary>
-		/// <param name="allRoles"></param>
-		/// <param name="userPersonaId"></param>
-		/// <returns></returns>
-		private ListResponse MergeSelRolesWithGreenbook(IList<ProductRole> allRoles, long userPersonaId)
-		{
+            if (userProductPropertyRole.RoleList?.Count > 0)
+            {
+                result.RoleList = new List<string>();
+                foreach (var roleId in userProductPropertyRole.RoleList)
+                {
+                    result.RoleList.Add(roleId);
+                }
+            }
 
-			WriteToDiagnosticLog($"ManageUPFMProductUser.MergeSelRolesWithGreenbook  Getting assigned user roles from GB DB - GetAssignedRoleForPersona with persona id - {userPersonaId}");
-			List<UL.Role> roleList = GetAssignedRoleForPersona(userPersonaId);
+            return result;
+        }
 
-			// if a user record exists
+        /// <summary>
+        /// Used to merge product roles to UnifedLogin roles
+        /// </summary>
+        /// <param name="allRoles"></param>
+        /// <param name="userPersonaId"></param>
+        /// <returns></returns>
+        private ListResponse MergeSelRolesWithGreenbook(IList<ProductRole> allRoles, long userPersonaId)
+        {
 
-			foreach (var role in roleList)
-			{
-				if (allRoles.Any(a => a.ID == role.RoleID.ToString()))
-				{
-					ProductRole selrole = (from a in allRoles
-										   where a.ID == role.RoleID.ToString()
-										   select a).FirstOrDefault();
-					if (selrole != null)
-					{
-						selrole.IsAssigned = true;
-					}
-				}
-			}
-			if (allRoles != null)
-			{
-				if (!allRoles.Any(s => s.IsAssigned == true) && allRoles.Any(s => s.DefaultRole.Equals("True", StringComparison.OrdinalIgnoreCase)))
-				{
-					allRoles.FirstOrDefault(s => s.DefaultRole.Equals("True", StringComparison.OrdinalIgnoreCase)).IsAssigned = true;
-				}
-			}
+            WriteToDiagnosticLog($"ManageUPFMProductUser.MergeSelRolesWithGreenbook  Getting assigned user roles from GB DB - GetAssignedRoleForPersona with persona id - {userPersonaId}");
+            List<UL.Role> roleList = GetAssignedRoleForPersona(userPersonaId);
 
-			return new ListResponse()
-			{
-				Records = allRoles.Cast<object>().ToList(),
-				TotalRows = allRoles.Count(),
-				RowsPerPage = 9999,
-				ErrorReason = string.Empty,
-				TotalPages = 1
-			};
-		}
+            // if a user record exists
 
-		#endregion
+            foreach (var role in roleList)
+            {
+                if (allRoles.Any(a => a.ID == role.RoleID.ToString()))
+                {
+                    ProductRole selrole = (from a in allRoles
+                        where a.ID == role.RoleID.ToString()
+                        select a).FirstOrDefault();
+                    if (selrole != null)
+                    {
+                        selrole.IsAssigned = true;
+                    }
+                }
+            }
 
-		#region Property
-		/// <summary>
-		/// Get the list of property instances for the given user to be used by external systems
-		/// </summary>
-		/// <param name="userPersonaId"></param>
-		/// <param name="product"></param>
-		/// <param name="productCode"></param>
-		/// <param name="include"></param>
-		/// <param name="isMultiCompany"></param>
-		/// <param name="multiCompanyRealPageId"></param>
-		/// <returns></returns>
-		public ListResponse GetEnterpriseUPFMProperties(long userPersonaId, int product, string productCode, string include = null, bool isMultiCompany = false, string multiCompanyRealPageId = null)
-		{
-			ListResponse response = new ListResponse();
-			/*
-				Updating product code to ProductEnum.UnifiedPlatform for CIMPL and Settings 
-				because these two products properties saved as productid 3 in UP database
-			*/
-			if (product == (int)ProductEnum.CIMPL || product == (int)ProductEnum.UnifiedSettings)
-			{
-				_upfmProductId = (int)ProductEnum.UnifiedPlatform;
+            if (allRoles != null)
+            {
+                if (!allRoles.Any(s => s.IsAssigned == true) && allRoles.Any(s => s.DefaultRole.Equals("True", StringComparison.OrdinalIgnoreCase)))
+                {
+                    allRoles.FirstOrDefault(s => s.DefaultRole.Equals("True", StringComparison.OrdinalIgnoreCase)).IsAssigned = true;
+                }
+            }
+
+            return new ListResponse()
+            {
+                Records = allRoles.Cast<object>().ToList(),
+                TotalRows = allRoles.Count(),
+                RowsPerPage = 9999,
+                ErrorReason = string.Empty,
+                TotalPages = 1
+            };
+        }
+
+        #endregion
+
+        #region Property
+
+        /// <summary>
+        /// Get the list of property instances for the given user to be used by external systems
+        /// </summary>
+        /// <param name="userPersonaId"></param>
+        /// <param name="product"></param>
+        /// <param name="productCode"></param>
+        /// <param name="include"></param>
+        /// <param name="isMultiCompany"></param>
+        /// <param name="multiCompanyRealPageId"></param>
+        /// <returns></returns>
+        public ListResponse GetEnterpriseUPFMProperties(long userPersonaId, int product, string productCode, string include = null, bool isMultiCompany = false, string multiCompanyRealPageId = null)
+        {
+            ListResponse response = new ListResponse();
+            /*
+                Updating product code to ProductEnum.UnifiedPlatform for CIMPL and Settings 
+                because these two products properties saved as productid 3 in UP database
+            */
+            if (product == (int)ProductEnum.CIMPL || product == (int)ProductEnum.UnifiedSettings)
+            {
+                _upfmProductId = (int)ProductEnum.UnifiedPlatform;
                 _udmSourceCode = !string.IsNullOrEmpty(productCode) ? productCode : _udmSourceCode;
             }
 
-			var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, _upfmProductId);
-			List<ProductProperty> userPropertyList = new List<ProductProperty>();
-			List<ProductProperty> translatedUserPropertyList = new List<ProductProperty>();
-			List<UPFMPropertyInstance> customerPropertyList = new List<UPFMPropertyInstance>();
-			int upfmProductId = (int)product;
+            var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, _upfmProductId);
+            List<ProductProperty> userPropertyList = new List<ProductProperty>();
+            List<ProductProperty> translatedUserPropertyList = new List<ProductProperty>();
+            List<UPFMPropertyInstance> customerPropertyList = new List<UPFMPropertyInstance>();
+            int upfmProductId = (int)product;
 
             if (userPropertyIdList != null)
             {
@@ -347,121 +353,122 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 
             if (userPropertyIdList?.Count > 0)
-			{
-				// call translate with upfm properties to get ib property id and merges propertyinstanceid with translated id
-				//note save upfmid into alias field before updating with translated id
-				UPFMProperty upfmProperties = new UPFMProperty();
-				List<string> instanceids = new List<string>();
-				var booksProductDetail = _productRepository.GetBooksMasterProductDetail(upfmProductId);
-				foreach (var property in userPropertyList)
-				{
-					instanceids.Add(property.InstanceId.ToLower());
-				}
-				upfmProperties.id = instanceids;
+            {
+                // call translate with upfm properties to get ib property id and merges propertyinstanceid with translated id
+                //note save upfmid into alias field before updating with translated id
+                UPFMProperty upfmProperties = new UPFMProperty();
+                List<string> instanceids = new List<string>();
+                var booksProductDetail = _productRepository.GetBooksMasterProductDetail(upfmProductId);
+                foreach (var property in userPropertyList)
+                {
+                    instanceids.Add(property.InstanceId.ToLower());
+                }
 
-				var translatedData = _blueBook.GetTranslatePropertiesFromUPFMToProductv3(upfmProperties, _udmSourceCode);
-				if (translatedData?.Data != null)
-				{
-					var booksProductCode = booksProductDetail.UDMSourceCode == null ? booksProductDetail.BooksProductCode : booksProductDetail.UDMSourceCode;
-					foreach (var attributes in translatedData.Data.Attributes)
-					{
-						foreach (var propertyData in attributes.TranslatedPropertyInstances)
-						{
-							if (propertyData.Source == booksProductCode)
-							{
-								var translatedProductProperty = userPropertyList.FirstOrDefault(u => u.InstanceId == attributes.PropertyInstanceSourceId);
-								if (translatedProductProperty != null)
-								{
-									translatedProductProperty.ID = propertyData.PropertyInstanceSourceId;
-									translatedProductProperty.Alias = null;
-									translatedProductProperty.CustomerPropertyId = propertyData.CustomerPropertyId;									
-									translatedUserPropertyList.Add(translatedProductProperty);
-								}
-							}
-						}
-					}
-				}
+                upfmProperties.id = instanceids;
 
-				bool bIncludeFields = (!string.IsNullOrWhiteSpace(include) && include.Split(new char[] { ',' }).Length > 0);
+                var translatedData = _blueBook.GetTranslatePropertiesFromUPFMToProductv3(upfmProperties, _udmSourceCode);
+                if (translatedData?.Data != null)
+                {
+                    var booksProductCode = booksProductDetail.UDMSourceCode == null ? booksProductDetail.BooksProductCode : booksProductDetail.UDMSourceCode;
+                    foreach (var attributes in translatedData.Data.Attributes)
+                    {
+                        foreach (var propertyData in attributes.TranslatedPropertyInstances)
+                        {
+                            if (propertyData.Source == booksProductCode)
+                            {
+                                var translatedProductProperty = userPropertyList.FirstOrDefault(u => u.InstanceId == attributes.PropertyInstanceSourceId);
+                                if (translatedProductProperty != null)
+                                {
+                                    translatedProductProperty.ID = propertyData.PropertyInstanceSourceId;
+                                    translatedProductProperty.Alias = null;
+                                    translatedProductProperty.CustomerPropertyId = propertyData.CustomerPropertyId;
+                                    translatedUserPropertyList.Add(translatedProductProperty);
+                                }
+                            }
+                        }
+                    }
+                }
 
-				if (bIncludeFields)
-				{
-					DynamicContractResolver dynamicContractResolver = new DynamicContractResolver(include);
-					string productPropertySerializableProperties = JsonConvert.SerializeObject(
-						translatedUserPropertyList,
-						new JsonSerializerSettings()
-						{
-							ContractResolver = dynamicContractResolver
-						}
-					);
-					translatedUserPropertyList = JsonConvert.DeserializeObject<List<ProductProperty>>(productPropertySerializableProperties);
-				}
+                bool bIncludeFields = (!string.IsNullOrWhiteSpace(include) && include.Split(new char[] { ',' }).Length > 0);
 
-				translatedUserPropertyList.ForEach(p =>
-				{
-					p.IsAssigned = null;
-					p.disableSelection = null;
-				});
+                if (bIncludeFields)
+                {
+                    DynamicContractResolver dynamicContractResolver = new DynamicContractResolver(include);
+                    string productPropertySerializableProperties = JsonConvert.SerializeObject(
+                        translatedUserPropertyList,
+                        new JsonSerializerSettings()
+                        {
+                            ContractResolver = dynamicContractResolver
+                        }
+                    );
+                    translatedUserPropertyList = JsonConvert.DeserializeObject<List<ProductProperty>>(productPropertySerializableProperties);
+                }
 
-				response.IsError = false;
-				response.Records = translatedUserPropertyList.Cast<object>().ToList();
-				response.TotalRows = translatedUserPropertyList.Count;
-				response.RowsPerPage = translatedUserPropertyList.Count;
-				response.TotalPages = 1;
-				response.ErrorReason = string.Empty;
-			}
+                translatedUserPropertyList.ForEach(p =>
+                {
+                    p.IsAssigned = null;
+                    p.disableSelection = null;
+                });
 
-			return response;
-		}
+                response.IsError = false;
+                response.Records = translatedUserPropertyList.Cast<object>().ToList();
+                response.TotalRows = translatedUserPropertyList.Count;
+                response.RowsPerPage = translatedUserPropertyList.Count;
+                response.TotalPages = 1;
+                response.ErrorReason = string.Empty;
+            }
 
-		/// <summary>
-		/// Get a list of UPFM property instances for the give user
-		/// </summary>
-		/// <param name="editorPersonaId"></param>
-		/// <param name="userPersonaId"></param>
-		/// <param name="assignedOnly"></param>
-		/// <param name="datafilter"></param>
-		/// <returns></returns>
-		public ListResponse GetUPFMProperties(long editorPersonaId, long userPersonaId, bool assignedOnly, RequestParameter datafilter)
-		{
-			ListResponse result = new ListResponse();
-			WriteToDiagnosticLog($"ManageUPFMProductUser.GetUPFMProperties - at beginning of method for user with editorPersona id - {editorPersonaId} - for product {_upfmProductId}");
+            return response;
+        }
 
-			try
-			{
-				result = GetCompanyEditorAndUserDetails(editorPersonaId, 0);
-				if (result.IsError)
-				{
-					WriteToErrorLog($"ManageUPFMProductUser.GetUPFMProperties.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
-					return result;
-				}
+        /// <summary>
+        /// Get a list of UPFM property instances for the give user
+        /// </summary>
+        /// <param name="editorPersonaId"></param>
+        /// <param name="userPersonaId"></param>
+        /// <param name="assignedOnly"></param>
+        /// <param name="datafilter"></param>
+        /// <returns></returns>
+        public ListResponse GetUPFMProperties(long editorPersonaId, long userPersonaId, bool assignedOnly, RequestParameter datafilter)
+        {
+            ListResponse result = new ListResponse();
+            WriteToDiagnosticLog($"ManageUPFMProductUser.GetUPFMProperties - at beginning of method for user with editorPersona id - {editorPersonaId} - for product {_upfmProductId}");
+
+            try
+            {
+                result = GetCompanyEditorAndUserDetails(editorPersonaId, 0);
+                if (result.IsError)
+                {
+                    WriteToErrorLog($"ManageUPFMProductUser.GetUPFMProperties.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
+                    return result;
+                }
 
                 var customerPropertyList = GetProductPropertyInstancesBasedOnUPFMProperties();
 
                 WriteToDiagnosticLog($"ManageUPFMProductUser.ListUPFMPropertyInstanceIdByInstanceIds() completed for user with editorPersona id -{editorPersonaId}.");
-				WriteToDiagnosticLog($"ManageUPFMProductUser.GetProperties- calling MergeUPFMBooksPropertiesWithUPFMProperties....for user with editorPersona id -{editorPersonaId} & userPersonaId-{userPersonaId}.");
-				result = MergeUPFMBooksPropertiesWithProductProperty(customerPropertyList, userPersonaId, assignedOnly);
-				WriteToDiagnosticLog($"ManageUPFMProductUser.GetProperties-MergeUPFMBooksPropertiesWithUPFMProperties completed for user with editorPersona id -{editorPersonaId}.");
+                WriteToDiagnosticLog($"ManageUPFMProductUser.GetProperties- calling MergeUPFMBooksPropertiesWithUPFMProperties....for user with editorPersona id -{editorPersonaId} & userPersonaId-{userPersonaId}.");
+                result = MergeUPFMBooksPropertiesWithProductProperty(customerPropertyList, userPersonaId, assignedOnly);
+                WriteToDiagnosticLog($"ManageUPFMProductUser.GetProperties-MergeUPFMBooksPropertiesWithUPFMProperties completed for user with editorPersona id -{editorPersonaId}.");
 
-			}
-			catch (Exception ex)
-			{
-				result.IsError = true;
-				if (ex is BlueBookException)
+            }
+            catch (Exception ex)
+            {
+                result.IsError = true;
+                if (ex is BlueBookException)
                 {
-					result.ErrorReason = CommonMessageConstants.CompanyErrorMessage;
-				}
-				else
+                    result.ErrorReason = CommonMessageConstants.CompanyErrorMessage;
+                }
+                else
                 {
-					result.ErrorReason = $"ManageUPFMProductUser.GetProperties - There was a problem getting the properties.";
-				}
+                    result.ErrorReason = $"ManageUPFMProductUser.GetProperties - There was a problem getting the properties.";
+                }
 
-				WriteToErrorLog($"ManageUPFMProductUser.GetProperties - There was a problem getting the properties for user with editorPersona id - {editorPersonaId}.",
-					exception: ex);
-			}
+                WriteToErrorLog($"ManageUPFMProductUser.GetProperties - There was a problem getting the properties for user with editorPersona id - {editorPersonaId}.",
+                    exception: ex);
+            }
 
-			return result;
-		}
+            return result;
+        }
 
         private List<UPFMPropertyInstance> GetProductPropertyInstancesBasedOnUPFMProperties()
         {
@@ -480,7 +487,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var booksUPFMPropertyList = _blueBook.GetUPFMPropertyInstances(_userClaims.OrganizationRealPageGuid.ToString());
                 booksPropertyList = new List<Guid>();
 
-                UPFMProperty properties = new UPFMProperty {id = new List<string>()};
+                UPFMProperty properties = new UPFMProperty { id = new List<string>() };
 
                 booksUPFMPropertyList.ForEach(c => properties.id.Add(c.ToString()));
 
@@ -513,429 +520,427 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 
         /// <summary>
-		/// Used to convert a UPFM property instance to a Product Property 
-		/// </summary>
-		/// <param name="upfmPropertyInstance"></param>
-		/// <param name="isAssigned"></param>
-		/// <returns></returns>
-		private static ProductProperty ConvertUPFMPropertyInstanceToProductProperty(UPFMPropertyInstance upfmPropertyInstance, bool isAssigned)
-		{
-			ProductProperty pp = new ProductProperty()
-			{
-				ID = upfmPropertyInstance.CustomerPropertyId.ToString(),
-				Name = upfmPropertyInstance.Name,
-				Street1 = upfmPropertyInstance.Address,
-				City = upfmPropertyInstance.City,
-				State = upfmPropertyInstance.State,
-				Zip = upfmPropertyInstance.PostalCode,
-				IsAssigned = isAssigned,
-				InstanceId = upfmPropertyInstance.InstanceId.ToString(),
-				Latitude = upfmPropertyInstance.Latitude,
-				Longitude = upfmPropertyInstance.Longitude,
-				Alias = upfmPropertyInstance.PropertyInstanceId.ToString()
-			};
-			return pp;
-		}
+        /// Used to convert a UPFM property instance to a Product Property 
+        /// </summary>
+        /// <param name="upfmPropertyInstance"></param>
+        /// <param name="isAssigned"></param>
+        /// <returns></returns>
+        private static ProductProperty ConvertUPFMPropertyInstanceToProductProperty(UPFMPropertyInstance upfmPropertyInstance, bool isAssigned)
+        {
+            ProductProperty pp = new ProductProperty()
+            {
+                ID = upfmPropertyInstance.CustomerPropertyId.ToString(),
+                Name = upfmPropertyInstance.Name,
+                Street1 = upfmPropertyInstance.Address,
+                City = upfmPropertyInstance.City,
+                State = upfmPropertyInstance.State,
+                Zip = upfmPropertyInstance.PostalCode,
+                IsAssigned = isAssigned,
+                InstanceId = upfmPropertyInstance.InstanceId.ToString(),
+                Latitude = upfmPropertyInstance.Latitude,
+                Longitude = upfmPropertyInstance.Longitude,
+                Alias = upfmPropertyInstance.PropertyInstanceId.ToString()
+            };
+            return pp;
+        }
 
 
 
-		/// <summary>
-		/// Used to unassign a property instance to the given user
-		/// </summary>
-		/// <param name="userPersonaId"></param>
-		/// <param name="productId"></param>
-		/// <param name="propertyInstanceId"></param>
-		/// <returns></returns>
-		private RepositoryResponse DeleteAssignedPropertyInstanceData(long userPersonaId, int product, long propertyInstanceId)
-		{
-			return DeleteAssignedUserPropertyInstanceData(userPersonaId, product, propertyInstanceId);
-		}
-		/// <summary>
-		/// Used to assign a property instance to the given user
-		/// </summary>
-		/// <param name="userPersonaId"></param>
-		/// <param name="productId"></param>
-		/// <param name="propertyInstanceId"></param>
-		/// <returns></returns>
-		private RepositoryResponse InsertAssignedPropertyInstanceData(long userPersonaId, int product, long propertyInstanceId)
-		{
-			return InsertAssignedUserPropertyInstanceData(userPersonaId, product, propertyInstanceId);
-		}
+        /// <summary>
+        /// Used to unassign a property instance to the given user
+        /// </summary>
+        /// <param name="userPersonaId"></param>
+        /// <param name="productId"></param>
+        /// <param name="propertyInstanceId"></param>
+        /// <returns></returns>
+        private RepositoryResponse DeleteAssignedPropertyInstanceData(long userPersonaId, int product, long propertyInstanceId)
+        {
+            return DeleteAssignedUserPropertyInstanceData(userPersonaId, product, propertyInstanceId);
+        }
 
-		/// <summary>
-		/// Used to get the list of UPFM property instances for the given personaid
-		/// </summary>
-		/// <param name="blueBookUPFMPropertyList"></param>
-		/// <param name="userPersonaId"></param>
-		/// <param name="assignedOnly"></param>
-		/// <returns>A list of product properties</returns>
-		private ListResponse MergeUPFMBooksPropertiesWithProductProperty(IList<UPFMPropertyInstance> blueBookUPFMPropertyList, long userPersonaId, bool assignedOnly)
-		{
-			// merge the given user details with the list
-			var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, _upfmProductId);
+        /// <summary>
+        /// Used to assign a property instance to the given user
+        /// </summary>
+        /// <param name="userPersonaId"></param>
+        /// <param name="productId"></param>
+        /// <param name="propertyInstanceId"></param>
+        /// <returns></returns>
+        private RepositoryResponse InsertAssignedPropertyInstanceData(long userPersonaId, int product, long propertyInstanceId)
+        {
+            return InsertAssignedUserPropertyInstanceData(userPersonaId, product, propertyInstanceId);
+        }
 
-			var propertyOption = new Dictionary<string, bool>();
+        /// <summary>
+        /// Used to get the list of UPFM property instances for the given personaid
+        /// </summary>
+        /// <param name="blueBookUPFMPropertyList"></param>
+        /// <param name="userPersonaId"></param>
+        /// <param name="assignedOnly"></param>
+        /// <returns>A list of product properties</returns>
+        private ListResponse MergeUPFMBooksPropertiesWithProductProperty(IList<UPFMPropertyInstance> blueBookUPFMPropertyList, long userPersonaId, bool assignedOnly)
+        {
+            // merge the given user details with the list
+            var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, _upfmProductId);
 
-			propertyOption.Add("allProperties", userPropertyIdList.Any(pl => pl == -1)); // Single Property
-			List<ProductProperty> productPropertyList = new List<ProductProperty>();
+            var propertyOption = new Dictionary<string, bool>();
 
-			foreach (UPFMPropertyInstance upfmPropertyInstance in blueBookUPFMPropertyList)
-			{
-				var pp = ConvertUPFMPropertyInstanceToProductProperty(upfmPropertyInstance, false);
+            propertyOption.Add("allProperties", userPropertyIdList.Any(pl => pl == -1)); // Single Property
+            List<ProductProperty> productPropertyList = new List<ProductProperty>();
 
-				if (userPropertyIdList.Any(propertyId => propertyId == upfmPropertyInstance.PropertyInstanceId))
-				{
-					pp.IsAssigned = true;
-				}
+            foreach (UPFMPropertyInstance upfmPropertyInstance in blueBookUPFMPropertyList)
+            {
+                var pp = ConvertUPFMPropertyInstanceToProductProperty(upfmPropertyInstance, false);
 
-				productPropertyList.Add(pp);
-			}
+                if (userPropertyIdList.Any(propertyId => propertyId == upfmPropertyInstance.PropertyInstanceId))
+                {
+                    pp.IsAssigned = true;
+                }
 
-			if (assignedOnly)
-			{
-				productPropertyList = productPropertyList.Where(a => a.IsAssigned == true).ToList();
-			}
+                productPropertyList.Add(pp);
+            }
 
-			return new ListResponse()
-			{
-				Records = productPropertyList.Cast<object>().ToList(),
-				TotalRows = productPropertyList.Count(),
-				RowsPerPage = 9999,
-				ErrorReason = string.Empty,
-				TotalPages = 1,
-				Additional = propertyOption
-			};
-		}
-		#endregion
-		/// <summary>
-		/// Used to create/update a user in Unifed Amenities
-		/// </summary>
-		/// <param name="editorPersonaId"></param>
-		/// <param name="userPersonaId"></param>
-		/// <param name="userAssignProductPropertyRole"></param>
-		/// <returns></returns>
-		public string ManageUPFMProductUser(long editorPersonaId, long userPersonaId, UPFMProductPropertyRole userAssignProductPropertyRole)
-		{
-			WriteToDiagnosticLog($"ManageUPFMProductUser - Begin create/update user for user with userPersonaId id - {userPersonaId}.");
-			try
-			{
-				var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
-				if (listResponse.IsError)
-				{
-					WriteToErrorLog($"ManageUPFMProductUser Error for user with userPersonaId id - {userPersonaId}. Error - {listResponse.ErrorReason}");
-					return listResponse.ErrorReason;
-				}
-				
-				var userPersona = _managePersona.GetPersona(userPersonaId);
-				var realPageId = userPersona.RealPageId;
-				var person = _managePerson.GetPerson(realPageId);
-				var userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
-				var productInternalSettingList = GetProductSetting((int)ProductEnum.UnifiedPlatform);
-				var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, _upfmProductId);
+            if (assignedOnly)
+            {
+                productPropertyList = productPropertyList.Where(a => a.IsAssigned == true).ToList();
+            }
 
-				// super user
-				// TODO what to do here?
-				if (IsSuperUser(userPersonaId))
-				{
-					WriteToDiagnosticLog($"ManageUPFMProductUser - new user is Super user with userPersonaId id - {userPersonaId}.");
-					IList<int> productIdList = _productRepository.GetProductIdsByCompany(userPersona.OrganizationPartyId);
-					var gbAllRoles = _productRepository.ListRolesForProductByParty(userPersona.OrganizationPartyId, productIdList, _productId) ?? new List<ProductRole>();
-					string superUserRoleId;
-					if (_productId == (int)ProductEnum.HospitalityService)
-					{
-						superUserRoleId = gbAllRoles.First(a => a.Name.Equals("Property Admin", StringComparison.OrdinalIgnoreCase)).ID;
-					}
-					else if (_productId == (int)ProductEnum.SelfGuidedTour)
-					{
-						superUserRoleId = gbAllRoles.First(a => a.Name.Equals("Implementations", StringComparison.OrdinalIgnoreCase)).ID;
-					}
-					else if(_productId == (int)ProductEnum.HandsOnTrainingSystem)
+            return new ListResponse()
+            {
+                Records = productPropertyList.Cast<object>().ToList(),
+                TotalRows = productPropertyList.Count(),
+                RowsPerPage = 9999,
+                ErrorReason = string.Empty,
+                TotalPages = 1,
+                Additional = propertyOption
+            };
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Used to create/update a user
+        /// </summary>
+        /// <param name="editorPersonaId"></param>
+        /// <param name="userPersonaId"></param>
+        /// <param name="userAssignProductPropertyRole"></param>
+        /// <returns></returns>
+        public string ManageUPFMProductUser(long editorPersonaId, long userPersonaId, UPFMProductPropertyRole userAssignProductPropertyRole)
+        {
+            WriteToDiagnosticLog($"ManageUPFMProductUser - Begin create/update user for user with userPersonaId id - {userPersonaId}.");
+            try
+            {
+                var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+                if (listResponse.IsError)
+                {
+                    WriteToErrorLog($"ManageUPFMProductUser Error for user with userPersonaId id - {userPersonaId}. Error - {listResponse.ErrorReason}");
+                    return listResponse.ErrorReason;
+                }
+
+                var userPersona = _managePersona.GetPersona(userPersonaId);
+                var realPageId = userPersona.RealPageId;
+                var userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
+                var productInternalSettingList = GetProductSetting((int)ProductEnum.UnifiedPlatform);
+                var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, _upfmProductId);
+
+                // super user
+                // TODO what to do here?
+                if (IsSuperUser(userPersonaId))
+                {
+                    WriteToDiagnosticLog($"ManageUPFMProductUser - new user is Super user with userPersonaId id - {userPersonaId}.");
+                    var productSettingList = GetProductSetting(_productId);
+                    var superUserRoleId = "0";
+                    if (productSettingList.Any(a => a.Name.Equals("SuperUserRoleId", StringComparison.OrdinalIgnoreCase)))
                     {
-						superUserRoleId = gbAllRoles.First(a => a.Name.Equals("Creator", StringComparison.OrdinalIgnoreCase)).ID;
-					}
-					else if (_productId == (int)ProductEnum.LeadScoring)
-					{
-						superUserRoleId = gbAllRoles.First(a => a.Name.Equals("Admin", StringComparison.OrdinalIgnoreCase)).ID;
-					}
-					else
-					{
-						superUserRoleId = gbAllRoles.First(a => a.Name.Equals("Portfolio Manager", StringComparison.OrdinalIgnoreCase)).ID;
-					}
-					List<string> propertiesToRemove = new List<string>();
-					if (userPropertyIdList?.Count > 0)
-					{
-						foreach (var prop in userPropertyIdList)
-						{
-							if (prop != -1)
-							{
-								propertiesToRemove.Add(prop.ToString());
-							}
-						}
-					}
+                        superUserRoleId = productSettingList.FirstOrDefault(a => a.Name.Equals("SuperUserRoleId", StringComparison.OrdinalIgnoreCase))?.Value;
+                    }
 
-					userAssignProductPropertyRole = new UPFMProductPropertyRole
-					{
-						PropertyList = new List<string> { "-1" },
-						RemovedPropertyList = propertiesToRemove,
-						RoleList = new List<string>() { superUserRoleId }
-					};
-				}
+                    List<string> propertiesToRemove = new List<string>();
+                    if (userPropertyIdList?.Count > 0)
+                    {
+                        foreach (var prop in userPropertyIdList)
+                        {
+                            if (prop != -1)
+                            {
+                                propertiesToRemove.Add(prop.ToString());
+                            }
+                        }
+                    }
 
-				var productLoginName = string.IsNullOrEmpty(_productUsername) ? userLogin.LoginName : _productUsername;
+                    userAssignProductPropertyRole = new UPFMProductPropertyRole
+                    {
+                        PropertyList = new List<string> { "-1" },
+                        RemovedPropertyList = propertiesToRemove,
+                        RoleList = new List<string>() { superUserRoleId }
+                    };
+                }
 
-				// Check for user role
-				UL.Role role = new UL.Role();
+                var productLoginName = string.IsNullOrEmpty(_productUsername) ? userLogin.LoginName : _productUsername;
 
-				if (userAssignProductPropertyRole != null)
-				{
-					RepositoryResponse result;
+                // Check for user role
+                UL.Role role = new UL.Role();
 
-					// map userAssignProductPropertyRole to ProductPropertyRole
-					var productPropertyRole = MapGbObjectToProduct(userAssignProductPropertyRole);
-					long existingRoleId = 0;
+                if (userAssignProductPropertyRole != null)
+                {
+                    RepositoryResponse result;
 
-					if (productPropertyRole.RoleList?.Count > 0)
-					{
-						role.RoleID = long.Parse(productPropertyRole.RoleList[0]);
+                    // map userAssignProductPropertyRole to ProductPropertyRole
+                    var productPropertyRole = MapGbObjectToProduct(userAssignProductPropertyRole);
+                    long existingRoleId = 0;
 
-						List<UL.Role> roleList = GetAssignedRoleForPersona(userPersonaId);
+                    if (productPropertyRole.RoleList?.Count > 0)
+                    {
+                        role.RoleID = long.Parse(productPropertyRole.RoleList[0]);
 
-						if (roleList?.Count > 0) // Existing user
-						{
-							existingRoleId = roleList[0].RoleID;
-						}
+                        List<UL.Role> roleList = GetAssignedRoleForPersona(userPersonaId);
 
-						if (role.RoleID != existingRoleId)
-						{
-							if (existingRoleId != 0)
-							{
-								// remove the existing role
-								WriteToDiagnosticLog($"ManageUPFMProductUser - removing role for user userPersonaId id - {userPersonaId}, RoleId - {existingRoleId}.");
-								result = _userRoleRightRepository.InsertAssignedRoleToUser(userPersonaId: userPersonaId, roleId: existingRoleId, userId: _userClaims.UserId, deleteRole: true);
-								if (result.Id < 0)
-								{
-									WriteToErrorLog($"ManageUPFMProductUser - Unable to delete role for user with userPersonaId - {userPersonaId}, RoleId - {existingRoleId}");
-									return result.ErrorMessage;
-								}
-							}
+                        if (roleList?.Count > 0) // Existing user
+                        {
+                            existingRoleId = roleList[0].RoleID;
+                        }
 
-							if (role.RoleID != 0)
-							{
-								// add the role
-								WriteToDiagnosticLog($"ManageUPFMProductUser - adding role for userPersonaId id - {userPersonaId}, RoleId - {role.RoleID}.");
-								result = _userRoleRightRepository.InsertAssignedRoleToUser(userPersonaId: userPersonaId, roleId: role.RoleID, userId: _userClaims.UserId, deleteRole: false);
-								if (result.Id < 0)
-								{
-									WriteToErrorLog($"ManageUPFMProductUser - Unable to add role for user with userPersonaId - {userPersonaId}, RoleId - {role.RoleID}");
-									return result.ErrorMessage;
-								}
-							}
-						}
-					}
+                        if (role.RoleID != existingRoleId)
+                        {
+                            if (existingRoleId != 0)
+                            {
+                                // remove the existing role
+                                WriteToDiagnosticLog($"ManageUPFMProductUser - removing role for user userPersonaId id - {userPersonaId}, RoleId - {existingRoleId}.");
+                                result = _userRoleRightRepository.InsertAssignedRoleToUser(userPersonaId: userPersonaId, roleId: existingRoleId, userId: _userClaims.UserId, deleteRole: true);
+                                if (result.Id < 0)
+                                {
+                                    WriteToErrorLog($"ManageUPFMProductUser - Unable to delete role for user with userPersonaId - {userPersonaId}, RoleId - {existingRoleId}");
+                                    return result.ErrorMessage;
+                                }
+                            }
 
-					if (userAssignProductPropertyRole.PropertyList != null && userAssignProductPropertyRole.PropertyList.Count > 0 && userAssignProductPropertyRole.PropertyList[0].ToUpper() == "ALL")
-					{
-						IList<int> productIdList = _productRepository.GetProductIdsByCompany(userPersona.OrganizationPartyId);
-						var gbAllRoles = _productRepository.ListRolesForProductByParty(userPersona.OrganizationPartyId, productIdList, _productId) ?? new List<ProductRole>();
-						if (gbAllRoles != null)
-						{
-							role.RoleID = long.Parse(productPropertyRole.RoleList[0]);
-							if (gbAllRoles.Any(r => long.Parse(r.ID) == role.RoleID && (r.accessAllProperties)))
-							{
-								userAssignProductPropertyRole.PropertyList = new List<string> { "-1" };
-							}
-						}
+                            if (role.RoleID != 0)
+                            {
+                                // add the role
+                                WriteToDiagnosticLog($"ManageUPFMProductUser - adding role for userPersonaId id - {userPersonaId}, RoleId - {role.RoleID}.");
+                                result = _userRoleRightRepository.InsertAssignedRoleToUser(userPersonaId: userPersonaId, roleId: role.RoleID, userId: _userClaims.UserId, deleteRole: false);
+                                if (result.Id < 0)
+                                {
+                                    WriteToErrorLog($"ManageUPFMProductUser - Unable to add role for user with userPersonaId - {userPersonaId}, RoleId - {role.RoleID}");
+                                    return result.ErrorMessage;
+                                }
+                            }
+                        }
+                    }
 
-					}
+                    if (userAssignProductPropertyRole.PropertyList != null && userAssignProductPropertyRole.PropertyList.Count > 0 && userAssignProductPropertyRole.PropertyList[0].ToUpper() == "ALL")
+                    {
+                        IList<int> productIdList = _productRepository.GetProductIdsByCompany(userPersona.OrganizationPartyId);
+                        var gbAllRoles = _productRepository.ListRolesForProductByParty(userPersona.OrganizationPartyId, productIdList, _productId) ?? new List<ProductRole>();
+                        if (gbAllRoles != null)
+                        {
+                            role.RoleID = long.Parse(productPropertyRole.RoleList[0]);
+                            if (gbAllRoles.Any(r => long.Parse(r.ID) == role.RoleID && (r.accessAllProperties)))
+                            {
+                                userAssignProductPropertyRole.PropertyList = new List<string> { "-1" };
+                            }
+                        }
 
-					List<string> assignedPropertyList = (userAssignProductPropertyRole.PropertyList == null) ? new List<string>() : userAssignProductPropertyRole.PropertyList;
-					List<string> unAssignedPropertyList = (userAssignProductPropertyRole?.RemovedPropertyList == null) ? new List<string>() : userAssignProductPropertyRole.RemovedPropertyList;
-					/*
-					 *Unassign all the individual properties if property list has -1(all properties selection is true)
-					 */
-					if (userAssignProductPropertyRole.PropertyList.Contains("-1"))
-					{
-						List<string> removePropList = new List<string>();
-						foreach (var propId in userPropertyIdList)
-						{
-							if (propId != -1)
-							{
-								removePropList.Add(propId.ToString());
-							}
-						}
-						unAssignedPropertyList.AddRange(removePropList);
-					}
+                    }
 
-					List<string> unassignedProperties = new List<string>();
-					List<string> assignedProperties = new List<string>();
+                    List<string> assignedPropertyList = (userAssignProductPropertyRole.PropertyList == null) ? new List<string>() : userAssignProductPropertyRole.PropertyList;
+                    List<string> unAssignedPropertyList = (userAssignProductPropertyRole?.RemovedPropertyList == null) ? new List<string>() : userAssignProductPropertyRole.RemovedPropertyList;
+                    /*
+                     *Unassign all the individual properties if property list has -1(all properties selection is true)
+                     */
+                    if (userAssignProductPropertyRole.PropertyList != null && userAssignProductPropertyRole.PropertyList.Contains("-1"))
+                    {
+                        List<string> removePropList = new List<string>();
+                        if (userPropertyIdList != null)
+                        {
+                            foreach (var propId in userPropertyIdList)
+                            {
+                                if (propId != -1)
+                                {
+                                    removePropList.Add(propId.ToString());
+                                }
+                            }
+                        }
 
-					//var product = ProductEnumHelper.GetUPFMProductEnum(_upfmProductId);
+                        unAssignedPropertyList.AddRange(removePropList);
+                    }
 
-					if (assignedPropertyList != null)
-					{
-						foreach (string propertyId in assignedPropertyList)
-						{
-							if (userPropertyIdList.All(p => p != Convert.ToInt32(propertyId)))
-							{
-								// new property to be added
-								assignedProperties.Add(propertyId);
-							}
-						}
-					}
+                    List<string> unassignedProperties = new List<string>();
+                    List<string> assignedProperties = new List<string>();
 
-					if (unAssignedPropertyList != null)
-					{
-						foreach (string propertyId in unAssignedPropertyList)
-						{
-							// remove property
-							unassignedProperties.Add(propertyId);
-						}
-					}
+                    //var product = ProductEnumHelper.GetUPFMProductEnum(_upfmProductId);
 
-					if ((unAssignedPropertyList == null || unAssignedPropertyList?.Count == 0) && assignedProperties?.Count > 0)
-					{
-						if (userPropertyIdList.Any(p => p == -1))
-						{
-							unassignedProperties.Add("-1");
-						}
-					}
+                    if (assignedPropertyList != null)
+                    {
+                        foreach (string propertyId in assignedPropertyList)
+                        {
+                            if (userPropertyIdList.All(p => p != Convert.ToInt32(propertyId)))
+                            {
+                                // new property to be added
+                                assignedProperties.Add(propertyId);
+                            }
+                        }
+                    }
 
-					if (unassignedProperties.Count > 0)
-					{
-						Parallel.ForEach(unassignedProperties, property => { result = DeleteAssignedPropertyInstanceData(userPersonaId, _productId, Convert.ToInt64(property)); });
-					}
+                    if (unAssignedPropertyList != null)
+                    {
+                        foreach (string propertyId in unAssignedPropertyList)
+                        {
+                            // remove property
+                            unassignedProperties.Add(propertyId);
+                        }
+                    }
 
-					if (assignedProperties.Count > 0)
-					{
-						Parallel.ForEach(assignedProperties, property => { result = InsertAssignedPropertyInstanceData(userPersonaId, _productId, Convert.ToInt64(property)); });
-					}
-				}
+                    if ((unAssignedPropertyList == null || unAssignedPropertyList?.Count == 0) && assignedProperties?.Count > 0)
+                    {
+                        if (userPropertyIdList.Any(p => p == -1))
+                        {
+                            unassignedProperties.Add("-1");
+                        }
+                    }
 
-				UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
+                    if (unassignedProperties.Count > 0)
+                    {
+                        Parallel.ForEach(unassignedProperties, property => { result = DeleteAssignedPropertyInstanceData(userPersonaId, _productId, Convert.ToInt64(property)); });
+                    }
 
-				return string.Empty;
-			}
-			catch (Exception ex)
-			{
-				WriteToErrorLog($"ManageUPFMProductUser - Error for user with userPersonaId id - {userPersonaId}", exception: ex);
-				UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
-				return $"Error - {ex.Message}";
-			}
-		}
+                    if (assignedProperties.Count > 0)
+                    {
+                        Parallel.ForEach(assignedProperties, property => { result = InsertAssignedPropertyInstanceData(userPersonaId, _productId, Convert.ToInt64(property)); });
+                    }
+                }
 
-		/// <summary>
-		/// Unassign User
-		/// </summary> 
-		public string UnassignUser(long editorPersonaId, long userPersonaId, UPFMProductPropertyRole userAssignProductPropertyRole)
-		{
-			var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
-			if (listResponse.IsError)
-			{
-				WriteToErrorLog(
-					$"ManageUPFMProductUser-UnassignUser - Error for user with userPersonaId:{userPersonaId}. ErrorReason-{listResponse.ErrorReason}");
-				return listResponse.ErrorReason;
-			}
+                UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
 
-			//var product = ProductEnumHelper.GetUPFMProductEnum(_upfmProductId);
+                return string.Empty;
+            }
+            catch (Exception ex)
+            {
+                WriteToErrorLog($"ManageUPFMProductUser - Error for user with userPersonaId id - {userPersonaId}", exception: ex);
+                UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
+                return $"Error - {ex.Message}";
+            }
+        }
 
-			List<UL.Role> roleList = GetAssignedRoleForPersona(userPersonaId);
-			if (roleList?.Count > 0)
-			{
-				long roleId = roleList[0].RoleID;
-				// Delete existing roleId
-				RepositoryResponse result = _userRoleRightRepository.InsertAssignedRoleToUser(userPersonaId: userPersonaId, roleId: roleId, userId: _userClaims.UserId, deleteRole: true);
-				if (result.Id < 0)
-				{
-					WriteToErrorLog($"ManageUPFMProductUser-UnassignUser - Unable to delete record for user with userPersonaId - {userPersonaId}, RoleId - {roleId}");
-					return result.ErrorMessage;
-				}
+        /// <summary>
+        /// Unassign User
+        /// </summary> 
+        public string UnassignUser(long editorPersonaId, long userPersonaId, UPFMProductPropertyRole userAssignProductPropertyRole)
+        {
+            var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+            if (listResponse.IsError)
+            {
+                WriteToErrorLog(
+                    $"ManageUPFMProductUser-UnassignUser - Error for user with userPersonaId:{userPersonaId}. ErrorReason-{listResponse.ErrorReason}");
+                return listResponse.ErrorReason;
+            }
 
-				List<ProductProperty> propertyList = GetAssignedPropertyForPersona(userPersonaId, _productId);
-				List<string> unassignedProperties = new List<string>();
+            //var product = ProductEnumHelper.GetUPFMProductEnum(_upfmProductId);
 
-				foreach (var property in propertyList)
-				{
-					unassignedProperties.Add(property.ID.ToString());
-				}
+            List<UL.Role> roleList = GetAssignedRoleForPersona(userPersonaId);
+            if (roleList?.Count > 0)
+            {
+                long roleId = roleList[0].RoleID;
+                // Delete existing roleId
+                RepositoryResponse result = _userRoleRightRepository.InsertAssignedRoleToUser(userPersonaId: userPersonaId, roleId: roleId, userId: _userClaims.UserId, deleteRole: true);
+                if (result.Id < 0)
+                {
+                    WriteToErrorLog($"ManageUPFMProductUser-UnassignUser - Unable to delete record for user with userPersonaId - {userPersonaId}, RoleId - {roleId}");
+                    return result.ErrorMessage;
+                }
 
-				if (unassignedProperties.Count > 0)
-				{
-					Parallel.ForEach(unassignedProperties, property => { result = DeleteAssignedPropertyInstanceData(userPersonaId, _productId, Convert.ToInt64(property)); });
-				}
-			}
+                List<ProductProperty> propertyList = GetAssignedPropertyForPersona(userPersonaId, _productId);
+                List<string> unassignedProperties = new List<string>();
 
-			WriteToInformationLog($"ManageUPFMProductUser-UnassignUser userPersonaId:{userPersonaId}");
-			UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
+                foreach (var property in propertyList)
+                {
+                    unassignedProperties.Add(property.ID.ToString());
+                }
 
-			return string.Empty;
-		}
+                if (unassignedProperties.Count > 0)
+                {
+                    Parallel.ForEach(unassignedProperties, property => { result = DeleteAssignedPropertyInstanceData(userPersonaId, _productId, Convert.ToInt64(property)); });
+                }
+            }
 
-		/// <summary>
-		/// Get Company Product Company InstanceId
-		/// </summary>
-		/// <param name="organizationRealPageId"></param>
-		/// <param name="booksCustmerMasterId"></param>
-		/// <param name="blueBookProductName"></param>
-		/// <param name="domain"></param>
-		/// <param name="includeExtra"></param>
-		/// <param name="useTranslate"></param>
-		/// <returns></returns>
-		public string GetProductCompanyInstanceId(Guid organizationRealPageId, long booksCustmerMasterId, string blueBookProductName, string domain, string includeExtra = "", bool useTranslate = true)
-		{			
-			IList<CustomerCompanyMap> companyProductList = _blueBook.GetCompanyMap(organizationRealPageId, booksCustmerMasterId, source: blueBookProductName.ToUpper(), domain: domain, includeExtra: includeExtra, useTranslate: useTranslate);			
-			if (companyProductList == null) { companyProductList = new List<CustomerCompanyMap>(); }
-			CustomerCompanyMap company = new CustomerCompanyMap();
-			if (companyProductList.Any(a => a.Source.Equals(blueBookProductName, StringComparison.OrdinalIgnoreCase)))
-			{
-				company = (from a in companyProductList where a.Source.Equals(blueBookProductName, StringComparison.OrdinalIgnoreCase) select a).FirstOrDefault();
-			}
-			return company.CompanyInstanceSourceId;
-		}
-		/// <summary>
-		/// Get multi company propeties of product
-		/// </summary>
-		/// <param name="productCode"></param>
-		/// <returns></returns>
-		public List<UserCompaniesProperties> GetUPFMMultiCompanyProperties(string productCode)
-		{			
-			IManageUserLogin manageUserLogin = new ManageUserLogin(_userClaims);
-			List<UserCompaniesProperties> userCompaniesProperties = new List<UserCompaniesProperties>();
-			var companyResponse = manageUserLogin.GetUserPersonaOrganization(_userClaims.LoginName);
-			string errorReason = string.Empty;
-			foreach (var company in companyResponse)
-			{
-				if (_productRepository.isProductAssigned(company.PersonaId, (int)UserUiStatusType.AccountCreationSuccessful, _productId))
-				{
-					if (userCompaniesProperties == null) 
-						userCompaniesProperties = new List<UserCompaniesProperties>();
-					var compnayInstanceSourceId = GetProductCompanyInstanceId(company.OrganizationRealPageId, company.BooksCustomerMasterId, productCode, "Primary");
-					var propertyResponse = GetEnterpriseUPFMProperties(company.PersonaId, _productId, productCode, null, companyResponse.Count > 1 ? true : false, company.OrganizationRealPageId.ToString());
-					if (propertyResponse.Records == null || propertyResponse.Records.Count == 0) errorReason = "Properties are not loaded from Blue Book";
+            WriteToInformationLog($"ManageUPFMProductUser-UnassignUser userPersonaId:{userPersonaId}");
+            UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
 
-					var userCompanyProperties = new UserCompaniesProperties()
-					{
-						Id = compnayInstanceSourceId,
-						OrganizationName = company.OrganizationName,
-						InstanceId = company.OrganizationRealPageId,
-						ErrorReason = errorReason,
-						Properties = new List<Properties>()
-					};
-					foreach (var product in propertyResponse.Records.ToList())
-					{
-						var properties = new Properties()
-						{
-							Id = ((ProductProperty)product).ID,
-							InstanceId = ((ProductProperty)product).InstanceId,
-							PropertyName = ((ProductProperty)product).Name
-						};
-						userCompanyProperties.Properties.Add(properties);
-					}
-					userCompaniesProperties.Add(userCompanyProperties);
-				}
-				else
-					userCompaniesProperties = userCompaniesProperties == null || userCompaniesProperties.Count == 0 ? userCompaniesProperties = null : userCompaniesProperties;
-			}
-			return userCompaniesProperties;
-		}
-	}
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Get Company Product Company InstanceId
+        /// </summary>
+        /// <param name="organizationRealPageId"></param>
+        /// <param name="booksCustmerMasterId"></param>
+        /// <param name="blueBookProductName"></param>
+        /// <param name="domain"></param>
+        /// <param name="includeExtra"></param>
+        /// <param name="useTranslate"></param>
+        /// <returns></returns>
+        public string GetProductCompanyInstanceId(Guid organizationRealPageId, long booksCustmerMasterId, string blueBookProductName, string domain, string includeExtra = "", bool useTranslate = true)
+        {
+            IList<CustomerCompanyMap> companyProductList = _blueBook.GetCompanyMap(organizationRealPageId, booksCustmerMasterId, source: blueBookProductName.ToUpper(), domain: domain, includeExtra: includeExtra, useTranslate: useTranslate);
+            if (companyProductList == null)
+            {
+                companyProductList = new List<CustomerCompanyMap>();
+            }
+
+            CustomerCompanyMap company = new CustomerCompanyMap();
+            if (companyProductList.Any(a => a.Source.Equals(blueBookProductName, StringComparison.OrdinalIgnoreCase)))
+            {
+                company = (from a in companyProductList where a.Source.Equals(blueBookProductName, StringComparison.OrdinalIgnoreCase) select a).FirstOrDefault();
+            }
+
+            return company.CompanyInstanceSourceId;
+        }
+
+        /// <summary>
+        /// Get multi company propeties of product
+        /// </summary>
+        /// <param name="productCode"></param>
+        /// <returns></returns>
+        public List<UserCompaniesProperties> GetUPFMMultiCompanyProperties(string productCode)
+        {
+            IManageUserLogin manageUserLogin = new ManageUserLogin(_userClaims);
+            List<UserCompaniesProperties> userCompaniesProperties = new List<UserCompaniesProperties>();
+            var companyResponse = manageUserLogin.GetUserPersonaOrganization(_userClaims.LoginName);
+            string errorReason = string.Empty;
+            foreach (var company in companyResponse)
+            {
+                if (_productRepository.isProductAssigned(company.PersonaId, (int)UserUiStatusType.AccountCreationSuccessful, _productId))
+                {
+                    if (userCompaniesProperties == null)
+                        userCompaniesProperties = new List<UserCompaniesProperties>();
+                    var compnayInstanceSourceId = GetProductCompanyInstanceId(company.OrganizationRealPageId, company.BooksCustomerMasterId, productCode, "Primary");
+                    var propertyResponse = GetEnterpriseUPFMProperties(company.PersonaId, _productId, productCode, null, companyResponse.Count > 1 ? true : false, company.OrganizationRealPageId.ToString());
+                    if (propertyResponse.Records == null || propertyResponse.Records.Count == 0) errorReason = "Properties are not loaded from Blue Book";
+
+                    var userCompanyProperties = new UserCompaniesProperties()
+                    {
+                        Id = compnayInstanceSourceId,
+                        OrganizationName = company.OrganizationName,
+                        InstanceId = company.OrganizationRealPageId,
+                        ErrorReason = errorReason,
+                        Properties = new List<Properties>()
+                    };
+                    foreach (var product in propertyResponse.Records.ToList())
+                    {
+                        var properties = new Properties()
+                        {
+                            Id = ((ProductProperty)product).ID,
+                            InstanceId = ((ProductProperty)product).InstanceId,
+                            PropertyName = ((ProductProperty)product).Name
+                        };
+                        userCompanyProperties.Properties.Add(properties);
+                    }
+
+                    userCompaniesProperties.Add(userCompanyProperties);
+                }
+                else
+                    userCompaniesProperties = userCompaniesProperties == null || userCompaniesProperties.Count == 0 ? userCompaniesProperties = null : userCompaniesProperties;
+            }
+
+            return userCompaniesProperties;
+        }
+    }
 }

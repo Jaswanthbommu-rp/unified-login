@@ -275,25 +275,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 						productListToCreate.Add(CreateProductBatchRecordForPortfolioManagement(propertyRoles, roles, usePrimaryProperties));
 					}
-					else if (product.ProductId == (int)ProductEnum.IntegrationMarketplace)
-					{
-						var existingRoleId = 0;
-
-						ISamlRepository samlRepository = new SamlRepository();
-						IList<SamlAttributes> productAttributes = samlRepository.GetProductSamlDetails(personaId, (int)ProductEnum.IntegrationMarketplace);
-
-						if (productAttributes.Any(a => a.Name.ToUpper() == SamlAttributeEnum.RoleCode.ToString().ToUpperInvariant()))
-						{
-							var imLogic = new ManageProductIntegrationMarketplace(_userClaim);
-							List<IntegrationMarketplaceRole> allImRoles = imLogic.GetIntegrationMarketplaceRoles();
-
-							var existingRoleCode = (from a in productAttributes where a.Name.ToUpper() == SamlAttributeEnum.RoleCode.ToString().ToUpperInvariant() select a.Value).FirstOrDefault();
-							existingRoleId = allImRoles.FirstOrDefault(x =>
-								x.ShortName.Equals(existingRoleCode, StringComparison.OrdinalIgnoreCase)).Id;
-						}
-
-						productListToCreate.Add(CreateIntegrationMarketplaceBatchRecord(existingRoleId, product.ProductId, usePrimaryProperties));
-					}
 					else if (product.ProductId == (int)ProductEnum.DepositAlternative)
 					{
 						var productLogic = ManageProductFactory.GetProductLogic(product.ProductId, createUserPersonaId, personaId, _userClaim);
