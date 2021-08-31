@@ -19,12 +19,6 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Command
 
                 activity = (ActivityDetailMessage)mqMessage.Body;
 
-                if (activity.BooksMasterOrganizationId == 0)
-                {
-                    var  logData = new Dictionary<string, object>() { { "ActivityDetailMessage", mqMessage.Body } };
-                    Log.Error( $"Activity Message with no organization. Message -{activity?.Message}", logData);
-                }
-
                 if (activity.OrganizationPartyId == 0)
                 {
                     var  logData = new Dictionary<string, object>() { { "ActivityDetailMessage", mqMessage.Body } };
@@ -36,7 +30,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Command
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Error in Activity Command - {ex.Message}. User: {activity?.FromUserLoginId.ToString()}. PmcId: {activity?.BooksMasterOrganizationId.ToString()}");
+                Log.Error(ex, $"Error in Activity Command - {ex.Message}. User: {activity?.FromUserLoginId.ToString()}. PmcId: {activity?.OrganizationPartyId.ToString()}");
             }
         }
     }

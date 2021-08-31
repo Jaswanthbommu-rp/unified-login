@@ -1,11 +1,11 @@
-﻿IF USER_ID('RUALogin') IS NULL
+﻿IF USER_ID('identityserver') IS NULL
 BEGIN
-	CREATE USER [RUALogin] FOR LOGIN [RUALogin]   
+	CREATE USER [identityserver] FOR LOGIN [identityserver]   
 		WITH DEFAULT_SCHEMA = [Logging];  
     
-    GRANT CONNECT TO [RUALogin]
+    GRANT CONNECT TO [identityserver]
 
-    EXEC sp_addrolemember N'db_owner', N'RUALogin'
+    EXEC sp_addrolemember N'db_owner', N'identityserver'
 
 END
 

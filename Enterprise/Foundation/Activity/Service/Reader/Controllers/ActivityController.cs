@@ -52,56 +52,56 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
         /// </summary>
         /// <param name="filterCriteria">Activity Log Filter Criteria</param>
         /// <returns>Response message including the status code and data</returns>
-        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
-        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
-        [SwaggerResponse(HttpStatusCode.OK, Description = "List activity by criteria", Type = typeof(ActivityDetailMessage))]
-        [Route("api/listactivitylog")]
-        [HttpPost]
-        public HttpResponseMessage ListActivityLog(ActivityLogFilterCriteria filterCriteria)
-        {
-            try
-            {
-                Log.Information($"Getting Activity Log");
+        //[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        //[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        //[SwaggerResponse(HttpStatusCode.OK, Description = "List activity by criteria", Type = typeof(ActivityDetailMessage))]
+        //[Route("api/listactivitylog")]
+        //[HttpPost]
+        //public HttpResponseMessage ListActivityLog(ActivityLogFilterCriteria filterCriteria)
+        //{
+        //    try
+        //    {
+        //        Log.Information($"Getting Activity Log");
 
-                if (filterCriteria == null)
-                {
-                    return Request.CreateResponse(HttpStatusCode.BadRequest, "No filterCriteria received.");
-                }
+        //        if (filterCriteria == null)
+        //        {
+        //            return Request.CreateResponse(HttpStatusCode.BadRequest, "No filterCriteria received.");
+        //        }
 
-                ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
-                if (currentClaimPrincipal.Identity.IsAuthenticated)
-                {
-                    var orgFilter = filterCriteria.ActivitySearchCriteria.Where(x => x.Value.Equals("OrganizationPartyId", StringComparison.OrdinalIgnoreCase));
-                    if (!orgFilter.Any()) // If OrganizationPartyId passed then bypass adding from claim
-                    {
-                        filterCriteria.ActivitySearchCriteria.Add(
-                            new ActivitySearchCriteria
-                            {
-                                Name = "OrganizationPartyId",
-                                Value = _userClaims.OrganizationPartyId.ToString()
-                            });
-                    }
+        //        ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
+        //        if (currentClaimPrincipal.Identity.IsAuthenticated)
+        //        {
+        //            var orgFilter = filterCriteria.ActivitySearchCriteria.Where(x => x.Value.Equals("OrganizationPartyId", StringComparison.OrdinalIgnoreCase));
+        //            if (!orgFilter.Any()) // If OrganizationPartyId passed then bypass adding from claim
+        //            {
+        //                filterCriteria.ActivitySearchCriteria.Add(
+        //                    new ActivitySearchCriteria
+        //                    {
+        //                        Name = "OrganizationPartyId",
+        //                        Value = _userClaims.OrganizationPartyId.ToString()
+        //                    });
+        //            }
 
-                    ;
-                }
+        //            ;
+        //        }
 
-                var readerRepository = new ReaderRepository();
-                var result = readerRepository.ListActivityLog(filterCriteria);
+        //        var readerRepository = new ReaderRepository();
+        //        var result = readerRepository.ListActivityLog(filterCriteria);
 
-                if (result != null)
-                {
-                    ObjectListOutput<ActivityDetailMessage, IErrorData> output = new ObjectListOutput<ActivityDetailMessage, IErrorData>() {list = result};
-                    return Request.CreateResponse(HttpStatusCode.OK, output);
-                }
+        //        if (result != null)
+        //        {
+        //            ObjectListOutput<ActivityDetailMessage, IErrorData> output = new ObjectListOutput<ActivityDetailMessage, IErrorData>() {list = result};
+        //            return Request.CreateResponse(HttpStatusCode.OK, output);
+        //        }
 
-                return Request.CreateResponse(HttpStatusCode.InternalServerError, "No data.");
-            }
-            catch (Exception ex)
-            {
-                WriteToErrorLog(exception: ex);
-                throw new HttpResponseException(HttpStatusCode.InternalServerError);
-            }
-        }
+        //        return Request.CreateResponse(HttpStatusCode.InternalServerError, "No data.");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        WriteToErrorLog(exception: ex);
+        //        throw new HttpResponseException(HttpStatusCode.InternalServerError);
+        //    }
+        //}
 
         /// <summary>
         /// Export activity log based on search criteria
@@ -142,8 +142,9 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
                 ;
 
                 ReaderRepository readerRepository = new ReaderRepository();
-                IList<ActivityDetailMessage> listActivityDetailMessage = readerRepository.ListActivityLog(filterCriteria);
-
+                var results = readerRepository.ListActivityLogDetails(filterCriteria);
+                IList<ActivityDetailMessage> listActivityDetailMessage = results.Records;
+                
                 if (listActivityDetailMessage != null)
                 {
                     errorStatus = SetAsposeLicense();
@@ -199,16 +200,15 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
                     return Request.CreateResponse(HttpStatusCode.BadRequest, "No activityDetailMessage received.");
                 }
 
-                // IF THIS HAS ISSUES, WE NEED TO FIND WHAT IS SETTING BOOKSMASTERORGID AND ADD PARTY ID AS WELL
-                if (_userClaims.OrganizationMasterId != 0 || activityDetailMessage.BooksMasterOrganizationId == 0)
-                {
-                    // TODO need to find all of these callers and add the orgpartyid to the post
-                    activityDetailMessage.BooksMasterOrganizationId = _userClaims.OrganizationMasterId;
-                }
-
                 if (activityDetailMessage.OrganizationPartyId == 0)
                 {
                     activityDetailMessage.OrganizationPartyId = _userClaims.OrganizationPartyId;
+                }
+
+                //To support unified login and needs to be removed once unified login replaces ToUserRealpageId with contextreferenceId
+                if (string.IsNullOrEmpty(activityDetailMessage.ContextReferenceId) && activityDetailMessage.ToUserRealpageId != null)
+                {
+                    activityDetailMessage.ContextReferenceId = activityDetailMessage.ToUserRealpageId.ToString();
                 }
 
                 activityDetailMessage.ApplicationTimestamp = DateTime.UtcNow;
@@ -295,10 +295,6 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
                 throw new HttpResponseException(HttpStatusCode.InternalServerError);
             }
         }
-
-        #endregion
-
-        #region Migration Tool
 
         /// <summary>
         /// List activity log based on search criteria to send data related to Pagination
