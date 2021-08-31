@@ -28,8 +28,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// </summary>
         /// <param name="baselinePropertyInstanceId"></param>
         /// <param name="clonePropertyInstanceId"></param>
+        /// <param name="cloneCompanyRealPageId"></param>
         /// <param name="userId"></param>
         /// <returns></returns>
-        RepositoryResponse InsertHotsPropertyRelationship(Guid baselinePropertyInstanceId, Guid clonePropertyInstanceId, int userId);
+        RepositoryResponse InsertHotsPropertyRelationship(Guid baselinePropertyInstanceId, Guid clonePropertyInstanceId, Guid cloneCompanyRealPageId, int userId);
     }
 }

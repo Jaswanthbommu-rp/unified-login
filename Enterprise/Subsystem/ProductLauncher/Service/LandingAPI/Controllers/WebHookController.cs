@@ -549,7 +549,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
                         if (resultBooks && property.ClonePropertyInstanceSourceId != Guid.Empty)
                         {
-                            var hotsResult = _manageHotsCloneUsers.InsertHotsPropertyRelationship(property.ClonePropertyInstanceSourceId, property.InstanceId, 1);
+                            Guid.TryParse(unifiedLoginInstanceId, out var cloneCompanyGuid);
+                            var hotsResult = _manageHotsCloneUsers.InsertHotsPropertyRelationship(property.ClonePropertyInstanceSourceId, property.InstanceId, cloneCompanyGuid, 1);
                             if (hotsResult?.Id == 0)
                             {
                                 WriteToLog(LogEventLevel.Error, $"Failed to add HOTS property relationship. baseline {property.ClonePropertyInstanceSourceId} clone {property.InstanceId}");

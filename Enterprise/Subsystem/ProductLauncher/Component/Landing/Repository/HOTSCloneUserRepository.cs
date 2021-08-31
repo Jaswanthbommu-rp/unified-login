@@ -193,14 +193,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// </summary>
         /// <param name="baselinePropertyInstanceId"></param>
         /// <param name="clonePropertyInstanceId"></param>
+        /// <param name="cloneCompanyRealPageId"></param>
         /// <param name="userId"></param>
         /// <returns></returns>
-        public RepositoryResponse InsertHotsPropertyRelationship(Guid baselinePropertyInstanceId, Guid clonePropertyInstanceId, int userId)
+        public RepositoryResponse InsertHotsPropertyRelationship(Guid baselinePropertyInstanceId, Guid clonePropertyInstanceId, Guid cloneCompanyRealPageId, int userId)
 		{
             dynamic param = new
             {
                 BaseLineProperty = baselinePropertyInstanceId,
                 CloneProperty = clonePropertyInstanceId,
+                CloneCompany = cloneCompanyRealPageId,
                 UserId = userId
             };
 

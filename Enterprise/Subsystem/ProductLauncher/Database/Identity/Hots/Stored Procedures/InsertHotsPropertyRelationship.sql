@@ -1,14 +1,17 @@
 ﻿CREATE PROCEDURE [Hots].[InsertHotsPropertyRelationship]
 	@BaseLineProperty UNIQUEIDENTIFIER,
 	@CloneProperty UNIQUEIDENTIFIER,
+	@CloneCompany UNIQUEIDENTIFIER,
 	@UserId INT = 1
 AS
 BEGIN
 	DECLARE @BaseLinePropertyInstanceId BIGINT, 
-			@ClonePropertyInstanceId BIGINT
+			@ClonePropertyInstanceId BIGINT,
+			@CloneCompanyPartyId BIGINT
 
 	SELECT @BaseLinePropertyInstanceId = PropertyInstanceId From Enterprise.PropertyInstance WHERE InstanceId = @BaseLineProperty
 	SELECT @ClonePropertyInstanceId = PropertyInstanceId From Enterprise.PropertyInstance WHERE InstanceId = @CloneProperty
+	SELECT @CloneCompanyPartyId = PartyId From Enterprise.Party WHERE RealPageId = @CloneCompany
 
 	IF @BaseLinePropertyInstanceId IS NULL OR @ClonePropertyInstanceId IS NULL
 	BEGIN
@@ -22,9 +25,9 @@ BEGIN
 		RETURN 0
 	END
 
-	INSERT INTO Hots.PropertyRelationship ( BasePropertyInstanceId, ClonePropertyInstanceId, CreateDate, CreatedBy )
+	INSERT INTO Hots.PropertyRelationship ( BasePropertyInstanceId, ClonePropertyInstanceId, CloneCompanyPartyId, CreateDate, CreatedBy )
 	VALUES
-		( @BaseLinePropertyInstanceId, @ClonePropertyInstanceId, GETUTCDATE(), @UserId )
+		( @BaseLinePropertyInstanceId, @ClonePropertyInstanceId, @CloneCompanyPartyId, GETUTCDATE(), @UserId )
 	
 	SELECT SCOPE_IDENTITY() [Id], '' [ErrorMessage]
 END

@@ -213,10 +213,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// </summary>
         /// <param name="baselinePropertyInstanceId"></param>
         /// <param name="clonePropertyInstanceId"></param>
+        /// <param name="cloneCompanyRealPageId"></param>
         /// <param name="userId"></param>
-        public RepositoryResponse InsertHotsPropertyRelationship(Guid baselinePropertyInstanceId, Guid clonePropertyInstanceId, int userId)
+        public RepositoryResponse InsertHotsPropertyRelationship(Guid baselinePropertyInstanceId, Guid clonePropertyInstanceId, Guid cloneCompanyRealPageId, int userId)
         {
-            return _hotsCloneUserRepository.InsertHotsPropertyRelationship(baselinePropertyInstanceId, clonePropertyInstanceId, userId);
+            return _hotsCloneUserRepository.InsertHotsPropertyRelationship(baselinePropertyInstanceId, clonePropertyInstanceId, cloneCompanyRealPageId, userId);
         }
 
 
