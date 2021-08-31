@@ -347,7 +347,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		}
 
 		//private List<string> GetEnterpriseRoleUserPrimaryPropertiesData(long editorPersonaId, long userPersonaId, int productId)
-		private ListResponse GetEnterpriseRoleUserPrimaryPropertiesData(long editorPersonaId, long userPersonaId, int productId)
+		public ListResponse GetEnterpriseRoleUserPrimaryPropertiesData(long editorPersonaId, long userPersonaId, int productId)
 		{
 			var productPropertyIdList = new List<string>();
 			IManageProductPanel manageProductPanel = new ManageProductPanel(_userClaim);

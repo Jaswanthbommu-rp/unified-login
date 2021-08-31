@@ -247,7 +247,6 @@
     <Compile Include="Logic\ManageStatusType.cs" />
     <Compile Include="Logic\Product\Interfaces\IManageProductClientPortal.cs" />
     <Compile Include="Logic\Product\Interfaces\IManageProductEasyLMS.cs" />
-    <Compile Include="Logic\Product\Interfaces\IManageProductIntegrationMarketplace.cs" />
     <Compile Include="Logic\Product\Interfaces\IManageProductLead2Lease.cs" />
     <Compile Include="Logic\Product\Interfaces\IManageProductMarketingCenter.cs" />
     <Compile Include="Logic\Product\Interfaces\IManageProductOmniChannel.cs" />
@@ -298,7 +297,6 @@
     <Compile Include="Logic\Product\ManageProductBase.cs" />
     <Compile Include="Logic\Product\ManageProductClientPortal.cs" />
     <Compile Include="Logic\Product\ManageProductEasyLMS.cs" />
-    <Compile Include="Logic\Product\ManageProductIntegrationMarketplace.cs" />
     <Compile Include="Logic\Product\ManageProductLead2Lease.cs" />
     <Compile Include="Logic\Product\ManageProductMarketingCenter.cs" />
     <Compile Include="Logic\Product\ManageProductOmniChannel.cs" />

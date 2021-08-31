@@ -275,7 +275,6 @@
     <Compile Include="Controllers\EmailController.cs" />
     <Compile Include="Controllers\EmployeeAccessController.cs" />
     <Compile Include="Controllers\MultiFactorAuthController.cs" />
-    <Compile Include="Controllers\ProductIntegrationMarketplaceController.cs" />
     <Compile Include="Controllers\ProductOneSiteAccountingController.cs" />
     <Compile Include="Controllers\Product\ProductAssetOptimizationController.cs" />
     <Compile Include="Controllers\ProductEasyLMSController.cs" />

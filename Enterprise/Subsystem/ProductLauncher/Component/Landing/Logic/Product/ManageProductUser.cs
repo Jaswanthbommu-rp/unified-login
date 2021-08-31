@@ -5,15 +5,16 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductInt
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Accounting;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ClientPortal;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.IntegrationMarketplace;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.IntelligentBuilding;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UPFMProduct;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.MarketingCenter;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ops;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ProspectContactCenter;
@@ -23,6 +24,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Re
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Rum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.SelfProvisioningPortal;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedAmenities;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UPFMProduct;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.VendorServices;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
 using Serilog;
@@ -30,14 +32,8 @@ using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
-using System.Threading.Tasks;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.EnterpriseRole;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using System.Text;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
-using System.Net;
+using System.Threading.Tasks;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -98,9 +94,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             long assignUserPersonaId = productUserAccountDetails.PersonaId;
 
-            var manageProductBase = new ManageProductBase(productUserAccountDetails.ProductName, _productInternalSettingRepository, _productRepository);
+            var manageProductBase = new ManageProductBase(productUserAccountDetails.ProductId, _productInternalSettingRepository, _productRepository);
 
-            manageProductBase.DeleteSamlUserProductInfoAndStatus(assignUserPersonaId, productUserAccountDetails.ProductName);
+            manageProductBase.DeleteSamlUserProductInfoAndStatus(assignUserPersonaId, productUserAccountDetails.ProductId);
 
             return string.Empty;
         }
@@ -153,14 +149,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public string CreateProductUser(ProductUserProperitiesRoles productUser)
         {
             string result = string.Empty;
-            int productId = 0;
+            int productId = productUser.ProductId;
 
             bool isUpdateUser = false;
             bool usePrimaryProperties = false;
             RolePropertyList roleProp = new RolePropertyList();
             try
             {
-                IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(productUser.AssignUserPersonaId, (int)productUser.ProductName);
+                IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(productUser.AssignUserPersonaId, productUser.ProductId);
                 if (productAttributes.Any())
                 {
                     isUpdateUser = true;
@@ -168,8 +164,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 roleProp = GetProductPropertiesRoles<RolePropertyList>(productUser.InputJson) as RolePropertyList;
                 usePrimaryProperties = roleProp.UsePrimaryProperties;
+                roleProp = AssignPrimaryPropertiesToProductBatchOnUserCreate(productUser, roleProp);
 
-                var integration = _integrationTypeFactory.GetIntegration(productUser.ProductName);
+                var integration = _integrationTypeFactory.GetIntegration(productUser.ProductId);
                 result = integration.CreateUser(productUser);
             }
             catch (Exception ex)
@@ -186,14 +183,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // If result OK then update Success status else Error
             if (string.IsNullOrEmpty(result))
             {
-                SavePersonaProductProperties(usePrimaryProperties, productUser.AssignUserPersonaId, (int)productUser.ProductName, roleProp, productUser.InputJson);
+                SavePersonaProductProperties(usePrimaryProperties, productUser.AssignUserPersonaId, productUser.ProductId, roleProp, productUser.InputJson);
                 isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Success);                
             }
             else
             {
                 if (result.ToUpper() == ProductBatchStatusType.Stop.ToString().ToUpper())
                 {
-                    isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Stop, null, "Batch Process stoped due to internal error for this product.");
+                    isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Stop, null, "Batch Process stopped due to internal error for this product.");
                 }
                 else
                 {
@@ -230,7 +227,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public string CreateEnterpriseRoleProductUser(ProductUserProperitiesRoles productUser)
         {
             string result = string.Empty;
-            int productId = 0;
+            int productId = productUser.ProductId;
 
             bool isUpdateUser = false;
             bool usePrimaryProperties = false;
@@ -238,13 +235,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             RolePropertyList roleProp = new RolePropertyList();
             try
             {
-                IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(productUser.AssignUserPersonaId, (int)productUser.ProductName);
+                IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(productUser.AssignUserPersonaId, productUser.ProductId);
                 if (productAttributes.Any())
                 {
                     isUpdateUser = true;
                 }
 
-                var productInternalSettings = _manageProduct.GetProductInternalSettings((int)productUser.ProductName);
+                var productInternalSettings = _manageProduct.GetProductInternalSettings(productUser.ProductId);
                 var updateinUDM = productInternalSettings.Where(x => x.Name.ToUpper() == "UPDATEPRODUCTINUDM").FirstOrDefault();
 
                 roleProp = GetProductPropertiesRoles<RolePropertyList>(productUser.InputJson) as RolePropertyList;
@@ -262,7 +259,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 else
                 {
 
-                    var integration = _integrationTypeFactory.GetIntegration(productUser.ProductName);
+                    var integration = _integrationTypeFactory.GetIntegration(productUser.ProductId);
                     result = integration.CreateUser(productUser);
                 }
             }
@@ -279,13 +276,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (string.IsNullOrEmpty(result))
             {
                 isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Success);
-                SavePersonaProductProperties(usePrimaryProperties, productUser.AssignUserPersonaId, (int)productUser.ProductName, roleProp, productUser.InputJson);
+                SavePersonaProductProperties(usePrimaryProperties, productUser.AssignUserPersonaId, productUser.ProductId, roleProp, productUser.InputJson);
             }
             else
             {
                 if (result.ToUpper() == ProductBatchStatusType.Stop.ToString().ToUpper())
                 {
-                    isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Stop, null, "Batch Process stoped due to internal error for this product.");
+                    isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Stop, null, "Batch Process stopped due to internal error for this product.");
                 }
                 else
                 {
@@ -320,7 +317,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns>String.empty if success else error</returns>
         public string UpdateProductUserAccountDetails(ProductUserAccountDetails productUserAccountDetails)
         {
-            var integration = _integrationTypeFactory.GetIntegration(productUserAccountDetails.ProductName);
+            var integration = _integrationTypeFactory.GetIntegration(productUserAccountDetails.ProductId);
             return integration.UpdateUserDetails(productUserAccountDetails);
         }
 
@@ -335,7 +332,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             try
             {
-                var integrationType = _integrationTypeFactory.GetIntegration(productUser.ProductName);
+                var integrationType = _integrationTypeFactory.GetIntegration(productUser.ProductId);
                 result = integrationType.UpdateUserProfile(productUser);
             }
             catch (Exception ex)
@@ -395,7 +392,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             try
             {
-                var integration = _integrationTypeFactory.GetIntegration(batchRecord.ProductName);
+                var integration = _integrationTypeFactory.GetIntegration(batchRecord.ProductId);
                 result = integration.ChangeUserType(batchRecord);
             }
             catch (Exception ex)
@@ -416,14 +413,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 if (result.ToUpper() == ProductBatchStatusType.Stop.ToString().ToUpper())
                 {
-                    _productRepository.UpdateProductBatch(batchRecord.ProductBatchId, (int)ProductBatchStatusType.Stop, null, "Batch Process stoped due to internal error for this product.");
+                    _productRepository.UpdateProductBatch(batchRecord.ProductBatchId, (int)ProductBatchStatusType.Stop, null, "Batch Process stopped due to internal error for this product.");
                 }
                 else
                 {
                     _productRepository.UpdateProductBatch(batchRecord.ProductBatchId, (int)ProductBatchStatusType.Error, null, result);
                     //Activity log
                     result = "An error occurred during the change user type process";
-                    WriteActivityLogWithMessage(batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, result, batchRecord.ProductName);
+                    WriteActivityLogWithMessage(batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, result, batchRecord.ProductId);
 
                 }
             }
@@ -701,6 +698,129 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             });
 
             return productInternalSettingList;
+        }
+
+        private RolePropertyList AssignPrimaryPropertiesToProductBatchOnUserCreate(ProductUserProperitiesRoles productUser, RolePropertyList roleProp)
+        {
+            IManagePersona _managePersona = new ManagePersona();
+            ManageEnterpriseRoleProductBatch manageEnterpriseRoleProductBatch = new ManageEnterpriseRoleProductBatch(_defaultUserClaim);
+            var editorPersona = _managePersona.GetPersona(productUser.CreateUserPersonaId);
+            var userPersona = _managePersona.GetPersona(productUser.AssignUserPersonaId);
+            _defaultUserClaim.UserRealPageGuid = editorPersona.RealPageId;
+            _defaultUserClaim.OrganizationRealPageGuid = editorPersona.Organization.RealPageId;
+            //_defaultUserClaim.Rights = GetPersonaRoleRights(batch.EditorUserPersonaId, editorPersona.OrganizationPartyId);
+            if (productUser.ProductId != 4 && roleProp.UsePrimaryProperties)
+            {
+                ListResponse propertyList = manageEnterpriseRoleProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, productUser.ProductId);
+                if (propertyList.Records.Count > 0)
+                {
+                    roleProp.PropertyList = new List<string>();
+                    roleProp.PropertyList = GetSelectedProperties(propertyList);
+                    productUser.InputJson = JsonConvert.SerializeObject(roleProp);
+                }
+            }
+            else if (productUser.ProductId == 4)
+            {
+                Object productPropertiesRoles =
+                        JsonConvert.DeserializeObject<AoUserCompanyPropertyRoleDetails>(productUser.InputJson);
+
+                var aoRoleProp = productPropertiesRoles as AoUserCompanyPropertyRoleDetails;
+                IList<AoUserCompanyPropertyRoleDetail> aoGbUserCompanyPropertyRoleDetails = aoRoleProp.AoUserCompanyPropertyRoleDetailList;
+                foreach (var data in aoGbUserCompanyPropertyRoleDetails)
+                {
+                    if (data.UsePrimaryProperties == true)
+                    {
+                        ListResponse propertyList = manageEnterpriseRoleProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, data.ProductId);
+                        if (propertyList.Records.Count > 0)
+                        {
+                            List<string> aoPropList = GetSelectedProperties(propertyList);
+                            data.SelectedPortfolioValues = aoPropList.Select(int.Parse).ToList();
+                        }
+                    }
+                }
+                productUser.InputJson = JsonConvert.SerializeObject(aoRoleProp);
+            }
+            return roleProp;
+        }
+
+
+        private List<string> GetSelectedProperties(ListResponse productResult)
+        {
+            List<string> selectedProperties = new List<string>();
+            var productPropertyType = productResult.Records[0].GetType();
+
+            if (productPropertyType == typeof(ProductProperty))
+            {
+                var productList = productResult.Records.Cast<ProductProperty>();
+                foreach (var property in productList)
+                {
+                    if (property.IsAssigned == true)
+                    {
+                        selectedProperties.Add(property.ID);
+                    }
+                }
+            }
+            else if (productPropertyType == typeof(ACProperty))
+            {
+                foreach (var property in productResult.Records.Cast<ACProperty>())
+                {
+                    if (property.IsAssigned == true)
+                    {
+                        selectedProperties.Add(property.Id);
+                    }
+                }
+            }
+            else if (productPropertyType == typeof(AssetGroup))
+            {
+                foreach (var property in productResult.Records.Cast<AssetGroup>())
+                {
+                    if (property.IsAssigned == true)
+                    {
+                        selectedProperties.Add(property.ID);
+                    }
+                }
+            }
+            else if (productPropertyType == typeof(OnSiteProperty))
+            {
+                foreach (var property in productResult.Records.Cast<OnSiteProperty>())
+                {
+                    if (property.IsAssigned == true)
+                    {
+                        selectedProperties.Add(property.GetPropertyId.ToString());
+                    }
+                }
+            }
+            else if (productPropertyType == typeof(RumPropertyGroup))
+            {
+                foreach (var property in productResult.Records.Cast<RumPropertyGroup>())
+                {
+                    if (property.IsAssigned == true)
+                    {
+                        selectedProperties.Add(property.Id.ToString());
+                    }
+                }
+            }
+            else if (productPropertyType == typeof(ProductProperties))
+            {
+                foreach (var property in productResult.Records.Cast<ProductProperties>())
+                {
+                    if (property.IsAssigned == true)
+                    {
+                        selectedProperties.Add(property.GetPropertyId.ToString());
+                    }
+                }
+            }
+            else if (productPropertyType == typeof(Portfolio))
+            {
+                foreach (var property in productResult.Records.Cast<Portfolio>())
+                {
+                    if (property.IsAssigned == true)
+                    {
+                        selectedProperties.Add(property.ID);
+                    }
+                }
+            }
+            return selectedProperties;
         }
 
         #endregion
@@ -3124,91 +3244,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var productLogic = ManageProductFactory.GetProductLogic(_productId, createUserPersonaId, assignUserPersonaId, userClaims);
 
             return productLogic.ChangeProductUserType(rpList, batchProcessType);
-        }
-    }
-    #endregion
-
-    #region Integration Marketplace
-
-    /// <summary>
-    /// A 'Concrete IntegrationMarketplaceProduct' class
-    /// </summary>
-    public class IntegrationMarketplaceProduct : ProductBase, IProduct
-    {
-        /// <summary>
-        /// default constructor
-        /// </summary>
-        /// <param name="userClaim">Use to hold user claim related information</param>
-        public IntegrationMarketplaceProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.IntegrationMarketplace, userClaim, null, null)
-        {
-        }
-
-        /// <summary>
-        /// Create IntegrationMarketplaceProduct user
-        /// </summary> 
-        /// <param name="createUserRealPageId">Logged-in user Enterprise UserId</param>
-        /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
-        /// <param name="assignUserPersonaId">new user PersonaId</param>
-        /// <param name="rolePropList">IntegrationMarketplaceProduct Role</param>
-        /// <returns>String.empty if success else error</returns>
-        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList)
-        {
-            var rpList = rolePropList as IntegrationMarketplacePropertyRole;
-
-            if (rpList == null)
-            {
-                return "Input JSON parsing issue; Null object.";
-            }
-
-            base.UserClaim.UserRealPageGuid = createUserRealPageId;
-            var integrationMarketplaceLogic = new ManageProductIntegrationMarketplace(base.UserClaim);
-
-            // assign user
-            if (rpList.IsAssigned)
-            {
-                return integrationMarketplaceLogic.ManageIntegrationMarketplaceUser(createUserPersonaId, assignUserPersonaId, rpList);
-            }
-
-            // Unassign User
-            return integrationMarketplaceLogic.UnassignUser(createUserPersonaId, assignUserPersonaId, rpList);
-        }
-
-        /// <summary>
-        /// Update Product User Profile
-        /// </summary> 
-        /// <param name="createUserRealPageId">Logged-in user Enterprise UserId</param>
-        /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
-        /// <param name="assignUserPersonaId">new user PersonaId</param>
-        /// <param name="rolePropList">Unified Amenities Role And Property List</param>
-        /// <returns>String.empty if success else error</returns>
-        public string UpdateProductUserProfile(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId)
-        {
-            // never comes here
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Change Product User Type from Admin to Regular or Regular to Admin
-        /// </summary>
-        /// <param name="createUserRealPageId">Logged-in user Enterprise UserId</param>
-        /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
-        /// <param name="assignUserPersonaId">new user PersonaId</param>
-        /// <param name="batchProcessType">Batch Process Type</param>
-        /// <param name="rolePropList">>Integration Marketplace Role And Property List</param>
-        /// <returns>String.empty if success else error</returns>
-        public string ChangeProductUserType(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, BatchProcessType batchProcessType, object rolePropList)
-        {
-            var rpList = rolePropList as IntegrationMarketplacePropertyRole;
-            if (rpList == null)
-            {
-                return "Input JSON parsing issue; Null object.";
-            }
-
-            base.UserClaim.UserRealPageGuid = createUserRealPageId;
-            var productIntegrationMarketplaceLogic = new ManageProductIntegrationMarketplace(base.UserClaim);
-
-            // Change user type (Update User)
-            return productIntegrationMarketplaceLogic.ChangeIntegrationMarketplaceUserType(createUserPersonaId, assignUserPersonaId, rpList, batchProcessType);
         }
     }
     #endregion

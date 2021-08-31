@@ -329,7 +329,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
                     ProductBatchId = batch.BatchProcessorId,
                     CreateUserPersonaId = batch.EditorUserPersonaId,
                     AssignUserPersonaId = batch.SubjectUserPersonaId,
-                    ProductName = batch.ProductId,
+                    ProductId = batch.ProductId,
                     InputJson = batch.InputJson,
                     CorrelationId = batch.CorrelationId,
                     BatchProcessType = batch.BatchProcessTypeId,
@@ -340,7 +340,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
                 var landingApiCaller = new ProductApiCaller();
                 var result = landingApiCaller.ProcessBatchRecord(input);
 
-                logger.Information($"CallApiToAssignProducts-Result received for Product {input.ProductName} & for User {batch.SubjectUserPersonaId} - {result.Result}. Calling API Completed to assign product {input.ProductName} to user {batch.SubjectUserPersonaId }.");
+                logger.Information($"CallApiToAssignProducts-Result received for Product {input.ProductId} & for User {batch.SubjectUserPersonaId} - {result.Result}. Calling API Completed to assign product {input.ProductId} to user {batch.SubjectUserPersonaId }.");
             }
             catch (Exception ex)
             {
