@@ -9,8 +9,8 @@ SET NOCOUNT ON;
 		sj.UserSyncJobId,
 		sua.PersonaId, 
 		sua.Value AS LoginName, 
-		ISNULL(p.UDMSourceCode, p.BooksProductCode) AS Source,
-		'https://swaggerhub.realpage.com/virts/Realpage/UnifiedLoginProductIntegration/1.0.2' AS SyncUrl
+		p.ProductId,
+		ISNULL(p.UDMSourceCode, p.BooksProductCode) AS Source
 		FROM	
 			Ident.SamlUserAttribute sua
 			INNER JOIN Ident.SamlAttribute sa ON sua.SamlAttributeId = sa.SamlAttributeId
@@ -18,7 +18,7 @@ SET NOCOUNT ON;
 			INNER JOIN Enterprise.UserSyncJobTask sjt ON sjt.UserSyncJobId = sj.UserSyncJobId
 			INNER JOIN Enterprise.Product p ON p.ProductId = sua.ProductId
 		WHERE 
-			sa.Name = 'productUsername' AND 
+			sa.Name = 'UserId' AND 
 			((@NOW BETWEEN sua.FromDate AND sua.ThruDate) OR (@NOW >= sua.FromDate AND sua.ThruDate IS NULL)) AND
 			sjt.UserSyncJobTaskId = @UserSyncJobTaskId AND
 			sjt.Source = ISNULL(p.UDMSourceCode, p.BooksProductCode)

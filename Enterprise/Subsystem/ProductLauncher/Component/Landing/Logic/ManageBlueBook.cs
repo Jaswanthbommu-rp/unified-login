@@ -1719,7 +1719,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 return productResult;
             }
-
+            bool dirtyProductPropertyData = false;
             TranslatePropertyInstance translatedData = new TranslatePropertyInstance();            
             var productInternalSettingsByType = _productInternalSettingRepository.GetProductSettingByType("ProductIntegrationType");
             var productType = productInternalSettingsByType?.FirstOrDefault(p => p.ProductId == productId)?.Value;
@@ -1782,8 +1782,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             }
                             else if (isPrimaryProperty)
                             {
+								if (property.IsAssigned.Value)
+								{
+                                    dirtyProductPropertyData = true;
+                                }
                                 property.IsAssigned = false;
-                            }
+                            }                            
                         }
                     }
                 }
@@ -1811,6 +1815,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         }
                         else if (isPrimaryProperty)
                         {
+                            if (property.IsAssigned.Value)
+                            {
+                                dirtyProductPropertyData = true;
+                            }
                             property.IsAssigned = false;
                         }
                     }
@@ -1830,6 +1838,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         }
                         else if (isPrimaryProperty)
                         {
+                            if (property.IsAssigned)
+                            {
+                                dirtyProductPropertyData = true;
+                            }
                             property.IsAssigned = false;
                         }
                     }
@@ -1849,6 +1861,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         }
                         else if (isPrimaryProperty)
                         {
+                            if (property.IsAssigned)
+                            {
+                                dirtyProductPropertyData = true;
+                            }
                             property.IsAssigned = false;
                         }
                     }
@@ -1868,6 +1884,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         }
                         else if (isPrimaryProperty)
                         {
+                            if (property.IsAssigned)
+                            {
+                                dirtyProductPropertyData = true;
+                            }
                             property.IsAssigned = false;
                         }
                     }
@@ -1887,6 +1907,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         }
                         else if (isPrimaryProperty)
                         {
+                            if (property.IsAssigned)
+                            {
+                                dirtyProductPropertyData = true;
+                            }
                             property.IsAssigned = false;
                         }
                     }
@@ -1906,6 +1930,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         }
                         else if (isPrimaryProperty)
                         {
+                            if (property.IsAssigned)
+                            {
+                                dirtyProductPropertyData = true;
+                            }
                             property.IsAssigned = false;
                         }
                     }
@@ -1925,12 +1953,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         }
                         else if (isPrimaryProperty)
                         {
+                            if (property.IsAssigned)
+                            {
+                                dirtyProductPropertyData = true;
+                            }
                             property.IsAssigned = false;
                         }
                     }
                 }
             }
-
+            Dictionary<string, bool> additionalDataCollection = productResult.Additional as Dictionary<string, bool>;
+            additionalDataCollection.Add("dirtyProductPropertyData", dirtyProductPropertyData);
             return productResult;
 		}
 

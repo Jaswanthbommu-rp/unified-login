@@ -20,3 +20,8 @@ GO
 
 ALTER TABLE [Settings].[SettingTableRowValue] CHECK CONSTRAINT [FK_SettingTableRowValue_Row]
 GO
+
+CREATE NONCLUSTERED INDEX [IX_SettingTableRowValue_SettingTableRowId]
+ON [Settings].[SettingTableRowValue] ([SettingTableRowId])
+INCLUDE ([UserLoginPersonaId],[Value])
+GO 

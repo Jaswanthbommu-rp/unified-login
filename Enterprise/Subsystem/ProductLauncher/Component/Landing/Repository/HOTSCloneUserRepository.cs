@@ -166,6 +166,52 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 			return hotsUser;
 		}
 
+		/// <summary>
+		/// Used to link a cloned company to a baseline company when using HOTS
+		/// </summary>
+		/// <param name="baselineCompanyRealPageId"></param>
+		/// <param name="cloneCompanyRealPageId"></param>
+		/// <param name="userId"></param>
+		/// <returns></returns>
+        public RepositoryResponse InsertHotsCompanyRelationship(Guid baselineCompanyRealPageId, Guid cloneCompanyRealPageId, int userId)
+        {
+            dynamic param = new
+            {
+                BaseLineCompany = baselineCompanyRealPageId,
+                CloneCompany = cloneCompanyRealPageId,
+                UserId = userId
+			};
+
+            using (var repository = GetRepository())
+            {
+                return repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_InsertHotsCompanyRelationship, param);
+            }
+		}
+
+		/// <summary>
+        /// Used to link a cloned property to a baseline property when using HOTS
+        /// </summary>
+        /// <param name="baselinePropertyInstanceId"></param>
+        /// <param name="clonePropertyInstanceId"></param>
+        /// <param name="cloneCompanyRealPageId"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        public RepositoryResponse InsertHotsPropertyRelationship(Guid baselinePropertyInstanceId, Guid clonePropertyInstanceId, Guid cloneCompanyRealPageId, int userId)
+		{
+            dynamic param = new
+            {
+                BaseLineProperty = baselinePropertyInstanceId,
+                CloneProperty = clonePropertyInstanceId,
+                CloneCompany = cloneCompanyRealPageId,
+                UserId = userId
+            };
+
+            using (var repository = GetRepository())
+            {
+                return repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_InsertHotsPropertyRelationship, param);
+            }
+        }
+
 		private string getLoginName (long partyId, IProfileDetail baseUserProfile)
 		{
 			return string.Concat(baseUserProfile.FirstName.Substring(0), baseUserProfile.LastName, partyId.ToString(), "@realpage.com");

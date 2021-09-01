@@ -4,7 +4,8 @@ CREATE PROCEDURE [Logging].[ListActivity] (
 	@SortOrderColumnName NVARCHAR(100),
 	@SortOrder NVARCHAR(100),
 	@RowsPerPage INT = 0,
-	@PageNumber INT = 1
+	@PageNumber INT = 1,
+	@TotalRows INT OUTPUT
 )
 AS
 BEGIN 
@@ -68,8 +69,8 @@ SET NOCOUNT ON;
 				'
 
 	SET @SelectCount = '
-	SELECT	COUNT (ActivityId) AS RowCnt
-	'
+    SELECT @TotalRows = COUNT (ActivityId)
+    '
 
 	IF EXISTS (SELECT 1 FROM @SearchCriteriaTPV)
 	BEGIN
@@ -82,6 +83,7 @@ SET NOCOUNT ON;
 					WHEN [Name] = 'StartDate' THEN 'A.ApplicationTimeStamp  > ' + '''' + [Value] + '''' 
 					WHEN [Name] =  'EndDate' THEN 'A.ApplicationTimeStamp <= ' + '''' + [Value] + '''' 
 					WHEN [Name] = 'FromRealPageId' THEN 'FUL.RealPageId = ' + '''' + [Value] + '''' 
+					WHEN [Name] = 'RealPageId' THEN 'FUL.RealPageId = ' + '''' + [Value] + ''''
 					WHEN [Name] = 'LogCategoryTypeId' THEN 'LCT.LogCategoryTypeId IN (' +  [Value] + ')'
 					WHEN [Name] = 'ToRealPageId' THEN 'A.ContextReferenceId = ' + '''' + [Value] + '''' --In future we can remove it if  from UI passing ContextReferenceId instead of ToRealPageId
 					ELSE 'A.' + [Name] + ' = ' + '''' + [Value] + '''' 
@@ -122,7 +124,7 @@ SET NOCOUNT ON;
 	--PRINT @SelectCount;
 
 	EXECUTE (@SelectColumns)	
-	EXECUTE (@SelectCount)		
-
+	--EXECUTE (@SelectCount)		
+	EXEC SP_EXECUTESQL @SelectCount, N'@TotalRows INT output', @TotalRows out
 END;
 GO

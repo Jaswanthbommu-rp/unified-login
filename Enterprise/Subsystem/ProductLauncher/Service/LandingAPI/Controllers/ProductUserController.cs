@@ -73,7 +73,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             if (productUser == null)
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "productUser null.");
 
-            if (productUser.ProductName <= 0)
+            if (productUser.ProductId <= 0)
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "ProductName empty.");
 
             ManageProductUser manageProduct = new ManageProductUser(_userClaims);
@@ -100,7 +100,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		    if (productUser == null)
 			    return Request.CreateResponse(HttpStatusCode.BadRequest, "productUser null.");
 
-            if (productUser.ProductName <= 0)
+            if (productUser.ProductId <= 0)
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "ProductName empty.");
 
 		    ManageProductUser manageProduct = new ManageProductUser(_userClaims);
@@ -167,7 +167,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 var output = new ProductUserAccountDetails()
                 {
                     PersonaId = 1234,
-                    ProductName = (int)Component.SharedObjects.Enum.ProductEnum.OneSite,
+                    ProductId = (int)Component.SharedObjects.Enum.ProductEnum.OneSite,
                     ProductStatus = Component.SharedObjects.Enum.ProductBatchStatusType.Success,
                     ProductSettings = new Dictionary<SamlAttributeEnum, string>()
                 };

@@ -19,8 +19,6 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Shared.Models
         [DataMember]
         public string LogActivityTypeName { get; set; }
 
-        [DataMember]
-        public string CorrelationId { get; set; }
 
         [DataMember]
         public string Message { get; set; }
@@ -41,38 +39,11 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Shared.Models
         public Guid FromUserRealpageId { get; set; }
 
         [DataMember]
-        public bool IsSystemAdminActivity { get; set; }
-
-        [DataMember]
-        public string ToUserLoginName { get; set; }
-
-        [DataMember]
-        public long? ToUserLoginId { get; set; }
-
-        [DataMember]
-        public string ToUserFirstName { get; set; }
-
-        [DataMember]
-        public string ToUserLastName { get; set; }
-
-        [DataMember]
-        public Guid ToUserRealpageId { get; set; }
+        public Guid? ToUserRealpageId { get; set; } 
 
         [DataMember]
         public long OrganizationPartyId { get; set; }
         
-        [DataMember]
-        public long BooksMasterOrganizationId { get; set; }
-
-        [DataMember]
-        public int BooksMasterPropertyId { get; set; }
-
-        [DataMember]
-        public string BooksProductCode { get; set; }
-
-        [DataMember]
-        public string ServerName { get; set; }
-
         [DataMember]
         public DateTime ApplicationTimestamp
         {
@@ -93,12 +64,10 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Shared.Models
 		[DataMember]
 		public string ApplicationTimestampOffset { get; set; }
 
-        public string SourceId { get; set; }
+        public string ContextId { get; set; }
 
-        public string MappingKey { get; set; }
+        public int LogActivityTypeId { get; set; }
 
-        public int ContextId { get; set; }
-
-        public Guid? InstanceId { get; set; }
+        public string ContextReferenceId { get; set; }
     }
 }

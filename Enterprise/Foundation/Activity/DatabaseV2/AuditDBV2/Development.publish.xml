@@ -13,12 +13,4 @@
 		<DoNotDropRoleMembership>True</DoNotDropRoleMembership>
 		<DoNotDropLogins>True</DoNotDropLogins>
 	</PropertyGroup>
-	<ItemGroup>
-		<SqlCmdVariable Include="Environment">
-			<Value>DEV</Value>
-		</SqlCmdVariable>
-		<SqlCmdVariable Include="Password">
-			<Value>p@$$w0rd</Value>
-		</SqlCmdVariable>
-	</ItemGroup>
 </Project>

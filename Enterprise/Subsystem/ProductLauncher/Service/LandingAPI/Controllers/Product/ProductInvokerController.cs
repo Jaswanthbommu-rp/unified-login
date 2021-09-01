@@ -18,6 +18,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers.Product
 {
@@ -28,6 +29,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 	{
 		private IntegrationTypeFactory _integrationTypeFactory;
 
+		private IProductRepository _productRepository;
+
 		protected override void Initialize(HttpControllerContext controllerContext)
         {
             base.Initialize(controllerContext);
@@ -35,10 +38,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			var manageProduct = new ManageProduct(_userClaims);
 			var manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
 			var manageProductOneSite = new ManageProductOneSite(_userClaims);
-			var productRepository = new ProductRepository(_userClaims);
 			var productInternalSettingRepository = new ProductInternalSettingRepository();
 
-			_integrationTypeFactory = new IntegrationTypeFactory(manageProduct, manageUnifiedLogin, manageProductOneSite, productRepository,
+			_productRepository = new ProductRepository(_userClaims);
+
+			_integrationTypeFactory = new IntegrationTypeFactory(manageProduct, manageUnifiedLogin, manageProductOneSite, _productRepository,
 				productInternalSettingRepository, _userClaims);
 		}
 
@@ -431,7 +435,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		/// Returns Properties for given property or region group
 		/// </summary>
 		/// <param name="editorPersonaId">Editor user persona Id</param>
-		/// <param name="productType">Product Type</param>
+		/// <param name="productType">Product Books Code</param>
 		/// <param name="dataFilter">A datafilter used to filter the roles.</param>
 		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
 		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
@@ -440,7 +444,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			 "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
 		[Route("products/users/migration")]
 		[HttpGet]
-		public HttpResponseMessage ListMigrationUsers(ProductEnum productType, long editorPersonaId, [FromUri] RequestParameter dataFilter)
+		public HttpResponseMessage ListMigrationUsers(string productType, long editorPersonaId, [FromUri] RequestParameter dataFilter)
 		{
 			ListResponse result;
 			try
@@ -448,7 +452,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				if (editorPersonaId == 0)
 					return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
 
-				int productId = (int)productType;
+				var productList = _productRepository.GetAllProducts();
+				int productId = ProductEnumHelper.GetProductIdByProductCode(productType, productList);
+
 				var integrationType = _integrationTypeFactory.GetIntegration(productId);
 				result = integrationType.GetMigrationUsers(editorPersonaId, dataFilter);
 
@@ -488,12 +494,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			 "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
 		[Route("products/users/migrate")]
 		[HttpPatch]
-		public HttpResponseMessage UpdateUsersMigrationStatus([FromUri]ProductEnum productType, [FromBody]IList<MigrateUser> migrateUsers)
+		public HttpResponseMessage UpdateUsersMigrationStatus([FromUri]string productType, [FromBody]IList<MigrateUser> migrateUsers)
 		{
 			if (_realpageUserId == Guid.Empty)
 				return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
 
-			int productId = (int)productType;
+			var productList = _productRepository.GetAllProducts();
+			int productId = ProductEnumHelper.GetProductIdByProductCode(productType, productList);
+
 			var integrationType = _integrationTypeFactory.GetIntegration(productId);
 			var result = integrationType.UpdateUsersMigrationStatus(_personaId, migrateUsers);
 
@@ -508,7 +516,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		/// Direct call to product to change profile including isActive (mainly used to
 		/// activate-deactivate from Migration tool)
 		/// </summary>
-		/// <param name="productType">Product Type</param>
+		/// <param name="productType">Product Code</param>
 		/// <param name="productUserProfile">Product user profile.</param>
 		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
 		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
@@ -516,12 +524,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
 		[Route("products/users/externalprofilechange")]
 		[HttpPatch]
-		public HttpResponseMessage ExternalProductUserProfileChange([FromUri]ProductEnum productType, [FromBody]ProductUserProfile productUserProfile)
+		public HttpResponseMessage ExternalProductUserProfileChange([FromUri]string productType, [FromBody]ProductUserProfile productUserProfile)
 		{
 			if (_realpageUserId == Guid.Empty)
 				return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
 
-			int productId = (int)productType;
+			var productList = _productRepository.GetAllProducts();
+			int productId = ProductEnumHelper.GetProductIdByProductCode(productType, productList);
+
 			var integrationType = _integrationTypeFactory.GetIntegration(productId);
 			var result = integrationType.ExternalUserProfileChange(_personaId, productUserProfile);
 

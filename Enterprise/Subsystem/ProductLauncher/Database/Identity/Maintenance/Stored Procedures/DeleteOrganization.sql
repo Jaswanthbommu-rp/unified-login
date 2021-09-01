@@ -122,6 +122,10 @@ AS
 			FROM	Enterprise.PersonaOrganization epo
 						INNER JOIN @Organization o ON (o.PartyId = epo.OrganizationId)
 
+			DELETE	oau
+			FROM	Enterprise.OrganizationAdminUser oau
+						INNER JOIN @Organization o ON (o.PartyId = oau.OrganizationPartyId)
+
 			DELETE	ecee
 			FROM	Enterprise.CommunicationEventEmail ecee
 						INNER JOIN Enterprise.CommunicationEvent ece ON (ece.CommunicationEventId = ecee.CommunicationEventId)
@@ -372,6 +376,29 @@ AS
 			FROM	Security.OrganizationOverRideRight oor
 					INNER JOIN @Organization o ON (o.PartyId = oor.OrgPartyId)
 
+			DELETE crr
+			FROM	Hots.CompanyRelationship crr
+					INNER JOIN @Organization o ON (o.PartyId = crr.CloneCompanyPartyId)
+			
+			DELETE	pim
+			FROM	Enterprise.PropertyInstanceMapping pim
+						INNER JOIN Person.Persona pp ON (pp.PersonaId = pim.PersonaID)
+						INNER JOIN Ident.UserLoginPersona iulp ON (iulp.UserLoginPersonaId = pp.UserLoginPersonaId)
+						INNER JOIN @Organization o ON (o.PartyId = iulp.OrganizationPartyId)
+
+			DECLARE @PropertyInstanceToDelete TABLE ( propertyinstanceid BIGINT NOT NULL )
+			INSERT INTO @PropertyInstanceToDelete ( propertyinstanceid )
+				SELECT PRR.ClonePropertyInstanceId FROM Hots.PropertyRelationship PRR 
+					INNER JOIN @Organization o ON (o.PartyId = PRR.CloneCompanyPartyId) 
+
+			DELETE pim
+			FROM	Enterprise.PropertyInstance pim
+					INNER JOIN @PropertyInstanceToDelete PID ON PID.propertyinstanceid = pim.PropertyInstanceId
+
+			DELETE prr
+			FROM	Hots.PropertyRelationship prr
+					INNER JOIN @Organization o ON (o.PartyId = prr.CloneCompanyPartyId)
+
 			DELETE	iulp
 			FROM		Ident.UserLoginPersona iulp
 							INNER JOIN Ident.UserLogin iul ON (iul.UserId = iulp.UserLoginId)
@@ -500,3 +527,4 @@ AS
 					
 		END CATCH
     END;
+ 
