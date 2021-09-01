@@ -5,7 +5,6 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Models
 {
     public class SearchMetadata
     {
-        public List<Product> ProductList { get; set; }
         public List<LogCategory> LogCategoryList { get; set; }
         public List<LogType> LogTypeList { get; set; }
     }
