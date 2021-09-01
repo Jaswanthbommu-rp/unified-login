@@ -108,6 +108,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string CustomerPropertyId { get; set; }
 
+        /// <summary>
+        /// Status
+        /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string Status { get; set; }
+
         #region Examples
 
         /// <summary>

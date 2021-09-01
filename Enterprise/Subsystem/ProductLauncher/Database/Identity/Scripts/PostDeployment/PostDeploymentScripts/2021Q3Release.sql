@@ -2300,3 +2300,47 @@ UPDATE UserManagement.Control SET DisplayName = 'Assign current and new properti
 END
  
 GO
+
+
+  --User Story 928047
+
+  DECLARE @UserId bigint,
+	@Now datetime = GETDATE(),
+	@PropertyControlId bigint;
+
+SELECT	@UserId = UserId
+FROM	Ident.UserLogin
+WHERE	LoginName LIKE 'realpagead@%'; 
+
+Declare @ControlId1 INT;
+Declare @ControlId2 INT;
+Declare @ControlId3 INT;
+SELECT @ControlId1 = ControlId FROM UserManagement.Control WHERE UIId='RadioButtonId' AND DisplayName = 'Active Properties';
+SELECT @ControlId2 = ControlId FROM UserManagement.Control WHERE UIId='RadioButtonId' AND DisplayName = 'Inactive Properties';
+SELECT @ControlId3 = ControlId FROM UserManagement.Control WHERE UIId='RadioButtonId' AND DisplayName = 'All Properties';
+
+IF (@ControlId1 IS NOT NULL AND @ControlId2  IS NOT NULL AND @ControlId3 IS NOT NULL)
+BEGIN
+Delete from  UserManagement.Control where  ControlId in ( @ControlId1,@ControlId2,@ControlId3);
+END
+
+Declare @ControlId INT 
+SELECT @ControlId = ControlId FROM UserManagement.Control WHERE UIId='PropertySelectColumnUIId';
+IF (@ControlId IS NOT NULL)
+BEGIN
+UPDATE UserManagement.Control SET ControlTypeId = 10 Where ControlId = @ControlId;
+END
+
+Select @PropertyControlId = ControlId from UserManagement.Control where UIId = 'PropertiesTabUIId'
+
+Insert into UserManagement.Control (ParentControlId,ControlTypeId,UIId,DisplayName,DataSource,Sequence,CreatedBy,CreatedDate)
+values (@PropertyControlId,1,'ProspectContactCenterAllowaccesstoallcurrentandfuturepropertiesPropertiesSwitchUIId','Assign access to current and new properties automatically',
+'allProperties',1,@UserId,@Now)
+
+Declare @parent bigint;
+Select @parent = ControlId from UserManagement.Control where UIID = 'PCCPAcessSelectgridUIId'
+
+Insert into UserManagement.Control (ParentControlId,ControlTypeId,UIId,DisplayName,DataSource,Sequence,CreatedBy,CreatedDate)
+values (@parent,5,'ProspectStateColumnId','Status','status',4,@UserId,@Now);
+
+GO
