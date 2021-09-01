@@ -13,7 +13,10 @@
     CONSTRAINT [FK_PersonaConfiguration_Persona] FOREIGN KEY ([PersonaId]) REFERENCES [Person].[Persona] ([PersonaId]) ON DELETE CASCADE,
     CONSTRAINT [FK_PersonaConfiguration_StatusType] FOREIGN KEY ([StatusTypeId]) REFERENCES [Enterprise].[StatusType] ([StatusTypeId])
 );
-
+GO
+ALTER TABLE [Enterprise].[PersonaConfiguration]
+ADD CONSTRAINT FK_PersonaConfiguration_Product
+FOREIGN KEY (ProductId) REFERENCES [Enterprise].[Product] ([ProductId])  ON DELETE CASCADE;
 
 GO
 CREATE NONCLUSTERED INDEX IDX_PersonaConfiguration_Comp02 ON [Enterprise].[PersonaConfiguration]
@@ -33,8 +36,11 @@ CREATE NONCLUSTERED INDEX IDX_PersonaConfiguration_Comp01 ON [Enterprise].[Perso
 	[ThruDate] ASC
 )
 INCLUDE ( 	[ConfigurationId]) WITH (SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
-go
+GO
 CREATE NONCLUSTERED INDEX [IX_PersonaConfiguration_ProductId_FromDate_ThruDate]
     ON [Enterprise].[PersonaConfiguration]([ProductId] ASC, [FromDate] ASC, [ThruDate] ASC)
     INCLUDE([PersonaId], [ConfigurationId]);
+
+
+
 
