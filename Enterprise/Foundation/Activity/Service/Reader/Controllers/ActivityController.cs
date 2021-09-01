@@ -206,7 +206,8 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
                 }
 
                 //To support unified login and needs to be removed once unified login replaces ToUserRealpageId with contextreferenceId
-                if (string.IsNullOrEmpty(activityDetailMessage.ContextReferenceId) && activityDetailMessage.ToUserRealpageId != null)
+                if (string.IsNullOrEmpty(activityDetailMessage.ContextReferenceId) && activityDetailMessage.ToUserRealpageId != null 
+                                                                                   && activityDetailMessage.ToUserRealpageId != Guid.Empty)
                 {
                     activityDetailMessage.ContextReferenceId = activityDetailMessage.ToUserRealpageId.ToString();
                 }
