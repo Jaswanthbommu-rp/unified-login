@@ -257,12 +257,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			try
 			{
 
-				location = _service.GetAllPropertyGroups(prop, wsParams, out results2);
-				logData = new Dictionary<string, object>();
-				logData.Add("location", location);
-				WriteToDiagnosticLog($"GetUserPropertyGroups - result from api", logData);
-				list = location.ToGBPropertyGroup();
+				if (userPersonaId > 0)
+				{
+					RPObjectCache rpCache = new RPObjectCache();
+					string cacheKey = $"GetUserPropertyGroups_{userPersonaId}_{_userClaims.OrganizationPartyId}";
+					list = rpCache.GetFromCache(cacheKey, 120, () =>
+					{
+						location = _service.GetAllPropertyGroups(prop, wsParams, out results2);
+						logData = new Dictionary<string, object>();
+						logData.Add("location", location);
+						WriteToDiagnosticLog($"GetUserPropertyGroups - result from api", logData);
+						return location.ToGBPropertyGroup();
 
+					});
+
+				}
+                else
+                {
+					location = _service.GetAllPropertyGroups(prop, wsParams, out results2);
+					logData = new Dictionary<string, object>();
+					logData.Add("location", location);
+					WriteToDiagnosticLog($"GetUserPropertyGroups - result from api", logData);
+					list = location.ToGBPropertyGroup();
+
+				}
+				
+				
 				if (list == null)
 				{
 					if (results2.Length > 0)
@@ -276,6 +296,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					list = new List<ProductPropertyGroup>();
 				}
 
+				
 				response = new ListResponse()
 				{
 					Records = list.Cast<object>().ToList(),
@@ -770,21 +791,44 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             bool hasAccessToAllCurrentAndFutureProperties = false;
             List<ACCompany> companyList = GetUserCompaniesDetails(editorPersonaId, userPersonaId, datafilter);
             ListResponse propertyList = GetUserPropertiesNew(editorPersonaId, userPersonaId, datafilter);
-            int totalCompanies = 0;
+			ListResponse propertyGroupList = GetUserPropertyGroups(editorPersonaId, userPersonaId, datafilter);
+
+			int totalCompanies = 0;
             int totalProperties = 0;
             int totalCompaniesSelected = 0;
             int totalPropertiesUnSelected = 0;
+			int totalPropertiesSelected = 0;
 
-            totalCompanies = companyList.Count;
+
+			totalCompanies = companyList.Count;
             totalCompaniesSelected = companyList.Count(c => c.isAssigned == true);
 
             totalProperties = propertyList.Records.Count;
             totalPropertiesUnSelected = propertyList.Records.Count(p => ((ACProperty)p).IsAssigned == false);
+			totalPropertiesSelected = propertyList.Records.Count(p => ((ACProperty)p).IsAssigned == true);
 
-            if ((totalCompanies == totalCompaniesSelected) && (totalProperties == totalPropertiesUnSelected))
-                hasAccessToAllCurrentAndFutureProperties = true;
+			if ((totalCompanies == totalCompaniesSelected) && (totalProperties == totalPropertiesUnSelected))
+				hasAccessToAllCurrentAndFutureProperties = true;
 
-            return hasAccessToAllCurrentAndFutureProperties;
+			int totalPropertyGroups = propertyGroupList.Records.Count;
+			var selectedPropertiesGroups = propertyGroupList.Records.Where(p => ((ProductPropertyGroup)p).IsAssigned == true);
+			
+			if ((totalPropertyGroups > 0) && (selectedPropertiesGroups.Count() > 0) && (totalPropertiesSelected == 0))
+			{
+				List<string> selectedLocEntities = new List<string>();
+
+				foreach (ProductPropertyGroup item in selectedPropertiesGroups)
+				{
+					selectedLocEntities.AddRange(item.AssignedProperties);
+				}
+
+				if (propertyList.Records.Count > 0)
+				{
+					hasAccessToAllCurrentAndFutureProperties = propertyList.Records.Any(x => selectedLocEntities.Contains(((ACProperty)x).PropertyName));
+				}
+			}
+
+			return hasAccessToAllCurrentAndFutureProperties;
         }
 
         private List<ACCompany> GetUserCompaniesDetails(long editorPersonaId, long userPersonaId, RequestParameter datafilter)
