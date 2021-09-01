@@ -261,7 +261,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				{
 					RPObjectCache rpCache = new RPObjectCache();
 					string cacheKey = $"GetUserPropertyGroups_{userPersonaId}_{_userClaims.OrganizationPartyId}";
-					list = rpCache.GetFromCache(cacheKey, 120, () =>
+					list = rpCache.GetFromCache(cacheKey, 60, () =>
 					{
 						location = _service.GetAllPropertyGroups(prop, wsParams, out results2);
 						logData = new Dictionary<string, object>();
