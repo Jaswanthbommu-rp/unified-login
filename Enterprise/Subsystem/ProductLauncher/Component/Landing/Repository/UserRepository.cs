@@ -4807,8 +4807,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 LogActivityTypeName = logActivityType,
                 LogCategoryName = logActivityCategoryType.ToString(),
                 CorrelationId = defaultUserClaim.CorrelationId.ToString(),
-                BooksMasterOrganizationId = userOrg != null ? userOrg.BooksCustomerMasterId : defaultUserClaim.OrganizationMasterId,
-                OrganizationPartyId = userOrg != null ? userOrg.OrganizationPartyId : defaultUserClaim.OrganizationPartyId,
+                BooksMasterOrganizationId = defaultUserClaim.OrganizationMasterId,
+                OrganizationPartyId = defaultUserClaim.OrganizationPartyId,
                 Message = message,
 
                 FromUserLoginName = defaultUserClaim.LoginName,
