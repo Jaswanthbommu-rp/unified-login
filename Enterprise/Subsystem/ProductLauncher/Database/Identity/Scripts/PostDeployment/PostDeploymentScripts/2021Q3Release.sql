@@ -2333,14 +2333,22 @@ END
 
 Select @PropertyControlId = ControlId from UserManagement.Control where UIId = 'PropertiesTabUIId'
 
+IF  NOT Exists (Select * from UserManagement.Control where UIId = 'ProspectContactCenterAllowaccesstoallcurrentandfuturepropertiesPropertiesSwitchUIId')
+Begin
+
 Insert into UserManagement.Control (ParentControlId,ControlTypeId,UIId,DisplayName,DataSource,Sequence,CreatedBy,CreatedDate)
 values (@PropertyControlId,1,'ProspectContactCenterAllowaccesstoallcurrentandfuturepropertiesPropertiesSwitchUIId','Assign access to current and new properties automatically',
 'allProperties',1,@UserId,@Now)
 
+End
+
+
+
 Declare @parent bigint;
 Select @parent = ControlId from UserManagement.Control where UIID = 'PCCPAcessSelectgridUIId'
-
+IF NOT EXISTS (Select * from UserManagement.Control where UIId = 'ProspectStateColumnId' and DataSource = 'status')
+Begin
 Insert into UserManagement.Control (ParentControlId,ControlTypeId,UIId,DisplayName,DataSource,Sequence,CreatedBy,CreatedDate)
 values (@parent,5,'ProspectStateColumnId','Status','status',4,@UserId,@Now);
-
+END
 GO
