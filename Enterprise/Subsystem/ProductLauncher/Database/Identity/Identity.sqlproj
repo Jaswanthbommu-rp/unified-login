@@ -1124,6 +1124,7 @@
     <Build Include="RoleRightsManagement\Tables\OrganizationOverRideRole.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2021.06.Q2.07.WMU.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2021.06.Q2.08.WMU1.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListAllOrganizationByLoginName.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
