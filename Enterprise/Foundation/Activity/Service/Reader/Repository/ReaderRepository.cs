@@ -128,7 +128,6 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Repository
                     Records = list,
                     TotalRows = rowCount
                 };
-
             }
 		}
 
