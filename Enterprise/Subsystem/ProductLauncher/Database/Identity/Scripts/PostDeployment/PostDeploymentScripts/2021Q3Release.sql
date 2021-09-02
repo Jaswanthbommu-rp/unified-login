@@ -2300,3 +2300,218 @@ UPDATE UserManagement.Control SET DisplayName = 'Assign current and new properti
 END
  
 GO
+--START : script for userstory #860232
+--WarnOnProductError 
+if not exists ( select top 1 1 from Enterprise.ProductSettingType where name = 'WarnOnProductError' )
+begin
+	insert into enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'WarnOnProductError', 'Warn On Product Error', 0)
+end
+
+DECLARE @NOW DATETIME = GETUTCDATE(); 
+declare @productlist table ( entid int identity, productid int, productsettingtype varchar(500), productsettingvalue varchar(2000))
+insert into @productlist values 
+	(1,	 'WarnOnProductError', '1' ),
+	(2,	 'WarnOnProductError', '0' ),
+	(3,	 'WarnOnProductError', '0' ),
+	(4,	 'WarnOnProductError', '1' ),
+	(5,	 'WarnOnProductError', '0' ),
+	(6,	 'WarnOnProductError', '1' ),
+	(7,	 'WarnOnProductError', '0' ),
+	(8,	 'WarnOnProductError', '1' ),
+	(9,	 'WarnOnProductError', '1' ),
+	(10, 'WarnOnProductError', '1' ),
+	(11, 'WarnOnProductError', '0' ),
+	(12, 'WarnOnProductError', '0' ),
+	(13, 'WarnOnProductError', '1' ),
+	(14, 'WarnOnProductError', '0' ),
+	(15, 'WarnOnProductError', '1' ),
+	(16, 'WarnOnProductError', '1' ),
+	(17, 'WarnOnProductError', '1' ),
+	(18, 'WarnOnProductError', '1' ),
+	(19, 'WarnOnProductError', '0' ),
+	(20, 'WarnOnProductError', '1' ),
+	(21, 'WarnOnProductError', '0' ),
+	(22, 'WarnOnProductError', '0' ),
+	(23, 'WarnOnProductError', '1' ),
+	(24, 'WarnOnProductError', '0' ),
+	(25, 'WarnOnProductError', '0' ),
+	(26, 'WarnOnProductError', '1' ),
+	(27, 'WarnOnProductError', '0' ),
+	(28, 'WarnOnProductError', '0' ),
+	(29, 'WarnOnProductError', '1' ),
+	(30, 'WarnOnProductError', '1' ),
+	(31, 'WarnOnProductError', '1' ),
+	(32, 'WarnOnProductError', '1' ),
+	(33, 'WarnOnProductError', '1' ),
+	(34, 'WarnOnProductError', '1' ),
+	(35, 'WarnOnProductError', '0' ),
+	(36, 'WarnOnProductError', '1' ),
+	(37, 'WarnOnProductError', '0' ),
+	(38, 'WarnOnProductError', '0' ),
+	(39, 'WarnOnProductError', '0' ),
+	(40, 'WarnOnProductError', '1' ),
+	(41, 'WarnOnProductError', '1' ),
+	(42, 'WarnOnProductError', '0' ),
+	(43, 'WarnOnProductError', '0' ),
+	(44, 'WarnOnProductError', '1' ),
+	(45, 'WarnOnProductError', '0' ),
+	(46, 'WarnOnProductError', '0' ),
+	(47, 'WarnOnProductError', '1' ),
+	(48, 'WarnOnProductError', '0' ),
+	(49, 'WarnOnProductError', '0' ),
+	(50, 'WarnOnProductError', '1' ),
+	(51, 'WarnOnProductError', '1' ),
+	(52, 'WarnOnProductError', '1' ),
+	(53, 'WarnOnProductError', '1' ),
+	(54, 'WarnOnProductError', '1' ),
+	(55, 'WarnOnProductError', '0' ),
+	(56, 'WarnOnProductError', '0' ),
+	(57, 'WarnOnProductError', '1' ),
+	(58, 'WarnOnProductError', '1' ),
+	(59, 'WarnOnProductError', '1' ),
+	(60, 'WarnOnProductError', '1' ),
+	(61, 'WarnOnProductError', '1' ),
+	(62, 'WarnOnProductError', '0' ),
+	(63, 'WarnOnProductError', '0' ),
+	(64, 'WarnOnProductError', '0' ),
+	(65, 'WarnOnProductError', '1' ),
+	(66, 'WarnOnProductError', '1' ),
+	(67, 'WarnOnProductError', '0' ),
+	(68, 'WarnOnProductError', '1' )
+	
+--select * from @productlist
+
+declare @MAX_ID INT
+declare @Current_ID INT = 1
+declare @CurrentProductId INT = 1
+
+select @MAX_ID = max(entid) from @productlist
+
+while @Current_ID <= @MAX_ID
+begin
+	declare @currentSettingType varchar(500)
+	declare @currentsettingValue varchar(2000)
+
+	select @CurrentProductId = productid , @currentSettingType = productsettingtype, @currentSettingValue = productsettingvalue
+		from @productlist where entid = @Current_ID
+
+	--print 'productid = ' + convert(varchar,@currentproductid)
+
+	if not exists (
+	select top 1 1 
+		FROM Enterprise.GlobalProductConfiguration gpc  
+		JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId  
+		JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId  
+		JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId  
+			WHERE  gpc.ProductId = @CurrentProductId  
+		AND ((@NOW BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@NOW >= gpc.FromDate AND gpc.ThruDate IS NULL))  
+		AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))  
+		AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))  
+		AND pst.Name = @currentSettingType
+		AND ps.Value = @currentsettingValue
+	)
+	begin
+		declare @currentproductconfigurationid INT
+		select distinct top 1 @currentproductconfigurationid = pc.configurationid
+			FROM Enterprise.GlobalProductConfiguration gpc  
+			JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId  
+			JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId  
+			JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId  
+				WHERE  gpc.ProductId = @CurrentProductId
+			AND ((@NOW BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@NOW >= gpc.FromDate AND gpc.ThruDate IS NULL))  
+			AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))  
+			AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))  
+		order by pc.ConfigurationId desc
+
+		if (@currentproductconfigurationid is not null)
+		begin
+			insert into enterprise.ProductSetting ( productid, ProductSettingTypeId, value, FromDate )
+				select @CurrentProductId, productsettingtypeid, @currentSettingValue, GETUTCDATE()
+					from enterprise.ProductSettingType where name = @currentSettingType
+			insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate, ThruDate )
+				values ( @currentproductconfigurationid, @@IDENTITY, GETUTCDATE(), null )
+		end
+	end
+	
+	set @Current_ID = @Current_ID + 1
+end
+GO
+--END : script for userstory #860232
+GO
+
+-- Add the PrimaryPropertyEnterpriseRole right
+ DECLARE @RightValue nvarchar(200),
+		 @UserId bigint,
+		 @Now datetime = GETDATE(),
+		 @RightId int,
+		 @RoleId INT,
+		 @ProductId int = 3,
+		 @TargetProductId int = 3,
+		 @RoleName nvarchar(100),
+		 @OrgVisibilityStatusId INT = 9,
+		 @RightVisibilityStatusId INT =10,
+		 @StatusTypeId int=13;
+SELECT	@UserId = UserId
+	FROM	Ident.UserLogin
+	WHERE	LoginName LIKE 'realpagead@%'
+IF NOT EXISTS(SELECT TOP 1 1 FROM [Security].[Right] WHERE RightName ='PrimaryPropertyEnterpriseRole')
+BEGIN 
+		INSERT INTO Security.[Right] (RightName,Description,Value,StatusTypeId,VisibilityStatusId,ProductId,TargetProductId,CreatedBy,CreatedDate)
+		VALUES('PrimaryPropertyEnterpriseRole','Manage Enterprise Roles','Ability to view, edit and create Enterprise Roles',@StatusTypeId,@RightVisibilityStatusId,@ProductId ,@TargetProductId,@UserId,@Now);
+END
+SELECT @RoleId = RoleId from [Security].[Role] where RoleName='User Administrator' And OrgPartyID IS NULL;
+SELECT @RightId =  RightId from [Security].[Right] where RightName = 'PrimaryPropertyEnterpriseRole';
+IF NOT EXISTS(SELECT TOP 1 1 FROM [Security].[RoleRight] WHERE [RightId]= @RightId)
+BEGIN
+	INSERT INTO Security.RoleRight (RoleId,RightId,CreatedBy,CreatedDate) 
+	VALUES(@RoleId,@RightId,@UserId,@Now);
+END
+
+GO
+  --User Story 928047
+DECLARE @UserId bigint,
+	    @Now datetime = GETDATE(),
+	    @PropertyControlId bigint;
+SELECT	@UserId = UserId
+FROM	Ident.UserLogin
+WHERE	LoginName LIKE 'realpagead@%'; 
+
+Declare @ControlId1 INT;
+Declare @ControlId2 INT;
+Declare @ControlId3 INT;
+SELECT @ControlId1 = ControlId FROM UserManagement.Control WHERE UIId='RadioButtonId' AND DisplayName = 'Active Properties';
+SELECT @ControlId2 = ControlId FROM UserManagement.Control WHERE UIId='RadioButtonId' AND DisplayName = 'Inactive Properties';
+SELECT @ControlId3 = ControlId FROM UserManagement.Control WHERE UIId='RadioButtonId' AND DisplayName = 'All Properties';
+
+IF (@ControlId1 IS NOT NULL AND @ControlId2  IS NOT NULL AND @ControlId3 IS NOT NULL)
+BEGIN
+Delete from  UserManagement.Control where  ControlId in ( @ControlId1,@ControlId2,@ControlId3);
+END
+
+Declare @Cont bigint,@ParentControlID bigint;
+Select @Cont = ControlId from UserManagement.Control where UIId = 'PCCPAcessSelectgridUIId';
+SELECT @ParentControlID = ControlId FROM UserManagement.Control WHERE UIId='PropertySelectColumnUIId' and ParentControlId =@Cont;
+Select @ParentControlID;
+IF (@ParentControlID IS NOT NULL)
+BEGIN
+UPDATE UserManagement.Control SET ControlTypeId = 10 Where ControlId = @ParentControlID;
+END
+
+Select @PropertyControlId = ControlId from UserManagement.Control where UIId = 'PropertiesTabUIId'
+IF  NOT Exists (Select * from UserManagement.Control where UIId = 'ProspectContactCenterAllowaccesstoallcurrentandfuturepropertiesPropertiesSwitchUIId')
+Begin
+Insert into UserManagement.Control (ParentControlId,ControlTypeId,UIId,DisplayName,DataSource,Sequence,CreatedBy,CreatedDate)
+values (@PropertyControlId,1,'ProspectContactCenterAllowaccesstoallcurrentandfuturepropertiesPropertiesSwitchUIId','Assign access to current and new properties automatically',
+'allProperties',1,@UserId,@Now)
+END
+
+Declare @parent bigint;
+Select @parent = ControlId from UserManagement.Control where UIID = 'PCCPAcessSelectgridUIId'
+IF NOT EXISTS (Select * from UserManagement.Control where UIId = 'ProspectContactCenterStatusLabelUIId' and DataSource = 'status')
+Begin
+Insert into UserManagement.Control (ParentControlId,ControlTypeId,UIId,DisplayName,DataSource,Sequence,CreatedBy,CreatedDate)
+values (@parent,5,'ProspectContactCenterStatusLabelUIId','Status','status',4,@UserId,@Now);
+END
+GO
+
+
