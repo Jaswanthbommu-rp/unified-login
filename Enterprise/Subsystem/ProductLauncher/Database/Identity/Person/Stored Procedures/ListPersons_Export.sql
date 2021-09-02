@@ -1,5 +1,6 @@
 ﻿
-CREATE PROCEDURE [Person].[ListPersons_Ver04] (
+CREATE PROCEDURE [Person].[ListPersons_Export] 
+(
 	@RealPageId uniqueidentifier = NULL,
 	@ParentPartyRoleTypeId int = NULL,
 	@UserListFilterType tinyint = 0,
@@ -11,6 +12,7 @@ CREATE PROCEDURE [Person].[ListPersons_Ver04] (
 )
 AS
 BEGIN
+
 	DECLARE @PartyId bigint,
 		@NOW datetime= GETUTCDATE(),
 		@sortOrder nvarchar(128),
@@ -270,6 +272,42 @@ BEGIN
 	DROP INDEX IF EXISTS [NCI_Temp_PersonaProduct_ProductId] ON [dbo].[#PersonaProduct]
 	CREATE NONCLUSTERED INDEX [NCI_Temp_PersonaProduct_ProductId]	ON [dbo].[#PersonaProduct] ([ProductId]) INCLUDE ([PersonaId])
 	
+	DROP TABLE IF EXISTS #CustomFields
+
+	SELECT  Id,UserLoginPersonaId,FieldValue,Enabled,Name,Value,Sequence
+	INTO #CustomFields
+	From (
+		Select sr.[SettingTableRowId] AS 'Id',
+			   st.[PartyId] AS 'OrganizationId',
+			   srv.UserLoginPersonaId 'UserLoginPersonaId',
+			   srv.Value 'FieldValue',
+			   [TableColumnName],
+			   [TableColumnValue]
+		from [Settings].[SettingTableColumn] stc
+		join [Settings].[SettingTableRow] sr on
+			stc.[SettingTableRowId] = sr.[SettingTableRowId]
+		join Settings.SettingTableRowValue SRV on
+			srv.SettingTableRowId = sr.SettingTableRowId
+		join [Settings].[SettingTable] st on
+			st.[SettingTableId] = sr.[SettingTableId]
+		where st.[PartyId] = @PartyId) As SourceTable
+	PIVOT
+	(
+		MIN([TableColumnValue])
+		FOR [TableColumnName] IN (Enabled,Name,Value,Sequence)
+	) AS PivotOutput
+
+	Delete from #CustomFields 
+	Where Enabled = 0
+	AND ((FieldValue IS NOT NULL) OR (LEN(FieldValue) > 0) )  
+
+	SELECT @minSequence = MIN(Sequence)
+	FROM  #CustomFields
+
+	Delete from #CustomFields 
+	Where [Sequence] <> @minSequence
+
+
 	DROP TABLE IF EXISTS #UserLogin
 
 	CREATE TABLE #UserLogin
@@ -407,6 +445,7 @@ BEGIN
 		EmployeeId,
 		Title,
 		Suffix,
+		CustomField,
 		UserId,
 		LoginName,
 		LastLogin,
@@ -438,6 +477,10 @@ BEGIN
 			 UE.Employee as EmployeeId,  
 			 p.Title,  
 			 p.Suffix,  
+			 CASE  
+			  WHEN cf.FieldValue IS NULL THEN ''  
+			  ELSE cf.FieldValue  
+			 END AS 'CustomFieldValue',  
 			 ulp.UserId,  
 			 ulp.LoginName,  
 			 ulp.LastLogin,  
@@ -485,12 +528,14 @@ BEGIN
 			 INNER JOIN Enterprise.RoleType rt ON (rt.PartyRoleTypeId = rst.RoleTypeIdValidFrom)  
 			 INNER JOIN Ident.IdentityProviderType ipt ON ulp.IdentityProviderTypeId = ipt.IdentityProviderTypeId  
 			 LEFT OUTER JOIN #ProductCount pct ON pct.PersonaId = ulp.PersonaId  
+			 LEFT OUTER JOIN #CustomFields cf ON (cf.UserLoginPersonaId = ulp.UserLoginPersonaId)  
 			 LEFT OUTER JOIN Enterprise.UserEmployeeId UE ON ulp.UserLoginPersonaId = UE.UserLoginPersonaId  
 			 LEFT OUTER JOIN #UserEnterpriseRole UER  ON ulp.PersonaId  = UER.PersonaId
 		  WHERE  (  
 				(@filterName IS NULL)  
 				OR (CHARINDEX(@filterName, FirstName + ' ' + LastName, 1) > 0)  
 				OR (CHARINDEX(@filterName, ulp.LoginName, 1) > 0)  
+				OR (CHARINDEX(@filterName, cf.FieldValue, 1) > 0)  
 				OR (CHARINDEX(@filterName, UE.Employee, 1) > 0)  
 				OR (CHARINDEX(@filterName, EA.ElectronicAddressString, 1) > 0)
 			   )  
@@ -507,6 +552,7 @@ BEGIN
 				EmployeeId,
 				Title,
 				Suffix,
+				CustomField,
 				EntepriseRoleName,
 				RoleTemplateId,
 				UserId,
