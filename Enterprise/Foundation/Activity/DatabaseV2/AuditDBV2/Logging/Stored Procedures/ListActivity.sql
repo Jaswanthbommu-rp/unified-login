@@ -18,6 +18,8 @@ SET NOCOUNT ON;
 	DECLARE @SearchCriteria NVARCHAR(4000) = ''
 	DECLARE @OffsetMinutes VARCHAR(5)
 	DECLARE @InternationalDateFormat VARCHAR(100) 
+	DECLARE @InternationalTimeFormat VARCHAR(100) = 'hh:mm:s tt'  
+
 		 
 	SELECT	@RowsPerPage =
 		CASE
@@ -34,17 +36,27 @@ SET NOCOUNT ON;
 
 	SET @OffsetMinutes = ISNULL(@OffsetMinutes, '0');
 
-	
-	SELECT  @InternationalDateFormat = [Value]  
-	FROM  @SearchCriteriaTPV  
-	WHERE [Name] = 'InternationalDateFormat'
+	SELECT  @InternationalTimeFormat = Value    
+	FROM  @SearchCriteriaTPV    
+	WHERE Name = 'InternationalTimeFormat'  
 
-	SET @InternationalDateFormat = CASE @InternationalDateFormat
-										WHEN 'mm/dd/yyyy' THEN 'MM/dd/yyyy hh:mm:s tt'
-										WHEN 'dd/mm/yyyy' THEN 'dd/MM/yyyy hh:mm:s tt'
-										WHEN 'yyyy/mm/dd' THEN 'yyyy/MM/dd hh:mm:s tt'
-										ELSE 'MM/dd/yyyy hh:mm:s tt'
+	SET @InternationalTimeFormat = CASE @InternationalTimeFormat  
+										WHEN '12Hours' THEN 'hh:mm:s tt' 
+										WHEN '24Hours' THEN 'HH:mm:s'           
+										ELSE 'hh:mm:s tt'  
 									END
+
+	SELECT  @InternationalDateFormat = Value  
+	FROM  @SearchCriteriaTPV  
+	WHERE Name = 'InternationalDateFormat'
+
+	SET @InternationalDateFormat = CASE @InternationalDateFormat  
+										WHEN 'mm/dd/yyyy' THEN CONVERT(varchar,'MM/dd/yyyy ' + @InternationalTimeFormat)  
+										WHEN 'dd/mm/yyyy' THEN CONVERT(varchar,'dd/MM/yyyy ' + @InternationalTimeFormat) 
+										WHEN 'yyyy/mm/dd' THEN CONVERT(varchar,'yyyy/MM/dd ' + @InternationalTimeFormat)  
+										ELSE 'MM/dd/yyyy hh:mm:s tt'  
+									END 
+
 
 	SET @SelectColumns = '
 	SELECT		A.ActivityId,
@@ -91,7 +103,7 @@ SET NOCOUNT ON;
 		FROM 
 			@SearchCriteriaTPV
 		WHERE
-			[Name] NOT IN ('OffsetMinutes', 'SaveFormat','InternationalDateFormat');
+			[Name] NOT IN ('OffsetMinutes', 'SaveFormat','InternationalDateFormat','InternationalTimeFormat');
 
 		SET @SearchCriteria = CHAR(9) + 'WHERE' + CHAR(9) + SUBSTRING(@SearchCriteria,5,LEN(@SearchCriteria))
 
@@ -127,4 +139,3 @@ SET NOCOUNT ON;
 	--EXECUTE (@SelectCount)		
 	EXEC SP_EXECUTESQL @SelectCount, N'@TotalRows INT output', @TotalRows out
 END;
-GO
