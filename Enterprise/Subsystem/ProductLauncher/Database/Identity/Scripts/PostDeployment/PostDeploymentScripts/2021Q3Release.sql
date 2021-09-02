@@ -2514,4 +2514,8 @@ values (@parent,5,'ProspectContactCenterStatusLabelUIId','Status','status',4,@Us
 END
 GO
 
-
+--START Userstory 934548
+update UserManagement.Control set ControlTypeId=3 where UIId = 'UnifiedPlatformRoleTemplateRolesSelectGridUIId'
+update UserManagement.Control set ControlTypeId=10 where UIId = 'UnifiedPlatformRoleTemplateRoleRadioUIId'
+GO
+--END Userstory 934548
