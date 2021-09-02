@@ -2466,3 +2466,52 @@ BEGIN
 	INSERT INTO Security.RoleRight (RoleId,RightId,CreatedBy,CreatedDate) 
 	VALUES(@RoleId,@RightId,@UserId,@Now);
 END
+
+GO
+  --User Story 928047
+DECLARE @UserId bigint,
+	    @Now datetime = GETDATE(),
+	    @PropertyControlId bigint;
+SELECT	@UserId = UserId
+FROM	Ident.UserLogin
+WHERE	LoginName LIKE 'realpagead@%'; 
+
+Declare @ControlId1 INT;
+Declare @ControlId2 INT;
+Declare @ControlId3 INT;
+SELECT @ControlId1 = ControlId FROM UserManagement.Control WHERE UIId='RadioButtonId' AND DisplayName = 'Active Properties';
+SELECT @ControlId2 = ControlId FROM UserManagement.Control WHERE UIId='RadioButtonId' AND DisplayName = 'Inactive Properties';
+SELECT @ControlId3 = ControlId FROM UserManagement.Control WHERE UIId='RadioButtonId' AND DisplayName = 'All Properties';
+
+IF (@ControlId1 IS NOT NULL AND @ControlId2  IS NOT NULL AND @ControlId3 IS NOT NULL)
+BEGIN
+Delete from  UserManagement.Control where  ControlId in ( @ControlId1,@ControlId2,@ControlId3);
+END
+
+Declare @Cont bigint,@ParentControlID bigint;
+Select @Cont = ControlId from UserManagement.Control where UIId = 'PCCPAcessSelectgridUIId';
+SELECT @ParentControlID = ControlId FROM UserManagement.Control WHERE UIId='PropertySelectColumnUIId' and ParentControlId =@Cont;
+Select @ParentControlID;
+IF (@ParentControlID IS NOT NULL)
+BEGIN
+UPDATE UserManagement.Control SET ControlTypeId = 10 Where ControlId = @ParentControlID;
+END
+
+Select @PropertyControlId = ControlId from UserManagement.Control where UIId = 'PropertiesTabUIId'
+IF  NOT Exists (Select * from UserManagement.Control where UIId = 'ProspectContactCenterAllowaccesstoallcurrentandfuturepropertiesPropertiesSwitchUIId')
+Begin
+Insert into UserManagement.Control (ParentControlId,ControlTypeId,UIId,DisplayName,DataSource,Sequence,CreatedBy,CreatedDate)
+values (@PropertyControlId,1,'ProspectContactCenterAllowaccesstoallcurrentandfuturepropertiesPropertiesSwitchUIId','Assign access to current and new properties automatically',
+'allProperties',1,@UserId,@Now)
+END
+
+Declare @parent bigint;
+Select @parent = ControlId from UserManagement.Control where UIID = 'PCCPAcessSelectgridUIId'
+IF NOT EXISTS (Select * from UserManagement.Control where UIId = 'ProspectContactCenterStatusLabelUIId' and DataSource = 'status')
+Begin
+Insert into UserManagement.Control (ParentControlId,ControlTypeId,UIId,DisplayName,DataSource,Sequence,CreatedBy,CreatedDate)
+values (@parent,5,'ProspectContactCenterStatusLabelUIId','Status','status',4,@UserId,@Now);
+END
+GO
+
+
