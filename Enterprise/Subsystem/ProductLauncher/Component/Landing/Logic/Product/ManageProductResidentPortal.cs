@@ -386,9 +386,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             Status<IErrorData> errorStatus = new Status<IErrorData>();
             string createUpdateUser = "create";
             bool IsEnterprise = false;
-            bool IsEmailUpdated = false;
-            bool IsProfileChanged = false;
-            bool IsEmailChanged = false;
             WriteToDiagnosticLog($"ManageProductResidentPortal.ManageResidentPortalUser - Begin user provisioning with userPersonaId - {userPersonaId}.");
 
             try
@@ -488,23 +485,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 else
                 {
-                    createUpdateUser = "update";
-                    if (!string.IsNullOrEmpty(_productUsername) && _productUsername.Equals(userEmailAddress))
-                    {
-                        userEmailAddress = _productUsername;
-                    }
-
+                     createUpdateUser = "update";
+                     userEmailAddress = _productUsername;
+                   
                     _residentPortalUser = GetUserDetails(editorPersonaId, userPersonaId, _productUsername, 0);
-                    IsProfileChanged = IsUserProfileChanged(person, _residentPortalUser);
-                    IsEmailChanged = IsUserEmailChanged(_productUsername, userEmailAddress);
-                    IsEnterprise = (_residentPortalUser?.EnterpriseUserId > 0);
-
-                    if (IsEmailChanged)
-                    {
-                        IsEmailUpdated = UpdateResidentPortalUserEmail(IsEnterprise, userEmailAddress);
-                        WriteToDiagnosticLog($"ManageProductResidentPortal.ManageResidentPortalUser - Updating Email for - {userPersonaId} is {IsEmailUpdated} ");
-                    }
-
+                   
                     if (_residentPortalUser == null)
                     {
                         errorStatus.Success = false;
@@ -812,7 +797,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                 }
 
-                _residentPortalUser = GetUserDetails(editorPersonaId, userPersonaId, userEmailAddress, 0);
+                _residentPortalUser = GetUserDetails(editorPersonaId, userPersonaId, _productUsername, 0);
                 if (_residentPortalUser != null)
                 {
                     userId = (IsEnterprise) ? _residentPortalUser.EnterpriseUserId.ToString() : _residentPortalUser.ManagerId.ToString();
@@ -820,7 +805,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     //Create OR Update a new Product UserId SAML attribute for the given personaId
                     Dictionary<SamlAttributeEnum, string> userSetting = new Dictionary<SamlAttributeEnum, string>()
                     {
-                        {SamlAttributeEnum.productUsername, userEmailAddress},
+                        {SamlAttributeEnum.productUsername, _productUsername},
                         {SamlAttributeEnum.UserId, userId }
                     };
                     UpdateSamlUserAttributes(userPersonaId, userSetting);
@@ -2322,65 +2307,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             WriteToDiagnosticLog($"ManageProductResidentPortal.ListResidentPortalProperties-Communities - Found total {communityList.Count} properties with Resident Portal company instance source id {_companyInstanceSourceId}.");
             return communityList;
         }
-        private bool UpdateResidentPortalUserEmail(bool isEnterprise, string userEmailAddress)
-        {
-            string url = _residentPortalApiEndPoint + ((isEnterprise) ? "/enterprise-users" : "/managers");
-            bool isEmailUpdated = false;
-            Dictionary<string, object> logData = new Dictionary<string, object>();
-            try
-            {
-                string userIdOrName = (!string.IsNullOrWhiteSpace(_productUsername)) ? _productUsername : userEmailAddress;
-                url = url + "/" + userIdOrName;
-                //This is Email Update only
-                IDataObject<EmailUpdateOnly> emailOnlyDataObject = new DataObject<EmailUpdateOnly>()
-                {
-                    data = new EmailUpdateOnly { Email = userEmailAddress }
-                };
-                HttpRequestMessage req = new HttpRequestMessage
-                {
-                    Method = new HttpMethod("PATCH"),
-                    Content = new StringContent(JsonConvert.SerializeObject(emailOnlyDataObject), System.Text.Encoding.Default, "application/json"),
-                    RequestUri = new Uri(url)
-                };
-
-                logData.Add("dataObject", emailOnlyDataObject);
-                WriteToDiagnosticLog($"ManageProductResidentPortal.UpdateResidentPortalUserEmail - Updaing email - {_productUsername} to {userEmailAddress}", logData);
-                HttpResponseMessage postResponse = _client.SendAsync(req).Result;
-                if (postResponse.IsSuccessStatusCode)
-                {
-                    dynamic resultObject = JsonConvert.DeserializeObject<dynamic>(postResponse.Content.ReadAsStringAsync().Result);
-                    logData = new Dictionary<string, object>
-                            {
-                                { "resultObject", resultObject }
-                            };
-                    isEmailUpdated = true;
-                    WriteToDiagnosticLog($"ManageProductResidentPortal.ManageResidentPortalUser - Updaing email result - {userEmailAddress}", logData);
-                }
-                else
-                {
-                    WriteToDiagnosticLog($"ManageProductResidentPortal.ManageResidentPortalUser - Updaing email errored - {_productUsername}");
-                }
-            }
-            catch (Exception ex)
-            {
-                // return the user exists
-                WriteToDiagnosticLog("ManageProductResidentPortal.GetUserDetails - Error " + ex.Message);
-            }
-
-            return isEmailUpdated;
-        }
-
-        private bool IsUserEmailChanged(string oldEmail, string newEmail)
-        {
-            return !string.IsNullOrEmpty(oldEmail) && !oldEmail.Equals(newEmail);
-        }
-        private bool IsUserProfileChanged(IPerson newProfile, ResidentPortalUser oldProfile)
-        {
-            bool isChanged = ((!newProfile.FirstName.Equals(oldProfile.FirstName)) || (!newProfile.LastName.Equals(oldProfile.LastName)));
-            return isChanged;
-
-        }
-
         #endregion
     }
 
