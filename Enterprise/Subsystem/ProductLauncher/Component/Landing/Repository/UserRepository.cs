@@ -2526,7 +2526,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 {
                     var userLoginRepository = new UserLoginRepository();
                     IUserLoginOnly userLoginOnly = userLoginRepository.GetUserLoginOnly(ul.UserRealPageId);
-                    var userOrganizationList = userLoginRepository.ListOrganizationByLoginName(userLoginOnly.LoginName);
+                    var userOrganizationList = userLoginRepository.ListAllOrganizationByLoginName(userLoginOnly.LoginName);
                     Guid primaryCompanyGuid = userOrganizationList.FirstOrDefault(p => p.PrimaryOrganization).OrganizationRealPageId;
                     List<Guid> organizationsToProcess = new List<Guid>();
                     foreach (var org in userOrganizationList)
@@ -2575,7 +2575,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 FromDate = ul.FromDate
                             });
                         }
-                        else if(!isUserdisabled)
+                        else if(!isUserdisabled && ul.OrganizationRealPageId == org.OrganizationRealPageId)
                         {
                             var updateUserStatusResponse = repository.Execute<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserStatusByCompany, new
                             {

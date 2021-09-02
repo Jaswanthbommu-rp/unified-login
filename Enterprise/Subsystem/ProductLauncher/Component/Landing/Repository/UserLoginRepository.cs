@@ -390,6 +390,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
 
         /// <summary>
+        /// List all organization for user without thru data condition
+        /// </summary>
+        /// <param name="loginName">User login name</param>        
+        /// <returns>List of User Persona and Organization detail</returns>
+        public IList<UserOrganization> ListAllOrganizationByLoginName(string loginName)
+        {
+            dynamic param = new
+            {
+                LoginName = loginName
+            };
+
+            using (var repository = GetRepository())
+            {
+                return repository.GetMany<UserOrganization>(StoredProcNameConstants.SP_ListAllOrganizationByLoginName, param);
+            }
+        }
+
+        /// <summary>
         /// list of Organization By Enterprise User Id
         /// </summary>
         /// <param name="realPageId">Unique Identifier - EnterpriseUserId</param>
