@@ -307,10 +307,6 @@ BEGIN
 	DROP INDEX IF EXISTS [NCI_Temp_PersonaProduct_ProductId] ON [dbo].[#PersonaProduct]
 	CREATE NONCLUSTERED INDEX [NCI_Temp_PersonaProduct_ProductId]	ON [dbo].[#PersonaProduct] ([ProductId]) INCLUDE ([PersonaId])
 	
-    DROP INDEX IF EXISTS [NCI_CustomField_Org_Seq_Enabled] ON [CustomField].[Field]
-	CREATE NONCLUSTERED INDEX [NCI_CustomField_Org_Seq_Enabled] ON [CustomField].[Field]([FieldId],OrganizationId) include ([Sequence]) where [Enabled] = 1 
-
-
 	DROP TABLE IF EXISTS #CustomFields
 
 	SELECT  Id,UserLoginPersonaId,FieldValue,Enabled,Name,Value,Sequence

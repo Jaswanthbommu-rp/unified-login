@@ -1,6 +1,8 @@
 -- EXEC  [Enterprise].[GetCompanyList] null,0,0,7,@RowsPerPage=3
--- EXEC  [Enterprise].[GetCompanyList] 'c',0,0,null,@FilterByProduct='26,45',@FilterByType='6',@FilterByDomain='1,2',@FilterByStatus=null
+-- EXEC  [Enterprise].[GetCompanyList] 'cf re',0,0,null,@FilterByProduct='26,45',@FilterByType='6',@FilterByDomain='1,2',@FilterByStatus=null
 -- EXEC Enterprise.GetCompanyList
+-- EXEC  [Enterprise].[GetCompanyList] 'realpage'
+-- EXEC ENTERPRISE.GETCOMPANYLIST @ORGANIZATIONNAME='REALPAGE', @FilterByDomain='1,2'
 CREATE PROCEDURE [Enterprise].[GetCompanyList] 
 (	
 	@OrganizationName		VARCHAR(300) = NULL,
@@ -63,7 +65,7 @@ BEGIN
 
 	CREATE TABLE #tempOrganizations
 	(
-		OrganizationPartyId		BIGINT, 
+		OrganizationPartyId		BIGINT NOT NULL, 
 		OrganizationName		NVARCHAR(300),
 		RealPageId				UNIQUEIDENTIFIER,
 		BooksMasterId			NVARCHAR(200),
@@ -77,7 +79,36 @@ BEGIN
 		Products				INT,
 		RealPageAccessUser NVARCHAR(100),
 		RealPageAccessUserId    UNIQUEIDENTIFIER,
-		UsePrimaryProperties TINYINT)	
+		EnablePrimaryPropertiesAndEnterpriseRoles TINYINT)	
+
+	CREATE TABLE #tempAdminUsers
+	(
+		PartyId BIGINT NOT NULL,
+		LoginName VARCHAR(200) NOT NULL,
+		RealPageId UNIQUEIDENTIFIER NOT NULL
+	)
+
+	INSERT INTO #tempAdminUsers ( PartyId, LoginName, RealPageId )
+	SELECT CAST(MC.AttributeId AS BIGINT), 
+		UL.LoginName,
+		UL.RealPageId as RealPageAccessUserId 
+		FROM Enterprise.MasterConfiguration MC
+        INNER JOIN Enterprise.MasterConfigurationSetting MCS ON MC.MasterConfigurationId = MCS.MasterConfigurationId  AND mc.ThruDate IS null
+        INNER JOIN Enterprise.MasterSetting MS ON MCS.MasterSettingId = MS.MasterSettingId  
+        INNER JOIN Enterprise.MasterSettingType MST ON MST.MasterSettingTypeId = MS.MasterSettingTypeId  
+        INNER JOIN Enterprise.MasterConfigurationType MCT ON MCT.MasterConfigurationTypeId = MST.MasterConfigurationTypeId  
+        INNER JOIN  
+				(  
+				 SELECT P.RealPageId,  
+					 UL.LoginName  
+				 FROM   
+				  Ident.UserLogin UL  
+				  INNER JOIN Enterprise.Party P ON UL.PersonPartyId = P.PartyId  
+				) UL ON LEN(MS.Value) = 36 AND UL.RealPageId = CAST(MS.Value AS UNIQUEIDENTIFIER)
+	WHERE MCT.Name = 'Organization'  
+		AND MST.Name = 'RealPageEmployeeAccessID'
+	UNION
+		SELECT CAST(PartyId AS BIGINT), 'nouser@realpage.com', CAST('00000000-0000-0000-0000-000000000000' AS UNIQUEIDENTIFIER) FROM Enterprise.Party WHERE RealPageId = '0d018e46-c20e-477d-aded-4e5a35fb8f99'
 
 	INSERT INTO #tempOrganizations(OrganizationPartyId,		
 								   OrganizationName,		
@@ -93,7 +124,7 @@ BEGIN
 								   Products,
 								   RealPageAccessUser,
 								   RealPageAccessUserId,
-								   UsePrimaryProperties)
+								   EnablePrimaryPropertiesAndEnterpriseRoles)
 	SELECT O.PartyId as OrganizationPartyId,    
 		   O.Name as OrganizationName,    
 		   P.RealPageId,    
@@ -110,29 +141,15 @@ BEGIN
 		   O.IsActive,
 		   Products = (select count(distinct productid) 
 						from Enterprise.OrganizationProduct op where o.PartyId= op.PartyId and ThruDate is null),
-		   UL.LoginName,
-		   UL.RealPageId as RealPageAccessUserId,
+		   CA.LoginName,
+		   CA.RealPageId as RealPageAccessUserId,
 		   0
 	FROM [Enterprise].Organization AS o    
 		INNER JOIN [Enterprise].Party P ON P.PartyId = O.PartyId
 		INNER JOIN Enterprise.OrganizationDomain OD ON OD.OrganizationDomainId = O.OrganizationDomainId
 		INNER JOIN Enterprise.OrganizationType OT ON OT.OrganizationTypeId = O.OrganizationTypeId 
-		INNER JOIN Enterprise.VW_DataImportMapping D ON(O.PartyId = D.PartyId) and d.CompanyMasterId > 1
-		INNER JOIN Enterprise.MasterConfiguration MC ON MC.AttributeId = O.PartyId  
-        INNER JOIN Enterprise.MasterConfigurationSetting MCS ON MC.MasterConfigurationId = MCS.MasterConfigurationId  
-        INNER JOIN Enterprise.MasterSetting MS ON MCS.MasterSettingId = MS.MasterSettingId  
-        INNER JOIN Enterprise.MasterSettingType MST ON MST.MasterSettingTypeId = MS.MasterSettingTypeId  
-        INNER JOIN Enterprise.MasterConfigurationType MCT ON MCT.MasterConfigurationTypeId = MST.MasterConfigurationTypeId  
-        INNER JOIN  
-				(  
-				 SELECT P.RealPageId,  
-					 UL.LoginName  
-				 FROM   
-				  Ident.UserLogin UL  
-				  INNER JOIN Enterprise.Party P ON UL.PersonPartyId = P.PartyId  
-				) UL ON CONVERT(VARCHAR(40), UL.RealPageId) = MS.Value  
-	WHERE MCT.Name = 'Organization'  
-		AND MST.Name = 'RealPageEmployeeAccessID'
+		INNER JOIN Enterprise.VW_DataImportMapping D ON(O.PartyId = D.PartyId)-- and d.CompanyMasterId > 1
+		INNER JOIN #tempAdminUsers CA ON CA.PartyId = o.PartyId
         AND	(@OrganizationName IS NULL OR O.Name LIKE '%' + @OrganizationName + '%')
 		AND	(@OrganizationID = 0 OR O.PartyId = @OrganizationID)
 		AND	(@Domain = 0 OR O.OrganizationDomainId = @Domain)
@@ -142,13 +159,13 @@ BEGIN
 		AND (@FilterByStatus IS NULL OR O.IsActive  IN (SELECT StatusId FROM @StatusFilter))
 		AND (@FilterByProduct IS NULL or o.PartyId in (
 			select distinct op.PartyId from 
-			Enterprise.OrganizationProduct op inner join Enterprise.Organization o on o.PartyId = op.PartyId
-			INNER JOIN Enterprise.VW_DataImportMapping D ON(O.PartyId = D.PartyId) and d.CompanyMasterId > 1
-			where ProductId in(SELECT ProductId FROM @ProductFilter) and op.ThruDate is null
+			Enterprise.OrganizationProduct op-- inner join Enterprise.Organization o on o.PartyId = op.PartyId
+			--INNER JOIN Enterprise.VW_DataImportMapping D ON(O.PartyId = D.PartyId)
+			where ProductId IN (SELECT ProductId FROM @ProductFilter) and op.ThruDate is null
 			)		
 		)
 
-	UPDATE t SET t.UsePrimaryProperties = MS.Value
+	UPDATE t SET t.EnablePrimaryPropertiesAndEnterpriseRoles = MS.Value
 	FROM #tempOrganizations t
 	INNER JOIN Enterprise.MasterConfiguration MC ON MC.AttributeId = t.OrganizationPartyId  
     INNER JOIN Enterprise.MasterConfigurationSetting MCS ON MC.MasterConfigurationId = MCS.MasterConfigurationId  
@@ -156,7 +173,7 @@ BEGIN
     INNER JOIN Enterprise.MasterSettingType MST ON MST.MasterSettingTypeId = MS.MasterSettingTypeId  
     INNER JOIN Enterprise.MasterConfigurationType MCT ON MCT.MasterConfigurationTypeId = MST.MasterConfigurationTypeId  
 	WHERE MCT.Name = 'Organization'  
-	AND MST.Name = 'UsePrimaryProperties'
+	AND MST.Name = 'EnablePrimaryPropertiesAndEnterpriseRoles'
 
 	SELECT @sortValue =
 		CASE @SortColumn
@@ -182,7 +199,7 @@ BEGIN
 			Products,
 			RealPageAccessUser,
 			RealPageAccessUserId,
-			UsePrimaryProperties,
+			EnablePrimaryPropertiesAndEnterpriseRoles,
 			TotalRecords, 
 			RowNumber
 		)
@@ -203,7 +220,7 @@ BEGIN
 			Products,
 			RealPageAccessUser,
 			RealPageAccessUserId,
-			UsePrimaryProperties,
+			EnablePrimaryPropertiesAndEnterpriseRoles,
 			COUNT(1) OVER () AS [TotalRecords],
 			CASE @sortValue
 				WHEN 100 THEN ROW_NUMBER() OVER (ORDER BY OrganizationName ASC)
@@ -229,7 +246,7 @@ BEGIN
 		Products,
 		RealPageAccessUser,
 		RealPageAccessUserId,
-		UsePrimaryProperties,
+		EnablePrimaryPropertiesAndEnterpriseRoles,
 		TotalRecords
 	FROM cteFilterOrganizations
 	ORDER BY RowNumber
@@ -238,4 +255,3 @@ BEGIN
 
 	drop table #tempOrganizations
 END
-GO

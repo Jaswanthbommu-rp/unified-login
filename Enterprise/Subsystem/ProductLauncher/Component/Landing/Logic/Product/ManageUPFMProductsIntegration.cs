@@ -628,58 +628,42 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				
 				var userPersona = _managePersona.GetPersona(userPersonaId);
 				var realPageId = userPersona.RealPageId;
-				var person = _managePerson.GetPerson(realPageId);
+                var person = _managePerson.GetPerson(realPageId);
 				var userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
 				var productInternalSettingList = GetProductSetting((int)ProductEnum.UnifiedPlatform);
 				var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, _upfmProductId);
 
 				// super user
 				// TODO what to do here?
-				if (IsSuperUser(userPersonaId))
-				{
-					WriteToDiagnosticLog($"ManageUPFMProductUser - new user is Super user with userPersonaId id - {userPersonaId}.");
-					IList<int> productIdList = _productRepository.GetProductIdsByCompany(userPersona.OrganizationPartyId);
-					var gbAllRoles = _productRepository.ListRolesForProductByParty(userPersona.OrganizationPartyId, productIdList, _productId) ?? new List<ProductRole>();
-					string superUserRoleId;
-					if (_productId == (int)ProductEnum.HospitalityService)
-					{
-						superUserRoleId = gbAllRoles.First(a => a.Name.Equals("Property Admin", StringComparison.OrdinalIgnoreCase)).ID;
-					}
-					else if (_productId == (int)ProductEnum.SelfGuidedTour)
-					{
-						superUserRoleId = gbAllRoles.First(a => a.Name.Equals("Implementations", StringComparison.OrdinalIgnoreCase)).ID;
-					}
-					else if(_productId == (int)ProductEnum.HandsOnTrainingSystem)
+                if (IsSuperUser(userPersonaId))
+                {
+                    WriteToDiagnosticLog($"ManageUPFMProductUser - new user is Super user with userPersonaId id - {userPersonaId}.");
+                    var productSettingList = GetProductSetting(_productId);
+                    var superUserRoleId = "0";
+                    if (productSettingList.Any(a => a.Name.Equals("SuperUserRoleId", StringComparison.OrdinalIgnoreCase)))
                     {
-						superUserRoleId = gbAllRoles.First(a => a.Name.Equals("Creator", StringComparison.OrdinalIgnoreCase)).ID;
-					}
-					else if (_productId == (int)ProductEnum.LeadScoring)
-					{
-						superUserRoleId = gbAllRoles.First(a => a.Name.Equals("Admin", StringComparison.OrdinalIgnoreCase)).ID;
-					}
-					else
-					{
-						superUserRoleId = gbAllRoles.First(a => a.Name.Equals("Portfolio Manager", StringComparison.OrdinalIgnoreCase)).ID;
-					}
-					List<string> propertiesToRemove = new List<string>();
-					if (userPropertyIdList?.Count > 0)
-					{
-						foreach (var prop in userPropertyIdList)
-						{
-							if (prop != -1)
-							{
-								propertiesToRemove.Add(prop.ToString());
-							}
-						}
-					}
+                        superUserRoleId = productSettingList.FirstOrDefault(a => a.Name.Equals("SuperUserRoleId", StringComparison.OrdinalIgnoreCase))?.Value;
+                    }
 
-					userAssignProductPropertyRole = new UPFMProductPropertyRole
-					{
-						PropertyList = new List<string> { "-1" },
-						RemovedPropertyList = propertiesToRemove,
-						RoleList = new List<string>() { superUserRoleId }
-					};
-				}
+                    List<string> propertiesToRemove = new List<string>();
+                    if (userPropertyIdList?.Count > 0)
+                    {
+                        foreach (var prop in userPropertyIdList)
+                        {
+                            if (prop != -1)
+                            {
+                                propertiesToRemove.Add(prop.ToString());
+                            }
+                        }
+                    }
+
+                    userAssignProductPropertyRole = new UPFMProductPropertyRole
+                    {
+                        PropertyList = new List<string> { "-1" },
+                        RemovedPropertyList = propertiesToRemove,
+                        RoleList = new List<string>() { superUserRoleId }
+                    };
+                }
 
 				var productLoginName = string.IsNullOrEmpty(_productUsername) ? userLogin.LoginName : _productUsername;
 
@@ -753,17 +737,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					/*
 					 *Unassign all the individual properties if property list has -1(all properties selection is true)
 					 */
-					if (userAssignProductPropertyRole.PropertyList.Contains("-1"))
+					if (userAssignProductPropertyRole.PropertyList != null && userAssignProductPropertyRole.PropertyList.Contains("-1"))
 					{
 						List<string> removePropList = new List<string>();
-						foreach (var propId in userPropertyIdList)
-						{
-							if (propId != -1)
-							{
-								removePropList.Add(propId.ToString());
-							}
-						}
-						unAssignedPropertyList.AddRange(removePropList);
+                        if (userPropertyIdList != null)
+                        {
+                            foreach (var propId in userPropertyIdList)
+                            {
+                                if (propId != -1)
+                                {
+                                    removePropList.Add(propId.ToString());
+                                }
+                            }
+                        }
+
+                        unAssignedPropertyList.AddRange(removePropList);
 					}
 
 					List<string> unassignedProperties = new List<string>();
