@@ -64,10 +64,13 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Shared.Models
 		[DataMember]
 		public string ApplicationTimestampOffset { get; set; }
 
+        [DataMember]
         public string ContextId { get; set; }
 
+        [DataMember]
         public int LogActivityTypeId { get; set; }
 
+        [DataMember]
         public string ContextReferenceId { get; set; }
     }
 }

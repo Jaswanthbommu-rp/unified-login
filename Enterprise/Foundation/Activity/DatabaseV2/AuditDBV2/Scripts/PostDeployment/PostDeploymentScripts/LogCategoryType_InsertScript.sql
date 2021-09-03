@@ -63,5 +63,16 @@ BEGIN
 INSERT [Logging].[LogCategoryType] (LogCategoryTypeId, [Name], [Description]) VALUES ( '12','CompanySetup','Company activities, such as create and product enablement' ) 
 END 
 GO
+IF NOT EXISTS (SELECT 1 FROM [Logging].[LogCategoryType] WHERE [Name] = 'Internal Settings') 
+BEGIN 
+INSERT [Logging].[LogCategoryType] (LogCategoryTypeId, [Name], [Description]) VALUES ( '13','Internal Settings','' ) 
+END 
+GO
+
+IF NOT EXISTS (SELECT 1 FROM [Logging].[LogCategoryType] WHERE [Name] = 'Internal Templates') 
+BEGIN 
+INSERT [Logging].[LogCategoryType] (LogCategoryTypeId, [Name], [Description]) VALUES ( '14','Internal Templates','' ) 
+END 
+GO
 
 

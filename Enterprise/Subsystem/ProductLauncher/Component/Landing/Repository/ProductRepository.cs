@@ -1016,6 +1016,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                     repositoryResponse.ErrorMessage = "CreateProductSetting Error: UpdatePersonaConfiguration failed.";
                                     WriteToLog(LogEventLevel.Error, repositoryResponse.ErrorMessage);
                                 }
+                                else
+                                {
+                                    var productSettings = _productInternalSettingRepository.GetProductSettingByType("WarnOnProductError");
+                                    if (productSettings.Any(p => p.ProductId == ProductId && p.Value == "1"))
+                                    {
+                                        param = new
+                                        {
+                                            PersonaId = PersonaId,
+                                            ProductId = ProductId,
+                                        };
+                                        repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_ManagePersonaProductError, param);
+                                        if (repositoryResponse.Id == 0)
+                                        {
+                                            repositoryResponse.ErrorMessage = "CreateProductSetting Error: ManagePersonaProductError failed.";
+                                            WriteToLog(LogEventLevel.Error, repositoryResponse.ErrorMessage);
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
