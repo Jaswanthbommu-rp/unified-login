@@ -131,5 +131,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 		/// User Enterprise Role Name
 		/// </summary>		
 		string EntepriseRoleName { get; set; }
+		bool PersonaHasProductError { get; set; }
 	}
 }
