@@ -1456,32 +1456,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             };
                             PartyRelationship relationshipType = repository.GetOne<PartyRelationship>(StoredProcNameConstants.SP_GetPartyRelationshipByRealPageId, paramRelType);
 
-                            int unlinkRoleTypeIdFrom = relationshipType.RoleTypeIdFrom;
-                            int linkRoleTypeIdFrom = (int)UserRoleType.ExternalUser;
-                            int roleTypeIdTo = relationshipType.RoleTypeIdTo;
+                            if(relationshipType != null) { 
+                                int unlinkRoleTypeIdFrom = relationshipType.RoleTypeIdFrom;
+                                int linkRoleTypeIdFrom = (int)UserRoleType.ExternalUser;
+                                int roleTypeIdTo = relationshipType.RoleTypeIdTo;
 
-                            //Update the User Type  
-                            if (unlinkRoleTypeIdFrom != linkRoleTypeIdFrom && relationshipType.RoleTypeIdFrom != (int)UserRoleType.ExternalUser)
-                            {
-                                dynamic paramRole = new
+                                //Update the User Type  
+                                if (unlinkRoleTypeIdFrom != linkRoleTypeIdFrom && relationshipType.RoleTypeIdFrom != (int)UserRoleType.ExternalUser)
                                 {
-                                    personRealPageId,
-                                    userPreviousOrg.OrganizationRealPageId,
-                                    unlinkRoleTypeIdFrom,
-                                    linkRoleTypeIdFrom,
-                                    roleTypeIdTo
-                                };
+                                    dynamic paramRole = new
+                                    {
+                                        personRealPageId,
+                                        userPreviousOrg.OrganizationRealPageId,
+                                        unlinkRoleTypeIdFrom,
+                                        linkRoleTypeIdFrom,
+                                        roleTypeIdTo
+                                    };
 
-                                RepositoryResponse RoleId = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdatePersonToOrganization, paramRole);
-                                if (RoleId.Id == 0)
-                                {
-                                    repository.UnitOfWork.Rollback();
-                                    errorStatus.Success = false;
-                                    errorStatus.ErrorCode = "User.CreateUser.29";
-                                    errorStatus.ErrorMsg = "Unable to set new user type.";
-                                    createUserResponse.Status = errorStatus;
-                                    createUserResponse.UserStatus = errorStatus.ErrorMsg;
-                                    return createUserResponse;
+                                    RepositoryResponse RoleId = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdatePersonToOrganization, paramRole);
+                                    if (RoleId.Id == 0)
+                                    {
+                                        repository.UnitOfWork.Rollback();
+                                        errorStatus.Success = false;
+                                        errorStatus.ErrorCode = "User.CreateUser.29";
+                                        errorStatus.ErrorMsg = "Unable to set new user type.";
+                                        createUserResponse.Status = errorStatus;
+                                        createUserResponse.UserStatus = errorStatus.ErrorMsg;
+                                        return createUserResponse;
+                                    }
                                 }
                             }
 
