@@ -702,6 +702,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 						roleTemplate = _productRepository.GetEnterpriseRoleForPersona(persona.PersonaId);
 						profileDetail.RoleTemplateId = roleTemplate?.RoleTemplateId ?? 0;
 						profileDetail.EntepriseRoleName = roleTemplate?.RoleTemplateName ?? "";
+						profileDetail.PersonaHasProductError = _productRepository.GetPersonaHasProductError(persona.PersonaId);
 					}
 				}
 				else

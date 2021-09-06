@@ -1,4 +1,5 @@
-﻿using RP.Enterprise.Foundation.DataAccess.Component;
+﻿using Newtonsoft.Json;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
@@ -673,8 +674,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <returns></returns>
         private OrganizationStatus CheckPrimaryOrganizationStatus(UserLoginOnly userLogin, DateTime? lastLoginDate, int userTypeId, ManageProfile manageProfile, DefaultUserClaim adminUserClaim)
         {
+            var logData = new Dictionary<string, object>();
             var primaryOrgStatus = _userLoginRepository.GetUserOrganizationWithStatus(userLogin.UserId, lastLoginDate, 0, true);
             var organization = _organizationRepository.GetOrganization(realPageId: primaryOrgStatus.RealPageId);
+
+            logData = new Dictionary<string, object> { { "userLogin", userLogin } };
+            WriteToLog(LogEventLevel.Debug, $"ManageUserLogin.CheckPrimaryOrganizationStatus at beginning of method for user with json", logData);
 
             if ((primaryOrgStatus.StatusTypeId == (int)UserUiStatusType.Pending || primaryOrgStatus.StatusTypeId == (int)UserUiStatusType.ForceResetPassword) &&
                 primaryOrgStatus.StatusThruDate != null &&
@@ -683,6 +688,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 _userLoginRepository.UpdateUserStatusByCompany(userLogin.RealPageId, primaryOrgStatus.PartyId, (int)UserUiStatusType.Expired, primaryOrgStatus.FromDate, null);
                 DefaultUserClaim currentUserClaim = GetCurrentUserClaim(manageProfile, organization);
+                WriteToLog(LogEventLevel.Debug, $"ManageUserLogin.CheckPrimaryOrganizationStatus: calling AddActivityLog - pending users who are not activated before status thru date then update status as expire - status type - {UserUiStatusType.Expired.ToString()}");
                 AddActivityLog(userLogin, UserUiStatusType.Expired.ToString(), ProductEnum.UnifiedPlatform.ToEnumDescription(), currentUserClaim);
             }
 
@@ -715,7 +721,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     {
                         message = $"Unable to send Welcome Email to user {userLogin.LoginName} by automated system.";
                     }
-
+                    WriteToLog(LogEventLevel.Debug, $"ManageUserLogin.CheckPrimaryOrganizationStatus: email notification - {message}");
                     if (organization.RealPageId != DefaultUserClaim.ExternalCompanyRealPageId)
                     {
                         LogActivity.WriteActivity(new ActivityDetails
@@ -739,6 +745,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     DefaultUserClaim currentUserClaim = GetCurrentUserClaim(manageProfile, organization);
                     string message = "{0} {1} was {2} by the system due to the scheduled User effective date "+ userFromDate;
+                    WriteToLog(LogEventLevel.Debug, $"ManageUserLogin.CheckPrimaryOrganizationStatus: calling AddActivityLog - Future user and user never logged in for status type - {statusType}");
                     AddActivityLog(userLogin, statusType, ProductEnum.UnifiedPlatform.ToEnumDescription(), currentUserClaim, message);
                 }
                 primaryOrgStatus = _userLoginRepository.GetUserOrganizationWithStatus(userLogin.UserId, lastLoginDate, 0, true);
@@ -800,10 +807,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         {
             try
             {
+                var logData = new Dictionary<string, object>();
                 DefaultUserClaim currentUserClaim = GetDefaultUserClaim();
                 //IManagePerson _managePerson = new ManagePerson();
                 var profileLogic = new ManageProfile(_defaultUserClaim);
-
+                logData = new Dictionary<string, object> { { "userLogins", userLogins } };
+                WriteToLog(LogEventLevel.Debug, $"ManageUserLogin.ProcessFutureUserLogins at beginning of method for user with json", logData);
                 foreach (var user in userLogins)
                 {
                     // Get Userlogin to pass Data
@@ -812,6 +821,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                     var orgStatus = _userLoginRepository.GetUserOrganizationWithStatus(userLogin.UserId, userLogin.LastLogin, org.PartyId, false);
                     var orgList = _userLoginRepository.ListOrganizationByEnterpriseUserId(user.UserRealPageId, null);
+
+                    logData = new Dictionary<string, object> { { "userLoginOnly", userLogin }, { "userOrganizationList", orgList } };
+                    WriteToLog(LogEventLevel.Debug, $"ManageUserLogin.ProcessFutureUserLogins : Getting info for process future user with login name { userLogin.LoginName} and user realpageId {user.UserRealPageId}", logData);
 
                     if (orgStatus != null)
                     {
@@ -833,6 +845,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                                 !userLogin.Is3rdPartyIDP)
                             {
                                 _userLoginRepository.UpdateUserStatusByCompany(userLogin.RealPageId, orgStatus.PartyId, (int)UserUiStatusType.Expired, orgStatus.FromDate, null);
+                                WriteToLog(LogEventLevel.Debug, $"ManageUserLogin.ProcessFutureUserLogins: calling AddActivityLog - pending users who are not activated before status thru date then update status as expire - status type - {UserUiStatusType.Expired.ToString()}");
                                 AddActivityLog(userLogin, UserUiStatusType.Expired.ToString(), ProductEnum.UnifiedPlatform.ToEnumDescription(), currentUserClaim);
                             }
 
@@ -873,7 +886,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                                     {
                                         message = $"Unable to send Welcome Email to user {profileDetail.userLogin.LoginName} by automated system.";
                                     }
-
+                                    WriteToLog(LogEventLevel.Debug, $"ManageUserLogin.ProcessFutureUserLogins: email notification - {message}");
                                     LogActivity.WriteActivity(new ActivityDetails
                                     {
                                         LogActivityTypeName = LogActivityTypeConstants.EMAIL_SENT,
@@ -888,9 +901,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                                         ToUserLoginId = profileDetail.userLogin.UserId
                                     });
                                 }
-
                                 _userLoginRepository.UpdateUserStatusByCompany(userLogin.RealPageId, org.PartyId, statusTypeId, userFromDate, thruUtcDateTime);
                                 string activityMessage = "{0} {1} was {2} by the system due to the scheduled User effective date " + userFromDate;
+                                WriteToLog(LogEventLevel.Debug, $"ManageUserLogin.ProcessFutureUserLogins: calling AddActivityLog - Future user and user never logged in for status type - {statusType}");
                                 AddActivityLog(userLogin, statusType, ProductEnum.UnifiedPlatform.ToEnumDescription(), currentUserClaim, activityMessage);
                             }
                         }
@@ -1652,6 +1665,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 ToUserLastName = profile.LastName,
                 ToUserRealpageId = profile.userLogin.RealPageId.ToString()
             });
+        }
+        /// <summary>
+        /// Used to write to the log
+        /// </summary>
+        /// <param name="logType"></param>
+        /// <param name="message"></param>
+        /// <param name="logData"></param>
+        /// <param name="exception"></param>
+        private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
+        {
+            string correlationId = "";
+            if (_defaultUserClaim != null)
+            {
+                correlationId = (_defaultUserClaim.CorrelationId != Guid.Empty) ? _defaultUserClaim.CorrelationId.ToString() : "";
+            }
+            var logger = Log.Logger;
+            if (logData?.Keys != null)
+            {
+                logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
+            }
+            logger = logger.ForContext("ProductModule", this.GetType());
+            logger = logger.ForContext("CorrelationId", correlationId);
+            logger.Write(logType, exception, message);
         }
         #endregion
     }

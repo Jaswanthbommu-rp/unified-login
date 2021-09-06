@@ -109,9 +109,10 @@
         public const string SP_GetDefaultPersona = "Person.GetDefaultPersona";
         public const string SP_ListUsers = "Person.ListPersonsForSupportTool";
 		public const string SP_GetNotificationEmailForPerson = "Person.GetNotificationEmailForPerson";
+        public const string SP_GetPersonaProductError = "Person.GetPersonaProductError";
 
-		//Persona
-		public const string SP_GetPersona = "Person.GetPersona";
+        //Persona
+        public const string SP_GetPersona = "Person.GetPersona";
         public const string SP_GetPersonaEnvironment = "Person.ListPersonaEnvironmentType";
         public const string SP_CreatePersona = "Person.CreatePersona";
         public const string SP_CreatePersonaType = "Person.CreatePersonaType";

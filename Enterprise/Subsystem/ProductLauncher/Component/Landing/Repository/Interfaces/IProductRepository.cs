@@ -304,5 +304,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <returns></returns>
         List<int> GetEnterpriseRoleDeletedProductsByRoleTemplateId(int roleTemplateId);
         List<int> GetEnterpriseRoleNewProductsByRoleTemplateId(int roleTemplateId);
+        /// <summary>
+        /// GetPersonaHasProductError
+        /// </summary>
+        /// <param name="personaId"></param>
+        /// <returns></returns>
+        bool GetPersonaHasProductError(long personaId);
     }
 }
