@@ -637,8 +637,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 						profiledetail.userLogin.IsActive = true;
 						profiledetail.userLogin.IsLocked = false;
 						profiledetail.userLogin.Status = UserUiStatusType.Active;
-						//profiledetail.EnterpriseRoleName = 
-
+						
 						profiledetail.userLogin = _manageUserLogin.GetUserLogin((UserLogin)profiledetail.userLogin, _userClaim.OrganizationPartyId);
 						return profiledetail;
 					},

@@ -1778,7 +1778,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                                 {
                                     property.IsAssigned = true;
                                 }
-                                property.InstanceId = instanceExists.PropertyInstanceSourceId;
+								else if (upfmProperty != null && (!upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
+								{
+									property.IsAssigned = false;
+								}
+								property.InstanceId = instanceExists.PropertyInstanceSourceId;
                             }
                             else if (isPrimaryProperty)
                             {
@@ -1811,6 +1815,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             {
                                 property.IsAssigned = true;
                             }
+                            else if (upfmProperty != null && (!upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
+                            {
+                                property.IsAssigned = false;
+                            }
                             property.InstanceId = instanceExists.PropertyInstanceSourceId;
                         }
                         else if (isPrimaryProperty)
@@ -1833,6 +1841,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             if (upfmProperty != null && (upfmProperty.id.Contains("-1") || upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
                             {
                                 property.IsAssigned = true;
+                            }
+                            else if (upfmProperty != null && (!upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
+                            {
+                                property.IsAssigned = false;
                             }
                             property.InstanceId = instanceExists.PropertyInstanceSourceId.ToLower();
                         }
@@ -1857,6 +1869,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             {
                                 property.IsAssigned = true;
                             }
+                            else if (upfmProperty != null && (!upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
+                            {
+                                property.IsAssigned = false;
+                            }
                             property.InstanceId = instanceExists.PropertyInstanceSourceId.ToLower();
                         }
                         else if (isPrimaryProperty)
@@ -1879,6 +1895,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             if (upfmProperty != null && (upfmProperty.id.Contains("-1") || upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
                             {
                                 property.IsAssigned = true;
+                            }
+                            else if (upfmProperty != null && (!upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
+                            {
+                                property.IsAssigned = false;
                             }
                             property.InstanceId = instanceExists.PropertyInstanceSourceId.ToLower();
                         }
@@ -1903,6 +1923,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             {
                                 property.IsAssigned = true;
                             }
+                            else if (upfmProperty != null && (!upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
+                            {
+                                property.IsAssigned = false;
+                            }
                             property.InstanceId = instanceExists.PropertyInstanceSourceId.ToLower();
                         }
                         else if (isPrimaryProperty)
@@ -1926,6 +1950,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             {
                                 property.IsAssigned = true;
                             }
+                            else if (upfmProperty != null && (!upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
+                            {
+                                property.IsAssigned = false;
+                            }
                             property.InstanceId = instanceExists.PropertyInstanceSourceId.ToLower();
                         }
                         else if (isPrimaryProperty)
@@ -1948,6 +1976,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             if (upfmProperty != null && (upfmProperty.id.Contains("-1") || upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
                             {
                                 property.IsAssigned = true;
+                            }
+                            else if (upfmProperty != null && (!upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
+                            {
+                                property.IsAssigned = false;
                             }
                             property.InstanceId = instanceExists.PropertyInstanceSourceId.ToLower();
                         }

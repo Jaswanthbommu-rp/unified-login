@@ -182,5 +182,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 		/// User Enterprise Role Template Id
 		/// </summary>
 		public int RoleTemplateId { get; set; }
+		/// <summary>
+		/// Persona Has Product Assignment Error
+		/// </summary>
+		public bool PersonaHasProductError { get; set; }
 	}
 }

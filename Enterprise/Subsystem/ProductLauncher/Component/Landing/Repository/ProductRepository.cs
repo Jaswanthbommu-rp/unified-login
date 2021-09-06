@@ -2001,6 +2001,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
 
         /// <summary>
+        /// Returns  persona has any product error.		
+        /// </summary> 
+        public bool GetPersonaHasProductError(long personaId)
+        {            
+            using (var repository = GetRepository())
+            {
+                return repository.GetOne<bool>(StoredProcNameConstants.SP_GetPersonaProductError, new { PersonaId = personaId });
+            }            
+        }
+
+        /// <summary>
 		/// GetRoleTemplateProductRoleMapping
 		/// </summary>
 		/// <param name="roleTemplateId"></param>

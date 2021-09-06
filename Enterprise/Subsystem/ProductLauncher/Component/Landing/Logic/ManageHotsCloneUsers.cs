@@ -189,9 +189,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			catch (Exception ex)
 			{
 				WriteToLog(LogEventLevel.Error,
-					   $"{GetType()} - Error while cloning users for." +
-					   $" Clone Customer Company {cloneUsers.CloneCustomerUPFMId} , " +
-					   $" BaseLine Customer Company PartyId {basePartyId}", exception: ex);
+					   $"ManageHotsCloneUsers - Error while cloning users for " +
+					   $" Clone Company PartyId {clonePartyId} , " +
+					   $" BaseLine Company PartyId {basePartyId}", exception: ex);
 				return clonedUsers;
 			}
 

@@ -350,7 +350,7 @@ BEGIN
 	FROM Person.Persona pe  
 		INNER JOIN Ident.UserLoginPersona iulp ON (pe.UserLoginPersonaId = iulp.UserLoginPersonaId)  
 		INNER JOIN Ident.UserLogin ul ON iulp.UserLoginId = ul.UserId  
-		INNER JOIN Enterprise.StatusType est ON iulp.StatusTypeId = est.StatusTypeId  
+		INNER JOIN Enterprise.StatusType est ON iulp.StatusTypeId = est.StatusTypeId  		
 		LEFT OUTER JOIN @filterStatus fs ON (est.StatusTypeId = fs.StatusTypeId)  
 	WHERE iulp.OrganizationPartyId = @PartyId  
 	AND  pe.personaId  NOT IN ( SELECT ISNULL(PersonaId, 0) FROM @HoldPersona)  
@@ -459,6 +459,7 @@ BEGIN
 		PasswordModifiedDate,
 		EntepriseRoleName,
 		RoleTemplateId,
+		PersonaHasProductError,
 		OffsetMinutes,
 		TotalRecords,
 		RowNumber
@@ -497,6 +498,7 @@ BEGIN
 			 ulp.PasswordModifiedDate, 
 			 UER.EnterpriseRoleName,
 			 UER.RoleTemplateId,
+			 CASE WHEN (PPE.PersonaId > 0) THEN 1 ELSE 0 END AS 'PersonaHasProductError',
 			 @OffsetMinutes,  
 			 COUNT(1) OVER () AS TotalRecords,
 			 CASE @sortValue  
@@ -528,6 +530,7 @@ BEGIN
 			 LEFT OUTER JOIN #CustomFields cf ON (cf.UserLoginPersonaId = ulp.UserLoginPersonaId)  
 			 LEFT OUTER JOIN Enterprise.UserEmployeeId UE ON ulp.UserLoginPersonaId = UE.UserLoginPersonaId  
 			 LEFT OUTER JOIN #UserEnterpriseRole UER  ON ulp.PersonaId  = UER.PersonaId
+			 LEFT OUTER JOIN Enterprise.PersonaProductError PPE ON ulp.PersonaId  = PPE.PersonaId
 		  WHERE  (  
 				(@filterName IS NULL)  
 				OR (CHARINDEX(@filterName, FirstName + ' ' + LastName, 1) > 0)  
@@ -552,6 +555,7 @@ BEGIN
 				CustomField,
 				EntepriseRoleName,
 				RoleTemplateId,
+				PersonaHasProductError,
 				UserId,
 				LoginName,
 				LastLogin,
