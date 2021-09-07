@@ -1551,9 +1551,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         productInternalSetting = productInternalSettingList.FirstOrDefault(item => item.Name.Equals("ProductNotAvailableForRegularUserNoEmail", StringComparison.OrdinalIgnoreCase));
                         s.ProductNotAvailableForRegularUserNoEmail = (productInternalSetting != null) ? productInternalSetting.Value.Trim() == "1" : true;
-                        
-                        var orgProductSetting = ProductSettingsByOrganizationList.FirstOrDefault(item => item.ProductId == s.ProductId && item.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase));
-                        s.UsePrimaryProperties = (orgProductSetting != null) ? orgProductSetting.Value.Trim() == "1" : false;
+
+                        if (f.ProductTypeId == 400)
+                        {
+                            var orgProductSetting = ProductSettingsByOrganizationList.FirstOrDefault(item => item.ProductId == (int)ProductEnum.AssetOptimizer && item.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase));
+                            s.UsePrimaryProperties = (orgProductSetting != null) ? orgProductSetting.Value.Trim() == "1" : false;
+                        }
+                        else
+                        {
+                            var orgProductSetting = ProductSettingsByOrganizationList.FirstOrDefault(item => item.ProductId == s.ProductId && item.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase));
+                            s.UsePrimaryProperties = (orgProductSetting != null) ? orgProductSetting.Value.Trim() == "1" : false;
+                        }
 
                         productInternalSetting = productInternalSettingList.FirstOrDefault(item => item.Name.Equals("ShowInRoleTemplate", StringComparison.OrdinalIgnoreCase));
                         s.ShowInRoleTemplate = (productInternalSetting != null) && (productInternalSetting.Value.Trim() == "1" ? true : false) ;
