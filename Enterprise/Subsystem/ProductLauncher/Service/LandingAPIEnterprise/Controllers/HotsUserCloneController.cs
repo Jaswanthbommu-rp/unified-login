@@ -115,9 +115,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 if (!string.IsNullOrEmpty(cloneUsers.CloneCustomerUPFMId.ToString()))
                 {
                     //IManageOrganization manageOrganization = new ManageOrganization(_userClaims);
-                    Guid AdminCreatorRealPageId = _manageOrganization.GetOrganizationAdminUserRealPageId(cloneUsers.CloneCustomerUPFMId);
+                    Guid adminCreatorRealPageId = _manageOrganization.GetOrganizationAdminUserRealPageId(cloneUsers.CloneCustomerUPFMId);
                     //recreate clams
-                    if (AdminCreatorRealPageId == Guid.Empty)
+                    if (adminCreatorRealPageId == Guid.Empty)
                     {
                         var errorResponse = new ErrorResponse { Errors = new List<Error>() };
                         errorResponse.Errors.Add(new Error
@@ -127,7 +127,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                         return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
                     }
 
-                    _userClaims = RecreateClaimsForClient(AdminCreatorRealPageId);
+                    _userClaims = RecreateClaimsForClient(adminCreatorRealPageId);
                     _managePersona = new ManagePersona(_userClaims);
                     _manageProduct = new ManageProduct(_userClaims);
 

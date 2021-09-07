@@ -38,12 +38,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		// get user assigned products data and replace properties with clone company properties and generate product bach data
 		// call sp to create user
 
-		private IProductRepository _productRepository;
 		private IProductInternalSettingRepository _productInternalSettingRepository;
-		private IManagePersona _managePersona;
 		private IHOTSCloneUserRepository _hotsCloneUserRepository;
-		private IOrganizationRepository _organizationRepository;
-		private IManageProfile _manageProfile;
 		private DefaultUserClaim _defaultUserClaim;
 		private IManageProduct _manageProduct;
 		readonly ITokenHelper _tokenHelper;
@@ -52,20 +48,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		/// <summary>
 		/// Used for dependency injection
 		/// </summary> 
-		public ManageHotsCloneUsers(IProductRepository productRepository,
-									IProductInternalSettingRepository productInternalSettingRepository,
-									IManagePersona managePersona,
+		public ManageHotsCloneUsers(IProductInternalSettingRepository productInternalSettingRepository,
 									IHOTSCloneUserRepository hotsCloneUserRepository,
-									IManageOrganization manageOrganization,
-									IManageProfile manageProfile,
 									DefaultUserClaim userClaim)
 		{
-			_productRepository = productRepository;
 			_productInternalSettingRepository = productInternalSettingRepository;
-			_managePersona = managePersona;
 			_hotsCloneUserRepository = hotsCloneUserRepository;
-			_organizationRepository = new OrganizationRepository();
-			_manageProfile = manageProfile;
 			_defaultUserClaim = userClaim;
 			_tokenHelper = new TokenHelper();
 		}
@@ -75,12 +63,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		/// </summary>
 		public ManageHotsCloneUsers(IRepository repository, DefaultUserClaim userClaim, HttpMessageHandler messageHandler)
 		{
-			_productRepository = new ProductRepository(repository, userClaim);
 			_productInternalSettingRepository = new ProductInternalSettingRepository(repository);
-			_managePersona = new ManagePersona(repository, userClaim, messageHandler);
 			_hotsCloneUserRepository = new HOTSCloneUserRepository(repository);
-			_organizationRepository = new OrganizationRepository(repository);
-			_manageProfile = new ManageProfile(userClaim);
 			_manageProduct = new ManageProduct(repository, userClaim, messageHandler);
             _tokenHelper = new TokenHelper(repository);
             _defaultUserClaim = userClaim;
@@ -88,12 +72,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 		public ManageHotsCloneUsers(DefaultUserClaim userClaim)
 		{
-			_productRepository = new ProductRepository();
 			_productInternalSettingRepository = new ProductInternalSettingRepository();
-			_managePersona = new ManagePersona();
 			_hotsCloneUserRepository = new HOTSCloneUserRepository();
-			_organizationRepository = new OrganizationRepository();
-			_manageProfile = new ManageProfile(userClaim);
 			_manageProduct = new ManageProduct(userClaim);
             _tokenHelper = new TokenHelper();
 			_defaultUserClaim = userClaim;
@@ -174,7 +154,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 							}
                         }
 
-						var hotsuser = _hotsCloneUserRepository.CreateUser(clonePartyId, user, profileDetail, pbData);
+						var hotsuser = _hotsCloneUserRepository.CreateUser(_defaultUserClaim, clonePartyId, user, profileDetail, pbData);
                         if (hotsuser != null)
                         {
                             clonedUsers.Users.Add(hotsuser);
