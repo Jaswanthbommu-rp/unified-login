@@ -1153,7 +1153,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Controllers
 				}
 
 				if (string.IsNullOrEmpty(message))
-					message = $"User {_userClaims.FirstName} {_userClaims.LastName} accessed product {booksProductDetail.Name}.";
+				{
+					if(string.IsNullOrEmpty(_userClaims.ImpersonatedByName))
+					{
+						message = $"User {_userClaims.FirstName} {_userClaims.LastName} accessed product {booksProductDetail.Name}.";
+					}
+					else
+					{
+						message = $"RealPage user {_userClaims.ImpersonatedByName} accessed product {booksProductDetail.Name}.";
+					}
+				}
 
 				LogActivity.WriteActivity(new ActivityDetails
 				{

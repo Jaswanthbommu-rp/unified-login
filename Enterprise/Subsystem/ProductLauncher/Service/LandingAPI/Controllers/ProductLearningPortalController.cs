@@ -285,7 +285,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 var productRepository = new ProductRepository();
                 var booksProductDetail = productRepository.GetBooksMasterProductDetail((int)ProductEnum.ProductLearningPortal);
-              
+                string _message = string.Empty;
+                if (string.IsNullOrEmpty(_userClaims.ImpersonatedByName))
+                {
+                    _message = $"User {_userClaims.FirstName} {_userClaims.LastName} accessed product {booksProductDetail.Name}.";
+                }
+                else
+                {
+                    _message = $"RealPage user {_userClaims.ImpersonatedByName} accessed product {booksProductDetail.Name}.";
+                }
                 LogActivity.WriteActivity(new ActivityDetails
                 {
                     LogActivityTypeName = "Product Access",
@@ -293,7 +301,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     CorrelationId = _userClaims.CorrelationId.ToString(),
                     BooksMasterOrganizationId = _userClaims.OrganizationMasterId,
                     OrganizationPartyId = _userClaims.OrganizationPartyId,
-                    Message = $"User {_userClaims.FirstName} {_userClaims.LastName} accessed product {booksProductDetail.Name}.",
+                    Message = _message,
 
                     FromUserLoginName = _userClaims.LoginName,
                     FromUserLoginId = _userClaims.UserId,

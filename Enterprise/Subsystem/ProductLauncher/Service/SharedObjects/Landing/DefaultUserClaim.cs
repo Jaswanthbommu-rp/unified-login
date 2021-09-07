@@ -65,7 +65,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 			{
 				ImpersonatedBy = impersonatedBy;
 			}
-		}
+
+            ImpersonatedByName = (from nvp in claimsPrincipal.Claims where nvp.Type.Equals("ImpersonatedByName", StringComparison.OrdinalIgnoreCase) select nvp.Value).FirstOrDefault();
+            
+        }
 
 		/// <summary>
 		/// The users id
@@ -150,5 +153,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 	    /// The id used to track the user that is impersonating a user
 	    /// </summary>
 	    public Guid ImpersonatedBy { get; set; }
-	}
+
+        /// <summary>
+	    /// The id used to track the user that is impersonating a user
+	    /// </summary>
+	    public string ImpersonatedByName { get; set; }
+    }
 }
