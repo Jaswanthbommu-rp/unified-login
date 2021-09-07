@@ -21,5 +21,10 @@
         /// The company id the setting belongs, null should be used for global settings
         /// </summary>
         public string PartyId { get; set; } = null;
+
+        /// <summary>
+        /// Created by id
+        /// </summary>
+        public long CreatedBy { get; set; }
     }
 }

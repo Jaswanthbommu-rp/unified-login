@@ -1774,10 +1774,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             //Add use primary properties setting
             MasterConfigurationSetting masterConfigurationSetting = new MasterConfigurationSetting
             {
-                ConfigurationType = "Organization",
-                SettingType = "EnablePrimaryPropertiesAndEnterpriseRoles",
                 PartyId = partyId.ToString(),
-                Value = value.ToString()
+                Value = value.ToString(),
+                CreatedBy = _defaultUserClaim.UserId
             };
 
             var configurationSettingResponse = _configurationSettingRepository.CreateUsePrimaryPropertyMasterConfigurationSetting(masterConfigurationSetting);

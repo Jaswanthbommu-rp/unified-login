@@ -36,7 +36,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         IOrganizationRepository _organizationRepository;
         IManageProfile _manageProfile;
         IManageUserRoleRight _manageUserRoleRight;
-	    DefaultUserClaim _defaultUserClaim;
+        IUnifiedSettingsRepository _unifiedSettingsRepository;
+        DefaultUserClaim _defaultUserClaim;
 
         private readonly object rightLock = new object();
 
@@ -54,6 +55,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _organizationRepository = new OrganizationRepository(repository);
             _manageProfile = new ManageProfile(repository, userClaim);
             _manageUserRoleRight = new ManageUserRoleRight(repository, userClaim);
+            _unifiedSettingsRepository = new UnifiedSettingsRepository(repository);
             _defaultUserClaim = userClaim;
         }
 
@@ -70,7 +72,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _organizationRepository = new OrganizationRepository();
             _manageProfile = new ManageProfile(userClaim);
             _manageUserRoleRight = new ManageUserRoleRight();
-	        _defaultUserClaim = userClaim;
+            _unifiedSettingsRepository = new UnifiedSettingsRepository();
+            _defaultUserClaim = userClaim;
         }
 
         #endregion
@@ -575,7 +578,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var companyProductSettings = _productRepository.GetProductSettings(upfmCompanyId);
 
             int organizationUsePrimaryProperties = -1;
-            int.TryParse(_organizationRepository.GetOrganizationSettingValue("EnablePrimaryPropertiesAndEnterpriseRoles", organizationPartyId), out organizationUsePrimaryProperties);
+            //int.TryParse(_organizationRepository.GetOrganizationSettingValue("EnablePrimaryPropertiesAndEnterpriseRoles", organizationPartyId), out organizationUsePrimaryProperties);
+            var settings = _unifiedSettingsRepository.GetUnifiedSettings(organizationPartyId, "Company");
+
+            if (settings.Any(a => a.Name.Equals("PrimaryPropertyEnterpriseRole", StringComparison.OrdinalIgnoreCase)))
+            {
+                var settingValue = settings.FirstOrDefault(a => a.Name.Equals("PrimaryPropertyEnterpriseRole", StringComparison.OrdinalIgnoreCase)).Value;
+                int.TryParse(settingValue, out organizationUsePrimaryProperties);
+            }
+
 
             foreach (var product in products)
             {

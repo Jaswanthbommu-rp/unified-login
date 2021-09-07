@@ -29,6 +29,7 @@ BEGIN
 		Declare @mappingValue varchar(100)
 		Declare @editable bit,@hidden bit
 		Declare @categoryId int
+		Declare @RightId bigint
 
 		Select @categoryId = SettingCategoryTypeId 
 		From [Settings].[SettingCategoryType] 
@@ -112,8 +113,26 @@ BEGIN
 						And PartyId = @PartyId
 						And SettingCategoryTypeId = @categoryId
 					END
-				END
-				
+					SELECT @RightId = RightId from [Security].[Right] where RightName = 'PrimaryPropertyEnterpriseRole';
+					SELECT @mappingValue = MappingValue FROM [Settings].[OrganizationSettings]
+								WHERE MappingName = 'PrimaryPropertyEnterpriseRole'
+								And PartyId = @PartyId
+								And SettingCategoryTypeId = @categoryId
+					 
+					IF  @mappingValue IS NOT NULL AND @mappingValue = '1' AND NOT EXISTS (SELECT 1 FROM [Security].[OrganizationOverRideRight]
+								WHERE RightId = @RightId 
+								And OrgPartyId = @PartyId)
+					BEGIN 
+						INSERT INTO [Security].[OrganizationOverRideRight](RightId, OrgPartyId, VisibilityStatusId, CreatedBy, CreatedDate)
+						SELECT @RightId, @PartyId, 9, @CreatedBy, GETUTCDATE()
+					END
+					ELSE
+					BEGIN
+						DELETE FROM [Security].[OrganizationOverRideRight]
+						WHERE RightId = @RightId 
+						AND OrgPartyId = @PartyId
+					END					
+				END				
 			END
 			set @Current_ID = @Current_ID + 1
 		end

@@ -147,11 +147,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     organization.organizationType = orgType != null ? new OrganizationType {Name = orgType.Name, OrganizationTypeId = orgType.OrganizationTypeId, CreateDate = orgType.CreateDate} : new OrganizationType();
                     var orgDomain = ListOrganizationDomain().FirstOrDefault(d => d.OrganizationDomainId == organization.OrganizationDomainId);
                     organization.OrganizationDomain = orgDomain != null ? new OrganizationDomain {OrganizationDomainId = orgDomain.OrganizationDomainId, Name = orgDomain.Name, CreateDate = orgDomain.CreateDate} : new OrganizationDomain();
-                    string usePrimaryPropertySettingValue = GetOrganizationSettingValue("EnablePrimaryPropertiesAndEnterpriseRoles", organization.PartyId);
-                    if (!string.IsNullOrEmpty(usePrimaryPropertySettingValue))
-                    {
-                        organization.EnablePrimaryPropertiesAndEnterpriseRoles = Convert.ToInt32(usePrimaryPropertySettingValue);
-                    }
                 }
                 return organization;
             }
@@ -174,12 +169,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         var orgType = ListOrganizationType().FirstOrDefault(t => t.OrganizationTypeId == o.OrganizationTypeId);
                         o.organizationType = orgType != null ? new OrganizationType {Name = orgType.Name, OrganizationTypeId = orgType.OrganizationTypeId, CreateDate = orgType.CreateDate} : new OrganizationType();
                         var orgDomain = ListOrganizationDomain().FirstOrDefault(d => d.OrganizationDomainId == o.OrganizationDomainId);
-                        o.OrganizationDomain = orgDomain != null ? new OrganizationDomain {OrganizationDomainId = orgDomain.OrganizationDomainId, Name = orgDomain.Name, CreateDate = orgDomain.CreateDate} : new OrganizationDomain();
-                        string usePrimaryPropertySettingValue = GetOrganizationSettingValue("EnablePrimaryPropertiesAndEnterpriseRoles", o.PartyId);
-                        if (!string.IsNullOrEmpty(usePrimaryPropertySettingValue))
-                        {
-                            o.EnablePrimaryPropertiesAndEnterpriseRoles = Convert.ToInt32(usePrimaryPropertySettingValue);
-                        }
+                        o.OrganizationDomain = orgDomain != null ? new OrganizationDomain {OrganizationDomainId = orgDomain.OrganizationDomainId, Name = orgDomain.Name, CreateDate = orgDomain.CreateDate} : new OrganizationDomain();                        
                     }
                 );
 

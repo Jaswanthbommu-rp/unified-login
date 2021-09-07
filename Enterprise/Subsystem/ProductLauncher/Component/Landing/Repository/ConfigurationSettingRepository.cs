@@ -147,10 +147,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         {
             dynamic param = new
             {
-                @MasterConfigurationType = masterSetting.ConfigurationType,
-                @MasterSettingType = masterSetting.SettingType,
                 @PartyId = masterSetting.PartyId,
-                @Value = masterSetting.Value
+                @Value = masterSetting.Value,
+                @CreatedBy = masterSetting.CreatedBy
             };
 
             using (var repository = GetRepository())
