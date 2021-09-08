@@ -274,8 +274,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			}
 
 			globals.Add(BaseType.RequestParameter, datafilter);
+            globals.Add("isExport", true);
 
-			IManageProfile manageProfile = new ManageProfile(_userClaims);
+            IManageProfile manageProfile = new ManageProfile(_userClaims);
 			IList<ProfileDetail> profileDetailList = manageProfile.ListProfileDetails(globals);
 
 			List<LE.User> listUsers = new List<LE.User>();
