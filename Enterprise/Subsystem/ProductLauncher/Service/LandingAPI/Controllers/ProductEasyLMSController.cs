@@ -244,6 +244,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			productEasyLMS.Url = productEasyLMSUri + "&realpageid=" + _realpageUserId + "&gbtoken=" + _greenBookAccessToken;
 			output.obj = productEasyLMS;
 			output.Status = errorStatus;
+			string _message = string.Empty;
+
+			if (string.IsNullOrEmpty(_userClaims.ImpersonatedByName))
+			{
+				_message = $"User {_userClaims.FirstName} {_userClaims.LastName} accessed product {manageProductEasyLMS.getProductName(ProductEnum.EasyLMS)}.";
+			}
+			else
+			{
+				_message = $"RealPage user {_userClaims.ImpersonatedByName} accessed product {manageProductEasyLMS.getProductName(ProductEnum.EasyLMS)}.";
+			}
 
 			LogActivity.WriteActivity(new ActivityDetails
 			{
@@ -252,7 +262,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				CorrelationId = _userClaims.CorrelationId.ToString(),
 				BooksMasterOrganizationId = _userClaims.OrganizationMasterId,
                 OrganizationPartyId = _userClaims.OrganizationPartyId,
-				Message = $"User {_userClaims.FirstName} {_userClaims.LastName} accessed product {manageProductEasyLMS.getProductName(ProductEnum.EasyLMS)}.",
+				Message = _message,
 				FromUserLoginName = _userClaims.LoginName,
 				FromUserLoginId = _userClaims.UserId,
 				FromUserFirstName = _userClaims.FirstName,

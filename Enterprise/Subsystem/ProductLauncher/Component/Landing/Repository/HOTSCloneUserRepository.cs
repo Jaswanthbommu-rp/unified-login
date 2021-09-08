@@ -96,7 +96,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             return userLogin;
         }
 
-        public HotsUser CreateUser(long partyId, BaseLineCustomerCompanyUser user, IProfileDetail baseUserProfile, List<ProductBatch> productBatch)
+        public HotsUser CreateUser(DefaultUserClaim cloneCompanyAdminUserClaim, long partyId, BaseLineCustomerCompanyUser user, IProfileDetail baseUserProfile, List<ProductBatch> productBatch)
         {
             HotsUser hotsUser = new HotsUser();
             string loginName;
@@ -153,7 +153,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     superUser = baseUserProfile.UserTypeId == 402;
                     // Add products
                     if (productBatch?.Count > 0) //TODO: remove UL product from list?
-                        SaveProductBatch(repository, user.PersonaId, newUserPersonaId, user.UserRealPageId, productBatch, superUser);
+                        SaveProductBatch(repository, cloneCompanyAdminUserClaim.PersonaId, newUserPersonaId, cloneCompanyAdminUserClaim.UserRealPageGuid, productBatch, superUser);
 
                     //COMMIT THE CHANGE
                     repository.UnitOfWork.Commit();

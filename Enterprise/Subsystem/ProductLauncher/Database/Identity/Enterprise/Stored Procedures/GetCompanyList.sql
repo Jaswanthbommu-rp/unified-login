@@ -154,15 +154,11 @@ BEGIN
 			)		
 		)
 
-	UPDATE t SET t.EnablePrimaryPropertiesAndEnterpriseRoles = MS.Value
-	FROM #tempOrganizations t
-	INNER JOIN Enterprise.MasterConfiguration MC ON MC.AttributeId = t.OrganizationPartyId  
-    INNER JOIN Enterprise.MasterConfigurationSetting MCS ON MC.MasterConfigurationId = MCS.MasterConfigurationId  
-    INNER JOIN Enterprise.MasterSetting MS ON MCS.MasterSettingId = MS.MasterSettingId  
-    INNER JOIN Enterprise.MasterSettingType MST ON MST.MasterSettingTypeId = MS.MasterSettingTypeId  
-    INNER JOIN Enterprise.MasterConfigurationType MCT ON MCT.MasterConfigurationTypeId = MST.MasterConfigurationTypeId  
-	WHERE MCT.Name = 'Organization'  
-	AND MST.Name = 'EnablePrimaryPropertiesAndEnterpriseRoles'
+	UPDATE t SET t.EnablePrimaryPropertiesAndEnterpriseRoles = ISNULL(os.MappingValue,0)
+    FROM #tempOrganizations t
+    INNER JOIN [Settings].[OrganizationSettings] OS On
+    t.OrganizationPartyId = OS.PartyId and
+    OS.MappingName = 'PrimaryPropertyEnterpriseRole'
 
 	SELECT @sortValue =
 		CASE @SortColumn

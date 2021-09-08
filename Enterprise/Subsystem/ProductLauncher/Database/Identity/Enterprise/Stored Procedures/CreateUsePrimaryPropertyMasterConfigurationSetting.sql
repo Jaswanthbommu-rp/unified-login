@@ -1,83 +1,51 @@
-﻿Create PROCEDURE [Enterprise].[CreateUsePrimaryPropertyMasterConfigurationSetting]
-(@MasterConfigurationType NVARCHAR(200),
- @MasterSettingType       NVARCHAR(100),
+﻿CREATE PROCEDURE [Enterprise].[CreateUsePrimaryPropertyMasterConfigurationSetting]
+(
  @PartyId                 BIGINT,
- @Value                   NVARCHAR(4000)
+ @Value                   NVARCHAR(4000),
+ @CreatedBy				  BIGINT
 )
 AS
-     BEGIN
-         DECLARE @MasterSettingId INT;
-         DECLARE @MasterSettingTypeId INT;
-         DECLARE @MasterConfigurationId INT;
-		 DECLARE @MasterConfigurationSettingId INT;
-         
-		 SELECT  @MasterConfigurationId = MasterConfigurationId
-         FROM Enterprise.MasterConfiguration MC
-              INNER JOIN Enterprise.MasterConfigurationType MCT ON MC.MasterConfigurationTypeId = MCT.MasterConfigurationTypeId
-         WHERE MC.AttributeId = @PartyId 
-               AND MCT.Name = @MasterConfigurationType;
-			   
-		SELECT @MasterSettingId = MasterSettingId
-		FROM Enterprise.MasterSetting MS
-				INNER JOIN Enterprise.MasterSettingType MST ON MST.MasterSettingTypeId = MS.MasterSettingTypeId
-				INNER JOIN Enterprise.MasterConfigurationType MCT ON MCT.MasterConfigurationTypeId = MST.MasterConfigurationTypeId
-		WHERE MST.Name = @MasterSettingType
-		AND MCT.Name = @MasterConfigurationType
-		AND MS.Value = @Value
-
-        BEGIN TRY
-			IF (@MasterSettingId IS NULL OR @MasterSettingId = 0)
-			BEGIN
-				 SELECT DISTINCT  @MasterSettingTypeId = MST.MasterSettingTypeId
-				 FROM Enterprise.MasterSettingType MST
-					  INNER JOIN Enterprise.MasterConfigurationType MCT ON MCT.MasterConfigurationTypeId = MST.MasterConfigurationTypeId
-					  INNER JOIN Enterprise.MasterConfiguration MC ON MC.MasterConfigurationTypeId = MST.MasterConfigurationTypeId
-				 WHERE MST.Name = @MasterSettingType 
-                AND MCT.Name = @MasterConfigurationType	
-
-				INSERT INTO Enterprise.MasterSetting
-						(MasterSettingTypeId,
-						 Value,
-						 FromDate,
-						 ThruDate
-						)
-				  VALUES
-						(@MasterSettingTypeId,
-						 @Value,
-						 GETUTCDATE(),
-						 NULL
-						);
-				  SELECT @MasterSettingId = SCOPE_IDENTITY();
+	BEGIN
+     BEGIN TRY
+		 DECLARE @mappingValue varchar(100) 
+		 Declare @RightId bigint
+		 DECLARE @SettingCategoryTypeId smallint
+     
+			SELECT @RightId = RightId from [Security].[Right] where RightName = 'PrimaryPropertyEnterpriseRole';
+			SELECT @SettingCategoryTypeId =  SettingCategoryTypeId FROM [Settings].[SettingCategoryType] where [Name] = 'Company'
+			if not exists (select 1 from Settings.OrganizationSettings where MappingName = 'PrimaryPropertyEnterpriseRole' and Partyid = @PartyId)
+			Begin
+				insert into Settings.OrganizationSettings(PartyId, SettingCategoryTypeId, MappingName, MappingValue, Editable, [Hidden], CreatedBy, CreatedDate, UpdatedDate)
+				SELECT @PartyId, @SettingCategoryTypeId, 'PrimaryPropertyEnterpriseRole', @Value, 1, 0, @CreatedBy, GETUTCDATE(), NULL
+			End
+			else
+			begin
+				update Settings.OrganizationSettings
+				SET MappingValue = @Value,
+				UpdatedDate = GETUTCDATE()
+				WHERE PartyId = @PartyId 
+				AND SettingCategoryTypeId = @SettingCategoryTypeId
+				AND MappingName = 'PrimaryPropertyEnterpriseRole'
+			end
+			SELECT @mappingValue = MappingValue FROM [Settings].[OrganizationSettings]
+						WHERE MappingName = 'PrimaryPropertyEnterpriseRole'
+						And PartyId = @PartyId
+			 
+			IF  @mappingValue IS NOT NULL AND @mappingValue = '1' AND NOT EXISTS (SELECT 1 FROM [Security].[OrganizationOverRideRight]
+						WHERE RightId = @RightId 
+						And OrgPartyId = @PartyId)
+			BEGIN 
+				INSERT INTO [Security].[OrganizationOverRideRight](RightId, OrgPartyId, VisibilityStatusId, CreatedBy, CreatedDate)
+				SELECT @RightId, @PartyId, 9, @CreatedBy, GETUTCDATE()
 			END
-
-			IF NOT EXISTS (SELECT 1 FROM Enterprise.MasterConfigurationSetting
-			WHERE MasterConfigurationId = @MasterCOnfigurationId
-			AND MasterSettingId = @MasterSettingId)
+			ELSE
 			BEGIN
-				---Delete existing MasterConfigurationSetting
-				DELETE FROM Enterprise.MasterConfigurationSetting
-				WHERE MasterConfigurationId = @MasterCOnfigurationId
-				AND MasterSettingId IN (SELECT MasterSettingId
-					FROM Enterprise.MasterSetting MS
-							INNER JOIN Enterprise.MasterSettingType MST ON MST.MasterSettingTypeId = MS.MasterSettingTypeId
-							INNER JOIN Enterprise.MasterConfigurationType MCT ON MCT.MasterConfigurationTypeId = MST.MasterConfigurationTypeId
-					WHERE MST.Name = @MasterSettingType
-					AND MCT.Name = @MasterConfigurationType)
-
-				---Insert MasterConfigurationSetting
-				INSERT INTO Enterprise.MasterCOnfigurationSetting
-				(MasterConfigurationId,
-					MasterSettingId
-				)
-				VALUES
-				(@MasterCOnfigurationId,
-					@MasterSettingId
-				);
-				SELECT @MasterConfigurationSettingId = SCOPE_IDENTITY()
-			END
+				DELETE FROM [Security].[OrganizationOverRideRight]
+				WHERE RightId = @RightId 
+				AND OrgPartyId = @PartyId
+			END		
 			
-			SELECT @MasterSettingId AS 'Id',
-				'' AS ErrorMessage;      
+			SELECT '' AS ErrorMessage;      
         END TRY
         BEGIN CATCH
             DECLARE @ErrorLogID INT;
@@ -89,4 +57,4 @@ AS
             WHERE ErrorLogID = @ErrorLogID;
             ROLLBACK;
         END CATCH;
-     END;
+	END;

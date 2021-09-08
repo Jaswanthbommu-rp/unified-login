@@ -1158,7 +1158,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     WriteToDiagnosticLog($"UpdatePropertiesToUser-BatchProcessType.UserTypeRegularToAdmin - END");
                 }
 
-                if (batchProcessType == BatchProcessType.UserTypeAdminToRegular)
+                if (batchProcessType == BatchProcessType.UserTypeAdminToRegular || batchProcessType == BatchProcessType.UserTypeAdminToExternal)
                 {
                     WriteToDiagnosticLog($"UpdatePropertiesToUser-BatchProcessType.UserTypeAdminToRegular - START");
 
@@ -1432,7 +1432,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     WriteToDiagnosticLog($"UpdateRolesToUser-BatchProcessType.UserTypeRegularToAdmin - END");
                 }
 
-                if (batchProcessType == BatchProcessType.UserTypeAdminToRegular)
+                if (batchProcessType == BatchProcessType.UserTypeAdminToRegular || batchProcessType == BatchProcessType.UserTypeAdminToExternal)
                 {
                     WriteToDiagnosticLog($"UpdateRolesToUser-BatchProcessType.UserTypeAdminToRegular - START");
                     // Remove Admin Roles

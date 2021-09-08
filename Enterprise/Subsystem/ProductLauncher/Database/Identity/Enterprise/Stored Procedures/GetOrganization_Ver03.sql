@@ -16,7 +16,8 @@ BEGIN
 			COALESCE(ISNULL(D.CompanyMasterId, 0), 0) AS BooksCustomerMasterId,  
 			o.OrganizationTypeId,
 			o.OrganizationDomainId,
-			o.IsActive
+			o.IsActive,
+			CASE WHEN (SELECT CASE WHEN OS.MappingValue = '1' THEN 1 ELSE 0 END FROM Settings.OrganizationSettings OS INNER JOIN Settings.SettingCategoryType st ON st.SettingCategoryTypeId = OS.SettingCategoryTypeId WHERE PartyId = O.PartyId AND MappingName = 'PrimaryPropertyEnterpriseRole' AND st.Name = 'Company' ) = 1 THEN 1 ELSE 0 end [EnablePrimaryPropertiesAndEnterpriseRoles]
 		 FROM [Enterprise].Organization AS o  
 			INNER JOIN [Enterprise].Party P ON P.PartyId = O.PartyId  
 			LEFT OUTER JOIN Enterprise.VW_DataImportMapping D ON(O.PartyId = D.PartyId)  
@@ -32,7 +33,8 @@ BEGIN
 			COALESCE(ISNULL(D.CompanyMasterId, 0), 0) AS BooksCustomerMasterId,  
 			o.OrganizationTypeId,
 			o.OrganizationDomainId,
-			o.IsActive
+			o.IsActive,
+			CASE WHEN (SELECT CASE WHEN OS.MappingValue = '1' THEN 1 ELSE 0 END FROM Settings.OrganizationSettings OS INNER JOIN Settings.SettingCategoryType st ON st.SettingCategoryTypeId = OS.SettingCategoryTypeId WHERE PartyId = O.PartyId AND MappingName = 'PrimaryPropertyEnterpriseRole' AND st.Name = 'Company' ) = 1 THEN 1 ELSE 0 end [EnablePrimaryPropertiesAndEnterpriseRoles]
 		 FROM [Enterprise].Organization AS o  
 			INNER JOIN [Enterprise].Party P ON P.PartyId = O.PartyId  
 			LEFT OUTER JOIN Enterprise.VW_DataImportMapping D ON(O.PartyId = D.PartyId)  
@@ -48,7 +50,8 @@ BEGIN
 			COALESCE(ISNULL(D.CompanyMasterId, 0), 0) AS BooksCustomerMasterId,  
 			o.OrganizationTypeId,
 			o.OrganizationDomainId,
-			o.IsActive
+			o.IsActive,
+			CASE WHEN (SELECT CASE WHEN OS.MappingValue = '1' THEN 1 ELSE 0 END FROM Settings.OrganizationSettings OS INNER JOIN Settings.SettingCategoryType st ON st.SettingCategoryTypeId = OS.SettingCategoryTypeId WHERE PartyId = O.PartyId AND MappingName = 'PrimaryPropertyEnterpriseRole' AND st.Name = 'Company' ) = 1 THEN 1 ELSE 0 end [EnablePrimaryPropertiesAndEnterpriseRoles]
 		 FROM [Enterprise].Organization AS o  
 			INNER JOIN [Enterprise].Party P ON P.PartyId = O.PartyId  
 			LEFT OUTER JOIN Enterprise.VW_DataImportMapping D ON(O.PartyId = D.PartyId)  
@@ -64,7 +67,8 @@ BEGIN
 			COALESCE(ISNULL(D.CompanyMasterId, 0), 0) AS BooksCustomerMasterId,  
 			o.OrganizationTypeId,
 			o.OrganizationDomainId,
-			o.IsActive
+			o.IsActive,
+			CASE WHEN (SELECT CASE WHEN OS.MappingValue = '1' THEN 1 ELSE 0 END FROM Settings.OrganizationSettings OS INNER JOIN Settings.SettingCategoryType st ON st.SettingCategoryTypeId = OS.SettingCategoryTypeId WHERE PartyId = O.PartyId AND MappingName = 'PrimaryPropertyEnterpriseRole' AND st.Name = 'Company' ) = 1 THEN 1 ELSE 0 end [EnablePrimaryPropertiesAndEnterpriseRoles]
 		 FROM [Enterprise].Organization AS o  
 			INNER JOIN [Enterprise].Party P ON P.PartyId = O.PartyId  
 			LEFT OUTER JOIN Enterprise.VW_DataImportMapping D ON(O.PartyId = D.PartyId)  
@@ -80,10 +84,10 @@ BEGIN
 			COALESCE(ISNULL(D.CompanyMasterId, 0), 0) AS BooksCustomerMasterId,  
 			o.OrganizationTypeId,
 			o.OrganizationDomainId,
-			o.IsActive
+			o.IsActive,
+			CASE WHEN (SELECT CASE WHEN OS.MappingValue = '1' THEN 1 ELSE 0 END FROM Settings.OrganizationSettings OS INNER JOIN Settings.SettingCategoryType st ON st.SettingCategoryTypeId = OS.SettingCategoryTypeId WHERE PartyId = O.PartyId AND MappingName = 'PrimaryPropertyEnterpriseRole' AND st.Name = 'Company' ) = 1 THEN 1 ELSE 0 end [EnablePrimaryPropertiesAndEnterpriseRoles]
 		 FROM [Enterprise].Organization AS o  
 			INNER JOIN [Enterprise].Party P ON P.PartyId = O.PartyId  
 			LEFT OUTER JOIN Enterprise.VW_DataImportMapping D ON(O.PartyId = D.PartyId)  
 	end
-	
 END;
