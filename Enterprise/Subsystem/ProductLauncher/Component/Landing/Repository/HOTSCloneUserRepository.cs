@@ -118,7 +118,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 MiddleName = baseUserProfile.MiddleName,
                 LastName = baseUserProfile.LastName,
                 UserTypeId = baseUserProfile.UserTypeId,
-                ThirdPartyIDP = baseUserProfile.userLogin.Is3rdPartyIDP,
+                ThirdPartyIDP = true,
                 LoginName = loginName,
                 NotificationEmail = string.Empty,
                 UserEffectiveDate = DateTime.UtcNow,
