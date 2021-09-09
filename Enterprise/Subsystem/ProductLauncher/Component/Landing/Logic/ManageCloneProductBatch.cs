@@ -319,7 +319,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			var aoProductList = userProducts.Where(y => ProductEnumHelper.GetAoProductList().Contains((ProductEnum)y.ProductId)).ToList();
 			if (aoProductList.Any())
 			{
-				var batches = CreateAoBatchRecords(_userClaim, baseOrgAdminPersonaId, personaId, externalUser);
+				var batches = CreateAoBatchRecords(_userClaim, baseOrgAdminPersonaId, personaId, productSettingList, externalUser);
 				foreach (var productBatch in batches)
 				{
 					// add only if userProducts has productId else product is modified after clone
@@ -894,7 +894,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			return pb;
 		}
 
-		private IList<ProductBatch> CreateAoBatchRecords(DefaultUserClaim userClaim, long editorPersonaId, long newUserPersonaId, bool externalUser = false)
+		private IList<ProductBatch> CreateAoBatchRecords(DefaultUserClaim userClaim, long editorPersonaId, long newUserPersonaId, List<ProductSettingList> productSettingList, bool externalUser = false)
 		{
 			var productBatchList = new List<ProductBatch>();
 			IList<AoUserCompanyPropertyRoleDetail> aoBIUserCompanyPropertyRoleDetails = new List<AoUserCompanyPropertyRoleDetail>();
@@ -934,6 +934,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					aoUserCompanyPropertyRoleDetail.PropertyGroups = new List<int>();
 				}
 
+				bool productEnabledForPrimaryProperty = IsProductEnabledForUsePrimaryProperty((int)ProductEnum.AssetOptimizer);
+
+				var productSetting = productSettingList.FirstOrDefault(item => item.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase)
+											&& item.ProductId == (int)ProductEnumHelper.GetAoProductEnum(aoUserCompanyPropertyRoleDetail.ProductName));
+				bool personaProductUsePrimaryProperty = false;
+				bool usePrimaryProperties = false;
+				if (productSetting != null)
+				{
+					personaProductUsePrimaryProperty = productSetting.Value.Trim() == "1" ? true : false;
+				}
+
+				usePrimaryProperties = productEnabledForPrimaryProperty && personaProductUsePrimaryProperty;
+
 				var productBatch = new ProductBatch()
 				{
 					ProductId = (int)ProductEnumHelper.GetAoProductEnum(aoUserCompanyPropertyRoleDetail.ProductName),
@@ -945,7 +958,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 							PropertyList = (from i in aoUserCompanyPropertyRoleDetail.SelectedPortfolioValues select i.ToString()).ToList(),
 							RoleList = (from i in aoUserCompanyPropertyRoleDetail.SelectedRoleValues select i).ToList(),
 							CompanyId = aoUserCompanyPropertyRoleDetail.CompanyId,
-							PropertyGroupList = (from i in aoUserCompanyPropertyRoleDetail.PropertyGroups select i.ToString()).ToList()
+							PropertyGroupList = (from i in aoUserCompanyPropertyRoleDetail.PropertyGroups select i.ToString()).ToList(),
+							UsePrimaryProperties = usePrimaryProperties
 						}
 				};
 
