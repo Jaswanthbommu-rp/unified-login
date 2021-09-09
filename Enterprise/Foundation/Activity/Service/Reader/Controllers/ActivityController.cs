@@ -205,13 +205,6 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
                     activityDetailMessage.OrganizationPartyId = _userClaims.OrganizationPartyId;
                 }
 
-                //To support unified login and needs to be removed once unified login replaces ToUserRealpageId with contextreferenceId
-                if (string.IsNullOrEmpty(activityDetailMessage.ContextReferenceId) && activityDetailMessage.ToUserRealpageId != null 
-                                                                                   && activityDetailMessage.ToUserRealpageId != Guid.Empty)
-                {
-                    activityDetailMessage.ContextReferenceId = activityDetailMessage.ToUserRealpageId.ToString();
-                }
-
                 activityDetailMessage.ApplicationTimestamp = DateTime.UtcNow;
 
                 if (string.IsNullOrEmpty(ConfigReader.ActivityMQName))
