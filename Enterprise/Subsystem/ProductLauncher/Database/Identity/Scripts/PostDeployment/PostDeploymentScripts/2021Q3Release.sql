@@ -2532,7 +2532,7 @@ END
 IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'HOTSCheckUserProductStatusSleepTimeout')
 BEGIN
 	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
-	VALUES ('HOTSCheckUserProductStatusSleepTimeout', 'The amount of time in milliseconds to wait when checking to see if a HOTS clone product batch process is complete', 0);
+	VALUES ('HOTSCheckUserProductStatusSleepTimeout', 'The amount of time in ms to wait checking a HOTS clone product batch process', 0);
 END
 
 
