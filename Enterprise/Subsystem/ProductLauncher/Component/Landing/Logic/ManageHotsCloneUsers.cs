@@ -40,20 +40,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 		private IProductInternalSettingRepository _productInternalSettingRepository;
 		private IHOTSCloneUserRepository _hotsCloneUserRepository;
+        private ISamlRepository _samlRepository;
 		private DefaultUserClaim _defaultUserClaim;
 		private IManageProduct _manageProduct;
 		readonly ITokenHelper _tokenHelper;
-		#region Ctor
 
-		/// <summary>
-		/// Used for dependency injection
-		/// </summary> 
-		public ManageHotsCloneUsers(IProductInternalSettingRepository productInternalSettingRepository,
+        private IList<ProductInternalSetting> _productInternalSettings;
+        #region Ctor
+
+        /// <summary>
+        /// Used for dependency injection
+        /// </summary> 
+        public ManageHotsCloneUsers(IProductInternalSettingRepository productInternalSettingRepository,
 									IHOTSCloneUserRepository hotsCloneUserRepository,
+                                    ISamlRepository samlRepository,
 									DefaultUserClaim userClaim)
 		{
 			_productInternalSettingRepository = productInternalSettingRepository;
 			_hotsCloneUserRepository = hotsCloneUserRepository;
+            _samlRepository = samlRepository;
 			_defaultUserClaim = userClaim;
 			_tokenHelper = new TokenHelper();
 		}
@@ -65,6 +70,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		{
 			_productInternalSettingRepository = new ProductInternalSettingRepository(repository);
 			_hotsCloneUserRepository = new HOTSCloneUserRepository(repository);
+            _samlRepository = new SamlRepository(repository);
 			_manageProduct = new ManageProduct(repository, userClaim, messageHandler);
             _tokenHelper = new TokenHelper(repository);
             _defaultUserClaim = userClaim;
@@ -74,6 +80,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		{
 			_productInternalSettingRepository = new ProductInternalSettingRepository();
 			_hotsCloneUserRepository = new HOTSCloneUserRepository();
+            _samlRepository = new SamlRepository();
 			_manageProduct = new ManageProduct(userClaim);
             _tokenHelper = new TokenHelper();
 			_defaultUserClaim = userClaim;
@@ -84,20 +91,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		{
 			ClonedUsers clonedUsers = new ClonedUsers
             {
-                Status = "InComplete",
+                Status = "Incomplete",
                 CloneCustomerCompanyId = cloneUsers.CloneCustomerUPFMId,
                 CloneCustomerEnvironment = cloneUsers.CloneCustomerEnvironment,
 				Users = new List<HotsUser>()
             };
 
-            var productInternalSettings = _manageProduct.GetProductInternalSettings(3);
+            _productInternalSettings = _manageProduct.GetProductInternalSettings(3);
 			try
 			{
 				bool isCloneUsersProcessEnabledForHOTS = false;
 
-				if (productInternalSettings.Any(s => s.Name.Equals("IsCloneUsersProcessEnabledForHOTS", StringComparison.OrdinalIgnoreCase)))
+				if (_productInternalSettings.Any(s => s.Name.Equals("IsCloneUsersProcessEnabledForHOTS", StringComparison.OrdinalIgnoreCase)))
 				{
-					isCloneUsersProcessEnabledForHOTS = (productInternalSettings.FirstOrDefault(s => s.Name.Equals("IsCloneUsersProcessEnabledForHOTS", StringComparison.OrdinalIgnoreCase))?.Value == "1");
+					isCloneUsersProcessEnabledForHOTS = (_productInternalSettings.FirstOrDefault(s => s.Name.Equals("IsCloneUsersProcessEnabledForHOTS", StringComparison.OrdinalIgnoreCase))?.Value == "1");
 				}
 
 				if (basePartyId > 0 && clonePartyId > 0 && baseOrgAdminPersonaId  > 0 && isCloneUsersProcessEnabledForHOTS)
@@ -110,14 +117,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					{
 						//get user profile
 						var profileDetail = getUserProfile(user, basePartyId);
-						//get user products
-						var userProducts = _hotsCloneUserRepository.GetUserProducts(user.PersonaId);
+                        if (CheckIfUserAlreadyExists(clonePartyId, profileDetail, clonedUsers)) continue;
+
+                        //get user products
+                        var userProducts = _hotsCloneUserRepository.GetUserProducts(user.PersonaId);
 						// get product batch data
 						IPersonaRepository personaRepository = new PersonaRepository();
 						var personaProductSettings = personaRepository.GetPersonaProductSettings(user.PersonaId);
 						List<ProductBatch> pbData = manageProductBatch.GetUserProductBatchData(user.PersonaId, userProducts, baseOrgAdminPersonaId, upfmProperty, personaProductSettings, false, false).ToList();
-
-
+                        
 						//	get base company product properties
 						//	get clone company product properties
 						//	Compare base assigned properties with clone properties by name
@@ -157,12 +165,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 						var hotsuser = _hotsCloneUserRepository.CreateUser(_defaultUserClaim, clonePartyId, user, profileDetail, pbData);
                         if (hotsuser != null)
                         {
+                            pbData?.ForEach( pb =>
+                            {
+                                hotsuser.CloneProducts.Add(pb.ProductId);
+                            });
                             clonedUsers.Users.Add(hotsuser);
                         }
                     }
-					clonedUsers.Status = "Complete";
-				
-					PostToHOTS(clonedUsers);
+
+                    clonedUsers.Status = "Complete";
+                    CheckUsersProductStatus(clonedUsers);
+
+                    PostToHOTS(clonedUsers);
 				}
 				return clonedUsers;
 			}
@@ -174,8 +188,92 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					   $" BaseLine Company PartyId {basePartyId}", exception: ex);
 				return clonedUsers;
 			}
+        }
 
-		}
+        private bool CheckIfUserAlreadyExists(long clonePartyId, IProfileDetail profileDetail, ClonedUsers clonedUsers)
+        {
+            var cloneLoginName = getLoginName(clonePartyId, profileDetail);
+
+            UserLoginOnly userLoginOnly = _hotsCloneUserRepository.GetUserLoginOnly(cloneLoginName);
+            if (userLoginOnly != null)
+            {
+                HotsUser existingUser = new HotsUser()
+                {
+                    BaselineUserId = profileDetail.userLogin.UserId,
+                    BaselineUserName = profileDetail.userLogin.LoginName,
+                    CloneUserId = userLoginOnly.UserId,
+                    CloneUserName = userLoginOnly.LoginName
+                };
+                var personaList = _hotsCloneUserRepository.ListPersona(userLoginOnly.RealPageId);
+                if (personaList != null)
+                {
+                    existingUser.ClonePersonaId = personaList.First(p => p.OrganizationPartyId == clonePartyId).PersonaId;
+                }
+
+                clonedUsers.Users.Add(existingUser);
+                return true;
+            }
+
+            return false;
+        }
+
+        private void CheckUsersProductStatus(ClonedUsers clonedUsers)
+        {
+            var retry = 5;
+            var statusCheckSleep = 2000;
+
+            var retrySetting = _productInternalSettings.FirstOrDefault(a => a.Name.Equals("HOTSCheckUserProductStatusRetryCount", StringComparison.OrdinalIgnoreCase))?.Value;
+            var statusCheckSleepSetting = _productInternalSettings.FirstOrDefault(a => a.Name.Equals("HOTSCheckUserProductStatusSleepTimeout", StringComparison.OrdinalIgnoreCase))?.Value;
+
+            if (retrySetting != null)
+            {
+                retry = Convert.ToInt16(retrySetting);
+            }
+
+            if (statusCheckSleepSetting != null)
+            {
+                statusCheckSleep = Convert.ToInt32(statusCheckSleepSetting);
+            }
+
+            var productsToValidate = 0;
+            clonedUsers?.Users?.ForEach(user => { productsToValidate += user.CloneProducts.Count; });
+            
+            while (retry >= 0)
+            {
+                clonedUsers?.Users?.ForEach(user =>
+                {
+                    // wait for all the products to be done creating
+                    if (user.CloneProducts.Count > 0)
+                    {
+                        System.Threading.Thread.Sleep(statusCheckSleep);
+                        var clonedUserProductStatus = _samlRepository.ListAllProductsByPersonaId(user.ClonePersonaId, 0, "");
+                        foreach (var userCloneProductId in user.CloneProducts.ToArray())
+                        {
+                            if (clonedUserProductStatus.Any(p => p.ProductId == userCloneProductId))
+                            {
+                                if (clonedUserProductStatus.First(p => p.ProductId == userCloneProductId).ProductStatus == 8)
+                                {
+                                    var remove = user.CloneProducts.Find(f => f == userCloneProductId);
+                                    user.CloneProducts.Remove(remove);
+                                    productsToValidate--;
+                                }
+                            }
+                        }
+                    }
+                });
+                if (productsToValidate == 0)
+                {
+                    break;
+                }
+
+                retry--;
+                if (retry == 0)
+                {
+                    clonedUsers.Status = "Incomplete";
+                    break;
+                }
+            }
+        }
 
         /// <summary>
         /// Used to link a cloned company to a baseline company when using HOTS
@@ -206,7 +304,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			return _hotsCloneUserRepository.GetBaseCompanyUPFMId(cloneUpfmId);
 		}
 
-		private IProfileDetail getUserProfile(BaseLineCustomerCompanyUser user, long partyId)
+        private string getLoginName(long partyId, IProfileDetail baseUserProfile)
+        {
+            return string.Concat(baseUserProfile.FirstName.Substring(0), baseUserProfile.LastName, partyId.ToString(), "@realpage.com");
+        }
+
+        private IProfileDetail getUserProfile(BaseLineCustomerCompanyUser user, long partyId)
 		{
 			var profileLogic = new ManageProfile(_defaultUserClaim);
 			IProfileDetail profileDetail = new ProfileDetail();
@@ -215,10 +318,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			return profileDetail;
 		}
 
-		/// <summary>
-		/// Used to write to the log
-		/// </summary>
-		private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
+        /// <summary>
+        /// Used to write to the log
+        /// </summary>
+        private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
 		{
 			try
 			{
@@ -479,12 +582,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		{
             try
             {
-				var productInternalSettingList = GetProductInternalSettings(ProductEnum.UnifiedPlatform);
-				
-                var hotsEndpoint = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("HOTSCloneUserCallBackEnpoint", StringComparison.OrdinalIgnoreCase))?.Value;
-				var hotsIssuerUri = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("HOTSCloneIssuerUri", StringComparison.OrdinalIgnoreCase))?.Value;
-				var hotsClientId = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("HOTSCloneClientId", StringComparison.OrdinalIgnoreCase))?.Value;
-				var hotsClientSecret = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("HOTSCloneClientSecret", StringComparison.OrdinalIgnoreCase))?.Value;
+                var hotsEndpoint = _productInternalSettings.FirstOrDefault(a => a.Name.Equals("HOTSCloneUserCallBackEnpoint", StringComparison.OrdinalIgnoreCase))?.Value;
+				var hotsIssuerUri = _productInternalSettings.FirstOrDefault(a => a.Name.Equals("HOTSCloneIssuerUri", StringComparison.OrdinalIgnoreCase))?.Value;
+				var hotsClientId = _productInternalSettings.FirstOrDefault(a => a.Name.Equals("HOTSCloneClientId", StringComparison.OrdinalIgnoreCase))?.Value;
+				var hotsClientSecret = _productInternalSettings.FirstOrDefault(a => a.Name.Equals("HOTSCloneClientSecret", StringComparison.OrdinalIgnoreCase))?.Value;
                 if (!string.IsNullOrEmpty(hotsClientSecret))
                 {
                     hotsClientSecret = Encoding.UTF8.GetString(Convert.FromBase64String(hotsClientSecret));
@@ -531,14 +632,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				Dictionary<string, object> logData = new Dictionary<string, object>() { { "Exception", ex.ToString() } };
 				WriteToLog(LogEventLevel.Error, "PostToHOTS", logData);
             }
-			
-		}
+        }
 
 		private IList<ProductInternalSetting> GetProductInternalSettings(ProductEnum product)
 		{
 			var rpcache = new RPObjectCache();
 			var cacheKey = $"productInternalSetting_{(int)product}";
-			IList<ProductInternalSetting> productInternalSettingList = rpcache.GetFromCache<IList<ProductInternalSetting>>(cacheKey, 600, () =>
+			IList<ProductInternalSetting> productInternalSettingList = rpcache.GetFromCache<IList<ProductInternalSetting>>(cacheKey, 100, () =>
 			{
 				// load from database
 

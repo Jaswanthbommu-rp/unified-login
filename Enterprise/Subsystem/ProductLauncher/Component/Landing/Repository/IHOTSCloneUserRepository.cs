@@ -12,7 +12,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		IList<BaseLineCustomerCompanyUser> ListUsers(long OrganizationId);
 		List<PersonaProductUserDetails> GetUserProducts(long personaId);
 		Guid GetBaseCompanyUPFMId(Guid cloneUpfmId);
-		HotsUser CreateUser(DefaultUserClaim cloneCompanyAdminUserClaim, long partyId, BaseLineCustomerCompanyUser user, IProfileDetail baseUserProfile, List<ProductBatch> productBatch);
+
+        UserLoginOnly GetUserLoginOnly(string enterpriseUserName);
+
+        IList<Persona> ListPersona(Guid realPageId);
+
+        HotsUser CreateUser(DefaultUserClaim cloneCompanyAdminUserClaim, long partyId, BaseLineCustomerCompanyUser user, IProfileDetail baseUserProfile, List<ProductBatch> productBatch);
 
         /// <summary>
         /// Used to link a cloned company to a baseline company when using HOTS

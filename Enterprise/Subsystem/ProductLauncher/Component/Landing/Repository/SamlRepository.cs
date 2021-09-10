@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
@@ -21,16 +22,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		public SamlRepository() : base(DbConnectionEnum.IdpConfigurationDb)
         {
         }
-        #endregion
 
         /// <summary>
-        /// List Active Products by PersonaId
+        /// Unit test constructor
         /// </summary>
-        /// <param name="PersonaId">User personaId</param>
-        /// <param name="ProductId">ProductId</param>
-        /// <param name="ProductType">NULL, ProductWithFavorites, IsResource, IsFavorite</param>
-        /// <returns>List of Portfolio Product User Details</returns>
-        public IList<PersonaProductUserDetails> ListActiveProductsByPersonaId(long PersonaId, int ProductId, string ProductType)
+        /// <param name="repository"></param>
+        public SamlRepository(IRepository repository) : base(repository)
+        {
+        }
+		#endregion
+
+		/// <summary>
+		/// List Active Products by PersonaId
+		/// </summary>
+		/// <param name="PersonaId">User personaId</param>
+		/// <param name="ProductId">ProductId</param>
+		/// <param name="ProductType">NULL, ProductWithFavorites, IsResource, IsFavorite</param>
+		/// <returns>List of Portfolio Product User Details</returns>
+		public IList<PersonaProductUserDetails> ListActiveProductsByPersonaId(long PersonaId, int ProductId, string ProductType)
         {
             using (var repo = GetRepository())
             {
