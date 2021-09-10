@@ -1598,7 +1598,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 if (productSetting != null)
                                 {
                                     s.ProductStatus = Convert.ToInt32(productSetting.Value);
-                                    if (s.ProductStatus == (int)ProductBatchStatusType.Deleted || s.ProductStatus == (int)ProductBatchStatusType.Inactive)
+                                    if (s.ProductStatus == (int)ProductBatchStatusType.Deleted || s.ProductStatus == (int)ProductBatchStatusType.Inactive || s.ProductStatus == (int)ProductBatchStatusType.Error)
                                     {
                                         s.IsAssigned = false;
                                     }
