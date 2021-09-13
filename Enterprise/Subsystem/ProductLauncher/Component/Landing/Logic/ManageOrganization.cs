@@ -445,16 +445,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <returns>RepositoryResponse object</returns>
         public RepositoryResponse CreateInitialOrgSuperUser(long organizationId, string firstName, string middleName, string lastName, string title, string suffix, string email, bool defaultIDP, int? idpTypeId, Guid organizationRealPageId)
         {
+            var cacheKey = $"getProductIdListByCompanyGuid_{organizationRealPageId}";
+            RPObjectCache.RemoveFromCache(cacheKey);
             IList<int> productIdList = _productRepository.GetProductIdsByCompany(organizationRealPageId);
 
             //Exclude following products from RealPage Employee Access admin user
-            //Unified Platform, Asset Optimization, RealPage Accounting, Client Portal, Product Updates, EasyLMS
-            productIdList.Remove(productIdList.FirstOrDefault(p => p == (int)ProductEnum.UnifiedPlatform));
-            productIdList.Remove(productIdList.FirstOrDefault(p => p == (int)ProductEnum.AssetOptimizer));
-            productIdList.Remove(productIdList.FirstOrDefault(p => p == (int)ProductEnum.FinancialSuite));
-            productIdList.Remove(productIdList.FirstOrDefault(p => p == (int)ProductEnum.ClientPortal));
-            productIdList.Remove(productIdList.FirstOrDefault(p => p == (int)ProductEnum.ProductUpdates));
-            productIdList.Remove(productIdList.FirstOrDefault(p => p == (int)ProductEnum.EasyLMS));
+            var _productInternalSettings = _productInternalSettingRepository.GetProductInternalSettings(3);
+            var excludeProductList = _productInternalSettings.FirstOrDefault(a => a.Name.Equals("ExcludeProductFromOrgSupportUser", StringComparison.OrdinalIgnoreCase))?.Value;
+            if (excludeProductList != null)
+            {
+                foreach (var productId in excludeProductList.Split(','))
+                {
+                    productIdList.Remove(productIdList.FirstOrDefault(p => p == Convert.ToInt32(productId)));
+                }
+            }
+            else
+            {
+                //Unified Platform, Asset Optimization, RealPage Accounting, Client Portal, Product Updates, EasyLMS
+                productIdList.Remove(productIdList.FirstOrDefault(p => p == (int)ProductEnum.UnifiedPlatform));
+                productIdList.Remove(productIdList.FirstOrDefault(p => p == (int)ProductEnum.AssetOptimizer));
+                productIdList.Remove(productIdList.FirstOrDefault(p => p == (int)ProductEnum.FinancialSuite));
+                productIdList.Remove(productIdList.FirstOrDefault(p => p == (int)ProductEnum.ClientPortal));
+                productIdList.Remove(productIdList.FirstOrDefault(p => p == (int)ProductEnum.ProductUpdates));
+                productIdList.Remove(productIdList.FirstOrDefault(p => p == (int)ProductEnum.EasyLMS));
+            }
 
             return _organizationRepository.CreateInitialOrgSuperUser(organizationId, firstName, middleName, lastName, title, suffix, email, defaultIDP, idpTypeId, productIdList);
         }
