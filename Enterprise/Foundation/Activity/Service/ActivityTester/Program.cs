@@ -16,9 +16,6 @@ namespace ActivityTester
 
             SendObject(new ActivityDetailMessage
             {
-                CorrelationId = Guid.NewGuid().ToString(),
-                BooksProductCode = "OS",
-                BooksMasterOrganizationId = 350,
                 FromUserLoginName = "abc@test.com",
                 FromUserLoginId = 2222,
                 Message = "Test Msg dumped to MQ.",

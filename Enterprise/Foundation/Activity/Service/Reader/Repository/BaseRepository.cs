@@ -20,22 +20,22 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Repository
         {
         }
 
-        public IRepository GetRepository()
+        public IRepository GetRepository(bool isAuditArchive = false)
         {
             _uow = new DapperUnitOfWork(_connectionFactory);
             _repository = new DapperRepository(_uow);
-            _repository.UnitOfWork.Initialize(GetConnectionString());
+            _repository.UnitOfWork.Initialize(GetConnectionString(isAuditArchive));
 
             return _repository;
         }
 
-        private string GetConnectionString()
+        private string GetConnectionString(bool isAuditArchive = false)
         {
             string connectionString;
 
             try
             {
-                connectionString = (ConfigurationManager.ConnectionStrings["AuditDbCnn"].ConnectionString);
+                connectionString = isAuditArchive ? (ConfigurationManager.ConnectionStrings["AuditArchiveDbCnn"].ConnectionString): (ConfigurationManager.ConnectionStrings["AuditDbCnn"].ConnectionString);
                 if (connectionString == null)
                     throw new Exception("Database connection settings have not been set in Web.config file");
             }

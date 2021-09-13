@@ -300,7 +300,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
         [SwaggerResponse(HttpStatusCode.OK, Description = "List activity by criteria to send data related to Pagination", Type = typeof(ListResponse<ActivityDetailMessage>))]
         [Route("api/v1/listactivitylog")]
         [HttpPost]
-        public HttpResponseMessage ListActivityLogDetails(ActivityLogFilterCriteria filterCriteria)
+        public HttpResponseMessage ListActivityLogDetails(ActivityLogFilterCriteria filterCriteria,bool isArchivedActivity = false)
         {
             var result = new ListResponse<ActivityDetailMessage>();
             try
@@ -326,7 +326,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
                 }
 
                 var readerRepository = new ReaderRepository();
-                result = readerRepository.ListActivityLogDetails(filterCriteria);
+                result = readerRepository.ListActivityLogDetails(filterCriteria, isArchivedActivity);
 
                 if (result != null)
                 {
