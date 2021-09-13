@@ -2583,3 +2583,43 @@ GO
 
 -- HOTS user cloning/userclone
 GO
+
+--START UserStory 892315 
+IF NOT EXISTS (Select * from  [Security].[Route] where RouteValue = 'EnterpriseRoles')
+Begin
+INSERT INTO [Security].[Route](RouteValue, [Description], CreatedBy, CreatedDate)
+SELECT 'EnterpriseRoles', 'EnterpriseRoles', 480, GETUTCDATE()
+END
+GO
+
+IF NOT EXISTS (Select * from  [Security].[RightRoute] where RightName = 'EnterpriseRoles' AND RightId = 509 AND RouteId = 13)
+Begin
+INSERT INTO [Security].[RightRoute](RightId, RouteId, RightName, CreatedBy, CreatedDate)
+SELECT 509, 13, 'EnterpriseRoles', 480, GETUTCDATE()
+END
+
+IF NOT EXISTS (Select * from  [Security].[RightRoute] where RightName = 'EnterpriseRoles' AND RightId = 509 AND RouteId = 9)
+Begin
+INSERT INTO [Security].[RightRoute](RightId, RouteId, RightName, CreatedBy, CreatedDate)
+SELECT 509, 9, 'EnterpriseRoles', 480, GETUTCDATE()
+END
+
+
+DECLARE @NivigationMenuId int
+DECLARE @SettingCategoryTypeId int
+
+SELECT @NivigationMenuId = Id
+FROM [Enterprise].[NavigationMenu]
+WHERE PageId = 'enterpriseRoles'
+
+SELECT @SettingCategoryTypeId = SettingCategoryTypeId
+FROM [Settings].[SettingCategoryType]
+WHERE [Name] = 'Company'
+
+IF (@NivigationMenuId IS NOT NULL) AND (@SettingCategoryTypeId IS NOT NULL) AND (NOT EXISTS (SELECT * FROM [Enterprise].[NavigationMenuSettingAccess] 
+WHERE NavigationMenuId = @NivigationMenuId AND SettingCategoryTypeId = @SettingCategoryTypeId  AND MappingName = 'PrimaryPropertyEnterpriseRole'))
+BEGIN
+INSERT INTO [Enterprise].[NavigationMenuSettingAccess](NavigationMenuId, SettingCategoryTypeId, MappingName)
+SELECT @NivigationMenuId, @SettingCategoryTypeId, 'PrimaryPropertyEnterpriseRole'
+END
+--END UserStory 892315 

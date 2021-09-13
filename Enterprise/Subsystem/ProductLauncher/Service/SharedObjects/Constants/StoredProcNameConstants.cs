@@ -413,6 +413,9 @@
         public const string SP_GetUnifiedSetting = "Settings.GetUnifiedSetting";
         public const string SP_UpdateUnifiedSetting = "Ident.UpdateUnifiedSetting";
 
+        //Accessability Setting
+        public const string SP_GetNavigationMenuSettingUnaccessable = "Enterprise.GetNavigationMenuSettingUnaccessable";
+
         //Custom Fields
         public const string SP_GetFieldsByPartyId = "Settings.GetFieldsByPartyId";
         public const string SP_GetFieldsValuesByUserLoginPersonaId = "Settings.GetFieldsValuesByUserLoginPersonaId";

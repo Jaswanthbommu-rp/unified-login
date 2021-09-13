@@ -2792,6 +2792,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             });
         }
 
+        public IList<NavigationMenuSetting> GetNavigationMenuSettingsUnaccessable(long partyId)
+        {
+            using (var repository = GetRepository())
+            {
+                return repository.GetMany<NavigationMenuSetting>(StoredProcNameConstants.SP_GetNavigationMenuSettingUnaccessable, new { partyId }).ToList();
+            }
+        }
+
         #endregion
 
         #region Private methods
