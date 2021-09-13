@@ -1,8 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Hots
 {
@@ -13,6 +11,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Hots
         public long CloneUserId { get; set; }
         public string CloneUserName { get; set; }
         public string ClonePassword { get; set; }
+        
+        [JsonIgnore]
+        public long ClonePersonaId { get; set; }
+
+        [JsonIgnore] public List<int> CloneProducts { get; set; } = new List<int>();
     }
 
     public class ClonedUsers

@@ -2519,3 +2519,22 @@ update UserManagement.Control set ControlTypeId=3 where UIId = 'UnifiedPlatformR
 update UserManagement.Control set ControlTypeId=10 where UIId = 'UnifiedPlatformRoleTemplateRoleRadioUIId'
 GO
 --END Userstory 934548
+
+-- HOTS user cloning/userclone
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'HOTSCheckUserProductStatusRetryCount')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
+	VALUES ('HOTSCheckUserProductStatusRetryCount', 'The number of times to retry when checking if a HOTS clone product batch process is complete', 0);
+END
+
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'HOTSCheckUserProductStatusSleepTimeout')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
+	VALUES ('HOTSCheckUserProductStatusSleepTimeout', 'The amount of time in ms to wait checking a HOTS clone product batch process', 0);
+END
+
+
+-- HOTS user cloning/userclone
+GO

@@ -49,7 +49,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		///  Learn more url
 		/// </summary>
 		[JsonProperty(PropertyName = "ProductStatus")]
-		public int ProductStatus { get; set; } = Convert.ToInt32(ProductBatchStatusType.Success);
+		public int ProductStatus { get; set; } = 0;
 
 		/// <summary>
 		/// Sub solution of the product
