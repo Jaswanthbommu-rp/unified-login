@@ -35,7 +35,8 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Repository
 
             try
             {
-                connectionString = isAuditArchive ? (ConfigurationManager.ConnectionStrings["AuditArchiveDbCnn"].ConnectionString): (ConfigurationManager.ConnectionStrings["AuditDbCnn"].ConnectionString);
+                var key = isAuditArchive ? "AuditArchiveDbCnn" : "AuditDbCnn";
+                connectionString = ConfigurationManager.ConnectionStrings[key].ConnectionString;
                 if (connectionString == null)
                     throw new Exception("Database connection settings have not been set in Web.config file");
             }
