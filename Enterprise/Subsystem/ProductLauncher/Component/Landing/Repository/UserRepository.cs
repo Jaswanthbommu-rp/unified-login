@@ -1567,7 +1567,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     }
 
 
-                    int productCount = SaveProductDetails(repository, newProfile.productBatch, createUserResponse, CreateUserPersonaId, AssignUserPersonaId, userClaim.UserRealPageGuid, organizationRealPageId, errorStatus, newProfile.UserTypeId, true, aoProductsAvailableForUser, newProfile.MigratedUser, true, greenBookRole);
+                    int productCount = SaveProductDetails(repository, newProfile.productBatch, createUserResponse, CreateUserPersonaId, AssignUserPersonaId, userClaim.UserRealPageGuid, organizationRealPageId, errorStatus, newProfile.UserTypeId, true, aoProductsAvailableForUser, newProfile.MigratedUser, true, greenBookRole, "add");
 
                     #endregion
 
@@ -3440,7 +3440,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="userIsActive">Is the user active</param>
         /// <param name="aoProducts">Applicable if PMC has AO products</param>
         /// <returns>Number of Products</returns>
-        private int SaveProductDetails(IRepository repository, IList<ProductBatch> productList, CreateUserResponse<IErrorData> createUserResponse, long CreateUserPersonaId, long AssignUserPersonaId, Guid realPageId, Guid organizationRealPageId, Status<IErrorData> errorStatus, int userTypeId, bool userIsActive, IList<string> aoProducts = null, bool migratedUser = false, bool isCreateUser = false, int unifiedPlatformRole = 0)
+        private int SaveProductDetails(IRepository repository, IList<ProductBatch> productList, CreateUserResponse<IErrorData> createUserResponse, long CreateUserPersonaId, long AssignUserPersonaId, Guid realPageId, Guid organizationRealPageId, Status<IErrorData> errorStatus, int userTypeId, bool userIsActive, IList<string> aoProducts = null, bool migratedUser = false, bool isCreateUser = false, int unifiedPlatformRole = 0, string operationType = "update")
         {
             int productCount = 0;
             int enterpriseRoleId = 0;
@@ -3521,7 +3521,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
 
 
-            if (userIsActive && userTypeId != (int)UserRoleType.SuperUser && !migratedUser && enterpriseRoleId > 0)
+            if (userIsActive && userTypeId != (int)UserRoleType.SuperUser && !migratedUser && enterpriseRoleId > 0 && operationType == "add")
             {
                 object param = new
                 {
@@ -3532,6 +3532,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 foreach (var product in roleTemplateProducts)
                 {
+                    batchProcessTypeId = (int)BatchProcessType.CreateUpdateProductUser;
                     var productRoleData = roleTemplateProductRole?.Where(p => p.ProductId == product);
                     var roleTemplateRoles = productRoleData?.Select(p => new
                     {
