@@ -4776,6 +4776,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="profile"></param>
         private void LogAuditActivity(string logActivityType, LogActivityCategoryType logActivityCategoryType, string message, string stepName, IProfileDetail profile)
         {
+            string userName = string.IsNullOrEmpty(_userClaim.ImpersonatedByName) ? _userClaim.FirstName + " " + _userClaim.LastName : _userClaim.ImpersonatedByName;
             LogActivity.WriteActivity(new ActivityDetails
             {
                 LogActivityTypeName = logActivityType,
@@ -4783,7 +4784,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 CorrelationId = _userClaim.CorrelationId.ToString(),
                 BooksMasterOrganizationId = _userClaim.OrganizationMasterId,
                 OrganizationPartyId = _userClaim.OrganizationPartyId,
-                Message = string.Format(message, profile.FirstName, profile.LastName, _userClaim.FirstName, _userClaim.LastName, profile.CreateUserSourceType.ToString()),
+                Message = string.Format(message, profile.FirstName, profile.LastName, userName, profile.CreateUserSourceType.ToString()),
 
                 FromUserLoginName = _userClaim.LoginName,
                 FromUserLoginId = _userClaim.UserId,
@@ -6235,7 +6236,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         string joinedOldRoles = string.Join(", ", oldRoles);
                         string joinedNewRoles = string.Join(", ", newRoles);
 
-                        var auditMessage = $"{{2}} {{3}} changed the Unified Platform role for {{0}} {{1}}. Previous role(s): {joinedOldRoles}. New role(s) : {joinedNewRoles}.";
+                        var auditMessage = $"{{2}} changed the Unified Platform role for {{0}} {{1}}. Previous role(s): {joinedOldRoles}. New role(s) : {joinedNewRoles}.";
                         LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, auditMessage, "UpdateUser", updateUserProfileEntity.NewProfile);
                     }
 
@@ -6248,7 +6249,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         {
                             var existingUserRole = enterpriseRoles.ToList().Where(e => e.RoleId == updateUserProfileEntity.ExistingRoleIds[0]).Select(e => e.Role).FirstOrDefault();
                             var newUserRole = enterpriseRoles.ToList().Where(e => e.RoleId == greenBookRole).Select(e => e.Role).FirstOrDefault();
-                            var auditMessage = $"{{2}} {{3}} changed the Unified Platform role for {{0}} {{1}}. Previous role: {existingUserRole}. New role: {newUserRole}.";
+                            var auditMessage = $"{{2}} changed the Unified Platform role for {{0}} {{1}}. Previous role: {existingUserRole}. New role: {newUserRole}.";
                             LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, auditMessage, "UpdateUser", updateUserProfileEntity.NewProfile);
                         }
                     }
@@ -6256,12 +6257,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     if (userBatchEntity.IsUserTypeChangedFromNoEmailToRegular)
                     {
                         //Log Activity
-                        LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, "{0} {1} user type changed from regular (No Email) to regular user by {2} {3}.", "UpdateUser", updateUserProfileEntity.NewProfile);
+                        LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, "{0} {1} user type changed from regular (No Email) to regular user by {2}.", "UpdateUser", updateUserProfileEntity.NewProfile);
                     }
                     else
                     {
                         //Log Activity
-                        LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, "User {0} {1} successfully updated by user {2} {3}.", "UpdateUser", updateUserProfileEntity.NewProfile);
+                        LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, "User {0} {1} successfully updated by user {2}.", "UpdateUser", updateUserProfileEntity.NewProfile);
                     }
                 }
 

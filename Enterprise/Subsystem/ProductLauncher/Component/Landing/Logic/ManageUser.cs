@@ -306,17 +306,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 						person = personLogic.GetPerson(cloneUserRealpageId);
 						if (person != null)
 						{
-							auditMessage = "User {0} {1} originally cloned from user " + person.FirstName + " " + person.LastName + " by user {2} {3}.";
+							auditMessage = "User {0} {1} originally cloned from user " + person.FirstName + " " + person.LastName + " by user {2}.";
 						}
 					}
 					else
 					{
-						auditMessage = "New User {0} {1} successfully created by user {2} {3}.";
+						auditMessage = "New User {0} {1} successfully created by user {2}.";
 					}
 				}
 				else
 				{
-					auditMessage = "New User {0} {1} successfully created by {4}.";
+					auditMessage = "New User {0} {1} successfully created by {3}.";
 				}
 
                 LogAuditActivity(LogActivityTypeConstants.CREATE_USER, LogActivityCategoryType.User, auditMessage, "CreateUser", profile);
@@ -333,13 +333,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 						if (isNotified)
 						{
 							//Log Activity
-							message = "Welcome Email sent to user {0} {1} by user {2} {3}.";
+							message = "Welcome Email sent to user {0} {1} by user {2}.";
 							LogAuditActivity(LogActivityTypeConstants.EMAIL_SENT, LogActivityCategoryType.Email, message, "CreateUser", profile);
 						}
 						else
 						{
 							//Log Activity
-							message = "Unable to Resend Welcome Email to user {0} {1} by user {2} {3}.";
+							message = "Unable to Resend Welcome Email to user {0} {1} by user {2}.";
 							LogAuditActivity(LogActivityTypeConstants.EMAIL_RESENT, LogActivityCategoryType.Email, message, "CreateUser", profile);
 						}
 					}
@@ -434,13 +434,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					if (isNotified)
 					{
 						//Log Activity
-						message = "Welcome Email sent to user {0} {1} by user {2} {3}.";
+						message = "Welcome Email sent to user {0} {1} by user {2}.";
 						LogAuditActivity(LogActivityTypeConstants.EMAIL_SENT, LogActivityCategoryType.Email, message, "UpdateUser", profile);
 					}
 					else
 					{
 						//Log Activity
-						message = "Unable to Resend Welcome Email to user {0} {1} by user {2} {3}.";
+						message = "Unable to Resend Welcome Email to user {0} {1} by user {2}.";
 						LogAuditActivity(LogActivityTypeConstants.EMAIL_RESENT, LogActivityCategoryType.Email, message, "UpdateUser", profile);
 					}
 				}
@@ -792,6 +792,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		private void LogAuditActivity(string logActivityType, LogActivityCategoryType logActivityCategoryType,
 			string message, string stepName, IProfileDetail profile)
 		{
+			string userName = string.IsNullOrEmpty(_userClaim.ImpersonatedByName) ? _userClaim.FirstName +" "+ _userClaim.LastName : _userClaim.ImpersonatedByName;
 			LogActivity.WriteActivity(new ActivityDetails
 			{
 				LogActivityTypeName = logActivityType,
@@ -799,7 +800,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				CorrelationId = _userClaim.CorrelationId.ToString(),
 				BooksMasterOrganizationId = _userClaim.OrganizationMasterId,
                 OrganizationPartyId = _userClaim.OrganizationPartyId,
-				Message = string.Format(message, profile.FirstName, profile.LastName, _userClaim.FirstName, _userClaim.LastName, profile.CreateUserSourceType.ToString()),
+				Message = string.Format(message, profile.FirstName, profile.LastName, userName, profile.CreateUserSourceType.ToString()),
+
 
 				FromUserLoginName = _userClaim.LoginName,
 				FromUserLoginId = _userClaim.UserId,

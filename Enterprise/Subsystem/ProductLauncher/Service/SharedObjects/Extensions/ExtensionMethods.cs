@@ -177,7 +177,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
 
                             AuditRecord auditRecord = new AuditRecord();
 
-                            auditRecord.AuditMessage = string.Concat("{2} {3} updated the ",
+                            auditRecord.AuditMessage = string.Concat("{2} updated the ",
                                                   oldCustomFieldValue.Name,
                                                   " information from ", string.IsNullOrEmpty(oldValue) ? "a blank value" : oldValue,
                                                   " to ", string.IsNullOrEmpty(newValue) ? "a blank value" : newValue,
@@ -201,7 +201,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
                 {
                     AuditRecord auditRecord = new AuditRecord();
 
-                    auditRecord.AuditMessage = string.Concat("{2} {3} updated the ",
+                    auditRecord.AuditMessage = string.Concat("{2} updated the ",
                                           customField.Name,
                                           " information from a blank value",
                                           " to ", customField.Value,
