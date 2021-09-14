@@ -1,4 +1,5 @@
-﻿CREATE PROCEDURE [Person].[ListPersons_Ver04] (  
+﻿
+CREATE PROCEDURE [Person].[ListPersons_Ver04] (  
  @RealPageId uniqueidentifier = NULL,  
  @ParentPartyRoleTypeId int = NULL,  
  @UserListFilterType tinyint = 0,  
@@ -278,16 +279,20 @@ BEGIN
   PersonPartyId BIGINT NULL,    
   UserId BIGINT NULL,    
   LoginName VARCHAR(255) NULL,    
-  LastLogin DATETIME NULL,    
+  LastLogin DATETIME NULL,   
+  FromDate DATETIME NULL,  
+  ThruDate DATETIME NULL,  
   IdentityProviderTypeId INT NULL,    
   StatusId INT,    
-  StatusName VARCHAR(50) NULL
+  StatusName VARCHAR(50) NULL,
+  StatusThruDate DATETIME NULL,  
+  PasswordModifiedDate SMALLDATETIME NULL
  )  
   
  INSERT INTO #UserLogin  
  (  
- PersonaId,UserLoginPersonaId,PersonPartyId,UserId,LoginName,LastLogin --,FromDate,ThruDate  
- ,IdentityProviderTypeId ,StatusId,StatusName--,StatusThruDate,PasswordModifiedDate  
+ PersonaId,UserLoginPersonaId,PersonPartyId,UserId,LoginName,LastLogin ,FromDate,ThruDate  
+ ,IdentityProviderTypeId ,StatusId,StatusName,StatusThruDate,PasswordModifiedDate  
  )  
  SELECT     
   pe.PersonaId,   
@@ -295,14 +300,18 @@ BEGIN
   ul.PersonPartyId,    
   ul.UserId,    
   ul.LoginName,    
-  ul.LastLoginDate AS LastLogin,    
+  ul.LastLoginDate AS LastLogin,   
+  iulp.FromDate,  
+  iulp.ThruDate, 
   ul.IdentityProviderTypeId,    
   iulp.StatusTypeId AS StatusId,    
   CASE    
   WHEN ((iulp.StatusTypeId = 12) AND (ul.LastLoginDate IS NULL)) THEN 'Pending'    
   WHEN ((iulp.StatusTypeId = 12) AND (ul.LastLoginDate IS NOT NULL)) THEN 'Active'    
   ELSE est.Name    
-  END AS 'StatusName'
+  END AS 'StatusName',    
+  iulp.StatusThruDate,  
+  ul.PasswordModifiedDate 
  FROM Person.Persona pe    
   INNER JOIN Ident.UserLoginPersona iulp ON (pe.UserLoginPersonaId = iulp.UserLoginPersonaId)    
   INNER JOIN Ident.UserLogin ul ON iulp.UserLoginId = ul.UserId    
@@ -386,7 +395,7 @@ BEGIN
   
  DROP INDEX IF EXISTS [NCI_cteUserLogin_PersonPartyId] ON [dbo].[#UserLogin]  
  CREATE NONCLUSTERED INDEX [NCI_cteUserLogin_PersonPartyId]  ON [dbo].[#UserLogin] ([PersonPartyId])  
- INCLUDE ([UserLoginPersonaId],[PersonaId],[UserId],[LoginName],[LastLogin],[IdentityProviderTypeId],[StatusId],[StatusName])  
+ INCLUDE ([UserLoginPersonaId],[PersonaId],[UserId],[LoginName],[LastLogin],[FromDate],[ThruDate],[IdentityProviderTypeId],[StatusId],[StatusName],[StatusThruDate],[PasswordModifiedDate])  
   
  ;WITH cteUsersFinal  
  (  
@@ -399,12 +408,16 @@ BEGIN
   UserId,  
   LoginName,
   LastLogin,
+  FromDate,
+  ThruDate,
   StatusId,  
-  StatusName,  
+  StatusName,
+  StatusThruDate,
   Is3rdPartyIDP,  
   Products,  
   UserType,  
-  PartyRoleTypeId,  
+  PartyRoleTypeId, 
+  PasswordModifiedDate,
   EntepriseRoleName,  
   RoleTemplateId,  
   OffsetMinutes,  
@@ -423,15 +436,19 @@ BEGIN
     ulp.UserId,    
     ulp.LoginName,
 	ulp.LastLogin,
+	ulp.FromDate,  
+	ulp.ThruDate,
     ulp.StatusId,    
-    ulp.StatusName,    
+    ulp.StatusName, 
+	ulp.StatusThruDate, 
     CASE    
      WHEN ipt.Name = 'ID3' THEN 0    
      ELSE 1    
     END AS 'Is3rdPartyIDP',    
     ISNULL(pct.ProductCount, 0) AS Products,    
     ISNULL(rt.Name, '') AS UserType,    
-    prs.RoleTypeIdFrom AS PartyRoleTypeId,    
+    prs.RoleTypeIdFrom AS PartyRoleTypeId,  
+	ulp.PasswordModifiedDate,
     UER.EnterpriseRoleName,  
     UER.RoleTemplateId,  
     @OffsetMinutes,    
@@ -487,9 +504,13 @@ BEGIN
     UserId,  
     LoginName,
 	LastLogin,
+	FromDate,
+	ThruDate,
     StatusId,  
-    StatusName,  
-    Is3rdPartyIDP,  
+    StatusName,
+	StatusThruDate,
+    Is3rdPartyIDP, 
+	PasswordModifiedDate,
     OffsetMinutes,      
     Products,  
     UserType,  
