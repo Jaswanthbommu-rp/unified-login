@@ -2594,6 +2594,11 @@ GO
 
 DECLARE @RightId int
 DECLARE @RouteId int
+DECLARE @UserId bigint
+
+SELECT	@UserId = UserId
+FROM	Ident.UserLogin
+WHERE	LoginName LIKE 'realpagead@%'
 
 SELECT @RightId = RightId
 FROM [Security].[Right]
@@ -2603,20 +2608,20 @@ SELECT @RouteId = RouteId
 FROM [Security].[Route]
 WHERE RouteValue = 'EnterpriseRoles'
 
-IF @RightId IS NOT NULL AND @RouteId IS NOT NULL AND NOT EXISTS (Select * from  [Security].[RightRoute] where RightName = 'EnterpriseRoles' AND RightId = @RightId AND RouteId = @RouteId)
+IF @RightId IS NOT NULL AND @RouteId IS NOT NULL AND @UserId IS NOT NULL AND NOT EXISTS (Select * from  [Security].[RightRoute] where RightName = 'EnterpriseRoles' AND RightId = @RightId AND RouteId = @RouteId)
 Begin
 INSERT INTO [Security].[RightRoute](RightId, RouteId, RightName, CreatedBy, CreatedDate)
-SELECT 509, 13, 'EnterpriseRoles', 480, GETUTCDATE()
+SELECT @RightId, @RouteId, 'EnterpriseRoles', @UserId, GETUTCDATE()
 END
 
 SELECT @RouteId = RouteId
 FROM [Security].[Route]
 WHERE RouteValue = 'SideMenu'
 
-IF @RightId IS NOT NULL AND @RouteId IS NOT NULL AND NOT EXISTS (Select * from  [Security].[RightRoute] where RightName = 'EnterpriseRoles' AND RightId = @RightId AND RouteId = @RouteId)
+IF @RightId IS NOT NULL AND @RouteId IS NOT NULL AND @UserId IS NOT NULL AND NOT EXISTS (Select * from  [Security].[RightRoute] where RightName = 'EnterpriseRoles' AND RightId = @RightId AND RouteId = @RouteId)
 Begin
 INSERT INTO [Security].[RightRoute](RightId, RouteId, RightName, CreatedBy, CreatedDate)
-SELECT 509, 9, 'EnterpriseRoles', 480, GETUTCDATE()
+SELECT @RightId, @RouteId, 'EnterpriseRoles', @UserId, GETUTCDATE()
 END
 
 DECLARE @NivigationMenuId int
