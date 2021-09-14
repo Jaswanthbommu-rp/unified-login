@@ -153,13 +153,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 
 			WriteToLog(LogEventLevel.Debug, $"Custom fields json - {userCustomFieldValueJson} for new user with login name {userProductDetails.UserProfileDetails.LoginName}");
 
-			LogAuditActivity(LogActivityTypeConstants.CREATE_USER, LogActivityCategoryType.User, "New User {0} {1} successfully created by user {2} using enterprise API.", "CreateUser", newUserDetails);
+			LogAuditActivity(LogActivityTypeConstants.CREATE_USER, LogActivityCategoryType.User, "New User {0} {1} successfully created by RealPage user {2} using enterprise API.", "CreateUser", newUserDetails);
 			if (userProductDetails.UserProfileDetails.SendInvitationEmail ?? false)
 			{
 				if (isMailNotified)
 				{
 					//Log Activity
-					LogAuditActivity(LogActivityTypeConstants.EMAIL_SENT, LogActivityCategoryType.Email, "Welcome Email sent to user {0} {1} by user {2}.", "CreateUser", newUserDetails);
+					LogAuditActivity(LogActivityTypeConstants.EMAIL_SENT, LogActivityCategoryType.Email, "Welcome Email sent to user {0} {1} by RealPage user {2}.", "CreateUser", newUserDetails);
 				}
 			}
 			response.Data = userRealPageId;

@@ -306,12 +306,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 						person = personLogic.GetPerson(cloneUserRealpageId);
 						if (person != null)
 						{
-							auditMessage = "User {0} {1} originally cloned from user " + person.FirstName + " " + person.LastName + " by user {2}.";
+							auditMessage = "User {0} {1} originally cloned from user " + person.FirstName + " " + person.LastName + " by RealPage user {2}.";
 						}
 					}
 					else
 					{
-						auditMessage = "New User {0} {1} successfully created by user {2}.";
+						auditMessage = "New User {0} {1} successfully created by RealPage user {2}.";
 					}
 				}
 				else
@@ -333,13 +333,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 						if (isNotified)
 						{
 							//Log Activity
-							message = "Welcome Email sent to user {0} {1} by user {2}.";
+							message = "Welcome Email sent to user {0} {1} by RealPage user {2}.";
 							LogAuditActivity(LogActivityTypeConstants.EMAIL_SENT, LogActivityCategoryType.Email, message, "CreateUser", profile);
 						}
 						else
 						{
 							//Log Activity
-							message = "Unable to Resend Welcome Email to user {0} {1} by user {2}.";
+							message = "Unable to Resend Welcome Email to user {0} {1} by RealPage user {2}.";
 							LogAuditActivity(LogActivityTypeConstants.EMAIL_RESENT, LogActivityCategoryType.Email, message, "CreateUser", profile);
 						}
 					}
@@ -434,13 +434,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					if (isNotified)
 					{
 						//Log Activity
-						message = "Welcome Email sent to user {0} {1} by user {2}.";
+						message = "Welcome Email sent to user {0} {1} by RealPage user {2}.";
 						LogAuditActivity(LogActivityTypeConstants.EMAIL_SENT, LogActivityCategoryType.Email, message, "UpdateUser", profile);
 					}
 					else
 					{
 						//Log Activity
-						message = "Unable to Resend Welcome Email to user {0} {1} by user {2}.";
+						message = "Unable to Resend Welcome Email to user {0} {1} by RealPage user {2}.";
 						LogAuditActivity(LogActivityTypeConstants.EMAIL_RESENT, LogActivityCategoryType.Email, message, "UpdateUser", profile);
 					}
 				}
