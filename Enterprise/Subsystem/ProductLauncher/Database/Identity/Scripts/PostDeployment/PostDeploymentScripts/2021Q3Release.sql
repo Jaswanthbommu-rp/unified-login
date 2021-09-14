@@ -2592,18 +2592,32 @@ SELECT 'EnterpriseRoles', 'EnterpriseRoles', 480, GETUTCDATE()
 END
 GO
 
-IF NOT EXISTS (Select * from  [Security].[RightRoute] where RightName = 'EnterpriseRoles' AND RightId = 509 AND RouteId = 13)
+DECLARE @RightId int
+DECLARE @RouteId int
+
+SELECT @RightId = RightId
+FROM [Security].[Right]
+WHERE RightName = 'PrimaryPropertyEnterpriseRole'
+
+SELECT @RouteId = RouteId
+FROM [Security].[Route]
+WHERE RouteValue = 'EnterpriseRoles'
+
+IF @RightId IS NOT NULL AND @RouteId IS NOT NULL AND NOT EXISTS (Select * from  [Security].[RightRoute] where RightName = 'EnterpriseRoles' AND RightId = @RightId AND RouteId = @RouteId)
 Begin
 INSERT INTO [Security].[RightRoute](RightId, RouteId, RightName, CreatedBy, CreatedDate)
 SELECT 509, 13, 'EnterpriseRoles', 480, GETUTCDATE()
 END
 
-IF NOT EXISTS (Select * from  [Security].[RightRoute] where RightName = 'EnterpriseRoles' AND RightId = 509 AND RouteId = 9)
+SELECT @RouteId = RouteId
+FROM [Security].[Route]
+WHERE RouteValue = 'SideMenu'
+
+IF @RightId IS NOT NULL AND @RouteId IS NOT NULL AND NOT EXISTS (Select * from  [Security].[RightRoute] where RightName = 'EnterpriseRoles' AND RightId = @RightId AND RouteId = @RouteId)
 Begin
 INSERT INTO [Security].[RightRoute](RightId, RouteId, RightName, CreatedBy, CreatedDate)
 SELECT 509, 9, 'EnterpriseRoles', 480, GETUTCDATE()
 END
-
 
 DECLARE @NivigationMenuId int
 DECLARE @SettingCategoryTypeId int
