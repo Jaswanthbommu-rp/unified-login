@@ -620,7 +620,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [Route("user")]
         [AuthorizeRight("createuser","cloneuser")]
         [HttpPost]
-		[AuthorizeScope("companyfunctions", "rplandingapi")]
+		[AuthorizeScope("companyfunctions", "rplandingapi", "migrationapi")]
 		public CreateUserResponse<IErrorData> CreateUser([FromBody] ProfileDetail newProfile)
         {
 			CreateUserResponse<IErrorData> response = new CreateUserResponse<IErrorData>();
