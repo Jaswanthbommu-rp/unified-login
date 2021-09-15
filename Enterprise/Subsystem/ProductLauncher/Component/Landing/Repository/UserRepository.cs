@@ -5025,7 +5025,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                     if ((profile.TelecommunicationNumber.Count > 0) && (profile.PreferredContactMethodId > 0))
                     {
+                        message += "ChangeUserTypeExternal log 15 --1 ---";
                         var response = UpdateProfile(repository, profile.RealPageId, profile);
+                        message += "ChangeUserTypeExternal log 15 --2 ---";
                         if (response.Id == 0)
                         {
                             return "Update User Error: Update Preferred ContactMethod and Phone for External Users failed.";
@@ -5108,7 +5110,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
             catch (Exception exception)
             {
-                return message + exception;
+                int lineno = new System.Diagnostics.StackTrace(exception, true).GetFrame(0).GetFileLineNumber();
+                return message + " Line no: " + lineno + "  ,"+ exception;
             }
             #endregion
 
