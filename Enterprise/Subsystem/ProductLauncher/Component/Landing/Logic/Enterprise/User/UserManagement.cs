@@ -153,13 +153,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 
 			WriteToLog(LogEventLevel.Debug, $"Custom fields json - {userCustomFieldValueJson} for new user with login name {userProductDetails.UserProfileDetails.LoginName}");
 
-			LogAuditActivity(LogActivityTypeConstants.CREATE_USER, LogActivityCategoryType.User, "New User {0} {1} successfully created by user {2} {3} using enterprise API.", "CreateUser", newUserDetails);
+			LogAuditActivity(LogActivityTypeConstants.CREATE_USER, LogActivityCategoryType.User, "New User {0} {1} successfully created by RealPage user {2} using enterprise API.", "CreateUser", newUserDetails);
 			if (userProductDetails.UserProfileDetails.SendInvitationEmail ?? false)
 			{
 				if (isMailNotified)
 				{
 					//Log Activity
-					LogAuditActivity(LogActivityTypeConstants.EMAIL_SENT, LogActivityCategoryType.Email, "Welcome Email sent to user {0} {1} by user {2} {3}.", "CreateUser", newUserDetails);
+					LogAuditActivity(LogActivityTypeConstants.EMAIL_SENT, LogActivityCategoryType.Email, "Welcome Email sent to user {0} {1} by RealPage user {2}.", "CreateUser", newUserDetails);
 				}
 			}
 			response.Data = userRealPageId;
@@ -653,6 +653,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 		private void LogAuditActivity(string logActivityType, LogActivityCategoryType logActivityCategoryType,
 			string message, string stepName, UserDetails userDetails)
 		{
+			string userName = string.IsNullOrEmpty(_userClaims.ImpersonatedByName) ? _userClaims.FirstName + " " + _userClaims.LastName : _userClaims.ImpersonatedByName;
 			try
 			{
 				LogActivity.WriteActivity(new ActivityDetails
@@ -662,9 +663,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 					CorrelationId = _userClaims.CorrelationId.ToString(),
 					BooksMasterOrganizationId = _userClaims.OrganizationMasterId,
                     OrganizationPartyId = _userClaims.OrganizationPartyId,
-					Message = string.Format(message, userDetails.FirstName, userDetails.LastName, _userClaims.FirstName,
-						_userClaims.LastName),
-
+					Message = string.Format(message, userDetails.FirstName, userDetails.LastName, userName),
 					FromUserLoginName = _userClaims.LoginName,
 					FromUserLoginId = _userClaims.UserId,
 					FromUserRealpageId = _userClaims.UserRealPageGuid.ToString(),

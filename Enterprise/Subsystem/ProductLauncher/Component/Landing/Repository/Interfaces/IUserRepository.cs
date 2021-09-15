@@ -174,5 +174,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		IList<NavigationMenuEntry> GetNavigationMenu();
 
 		IList<NavigationMenuRightEntry> GetNavigationMenuRights();
+
+		IList<NavigationMenuSetting> GetNavigationMenuSettingsUnaccessable(long partyId);
 	}
 }

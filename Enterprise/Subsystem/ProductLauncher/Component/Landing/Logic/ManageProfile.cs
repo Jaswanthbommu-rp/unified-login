@@ -185,13 +185,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         public IList<ProfileDetail> ListProfileDetails(IDictionary<object, object> globals, Guid? organizationRealPageId = null)
         {
 			IList<ProfileDetail> profileDetailList = new List<ProfileDetail>();
-            RequestParameter dataFilter = new RequestParameter();           
-
+            RequestParameter dataFilter = new RequestParameter();
+            bool isExport = false;
             // for now, get the current user organization to filter the list of users
             //ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
-	        //if (currentClaimPrincipal.Identity.IsAuthenticated)
-	        //{
-		    //    Persona persona = _personaLogic.GetActivePersona(_userClaim.UserRealPageGuid);
+            //if (currentClaimPrincipal.Identity.IsAuthenticated)
+            //{
+            //    Persona persona = _personaLogic.GetActivePersona(_userClaim.UserRealPageGuid);
             if (organizationRealPageId == null || !_userClaim.RealPageEmployee)
             {
                 organizationRealPageId = _userClaim.OrganizationRealPageGuid;
@@ -201,8 +201,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			{
 				dataFilter = globals[BaseType.RequestParameter] as RequestParameter;
 			}
-
-			IList<int> organizationActiveProductIdList = _productRepository.GetProductIdsByCompany(_userClaim.OrganizationRealPageGuid);
+            if (globals.ContainsKey("isExport"))
+            {
+                isExport = true;
+            }
+            IList<int> organizationActiveProductIdList = _productRepository.GetProductIdsByCompany(_userClaim.OrganizationRealPageGuid);
             if (organizationActiveProductIdList.Contains((int)ProductEnum.AssetOptimizer))
             {
                 var allProducts = _productRepository.GetAllProducts();
@@ -222,7 +225,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				organizationActiveProductIdList: organizationActiveProductIdList,
 				realPageId: organizationRealPageId,
 				parentPartyRoleTypeId: _parentPartyRoleTypeId,
-				dataFilterSort: dataFilter);
+				dataFilterSort: dataFilter,
+                isExport: isExport);
 	
             return profileDetailList;
         }

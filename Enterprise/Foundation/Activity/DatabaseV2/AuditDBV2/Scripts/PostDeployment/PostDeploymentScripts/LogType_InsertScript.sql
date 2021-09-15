@@ -442,122 +442,144 @@ BEGIN
 INSERT [Logging].[LogType] (LogTypeId, LogCategoryTypeId, [Name], [Description]) VALUES ( '98','4','Reset Password Email','' ) 
 END 
 GO
+
 IF NOT EXISTS (SELECT 1 FROM [Logging].[LogType] WHERE [Name] = 'User requested new activation link' AND [LogcategoryTypeId] = '4')
 BEGIN 
 INSERT [Logging].[LogType] (LogTypeId, LogCategoryTypeId, [Name], [Description]) VALUES ( '99','4','User requested new activation link','' ) 
 END 
 GO
 
+IF NOT EXISTS (SELECT 1 FROM [Logging].[LogType] WHERE [Name] = 'Internal Update Settings' AND [LogcategoryTypeId] = '6')
+BEGIN 
+INSERT [Logging].[LogType] (LogTypeId, LogCategoryTypeId, [Name], [Description]) VALUES ( '100','6','Internal Update Settings','' ) 
+END 
+GO
+
+IF NOT EXISTS (SELECT 1 FROM [Logging].[LogType] WHERE [Name] = 'Applied Template' AND [LogcategoryTypeId] = '6')
+BEGIN 
+INSERT [Logging].[LogType] (LogTypeId, LogCategoryTypeId, [Name], [Description]) VALUES ( '101','6','Applied Template','' ) 
+END 
+GO
+
+IF NOT EXISTS (SELECT 1 FROM [Logging].[LogType] WHERE [Name] = 'Internal Deleted Template' AND [LogcategoryTypeId] = '6')
+BEGIN 
+INSERT [Logging].[LogType] (LogTypeId, LogCategoryTypeId, [Name], [Description]) VALUES ( '102','6','Internal Deleted Template','' ) 
+END 
+GO
+
+IF NOT EXISTS (SELECT 1 FROM [Logging].[LogType] WHERE [Name] = 'Deleted Template' AND [LogcategoryTypeId] = '6')
+BEGIN 
+INSERT [Logging].[LogType] (LogTypeId, LogCategoryTypeId, [Name], [Description]) VALUES ( '103','6','Deleted Template','' ) 
+END 
+GO
+
+IF NOT EXISTS (SELECT 1 FROM [Logging].[LogType] WHERE [Name] = 'Internal Added Template' AND [LogcategoryTypeId] = '6')
+BEGIN 
+INSERT [Logging].[LogType] (LogTypeId, LogCategoryTypeId, [Name], [Description]) VALUES ( '104','6','Internal Added Template','' ) 
+END 
+GO
+
+IF NOT EXISTS (SELECT 1 FROM [Logging].[LogType] WHERE [Name] = 'Added Template' AND [LogcategoryTypeId] = '6')
+BEGIN 
+INSERT [Logging].[LogType] (LogTypeId, LogCategoryTypeId, [Name], [Description]) VALUES ( '105','6','Added Template','' ) 
+END 
+GO
+
+IF NOT EXISTS (SELECT 1 FROM [Logging].[LogType] WHERE [Name] = 'Internal Modified Template' AND [LogcategoryTypeId] = '6')
+BEGIN 
+INSERT [Logging].[LogType] (LogTypeId, LogCategoryTypeId, [Name], [Description]) VALUES ( '106','6','Internal Modified Template','' ) 
+END 
+GO
+
+
 IF NOT EXISTS (SELECT 1 FROM [Logging].[LogType] WHERE [Name] = 'Internal Enabled Setting' AND [LogcategoryTypeId] = '13')
 BEGIN 
-INSERT [Logging].[LogType] (LogTypeId, LogCategoryTypeId, [Name], [Description]) VALUES ( '100','13','Internal Enabled Setting','' ) 
+INSERT [Logging].[LogType] (LogTypeId, LogCategoryTypeId, [Name], [Description]) VALUES ( '107','13','Internal Enabled Setting','' ) 
 END 
 GO
 
 IF NOT EXISTS (SELECT 1 FROM [Logging].[LogType] WHERE [Name] = 'Internal Disabled Setting' AND [LogcategoryTypeId] = '13')
 BEGIN 
-INSERT [Logging].[LogType] (LogTypeId, LogCategoryTypeId, [Name], [Description]) VALUES ( '101','13','Internal Disabled Setting','' ) 
+INSERT [Logging].[LogType] (LogTypeId, LogCategoryTypeId, [Name], [Description]) VALUES ( '108','13','Internal Disabled Setting','' ) 
 END 
 GO
 
 IF NOT EXISTS (SELECT 1 FROM [Logging].[LogType] WHERE [Name] = 'Internal Update Settings' AND [LogcategoryTypeId] = '13')
 BEGIN 
-INSERT [Logging].[LogType] (LogTypeId, LogCategoryTypeId, [Name], [Description]) VALUES ( '102','13','Internal Update Settings','' ) 
+INSERT [Logging].[LogType] (LogTypeId, LogCategoryTypeId, [Name], [Description]) VALUES ( '109','13','Internal Update Settings','' ) 
 END 
 GO
 
 IF NOT EXISTS (SELECT 1 FROM [Logging].[LogType] WHERE [Name] = 'Internal Added Template' AND [LogcategoryTypeId] = '14')
 BEGIN 
-INSERT [Logging].[LogType] (LogTypeId, LogCategoryTypeId, [Name], [Description]) VALUES ( '103','14','Internal Added Template','' ) 
+INSERT [Logging].[LogType] (LogTypeId, LogCategoryTypeId, [Name], [Description]) VALUES ( '110','14','Internal Added Template','' ) 
 END 
 GO
 
 IF NOT EXISTS (SELECT 1 FROM [Logging].[LogType] WHERE [Name] = 'Internal Applied Template' AND [LogcategoryTypeId] = '14')
 BEGIN 
-INSERT [Logging].[LogType] (LogTypeId, LogCategoryTypeId, [Name], [Description]) VALUES ( '104','14','Internal Applied Template','' ) 
+INSERT [Logging].[LogType] (LogTypeId, LogCategoryTypeId, [Name], [Description]) VALUES ( '111','14','Internal Applied Template','' ) 
 END 
 GO
 
 
 IF NOT EXISTS (SELECT 1 FROM [Logging].[LogType] WHERE [Name] = 'Internal Deleted Template' AND [LogcategoryTypeId] = '14')
 BEGIN 
-INSERT [Logging].[LogType] (LogTypeId, LogCategoryTypeId, [Name], [Description]) VALUES ( '105','14','Internal Deleted Template','' ) 
+INSERT [Logging].[LogType] (LogTypeId, LogCategoryTypeId, [Name], [Description]) VALUES ( '112','14','Internal Deleted Template','' ) 
 END 
 GO
 
 IF NOT EXISTS (SELECT 1 FROM [Logging].[LogType] WHERE [Name] = 'Internal Modified Template' AND [LogcategoryTypeId] = '14')
 BEGIN 
-INSERT [Logging].[LogType] (LogTypeId, LogCategoryTypeId, [Name], [Description]) VALUES ( '106','14','Internal Modified Template','' ) 
+INSERT [Logging].[LogType] (LogTypeId, LogCategoryTypeId, [Name], [Description]) VALUES ( '113','14','Internal Modified Template','' ) 
 END 
 GO
 
 IF NOT EXISTS (SELECT 1 FROM [Logging].[LogType] WHERE [Name] = 'Internal Modified Table' AND [LogcategoryTypeId] = '14')
 BEGIN 
-INSERT [Logging].[LogType] (LogTypeId, LogCategoryTypeId, [Name], [Description]) VALUES ( '107','14','Internal Modified Table','' ) 
+INSERT [Logging].[LogType] (LogTypeId, LogCategoryTypeId, [Name], [Description]) VALUES ( '114','14','Internal Modified Table','' ) 
 END 
 GO
 
 IF NOT EXISTS (SELECT 1 FROM [Logging].[LogType] WHERE [Name] = 'Internal Added Table Row' AND [LogcategoryTypeId] = '14')
 BEGIN 
-INSERT [Logging].[LogType] (LogTypeId, LogCategoryTypeId, [Name], [Description]) VALUES ( '108','14','Internal Added Table Row','' ) 
+INSERT [Logging].[LogType] (LogTypeId, LogCategoryTypeId, [Name], [Description]) VALUES ( '115','14','Internal Added Table Row','' ) 
 END 
 GO
 
 IF NOT EXISTS (SELECT 1 FROM [Logging].[LogType] WHERE [Name] = 'Internal Deleted Table Row' AND [LogcategoryTypeId] = '14')
 BEGIN 
-INSERT [Logging].[LogType] (LogTypeId, LogCategoryTypeId, [Name], [Description]) VALUES ( '109','14','Internal Deleted Table Row','' ) 
+INSERT [Logging].[LogType] (LogTypeId, LogCategoryTypeId, [Name], [Description]) VALUES ( '116','14','Internal Deleted Table Row','' ) 
 END 
 GO
 
 IF NOT EXISTS (SELECT 1 FROM [Logging].[LogType] WHERE [Name] = 'Internal Modified Table Row' AND [LogcategoryTypeId] = '14')
 BEGIN 
-INSERT [Logging].[LogType] (LogTypeId, LogCategoryTypeId, [Name], [Description]) VALUES ( '110','14','Internal Modified Table Row','' ) 
+INSERT [Logging].[LogType] (LogTypeId, LogCategoryTypeId, [Name], [Description]) VALUES ( '117','14','Internal Modified Table Row','' ) 
 END 
 GO
 
 IF NOT EXISTS (SELECT 1 FROM [Logging].[LogType] WHERE [Name] = 'Internal Selected Table Actions' AND [LogcategoryTypeId] = '14')
 BEGIN 
-INSERT [Logging].[LogType] (LogTypeId, LogCategoryTypeId, [Name], [Description]) VALUES ( '111','14','Internal Selected Table Actions','' ) 
+INSERT [Logging].[LogType] (LogTypeId, LogCategoryTypeId, [Name], [Description]) VALUES ( '118','14','Internal Selected Table Actions','' ) 
 END 
 GO
 
 IF NOT EXISTS (SELECT 1 FROM [Logging].[LogType] WHERE [Name] = 'Internal Template Error' AND [LogcategoryTypeId] = '14')
 BEGIN 
-INSERT [Logging].[LogType] (LogTypeId, LogCategoryTypeId, [Name], [Description]) VALUES ( '112','14','Internal Template Error','' ) 
+INSERT [Logging].[LogType] (LogTypeId, LogCategoryTypeId, [Name], [Description]) VALUES ( '119','14','Internal Template Error','' ) 
 END 
 GO
-
 
 IF NOT EXISTS (SELECT 1 FROM [Logging].[LogType] WHERE [Name] = 'Template Error' AND [LogcategoryTypeId] = '10')
 BEGIN 
-INSERT [Logging].[LogType] (LogTypeId, LogCategoryTypeId, [Name], [Description]) VALUES ( '113','10','Template Error','' ) 
+INSERT [Logging].[LogType] (LogTypeId, LogCategoryTypeId, [Name], [Description]) VALUES ( '120','10','Template Error','' ) 
 END 
 GO
 
 
-IF NOT EXISTS (SELECT 1 FROM [Logging].[LogType] WHERE [Name] = 'Internal Update Settings' AND [LogcategoryTypeId] = '6')
-BEGIN 
-INSERT [Logging].[LogType] (LogTypeId, LogCategoryTypeId, [Name], [Description]) VALUES ( '114','6','Internal Update Settings','' ) 
-END 
-GO
 
 
-IF NOT EXISTS (SELECT 1 FROM [Logging].[LogType] WHERE [Name] = 'Internal Modified Template' AND [LogcategoryTypeId] = '6')
-BEGIN 
-INSERT [Logging].[LogType] (LogTypeId, LogCategoryTypeId, [Name], [Description]) VALUES ( '115','6','Internal Modified Template','' ) 
-END 
-GO
 
-IF NOT EXISTS (SELECT 1 FROM [Logging].[LogType] WHERE [Name] = 'Internal Added Template' AND [LogcategoryTypeId] = '6')
-BEGIN 
-INSERT [Logging].[LogType] (LogTypeId, LogCategoryTypeId, [Name], [Description]) VALUES ( '116','6','Internal Added Template','' ) 
-END 
-GO
-
-IF NOT EXISTS (SELECT 1 FROM [Logging].[LogType] WHERE [Name] = 'Internal Deleted Template' AND [LogcategoryTypeId] = '6')
-BEGIN 
-INSERT [Logging].[LogType] (LogTypeId, LogCategoryTypeId, [Name], [Description]) VALUES ( '117','6','Internal Deleted Template','' ) 
-END 
-GO
 
 

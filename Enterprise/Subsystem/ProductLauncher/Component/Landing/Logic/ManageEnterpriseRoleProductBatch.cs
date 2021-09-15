@@ -316,7 +316,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			return false;
 		}
 
-		private List<string> GetPersonaRoleRights(long personaId, long orgPartyId)
+		public List<string> GetPersonaRoleRights(long personaId, long orgPartyId)
 		{
 			List<string> userRights = new List<string>();
 			UserRoleRightRepository urr = new UserRoleRightRepository();

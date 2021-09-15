@@ -708,14 +708,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var userPersona = _managePersona.GetPersona(productUser.AssignUserPersonaId);
             _defaultUserClaim.UserRealPageGuid = editorPersona.RealPageId;
             _defaultUserClaim.OrganizationRealPageGuid = editorPersona.Organization.RealPageId;
-            //_defaultUserClaim.Rights = GetPersonaRoleRights(batch.EditorUserPersonaId, editorPersona.OrganizationPartyId);
+            _defaultUserClaim.Rights = manageEnterpriseRoleProductBatch.GetPersonaRoleRights(productUser.CreateUserPersonaId, editorPersona.OrganizationPartyId);
             if (productUser.ProductId != 4 && roleProp.UsePrimaryProperties)
             {
                 ListResponse propertyList = manageEnterpriseRoleProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, productUser.ProductId);
                 if (propertyList.Records.Count > 0)
                 {
                     roleProp.PropertyList = new List<string>();
-                    roleProp.PropertyList = GetSelectedProperties(propertyList);
+                    roleProp.ProductPrimaryProperties = GetSelectedProperties(propertyList);
+                    roleProp.PropertyList = roleProp.ProductPrimaryProperties?.Select(p=>p.ProductPropertyId).ToList<string>();
                     productUser.InputJson = JsonConvert.SerializeObject(roleProp);
                 }
             }
@@ -732,8 +733,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         ListResponse propertyList = manageEnterpriseRoleProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, data.ProductId);
                         if (propertyList.Records.Count > 0)
-                        {
-                            List<string> aoPropList = GetSelectedProperties(propertyList);
+                        {                            
+                            data.ProductPrimaryProperties = GetSelectedProperties(propertyList);
+                            List<string> aoPropList = data.ProductPrimaryProperties?.Select(p => p.ProductPropertyId).ToList<string>();
                             data.SelectedPortfolioValues = aoPropList.Select(int.Parse).ToList();
                         }
                     }
@@ -743,10 +745,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return roleProp;
         }
 
-
-        private List<string> GetSelectedProperties(ListResponse productResult)
+        private List<ProductPrimaryProperties> GetSelectedProperties(ListResponse productResult)
         {
-            List<string> selectedProperties = new List<string>();
+            List<ProductPrimaryProperties> selectedProperties = new List<ProductPrimaryProperties>();
             var productPropertyType = productResult.Records[0].GetType();
 
             if (productPropertyType == typeof(ProductProperty))
@@ -756,7 +757,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     if (property.IsAssigned == true)
                     {
-                        selectedProperties.Add(property.ID);
+                        ProductPrimaryProperties productPrimaryProperties = new ProductPrimaryProperties
+                        {
+                            ProductPropertyId = property.ID,
+                            PropertyInstanceId = property.InstanceId
+                        };
+                        selectedProperties.Add(productPrimaryProperties);
                     }
                 }
             }
@@ -766,7 +772,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     if (property.IsAssigned == true)
                     {
-                        selectedProperties.Add(property.Id);
+                        ProductPrimaryProperties productPrimaryProperties = new ProductPrimaryProperties
+                        {
+                            ProductPropertyId = property.Id,
+                            PropertyInstanceId = property.InstanceId
+                        };
+                        selectedProperties.Add(productPrimaryProperties);
                     }
                 }
             }
@@ -776,17 +787,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     if (property.IsAssigned == true)
                     {
-                        selectedProperties.Add(property.ID);
+                        ProductPrimaryProperties productPrimaryProperties = new ProductPrimaryProperties
+                        {
+                            ProductPropertyId = property.ID,
+                            PropertyInstanceId = property.InstanceId
+                        };
+                        selectedProperties.Add(productPrimaryProperties);
                     }
                 }
             }
             else if (productPropertyType == typeof(OnSiteProperty))
             {
                 foreach (var property in productResult.Records.Cast<OnSiteProperty>())
-                {
+                {                    
                     if (property.IsAssigned == true)
                     {
-                        selectedProperties.Add(property.GetPropertyId.ToString());
+                        ProductPrimaryProperties productPrimaryProperties = new ProductPrimaryProperties
+                        {
+                            ProductPropertyId = property.GetPropertyId.ToString(),
+                            PropertyInstanceId = property.InstanceId
+                        };
+                        selectedProperties.Add(productPrimaryProperties);
                     }
                 }
             }
@@ -796,7 +817,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     if (property.IsAssigned == true)
                     {
-                        selectedProperties.Add(property.Id.ToString());
+                        ProductPrimaryProperties productPrimaryProperties = new ProductPrimaryProperties
+                        {
+                            ProductPropertyId = property.Id.ToString(),
+                            PropertyInstanceId = property.InstanceId
+                        };
+                        selectedProperties.Add(productPrimaryProperties);
                     }
                 }
             }
@@ -806,7 +832,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     if (property.IsAssigned == true)
                     {
-                        selectedProperties.Add(property.GetPropertyId.ToString());
+                        ProductPrimaryProperties productPrimaryProperties = new ProductPrimaryProperties
+                        {
+                            ProductPropertyId = property.GetPropertyId.ToString(),
+                            PropertyInstanceId = property.InstanceId
+                        };
+                        selectedProperties.Add(productPrimaryProperties);
                     }
                 }
             }
@@ -816,7 +847,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     if (property.IsAssigned == true)
                     {
-                        selectedProperties.Add(property.ID);
+                        ProductPrimaryProperties productPrimaryProperties = new ProductPrimaryProperties
+                        {
+                            ProductPropertyId = property.ID.ToString(),
+                            PropertyInstanceId = property.InstanceId
+                        };
+                        selectedProperties.Add(productPrimaryProperties);
                     }
                 }
             }

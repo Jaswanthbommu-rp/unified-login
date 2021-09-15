@@ -26,6 +26,13 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Command
                 }
 
                 var repo = new ActivityRepository();
+
+                //To support unified login and needs to be removed once unified login replaces ToUserRealpageId with contextreferenceId
+                if (string.IsNullOrEmpty(activity.ContextReferenceId) && activity.ToUserRealpageId != null
+                                                                      && activity.ToUserRealpageId != Guid.Empty)
+                {
+                    activity.ContextReferenceId = activity.ToUserRealpageId.ToString();
+                }
                 repo.InsertActivity(activity);
             }
             catch (Exception ex)

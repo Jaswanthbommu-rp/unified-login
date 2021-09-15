@@ -69,13 +69,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
             var navigationMenu = _userRepository.GetNavigationMenu();
             var navigationMenuRights = _userRepository.GetNavigationMenuRights();
+            var navigationMenuSettingAccess = _userRepository.GetNavigationMenuSettingsUnaccessable(_orgPartyId);
 
             var filteredMenuEntries = navigationMenu.Where(
                 nmw => !navigationMenuRights.Any(w => w.NavigationMenuId == nmw.Id)
                     || navigationMenuRights.Where(w => w.NavigationMenuId == nmw.Id).Any(a => rights.Contains(a.RightName))
+                );
+
+            var accessibleMenuEntries = filteredMenuEntries.Where(
+                fme => !navigationMenuSettingAccess.Any(n => n.NavigationMenuId == fme.Id)
                 ).ToList();
 
-            return BuildNavigationMenuTree(filteredMenuEntries);
+            return BuildNavigationMenuTree(accessibleMenuEntries);
         }
 
         private List<NavigationMenuTree> BuildNavigationMenuTree(List<NavigationMenuEntry> entries, int? parentId = null)

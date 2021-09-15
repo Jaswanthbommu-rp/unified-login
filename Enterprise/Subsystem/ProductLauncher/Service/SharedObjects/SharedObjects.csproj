@@ -192,6 +192,7 @@
     <Compile Include="Enterprise\MappedUnifiedLoginUserDetails.cs" />
     <Compile Include="Enterprise\NavigationMenuEntry.cs" />
     <Compile Include="Enterprise\NavigationMenuRightEntry.cs" />
+    <Compile Include="Enterprise\NavigationMenuSetting.cs" />
     <Compile Include="Enterprise\NavigationMenuTree.cs" />
     <Compile Include="Enterprise\ProductDetail.cs" />
     <Compile Include="Enterprise\ProductUserIDMappingRequest.cs" />

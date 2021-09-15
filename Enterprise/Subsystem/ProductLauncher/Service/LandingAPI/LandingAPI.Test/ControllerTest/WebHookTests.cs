@@ -245,7 +245,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             _productInternalSettings = new List<ProductInternalSetting>()
             {
                 new ProductInternalSetting() { Name = "TiboWebHookSigningSecret", Value = _mockTiboWebHookSigningSecret },
-                new ProductInternalSetting() { Name = "IsCloneUsersProcessEnabledForHOTS", Value = "1" }
+                new ProductInternalSetting() { Name = "IsCloneUsersProcessEnabledForHOTS", Value = "1" },
+                new ProductInternalSetting() { Name = "ExcludeProductFromOrgSupportUser", Value = "3,4,8,14,28,36,56" }
             };
         }
 
@@ -1090,6 +1091,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             };
             UserLoginOnly userLoginOnlyNull = null;
 
+            IList<ProductUI> productUIList = new List<ProductUI>() { new ProductUI() { ProductId = 3 }, new ProductUI(){ ProductId = 56 } };
+
             Guid propertyGuid = new Guid("5C04F18A-FC9B-4A13-AAAF-E26DA83CE516");
 
             HttpResponseMessage responseCustomerCompany = new HttpResponseMessage(HttpStatusCode.OK);
@@ -1123,6 +1126,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             mockRepository
                 .Setup(m => m.GetMany<OrganizationDomain>(StoredProcNameConstants.SP_ListOrganizationDomain, null))
                 .Returns(_organizationDomains);
+
+            mockRepository
+                .Setup(m => m.GetMany<ProductUI>(StoredProcNameConstants.SP_ListProductsByOrganization, It.IsAny<object>()))
+                .Returns(productUIList);
 
             mockRepository
                 .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_DataImportMappingUpdate, It.IsAny<object>()))

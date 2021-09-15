@@ -2519,3 +2519,126 @@ update UserManagement.Control set ControlTypeId=3 where UIId = 'UnifiedPlatformR
 update UserManagement.Control set ControlTypeId=10 where UIId = 'UnifiedPlatformRoleTemplateRoleRadioUIId'
 GO
 --END Userstory 934548
+
+-- HOTS user cloning/userclone
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'HOTSCheckUserProductStatusRetryCount')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
+	VALUES ('HOTSCheckUserProductStatusRetryCount', 'The number of times to retry when checking if a HOTS clone product batch process is complete', 0);
+END
+
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'HOTSCheckUserProductStatusSleepTimeout')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
+	VALUES ('HOTSCheckUserProductStatusSleepTimeout', 'The amount of time in ms to wait checking a HOTS clone product batch process', 0);
+END
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'ExcludeProductFromOrgSupportUser')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
+	VALUES ('ExcludeProductFromOrgSupportUser', 'Exclude following products from RealPage Employee Access admin user', 0);
+END
+
+DECLARE @NOW DATETIME = GETUTCDATE()
+
+if NOT EXISTS (
+	select TOP (1) 1 
+		FROM Enterprise.GlobalProductConfiguration gpc  
+		JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId  
+		JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId  
+		JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId  
+			WHERE  gpc.ProductId = 3  
+		AND ((@NOW BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@NOW >= gpc.FromDate AND gpc.ThruDate IS NULL))  
+		AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))  
+		AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))  
+		AND pst.Name = 'ExcludeProductFromOrgSupportUser'
+		AND ps.Value = '3,4,8,14,28,36,56'
+	)
+	BEGIN
+		declare @currentproductconfigurationid INT
+		select distinct TOP (1) @currentproductconfigurationid = pc.configurationid
+			FROM Enterprise.GlobalProductConfiguration gpc  
+			JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId  
+			JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId  
+			JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId  
+				WHERE  gpc.ProductId = 3
+			AND ((@NOW BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@NOW >= gpc.FromDate AND gpc.ThruDate IS NULL))  
+			AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))  
+			AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))  
+		order by pc.ConfigurationId DESC
+
+		if (@currentproductconfigurationid is not null)
+		begin
+			insert into enterprise.ProductSetting ( productid, ProductSettingTypeId, value, FromDate )
+				select 3, productsettingtypeid, '3,4,8,14,28,36,56', GETUTCDATE()
+					from enterprise.ProductSettingType where name = 'ExcludeProductFromOrgSupportUser'
+			insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate, ThruDate )
+				values ( @currentproductconfigurationid, SCOPE_IDENTITY(), GETUTCDATE(), null )
+		end
+	END
+
+GO
+
+-- HOTS user cloning/userclone
+GO
+
+--START UserStory 892315 
+IF NOT EXISTS (Select * from  [Security].[Route] where RouteValue = 'EnterpriseRoles')
+Begin
+INSERT INTO [Security].[Route](RouteValue, [Description], CreatedBy, CreatedDate)
+SELECT 'EnterpriseRoles', 'EnterpriseRoles', 480, GETUTCDATE()
+END
+GO
+
+DECLARE @RightId int
+DECLARE @RouteId int
+DECLARE @UserId bigint
+
+SELECT	@UserId = UserId
+FROM	Ident.UserLogin
+WHERE	LoginName LIKE 'realpagead@%'
+
+SELECT @RightId = RightId
+FROM [Security].[Right]
+WHERE RightName = 'PrimaryPropertyEnterpriseRole'
+
+SELECT @RouteId = RouteId
+FROM [Security].[Route]
+WHERE RouteValue = 'EnterpriseRoles'
+
+IF @RightId IS NOT NULL AND @RouteId IS NOT NULL AND @UserId IS NOT NULL AND NOT EXISTS (Select * from  [Security].[RightRoute] where RightName = 'EnterpriseRoles' AND RightId = @RightId AND RouteId = @RouteId)
+Begin
+INSERT INTO [Security].[RightRoute](RightId, RouteId, RightName, CreatedBy, CreatedDate)
+SELECT @RightId, @RouteId, 'EnterpriseRoles', @UserId, GETUTCDATE()
+END
+
+SELECT @RouteId = RouteId
+FROM [Security].[Route]
+WHERE RouteValue = 'SideMenu'
+
+IF @RightId IS NOT NULL AND @RouteId IS NOT NULL AND @UserId IS NOT NULL AND NOT EXISTS (Select * from  [Security].[RightRoute] where RightName = 'EnterpriseRoles' AND RightId = @RightId AND RouteId = @RouteId)
+Begin
+INSERT INTO [Security].[RightRoute](RightId, RouteId, RightName, CreatedBy, CreatedDate)
+SELECT @RightId, @RouteId, 'EnterpriseRoles', @UserId, GETUTCDATE()
+END
+
+DECLARE @NivigationMenuId int
+DECLARE @SettingCategoryTypeId int
+
+SELECT @NivigationMenuId = Id
+FROM [Enterprise].[NavigationMenu]
+WHERE PageId = 'enterpriseRoles'
+
+SELECT @SettingCategoryTypeId = SettingCategoryTypeId
+FROM [Settings].[SettingCategoryType]
+WHERE [Name] = 'Company'
+
+IF (@NivigationMenuId IS NOT NULL) AND (@SettingCategoryTypeId IS NOT NULL) AND (NOT EXISTS (SELECT * FROM [Enterprise].[NavigationMenuSettingAccess] 
+WHERE NavigationMenuId = @NivigationMenuId AND SettingCategoryTypeId = @SettingCategoryTypeId  AND MappingName = 'PrimaryPropertyEnterpriseRole'))
+BEGIN
+INSERT INTO [Enterprise].[NavigationMenuSettingAccess](NavigationMenuId, SettingCategoryTypeId, MappingName)
+SELECT @NivigationMenuId, @SettingCategoryTypeId, 'PrimaryPropertyEnterpriseRole'
+END
+--END UserStory 892315 

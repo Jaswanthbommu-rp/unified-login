@@ -10,6 +10,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 {
@@ -83,7 +84,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
-        private UserLoginOnly getUserLoginOnly(string enterpriseUserName)
+        public UserLoginOnly GetUserLoginOnly(string enterpriseUserName)
         {
             UserLoginOnly userLogin = new UserLoginOnly();
             dynamic param = new { EnterpriseUserName = enterpriseUserName };
@@ -96,29 +97,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             return userLogin;
         }
 
+        public IList<Persona> ListPersona(Guid realPageId)
+        {
+            dynamic param = new
+            {
+                RealPageId = realPageId
+            };
+
+            using (var repository = GetRepository())
+            {
+                IList<Persona> personaList = repository.GetMany<Persona>(StoredProcNameConstants.SP_ListPersona, param);
+                return personaList;
+            }
+        }
+
         public HotsUser CreateUser(DefaultUserClaim cloneCompanyAdminUserClaim, long partyId, BaseLineCustomerCompanyUser user, IProfileDetail baseUserProfile, List<ProductBatch> productBatch)
         {
             HotsUser hotsUser = new HotsUser();
             string loginName;
             loginName = getLoginName(partyId, baseUserProfile);
-
-            UserLoginOnly userLoginOnly = getUserLoginOnly(loginName);
-            if (userLoginOnly != null)
-            {
-                hotsUser.BaselineUserId = baseUserProfile.userLogin.UserId;
-                hotsUser.BaselineUserName = baseUserProfile.userLogin.LoginName;
-                hotsUser.CloneUserId = userLoginOnly.UserId;
-                hotsUser.CloneUserName = userLoginOnly.LoginName;
-                return hotsUser;
-            }
-
+            
             dynamic param = new
             {
                 FirstName = baseUserProfile.FirstName,
                 MiddleName = baseUserProfile.MiddleName,
                 LastName = baseUserProfile.LastName,
                 UserTypeId = baseUserProfile.UserTypeId,
-                ThirdPartyIDP = baseUserProfile.userLogin.Is3rdPartyIDP,
+                ThirdPartyIDP = true,
                 LoginName = loginName,
                 NotificationEmail = string.Empty,
                 UserEffectiveDate = DateTime.UtcNow,
@@ -162,6 +167,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     hotsUser.BaselineUserName = baseUserProfile.userLogin.LoginName;
                     hotsUser.CloneUserId = userId;
                     hotsUser.CloneUserName = loginName;
+                    hotsUser.ClonePersonaId = newUserPersonaId;
                 }
                 catch (Exception)
                 {
