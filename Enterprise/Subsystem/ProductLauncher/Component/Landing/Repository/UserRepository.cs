@@ -4875,230 +4875,241 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             long userEmailContactMechanismId = 0;
             DateTime utcNow = DateTime.UtcNow;
             DateTime utcMaxValue = DateTime.MaxValue.ToUniversalTime();
-
-            RepositoryResponse repositoryResponse = new RepositoryResponse();
-
-            bool userIsExternalEverywhere = userPersonaOrganizationList.ToList().All(x => x.PartyRoleTypeId.Equals((int)UserRoleType.ExternalUser));
+            string message = string.Empty;
             #region UserType Changed To External OR From External
-
-            if ((userTypeChangedToFromExternal.Equals("ToExternal", StringComparison.OrdinalIgnoreCase)) && (userPersonaOrganizationList.Count > 1) && (userPersonaOrganizationList.ToList().Any(x => x.OrganizationPartyId.Equals(persona.OrganizationPartyId) && x.PrimaryOrganization == true)))
+            try
             {
-                //Add to External Users as Primary
-                param = new
+                message += "ChangeUserTypeExternal log 1 ---";
+                RepositoryResponse repositoryResponse = new RepositoryResponse();
+                message += "ChangeUserTypeExternal log 2 ---";
+                bool userIsExternalEverywhere = userPersonaOrganizationList.ToList().All(x => x.PartyRoleTypeId.Equals((int)UserRoleType.ExternalUser));
+                message += "ChangeUserTypeExternal log 3 ---";
+
+                if ((userTypeChangedToFromExternal.Equals("ToExternal", StringComparison.OrdinalIgnoreCase)) && (userPersonaOrganizationList.Count > 1) && (userPersonaOrganizationList.ToList().Any(x => x.OrganizationPartyId.Equals(persona.OrganizationPartyId) && x.PrimaryOrganization == true)))
                 {
-                    UserLoginId = profile.userLogin.UserId,
-                    StatusTypeId = profile.userLogin.Status,
-                    OrganizationPartyId = organizationExternalUser.PartyId,
-                    PrimaryOrganization = true,
-                    FromDate = currentPrimaryOrgStatus.FromDate,
-                    ThruDate = currentPrimaryOrgStatus.ThruDate,
-                    StatusThruDate = currentPrimaryOrgStatus.StatusThruDate
-                };
-                repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateUserLoginPersona, param);
-                if (repositoryResponse.Id == 0)
-                {
-                    return "Update User Error: Add to External Users as primary failed.";
-                }
-
-                //Create Persona for External Users
-                long userLoginPersonaId = repositoryResponse.Id;
-                personaId = null;
-
-                param = new
-                {
-                    PersonRealPageId = profile.RealPageId,
-                    UserLoginPersonaId = userLoginPersonaId,
-                    OrganizationRealPageId = organizationExternalUser.RealPageId,
-                    PersonaTypeId = (int)PersonaType.Primary,
-                    UserId = profile.userLogin.UserId,
-                    PersonaEnvironmentTypeId = persona.PersonaEnvironmentTypeId,
-                    FromDate = currentPrimaryOrgStatus.FromDate,
-                    ThruDate = persona.ThruDate,
-                    personaId
-                };
-                repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreatePersona, param);
-                personaId = repositoryResponse.Id;
-
-                // Linking Persona to a Role based on user type for External Users                
-                var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesByRealPageID" : StoredProcNameConstants.SP_ListRolesByRealPageID;
-                param = new
-                {
-                    realPageId = organizationExternalUser.RealPageId
-                };
-                IList<EnterpriseRole> enterpriseRoles = repository.GetMany<EnterpriseRole>(procName, param);
-
-                greenBookRole = enterpriseRoles.FirstOrDefault(r => r.Role.Equals("Basic End User", StringComparison.OrdinalIgnoreCase)).RoleId;
-                param = new
-                {
-                    personaID = personaId,
-                    roleID = greenBookRole,
-                    CreatedBy = _userClaim.UserId,
-                    personaPrivilgeID = 0
-                };
-
-                procName = schemaName?.Length > 0 ? $"{schemaName}.LinkPersonaToRole" : StoredProcNameConstants.SP_LinkPersonaToRole;
-                repositoryResponse = repository.GetOne<RepositoryResponse>(procName, param);
-                if (repositoryResponse.Id == 0)
-                {
-                    return "Update User Error: Linking Persona to a Role based on user type for External Users failed.";
-                }
-
-                //Set Default Employment Role within External Users
-
-                #region Set Default Employment Role
-
-                //Set Person Role (Employer, User Type) to Organization
-                param = new
-                {
-                    RoleTypeName = "Organization Role"
-                };
-                IList<RoleType> roleTypes = repository.GetMany<RoleType>(StoredProcNameConstants.SP_ListRoleType, param);
-                RoleType Employer = roleTypes.SingleOrDefault<RoleType>(p => p.Name.Equals("Employer", StringComparison.OrdinalIgnoreCase));
-                RoleType UserType = roleTypes.SingleOrDefault<RoleType>(p => p.Name.Equals("User Type", StringComparison.OrdinalIgnoreCase));
-
-                param = new
-                {
-                    RoleTypeName = "User Role"
-                };
-                roleTypes = repository.GetMany<RoleType>(StoredProcNameConstants.SP_ListRoleType, param);
-                RoleType SuperUserRole = roleTypes.SingleOrDefault<RoleType>(p => p.Name.Equals("SuperUser", StringComparison.OrdinalIgnoreCase));
-                RoleType UserRole = roleTypes.SingleOrDefault<RoleType>(p => p.Name.Equals("User", StringComparison.OrdinalIgnoreCase));
-                RoleType UserNoEmailRole = roleTypes.SingleOrDefault<RoleType>(p => p.Name.Equals("User (No Email)", StringComparison.OrdinalIgnoreCase));
-                RoleType rpEmployee = roleTypes.SingleOrDefault<RoleType>(p => p.Name.Equals("realpage employee", StringComparison.OrdinalIgnoreCase));
-                RoleType rpExternalUser = roleTypes.SingleOrDefault<RoleType>(p => p.Name.Equals("external user", StringComparison.OrdinalIgnoreCase));
-
-                #endregion
-
-                //Set User Type for External Users
-
-                #region Set User Type
-
-                int roleTypeIdFrom = 0;
-                int roleTypeIdTo = (int)Employer.PartyRoleTypeId; //Employer
-
-                switch (profile.UserTypeId)
-                {
-                    case (int)UserRoleType.User:
-                        roleTypeIdFrom = UserRole.PartyRoleTypeId;
-                        break;
-                    case (int)UserRoleType.SuperUser:
-                        roleTypeIdFrom = SuperUserRole.PartyRoleTypeId;
-                        break;
-                    case (int)UserRoleType.RealPageEmployee:
-                        roleTypeIdFrom = rpEmployee.PartyRoleTypeId;
-                        break;
-                    case (int)UserRoleType.UserNoEmail:
-                        roleTypeIdFrom = UserNoEmailRole.PartyRoleTypeId;
-                        break;
-                    case (int)UserRoleType.ExternalUser:
-                        roleTypeIdFrom = rpExternalUser.PartyRoleTypeId;
-                        break;
-                    default:
-                        roleTypeIdFrom = UserRole.PartyRoleTypeId;
-                        break;
-                }
-
-                roleTypeIdTo = (int)UserType.PartyRoleTypeId; //User Type
-
-                param = new
-                {
-                    PersonRealPageId = profile.RealPageId,
-                    OrganizationRealPageId = organizationExternalUser.RealPageId,
-                    RoleTypeIdFrom = roleTypeIdFrom,
-                    RoleTypeIdTo = roleTypeIdTo
-                };
-
-                repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkPersonToOrganization, param);
-                if (repositoryResponse == null)
-                {
-                    return "Update User Error: Link person to External Users failed.";
-                }
-
-                #endregion
-
-                #region Preferred Contact Method and Tele-Communication
-
-                if ((profile.TelecommunicationNumber.Count > 0) && (profile.PreferredContactMethodId > 0))
-                {
-                    var response = UpdateProfile(repository, profile.RealPageId, profile);
-                    if (response.Id == 0)
+                    //Add to External Users as Primary
+                    param = new
                     {
-                        return "Update User Error: Update Preferred ContactMethod and Phone for External Users failed.";
-                    }
-                }
-
-                #endregion
-
-                #region Email Communication Event
-
-                if (identityProviderType.IsLocal)
-                {
-                    IList<CommonAddress> orgMechanismList = ListContactMechanismForPerson(repository, organizationExternalUser.RealPageId, emailUsageType);
-                    if (userEmailContactMechanismId == 0)
+                        UserLoginId = profile.userLogin.UserId,
+                        StatusTypeId = profile.userLogin.Status,
+                        OrganizationPartyId = organizationExternalUser.PartyId,
+                        PrimaryOrganization = true,
+                        FromDate = currentPrimaryOrgStatus.FromDate,
+                        ThruDate = currentPrimaryOrgStatus.ThruDate,
+                        StatusThruDate = currentPrimaryOrgStatus.StatusThruDate
+                    };
+                    message += "ChangeUserTypeExternal log 4 ---";
+                    repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateUserLoginPersona, param);
+                    if (repositoryResponse.Id == 0)
                     {
-                        IList<CommonAddress> userMechanismList = ListContactMechanismForPerson(repository, profile.RealPageId, emailUsageType);
-                        userEmailContactMechanismId = userMechanismList[0].PartyContactMechanismId;
+                        return "Update User Error: Add to External Users as primary failed.";
                     }
 
-                    var orgContactMechanismId = orgMechanismList[0].PartyContactMechanismId;
-                    if (orgContactMechanismId > 0 && userEmailContactMechanismId > 0)
+                    //Create Persona for External Users
+                    long userLoginPersonaId = repositoryResponse.Id;
+                    personaId = null;
+                    message += "ChangeUserTypeExternal log 5 ---";
+                    param = new
                     {
-                        long? communicationEventId = null;
-                        int statusTypeId = (int)EmailStatusType.EmailPending;
-                        string note = "pending";
-                        DateTime started = DateTime.UtcNow;
-                        DateTime ended = DateTime.UtcNow;
-                        dynamic paramCommunicationEvent = new
+                        PersonRealPageId = profile.RealPageId,
+                        UserLoginPersonaId = userLoginPersonaId,
+                        OrganizationRealPageId = organizationExternalUser.RealPageId,
+                        PersonaTypeId = (int)PersonaType.Primary,
+                        UserId = profile.userLogin.UserId,
+                        PersonaEnvironmentTypeId = persona.PersonaEnvironmentTypeId,
+                        FromDate = currentPrimaryOrgStatus.FromDate,
+                        ThruDate = persona.ThruDate,
+                        personaId
+                    };
+                    repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreatePersona, param);
+                    personaId = repositoryResponse.Id;
+                    message += "ChangeUserTypeExternal log 6 ---";
+                    // Linking Persona to a Role based on user type for External Users                
+                    var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesByRealPageID" : StoredProcNameConstants.SP_ListRolesByRealPageID;
+                    param = new
+                    {
+                        realPageId = organizationExternalUser.RealPageId
+                    };
+                    IList<EnterpriseRole> enterpriseRoles = repository.GetMany<EnterpriseRole>(procName, param);
+                    message += "ChangeUserTypeExternal log 7 ---";
+                    greenBookRole = enterpriseRoles.FirstOrDefault(r => r.Role.Equals("Basic End User", StringComparison.OrdinalIgnoreCase)).RoleId;
+                    param = new
+                    {
+                        personaID = personaId,
+                        roleID = greenBookRole,
+                        CreatedBy = _userClaim.UserId,
+                        personaPrivilgeID = 0
+                    };
+                    message += "ChangeUserTypeExternal log 8 ---";
+                    procName = schemaName?.Length > 0 ? $"{schemaName}.LinkPersonaToRole" : StoredProcNameConstants.SP_LinkPersonaToRole;
+                    repositoryResponse = repository.GetOne<RepositoryResponse>(procName, param);
+                    if (repositoryResponse.Id == 0)
+                    {
+                        return "Update User Error: Linking Persona to a Role based on user type for External Users failed.";
+                    }
+
+                    //Set Default Employment Role within External Users
+                    message += "ChangeUserTypeExternal log 9 ---";
+                    #region Set Default Employment Role
+
+                    //Set Person Role (Employer, User Type) to Organization
+                    param = new
+                    {
+                        RoleTypeName = "Organization Role"
+                    };
+                    IList<RoleType> roleTypes = repository.GetMany<RoleType>(StoredProcNameConstants.SP_ListRoleType, param);
+                    RoleType Employer = roleTypes.SingleOrDefault<RoleType>(p => p.Name.Equals("Employer", StringComparison.OrdinalIgnoreCase));
+                    RoleType UserType = roleTypes.SingleOrDefault<RoleType>(p => p.Name.Equals("User Type", StringComparison.OrdinalIgnoreCase));
+                    message += "ChangeUserTypeExternal log 10 ---";
+                    param = new
+                    {
+                        RoleTypeName = "User Role"
+                    };
+                    roleTypes = repository.GetMany<RoleType>(StoredProcNameConstants.SP_ListRoleType, param);
+                    RoleType SuperUserRole = roleTypes.SingleOrDefault<RoleType>(p => p.Name.Equals("SuperUser", StringComparison.OrdinalIgnoreCase));
+                    RoleType UserRole = roleTypes.SingleOrDefault<RoleType>(p => p.Name.Equals("User", StringComparison.OrdinalIgnoreCase));
+                    RoleType UserNoEmailRole = roleTypes.SingleOrDefault<RoleType>(p => p.Name.Equals("User (No Email)", StringComparison.OrdinalIgnoreCase));
+                    RoleType rpEmployee = roleTypes.SingleOrDefault<RoleType>(p => p.Name.Equals("realpage employee", StringComparison.OrdinalIgnoreCase));
+                    RoleType rpExternalUser = roleTypes.SingleOrDefault<RoleType>(p => p.Name.Equals("external user", StringComparison.OrdinalIgnoreCase));
+                    message += "ChangeUserTypeExternal log 11 ---";
+                    #endregion
+
+                    //Set User Type for External Users
+
+                    #region Set User Type
+
+                    int roleTypeIdFrom = 0;
+                    int roleTypeIdTo = (int)Employer.PartyRoleTypeId; //Employer
+                    message += "ChangeUserTypeExternal log 12 ---";
+                    switch (profile.UserTypeId)
+                    {
+                        case (int)UserRoleType.User:
+                            roleTypeIdFrom = UserRole.PartyRoleTypeId;
+                            break;
+                        case (int)UserRoleType.SuperUser:
+                            roleTypeIdFrom = SuperUserRole.PartyRoleTypeId;
+                            break;
+                        case (int)UserRoleType.RealPageEmployee:
+                            roleTypeIdFrom = rpEmployee.PartyRoleTypeId;
+                            break;
+                        case (int)UserRoleType.UserNoEmail:
+                            roleTypeIdFrom = UserNoEmailRole.PartyRoleTypeId;
+                            break;
+                        case (int)UserRoleType.ExternalUser:
+                            roleTypeIdFrom = rpExternalUser.PartyRoleTypeId;
+                            break;
+                        default:
+                            roleTypeIdFrom = UserRole.PartyRoleTypeId;
+                            break;
+                    }
+
+                    roleTypeIdTo = (int)UserType.PartyRoleTypeId; //User Type
+                    message += "ChangeUserTypeExternal log 13 ---";
+                    param = new
+                    {
+                        PersonRealPageId = profile.RealPageId,
+                        OrganizationRealPageId = organizationExternalUser.RealPageId,
+                        RoleTypeIdFrom = roleTypeIdFrom,
+                        RoleTypeIdTo = roleTypeIdTo
+                    };
+
+                    repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkPersonToOrganization, param);
+                    if (repositoryResponse == null)
+                    {
+                        return "Update User Error: Link person to External Users failed.";
+                    }
+                    message += "ChangeUserTypeExternal log 14 ---";
+                    #endregion
+                    message += "ChangeUserTypeExternal log 15 ---";
+                    #region Preferred Contact Method and Tele-Communication
+
+                    if ((profile.TelecommunicationNumber.Count > 0) && (profile.PreferredContactMethodId > 0))
+                    {
+                        var response = UpdateProfile(repository, profile.RealPageId, profile);
+                        if (response.Id == 0)
                         {
-                            StatusTypeID = statusTypeId,
-                            FromPartyContactMechanismId = orgContactMechanismId,
-                            ToPartyContactMechanismId = userEmailContactMechanismId,
-                            Started = started,
-                            Ended = ended,
-                            Note = note,
-                            CommunicationEventID = communicationEventId
-                        };
-                        repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateCommunicationEvent, paramCommunicationEvent);
-                        if (repositoryResponse.Id == 0)
-                        {
-                            return "Update User Error:  Create communication event for External Users failed.";
+                            return "Update User Error: Update Preferred ContactMethod and Phone for External Users failed.";
                         }
                     }
+                    message += "ChangeUserTypeExternal log 16 ---";
+                    #endregion
+
+                    #region Email Communication Event
+
+                    if (identityProviderType.IsLocal)
+                    {
+                        IList<CommonAddress> orgMechanismList = ListContactMechanismForPerson(repository, organizationExternalUser.RealPageId, emailUsageType);
+                        if (userEmailContactMechanismId == 0)
+                        {
+                            IList<CommonAddress> userMechanismList = ListContactMechanismForPerson(repository, profile.RealPageId, emailUsageType);
+                            userEmailContactMechanismId = userMechanismList[0].PartyContactMechanismId;
+                        }
+
+                        var orgContactMechanismId = orgMechanismList[0].PartyContactMechanismId;
+                        if (orgContactMechanismId > 0 && userEmailContactMechanismId > 0)
+                        {
+                            long? communicationEventId = null;
+                            int statusTypeId = (int)EmailStatusType.EmailPending;
+                            string note = "pending";
+                            DateTime started = DateTime.UtcNow;
+                            DateTime ended = DateTime.UtcNow;
+                            dynamic paramCommunicationEvent = new
+                            {
+                                StatusTypeID = statusTypeId,
+                                FromPartyContactMechanismId = orgContactMechanismId,
+                                ToPartyContactMechanismId = userEmailContactMechanismId,
+                                Started = started,
+                                Ended = ended,
+                                Note = note,
+                                CommunicationEventID = communicationEventId
+                            };
+                            repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateCommunicationEvent, paramCommunicationEvent);
+                            if (repositoryResponse.Id == 0)
+                            {
+                                return "Update User Error:  Create communication event for External Users failed.";
+                            }
+                        }
+                    }
+
+                    #endregion
+                    message += "ChangeUserTypeExternal log 17 ---";
                 }
 
-                #endregion
-            }
+                if ((userTypeChangedToFromExternal.Equals("FromExternal", StringComparison.OrdinalIgnoreCase)) && (userIsExternalEverywhere))
+                {
+                    //Unlink the user from External Users (Enterprise.PartyRelationship)
+                    param = new
+                    {
+                        PersonRealPageId = profile.RealPageId,
+                        OrganizationRealPageId = organizationExternalUser.RealPageId
+                    };
+                    repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UnlinkPersonToOrganization, param);
+                    if (repositoryResponse.Id == 0)
+                    {
+                        return "Update User Error: Unlink the user from External Users failed.";
+                    }
 
-            if ((userTypeChangedToFromExternal.Equals("FromExternal", StringComparison.OrdinalIgnoreCase)) && (userIsExternalEverywhere))
+                    //Set this Organization as Primary
+                    param = new
+                    {
+                        UserLoginId = profile.userLogin.UserId,
+                        StatusTypeId = currentPrimaryOrgStatus.StatusTypeId,
+                        OrganizationPartyId = persona.OrganizationPartyId,
+                        Primaryorganization = true,
+                        StatusThruDate = currentPrimaryOrgStatus.StatusThruDate
+                    };
+                    repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserLoginPersona, param);
+                    if (repositoryResponse.Id == 0)
+                    {
+                        return "Update User Error: Update User login persona External Users failed.";
+                    }
+                }
+                message += "ChangeUserTypeExternal log 18 ---";
+            }
+            catch (Exception exception)
             {
-                //Unlink the user from External Users (Enterprise.PartyRelationship)
-                param = new
-                {
-                    PersonRealPageId = profile.RealPageId,
-                    OrganizationRealPageId = organizationExternalUser.RealPageId
-                };
-                repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UnlinkPersonToOrganization, param);
-                if (repositoryResponse.Id == 0)
-                {
-                    return "Update User Error: Unlink the user from External Users failed.";
-                }
-
-                //Set this Organization as Primary
-                param = new
-                {
-                    UserLoginId = profile.userLogin.UserId,
-                    StatusTypeId = currentPrimaryOrgStatus.StatusTypeId,
-                    OrganizationPartyId = persona.OrganizationPartyId,
-                    Primaryorganization = true,
-                    StatusThruDate = currentPrimaryOrgStatus.StatusThruDate
-                };
-                repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserLoginPersona, param);
-                if (repositoryResponse.Id == 0)
-                {
-                    return "Update User Error: Update User login persona External Users failed.";
-                }
+                return message + exception;
             }
-
             #endregion
 
             return string.Empty;
