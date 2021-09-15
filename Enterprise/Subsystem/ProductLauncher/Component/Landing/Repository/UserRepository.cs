@@ -2828,180 +2828,199 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <returns>Repository response object</returns>
         private RepositoryResponse UpdateProfile(IRepository repository, Guid realPageId, IProfileDetail profile)
         {
-            DateTime utcNow = DateTime.UtcNow;
-            DateTime utcMaxValue = DateTime.MaxValue.ToUniversalTime();
-            RepositoryResponse repositoryResponse = new RepositoryResponse();
-            string message = string.Empty;
+            
+            RepositoryResponse message = new RepositoryResponse();
+            string msg = string.Empty;
             try
             {
-                //Setup the parameter values to update the person's info
-                dynamic param = new
+                msg += "UpdateProfile Log 0-- ";
+                DateTime utcNow = DateTime.UtcNow;
+                DateTime utcMaxValue = DateTime.MaxValue.ToUniversalTime();
+                RepositoryResponse repositoryResponse = new RepositoryResponse();
+                msg += "UpdateProfile Log 1-- ";
+                try
                 {
-                    RealPageId = realPageId,
-                    Title = profile.Title,
-                    FirstName = profile.FirstName,
-                    MiddleName = profile.MiddleName,
-                    LastName = profile.LastName,
-                    Suffix = profile.Suffix,
-                    PreferredContactMethodId = profile.PreferredContactMethodId
-                };
-                //Update the person's info
-                repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdatePerson, param);
-                if (repositoryResponse.Id == 0)
-                {
-                    repositoryResponse.ErrorMessage = "Update profile Error: Update person failed.";
-                }
-                else
-                {
-                    //Job Title
-                    IPartyRoleRepository partyRoleRepository = new PartyRoleRepository();
-                    IPartyRole partyRole = new PartyRole();
-                    if ((profile.PartyRole != null) && (profile.PartyRole.RoleTypeId > 0))
+                    //Setup the parameter values to update the person's info
+                    dynamic param = new
                     {
-                        //Add Job title parameter values
-                        param = new
-                        {
-                            RealPageId = realPageId,
-                            RoleTypeId = profile.PartyRole.RoleTypeId
-                        };
-                        //Assign Job tile to person
-                        repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreatePartyRoleByRealPageId, param);
-                    }
-
+                        RealPageId = realPageId,
+                        Title = profile.Title,
+                        FirstName = profile.FirstName,
+                        MiddleName = profile.MiddleName,
+                        LastName = profile.LastName,
+                        Suffix = profile.Suffix,
+                        PreferredContactMethodId = profile.PreferredContactMethodId
+                    };
+                    msg += "UpdateProfile Log 2-- ";
+                    //Update the person's info
+                    repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdatePerson, param);
+                    msg += "UpdateProfile Log 3-- ";
                     if (repositoryResponse.Id == 0)
                     {
-                        repositoryResponse.ErrorMessage = "Update profile Error: Job Title failed.";
+                        msg += "UpdateProfile Log 4-- ";
+                        repositoryResponse.ErrorMessage = "Update profile Error: Update person failed.";
                     }
                     else
                     {
-                        ITelecommunicationNumberRepository telecommunicationNumberRepository = new TelecommunicationNumberRepository();
-                        ITelecommunicationNumber telecommunicationNumber = new TelecommunicationNumber();
-                        IContactMechanismRepository contactMechanismRepository = new ContactMechanismRepository();
-                        IPartyContactMechanism partyContactMechanism = new PartyContactMechanism();
-                        //Loop through all the Telecommunication numbers
-                        foreach (ITelecommunicationNumber phone in profile.TelecommunicationNumber)
+                        msg += "UpdateProfile Log 5-- ";
+                        //Job Title
+                        IPartyRoleRepository partyRoleRepository = new PartyRoleRepository();
+                        IPartyRole partyRole = new PartyRole();
+                        if ((profile.PartyRole != null) && (profile.PartyRole.RoleTypeId > 0))
                         {
-                            telecommunicationNumber.ContactMechanismId = phone.ContactMechanismId;
-                            telecommunicationNumber.AreaCode = phone.AreaCode;
-                            telecommunicationNumber.CountryCode = phone.CountryCode;
-                            telecommunicationNumber.PhoneNumber = phone.PhoneNumber;
-                            telecommunicationNumber.ISOCode = phone.ISOCode;
-                            //New Telecommunication number
-                            if (phone.ContactMechanismId == 0)
+                            //Add Job title parameter values
+                            param = new
                             {
-                                //Is the Phone and Type valid
-                                if ((phone.PhoneNumber.Trim().Length > 0) && (phone.contactMechanismUsageType.ContactMechanismUsageTypeId > 0))
+                                RealPageId = realPageId,
+                                RoleTypeId = profile.PartyRole.RoleTypeId
+                            };
+                            //Assign Job tile to person
+                            repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreatePartyRoleByRealPageId, param);
+                        }
+                        msg += "UpdateProfile Log 6-- ";
+                        if (repositoryResponse.Id == 0)
+                        {
+                            repositoryResponse.ErrorMessage = "Update profile Error: Job Title failed.";
+                        }
+                        else
+                        {
+                            msg += "UpdateProfile Log 7-- ";
+                            ITelecommunicationNumberRepository telecommunicationNumberRepository = new TelecommunicationNumberRepository();
+                            ITelecommunicationNumber telecommunicationNumber = new TelecommunicationNumber();
+                            IContactMechanismRepository contactMechanismRepository = new ContactMechanismRepository();
+                            IPartyContactMechanism partyContactMechanism = new PartyContactMechanism();
+                            //Loop through all the Telecommunication numbers
+                            foreach (ITelecommunicationNumber phone in profile.TelecommunicationNumber)
+                            {
+                                telecommunicationNumber.ContactMechanismId = phone.ContactMechanismId;
+                                telecommunicationNumber.AreaCode = phone.AreaCode;
+                                telecommunicationNumber.CountryCode = phone.CountryCode;
+                                telecommunicationNumber.PhoneNumber = phone.PhoneNumber;
+                                telecommunicationNumber.ISOCode = phone.ISOCode;
+                                //New Telecommunication number
+                                if (phone.ContactMechanismId == 0)
                                 {
-                                    //Add a new phone
-                                    //Create the Contact Mechanism
-                                    param = new
+                                    //Is the Phone and Type valid
+                                    msg += "UpdateProfile Log 8-- ";
+                                    if ((phone.PhoneNumber.Trim().Length > 0) && (phone.contactMechanismUsageType.ContactMechanismUsageTypeId > 0))
                                     {
-                                        ContactMechanismId = 0
-                                    };
-                                    repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateContactMechanism, param);
-                                    if (repositoryResponse.Id == 0)
-                                    {
-                                        repositoryResponse.ErrorMessage = "Update profile Error: Create Contact Mechanism failed.";
-                                    }
-                                    else
-                                    {
-                                        telecommunicationNumber.ContactMechanismId = Convert.ToInt32(repositoryResponse.Id);
-                                        //Associate the Contact Mechanism to a Party
+                                        //Add a new phone
+                                        //Create the Contact Mechanism
                                         param = new
                                         {
-                                            RealPageId = realPageId,
-                                            PartyContactMechanismId = 0,
-                                            ContactMechanismId = telecommunicationNumber.ContactMechanismId,
-                                            FromDate = utcNow,
-                                            ThruDate = utcMaxValue
+                                            ContactMechanismId = 0
                                         };
-                                        repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkContactMechanismToParty, param);
+                                        repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateContactMechanism, param);
                                         if (repositoryResponse.Id == 0)
                                         {
                                             repositoryResponse.ErrorMessage = "Update profile Error: Create Contact Mechanism failed.";
                                         }
                                         else
                                         {
-                                            //Assign a usage type to the Contact Mechanism
-                                            partyContactMechanism.PartyContactMechanismId = repositoryResponse.Id;
+                                            telecommunicationNumber.ContactMechanismId = Convert.ToInt32(repositoryResponse.Id);
+                                            //Associate the Contact Mechanism to a Party
                                             param = new
                                             {
-                                                PartyContactMechanismId = partyContactMechanism.PartyContactMechanismId,
-                                                ContactMechanismUsageTypeId = phone.contactMechanismUsageType.ContactMechanismUsageTypeId
+                                                RealPageId = realPageId,
+                                                PartyContactMechanismId = 0,
+                                                ContactMechanismId = telecommunicationNumber.ContactMechanismId,
+                                                FromDate = utcNow,
+                                                ThruDate = utcMaxValue
                                             };
-                                            repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkUsageTypeToPartyContactMechanism, param);
+                                            repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkContactMechanismToParty, param);
                                             if (repositoryResponse.Id == 0)
                                             {
-                                                repositoryResponse.ErrorMessage = "Update profile Error: Link UsageType to Party Contact Mechanism failed.";
+                                                repositoryResponse.ErrorMessage = "Update profile Error: Create Contact Mechanism failed.";
+                                            }
+                                            else
+                                            {
+                                                //Assign a usage type to the Contact Mechanism
+                                                partyContactMechanism.PartyContactMechanismId = repositoryResponse.Id;
+                                                param = new
+                                                {
+                                                    PartyContactMechanismId = partyContactMechanism.PartyContactMechanismId,
+                                                    ContactMechanismUsageTypeId = phone.contactMechanismUsageType.ContactMechanismUsageTypeId
+                                                };
+                                                repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkUsageTypeToPartyContactMechanism, param);
+                                                if (repositoryResponse.Id == 0)
+                                                {
+                                                    repositoryResponse.ErrorMessage = "Update profile Error: Link UsageType to Party Contact Mechanism failed.";
+                                                }
                                             }
                                         }
                                     }
                                 }
-                            }
-                            else
-                            {
-                                if ((phone.contactMechanismUsageType.ContactMechanismUsageTypeId > 0) && (phone.PhoneNumber.Trim().Length > 0))
-                                {
-                                    //Set the PhoneType for the added/updated Telecommunication number
-                                    param = new
-                                    {
-                                        PartyContactMechanismID = phone.PartyContactMechanismId,
-                                        ContactMechanismUsageTypeId = phone.contactMechanismUsageType.ContactMechanismUsageTypeId
-                                    };
-
-                                    repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateContactMechanismUsageForParty, param);
-                                    if (repositoryResponse.Id == 0)
-                                    {
-                                        repositoryResponse.ErrorMessage = "Update profile Error: Update Contact Mechanism Usage For Party failed.";
-                                    }
-                                }
                                 else
                                 {
-                                    //Expire the Telecommunication number is the phone number or type is cleared
+                                    if ((phone.contactMechanismUsageType.ContactMechanismUsageTypeId > 0) && (phone.PhoneNumber.Trim().Length > 0))
+                                    {
+                                        //Set the PhoneType for the added/updated Telecommunication number
+                                        param = new
+                                        {
+                                            PartyContactMechanismID = phone.PartyContactMechanismId,
+                                            ContactMechanismUsageTypeId = phone.contactMechanismUsageType.ContactMechanismUsageTypeId
+                                        };
+
+                                        repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateContactMechanismUsageForParty, param);
+                                        if (repositoryResponse.Id == 0)
+                                        {
+                                            repositoryResponse.ErrorMessage = "Update profile Error: Update Contact Mechanism Usage For Party failed.";
+                                        }
+                                    }
+                                    else
+                                    {
+                                        //Expire the Telecommunication number is the phone number or type is cleared
+                                        param = new
+                                        {
+                                            RealPageId = realPageId,
+                                            PartyContactMechanismId = phone.PartyContactMechanismId,
+                                            ContactMechanismId = phone.ContactMechanismId,
+                                            FromDate = utcNow,
+                                            ThruDate = utcNow
+                                        };
+                                        repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkContactMechanismToParty, param);
+                                    }
+
+                                    if (repositoryResponse.Id == 0)
+                                    {
+                                        repositoryResponse.ErrorMessage = "Update profile Error: Link Contact Mechanism To a Party failed.";
+                                    }
+                                }
+
+                                if ((telecommunicationNumber.ContactMechanismId > 0) && (phone.PhoneNumber.Trim().Length > 0))
+                                {
                                     param = new
                                     {
-                                        RealPageId = realPageId,
-                                        PartyContactMechanismId = phone.PartyContactMechanismId,
-                                        ContactMechanismId = phone.ContactMechanismId,
-                                        FromDate = utcNow,
-                                        ThruDate = utcNow
+                                        ContactMechanismId = telecommunicationNumber.ContactMechanismId,
+                                        AreaCode = telecommunicationNumber.AreaCode,
+                                        CountryCode = telecommunicationNumber.CountryCode,
+                                        PhoneNumber = telecommunicationNumber.PhoneNumber,
+                                        ISOCode = telecommunicationNumber.ISOCode
                                     };
-                                    repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkContactMechanismToParty, param);
-                                }
-
-                                if (repositoryResponse.Id == 0)
-                                {
-                                    repositoryResponse.ErrorMessage = "Update profile Error: Link Contact Mechanism To a Party failed.";
-                                }
-                            }
-
-                            if ((telecommunicationNumber.ContactMechanismId > 0) && (phone.PhoneNumber.Trim().Length > 0))
-                            {
-                                param = new
-                                {
-                                    ContactMechanismId = telecommunicationNumber.ContactMechanismId,
-                                    AreaCode = telecommunicationNumber.AreaCode,
-                                    CountryCode = telecommunicationNumber.CountryCode,
-                                    PhoneNumber = telecommunicationNumber.PhoneNumber,
-                                    ISOCode = telecommunicationNumber.ISOCode
-                                };
-                                repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateTelecommunicationNumber, param);
-                                if (repositoryResponse.Id == 0)
-                                {
-                                    repositoryResponse.ErrorMessage = "Update profile Error: Link a telecommunication number details for a person failed.";
+                                    repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateTelecommunicationNumber, param);
+                                    if (repositoryResponse.Id == 0)
+                                    {
+                                        repositoryResponse.ErrorMessage = "Update profile Error: Link a telecommunication number details for a person failed.";
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
-            catch (Exception exception)
-            {
-                repositoryResponse.Id = 0;
-                repositoryResponse.ErrorMessage = "Update profile Error: " + exception.Message;
-            }
+                catch (Exception exception)
+                {
+                    repositoryResponse.Id = 0;
+                    repositoryResponse.ErrorMessage = "Update profile Error: " + exception.Message;
+                }
 
-            return repositoryResponse;
+                return repositoryResponse;
+            }
+            catch (Exception ex)
+            {
+                message.Id = 0;
+                message.ErrorMessage = "Update profile Error: " + ex.Message;
+            }
+            return message;
         }
 
         /// <summary>
@@ -5020,7 +5039,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     }
                     message += "ChangeUserTypeExternal log 14 ---";
                     #endregion
-                    message += "ChangeUserTypeExternal log 15 ---";
+                    message += "ChangeUserTypeExternal log 15 ---profile.PreferredContactMethodId--";
                     #region Preferred Contact Method and Tele-Communication
 
                     if ((profile.TelecommunicationNumber.Count > 0) && (profile.PreferredContactMethodId > 0))
