@@ -2831,7 +2831,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             DateTime utcNow = DateTime.UtcNow;
             DateTime utcMaxValue = DateTime.MaxValue.ToUniversalTime();
             RepositoryResponse repositoryResponse = new RepositoryResponse();
-
+            string message = string.Empty;
             try
             {
                 //Setup the parameter values to update the person's info
@@ -5026,6 +5026,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     if ((profile.TelecommunicationNumber.Count > 0) && (profile.PreferredContactMethodId > 0))
                     {
                         message += "ChangeUserTypeExternal log 15 --1 ---";
+                        if (repository is null)
+                        {
+                            message += "ChangeUserTypeExternal log 15 --10 ---";
+                        }
+                        var userrepository = GetRepository();
                         var response = UpdateProfile(repository, profile.RealPageId, profile);
                         message += "ChangeUserTypeExternal log 15 --2 ---";
                         if (response.Id == 0)
@@ -5110,8 +5115,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
             catch (Exception exception)
             {
+                Exception realerror = exception;
+                while (realerror.InnerException != null)
+                    realerror = realerror.InnerException;
                 int lineno = new System.Diagnostics.StackTrace(exception, true).GetFrame(0).GetFileLineNumber();
-                return message + " Line no: " + lineno + "  ,"+ exception;
+                return message + " Line no: " + lineno + "  ,"+ exception + "--> "+ realerror;
             }
             #endregion
 
