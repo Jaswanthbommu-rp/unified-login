@@ -3010,7 +3010,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 catch (Exception exception)
                 {
                     repositoryResponse.Id = 0;
-                    repositoryResponse.ErrorMessage = "Update profile Error: " + exception.Message;
+                    repositoryResponse.ErrorMessage = "Update profile Error1: " + exception.Message + msg;
                 }
 
                 return repositoryResponse;
@@ -3018,7 +3018,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             catch (Exception ex)
             {
                 message.Id = 0;
-                message.ErrorMessage = "Update profile Error: " + ex.Message;
+                message.ErrorMessage = "Update profile Error2: " + ex.Message + msg;
             }
             return message;
         }
