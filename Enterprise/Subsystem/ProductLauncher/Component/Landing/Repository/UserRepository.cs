@@ -5054,7 +5054,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         message += "ChangeUserTypeExternal log 15 --2 ---";
                         if (response.Id == 0)
                         {
-                            return "Update User Error: Update Preferred ContactMethod and Phone for External Users failed.";
+                            return "Update User Error: Update Preferred ContactMethod and Phone for External Users failed." + response.ErrorMessage;
                         }
                     }
                     message += "ChangeUserTypeExternal log 16 ---";
