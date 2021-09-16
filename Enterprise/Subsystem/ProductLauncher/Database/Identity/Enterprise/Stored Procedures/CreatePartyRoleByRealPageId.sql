@@ -8,6 +8,8 @@ BEGIN
         BEGIN TRANSACTION; 
 		UPDATE pr
 		   SET RoleTypeId = @RoleTypeId
+		   OUTPUT inserted.PartyRoleId AS Id,  
+		   '' AS ErrorMessage  
 		   FROM Enterprise.Party pa 
 		   INNER JOIN Person.Person p ON (pa.PartyId = p.PartyId)
 		   INNER JOIN Enterprise.PartyRole pr ON (p.PartyId = pr.PartyId)
