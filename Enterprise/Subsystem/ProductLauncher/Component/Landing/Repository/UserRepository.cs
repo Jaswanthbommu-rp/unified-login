@@ -6235,33 +6235,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 }
 
                 // Activity logging
-                if (repositoryResponse.Id > 0 || string.IsNullOrWhiteSpace(repositoryResponse.ErrorMessage)) 
+                if (repositoryResponse.Id > 0 || string.IsNullOrWhiteSpace(repositoryResponse.ErrorMessage))
                 {
-                    if (enterpriseRoles != null)
-                    {
-                        var newRoles = enterpriseRoles.Where(x => greenBookRoles.Contains(x.RoleId)).ToList().Select(e => e.Role).ToList();
-                        var oldRoles = enterpriseRoles.Where(x => updateUserProfileEntity.ExistingRoleIds.Contains(x.RoleId)).ToList().Select(e => e.Role).ToList();
-
-                        string joinedOldRoles = string.Join(", ", oldRoles);
-                        string joinedNewRoles = string.Join(", ", newRoles);
-
-                        var auditMessage = $"RealPage user {{2}} changed the Unified Platform role for {{0}} {{1}}. Previous role(s): {joinedOldRoles}. New role(s) : {joinedNewRoles}.";
-                        LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, auditMessage, "UpdateUser", updateUserProfileEntity.NewProfile);
-                    }
-
-                    if (greenBookRole != 0 &&
-                        updateUserProfileEntity.ExistingRoleIds.Count > 0 &&
-                        greenBookRole != updateUserProfileEntity.ExistingRoleIds[0] 
-                        && updateUserProfileEntity.ExistingRoleIds[0] != 0)
-                    {
-                        if (enterpriseRoles != null)
+                    var newRoles = enterpriseRoles?.Where(x => greenBookRoles.Contains(x.RoleId)).ToList().Select(e => e.Role).ToList();
+                    if (enterpriseRoles != null && newRoles.Count > 0)
+					{
+						var oldRoles = enterpriseRoles.Where(x => updateUserProfileEntity.ExistingRoleIds.Contains(x.RoleId)).ToList().Select(e => e.Role).ToList();						
+                        if(newRoles.Except(oldRoles).ToList().Count > 0)
                         {
-                            var existingUserRole = enterpriseRoles.ToList().Where(e => e.RoleId == updateUserProfileEntity.ExistingRoleIds[0]).Select(e => e.Role).FirstOrDefault();
-                            var newUserRole = enterpriseRoles.ToList().Where(e => e.RoleId == greenBookRole).Select(e => e.Role).FirstOrDefault();
-                            var auditMessage = $"RealPage user {{2}} changed the Unified Platform role for {{0}} {{1}}. Previous role: {existingUserRole}. New role: {newUserRole}.";
+                            string joinedOldRoles = string.Join(", ", oldRoles);
+                            string joinedNewRoles = string.Join(", ", newRoles);
+                            var auditMessage = $"RealPage user {{2}} changed the Unified Platform role for {{0}} {{1}}. Previous role(s): {joinedOldRoles}. New role(s) : {joinedNewRoles}.";
                             LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, auditMessage, "UpdateUser", updateUserProfileEntity.NewProfile);
                         }
-                    }
+					}					
 
                     if (userBatchEntity.IsUserTypeChangedFromNoEmailToRegular)
                     {
