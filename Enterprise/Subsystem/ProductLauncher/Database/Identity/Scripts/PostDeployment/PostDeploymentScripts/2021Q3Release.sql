@@ -2642,3 +2642,20 @@ INSERT INTO [Enterprise].[NavigationMenuSettingAccess](NavigationMenuId, Setting
 SELECT @NivigationMenuId, @SettingCategoryTypeId, 'PrimaryPropertyEnterpriseRole'
 END
 --END UserStory 892315 
+GO
+
+-- User Story 878972
+DECLARE @parent bigint;
+	SELECT TOP 1 @parent = Id FROM Enterprise.NavigationMenu WHERE PageId = N'Settings';
+IF NOT EXISTS(SELECT TOP 1 1 FROM Enterprise.NavigationMenu WHERE PageId = 'Admin Console' and ParentId = @parent)
+BEGIN 
+	BEGIN TRAN
+	DECLARE @menuEntryId int;
+	INSERT INTO Enterprise.NavigationMenu(Title, PageId, Icon, [URL], OrderIndex, ParentId, Origin)
+	VALUES (N'Admin Console', N'Admin Console', NULL, '/settings', 220, @parent, 'unified-settings');
+	SET @menuEntryId = SCOPE_IDENTITY();
+	INSERT INTO Enterprise.NavigationMenuRights(NavigationMenuId, RightId)
+	SELECT @menuEntryId, RightId FROM [Security].[Right] WHERE RightName = 'AccessSettingsAdmin'
+	COMMIT TRAN
+END
+GO
