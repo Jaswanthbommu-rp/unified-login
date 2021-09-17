@@ -2659,3 +2659,16 @@ BEGIN
 	COMMIT TRAN
 END
 GO
+
+-- User Story 878973
+Declare @Right1 bigint,@Right2 bigint,@SettingId bigint;
+Select  @Right1 = RightId  from Security.[Right]  where RightName = 'Managecompanylevelsettings';
+Select @Right2 = RightId from Security.[Right] where RightName = 'ViewUnifiedSettings';
+Select @SettingId = Id from Enterprise.NavigationMenu where pageId = 'manage-settings';
+
+IF Not Exists (Select Top 1 1 from Enterprise.NavigationMenuRights where NavigationMenuId = @SettingId and RightId in (@Right1,@Right2))
+BEGIN
+  Insert into Enterprise.NavigationMenuRights(NavigationMenuId , RightId)
+          Values (@SettingId,@Right1), (@SettingId,@Right2);
+END
+GO
