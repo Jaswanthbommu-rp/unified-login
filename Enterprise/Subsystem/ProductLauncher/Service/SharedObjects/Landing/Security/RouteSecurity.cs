@@ -30,7 +30,5 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         /// List of all rights associated with route
         /// </summary>
         public IList<string> Rights { get; set; }
-
-        public RouteSecurity ImpersonatedRights { get; set; }
     }
 }

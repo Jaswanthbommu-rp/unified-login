@@ -1245,7 +1245,10 @@ BEGIN
 		Set @endpoint = 'https://training-api.realpage.com/v1/cloning/userclone';
 	END
 
-	EXEC Enterprise.SetProductSetting @ProductSettingId=0,  @ProductId =3,  @ProductSettingTypeId = @typeId,  @Value = @endpoint
+	IF @endpoint <> ''
+	begin
+		EXEC Enterprise.SetProductSetting @ProductSettingId=0,  @ProductId =3,  @ProductSettingTypeId = @typeId,  @Value = @endpoint
+	end
 End
 GO
 IF NOT EXISTS (SELECT 1 FROM [Batch].[BatchProcessConfigurationType] Where Name = 'EnterpriseRoleProcessApiEndpoint')
@@ -2396,43 +2399,44 @@ begin
 		from @productlist where entid = @Current_ID
 
 	--print 'productid = ' + convert(varchar,@currentproductid)
-
-	if not exists (
-	select top 1 1 
-		FROM Enterprise.GlobalProductConfiguration gpc  
-		JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId  
-		JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId  
-		JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId  
-			WHERE  gpc.ProductId = @CurrentProductId  
-		AND ((@NOW BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@NOW >= gpc.FromDate AND gpc.ThruDate IS NULL))  
-		AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))  
-		AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))  
-		AND pst.Name = @currentSettingType
-		AND ps.Value = @currentsettingValue
-	)
+	if exists ( select top 1 1 from enterprise.product WHERE ProductId = @CurrentProductId )
 	begin
-		declare @currentproductconfigurationid INT
-		select distinct top 1 @currentproductconfigurationid = pc.configurationid
+		if not exists (
+		select top 1 1 
 			FROM Enterprise.GlobalProductConfiguration gpc  
 			JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId  
 			JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId  
 			JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId  
-				WHERE  gpc.ProductId = @CurrentProductId
+				WHERE  gpc.ProductId = @CurrentProductId  
 			AND ((@NOW BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@NOW >= gpc.FromDate AND gpc.ThruDate IS NULL))  
 			AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))  
 			AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))  
-		order by pc.ConfigurationId desc
-
-		if (@currentproductconfigurationid is not null)
+			AND pst.Name = @currentSettingType
+			AND ps.Value = @currentsettingValue
+		)
 		begin
-			insert into enterprise.ProductSetting ( productid, ProductSettingTypeId, value, FromDate )
-				select @CurrentProductId, productsettingtypeid, @currentSettingValue, GETUTCDATE()
-					from enterprise.ProductSettingType where name = @currentSettingType
-			insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate, ThruDate )
-				values ( @currentproductconfigurationid, @@IDENTITY, GETUTCDATE(), null )
+			declare @currentproductconfigurationid INT
+			select distinct top 1 @currentproductconfigurationid = pc.configurationid
+				FROM Enterprise.GlobalProductConfiguration gpc  
+				JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId  
+				JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId  
+				JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId  
+					WHERE  gpc.ProductId = @CurrentProductId
+				AND ((@NOW BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@NOW >= gpc.FromDate AND gpc.ThruDate IS NULL))  
+				AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))  
+				AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))  
+			order by pc.ConfigurationId desc
+
+			if (@currentproductconfigurationid is not null)
+			begin
+				insert into enterprise.ProductSetting ( productid, ProductSettingTypeId, value, FromDate )
+					select @CurrentProductId, productsettingtypeid, @currentSettingValue, GETUTCDATE()
+						from enterprise.ProductSettingType where name = @currentSettingType
+				insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate, ThruDate )
+					values ( @currentproductconfigurationid, @@IDENTITY, GETUTCDATE(), null )
+			end
 		end
-	end
-	
+	end	
 	set @Current_ID = @Current_ID + 1
 end
 GO
@@ -2642,3 +2646,33 @@ INSERT INTO [Enterprise].[NavigationMenuSettingAccess](NavigationMenuId, Setting
 SELECT @NivigationMenuId, @SettingCategoryTypeId, 'PrimaryPropertyEnterpriseRole'
 END
 --END UserStory 892315 
+GO
+
+-- User Story 878972
+DECLARE @parent bigint;
+	SELECT TOP 1 @parent = Id FROM Enterprise.NavigationMenu WHERE PageId = N'Settings';
+IF NOT EXISTS(SELECT TOP 1 1 FROM Enterprise.NavigationMenu WHERE PageId = 'Admin Console' and ParentId = @parent)
+BEGIN 
+	BEGIN TRAN
+	DECLARE @menuEntryId int;
+	INSERT INTO Enterprise.NavigationMenu(Title, PageId, Icon, [URL], OrderIndex, ParentId, Origin)
+	VALUES (N'Admin Console', N'Admin Console', NULL, '/settings', 220, @parent, 'unified-settings');
+	SET @menuEntryId = SCOPE_IDENTITY();
+	INSERT INTO Enterprise.NavigationMenuRights(NavigationMenuId, RightId)
+	SELECT @menuEntryId, RightId FROM [Security].[Right] WHERE RightName = 'AccessSettingsAdmin'
+	COMMIT TRAN
+END
+GO
+
+-- User Story 878973
+Declare @Right1 bigint,@Right2 bigint,@SettingId bigint;
+Select  @Right1 = RightId  from Security.[Right]  where RightName = 'Managecompanylevelsettings';
+Select @Right2 = RightId from Security.[Right] where RightName = 'ViewUnifiedSettings';
+Select @SettingId = Id from Enterprise.NavigationMenu where pageId = 'manage-settings';
+
+IF Not Exists (Select Top 1 1 from Enterprise.NavigationMenuRights where NavigationMenuId = @SettingId and RightId in (@Right1,@Right2))
+BEGIN
+  Insert into Enterprise.NavigationMenuRights(NavigationMenuId , RightId)
+          Values (@SettingId,@Right1), (@SettingId,@Right2);
+END
+GO

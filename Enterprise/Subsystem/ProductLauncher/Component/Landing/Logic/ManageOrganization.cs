@@ -1010,7 +1010,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 if ((selectedProperties != null && selectedProperties.Count > 0))
                 {
                     selectedPropertyInstanceIds = selectedProperties;
-                }
+                }                
                 if (isSelectedProperties == true)
                 {
                     propertyInstanceIds = selectedPropertyInstanceIds;
@@ -1020,7 +1020,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     propertyInstanceIds = propertyInstanceIds.Except(selectedPropertyInstanceIds).ToList<Guid>();
                 }
             }
-            if (userPersonaId == 0 && (selectedProperties == null || selectedProperties.Count == 0) && isSelectedProperties == true)
+            if ((selectedProperties == null || selectedProperties.Count == 0) && isSelectedProperties == true)
             {
                 propertyInstanceIds = new List<Guid>();
             }
