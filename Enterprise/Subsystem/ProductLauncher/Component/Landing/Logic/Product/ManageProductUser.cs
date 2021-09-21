@@ -564,6 +564,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     if (successRecords != null && successRecords.Count > 0)
                     {
                         var message = GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, successRecords, true);
+                        if (string.IsNullOrEmpty(message))
+                        {
+                            PushToQueue(fromUserLogInfo, toUserLogInfo, "Error 1:");
+                            string record = JsonConvert.SerializeObject(successRecords);
+                            PushToQueue(fromUserLogInfo, toUserLogInfo, record);
+                        }
                         PushToQueue(fromUserLogInfo, toUserLogInfo, message);
                     }
 
