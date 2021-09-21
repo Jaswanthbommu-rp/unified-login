@@ -69,13 +69,13 @@ BEGIN
 				SELECT 1
 				FROM Enterprise.GlobalProductConfiguration
 				WHERE ProductId = @ProductId
-					AND (GETDATE() BETWEEN FromDate AND ThruDate
+					AND (GETUTCDATE() BETWEEN FromDate AND ThruDate
 					OR ThruDate IS NULL))
 			BEGIN
 				SELECT @ConfigurationId = ConfigurationId
 				FROM Enterprise.GlobalProductConfiguration
 				WHERE ProductId = @ProductId
-					AND (GETDATE() BETWEEN FromDate AND ThruDate
+					AND (GETUTCDATE() BETWEEN FromDate AND ThruDate
 					OR ThruDate IS NULL);
 			END;
 			ELSE
