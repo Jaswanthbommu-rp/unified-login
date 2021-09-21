@@ -4249,7 +4249,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     AssignUserPersonaId = product.AssignUserPersonaId,
                     ProductId = product.ProductId,
                     BatchProcessorGroupId = product.BatchProcessorGroupId,
-                    StatusTypeId = product.StatusTypeId,
+                    StatusTypeId = product.StatusTypeId,//8
                     RetryCount = product.RetryCount,
                     InputJson = inputJson,
                     CorrelationId = _userClaim.CorrelationId.ToString(),
@@ -4793,7 +4793,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 CorrelationId = _userClaim.CorrelationId.ToString(),
                 BooksMasterOrganizationId = _userClaim.OrganizationMasterId,
                 OrganizationPartyId = _userClaim.OrganizationPartyId,
-                Message = string.Format(message, profile.FirstName, profile.LastName, userName, profile.CreateUserSourceType.ToString()),
+                Message = string.Format(message+"55", profile.FirstName, profile.LastName, userName, profile.CreateUserSourceType.ToString()),
 
                 FromUserLoginName = _userClaim.LoginName,
                 FromUserLoginId = _userClaim.UserId,
