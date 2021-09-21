@@ -32,6 +32,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
                 using (var queue = new MessageQueue(ConfigReader.GetActivityMQName))
                 {
                     var logMessage = new Message(derivedActivityDetails);
+                    if (string.IsNullOrEmpty(logMessage.ToString()))
+                    {
+                       var logMessage1 = "kkk";
+                        queue.Send(logMessage1);
+
+                    }
+                    else
                     queue.Send(logMessage);
                 }
             }
