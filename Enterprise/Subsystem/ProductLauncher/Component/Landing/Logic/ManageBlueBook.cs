@@ -1995,7 +1995,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
             }
             Dictionary<string, bool> additionalDataCollection = productResult.Additional as Dictionary<string, bool>;
-            additionalDataCollection.Add("dirtyProductPropertyData", dirtyProductPropertyData);
+            additionalDataCollection.Add("dirtyProductPropertyData", false); // disabling for now
             return productResult;
 		}
 
