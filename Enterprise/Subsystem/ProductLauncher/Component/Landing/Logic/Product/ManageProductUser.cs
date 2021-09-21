@@ -571,6 +571,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     if (failedRecords != null && failedRecords.Count > 0)
                     {
                         var message = GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, failedRecords, false);
+                        if (string.IsNullOrEmpty(message))
+                        {
+                            PushToQueue(fromUserLogInfo, toUserLogInfo, "Error 1:");
+                            string record = JsonConvert.SerializeObject(failedRecords);
+                            PushToQueue(fromUserLogInfo, toUserLogInfo, record);
+                        }
                         PushToQueue(fromUserLogInfo, toUserLogInfo, message);
                         SendNotification(message + " Please contact RealPage Support for assistance.", fromPersonaId);
                     }
@@ -615,54 +621,62 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private string GenerateQueueMessage(UserActivityLogInfo fromUserLogInfo, UserActivityLogInfo toUserLogInfo, List<UserBatchProductDetail> userBatchProductDetails, bool IsSuccess) 
         {
             string message = "";
-
-            List<string> assinedProducts = new List<string>();
-            List<string> unassignedProducts= new List<string>();
-
-            string assignedMessage = "";
-            string unassignedMessage = "";
-
-            if (IsSuccess) 
+            try
             {
-                message = $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} updated access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName}:";
-                foreach (var item in userBatchProductDetails)
-                {
-                    if (item.IsAssigned)
-                        assinedProducts.Add(item.Name);
+                List<string> assinedProducts = new List<string>();
+                List<string> unassignedProducts = new List<string>();
 
-                    if (!item.IsAssigned)
-                        unassignedProducts.Add(item.Name);
+                string assignedMessage = "";
+                string unassignedMessage = "";
+
+                if (IsSuccess)
+                {
+                    message = $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} updated access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName}:";
+                    foreach (var item in userBatchProductDetails)
+                    {
+                        if (item.IsAssigned)
+                            assinedProducts.Add(item.Name);
+
+                        if (!item.IsAssigned)
+                            unassignedProducts.Add(item.Name);
+                    }
+
+                    if (assinedProducts.Count > 0)
+                        assignedMessage = " Access was granted to " + string.Join(", ", assinedProducts) + ".";
+
+
+                    if (unassignedProducts.Count > 0)
+                        unassignedMessage = " Access was unassigned from " + string.Join(", ", unassignedProducts) + ".";
+
+                    message += assignedMessage;
+                    message += unassignedMessage;
                 }
 
-                if (assinedProducts.Count > 0)
-                    assignedMessage = " Access was granted to " + string.Join(", ", assinedProducts) + ".";
-
-
-                if (unassignedProducts.Count > 0)
-                    unassignedMessage = " Access was unassigned from " + string.Join(", ", unassignedProducts) + ".";
-
-                message += assignedMessage;
-                message += unassignedMessage;
-            }
-
-            else
-            {
-                message = $"An exception occurred when {fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} attempted to update product access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName} in ";
-                string[] products = new string[userBatchProductDetails.Count];
-
-                for (int i = 0; i < userBatchProductDetails.Count; i++)
+                else
                 {
-                    products[i] = userBatchProductDetails[i].Name;
+                    message = $"An exception occurred when {fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} attempted to update product access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName} in ";
+                    string[] products = new string[userBatchProductDetails.Count];
+
+                    for (int i = 0; i < userBatchProductDetails.Count; i++)
+                    {
+                        products[i] = userBatchProductDetails[i].Name;
+                    }
+
+                    var commaString = string.Join(", ", products);
+                    var lastComma = commaString.LastIndexOf(',');
+
+                    if (lastComma != -1)
+                        commaString = commaString.Remove(lastComma, 1).Insert(lastComma, " and");
+
+                    message += commaString + ".";
                 }
-
-                var commaString = string.Join(", ", products);
-                var lastComma = commaString.LastIndexOf(',');
-
-                if (lastComma != -1)
-                    commaString = commaString.Remove(lastComma, 1).Insert(lastComma, " and");
-
-                message += commaString + ".";
             }
+            catch (Exception ex)
+            {
+                message = "Got an exception : "+ message + "-->"+ ex ; 
+            }
+
+            
 
             return message;
         }
