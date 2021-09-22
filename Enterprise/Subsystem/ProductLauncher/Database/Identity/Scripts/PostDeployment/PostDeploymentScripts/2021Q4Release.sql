@@ -2137,3 +2137,209 @@ if NOT EXISTS (
 		end
 	END
 --End UserStory 947864
+
+
+--Start Userstory 936667
+---Script to add AzureTokenAddress configuration
+DECLARE @AzureTokenAddress NVARCHAR(max) = 'https://login.microsoftonline.com/2c94bed6-d675-4d3d-a53b-7b461fd6acc2/oauth2/v2.0'
+
+IF NOT EXISTS ( select top (1) 1 from Enterprise.ProductSettingType where name = 'AzureTokenAddress')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'AzureTokenAddress', 'The api endpoint for Azure Token Address APIs', 0 )
+END
+
+IF NOT EXISTS(Select top (1) 1 from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'AzureTokenAddress' and ps.ProductId= 3)
+BEGIN
+	Insert into Enterprise.ProductSetting (ProductId, ProductSettingTypeId, Value, FromDate)
+	Select 3, ProductSettingTypeId, @AzureTokenAddress, GETUTCDATE()
+	from Enterprise.ProductSettingType
+	where Name = 'AzureTokenAddress'
+
+	declare @productsettingid int
+	select @productsettingid = productsettingid from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'AzureTokenAddress' and ps.ProductId= 3
+
+	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
+				select TOP (1) ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is NULL ORDER BY GlobalProductConfigurationId DESC
+END
+GO
+
+---Script to add AzureTokenAddress configuration
+DECLARE @AzureUnifiedLoginUserClientSecret NVARCHAR(max) = '1JCckXFT1uR2BOr.sPMY37G91w_q5-4~D8'
+
+IF NOT EXISTS ( select top (1) 1 from Enterprise.ProductSettingType where name = 'AzureUnifiedLoginUserClientSecret')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'AzureUnifiedLoginUserClientSecret', 'Azure UnifiedLogin User Client Secret', 1 )
+END
+
+IF NOT EXISTS(Select top (1) 1 from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'AzureUnifiedLoginUserClientSecret' and ps.ProductId= 3)
+BEGIN
+	Insert into Enterprise.ProductSetting (ProductId, ProductSettingTypeId, Value, FromDate)
+	Select 3, ProductSettingTypeId, @AzureUnifiedLoginUserClientSecret, GETUTCDATE()
+	from Enterprise.ProductSettingType
+	where Name = 'AzureUnifiedLoginUserClientSecret'
+
+	declare @productsettingid int
+	select @productsettingid = productsettingid from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'AzureUnifiedLoginUserClientSecret' and ps.ProductId= 3
+
+	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
+				select TOP (1) ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is NULL ORDER BY GlobalProductConfigurationId DESC
+END
+GO
+
+---Script to add AzureTokenAddress configuration
+DECLARE @AzureUnifiedLoginUserClientId NVARCHAR(max) = '7930bfd6-d0b0-45dd-93fb-162eae96365f'
+
+IF NOT EXISTS ( select top (1) 1 from Enterprise.ProductSettingType where name = 'AzureUnifiedLoginUserClientId')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'AzureUnifiedLoginUserClientId', 'Azure UnifiedLogin User Client Id', 0 )
+END
+
+IF NOT EXISTS(Select top (1) 1 from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'AzureUnifiedLoginUserClientId' and ps.ProductId= 3)
+BEGIN
+	Insert into Enterprise.ProductSetting (ProductId, ProductSettingTypeId, Value, FromDate)
+	Select 3, ProductSettingTypeId, @AzureUnifiedLoginUserClientId, GETUTCDATE()
+	from Enterprise.ProductSettingType
+	where Name = 'AzureUnifiedLoginUserClientId'
+
+	declare @productsettingid int
+	select @productsettingid = productsettingid from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'AzureUnifiedLoginUserClientId' and ps.ProductId= 3
+
+	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
+				select TOP (1) ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is NULL ORDER BY GlobalProductConfigurationId DESC
+END
+GO
+
+---Script to add AzureTokenAddress configuration
+DECLARE @AzureUnifiedLoginUserClientScopes NVARCHAR(max) = 'https://graph.microsoft.com/.default'
+
+IF NOT EXISTS ( select top (1) 1 from Enterprise.ProductSettingType where name = 'AzureUnifiedLoginUserClientScopes')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'AzureUnifiedLoginUserClientScopes', 'Azure UnifiedLogin User Client Scopes', 0 )
+END
+
+IF NOT EXISTS(Select top (1) 1 from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'AzureUnifiedLoginUserClientScopes' and ps.ProductId= 3)
+BEGIN
+	Insert into Enterprise.ProductSetting (ProductId, ProductSettingTypeId, Value, FromDate)
+	Select 3, ProductSettingTypeId, @AzureUnifiedLoginUserClientScopes, GETUTCDATE()
+	from Enterprise.ProductSettingType
+	where Name = 'AzureUnifiedLoginUserClientScopes'
+
+	declare @productsettingid int
+	select @productsettingid = productsettingid from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'AzureUnifiedLoginUserClientScopes' and ps.ProductId= 3
+
+	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
+				select TOP (1) ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is NULL ORDER BY GlobalProductConfigurationId DESC
+END
+GO
+
+---Script to add AzureTokenAddress configuration
+DECLARE @AzureUserGraphAPI NVARCHAR(max) = 'https://graph.microsoft.com'
+
+IF NOT EXISTS ( select top (1) 1 from Enterprise.ProductSettingType where name = 'AzureUserGraphAPI')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'AzureUserGraphAPI', 'Azure User Graph API', 0 )
+END
+
+IF NOT EXISTS(Select top (1) 1 from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'AzureUserGraphAPI' and ps.ProductId= 3)
+BEGIN
+	Insert into Enterprise.ProductSetting (ProductId, ProductSettingTypeId, Value, FromDate)
+	Select 3, ProductSettingTypeId, @AzureUserGraphAPI, GETUTCDATE()
+	from Enterprise.ProductSettingType
+	where Name = 'AzureUserGraphAPI'
+
+	declare @productsettingid int
+	select @productsettingid = productsettingid from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'AzureUserGraphAPI' and ps.ProductId= 3
+
+	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
+				select TOP (1) ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is NULL ORDER BY GlobalProductConfigurationId DESC
+END
+GO
+
+---Script to add TimeIntervelToCallAzureADGroupAPI 
+DECLARE @TimeIntervelToCallAzureADGroupAPI int = 120
+
+IF NOT EXISTS ( select top (1) 1 from Enterprise.ProductSettingType where name = 'TimeIntervelToCallAzureADGroupAPI')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'TimeIntervelToCallAzureADGroupAPI', 'Time Intervel To Call AzureADGroup API in Minutes', 0 )
+END
+
+IF NOT EXISTS(Select top (1) 1 from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'TimeIntervelToCallAzureADGroupAPI' and ps.ProductId= 3)
+BEGIN
+	Insert into Enterprise.ProductSetting (ProductId, ProductSettingTypeId, Value, FromDate)
+	Select 3, ProductSettingTypeId, @TimeIntervelToCallAzureADGroupAPI, GETUTCDATE()
+	from Enterprise.ProductSettingType
+	where Name = 'TimeIntervelToCallAzureADGroupAPI'
+
+	declare @productsettingid int
+	select @productsettingid = productsettingid from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'TimeIntervelToCallAzureADGroupAPI' and ps.ProductId= 3
+
+	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
+				select TOP (1) ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is NULL ORDER BY GlobalProductConfigurationId DESC
+END
+GO
+
+---Script to add EnableAzureADGroupUserImport 
+DECLARE @EnableAzureADGroupUserImport bit = 1
+
+IF NOT EXISTS ( select top (1) 1 from Enterprise.ProductSettingType where name = 'EnableAzureADGroupUserImport')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'EnableAzureADGroupUserImport', 'Enable Azure ADGroup User Import', 0 )
+END
+
+IF NOT EXISTS(Select top (1) 1 from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'EnableAzureADGroupUserImport' and ps.ProductId= 3)
+BEGIN
+	Insert into Enterprise.ProductSetting (ProductId, ProductSettingTypeId, Value, FromDate)
+	Select 3, ProductSettingTypeId, @EnableAzureADGroupUserImport, GETUTCDATE()
+	from Enterprise.ProductSettingType
+	where Name = 'EnableAzureADGroupUserImport'
+
+	declare @productsettingid int
+	select @productsettingid = productsettingid from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'EnableAzureADGroupUserImport' and ps.ProductId= 3
+
+	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
+				select TOP (1) ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is NULL ORDER BY GlobalProductConfigurationId DESC
+END
+GO
+--End Userstory 936667
