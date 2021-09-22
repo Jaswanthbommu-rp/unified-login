@@ -246,7 +246,6 @@ begin
 		AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))  
 		AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))  
 		AND pst.Name = @currentSettingType
-		AND ps.Value = @currentsettingValue
 	)
 	begin
 		declare @currentproductconfigurationid INT
@@ -1174,7 +1173,6 @@ begin
 			AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))  
 			AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))  
 			AND pst.Name = @currentSettingType
-			AND ps.Value = @currentsettingValue
 		)
 		begin
 			declare @currentproductconfigurationid INT
@@ -2412,7 +2410,6 @@ begin
 			AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))  
 			AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))  
 			AND pst.Name = @currentSettingType
-			AND ps.Value = @currentsettingValue
 		)
 		begin
 			declare @currentproductconfigurationid INT
