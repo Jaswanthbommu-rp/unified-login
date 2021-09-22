@@ -75,8 +75,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
 
                             var newValue = newEntityProperty.GetValue(newEntity);
 
-                            var formatedOldValue = oldValue != null ? oldValue.ToString() : null;
-                            var formatedNewValue = newValue != null ? newValue.ToString() : null;
+                            var formatedOldValue = oldValue != null ? (oldValue.ToString() != string.Empty ? oldValue.ToString() : null) : null;
+                            var formatedNewValue = newValue != null ? (newValue.ToString() != string.Empty ? newValue.ToString() : null) : null;
 
                             bool oldValueIsDate = oldValue != null && oldValue.GetType() == Type.GetType("System.DateTime") ? true : false;
                             bool newValueIsDate = newValue != null && newValue.GetType() == Type.GetType("System.DateTime") ? true : false;
