@@ -1010,8 +1010,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 message = "{0} {1} user type changed from external user to admin in product {2} by user {3} {4}.";
             }
-
-            WriteActivityLog(fromPersonaId, toPerson, toUserGbLogin, message);
+            if (!string.IsNullOrEmpty(message))
+            {
+                WriteActivityLog(fromPersonaId, toPerson, toUserGbLogin, message);
+            }
         }
 
         protected void WriteUserActivityLogWithMessage(long fromPersonaId, IC.Person toPerson, UserLoginOnly toUserGbLogin, string message)
