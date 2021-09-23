@@ -382,6 +382,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					productId = (int)ProductEnum.OneSite;
 					break;
 				case (int)ProductEnum.OneSiteConversions:
+				case (int)ProductEnum.Facilities:
 					productId = (int)ProductEnum.OneSite;
 					//productType = "IsResource";
 					break;
@@ -482,6 +483,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			switch (productId)
 			{
 				case (int)ProductEnum.OneSite:
+				case (int)ProductEnum.Facilities:
 					getOneSitePMCURL = true;
 					break;
 				case (int)ProductEnum.UnifiedUI:
