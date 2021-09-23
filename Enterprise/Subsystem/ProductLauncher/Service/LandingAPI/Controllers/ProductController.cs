@@ -423,6 +423,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return new ProductLoginResponse() {ErrorMessage = "User not active"};
             }
 
+            string adGroupProductSetting = productInternalSettingsList.FirstOrDefault(s => s.Name.Equals("CheckADGroupProductAccess", StringComparison.OrdinalIgnoreCase))?.Value;
+            
+            if (!string.IsNullOrEmpty(adGroupProductSetting) && adGroupProductSetting.Equals("1", StringComparison.OrdinalIgnoreCase))
+            {
+                var GroupAdProduct = _manageProduct.GetAdGroupsForProduct(productId);
+
+                if (GroupAdProduct != null)
+                {
+                    var GroupAdsForUser = _manageProduct.GetAdGroupsForProduct(productId);
+                }
+            }
+            //Find AD group setting, and check if it is equal to 1
+            //Check to see if the product id is in the GroupAdProductTable, and retrieve it  
+            //Check what the user has, and if the user doesn't have at least one of the groups, then he has the denied access
+
             string authenticationType = productInternalSettingsList.FirstOrDefault(a => a.Name.Equals("AuthenticationType", StringComparison.OrdinalIgnoreCase))?.Value;
             switch (authenticationType)
             {

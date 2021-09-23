@@ -2103,6 +2103,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 return repository.GetMany<PersonaProductProperty>(StoredProcNameConstants.SP_GetPersonaProductPrimaryProperties, param);
             }
         }
+
+        public IList<ADGroupProduct> GetAdGroupsForProduct(int productId)
+        {
+            dynamic param = new
+            {
+                ProductId = productId
+            };
+            using (var repository = GetRepository())
+            {
+                return repository.GetMany<ADGroupProduct>(StoredProcNameConstants.SP_GetAdGroupsForProduct, param);
+            }
+        }
         #endregion
 
         #region Private Methods

@@ -127,5 +127,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <param name="productUI"></param>
         /// <returns></returns>
         IList<ProductUI> AddProductSourceAndGreenBookCareFlagToProducts(Guid upfmCompanyId, long organizationPartyId, IList<ProductUI> productUI);
+
+        /// <summary>
+        /// Return AD groups for the product
+        /// </summary>
+        /// <param name="productId"></param>
+        /// <returns></returns>
+        IList<ADGroupProduct> GetAdGroupsForProduct(int productId);
     }
 }

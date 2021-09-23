@@ -635,6 +635,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return products;
         }
 
+        public IList<ADGroupProduct> GetAdGroupsForProduct(int productId)
+        {
+            return _productRepository.GetAdGroupsForProduct(productId);
+        }
+
         #endregion
     }
 }

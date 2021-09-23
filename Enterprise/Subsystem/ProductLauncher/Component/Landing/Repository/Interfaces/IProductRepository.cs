@@ -310,5 +310,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="personaId"></param>
         /// <returns></returns>
         bool GetPersonaHasProductError(long personaId);
+        
+        /// <summary>
+        /// Get AD groups for product
+        /// </summary>
+        /// <param name="productId"></param>
+        /// <returns></returns>
+        IList<ADGroupProduct> GetAdGroupsForProduct(int productId);
     }
 }
