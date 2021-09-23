@@ -559,7 +559,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 					(f.Key.Equals("Status", StringComparison.OrdinalIgnoreCase)) ||
 					(f.Key.Equals("UserType", StringComparison.OrdinalIgnoreCase)) ||
 					(f.Key.Equals("OffsetMinutes", StringComparison.OrdinalIgnoreCase)) ||
-					(f.Key.Equals("RoleTemplateId", StringComparison.OrdinalIgnoreCase))
+					(f.Key.Equals("RoleTemplateId", StringComparison.OrdinalIgnoreCase)) ||
+					(f.Key.Equals("PersonaHasProductError", StringComparison.OrdinalIgnoreCase))
 					)
 				{
 					filterBy.Add(
@@ -664,6 +665,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
 				return items.ToList();
 			}
+		}
+
+		public bool GetOrganizationHasAnyProductAssignmentError(long orgPartyId)
+		{
+			using (var repository = GetRepository())
+			{
+				return repository.GetOne<bool>(StoredProcNameConstants.SP_GetOrganizationHasPersonaProductError, new { PartyId = orgPartyId });
+			}
+				
 		}
 
 		/// <summary>

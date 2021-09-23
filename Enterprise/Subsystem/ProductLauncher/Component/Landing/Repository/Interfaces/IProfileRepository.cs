@@ -39,5 +39,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		/// <param name="personaId">Optional personaId</param>
 		/// <returns>List of Person</returns>
 		IList<ProductUsers> ListPersonsByProductId(int productId, Guid? realPageId = null, long? personaId = null);
+		bool GetOrganizationHasAnyProductAssignmentError(long orgPartyId);
 	}
 }

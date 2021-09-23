@@ -20,7 +20,8 @@ BEGIN
   @filterProductId int = NULL,  
   @filterStatusTypeId int = 0,  
   @filterEnterpriseRoleCount int = 0,  
-  @filterPartyRoleTypeId int = NULL,  
+  @filterPartyRoleTypeId int = NULL, 
+  @filterPersonaProductError tinyint = NULL,
   @minSequence smallint,  
   @csvAssignedProducts varchar(max),  
   @csvStatus varchar(max),  
@@ -53,6 +54,11 @@ BEGIN
   PersonaId bigint,  
   ProductId bigint  
  )  
+
+ CREATE TABLE #PersonaProductError(  
+  PersonaId bigint,
+  IsProductError tinyint 
+ ) 
   
  SELECT @RowsPerPage = CASE  
   WHEN @RowsPerPage <= 0 THEN 2147483647  
@@ -148,6 +154,14 @@ BEGIN
  FROM  @tblFilterBy  
  WHERE ColumnName = 'RoleTemplateId'  
  AND   SearchValue NOT IN ( '%', '')  
+ 
+ SELECT @filterPersonaProductError = CONVERT(tinyint, SearchValue)  
+ FROM  @tblFilterBy  
+ WHERE ColumnName = 'PersonaHasProductError'  
+ AND   ISNUMERIC(SearchValue) = 1 
+
+ IF (@filterPersonaProductError = 0)
+	SET @filterPersonaProductError = NULL
   
  IF (LEN(@csvStatus) > 0)  
  BEGIN  
@@ -266,6 +280,15 @@ BEGIN
    AND     ((@NOW >= ps.FromDate AND ps.ThruDate IS NULL) OR (@NOW BETWEEN ps.FromDate AND ps.ThruDate))  
   
  END  
+
+ INSERT INTO #PersonaProductError (  
+   PersonaId,IsProductError  
+  )  
+  SELECT pe.PersonaId  ,1
+  FROM Enterprise.PersonaProductError PPE  
+  INNER JOIN Person.Persona PE ON PE.PersonaId = PPE.PersonaId  
+  INNER JOIN Ident.UserLoginPersona ULP ON PE.UserLoginPersonaId = ULP.UserLoginPersonaId
+  WHERE  ULP.OrganizationPartyId = @PartyId 
   
  DROP INDEX IF EXISTS [NCI_Temp_PersonaProduct_ProductId] ON [dbo].[#PersonaProduct]  
  CREATE NONCLUSTERED INDEX [NCI_Temp_PersonaProduct_ProductId] ON [dbo].[#PersonaProduct] ([ProductId]) INCLUDE ([PersonaId])  
@@ -419,7 +442,8 @@ BEGIN
   PartyRoleTypeId, 
   PasswordModifiedDate,
   EntepriseRoleName,  
-  RoleTemplateId,  
+  RoleTemplateId,
+  PersonaHasProductError,
   OffsetMinutes,  
   TotalRecords,  
   RowNumber  
@@ -450,7 +474,8 @@ BEGIN
     prs.RoleTypeIdFrom AS PartyRoleTypeId,  
 	ulp.PasswordModifiedDate,
     UER.EnterpriseRoleName,  
-    UER.RoleTemplateId,  
+    UER.RoleTemplateId,
+	ISNULL(PPE.IsProductError, 0) As 'PersonaHasProductError',
     @OffsetMinutes,    
     COUNT(1) OVER () AS TotalRecords,  
     CASE @sortValue    
@@ -480,7 +505,8 @@ BEGIN
     INNER JOIN Ident.IdentityProviderType ipt ON ulp.IdentityProviderTypeId = ipt.IdentityProviderTypeId    
     LEFT OUTER JOIN #ProductCount pct ON pct.PersonaId = ulp.PersonaId    
     LEFT OUTER JOIN Enterprise.UserEmployeeId UE ON ulp.UserLoginPersonaId = UE.UserLoginPersonaId    
-    LEFT OUTER JOIN #UserEnterpriseRole UER  ON ulp.PersonaId  = UER.PersonaId  
+    LEFT OUTER JOIN #UserEnterpriseRole UER  ON ulp.PersonaId  = UER.PersonaId
+	LEFT OUTER JOIN #PersonaProductError PPE ON PPE.PersonaId = ulp.PersonaId
     WHERE  (    
     (@filterName IS NULL)    
     OR (CHARINDEX(@filterName, FirstName + ' ' + LastName, 1) > 0)    
@@ -490,7 +516,8 @@ BEGIN
       )    
     AND  ((@NOW BETWEEN prs.FromDate AND prs.ThruDate) OR (@NOW >= prs.FromDate AND prs.ThruDate IS NULL))    
     AND  ((@ParentPartyRoleTypeId IS NULL) OR (rt.ParentPartyRoleTypeId = @ParentPartyRoleTypeId))    
-    AND  ((@filterPartyRoleTypeId IS NULL) OR (prs.RoleTypeIdFrom = @filterPartyRoleTypeId))       
+    AND  ((@filterPartyRoleTypeId IS NULL) OR (prs.RoleTypeIdFrom = @filterPartyRoleTypeId))   
+	AND  ((@filterPersonaProductError IS NULL) OR (PPE.IsProductError = @filterPersonaProductError))
  )  
  SELECT  TotalRecords,  
     RealPageID,  
@@ -500,7 +527,8 @@ BEGIN
     LastName,  
     EmployeeId,  
     EntepriseRoleName,  
-    RoleTemplateId,  
+    RoleTemplateId,
+	PersonaHasProductError,
     UserId,  
     LoginName,
 	LastLogin,
@@ -525,6 +553,7 @@ BEGIN
  DROP TABLE IF EXISTS #ProductCount   
  DROP TABLE IF EXISTS #UserLogin  
  DROP TABLE IF EXISTS #PersonaProduct  
- DROP TABLE IF EXISTS #PartyContactMechanism  
+ DROP TABLE IF EXISTS #PartyContactMechanism 
+ DROP TABLE IF EXISTS #PersonaProductError
   
 END;
