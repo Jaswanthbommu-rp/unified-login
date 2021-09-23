@@ -423,15 +423,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return new ProductLoginResponse() {ErrorMessage = "User not active"};
             }
 
-            string adGroupProductSetting = productInternalSettingsList.FirstOrDefault(s => s.Name.Equals("CheckADGroupProductAccess", StringComparison.OrdinalIgnoreCase))?.Value;
+            string AdGroupProductSetting = productInternalSettingsList.FirstOrDefault(s => s.Name.Equals("CheckADGroupProductAccess", StringComparison.OrdinalIgnoreCase))?.Value;
             
-            if (!string.IsNullOrEmpty(adGroupProductSetting) && adGroupProductSetting.Equals("1", StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrEmpty(AdGroupProductSetting) && AdGroupProductSetting.Equals("1", StringComparison.OrdinalIgnoreCase))
             {
-                var GroupAdProduct = _manageProduct.GetAdGroupsForProduct(productId);
-
-                if (GroupAdProduct != null)
+                //Get all ADgroups for this product
+                var AdGroupsProduct = _manageProduct.GetAdGroupsForProduct(productId).Where(g => g.ADgroupName.Contains("Product_Access") && !g.ADgroupName.Contains("Management_Product_Access"));
+                //If there is at least one AdGroup for this product
+                if (AdGroupsProduct != null)
                 {
-                    var GroupAdsForUser = _manageProduct.GetAdGroupsForProduct(productId);
+                    var ADGroupsForUser = _manageProduct.GetAdGroupsForUser(personaId);
+
+                    var productAdGorupIds = AdGroupsProduct.Select(gp => gp.ADgroupId);
+                    var userAdGorupIds = ADGroupsForUser.Select(gu => gu.ADGroupId);
+
+                    //If there is not a single ADgroup for the product, that exits for the user, block
+                    if ((productAdGorupIds.Intersect(userAdGorupIds)).ToList().Count == 0)
+                    {
+                        return new ProductLoginResponse() { ErrorMessage = "Access denied for this user" };
+                    }
                 }
             }
             //Find AD group setting, and check if it is equal to 1

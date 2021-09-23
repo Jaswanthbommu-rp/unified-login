@@ -134,5 +134,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <param name="productId"></param>
         /// <returns></returns>
         IList<ADGroupProduct> GetAdGroupsForProduct(int productId);
+
+        /// <summary>
+        /// Return AD groups for the user
+        /// </summary>
+        /// <param name="personaId"></param>
+        /// <returns></returns>
+        IList<ADGroupUser> GetAdGroupsForUser(long personaId);
     }
 }

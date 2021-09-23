@@ -452,6 +452,7 @@
 
         //Ad Groups
         public const string SP_GetAdGroupsForProduct = "Security.GetAdGroupForProduct";
+        public const string SP_GetAdGroupsForUser = "Security.GetADGroupUser";
     }
 
     public static class EnterpriseStoredProcNameConstants
