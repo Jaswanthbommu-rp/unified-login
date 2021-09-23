@@ -323,6 +323,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// </summary>
         /// <param name="personaId"></param>
         /// <returns></returns>
-        public IList<ADGroupUser> GetAdGroupsForUser(long personaId);
+        IList<ADGroupUser> GetAdGroupsForUser(long personaId);
     }
 }
