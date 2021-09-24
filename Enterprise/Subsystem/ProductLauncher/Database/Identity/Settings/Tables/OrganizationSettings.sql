@@ -4,7 +4,7 @@
     [PartyId] BIGINT NOT NULL, 
     [SettingCategoryTypeId] SMALLINT NOT NULL, 
     [MappingName] NVARCHAR(200) NOT NULL, 
-    [MappingValue] NVARCHAR(100) NOT NULL, 
+    [MappingValue] NVARCHAR(max) NOT NULL, 
     [Editable] BIT NULL DEFAULT 1, 
     [Hidden] BIT NULL DEFAULT 0,
     [CreatedBy]       BIGINT         NOT NULL,

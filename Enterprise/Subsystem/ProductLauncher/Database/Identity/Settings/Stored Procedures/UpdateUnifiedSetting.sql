@@ -9,7 +9,7 @@ BEGIN
 		DECLARE @settings TABLE (
 			Id int identity,
 			MappingName varchar(200),
-			MappingValue varchar(100),
+			MappingValue nvarchar(max),
 			Editable bit,
 			Hidden bit
 		)
