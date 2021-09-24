@@ -1566,7 +1566,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
                     }
 
-
+                    processTracker = "SaveProductDetails";
                     int productCount = SaveProductDetails(repository, newProfile.productBatch, createUserResponse, CreateUserPersonaId, AssignUserPersonaId, userClaim.UserRealPageGuid, organizationRealPageId, errorStatus, newProfile.UserTypeId, true, aoProductsAvailableForUser, newProfile.MigratedUser, true, greenBookRole, "add");
 
                     #endregion
@@ -3463,7 +3463,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             var batchGroup = CreateBatchProcessGroup(repository);
 
-            ProductBatch primaryPropertyBatch = productList.ToList().FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedUI);
+            ProductBatch primaryPropertyBatch = productList?.ToList().FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedUI);
             if (primaryPropertyBatch?.InputJson?.RoleList != null && primaryPropertyBatch?.InputJson?.RoleList.Count > 0)
             {
                 enterpriseRoleId = Convert.ToInt32(primaryPropertyBatch.InputJson.RoleList.FirstOrDefault());

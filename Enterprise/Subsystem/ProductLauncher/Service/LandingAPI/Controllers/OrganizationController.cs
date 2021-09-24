@@ -317,12 +317,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				{
                     return Request.CreateResponse(HttpStatusCode.BadRequest, "There was a problem adding the UPFM instance to UDM");
                 }
-                else
+                if (!_manageOrganization.AddUpdateCompanyToUnifiedSettings(companyInstance.CompanyInstanceSourceId, "Create", companyInstance.CustomerEnvironment))
                 {
-                    if (!_manageOrganization.AddUpdateCompanyToUnifiedSettings(companyInstance.CompanyInstanceSourceId, "Create", companyInstance.CustomerEnvironment))
-                    {
-                        return Request.CreateResponse(HttpStatusCode.BadRequest, $"Unified Login and MDM company was updated successfully but Settings data update failed.");
-                    }
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, $"Unified Login and MDM company was updated successfully but Settings data update failed.");
                 }
 
                 // add the products assigned to the new company
