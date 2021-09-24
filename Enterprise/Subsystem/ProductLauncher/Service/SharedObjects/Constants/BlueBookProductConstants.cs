@@ -314,5 +314,9 @@
 		///  Smart Waste Commercial
 		/// </summary>
 		public const string SmartWasteCommercial = "SMS-TC";
+		/// <summary>
+		/// Facilities
+		/// </summary>
+		public const string Facilities = "FS";
 	}
 }
