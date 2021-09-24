@@ -2673,3 +2673,15 @@ BEGIN
           Values (@SettingId,@Right1), (@SettingId,@Right2);
 END
 GO
+Declare @partyId bigint
+select @partyId = PartyId from Enterprise.Party where RealPageId = '0d018e46-c20e-477d-aded-4e5a35fb8f99'
+
+update Settings.OrganizationSettings set MappingValue = 'Discover innovative, integrated solutions designed to grow renewals, revenue, and online reputation and deliver peak performance for your portfolio.'
+where PartyId = @partyId and MappingName = 'platformloginpagedescription'
+
+update Settings.OrganizationSettings set MappingValue = 'https://www.realpage.com/lp/resident-experience/'
+where PartyId = @partyId and MappingName = 'calltoactionurl'
+
+update Settings.OrganizationSettings set MappingValue = 'Maximize the Resident Experience'
+where PartyId = @partyId and MappingName = 'platformloginpagetitle'
+GO
