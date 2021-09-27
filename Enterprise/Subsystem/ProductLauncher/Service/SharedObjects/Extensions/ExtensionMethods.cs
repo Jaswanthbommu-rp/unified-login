@@ -135,7 +135,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
                                 }
                                 else
                                 {
-                                    auditRecord.AuditMessage = string.Concat("{2} {3} updated the ",
+                                    auditRecord.AuditMessage = string.Concat("RealPage User {2} updated the ",
                                        internalAttribute.ColumnName,
                                        newValueIsDate || oldValueIsDate ? " date from " :" from ", auditRecord.OldValue == null ? internalAttribute.NullBlankValue : auditRecord.OldValue.ToString() == string.Empty ? internalAttribute.NullBlankValue : auditRecord.OldValue,
                                        " to ", auditRecord.NewValue == null ? internalAttribute.NullBlankValue : auditRecord.NewValue.ToString() == string.Empty ? internalAttribute.NullBlankValue : auditRecord.NewValue,
