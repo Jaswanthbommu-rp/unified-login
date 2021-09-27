@@ -46,5 +46,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <param name="personaId">Optional personaId</param>
         /// <returns>List of Person</returns>
         IList<ProductUsers> ListPersonsByProductId(int productId, Guid? organizationRealPageId = null, long? personaId = null);
+        bool GetOrganizationHasProductAssignmentError(long orgPartyId);
 	}
 }

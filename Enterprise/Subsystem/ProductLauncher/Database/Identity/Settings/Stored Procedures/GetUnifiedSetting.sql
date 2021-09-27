@@ -6,7 +6,7 @@ BEGIN
 	SET NOCOUNT ON;
 	DECLARE @settings TABLE (			
 			Name varchar(200),
-			Value varchar(100),
+			Value nvarchar(max),
 			Editable bit,
 			Hidden bit
 		)

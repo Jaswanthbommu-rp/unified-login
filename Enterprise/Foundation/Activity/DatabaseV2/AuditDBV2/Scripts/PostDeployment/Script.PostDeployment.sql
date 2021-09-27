@@ -12,10 +12,6 @@ Post-Deployment Script Template
 
 :r .\PostDeploymentScripts\User_Creation.sql
 
-:r .\PostDeploymentScripts\LogCategoryType_InsertScript.sql
-
-:r .\PostDeploymentScripts\LogType_InsertScript.sql
-
 
 --Job
 :r .\PostDeploymentScripts\Activity_Archiving_Job_Script.sql

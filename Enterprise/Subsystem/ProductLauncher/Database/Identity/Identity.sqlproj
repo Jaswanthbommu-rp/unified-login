@@ -1173,6 +1173,7 @@
     <Build Include="Person\Stored Procedures\ListPersons_Export.sql" />
     <Build Include="Enterprise\Tables\NavigationMenuSettingAccess.sql" />
     <Build Include="Enterprise\Stored Procedures\GetNavigationMenuSettingUnaccessable.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetOrganizationHasPersonaProductError.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2021Q4Release.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\GetADGroupsByPersona.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\GetAllADGroups.sql" />

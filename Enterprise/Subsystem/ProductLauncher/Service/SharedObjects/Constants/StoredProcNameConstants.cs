@@ -110,7 +110,7 @@
         public const string SP_ListUsers = "Person.ListPersonsForSupportTool";
 		public const string SP_GetNotificationEmailForPerson = "Person.GetNotificationEmailForPerson";
         public const string SP_GetPersonaProductError = "Person.GetPersonaProductError";
-
+        public const string SP_GetOrganizationHasPersonaProductError = "Enterprise.GetOrganizationHasPersonaProductError";
         //Persona
         public const string SP_GetPersona = "Person.GetPersona";
         public const string SP_GetPersonaEnvironment = "Person.ListPersonaEnvironmentType";
