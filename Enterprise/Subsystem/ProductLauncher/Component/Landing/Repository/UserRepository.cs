@@ -1566,8 +1566,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
                     }
 
-
-                    int productCount = SaveProductDetails(repository, newProfile.productBatch, createUserResponse, CreateUserPersonaId, AssignUserPersonaId, userClaim.UserRealPageGuid, organizationRealPageId, errorStatus, newProfile.UserTypeId, true, aoProductsAvailableForUser, newProfile.MigratedUser, true, greenBookRole);
+                    processTracker = "SaveProductDetails";
+                    int productCount = SaveProductDetails(repository, newProfile.productBatch, createUserResponse, CreateUserPersonaId, AssignUserPersonaId, userClaim.UserRealPageGuid, organizationRealPageId, errorStatus, newProfile.UserTypeId, true, aoProductsAvailableForUser, newProfile.MigratedUser, true, greenBookRole, "add");
 
                     #endregion
 
@@ -2792,6 +2792,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             });
         }
 
+        public IList<NavigationMenuSetting> GetNavigationMenuSettingsUnaccessable(long partyId)
+        {
+            using (var repository = GetRepository())
+            {
+                return repository.GetMany<NavigationMenuSetting>(StoredProcNameConstants.SP_GetNavigationMenuSettingUnaccessable, new { partyId }).ToList();
+            }
+        }
+
         #endregion
 
         #region Private methods
@@ -3440,7 +3448,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="userIsActive">Is the user active</param>
         /// <param name="aoProducts">Applicable if PMC has AO products</param>
         /// <returns>Number of Products</returns>
-        private int SaveProductDetails(IRepository repository, IList<ProductBatch> productList, CreateUserResponse<IErrorData> createUserResponse, long CreateUserPersonaId, long AssignUserPersonaId, Guid realPageId, Guid organizationRealPageId, Status<IErrorData> errorStatus, int userTypeId, bool userIsActive, IList<string> aoProducts = null, bool migratedUser = false, bool isCreateUser = false, int unifiedPlatformRole = 0)
+        private int SaveProductDetails(IRepository repository, IList<ProductBatch> productList, CreateUserResponse<IErrorData> createUserResponse, long CreateUserPersonaId, long AssignUserPersonaId, Guid realPageId, Guid organizationRealPageId, Status<IErrorData> errorStatus, int userTypeId, bool userIsActive, IList<string> aoProducts = null, bool migratedUser = false, bool isCreateUser = false, int unifiedPlatformRole = 0, string operationType = "update")
         {
             int productCount = 0;
             int enterpriseRoleId = 0;
@@ -3455,7 +3463,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             var batchGroup = CreateBatchProcessGroup(repository);
 
-            ProductBatch primaryPropertyBatch = productList.ToList().FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedUI);
+            ProductBatch primaryPropertyBatch = productList?.ToList().FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedUI);
             if (primaryPropertyBatch?.InputJson?.RoleList != null && primaryPropertyBatch?.InputJson?.RoleList.Count > 0)
             {
                 enterpriseRoleId = Convert.ToInt32(primaryPropertyBatch.InputJson.RoleList.FirstOrDefault());
@@ -3521,7 +3529,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
 
 
-            if (userIsActive && userTypeId != (int)UserRoleType.SuperUser && !migratedUser && enterpriseRoleId > 0)
+            if (userIsActive && userTypeId != (int)UserRoleType.SuperUser && !migratedUser && enterpriseRoleId > 0 && operationType == "add")
             {
                 object param = new
                 {
@@ -3532,6 +3540,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 foreach (var product in roleTemplateProducts)
                 {
+                    batchProcessTypeId = (int)BatchProcessType.CreateUpdateProductUser;
                     var productRoleData = roleTemplateProductRole?.Where(p => p.ProductId == product);
                     var roleTemplateRoles = productRoleData?.Select(p => new
                     {
@@ -4776,6 +4785,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="profile"></param>
         private void LogAuditActivity(string logActivityType, LogActivityCategoryType logActivityCategoryType, string message, string stepName, IProfileDetail profile)
         {
+            string userName = string.IsNullOrEmpty(_userClaim.ImpersonatedByName) ? _userClaim.FirstName + " " + _userClaim.LastName : _userClaim.ImpersonatedByName;
             LogActivity.WriteActivity(new ActivityDetails
             {
                 LogActivityTypeName = logActivityType,
@@ -4783,7 +4793,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 CorrelationId = _userClaim.CorrelationId.ToString(),
                 BooksMasterOrganizationId = _userClaim.OrganizationMasterId,
                 OrganizationPartyId = _userClaim.OrganizationPartyId,
-                Message = string.Format(message, profile.FirstName, profile.LastName, _userClaim.FirstName, _userClaim.LastName, profile.CreateUserSourceType.ToString()),
+                Message = string.Format(message, profile.FirstName, profile.LastName, userName, profile.CreateUserSourceType.ToString()),
 
                 FromUserLoginName = _userClaim.LoginName,
                 FromUserLoginId = _userClaim.UserId,
@@ -6225,43 +6235,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 }
 
                 // Activity logging
-                if (repositoryResponse.Id > 0 || string.IsNullOrWhiteSpace(repositoryResponse.ErrorMessage)) 
+                if (repositoryResponse.Id > 0 || string.IsNullOrWhiteSpace(repositoryResponse.ErrorMessage))
                 {
-                    if (enterpriseRoles != null)
-                    {
-                        var newRoles = enterpriseRoles.Where(x => greenBookRoles.Contains(x.RoleId)).ToList().Select(e => e.Role).ToList();
-                        var oldRoles = enterpriseRoles.Where(x => updateUserProfileEntity.ExistingRoleIds.Contains(x.RoleId)).ToList().Select(e => e.Role).ToList();
-
-                        string joinedOldRoles = string.Join(", ", oldRoles);
-                        string joinedNewRoles = string.Join(", ", newRoles);
-
-                        var auditMessage = $"{{2}} {{3}} changed the Unified Platform role for {{0}} {{1}}. Previous role(s): {joinedOldRoles}. New role(s) : {joinedNewRoles}.";
-                        LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, auditMessage, "UpdateUser", updateUserProfileEntity.NewProfile);
-                    }
-
-                    if (greenBookRole != 0 &&
-                        updateUserProfileEntity.ExistingRoleIds.Count > 0 &&
-                        greenBookRole != updateUserProfileEntity.ExistingRoleIds[0] 
-                        && updateUserProfileEntity.ExistingRoleIds[0] != 0)
-                    {
-                        if (enterpriseRoles != null)
+                    var newRoles = enterpriseRoles?.Where(x => greenBookRoles.Contains(x.RoleId)).ToList().Select(e => e.Role).ToList();
+                    if (enterpriseRoles != null && newRoles.Count > 0)
+					{
+						var oldRoles = enterpriseRoles.Where(x => updateUserProfileEntity.ExistingRoleIds.Contains(x.RoleId)).ToList().Select(e => e.Role).ToList();						
+                        if(newRoles.Except(oldRoles).ToList().Count > 0)
                         {
-                            var existingUserRole = enterpriseRoles.ToList().Where(e => e.RoleId == updateUserProfileEntity.ExistingRoleIds[0]).Select(e => e.Role).FirstOrDefault();
-                            var newUserRole = enterpriseRoles.ToList().Where(e => e.RoleId == greenBookRole).Select(e => e.Role).FirstOrDefault();
-                            var auditMessage = $"{{2}} {{3}} changed the Unified Platform role for {{0}} {{1}}. Previous role: {existingUserRole}. New role: {newUserRole}.";
+                            string joinedOldRoles = string.Join(", ", oldRoles);
+                            string joinedNewRoles = string.Join(", ", newRoles);
+                            var auditMessage = $"RealPage user {{2}} changed the Unified Platform role for {{0}} {{1}}. Previous role(s): {joinedOldRoles}. New role(s) : {joinedNewRoles}.";
                             LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, auditMessage, "UpdateUser", updateUserProfileEntity.NewProfile);
                         }
-                    }
+					}					
 
                     if (userBatchEntity.IsUserTypeChangedFromNoEmailToRegular)
                     {
                         //Log Activity
-                        LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, "{0} {1} user type changed from regular (No Email) to regular user by {2} {3}.", "UpdateUser", updateUserProfileEntity.NewProfile);
+                        LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, "{0} {1} user type changed from regular (No Email) to regular user by {2}.", "UpdateUser", updateUserProfileEntity.NewProfile);
                     }
                     else
                     {
                         //Log Activity
-                        LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, "User {0} {1} successfully updated by user {2} {3}.", "UpdateUser", updateUserProfileEntity.NewProfile);
+                        LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, "User {0} {1} successfully updated by RealPage user {2}.", "UpdateUser", updateUserProfileEntity.NewProfile);
                     }
                 }
 

@@ -15,7 +15,7 @@ BEGIN
    @nowPlusSec datetime,              
    @TempSettingId INT              
               
-   set @now = getdate()              
+   set @now = getutcdate()              
    SET @nowPlusSec=DATEADD (ss, 1, @now)             
      
    select top 1 @ConfigurationId = ConfigurationId from Enterprise.GlobalProductConfiguration               

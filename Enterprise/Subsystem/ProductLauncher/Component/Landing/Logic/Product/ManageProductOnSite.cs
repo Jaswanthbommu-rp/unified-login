@@ -227,13 +227,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 else // Called during creating a new User
                 {
+                    Dictionary<string, bool> additionalData = new Dictionary<string, bool>();
+                    additionalData.Add("allRegions", false);
                     response = new ListResponse()
                     {
                         Records = allRegions.OrderBy(p => p.GetRegionName).Cast<object>().ToList(),
                         TotalRows = allRegions.Count(),
                         RowsPerPage = 9999,
                         ErrorReason = string.Empty,
-                        TotalPages = 1
+                        TotalPages = 1,
+                        Additional = additionalData
                     };
                 }
 

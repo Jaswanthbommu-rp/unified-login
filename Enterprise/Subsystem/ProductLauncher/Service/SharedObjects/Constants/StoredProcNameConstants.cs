@@ -110,7 +110,7 @@
         public const string SP_ListUsers = "Person.ListPersonsForSupportTool";
 		public const string SP_GetNotificationEmailForPerson = "Person.GetNotificationEmailForPerson";
         public const string SP_GetPersonaProductError = "Person.GetPersonaProductError";
-
+        public const string SP_GetOrganizationHasPersonaProductError = "Enterprise.GetOrganizationHasPersonaProductError";
         //Persona
         public const string SP_GetPersona = "Person.GetPersona";
         public const string SP_GetPersonaEnvironment = "Person.ListPersonaEnvironmentType";
@@ -412,6 +412,9 @@
         //Unified Setting
         public const string SP_GetUnifiedSetting = "Settings.GetUnifiedSetting";
         public const string SP_UpdateUnifiedSetting = "Ident.UpdateUnifiedSetting";
+
+        //Accessability Setting
+        public const string SP_GetNavigationMenuSettingUnaccessable = "Enterprise.GetNavigationMenuSettingUnaccessable";
 
         //Custom Fields
         public const string SP_GetFieldsByPartyId = "Settings.GetFieldsByPartyId";

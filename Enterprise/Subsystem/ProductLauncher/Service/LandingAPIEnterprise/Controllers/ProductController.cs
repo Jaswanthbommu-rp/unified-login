@@ -127,8 +127,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             productId = result.Where(x => x.BooksProductCode == productUserIDMappingRequest.ProductCode).FirstOrDefault().ProductId;
 
             if (productUserIDMappingRequest == null ||
-                productUserIDMappingRequest.CompanyId <= 0 ||
+                productUserIDMappingRequest.CompanyId < 0 ||
                 string.IsNullOrEmpty(productUserIDMappingRequest.ProductCode) ||
+                productUserIDMappingRequest.ProductUserId?.Count == 0 ||
                 productId <= 0)
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, mappedUnifiedLoginUserDetails);

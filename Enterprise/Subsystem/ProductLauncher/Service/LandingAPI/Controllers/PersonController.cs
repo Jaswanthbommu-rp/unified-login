@@ -173,7 +173,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         public HttpResponseMessage ListPersons([FromUri]RequestParameter datafilter)
         {
             IDictionary<object, object> globals = new Dictionary<object, object>();
-            ObjectListOutput<ProfileDetail, IErrorData> output = new ObjectListOutput<ProfileDetail, IErrorData>();
+            ObjectUserListOutput<ProfileDetail, IErrorData> output = new ObjectUserListOutput<ProfileDetail, IErrorData>();
             Status<IErrorData> errorStatus = new Status<IErrorData>();
 
             if (datafilter == null)
@@ -197,8 +197,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				TotalPages = (resultsPerPage == 0) ? 0 : (int)Math.Ceiling(totalRecords / resultsPerPage)
 			};
 
-			output = new ObjectListOutput<ProfileDetail, IErrorData>() { list = profileDetailList, Status = errorStatus };
+			output = new ObjectUserListOutput<ProfileDetail, IErrorData>() { list = profileDetailList, Status = errorStatus };
 			output.pagingSummary = pagingSummary;
+            output.OrganizationHasProductAssignmentError = manageProfile.GetOrganizationHasProductAssignmentError(_userClaims.OrganizationPartyId);
 			return Request.CreateResponse(HttpStatusCode.OK, output);
         }
 

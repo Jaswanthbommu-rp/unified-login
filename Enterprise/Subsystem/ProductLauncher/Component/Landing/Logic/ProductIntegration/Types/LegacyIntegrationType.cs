@@ -632,7 +632,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     break;
 
                 default:
-                    result = "Product code does not exist.";
+                    result = ""; // just ignore the product batch
                     break;
             }
 
@@ -807,7 +807,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         batchRecord.AssignUserPersonaId, productPropertiesRoles);
                     break;
                 default:
-                    result = "Product code does not exist.";
+                    result = ""; // just ignore the product batch
                     break;
             }
 
@@ -1085,7 +1085,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     result = "User Profile Change not implemented for this Product.";
                     break;
                 default:
-                    result = "Product code does not exist.";
+                    result = ""; // just ignore the product batch
                     break;
             }
 
@@ -1243,7 +1243,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     result = product.UpdateUserDetails(productUserAccountDetails);
                     break;
                 default:
-                    result = "Product code does not exist.";
+                    result = ""; // just ignore the product batch
                     break;
             }
 

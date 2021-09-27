@@ -155,6 +155,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return profileDetail;
         }
 
+        public bool GetOrganizationHasProductAssignmentError(long orgPartyId)
+        {
+            return _profileRepository.GetOrganizationHasAnyProductAssignmentError(orgPartyId);
+		}
         /// <summary>
         /// Update Profile
         /// </summary>
