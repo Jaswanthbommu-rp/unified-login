@@ -11,5 +11,5 @@ Begin
  where bp.BatchProcessorGroupId = @batchProcessorGroupId    
  and SubjectUserPersonaId = @subjectUserPersonId        
  and EditorUserPersonaId = @editorUserPersonId
- and bp.ProductId <> 42 -- ignoring 42, salesforce, since its a dummy product
+ and bp.ProductId <> 42 -- ignoring 42, salesforce, since its a dummy product 
 End 
