@@ -449,6 +449,10 @@
         public const string SP_GetEnterpriseRoleDeletedProductsByRoleTemplateId = "Security.GetEnterpriseRoleDeletedProductsByRoleTemplateId";
         public const string SP_GetUserRoleTemplate = "Security.GetUserRoleTemplate";
         public const string SP_GetEnterpriseRoleNewProductsByRoleTemplateId = "Security.GetEnterpriseRoleNewProductsByRoleTemplateId";
+
+        //AD groups
+        public const string SP_GetADGroupsForUser = "Security.GetADGroupsByPersona";
+        public const string SP_GetADGroupsForProduct = "Security.GetADGroupsByProductId";
     }
 
     public static class EnterpriseStoredProcNameConstants
