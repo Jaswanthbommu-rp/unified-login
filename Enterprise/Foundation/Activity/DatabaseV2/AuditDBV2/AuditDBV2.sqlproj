@@ -88,8 +88,6 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\Activity_Archiving_Job_Script.sql" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Scripts\PostDeployment\PostDeploymentScripts\LogCategoryType_InsertScript.sql" />
-    <None Include="Scripts\PostDeployment\PostDeploymentScripts\LogType_InsertScript.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\User_Creation.sql" />
     <None Include="Production.publish.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
