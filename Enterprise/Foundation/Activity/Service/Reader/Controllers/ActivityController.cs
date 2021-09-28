@@ -300,13 +300,12 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
         [SwaggerResponse(HttpStatusCode.OK, Description = "List activity by criteria to send data related to Pagination", Type = typeof(ListResponse<ActivityDetailMessage>))]
         [Route("api/v1/listactivitylog")]
         [HttpPost]
-        public HttpResponseMessage ListActivityLogDetails(ActivityLogFilterCriteria filterCriteria)
+        public HttpResponseMessage ListActivityLogDetails(ActivityLogFilterCriteria filterCriteria,bool isArchived = false)
         {
             var result = new ListResponse<ActivityDetailMessage>();
             try
             {
                 Log.Information($"Getting Activity Log Detail");
-                var isArchived = Request.GetQueryNameValuePairs().Any(x=>x.Key == "isArchived" && x.Value == "true");
                 if (filterCriteria == null)
                 {
                     result.IsError = true;
