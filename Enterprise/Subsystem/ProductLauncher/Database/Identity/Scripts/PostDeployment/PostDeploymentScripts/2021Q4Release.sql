@@ -2343,3 +2343,35 @@ BEGIN
 END
 GO
 --End Userstory 936667
+--Start Userstory 920585
+IF NOT EXISTS ( select top (1) 1 from Enterprise.ProductSettingType where name = 'CheckADGroupProductAccessGroupNames')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'CheckADGroupProductAccessGroupNames', 'Check ADGroup Group Names to verify Employee Product Access', 0 )
+END
+
+IF NOT EXISTS(Select top (1) 1 from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'CheckADGroupProductAccessGroupNames' and ps.ProductId= 1)
+BEGIN
+	Insert into Enterprise.ProductSetting (ProductId, ProductSettingTypeId, Value, FromDate)
+	Select 1, ProductSettingTypeId, 'Product_Access,RealPage IA,Realpage Support Login,Products_Access', GETUTCDATE()
+	from Enterprise.ProductSettingType
+	where Name = 'CheckADGroupProductAccessGroupNames'
+
+	declare @productsettingid int
+	select @productsettingid = productsettingid from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'CheckADGroupProductAccessGroupNames' and ps.ProductId= 1
+
+	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
+				select TOP (1) ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 1 and thrudate is NULL ORDER BY GlobalProductConfigurationId DESC
+END
+GO
+IF NOT EXISTS (SELECT TOP (1)  1 FROM Enterprise.ProductUserDependency WHERE ProductId = 75 and DependentProductId = 1)
+BEGIN
+	INSERT INTO Enterprise.ProductUserDependency(ProductId,DependentProductId)
+	VALUES(75,1)
+END
+GO

@@ -316,6 +316,7 @@
     <Compile Include="IdentityConfig\UserLoginOnly.cs" />
     <Compile Include="IdentityConfig\UserLoginOrganization.cs" />
     <Compile Include="IdentityConfig\UserLoginPersona.cs" />
+    <Compile Include="Landing\AdGroup.cs" />
     <Compile Include="Landing\ApiError.cs" />
     <Compile Include="Landing\IObjectUserListOutput.cs" />
     <Compile Include="Landing\ObjectUserListOutput.cs" />

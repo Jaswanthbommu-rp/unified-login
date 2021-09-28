@@ -19,6 +19,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Web.Http;
 using System.Web.Http.Controllers;
@@ -44,6 +45,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         private IRepository _repository;
         private IProductRepository _productRepository;
         private IManageBlueBook _manageBlueBook;
+        private IManagePersona _managePersona;
 
         #endregion
 
@@ -72,6 +74,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _manageBlueBook = new ManageBlueBook(userClaim, repository, productInternalSettingRepository, messageHandler);
             _manageProduct = new ManageProduct(_repository, _userClaims, messageHandler);
             _productRepository = productRepository;
+            _managePersona = new ManagePersona(_repository, _userClaims, messageHandler);
         }
 
         /// <summary>
@@ -84,6 +87,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _manageProduct = new ManageProduct(_userClaims);
             _productRepository = new ProductRepository(_userClaims);
             _manageBlueBook = new ManageBlueBook(_userClaims);
+            _managePersona = new ManagePersona(_userClaims);
         }
         #endregion
 
@@ -423,6 +427,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return new ProductLoginResponse() {ErrorMessage = "User not active"};
             }
 
+
+            if (DenyEmployeeAccessByADGroup(productId, productInternalSettingsList, out var productLoginResponseDenied)) return productLoginResponseDenied;
+
             string authenticationType = productInternalSettingsList.FirstOrDefault(a => a.Name.Equals("AuthenticationType", StringComparison.OrdinalIgnoreCase))?.Value;
             switch (authenticationType)
             {
@@ -470,7 +477,70 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             return productLoginResponse;
         }
 
-       
+        private bool DenyEmployeeAccessByADGroup(int productId, IList<ProductInternalSetting> productInternalSettingsList, out ProductLoginResponse productLoginResponseDenied)
+        {
+            productLoginResponseDenied = null;
+            if (string.IsNullOrEmpty(_userClaims.ImpersonatedByName) || !_userClaims.LoginName.Contains("@realpage.com"))
+            {
+                return false;
+            }
+
+            string AdGroupProductSetting = productInternalSettingsList.FirstOrDefault(s => s.Name.Equals("CheckADGroupProductAccess", StringComparison.OrdinalIgnoreCase))?.Value;
+
+            if (!string.IsNullOrEmpty(AdGroupProductSetting) && AdGroupProductSetting.Equals("1", StringComparison.OrdinalIgnoreCase))
+            {
+                //Get all ADgroups for this product
+                var productAccessGroupName = productInternalSettingsList.FirstOrDefault(s => s.Name.Equals("CheckADGroupProductAccessGroupNames", StringComparison.OrdinalIgnoreCase))?.Value;
+                var productSettingArray = productAccessGroupName.Split(',');
+
+                var AdGroupsProduct = _manageProduct.GetAdGroupsForProduct(productId);
+
+                if (AdGroupsProduct.Count > 0)
+                {
+                    var accessibleAdGroupsProduct = new List<AdGroup>();
+
+                    foreach (var group in AdGroupsProduct)
+                    {
+                        foreach (var restriction in productSettingArray)
+                        {
+                            if (@group.ADGroupName.Contains(restriction) && !@group.ADGroupName.Contains("Manage_Product_Access"))
+                            {
+                                accessibleAdGroupsProduct.Add(@group);
+                            }
+                        }
+                    }
+
+                    //If there is at least one AdGroup for this product
+                    if (accessibleAdGroupsProduct.Count > 0)
+                    {
+                        var personaList = _managePersona.ListPersona(_userClaims.ImpersonatedBy);
+                        var employeePersona = personaList.FirstOrDefault(p => p.Organization.RealPageId == EmployeeCompanyRealPageId);
+                        if (employeePersona == null)
+                        {
+                            return false;
+                        }
+
+                        var ADGroupsForUser = _manageProduct.GetAdGroupsForUser(employeePersona?.PersonaId ?? 0);
+
+                        var productAdGroupIds = accessibleAdGroupsProduct.Select(gp => gp.ADGroupId).ToList();
+                        var userAdGroupIds = ADGroupsForUser.Select(gu => gu.ADGroupId).ToList();
+
+                        //If there is not a single ADgroup for the product, that exits for the user, block
+                        if ((productAdGroupIds.Intersect(userAdGroupIds)).ToList().Count == 0)
+                        {
+                            {
+                                productLoginResponseDenied = new ProductLoginResponse() { ErrorMessage = "AccessDenied" };
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            return false;
+        }
+
+
         [Route("product/{productCode}/persona/{personaId}")]
         [Authorize]
         [HttpGet]
