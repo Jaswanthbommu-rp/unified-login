@@ -132,9 +132,9 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Repository
             }
 		}
 
-		public IList<AdditionalParameters> ListActivityAdditionalParams(long activityId)
+		public IList<AdditionalParameters> ListActivityAdditionalParams(long activityId, bool isAuditArchive = false)
 		{
-			using (var repository = GetRepository())
+			using (var repository = GetRepository(isAuditArchive))
 			{
 				return repository.GetMany<AdditionalParameters>("Logging.ListActivityDetails", new { activityId }).ToList();
 			} 

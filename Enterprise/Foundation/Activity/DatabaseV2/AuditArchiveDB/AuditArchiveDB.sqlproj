@@ -62,6 +62,8 @@
     <Folder Include="Scripts" />
     <Folder Include="Scripts\PostDeployment" />
     <Folder Include="Scripts\PostDeployment\PostDeploymentScripts" />
+    <Folder Include="dbo" />
+    <Folder Include="dbo\User Defined Types" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Development.publish.xml">
@@ -80,5 +82,8 @@
     <Build Include="Logging\Tables\LogType.sql" />
     <Build Include="Logging\Tables\UserLogin.sql" />
     <Build Include="Security\Schema\Logging.sql" />
+    <Build Include="Logging\Stored Procedures\ListActivity.sql" />
+    <Build Include="dbo\User Defined Types\SearchCriteria.sql" />
+    <Build Include="Logging\Stored Procedures\ListActivityDetails.sql" />
   </ItemGroup>
 </Project>
