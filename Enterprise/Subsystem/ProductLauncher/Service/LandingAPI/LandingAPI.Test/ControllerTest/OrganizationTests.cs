@@ -139,7 +139,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 new GbProductMap() {BooksProductCode = "RPT", Name = "Reporting", ProductId = 67, UDMSourceCode = null},
                 new GbProductMap() {BooksProductCode = "6247", Name = "Self-Guided Tour", ProductId = 65, UDMSourceCode = null},
                 new GbProductMap() {BooksProductCode = "LST", Name = "Lead Scoring", ProductId = 69, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode ="SMS-TC",Name="Smart Waste Commercial",ProductId =70, UDMSourceCode ="IB"}
+                new GbProductMap() {BooksProductCode ="SMS-TC",Name="Smart Waste Commercial",ProductId =70, UDMSourceCode ="IB"},
+                new GbProductMap() {BooksProductCode ="OS",Name="Facilities",ProductId =75, UDMSourceCode =null}
+
 
             };
             
@@ -1605,7 +1607,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             // list of products to exclude from Bluebook to product integration
             var ignoreProductList = new List<int>()
             {
-                (int)ProductEnum.UnifiedUI, (int)ProductEnum.SelfProvisioningPortal, (int)ProductEnum.SalesForce, (int)ProductEnum.SettingsManagement
+                (int)ProductEnum.UnifiedUI, (int)ProductEnum.SelfProvisioningPortal, (int)ProductEnum.SalesForce, (int)ProductEnum.SettingsManagement, (int)ProductEnum.Facilities
             };
 
             foreach (var pr in typeof(ProductEnum).GetFields())

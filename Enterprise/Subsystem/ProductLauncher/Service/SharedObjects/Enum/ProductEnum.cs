@@ -578,7 +578,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// Smart Waste Commercial
 		/// </summary>
 		[Description("SMS-TC")]
-		SmartWasteCommercial = 70
+		SmartWasteCommercial = 70,
+		/// <summary>
+		/// Facilities
+		/// </summary>
+		[Description("OS")]
+		Facilities = 75
 	}
 
 	/// <summary>
