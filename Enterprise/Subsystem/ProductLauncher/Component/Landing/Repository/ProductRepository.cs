@@ -786,7 +786,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             //{
             //using (var repository = GetRepository())
             //{
-            products = rpCache.GetFromCache<IList<ProductUI>>(cacheKey, 180, () =>
+            products = rpCache.GetFromCache<IList<ProductUI>>(cacheKey, 1, () =>
             {
                 using (var repository = GetRepository())
                 {
@@ -812,7 +812,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 //Product Settings
                 cacheKey = $"getListGlobalSettingsForProduct_{p.ProductId}";
-                IList<ProductInternalSetting> productInternalSettingList = rpCache.GetFromCache<IList<ProductInternalSetting>>(cacheKey, 180, () =>
+                IList<ProductInternalSetting> productInternalSettingList = rpCache.GetFromCache<IList<ProductInternalSetting>>(cacheKey, 1, () =>
                 {
                     using (var repository = GetRepository())
                     {
