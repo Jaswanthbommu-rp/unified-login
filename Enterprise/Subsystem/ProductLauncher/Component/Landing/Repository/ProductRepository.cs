@@ -326,6 +326,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     }
                 });
 
+                string rightstring = string.Empty;
+                foreach (var right in _userClaim.Rights)
+                {
+                    rightstring +="_"+ right;
+                }
+                using (var repository = GetRepository())
+                {
+                    userProducts = repository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = persona.PersonaId, ProductStatusValue = rightstring.ToString() }).ToList();
+                }
+
                 if (_userClaim.Rights.All(rght => rght != null && !rght.Equals("ProductLearningPortal", StringComparison.OrdinalIgnoreCase)))
                 {
                     if (userProducts.Any(a => a.ProductId == (int)ProductEnum.ProductLearningPortal))
