@@ -234,7 +234,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
         [SwaggerResponse(HttpStatusCode.OK, Description = "Returns additional details (key-value) data for particular activity.", Type = typeof(List<Shared.Models.AdditionalParameters>))]
         [Route("api/additionalparams")]
         [HttpGet]
-        public HttpResponseMessage ListActivityAdditionalParams(long activityId)
+        public HttpResponseMessage ListActivityAdditionalParams(long activityId,bool isArchived = false)
         {
             try
             {
@@ -242,7 +242,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
                     return Request.CreateResponse(HttpStatusCode.BadRequest, "0 activity Id received.");
 
                 var readerRepository = new ReaderRepository();
-                var result = readerRepository.ListActivityAdditionalParams(activityId);
+                var result = readerRepository.ListActivityAdditionalParams(activityId, isArchived);
 
                 return Request.CreateResponse(HttpStatusCode.OK, result);
             }
