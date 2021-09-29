@@ -3313,7 +3313,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         {
             List<int> productIDUserCreateList;
             RPObjectCache rpCache = new RPObjectCache();
-            var cacheKey = $"getListProductsByOrganization_{organizationRealPageId}";
+            var cacheKey = $"getListProductsByOrganizationb_{organizationRealPageId}";
 
             List<ProductUI> productsAssignedToCompany = rpCache.GetFromCache<List<ProductUI>>(cacheKey, 180, () =>
             {

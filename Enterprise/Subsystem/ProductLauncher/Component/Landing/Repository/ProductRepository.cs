@@ -782,7 +782,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             //}
             //catch (Exception ex) { products = null; }
             //if (products == null)
-            var cacheKey = $"getListProductsByOrganization_{organizationRealPageId}";
+            var cacheKey = $"getListProductsByOrganizationa_{organizationRealPageId}";
             //{
             //using (var repository = GetRepository())
             //{

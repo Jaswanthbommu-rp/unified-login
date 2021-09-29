@@ -323,7 +323,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 }
 
                 // add the products assigned to the new company
-                var cacheKey = $"getListProductsByOrganization_{result.obj.Org.RealPageId}";
+                var cacheKey = $"getListProductsByOrganizationc_{result.obj.Org.RealPageId}";
                 MemoryCache.Default.Remove(cacheKey);
 
                 IList<ProductUI> productList = _manageProduct.GetProducts(result.obj.Org.RealPageId, 0, true);
@@ -802,7 +802,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             CheckPasswordExpirationResponse checkPasswordExpirationResponse = _manageCredential.CheckPasswordExpiration(_userClaims.UserId, _userClaims.UserRealPageGuid);
             if (checkPasswordExpirationResponse != null && !checkPasswordExpirationResponse.IsPasswordExpired)
             {
-                var cacheKey = $"getListProductsByOrganization_{org.RealPageId}";
+                var cacheKey = $"getListProductsByOrganizationd_{org.RealPageId}";
                 MemoryCache.Default.Remove(cacheKey);
 
                 IList<ProductUI> productList = _manageProduct.GetProducts(org.RealPageId, personaId, (allProducts.HasValue ? allProducts.Value : false));
