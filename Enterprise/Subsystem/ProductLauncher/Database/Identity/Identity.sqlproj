@@ -1179,6 +1179,8 @@
     <Build Include="RoleRightsManagement\Stored Procedures\GetAllADGroups.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\SaveADGroupsForUser.sql" />
     <Build Include="Enterprise\Tables\ProductUserDependency.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\GetUserManagementADGroupsByProduct.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\GetADGroupsByProductId.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

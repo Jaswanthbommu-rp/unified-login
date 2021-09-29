@@ -2375,3 +2375,122 @@ BEGIN
 	VALUES(75,1)
 END
 GO
+GO
+
+--START : script for userstory #944865
+--LockOnProductAccessRight 
+if not exists ( select top 1 1 from Enterprise.ProductSettingType where name = 'LockOnProductAccessRight' )
+begin
+	insert into enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'LockOnProductAccessRight', 'Warn On Product Error', 0)
+end
+
+DECLARE @NOW DATETIME = GETUTCDATE(); 
+declare @productlist table ( entid int identity, productid int, productsettingtype varchar(500), productsettingvalue varchar(2000))
+insert into @productlist values 
+	(1,	 'LockOnProductAccessRight', 'ManageOneSiteProductAccess' ),
+	(4,	 'LockOnProductAccessRight', 'ManageAssetOptimizationProductAccess' ),
+	(6,	 'LockOnProductAccessRight', 'ManageLead2LeaseProductAccess' ),
+	(8,	 'LockOnProductAccessRight', 'ManageAccountingProductAccess' ),
+	(9,	 'LockOnProductAccessRight', 'ManageMarketingCenterProductAccess' ),
+	(10, 'LockOnProductAccessRight', 'ProspectContactCenterProductAccess' ),
+	(13, 'LockOnProductAccessRight', 'ManageSpendManagementProductAccess' ),
+	(14, 'LockOnProductAccessRight', 'ManageClientPortalProductAccess' ),
+	(15, 'LockOnProductAccessRight', 'ManageRentersInsuranceProductAccess' ),
+	(16, 'LockOnProductAccessRight', 'ManageVendorComplianceProductAccess' ),
+	(17, 'LockOnProductAccessRight', 'AddEditResidentPortalUser' ),
+	(18, 'LockOnProductAccessRight', 'ManageUtilityManagementProductAccess' ),
+	(20, 'LockOnProductAccessRight', 'ManageDocumentManagementProductAccess' ),
+	(23, 'LockOnProductAccessRight', 'ManageOnSiteProductAccess' ),
+	(26, 'LockOnProductAccessRight', 'ManageUnifiedAmenitiesProductAccess' ),
+	(29, 'LockOnProductAccessRight', 'ManageAssetOptimizationProductAccess' ),
+	(30, 'LockOnProductAccessRight', 'ManageAssetOptimizationProductAccess' ),
+	(31, 'LockOnProductAccessRight', 'ManageAssetOptimizationProductAccess' ),
+	(32, 'LockOnProductAccessRight', 'ManageAssetOptimizationProductAccess' ),
+	(33, 'LockOnProductAccessRight', 'ManageAssetOptimizationProductAccess' ),
+	(34, 'LockOnProductAccessRight', 'ManageAssetOptimizationProductAccess' ),
+	(39, 'LockOnProductAccessRight', 'AccessIntegrationMarketplace' ),
+	(40, 'LockOnProductAccessRight', 'ManageILMLeadManagemementProductAccess' ),
+	(41, 'LockOnProductAccessRight', 'ManageILMLeasingAnalyticsProductAccess' ),
+	(44, 'LockOnProductAccessRight', 'ManagePortfolioManagementProductAccess' ),
+	(45, 'LockOnProductAccessRight', 'ManagePlatFormSecurity' ),
+	(46, 'LockOnProductAccessRight', 'ManageCustomFields' ),
+	(47, 'LockOnProductAccessRight', 'ManageDepositAlternativeProductAccess' ),
+	(48, 'LockOnProductAccessRight', 'ManageClickPayProductAccess' ),
+	(49, 'LockOnProductAccessRight', 'ManageUnifiedSettings' ),
+	(50, 'LockOnProductAccessRight', 'ManageSeniorLeadManagement' ),
+	(51, 'LockOnProductAccessRight', 'ManageAssetOptimizationProductAccess' ),
+	(52, 'LockOnProductAccessRight', 'ManageAssetOptimizationProductAccess' ),
+	(53, 'LockOnProductAccessRight', 'ManageAssetOptimizationProductAccess' ),
+	(54, 'LockOnProductAccessRight', 'ManageAssetOptimizationProductAccess' ),
+	(55, 'LockOnProductAccessRight', 'ManageRenovationManager' ),
+	(57, 'LockOnProductAccessRight', 'ManageIntelligentBuildingTrashProductAccess' ),
+	(58, 'LockOnProductAccessRight', 'ManageIntelligentBuildingEnergyProductAccess' ),
+	(59, 'LockOnProductAccessRight', 'ManageIntelligentBuildingWaterProductAccess' ),
+	(60, 'LockOnProductAccessRight', 'ManageHomeSharingProductAccess' ),
+	(63, 'LockOnProductAccessRight', 'ManageHandsOnTrainingSystemProductAccess' ),
+	(65, 'LockOnProductAccessRight', 'ManageSGTourProductAccess' ),
+	(66, 'LockOnProductAccessRight', 'ManageAssetOptimizationProductAccess' ),
+	(67, 'LockOnProductAccessRight', 'Reporting' ),
+	(68, 'LockOnProductAccessRight', 'ManageLeaseLabsProductAccess' ),
+	(69, 'LockOnProductAccessRight', 'ManageLeadScoringProductAccess' ),
+	(70, 'LockOnProductAccessRight', 'ManageSmartWasteCommercialProductAccess' )
+	
+	
+--select * from @productlist
+
+declare @MAX_ID INT
+declare @Current_ID INT = 1
+declare @CurrentProductId INT = 1
+
+select @MAX_ID = max(entid) from @productlist
+
+while @Current_ID <= @MAX_ID
+begin
+	declare @currentSettingType varchar(500)
+	declare @currentsettingValue varchar(2000)
+
+	select @CurrentProductId = productid , @currentSettingType = productsettingtype, @currentSettingValue = productsettingvalue
+		from @productlist where entid = @Current_ID
+
+	--print 'productid = ' + convert(varchar,@currentproductid)
+	if exists ( select top 1 1 from enterprise.product WHERE ProductId = @CurrentProductId )
+	begin
+		if not exists (
+		select top 1 1 
+			FROM Enterprise.GlobalProductConfiguration gpc  
+			JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId  
+			JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId  
+			JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId  
+				WHERE  gpc.ProductId = @CurrentProductId  
+			AND ((@NOW BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@NOW >= gpc.FromDate AND gpc.ThruDate IS NULL))  
+			AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))  
+			AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))  
+			AND pst.Name = @currentSettingType
+		)
+		begin
+			declare @currentproductconfigurationid INT
+			select distinct top 1 @currentproductconfigurationid = pc.configurationid
+				FROM Enterprise.GlobalProductConfiguration gpc  
+				JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId  
+				JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId  
+				JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId  
+					WHERE  gpc.ProductId = @CurrentProductId
+				AND ((@NOW BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@NOW >= gpc.FromDate AND gpc.ThruDate IS NULL))  
+				AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))  
+				AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))  
+			order by pc.ConfigurationId desc
+
+			if (@currentproductconfigurationid is not null)
+			begin
+				insert into enterprise.ProductSetting ( productid, ProductSettingTypeId, value, FromDate )
+					select @CurrentProductId, productsettingtypeid, @currentSettingValue, GETUTCDATE()
+						from enterprise.ProductSettingType where name = @currentSettingType
+				insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate, ThruDate )
+					values ( @currentproductconfigurationid, @@IDENTITY, GETUTCDATE(), null )
+			end
+		end
+	end	
+	set @Current_ID = @Current_ID + 1
+end
+GO
+--END : script for userstory #944865
