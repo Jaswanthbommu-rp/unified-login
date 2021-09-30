@@ -113,7 +113,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
         [SwaggerResponse(HttpStatusCode.OK, Description = "Export activity log by search criteria in excel.", Type = typeof(ActivityDetailMessage))]
         [Route("api/exportactivitylog")]
         [HttpPost]
-        public HttpResponseMessage ExportActivityLog(ActivityLogFilterCriteria filterCriteria)
+        public HttpResponseMessage ExportActivityLog(ActivityLogFilterCriteria filterCriteria, bool isArchived = false)
         {
             try
             {
@@ -142,7 +142,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
                 ;
 
                 ReaderRepository readerRepository = new ReaderRepository();
-                var results = readerRepository.ListActivityLogDetails(filterCriteria);
+                var results = readerRepository.ListActivityLogDetails(filterCriteria, isArchived);
                 IList<ActivityDetailMessage> listActivityDetailMessage = results.Records;
                 
                 if (listActivityDetailMessage != null)
