@@ -2685,3 +2685,17 @@ where PartyId = @partyId and MappingName = 'calltoactionurl'
 update Settings.OrganizationSettings set MappingValue = 'Maximize the Resident Experience'
 where PartyId = @partyId and MappingName = 'platformloginpagetitle'
 GO
+
+  -- User Story 878972
+ Declare @UserId bigint;
+SELECT	@UserId = UserId
+FROM	Ident.UserLogin
+WHERE	LoginName LIKE 'realpagead@%'
+Declare @RightId bigint,@RouteId varchar(50);
+Select @RightId = RightId from  Security.[Right] where RightName = 'AccessSettingsAdmin';
+Select @RouteId = RouteId from Security.Route where RouteValue = 'SideMenu';
+If Not Exists (Select Top 1 1 from Security.[RightRoute] where RightId = @RightId and RouteId = @RouteId)
+Begin
+Insert into Security.[RightRoute] Values(@RightId,@RouteId,'Access to Settings Admin',@UserId,GETDATE());
+End
+Go
