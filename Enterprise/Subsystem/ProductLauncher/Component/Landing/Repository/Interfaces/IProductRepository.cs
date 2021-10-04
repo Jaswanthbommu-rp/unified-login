@@ -100,14 +100,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         IList<ProductSettingType> ListProductSettingType();
 
         /// <summary>
-        /// Create a new Product Batch
-        /// </summary>
-        /// <param name="realPageId">User unique identifier</param>
-        /// <param name="productBatch">ProductBatch object of the parameter values</param>
-        /// <returns>Repository response object</returns>
-        RepositoryResponse CreateProductBatch(Guid realPageId, IProductBatch productBatch);
-
-        /// <summary>
         /// Update a Product Batch
         /// </summary> 
         /// <returns>Repository response object</returns>

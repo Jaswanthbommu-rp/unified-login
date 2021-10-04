@@ -1,16 +1,19 @@
-﻿using Newtonsoft.Json;
+﻿using Dapper;
+using Newtonsoft.Json;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Batch;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -464,7 +467,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 					if ((!IsSuperUser) && (industryStandardJobChanged || customJobTitleChanged) && (residentPortalAssignedToUser))
 					{
 						string saveProductBatchError = "Save Product User Profile/Type Error: ";
-						//Industry Standard Job tiltle got Set/Updated and the Regular user (Staff Role) has access to Resident Portal
+						//Industry Standard Job title got Set/Updated and the Regular user (Staff Role) has access to Resident Portal
 						ProductBatch productBatch = new ProductBatch()
 						{
 							ProductId = (int)ProductEnum.ResidentPortal,
@@ -718,6 +721,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		{
 			try
 			{
+                var batchGroup = CreateBatchProcessGroup(repository);
+
 				//Set the Logged-in and New User PeronaIds
 				product.CreateUserPersonaId = CreateUserPersonaId;
 				product.AssignUserPersonaId = AssignUserPersonaId;
@@ -734,7 +739,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 					RetryCount = product.RetryCount,
 					InputJson = inputJson,
 					CorrelationId = _userClaim.CorrelationId.ToString(),
-					BatchProcessTypeId = batchProcessTypeId
+					BatchProcessTypeId = batchProcessTypeId,
+                    BatchProcessorGroupId = batchGroup.BatchProcessorGroupId
 				};
 
 				RepositoryResponse repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateProductBatch, param);
@@ -762,6 +768,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 				string errorMessage = ex.Message;
 			}
 		}
+
+        private BatchProcessorGroup CreateBatchProcessGroup(IRepository repo)
+        {
+            {
+                DynamicParameters param = new DynamicParameters();
+                int groupID = 0;
+                param.Add("@BatchProcessorGroupID", groupID, dbType: DbType.Int32, direction: ParameterDirection.Output);
+
+                try
+                {
+                    var a = repo.Execute(StoredProcNameConstants.SP_CreateBatchProcessorGroup, param);
+                    groupID = param.Get<int>("@BatchProcessorGroupID");
+                }
+                catch (Exception ex)
+                {
+                }
+
+                return new BatchProcessorGroup()
+                {
+                    BatchProcessorGroupId = groupID,
+                    BatchProcessorGroupActivityLogged = false
+                };
+            }
+        }
 
 		/// <summary>
 		/// Update Contact Preference

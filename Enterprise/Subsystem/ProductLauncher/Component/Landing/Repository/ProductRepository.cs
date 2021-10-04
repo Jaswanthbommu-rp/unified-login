@@ -1206,46 +1206,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
 
         /// <summary>
-        /// Create a new Product Batch
-        /// </summary>
-        /// <param name="realPageId">User unique identifier</param>
-        /// <param name="productBatch">ProductBatch object of the parameter values</param>
-        /// <returns>Repository response object</returns>
-        public RepositoryResponse CreateProductBatch(Guid realPageId, IProductBatch productBatch)
-        {
-            RepositoryResponse repositoryResponse = new RepositoryResponse();
-
-            try
-            {
-                dynamic param = new
-                {
-                    PersonRealPageId = realPageId,
-                    CreateUserPersonaId = productBatch.CreateUserPersonaId,
-                    AssignUserPersonaId = productBatch.AssignUserPersonaId,
-                    ProductId = productBatch.ProductId,
-                    StatusTypeId = productBatch.StatusTypeId,
-                    RetryCount = productBatch.RetryCount,
-                    InputJson = productBatch.InputJson,
-                    LastRunDate = productBatch.LastRunDate,
-                    CreatedDate = productBatch.CreatedDate,
-                    ModifiedDate = productBatch.ModifiedDate,
-                    ErrorDetails = productBatch.ErrorDetails
-                };
-
-                using (var repository = GetRepository())
-                {
-                    var result = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateProductBatch, param);
-                    return result;
-                }
-            }
-            catch
-            {
-                repositoryResponse.Id = 0;
-                return repositoryResponse;
-            }
-        }
-
-        /// <summary>
         /// Update a Product Batch
         /// </summary>
         /// <returns>Repository response object</returns>
