@@ -10,6 +10,7 @@ using System.Net;
 using System.Web.Http;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using System.Linq;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -74,7 +75,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         public IList<ProductSamlDetails> GetPersonaProductSamlDetails([FromUri] long personaId) 
         {
             var samlRepository = new SamlRepository();
-            return samlRepository.ListPersonaProductsSamlDetails(personaId);
+            var productSamlDetails = samlRepository.ListPersonaProductsSamlDetails(personaId);
+            var aoProducts = productSamlDetails.FirstOrDefault(p => p.ProductId == 4);
+            if (aoProducts != null)
+			{
+                aoProducts.Products = productSamlDetails.Where(p => p.ParentProductTypeId == 400).Select(p => p.ProductName).ToList<string>();
+                IList<ProductSamlDetails> allAOProducts = productSamlDetails.Where(p => p.ParentProductTypeId == 400).ToList();
+                foreach (var item in allAOProducts)
+				{
+                    productSamlDetails.Remove(item);
+				}
+            }
+            return productSamlDetails;
         }
 
         /// <summary>

@@ -1,4 +1,4 @@
-﻿Create PROCEDURE [Ident].[ListPersonaProductsSamlDetails]
+﻿CREATE PROCEDURE [Ident].[ListPersonaProductsSamlDetails]
 (@PersonaId          BIGINT)
 AS
 BEGIN
@@ -13,11 +13,12 @@ BEGIN
 		RoleType varchar(255) NULL,
 		PortalId varchar(255) NULL,
 		OrganizationId varchar(255) NULL,
-		NWPUserType varchar(255) NULL
+		NWPUserType varchar(255) NULL,
+		ParentProductTypeId INT NULL
 	)
 
     DECLARE @NOW DATETIME= GETUTCDATE();
-	Declare @CompanyOrganizationProduct TABLE ( ProductId INT ) 
+	Declare @CompanyOrganizationProduct TABLE ( ProductId INT, ParentProductTypeId INT NULL ) 
  
 		 INSERT INTO @CompanyOrganizationProduct ( ProductId )
 			SELECT ProductId from Enterprise.OrganizationProduct OP 
@@ -29,16 +30,19 @@ BEGIN
 
 		IF EXISTS ( SELECT TOP 1 1 FROM @CompanyOrganizationProduct Where ProductID = 4 )
 		BEGIN
-			INSERT INTO @CompanyOrganizationProduct ( ProductId )
-				Select ProductId from Enterprise.Product where ProductTypeId IN ( SELECT ProductTypeId FROM Enterprise.ProductType where ParentProductTypeId = 400 )
+			INSERT INTO @CompanyOrganizationProduct ( ProductId, ParentProductTypeId )
+			SELECT ProductId, ParentProductTypeId 
+			FROM Enterprise.Product p 
+				INNER JOIN Enterprise.ProductType pt on pt.ProductTypeId = p.ProductTypeId and pt.ParentProductTypeId =400
 		END		
 	
-        INSERT INTO @productData(ProductId,ProductName,ProductDescription,ProductStatus)
+        INSERT INTO @productData(ProductId,ProductName,ProductDescription,ProductStatus, ParentProductTypeId)
 		SELECT DISTINCT                
                 p.ProductId,
                 prod.[Name] ,
                 prod.Description ,               
-                ST.Name 
+                ST.Name ,
+				OP.ParentProductTypeId 
          FROM Enterprise.PersonaConfiguration p
 			JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = p.ConfigurationId
 			INNER JOIN Enterprise.productSetting PS ON PC.productsettingid = ps.productsettingid
