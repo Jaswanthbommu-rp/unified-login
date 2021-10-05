@@ -57,14 +57,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             return Request.CreateResponse(HttpStatusCode.OK, _manageEmployeeAccess.GetUsers(editorPersonaId, filter));
         }
 
+        /// <summary>
+        /// Gets comapny persona Id, if exists else creates user in company and gets, and user realpage guid for employee as a user.
+        /// </summary>
+        /// <param name="companyRealPageId"></param>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Gets comapny persona Id, if exists else creates user in company and gets, and user realpage guid for employee as a user.", Type = typeof(HttpResponseMessage))]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [Route("employeeaccess/company/{companyRealPageId}/persona")]
         [HttpGet]
         public HttpResponseMessage GetEmployeePersonaId(Guid companyRealPageId)
         {
-            //return personaId and userRelapgeId (_realpageUserId)
             if (companyRealPageId == Guid.Empty)
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Company ID not supplied.");
-            
+
             return Request.CreateResponse(HttpStatusCode.OK, _manageEmployeeAccess.GetOrCreateEmployeePersonaId(companyRealPageId, _userClaims.LoginName));
         }
 
