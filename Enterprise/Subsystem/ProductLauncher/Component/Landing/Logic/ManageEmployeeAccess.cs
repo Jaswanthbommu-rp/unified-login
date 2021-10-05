@@ -328,7 +328,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             
             persona.Name = newProfile.UserTypeId == (int)UserRoleType.SuperUser ? "System Administrator" : "Primary";
             persona.PersonaEnvironmentTypeId = (int)personaEnv.PersonaEnvironmentTypeId;
-            persona.FromDate = utcNow;
+            persona.FromDate = utcNow.AddMinutes(-5);
             persona.ThruDate = null;
             personaList.Add(persona);
             newProfile.Persona = personaList;
@@ -343,7 +343,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             ul.IsActive = true;
             ul.IsPending = false;
             ul.IsExpired = false;
-            ul.FromDate = DateTime.UtcNow;
+            ul.FromDate = DateTime.UtcNow.AddMinutes(-5);
             ul.Is3rdPartyIDP = false;
 
             newProfile.userLogin = ul;
