@@ -67,6 +67,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         // Services
         private IOneSiteProductService _service = new OneSiteProductService();
 
+        private IManageMicrosoftAzure _manageMicrosoftAzure;
+
         /// <summary>
         /// The default constructor
         /// </summary>
@@ -90,6 +92,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _service.Url = _onesiteUrl;
             _service.PreAuthenticate = true;
             _service.Credentials = new System.Net.NetworkCredential(_username, _password);
+
+            _manageMicrosoftAzure = new ManageMicrosoftAzure(_userClaims);
+
             //ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
             //Guid realGuid;
             //if (Guid.TryParse((from nvp in currentClaimPrincipal.Claims where nvp.Type == "realPageId" select nvp.Value).FirstOrDefault(), out realGuid))
@@ -125,6 +130,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _mtTokenEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "MTTOKENENDPOINT").Value;
             _mtClientId = _productInternalSettingList.First(a => a.Name.ToUpper() == "MTCLIENTID").Value;
             _mtClientSecret = _productInternalSettingList.First(a => a.Name.ToUpper() == "MTCLIENTSECRET").Value;
+
+            _manageMicrosoftAzure = null;
         }
 
         /// <summary>
@@ -167,6 +174,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _manageElectronicAddress = manageElectronicAddress;
             _userRepository = userRepository;
             _userLoginPersonaRepository = userLoginPersonaRepository;
+            _manageMicrosoftAzure = null;
         }
 
         #region Property
@@ -198,7 +206,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 PropertyList propertyList = new PropertyList();
                 Dictionary<string, object> logData = new Dictionary<string, object>();
                 OneSiteUser onesiteuser = new OneSiteUser();
-                
+
                 if (!string.IsNullOrEmpty(_systemIdentifier))
                 {
                     onesiteuser = GetOneSiteUserInfo(_systemIdentifier);
@@ -542,9 +550,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
                 _pmcID = GetOneSitePMCIDFromPersona(_editorPersona);
-                if (response.IsError) 
+                if (response.IsError)
                 {
-                    return response; 
+                    return response;
                 }
 
                 if (string.IsNullOrWhiteSpace(_pmcID))
@@ -610,9 +618,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             string roleIDRemoveList = "";
             List<string> rolesToRemove = new List<string>();
             string resultCount = "";
-            
+
             bool superUser = IsSuperUser(userPersonaId);
-            
+
 
             string PMCID = _systemIdentifier.Split('|')[0];
             Dictionary<string, string> args = new Dictionary<string, string>();
@@ -1264,7 +1272,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             bool isSuperUser = IsSuperUser(userPersona.PersonaId);
 
-            List<NameValuePair> userArray = new List<NameValuePair>();
             Dictionary<string, object> logData = new Dictionary<string, object>();
 
             if (userLogin.PartyId > 0)
@@ -1286,28 +1293,113 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                 }
 
+                // build the call to OneSite to create the user
+                var userArray = new List<NameValuePair>
+                {
+                    new NameValuePair() { Name = "Pin", Value = onesitePin },
+                    new NameValuePair() { Name = "ReferenceNumber", Value = userThirdPartyReference },
+                    new NameValuePair() { Name = "PMCID", Value = _pmcID },
+                    new NameValuePair() { Name = "IsULLinked", Value = "1" },
+                };
+
+                var userFirstName = new string(person.FirstName.Where(Char.IsLetter).ToArray());
+                var userLastName = new string(person.LastName.Where(Char.IsLetter).ToArray());
+
+                // check if RP employee
+                if (!existingUser && userLogin.LoginName.Contains("@realpage.com") && userLoginPersonaList[0].PrimaryOrganization == false)
+                {
+                    var personaList = _managePersona.ListPersona(userLogin.RealPageId);
+                    var employeePersona = personaList.FirstOrDefault(p => p.Organization.RealPageId == _employeeCompanyRealPageId);
+                    if (employeePersona == null)
+                    {
+                        listResponse.IsError = true;
+                        listResponse.ErrorReason = "Employee does not exist in the employee company to get AD groups";
+                        return listResponse.ErrorReason;
+                    }
+
+                    var userAdGroupList = _productRepository.GetAdGroupsForUser(employeePersona.PersonaId);
+                    var productAdGroupList = _productRepository.GetAdGroupsForProduct(_productId);
+                    var employeeProductRoleNameList = new List<string>();
+                    var azureUserInfo = _manageMicrosoftAzure.GetADUserInfo(userLogin.LoginName);
+
+                    if (azureUserInfo != null && (azureUserInfo?.value?.FirstOrDefault()?.userPrincipalName.Equals(userLogin.LoginName, StringComparison.OrdinalIgnoreCase) ?? false))
+                    {
+                        userFirstName = azureUserInfo?.value?.FirstOrDefault().onPremisesSamAccountName.ToLower().Substring(0, 25);
+                    }
+                    userLastName = "supportlogin";
+
+                    if ((productAdGroupList.Intersect(userAdGroupList)).ToList().Count == 0)
+                    {
+                        listResponse.IsError = true;
+                        listResponse.ErrorReason = "Employee does not have required AD groups for product";
+                        return listResponse.ErrorReason;
+                    }
+
+                    var isInternalAdmin = false;
+                    var employeeInternalAdminADGroupName = _productInternalSettingList?.FirstOrDefault(p => p.Name.Equals("EmployeeInternalAdminADGroupName", StringComparison.OrdinalIgnoreCase))?.Value;
+                    if (employeeInternalAdminADGroupName != null)
+                    {
+                        foreach (var group in employeeInternalAdminADGroupName.Split('|'))
+                        {
+                            var iaGroup = productAdGroupList.FirstOrDefault(gp => gp.ADGroupName.Equals(@group, StringComparison.OrdinalIgnoreCase));
+                            if (iaGroup != null)
+                            {
+                                if (userAdGroupList.Any(ug => ug.ADGroupId == iaGroup.ADGroupId))
+                                {
+                                    isInternalAdmin = true;
+                                    userLastName = "ialogin";
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    var employeeProductRoleNames = _productInternalSettingList?.FirstOrDefault(p => p.Name.Equals(isInternalAdmin ? "EmployeeInternalAdminRoleName" : "EmployeeSupportRoleName", StringComparison.OrdinalIgnoreCase))?.Value;
+                    if (employeeProductRoleNames != null)
+                    {
+                        foreach (var productGroup in employeeProductRoleNames.Split('|'))
+                        {
+                            employeeProductRoleNameList.Add(productGroup);
+                        }
+                    }
+
+                    // get product roles
+                    if (employeeProductRoleNames.Length > 0)
+                    {
+                        RoleList = new List<string>();
+                        var allRoles = GetOneSiteRoleListAll(editorPersonaId, new RequestParameter());
+                        var roleInfoList = allRoles.Records.Cast<ProductRole>().ToList();
+                        
+                        foreach (var roleName in employeeProductRoleNameList)
+                        {
+                            var roleInfo = roleInfoList.FirstOrDefault(r => r.Name != null && r.Name.Equals(roleName, StringComparison.OrdinalIgnoreCase));
+                            if (roleInfo != null)
+                            {
+                                RoleList.Add(roleInfo.ID);
+                            }
+                        }
+                    }
+
+                    PropertyList = new List<string>() { "ALL" };
+                    onesiteLoginName = "C_" + Guid.NewGuid().ToString().Substring(0, 13);
+                    userArray.Add(new NameValuePair() { Name = "IsInternalUser", Value = "1" });
+                }
+
+                userArray.Add(new NameValuePair() { Name = "FirstName", Value = userFirstName });
+                userArray.Add(new NameValuePair() { Name = "LastName", Value = userLastName });
+                userArray.Add(new NameValuePair() { Name = "LogonName", Value = onesiteLoginName });// leave empty login name so OneSite will create one
+
                 if (!isSuperUser)
                 {
                     WriteToDiagnosticLog("ManageOneSiteUser - isSuperUser = false");
 
-
                     // build the call to OneSite to create the user
-                    userArray = new List<NameValuePair> {
-                        new NameValuePair() { Name = "FirstName", Value = new string(person.FirstName.Where(Char.IsLetter).ToArray())},
-                        new NameValuePair() { Name = "LastName", Value = new string(person.LastName.Where(Char.IsLetter).ToArray())},
-                        new NameValuePair() { Name = "Pin", Value = onesitePin },
-                        new NameValuePair() { Name = "ReferenceNumber", Value = userThirdPartyReference },
-                        new NameValuePair() { Name = "PMCID", Value = _pmcID },
-                        new NameValuePair() { Name = "IsSuperuser", Value = "0" },
-                        new NameValuePair() { Name = "LogonName", Value = onesiteLoginName }, // leave empty login name so OneSite will create one
-						new NameValuePair() { Name = "IsULLinked", Value = "1" }, // Set the user is using UnifiedLogin
-						new NameValuePair() { Name = "EmailAddress", Value = userEmailAddress.Contains("@bogusemail.com") ? string.Empty : userEmailAddress }
-                    };
+                    userArray.Add(new NameValuePair() { Name = "IsSuperuser", Value = "0" });
+                    userArray.Add(new NameValuePair() { Name = "EmailAddress", Value = userEmailAddress.Contains("@bogusemail.com") ? string.Empty : userEmailAddress });
 
                     try
                     {
-                        logData = new Dictionary<string, object>();
-                        logData.Add("userArray", userArray);
+                        logData = new Dictionary<string, object> { { "userArray", userArray } };
 
                         if (string.IsNullOrEmpty(_systemIdentifier))
                         {
@@ -1315,8 +1407,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             WriteToDiagnosticLog("ManageOneSiteUser - Posting to create new user", logData);
                             response = _service.CreateUser(userArray.ToArray());
                             // add to product to the personaconfiguration
-                            logData = new Dictionary<string, object>();
-                            logData.Add("response", response);
+                            logData = new Dictionary<string, object> { { "response", response } };
                             WriteToDiagnosticLog("ManageOneSiteUser - Got response from create new user", logData);
                             // add the pmcid to the saml attribute
                             WriteToDiagnosticLog("ManageOneSiteUser - Saving PMC id to new user");
@@ -1341,8 +1432,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         {
                             WriteToDiagnosticLog("ManageOneSiteUser - Posting to update regular user", logData);
                             response = _service.UpdateUser(_systemIdentifier, userArray.ToArray());
-                            logData = new Dictionary<string, object>();
-                            logData.Add("response", response);
+                            logData = new Dictionary<string, object> { { "response", response } };
                             WriteToDiagnosticLog("ManageOneSiteUser - Got response from update regular user", logData);
                         }
                     }
@@ -1361,32 +1451,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     WriteToDiagnosticLog("ManageOneSiteUser - isSuperUser = true");
                     // build the call to OneSite to create the user
-                    userArray = new List<NameValuePair>
-                    {
-                        new NameValuePair() { Name = "FirstName", Value = new string(person.FirstName.Where(Char.IsLetter).ToArray())},
-                        new NameValuePair() { Name = "LastName", Value = new string(person.LastName.Where(Char.IsLetter).ToArray())},
-                        new NameValuePair() { Name = "Pin", Value = onesitePin },
-                        new NameValuePair() { Name = "ReferenceNumber", Value = userThirdPartyReference },
-                        new NameValuePair() { Name = "PMCID", Value = _pmcID },
-                        new NameValuePair() { Name = "IsSuperuser", Value = "1" },
-                        new NameValuePair() { Name = "LogonName", Value = onesiteLoginName }, // leave empty login name so OneSite will create one
-                        new NameValuePair() { Name = "IsULLinked", Value = "1" }, // Set the user is using UnifiedLogin
-                        new NameValuePair() { Name = "EmailAddress", Value = userEmailAddress }, // is the login name an email?
-                        new NameValuePair() { Name = "Title", Value = "SuperUser" },
-                    };
+                    userArray.Add(new NameValuePair() { Name = "IsSuperuser", Value = "1" });
+                    userArray.Add(new NameValuePair() { Name = "EmailAddress", Value = userEmailAddress }); // is the login name an email?
+                    userArray.Add(new NameValuePair() { Name = "Title", Value = "SuperUser" });
                     try
                     {
-                        logData = new Dictionary<string, object>();
-                        logData.Add("userArray", userArray);
+                        logData = new Dictionary<string, object> { { "userArray", userArray } };
 
                         if (string.IsNullOrEmpty(_systemIdentifier))
                         {
                             WriteToDiagnosticLog("ManageOneSiteUser - Posting to create new super user", logData);
                             response = _service.CreateSuperuser(userArray.ToArray());
-                            logData = new Dictionary<string, object>();
-                            logData.Add("response", response);
+                            logData = new Dictionary<string, object> { { "response", response } };
                             WriteToDiagnosticLog("ManageOneSiteUser - Got response from create new super user", logData);
-
                             WriteToDiagnosticLog("ManageOneSiteUser - Saving PMC id to new user");
                             _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.PMCID, _pmcID);
                             for (int i = 0; i < response.Length; i++)
@@ -1409,8 +1486,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         {
                             WriteToDiagnosticLog("ManageOneSiteUser - Posting to update super user", logData);
                             response = _service.UpdateSuperuser(_systemIdentifier, userArray.ToArray());
-                            logData = new Dictionary<string, object>();
-                            logData.Add("response", response);
+                            logData = new Dictionary<string, object> { { "response", response } };
                             WriteToDiagnosticLog("ManageOneSiteUser - Got response from update super user", logData);
                         }
                     }
@@ -1436,6 +1512,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             {
                                 hasError = true;
                             }
+
                             break;
                         case "SYSTEMIDENTIFIER":
                             _systemIdentifier = response[i].Value;
@@ -1445,6 +1522,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             break;
                     }
                 }
+
                 if (hasError)
                 {
                     WriteToDiagnosticLog("ManageOneSiteUser - Encountered an error : " + errorMessage);
@@ -1462,10 +1540,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     RoleList = new List<string>();
                 }
+
                 if (PropertyList == null)
                 {
                     PropertyList = new List<string>();
                 }
+
                 WriteToDiagnosticLog("ManageOneSiteUser - Setting product result to success");
                 UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
 
@@ -1474,10 +1554,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     UpdateRolesForUser(editorPersonaId, userPersonaId, RoleList);
                 }
+
                 if (PropertyList.Count > 0 && !isUserProfileChanged)
                 {
                     UpdatePropertiesForUser(editorPersonaId, userPersonaId, PropertyList);
                 }
+
                 WriteToDiagnosticLog("ManageOneSiteUser - Finished update to roles and properties");
 
             }

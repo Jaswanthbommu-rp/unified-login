@@ -35,12 +35,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
         /// <summary>
         /// Used to get a client token from an external identity server
         /// </summary>
-        /// <param name="issuerUri"></param>
+        /// <param name="tokenUri"></param>
         /// <param name="clientId"></param>
         /// <param name="clientSecret"></param>
         /// <param name="scopes"></param>
         /// <returns></returns>
-        string GetExternalClientCredentialServerToken(string issuerUri, string clientId, string clientSecret, string scopes);
+        string GetExternalClientCredentialServerToken(string tokenUri, string clientId, string clientSecret, string scopes);
     }
 
     public class TokenHelper : ITokenHelper
@@ -136,22 +136,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
         /// <summary>
         /// Used to get a client token from an external identity server
         /// </summary>
-        /// <param name="issuerUri"></param>
+        /// <param name="tokenUri"></param>
         /// <param name="clientId"></param>
         /// <param name="clientSecret"></param>
         /// <param name="scopes"></param>
         /// <returns></returns>
-        public string GetExternalClientCredentialServerToken(string issuerUri, string clientId, string clientSecret, string scopes)
+        public string GetExternalClientCredentialServerToken(string tokenUri, string clientId, string clientSecret, string scopes)
         {
             try
             {
                 RPObjectCache rpCache = new RPObjectCache();
-                var issuerHash = issuerUri.GetHashCode();
+                var issuerHash = tokenUri.GetHashCode();
                 var cacheKey = $"GetExternalClientCredentialServerToken_{issuerHash}_{clientId}_{scopes}";
 
                 string accessToken = rpCache.GetFromCache<string>(cacheKey, 300, () =>
                 {
-                    TokenClient tokenClient = new TokenClient($"{issuerUri}/connect/token", clientId, clientSecret);
+                    TokenClient tokenClient = new TokenClient($"{tokenUri}", clientId, clientSecret);
 
                     var tokenResponse = tokenClient.RequestClientCredentialsAsync(scopes).Result;
 
