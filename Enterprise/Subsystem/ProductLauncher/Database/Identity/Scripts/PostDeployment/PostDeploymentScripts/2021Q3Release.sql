@@ -2657,6 +2657,8 @@ BEGIN
 	SET @menuEntryId = SCOPE_IDENTITY();
 	INSERT INTO Enterprise.NavigationMenuRights(NavigationMenuId, RightId)
 	SELECT @menuEntryId, RightId FROM [Security].[Right] WHERE RightName = 'AccessSettingsAdmin'
+	INSERT INTO Enterprise.NavigationMenuRights(NavigationMenuId, RightId)
+	SELECT @menuEntryId, RightId FROM [Security].[Right] WHERE RightName = 'ViewUnifiedSettings'
 	COMMIT TRAN
 END
 GO
