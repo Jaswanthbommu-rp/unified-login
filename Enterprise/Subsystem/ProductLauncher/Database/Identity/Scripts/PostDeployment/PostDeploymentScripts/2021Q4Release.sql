@@ -2525,9 +2525,9 @@ BEGIN
 	INSERT INTO Enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'EmployeeSupportADGroupName', 'The required AD group to create a support user account', 0 )
 END
 
-IF NOT EXISTS ( select top (1) 1 from Enterprise.ProductSettingType where name = 'EmployeeSupportRoleName')
+IF NOT EXISTS ( select top (1) 1 from Enterprise.ProductSettingType where name = 'EmployeeSupportProductRoleName')
 BEGIN
-	INSERT INTO Enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'EmployeeSupportRoleName', 'The product role(s) to assign for support user access', 0 )
+	INSERT INTO Enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'EmployeeSupportProductRoleName', 'The product role(s) to assign for support user access', 0 )
 END
 
 IF NOT EXISTS ( select top (1) 1 from Enterprise.ProductSettingType where name = 'EmployeeInternalAdminADGroupName')
@@ -2535,9 +2535,9 @@ BEGIN
 	INSERT INTO Enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'EmployeeInternalAdminADGroupName', 'The required AD group to create an internal admin user account', 0 )
 END
 
-IF NOT EXISTS ( select top (1) 1 from Enterprise.ProductSettingType where name = 'EmployeeInternalAdminRoleName')
+IF NOT EXISTS ( select top (1) 1 from Enterprise.ProductSettingType where name = 'EmployeeInternalAdminProductRoleName')
 BEGIN
-	INSERT INTO Enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'EmployeeInternalAdminRoleName', 'The product role(s) to assign for internal admin user access', 0 )
+	INSERT INTO Enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'EmployeeInternalAdminProductRoleName', 'The product role(s) to assign for internal admin user access', 0 )
 END
 
 
@@ -2545,9 +2545,9 @@ DECLARE @NOW DATETIME = GETUTCDATE();
 declare @productlist table ( entid int identity, productid int, productsettingtype varchar(500), productsettingvalue varchar(2000))
 insert into @productlist values 
 	(1,	 'EmployeeSupportADGroupName', 'Realpage Support Login' ),
-	(4,	 'EmployeeSupportRoleName', 'RealPage Support' ),
-	(6,	 'EmployeeInternalAdminADGroupName', 'ManageLead2LeaseProductAccess' ),
-	(8,	 'EmployeeInternalAdminRoleName', 'RealPage IA' )
+	(1,	 'EmployeeSupportProductRoleName', 'RealPage Support' ),
+	(1,	 'EmployeeInternalAdminADGroupName', 'RealPage IA' ),
+	(1,	 'EmployeeInternalAdminProductRoleName', 'Internal Administrator' )
 	
 	
 --select * from @productlist

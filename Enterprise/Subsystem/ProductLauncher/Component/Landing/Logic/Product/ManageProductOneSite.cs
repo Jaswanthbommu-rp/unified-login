@@ -1324,7 +1324,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                     if (azureUserInfo != null && (azureUserInfo?.value?.FirstOrDefault()?.userPrincipalName.Equals(userLogin.LoginName, StringComparison.OrdinalIgnoreCase) ?? false))
                     {
-                        userFirstName = azureUserInfo?.value?.FirstOrDefault().onPremisesSamAccountName.ToLower().Substring(0, 25);
+                        userFirstName = azureUserInfo?.value?.FirstOrDefault()?.onPremisesSamAccountName.ToLower();
+                        if (userFirstName?.Length > 25)
+                        {
+                            userFirstName = userFirstName.Substring(0, 25);
+                        }
                     }
                     userLastName = "supportlogin";
 
@@ -1354,18 +1358,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         }
                     }
 
-                    var employeeProductRoleNames = _productInternalSettingList?.FirstOrDefault(p => p.Name.Equals(isInternalAdmin ? "EmployeeInternalAdminRoleName" : "EmployeeSupportRoleName", StringComparison.OrdinalIgnoreCase))?.Value;
-                    if (employeeProductRoleNames != null)
+                    var employeeProductRoleNames = _productInternalSettingList?.FirstOrDefault(p => p.Name.Equals(isInternalAdmin ? "EmployeeInternalAdminProductRoleName" : "EmployeeSupportProductRoleName", StringComparison.OrdinalIgnoreCase))?.Value;
+                    if (!string.IsNullOrEmpty(employeeProductRoleNames))
                     {
                         foreach (var productGroup in employeeProductRoleNames.Split('|'))
                         {
                             employeeProductRoleNameList.Add(productGroup);
                         }
-                    }
 
-                    // get product roles
-                    if (employeeProductRoleNames.Length > 0)
-                    {
                         RoleList = new List<string>();
                         var allRoles = GetOneSiteRoleListAll(editorPersonaId, new RequestParameter());
                         var roleInfoList = allRoles.Records.Cast<ProductRole>().ToList();
@@ -1409,9 +1409,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             // add to product to the personaconfiguration
                             logData = new Dictionary<string, object> { { "response", response } };
                             WriteToDiagnosticLog("ManageOneSiteUser - Got response from create new user", logData);
-                            // add the pmcid to the saml attribute
-                            WriteToDiagnosticLog("ManageOneSiteUser - Saving PMC id to new user");
-                            _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.PMCID, _pmcID);
+                            
                             for (int i = 0; i < response.Length; i++)
                             {
                                 // pull out the needed info
@@ -1427,6 +1425,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                                         break;
                                 }
                             }
+                            // add the pmcid to the saml attribute
+                            WriteToDiagnosticLog("ManageOneSiteUser - Saving PMC id to new user");
+                            _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.PMCID, _pmcID);
                         }
                         else
                         {
@@ -1464,8 +1465,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             response = _service.CreateSuperuser(userArray.ToArray());
                             logData = new Dictionary<string, object> { { "response", response } };
                             WriteToDiagnosticLog("ManageOneSiteUser - Got response from create new super user", logData);
-                            WriteToDiagnosticLog("ManageOneSiteUser - Saving PMC id to new user");
-                            _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.PMCID, _pmcID);
                             for (int i = 0; i < response.Length; i++)
                             {
                                 // pull out the needed info
@@ -1481,6 +1480,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                                         break;
                                 }
                             }
+                            WriteToDiagnosticLog("ManageOneSiteUser - Saving PMC id to new user");
+                            _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.PMCID, _pmcID);
                         }
                         else
                         {
