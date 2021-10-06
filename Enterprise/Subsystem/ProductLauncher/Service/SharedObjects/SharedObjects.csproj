@@ -476,6 +476,7 @@
     <Compile Include="Product\Accounting\RightsAddRemoveList.cs" />
     <Compile Include="Product\Accounting\RolesAddRemove.cs" />
     <Compile Include="Product\EmployeeAccess\CompanyDetails.cs" />
+    <Compile Include="Product\EmployeeAccess\EmployeePersona.cs" />
     <Compile Include="Product\EmployeeAccess\UserDetail.cs" />
     <Compile Include="Product\IntegrationsMarketplace\IntegrationsMarketplacePropertyRole.cs" />
     <Compile Include="Product\IntegrationsMarketplace\IntegrationsMarketplaceUser.cs" />

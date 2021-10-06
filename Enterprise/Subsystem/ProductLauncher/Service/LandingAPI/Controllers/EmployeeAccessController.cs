@@ -9,56 +9,74 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
-	public class EmployeeAccessController : BaseApiController
+    public class EmployeeAccessController : BaseApiController
+    {
+        private IManageEmployeeAccess _manageEmployeeAccess;
+
+        public EmployeeAccessController() : base() { }
+
+        public EmployeeAccessController(IManageEmployeeAccess manageEmployeeAccess)
         {
-            private IManageEmployeeAccess _manageEmployeeAccess;
+            _manageEmployeeAccess = manageEmployeeAccess;
 
-            public EmployeeAccessController() : base() { }
+            base.Request = new HttpRequestMessage();
+            base.Request.SetConfiguration(new HttpConfiguration());
+        }
 
-            public EmployeeAccessController(IManageEmployeeAccess manageEmployeeAccess)
-            {
-                _manageEmployeeAccess = manageEmployeeAccess;
+        protected override void Initialize(HttpControllerContext controllerContext)
+        {
+            base.Initialize(controllerContext);
+            _manageEmployeeAccess = new ManageEmployeeAccess(_userClaims);
+        }
 
-                base.Request = new HttpRequestMessage();
-                base.Request.SetConfiguration(new HttpConfiguration());
-            }
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "List of roles by partyid", Type = typeof(HttpResponseMessage))]
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
+        [Route("employeeaccess/companies")]
+        [HttpGet]
+        public HttpResponseMessage GetCompanies(long editorPersonaId, string filter)
+        {
+            if (editorPersonaId == 0)
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
 
-            protected override void Initialize(HttpControllerContext controllerContext)
-            {
-                base.Initialize(controllerContext);
-                _manageEmployeeAccess = new ManageEmployeeAccess(_userClaims);
-            }
-		
-            [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
-            [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
-            [SwaggerResponse(HttpStatusCode.OK, Description = "List of roles by partyid", Type = typeof(HttpResponseMessage))]
-            [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
-            [Route("employeeaccess/companies")]
-            [HttpGet]
-            public HttpResponseMessage GetCompanies(long editorPersonaId, string filter)
-            {
-                if (editorPersonaId == 0)
-                    return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
-                
-                return Request.CreateResponse(HttpStatusCode.OK, _manageEmployeeAccess.GetCompanies(editorPersonaId, filter));
-            }
+            return Request.CreateResponse(HttpStatusCode.OK, _manageEmployeeAccess.GetCompanies(editorPersonaId, filter));
+        }
 
-            [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
-            [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
-            [SwaggerResponse(HttpStatusCode.OK, Description = "List of roles by partyid", Type = typeof(HttpResponseMessage))]
-            [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
-            [Route("employeeaccess/users")]
-            [HttpGet]
-            public HttpResponseMessage GetUsers(long editorPersonaId, string filter)
-            {
-                if (editorPersonaId == 0)
-                    return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "List of roles by partyid", Type = typeof(HttpResponseMessage))]
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
+        [Route("employeeaccess/users")]
+        [HttpGet]
+        public HttpResponseMessage GetUsers(long editorPersonaId, string filter)
+        {
+            if (editorPersonaId == 0)
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
 
-                return Request.CreateResponse(HttpStatusCode.OK, _manageEmployeeAccess.GetUsers(editorPersonaId, filter));
-            }
+            return Request.CreateResponse(HttpStatusCode.OK, _manageEmployeeAccess.GetUsers(editorPersonaId, filter));
+        }
+
+        /// <summary>
+        /// Gets comapny persona Id, if exists else creates user in company and gets, and user realpage guid for employee as a user.
+        /// </summary>
+        /// <param name="companyRealPageId"></param>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Gets comapny persona Id, if exists else creates user in company and gets, and user realpage guid for employee as a user.", Type = typeof(HttpResponseMessage))]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [Route("employeeaccess/company/{companyRealPageId}/persona")]
+        [HttpGet]
+        public HttpResponseMessage GetEmployeePersonaId(Guid companyRealPageId)
+        {
+            if (companyRealPageId == Guid.Empty)
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Company ID not supplied.");
+            
+            return Request.CreateResponse(HttpStatusCode.OK, _manageEmployeeAccess.GetOrCreateEmployeePersonaId(companyRealPageId, _userClaims.LoginName));
+        }
 
     }
-    
+
 }
 
 

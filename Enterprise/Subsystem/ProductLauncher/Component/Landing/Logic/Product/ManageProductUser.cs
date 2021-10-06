@@ -4,6 +4,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductInt
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
@@ -702,20 +703,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         private RolePropertyList AssignPrimaryPropertiesToProductBatchOnUserCreate(ProductUserProperitiesRoles productUser, RolePropertyList roleProp)
         {
-            IManagePersona _managePersona = new ManagePersona();
+            IManagePersona _managePersona = new ManagePersona(_defaultUserClaim);
             ManageEnterpriseRoleProductBatch manageEnterpriseRoleProductBatch = new ManageEnterpriseRoleProductBatch(_defaultUserClaim);
             var editorPersona = _managePersona.GetPersona(productUser.CreateUserPersonaId);
             var userPersona = _managePersona.GetPersona(productUser.AssignUserPersonaId);
             _defaultUserClaim.UserRealPageGuid = editorPersona.RealPageId;
             _defaultUserClaim.OrganizationRealPageGuid = editorPersona.Organization.RealPageId;
             _defaultUserClaim.Rights = manageEnterpriseRoleProductBatch.GetPersonaRoleRights(productUser.CreateUserPersonaId, editorPersona.OrganizationPartyId);
+
+            var productInternalSettingsByType = _productInternalSettingRepository.GetProductSettingByType("ProductIntegrationType");
+            var productType = productInternalSettingsByType?.FirstOrDefault(p => p.ProductId == productUser.ProductId)?.Value;
+
             if (productUser.ProductId != 4 && roleProp.UsePrimaryProperties)
             {
                 ListResponse propertyList = manageEnterpriseRoleProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, productUser.ProductId);
                 if (propertyList.Records.Count > 0)
                 {
                     roleProp.PropertyList = new List<string>();
-                    roleProp.ProductPrimaryProperties = GetSelectedProperties(propertyList);
+                    roleProp.ProductPrimaryProperties = GetSelectedProperties(propertyList, productType);
                     roleProp.PropertyList = roleProp.ProductPrimaryProperties?.Select(p=>p.ProductPropertyId).ToList<string>();
                     productUser.InputJson = JsonConvert.SerializeObject(roleProp);
                 }
@@ -734,7 +739,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         ListResponse propertyList = manageEnterpriseRoleProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, data.ProductId);
                         if (propertyList.Records.Count > 0)
                         {                            
-                            data.ProductPrimaryProperties = GetSelectedProperties(propertyList);
+                            data.ProductPrimaryProperties = GetSelectedProperties(propertyList, productType);
                             List<string> aoPropList = data.ProductPrimaryProperties?.Select(p => p.ProductPropertyId).ToList<string>();
                             data.SelectedPortfolioValues = aoPropList.Select(int.Parse).ToList();
                         }
@@ -745,7 +750,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return roleProp;
         }
 
-        private List<ProductPrimaryProperties> GetSelectedProperties(ListResponse productResult)
+        private List<ProductPrimaryProperties> GetSelectedProperties(ListResponse productResult, string integrationType)
         {
             List<ProductPrimaryProperties> selectedProperties = new List<ProductPrimaryProperties>();
             var productPropertyType = productResult.Records[0].GetType();
@@ -759,9 +764,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         ProductPrimaryProperties productPrimaryProperties = new ProductPrimaryProperties
                         {
-                            ProductPropertyId = property.ID,
                             PropertyInstanceId = property.InstanceId
                         };
+
+                        productPrimaryProperties.ProductPropertyId = integrationType.Equals("UPFM", StringComparison.OrdinalIgnoreCase) ? property.Alias : property.ID;
+
                         selectedProperties.Add(productPrimaryProperties);
                     }
                 }

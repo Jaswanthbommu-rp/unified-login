@@ -19,5 +19,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		public string PortalId { get; set; }
 		public string OrganizationId { get; set; }
 		public string NWPUserType { get; set; }
+		public int ParentProductTypeId { get; set; }
+		public List<string> Products { get; set; }
 	}
 }
