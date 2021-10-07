@@ -1308,6 +1308,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // check if RP employee
                 if (!existingUser && userLogin.LoginName.Contains("@realpage.com") && userLoginPersonaList[0].PrimaryOrganization == false)
                 {
+                    WriteToDiagnosticLog("ManageOneSiteUser - Begin Employee Create");
                     var personaList = _managePersona.ListPersona(userLogin.RealPageId);
                     var employeePersona = personaList.FirstOrDefault(p => p.Organization.RealPageId == _employeeCompanyRealPageId);
                     if (employeePersona == null)
@@ -1320,6 +1321,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     var userAdGroupList = _productRepository.GetAdGroupsForUser(employeePersona.PersonaId);
                     var productAdGroupList = _productRepository.GetAdGroupsForProduct(_productId);
                     var employeeProductRoleNameList = new List<string>();
+
+                    if ((productAdGroupList.Intersect(userAdGroupList)).ToList().Count == 0)
+                    {
+                        listResponse.IsError = true;
+                        listResponse.ErrorReason = "Employee does not have required AD groups for product";
+                        return listResponse.ErrorReason;
+                    }
+
                     var azureUserInfo = _manageMicrosoftAzure.GetADUserInfo(userLogin.LoginName);
 
                     if (azureUserInfo != null && (azureUserInfo?.value?.FirstOrDefault()?.userPrincipalName.Equals(userLogin.LoginName, StringComparison.OrdinalIgnoreCase) ?? false))
@@ -1331,13 +1340,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         }
                     }
                     userLastName = "supportlogin";
-
-                    if ((productAdGroupList.Intersect(userAdGroupList)).ToList().Count == 0)
-                    {
-                        listResponse.IsError = true;
-                        listResponse.ErrorReason = "Employee does not have required AD groups for product";
-                        return listResponse.ErrorReason;
-                    }
 
                     var isInternalAdmin = false;
                     var employeeInternalAdminADGroupName = _productInternalSettingList?.FirstOrDefault(p => p.Name.Equals("EmployeeInternalAdminADGroupName", StringComparison.OrdinalIgnoreCase))?.Value;
@@ -1367,21 +1369,31 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         }
 
                         RoleList = new List<string>();
-                        var allRoles = GetOneSiteRoleListAll(editorPersonaId, new RequestParameter());
-                        var roleInfoList = allRoles.Records.Cast<ProductRole>().ToList();
-                        
+                        Dictionary<string, string> args = new Dictionary<string, string>
+                        {
+                            { "PMCID", _pmcID }
+                        };
+                        IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(editorPersonaId, _productId);
+                        var editorOneSiteInfo = string.Empty;
+                        if (productAttributes.Any(a => a.Name.Equals("UserId", StringComparison.OrdinalIgnoreCase)))
+                        {
+                            editorOneSiteInfo = (from a in productAttributes where a.Name.Equals("UserId", StringComparison.OrdinalIgnoreCase) select a.Value).FirstOrDefault();
+                        }
+                        var allRoles = GetOneSiteRoleListMain(args, new RequestParameter() { Pages = new PageRequest() { ResultsPerPage = 9999 } }, editorOneSiteInfo);
+                        var oneSiteRoleList = allRoles?.Role?.ToList();
+
                         foreach (var roleName in employeeProductRoleNameList)
                         {
-                            var roleInfo = roleInfoList.FirstOrDefault(r => r.Name != null && r.Name.Equals(roleName, StringComparison.OrdinalIgnoreCase));
+                            var roleInfo = oneSiteRoleList?.FirstOrDefault(r => r.RoleName != null && r.RoleName.Equals(roleName, StringComparison.OrdinalIgnoreCase));
                             if (roleInfo != null)
                             {
-                                RoleList.Add(roleInfo.ID);
+                                RoleList.Add(roleInfo.RoleID);
                             }
                         }
                     }
 
                     PropertyList = new List<string>() { "ALL" };
-                    onesiteLoginName = "C_" + Guid.NewGuid().ToString().Substring(0, 13);
+                    onesiteLoginName = "C-" + Guid.NewGuid().ToString().Substring(0, 13);
                     userArray.Add(new NameValuePair() { Name = "IsInternalUser", Value = "1" });
                 }
 

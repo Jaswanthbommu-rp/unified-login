@@ -65,7 +65,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
                 var response = _httpClient.GetAsync($"/v1.0/users?$filter = userPrincipalName eq '{userName}' &$select = userPrincipalName,onPremisesSamAccountName,displayName,mail,userPrincipalName,id").Result;
-                //_logger.Log(LogLevel.Debug, $"/v1.0/users?$filter = userPrincipalName eq '{userName}' &$select = userPrincipalName,onPremisesSamAccountName,displayName,mail,userPrincipalName,id");
+                var logger = Log.Logger;
+                logger = logger.ForContext("ProductModule", this.GetType());
+                logger.Write(Serilog.Events.LogEventLevel.Debug, $"/v1.0/users?$filter = userPrincipalName eq '{userName}' &$select = userPrincipalName,onPremisesSamAccountName,displayName,mail,userPrincipalName,id");
                 if (response.IsSuccessStatusCode)
                 {
                     var responseContent = response.Content.ReadAsStringAsync().Result;
