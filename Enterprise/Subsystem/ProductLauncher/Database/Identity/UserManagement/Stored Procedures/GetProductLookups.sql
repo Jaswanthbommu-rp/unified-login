@@ -7,8 +7,8 @@
 CREATE procedure [Enterprise].[ProductLookup]  
 AS  
 BEGIN
- SELECT ProductTypeId, Name, Description from Enterprise.ProductType with (nolock) where ParentProductTypeId is null;  
- SELECT ControlTypeId, Name, Description from [UserManagement].[ControlType] with (nolock);  
- SELECT ProductPageTypeId, value, Description from [UserManagement].[ProductPageType] with (nolock);
- SELECT ProductSettingTypeId,Name,Description,SensitiveData from Enterprise.ProductSettingType with (nolock);
+ SELECT ProductTypeId, Name, Description from Enterprise.ProductType with (nolock) where ParentProductTypeId is null ORDER BY [Name];  
+ SELECT ControlTypeId, Name, Description from [UserManagement].[ControlType] with (nolock) ORDER BY [Name];  
+ SELECT ProductPageTypeId, value, Description from [UserManagement].[ProductPageType] with (nolock) ORDER BY [value];
+ SELECT ProductSettingTypeId,Name,Description,SensitiveData from Enterprise.ProductSettingType with (nolock) ORDER BY [Name];
 END

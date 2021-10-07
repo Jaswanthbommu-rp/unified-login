@@ -2494,3 +2494,75 @@ begin
 end
 GO
 --END : script for userstory #944865
+
+
+
+
+Declare @RightId bigint,@RoleID bigint,@UserId bigint;
+
+SELECT	@UserId = UserId
+	FROM	Ident.UserLogin
+	WHERE	LoginName LIKE 'realpagead@%'
+
+If Not Exists (Select Top 1 1 from Security.[Right] where RightName = 'ManageCommunityRewardsProductAccess')
+Begin
+insert into Security.[Right] values ('ManageCommunityRewardsProductAccess', 'Manage Community Rewards Product Access','Manage Community Rewards Product Access',13,9,3,77,6357,GETDATE())
+END
+
+Select @RightId = RightId from Security.[Right] where RightName = 'ManageCommunityRewardsProductAccess';
+Select @RoleID = RoleID from Security.Role where RoleName = 'User Administrator';
+
+If Not Exists (Select Top 1 1 from Security.RoleRight where RoleId =@RoleID and RightID = @RightId)
+Begin
+ Insert into Security.RoleRight values (@RoleID,@RightId,@UserId,GETDATE())
+End
+
+GO
+--Start: Script for 965199
+DECLARE @CreatedById bigint,
+		@RightId bigint,
+		@Now datetime = GETDATE(),
+		@PartyId bigint,
+		@RoleId bigint
+SELECT @CreatedById = UserId FROM Ident.UserLogin WHERE LoginName like 'realpagead@%'
+
+IF NOT EXISTS(SELECT 1 FROM Security.[Right] WHERE RightName = 'EmployeeAccessToInternalRolesAndRightsSetup')
+BEGIN
+	INSERT INTO Security.[Right](RightName, Description, Value, StatusTypeId, VisibilityStatusId, ProductId, TargetProductId, CreatedBy, CreatedDate)
+	VALUES('EmployeeAccessToInternalRolesAndRightsSetup', 'Ability to view and edit internal Roles & Rights', 'Employee Access to Internal Roles & Rights Setup', 13, 10, 3, 3, @CreatedById, GETDATE())
+END
+
+--RoleRight
+SELECT @RightId = RightId 
+FROM [Security].[Right]
+WHERE RightName = 'EmployeeAccessToInternalRolesAndRightsSetup'
+
+SELECT @RoleId = RoleId 
+FROM [Security].[Role]
+WHERE RoleName = 'User Administrator' AND ShortName = 'SuperUser' and OrgPartyID IS NULL
+
+IF NOT EXISTS (SELECT 1 FROM [Security].[RoleRight] WHERE RoleId = @RoleId AND RightId = @RightId)
+BEGIN
+	INSERT INTO [Security].[RoleRight]( RoleId,RightId,CreatedBy,CreatedDate)
+	VALUES (@RoleId, @RightId, @CreatedById, @Now)
+END
+
+--OrganizationOverRideRight
+SELECT @PartyId = O.PartyId
+FROM [Enterprise].[Organization] O
+    INNER JOIN [Enterprise].[Party] P ON P.PartyId = O.PartyId
+WHERE p.RealPageId = '0D018E46-C20E-477D-ADED-4E5A35FB8F99'
+
+IF NOT EXISTS (SELECT 1 FROM [Security].[OrganizationOverRideRight]  WHERE RightId = @RightId AND OrgPartyId = @PartyId)
+BEGIN
+	INSERT INTO [Security].[OrganizationOverRideRight]
+           ([RightId]
+           ,[OrgPartyId]
+           ,[VisibilityStatusId]
+           ,[CreatedBy]
+           ,[CreatedDate]) 
+           VALUES	(@RightId, @PartyId, 9, @CreatedById, @Now)
+END
+
+GO
+--End: Script for 965199

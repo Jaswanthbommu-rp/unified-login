@@ -10,6 +10,9 @@ using System.Linq;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using Dapper;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Batch;
+using System.Data;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Enterprise
 {
@@ -178,6 +181,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.E
 			IList<ProductDetail> userProductList)
 		{
 			var productRepo = new ProductRepository();
+            var batchGroup = CreateBatchProcessGroup(repository);
 
 			foreach (var prod in userProductList)
 			{
@@ -189,7 +193,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.E
 					ProductId = productRepo.GetBooksMasterProductDetail(prod.ProductCode.ToUpper()).ProductId,
 					StatusTypeId = 5,
 					RetryCount = 0,
-
+                    BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
 					InputJson = JsonConvert.SerializeObject(new RolePropertyList()
 					{
 						PropertyList = prod.PropertiesAssigned,
@@ -209,6 +213,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.E
 				}
 			}
 		}
+
+        private BatchProcessorGroup CreateBatchProcessGroup(IRepository repo)
+        {
+            {
+                DynamicParameters param = new DynamicParameters();
+                int groupID = 0;
+                param.Add("@BatchProcessorGroupID", groupID, dbType: DbType.Int32, direction: ParameterDirection.Output);
+
+                try
+                {
+                    var a = repo.Execute(StoredProcNameConstants.SP_CreateBatchProcessorGroup, param);
+                    groupID = param.Get<int>("@BatchProcessorGroupID");
+                }
+                catch (Exception ex)
+                {
+                }
+
+                return new BatchProcessorGroup()
+                {
+                    BatchProcessorGroupId = groupID,
+                    BatchProcessorGroupActivityLogged = false
+                };
+            }
+        }
 	}
 
 	public class RepoObject

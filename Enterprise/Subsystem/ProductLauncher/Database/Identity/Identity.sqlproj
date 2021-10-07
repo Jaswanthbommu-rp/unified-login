@@ -1181,6 +1181,7 @@
     <Build Include="Enterprise\Tables\ProductUserDependency.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\GetUserManagementADGroupsByProduct.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\GetADGroupsByProductId.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListEmployeeProductsByOrganization.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

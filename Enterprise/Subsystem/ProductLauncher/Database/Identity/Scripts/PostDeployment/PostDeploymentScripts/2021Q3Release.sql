@@ -2660,6 +2660,8 @@ BEGIN
 	SET @menuEntryId = SCOPE_IDENTITY();
 	INSERT INTO Enterprise.NavigationMenuRights(NavigationMenuId, RightId)
 	SELECT @menuEntryId, RightId FROM [Security].[Right] WHERE RightName = 'AccessSettingsAdmin'
+	INSERT INTO Enterprise.NavigationMenuRights(NavigationMenuId, RightId)
+	SELECT @menuEntryId, RightId FROM [Security].[Right] WHERE RightName = 'ViewUnifiedSettings'
 	COMMIT TRAN
 END
 GO
@@ -2684,7 +2686,6 @@ WHERE	LoginName LIKE 'realpagead@%'
 Declare @RightId bigint,@RouteId varchar(50);
 Select @RightId = RightId from  Security.[Right] where RightName = 'AccessSettingsAdmin';
 Select @RouteId = RouteId from Security.Route where RouteValue = 'SideMenu';
-
 If Not Exists (Select Top 1 1 from Security.[RightRoute] where RightId = @RightId and RouteId = @RouteId)
 Begin
 Insert into Security.[RightRoute] Values(@RightId,@RouteId,'Access to Settings Admin',@UserId,GETDATE());
