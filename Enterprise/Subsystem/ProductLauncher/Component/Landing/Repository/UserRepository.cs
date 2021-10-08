@@ -2599,6 +2599,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             RepositoryResponse updateUserStatusResponse = new RepositoryResponse();
             logData = new Dictionary<string, object> { { "userLogins", userLogins} };
             var profileLogic = new ManageProfile(_userClaim);
+            DateTime? thruDateCST = null;
 
             WriteToLog(LogEventLevel.Debug, $"UserRepository.ProcessDisabledUsers at beginning of method for user with json", logData);
             using (var repository = GetRepository())
@@ -2684,7 +2685,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         if (updateUserStatusResponse.Id > 0)
                         {
-                            string message = $"{person.FirstName} {person.LastName} was deactivated by the system due to the scheduled User Expires date {userLogin.ThruDate}";
+                            thruDateCST = userLogin.ThruDate != null ? TimeZoneInfo.ConvertTime(Convert.ToDateTime(userLogin.ThruDate), TimeZoneInfo.FindSystemTimeZoneById("Central Standard Time")) : userLogin.ThruDate;
+                            string message = $"{person.FirstName} {person.LastName} was deactivated by the system due to the scheduled User Expires date. | { (thruDateCST != null ? thruDateCST.Value.ToShortDateString() + "/ " + thruDateCST.Value.ToShortTimeString() : string.Empty)} CST";
                             WriteToLog(LogEventLevel.Debug, $"UserRepository.ProcessDisabledUsers: calling AddActivityLog method for activity - {message}");
                             AddActivityLog(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, message, person, userLoginOnly, org, currentUserClaim);
                         }

@@ -2691,3 +2691,12 @@ Begin
 Insert into Security.[RightRoute] Values(@RightId,@RouteId,'Access to Settings Admin',@UserId,GETDATE());
 End
 Go
+ -- Order of the setting menu under manage setting and Reports
+IF EXISTS (Select Top 1 1 from Enterprise.NavigationMenu  where Title = 'Manage Settings' and Origin = 'unified-settings' and OrderIndex = 170)
+BEGIN
+UPDATE Enterprise.NavigationMenu Set OrderIndex = 170 where Title = 'Admin Console' and Origin = 'unified-settings';
+UPDATE Enterprise.NavigationMenu Set OrderIndex = 180 where Title = 'Manage Settings' and Origin = 'unified-settings';
+UPDATE Enterprise.NavigationMenu Set OrderIndex = 190 where Title = 'Manage Templates' and Origin = 'unified-settings';
+UPDATE Enterprise.NavigationMenu Set OrderIndex = 200 where Title = 'Settings Activity Log' and Origin = 'unified-settings';
+END
+GO
