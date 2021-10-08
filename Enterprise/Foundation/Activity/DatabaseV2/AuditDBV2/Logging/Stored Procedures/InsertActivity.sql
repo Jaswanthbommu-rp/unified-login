@@ -28,14 +28,15 @@ SET NOCOUNT ON;
 
 	DECLARE @Now DATETIME= GETUTCDATE();
 	DECLARE @FromUserId BIGINT;
-	
+
 	SELECT @LogTypeId = LogTypeId
 	FROM Logging.LogType AS LT
 	INNER JOIN Logging.LogCategoryType LCT ON LT.LogCategoryTypeId = LCT.LogCategoryTypeId
 	WHERE
 	(@LogType IS NULL AND @LogCategoryType IS NULL AND LogTypeId = @LogTypeId)
 	OR
-	(LT.[Name] = @LogType AND LCT.[Name] = @LogCategoryType) 
+	(LT.[Name] = @LogType AND (LCT.[Name] = @LogCategoryType OR @LogCategoryType IS NULL))
+
 	IF (@LogTypeId IS NULL OR @FromUserRealpageId IS NULL)
 	RETURN
 
