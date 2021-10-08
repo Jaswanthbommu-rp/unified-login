@@ -1322,7 +1322,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     var productAdGroupList = _productRepository.GetAdGroupsForProduct(_productId);
                     var employeeProductRoleNameList = new List<string>();
 
-                    if ((productAdGroupList.Intersect(userAdGroupList)).ToList().Count == 0)
+                    if (!productAdGroupList.Any(pa => userAdGroupList != null && pa.ADGroupId == userAdGroupList.FirstOrDefault(ua => ua.ADGroupId == pa.ADGroupId)?.ADGroupId))
                     {
                         listResponse.IsError = true;
                         listResponse.ErrorReason = "Employee does not have required AD groups for product";
