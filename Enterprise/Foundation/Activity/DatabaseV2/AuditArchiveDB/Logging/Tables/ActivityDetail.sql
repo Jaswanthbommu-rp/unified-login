@@ -1,5 +1,5 @@
 ﻿CREATE TABLE [Logging].[ActivityDetail] (
-    [ActivityDetailId] BIGINT         IDENTITY (1, 1) NOT NULL,
+    [ActivityDetailId] BIGINT         NOT NULL,
     [ActivityId]       BIGINT         NOT NULL,
     [Key]              NVARCHAR (MAX) NULL,
     [Value]            NVARCHAR (MAX) NULL,
