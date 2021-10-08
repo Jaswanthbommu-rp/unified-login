@@ -1,5 +1,5 @@
 ﻿CREATE TABLE [Logging].[Activity] (
-    [ActivityId]           BIGINT         IDENTITY (1, 1) NOT NULL,
+    [ActivityId]           BIGINT         NOT NULL,
     [OrganizationPartyId]  BIGINT         NOT NULL CONSTRAINT [DF_Activity_OrganizationPartyId] DEFAULT ((0)),
     [LogTypeId]            INT            NULL,
     [Message]              NVARCHAR (400) NULL,

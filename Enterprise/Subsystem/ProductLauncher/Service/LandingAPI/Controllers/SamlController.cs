@@ -79,7 +79,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             var aoProducts = productSamlDetails.FirstOrDefault(p => p.ProductId == 4);
             if (aoProducts != null)
 			{
-                aoProducts.Products = productSamlDetails.Where(p => p.ParentProductTypeId == 400).Select(p => p.ProductName).ToList<string>();
+                //Add AO products with success status
+                aoProducts.Products = productSamlDetails.Where(p => p.ParentProductTypeId == 400 && p.ProductStatus.Equals("Success", StringComparison.OrdinalIgnoreCase)).Select(s=>s.ProductName).ToList<string>();  
+
+                //Add AO Products other then success status with order by status and name
+                var aoProductsOrderByStatus = productSamlDetails.Where(p => p.ParentProductTypeId == 400 && !p.ProductStatus.Equals("Success", StringComparison.OrdinalIgnoreCase)).OrderByDescending(x => x.ProductStatus).ThenBy(x1 => x1.ProductName).ToList();
+                aoProducts.Products.AddRange(aoProductsOrderByStatus.Select(s => s.ProductName +  "( " + s.ProductStatus + " )").ToList<string>());
                 IList<ProductSamlDetails> allAOProducts = productSamlDetails.Where(p => p.ParentProductTypeId == 400).ToList();
                 foreach (var item in allAOProducts)
 				{

@@ -4,6 +4,7 @@ CREATE PROCEDURE [Logging].[InsertActivity]
 (
 	@LogTypeId INT = NULL,
 	@LogType NVARCHAR(100) = NULL, 
+	@LogCategoryType NVARCHAR(100) = NULL,
 	@Message NVARCHAR(400),
 	@FromUserLoginName NVARCHAR(200),
 	@FromUserFirstName NVARCHAR(50),
@@ -27,16 +28,18 @@ SET NOCOUNT ON;
 
 	DECLARE @Now DATETIME= GETUTCDATE();
 	DECLARE @FromUserId BIGINT;
-	
+
 	SELECT @LogTypeId = LogTypeId
 	FROM Logging.LogType AS LT
-	WHERE 
-		(@LogType IS NULL AND LogTypeId = @LogTypeId)
-		OR 
-		LT.[Name] = @LogType 
+	INNER JOIN Logging.LogCategoryType LCT ON LT.LogCategoryTypeId = LCT.LogCategoryTypeId
+	WHERE
+	(@LogType IS NULL AND @LogCategoryType IS NULL AND LogTypeId = @LogTypeId)
+	OR
+	(LT.[Name] = @LogType AND (LCT.[Name] = @LogCategoryType OR @LogCategoryType IS NULL))
 
-	IF (@LogTypeId IS NULL OR  @FromUserRealpageId IS NULL)
-		RETURN
+	IF (@LogTypeId IS NULL OR @FromUserRealpageId IS NULL)
+	RETURN
+
 			
 	SELECT @FromUserId = [UserId]
 	FROM Logging.UserLogin
