@@ -19,6 +19,9 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Shared.Models
         [DataMember]
         public string LogActivityTypeName { get; set; }
 
+        [DataMember]
+        public string LogCategoryType { get; set; }
+
 
         [DataMember]
         public string Message { get; set; }
