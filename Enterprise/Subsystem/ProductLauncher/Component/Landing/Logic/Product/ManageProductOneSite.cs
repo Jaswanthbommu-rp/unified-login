@@ -1215,6 +1215,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             string onesitePin = "XXXX";
             bool existingUser = false;
             string userThirdPartyReference = "";
+            OneSiteUser oneSiteUser = null;
 
             WriteToDiagnosticLog("Beginning ManageOneSiteUser");
 
@@ -1282,14 +1283,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (!string.IsNullOrWhiteSpace(_systemIdentifier))
                 {
-                    var onesiteuser = GetOneSiteUserInfo(_systemIdentifier);
-                    if (person.EmployeeId != onesiteuser.UserThirdPartyReference)
+                    oneSiteUser = GetOneSiteUserInfo(_systemIdentifier);
+                    if (person.EmployeeId != oneSiteUser.UserThirdPartyReference)
                     {
                         userThirdPartyReference = person.EmployeeId;
                     }
                     else
                     {
-                        userThirdPartyReference = onesiteuser.UserThirdPartyReference;
+                        userThirdPartyReference = oneSiteUser.UserThirdPartyReference;
                     }
                 }
 
@@ -1305,95 +1306,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var userFirstName = new string(person.FirstName.Where(Char.IsLetter).ToArray());
                 var userLastName = new string(person.LastName.Where(Char.IsLetter).ToArray());
 
-                // check if RP employee
-                if (!existingUser && userLogin.LoginName.Contains("@realpage.com") && userLoginPersonaList[0].PrimaryOrganization == false)
+                // check if RP employee, what additional should we check for?
+                if (userLogin.LoginName.Contains("@realpage.com") && userLoginPersonaList[0].PrimaryOrganization == false)
                 {
-                    WriteToDiagnosticLog("ManageOneSiteUser - Begin Employee Create");
-                    var personaList = _managePersona.ListPersona(userLogin.RealPageId);
-                    var employeePersona = personaList.FirstOrDefault(p => p.Organization.RealPageId == _employeeCompanyRealPageId);
-                    if (employeePersona == null)
+                    if (!CheckEmployeeADUserAccess(editorPersonaId, oneSiteUser, out RoleList, out PropertyList, userLogin, ref userFirstName, ref userLastName, ref onesiteLoginName, out var errorResponse))
                     {
-                        listResponse.IsError = true;
-                        listResponse.ErrorReason = "Employee does not exist in the employee company to get AD groups";
-                        return listResponse.ErrorReason;
+                        return errorResponse;
                     }
-
-                    var userAdGroupList = _productRepository.GetAdGroupsForUser(employeePersona.PersonaId);
-                    var productAdGroupList = _productRepository.GetAdGroupsForProduct(_productId);
-                    var employeeProductRoleNameList = new List<string>();
-
-                    if (!productAdGroupList.Any(pa => userAdGroupList != null && pa.ADGroupId == userAdGroupList.FirstOrDefault(ua => ua.ADGroupId == pa.ADGroupId)?.ADGroupId))
-                    {
-                        listResponse.IsError = true;
-                        listResponse.ErrorReason = "Employee does not have required AD groups for product";
-                        return listResponse.ErrorReason;
-                    }
-
-                    var azureUserInfo = _manageMicrosoftAzure.GetADUserInfo(userLogin.LoginName);
-
-                    if (azureUserInfo != null && (azureUserInfo?.value?.FirstOrDefault()?.userPrincipalName.Equals(userLogin.LoginName, StringComparison.OrdinalIgnoreCase) ?? false))
-                    {
-                        userFirstName = azureUserInfo?.value?.FirstOrDefault()?.onPremisesSamAccountName.ToLower();
-                        if (userFirstName?.Length > 25)
-                        {
-                            userFirstName = userFirstName.Substring(0, 25);
-                        }
-                    }
-                    userLastName = "supportlogin";
-
-                    var isInternalAdmin = false;
-                    var employeeInternalAdminADGroupName = _productInternalSettingList?.FirstOrDefault(p => p.Name.Equals("EmployeeInternalAdminADGroupName", StringComparison.OrdinalIgnoreCase))?.Value;
-                    if (employeeInternalAdminADGroupName != null)
-                    {
-                        foreach (var group in employeeInternalAdminADGroupName.Split('|'))
-                        {
-                            var iaGroup = productAdGroupList.FirstOrDefault(gp => gp.ADGroupName.Equals(@group, StringComparison.OrdinalIgnoreCase));
-                            if (iaGroup != null)
-                            {
-                                if (userAdGroupList.Any(ug => ug.ADGroupId == iaGroup.ADGroupId))
-                                {
-                                    isInternalAdmin = true;
-                                    userLastName = "ialogin";
-                                    break;
-                                }
-                            }
-                        }
-                    }
-
-                    var employeeProductRoleNames = _productInternalSettingList?.FirstOrDefault(p => p.Name.Equals(isInternalAdmin ? "EmployeeInternalAdminProductRoleName" : "EmployeeSupportProductRoleName", StringComparison.OrdinalIgnoreCase))?.Value;
-                    if (!string.IsNullOrEmpty(employeeProductRoleNames))
-                    {
-                        foreach (var productGroup in employeeProductRoleNames.Split('|'))
-                        {
-                            employeeProductRoleNameList.Add(productGroup);
-                        }
-
-                        RoleList = new List<string>();
-                        Dictionary<string, string> args = new Dictionary<string, string>
-                        {
-                            { "PMCID", _pmcID }
-                        };
-                        IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(editorPersonaId, _productId);
-                        var editorOneSiteInfo = string.Empty;
-                        if (productAttributes.Any(a => a.Name.Equals("UserId", StringComparison.OrdinalIgnoreCase)))
-                        {
-                            editorOneSiteInfo = (from a in productAttributes where a.Name.Equals("UserId", StringComparison.OrdinalIgnoreCase) select a.Value).FirstOrDefault();
-                        }
-                        var allRoles = GetOneSiteRoleListMain(args, new RequestParameter() { Pages = new PageRequest() { ResultsPerPage = 9999 } }, editorOneSiteInfo);
-                        var oneSiteRoleList = allRoles?.Role?.ToList();
-
-                        foreach (var roleName in employeeProductRoleNameList)
-                        {
-                            var roleInfo = oneSiteRoleList?.FirstOrDefault(r => r.RoleName != null && r.RoleName.Equals(roleName, StringComparison.OrdinalIgnoreCase));
-                            if (roleInfo != null)
-                            {
-                                RoleList.Add(roleInfo.RoleID);
-                            }
-                        }
-                    }
-
-                    PropertyList = new List<string>() { "ALL" };
-                    onesiteLoginName = "C-" + Guid.NewGuid().ToString().Substring(0, 13);
                     userArray.Add(new NameValuePair() { Name = "IsInternalUser", Value = "1" });
                 }
 
@@ -1583,6 +1502,110 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 return $"Error : Missing party id for userPersonaId {userPersonaId}";
             }
             return "";
+        }
+
+
+        private bool CheckEmployeeADUserAccess(long editorPersonaId, OneSiteUser oneSiteUser, out List<string> roleList, out List<string> propertyList, UserLoginOnly userLogin, ref string userFirstName, ref string userLastName, ref string onesiteLoginName, out string errorResponse)
+        {
+            roleList = new List<string>();
+            propertyList = new List<string>();
+            errorResponse = string.Empty;
+
+            WriteToDiagnosticLog("ManageOneSiteUser - Begin Employee Create");
+            var personaList = _managePersona.ListPersona(userLogin.RealPageId);
+            var employeePersona = personaList.FirstOrDefault(p => p.Organization.RealPageId == _employeeCompanyRealPageId);
+            if (employeePersona == null)
+            {
+                {
+                    errorResponse = "Employee does not exist in the employee company to get AD groups";
+                    return false;
+                }
+            }
+
+            var userAdGroupList = _productRepository.GetAdGroupsForUser(employeePersona.PersonaId);
+            var productAdGroupList = _productRepository.GetAdGroupsForProduct(_productId);
+            var employeeProductRoleNameList = new List<string>();
+
+            if (!productAdGroupList.Any(pa => userAdGroupList != null && pa.ADGroupId == userAdGroupList.FirstOrDefault(ua => ua.ADGroupId == pa.ADGroupId)?.ADGroupId))
+            {
+                {
+                    errorResponse = "Employee does not have required AD groups for product";
+                    return false;
+                }
+            }
+
+            var azureUserInfo = _manageMicrosoftAzure.GetADUserInfo(userLogin.LoginName);
+
+            if (azureUserInfo != null && (azureUserInfo?.value?.FirstOrDefault()?.userPrincipalName.Equals(userLogin.LoginName, StringComparison.OrdinalIgnoreCase) ?? false))
+            {
+                userFirstName = azureUserInfo?.value?.FirstOrDefault()?.onPremisesSamAccountName.ToLower();
+                if (userFirstName?.Length > 25)
+                {
+                    userFirstName = userFirstName.Substring(0, 25);
+                }
+            }
+
+            userLastName = "supportlogin";
+
+            var isInternalAdmin = false;
+            var employeeInternalAdminADGroupName = _productInternalSettingList?.FirstOrDefault(p => p.Name.Equals("EmployeeInternalAdminADGroupName", StringComparison.OrdinalIgnoreCase))?.Value;
+            if (employeeInternalAdminADGroupName != null)
+            {
+                foreach (var group in employeeInternalAdminADGroupName.Split('|'))
+                {
+                    var iaGroup = productAdGroupList.FirstOrDefault(gp => gp.ADGroupName.Equals(@group, StringComparison.OrdinalIgnoreCase));
+                    if (iaGroup != null)
+                    {
+                        if (userAdGroupList.Any(ug => ug.ADGroupId == iaGroup.ADGroupId))
+                        {
+                            isInternalAdmin = true;
+                            userLastName = "ialogin";
+                            break;
+                        }
+                    }
+                }
+            }
+
+            var employeeProductRoleNames = _productInternalSettingList?.FirstOrDefault(p => p.Name.Equals(isInternalAdmin ? "EmployeeInternalAdminProductRoleName" : "EmployeeSupportProductRoleName", StringComparison.OrdinalIgnoreCase))?.Value;
+            if (!string.IsNullOrEmpty(employeeProductRoleNames))
+            {
+                foreach (var productGroup in employeeProductRoleNames.Split('|'))
+                {
+                    employeeProductRoleNameList.Add(productGroup);
+                }
+
+                roleList = new List<string>();
+                Dictionary<string, string> args = new Dictionary<string, string>
+                {
+                    { "PMCID", _pmcID }
+                };
+                IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(editorPersonaId, _productId);
+                var editorOneSiteInfo = string.Empty;
+                if (productAttributes.Any(a => a.Name.Equals("UserId", StringComparison.OrdinalIgnoreCase)))
+                {
+                    editorOneSiteInfo = (from a in productAttributes where a.Name.Equals("UserId", StringComparison.OrdinalIgnoreCase) select a.Value).FirstOrDefault();
+                }
+
+                var allRoles = GetOneSiteRoleListMain(args, new RequestParameter() { Pages = new PageRequest() { ResultsPerPage = 9999 } }, editorOneSiteInfo);
+                var oneSiteRoleList = allRoles?.Role?.ToList();
+
+                foreach (var roleName in employeeProductRoleNameList)
+                {
+                    var roleInfo = oneSiteRoleList?.FirstOrDefault(r => r.RoleName != null && r.RoleName.Equals(roleName, StringComparison.OrdinalIgnoreCase));
+                    if (roleInfo != null)
+                    {
+                        roleList.Add(roleInfo.RoleID);
+                    }
+                }
+            }
+
+            propertyList = new List<string>() { "ALL" };
+            if (oneSiteUser == null)
+            {
+                onesiteLoginName = "C-" + Guid.NewGuid().ToString().Substring(0, 13);
+            }
+            
+            return true;
         }
 
         /// <summary>
