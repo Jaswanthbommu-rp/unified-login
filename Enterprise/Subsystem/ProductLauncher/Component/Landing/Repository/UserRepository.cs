@@ -2599,7 +2599,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             RepositoryResponse updateUserStatusResponse = new RepositoryResponse();
             logData = new Dictionary<string, object> { { "userLogins", userLogins} };
             var profileLogic = new ManageProfile(_userClaim);
-            DateTime? thruDateCST = null; ;
+            DateTime? thruDateCST = null;
 
             WriteToLog(LogEventLevel.Debug, $"UserRepository.ProcessDisabledUsers at beginning of method for user with json", logData);
             using (var repository = GetRepository())
