@@ -698,6 +698,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 string statusType = UserUiStatusType.Pending.ToString();
                 DateTime? thruUtcDateTime = primaryOrgStatus.FromDate.AddHours(72);
                 var userFromDate = primaryOrgStatus.FromDate;
+                var userFromDateCST = TimeZoneInfo.ConvertTime(Convert.ToDateTime(userFromDate), TimeZoneInfo.FindSystemTimeZoneById("Central Standard Time"));
                 var newUserRegistrationActivity = GetActivities(organization.PartyId);
                 thruUtcDateTime = newUserRegistrationActivity != null ? DateTime.UtcNow.Date.AddMinutes(newUserRegistrationActivity.ActivityTokenExpirationMinutes) : thruUtcDateTime;
 
@@ -744,7 +745,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 if (organization.RealPageId != DefaultUserClaim.ExternalCompanyRealPageId)
                 {
                     DefaultUserClaim currentUserClaim = GetCurrentUserClaim(manageProfile, organization);
-                    string message = "{0} {1} was {2} by the system due to the scheduled User effective date "+ userFromDate;
+                    string message = "{0} {1} was activated by the system due to the scheduled User Effective date. | " + userFromDateCST.ToShortDateString() + "/ " + userFromDateCST.ToShortTimeString() + " CST";
                     WriteToLog(LogEventLevel.Debug, $"ManageUserLogin.CheckPrimaryOrganizationStatus: calling AddActivityLog - Future user and user never logged in for status type - {statusType}");
                     AddActivityLog(userLogin, statusType, ProductEnum.UnifiedPlatform.ToEnumDescription(), currentUserClaim, message);
                 }
@@ -856,6 +857,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                                 string statusType = UserUiStatusType.Pending.ToString();
                                 DateTime? thruUtcDateTime = orgStatus.FromDate.AddHours(72);
                                 var userFromDate = orgStatus.FromDate;
+                                var userFromDateCST = TimeZoneInfo.ConvertTime(Convert.ToDateTime(userFromDate), TimeZoneInfo.FindSystemTimeZoneById("Central Standard Time"));
+
                                 var newUserRegistrationActivity = GetActivities(org.PartyId);
                                 thruUtcDateTime = newUserRegistrationActivity != null ? DateTime.UtcNow.Date.AddMinutes(newUserRegistrationActivity.ActivityTokenExpirationMinutes) : thruUtcDateTime;
 
@@ -902,7 +905,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                                     });
                                 }
                                 _userLoginRepository.UpdateUserStatusByCompany(userLogin.RealPageId, org.PartyId, statusTypeId, userFromDate, thruUtcDateTime);
-                                string activityMessage = "{0} {1} was {2} by the system due to the scheduled User effective date " + userFromDate;
+                                string activityMessage = "{0} {1} was activated by the system due to the scheduled User Effective date. | " + userFromDateCST.ToShortDateString() + "/ " + userFromDateCST.ToShortTimeString() + " CST";
                                 WriteToLog(LogEventLevel.Debug, $"ManageUserLogin.ProcessFutureUserLogins: calling AddActivityLog - Future user and user never logged in for status type - {statusType}");
                                 AddActivityLog(userLogin, statusType, ProductEnum.UnifiedPlatform.ToEnumDescription(), currentUserClaim, activityMessage);
                             }
@@ -1322,7 +1325,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
             else
             {
-                message =string.Format(activityMessage, person.FirstName, person.LastName, activity);
+                message = string.Format(activityMessage, person.FirstName, person.LastName);
             }
             if (!string.IsNullOrEmpty(activity))
             {
