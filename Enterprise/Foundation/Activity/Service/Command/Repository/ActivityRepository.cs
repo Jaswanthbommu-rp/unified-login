@@ -25,7 +25,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Command.Repository
 
             dparm.Add("LogTypeId", activityLog.LogActivityTypeId, DbType.Int32);
             dparm.Add("LogType", activityLog.LogActivityTypeName, DbType.String);
-            dparm.Add("LogCategoryType", activityLog.LogCategoryType, DbType.String);
+            dparm.Add("LogCategoryType", activityLog.LogCategoryName, DbType.String);
             dparm.Add("Message", activityLog.Message, DbType.String);
             dparm.Add("FromUserLoginName", activityLog.FromUserLoginName, DbType.String);
             dparm.Add("FromUserFirstName", activityLog.FromUserFirstName, DbType.String);
