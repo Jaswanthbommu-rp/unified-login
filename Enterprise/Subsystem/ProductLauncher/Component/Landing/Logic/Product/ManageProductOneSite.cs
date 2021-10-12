@@ -1562,7 +1562,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         {
                             isInternalAdmin = true;
                             userLastName = "ialogin";
-                            employeeProductRoleNameList.Add(iaGroup.RoleName);
+                            if (!employeeProductRoleNameList.Contains(iaGroup.RoleName))
+                            {
+                                employeeProductRoleNameList.Add(iaGroup.RoleName);
+                            }
                         }
                     }
                 }
@@ -1574,7 +1577,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         if (userAdGroupList.Any(ug => ug.ADGroupId == nonIaGroup.ADGroupId))
                         {
-                            employeeProductRoleNameList.Add(nonIaGroup.RoleName);
+                            if (!employeeProductRoleNameList.Contains(nonIaGroup.RoleName))
+                            {
+                                employeeProductRoleNameList.Add(nonIaGroup.RoleName);
+                            }
                         }
                     }
                 }
