@@ -38,7 +38,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         ListResponse GetUsersForRole(long editorPersonaId, int roleId, bool assignedOnly, RequestParameter datafilter);
         string ManageOneSiteUser(long editorPersonaId, long userPersonaId, List<string> RoleList, List<string> PropertyList, bool isUserProfileChanged = false);
         string UpdatePropertiesForUser(long editorPersonaId, long userPersonaId, List<string> propertiesToAssign);
-        string UpdateRolesForUser(long editorPersonaId, long userPersonaId, List<string> rolesToAssign);
+        string UpdateRolesForUser(long editorPersonaId, long userPersonaId, List<string> rolesToAssign, bool realRageEmployee);
         string UpdateRightToRoles(long editorPersonaId, int rightId, List<string> roles, bool assignRight);
         string UpdateRoleToRights(long editorPersonaId, int roleId, List<string> rightsToAdd, List<string> rightsToRemove);
 

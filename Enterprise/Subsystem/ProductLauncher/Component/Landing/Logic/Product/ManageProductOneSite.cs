@@ -607,8 +607,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="editorPersonaId">The id of the user making the changes</param>
         /// <param name="userPersonaId">The id of the user being updated</param>
         /// <param name="rolesToAssign">A list of roles to assign to the user</param>
+        /// <param name="realRageEmployee">Is the persona being edited a RealPage employee</param>
         /// <returns>A count of the number of changes made</returns>
-        public string UpdateRolesForUser(long editorPersonaId, long userPersonaId, List<string> rolesToAssign)
+        public string UpdateRolesForUser(long editorPersonaId, long userPersonaId, List<string> rolesToAssign, bool realRageEmployee)
         {
             WriteToDiagnosticLog("UpdateRolesForUser - Beginning update to roles");
             ListResponse response = new ListResponse();
@@ -632,7 +633,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // compare the current property list to what was passed to determine what is new and what was removed.
             foreach (RoleType role in userCurrentRoleList.Role)
             {
-                if (role.IsInternal && (!OneSiteHelpers.IsValidRoleForCustomer(role, false)))
+                if (role.IsInternal && (!OneSiteHelpers.IsValidRoleForCustomer(role, realRageEmployee)))
                 {
                     // if trying to add an internal role and the user already has it, don't do anything
                     if (rolesToAssign.Contains(role.RoleID) && role.IsAssigned)
@@ -1305,11 +1306,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 var userFirstName = new string(person.FirstName.Where(Char.IsLetter).ToArray());
                 var userLastName = new string(person.LastName.Where(Char.IsLetter).ToArray());
+                var isRealPageEmployee = false;
 
                 // check if RP employee, what additional should we check for?
                 if (userLogin.LoginName.Contains("@realpage.com") && userLoginPersonaList[0].PrimaryOrganization == false)
                 {
-                    if (!CheckEmployeeADUserAccess(editorPersonaId, oneSiteUser, out RoleList, out PropertyList, userLogin, ref userFirstName, ref userLastName, ref onesiteLoginName, out var errorResponse))
+                    if (!CheckEmployeeADUserAccess(editorPersonaId, oneSiteUser, out RoleList, out PropertyList, userLogin, ref userFirstName, ref userLastName, ref onesiteLoginName, ref isRealPageEmployee, out var errorResponse))
                     {
                         return errorResponse;
                     }
@@ -1484,7 +1486,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 WriteToDiagnosticLog("ManageOneSiteUser - Beginning update to roles and properties");
                 if ((RoleList.Count > 0 || isSuperUser) && !isUserProfileChanged)
                 {
-                    UpdateRolesForUser(editorPersonaId, userPersonaId, RoleList);
+                    UpdateRolesForUser(editorPersonaId, userPersonaId, RoleList, isRealPageEmployee);
                 }
 
                 if (PropertyList.Count > 0 && !isUserProfileChanged)
@@ -1505,7 +1507,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         }
 
 
-        private bool CheckEmployeeADUserAccess(long editorPersonaId, OneSiteUser oneSiteUser, out List<string> roleList, out List<string> propertyList, UserLoginOnly userLogin, ref string userFirstName, ref string userLastName, ref string onesiteLoginName, out string errorResponse)
+        private bool CheckEmployeeADUserAccess(long editorPersonaId, OneSiteUser oneSiteUser, out List<string> roleList, out List<string> propertyList, UserLoginOnly userLogin, ref string userFirstName, ref string userLastName, ref string onesiteLoginName, ref bool isRealPageEmployee, out string errorResponse)
         {
             roleList = new List<string>();
             propertyList = new List<string>();
@@ -1548,30 +1550,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             userLastName = "supportlogin";
 
             var isInternalAdmin = false;
-            var employeeInternalAdminADGroupName = _productInternalSettingList?.FirstOrDefault(p => p.Name.Equals("EmployeeInternalAdminADGroupName", StringComparison.OrdinalIgnoreCase))?.Value;
-            if (employeeInternalAdminADGroupName != null)
+            var productADGroupRoleList = _productRepository.GetADGroupProductRoleByProductId(_productId);
+            if (productADGroupRoleList.Count > 0)
             {
-                foreach (var group in employeeInternalAdminADGroupName.Split('|'))
+                var employeeInternalAdminADGroupList = productADGroupRoleList.Where(ad => ad.IsAdminRole).ToList();
+                if (employeeInternalAdminADGroupList.Any())
                 {
-                    var iaGroup = productAdGroupList.FirstOrDefault(gp => gp.ADGroupName.Equals(@group, StringComparison.OrdinalIgnoreCase));
-                    if (iaGroup != null)
+                    foreach (var iaGroup in employeeInternalAdminADGroupList)
                     {
                         if (userAdGroupList.Any(ug => ug.ADGroupId == iaGroup.ADGroupId))
                         {
                             isInternalAdmin = true;
                             userLastName = "ialogin";
-                            break;
+                            employeeProductRoleNameList.Add(iaGroup.RoleName);
                         }
                     }
                 }
-            }
 
-            var employeeProductRoleNames = _productInternalSettingList?.FirstOrDefault(p => p.Name.Equals(isInternalAdmin ? "EmployeeInternalAdminProductRoleName" : "EmployeeSupportProductRoleName", StringComparison.OrdinalIgnoreCase))?.Value;
-            if (!string.IsNullOrEmpty(employeeProductRoleNames))
-            {
-                foreach (var productGroup in employeeProductRoleNames.Split('|'))
+                if (!isInternalAdmin)
                 {
-                    employeeProductRoleNameList.Add(productGroup);
+                    var employeeNonAdminADGroupName = productADGroupRoleList.Where(ad => !ad.IsAdminRole).ToList();
+                    foreach (var nonIaGroup in employeeNonAdminADGroupName)
+                    {
+                        if (userAdGroupList.Any(ug => ug.ADGroupId == nonIaGroup.ADGroupId))
+                        {
+                            employeeProductRoleNameList.Add(nonIaGroup.RoleName);
+                        }
+                    }
                 }
 
                 roleList = new List<string>();
@@ -1604,7 +1609,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 onesiteLoginName = "C-" + Guid.NewGuid().ToString().Substring(0, 13);
             }
-            
+
+            isRealPageEmployee = true;
             return true;
         }
 

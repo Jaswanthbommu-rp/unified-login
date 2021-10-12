@@ -316,5 +316,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="personaId"></param>
         /// <returns></returns>
         List<AdGroup> GetAdGroupsForUser(long personaId);
+
+        List<AdGroup> GetUserManagementADGroupsByProduct(long productId);
+
+        /// <summary>
+        /// Used to get the list of product roles by product and ADGroup used when creating users
+        /// </summary>
+        /// <param name="productId"></param>
+        /// <returns></returns>
+        List<ADGroupProductRole> GetADGroupProductRoleByProductId(int productId);
     }
 }

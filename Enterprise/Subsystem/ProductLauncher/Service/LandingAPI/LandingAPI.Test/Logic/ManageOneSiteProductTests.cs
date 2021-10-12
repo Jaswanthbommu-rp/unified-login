@@ -3080,7 +3080,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 userLoginPersonaRepository: null,
                 userRepository: null
             );
-			string resp = manageProductOneSite.UpdateRolesForUser(_editorPersonaId, _userPersonaId, _rolesToAdd);
+			string resp = manageProductOneSite.UpdateRolesForUser(_editorPersonaId, _userPersonaId, _rolesToAdd, false);
             // Role 1 should be kept, Role 2 added and Role 3 should be removed, causing an update of 2 records changed
             Assert.True(resp == "2");
         }

@@ -209,7 +209,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "No Data");
             }
-            string result = _manageProductOneSite.UpdateRolesForUser(editorPersonaId, userPersonaId, roleList);
+
+            string result = _manageProductOneSite.UpdateRolesForUser(editorPersonaId, userPersonaId, roleList, false);
             if (!string.IsNullOrEmpty(result))
             {
                 return Request.CreateResponse(HttpStatusCode.OK, result.ToString() + " Records Updated");

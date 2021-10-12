@@ -2124,6 +2124,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 return repository.GetMany<AdGroup>(StoredProcNameConstants.SP_GetUserManagementADGroupsByProduct, param);
             }
         }
+
+        /// <summary>
+        /// Used to get the list of product roles by product and ADGroup used when creating users
+        /// </summary>
+        /// <param name="productId"></param>
+        /// <returns></returns>
+        public List<ADGroupProductRole> GetADGroupProductRoleByProductId(int productId)
+        {
+            dynamic param = new
+            {
+                ProductId = productId
+            };
+            using (var repository = GetRepository())
+            {
+                return repository.GetMany<ADGroupProductRole>(StoredProcNameConstants.SP_GetADGroupProductRoleByProductId, param);
+            }
+        }
+
+
         #endregion
 
         #region Private Methods
