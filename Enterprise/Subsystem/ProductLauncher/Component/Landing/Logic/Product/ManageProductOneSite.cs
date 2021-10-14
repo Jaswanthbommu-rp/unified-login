@@ -647,7 +647,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         rolesToAssign.Remove(role.RoleID);
                     }
                     // leave the role alone in the user
-                    //continue;
+                    continue;
                 }
                 if (!(rolesToAssign.Contains(role.RoleID)))
                 {
