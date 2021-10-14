@@ -12,7 +12,7 @@ SET NOCOUNT ON;
 		,[Name]
 		,[Description]
 	FROM   
-		Logging.LogCategoryType
+		Logging.LogCategoryType WITH(NOLOCK)
 	WHERE
 		(@LogCategoryTypeIds IS NULL 
 		OR 
@@ -24,7 +24,7 @@ SET NOCOUNT ON;
 		,[Name]
 		,[Description]
 	FROM 
-		Logging.LogType
+		Logging.LogType WITH(NOLOCK)
 	WHERE 
 		(@LogCategoryTypeIds IS NULL 
 		OR 

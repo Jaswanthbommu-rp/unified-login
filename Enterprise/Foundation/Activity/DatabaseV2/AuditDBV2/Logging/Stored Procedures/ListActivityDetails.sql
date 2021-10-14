@@ -10,7 +10,7 @@ SET NOCOUNT ON;
 		[Key],
 		[Value]
 	FROM  
-		[Logging].[ActivityDetail]
+		[Logging].[ActivityDetail] WITH(NOLOCK)
 	WHERE 
 		[ActivityId] = @ActivityId
 	 
