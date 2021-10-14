@@ -2151,27 +2151,35 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             List<string> editorRights = _userClaim.Rights;
             foreach (var s in productFamily.Solutions)
             {
-                s.LockOnProductAccess = true;
+                s.LockOnProductAccess = false;
                 var productAccessRight = lockOnProductAccessRights.FirstOrDefault(f => f.ProductId == s.ProductId)?.Value;
                 var productcheckADGroupUserMgmt = checkADGroupUserMgmt.FirstOrDefault(p => p.ProductId == s.ProductId);
                 if (productcheckADGroupUserMgmt != null && productcheckADGroupUserMgmt.Value == "1" && impersonatePersonaId > 0)
                 {
+                    if (adGroupsForPersona?.Count == 0)
+					{
+                        s.LockOnProductAccess = true;
+                    }
                     if (adGroupsForPersona != null && adGroupsForPersona.Count > 0)
                     {
                         var userManagementAdGroupsForProduct = GetUserManagementADGroupsByProduct(s.ProductId);
+                        if (userManagementAdGroupsForProduct?.Count == 0)
+                        {
+                            s.LockOnProductAccess = true;
+                        }
                         if (userManagementAdGroupsForProduct.Count > 0)
                         {
-                            if ((userManagementAdGroupsForProduct.Select(p => p.ADGroupId).Intersect(adGroupsForPersona.Select(a => a.ADGroupId))).ToList().Count > 0)
+                            if ((userManagementAdGroupsForProduct.Select(p => p.ADGroupId).Intersect(adGroupsForPersona.Select(a => a.ADGroupId))).ToList().Count == 0)
                             {
-                                s.LockOnProductAccess = false;
+                                s.LockOnProductAccess = true;
                             }
                         }
-                    }
+                    }					
                 }
                 else if (!string.IsNullOrWhiteSpace(productAccessRight))
                 {
                     s.LockOnProductAccess = !editorRights.Contains(productAccessRight, StringComparer.OrdinalIgnoreCase);
-                }                
+                }
             }
         }
 

@@ -2416,7 +2416,6 @@ insert into @productlist values
 	(46, 'LockOnProductAccessRight', 'ManageCustomFields' ),
 	(47, 'LockOnProductAccessRight', 'ManageDepositAlternativeProductAccess' ),
 	(48, 'LockOnProductAccessRight', 'ManageClickPayProductAccess' ),
-	(49, 'LockOnProductAccessRight', 'ManageUnifiedSettings' ),
 	(50, 'LockOnProductAccessRight', 'ManageSeniorLeadManagement' ),
 	(51, 'LockOnProductAccessRight', 'ManageAssetOptimizationProductAccess' ),
 	(52, 'LockOnProductAccessRight', 'ManageAssetOptimizationProductAccess' ),
@@ -2430,10 +2429,7 @@ insert into @productlist values
 	(63, 'LockOnProductAccessRight', 'ManageHandsOnTrainingSystemProductAccess' ),
 	(65, 'LockOnProductAccessRight', 'ManageSGTourProductAccess' ),
 	(66, 'LockOnProductAccessRight', 'ManageAssetOptimizationProductAccess' ),
-	(67, 'LockOnProductAccessRight', 'Reporting' ),
-	(68, 'LockOnProductAccessRight', 'ManageLeaseLabsProductAccess' ),
-	(69, 'LockOnProductAccessRight', 'ManageLeadScoringProductAccess' ),
-	(70, 'LockOnProductAccessRight', 'ManageSmartWasteCommercialProductAccess' )
+	(68, 'LockOnProductAccessRight', 'ManageLeaseLabsProductAccess' )
 	
 	
 --select * from @productlist
