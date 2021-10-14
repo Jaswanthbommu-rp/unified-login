@@ -622,6 +622,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             bool superUser = IsSuperUser(userPersonaId);
 
+            if (!superUser && realRageEmployee)
+            {
+                // IA role will not remove if trying to remove it by id, need to remove all roles and reassign whatever is current for employees
+                WriteToDiagnosticLog("UpdateRolesForUser - Removing employee roles before reassigning");
+                AssignStatus removeStatus = _service.RemoveRolesFromUser(_systemIdentifier, "ALL");
+            }
 
             string PMCID = _systemIdentifier.Split('|')[0];
             Dictionary<string, string> args = new Dictionary<string, string>();
@@ -674,6 +680,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 roleIDRemoveList = string.Join("|", rolesToRemove);
             }
             resultCount = (rolesToAssign.Count + rolesToRemove.Count).ToString();
+            //roleIDRemoveList = "ALL";
             WriteToDiagnosticLog("UpdateRolesForUser - Build add/remove role list");
             try
             {
