@@ -1349,7 +1349,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             // add to product to the personaconfiguration
                             logData = new Dictionary<string, object> { { "response", response } };
                             WriteToDiagnosticLog("ManageOneSiteUser - Got response from create new user", logData);
-                            
+                            var createdUser = false;
                             for (int i = 0; i < response.Length; i++)
                             {
                                 // pull out the needed info
@@ -1362,12 +1362,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                                         _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.UserId, pmcuserlogin);
                                         WriteToDiagnosticLog("ManageOneSiteUser - Saving productUsername to new user");
                                         _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.productUsername, pmcuserlogin.Split('|')[1]);
+                                        createdUser = true;
                                         break;
                                 }
                             }
-                            // add the pmcid to the saml attribute
-                            WriteToDiagnosticLog("ManageOneSiteUser - Saving PMC id to new user");
-                            _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.PMCID, _pmcID);
+
+                            if (createdUser)
+                            {
+                                // add the pmcid to the saml attribute
+                                WriteToDiagnosticLog("ManageOneSiteUser - Saving PMC id to new user");
+                                _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.PMCID, _pmcID);
+                            }
                         }
                         else
                         {

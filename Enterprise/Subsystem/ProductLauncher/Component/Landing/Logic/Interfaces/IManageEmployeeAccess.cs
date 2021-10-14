@@ -18,5 +18,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 
         EmployeePersona GetOrCreateEmployeePersonaId(Guid companyRealPageId, string loginName);
 
+        string CreateEmployeeProductUser(int productId, long personaId);
+
     }
 }

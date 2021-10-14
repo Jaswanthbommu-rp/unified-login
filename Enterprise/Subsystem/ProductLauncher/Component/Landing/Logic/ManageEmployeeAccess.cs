@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Newtonsoft.Json;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
@@ -11,10 +9,12 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.EmployeeAccess;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ResidentPortal;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -31,6 +31,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private readonly IIntegrationTypeFactory _integrationTypeFactory;
         private readonly IManageProductOneSite _manageProductOneSite;
         readonly IManageUnifiedLogin _manageUnifiedLogin;
+        private IManageProductUser _manageProductUser;
         #region Ctor
 
 
@@ -50,6 +51,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _managePersona = new ManagePersona(_userClaim);
             _manageUnifiedLogin = new ManageUnifiedLogin(_userClaim);
             _manageProductOneSite = new ManageProductOneSite(_userClaim);
+            _manageProductUser = new ManageProductUser(_userClaim);
 
             var manageProduct = new ManageProduct(_userClaim);
             var productInternalSettingRepository = new ProductInternalSettingRepository();
@@ -209,10 +211,57 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return employeePersona;
             
         }
+
+        public string CreateEmployeeProductUser(int productId, long personaId)
+        {
+            long adminUserPersonaId = 0;
+            var adminCreatorRealPageId = Guid.Empty;
+            var userPersona = _managePersona.GetPersona(personaId);
+
+            if (userPersona.Organization.RealPageId != Guid.Empty)
+            {
+                adminCreatorRealPageId = _manageOrganization.GetOrganizationAdminUserRealPageId(userPersona.Organization.RealPageId);
+                if (adminCreatorRealPageId == Guid.Empty)
+                {
+                    return "Missing company admin user.";
+                }
+                //recreate clams
+                adminUserPersonaId = _managePersona.GetFirstAvailablePersonaByCompany(adminCreatorRealPageId, userPersona.OrganizationPartyId).PersonaId;
+                _manageProductUser = new ManageProductUser(_userClaim);
+            }
+
+            var rolePropertyList = new RolePropertyList();
+            // the following needs refinement
+            var productADGroupRoleList = _productRepository.GetADGroupProductRoleByProductId(productId);
+            if (productADGroupRoleList.Count > 0)
+            {
+                rolePropertyList.RoleList = new List<string>();
+                foreach (var productRole in productADGroupRoleList)
+                {
+                    rolePropertyList.RoleList.Add(productRole.RoleName);
+                }
+            }
+
+            rolePropertyList.PropertyList = new List<string>() { "-1" };
+            // the following needs refinement
+
+            var productUser = new ProductUserProperitiesRoles()
+            {
+                RealPageId = adminCreatorRealPageId,
+                ProductId = productId,
+                CreateUserPersonaId = adminUserPersonaId,
+                AssignUserPersonaId = personaId,
+                CorrelationId = _userClaim.CorrelationId,
+                InputJson = JsonConvert.SerializeObject(rolePropertyList)
+            };
+            
+            return _manageProductUser.CreateProductUser(productUser);
+        }
+
         #endregion
 
         #region Private Methods  
-        
+
         private List<CompanyDetails> MergeCompanies(List<UnifiedLoginCompany> gbcompanies, IList<Company> bbcompanies)
         {
             List<CompanyDetails> compList = new List<CompanyDetails>();
