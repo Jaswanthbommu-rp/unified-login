@@ -11,4 +11,36 @@
     CONSTRAINT [PK_Activity_ActivityId] PRIMARY KEY CLUSTERED ([ActivityId] ASC),
     CONSTRAINT [FK_Activity_LogTypeId] FOREIGN KEY ([LogTypeId]) REFERENCES [Logging].[LogType] ([LogTypeId])
 );
+GO
+
+CREATE NONCLUSTERED INDEX [IX_Activity_OrgPartyId_AppTimeStamp] 
+ON [Logging].[Activity]
+(
+	[OrganizationPartyId] ASC,
+	[ApplicationTimeStamp] ASC
+)
+INCLUDE([ActivityId],[LogTypeId],[Message],[ContextId],[ContextReferenceId],[CreatedBy]) 
+GO
+
+CREATE NONCLUSTERED INDEX [IX_Activity_OrgPartyId_AppTimeStamp_LogtypeId]
+ON [Logging].[Activity] 
+(
+	[OrganizationPartyId],
+	[LogTypeId],
+	[ApplicationTimeStamp]
+)
+INCLUDE ([ActivityId],[Message],[ContextId],[ContextReferenceId],[CreatedBy])
+GO
+
+
+CREATE NONCLUSTERED INDEX [IX_Activity_OrgPartyId_AppTimeStamp_CreatedBy]
+ON [Logging].[Activity] 
+(
+	[OrganizationPartyId],
+	[CreatedBy],
+	[ApplicationTimeStamp]
+)
+INCLUDE ([LogTypeId],[ContextReferenceId])
+GO
+
 

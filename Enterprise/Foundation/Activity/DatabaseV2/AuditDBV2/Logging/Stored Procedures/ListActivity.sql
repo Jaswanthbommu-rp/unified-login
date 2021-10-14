@@ -74,10 +74,10 @@ SET NOCOUNT ON;
 				'
 	SET @From = '
 			FROM	
-				Logging.Activity A
-				INNER JOIN Logging.LogType LT ON A.LogTypeId = LT.LogTypeId
-				INNER JOIN Logging.LogCategoryType LCT ON LCT.LogCategoryTypeId = LT.LogCategoryTypeId
-				INNER JOIN Logging.UserLogin FUL ON FUL.UserId = A.CreatedBy --FromUserId 
+				Logging.Activity A WITH(NOLOCK)
+				INNER JOIN Logging.LogType LT WITH(NOLOCK) ON A.LogTypeId = LT.LogTypeId
+				INNER JOIN Logging.LogCategoryType LCT WITH(NOLOCK) ON LCT.LogCategoryTypeId = LT.LogCategoryTypeId
+				INNER JOIN Logging.UserLogin FUL WITH(NOLOCK) ON FUL.UserId = A.CreatedBy --FromUserId 
 				'
 
 	SET @SelectCount = '
@@ -138,4 +138,5 @@ SET NOCOUNT ON;
 	EXECUTE (@SelectColumns)	
 	--EXECUTE (@SelectCount)		
 	EXEC SP_EXECUTESQL @SelectCount, N'@TotalRows INT output', @TotalRows out
+
 END;

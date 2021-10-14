@@ -6,4 +6,12 @@
     [RealPageId]    UNIQUEIDENTIFIER NULL,
     CONSTRAINT [PK_UserLogin_UserId] PRIMARY KEY CLUSTERED ([UserId] ASC)
 );
+GO
+
+CREATE NONCLUSTERED INDEX [IX_UserLogin_RealPageId]
+ON [Logging].[UserLogin] 
+(
+	[RealPageId]
+)
+GO
 

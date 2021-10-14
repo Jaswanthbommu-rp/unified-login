@@ -2585,3 +2585,34 @@ END
 
 GO
 --End: Script for 965199
+
+-- 981690
+DECLARE @rolesandrightssetuprightid INT = 0, @rolesrightsnavigationmenuid INT = 0, @sidemenurouteid INT = 0, @UserId BIGINT = 0, @configmenuid INT = 0;
+
+SELECT @configmenuid = id FROM Enterprise.NavigationMenu WHERE Title = 'Configurations'
+SELECT @rolesandrightssetuprightid = rightid FROM security.[RIGHT] WHERE RightName = 'EmployeeAccessToInternalRolesAndRightsSetup'
+SELECT @sidemenurouteid = routeid FROM security.Route WHERE RouteValue = 'SideMenu'
+SELECT @UserId = UserId FROM Ident.UserLogin WHERE LoginName LIKE 'realpagead@%'
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.NavigationMenu WHERE Title = 'Roles & Rights Setup' )
+BEGIN
+	INSERT INTO enterprise.NavigationMenu (Title,PageId,Icon,URL,OrderIndex,ParentId,Origin)
+	VALUES ( 'Roles & Rights Setup','rolesandrightssetup', NULL, '/home/roles-rights-setup', 129, @configmenuid, N'unified-login' )
+END
+
+SELECT @rolesrightsnavigationmenuid = Id FROM Enterprise.NavigationMenu WHERE URL = '/home/roles-rights-setup'
+
+IF @rolesandrightssetuprightid <> 0 AND @rolesrightsnavigationmenuid <> 0 AND NOT EXISTS (SELECT TOP 1 1 FROM enterprise.NavigationMenuRights WHERE NavigationMenuId = @rolesrightsnavigationmenuid AND RightId = @rolesandrightssetuprightid)
+BEGIN
+	INSERT INTO enterprise.NavigationMenuRights ( NavigationMenuId, RightId )
+	VALUES (@rolesrightsnavigationmenuid, @rolesandrightssetuprightid)
+END
+
+IF @rolesandrightssetuprightid <> 0 AND @sidemenurouteid <> 0 AND NOT EXISTS (SELECT TOP 1 1 FROM Security.RightRoute WHERE RightId = @rolesandrightssetuprightid AND RouteId = @sidemenurouteid)
+BEGIN
+	INSERT INTO security.RightRoute ( RightId,RouteId,RightName,CreatedBy,CreatedDate )
+	VALUES ( @rolesandrightssetuprightid, @sidemenurouteid, 'EmployeeAccessToInternalRolesAndRightsSetup', @UserId, GETDATE() )
+END
+
+GO
+-- 981690
