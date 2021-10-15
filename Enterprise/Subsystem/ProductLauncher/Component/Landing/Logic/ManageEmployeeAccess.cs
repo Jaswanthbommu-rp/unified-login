@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
@@ -10,11 +11,13 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.EmployeeAccess;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSite;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ResidentPortal;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -57,6 +60,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var productInternalSettingRepository = new ProductInternalSettingRepository();
             _integrationTypeFactory = new IntegrationTypeFactory(manageProduct, _manageUnifiedLogin, _manageProductOneSite, _productRepository, productInternalSettingRepository, _userClaim);
         }
+
+        /// <summary>
+        /// Unit test constructor
+        /// </summary>
+        /// <param name="userClaim"></param>
+        /// <param name="repository"></param>
+        /// <param name="messageHandler"></param>
+        /// <param name="oneSiteProductService"></param>
+        public ManageEmployeeAccess(DefaultUserClaim userClaim, IRepository repository, HttpMessageHandler messageHandler, IOneSiteProductService oneSiteProductService) : base((int)ProductEnum.SupportTool, userClaim, repository)
+        {
+            _productId = (int)ProductEnum.SupportTool;
+            _userClaim = userClaim;
+            _editorRealPageId = _userClaim.UserRealPageGuid;
+            _blueBook = new ManageBlueBook(userClaim, repository, messageHandler);
+            _userLoginRepository = new UserLoginRepository(repository);
+
+            _manageUser = new ManageUser(repository, userClaim, messageHandler);
+            _managePersona = new ManagePersona(repository, userClaim, messageHandler);
+            _manageUnifiedLogin = new ManageUnifiedLogin(repository, userClaim, messageHandler);
+            _manageProductOneSite = new ManageProductOneSite(repository, userClaim, messageHandler, oneSiteProductService);
+            _manageProductUser = new ManageProductUser(repository, userClaim, messageHandler, oneSiteProductService);
+            _manageOrganization = new ManageOrganization(repository, userClaim, messageHandler, _manageProductOneSite);
+
+            var manageProduct = new ManageProduct(repository, userClaim, messageHandler);
+            var productInternalSettingRepository = new ProductInternalSettingRepository(repository);
+            _integrationTypeFactory = new IntegrationTypeFactory(manageProduct, _manageUnifiedLogin, _manageProductOneSite, _productRepository, productInternalSettingRepository, _userClaim);
+        }
+
         #endregion
 
         #region Public Methods

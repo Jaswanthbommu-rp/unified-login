@@ -127,6 +127,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _httpClient = new HttpClient {BaseAddress = new Uri(bbUri)};
         }
 
+        /// <summary>
+        /// Unit test
+        /// </summary>
+        /// <param name="userClaim"></param>
+        /// <param name="repository"></param>
+        /// <param name="productInternalSettingRepository"></param>
+        /// <param name="messageHandler"></param>
         public ManageBlueBook(DefaultUserClaim userClaim, IRepository repository, IProductInternalSettingRepository productInternalSettingRepository, HttpMessageHandler messageHandler)
         {
             _productInternalSettingRepository = productInternalSettingRepository;
@@ -139,6 +146,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             useUPFMId = GetBooleanProductSettings("BooksUseUPFMId");
         }
 
+        /// <summary>
+        /// Unit test
+        /// </summary>
+        /// <param name="userClaim"></param>
+        /// <param name="repository"></param>
+        /// <param name="messageHandler"></param>
+        public ManageBlueBook(DefaultUserClaim userClaim, IRepository repository, HttpMessageHandler messageHandler)
+        {
+            _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
+            _httpClient = new HttpClient(messageHandler) { BaseAddress = new Uri("http://localhost") };
+            _defaultUserClaim = userClaim;
+            _productRepository = new ProductRepository(repository, userClaim);
+
+            productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
+            useDomains = GetBooleanProductSettings("BooksUseDomains");
+            useUPFMId = GetBooleanProductSettings("BooksUseUPFMId");
+        }
+        
         /// <summary>
         /// Filter Company Map
         /// </summary>

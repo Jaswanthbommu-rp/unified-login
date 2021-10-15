@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Net.Mail;
 using System.Runtime.Caching;
 using Newtonsoft.Json;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
@@ -246,6 +247,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _correlationId = _userClaim.CorrelationId.ToString();
             if (productInternalSettingRepository != null) { _productInternalSettingRepository = productInternalSettingRepository; }
             if (productRepository != null) { _productRepository = productRepository; }
+            _productInternalSettingList = GetProductSetting(_productId);
+            _productDetails = GetBooksMasterProductDetail(_productId);
+            if (_productDetails != null)
+            {
+                _udmSourceCode = _productDetails.UDMSourceCode?.Length > 0 ? _productDetails.UDMSourceCode : _productDetails.BooksProductCode;
+            }
+        }
+
+        /// <summary>
+        /// Unit test constructor
+        /// </summary>
+        /// <param name="productId"></param>
+        /// <param name="userClaim"></param>
+        /// <param name="repository"></param>
+        public ManageProductBase(int productId, DefaultUserClaim userClaim, IRepository repository)
+        {
+            _productId = productId;
+            _userClaim = userClaim;
+            _correlationId = _userClaim.CorrelationId.ToString();
+            _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
+            _productRepository = new ProductRepository(repository, userClaim);
             _productInternalSettingList = GetProductSetting(_productId);
             _productDetails = GetBooksMasterProductDetail(_productId);
             if (_productDetails != null)

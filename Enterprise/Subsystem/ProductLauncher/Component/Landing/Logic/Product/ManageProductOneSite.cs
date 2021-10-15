@@ -15,8 +15,10 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using IC = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RoleType = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSite.RoleType;
@@ -132,6 +134,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _mtClientSecret = _productInternalSettingList.First(a => a.Name.ToUpper() == "MTCLIENTSECRET").Value;
 
             _manageMicrosoftAzure = null;
+        }
+
+        /// <summary>
+        /// Unit test constructor
+        /// </summary>
+        /// <param name="repository"></param>
+        /// <param name="userClaims"></param>
+        /// <param name="editorRealPageId"></param>
+        /// <param name="service"></param>
+        /// <param name="messageHandler"></param>
+        public ManageProductOneSite(IRepository repository, DefaultUserClaim userClaims, HttpMessageHandler messageHandler, IOneSiteProductService oneSiteProductService)
+            : base((int)ProductEnum.OneSite, userClaims, repository)
+        {
+            _editorRealPageId = userClaims.UserRealPageGuid;
+            _service = oneSiteProductService;
+            _samlRepository = new SamlRepository(repository);
+            _managePersona = new ManagePersona(repository, userClaims, messageHandler);
+            _blueBook = new ManageBlueBook(userClaims, repository, messageHandler);
+            _productRepository = new ProductRepository(repository, userClaims);
+            _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
+            _messageHandler = messageHandler;
+
+            _mtApiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "MTAPIENDPOINT").Value;
+            _mtTokenEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "MTTOKENENDPOINT").Value;
+            _mtClientId = _productInternalSettingList.First(a => a.Name.ToUpper() == "MTCLIENTID").Value;
+            _mtClientSecret = _productInternalSettingList.First(a => a.Name.ToUpper() == "MTCLIENTSECRET").Value;
+
+            _manageMicrosoftAzure = new ManageMicrosoftAzure(userClaims, repository, messageHandler);
         }
 
         /// <summary>

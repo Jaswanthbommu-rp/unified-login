@@ -152,6 +152,7 @@
     <Compile Include="ControllerTest\WebHookTests.cs" />
     <Compile Include="Logic\ManageBlueBookTests.cs" />
     <Compile Include="Logic\ManageCredentialTest.cs" />
+    <Compile Include="Logic\ManageEmployeeAccessTests.cs" />
     <Compile Include="Logic\ManageUnifiedSettingsTests.cs" />
     <Compile Include="Logic\ManageUserLoginPersonaTests.cs" />
     <Compile Include="Logic\ProductIntegration\ClickPayIntegrationTest.cs" />

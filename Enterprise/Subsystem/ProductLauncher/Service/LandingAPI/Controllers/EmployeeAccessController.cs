@@ -13,7 +13,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
     {
         private IManageEmployeeAccess _manageEmployeeAccess;
 
-
         public EmployeeAccessController() : base() { }
 
         public EmployeeAccessController(IManageEmployeeAccess manageEmployeeAccess)

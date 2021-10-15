@@ -35,6 +35,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using RP.Enterprise.Foundation.DataAccess.Component;
+using System.Net.Http;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSite;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -65,6 +68,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _productInternalSettingRepository = productInternalSettingRepository;
             _samlRepository = samlRepository;
             _manageProduct = manageProduct;
+        }
+
+        /// <summary>
+        /// Unit test constructor
+        /// </summary>
+        /// <param name="repository"></param>
+        /// <param name="userClaims"></param>
+        /// <param name="messageHandler"></param>
+        public ManageProductUser(IRepository repository, DefaultUserClaim userClaims, HttpMessageHandler messageHandler, IOneSiteProductService oneSiteProductService)
+        {
+            _productRepository = new ProductRepository(repository, userClaims);
+            _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
+            _samlRepository = new SamlRepository(repository);
+            _manageProduct = new ManageProduct(repository, userClaims, messageHandler);
+            var manageUnifiedLogin = new ManageUnifiedLogin(repository, userClaims, messageHandler);
+            var manageProductOneSite = new ManageProductOneSite(repository, userClaims, messageHandler, oneSiteProductService);
+            _integrationTypeFactory = new IntegrationTypeFactory(_manageProduct, manageUnifiedLogin, manageProductOneSite, _productRepository, _productInternalSettingRepository, userClaims);
+
         }
 
         /// <summary>
