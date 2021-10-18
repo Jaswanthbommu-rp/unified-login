@@ -1,7 +1,7 @@
 ﻿CREATE PROCEDURE [Security].[GetADGroupsByPersonaId] (@personaId bigint)
 AS
 BEGIN
-	SELECT g.ADGroupId, g.DisplayName as ADGroupName, pd.*, rls.*, rt.*
+	SELECT g.ADGroupId, g.DisplayName as ADGroupName, pd.ProductsCount, rls.RolesCount, rt.RightsCount
 	FROM SECURITY.ADGroupUser u
 	JOIN SECURITY.ADGroup g ON g.ADGroupId = u.ADGroupId
 	CROSS APPLY (
