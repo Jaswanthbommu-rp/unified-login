@@ -6213,7 +6213,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     repositoryResponse.Id = 0;
                     if (repositoryResponse.ErrorMessage.Length == 0)
                     {
-                        repositoryResponse.ErrorMessage = "There was a problem updating the user";
+                        repositoryResponse.ErrorMessage = "There was a problem updating the user" + exception;
                     }
                 }
                 finally
