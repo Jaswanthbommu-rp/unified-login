@@ -344,7 +344,7 @@
 
         #region Persona Security
         public const string SP_ListRolesByRealPageID = "Enterprise.ListRolesByRealPageID";
-        public const string SP_LinkPersonaToRole = "Enterprise.LinkPersonaToRole";
+        public const string SP_LinkPersonaToRole = "Security.LinkPersonaToRole";
         public const string SP_ListRightsByPersonaID = "Enterprise.ListPersonaRightsAndActionsByRoute";
         public const string SP_ListPersonaRightsAndActionsByRoute = "Enterprise.ListPersonaRightsAndActionsByRoute";
         #endregion

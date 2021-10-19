@@ -156,9 +156,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         public RepositoryResponse InsertAssignedRoleToUser(long userPersonaId, long roleId, int userId, bool deleteRole = false)
         {
             RepositoryResponse rr = new RepositoryResponse();
-            string schemaName = getRoleRightsSchemaName();
-            var procName = schemaName?.Length > 0 ? $"{schemaName}.LinkPersonaToRole" : StoredProcNameConstants.SP_LinkPersonaToRole;
-
+            
             dynamic param = new
             {
                 PersonaID = userPersonaId,
@@ -171,11 +169,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             if (_repository == null)
             {
                 _repository = GetRepository();
-                rr = _repository.GetOne<RepositoryResponse>(procName, param);
+                rr = _repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkPersonaToRole, param);
             }
             else
             {
-                rr = _repository.GetOne<RepositoryResponse>(procName, param);
+                rr = _repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkPersonaToRole, param);
             }
 
             return rr;
