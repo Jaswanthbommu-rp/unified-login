@@ -1186,8 +1186,7 @@
     <Build Include="RoleRightsManagement\Stored Procedures\GetRolesList.sql" />
     <Build Include="Security\GetProuctsForADGroup.sql" />
     <Build Include="Security\GetRightsAndProductsForADGroup.sql" />
-    <Build Include="Security\GetRolesAndProductForADGroup.sql" />
-    <Build Include="Security\GetADGroupsByPersonaId.sql" />
+    <Build Include="Security\GetADGroupsProductRightByPersonaId.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

@@ -1,7 +1,7 @@
-﻿CREATE PROCEDURE [Security].[GetADGroupsByPersonaId] (@personaId bigint)
+﻿CREATE PROCEDURE [Security].[GetADGroupsProductRightByPersonaId] (@personaId bigint)
 AS
 BEGIN
-	SELECT g.ADGroupId, g.DisplayName as ADGroupName, pd.ProductsCount, rls.RolesCount, rt.RightsCount
+	SELECT g.ADGroupId, g.DisplayName as ADGroupName, pd.ProductsCount, rt.RightsCount
 	FROM SECURITY.ADGroupUser u
 	JOIN SECURITY.ADGroup g ON g.ADGroupId = u.ADGroupId
 	CROSS APPLY (
@@ -14,12 +14,6 @@ BEGIN
 		FROM SECURITY.[ADGroupProduct] apd
 		WHERE apd.ADGroupId = g.ADGroupId
 		) AS pd
-	CROSS APPLY(
-		SELECT COUNT(distinct rr.RoleId) AS RolesCount
-		FROM SECURITY.[ADGroupRight] art
-		JOIN SECURITY.[RoleRight] rr ON rr.RightId = art.RightId
-		WHERE art.ADGroupId = g.ADGroupId
-		) AS rls
 	WHERE u.PersonaId = @personaId
 	ORDER BY g.DisplayName
 END
