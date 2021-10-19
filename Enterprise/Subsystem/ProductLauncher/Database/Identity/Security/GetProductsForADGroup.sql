@@ -1,4 +1,4 @@
-﻿CREATE PROCEDURE [Security].[GetProuctsForADGroup] @adGroupId int  
+﻿CREATE PROCEDURE [Security].[GetProductsForADGroup] @adGroupId int  
 AS  
 BEGIN  
 SELECT p.ProductId as Id, p.Name  
