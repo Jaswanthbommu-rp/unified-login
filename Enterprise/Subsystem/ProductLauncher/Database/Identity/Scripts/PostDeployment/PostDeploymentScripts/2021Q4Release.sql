@@ -2671,3 +2671,10 @@ BEGIN
  Insert into Security.RoleRight values(@RId,@Rig,@UserId,GETDATE())
  END
 GO
+
+--EmployeeExternelUserDefautRole
+if not exists ( select top 1 1 from Enterprise.ProductSettingType where name = 'EmployeeExternelUserDefautRole' )
+begin
+	insert into enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'EmployeeExternelUserDefautRole', 'Create Employee Externel User via support tool link DefautRole', 0)
+end
+GO
