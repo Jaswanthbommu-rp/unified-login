@@ -51,6 +51,16 @@ BEGIN
 				UL.PersonPartyId = @PartyIdFrom
 				AND
 				ULP.OrganizationPartyId = @PartyIdTo
+		
+	   DELETE PM
+	   FROM Enterprise.PropertyInstanceMapping PM
+	   INNER JOIN Person.Persona P  ON PM.PersonaId = P.PersonaId
+	   INNER JOIN Ident.UserLoginPersona ULP ON P.UserLoginPersonaId = ULP.UserLoginPersonaId  
+	   INNER JOIN Ident.UserLogin UL ON ULP.UserLoginId = UL.UserId  
+	   WHERE  
+		UL.PersonPartyId = @PartyIdFrom  
+		AND  
+		ULP.OrganizationPartyId = @PartyIdTo 
 
 		DELETE P
 		FROM Person.Persona P
