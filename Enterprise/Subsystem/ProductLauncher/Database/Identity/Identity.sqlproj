@@ -1184,6 +1184,9 @@
     <Build Include="Enterprise\Stored Procedures\ListEmployeeProductsByOrganization.sql" />
     <Build Include="Enterprise\Stored Procedures\ListEmployeeOnlyProducts.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\GetRolesList.sql" />
+    <Build Include="Security\GetProductsForADGroup.sql" />
+    <Build Include="Security\GetRightsAndProductsForADGroup.sql" />
+    <Build Include="Security\GetADGroupsProductRightByPersonaId.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\UpdateRoleDetailsInternal.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\AddRoleDetailsInternal.sql" />
   </ItemGroup>
