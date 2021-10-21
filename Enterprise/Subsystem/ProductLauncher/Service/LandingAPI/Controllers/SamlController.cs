@@ -61,6 +61,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         }
 
         /// <summary>
+		/// Get Saml product attributes by  ProductId
+		/// </summary>
+		/// <param name="ProductId"></param>
+		/// <returns>List of Saml Attributes</returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about the user", Type = typeof(SamlProductAttributes))]
+        [SwaggerResponseExamples(typeof(SamlProductAttributes), typeof(SamlProductAttributesExample))]
+        [Authorize]
+        [Route("saml/productAttributes")]
+        [HttpGet]
+        public IList<SamlProductAttributes> GetSamlProductAttributes(int ProductId)
+        {
+            var samlRepository = new SamlRepository();
+            return samlRepository.GetSamlProductAttributes(ProductId);
+        }
+
+        /// <summary>
 		/// Get Persona Products Saml attributes  
 		/// </summary>
 		/// <param name="personaId"></param>
@@ -72,25 +90,48 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [Authorize]
         [Route("saml/persona/{personaId}/attributes")]
         [HttpGet]
-        public IList<ProductSamlDetails> GetPersonaProductSamlDetails([FromUri] long personaId) 
+        public IList<ProductSamlDetails> GetPersonaProductSamlDetails([FromUri] long personaId)
         {
             var samlRepository = new SamlRepository();
             var productSamlDetails = samlRepository.ListPersonaProductsSamlDetails(personaId);
             var aoProducts = productSamlDetails.FirstOrDefault(p => p.ProductId == 4);
+            ProductRepository productRepository = new ProductRepository();
+            IList<GbProductMap> gbProductMaps = productRepository.ListProducts(null, null, null, null);
             if (aoProducts != null)
-			{
+            {
+                aoProducts.Products = new List<ProductDetails>();
+                aoProducts.AOProducts = gbProductMaps.Where(p => p.UDMSourceCode == "AO").OrderBy(s => s.Name).ToList();
                 //Add AO products with success status
-                aoProducts.Products = productSamlDetails.Where(p => p.ParentProductTypeId == 400 && p.ProductStatus.Equals("Success", StringComparison.OrdinalIgnoreCase)).Select(s=>s.ProductName).ToList<string>();  
-
+                var successStatusProducts = productSamlDetails.Where(p => p.ParentProductTypeId == 400 && p.ProductStatus.Equals("Success", StringComparison.OrdinalIgnoreCase)).ToList();
+                foreach (var prod in successStatusProducts)
+                {
+                    ProductDetails successfulproductDetails = new ProductDetails
+                    {
+                        ProductId = prod.ProductId,
+                        ProductName = prod.ProductName,
+                        Status = prod.ProductStatus
+                    };
+                    aoProducts.Products.Add(successfulproductDetails);
+                }
                 //Add AO Products other then success status with order by status and name
                 var aoProductsOrderByStatus = productSamlDetails.Where(p => p.ParentProductTypeId == 400 && !p.ProductStatus.Equals("Success", StringComparison.OrdinalIgnoreCase)).OrderByDescending(x => x.ProductStatus).ThenBy(x1 => x1.ProductName).ToList();
-                aoProducts.Products.AddRange(aoProductsOrderByStatus.Select(s => s.ProductName +  "( " + s.ProductStatus + " )").ToList<string>());
+                foreach (var prod in aoProductsOrderByStatus)
+                {
+                    ProductDetails productDetails = new ProductDetails
+                    {
+                        ProductId = prod.ProductId,
+                        ProductName = prod.ProductName,
+                        Status = prod.ProductStatus
+                    };
+                    aoProducts.Products.Add(productDetails);
+                }
                 IList<ProductSamlDetails> allAOProducts = productSamlDetails.Where(p => p.ParentProductTypeId == 400).ToList();
                 foreach (var item in allAOProducts)
-				{
+                {
                     productSamlDetails.Remove(item);
-				}
+                }
             }
+
             return productSamlDetails;
         }
 
@@ -195,6 +236,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     SamlAttributeId = 5,
                     Type = "&lt;SSOServiceProviders&gt;&lt;/SSOServiceProviders&gt;",
                     Value = "6"
+                });
+
+                return example;
+            }
+        }
+
+        //SamlProductAttributes
+        /// <summary>
+        /// Used to document examples of the Product Saml setting webapi result
+        /// </summary>
+        public class SamlProductAttributesExample : IProvideExamples
+        {
+            /// <summary>
+            /// Example object data used by Swagger to document the output of the webapi method
+            /// </summary>
+            /// <returns>User List example</returns>
+            public object GetExamples()
+            {
+                List<SamlProductAttributes> example = new List<SamlProductAttributes>();
+                example.Add(new SamlProductAttributes()
+                {
+                    DisplayName = "userid",
+                    ProductID = 1
+                });
+                example.Add(new SamlProductAttributes()
+                {
+                    DisplayName = "RealPageIDProductsRaw",
+                    ProductID = 5
                 });
 
                 return example;

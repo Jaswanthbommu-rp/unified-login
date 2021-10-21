@@ -1189,6 +1189,8 @@
     <Build Include="Security\GetADGroupsProductRightByPersonaId.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\UpdateRoleDetailsInternal.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\AddRoleDetailsInternal.sql" />
+    <Build Include="Ident\Stored Procedures\GetSamlProductAttributes.sql" />
+    <Build Include="Ident\Tables\SamlProductAttribute.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\GetExcludedCompaniesForRole.sql" />
   </ItemGroup>
   <ItemGroup>

@@ -266,6 +266,7 @@
         public const string SP_GetProductSamlDetails = "Ident.GetProductSamlDetails";
         public const string SP_GetProductSamlSettings = "Ident.GetProductSamlSettings";
         public const string SP_ListPersonaProductsSamlDetails = "Ident.ListPersonaProductsSamlDetails";
+        public const string SP_GetSamlProductAttributes = "Ident.GetSamlProductAttributes";
 
         public const string SP_CreateSamlUserAttribute = "Ident.CreateSamlUserAttribute";
         public const string SP_DeleteSamlUserProductInfoAndStatus = "Enterprise.UnLinkProductFromPersona";

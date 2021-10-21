@@ -20,6 +20,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		public string OrganizationId { get; set; }
 		public string NWPUserType { get; set; }
 		public int ParentProductTypeId { get; set; }
-		public List<string> Products { get; set; }
+		public List<ProductDetails> Products { get; set; }
+		public List<GbProductMap> AOProducts { get; set; }
+	}
+
+	public class ProductDetails
+	{
+		public int ProductId { get; set; }
+		public string ProductName { get; set; }
+		public string Status { get; set; }
 	}
 }
