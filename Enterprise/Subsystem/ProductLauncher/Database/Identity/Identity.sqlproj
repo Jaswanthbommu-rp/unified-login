@@ -1189,6 +1189,7 @@
     <Build Include="Security\GetADGroupsProductRightByPersonaId.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\UpdateRoleDetailsInternal.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\AddRoleDetailsInternal.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\GetExcludedCompaniesForRole.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

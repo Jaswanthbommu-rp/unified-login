@@ -209,7 +209,7 @@ AND  (
 	OR (CHARINDEX(@filterName, P.[Name], 1) > 0)
       )    
     AND  ((@filterRoleTypeId IS NULL) OR (RT.RoleTypeId = @filterRoleTypeId)) 
-	AND  ((@filterOrgPartyIdForVisibility IS NULL) OR (R.OrgPartyID = @filterOrgPartyIdForVisibility))
+	AND  ((@filterOrgPartyIdForVisibility IS NULL) OR (@filterOrgPartyIdForVisibility != 0 AND R.OrgPartyID = @filterOrgPartyIdForVisibility) OR (@filterOrgPartyIdForVisibility = 0 AND R.OrgPartyID IS NULL))
 	AND  ((@productFilterCount = 0) OR P.ProductId IN (SELECT ProductId FROM @filterProduct))
 )
 
@@ -248,4 +248,4 @@ FROM cteRolesFinal
  FETCH NEXT(@RowsPerPage) ROWS ONLY  
  OPTION (RECOMPILE) 
 
- DROP TABLE IF EXISTS #RoleDetails  
+ DROP TABLE IF EXISTS #RoleDetails
