@@ -6,6 +6,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Factory;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
@@ -31,6 +32,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private readonly IIntegrationTypeFactory _integrationTypeFactory;
         private readonly IManageProductOneSite _manageProductOneSite;
         readonly IManageUnifiedLogin _manageUnifiedLogin;
+        IProductInternalSettingRepository _productInternalSettingRepository;
         #region Ctor
 
 
@@ -52,8 +54,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _manageProductOneSite = new ManageProductOneSite(_userClaim);
 
             var manageProduct = new ManageProduct(_userClaim);
-            var productInternalSettingRepository = new ProductInternalSettingRepository();
-            _integrationTypeFactory = new IntegrationTypeFactory(manageProduct, _manageUnifiedLogin, _manageProductOneSite, _productRepository, productInternalSettingRepository, _userClaim);
+            _productInternalSettingRepository = new ProductInternalSettingRepository();
+            _integrationTypeFactory = new IntegrationTypeFactory(manageProduct, _manageUnifiedLogin, _manageProductOneSite, _productRepository, _productInternalSettingRepository, _userClaim);
         }
         #endregion
 
@@ -325,7 +327,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             
             IList<PersonaEnvironment> personaEnvironment = _managePersona.GetPersonaEnvironmentType();
             var personaEnv = personaEnvironment.SingleOrDefault<PersonaEnvironment>(p => p.Name == "Production");
-            
+            var productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
+
             persona.Name = newProfile.UserTypeId == (int)UserRoleType.SuperUser ? "System Administrator" : "Primary";
             persona.PersonaEnvironmentTypeId = (int)personaEnv.PersonaEnvironmentTypeId;
             persona.FromDate = utcNow.AddMinutes(-5);
@@ -379,7 +382,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             foreach (var item in result.Records)
                 roleRights.Add((UnifiedLoginRoleRights)item);
 
-            var role = roleRights.Where(x => x.Role == "User Administrator" && x.Roletype == "System").FirstOrDefault();
+            var defaultRole = productInternalSettingList.FirstOrDefault(s => s.Name.Equals("EmployeeExternelUserDefautRole", StringComparison.OrdinalIgnoreCase))?.Value ;
+            defaultRole = defaultRole != null ? defaultRole : "User Administrator";
+            var role = roleRights.Where(x => x.Role == defaultRole && x.Roletype == "System").FirstOrDefault();
 
             if (role != null)
                 rpl.RoleList = new List<string>() { role.RoleId.ToString() };

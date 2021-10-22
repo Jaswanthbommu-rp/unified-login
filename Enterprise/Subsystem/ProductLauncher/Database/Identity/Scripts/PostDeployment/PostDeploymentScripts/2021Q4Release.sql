@@ -2593,3 +2593,388 @@ END
 
 GO
 -- 981690
+
+--User Story 952202
+
+DECLARE @UserId INT,@AdminRoleId bigint,@ReadOnlyUser bigint,@StandardUser bigint,@rightId1 bigint,@rightId2 bigint,@rightId3 bigint,@rightId4 bigint,@rightId5 bigint,@rightId6 bigint;
+SELECT @UserId = UserId FROM Ident.UserLogin WHERE LoginName like 'realpagead@%';
+
+IF NOT EXISTS(SELECT 1 FROM Security.Role WHERE RoleName = 'Administrator' AND OrgPartyID IS NULL AND ProductId = 38)
+BEGIN
+	INSERT INTO Security.Role(RoleName, ShortName, Description, RoleTypeID, OrgPartyID, ProductId, CreatedBy, CreatedDate)
+	VALUES('Administrator', 'Administrator', 'Administrator', 3, NULL, 38, @UserId, GETDATE())	
+END	
+IF NOT EXISTS(SELECT 1 FROM Security.Role WHERE RoleName = 'ReadOnlyUser' AND OrgPartyID IS NULL AND ProductId = 38)
+BEGIN
+	INSERT INTO Security.Role(RoleName, ShortName, Description, RoleTypeID, OrgPartyID, ProductId, CreatedBy, CreatedDate)
+	VALUES('ReadOnlyUser', 'ReadOnlyUser', 'Read-Only User', 3, NULL, 38, @UserId, GETDATE())	
+END	
+IF NOT EXISTS(SELECT 1 FROM Security.Role WHERE RoleName = 'StandardUser' AND OrgPartyID IS NULL AND ProductId = 38)
+BEGIN
+	INSERT INTO Security.Role(RoleName, ShortName, Description, RoleTypeID, OrgPartyID, ProductId, CreatedBy, CreatedDate)
+	VALUES('StandardUser', 'StandardUser', 'Standard User', 3, NULL, 38, @UserId, GETDATE())	
+END	
+IF NOT EXISTS(SELECT 1 FROM Security.[Right] WHERE RightName in ('AccesstoBids&ContractsinVendorMarketplace','ExecuteandCloseContracts','AwardBids','CreateEditorCancelBids', 
+                                                                   'CreateEditorCancelContracts','ApproveorRejectContracts') )
+BEGIN
+	INSERT INTO Security.[Right](RightName, Description, Value, StatusTypeId, VisibilityStatusId, ProductId, TargetProductId, CreatedBy, CreatedDate)
+	VALUES('AccesstoBids&ContractsinVendorMarketplace', 'Access to Bids & Contracts in Vendor Marketplace', 'Access to Bids & Contracts in Vendor Marketplace', 13, 9, 38, 38, @UserId, GETDATE())
+	     ,('ExecuteandCloseContracts', 'Execute and Close Contracts', 'Execute and Close Contracts', 13, 9, 38, 38, @UserId, GETDATE())
+		 ,('AwardBids', 'Award Bids', 'Award Bids', 13, 9, 38, 38, @UserId, GETDATE())
+		 ,('CreateEditorCancelBids', 'Create, Edit, or Cancel Bids', 'Create, Edit, or Cancel Bids', 13, 9, 38, 38, @UserId, GETDATE())
+		 ,('CreateEditorCancelContracts', 'Create, Edit, or Cancel Contracts', 'Create, Edit, or Cancel Contracts', 13, 9, 38, 38, @UserId, GETDATE())
+		 ,('ApproveorRejectContracts', 'Approve or Reject Contracts', 'Approve or Reject Contracts', 13, 9, 38, 38, @UserId, GETDATE())
+END
+SELECT @AdminRoleId = RoleId FROM Security.Role WHERE RoleName = 'Administrator' AND OrgPartyID IS NULL AND ProductId = 38;
+SELECT @ReadOnlyUser = RoleId FROM Security.Role WHERE RoleName = 'ReadOnlyUser' AND OrgPartyID IS NULL AND ProductId = 38;
+SELECT @StandardUser = RoleId FROM Security.Role WHERE RoleName = 'StandardUser' AND OrgPartyID IS NULL AND ProductId = 38;
+
+Select @rightId1  = RightId from Security.[Right] where RightName ='AccesstoBids&ContractsinVendorMarketplace';
+Select @rightId2  = RightId from Security.[Right] where RightName ='ExecuteandCloseContracts';
+Select @rightId3  = RightId from Security.[Right] where RightName ='AwardBids';
+Select @rightId4  = RightId from Security.[Right] where RightName ='CreateEditorCancelBids';
+Select @rightId5  = RightId from Security.[Right] where RightName ='ApproveorRejectContracts';
+Select @rightId6  = RightId from Security.[Right] where RightName ='CreateEditorCancelContracts';
+
+
+IF NOT EXISTS (Select Top 1 1 from Security.RoleRight where  RoleId = @AdminRoleId and RightId in (@rightId1,@rightId2,@rightId3,@rightId4,@rightId5))
+BEGIN
+  INSERT INTO Security.RoleRight values (@AdminRoleId,@rightId1,@UserId,GETDATE())
+                                       ,(@AdminRoleId,@rightId2,@UserId,GETDATE())
+									   ,(@AdminRoleId,@rightId3,@UserId,GETDATE())
+									   ,(@AdminRoleId,@rightId4,@UserId,GETDATE())
+									   ,(@AdminRoleId,@rightId5,@UserId,GETDATE())
+									   ,(@AdminRoleId,@rightId6,@UserId,GETDATE())
+END
+IF NOT EXISTS (Select Top 1 1 from Security.RoleRight where  RoleId = @ReadOnlyUser and RightId in (@rightId1))
+BEGIN
+  INSERT INTO Security.RoleRight values (@ReadOnlyUser,@rightId1,@UserId,GETDATE())                     
+END
+IF NOT EXISTS (Select Top 1 1 from Security.RoleRight where  RoleId = @StandardUser and RightId in (@rightId1,@rightId4,@rightId6))
+BEGIN
+  INSERT INTO Security.RoleRight values (@StandardUser,@rightId1,@UserId,GETDATE()) 
+                                       ,(@StandardUser,@rightId4,@UserId,GETDATE()) 
+									   ,(@StandardUser,@rightId6,@UserId,GETDATE()) 
+END
+
+Declare @userAdminn bigint,@Rig bigint,@RId bigint;
+SELECT @RId = RoleId from [Security].[Role] where RoleName='User Administrator';
+IF NOT EXISTS (Select Top 1 1 from Security.[Right] where RightName = 'ManageVendorMarketplaceProductAccess')
+BEGIN
+  INSERT INTO Security.[Right](RightName, Description, Value, StatusTypeId, VisibilityStatusId, ProductId, TargetProductId, CreatedBy, CreatedDate)
+	VALUES('ManageVendorMarketplaceProductAccess', 'Manage Vendor Marketplace Product Access', 'Manage Vendor Marketplace Product Access', 13, 9, 38, 38, @UserId, GETDATE())
+END
+Select @Rig = RightId from Security.[Right] where RightName = 'ManageVendorMarketplaceProductAccess';
+
+IF NOT EXISTS (Select Top 1 1 from Security.RoleRight where RoleId =@RId and RightId = @Rig)
+BEGIN
+ Insert into Security.RoleRight values(@RId,@Rig,@UserId,GETDATE())
+ END
+GO
+
+--EmployeeExternelUserDefautRole
+if not exists ( select top 1 1 from Enterprise.ProductSettingType where name = 'EmployeeExternelUserDefautRole' )
+begin
+	insert into enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'EmployeeExternelUserDefautRole', 'Create Employee Externel User via support tool link DefautRole', 0)
+end
+GO
+
+--START : script for userstory #978265 
+--ShowProductInUserSummaryAside 
+if not exists ( select top 1 1 from Enterprise.ProductSettingType where name = 'ShowProductInUserSummaryAside' )
+begin
+	insert into enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'ShowProductInUserSummaryAside', 'Show Product In User Summary Aside', 0)
+end
+
+DECLARE @NOW DATETIME = GETUTCDATE(); 
+declare @productlist table ( entid int identity, productid int, productsettingtype varchar(500), productsettingvalue varchar(2000))
+insert into @productlist values 
+	(1,	 'ShowProductInUserSummaryAside', 1),
+	(4,	 'ShowProductInUserSummaryAside', 1),
+	(6,	 'ShowProductInUserSummaryAside', 1),
+	(8,	 'ShowProductInUserSummaryAside', 1),
+	(9,	 'ShowProductInUserSummaryAside', 1),
+	(10, 'ShowProductInUserSummaryAside', 1),
+	(13, 'ShowProductInUserSummaryAside', 1),
+	(14, 'ShowProductInUserSummaryAside', 1),
+	(15, 'ShowProductInUserSummaryAside', 1),
+	(16, 'ShowProductInUserSummaryAside', 1),
+	(17, 'ShowProductInUserSummaryAside', 1),
+	(18, 'ShowProductInUserSummaryAside', 1),
+	(19, 'ShowProductInUserSummaryAside', 1),
+	(20, 'ShowProductInUserSummaryAside', 1),
+	(23, 'ShowProductInUserSummaryAside', 1),
+	(24, 'ShowProductInUserSummaryAside', 1),
+	(26, 'ShowProductInUserSummaryAside', 1),
+	(29, 'ShowProductInUserSummaryAside', 1),
+	(30, 'ShowProductInUserSummaryAside', 0),
+	(31, 'ShowProductInUserSummaryAside', 0),
+	(32, 'ShowProductInUserSummaryAside', 0),
+	(33, 'ShowProductInUserSummaryAside', 0),
+	(34, 'ShowProductInUserSummaryAside', 0),
+	(36, 'ShowProductInUserSummaryAside', 1),
+	(38, 'ShowProductInUserSummaryAside', 1),
+	(39, 'ShowProductInUserSummaryAside', 1),
+	(40, 'ShowProductInUserSummaryAside', 1),
+	(41, 'ShowProductInUserSummaryAside', 1),
+	(44, 'ShowProductInUserSummaryAside', 1),
+	(45, 'ShowProductInUserSummaryAside', 0),
+	(46, 'ShowProductInUserSummaryAside', 1),
+	(47, 'ShowProductInUserSummaryAside', 1),
+	(48, 'ShowProductInUserSummaryAside', 1),
+	(50, 'ShowProductInUserSummaryAside', 1),
+	(51, 'ShowProductInUserSummaryAside', 1),
+	(52, 'ShowProductInUserSummaryAside', 0),
+	(53, 'ShowProductInUserSummaryAside', 0),
+	(54, 'ShowProductInUserSummaryAside', 0),
+	(55, 'ShowProductInUserSummaryAside', 0),
+	(56, 'ShowProductInUserSummaryAside', 0),
+	(57, 'ShowProductInUserSummaryAside', 1),
+	(58, 'ShowProductInUserSummaryAside', 1),
+	(59, 'ShowProductInUserSummaryAside', 1),
+	(60, 'ShowProductInUserSummaryAside', 1),
+	(62, 'ShowProductInUserSummaryAside', 0),
+	(63, 'ShowProductInUserSummaryAside', 1),
+	(64, 'ShowProductInUserSummaryAside', 0),
+	(65, 'ShowProductInUserSummaryAside', 1),
+	(66, 'ShowProductInUserSummaryAside', 0),
+	(67, 'ShowProductInUserSummaryAside', 0),
+	(68, 'ShowProductInUserSummaryAside', 1),
+	(69, 'ShowProductInUserSummaryAside', 1),
+	(70, 'ShowProductInUserSummaryAside', 1),
+	(71, 'ShowProductInUserSummaryAside', 0),
+	(73, 'ShowProductInUserSummaryAside', 1),
+	(75, 'ShowProductInUserSummaryAside', 0),
+	(77, 'ShowProductInUserSummaryAside', 1)
+	
+	
+--select * from @productlist
+
+declare @MAX_ID INT
+declare @Current_ID INT = 1
+declare @CurrentProductId INT = 1
+
+select @MAX_ID = max(entid) from @productlist
+
+while @Current_ID <= @MAX_ID
+begin
+	declare @currentSettingType varchar(500)
+	declare @currentsettingValue varchar(2000)
+
+	select @CurrentProductId = productid , @currentSettingType = productsettingtype, @currentSettingValue = productsettingvalue
+		from @productlist where entid = @Current_ID
+
+	--print 'productid = ' + convert(varchar,@currentproductid)
+	if exists ( select top 1 1 from enterprise.product WHERE ProductId = @CurrentProductId )
+	begin
+		if not exists (
+		select top 1 1 
+			FROM Enterprise.GlobalProductConfiguration gpc  
+			JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId  
+			JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId  
+			JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId  
+				WHERE  gpc.ProductId = @CurrentProductId  
+			AND ((@NOW BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@NOW >= gpc.FromDate AND gpc.ThruDate IS NULL))  
+			AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))  
+			AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))  
+			AND pst.Name = @currentSettingType
+		)
+		begin
+			declare @currentproductconfigurationid INT
+			select distinct top 1 @currentproductconfigurationid = pc.configurationid
+				FROM Enterprise.GlobalProductConfiguration gpc  
+				JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId  
+				JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId  
+				JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId  
+					WHERE  gpc.ProductId = @CurrentProductId
+				AND ((@NOW BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@NOW >= gpc.FromDate AND gpc.ThruDate IS NULL))  
+				AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))  
+				AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))  
+			order by pc.ConfigurationId desc
+
+			if (@currentproductconfigurationid is not null)
+			begin
+				insert into enterprise.ProductSetting ( productid, ProductSettingTypeId, value, FromDate )
+					select @CurrentProductId, productsettingtypeid, @currentSettingValue, GETUTCDATE()
+						from enterprise.ProductSettingType where name = @currentSettingType
+				insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate, ThruDate )
+					values ( @currentproductconfigurationid, @@IDENTITY, GETUTCDATE(), null )
+			end
+		end
+	end	
+	set @Current_ID = @Current_ID + 1
+end
+GO
+--END : script for userstory #978265 
+
+--START : script to insert data to [Ident].[SamlProductAttribute] -- userstory #978265 
+DECLARE @SAMLProdAttributeCount bigint
+SELECT @SAMLProdAttributeCount = COUNT(*) FROM Ident.[SamlProductAttribute]
+IF ( @SAMLProdAttributeCount = 0)
+BEGIN
+INSERT INTO  [Ident].[SamlProductAttribute] (ProductId,SamlAttributeId)
+--ONESITE
+SELECT 1, 1 UNION 
+SELECT 1, 4 UNION
+SELECT 1, 3 UNION
+--AO
+SELECT 4, 1 UNION
+SELECT 4, 4 UNION
+
+--"Lead2Lease"
+SELECT 6, 1 UNION
+SELECT 6, 4 UNION
+
+--"Financial Suite"
+SELECT 8, 1 UNION
+SELECT 8, 4 UNION
+
+--"MarketingCenter"
+SELECT 9, 1 UNION
+SELECT 9, 4 UNION
+
+--"Prospect Contact Center"
+SELECT 10, 1 UNION
+SELECT 10, 4 UNION
+
+--"Spend Management"
+SELECT 13, 1 UNION
+SELECT 13, 4 UNION
+
+--"Client Portal"
+
+SELECT 14, 1 UNION
+SELECT 14, 4 UNION
+SELECT 14, 10 UNION
+SELECT 14, 11 UNION
+
+--"Renters Insurance"
+SELECT 15, 1 UNION
+SELECT 15, 4 UNION
+
+-- "Vendor Credentialing"
+SELECT 16, 1 UNION
+SELECT 16, 4 UNION 
+
+--"ResProductIdent Portals"
+SELECT 17, 1 UNION
+SELECT 17, 4 UNION 
+
+--"Utility Management"
+SELECT 18, 1 UNION
+SELECT 18, 4 UNION 
+SELECT 18, 13 UNION
+
+--"Product Learning Portal"
+SELECT 19, 1 UNION
+SELECT 19, 4 UNION 
+
+--"Document Director"
+SELECT 20, 1 UNION
+SELECT 20, 4 UNION
+
+--"On-Site"
+SELECT 23, 1 UNION
+SELECT 23, 4 UNION 
+SELECT 23, 3 UNION 
+
+--"Business Intelligence"
+SELECT 29, 1 UNION
+SELECT 29, 4 UNION
+
+--"Performance Analytics"
+SELECT 30, 1 UNION
+SELECT 30, 4 UNION
+
+--"Investment Analytics"
+SELECT 31, 1 UNION
+SELECT 31, 4 UNION
+
+--"Revenue Management"
+SELECT 32, 1 UNION
+SELECT 32, 4 UNION 
+
+--"Axiometrics"
+SELECT 33, 1 UNION
+SELECT 33, 4 UNION 
+
+--"Benchmarking"
+SELECT 34, 1 UNION
+SELECT 34, 4 UNION 
+
+--"EasyLMS"
+SELECT 36, 1 UNION
+
+--"ILM Lead Management"
+SELECT 40, 1 UNION
+SELECT 40, 4 UNION 
+
+--"ILM Leasing Analytics"
+SELECT 41, 1 UNION
+SELECT 41, 4 UNION  
+
+--"Portfolio Management"
+SELECT 44, 1 UNION
+SELECT 44, 4 UNION
+SELECT 44, 3 UNION 
+
+--"Deposit Alternative"
+SELECT 47, 1 UNION
+SELECT 47, 4 UNION
+
+--"ClickPay"
+SELECT 48, 1 UNION
+SELECT 48, 4 UNION
+
+--"Senior Lead Management"
+SELECT 50, 1 UNION
+SELECT 50, 4 UNION
+
+--"LRO"
+SELECT 51, 1 UNION
+SELECT 51, 4 UNION
+
+--"Amenity Optimization"
+SELECT 52, 1 UNION
+SELECT 52, 4 UNION
+
+--"AI Revenue Management"
+SELECT 53, 1 UNION
+SELECT 53, 4 UNION
+
+--"Rent Control"
+SELECT 54, 1 UNION
+SELECT 54, 4 UNION
+
+--"Renovation Manager"
+SELECT 55, 1 UNION
+SELECT 55, 4 UNION
+SELECT 55, 3 UNION
+
+--Market Analytics
+--SELECT 66, sourceName = "RMA", productName = "Market Analytics", includeInNewCompany = true},
+SELECT 66, 1 UNION
+SELECT 66, 4 UNION
+
+--"Relate 24/7"
+--SELECT 73, sourceName = "R247", productName = "Relate 24/7", includeInNewCompany = true },
+SELECT 73, 1 UNION
+SELECT 73, 4 UNION
+
+--"Community Rewards"
+--SELECT 73, sourceName = "R247", productName = "Relate 24/7", includeInNewCompany = true },
+SELECT 77, 1 UNION
+SELECT 77, 4 
+END
+
+GO           
+--END : script for userstory #978265 
+
+UPDATE Ident.SamlAttribute SET DisplayName= 'Username' where name ='productUsername'
+UPDATE Ident.SamlAttribute SET DisplayName= 'PMC ID' where name ='PMCID'
+UPDATE Ident.SamlAttribute SET DisplayName= 'User ID' where name ='UserId'
+UPDATE Ident.SamlAttribute SET DisplayName= 'Portal ID' where name ='portal_id'
+UPDATE Ident.SamlAttribute SET DisplayName= 'Organization ID' where name ='organization_id'
+UPDATE Ident.SamlAttribute SET DisplayName= 'User Type' where name ='NWPUserType'
+
+GO

@@ -40,6 +40,7 @@ BEGIN
 		 INSERT INTO @CompanyOrganizationProduct ( ProductId )
 			SELECT ProductId from Enterprise.OrganizationProduct 
 			WHERE PartyId = @PartyId
+			And ProductId NOT IN (3,36,56)
 			AND ((@NOW BETWEEN FromDate AND ThruDate) OR (@NOW >= FromDate	AND ThruDate IS NULL))
 
 		--AD Groups
@@ -103,7 +104,8 @@ BEGIN
                 @RealPageId AS RealPageId,
                 @PartyId AS OrganizationPartyId,
                 @Name AS OrganizationName,
-              	CASE WHEN (ISNULL(EAD.ProductId, 0) > 0 OR COP.ProductStatus = 8) THEN '8'
+              	CASE WHEN (ISNULL(EAD.ProductId, 0) > 0 AND ISNULL(COP.ProductStatus, 0) = 0) THEN '5'
+				WHEN (ISNULL(EAD.ProductId, 0) > 0 AND COP.ProductStatus = 8) THEN '8'
 				WHEN (ISNULL(EAD.ProductId, 0) = 0 AND COP.ProductStatus = 8) THEN '24'
 				WHEN ISNULL(EAD.ProductId, 0) = 0  THEN '24'
 				ELSE COP.ProductStatus END As ProductStatus

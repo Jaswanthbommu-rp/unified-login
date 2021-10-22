@@ -692,6 +692,7 @@
     <Compile Include="ResponseObject\PagedResponse.cs" />
     <Compile Include="Saml\ISamlAttributes.cs" />
     <Compile Include="Saml\SamlAttributes.cs" />
+    <Compile Include="Saml\SamlProductAttributes.cs" />
     <Compile Include="Swagger\IProvideExamples.cs" />
     <Compile Include="Swagger\SwaggerUtil.cs" />
     <Compile Include="Product\UPFMPropertyInstance.cs" />

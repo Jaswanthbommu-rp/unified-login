@@ -266,6 +266,7 @@
         public const string SP_GetProductSamlDetails = "Ident.GetProductSamlDetails";
         public const string SP_GetProductSamlSettings = "Ident.GetProductSamlSettings";
         public const string SP_ListPersonaProductsSamlDetails = "Ident.ListPersonaProductsSamlDetails";
+        public const string SP_GetSamlProductAttributes = "Ident.GetSamlProductAttributes";
 
         public const string SP_CreateSamlUserAttribute = "Ident.CreateSamlUserAttribute";
         public const string SP_DeleteSamlUserProductInfoAndStatus = "Enterprise.UnLinkProductFromPersona";
@@ -344,7 +345,7 @@
 
         #region Persona Security
         public const string SP_ListRolesByRealPageID = "Enterprise.ListRolesByRealPageID";
-        public const string SP_LinkPersonaToRole = "Enterprise.LinkPersonaToRole";
+        public const string SP_LinkPersonaToRole = "Security.LinkPersonaToRole";
         public const string SP_ListRightsByPersonaID = "Enterprise.ListPersonaRightsAndActionsByRoute";
         public const string SP_ListPersonaRightsAndActionsByRoute = "Enterprise.ListPersonaRightsAndActionsByRoute";
         #endregion

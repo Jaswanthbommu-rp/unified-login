@@ -90,11 +90,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
 
 		/// <summary>
+		/// Get the SAML product attribute DisplayName, ProductId by ProductId
+		/// </summary>
+		/// <param name="ProductId">ProductId</param>
+		/// <returns>list SamlProductAttributes object</returns>
+		public IList<SamlProductAttributes> GetSamlProductAttributes(int ProductId)
+		{
+			using (var repo = GetRepository())
+			{
+				return repo.GetMany<SamlProductAttributes>(StoredProcNameConstants.SP_GetSamlProductAttributes, new { ProductId }).ToList();
+			}
+		}
+
+		/// <summary>
 		/// Get a product Saml Settings
 		/// </summary>
 		/// <param name="productId"></param>
 		/// <returns>ProductSamlSettings object</returns>
-        public ProductSamlSettings GetProductSamlSettingsByProductId(int productId)
+		public ProductSamlSettings GetProductSamlSettingsByProductId(int productId)
         {
             using (var repo = GetRepository())
             {

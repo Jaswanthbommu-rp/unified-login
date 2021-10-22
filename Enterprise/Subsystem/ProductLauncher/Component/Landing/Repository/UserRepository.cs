@@ -5547,7 +5547,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 };
                 IList<UserLoginPersona> userLoginPersonaList = repository.GetMany<UserLoginPersona>(StoredProcNameConstants.SP_GetUserLoginPersona, param);
 
-                int greenBookRole = 0;
                 List<int> greenBookRoles = new List<int>();
 
                 userBatchEntity = GetUserBatch(updateUserProfileEntity.NewProfile, updateUserProfileEntity.OldProfile, updateUserProfileEntity.UserIsExternalEverywhere);
@@ -6128,7 +6127,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                                 if (SuperUserRole.PartyRoleTypeId == updateUserProfileEntity.NewProfile.UserTypeId)
                                 {
-                                    greenBookRole = enterpriseRoles.FirstOrDefault(ur => ur.Role == "User Administrator").RoleId;
+                                    greenBookRoles.Add(enterpriseRoles.FirstOrDefault(ur => ur.Role == "User Administrator").RoleId);
                                 }
                                 else
                                 {
@@ -6139,8 +6138,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                         RealPageID = updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId
                                     };
                                     var defaultRole = repository.GetOne<dynamic>(procName, paramDefaultRole);
-
-                                    greenBookRole = defaultRole != null ? defaultRole.RoleId : enterpriseRoles.FirstOrDefault(rl => rl.Role == "Basic End User").RoleId;
+                                    if(defaultRole != null)
+                                    {
+                                        greenBookRoles.Add(defaultRole.RoleId);
+                                    }
+                                    else
+                                    {
+                                        greenBookRoles.Add(enterpriseRoles.FirstOrDefault(rl => rl.Role == "Basic End User").RoleId);
+                                    }
                                 }
 
                                 if ((SuperUserRole.PartyRoleTypeId == updateUserProfileEntity.NewProfile.UserTypeId) && (enterpriseRoles.FirstOrDefault(r => r.Role.Equals("User Administrator", StringComparison.OrdinalIgnoreCase)).RoleId > 0))
