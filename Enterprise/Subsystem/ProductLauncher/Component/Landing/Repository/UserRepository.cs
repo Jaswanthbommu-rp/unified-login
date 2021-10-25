@@ -6111,6 +6111,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         if (gbProdBatch != null)
                         {
                             greenBookRoles = GetGreenBookRoles(gbProdBatch);
+
+                            if (userBatchEntity.UserTypeChanged && greenBookRoles.Count == 0)
+                            {
+                                greenBookRoles.Add(GetUnifiedPlatformDefaultRole(repository, updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId, enterpriseRoles));
+                            }
                         }
                         else
                         {
@@ -6131,21 +6136,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 }
                                 else
                                 {
-                                    procName = schemaName?.Length > 0 ? $"{schemaName}.GetUnifiedLoginDefaultRole" : StoredProcNameConstants.SP_GetUnifiedLoginDefaultRole;
-
-                                    var paramDefaultRole = new
-                                    {
-                                        RealPageID = updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId
-                                    };
-                                    var defaultRole = repository.GetOne<dynamic>(procName, paramDefaultRole);
-                                    if(defaultRole != null)
-                                    {
-                                        greenBookRoles.Add(defaultRole.RoleId);
-                                    }
-                                    else
-                                    {
-                                        greenBookRoles.Add(enterpriseRoles.FirstOrDefault(rl => rl.Role == "Basic End User").RoleId);
-                                    }
+                                    greenBookRoles.Add(GetUnifiedPlatformDefaultRole(repository, updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId, enterpriseRoles));
                                 }
 
                                 if ((SuperUserRole.PartyRoleTypeId == updateUserProfileEntity.NewProfile.UserTypeId) && (enterpriseRoles.FirstOrDefault(r => r.Role.Equals("User Administrator", StringComparison.OrdinalIgnoreCase)).RoleId > 0))
@@ -6455,6 +6446,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
 
             return userOrganizationExists;
+        }
+
+        private int GetUnifiedPlatformDefaultRole(IRepository repository,Guid realPageId, IEnumerable<EnterpriseRole> enterpriseRoles)
+        {            
+            var paramDefaultRole = new
+            {
+                RealPageID = realPageId
+            };
+            var defaultRole = repository.GetOne<dynamic>(StoredProcNameConstants.SP_GetUnifiedLoginDefaultRole, paramDefaultRole);
+            if (defaultRole != null)
+            {
+                return defaultRole.RoleId;
+            }
+            else
+            {
+                return enterpriseRoles.FirstOrDefault(rl => rl.Role == "Basic End User").RoleId ;
+            }            
         }
         #endregion
     }
