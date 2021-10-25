@@ -1192,6 +1192,7 @@
     <Build Include="Ident\Stored Procedures\GetSamlProductAttributes.sql" />
     <Build Include="Ident\Tables\SamlProductAttribute.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\GetExcludedCompaniesForRole.sql" />
+    <Build Include="Security\GetRightsByRoleId.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
