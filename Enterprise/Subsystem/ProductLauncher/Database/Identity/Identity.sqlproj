@@ -1193,7 +1193,7 @@
     <Build Include="Ident\Tables\SamlProductAttribute.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\GetExcludedCompaniesForRole.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\GetExcludedCompaniesForRole.sql" />
-    <Build Include="Security\GetRightsByRoleId.sql" />
+    <Build Include="Security\GetRightDetails.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
