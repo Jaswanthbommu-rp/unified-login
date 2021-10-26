@@ -38,12 +38,7 @@ CREATE NONCLUSTERED INDEX IDX_PartyRelationship_Comp02 ON [Enterprise].[PartyRel
 )WITH (SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
 go
 
-CREATE NONCLUSTERED INDEX [IX_Enterprise_PartyRelationship_RoleTypeIdFrom_PartyIdFrom]
-	ON [Enterprise].[PartyRelationship] (
-		[RoleTypeIdFrom] ASC,
-		[PartyIdFrom] ASC
-	) WITH (SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
-GO
+
 CREATE NONCLUSTERED INDEX [IX_Enterprise_PartyRelationship_PartyIdTo_PartyRelationshipTypeId]
     ON [Enterprise].[PartyRelationship]([PartyIdTo] ASC, [PartyRelationshipTypeId] ASC, [FromDate] ASC, [ThruDate] ASC)
     INCLUDE([PartyIdFrom], [RoleTypeIdFrom]);
