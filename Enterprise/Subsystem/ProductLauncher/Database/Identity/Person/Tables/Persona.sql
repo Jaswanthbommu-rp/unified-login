@@ -6,7 +6,6 @@
     [FromDate]                 DATETIME CONSTRAINT [DF__Persona__FromDat__41049384] DEFAULT (getutcdate()) NOT NULL,
     [ThruDate]                 DATETIME NULL,
     [IsDefault]                BIT      CONSTRAINT [DF__Persona__IsDefau__41F8B7BD] DEFAULT ((0)) NOT NULL,
-    [IsRPEmployee]             BIT      NOT NULL DEFAULT ((0)), 
     CONSTRAINT [PK_Persona] PRIMARY KEY CLUSTERED ([PersonaId] ASC) WITH (FILLFACTOR = 80),
     CONSTRAINT [FK_Persona_PersonaEnvironmentType] FOREIGN KEY ([PersonaEnvironmentTypeId]) REFERENCES [Person].[PersonaEnvironmentType] ([PersonaEnvironmentTypeID]) ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT [FK_Persona_PersonaType] FOREIGN KEY ([PersonaTypeId]) REFERENCES [Person].[PersonaType] ([PersonaTypeId]) ON DELETE CASCADE ON UPDATE CASCADE,
