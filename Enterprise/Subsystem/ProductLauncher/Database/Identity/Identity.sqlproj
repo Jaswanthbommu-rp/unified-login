@@ -1192,7 +1192,10 @@
     <Build Include="Ident\Stored Procedures\GetSamlProductAttributes.sql" />
     <Build Include="Ident\Tables\SamlProductAttribute.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\GetExcludedCompaniesForRole.sql" />
-    <Build Include="RoleRightsManagement\Stored Procedures\GetExcludedCompaniesForRole.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\UpdateExcludedCompaniesForRole.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\UpdateRightsForRole.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\GetRightsAssignedToRole.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\GetRoleDetails.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
