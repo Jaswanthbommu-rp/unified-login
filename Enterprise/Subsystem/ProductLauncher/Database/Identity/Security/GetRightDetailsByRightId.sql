@@ -21,7 +21,7 @@ BEGIN
 
 	SELECT rl.RoleId, rl.RoleName, p.ProductId, p.Name as ProductName
 	FROM SECURITY.[RoleRight] rr
-		JOIN SECURITY.[Role] rl on rl.RoleId = rr.RoleRightId
+		JOIN SECURITY.[Role] rl on rl.RoleId = rr.RoleId
 		JOIN Enterprise.Product p on p.ProductId = rl.ProductId
 	WHERE rr.RightId = @rightId
 	
