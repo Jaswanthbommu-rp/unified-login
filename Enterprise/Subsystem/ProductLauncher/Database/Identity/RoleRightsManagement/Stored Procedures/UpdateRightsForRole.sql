@@ -17,7 +17,6 @@ IF (LEN(@RightIdsList) > 0)
   SELECT CONVERT(int, value)  
   FROM STRING_SPLIT(@RightIdsList, ',');  
  END
-	BEGIN TRANSACTION;
 		DELETE
 		FROM [Security].RoleRight
 		WHERE [Security].RoleRight.RoleId = @RoleId

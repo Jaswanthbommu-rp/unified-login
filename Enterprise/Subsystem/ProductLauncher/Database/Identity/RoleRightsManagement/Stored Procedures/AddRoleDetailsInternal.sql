@@ -8,6 +8,7 @@
 	@CreatedBy nvarchar(255)
 AS
 BEGIN
+	DECLARE @RoleId INT
 	INSERT INTO [Security].[Role]
 		(RoleName,
 		[Description],
@@ -28,4 +29,6 @@ BEGIN
 		@CreatedBy,
 		GETUTCDATE()
 		);
+	SELECT @RoleId = SCOPE_IDENTITY();
+	SELECT @RoleId AS Id, '' AS ErrorMessage
 END;
