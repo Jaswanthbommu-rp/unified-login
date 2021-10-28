@@ -2985,13 +2985,17 @@ begin
 	insert into enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'ProductAsideInfoData', 'The type of data which loads aside info grid.For example groupproperties or rights.', 0)
 end
 GO
+
    Declare @PartyId bigint,@UserId bigint;
+   declare @categoryType int
+
+	select @categoryType = SettingCategoryTypeId from Settings.SettingCategoryType Where Name = 'Company' 
 
 	SELECT	@UserId = UserId
 	FROM	Ident.UserLogin
 	WHERE	LoginName LIKE 'realpagead@%'
 
-	 SELECT @PartyId = O.PartyId
+	SELECT @PartyId = O.PartyId
 	FROM [Enterprise].[Organization] O
 		INNER JOIN [Enterprise].[Party] P ON P.PartyId = O.PartyId
 	WHERE p.RealPageId = '0D018E46-C20E-477D-ADED-4E5A35FB8F99'
@@ -2999,6 +3003,7 @@ GO
   if not exists (Select 1 From Settings.OrganizationSettings Where PartyId = @PartyId And MappingName = 'PropertyTabHidden')
   Begin
 	  insert into Settings.OrganizationSettings (PartyId,SettingCategoryTypeId,MappingName,MappingValue,Editable,Hidden,CreatedBy,CreatedDate,UpdatedDate)
-	  select @PartyId, 5, 'PropertyTabHidden','3,60,65',1,0,@UserId,GETUTCDATE(),NULL
+	  select @PartyId, @categoryType, 'PropertyTabHidden','3,60,65',1,0,@UserId,GETUTCDATE(),NULL
   End
+
 GO
