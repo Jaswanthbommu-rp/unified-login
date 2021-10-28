@@ -351,7 +351,7 @@
         #endregion
 
         public const string SP_GetUserDetails = "Enterprise.GetUserDetails_Ver01";
-        public const string SP_GetUnifiedLoginDefaultRole = "Enterprise.GetUnifiedLoginDefaultRole";
+        public const string SP_GetUnifiedLoginDefaultRole = "Security.GetUnifiedLoginDefaultRole";
 
         #region Client settings
         public const string SP_ClientsDelete = "Auth.ClientsDelete";

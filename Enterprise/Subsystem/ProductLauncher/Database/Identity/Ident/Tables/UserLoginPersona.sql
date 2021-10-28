@@ -7,6 +7,7 @@ CREATE TABLE [Ident].[UserLoginPersona] (
     [FromDate]            DATETIME NOT NULL,
     [ThruDate]            DATETIME NULL,
     [StatusThruDate]      DATETIME NULL,
+    [IsRPEmployee]        BIT      NOT NULL CONSTRAINT [DF_UserLoginPersona_IsRPEmployee] DEFAULT ((0))
     CONSTRAINT [PK_UserLoginPersona] PRIMARY KEY CLUSTERED ([UserLoginPersonaId] ASC),
 	CONSTRAINT [FK_UserLoginPersona_Organization] FOREIGN KEY ([OrganizationPartyId]) REFERENCES [Enterprise].[Organization] ([PartyId]),
     CONSTRAINT [FK_UserLoginPersona_StatusType] FOREIGN KEY ([StatusTypeId]) REFERENCES [Enterprise].[StatusType] ([StatusTypeId]),
