@@ -2978,3 +2978,27 @@ UPDATE Ident.SamlAttribute SET DisplayName= 'Organization ID' where name ='organ
 UPDATE Ident.SamlAttribute SET DisplayName= 'User Type' where name ='NWPUserType'
 
 GO
+
+--ProductAsideInfoData
+if not exists ( select top 1 1 from Enterprise.ProductSettingType where name = 'ProductAsideInfoData' )
+begin
+	insert into enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'ProductAsideInfoData', 'The type of data which loads aside info grid.For example groupproperties or rights.', 0)
+end
+GO
+   Declare @PartyId bigint,@UserId bigint;
+
+	SELECT	@UserId = UserId
+	FROM	Ident.UserLogin
+	WHERE	LoginName LIKE 'realpagead@%'
+
+	 SELECT @PartyId = O.PartyId
+	FROM [Enterprise].[Organization] O
+		INNER JOIN [Enterprise].[Party] P ON P.PartyId = O.PartyId
+	WHERE p.RealPageId = '0D018E46-C20E-477D-ADED-4E5A35FB8F99'
+  
+  if not exists (Select 1 From Settings.OrganizationSettings Where PartyId = @PartyId And MappingName = 'PropertyTabHidden')
+  Begin
+	  insert into Settings.OrganizationSettings (PartyId,SettingCategoryTypeId,MappingName,MappingValue,Editable,Hidden,CreatedBy,CreatedDate,UpdatedDate)
+	  select @PartyId, 5, 'PropertyTabHidden','3,60,65',1,0,@UserId,GETUTCDATE(),NULL
+  End
+GO
