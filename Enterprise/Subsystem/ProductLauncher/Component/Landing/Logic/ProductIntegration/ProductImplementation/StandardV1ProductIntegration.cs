@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Web;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.ProductImplementation
 {
@@ -728,6 +729,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary> 
         public virtual IntegrationProductUser GetProductUser(string baseUrlAndQuery = null, bool isThrowOnError = true)
         {
+            bool isUrlEncodingRequired = false;
             WriteToDiagnosticLog(
                 $"{nameof(StandardV1ProductIntegration)}.GetProductUser - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method.");
 
@@ -737,6 +739,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             WriteToDiagnosticLog(
                 $"{nameof(StandardV1ProductIntegration)}.GetProductUser - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling API - {baseUrlAndQuery}.");
+
+            var ProductInternalSettingUrlEncodingRequired = ProductInternalSettingList.FirstOrDefault(item => item.Name.Equals("IsEmailEncodingRequired", StringComparison.OrdinalIgnoreCase));
+            isUrlEncodingRequired = (ProductInternalSettingUrlEncodingRequired != null) ? ProductInternalSettingUrlEncodingRequired.Value.Trim() == "1" : false;
+            
+            if (isUrlEncodingRequired)
+            {
+                SubjectUserDetails.ProductUserName = HttpUtility.UrlEncode(SubjectUserDetails.ProductUserName);
+            }
 
             if (baseUrlAndQuery.Contains("{1}"))
                 baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, SubjectUserDetails.ProductUserName);
