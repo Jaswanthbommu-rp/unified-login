@@ -2978,3 +2978,9 @@ UPDATE Ident.SamlAttribute SET DisplayName= 'Organization ID' where name ='organ
 UPDATE Ident.SamlAttribute SET DisplayName= 'User Type' where name ='NWPUserType'
 
 GO
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'IsEmailEncodingRequired')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
+	VALUES ('IsEmailEncodingRequired', 'Email is encoded before calling API', 0);
+END
+Go
