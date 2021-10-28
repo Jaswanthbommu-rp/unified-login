@@ -306,6 +306,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             long persona = 0;
 
             var newProfile = CreateNewProfile(companyRealPageId);
+            newProfile.IsRPEmployee = true;
             var newUser = _manageUser.CreateUser(newProfile, newProfile.Persona);
             persona = newUser.PersonaId;
 

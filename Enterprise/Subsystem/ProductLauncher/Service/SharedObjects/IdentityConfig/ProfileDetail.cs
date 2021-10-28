@@ -186,5 +186,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 		/// Persona Has Product Assignment Error
 		/// </summary>
 		public bool PersonaHasProductError { get; set; }
-	}
+
+		/// <summary>
+		/// Is the person been created a RP employee
+		/// </summary>
+        public bool IsRPEmployee { get; set; }
+    }
 }

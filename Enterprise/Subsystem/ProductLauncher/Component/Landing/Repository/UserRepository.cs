@@ -1029,7 +1029,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             PrimaryOrganization = currentOrg.PrimaryOrganization,
                             FromDate = currentOrg.OrganizationFromDate,
                             ThruDate = currentOrg.OrganizationThruDate,
-                            StatusThruDate = currentStatusThruDate
+                            StatusThruDate = currentStatusThruDate,
+                            IsRPEmployee = newProfile.IsRPEmployee
                         };
 
                         repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateUserLoginPersona, param);
