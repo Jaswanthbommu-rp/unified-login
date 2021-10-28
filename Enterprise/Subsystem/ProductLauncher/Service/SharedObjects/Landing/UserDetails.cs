@@ -27,5 +27,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		public DateTime? ThruDate { get; set; }
 		public bool? IsActive { get; set; } = false;
 		public List<string> PhoneNumbers { get; set; } = new List<string>();//SLM
-	}
+        public bool IsRPEmployee { get; set; }
+    }
 }
