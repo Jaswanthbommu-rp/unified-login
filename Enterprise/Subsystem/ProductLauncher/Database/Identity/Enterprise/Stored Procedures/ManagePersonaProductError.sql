@@ -1,7 +1,6 @@
 CREATE PROCEDURE [Enterprise].[ManagePersonaProductError]
 (
-	@PersonaId BigInt,
-	@ProductId INT
+	@PersonaId BigInt
 )
 AS
 BEGIN

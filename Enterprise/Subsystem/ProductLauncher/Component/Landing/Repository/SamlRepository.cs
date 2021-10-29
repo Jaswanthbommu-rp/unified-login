@@ -135,6 +135,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
 		    }
 	    }
+		/// <summary>
+		/// Used to delete product error for a user
+		/// </summary>
+		/// <param name="personaId"></param>
+		/// <returns></returns>
+		public RepositoryResponse DeletePersonaProductError(long personaId)
+		{
+			using (var repo = GetRepository())
+			{
+				dynamic param = new
+				{
+					PersonaId = personaId
+				};
+				var result = repo.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_ManagePersonaProductError, param);
+				return result;
+
+			}
+		}
 
 		/// <summary>
 		/// Used to create a new SAML attribute for the given personaId
