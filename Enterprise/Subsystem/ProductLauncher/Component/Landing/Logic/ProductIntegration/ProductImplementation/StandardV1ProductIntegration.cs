@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterprise.Helpers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Factory;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Helpers;
@@ -44,6 +45,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         protected IDataCollector _dataCollector;
         private IManagePersona _managePersona;
         private IProductInternalSettingRepository _productInternalSettingRepository;
+        private ITokenHelper _tokenHelper = new TokenHelper();
 
         protected UserDetails EditorUserDetails { get; set; }
         protected UserDetails SubjectUserDetails { get; set; }
@@ -102,6 +104,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _managePersona = injectedManagePersona;
             _productInternalSettingRepository = injectedProductInternalSettingRepository;
             _dataCollector = injectedDataCollector;
+           // _tokenHelper = new TokenHelper();
+
 
             Init(productId, editorPersonaId, subjectPersonaId, userClaims);
         }
@@ -1343,7 +1347,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         }
 
         protected virtual void ApplyApiSecurity()
-        {
+         {
             try
             {
                 _httpClient = new HttpClient();
@@ -1362,6 +1366,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     _httpClient.DefaultRequestHeaders.Add("apikey", apiKey);
                 }
+
+                string tokenURL = ProductInternalSettingList.FirstOrDefault(a => a.Name.ToUpper() == "TOKENURL")?.Value;
+                string apiEndPoint = ProductInternalSettingList.FirstOrDefault(a => a.Name.ToUpper() == "APIENDPOINT")?.Value;
+                string apiSecret = ProductInternalSettingList.FirstOrDefault(a => a.Name.ToUpper() == "APISECRET")?.Value;
+                string clientId = ProductInternalSettingList.FirstOrDefault(a => a.Name.ToUpper() == "CLIENTID")?.Value;
+
+                if (!string.IsNullOrWhiteSpace(tokenURL) && !string.IsNullOrWhiteSpace(apiEndPoint)
+                    && !string.IsNullOrWhiteSpace(apiSecret) && !string.IsNullOrWhiteSpace(clientId))
+                {
+                    var _token = _tokenHelper.GetExternalClientCredentialServerToken(tokenURL, clientId, apiSecret, clientId);
+                    if (_token != null)
+                    {
+                        _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
+                    }
+                }
+
             }
             catch (Exception ex)
             {
