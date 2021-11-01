@@ -2,9 +2,10 @@
     @RealPageId UNIQUEIDENTIFIER = NULL,
     @Filter VARCHAR(100) = NULL
 AS
-     BEGIN
+BEGIN
+
          SELECT O.PartyId,
-                O.Name,
+                O.[Name],
                 O.IsActive,
                 P.RealPageId 'OrganizationRealPageId',
                 COALESCE(ISNULL(D.MasterId, 0),0)  AS 'BooksMasterId',
@@ -12,7 +13,7 @@ AS
                 'RealPageEmployeeAccessID' AS 'SettingName',
                 P2.RealPageId AS 'PersonRealPageId',
                 UL.LoginName,
-				OD.Name as Domain
+				OD.[Name] as Domain
          FROM Enterprise.Organization O
               INNER JOIN Enterprise.Party P ON O.PartyId = P.PartyId
               INNER JOIN Enterprise.VW_DataImportMapping D ON O.PartyId = D.PartyId
@@ -23,5 +24,7 @@ AS
 			  INNER JOIN Enterprise.Party P2 ON P2.PartyId = UL.PersonPartyId
                AND (@Filter IS NULL OR o.Name like '%'+@Filter+'%')
 			   AND (@RealPageID IS NULL OR P.RealPageId = @RealPageId)
-		order by O.Name
-     END; 
+		ORDER BY O.[Name]
+        OPTION (RECOMPILE)
+
+END; 
