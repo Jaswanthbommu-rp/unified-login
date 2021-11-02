@@ -173,7 +173,7 @@ ORDER BY RowNumber
 
 SELECT distinct
 	p.ProductId
-	, p.Name
+	, p.Name as ProductName
 	FROM 
 	SECURITY.[Right] R INNER JOIN Enterprise.Product p on p.ProductId = r.ProductId	
 
@@ -188,7 +188,7 @@ FROM SECURITY.[Right] r INNER JOIN Enterprise.StatusType st on st.StatusTypeId =
 
 SELECT distinct
 	p.ProductId
-	, p.Name
+	, p.Name as ProductName
 	FROM 
 	SECURITY.[Right] R INNER JOIN Enterprise.Product p on p.ProductId = r.TargetProductId	
 
