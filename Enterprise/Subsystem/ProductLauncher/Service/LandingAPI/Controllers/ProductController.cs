@@ -480,7 +480,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         private bool DenyEmployeeAccessByADGroup(int productId, IList<ProductInternalSetting> productInternalSettingsList, out ProductLoginResponse productLoginResponseDenied)
         {
             productLoginResponseDenied = null;
-            if (string.IsNullOrEmpty(_userClaims.ImpersonatedByName) || !_userClaims.LoginName.Contains("@realpage.com"))
+
+            if (string.IsNullOrEmpty(_userClaims.ImpersonatedByName) || !_userClaims.IsRPEmployee)
             {
                 return false;
             }
