@@ -18,23 +18,28 @@ BEGIN
      OR (@NOW >= op.FromDate          
      AND op.ThruDate IS NULL))          
         
-  INSERT INTO @ProductCenterProducts ( ProductId , PersonaId)     
-  SELECT DISTINCT ps.ProductId,ppc.PersonaId         
-  FROM Enterprise.PersonaProductCenter ppc       
-  inner join Enterprise.ProductProductCenter p on ppc.ProductCenterId = p.ProductCenterId      
-  inner join Enterprise.GlobalProductConfiguration gpc on gpc.ProductId = p.productId      
-  inner join Enterprise.ProductConfiguration config on config.ConfigurationID = gpc.ConfigurationID     
-  inner join Enterprise.ProductSetting ps on ps.ProductSettingId = config.ProductSettingId      
-  inner join Enterprise.ProductSettingType pst on (ps.ProductSettingTypeId = pst.ProductSettingTypeId and pst.Name ='GetUserProductCenterEnabled')     
-  inner join Enterprise.ProductUserDependency pud on p.ProductId = pud.ProductId    
-  inner join Enterprise.PersonaConfiguration PC on pc.ProductId = pud.DependentProductId    
-  WHERE ps.Value = 1      
-  and ppc.PersonaId = @PersonaId      
-  and gpc.ThruDate is null      
-  and config.ThruDate is null      
-  and ps.ThruDate is null    
-     AND PC.ThruDate IS NULL     
-  AND (PC.StatusTypeId = @ProductStatusValue OR @ProductStatusValue IS NULL)    
+  ;with cte as (
+	 select productId from Enterprise.PersonaConfiguration where personaId = @PersonaId 
+	 AND  ThruDate IS NULL       
+	  AND (StatusTypeId = @ProductStatusValue OR @ProductStatusValue IS NULL)
+  )
+  
+  INSERT INTO @ProductCenterProducts ( ProductId , PersonaId)       
+  SELECT DISTINCT ps.ProductId,ppc.PersonaId           
+  FROM Enterprise.PersonaProductCenter ppc         
+  inner join Enterprise.ProductProductCenter p on ppc.ProductCenterId = p.ProductCenterId        
+  inner join Enterprise.GlobalProductConfiguration gpc on gpc.ProductId = p.productId        
+  inner join Enterprise.ProductConfiguration config on config.ConfigurationID = gpc.ConfigurationID       
+  inner join Enterprise.ProductSetting ps on ps.ProductSettingId = config.ProductSettingId        
+  inner join Enterprise.ProductSettingType pst on (ps.ProductSettingTypeId = pst.ProductSettingTypeId and pst.[Name] ='GetUserProductCenterEnabled')       
+  inner join Enterprise.ProductUserDependency pud on p.ProductId = pud.ProductId      
+  inner join cte  c on ( c.ProductId = pud.DependentProductId)         
+  inner join @CompanyOrganizationProduct cop on (cop.ProductId = ps.ProductId)
+  WHERE ps.[Value] = '1'        
+  and ppc.PersonaId = @PersonaId        
+  and gpc.ThruDate is null        
+  and config.ThruDate is null        
+  and ps.ThruDate is null         
           
   IF EXISTS ( SELECT TOP 1 1 FROM @CompanyOrganizationProduct Where ProductID = 4 )          
   BEGIN          
