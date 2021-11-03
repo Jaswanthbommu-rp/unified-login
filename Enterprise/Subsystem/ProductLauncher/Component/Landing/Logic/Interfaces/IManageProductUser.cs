@@ -27,8 +27,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// Used to delete all SAML product information and status for a user
 		/// </summary>
 		/// <param name="productUserAccountDetails">product User Account Details</param>
+		/// <param name="internalChange">Tells if it is called internally.</param>
 		/// <returns>String.empty if success else error</returns>
-		string DeleteSamlUserProductInfoAndStatus(ProductUserAccountDetails productUserAccountDetails);
+		string DeleteSamlUserProductInfoAndStatus(ProductUserAccountDetails productUserAccountDetails, bool internalChange = false);
 
 		/// <summary>
 		/// Returns List of Product Batch Statuses
@@ -42,8 +43,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// Update product details for a user
 		/// </summary> 
 		/// <param name="productUserAccountDetails">Product User Account Details</param>
+		/// <param name="internalChange">Tells if it has been called internally</param>
 		/// <returns>String.empty if success else error</returns>
-		string UpdateProductUserAccountDetails(ProductUserAccountDetails productUserAccountDetails);
+		string UpdateProductUserAccountDetails(ProductUserAccountDetails productUserAccountDetails, bool internalChange = false);
 
 		/// <summary>
 		/// Update Product User Profile

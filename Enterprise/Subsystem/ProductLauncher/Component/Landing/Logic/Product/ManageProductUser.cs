@@ -51,6 +51,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private IPropertyRepository _propertyRepository;
         IManageProduct _manageProduct;
         private readonly IIntegrationTypeFactory _integrationTypeFactory;
+        private SaveInteralSamlAttrLog _activityLogHelper;
 
         #endregion
 
@@ -82,6 +83,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var manageUnifiedLogin = new ManageUnifiedLogin(_defaultUserClaim);
             var manageProductOneSite = new ManageProductOneSite(_defaultUserClaim);
             _integrationTypeFactory = new IntegrationTypeFactory(_manageProduct, manageUnifiedLogin, manageProductOneSite, _productRepository, _productInternalSettingRepository, _defaultUserClaim);
+
+            _activityLogHelper = new SaveInteralSamlAttrLog(_defaultUserClaim);
+
         }
         #endregion
 
@@ -90,14 +94,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// Used to delete all SAML product information and status for a user
         /// </summary>
         /// <param name="productUserAccountDetails">product User Account Details</param>
+        /// <param name="internalChange">Tells if it is called internally</param>
         /// <returns>String.empty if success else error</returns>
-        public string DeleteSamlUserProductInfoAndStatus(ProductUserAccountDetails productUserAccountDetails)
+        public string DeleteSamlUserProductInfoAndStatus(ProductUserAccountDetails productUserAccountDetails, bool internalChange = false)
         {
             long assignUserPersonaId = productUserAccountDetails.PersonaId;
 
             var manageProductBase = new ManageProductBase(productUserAccountDetails.ProductId, _productInternalSettingRepository, _productRepository);
 
             manageProductBase.DeleteSamlUserProductInfoAndStatus(assignUserPersonaId, productUserAccountDetails.ProductId);
+
+            if (internalChange)
+            {
+                var fromuserInfo = _activityLogHelper.GetUserActivityLogInfo(_defaultUserClaim.PersonaId);
+                var touserInfo = _activityLogHelper.GetUserActivityLogInfo(assignUserPersonaId);
+                var product = _productRepository.ListProducts(productUserAccountDetails.ProductId, null, null, null).First();
+
+                var logMessage = $"{fromuserInfo.FirstName} {fromuserInfo.LastName} " +
+                    $"deleted user information of {touserInfo.FirstName} {touserInfo.LastName} " +
+                    $"for {product.Name}.";
+
+                _activityLogHelper.PushToQueue(fromuserInfo, touserInfo, logMessage, "USER_UPDATE_INTERNAL");
+            }
 
             return string.Empty;
         }
@@ -107,11 +125,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var manageProductBase = new ManageProductBase(productId, _productInternalSettingRepository, _productRepository);
             manageProductBase.UpdateProductSettingProductStatus(userPersonaId, "UsePrimaryProperties", productId, settingvalue);
             return string.Empty;
-		}
+        }
 
         private void SavePersonaProductProperties(bool usePrimaryProperties, long assignUserPersonaId, int productId, RolePropertyList roleProp, string inputJson)
         {
-            if (productId != 4 )
+            if (productId != 4)
             {
                 if (usePrimaryProperties == true && roleProp.ProductPrimaryProperties != null)
                 {
@@ -185,7 +203,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (string.IsNullOrEmpty(result))
             {
                 SavePersonaProductProperties(usePrimaryProperties, productUser.AssignUserPersonaId, productUser.ProductId, roleProp, productUser.InputJson);
-                isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Success);                
+                isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Success);
             }
             else
             {
@@ -315,11 +333,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// Update product details for a user
         /// </summary> 
         /// <param name="productUserAccountDetails">Product User Account Details</param>
+        /// <param name="internalChange">Tells if this chnage is from internally or not</param>
         /// <returns>String.empty if success else error</returns>
-        public string UpdateProductUserAccountDetails(ProductUserAccountDetails productUserAccountDetails)
+        public string UpdateProductUserAccountDetails(ProductUserAccountDetails productUserAccountDetails, bool internalChange = false)
         {
             var integration = _integrationTypeFactory.GetIntegration(productUserAccountDetails.ProductId);
-            return integration.UpdateUserDetails(productUserAccountDetails);
+            return integration.UpdateUserDetails(productUserAccountDetails, internalChange);
         }
 
         /// <summary>
@@ -408,7 +427,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // If result OK then update Success status else Error
             if (string.IsNullOrEmpty(result))
             {
-                _productRepository.UpdateProductBatch(batchRecord.ProductBatchId, (int)ProductBatchStatusType.Success);               
+                _productRepository.UpdateProductBatch(batchRecord.ProductBatchId, (int)ProductBatchStatusType.Success);
             }
             else
             {
@@ -473,8 +492,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private void WriteActivityLogWithMessage(long fromPersonaId, long toPersonaId, string message, int productId)
         {
             // log product user updated activity
-            var fromUserLogDetail = GetUserActivityLogInfo(fromPersonaId);
-            var toUserLogDetail = GetUserActivityLogInfo(toPersonaId);
+            var fromUserLogDetail = _activityLogHelper.GetUserActivityLogInfo(fromPersonaId);
+            var toUserLogDetail = _activityLogHelper.GetUserActivityLogInfo(toPersonaId);
             var booksProductDetail = _productRepository.GetBooksMasterProductDetail(productId);
 
             var logMessage = string.Format(message, toUserLogDetail.FirstName, toUserLogDetail.LastName,
@@ -482,31 +501,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             WriteActivityLog(fromUserLogDetail, toUserLogDetail,
                booksProductDetail.BooksProductCode, logMessage);
-        }
-
-        /// <summary>
-        /// Get User info for activity logging
-        /// </summary>
-        private UserActivityLogInfo GetUserActivityLogInfo(long personaId)
-        {
-            IManagePersona _managePersona = new ManagePersona();
-            IManagePerson _managePerson = new ManagePerson();
-            IManageUserLogin _manageUserLogin = new ManageUserLogin();
-
-            var persona = _managePersona.GetPersona(personaId);
-            var userLogin = _manageUserLogin.GetUserLoginOnly(persona.RealPageId);
-            var person = _managePerson.GetPerson(persona.RealPageId);
-
-            return new UserActivityLogInfo
-            {
-                FirstName = person.FirstName,
-                LastName = person.LastName,
-                RealPageId = userLogin.RealPageId,
-                LoginName = userLogin.LoginName,
-                BooksOrganizationMasterId = persona.Organization.BooksMasterId,
-                OrganizationPartyId = persona.OrganizationPartyId,
-                UserId = userLogin.UserId
-            };
         }
 
         private void WriteActivityLog(UserActivityLogInfo fromUserLogInfo, UserActivityLogInfo toUserLogInfo, string booksProductCode, string message)
@@ -545,12 +539,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         private void WriteActivityLog(long fromPersonaId, long toPersonaId, int batchGroupId)
         {
-            var fromUserLogInfo = GetUserActivityLogInfo(fromPersonaId);
-            var toUserLogInfo = GetUserActivityLogInfo(toPersonaId);
+            var fromUserLogInfo = _activityLogHelper.GetUserActivityLogInfo(fromPersonaId);
+            var toUserLogInfo = _activityLogHelper.GetUserActivityLogInfo(toPersonaId);
 
             var data = _productRepository.GetUserBatchDetails(batchGroupId, fromPersonaId, toPersonaId);
 
-            if (data != null & data.Count > 0) 
+            if (data != null & data.Count > 0)
             {
                 foreach (var item in data)
                 {
@@ -559,20 +553,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 bool activityLogged = data[0].BatchProcessorGroupActivityLogged;
-                if (!activityLogged) 
+                if (!activityLogged)
                 {
                     var successRecords = data.Where(x => x.StatusTypeId == 8).ToList();
                     if (successRecords != null && successRecords.Count > 0)
                     {
                         var message = GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, successRecords, true);
-                        PushToQueue(fromUserLogInfo, toUserLogInfo, message);
+                        _activityLogHelper.PushToQueue(fromUserLogInfo, toUserLogInfo, message, "PRODUCT_ACCESS");
                     }
 
                     var failedRecords = data.Where(x => x.StatusTypeId == 7).ToList();
                     if (failedRecords != null && failedRecords.Count > 0)
                     {
                         var message = GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, failedRecords, false);
-                        PushToQueue(fromUserLogInfo, toUserLogInfo, message);
+                        _activityLogHelper.PushToQueue(fromUserLogInfo, toUserLogInfo, message, "PRODUCT_ACCESS");
                         SendNotification(message + " Please contact RealPage Support for assistance.", fromPersonaId);
                     }
 
@@ -582,48 +576,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
-        private void PushToQueue(UserActivityLogInfo fromUserLogInfo, UserActivityLogInfo toUserLogInfo, String message) 
-        {
-            try
-            {
-                LogActivity.WriteActivity(new ActivityDetails
-                {
-                    LogActivityTypeName = LogActivityTypeConstants.PRODUCT_ACCESS,
-                    LogCategoryName = LogActivityCategoryType.ProductAccess.ToString(),
-                    CorrelationId = Guid.NewGuid().ToString(),
-                    BooksMasterOrganizationId = toUserLogInfo.BooksOrganizationMasterId,
-                    OrganizationPartyId = toUserLogInfo.OrganizationPartyId,
-                    Message = message,
-
-                    FromUserLoginName = fromUserLogInfo.LoginName,
-                    FromUserLoginId = fromUserLogInfo.UserId,
-                    FromUserFirstName = fromUserLogInfo.FirstName,
-                    FromUserLastName = fromUserLogInfo.LastName,
-                    FromUserRealpageId = fromUserLogInfo.RealPageId.ToString(),
-
-                    ToUserLoginId = toUserLogInfo.UserId,
-                    ToUserLoginName = toUserLogInfo.LoginName,
-                    ToUserFirstName = toUserLogInfo.FirstName,
-                    ToUserLastName = toUserLogInfo.LastName,
-                    ToUserRealpageId = toUserLogInfo.RealPageId.ToString(),
-                });
-            }
-            catch (Exception ex)
-            {
-            }
-        }
-
-        private string GenerateQueueMessage(UserActivityLogInfo fromUserLogInfo, UserActivityLogInfo toUserLogInfo, List<UserBatchProductDetail> userBatchProductDetails, bool IsSuccess) 
+        private string GenerateQueueMessage(UserActivityLogInfo fromUserLogInfo, UserActivityLogInfo toUserLogInfo, List<UserBatchProductDetail> userBatchProductDetails, bool IsSuccess)
         {
             string message = "";
 
             List<string> assinedProducts = new List<string>();
-            List<string> unassignedProducts= new List<string>();
+            List<string> unassignedProducts = new List<string>();
 
             string assignedMessage = "";
             string unassignedMessage = "";
 
-            if (IsSuccess) 
+            if (IsSuccess)
             {
                 message = $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} updated access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName}:";
                 foreach (var item in userBatchProductDetails)
@@ -668,7 +631,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return message;
         }
 
-        private void SendNotification(string message, long notificationTo) 
+        private void SendNotification(string message, long notificationTo)
         {
             string title = "User Update Exception";
             List<string> users = new List<string>() { notificationTo.ToString() };
@@ -721,7 +684,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     roleProp.PropertyList = new List<string>();
                     roleProp.ProductPrimaryProperties = GetSelectedProperties(propertyList, productType);
-                    roleProp.PropertyList = roleProp.ProductPrimaryProperties?.Select(p=>p.ProductPropertyId).ToList<string>();
+                    roleProp.PropertyList = roleProp.ProductPrimaryProperties?.Select(p => p.ProductPropertyId).ToList<string>();
                     productUser.InputJson = JsonConvert.SerializeObject(roleProp);
                 }
             }
@@ -738,7 +701,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         ListResponse propertyList = manageEnterpriseRoleProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, data.ProductId);
                         if (propertyList.Records.Count > 0)
-                        {                            
+                        {
                             data.ProductPrimaryProperties = GetSelectedProperties(propertyList, productType);
                             List<string> aoPropList = data.ProductPrimaryProperties?.Select(p => p.ProductPropertyId).ToList<string>();
                             data.SelectedPortfolioValues = aoPropList.Select(int.Parse).ToList();
@@ -806,7 +769,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             else if (productPropertyType == typeof(OnSiteProperty))
             {
                 foreach (var property in productResult.Records.Cast<OnSiteProperty>())
-                {                    
+                {
                     if (property.IsAssigned == true)
                     {
                         ProductPrimaryProperties productPrimaryProperties = new ProductPrimaryProperties
@@ -887,11 +850,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
             }
-			logger = logger.ForContext("ProductModule", this.GetType());
+            logger = logger.ForContext("ProductModule", this.GetType());
             logger = logger.ForContext("CorrelationId", correlationId);
-            logger.Write(logType, exception, message );
+            logger.Write(logType, exception, message);
         }
-        
+
     }
 
 
@@ -901,9 +864,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
     /// </summary>
     interface IProduct
     {
-        string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolepropList); 
-        
-        string UpdateUserDetails(ProductUserAccountDetails productUserAccountDetails);
+        string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolepropList);
+
+        string UpdateUserDetails(ProductUserAccountDetails productUserAccountDetails, bool internalChange);
 
         /// <summary>
         /// Update product user profile
@@ -924,8 +887,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
     interface IUPFMProduct
     {
         string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolepropList);
-      
-        string UpdateUserDetails(ProductUserAccountDetails productUserAccountDetails);
+
+        string UpdateUserDetails(ProductUserAccountDetails productUserAccountDetails, bool internalChange = false);
 
         /// <summary>
         /// Update product user profile
@@ -956,6 +919,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         IProductInternalSettingRepository _productInternalSettingRepository;
         IProductRepository _productRepository;
         DefaultUserClaim _userClaim;
+        private SaveInteralSamlAttrLog _activityLogHelper;
+        private SamlRepository _samlRepository;
 
         /// <summary>
         /// ProductBase
@@ -967,6 +932,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _productId = productId;
             _productInternalSettingRepository = productInternalSettingRepository;
             _productRepository = productRepository;
+            _activityLogHelper = new SaveInteralSamlAttrLog(_userClaim);
+            _samlRepository = new SamlRepository();
         }
 
         /// <summary>
@@ -981,35 +948,180 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _userClaim = userClaim;
             _productInternalSettingRepository = productInternalSettingRepository;
             _productRepository = productRepository;
+            _activityLogHelper = new SaveInteralSamlAttrLog(_userClaim);
+            _samlRepository = new SamlRepository();
         }
 
         /// <summary>
         /// Update product identifiers for a given user
         /// </summary>
-        public string UpdateUserDetails(ProductUserAccountDetails productUserAccountDetails) //long assignUserPersonaId, ProductBatchStatusType productStatus, Dictionary<SamlAttributeEnum, string> settingList)
+        public string UpdateUserDetails(ProductUserAccountDetails productUserAccountDetails, bool internalChange = false) //long assignUserPersonaId, ProductBatchStatusType productStatus, Dictionary<SamlAttributeEnum, string> settingList)
         {
+            string updates = string.Empty;
+
             // Handle all other products than AO
             long assignUserPersonaId = productUserAccountDetails.PersonaId;
-            _userClaim = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
-            var manageProductBase = new ManageProductBase(_productId, _userClaim, _productInternalSettingRepository, _productRepository);
-            
+            var userClaim = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
+            var manageProductBase = new ManageProductBase(_productId, userClaim, _productInternalSettingRepository, _productRepository);
+
+            StringBuilder messageTolog = new StringBuilder();
+            UserActivityLogInfo fromuserInfo = _activityLogHelper.GetUserActivityLogInfo(_userClaim.PersonaId);
+            UserActivityLogInfo touserInfo = _activityLogHelper.GetUserActivityLogInfo(assignUserPersonaId);
+            GbProductMap product = _productRepository.ListProducts(productUserAccountDetails.ProductId, null, null, null).First();
+            List<string> changedAttribute = new List<string>();
+            List<string> changedAttrValues = new List<string>();
+
             // Update user Employee Id
             if (!string.IsNullOrEmpty(productUserAccountDetails.EmployeeId))
             {
                 manageProductBase.UpdateUserEmployeeId(assignUserPersonaId, productUserAccountDetails.EmployeeId);
             }
 
+            //GetProductSamlDetails before update
+            IList<SamlAttributes> oldSamlAttributes = _samlRepository.GetProductSamlDetails(assignUserPersonaId, _productId);
+
             // Handle AO user products separately 
             if (_productId == (int)ProductEnum.AssetOptimizer)
             {
-                return UpdateAoUserDetails(productUserAccountDetails);
+                updates = UpdateAoUserDetails(productUserAccountDetails);
+                if (internalChange) 
+                {
+                    var productNameString = product.Name;
+                    GenerateInternalUpdateAttrLogMessage(assignUserPersonaId, changedAttribute, changedAttrValues, oldSamlAttributes);
+                    GenerateInternalUpdateStatusLogMessage(productUserAccountDetails, changedAttribute, changedAttrValues);
+
+                    var aoProducts = _productRepository.ListProducts(null, null, null, null);
+                    var subProucts = productUserAccountDetails.SubProducts.ToList();
+                    var newlySelectedAOProducts = aoProducts.Where(p => subProucts.Any(p2 => p2 == p.BooksProductCode)).ToList();
+
+                    string aoProductString = "(";
+                    foreach (var item in newlySelectedAOProducts)
+                        aoProductString += item.Name + ", ";
+
+                    var lastComma = aoProductString.LastIndexOf(',');
+                    if (lastComma != -1)
+                        aoProductString = aoProductString.Remove(lastComma, 1);
+                    
+                    var secondlastComma = aoProductString.LastIndexOf(',');
+                    if (secondlastComma != -1)
+                        aoProductString = aoProductString.Remove(secondlastComma, 1).Insert(secondlastComma, " and"); ;
+
+                    aoProductString += ")";
+                    
+                    if (newlySelectedAOProducts.Count > 0)
+                        productNameString += aoProductString.ToString();
+
+                    CreateInternalUpdateLogMessage(messageTolog, fromuserInfo, touserInfo, changedAttribute, changedAttrValues, productNameString);
+                }
+            }
+            else
+            {
+                manageProductBase.UpdateSamlUserAttributes(assignUserPersonaId, productUserAccountDetails.ProductSettings);
+
+                if (internalChange)
+                {
+                    GenerateInternalUpdateAttrLogMessage(assignUserPersonaId, changedAttribute, changedAttrValues, oldSamlAttributes);
+                    GenerateInternalUpdateStatusLogMessage(productUserAccountDetails, changedAttribute, changedAttrValues);
+                    CreateInternalUpdateLogMessage(messageTolog, fromuserInfo, touserInfo, changedAttribute, changedAttrValues, product.Name);
+                }
+
+                manageProductBase.UpdateProductSettingProductStatus(assignUserPersonaId,
+                    ManageProductBase._productSettingType_ProductStatus, (int)productUserAccountDetails.ProductStatus);
             }
 
-            manageProductBase.UpdateSamlUserAttributes(assignUserPersonaId, productUserAccountDetails.ProductSettings);
-            manageProductBase.UpdateProductSettingProductStatus(assignUserPersonaId,
-                ManageProductBase._productSettingType_ProductStatus, (int)productUserAccountDetails.ProductStatus);
+            _activityLogHelper.PushToQueue(fromuserInfo, touserInfo, messageTolog.ToString(), "USER_UPDATE_INTERNAL");
 
-            return string.Empty;
+            return updates;
+        }
+
+        private void CreateInternalUpdateLogMessage(StringBuilder messageTolog, UserActivityLogInfo fromuserInfo, 
+            UserActivityLogInfo touserInfo, List<string> changedAttribute, List<string> changedAttrValues, string productName)
+        {
+            string commaAttributes = string.Join(", ", changedAttribute);
+
+            var lastComma = commaAttributes.LastIndexOf(',');
+            
+            if (lastComma != -1) 
+                commaAttributes = commaAttributes.Remove(lastComma, 1).Insert(lastComma, " and");
+
+            messageTolog.Append($"{fromuserInfo.FirstName} {fromuserInfo.LastName} updated {commaAttributes} " +
+                $"of {touserInfo.FirstName} {touserInfo.LastName} for {productName}.");
+
+            foreach (var item in changedAttrValues)
+            {
+                messageTolog.AppendLine(item);
+            }
+        }
+
+        private void GenerateInternalUpdateStatusLogMessage(ProductUserAccountDetails productUserAccountDetails, List<string> changedAttribute, List<string> changedAttrValues)
+        {
+            var productsWithStatus = _samlRepository.ListAllProductsByPersonaId(productUserAccountDetails.PersonaId, productUserAccountDetails.ProductId, null);
+
+            if (productsWithStatus.Count > 0)
+            {
+                var productWithStatus = productsWithStatus.FirstOrDefault(x => x.ProductId == productUserAccountDetails.ProductId);
+                
+                if (productWithStatus == null)
+                {
+                    if (!string.IsNullOrWhiteSpace(productUserAccountDetails.ProductStatus.ToString()))
+                    {
+                        changedAttribute.Add("status");
+                        changedAttrValues.Add($"From Status : \"NONE\" to \"{productUserAccountDetails.ProductStatus}\".");
+                    }
+                }
+                else 
+                {
+                    int oldStatusId = productWithStatus.ProductStatus;
+                    int newStatusId = (int)productUserAccountDetails.ProductStatus;
+
+                    if (oldStatusId != newStatusId)
+                    {
+                        var oldstatus = (ProductBatchStatusType)oldStatusId;
+                        var newStatus = productUserAccountDetails.ProductStatus;
+
+                        changedAttribute.Add("status");
+                        changedAttrValues.Add($"From Status : \"{oldstatus.ToString()}\" to \"{newStatus.ToString()}\".");
+                    }
+                }
+            }
+        }
+
+        private void GenerateInternalUpdateAttrLogMessage(long assignUserPersonaId, List<string> changedAttribute, List<string> changedAttrValues, IList<SamlAttributes> oldSamlAttributes)
+        {
+            var newSamlAttributes = _samlRepository.GetProductSamlDetails(assignUserPersonaId, _productId);
+
+            if (oldSamlAttributes.Count == 0 && newSamlAttributes.Count > 0)
+            {
+                foreach (var item in newSamlAttributes)
+                {
+                    changedAttribute.Add(item.DisplayName);
+                    changedAttrValues.Add($"From {item.DisplayName} : \"NONE\" to \"{item.Value}\".");
+                }
+
+            }
+            else //else: it will be updating the existing values
+            {
+                if (newSamlAttributes.Count > 0)
+                    foreach (var item in oldSamlAttributes)
+                    {
+                        var a = newSamlAttributes.Where(x => x.Name == item.Name).FirstOrDefault();
+                        if (a != null)
+                        {
+                            var attribute = newSamlAttributes.FirstOrDefault(x => x.Name == item.Name);
+
+                            if (attribute.Value != item.Value)
+                            {
+                                if (!string.IsNullOrWhiteSpace(attribute.Value))
+                                {
+                                    //updated
+                                    changedAttribute.Add(item.DisplayName);
+                                    changedAttrValues.Add($"From {item.DisplayName} : \"{item.Value}\" to \"{attribute.Value}\". ");
+                                }
+                            }
+                        }
+
+                    }
+            }
         }
 
         private string UpdateAoUserDetails(ProductUserAccountDetails productUserAccountDetails)
@@ -1039,6 +1151,78 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public DefaultUserClaim UserClaim
         {
             get { return _userClaim; }
+        }
+    }
+
+    public class SaveInteralSamlAttrLog
+    {
+        private IManagePersona _managePersona;
+        private IManagePerson _managePerson;
+        private IManageUserLogin _manageUserLogin;
+        private DefaultUserClaim _defaultUserClaim;
+
+        public SaveInteralSamlAttrLog(DefaultUserClaim defaultUserClaim)
+        {
+            _defaultUserClaim = defaultUserClaim;
+            _managePersona = new ManagePersona(_defaultUserClaim);
+            _managePerson = new ManagePerson();
+            _manageUserLogin = new ManageUserLogin(_defaultUserClaim);
+        }
+
+        public UserActivityLogInfo GetUserActivityLogInfo(long personaId)
+        {
+            var persona = _managePersona.GetPersona(personaId);
+            var userLogin = _manageUserLogin.GetUserLoginOnly(persona.RealPageId);
+            var person = _managePerson.GetPerson(persona.RealPageId);
+
+            return new UserActivityLogInfo
+            {
+                FirstName = person.FirstName,
+                LastName = person.LastName,
+                RealPageId = userLogin.RealPageId,
+                LoginName = userLogin.LoginName,
+                BooksOrganizationMasterId = persona.Organization.BooksMasterId,
+                OrganizationPartyId = persona.OrganizationPartyId,
+                UserId = userLogin.UserId
+            };
+        }
+
+        public void PushToQueue(UserActivityLogInfo fromUserLogInfo, UserActivityLogInfo toUserLogInfo, String message, string logActivityType)
+        {
+            try
+            {
+                string activityName = string.Empty;
+
+                if (logActivityType == "PRODUCT_ACCESS")
+                    activityName = LogActivityTypeConstants.PRODUCT_ACCESS;
+                else if (logActivityType == "USER_UPDATE_INTERNAL")
+                    activityName = LogActivityTypeConstants.USER_UPDATE_INTERNAL;
+
+                LogActivity.WriteActivity(new ActivityDetails
+                {
+                    LogActivityTypeName = activityName,
+                    LogCategoryName = LogActivityCategoryType.ProductAccess.ToString(),
+                    CorrelationId = _defaultUserClaim.CorrelationId.ToString(),
+                    BooksMasterOrganizationId = fromUserLogInfo.BooksOrganizationMasterId,
+                    OrganizationPartyId = fromUserLogInfo.OrganizationPartyId,
+                    Message = message,
+
+                    FromUserLoginName = fromUserLogInfo.LoginName,
+                    FromUserLoginId = fromUserLogInfo.UserId,
+                    FromUserFirstName = fromUserLogInfo.FirstName,
+                    FromUserLastName = fromUserLogInfo.LastName,
+                    FromUserRealpageId = fromUserLogInfo.RealPageId.ToString(),
+
+                    ToUserLoginId = toUserLogInfo.UserId,
+                    ToUserLoginName = toUserLogInfo.LoginName,
+                    ToUserFirstName = toUserLogInfo.FirstName,
+                    ToUserLastName = toUserLogInfo.LastName,
+                    ToUserRealpageId = toUserLogInfo.RealPageId.ToString(),
+                });
+            }
+            catch (Exception ex)
+            {
+            }
         }
     }
     #endregion
@@ -2816,7 +3000,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 throw new Exception("Input JSON parsing issue; Null object.");
             }
-            
+
             base.UserClaim.UserRealPageGuid = createUserRealPageId;
             ManageProductSelfProvisioningPortal productSelfProvisioningPortal = new ManageProductSelfProvisioningPortal(base.UserClaim);
 
@@ -3161,7 +3345,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             var productRPDM = new ManageProductRPDocumentManagement(base.UserClaim);
 
-           
+
             return productRPDM.UpdateRPDMUserProfile(createUserPersonaId, assignUserPersonaId);
         }
 

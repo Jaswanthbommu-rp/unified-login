@@ -85,5 +85,6 @@
     <Build Include="Logging\Stored Procedures\ListActivity.sql" />
     <Build Include="dbo\User Defined Types\SearchCriteria.sql" />
     <Build Include="Logging\Stored Procedures\ListActivityDetails.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\AddNewLogType.sql" />
   </ItemGroup>
 </Project>

@@ -1,0 +1,18 @@
+﻿IF NOT EXISTS(SELECT TOP 1 1 FROM Logging.LogType WHERE NAME = 'User Update - Internal')
+BEGIN
+	DECLARE @catId INT;
+	DECLARE @logId INT;
+	
+	SELECT @catId = LogCategoryTypeId
+	FROM logging.LogCategoryType 
+	WHERE NAME = 'user'
+	
+	SELECT @logId = MAX(LogTypeId) + 1
+	FROM Logging.LogType
+	
+	SELECT @catId, @logId
+	
+	INSERT INTO Logging.LogType (LogTypeId, LogcategoryTypeId, Name, Description)
+	VALUES (@logId, @catId, 'User Update - Internal', 'User Update - Internal')
+	
+End

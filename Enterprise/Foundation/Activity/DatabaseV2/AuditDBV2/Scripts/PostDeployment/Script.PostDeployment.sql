@@ -15,3 +15,4 @@ Post-Deployment Script Template
 
 --Job
 :r .\PostDeploymentScripts\Activity_Archiving_Job_Script.sql
+:r .\PostDeploymentScripts\AddNewLogType.sql

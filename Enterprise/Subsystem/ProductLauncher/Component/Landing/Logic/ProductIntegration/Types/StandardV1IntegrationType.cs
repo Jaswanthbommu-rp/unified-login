@@ -145,10 +145,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
-        public string UpdateUserDetails(ProductUserAccountDetails productUserAccountDetails)
+        public string UpdateUserDetails(ProductUserAccountDetails productUserAccountDetails, bool internalChange = false)
         {
             var product = new ProductBase(_productId, _userClaims, _productInternalSettingRepository, _productRepository);
-            return product.UpdateUserDetails(productUserAccountDetails);
+            return product.UpdateUserDetails(productUserAccountDetails, internalChange);
         }
     }
 }

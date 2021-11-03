@@ -1131,7 +1131,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
-        public string UpdateUserDetails(ProductUserAccountDetails productUserAccountDetails)
+        public string UpdateUserDetails(ProductUserAccountDetails productUserAccountDetails, bool internalChange = false)
         {
             string result = string.Empty;
             IProduct product;
@@ -1140,107 +1140,107 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 case (int)ProductEnum.OneSite:
                     product = new OneSiteProduct(_userClaims, _productInternalSettingRepository, _productRepository);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
+                    result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
                 case (int)ProductEnum.MarketingCenter:
                     product = new MarketingCenterProduct(_userClaims, _productInternalSettingRepository, _productRepository);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
+                    result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
                 case (int)ProductEnum.FinancialSuite:
                     product = new OneSiteAccountingProduct(_userClaims, _productInternalSettingRepository, _productRepository);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
+                    result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
                 case (int)ProductEnum.OpsBuyer:
                     product = new OpsProduct(_userClaims, _productInternalSettingRepository, _productRepository);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
+                    result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
                 case (int)ProductEnum.VendorServices:
                     product = new VendorServicesProduct(_userClaims, _productInternalSettingRepository, _productRepository);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
+                    result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
                 case (int)ProductEnum.ClientPortal:
                     product = new ClientPortalProduct(_userClaims, _productInternalSettingRepository, _productRepository);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
+                    result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
                 case (int)ProductEnum.SalesForce:
                     product = new ClientPortalProduct(_userClaims, _productInternalSettingRepository, _productRepository);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
+                    result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
                 case (int)ProductEnum.ProspectContactCenter:
                     product = new ProspectContactCenterProduct(_userClaims, _productInternalSettingRepository, _productRepository);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
+                    result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
                 case (int)ProductEnum.Lead2Lease:
                     product = new Lead2LeaseProduct(_userClaims, _productInternalSettingRepository, _productRepository);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
+                    result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
                 case (int)ProductEnum.ResidentPortal:
                     product = new ResidentPortalProduct(_userClaims, _productInternalSettingRepository, _productRepository);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
+                    result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
                 case (int)ProductEnum.OnSite:
                     product = new OnSiteProduct(_userClaims, _productInternalSettingRepository, _productRepository);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
+                    result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
                 case (int)ProductEnum.Insurance:
                     product = new RentersInsuranceProduct(_productInternalSettingRepository, _productRepository);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
+                    result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
                 case (int)ProductEnum.ResearchApplication:
                     product = new ResearchApplicationProduct(_userClaims, _productInternalSettingRepository, _productRepository);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
+                    result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
                 case (int)ProductEnum.UnifiedAmenities:
                     product = new UnifiedAmenitiesProduct(_userClaims, _productInternalSettingRepository, _productRepository);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
+                    result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
                 case (int)ProductEnum.SelfProvisioningPortal:
                     product = new SelfProvisioningPortalProduct(_userClaims, _productInternalSettingRepository, _productRepository);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
+                    result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
                 case (int)ProductEnum.UtilityManagement:
                     product = new UtilityManagementProduct(_userClaims, _productInternalSettingRepository, _productRepository);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
+                    result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
                 case (int)ProductEnum.AssetOptimizer:
                     product = new AssetOptimizerProduct(_userClaims, _productInternalSettingRepository, _productRepository);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
+                    result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
                 case (int)ProductEnum.AoBusinessIntelligence:
                     product = new AoBusinessIntelligenceProduct(_userClaims, _productInternalSettingRepository, _productRepository);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
+                    result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
                 case (int)ProductEnum.LeadManagement:
                     product = new LeadManagementProduct(ProductEnum.LeadManagement);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
+                    result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
                 case (int)ProductEnum.LeadAnalytics:
                     product = new LeadManagementProduct(ProductEnum.LeadAnalytics);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
+                    result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
                 case (int)ProductEnum.RPDocumentManagement:
                     product = new RPDocumentManagementProduct(_userClaims, _productInternalSettingRepository, _productRepository);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
+                    result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
                 case (int)ProductEnum.PortfolioManagement:
                     product = new PortfolioManagementProduct(ProductEnum.PortfolioManagement);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
+                    result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
                 case (int)ProductEnum.DepositAlternative:
                     product = new DepositAlternativeProduct(ProductEnum.DepositAlternative);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
+                    result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
                 case (int)ProductEnum.ClickPay:
                     product = new ClickPayProduct(ProductEnum.ClickPay);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
+                    result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
                 case (int)ProductEnum.SeniorLeadManagement:
                     product = new SeniorLeadManagementProduct(_userClaims, ProductEnum.SeniorLeadManagement);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
+                    result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
                 case (int)ProductEnum.RenovationManager:
                     product = new RenovationManagerProduct(ProductEnum.RenovationManager);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
+                    result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
                 default:
                     result = ""; // just ignore the product batch

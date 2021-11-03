@@ -86,6 +86,7 @@
     <Build Include="Security\Schema\Logging.sql" />
     <Build Include="Logging\Stored Procedures\Activity_Archive.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\Activity_Archiving_Job_Script.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\AddNewLogType.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\User_Creation.sql" />

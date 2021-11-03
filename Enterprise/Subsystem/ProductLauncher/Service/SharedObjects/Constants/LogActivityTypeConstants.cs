@@ -33,6 +33,7 @@
         public const string PROPERTY_DELETED = "Property Delete";
         public const string PROPERTY_UPDATED = "Property Update";
         public const string USER_REQUESTED_NEW_ACTIVATION_LINK = "User requested new activation link";
+        public const string USER_UPDATE_INTERNAL = "User Update - Internal";
     }
 
     //public static class SecurityActivityMessageConstants

@@ -11,7 +11,8 @@ BEGIN
 			sa.Name,
 			sat.Name AS [Type],
 			sua.SamlUserAttributeId,
-			sua.Value
+			sua.Value,
+			sa.DisplayName
 	FROM	Person.Persona p
 			INNER JOIN Ident.SamlUserAttribute sua ON (p.PersonaId = sua.PersonaId)
 			INNER JOIN Ident.SamlAttribute sa ON (sua.SamlAttributeId = sa.SamlAttributeId)

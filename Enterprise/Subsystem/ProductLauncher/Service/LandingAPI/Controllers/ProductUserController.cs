@@ -77,7 +77,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "ProductName empty.");
 
             ManageProductUser manageProduct = new ManageProductUser(_userClaims);
-            string result = manageProduct.UpdateProductUserAccountDetails(productUser);
+            string result = manageProduct.UpdateProductUserAccountDetails(productUser, true);
 
             if (string.IsNullOrEmpty(result))
                 result = "Success";
@@ -104,7 +104,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "ProductName empty.");
 
 		    ManageProductUser manageProduct = new ManageProductUser(_userClaims);
-		    string result = manageProduct.DeleteSamlUserProductInfoAndStatus(productUser);
+		    string result = manageProduct.DeleteSamlUserProductInfoAndStatus(productUser, true);
 
 		    if (string.IsNullOrEmpty(result))
 			    result = "Success";

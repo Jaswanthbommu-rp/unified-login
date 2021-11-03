@@ -46,5 +46,10 @@
 		/// Unique Saml User Attribute Id
 		/// </summary>
 		public int SamlUserAttributeId { get; set; }
-	}
+
+        /// <summary>
+		/// Display Name
+		/// </summary>
+		public string DisplayName { get; set; }
+    }
 }
