@@ -1,4 +1,7 @@
-﻿IF NOT EXISTS(SELECT TOP 1 1 FROM Logging.LogType WHERE NAME = 'User Update - Internal')
+﻿USE AuditArchiveDB
+GO
+
+IF NOT EXISTS(SELECT TOP 1 1 FROM Logging.LogType WHERE NAME = 'User Update - Internal')
 BEGIN
 	DECLARE @catId INT;
 	DECLARE @logId INT;
