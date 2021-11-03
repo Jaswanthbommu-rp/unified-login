@@ -1192,11 +1192,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             try
             {
                 string activityName = string.Empty;
+                string categroyName = string.Empty;
 
                 if (logActivityType == "PRODUCT_ACCESS")
+                {
                     activityName = LogActivityTypeConstants.PRODUCT_ACCESS;
+                    categroyName = LogActivityCategoryType.ProductAccess.ToString();
+                }
                 else if (logActivityType == "USER_UPDATE_INTERNAL")
+                {
                     activityName = LogActivityTypeConstants.USER_UPDATE_INTERNAL;
+                    categroyName = LogActivityCategoryType.User.ToString();
+                }
 
                 LogActivity.WriteActivity(new ActivityDetails
                 {
