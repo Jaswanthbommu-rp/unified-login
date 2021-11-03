@@ -582,7 +582,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// <summary>
 		/// Facilities
 		/// </summary>
-		[Description("OS")]
+		[Description("FS")]
 		Facilities = 75
 	}
 
