@@ -9,6 +9,7 @@ AS
 BEGIN  
 	
 	DECLARE @NOW  DATETIME = GETUTCDATE();
+    DECLARE @orgTypeId BIGINT;
 	
     SELECT DISTINCT pr.ProductGUID ,  
             pr.ProductId ,  
@@ -28,4 +29,11 @@ BEGIN
     WHERE (par.RealPageId = @OrganizationRealPageId OR @OrganizationRealPageId IS NULL)
 	AND (Par.PartyId = @PartyId OR @PartyId IS NULL)
 	AND ((@NOW BETWEEN op.FromDate AND op.ThruDate) OR (@NOW >= op.FromDate AND op.ThruDate IS NULL)) 
+
+    --Deleteing VendorMarketPlace product other that Multifamily Organization TYpe
+    SELECT @orgTypeId = OrganizationTypeId FROM [Enterprise].OrganizationType where Name = 'Multifamily';
+    Delete FROM #Results where  ProductId = 38 and OrganizationTypeId <> @orgTypeId;
+
+     SELECT ProductGUID,ProductId,ProductName,SolutionId,Solution,FamilyId,Family,ProductDescription,[Active]
+	 FROM #Results;
 END;
