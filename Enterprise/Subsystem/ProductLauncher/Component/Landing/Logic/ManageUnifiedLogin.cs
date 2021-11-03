@@ -934,6 +934,58 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return response;
         }
 
+        public ListResponse GetListRightbyRole(string productCode,int roleId)
+        {
+            WriteToDiagnosticLog(
+                $"UnifiedLogin - ManageUnifiedLogin.GetRightsByRole at beginning of method for user with productCode - {productCode}");
+
+            var response = new ListResponse();
+            try
+            {
+                ListResponse result = GetCompanyEditorAndUserDetails(_userClaims.PersonaId, _userClaims.PersonaId);
+                if (result.IsError)
+                {
+                    WriteToErrorLog(
+                        $"UnifiedLogin - ManageUnifiedLogin.GetRightsByRole.GetCompanyEditorAndUserDetails error for user with Persona id - {_userClaims.PersonaId} - {result.ErrorReason}");
+                    return result;
+                }
+
+                var productList = _productRepository.GetAllProducts();
+                int productId = ProductEnumHelper.GetProductIdByProductCode(productCode, productList);
+
+                
+                UnifiedLoginRepository umr = new UnifiedLoginRepository();
+                
+                var gbAllRights = umr.ListRightsByRole(_userClaims.OrganizationPartyId, new List<int> {productId}, productId, roleId);
+
+                // gbAllRights = GetRightsWithoutDefault(gbAllRights);
+                gbAllRights = gbAllRights.OrderBy(r => r.Description).ToList();
+
+                WriteToDiagnosticLog(
+                    $"UnifiedLogin - ManageUnifiedLogin.GetRightsByRole.MapProductAccessGroupsToGB() completed for user with Persona id - {_userClaims.PersonaId}");
+
+
+                response = new ListResponse()
+                {
+                    Records = gbAllRights.Cast<object>().ToList(),
+                    TotalRows = gbAllRights.Count(),
+                    RowsPerPage = 9999,
+                    ErrorReason = string.Empty,
+                    TotalPages = 1
+                };
+
+
+            }
+            catch (Exception ex)
+            {
+                response.IsError = true;
+                response.ErrorReason = CommonMessageConstants.RightErrorMessage;
+                WriteToErrorLog($"UnifiedLogin - ManageUnifiedLogin.GetRightsByRole Error for user with editorPersona id - {_userClaims.PersonaId} ", exception: ex);
+            }
+
+            return response;
+        }
+
         /// <summary>
         /// Returns All Rights with selected rights for a roleId(User Access Groups in UnifiedLogin)
         /// </summary>

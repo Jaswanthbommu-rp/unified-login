@@ -31,6 +31,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 	{
 		private IProductRepository _productRepository;
 
+		private IManageUnifiedLogin _manageUnifiedLogin;
+
 		/// <summary>
 		/// Default constructor
 		/// </summary>
@@ -43,16 +45,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 		{
 			base.Initialize(controllerContext);
 
-			_productRepository = new ProductRepository(_userClaims);
-		}
+            _productRepository = new ProductRepository(_userClaims);
+			_manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
+        }
 
-		/// <summary>
-		/// Get a list of roles for the given user and product
-		/// </summary>
-		/// <param name="realPageId">The guid for the user being requested</param>
-		/// <param name="productCode">The code for the product being requested.All Products are supported</param>
-		/// <returns>A list of product roles</returns>
-		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+        /// <summary>
+        /// Get a list of roles for the given user and product
+        /// </summary>
+        /// <param name="realPageId">The guid for the user being requested</param>
+        /// <param name="productCode">The code for the product being requested.All Products are supported</param>
+        /// <returns>A list of product roles</returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
 		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
 		[SwaggerResponse(HttpStatusCode.NotFound, Description = "Not Found")]
 		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
@@ -174,6 +177,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 				error.Errors.Add(new Error() {Title = "Error", Detail = productResponse.ErrorReason, Source = "/role", StatusCode = ""});
 				return Request.CreateResponse(HttpStatusCode.BadRequest, error);
 			}
+		}
+
+		/// <summary>
+		/// Get a list of Rights for a Role
+		/// </summary>
+		/// <param name="productCode">The code for the product being requested. All Products are supported</param>
+		/// <param name="roleId">roleId is being requested</param>
+		/// <returns>A list of rights for a Role</returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.NotFound, Description = "Not Found")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "A list of roles", Type = typeof(ProductRole))]
+		[SwaggerResponseExamples(typeof(ProductRole), typeof(EnterpriseRoleExample))]
+		[Route("product/{productCode}/roles/{roleId}/rights")]
+		[AuthorizeScope("enterpriseapi")]
+		[HttpGet]
+		public HttpResponseMessage GetRightsforRole(string productCode,int roleId)
+		{
+			if (string.IsNullOrEmpty(productCode))
+				return Request.CreateResponse(HttpStatusCode.BadRequest, "ProductCode not supplied.");
+			if (roleId == 0)
+				return Request.CreateResponse(HttpStatusCode.BadRequest, "roleId not supplied.");
+			return Request.CreateResponse(HttpStatusCode.OK, _manageUnifiedLogin.GetListRightbyRole(productCode,roleId));
 		}
 
 		#region GetExamples
