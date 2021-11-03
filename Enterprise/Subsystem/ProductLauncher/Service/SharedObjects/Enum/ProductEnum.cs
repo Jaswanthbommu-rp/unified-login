@@ -583,7 +583,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// Facilities
 		/// </summary>
 		[Description("OS")]
-		Facilities = 75
+		Facilities = 75,
+		/// <summary>
+		/// Community Rewards
+		/// </summary>
+		[Description("MM")]
+		CommunityRewards = 77
 	}
 
 	/// <summary>
