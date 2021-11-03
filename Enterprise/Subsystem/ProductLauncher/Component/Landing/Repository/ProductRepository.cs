@@ -1587,52 +1587,57 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 });
             }
 
-            Guid userRealPageGUIDForAdGroup = _userClaim.UserRealPageGuid;
-            var checkForADGroupProductAccess = _productInternalSettingRepository.GetProductSettingByType("CheckADGroupUserMgmt");
-            var lockOnProductAccessRights = _productInternalSettingRepository.GetProductSettingByType("LockOnProductAccessRight");
-            List<AdGroup> adGroupsForPersona = new List<AdGroup>();
-            long impersonatePersonaId = 0;
-            if (checkForADGroupProductAccess != null && checkForADGroupProductAccess.Count > 0)
+            if (_userClaim.IsRPEmployee || _userClaim.ImpersonatedBy != null)
             {
-                if (_userClaim.ImpersonatedBy != null && _userClaim.ImpersonatedBy != Guid.Empty)
+                Guid userRealPageGUIDForAdGroup = _userClaim.UserRealPageGuid;
+                var checkForADGroupProductAccess = _productInternalSettingRepository.GetProductSettingByType("CheckADGroupUserMgmt");
+                var lockOnProductAccessRights = _productInternalSettingRepository.GetProductSettingByType("LockOnProductAccessRight");
+                List<AdGroup> adGroupsForPersona = new List<AdGroup>();
+                long impersonatePersonaId = 0;
+                if (checkForADGroupProductAccess != null && checkForADGroupProductAccess.Count > 0)
                 {
-                    userRealPageGUIDForAdGroup = _userClaim.ImpersonatedBy;
+                    if (_userClaim.ImpersonatedBy != null && _userClaim.ImpersonatedBy != Guid.Empty)
+                    {
+                        userRealPageGUIDForAdGroup = _userClaim.ImpersonatedBy;
+                    }
+                    IList<Persona> persona = _personaRepository.ListPersona(userRealPageGUIDForAdGroup);
+                    impersonatePersonaId = persona.FirstOrDefault(x => x.Organization.RealPageId == EmployeeCompanyRealPageId)?.PersonaId ?? 0;
+                    //If user doesn't exist in employee company then skip ADGroup check.
+                    if (impersonatePersonaId > 0)
+                    {
+                        adGroupsForPersona = GetAdGroupsForUser(impersonatePersonaId);
+                    }
                 }
-                IList<Persona> persona = _personaRepository.ListPersona(userRealPageGUIDForAdGroup);
-                impersonatePersonaId = persona.FirstOrDefault(x => x.Organization.RealPageId == EmployeeCompanyRealPageId)?.PersonaId ?? 0;
-                //If user doesn't exist in employee company then skip ADGroup check.
-                if (impersonatePersonaId > 0)
+            
+            
+
+                //allways set "Platform Services" (productId - 500) => Landing (productId - 3) => IsAssigned to True -- For GB Roles and Rights
+                productFamilyList.ToList().ForEach(p =>
                 {
-                    adGroupsForPersona = GetAdGroupsForUser(impersonatePersonaId);
-                }
+                    Solution solution = new Solution();
+                    if (p.Name.Equals("Administration", StringComparison.OrdinalIgnoreCase))
+                    {
+                        //always set "Platform Services" (productId - 500) => Landing (productId - 3) => IsAssigned to True -- For GB Roles and Rights
+                        solution = p.Solutions.FirstOrDefault(s => s.ProductId == (int)ProductEnum.UnifiedPlatform);
+                        if (solution != null)
+                        {
+                            solution.IsAssigned = true;
+                        }
+                    }
+                    else if (p.Name.Equals("Property Management", StringComparison.OrdinalIgnoreCase) && (personaProductUserDetails.Any(c => c.ProductId == (int)ProductEnum.EasyLMS)))
+                    {
+                        // Set IsAssigned to true if Organization has EasyLMS
+                        solution = p.Solutions.FirstOrDefault(s => s.ProductId == (int)ProductEnum.EasyLMS);
+                        if (solution != null)
+                        {
+                            solution.IsAssigned = true;
+                        }
+                    }
+
+                    CheckProductRight(ref p, lockOnProductAccessRights, checkForADGroupProductAccess, adGroupsForPersona, impersonatePersonaId);
+
+                });
             }
-
-            //allways set "Platform Services" (productId - 500) => Landing (productId - 3) => IsAssigned to True -- For GB Roles and Rights
-            productFamilyList.ToList().ForEach(p =>
-            {
-                Solution solution = new Solution();
-                if (p.Name.Equals("Administration", StringComparison.OrdinalIgnoreCase))
-                {
-                    //always set "Platform Services" (productId - 500) => Landing (productId - 3) => IsAssigned to True -- For GB Roles and Rights
-                    solution = p.Solutions.FirstOrDefault(s => s.ProductId == (int)ProductEnum.UnifiedPlatform);
-                    if (solution != null)
-                    {
-                        solution.IsAssigned = true;
-                    }
-                }
-                else if (p.Name.Equals("Property Management", StringComparison.OrdinalIgnoreCase) && (personaProductUserDetails.Any(c => c.ProductId == (int)ProductEnum.EasyLMS)))
-                {
-                    // Set IsAssigned to true if Organization has EasyLMS
-                    solution = p.Solutions.FirstOrDefault(s => s.ProductId == (int)ProductEnum.EasyLMS);
-                    if (solution != null)
-                    {
-                        solution.IsAssigned = true;
-                    }
-                }
-
-                CheckProductRight(ref p, lockOnProductAccessRights, checkForADGroupProductAccess, adGroupsForPersona, impersonatePersonaId);
-
-            });
 
             // now remove any products which are not matching product access filter
             if (accessFilter != null)

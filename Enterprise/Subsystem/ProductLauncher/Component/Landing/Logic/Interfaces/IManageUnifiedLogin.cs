@@ -91,5 +91,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         ListResponse GetEnterpriseProperties(long userPersonaId, string include = null);
 
         ListResponse GetUPFMProperties(long editorPersonaId, long userPersonaId, bool assignedOnly, ProductEnum product, RequestParameter datafilter);
+
+        ListResponse GetListRightbyRole(string productCode, int roleId);
     }
 }

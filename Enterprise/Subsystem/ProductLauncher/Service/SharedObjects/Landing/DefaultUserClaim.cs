@@ -38,6 +38,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 			ClientCode = (from nvp in claimsPrincipal.Claims where nvp.Type.Equals("CLIENT_ID", StringComparison.OrdinalIgnoreCase) select nvp.Value).FirstOrDefault();
             Rights = (from nvp in claimsPrincipal.Claims where nvp.Type.Equals("RIGHT", StringComparison.OrdinalIgnoreCase) select nvp.Value).ToList();
             PersonaId= Convert.ToInt32((from nvp in claimsPrincipal.Claims where nvp.Type.Equals("PERSONAID", StringComparison.OrdinalIgnoreCase) select nvp.Value).FirstOrDefault());
+            IsRPEmployee = Convert.ToBoolean((from nvp in claimsPrincipal.Claims where nvp.Type.Equals("isRPEmployee", StringComparison.OrdinalIgnoreCase) select nvp.Value).FirstOrDefault());
+
 
             Guid realGuid;
             if (Guid.TryParse((from nvp in claimsPrincipal.Claims where nvp.Type.Equals("realPageId", StringComparison.OrdinalIgnoreCase) select nvp.Value).FirstOrDefault(), out realGuid))
@@ -158,5 +160,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 	    /// The id used to track the user that is impersonating a user
 	    /// </summary>
 	    public string ImpersonatedByName { get; set; }
+
+        /// <summary>
+	    /// Flag used to determine if RP employee is logged in
+	    /// </summary>
+        public bool IsRPEmployee { get; set; }
     }
 }
