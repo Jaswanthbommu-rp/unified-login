@@ -1371,11 +1371,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 string apiEndPoint = ProductInternalSettingList.FirstOrDefault(a => a.Name.ToUpper() == "APIENDPOINT")?.Value;
                 string apiSecret = ProductInternalSettingList.FirstOrDefault(a => a.Name.ToUpper() == "APISECRET")?.Value;
                 string clientId = ProductInternalSettingList.FirstOrDefault(a => a.Name.ToUpper() == "CLIENTID")?.Value;
+                string scopes = ProductInternalSettingList.FirstOrDefault(a => a.Name.ToUpper() == "CLIENTSCOPE")?.Value;
 
                 if (!string.IsNullOrWhiteSpace(tokenURL) && !string.IsNullOrWhiteSpace(apiEndPoint)
                     && !string.IsNullOrWhiteSpace(apiSecret) && !string.IsNullOrWhiteSpace(clientId))
                 {
-                    var _token = _tokenHelper.GetExternalClientCredentialServerToken(tokenURL, clientId, apiSecret, clientId);
+                    var _token = _tokenHelper.GetExternalClientCredentialServerToken(tokenURL, clientId, apiSecret, scopes);
                     if (_token != null)
                     {
                         _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
