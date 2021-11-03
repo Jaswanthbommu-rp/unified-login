@@ -1192,23 +1192,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             try
             {
                 string activityName = string.Empty;
-                string categroyName = string.Empty;
+                string categoryName = string.Empty;
 
                 if (logActivityType == "PRODUCT_ACCESS")
                 {
                     activityName = LogActivityTypeConstants.PRODUCT_ACCESS;
-                    categroyName = LogActivityCategoryType.ProductAccess.ToString();
+                    categoryName = LogActivityCategoryType.ProductAccess.ToString();
                 }
                 else if (logActivityType == "USER_UPDATE_INTERNAL")
                 {
                     activityName = LogActivityTypeConstants.USER_UPDATE_INTERNAL;
-                    categroyName = LogActivityCategoryType.User.ToString();
+                    categoryName = LogActivityCategoryType.User.ToString();
                 }
 
                 LogActivity.WriteActivity(new ActivityDetails
                 {
                     LogActivityTypeName = activityName,
-                    LogCategoryName = LogActivityCategoryType.ProductAccess.ToString(),
+                    LogCategoryName = categoryName,
                     CorrelationId = _defaultUserClaim.CorrelationId.ToString(),
                     BooksMasterOrganizationId = fromUserLogInfo.BooksOrganizationMasterId,
                     OrganizationPartyId = fromUserLogInfo.OrganizationPartyId,
