@@ -3400,7 +3400,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     (int) ProductEnum.LeaseLabs,
                     (int) ProductEnum.SelfGuidedTour,
                     (int) ProductEnum.LeadScoring,
-                    (int) ProductEnum.SmartWasteCommercial
+                    (int) ProductEnum.SmartWasteCommercial,
+                    (int) ProductEnum.CommunityRewards
                 };
             }
 
