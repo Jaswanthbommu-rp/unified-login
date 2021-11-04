@@ -3354,113 +3354,42 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
 
         /// <summary>
-        /// Used to get list of valid products assigned to organization 
+        /// Used to get list of valid products assigned to organization for admin user
         /// </summary>
         /// <param name="repository">Dapper Repository</param>		
         /// <param name="realPageId">enterprise User Id</param>
         /// <param name="organizationRealPageId">enterprise Organization Id</param>		
         /// <param name="aoProducts">Applicable if PMC has AO products</param>
-        private List<ProductUI> GetOrganizationProductList(IRepository repository, Guid realPageId, Guid organizationRealPageId, IList<string> aoProducts = null)
+        private List<ProductUI> GetOrganizationProductListForAdmiinUser(IRepository repository, Guid realPageId, Guid organizationRealPageId, IList<string> aoProducts = null)
         {
-            List<int> productIDUserCreateList;
             RPObjectCache rpCache = new RPObjectCache();
-            var cacheKey = $"getListProductsByOrganization_{organizationRealPageId}";
+            var cacheKey = $"getListProductsByOrganizationForAdminUser_{organizationRealPageId}";
 
             List<ProductUI> productsAssignedToCompany = rpCache.GetFromCache<List<ProductUI>>(cacheKey, 180, () =>
             {
-                return repository.GetMany<ProductUI>(StoredProcNameConstants.SP_ListProductsByOrganization,
+                return repository.GetMany<ProductUI>(StoredProcNameConstants.SP_ListProductsByOrganizationForAdminUser,
                     new { OrganizationRealPageId = organizationRealPageId }).ToList();
             });
 
-            // Add AO products if any
+            // Check For AO products
             if (aoProducts != null)
             {
-                foreach (var aoProduct in aoProducts)
+                //check with admin user ao products, if product is not assigned to editor admin then remove that product
+                foreach (ProductUI prod in productsAssignedToCompany.Where(a => a.UDMSourceCode == "AO").ToList())
                 {
-                    productsAssignedToCompany.Add(new PersonaProductUserDetails { ProductId = (int)ProductEnumHelper.GetAoProductEnum(aoProduct) });
+                    if (!aoProducts.Contains(prod.ProductCode))
+                    {
+                        productsAssignedToCompany.Remove(prod);
+                    }
                 }
             }
-
-            IList<ProductBatch> productListToCreate = new List<ProductBatch>();
-
-            //Get the organization type
-            dynamic param = null;
-            cacheKey = $"getListOrganizationType";
-            IList<OrganizationType> organizationTypeList = rpCache.GetFromCache<IList<OrganizationType>>(cacheKey, 180, () => { return repository.GetMany<OrganizationType>(StoredProcNameConstants.SP_ListOrganizationType, param); });
-
-            cacheKey = $"getGetOrganization_{organizationRealPageId}";
-            Organization organization = rpCache.GetFromCache<Organization>(cacheKey, 180, () =>
-            {
-                param = new
-                {
-                    RealPageId = organizationRealPageId
-                };
-                return repository.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization, param);
-            });
-
-            if (organization != null)
-            {
-                organization.organizationType = organizationTypeList.ToList().FirstOrDefault(o => o.OrganizationTypeId == organization.OrganizationTypeId);
-            }
-
-            if (organization.organizationType.Name.Equals("Vendor", StringComparison.OrdinalIgnoreCase))
-            {
-                //Company type is Vendor
-                productIDUserCreateList = new List<int>()
-                {
-                    (int) ProductEnum.VendorMarketplace
-                };
-            }
-            else
-            {
-                // the list of products that are currently available to add users for (Company type is NOT Vendor)
-                productIDUserCreateList = new List<int>()
-                {
-                    (int) ProductEnum.OneSite,
-                    (int) ProductEnum.FinancialSuite,
-                    (int) ProductEnum.MarketingCenter,
-                    (int) ProductEnum.OpsBuyer,
-                    (int) ProductEnum.ClientPortal,
-                    (int) ProductEnum.VendorServices,
-                    (int) ProductEnum.Lead2Lease,
-                    (int) ProductEnum.ResidentPortal,
-                    (int) ProductEnum.ProspectContactCenter,
-                    (int) ProductEnum.Insurance,
-                    (int) ProductEnum.OnSite,
-                    (int) ProductEnum.UtilityManagement,
-                    (int) ProductEnum.SelfProvisioningPortal,
-                    (int) ProductEnum.UnifiedAmenities,
-                    (int) ProductEnum.ResearchApplication,
-                    (int) ProductEnum.RPDocumentManagement,
-                    (int) ProductEnum.LeadManagement,
-                    (int) ProductEnum.LeadAnalytics,
-                    (int) ProductEnum.PortfolioManagement,
-                    (int) ProductEnum.IntegrationMarketplace,
-                    (int) ProductEnum.DepositAlternative,
-                    (int) ProductEnum.ClickPay,
-                    (int) ProductEnum.RenovationManager,
-                    (int) ProductEnum.SeniorLeadManagement,
-                    (int) ProductEnum.IntelligentBuildingTrash,
-                    (int) ProductEnum.IntelligentBuildingEnergy,
-                    (int) ProductEnum.IntelligentBuildingWater,
-                    (int) ProductEnum.HospitalityService,
-                    (int) ProductEnum.HandsOnTrainingSystem,
-                    (int) ProductEnum.LeaseLabs,
-                    (int) ProductEnum.SelfGuidedTour,
-                    (int) ProductEnum.LeadScoring,
-                    (int) ProductEnum.SmartWasteCommercial
-                };
-            }
-
-            // Add AO products Supported by GB
-            productIDUserCreateList.AddRange(ProductEnumHelper.GetAoProductList().Cast<int>().ToList());
-            foreach (ProductUI prod in productsAssignedToCompany.ToList())
-            {
-                if (!productIDUserCreateList.Contains(prod.ProductId))
-                {
-                    productsAssignedToCompany.Remove(prod);
+            else{
+                foreach (ProductUI prod in productsAssignedToCompany.Where(a => a.UDMSourceCode == "AO").ToList())
+                {                    
+                    productsAssignedToCompany.Remove(prod);                   
                 }
             }
+            
             return productsAssignedToCompany;
         }
 
@@ -3537,7 +3466,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 IList<ProductBatch> productListToCreate = new List<ProductBatch>();
                 IList<PersonaProductUserDetails> userProducts = repository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = AssignUserPersonaId }).ToList();
-                List<ProductUI> productsAssignedToCompany = GetOrganizationProductList(repository, realPageId, organizationRealPageId, aoProducts);
+                List<ProductUI> productsAssignedToCompany = GetOrganizationProductListForAdmiinUser(repository, realPageId, organizationRealPageId, aoProducts);
 
                 foreach (ProductUI prod in productsAssignedToCompany)
                 {
@@ -4042,7 +3971,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 else //UserTypeRegularToAdmin || UserTypeExternalToAdmin
                 {
                     // Get products assigned to company including AO products
-                    List<ProductUI> productsAssignedToCompany = GetOrganizationProductList(repository, realPageId, organizationRealPageId, aoProductsAvailableForUser);
+                    List<ProductUI> productsAssignedToCompany = GetOrganizationProductListForAdmiinUser(repository, realPageId, organizationRealPageId, aoProductsAvailableForUser);
 
                     //Regular to Admin
                     foreach (ProductUI prod in productsAssignedToCompany)

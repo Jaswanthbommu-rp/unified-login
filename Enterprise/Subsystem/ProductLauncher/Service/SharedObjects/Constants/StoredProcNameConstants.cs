@@ -187,6 +187,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         //Products
         public const string SP_UpdateProductSettingByPersona = "Enterprise.UpdateProductSettingByPersona";
         public const string SP_ListProductsByOrganization = "Enterprise.ListProductsByOrganization";
+        public const string SP_ListProductsByOrganizationForAdminUser = "Enterprise.ListProductsByOrganizationForAdminUser";
         public const string SP_ListProductSettingsByOrganization = "Enterprise.ListProductSettingsByOrganization";
         public const string SP_ListProductSettingsByPersona = "Enterprise.ListProductSettingsByPersona";
         public const string SP_ListProductSettingsByPersonaId = "Enterprise.ListProductSettingsByPersonaId";
