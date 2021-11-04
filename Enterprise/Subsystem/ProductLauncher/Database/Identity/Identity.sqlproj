@@ -1200,6 +1200,7 @@
     <Build Include="Security\GetRightDetailsByRightId.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\SaveRightDetails.sql" />
     <Build Include="Security\GetRoutesWithRightCount.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\GetAdGroupDetails.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
