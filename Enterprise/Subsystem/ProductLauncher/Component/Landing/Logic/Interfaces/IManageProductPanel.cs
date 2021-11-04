@@ -48,6 +48,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <returns>String.empty if success else error</returns>
 		ListResponse GetProductRightsForRole(long editorPersonaId, int roleId, long partyId, int productId, RequestParameter datafilter, bool assignedToRoleOnly = false);
 		/// <summary>
+		///Get Product Rights For Role
+		/// </summary> 
+		/// <param name="editorPersonaId">editorPersonaId</param>
+		/// <param name="roleId"></param>
+		/// <param name="partyId"></param>
+		/// <param name="productId"></param>	
+		/// <param name="datafilter"></param>
+		/// <param name="assignedToRoleOnly"></param>		
+		/// <returns>String.empty if success else error</returns>
+		ListResponse GetProductRightsForRole(long editorPersonaId, string roleId, long partyId, int productId, RequestParameter datafilter, bool assignedToRoleOnly = false);
+		/// <summary>
 		/// Get Product PropertyGroups
 		/// </summary> 
 		/// <param name="editorPersonaId">editorPersonaId</param>		

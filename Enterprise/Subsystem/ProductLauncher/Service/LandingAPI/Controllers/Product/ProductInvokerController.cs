@@ -113,26 +113,35 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         ]
         [Route("products/role/rights")]
 		[HttpGet]
-        public HttpResponseMessage GetRightsForRole(ProductEnum productType, long editorPersonaId, long subjectPersonaId, long roleId,
+        public HttpResponseMessage GetRightsForRole(ProductEnum productType, long editorPersonaId, long subjectPersonaId, string roleId,
             [FromUri] RequestParameter dataFilter)
         {
 			// TODO: This method doesn't appear to be in use
             ListResponse result;
-            try
+			int productRoleId;
+			try
             {
                 if (editorPersonaId == 0)
                     return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
 
-                if (roleId == 0)
-                    return Request.CreateResponse(HttpStatusCode.BadRequest, "roleId not supplied.");
+				if (String.IsNullOrWhiteSpace(roleId) || roleId == "0")
+					return Request.CreateResponse(HttpStatusCode.BadRequest, "roleId not supplied.");
 
-                if (_realpageUserId == Guid.Empty)
+				if (_realpageUserId == Guid.Empty)
                     return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
 
 				int productId = (int)productType;
 				var integrationType = _integrationTypeFactory.GetIntegration(productId);
-				result = integrationType.GetRightsForRole(editorPersonaId, subjectPersonaId, roleId, 0, false, dataFilter);
-
+				if (_integrationTypeFactory.GetIntegrationTypeForProductId(productId) == ProductIntegrationTypeEnum.StandardV1)
+				{
+					result = integrationType.GetRightsForRole(editorPersonaId, subjectPersonaId, roleId, 0, false, dataFilter);
+				}
+				else
+				{
+					result = integrationType.GetRightsForRole(editorPersonaId, subjectPersonaId, Int32.Parse(roleId), 0, false, dataFilter);			
+				}
+				
+				
 				if (result.IsError)
                     Request.CreateResponse(HttpStatusCode.Forbidden, result);
 

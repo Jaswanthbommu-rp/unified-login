@@ -322,6 +322,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
 			return Request.CreateResponse(HttpStatusCode.OK, result);
 		}
+		
 		/// <summary>
 		/// Returns Rights  
 		/// </summary>
@@ -337,27 +338,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
 		[Route("product/rightsforrole")]
 		[HttpGet]
-		public HttpResponseMessage GetRights(long editorPersonaId, int productId,int roleId, long partyId,[FromUri]RequestParameter datafilter, bool assignedToRoleOnly = false)
+		public HttpResponseMessage GetRights(long editorPersonaId, int productId, string roleId, long partyId, [FromUri] RequestParameter datafilter, bool assignedToRoleOnly = false)
 		{
 			var completeRoute = this.ControllerContext.RouteData.Route;
 			string method = completeRoute.RouteTemplate.Substring(completeRoute.RouteTemplate.IndexOf("/"));
+			int productRoleId;
 
 			if (editorPersonaId == 0)
 				return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
 
 			if (_realpageUserId == Guid.Empty)
 				return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
+			
+			if (String.IsNullOrWhiteSpace(roleId) || roleId == "0")
+				return Request.CreateResponse(HttpStatusCode.BadRequest, "roleId not supplied.");
 
 			ListResponse result = new ListResponse();
 
-			result = _manageProductPanel.GetProductRightsForRole(editorPersonaId, roleId, partyId , productId, datafilter, assignedToRoleOnly);
+			result = _manageProductPanel.GetProductRightsForRole(editorPersonaId, roleId, partyId, productId, datafilter, assignedToRoleOnly);
 
 			if (result.IsError)
 				Request.CreateResponse(HttpStatusCode.Forbidden, result);
 
 			return Request.CreateResponse(HttpStatusCode.OK, result);
 		}
-
 		/// <summary>
 		/// Returns  group Properties
 		/// </summary>

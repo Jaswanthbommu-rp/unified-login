@@ -70,10 +70,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         public ListResponse GetEnterpriseProperties(long userPersonaId) => GetProperties(userPersonaId, userPersonaId, new RequestParameter());
 
-        public ListResponse GetRightsForRole(long editorPersonaId, long userPersonaId, long roleId, long partyId, bool assignedToRoleOnly, RequestParameter dataFilter)
+        public ListResponse GetRightsForRole(long editorPersonaId, long userPersonaId, string roleId, long partyId, bool assignedToRoleOnly, RequestParameter dataFilter)
         {
             var productIntegration = new StandardV1ProductIntegration(_productId, editorPersonaId, userPersonaId, _userClaims);
             return productIntegration.GetProductRightsForRole(dataFilter, roleId);
+        }
+
+        public ListResponse GetRightsForRole(long editorPersonaId, long userPersonaId, long roleId, long partyId, bool assignedToRoleOnly, RequestParameter dataFilter)
+        {
+            ListResponse result = new ListResponse();
+            return result;
         }
 
         public ListResponse GetRoles(long editorPersonaId, long userPersonaId, long partyId, AccessType? accessType, RequestParameter dataFilter)
