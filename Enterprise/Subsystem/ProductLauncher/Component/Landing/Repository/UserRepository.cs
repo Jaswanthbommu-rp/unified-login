@@ -2795,6 +2795,54 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             });
         }
 
+        public AdUserDetail GetAzureUserDetails(long userId)
+        {
+            using (var repository = GetRepository())
+            {
+                return repository.GetOne<AdUserDetail>(StoredProcNameConstants.SP_GetADDetailsForUser, new { userId });
+            }
+        }
+
+        /// <summary>
+        /// Used to get the list of products and the adgroup assigned to it for the given persona
+        /// </summary>
+        /// <param name="personaId"></param>
+        /// <param name="productId"></param>
+        /// <returns></returns>
+        public IList<EmployeeProductMapping> GetEmployeeProductADGroupMapping(long personaId, int productId)
+        {
+            using (var repository = GetRepository())
+            {
+                dynamic param = new
+                {
+                    ProductId = productId,
+                    PersonaId = personaId
+                };
+                return repository.GetMany<EmployeeProductMapping>(StoredProcNameConstants.SP_GetEmployeeProductADGroupMapping, param);
+            }
+        }
+
+        /// <summary>
+        /// Used to add or update an employees product to adgroup user mapping
+        /// </summary>
+        /// <param name="personaId"></param>
+        /// <param name="productId"></param>
+        /// <param name="adGroupId"></param>
+        /// <returns></returns>
+        public RepositoryResponse AddUpdateEmployeeProductADGroupMapping(long personaId, int productId, int adGroupId)
+        {
+            using (var repository = GetRepository())
+            {
+                dynamic param = new
+                {
+                    ProductId = productId,
+                    PersonaId = personaId,
+                    ADGroupId = adGroupId
+                };
+                return repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdateEmployeeProductADGroupMapping, param);
+            }
+        }
+
         public IList<NavigationMenuSetting> GetNavigationMenuSettingsUnaccessable(long partyId)
         {
             using (var repository = GetRepository())

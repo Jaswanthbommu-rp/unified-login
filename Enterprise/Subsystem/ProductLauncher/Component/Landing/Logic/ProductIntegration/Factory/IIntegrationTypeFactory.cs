@@ -7,6 +7,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
     {
         IIntegrationType GetIntegration(int productId);
 
+        IIntegrationType GetIntegrationStandardV1(int productId);
+
         ProductIntegrationTypeEnum GetIntegrationTypeForProductId(int productId);
     }
 }

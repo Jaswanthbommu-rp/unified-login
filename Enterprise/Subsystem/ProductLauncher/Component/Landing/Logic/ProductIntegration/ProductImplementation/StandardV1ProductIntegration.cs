@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterprise.Helpers;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.ProductImplementation
 {
@@ -35,7 +36,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         protected DefaultUserClaim _userClaims;
 
         private const string PRODUCT_SETTINGTYPE_STATUS = "ProductStatus";
-
         #endregion
 
         #region Properties
@@ -44,6 +44,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         protected IDataCollector _dataCollector;
         private IManagePersona _managePersona;
         private IProductInternalSettingRepository _productInternalSettingRepository;
+        private ITokenHelper _tokenHelper;
 
         protected UserDetails EditorUserDetails { get; set; }
         protected UserDetails SubjectUserDetails { get; set; }
@@ -112,17 +113,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _userClaims = userClaims;
             _productDetails = _productRepository.GetBooksMasterProductDetail(ProductId);
             _udmSourceCode = _productDetails.UDMSourceCode?.Length > 0 ? _productDetails.UDMSourceCode : _productDetails.BooksProductCode;
+
             // Get editor & subject user details & Verify editor user is the logged-in user
             GetValidateEditorSubjectUserDetails(editorPersonaId, subjectPersonaId);
 
             // Get product & end point details
             GetProductEndPointDetails();
 
-            // Apply API security to HTTP Client
-            ApplyApiSecurity();
-
             // Get Blue book product Code & company instance Id
             GetBlueBookProductMapAndCompanyDetails(subjectPersonaId);
+
+            // Apply API security to HTTP Client
+            ApplyApiSecurity();
 
             // Used for logging etc
             CorrelationId = userClaims.CorrelationId;
@@ -715,6 +717,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // OPTIONAL - If product needs more attributes than userid or loginName then override in the product (e.g. PAM uses)
                 CreateAdditionalSamlUserAttribute(SubjectUserDetails.PersonaId, ProductId, productUser);
 
+                if (productUser.EmployeeAdditional != null)
+                {
+                    _dataCollector.AddUpdateEmployeeProductADGroupMapping(SubjectUserDetails.PersonaId, ProductId, productUser.EmployeeAdditional.AzureADGroupId);
+                }
                 return string.Empty;
             }
 
@@ -805,6 +811,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 // OPTIONAL - If product needs more attributes than userid or loginName then override in the product (e.g. PAM uses)
                 CreateAdditionalSamlUserAttribute(SubjectUserDetails.PersonaId, ProductId, productUser);
+
+                if (productUser.EmployeeAdditional != null)
+                {
+                    _dataCollector.AddUpdateEmployeeProductADGroupMapping(SubjectUserDetails.PersonaId, ProductId, productUser.EmployeeAdditional.AzureADGroupId);
+                }
             }
             else
             {
@@ -860,6 +871,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (!ProductAcceptsUniqueProductUserName)
                     UpdateSamlUserAttribute(SubjectUserDetails.PersonaId, ProductId, productUser.UserId, productUser.LoginName, productUser.Email);
 
+                if (productUser.EmployeeAdditional != null)
+                {
+                    _dataCollector.AddUpdateEmployeeProductADGroupMapping(SubjectUserDetails.PersonaId, ProductId, productUser.EmployeeAdditional.AzureADGroupId);
+                }
+
                 return string.Empty;
             }
             Dictionary<string, object> logData = new Dictionary<string, object> {{"result", result}};
@@ -886,7 +902,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             //Blank method used for override
         }
-
+        
         /// <summary>
         /// Returns true if user exists in the product
         /// </summary> 
@@ -1153,7 +1169,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 OrganizationRoles = userRolePropertiesRegion.OrganizationRoleList,
                 CanReceiveMonthlyReport = userRolePropertiesRegion.CanReceiveMonthlyReport,
                 PropertyRoleList = userRolePropertiesRegion.RolePropertiesList,
-                RoleList = userRolePropertiesRegion.RoleList?.ConvertAll<string>(x => x.ToString())
+                RoleList = userRolePropertiesRegion.RoleList?.ConvertAll<string>(x => x.ToString()),
+                IsRealPageEmployee = SubjectUserDetails.IsRPEmployee,
+
             };
 
             if (SubjectUserDetails.UserRoleTypeId == (int) UserRoleType.SuperUser)
@@ -1161,7 +1179,46 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 ApplySuperUserData(productUser);
             }
 
+            if (SubjectUserDetails.IsRPEmployee)
+            {
+                ApplyEmployeeData(productUser);
+            }
+
             return productUser;
+        }
+
+        private void ApplyEmployeeData(IntegrationProductUser productUser)
+        {
+            var personaList = _managePersona.ListPersona(SubjectUserDetails.UserRealPageId);
+            var employeePersona = personaList.FirstOrDefault(p => p.Organization.RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId);
+            if (employeePersona == null)
+            {
+                return;
+            }
+
+            productUser.EmployeeAdditional = new EmployeeAdditional() { AzureADGroup = "" };
+            // gather AD info
+            var adUserInfo = _dataCollector.GetAzureUserDetails(SubjectUserDetails.UserId);
+            productUser.EmployeeAdditional.SAMAccountName = adUserInfo?.SamAccountName;
+
+            var productAdGroups = _productRepository.GetAdGroupsForProduct(ProductId);
+            if (productAdGroups.Count > 0)
+            {
+                var orderedAdGroup = productAdGroups.OrderBy(p => p.AssignmentOrder);
+                var userAdGroups = _productRepository.GetAdGroupsForUser(employeePersona.PersonaId);
+                foreach (var adGroupProduct in orderedAdGroup)
+                {
+                    if (userAdGroups.All(p => p.ADGroupId != adGroupProduct.ADGroupId)) continue;
+                    productUser.EmployeeAdditional.AzureADGroup = adGroupProduct.ADGroupName;
+                    productUser.EmployeeAdditional.AzureADGroupId = adGroupProduct.ADGroupId;
+                    break;
+                }
+            }
+
+            if (string.IsNullOrEmpty(productUser.EmployeeAdditional.AzureADGroup))
+            {
+                productUser.IsActive = false;
+            }
         }
 
         protected virtual void ApplySuperUserData(IntegrationProductUser productUser)
@@ -1320,18 +1377,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (_productInternalSettingRepository == null)
                     _productInternalSettingRepository = new ProductInternalSettingRepository();
 
-                ProductInternalSettingList =
+                ProductInternalSettingList = 
                     _productInternalSettingRepository.GetProductInternalSettings(ProductId);
-                ProductApiBaseUrl = ProductInternalSettingList.First(a => a.Name.ToUpper() == "APIENDPOINT").Value;
+
+                ProductApiBaseUrl = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("ApiEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
+                var alternateApiEndPoint = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("AlternateApiEndPoint", StringComparison.OrdinalIgnoreCase))?.Value;
+                if (alternateApiEndPoint != null)
+                {
+                    ProductApiBaseUrl = alternateApiEndPoint;
+                }
 
                 var productInternalSetting = ProductInternalSettingList.FirstOrDefault(item => item.Name.Equals("CreateUpdateMultiCompanyUserRequiresPMC", StringComparison.OrdinalIgnoreCase));
-                CreateUpdateMultiCompanyUserRequiresPMC = (productInternalSetting != null) ? productInternalSetting.Value.Trim() == "1" : false;
+                CreateUpdateMultiCompanyUserRequiresPMC = (productInternalSetting != null) && productInternalSetting.Value.Trim() == "1";
 
                 var productInternalSettingProductNotAvailable = ProductInternalSettingList.FirstOrDefault(item => item.Name.Equals("ProductNotAvailableForRegularUserNoEmail", StringComparison.OrdinalIgnoreCase));
-                ProductNotAvailableForRegularUserNoEmail = (productInternalSettingProductNotAvailable != null) ? productInternalSettingProductNotAvailable.Value.Trim() == "1" : false;
+                ProductNotAvailableForRegularUserNoEmail = (productInternalSettingProductNotAvailable != null) && productInternalSettingProductNotAvailable.Value.Trim() == "1";
 
-                var productInternalSettingacceptsUniqueProductUserName = ProductInternalSettingList.FirstOrDefault(item => item.Name.Equals("ProductAcceptsUniqueProductUserName", StringComparison.OrdinalIgnoreCase));
-                ProductAcceptsUniqueProductUserName = (productInternalSettingacceptsUniqueProductUserName != null) ? productInternalSettingacceptsUniqueProductUserName.Value.Trim() == "1" : false;
+                var productInternalSettingAcceptsUniqueProductUserName = ProductInternalSettingList.FirstOrDefault(item => item.Name.Equals("ProductAcceptsUniqueProductUserName", StringComparison.OrdinalIgnoreCase));
+                ProductAcceptsUniqueProductUserName = (productInternalSettingAcceptsUniqueProductUserName != null) && productInternalSettingAcceptsUniqueProductUserName.Value.Trim() == "1";
             }
             catch (Exception ex)
             {
@@ -1349,18 +1412,36 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 _httpClient = new HttpClient();
                 _httpClient.DefaultRequestHeaders.Clear();
 
-                string apiUser = ProductInternalSettingList.FirstOrDefault(a => a.Name.ToUpper() == "APIUSERNAME")?.Value;
-                string apiPassword = ProductInternalSettingList.FirstOrDefault(a => a.Name.ToUpper() == "APIPASSWORD")?.Value;
-                if (!string.IsNullOrWhiteSpace(apiUser)
-                    && !string.IsNullOrWhiteSpace(apiPassword))
+                string tokenScopes = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("TokenAuthScopes", StringComparison.OrdinalIgnoreCase))?.Value;
+
+                if (tokenScopes != null)
+                {
+                    if (_tokenHelper == null)
+                    {
+                        _tokenHelper = new TokenHelper();
+                    }
+
+                    var ulToken = _tokenHelper.GetUnifiedLoginServerToken(tokenScopes);
+                    _httpClient.SetBearerToken(ulToken);
+                }
+
+                string apiUser = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("ApiUserName", StringComparison.OrdinalIgnoreCase))?.Value;
+                string apiPassword = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("ApiPassword", StringComparison.OrdinalIgnoreCase))?.Value;
+                if (!string.IsNullOrWhiteSpace(apiUser) && !string.IsNullOrWhiteSpace(apiPassword))
                 {
                     _httpClient.SetBasicAuthentication(apiUser, apiPassword);
                 }
 
-                string apiKey = ProductInternalSettingList.FirstOrDefault(a => a.Name.ToUpper() == "APIKEY")?.Value;
+                string apiKey = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("ApiKey", StringComparison.OrdinalIgnoreCase))?.Value;
                 if (!string.IsNullOrWhiteSpace(apiKey))
                 {
                     _httpClient.DefaultRequestHeaders.Add("apikey", apiKey);
+                }
+
+                var includeCompanyIdHeader = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("Kong-IncludeCompanyIdHeader", StringComparison.OrdinalIgnoreCase))?.Value;
+                if (includeCompanyIdHeader == "1")
+                {
+                    _httpClient.DefaultRequestHeaders.Add("company-id", CompanyInstanceSourceId);
                 }
             }
             catch (Exception ex)

@@ -35,6 +35,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using RP.Enterprise.Foundation.DataAccess.Component;
+using System.Net.Http;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSite;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -66,6 +69,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _productInternalSettingRepository = productInternalSettingRepository;
             _samlRepository = samlRepository;
             _manageProduct = manageProduct;
+        }
+
+        /// <summary>
+        /// Unit test constructor
+        /// </summary>
+        /// <param name="repository"></param>
+        /// <param name="userClaims"></param>
+        /// <param name="messageHandler"></param>
+        public ManageProductUser(IRepository repository, DefaultUserClaim userClaims, HttpMessageHandler messageHandler, IOneSiteProductService oneSiteProductService)
+        {
+            _productRepository = new ProductRepository(repository, userClaims);
+            _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
+            _samlRepository = new SamlRepository(repository);
+            _manageProduct = new ManageProduct(repository, userClaims, messageHandler);
+            var manageUnifiedLogin = new ManageUnifiedLogin(repository, userClaims, messageHandler);
+            var manageProductOneSite = new ManageProductOneSite(repository, userClaims, messageHandler, oneSiteProductService);
+            _integrationTypeFactory = new IntegrationTypeFactory(_manageProduct, manageUnifiedLogin, manageProductOneSite, _productRepository, _productInternalSettingRepository, userClaims);
+
         }
 
         /// <summary>
@@ -237,6 +258,65 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return result;
         }
 
+        /// <summary>
+        /// Used to create an employee in the given product
+        /// </summary>
+        /// <param name="productUser"></param>
+        /// <returns></returns>
+        public string CreateEmployeeProductUser(ProductUserProperitiesRoles productUser)
+        {
+            string result = string.Empty;
+            int productId = productUser.ProductId;
+
+            bool isUpdateUser = false;
+            bool usePrimaryProperties = false;
+            RolePropertyList roleProp = new RolePropertyList();
+            try
+            {
+                IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(productUser.AssignUserPersonaId, productUser.ProductId);
+                if (productAttributes.Any())
+                {
+                    isUpdateUser = true;
+                }
+
+                roleProp = GetProductPropertiesRoles<RolePropertyList>(productUser.InputJson) as RolePropertyList;
+                usePrimaryProperties = roleProp.UsePrimaryProperties;
+                roleProp = AssignPrimaryPropertiesToProductBatchOnUserCreate(productUser, roleProp);
+
+                var integration = _integrationTypeFactory.GetIntegrationStandardV1(productUser.ProductId);
+                result = integration.CreateUser(productUser);
+            }
+            catch (Exception ex)
+            {
+                Exception realError = ex;
+                while (realError.InnerException != null)
+                    realError = realError.InnerException;
+
+                result = realError.Message;
+            }
+
+            var employeeInfo = _activityLogHelper.GetUserActivityLogInfo(productUser.AssignUserPersonaId);
+            // If result OK then update Success status else Error
+            if (string.IsNullOrEmpty(result))
+            {
+                SavePersonaProductProperties(usePrimaryProperties, productUser.AssignUserPersonaId, productUser.ProductId, roleProp, productUser.InputJson);
+                WriteActivityLogWithMessage(productUser.RealPageEmployeePersonaId, 0, "Employee {3} {4} added/updated to product {2} in company " + employeeInfo.OrganizationName, productId);
+                return "";
+            }
+
+            if (!isUpdateUser)
+            {
+                _productRepository.UpdateProductSettingProductStatus(productUser.AssignUserPersonaId, productId, "ProductStatus", (int)ProductBatchStatusType.Error);
+            }
+            else
+            {
+                //Activity log
+                result = "An error occurred during the update process for employee {3} {4} to product {2} in company " + employeeInfo.OrganizationName;
+                WriteActivityLogWithMessage(productUser.RealPageEmployeePersonaId, 0, result, productId);
+            }
+
+            return result;
+        }
 
         /// <summary>
         /// Creates Product User
@@ -491,20 +571,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         private void WriteActivityLogWithMessage(long fromPersonaId, long toPersonaId, string message, int productId)
         {
+            UserActivityLogInfo toUserLogDetail = null;
             // log product user updated activity
             var fromUserLogDetail = _activityLogHelper.GetUserActivityLogInfo(fromPersonaId);
-            var toUserLogDetail = _activityLogHelper.GetUserActivityLogInfo(toPersonaId);
+            toUserLogDetail = toPersonaId != 0 ? _activityLogHelper.GetUserActivityLogInfo(toPersonaId) : null;
             var booksProductDetail = _productRepository.GetBooksMasterProductDetail(productId);
 
-            var logMessage = string.Format(message, toUserLogDetail.FirstName, toUserLogDetail.LastName,
+            var logMessage = string.Format(message, toUserLogDetail?.FirstName, toUserLogDetail?.LastName,
                 booksProductDetail.Name, fromUserLogDetail.FirstName, fromUserLogDetail.LastName);
 
-            WriteActivityLog(fromUserLogDetail, toUserLogDetail,
-               booksProductDetail.BooksProductCode, logMessage);
+            WriteActivityLog(fromUserLogDetail, toUserLogDetail, booksProductDetail.BooksProductCode, logMessage);
         }
 
         private void WriteActivityLog(UserActivityLogInfo fromUserLogInfo, UserActivityLogInfo toUserLogInfo, string booksProductCode, string message)
         {
+            long booksMasterOrgId = toUserLogInfo?.BooksOrganizationMasterId ?? fromUserLogInfo.BooksOrganizationMasterId;
+            long orgPartyId = toUserLogInfo?.OrganizationPartyId ?? fromUserLogInfo.OrganizationPartyId;
+
             // log product user updated activity
             try
             {
@@ -513,8 +596,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     LogActivityTypeName = LogActivityTypeConstants.PRODUCT_ACCESS,
                     LogCategoryName = LogActivityCategoryType.ProductAccess.ToString(),
                     CorrelationId = Guid.NewGuid().ToString(),
-                    BooksMasterOrganizationId = toUserLogInfo.BooksOrganizationMasterId,
-                    OrganizationPartyId = toUserLogInfo.OrganizationPartyId,
+                    BooksMasterOrganizationId = booksMasterOrgId,
+                    OrganizationPartyId = orgPartyId,
                     Message = message,
 
                     FromUserLoginName = fromUserLogInfo.LoginName,
@@ -523,11 +606,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     FromUserLastName = fromUserLogInfo.LastName,
                     FromUserRealpageId = fromUserLogInfo.RealPageId.ToString(),
 
-                    ToUserLoginId = toUserLogInfo.UserId,
-                    ToUserLoginName = toUserLogInfo.LoginName,
-                    ToUserFirstName = toUserLogInfo.FirstName,
-                    ToUserLastName = toUserLogInfo.LastName,
-                    ToUserRealpageId = toUserLogInfo.RealPageId.ToString(),
+                    ToUserLoginId = toUserLogInfo?.UserId,
+                    ToUserLoginName = toUserLogInfo?.LoginName,
+                    ToUserFirstName = toUserLogInfo?.FirstName,
+                    ToUserLastName = toUserLogInfo?.LastName,
+                    ToUserRealpageId = toUserLogInfo?.RealPageId.ToString(),
 
                     BooksProductCode = booksProductCode
                 });
@@ -1183,6 +1266,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 LoginName = userLogin.LoginName,
                 BooksOrganizationMasterId = persona.Organization.BooksMasterId,
                 OrganizationPartyId = persona.OrganizationPartyId,
+                OrganizationName = persona.Organization.Name,
                 UserId = userLogin.UserId
             };
         }

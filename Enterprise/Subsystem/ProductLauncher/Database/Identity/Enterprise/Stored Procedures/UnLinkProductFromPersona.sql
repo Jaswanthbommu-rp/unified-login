@@ -1,6 +1,4 @@
-﻿
-
-CREATE PROCEDURE Enterprise.UnLinkProductFromPersona
+﻿CREATE PROCEDURE Enterprise.UnLinkProductFromPersona
 (@PersonaId BIGINT,
  @ProductId INT
 )
@@ -35,6 +33,18 @@ AS
 				)
                  BEGIN
                      DELETE FROM enterprise.PersonaConfiguration
+                     WHERE productid = @ProductId
+                           AND personaid = @PersonaiD;
+                 END;
+             IF EXISTS
+				(
+					SELECT 1
+					FROM Enterprise.EmployeeProductMapping
+					WHERE productid = @ProductId
+						  AND personaid = @PersonaiD
+				)
+                 BEGIN
+                     DELETE FROM Enterprise.EmployeeProductMapping
                      WHERE productid = @ProductId
                            AND personaid = @PersonaiD;
                  END;

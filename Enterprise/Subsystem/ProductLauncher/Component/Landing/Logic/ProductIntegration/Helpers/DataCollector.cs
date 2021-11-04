@@ -60,11 +60,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		public void CreateProductUserInGreenBook(long subjectPersonaId, dynamic userResult, int productId, string productLoginName)
 		{
 			string newid = userResult.userId != null ? (string)userResult.userId : (string)userResult.UserId;
+            string newProductLoginName = userResult.loginName != null ? (string)userResult.loginName : productLoginName;
 
 			if (string.IsNullOrEmpty(newid))
 				throw new Exception($"Unable to get userId from response. userResult-{userResult}");
 
-			CreateSamlUserAttribute(subjectPersonaId, productId, SamlAttributeEnum.productUsername, productLoginName);
+			CreateSamlUserAttribute(subjectPersonaId, productId, SamlAttributeEnum.productUsername, newProductLoginName);
 			CreateSamlUserAttribute(subjectPersonaId, productId, SamlAttributeEnum.UserId, newid);
 
 			//WriteToDiagnosticLog("ManageProductVendorServices.CreateProductUserInGreenBook - Create user Success. Set product status to Success");
@@ -133,6 +134,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			return userDetails;
 		}
+
+        public AdUserDetail GetAzureUserDetails(long userId)
+        {
+            return _userRepository.GetAzureUserDetails(userId);
+        }
+
+        public List<AdGroup> GetAdGroupsForUser(long personaId)
+        {
+            return _productRepository.GetAdGroupsForUser(personaId);
+        }
+
 		private void GetUserSamlDetails(UserDetails userDetails, int productId)
 		{
 			IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(userDetails.PersonaId, productId);
@@ -140,17 +152,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			if (productAttributes != null && productAttributes.Any())
 			{
 				// the  user making the change, get the Company from the user
-				if (productAttributes.Any(a => a.Name.ToUpper() == "PRODUCTUSERNAME"))
+				if (productAttributes.Any(a => a.Name.Equals("ProductUserName", StringComparison.OrdinalIgnoreCase)))
 				{
 					userDetails.ProductUserName =
-						(from a in productAttributes where a.Name.ToUpper() == "PRODUCTUSERNAME" select a.Value)
+						(from a in productAttributes where a.Name.Equals("ProductUserName", StringComparison.OrdinalIgnoreCase) select a.Value)
 							.FirstOrDefault();
 				}
 
-				if (productAttributes.Any(a => a.Name.ToUpper() == "USERID"))
+				if (productAttributes.Any(a => a.Name.Equals("UserId", StringComparison.OrdinalIgnoreCase)))
 				{
 					userDetails.ProductUserId =
-						(from a in productAttributes where a.Name.ToUpper() == "USERID" select a.Value).FirstOrDefault();
+						(from a in productAttributes where a.Name.Equals("UserId", StringComparison.OrdinalIgnoreCase) select a.Value).FirstOrDefault();
 				}
 			}
 		}
@@ -167,5 +179,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				_productRepository.CreateProductSetting(subjectPersonaId, productId, productStatusTypeId, value.ToString());
 			}
 		}
+
+        public void AddUpdateEmployeeProductADGroupMapping(long personaId, int productId, int adGroupId)
+        {
+            _userRepository.AddUpdateEmployeeProductADGroupMapping(personaId, productId, adGroupId);
+        }
 	}
 }

@@ -1,6 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Newtonsoft.Json;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
@@ -12,10 +11,14 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.EmployeeAccess;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSite;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ResidentPortal;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -32,6 +35,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private readonly IIntegrationTypeFactory _integrationTypeFactory;
         private readonly IManageProductOneSite _manageProductOneSite;
         readonly IManageUnifiedLogin _manageUnifiedLogin;
+        private IManageProductUser _manageProductUser;
         IProductInternalSettingRepository _productInternalSettingRepository;
         #region Ctor
 
@@ -52,11 +56,40 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _managePersona = new ManagePersona(_userClaim);
             _manageUnifiedLogin = new ManageUnifiedLogin(_userClaim);
             _manageProductOneSite = new ManageProductOneSite(_userClaim);
+            _manageProductUser = new ManageProductUser(_userClaim);
 
             var manageProduct = new ManageProduct(_userClaim);
             _productInternalSettingRepository = new ProductInternalSettingRepository();
             _integrationTypeFactory = new IntegrationTypeFactory(manageProduct, _manageUnifiedLogin, _manageProductOneSite, _productRepository, _productInternalSettingRepository, _userClaim);
         }
+
+        /// <summary>
+        /// Unit test constructor
+        /// </summary>
+        /// <param name="userClaim"></param>
+        /// <param name="repository"></param>
+        /// <param name="messageHandler"></param>
+        /// <param name="oneSiteProductService"></param>
+        public ManageEmployeeAccess(DefaultUserClaim userClaim, IRepository repository, HttpMessageHandler messageHandler, IOneSiteProductService oneSiteProductService) : base((int)ProductEnum.SupportTool, userClaim, repository)
+        {
+            _productId = (int)ProductEnum.SupportTool;
+            _userClaim = userClaim;
+            _editorRealPageId = _userClaim.UserRealPageGuid;
+            _blueBook = new ManageBlueBook(userClaim, repository, messageHandler);
+            _userLoginRepository = new UserLoginRepository(repository);
+
+            _manageUser = new ManageUser(repository, userClaim, messageHandler);
+            _managePersona = new ManagePersona(repository, userClaim, messageHandler);
+            _manageUnifiedLogin = new ManageUnifiedLogin(repository, userClaim, messageHandler);
+            _manageProductOneSite = new ManageProductOneSite(repository, userClaim, messageHandler, oneSiteProductService);
+            _manageProductUser = new ManageProductUser(repository, userClaim, messageHandler, oneSiteProductService);
+            _manageOrganization = new ManageOrganization(repository, userClaim, messageHandler, _manageProductOneSite);
+
+            var manageProduct = new ManageProduct(repository, userClaim, messageHandler);
+            var productInternalSettingRepository = new ProductInternalSettingRepository(repository);
+            _integrationTypeFactory = new IntegrationTypeFactory(manageProduct, _manageUnifiedLogin, _manageProductOneSite, _productRepository, productInternalSettingRepository, _userClaim);
+        }
+
         #endregion
 
         #region Public Methods
@@ -211,10 +244,79 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return employeePersona;
             
         }
+
+        /// <summary>
+        /// Used to create an employee in product 
+        /// </summary>
+        /// <param name="productId"></param>
+        /// <param name="personaId"></param>
+        /// <returns></returns>
+        public string CreateEmployeeProductUser(int productId, long personaId)
+        {
+            long adminUserPersonaId = 0;
+            var adminCreatorRealPageId = Guid.Empty;
+            var userPersona = _managePersona.GetPersona(personaId);
+            var personaList = _managePersona.ListPersona(userPersona.RealPageId);
+            var employeePersona = personaList.FirstOrDefault(p => p.Organization.RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId);
+            if (employeePersona == null)
+            {
+                return "Employee persona could not be found in RealPage Employee company";
+            }
+
+            var productAdGroups = _productRepository.GetAdGroupsForProduct(productId);
+            if (productAdGroups.Count > 0)
+            {
+                var userAdGroups = _productRepository.GetAdGroupsForUser(employeePersona.PersonaId);
+                var userProductToADGroups = _userRepository.GetEmployeeProductADGroupMapping(personaId, productId);
+                var isProductAssigned = _productRepository.isProductAssigned(personaId, (int)ProductBatchStatusType.Success, productId);
+                if (isProductAssigned)
+                {
+                    var productAddedToUserDate = userProductToADGroups.Max(p => p.CreatedDate);
+                    var userLastADUpdateDate = userAdGroups.Max(p => p.CreatedDate);
+                    if (userProductToADGroups.Any(userProductToAdGroup => userAdGroups.Any(p => p.ADGroupId == userProductToAdGroup.ADGroupId) && productAddedToUserDate > userLastADUpdateDate))
+                    {
+                        return "";
+                    }
+                }
+            }
+            
+            if (userPersona.Organization.RealPageId != Guid.Empty)
+            {
+                adminCreatorRealPageId = _manageOrganization.GetOrganizationAdminUserRealPageId(userPersona.Organization.RealPageId);
+                if (adminCreatorRealPageId == Guid.Empty)
+                {
+                    return "Missing company admin user.";
+                }
+                //recreate clams
+                adminUserPersonaId = _managePersona.GetFirstAvailablePersonaByCompany(adminCreatorRealPageId, userPersona.OrganizationPartyId).PersonaId;
+                _manageProductUser = new ManageProductUser(_userClaim);
+            }
+
+            // not used
+            var rolePropertyList = new RolePropertyList
+            {
+                PropertyList = new List<string>() { "-1" }
+            };
+
+            var productUser = new ProductUserProperitiesRoles()
+            {
+                RealPageId = adminCreatorRealPageId,
+                ProductId = productId,
+                CreateUserPersonaId = adminUserPersonaId,
+                AssignUserPersonaId = personaId,
+                CorrelationId = _userClaim.CorrelationId,
+                InputJson = JsonConvert.SerializeObject(rolePropertyList),
+                CreateRealPageEmployee = true,
+                RealPageEmployeePersonaId = employeePersona.PersonaId
+            };
+            
+            return _manageProductUser.CreateEmployeeProductUser(productUser);
+        }
+
         #endregion
 
         #region Private Methods  
-        
+
         private List<CompanyDetails> MergeCompanies(List<UnifiedLoginCompany> gbcompanies, IList<Company> bbcompanies)
         {
             List<CompanyDetails> compList = new List<CompanyDetails>();
@@ -403,9 +505,4 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
         #endregion
     }
-
-
-
-
-
 }

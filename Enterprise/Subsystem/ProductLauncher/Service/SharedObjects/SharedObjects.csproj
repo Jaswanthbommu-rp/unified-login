@@ -317,7 +317,11 @@
     <Compile Include="IdentityConfig\UserLoginOrganization.cs" />
     <Compile Include="IdentityConfig\UserLoginPersona.cs" />
     <Compile Include="Landing\AdGroup.cs" />
+    <Compile Include="Landing\AdGroupProduct.cs" />
+    <Compile Include="Landing\AdUserDetail.cs" />
     <Compile Include="Landing\ApiError.cs" />
+    <Compile Include="Landing\AzureUser.cs" />
+    <Compile Include="Landing\EmployeeProductMapping.cs" />
     <Compile Include="Landing\IObjectUserListOutput.cs" />
     <Compile Include="Landing\ObjectUserListOutput.cs" />
     <Compile Include="Landing\OrganizationDelete.cs" />

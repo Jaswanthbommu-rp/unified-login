@@ -15,6 +15,8 @@ using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using RP.Enterprise.Foundation.DataAccess.Component;
+using System.Net.Http;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -50,10 +52,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _userClaim = userClaim;
         }
 
-        /// <summary>
-        /// Create a basic instance of the ManageUser Controller class
-        /// </summary>
-        public ManageUser(DefaultUserClaim userClaim)
+		/// <summary>
+		/// Unit test constructor
+		/// </summary>
+		/// <param name="repository"></param>
+		/// <param name="userClaim"></param>
+		/// <param name="messageHandler"></param>
+		public ManageUser(IRepository repository, DefaultUserClaim userClaim, HttpMessageHandler messageHandler)
+        {
+            _userRepository = new UserRepository(repository, userClaim, messageHandler);
+            _credentialRepository = new CredentialRepository(repository);
+            _userLoginRepository = new UserLoginRepository(repository);
+            _manageUserRegistrationEmail = new ManageUserRegistrationEmail(userClaim, repository);
+            _userClaim = userClaim;
+        }
+
+
+		/// <summary>
+		/// Create a basic instance of the ManageUser Controller class
+		/// </summary>
+		public ManageUser(DefaultUserClaim userClaim)
 		{
 			_userRepository = new UserRepository(userClaim);
 			_credentialRepository = new CredentialRepository();

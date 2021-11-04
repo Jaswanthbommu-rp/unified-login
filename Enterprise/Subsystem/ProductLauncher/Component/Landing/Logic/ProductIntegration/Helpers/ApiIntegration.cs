@@ -51,7 +51,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         throw new Exception($"Error in Get response code - {response.StatusCode}, {response.Content}");
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 if (isThrowOnError)
                     throw;

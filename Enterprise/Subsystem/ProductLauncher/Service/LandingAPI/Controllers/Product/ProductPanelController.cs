@@ -18,6 +18,10 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.Controllers;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
+using System.Diagnostics.CodeAnalysis;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Attribute;
+using static RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers.OrganizationController;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers.Product
 {
@@ -334,7 +338,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		/// <param name="roleId"></param>
 		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
 		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
-		[SwaggerResponse(HttpStatusCode.OK, Description = "Update successful", Type = typeof(HttpResponseMessage))]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "Update successful", Type = typeof(ProductRight))]
+        [SwaggerResponseExamples(typeof(ProductRight), typeof(RightsForRoleExample))]
 		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
 		[Route("product/rightsforrole")]
 		[HttpGet]
@@ -478,4 +483,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		}
 		#endregion
 	}
+
+	#region Swagger Examples
+	[ExcludeFromCodeCoverage]
+    public class RightsForRoleExample : IProvideExamples
+    {
+        /// <summary>
+        /// Example object data used by Swagger to document the output of the webapi method
+        /// </summary>
+        /// <returns>List of Companies example</returns>
+        public object GetExamples()
+        {
+            var roleRights = new List<ProductRight>()
+            {
+                new ProductRight() { SetRightId = "1", SetName = "Right 1", RightType = "System", IsAssigned = false },
+                new ProductRight() { SetRightId = "2", SetName = "Right 2", RightType = "System", IsAssigned = true }
+			};
+			
+            return roleRights;
+        }
+    }
+    #endregion
 }

@@ -594,7 +594,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                 if (!string.IsNullOrEmpty(hotsClientId) && !string.IsNullOrEmpty(hotsClientSecret))
                 {
-                    ulClientToken = _tokenHelper.GetExternalClientCredentialServerToken(hotsIssuerUri, hotsClientId, hotsClientSecret, "hotsapi");
+                    ulClientToken = _tokenHelper.GetExternalClientCredentialServerToken(hotsIssuerUri+ "/connect/token", hotsClientId, hotsClientSecret, "hotsapi");
                 }
 
                 if (ulClientToken != null)

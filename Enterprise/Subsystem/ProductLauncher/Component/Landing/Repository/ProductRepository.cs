@@ -2093,7 +2093,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
-        public List<AdGroup> GetAdGroupsForProduct(int productId)
+        public List<AdGroupProduct> GetAdGroupsForProduct(int productId)
         {
             dynamic param = new
             {
@@ -2101,7 +2101,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             };
             using (var repository = GetRepository())
             {
-                return repository.GetMany<AdGroup>(StoredProcNameConstants.SP_GetADGroupsForProduct, param);
+                return repository.GetMany<AdGroupProduct>(StoredProcNameConstants.SP_GetADGroupsForProduct, param);
             }
         }
 
@@ -2128,6 +2128,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 return repository.GetMany<AdGroup>(StoredProcNameConstants.SP_GetUserManagementADGroupsByProduct, param);
             }
         }
+
         #endregion
 
         #region Private Methods
@@ -2161,7 +2162,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 if (productcheckADGroupUserMgmt != null && productcheckADGroupUserMgmt.Value == "1" && impersonatePersonaId > 0)
                 {
                     if (adGroupsForPersona?.Count == 0)
-					{
+                    {
                         s.LockOnProductAccess = true;
                     }
                     if (adGroupsForPersona != null && adGroupsForPersona.Count > 0)
@@ -2178,12 +2179,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 s.LockOnProductAccess = true;
                             }
                         }
-                    }					
+                    }
                 }
                 else if (!string.IsNullOrWhiteSpace(productAccessRight))
                 {
                     s.LockOnProductAccess = !editorRights.Contains(productAccessRight, StringComparer.OrdinalIgnoreCase);
-                }
+                }                
             }
         }
 

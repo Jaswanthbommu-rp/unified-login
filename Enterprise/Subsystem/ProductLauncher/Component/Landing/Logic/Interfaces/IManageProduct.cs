@@ -133,7 +133,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// </summary>
         /// <param name="productId"></param>
         /// <returns></returns>
-        List<AdGroup> GetAdGroupsForProduct(int productId);
+        List<AdGroupProduct> GetAdGroupsForProduct(int productId);
 
         /// <summary>
         /// Get ADGroups for the user

@@ -635,7 +635,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return products;
         }
 
-        public List<AdGroup> GetAdGroupsForProduct(int productId)
+        public List<AdGroupProduct> GetAdGroupsForProduct(int productId)
         {
             return _productRepository.GetAdGroupsForProduct(productId);
         }

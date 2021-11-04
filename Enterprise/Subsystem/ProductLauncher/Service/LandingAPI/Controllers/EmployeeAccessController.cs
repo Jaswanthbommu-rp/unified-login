@@ -1,11 +1,11 @@
 ﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.Controllers;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -63,7 +63,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// <param name="companyRealPageId"></param>
         /// <returns></returns>
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
-        [SwaggerResponse(HttpStatusCode.OK, Description = "Gets comapny persona Id, if exists else creates user in company and gets, and user realpage guid for employee as a user.", Type = typeof(HttpResponseMessage))]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Gets company persona Id, if exists else creates user in company and gets, and user realpage guid for employee as a user.", Type = typeof(HttpResponseMessage))]
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [Route("employeeaccess/company/{companyRealPageId}/persona")]
         [HttpGet]
@@ -75,8 +75,53 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             return Request.CreateResponse(HttpStatusCode.OK, _manageEmployeeAccess.GetOrCreateEmployeePersonaId(companyRealPageId, _userClaims.LoginName));
         }
 
-    }
+        /// <summary>
+        /// Creates an employee in the given product and company if it does not exist.
+        /// </summary>
+        /// <param name="productId"></param>
+        /// <param name="personaId"></param>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Creates an employee in the given product and company if it does not exist.", Type = typeof(EmployeeAccessResponse))]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [Route("employeeaccess/product/{productId}/persona/{personaId}")]
+        [HttpPost]
+        public HttpResponseMessage CreateEmployeeProductUser(int productId, long personaId)
+        {
+            var response = new EmployeeAccessResponse();
 
+            if (productId == 0)
+            {
+                response.ErrorMessage = "Product ID not supplied.";
+                return Request.CreateResponse(HttpStatusCode.BadRequest, response);
+            }
+
+            if (personaId == 0)
+            {
+                response.ErrorMessage = "Persona ID not supplied.";
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Persona ID not supplied.");
+            }
+
+            var result = _manageEmployeeAccess.CreateEmployeeProductUser(productId, personaId);
+            if (string.IsNullOrEmpty(result))
+            {
+                response.Status = true;
+            }
+            else
+            {
+                response.ErrorMessage = result;
+            }
+
+            return Request.CreateResponse(HttpStatusCode.OK, response);
+        }
+
+        public class EmployeeAccessResponse
+        {
+            public bool Status { get; set; }
+            public string ErrorMessage { get; set; } = "";
+
+        }
+    }
 }
 
 

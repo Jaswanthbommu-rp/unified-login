@@ -1,0 +1,6 @@
+﻿CREATE TABLE [Security].[ADUserDetails]
+(
+	[UserId] BIGINT NOT NULL PRIMARY KEY,
+	[SamAccountName] VARCHAR(100) NOT NULL
+	CONSTRAINT [FK_ADUserDetails_UserId] FOREIGN KEY ([UserId]) REFERENCES [Ident].[UserLogin] ([UserId]) ON DELETE CASCADE ON UPDATE CASCADE
+)

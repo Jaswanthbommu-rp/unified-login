@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Net.Mail;
 using System.Runtime.Caching;
 using Newtonsoft.Json;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
@@ -214,6 +215,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         protected GbProductMap _productDetails = new GbProductMap();
 
         public static readonly Guid _contractCompanyRealPageId = new Guid("10F5A427-4636-4F47-840E-6212BD842BC0");
+        public static readonly Guid _employeeCompanyRealPageId = new Guid("0D018E46-C20E-477D-ADED-4E5A35FB8F99");
 
         /// <summary>
         /// Default constructor
@@ -245,6 +247,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _correlationId = _userClaim.CorrelationId.ToString();
             if (productInternalSettingRepository != null) { _productInternalSettingRepository = productInternalSettingRepository; }
             if (productRepository != null) { _productRepository = productRepository; }
+            _productInternalSettingList = GetProductSetting(_productId);
+            _productDetails = GetBooksMasterProductDetail(_productId);
+            if (_productDetails != null)
+            {
+                _udmSourceCode = _productDetails.UDMSourceCode?.Length > 0 ? _productDetails.UDMSourceCode : _productDetails.BooksProductCode;
+            }
+        }
+
+        /// <summary>
+        /// Unit test constructor
+        /// </summary>
+        /// <param name="productId"></param>
+        /// <param name="userClaim"></param>
+        /// <param name="repository"></param>
+        public ManageProductBase(int productId, DefaultUserClaim userClaim, IRepository repository)
+        {
+            _productId = productId;
+            _userClaim = userClaim;
+            _correlationId = _userClaim.CorrelationId.ToString();
+            _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
+            _productRepository = new ProductRepository(repository, userClaim);
             _productInternalSettingList = GetProductSetting(_productId);
             _productDetails = GetBooksMasterProductDetail(_productId);
             if (_productDetails != null)
@@ -1165,7 +1188,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public string LoginName { get; set; }
         public long BooksOrganizationMasterId { get; set; }
         public long OrganizationPartyId { get; set; }
-
+        public string OrganizationName { get; set; }
         public long UserId { get; set; }
     }
 

@@ -23,6 +23,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <returns>String.empty if success else error</returns>
 		string CreateProductUser(ProductUserProperitiesRoles productUser);
 
+        /// <summary>
+		/// Creates an employee product user
+		/// </summary>
+		/// <param name="productUser"></param>
+		/// <returns></returns>
+        string CreateEmployeeProductUser(ProductUserProperitiesRoles productUser);
+
 		/// <summary>
 		/// Used to delete all SAML product information and status for a user
 		/// </summary>

@@ -14,8 +14,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Caching;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using UL = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
+using System.Net.Http;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -50,6 +52,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _productId = (int) ProductEnum.UnifiedPlatform;
             _editorRealPageId = userClaims.UserRealPageGuid;
             _blueBook = manageBlueBook;
+            _userClaims = userClaims;
+        }
+
+        /// <summary>
+        /// Unit test constructor
+        /// </summary>
+        /// <param name="userClaims"></param>
+        /// <param name="repository"></param>
+        /// <param name="messageHandler"></param>
+        public ManageUnifiedLogin(IRepository repository, DefaultUserClaim userClaims, HttpMessageHandler messageHandler) : base((int)ProductEnum.UnifiedPlatform, userClaims, repository)
+        {
+            _productId = (int)ProductEnum.UnifiedPlatform;
+            _editorRealPageId = userClaims.UserRealPageGuid;
+            _blueBook = new ManageBlueBook(userClaims, repository, messageHandler);
             _userClaims = userClaims;
         }
 

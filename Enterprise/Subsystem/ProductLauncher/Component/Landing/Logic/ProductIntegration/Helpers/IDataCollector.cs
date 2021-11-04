@@ -14,5 +14,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         void UpdateProductSettingProductStatus<T>(long subjectPersonaId, string settingType, int productId, T value);
         void UpdateSamlUserAttribute(long personaId, int productId, SamlAttributeEnum attributeType, string newValue);
         void CreateSamlUserAttribute(long subjectPersonaId, int productId, SamlAttributeEnum samlAttributeEnum, string value);
+        AdUserDetail GetAzureUserDetails(long userId);
+        void AddUpdateEmployeeProductADGroupMapping(long personaId, int productId, int adGroupId);
     }
 }

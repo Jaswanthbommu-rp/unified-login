@@ -189,6 +189,7 @@
     <Compile Include="Logic\IManageUserLoginPersona.cs" />
     <Compile Include="Logic\Interfaces\IManageCustomFields.cs" />
     <Compile Include="Logic\Interfaces\IManageIntelligentBuilding.cs" />
+    <Compile Include="Logic\Interfaces\IManageMicrosoftAzure.cs" />
     <Compile Include="Logic\Interfaces\IManageProductPanel.cs" />
     <Compile Include="Logic\Interfaces\IManageStatusType.cs" />
     <Compile Include="Logic\Interfaces\IManageBlueBook.cs" />
@@ -219,6 +220,7 @@
     <Compile Include="Logic\Interfaces\IUnifiedSettingsRepository.cs" />
     <Compile Include="Logic\ManageEnterpriseRoleProductBatch.cs" />
     <Compile Include="Logic\ManageHotsCloneUsers.cs" />
+    <Compile Include="Logic\ManageMicrosoftAzure.cs" />
     <Compile Include="Logic\ManageUnifiedSettings.cs" />
     <Compile Include="Logic\ManageUserLoginPersona.cs" />
     <Compile Include="Logic\ProductIntegration\Factory\IIntegrationTypeFactory.cs" />

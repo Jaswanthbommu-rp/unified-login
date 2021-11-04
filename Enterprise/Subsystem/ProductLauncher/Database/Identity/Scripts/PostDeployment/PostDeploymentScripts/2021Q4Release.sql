@@ -2979,6 +2979,42 @@ UPDATE Ident.SamlAttribute SET DisplayName= 'User Type' where name ='NWPUserType
 
 GO
 
+-- 944879
+IF NOT EXISTS (SELECT TOP (1) 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'AlternateApiEndPoint')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
+	VALUES ('AlternateApiEndPoint', 'An alternate api endpoint for user creation using Standard Integration', 0);
+END
+GO
+
+IF NOT EXISTS (SELECT TOP (1) 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'Kong-IncludeCompanyIdHeader')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
+	VALUES ('Kong-IncludeCompanyIdHeader', 'Add the company-id header to the api requests that are routed through Kong', 0);
+END
+GO
+
+IF EXISTS ( SELECT TOP (1) 1 FROM Security.ADGroupProduct )
+BEGIN
+	UPDATE agp
+	SET agp.AssignmentOrder = 2
+--	SELECT *
+		FROM Security.ADGroupProduct agp 
+		INNER JOIN Security.ADGroup ag ON ag.ADGroupId = agp.ADGroupId
+		WHERE 
+			agp.ProductId = 1 AND ag.ActiveDirectoryId = 'A8CC84A7-37AD-4189-B24B-3F1F724E7C9C'
+
+	UPDATE agp
+	SET agp.AssignmentOrder = 2
+--	SELECT *
+		FROM Security.ADGroupProduct agp 
+		INNER JOIN Security.ADGroup ag ON ag.ADGroupId = agp.ADGroupId
+		WHERE 
+			ag.ActiveDirectoryId = 'DE94D94C-4BDA-49C3-8A36-C2563B440B2D'
+
+END
+
+-- 944879
 --ProductAsideInfoData
 if not exists ( select top 1 1 from Enterprise.ProductSettingType where name = 'ProductAsideInfoData' )
 begin
@@ -3007,3 +3043,26 @@ GO
   End
 
 GO
+
+IF NOT EXISTS ( SELECT TOP(1) 1 FROM Security.ADGroup WHERE ADGroupId = 0 )
+BEGIN
+	SET IDENTITY_INSERT security.ADGroup ON
+
+	INSERT INTO Security.ADGroup
+	(
+		adgroupid,
+		DisplayName,
+		ActiveDirectoryId,
+		CreatedBy,
+		CreatedDate
+	)
+	VALUES
+	(	0,
+		'No AdGroup',   -- DisplayName - nvarchar(255)
+		N'00000000-0000-0000-0000-000000000000',    -- CreatedBy - nvarchar(25)
+		'System',
+		GETUTCDATE() -- CreatedDate - datetime
+		)
+
+	SET IDENTITY_INSERT security.ADGroup OFF
+END	

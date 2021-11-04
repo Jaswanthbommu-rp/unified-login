@@ -1,4 +1,6 @@
-﻿namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
+﻿using System.Web.SessionState;
+
+namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
 {
     public static class StoredProcNameConstants
     {
@@ -455,6 +457,11 @@
         public const string SP_GetADGroupsForUser = "Security.GetADGroupsByPersona";
         public const string SP_GetADGroupsForProduct = "Security.GetADGroupsByProductId";
         public const string SP_GetUserManagementADGroupsByProduct = "Security.GetUserManagementADGroupsByProduct";
+
+        //AD User Details
+        public const string SP_GetADDetailsForUser = "Security.GetADDetailsForUser";
+        public const string SP_GetEmployeeProductADGroupMapping = "Enterprise.GetEmployeeProductADGroupMapping";
+        public const string SP_AddUpdateEmployeeProductADGroupMapping = "Enterprise.AddUpdateEmployeeProductADGroupMapping";
     }
 
     public static class EnterpriseStoredProcNameConstants

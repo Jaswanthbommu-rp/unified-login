@@ -61,6 +61,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return ret;
         }
 
+        public IIntegrationType GetIntegrationStandardV1(int productId)
+        {
+            var integrationType = ProductIntegrationTypeEnum.StandardV1;
+
+            IIntegrationType ret = null;
+            if (_integrationTypeMap.ContainsKey(integrationType))
+            {
+                ret = _integrationTypeMap[integrationType](productId, _userClaims, _manageUnifiedLogin, _manageProductOneSite, _manageProduct, _productRepository, _productInternalSettingRepository);
+            }
+            return ret;
+        }
+
         private static readonly IReadOnlyDictionary<string, ProductIntegrationTypeEnum> _integrationTypeEnumMap =
             new Dictionary<string, ProductIntegrationTypeEnum>(StringComparer.OrdinalIgnoreCase)
             {

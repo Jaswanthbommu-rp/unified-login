@@ -2,6 +2,7 @@
 	[ADGroupProductId] [int] IDENTITY(1,1) NOT NULL,
 	[ADGroupId] [int] NOT NULL,
 	[ProductId] [int] NOT NULL,
+	[AssignmentOrder] TINYINT NOT NULL CONSTRAINT [DF_ADGroupProduct_AssignmentOrder] DEFAULT (1),
 	[CreatedBy] [nvarchar](25) NOT NULL,
 	[CreatedDate] [datetime] NOT NULL
  CONSTRAINT [PK_ADGroupProduct] PRIMARY KEY CLUSTERED 

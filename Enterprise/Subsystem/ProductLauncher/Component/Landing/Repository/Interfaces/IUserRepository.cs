@@ -176,5 +176,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		IList<NavigationMenuRightEntry> GetNavigationMenuRights();
 
 		IList<NavigationMenuSetting> GetNavigationMenuSettingsUnaccessable(long partyId);
-	}
+
+        AdUserDetail GetAzureUserDetails(long userId);
+
+        IList<EmployeeProductMapping> GetEmployeeProductADGroupMapping(long personaId, int productId);
+
+        RepositoryResponse AddUpdateEmployeeProductADGroupMapping(long personaId, int productId, int adGroupId);
+
+    }
 }

@@ -21,6 +21,8 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Inter
 using IC = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RoleType = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSite.RoleType;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
+using RP.Enterprise.Foundation.DataAccess.Component;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -167,6 +169,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _manageElectronicAddress = manageElectronicAddress;
             _userRepository = userRepository;
             _userLoginPersonaRepository = userLoginPersonaRepository;
+        }
+
+        /// <summary>
+        /// Unit test constructor
+        /// </summary>
+        /// <param name="repository"></param>
+        /// <param name="userClaims"></param>
+        /// <param name="messageHandler"></param>
+        /// <param name="oneSiteProductService"></param>
+        public ManageProductOneSite(IRepository repository, DefaultUserClaim userClaims, HttpMessageHandler messageHandler, IOneSiteProductService oneSiteProductService)
+            : base((int)ProductEnum.OneSite, userClaims, repository)
+        {
+            _editorRealPageId = userClaims.UserRealPageGuid;
+            _service = oneSiteProductService;
+            _samlRepository = new SamlRepository(repository);
+            _managePersona = new ManagePersona(repository, userClaims, messageHandler);
+            _blueBook = new ManageBlueBook(userClaims, repository, messageHandler);
+            _productRepository = new ProductRepository(repository, userClaims);
+            _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
+            _messageHandler = messageHandler;
+            _mtApiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "MTAPIENDPOINT").Value;
+            _mtTokenEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "MTTOKENENDPOINT").Value;
+            _mtClientId = _productInternalSettingList.First(a => a.Name.ToUpper() == "MTCLIENTID").Value;
+            _mtClientSecret = _productInternalSettingList.First(a => a.Name.ToUpper() == "MTCLIENTSECRET").Value;
         }
 
         #region Property

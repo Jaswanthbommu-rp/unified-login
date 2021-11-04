@@ -1196,8 +1196,14 @@
     <Build Include="RoleRightsManagement\Stored Procedures\UpdateRightsForRole.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\GetRightsAssignedToRole.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\GetRoleDetails.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\SaveADDetailsForUser.sql" />
+    <Build Include="RoleRightsManagement\Tables\ADUserDetails.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\GetADDetailsForUser.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\GetRightsList.sql" />
     <Build Include="Security\GetRightDetailsByRightId.sql" />
+    <Build Include="Enterprise\Tables\EmployeeProductMapping.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetEmployeeProductADGroupMapping.sql" />
+    <Build Include="Enterprise\Stored Procedures\AddUpdateEmployeeProductADGroupMapping.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\SaveRightDetails.sql" />
     <Build Include="Security\GetRoutesWithRightCount.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\GetAdGroupDetails.sql" />

@@ -51,5 +51,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 	    /// BatchprocessGroup GUID
 	    /// </summary>
         public int BatchProcessorGroupId { get; set; }
+
+        /// <summary>
+        /// Is the user a RealPage employee?
+        /// </summary>
+        public bool CreateRealPageEmployee { get; set; }
+        public long RealPageEmployeePersonaId { get; set; }
     }
 }

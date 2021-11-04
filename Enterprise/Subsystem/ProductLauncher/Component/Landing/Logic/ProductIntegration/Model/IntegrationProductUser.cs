@@ -78,5 +78,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 		[JsonProperty(PropertyName = "isAdminUser", NullValueHandling = NullValueHandling.Ignore)]
 		public bool IsAdminUser { get; set; }
-	}
+
+        [JsonProperty(PropertyName = "isRealPageEmployee", NullValueHandling = NullValueHandling.Ignore)]
+        public bool IsRealPageEmployee { get; set; }
+
+        [JsonProperty(PropertyName = "EmployeeAdditional", NullValueHandling = NullValueHandling.Ignore)]
+		public EmployeeAdditional EmployeeAdditional { get; set; }
+    }
+
+    
+	public class EmployeeAdditional
+    {
+        [JsonProperty(PropertyName = "samAccountName", NullValueHandling = NullValueHandling.Ignore)]
+		public string SAMAccountName { get; set; }
+
+        [JsonProperty(PropertyName = "azureADGroup", NullValueHandling = NullValueHandling.Ignore)]
+		public string AzureADGroup { get; set; }
+
+        [JsonIgnore]
+		public int AzureADGroupId { get; set; }
+    }
 }

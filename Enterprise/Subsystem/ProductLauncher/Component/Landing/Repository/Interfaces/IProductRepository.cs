@@ -308,7 +308,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// </summary>
         /// <param name="productId"></param>
         /// <returns></returns>
-        List<AdGroup> GetAdGroupsForProduct(int productId);
+        List<AdGroupProduct> GetAdGroupsForProduct(int productId);
 
         /// <summary>
         /// Get AdGroups For User
@@ -316,5 +316,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="personaId"></param>
         /// <returns></returns>
         List<AdGroup> GetAdGroupsForUser(long personaId);
+
+        List<AdGroup> GetUserManagementADGroupsByProduct(long productId);
+
     }
 }
