@@ -1260,10 +1260,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         protected string GetOperationEndPoint(ProductEntityEndpointKeyEnum entityType)
         {
             // Get partial api query based on end point                         
-            var partialApiQueryUrl = ProductInternalSettingList.First(a => a.Name.ToUpper() == entityType.ToString().ToUpper()).Value;
+            var partialApiQueryUrl = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals(entityType.ToString(), StringComparison.OrdinalIgnoreCase))?.Value;
             if (string.IsNullOrEmpty(partialApiQueryUrl))
             {
-                throw new Exception();
+                throw new Exception($"Unable to find setting for {entityType}");
             }
 
             return ProductApiBaseUrl + partialApiQueryUrl;
