@@ -60,6 +60,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         [JsonProperty(PropertyName = "Rights", NullValueHandling = NullValueHandling.Ignore)]
         public List<Right> Rights { get; set; }
 
+        /// <summary>
+        /// Description
+        /// </summary>
+        [JsonProperty(PropertyName = "Description")]
+        public string Description { get; set; }
     }
 
 }

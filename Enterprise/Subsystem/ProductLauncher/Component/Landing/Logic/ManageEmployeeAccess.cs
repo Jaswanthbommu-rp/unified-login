@@ -255,6 +255,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         {
             long adminUserPersonaId = 0;
             var adminCreatorRealPageId = Guid.Empty;
+
+            var productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings(productId);
+            var supportsEmployeeAccess = productInternalSettingList.FirstOrDefault(s => s.Name.Equals("SI_SupportsEmployeeCreation", StringComparison.OrdinalIgnoreCase))?.Value;
+            if (string.IsNullOrEmpty(supportsEmployeeAccess) || supportsEmployeeAccess == "0")
+            {
+                return "Product does not support employee creation";
+            }
+
             var userPersona = _managePersona.GetPersona(personaId);
             var personaList = _managePersona.ListPersona(userPersona.RealPageId);
             var employeePersona = personaList.FirstOrDefault(p => p.Organization.RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId);
@@ -271,8 +279,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 var isProductAssigned = _productRepository.isProductAssigned(personaId, (int)ProductBatchStatusType.Success, productId);
                 if (isProductAssigned)
                 {
-                    var productAddedToUserDate = userProductToADGroups.Max(p => p.CreatedDate);
-                    var userLastADUpdateDate = userAdGroups.Max(p => p.CreatedDate);
+                    var productAddedToUserDate = userProductToADGroups.Count > 0 ? userProductToADGroups.Max(p => p.CreatedDate) : DateTime.MinValue;
+                    var userLastADUpdateDate = userAdGroups.Count > 0 ? userAdGroups.Max(p => p.CreatedDate) : DateTime.MinValue;
                     if (userProductToADGroups.Any(userProductToAdGroup => userAdGroups.Any(p => p.ADGroupId == userProductToAdGroup.ADGroupId) && productAddedToUserDate > userLastADUpdateDate))
                     {
                         return "";

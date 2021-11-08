@@ -2994,6 +2994,20 @@ BEGIN
 END
 GO
 
+IF NOT EXISTS (SELECT TOP (1) 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'SI_AdditionalSAMLUserAttributes')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
+	VALUES ('SI_AdditionalSAMLUserAttributes', 'Standard Integration - Which additional product values should be saved for the user. Values: PMCID', 0);
+END
+GO
+
+IF NOT EXISTS (SELECT TOP (1) 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'SI_SupportsEmployeeCreation')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
+	VALUES ('SI_SupportsEmployeeCreation', 'Standard Integration - Does the product support RealPage employee creation using ADGroups', 0);
+END
+GO
+
 IF EXISTS ( SELECT TOP (1) 1 FROM Security.ADGroupProduct )
 BEGIN
 	UPDATE agp
@@ -3010,10 +3024,55 @@ BEGIN
 		FROM Security.ADGroupProduct agp 
 		INNER JOIN Security.ADGroup ag ON ag.ADGroupId = agp.ADGroupId
 		WHERE 
-			ag.ActiveDirectoryId = 'DE94D94C-4BDA-49C3-8A36-C2563B440B2D'
+			ag.ActiveDirectoryId = 'DE94D94C-4BDA-49C3-8A36-C2563B440B2D' and agp.productid <> 1
 
+	UPDATE agp
+	SET agp.AssignmentOrder = 3
+--	SELECT *
+		FROM Security.ADGroupProduct agp 
+		INNER JOIN Security.ADGroup ag ON ag.ADGroupId = agp.ADGroupId
+		WHERE 
+			ag.ActiveDirectoryId = 'DE94D94C-4BDA-49C3-8A36-C2563B440B2D' and agp.productid = 1
 END
 
+
+DECLARE @NOW DATETIME = GETUTCDATE()
+
+if NOT EXISTS (
+	select TOP (1) 1 
+		FROM Enterprise.GlobalProductConfiguration gpc  
+		JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId  
+		JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId  
+		JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId  
+			WHERE  gpc.ProductId = 1
+		AND ((@NOW BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@NOW >= gpc.FromDate AND gpc.ThruDate IS NULL))  
+		AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))  
+		AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))  
+		AND pst.Name = 'SI_AdditionalSAMLUserAttributes'
+	)
+	BEGIN
+		declare @currentproductconfigurationid INT
+		select distinct TOP (1) @currentproductconfigurationid = pc.configurationid
+			FROM Enterprise.GlobalProductConfiguration gpc  
+			JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId  
+			JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId  
+			JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId  
+				WHERE  gpc.ProductId = 1
+			AND ((@NOW BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@NOW >= gpc.FromDate AND gpc.ThruDate IS NULL))  
+			AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))  
+			AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))  
+		order by pc.ConfigurationId DESC
+
+		if (@currentproductconfigurationid is not null)
+		begin
+			insert into enterprise.ProductSetting ( productid, ProductSettingTypeId, value, FromDate )
+				select 1, productsettingtypeid, 'PMCID', GETUTCDATE()
+					from enterprise.ProductSettingType where name = 'SI_AdditionalSAMLUserAttributes'
+			insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate, ThruDate )
+				values ( @currentproductconfigurationid, SCOPE_IDENTITY(), GETUTCDATE(), null )
+		end
+	END
+GO
 -- 944879
 --ProductAsideInfoData
 if not exists ( select top 1 1 from Enterprise.ProductSettingType where name = 'ProductAsideInfoData' )
