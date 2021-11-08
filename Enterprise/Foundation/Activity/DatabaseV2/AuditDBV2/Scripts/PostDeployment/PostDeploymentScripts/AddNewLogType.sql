@@ -23,7 +23,7 @@ End
 
 GO
 
-IF NOT EXISTS (SELECT TOP 1 1 FROM Logging.LogCategoryType WHERE Name = 'Internal Product Settings')
+IF NOT EXISTS (SELECT TOP 1 1 FROM Logging.LogCategoryType WHERE Name = 'InternalProductSettings')
 BEGIN
 	Declare @catId int;
 
@@ -31,7 +31,7 @@ BEGIN
 	FROM Logging.LogCategoryType
 
 	Insert into Logging.LogCategoryType (LogCategoryTypeId, Name, Description)
-	values (@catId, 'Internal Product Settings','Internal Product Settings.')
+	values (@catId, 'InternalProductSettings','Internal Product Settings.')
 END
 
 GO
@@ -43,7 +43,7 @@ BEGIN
 	
 	SELECT @catId = LogCategoryTypeId
 	FROM logging.LogCategoryType 
-	WHERE NAME = 'Internal Product Settings'
+	WHERE NAME = 'InternalProductSettings'
 	
 	SELECT @logId = MAX(LogTypeId) + 1
 	FROM Logging.LogType
