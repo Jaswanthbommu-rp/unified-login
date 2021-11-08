@@ -3010,8 +3010,15 @@ BEGIN
 		FROM Security.ADGroupProduct agp 
 		INNER JOIN Security.ADGroup ag ON ag.ADGroupId = agp.ADGroupId
 		WHERE 
-			ag.ActiveDirectoryId = 'DE94D94C-4BDA-49C3-8A36-C2563B440B2D'
+			ag.ActiveDirectoryId = 'DE94D94C-4BDA-49C3-8A36-C2563B440B2D' and agp.productid <> 1
 
+	UPDATE agp
+	SET agp.AssignmentOrder = 3
+--	SELECT *
+		FROM Security.ADGroupProduct agp 
+		INNER JOIN Security.ADGroup ag ON ag.ADGroupId = agp.ADGroupId
+		WHERE 
+			ag.ActiveDirectoryId = 'DE94D94C-4BDA-49C3-8A36-C2563B440B2D' and agp.productid = 1
 END
 
 -- 944879

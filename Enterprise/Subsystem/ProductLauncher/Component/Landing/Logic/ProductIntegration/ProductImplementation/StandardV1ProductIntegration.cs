@@ -1,10 +1,12 @@
 ﻿using Newtonsoft.Json;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterprise.Helpers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Factory;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Helpers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
@@ -19,7 +21,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterprise.Helpers;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.ProductImplementation
 {
@@ -1484,13 +1485,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // Get Company Books Instance Source Id
                 var userBooksMasterId = EditorUserDetails.BooksCustomerMasterId;
                 if (subjectPersonaId != 0)
+                {
                     userBooksMasterId = SubjectUserDetails.BooksCustomerMasterId;
-                CompanyInstanceSourceId = _dataCollector.GetProductCompanyMap(blueBookProductCode, userBooksMasterId, _userClaims, EditorUserDetails.OrganizationDomain).CompanyInstanceSourceId;
+                }
+                
+                var overrideCompanyInstanceSourceId = CheckForOverrideCompanyIdForProduct();
+                if (string.IsNullOrEmpty(overrideCompanyInstanceSourceId))
+                {
+                    CompanyInstanceSourceId = _dataCollector.GetProductCompanyMap(blueBookProductCode, userBooksMasterId, _userClaims, EditorUserDetails.OrganizationDomain).CompanyInstanceSourceId;
+                }
+                else
+                {
+                    CompanyInstanceSourceId = overrideCompanyInstanceSourceId;
+                }
 
                 if (string.IsNullOrEmpty(CompanyInstanceSourceId))
                 {
                     throw new BlueBookException("Company Setup Error: Please Contact Support.");
                 }
+
+                
             }
             catch (Exception ex)
             {
@@ -1499,6 +1513,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 throw ex;
             }
+        }
+
+        private string CheckForOverrideCompanyIdForProduct()
+        {
+            var overridePMCId = "";
+            var rpcache = new RPObjectCache();
+            var cacheKey = $"orgProductSettings_{_userClaims.OrganizationRealPageGuid}_{ProductId}";
+            IList<ProductSettingList> orgProductSettingList = rpcache.GetFromCache(cacheKey, 300, () => _productRepository.GetProductSettings(_userClaims.OrganizationRealPageGuid, ProductId));
+            if (orgProductSettingList.Any(p => p.Name.Equals("OverridePMCID", StringComparison.OrdinalIgnoreCase)))
+            {
+                var overridePMC = orgProductSettingList.FirstOrDefault(p => p.Name.Equals("OverridePMCID", StringComparison.OrdinalIgnoreCase))?.Value;
+                if (overridePMC != null)
+                {
+                    overridePMCId = overridePMC;
+                    WriteToDiagnosticLog($"{nameof(StandardV1ProductIntegration)} - Found OverridePMCID {overridePMC}");
+                }
+            }
+
+            return overridePMCId;
         }
 
         #endregion
