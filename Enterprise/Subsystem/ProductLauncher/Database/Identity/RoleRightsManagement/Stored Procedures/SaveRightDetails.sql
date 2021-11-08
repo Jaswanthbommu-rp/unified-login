@@ -74,8 +74,8 @@ BEGIN
 		  CROSS APPLY OPENJSON(i.RoleData)
 		  WITH(RoleId INT '$.RoleId') r;
 
-		  Declare @RightId int,@VisibilityStatusId Int;
-		  Select @RightId = ISNULL(RightId,0) From @SecurityRight
+		  Declare @RightId int,@VisibilityStatusId Int, @RightName varchar(100);
+		  Select @RightId = ISNULL(RightId,0), @RightName = RightName From @SecurityRight
 
 		  IF (@RightId = 0)
 		  BEGIN
@@ -92,8 +92,8 @@ BEGIN
 
 			IF (Select Count(*) From @RightRoute) > 0
 			Begin
-				INSERT INTO Security.RightRoute(RightId,RouteId,CreatedBy,CreatedDate)
-				Select @RightId,RouteId,@ModifiedBy,GETUTCDATE() From @RightRoute
+				INSERT INTO Security.RightRoute(RightId,RouteId,RightName,CreatedBy,CreatedDate)
+				Select @RightId,RouteId,@RightName, @ModifiedBy,GETUTCDATE() From @RightRoute
 			End
 
 			IF (Select Count(*) From @OverRideRight) > 0
@@ -129,8 +129,8 @@ BEGIN
 				Delete From Security.RightRoute Where RightId = @RightId
 				IF (Select Count(*) From @RightRoute) > 0
 				Begin
-					INSERT INTO Security.RightRoute(RightId,RouteId,CreatedBy,CreatedDate)
-					Select RightId,RouteId,@ModifiedBy,GETUTCDATE() From @RightRoute
+					INSERT INTO Security.RightRoute(RightId,RouteId,RightName,CreatedBy,CreatedDate)
+					Select @RightId,RouteId,@RightName, @ModifiedBy,GETUTCDATE() From @RightRoute
 				End
 
 				Delete From Security.OrganizationOverRideRight Where RightId = @RightId
