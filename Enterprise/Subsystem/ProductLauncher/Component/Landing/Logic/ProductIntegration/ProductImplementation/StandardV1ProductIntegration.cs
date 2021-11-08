@@ -718,6 +718,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // OPTIONAL - If product needs more attributes than userid or loginName then override in the product (e.g. PAM uses)
                 CreateAdditionalSamlUserAttribute(SubjectUserDetails.PersonaId, ProductId, productUser);
 
+                CreateAdditionalSamlUserAttributeForStandardIntegration(SubjectUserDetails.PersonaId, ProductId, productUser);
+
                 if (productUser.EmployeeAdditional != null)
                 {
                     _dataCollector.AddUpdateEmployeeProductADGroupMapping(SubjectUserDetails.PersonaId, ProductId, productUser.EmployeeAdditional.AzureADGroupId);
@@ -813,6 +815,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // OPTIONAL - If product needs more attributes than userid or loginName then override in the product (e.g. PAM uses)
                 CreateAdditionalSamlUserAttribute(SubjectUserDetails.PersonaId, ProductId, productUser);
 
+                CreateAdditionalSamlUserAttributeForStandardIntegration(SubjectUserDetails.PersonaId, ProductId, productUser);
+
                 if (productUser.EmployeeAdditional != null)
                 {
                     _dataCollector.AddUpdateEmployeeProductADGroupMapping(SubjectUserDetails.PersonaId, ProductId, productUser.EmployeeAdditional.AzureADGroupId);
@@ -903,7 +907,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             //Blank method used for override
         }
-        
+
+        /// <summary>
+        /// Used to add additional product information for the given user and product.
+        /// </summary>
+        /// <param name="personaId"></param>
+        /// <param name="productId"></param>
+        /// <param name="productUser"></param>
+        private void CreateAdditionalSamlUserAttributeForStandardIntegration(long personaId, int productId, IntegrationProductUser productUser)
+        {
+            string additionalSamlAttributesForStandardIntegration = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("SI_AdditionalSAMLUserAttributes", StringComparison.OrdinalIgnoreCase))?.Value;
+            if (additionalSamlAttributesForStandardIntegration != null)
+            {
+                var samlAttributeList = additionalSamlAttributesForStandardIntegration.Split(',');
+                foreach (var attribute in samlAttributeList)
+                {
+                    switch (attribute.ToUpperInvariant())
+                    {
+                        case "PMCID":
+                            _dataCollector.CreateSamlUserAttribute(personaId, productId, SamlAttributeEnum.PMCID, productUser.CompanyId);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Returns true if user exists in the product
         /// </summary> 
