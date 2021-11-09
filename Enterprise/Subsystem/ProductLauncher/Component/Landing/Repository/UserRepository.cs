@@ -4037,6 +4037,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         productListToCreate.Add(pb);
                     }
                 }
+                aoInputJsonString = BundleAoProducts(productListToCreate, batchGroup.BatchProcessorGroupId);
             }
 
             if (productListToCreate != null)
