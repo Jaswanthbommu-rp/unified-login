@@ -388,7 +388,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     TimeZoneSidKey = "America/Chicago",
                     Username = uniqueProductLoginName,
                     LocaleSidKey = "en_US",
-                    CommunityNickname = uniqueProductLoginName,
+                    CommunityNickname = uniqueProductLoginName.Substring(0, uniqueProductLoginName.Length >= 40 ? 40 : uniqueProductLoginName.Length),
                     Alias = GetAliasFromLogin(uniqueProductLoginName),
                     ProfileId = clientPortalPropertyRole.RoleList[0],
                     IsActive = true
