@@ -364,7 +364,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="productId">The product id to delete</param>
         public void DeleteSamlUserProductInfoAndStatus(long personaId, int productId)
         {
-            _samlRepository.DeleteSamlUserProductInfoAndStatus(personaId, productId);
+            var result =_samlRepository.DeleteSamlUserProductInfoAndStatus(personaId, productId);
+            if(result.Id > 0)
+            {
+                _samlRepository.DeletePersonaProductError(personaId);
+            }
         }
 
         /// <summary>

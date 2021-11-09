@@ -1023,8 +1023,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                     {
                                         param = new
                                         {
-                                            PersonaId = PersonaId,
-                                            ProductId = ProductId,
+                                            PersonaId = PersonaId
                                         };
                                         repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_ManagePersonaProductError, param);
                                         if (repositoryResponse.Id == 0)

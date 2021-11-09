@@ -68,5 +68,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		/// <param name="PersonaId">User personaId</param>		
 		/// <returns>List of Persona Products SAML Details</returns>
 		IList<ProductSamlDetails> ListPersonaProductsSamlDetails(long PersonaId);
+
+		/// <summary>
+		/// Used to delete product error for a user
+		/// </summary>
+		/// <param name="personaId"></param>
+		/// <returns></returns>
+		RepositoryResponse DeletePersonaProductError(long personaId);
 	}
 }
