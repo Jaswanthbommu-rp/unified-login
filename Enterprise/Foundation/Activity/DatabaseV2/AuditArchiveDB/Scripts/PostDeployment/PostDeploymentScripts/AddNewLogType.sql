@@ -53,3 +53,26 @@ BEGIN
 	VALUES (@logId, @catId, 'Product Settings Update', 'Product Settings Update')
 	
 End
+
+GO
+
+IF NOT EXISTS(SELECT TOP 1 1 FROM Logging.LogType WHERE NAME = 'Import Product')
+BEGIN
+	DECLARE @catId INT;
+	DECLARE @logId INT;
+	
+	SELECT @catId = LogCategoryTypeId
+	FROM logging.LogCategoryType 
+	WHERE NAME = 'InternalProductSettings'
+	
+	SELECT @logId = MAX(LogTypeId) + 1
+	FROM Logging.LogType
+	
+	SELECT @catId, @logId
+	
+	INSERT INTO Logging.LogType (LogTypeId, LogcategoryTypeId, Name, Description)
+	VALUES (@logId, @catId, 'Import Product', 'Import Product')
+	
+End
+
+GO

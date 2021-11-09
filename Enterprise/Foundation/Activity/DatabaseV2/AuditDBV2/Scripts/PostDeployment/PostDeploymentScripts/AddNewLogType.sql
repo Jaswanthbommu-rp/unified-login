@@ -23,7 +23,7 @@ End
 
 GO
 
-IF NOT EXISTS (SELECT TOP 1 1 FROM Logging.LogCategoryType WHERE Name = 'InternalProductSettings')
+IF NOT EXISTS (SELECT TOP 1 1 FROM Logging.LogCategoryType WHERE Name = 'Internal Product Settings')
 BEGIN
 	Declare @catId int;
 
@@ -31,12 +31,33 @@ BEGIN
 	FROM Logging.LogCategoryType
 
 	Insert into Logging.LogCategoryType (LogCategoryTypeId, Name, Description)
-	values (@catId, 'InternalProductSettings','Internal Product Settings.')
+	values (@catId, 'Internal Product Settings','Internal Product Settings.')
 END
 
 GO
 
 IF NOT EXISTS(SELECT TOP 1 1 FROM Logging.LogType WHERE NAME = 'Product Settings Update')
+BEGIN
+	DECLARE @catId INT;
+	DECLARE @logId INT;
+	
+	SELECT @catId = LogCategoryTypeId
+	FROM logging.LogCategoryType 
+	WHERE NAME = 'Internal Product Settings'
+	
+	SELECT @logId = MAX(LogTypeId) + 1
+	FROM Logging.LogType
+	
+	SELECT @catId, @logId
+	
+	INSERT INTO Logging.LogType (LogTypeId, LogcategoryTypeId, Name, Description)
+	VALUES (@logId, @catId, 'Product Settings Update', 'Product Settings Update')
+	
+End
+
+GO
+
+IF NOT EXISTS(SELECT TOP 1 1 FROM Logging.LogType WHERE NAME = 'Import Product')
 BEGIN
 	DECLARE @catId INT;
 	DECLARE @logId INT;
@@ -51,6 +72,9 @@ BEGIN
 	SELECT @catId, @logId
 	
 	INSERT INTO Logging.LogType (LogTypeId, LogcategoryTypeId, Name, Description)
-	VALUES (@logId, @catId, 'Product Settings Update', 'Product Settings Update')
+	VALUES (@logId, @catId, 'Import Product', 'Import Product')
 	
 End
+
+GO
+
