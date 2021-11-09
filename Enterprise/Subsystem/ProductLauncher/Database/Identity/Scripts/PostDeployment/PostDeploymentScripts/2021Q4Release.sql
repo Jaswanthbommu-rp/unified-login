@@ -2662,7 +2662,7 @@ SELECT @RId = RoleId from [Security].[Role] where RoleName='User Administrator';
 IF NOT EXISTS (Select Top 1 1 from Security.[Right] where RightName = 'ManageVendorMarketplaceProductAccess')
 BEGIN
   INSERT INTO Security.[Right](RightName, Description, Value, StatusTypeId, VisibilityStatusId, ProductId, TargetProductId, CreatedBy, CreatedDate)
-	VALUES('ManageVendorMarketplaceProductAccess', 'Manage Vendor Marketplace Product Access', 'Manage Vendor Marketplace Product Access', 13, 9, 38, 38, @UserId, GETDATE())
+	VALUES('ManageVendorMarketplaceProductAccess', 'Manage Vendor Marketplace Product Access', 'Manage Vendor Marketplace Product Access', 13, 9, 3, 38, @UserId, GETDATE())
 END
 Select @Rig = RightId from Security.[Right] where RightName = 'ManageVendorMarketplaceProductAccess';
 
