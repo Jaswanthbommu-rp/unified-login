@@ -398,7 +398,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var integration = _integrationTypeFactory.GetIntegration(productId);
             return integration.GetRightsForRole(editorPersonaId, 0, roleId, partyId, assignedToRoleOnly, datafilter);
         }
+        public ListResponse GetProductRightsForRole(long editorPersonaId, string roleId, long partyId, int productId, RequestParameter datafilter, bool assignedToRoleOnly = false)
+        {
+            var integration = _integrationTypeFactory.GetIntegration(productId);
+            if (_integrationTypeFactory.GetIntegrationTypeForProductId(productId) == ProductIntegrationTypeEnum.StandardV1)
+            {
+                return integration.GetRightsForRole(editorPersonaId, 0, roleId, partyId, assignedToRoleOnly, datafilter);
+            }
+            else
+            {
+                return integration.GetRightsForRole(editorPersonaId, 0, Int32.Parse(roleId), partyId, assignedToRoleOnly, datafilter);
+            }
 
+        }
         public ListResponse GetProductPropertyGroups(long editorPersonaId, long userPersonaId, int productId, RequestParameter datafilter, bool assignedOnly = false, string userLoginName = "")
         {
             ListResponse result = new ListResponse();

@@ -14,3 +14,9 @@ Begin
  Insert into Security.RoleRight values (@RoleID,@RightId,@UserId,GETDATE())
 End
 GO
+--ProductAsideInfoData
+if not exists ( select top 1 1 from Enterprise.ProductSettingType where name = 'ProductAsideInfoData' )
+begin
+	insert into enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'ProductAsideInfoData', 'The type of data which loads aside info grid.For example groupproperties or rights.', 0)
+end
+GO

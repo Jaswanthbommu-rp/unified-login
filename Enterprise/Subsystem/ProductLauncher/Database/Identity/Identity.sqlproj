@@ -1174,6 +1174,7 @@
     <Build Include="Enterprise\Tables\NavigationMenuSettingAccess.sql" />
     <Build Include="Enterprise\Stored Procedures\GetNavigationMenuSettingUnaccessable.sql" />
     <Build Include="Enterprise\Tables\ProductUserDependency.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListProductsByOrganizationForAdminUser.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

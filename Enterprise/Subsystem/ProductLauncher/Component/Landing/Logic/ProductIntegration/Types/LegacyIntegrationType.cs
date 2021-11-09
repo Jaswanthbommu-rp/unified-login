@@ -413,6 +413,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return result;
         }
 
+        public ListResponse GetRightsForRole(long editorPersonaId, long userPersonaId, string roleId, long partyId, bool assignedToRoleOnly, RequestParameter dataFilter)
+        {
+            ListResponse result = new ListResponse();
+
+            return result;
+        }
+
         public string CreateUser(ProductUserProperitiesRoles productUser)
         {
             string result;

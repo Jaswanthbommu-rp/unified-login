@@ -200,7 +200,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Returns Product Rights for a Role
         /// </summary>
-        public virtual ListResponse GetProductRightsForRole(RequestParameter dataFilter, long roleId, string baseUrlAndQuery = null)
+        public virtual ListResponse GetProductRightsForRole(RequestParameter dataFilter, string roleId, string baseUrlAndQuery = null)
         {
             try
             {

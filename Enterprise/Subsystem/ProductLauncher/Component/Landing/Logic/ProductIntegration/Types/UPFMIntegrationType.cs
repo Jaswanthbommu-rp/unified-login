@@ -50,6 +50,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public ListResponse GetRightsForRole(long editorPersonaId, long userPersonaId, long roleId, long partyId, bool assignedToRoleOnly, RequestParameter dataFilter) =>
             _manageUPFMProductIntegration.GetRightsByRole(editorPersonaId, partyId, roleId);
 
+        public ListResponse GetRightsForRole(long editorPersonaId, long userPersonaId, string roleId, long partyId, bool assignedToRoleOnly, RequestParameter dataFilter)
+        {
+            ListResponse result = new ListResponse();
+            return result;
+        }
+
         public string CreateUser(ProductUserProperitiesRoles productUser)
         {
             var productPropertiesRoles = DeserializeJSON<UPFMProductPropertyRole>(productUser.InputJson);

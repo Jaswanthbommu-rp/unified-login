@@ -21,12 +21,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
 		/// Get Roles based Rights
 		/// </summary>
-        ListResponse GetProductRightsForRole(RequestParameter dataFilter, long roleId, string baseUrlAndQuery = null);
-
-        /// <summary>
-        /// Get Product Properties
-        /// </summary>
-        ListResponse GetProductProperties(RequestParameter datafilter, string baseUrlAndQuery = null);
+        ListResponse GetProductRightsForRole(RequestParameter dataFilter, string roleId, string baseUrlAndQuery = null);		
+		/// <summary>
+		/// Get Product Properties
+		/// </summary>
+		ListResponse GetProductProperties(RequestParameter datafilter, string baseUrlAndQuery = null);
 
 		/// <summary>
 		/// Get Product Regions
