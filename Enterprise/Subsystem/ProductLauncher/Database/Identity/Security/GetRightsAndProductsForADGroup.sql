@@ -1,12 +1,11 @@
 ﻿CREATE   PROCEDURE [Security].[GetRightsAndProductsForADGroup] @adGroupId int  
 AS  
 BEGIN  
- SELECT r.RightId, r.RightName, p.Name as ProductName  
- FROM Security.[ADGroupRight] ar  
- JOIN Security.[Right] r on r.RightId = ar.RightId  
- JOIN  Security.ADGroupProduct ap on ar.ADGroupId = ap.ADGroupId  
- JOIN Enterprise.Product p on p.ProductId = ap.ProductId
-  AND r.TargetProductId = p.ProductId
- WHERE ar.ADGroupId = @adGroupId  
- ORDER BY p.Name  
+ SELECT r.RightId, r.RightName, p.Name as ProductName, p1.Name AS TargetProductName
+ FROM security.ADGroupRight adr
+ INNER JOIN security.[Right] r ON r.RightId = adr.RightId
+ INNER JOIN enterprise.Product p ON p.ProductId = r.ProductId
+ INNER JOIN enterprise.product p1 ON p1.ProductId = r.TargetProductId
+ WHERE adr.ADGroupId = @adGroupId      
+ ORDER BY p.name, p1.name 
 END  
