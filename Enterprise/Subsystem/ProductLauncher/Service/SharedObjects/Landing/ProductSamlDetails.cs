@@ -21,6 +21,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		public string NWPUserType { get; set; }
 		public int ParentProductTypeId { get; set; }
 		public List<ProductDetails> Products { get; set; }
+	}
+
+	public class SamlUserProductDetails
+	{
+		public IList<ProductSamlDetails> ProductSamlDetails { get; set; }
+
 		public List<GbProductMap> AOProducts { get; set; }
 	}
 

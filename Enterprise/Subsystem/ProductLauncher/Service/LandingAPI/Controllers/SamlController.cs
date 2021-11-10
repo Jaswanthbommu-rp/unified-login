@@ -90,17 +90,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [Authorize]
         [Route("saml/persona/{personaId}/attributes")]
         [HttpGet]
-        public IList<ProductSamlDetails> GetPersonaProductSamlDetails([FromUri] long personaId)
+        public SamlUserProductDetails GetPersonaProductSamlDetails([FromUri] long personaId)
         {
             var samlRepository = new SamlRepository();
             var productSamlDetails = samlRepository.ListPersonaProductsSamlDetails(personaId);
             var aoProducts = productSamlDetails.FirstOrDefault(p => p.ProductId == 4);
             ProductRepository productRepository = new ProductRepository();
             IList<GbProductMap> gbProductMaps = productRepository.ListProducts(null, null, null, null);
+            SamlUserProductDetails samlUserProductDetails = new SamlUserProductDetails
+            {
+                AOProducts = gbProductMaps.Where(p => p.UDMSourceCode == "AO").OrderBy(s => s.Name).ToList()
+            };
             if (aoProducts != null)
             {
                 aoProducts.Products = new List<ProductDetails>();
-                aoProducts.AOProducts = gbProductMaps.Where(p => p.UDMSourceCode == "AO").OrderBy(s => s.Name).ToList();
                 //Add AO products with success status
                 var successStatusProducts = productSamlDetails.Where(p => p.ParentProductTypeId == 400 && p.ProductStatus.Equals("Success", StringComparison.OrdinalIgnoreCase)).ToList();
                 foreach (var prod in successStatusProducts)
@@ -131,8 +134,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     productSamlDetails.Remove(item);
                 }
             }
-
-            return productSamlDetails;
+            samlUserProductDetails.ProductSamlDetails = productSamlDetails;
+            return samlUserProductDetails;
         }
 
         /// <summary>
