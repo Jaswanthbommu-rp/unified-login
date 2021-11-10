@@ -1256,5 +1256,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             return result;
         }
+
+        public ListResponse GetAccessTypes(long editorPersonaId, long userPersonaId) => new ListResponse();
     }
 }

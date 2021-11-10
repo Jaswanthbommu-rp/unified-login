@@ -1,4 +1,13 @@
-﻿--START UserStory 944608
+﻿-- Add GetAccessTypesEndpoint product setting
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'GetAccessTypesEndpoint')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
+	VALUES ('GetAccessTypesEndpoint', 'Access Type endpoint for product API', 0);
+END
+
+GO
+--START UserStory 944608
 IF NOT EXISTS (Select * from  [Security].[ADGroup] where DisplayName = 'RealPage IA' AND ActiveDirectoryId = 'b894d20b-fc29-4aca-927f-485b585a4a36')
 BEGIN
 INSERT INTO [Security].[ADGroup](DisplayName, ActiveDirectoryId, CreatedBy, CreatedDate)
