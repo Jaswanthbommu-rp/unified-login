@@ -3126,6 +3126,85 @@ BEGIN
 	SET IDENTITY_INSERT security.ADGroup OFF
 END	
 
+GO
+
+--- 1002362
+UPDATE Enterprise.NavigationMenu SET Title = 'Platform Setup Activity Log' WHERE Title = 'Company Setup Activity Log' AND Origin = 'unified-login'
+GO
+
+IF NOT EXISTS ( SELECT TOP (1) 1 FROM enterprise.NavigationMenuRights nmr 
+	INNER JOIN enterprise.NavigationMenu nm ON nmr.NavigationMenuId = nm.Id 
+	INNER JOIN security.[Right] r ON r.RightId = nmr.RightId
+	WHERE 
+		nm.Title = 'Platform Setup Activity Log' AND nm.Origin = 'unified-login'
+		AND r.RightName = 'EmployeeAccessToCompanySetup'
+)
+BEGIN
+	INSERT INTO enterprise.NavigationMenuRights (NavigationMenuId,RightId)
+	SELECT nm.id, r.RightId FROM enterprise.NavigationMenu nm
+	CROSS JOIN security.[Right] r
+	WHERE
+		nm.Title = 'Platform Setup Activity Log' AND nm.Origin = 'unified-login'
+		AND 
+		r.RightName = 'EmployeeAccessToCompanySetup'
+END
+GO
+
+IF NOT EXISTS ( SELECT TOP (1) 1 FROM enterprise.NavigationMenuRights nmr 
+	INNER JOIN enterprise.NavigationMenu nm ON nmr.NavigationMenuId = nm.Id 
+	INNER JOIN security.[Right] r ON r.RightId = nmr.RightId
+	WHERE 
+		nm.Title = 'Platform Setup Activity Log' AND nm.Origin = 'unified-login'
+		AND r.RightName = 'EmployeeAccessToInternalClientSettings'
+)
+BEGIN
+	INSERT INTO enterprise.NavigationMenuRights (NavigationMenuId,RightId)
+	SELECT nm.id, r.RightId FROM enterprise.NavigationMenu nm
+	CROSS JOIN security.[Right] r
+	WHERE
+		nm.Title = 'Platform Setup Activity Log' AND nm.Origin = 'unified-login'
+		AND 
+		r.RightName = 'EmployeeAccessToInternalClientSettings'
+END
+GO
+
+IF NOT EXISTS ( SELECT TOP (1) 1 FROM enterprise.NavigationMenuRights nmr 
+	INNER JOIN enterprise.NavigationMenu nm ON nmr.NavigationMenuId = nm.Id 
+	INNER JOIN security.[Right] r ON r.RightId = nmr.RightId
+	WHERE 
+		nm.Title = 'Platform Setup Activity Log' AND nm.Origin = 'unified-login'
+		AND r.RightName = 'AbilityToAddProducts'
+)
+BEGIN
+	INSERT INTO enterprise.NavigationMenuRights (NavigationMenuId,RightId)
+	SELECT nm.id, r.RightId FROM enterprise.NavigationMenu nm
+	CROSS JOIN security.[Right] r
+	WHERE
+		nm.Title = 'Platform Setup Activity Log' AND nm.Origin = 'unified-login'
+		AND 
+		r.RightName = 'AbilityToAddProducts'
+END
+GO
+
+IF NOT EXISTS ( SELECT TOP (1) 1 FROM enterprise.NavigationMenuRights nmr 
+	INNER JOIN enterprise.NavigationMenu nm ON nmr.NavigationMenuId = nm.Id 
+	INNER JOIN security.[Right] r ON r.RightId = nmr.RightId
+	WHERE 
+		nm.Title = 'Platform Setup Activity Log' AND nm.Origin = 'unified-login'
+		AND r.RightName = 'EmployeeAccessToInternalRolesAndRightsSetup'
+)
+BEGIN
+	INSERT INTO enterprise.NavigationMenuRights (NavigationMenuId,RightId)
+	SELECT nm.id, r.RightId FROM enterprise.NavigationMenu nm
+	CROSS JOIN security.[Right] r
+	WHERE
+		nm.Title = 'Platform Setup Activity Log' AND nm.Origin = 'unified-login'
+		AND 
+		r.RightName = 'EmployeeAccessToInternalRolesAndRightsSetup'
+END
+GO
+
+--- 1002362
 -- Add GetAccessTypesEndpoint product setting
 
 IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'GetAccessTypesEndpoint')
