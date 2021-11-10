@@ -455,7 +455,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
 		[Route("product/locationgroups")]
 		[HttpGet]
-		public HttpResponseMessage GetLocationGroups(long editorPersonaId, long userPersonaId, int productId, [FromUri]RequestParameter datafilter)
+		public HttpResponseMessage GetLocationGroups(long editorPersonaId, long userPersonaId, int productId, [FromUri] RequestParameter datafilter)
 		{
 			var completeRoute = this.ControllerContext.RouteData.Route;
 			string method = completeRoute.RouteTemplate.Substring(completeRoute.RouteTemplate.IndexOf("/"));
@@ -472,6 +472,39 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
 			if (result.IsError)
 				Request.CreateResponse(HttpStatusCode.Forbidden, result);
+
+			return Request.CreateResponse(HttpStatusCode.OK, result);
+		}
+
+		/// <summary>
+		/// Product Access Types
+		/// </summary>
+		/// <param name="editorPersonaId">Assign user Id</param>
+		/// <param name="userPersonaId">Author user persona id who is creating or editing user</param> 
+		/// <param name="productId">Author user persona id who is creating or editing user</param>
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "Successfully received access types", Type = typeof(HttpResponseMessage))]
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when information is out of sync with the server)")]
+		[Route("product/accessTypes")]
+		[HttpGet]
+		public HttpResponseMessage GetAccessTypes(long editorPersonaId, long userPersonaId, int productId)
+		{
+			if (editorPersonaId == 0)
+            {
+				return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
+			}
+			else if (_realpageUserId == Guid.Empty)
+            {
+				return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
+			}
+
+			var result = _manageProductPanel.GetProductAccessTypes(editorPersonaId, userPersonaId, productId);
+
+			if (result.IsError)
+            {
+				return Request.CreateResponse(HttpStatusCode.Forbidden, result);
+			}
 
 			return Request.CreateResponse(HttpStatusCode.OK, result);
 		}

@@ -115,6 +115,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		ListResponse GetProductLocationGroups(long editorPersonaId, long userPersonaId, int productId, RequestParameter datafilter, bool assignedOnly = false, string userLoginName = "");
 
 		/// <summary>
+		/// Get product access types
+		/// </summary>
+		/// <param name="editorPersonaId">Assign user Id</param>
+		/// <param name="userPersonaId">Author user persona id who is creating or editing user</param> 
+		/// <param name="productId">Author user persona id who is creating or editing user</param>
+		/// <returns></returns>
+		ListResponse GetProductAccessTypes(long editorPersonaId, long userPersonaId, int productId);
+
+		/// <summary>
 		/// Compare Product and Primary properties
 		/// </summary>
 		/// <param name="upfmProperty"></param>

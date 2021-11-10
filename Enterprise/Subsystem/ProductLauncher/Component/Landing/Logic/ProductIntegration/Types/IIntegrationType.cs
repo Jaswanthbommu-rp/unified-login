@@ -39,5 +39,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         string UpdateUserProfile(ProductUserProperitiesRoles productUser);
         
         string UpdateUserDetails(ProductUserAccountDetails productUserAccountDetails);
+
+        ListResponse GetAccessTypes(long editorPersonaId, long userPersonaId);
     }
 }
