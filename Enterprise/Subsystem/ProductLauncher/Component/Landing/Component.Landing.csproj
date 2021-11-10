@@ -229,6 +229,7 @@
     <Compile Include="Logic\ProductIntegration\Model\ClickPay\ClickPayOrganization.cs" />
     <Compile Include="Logic\ProductIntegration\Model\ClickPay\ClickPayRole.cs" />
     <Compile Include="Logic\ProductIntegration\Model\ClickPay\ClickPayUsers.cs" />
+    <Compile Include="Logic\ProductIntegration\Model\ProductAccessType.cs" />
     <Compile Include="Logic\ProductIntegration\Model\ProductRight.cs" />
     <Compile Include="Logic\ProductIntegration\Model\ProductRightRole.cs" />
     <Compile Include="Logic\ProductIntegration\Model\SeniorLeadManagement\OneSiteUserInfo.cs" />

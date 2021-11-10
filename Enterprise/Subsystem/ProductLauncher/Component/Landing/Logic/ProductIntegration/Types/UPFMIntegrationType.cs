@@ -128,5 +128,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         }
 
         public string UpdateUserDetails(ProductUserAccountDetails productUserAccountDetails, bool internalChange = false) => "User details Change not implemented for this Product.";
+
+
+        public ListResponse GetAccessTypes(long editorPersonaId, long userPersonaId) => new ListResponse();
     }
 }
