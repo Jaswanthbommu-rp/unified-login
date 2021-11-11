@@ -4,6 +4,7 @@ BEGIN
 	Select r.RightId, 
 		r.RightName, 
 		r.Description,
+		r.Value,
 		p.ProductId,
 		p.Name as ProductName,
 		t.ProductId as TargetProductId,

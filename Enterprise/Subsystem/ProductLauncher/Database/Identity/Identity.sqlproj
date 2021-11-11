@@ -1210,6 +1210,8 @@
     <Build Include="RoleRightsManagement\Stored Procedures\GetAdGroupByActiveDirectoryId.sql" />
     <Build Include="Enterprise\Stored Procedures\ListProductsByOrganizationForAdminUser.sql" />
     <Build Include="UserManagement\Stored Procedures\GetProductPageById.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\GetRoleDetailsByShortName.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\GetRightDetailsByRightName.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
