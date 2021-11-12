@@ -66,7 +66,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Helper
 			if (allProperties)
 			{
 				if (productID == (int)ProductEnum.ClientPortal ||
-					integrationType == ProductIntegrationTypeEnum.UPFM)
+					integrationType == ProductIntegrationTypeEnum.UPFM ||
+					integrationType == ProductIntegrationTypeEnum.StandardV1)
 				{
 					PropertyList.Add("-1");
 				}
