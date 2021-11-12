@@ -1067,7 +1067,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (_productId == (int)ProductEnum.AssetOptimizer)
             {
                 updates = UpdateAoUserDetails(productUserAccountDetails);
-                if (internalChange) 
+                if (internalChange)
                 {
                     var productNameString = product.Name;
                     GenerateInternalUpdateAttrLogMessage(assignUserPersonaId, changedAttribute, changedAttrValues, oldSamlAttributes);
@@ -1077,22 +1077,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     var subProucts = productUserAccountDetails.SubProducts.ToList();
                     var newlySelectedAOProducts = aoProducts.Where(p => subProucts.Any(p2 => p2 == p.BooksProductCode)).ToList();
 
-                    string aoProductString = "(";
-                    foreach (var item in newlySelectedAOProducts)
-                        aoProductString += item.Name + ", ";
+                    string aoProductString = " ( " + String.Join(", ", newlySelectedAOProducts.Select(p => p.Name)) + " )";
 
-                    var lastComma = aoProductString.LastIndexOf(',');
-                    if (lastComma != -1)
-                        aoProductString = aoProductString.Remove(lastComma, 1);
-                    
-                    var secondlastComma = aoProductString.LastIndexOf(',');
-                    if (secondlastComma != -1)
-                        aoProductString = aoProductString.Remove(secondlastComma, 1).Insert(secondlastComma, " and"); ;
-
-                    aoProductString += ")";
-                    
                     if (newlySelectedAOProducts.Count > 0)
+                    {
                         productNameString += aoProductString.ToString();
+                    }
 
                     CreateInternalUpdateLogMessage(messageTolog, fromuserInfo, touserInfo, changedAttribute, changedAttrValues, productNameString);
                 }
@@ -1100,19 +1090,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             else
             {
                 manageProductBase.UpdateSamlUserAttributes(assignUserPersonaId, productUserAccountDetails.ProductSettings);
+                manageProductBase.UpdateProductSettingProductStatus(assignUserPersonaId,
+                    ManageProductBase._productSettingType_ProductStatus, (int)productUserAccountDetails.ProductStatus);
 
                 if (internalChange)
                 {
                     GenerateInternalUpdateAttrLogMessage(assignUserPersonaId, changedAttribute, changedAttrValues, oldSamlAttributes);
-                    GenerateInternalUpdateStatusLogMessage(productUserAccountDetails, changedAttribute, changedAttrValues);
-                    CreateInternalUpdateLogMessage(messageTolog, fromuserInfo, touserInfo, changedAttribute, changedAttrValues, product.Name);
+                    if (changedAttrValues.Count > 0)
+                    {
+                        GenerateInternalUpdateStatusLogMessage(productUserAccountDetails, changedAttribute, changedAttrValues);
+                        CreateInternalUpdateLogMessage(messageTolog, fromuserInfo, touserInfo, changedAttribute, changedAttrValues, product.Name);
+                    }
                 }
 
-                manageProductBase.UpdateProductSettingProductStatus(assignUserPersonaId,
-                    ManageProductBase._productSettingType_ProductStatus, (int)productUserAccountDetails.ProductStatus);
             }
-
-            _activityLogHelper.PushToQueue(fromuserInfo, touserInfo, messageTolog.ToString(), "USER_UPDATE_INTERNAL");
+            if (messageTolog.Length > 0)
+            {
+                _activityLogHelper.PushToQueue(fromuserInfo, touserInfo, messageTolog.ToString(), "USER_UPDATE_INTERNAL");
+            }
 
             return updates;
         }
@@ -1127,8 +1122,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (lastComma != -1) 
                 commaAttributes = commaAttributes.Remove(lastComma, 1).Insert(lastComma, " and");
 
-            messageTolog.Append($"{fromuserInfo.FirstName} {fromuserInfo.LastName} updated {commaAttributes} " +
-                $"of {touserInfo.FirstName} {touserInfo.LastName} for {productName}.");
+            if (commaAttributes.Length > 0)
+            {
+                messageTolog.Append($"{fromuserInfo.FirstName} {fromuserInfo.LastName} updated {commaAttributes} " +
+                    $"of {touserInfo.FirstName} {touserInfo.LastName} for {productName}. ");
+            }
+            else
+            {
+                messageTolog.Append($"{fromuserInfo.FirstName} {fromuserInfo.LastName} updated {touserInfo.FirstName} {touserInfo.LastName} for {productName}.");
+            }
 
             foreach (var item in changedAttrValues)
             {
