@@ -8,9 +8,9 @@
     @StatusTypeId INT = 5,           --waiting    
     @RetryCount TINYINT = 0,         -- no retries on a new    
     @InputJson NVARCHAR(MAX),  
-    @LastRunDate SMALLDATETIME = NULL,  
-    @CreatedDate SMALLDATETIME = NULL,  
-    @ModifiedDate SMALLDATETIME = NULL,  
+    @LastRunDate DATETIME = NULL,  
+    @CreatedDate DATETIME = NULL,  
+    @ModifiedDate DATETIME = NULL,  
     @ErrorDetails VARCHAR(MAX) = NULL,  
     @BatchProcessTypeId TINYINT = 1, --default create update user  
     @CorrelationId UNIQUEIDENTIFIER = NULL
@@ -19,7 +19,7 @@ AS
 BEGIN  
     SET NOCOUNT ON;  
   
-    DECLARE @NOW SMALLDATETIME = GETUTCDATE(),  
+    DECLARE @NOW DATETIME = GETUTCDATE(),  
             @PersonPartyId BIGINT;  
   
     IF @CreatedDate IS NULL  

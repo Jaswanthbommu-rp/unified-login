@@ -2,7 +2,7 @@
 	[BatchProcessorErrorId] [int] IDENTITY(1,1) NOT NULL,
 	[BatchProcessorId] [bigint] NOT NULL,
 	[Error] [varchar](max) NULL,
-	[CreatedDateTime] [smalldatetime] NOT NULL,
+	[CreatedDateTime] DATETIME NOT NULL,
  CONSTRAINT [PK_BatchError] PRIMARY KEY CLUSTERED 
 (
 	[BatchProcessorErrorId] ASC

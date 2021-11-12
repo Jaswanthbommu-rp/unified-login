@@ -10,7 +10,7 @@ BEGIN
         [SubjectUserPersonaId] [BIGINT] NOT NULL,  
         [EnterpriseRoleTemplateId] [INT] NOT NULL,  
         [StatusTypeId] [INT] NOT NULL,  
-        [CreatedDateTime] [SMALLDATETIME] NOT NULL,  
+        [CreatedDateTime] [DATETIME] NOT NULL,  
         [BatchProcessTypeId] [TINYINT] NOT NULL  
     );  
 

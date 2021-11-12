@@ -21,8 +21,8 @@ BEGIN
         [StatusTypeId] [INT] NOT NULL,  
         [RetryCount] [TINYINT] NOT NULL,  
         [InputJson] [NVARCHAR](MAX) NOT NULL,  
-        [LastRunDateTime] [SMALLDATETIME] NULL,  
-        [CreatedDateTime] [SMALLDATETIME] NOT NULL,  
+        [LastRunDateTime] [DATETIME] NULL,  
+        [CreatedDateTime] [DATETIME] NOT NULL,  
         [BatchProcessTypeId] [TINYINT] NOT NULL  
     );  
   

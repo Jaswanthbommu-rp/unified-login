@@ -7,9 +7,9 @@
  ,@StatusTypeId int = 5 --waiting    
  ,@RetryCount tinyint = 0 -- no retries on a new    
  ,@InputJson nvarchar(max)    
- ,@LastRunDate smalldatetime = NULL    
- ,@CreatedDate smalldatetime = NULL  
- ,@ModifiedDate smalldatetime = NULL    
+ ,@LastRunDate DATETIME = NULL    
+ ,@CreatedDate DATETIME = NULL  
+ ,@ModifiedDate DATETIME = NULL    
  ,@ErrorDetails varchar(max) = NULL    
  ,@BatchProcessTypeId tinyint =1 --default create update user  
  ,@CorrelationId uniqueidentifier =NULL  
@@ -21,7 +21,7 @@ BEGIN
  IF @CorrelationId IS NULL  
    SET @CorrelationId = NEWID()  
   
- DECLARE @NOW smalldatetime = GETUTCDATE(),  
+ DECLARE @NOW DATETIME = GETUTCDATE(),  
   @PersonPartyId bigint;    
      
  IF @CreatedDate IS NULL  
