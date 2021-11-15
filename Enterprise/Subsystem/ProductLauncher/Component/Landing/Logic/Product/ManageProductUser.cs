@@ -1187,25 +1187,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             else //else: it will be updating the existing values
             {
                 if (newSamlAttributes.Count > 0)
-                    foreach (var item in oldSamlAttributes)
+                {
+                    foreach (var newAttribute in newSamlAttributes)
                     {
-                        var a = newSamlAttributes.Where(x => x.Name == item.Name).FirstOrDefault();
+                        var a = oldSamlAttributes.Where(x => x.Name.Equals(newAttribute.Name, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
                         if (a != null)
                         {
-                            var attribute = newSamlAttributes.FirstOrDefault(x => x.Name == item.Name);
+                            var oldAttribute = oldSamlAttributes.FirstOrDefault(x => x.Name.Equals(newAttribute.Name, StringComparison.OrdinalIgnoreCase));
 
-                            if (attribute.Value != item.Value)
+                            if (!oldAttribute.Value.Equals(newAttribute.Value, StringComparison.OrdinalIgnoreCase))
                             {
-                                if (!string.IsNullOrWhiteSpace(attribute.Value))
+                                if (!string.IsNullOrWhiteSpace(oldAttribute.Value))
                                 {
                                     //updated
-                                    changedAttribute.Add(item.DisplayName);
-                                    changedAttrValues.Add($"From {item.DisplayName} : \"{item.Value}\" to \"{attribute.Value}\". ");
+                                    changedAttribute.Add(oldAttribute.DisplayName);
+                                    changedAttrValues.Add($"From {oldAttribute.DisplayName} : \"{oldAttribute.Value}\" to \"{newAttribute.Value}\". ");
                                 }
                             }
                         }
-
+                        else
+                        {
+                            //added
+                            changedAttribute.Add(newAttribute.DisplayName);
+                            changedAttrValues.Add($"From {newAttribute.DisplayName} : \"None\" to \"{newAttribute.Value}\". ");
+                        }
                     }
+                }
             }
         }
 
