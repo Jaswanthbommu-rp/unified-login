@@ -1279,7 +1279,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 foreach (var adGroupProduct in orderedAdGroup)
                 {
                     if (userAdGroups.All(p => p.ADGroupId != adGroupProduct.ADGroupId)) continue;
-                    productUser.EmployeeAdditional.AzureADGroup = adGroupProduct.ADGroupName;
+                    productUser.EmployeeAdditional.AzureADGroup = adGroupProduct.ActiveDirectoryId.ToString();
                     productUser.EmployeeAdditional.AzureADGroupId = adGroupProduct.ADGroupId;
                     break;
                 }

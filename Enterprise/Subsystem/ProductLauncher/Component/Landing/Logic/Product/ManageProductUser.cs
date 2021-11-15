@@ -313,6 +313,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 //Activity log
                 result = "An error occurred during the update process for employee {3} {4} to product {2} in company " + employeeInfo.OrganizationName;
                 WriteActivityLogWithMessage(productUser.RealPageEmployeePersonaId, 0, result, productId);
+                return "An error occurred during the update process";
             }
 
             return result;

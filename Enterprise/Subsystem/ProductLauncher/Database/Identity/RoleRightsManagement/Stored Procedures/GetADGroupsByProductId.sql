@@ -4,7 +4,8 @@ AS
 BEGIN
 	SELECT 
 		AP.ADGroupId, 
-		G.DisplayName AS ADGroupName,
+		G.DisplayName [ADGroupName],
+		g.ActiveDirectoryId [ActiveDirectoryId],
 		AP.AssignmentOrder
 	FROM [Security].ADGroupProduct AP
 		JOIN [Security].ADGroup G on G.ADGroupId = AP.ADGroupId

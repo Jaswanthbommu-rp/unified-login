@@ -7,5 +7,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         public int ADGroupId { get; set; }
         public DateTime CreatedDate { get; set; }
         public string ADGroupName { get; set; }
+        public Guid ActiveDirectoryId { get; set; }
     }
 }
