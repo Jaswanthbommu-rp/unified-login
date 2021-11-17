@@ -2,7 +2,6 @@
 	[RightRouteId] [bigint] IDENTITY(1,1) NOT NULL,
 	[RightId] INT NOT NULL,
 	[RouteId] INT NULL,
-	[RightName] [varchar](256) NOT NULL,
 	[CreatedBy] [nvarchar](25) NOT NULL,
 	[CreatedDate] [datetime] NOT NULL,
  CONSTRAINT [PK_RightRoute] PRIMARY KEY CLUSTERED 

@@ -81,6 +81,7 @@ AS
 		R.RightId AS RightId
 		,R.RightName AS  RightName
 		,ISNULL(R.Description,'') AS Description
+		,ISNULL(R.Value,R.RightName) As Value
 		,ISNULL(r.VisibilityStatusId,'0') AS VisibilityStatusId
 		,ISNULL(ST.Name,'') AS Visibility		
 		,R.ProductId as ProductId
@@ -120,6 +121,7 @@ AS
 		RightId
 		, RightName
 		, Description
+		, Value
 		, VisibilityStatusId
 		, Visibility
 		, Product
@@ -156,6 +158,7 @@ SELECT
 		RightId
 		, RightName
 		, Description
+		, Value
 		, VisibilityStatusId
 		, Visibility
 		, Product

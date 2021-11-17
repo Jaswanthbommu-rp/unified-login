@@ -43,9 +43,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.S
             RPObjectCache rpcache = new RPObjectCache();
             var cacheKey = $"listRightsAndActionsByPersonaId_{personaId}_{routeId}";
            
-            var productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
-            string schemaName =  productInternalSettingList.FirstOrDefault(s => s.Name.Equals("RolesRightsSchemaName", StringComparison.OrdinalIgnoreCase))?.Value;
-            var procName = schemaName?.Length > 0 ? $"{schemaName}.ListPersonaRightsAndActionsByRoute" : StoredProcNameConstants.SP_ListPersonaRightsAndActionsByRoute;
+            var procName = StoredProcNameConstants.SP_ListPersonaRightsAndActionsByRoute;
 
             IEnumerable<PersonaActionRight> personaRights = rpcache.GetFromCache<IEnumerable<PersonaActionRight>>(cacheKey, 120, () =>
             {

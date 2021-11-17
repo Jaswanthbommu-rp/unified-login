@@ -349,8 +349,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         #region Persona Security
         public const string SP_ListRolesByRealPageID = "Enterprise.ListRolesByRealPageID";
         public const string SP_LinkPersonaToRole = "Security.LinkPersonaToRole";
-        public const string SP_ListRightsByPersonaID = "Enterprise.ListPersonaRightsAndActionsByRoute";
-        public const string SP_ListPersonaRightsAndActionsByRoute = "Enterprise.ListPersonaRightsAndActionsByRoute";
+        public const string SP_ListRightsByPersonaID = "Security.ListPersonaRightsAndActionsByRoute";
+        public const string SP_ListPersonaRightsAndActionsByRoute = "Security.ListPersonaRightsAndActionsByRoute";
         #endregion
 
         public const string SP_GetUserDetails = "Enterprise.GetUserDetails_Ver01";

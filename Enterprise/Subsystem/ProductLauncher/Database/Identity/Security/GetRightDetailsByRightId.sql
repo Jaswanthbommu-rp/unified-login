@@ -4,7 +4,7 @@ BEGIN
 	Select r.RightId, 
 		r.RightName, 
 		r.Description,
-		r.Value,
+		ISNULL(r.Value,r.RightName) As Value,
 		p.ProductId,
 		p.Name as ProductName,
 		t.ProductId as TargetProductId,
