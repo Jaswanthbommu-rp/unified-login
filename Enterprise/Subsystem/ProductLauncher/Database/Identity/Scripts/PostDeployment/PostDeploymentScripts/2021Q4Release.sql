@@ -2587,8 +2587,8 @@ END
 
 IF @rolesandrightssetuprightid <> 0 AND @sidemenurouteid <> 0 AND NOT EXISTS (SELECT TOP 1 1 FROM Security.RightRoute WHERE RightId = @rolesandrightssetuprightid AND RouteId = @sidemenurouteid)
 BEGIN
-	INSERT INTO security.RightRoute ( RightId,RouteId,RightName,CreatedBy,CreatedDate )
-	VALUES ( @rolesandrightssetuprightid, @sidemenurouteid, 'EmployeeAccessToInternalRolesAndRightsSetup', @UserId, GETDATE() )
+	INSERT INTO security.RightRoute ( RightId,RouteId,CreatedBy,CreatedDate )
+	VALUES ( @rolesandrightssetuprightid, @sidemenurouteid, @UserId, GETDATE() )
 END
 
 GO
