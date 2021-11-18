@@ -14,7 +14,7 @@ BEGIN
 				   @PersonPartyId bigint,
 				   @EmployeePersonaId bigint;
 
-		 Declare @CompanyOrganizationProduct TABLE ( ProductId INT, ProductStatus varchar(100) NULL ) 
+		 Declare @CompanyOrganizationProduct TABLE ( ProductId INT, ProductStatus varchar(100) NULL, SupportsEmployeeCreation bit  ) 
 		 Declare @EmployeeADGroupProduct TABLE ( ProductId INT ) 
 
 		 SELECT @PersonPartyId = UL.PersonPartyId,@PersonaId = per.PersonaId
@@ -37,11 +37,11 @@ BEGIN
 		 WHERE O.PartyId = @PartyId
 			
 		 --Org Products
-		 INSERT INTO @CompanyOrganizationProduct ( ProductId )
-			SELECT ProductId from Enterprise.OrganizationProduct 
-			WHERE PartyId = @PartyId
-			And ProductId NOT IN (3,36,56)
-			AND ((@NOW BETWEEN FromDate AND ThruDate) OR (@NOW >= FromDate	AND ThruDate IS NULL))
+		INSERT INTO @CompanyOrganizationProduct ( ProductId , SupportsEmployeeCreation )
+		SELECT distinct ProductId , 0 from Enterprise.OrganizationProduct 
+		WHERE PartyId = @PartyId
+		And ProductId NOT IN (3,36,56)
+		AND ((@NOW BETWEEN FromDate AND ThruDate) OR (@NOW >= FromDate	AND ThruDate IS NULL))
 
 		--AD Groups
 		INSERT INTO @EmployeeADGroupProduct ( ProductId )
@@ -56,15 +56,11 @@ BEGIN
 	  --Persona Product status
 	  IF (@PersonaId > 0 AND @PersonaId IS NOT NULL)
 	  Begin
-	   Update OP SET ProductStatus = p.StatusTypeId
-	   FROM Enterprise.PersonaConfiguration p
-			INNER JOIN @CompanyOrganizationProduct OP ON OP.ProductId = p.ProductId
-         WHERE p.PersonaId = @PersonaId
-               AND ((@NOW BETWEEN p.FromDate AND p.ThruDate)
-                    OR (@NOW >= p.FromDate
-                        AND p.ThruDate IS NULL))
-               AND (p.StatusTypeId = @ProductStatusValue
-                    OR @ProductStatusValue IS NULL);
+		   Update OP SET ProductStatus = p.StatusTypeId
+		   FROM Enterprise.PersonaConfiguration p
+				INNER JOIN @CompanyOrganizationProduct OP ON OP.ProductId = p.ProductId
+		   WHERE p.PersonaId = @PersonaId
+		   AND ((@NOW BETWEEN p.FromDate AND p.ThruDate) OR (@NOW >= p.FromDate AND p.ThruDate IS NULL));       
 
 			--Persona Product Centers
 			INSERT INTO @CompanyOrganizationProduct ( ProductId )   
@@ -88,11 +84,29 @@ BEGIN
 
 		IF EXISTS ( SELECT TOP 1 1 FROM @CompanyOrganizationProduct Where ProductID = 4 )
 		BEGIN
-			INSERT INTO @CompanyOrganizationProduct ( ProductId )
-				Select ProductId from Enterprise.Product where ProductTypeId IN ( SELECT ProductTypeId FROM Enterprise.ProductType where ParentProductTypeId = 400 )
+			INSERT INTO @CompanyOrganizationProduct ( ProductId, SupportsEmployeeCreation )
+				Select ProductId,0 from Enterprise.Product where ProductTypeId IN ( SELECT ProductTypeId FROM Enterprise.ProductType where ParentProductTypeId = 400 )
 		END	
 		
+		--Product is enabled for user creation (SI_SupportsEmployeeCreation)
+		Update COP Set SupportsEmployeeCreation = ISNULL(ps.Value,0)
+		FROM @CompanyOrganizationProduct COP
+			JOIN Enterprise.GlobalProductConfiguration gpc ON gpc.ProductId = COP.ProductId
+			JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId
+			JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId
+			JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId
+		WHERE pst.Name = 'SI_SupportsEmployeeCreation'
+		AND ((@NOW BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@NOW >= gpc.FromDate AND gpc.ThruDate IS NULL))
+		AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))
+		AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))
 		
+		--product Status logic
+		--AD Group and SupportsEmployeeCreation and product is not assigned then status is 5
+		--AD Group and SupportsEmployeeCreation and product is  assigned then status is 8
+		--AD Group and SupportsEmployeeCreation and product is assignment errored out then status is 7
+		--AD Group is not assigned and SupportsEmployeeCreation  then status is 24
+		--AD Group is assigned and NO SupportsEmployeeCreation  then status is 24
+		--AD Group is not assigned and NO SupportsEmployeeCreation  then status is 24
 		 SELECT DISTINCT
                 prod.ProductGUID,
                 prod.ProductId,
@@ -104,10 +118,12 @@ BEGIN
                 @RealPageId AS RealPageId,
                 @PartyId AS OrganizationPartyId,
                 @Name AS OrganizationName,
-              	CASE WHEN (ISNULL(EAD.ProductId, 0) > 0 AND ISNULL(COP.ProductStatus, 0) = 0) THEN '5'
-				WHEN (ISNULL(EAD.ProductId, 0) > 0 AND COP.ProductStatus = 8) THEN '8'
-				WHEN (ISNULL(EAD.ProductId, 0) = 0 AND COP.ProductStatus = 8) THEN '24'
-				WHEN ISNULL(EAD.ProductId, 0) = 0  THEN '24'
+              	CASE WHEN (ISNULL(EAD.ProductId, 0) > 0 AND ISNULL(COP.ProductStatus, 0) = 0) AND COP.SupportsEmployeeCreation = 1 THEN '5'
+				WHEN (ISNULL(EAD.ProductId, 0) > 0 AND COP.SupportsEmployeeCreation = 1 AND COP.ProductStatus = 8) THEN '8'
+				WHEN (ISNULL(EAD.ProductId, 0) > 0 AND COP.SupportsEmployeeCreation = 1 AND COP.ProductStatus = 7) THEN '7'
+				WHEN (ISNULL(EAD.ProductId, 0) = 0 AND COP.SupportsEmployeeCreation = 1) THEN '24'
+				WHEN (ISNULL(EAD.ProductId, 0) > 0 AND COP.SupportsEmployeeCreation = 0) THEN '24'
+				WHEN (ISNULL(EAD.ProductId, 0) = 0 AND COP.SupportsEmployeeCreation = 0) THEN '24' 
 				ELSE COP.ProductStatus END As ProductStatus
 		FROM @CompanyOrganizationProduct COP
 		INNER JOIN Enterprise.Product prod ON prod.ProductId = COP.ProductId and prod.Active = 1
