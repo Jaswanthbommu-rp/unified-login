@@ -1216,6 +1216,9 @@
     <Build Include="RoleRightsManagement\Stored Procedures\AddAdGroup.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\UpdateAdGroup.sql" />
     <Build Include="UserManagement\Stored Procedures\GetProductPageTypes.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\AddRouteDetailsInternal.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\UpdateRouteDetailsInternal.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\UpdateRightsForRoute.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
