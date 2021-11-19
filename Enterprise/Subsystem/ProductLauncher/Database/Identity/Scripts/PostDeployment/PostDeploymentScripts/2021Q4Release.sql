@@ -3214,3 +3214,60 @@ BEGIN
 END
 
 GO
+
+-- Add New Setting for Multi-family Orgtypes
+
+IF NOT EXISTS (SELECT TOP (1) 1 FROM Enterprise.ProductSettingType WHERE Name = 'DisableUserManagementForOrgType' )
+BEGIN
+    INSERT INTO Enterprise.ProductSettingType
+    (
+        Name,
+        Description,
+        SensitiveData
+    )
+    VALUES
+    (   N'DisableUserManagementForOrgType',    -- Name - nvarchar(50)
+        'Enable product only for Multi-family Org type ',   -- Description - nvarchar(100)
+        0 -- SensitiveData - tinyint
+    )
+
+END
+-- Muti-family Setting type
+
+DECLARE @NOW DATETIME = GETUTCDATE()
+
+if NOT EXISTS (
+	select TOP (1) 1 
+		FROM Enterprise.GlobalProductConfiguration gpc  
+		JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId  
+		JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId  
+		JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId  
+			WHERE  gpc.ProductId = 38  
+		AND ((@NOW BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@NOW >= gpc.FromDate AND gpc.ThruDate IS NULL))  
+		AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))  
+		AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))  
+		AND pst.Name = 'DisableUserManagementForOrgType'
+	)
+	BEGIN
+		declare @currentproductconfigurationid INT
+		select distinct TOP (1) @currentproductconfigurationid = pc.configurationid
+			FROM Enterprise.GlobalProductConfiguration gpc  
+			JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId  
+			JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId  
+			JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId  
+				WHERE  gpc.ProductId = 38
+			AND ((@NOW BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@NOW >= gpc.FromDate AND gpc.ThruDate IS NULL))  
+			AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))  
+			AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))  
+		order by pc.ConfigurationId DESC
+
+		if (@currentproductconfigurationid is not null)
+		begin
+			insert into enterprise.ProductSetting ( productid, ProductSettingTypeId, value, FromDate )
+				select 38, productsettingtypeid, 'Vendor,Other', GETUTCDATE()
+					from enterprise.ProductSettingType where name = 'DisableUserManagementForOrgType'
+			insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate, ThruDate )
+				values ( @currentproductconfigurationid, SCOPE_IDENTITY(), GETUTCDATE(), null )
+		end
+	END
+GO

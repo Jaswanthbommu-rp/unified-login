@@ -32,7 +32,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 			OrganizationMasterId = Convert.ToInt64((from nvp in claimsPrincipal.Claims where nvp.Type.Equals("ORGMASTERID", StringComparison.OrdinalIgnoreCase) select nvp.Value).FirstOrDefault());
 			CustomerMasterId = Convert.ToInt64((from nvp in claimsPrincipal.Claims where nvp.Type.Equals("orgCompanyMasterId", StringComparison.OrdinalIgnoreCase) select nvp.Value).FirstOrDefault());
 			OrganizationName = (from nvp in claimsPrincipal.Claims where nvp.Type.Equals("ORGNAME", StringComparison.OrdinalIgnoreCase) select nvp.Value).FirstOrDefault();
-			Roles = (from nvp in claimsPrincipal.Claims where nvp.Type.Equals("ROLE", StringComparison.OrdinalIgnoreCase) || nvp.Type.Equals("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", StringComparison.OrdinalIgnoreCase) select nvp.Value).FirstOrDefault();
+            OrganizationType = (from nvp in claimsPrincipal.Claims where nvp.Type.Equals("orgType", StringComparison.OrdinalIgnoreCase) select nvp.Value).FirstOrDefault();
+            Roles = (from nvp in claimsPrincipal.Claims where nvp.Type.Equals("ROLE", StringComparison.OrdinalIgnoreCase) || nvp.Type.Equals("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", StringComparison.OrdinalIgnoreCase) select nvp.Value).FirstOrDefault();
             FirstName = (from nvp in claimsPrincipal.Claims where nvp.Type.Equals("FIRSTNAME", StringComparison.OrdinalIgnoreCase) select nvp.Value).FirstOrDefault();
 			LastName = (from nvp in claimsPrincipal.Claims where nvp.Type.Equals("LASTNAME", StringComparison.OrdinalIgnoreCase) select nvp.Value).FirstOrDefault();
 			ClientCode = (from nvp in claimsPrincipal.Claims where nvp.Type.Equals("CLIENT_ID", StringComparison.OrdinalIgnoreCase) select nvp.Value).FirstOrDefault();
@@ -106,6 +107,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 	    /// The name of the users organization
 	    /// </summary>
 	    public string OrganizationName { get; set; } = "";
+
+        /// <summary>
+        /// The name of the users organization type
+        /// </summary>
+        public string OrganizationType { get; set; } = "";
 
         /// <summary>
         /// The books id of the users organization
