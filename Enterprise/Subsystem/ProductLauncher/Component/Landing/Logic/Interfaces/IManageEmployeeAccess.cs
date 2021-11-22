@@ -16,7 +16,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// </summary>
         ListResponse GetUsers(long editorPersonaId, string filter);
 
-        EmployeePersona GetOrCreateEmployeePersonaId(Guid companyRealPageId, string loginName);
+        EmployeePersona GetOrCreateEmployeePersonaId(Guid companyRealPageId, DefaultUserClaim userClaim);
 
         string CreateEmployeeProductUser(int productId, long personaId);
 

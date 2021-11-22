@@ -419,6 +419,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             return productSettingList;
         }
+        /// <summary>
+        /// Create a new Secondary Persona
+        /// </summary>
+        /// <param name="userId">User unique identifier</param>
+        /// <param name="organizationRealPageId">Organization unique identifier</param>
+        /// <param name="createdBy">created by</param>
+        /// <returns>Repository response object</returns>
+        public RepositoryResponse CreateAdditionalPersona(Guid organizationRealPageId, long userId, long createdBy)
+        {
+            long PersonaId = 0;
+            dynamic param = new
+            {
+                OrganizationRealPageId = organizationRealPageId,
+                UserId = userId,
+                CreatedBy = createdBy,
+                PersonaId = PersonaId
+            };
+
+            using (var repository = GetRepository())
+            {
+                var result = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateAdditionalPersona, param);
+                return result;
+            }
+        }
         #endregion
     }
 }

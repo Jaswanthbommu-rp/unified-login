@@ -3271,3 +3271,11 @@ if NOT EXISTS (
 		end
 	END
 GO
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Person.PersonaType WHERE [Name] = 'Secondary')
+BEGIN
+	INSERT INTO Person.PersonaType ([Name])
+	VALUES ('Secondary');
+END
+
+GO

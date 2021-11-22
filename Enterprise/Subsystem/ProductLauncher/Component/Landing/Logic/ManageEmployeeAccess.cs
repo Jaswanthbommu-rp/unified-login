@@ -221,15 +221,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <summary>
         /// Gets personaId if existed else, creates and gets one
         /// </summary>
-        public EmployeePersona GetOrCreateEmployeePersonaId(Guid companyRealPageId, string loginName) 
+        public EmployeePersona GetOrCreateEmployeePersonaId(Guid companyRealPageId, DefaultUserClaim userClaim) 
         {
             EmployeePersona employeePersona = new EmployeePersona();
             employeePersona.RealpageUserId = _userClaim.UserRealPageGuid;
 
-            var userPersonaOrganizationList = _userLoginRepository.ListOrganizationByLoginName(loginName);
+            var userPersonaOrganizationList = _userLoginRepository.ListOrganizationByLoginName(userClaim.LoginName);
             
             if (userPersonaOrganizationList != null && userPersonaOrganizationList.Count > 0)
             {
+                //First get count of ad groups and products for employee persona
+                //if company does'nt have product do not create second persona
+                //rethink how  return correct persona based on ad group data
+                var userProductAdGroups = _productRepository.GetPersonaProductsAdGroupsCount(userClaim.PersonaId);
+                //Get Organization product id's
+                IList<int> orgProducts = _productRepository.GetProductIdsByCompany(companyRealPageId);
+                //Filter adgroup data with valid org products
+                var matchedProductData = userProductAdGroups.Where(p => orgProducts.Contains(p.ProductId)).ToList();
+                int maxCount = 0;
+                //Get max adgroup count
+                if (matchedProductData?.Count > 0)
+                {
+                    maxCount = matchedProductData.Max(x => x.ADGroupCount);
+                }
+                //Get User persona count
+                int orgPersonaCount = userPersonaOrganizationList.Where(x => x.OrganizationRealPageId == companyRealPageId).Count();
+
                 var user = userPersonaOrganizationList.Where(x => x.OrganizationRealPageId == companyRealPageId).FirstOrDefault();
                 if (user != null)
                 {
@@ -237,12 +254,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
                 else
                 {
-                    employeePersona.PersonaId = CreatePersonaInCompany(loginName, companyRealPageId);
+                    employeePersona.PersonaId = CreatePersonaInCompany(userClaim.LoginName, companyRealPageId);
+                    orgPersonaCount++;
                 }
-            }
 
-            return employeePersona;
-            
+                if (maxCount > 0 && orgPersonaCount > 0)
+                {
+                    //add new persons based on max count and existing persona count
+                    int newPersonasTobeCreatedCount = 0;
+                    newPersonasTobeCreatedCount = maxCount - orgPersonaCount;
+                    for (int i = 1; i <= newPersonasTobeCreatedCount; i++)
+                    {
+                        var repoResponse = _managePersona.CreateAdditionalPersona(companyRealPageId, userClaim.UserId, userClaim.UserId);
+                    }
+                }
+                             
+            }
+            return employeePersona;            
         }
 
         /// <summary>

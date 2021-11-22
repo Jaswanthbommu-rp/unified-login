@@ -133,6 +133,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         /// <summary>
+        /// Create a new Persona
+        /// </summary>
+        /// <param name="userId">User unique identifier</param>
+        /// <param name="organizationRealPageId">Organization unique identifier</param>
+        /// <param name="createdBy">created by</param>
+        /// <returns>Repository response object</returns>
+        public RepositoryResponse CreateAdditionalPersona(Guid organizationRealPageId, long userId, long createdBy)
+        {
+            if (userId == 0)
+            {
+                throw new Exception("Invalid parameter UserId.");
+            }
+
+            if (organizationRealPageId == Guid.Empty)
+            {
+                throw new Exception("Invalid parameter Organization realPageId.");
+            }
+
+            return _personaRepository.CreateAdditionalPersona(organizationRealPageId, userId,createdBy);
+        }
+
+        /// <summary>
         /// Get Persona by Persona Id
         /// </summary>
         /// <param name="personaId">Persona Id</param>

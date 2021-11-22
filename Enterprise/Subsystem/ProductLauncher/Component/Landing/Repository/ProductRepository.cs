@@ -2143,6 +2143,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
+        public List<ProductAdGroupsCount> GetPersonaProductsAdGroupsCount(long personaId)
+        {
+            dynamic param = new
+            {
+                PersonaId = personaId
+            };
+            using (var repository = GetRepository())
+            {
+                return repository.GetMany<ProductAdGroupsCount>(StoredProcNameConstants.SP_GetPersonaProductADGroupCount, param);
+            }
+        }
+
         public List<AdGroup> GetUserManagementADGroupsByProduct(long productId)
         {
             dynamic param = new

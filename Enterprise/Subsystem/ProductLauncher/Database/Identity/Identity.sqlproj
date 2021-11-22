@@ -1219,6 +1219,8 @@
     <Build Include="RoleRightsManagement\Stored Procedures\AddRouteDetailsInternal.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\UpdateRouteDetailsInternal.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\UpdateRightsForRoute.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\GetPersonaProductADGroupCount.sql" />
+    <Build Include="Person\Stored Procedures\CreateAdditionalPersona.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

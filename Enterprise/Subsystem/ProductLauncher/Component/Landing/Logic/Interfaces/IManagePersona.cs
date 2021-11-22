@@ -101,5 +101,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         Persona GetFirstAvailablePersonaByCompany(Guid realPageId, long orgPartyId);
 
         Guid ChangeCompanyNotification(long personaId);
+        /// <summary>
+		/// Create a Secondary Persona
+		/// </summary>
+		/// <param name="userId">User unique identifier</param>
+		/// <param name="organizationRealPageId">Organization unique identifier</param>
+		/// <param name="createdBy">createdBy</param>
+		/// <returns>Repository response object</returns>
+		RepositoryResponse CreateAdditionalPersona(Guid organizationRealPageId, long userId, long createdBy);
     }
 }

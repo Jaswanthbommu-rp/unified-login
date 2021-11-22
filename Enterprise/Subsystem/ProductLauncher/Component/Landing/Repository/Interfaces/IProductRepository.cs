@@ -318,6 +318,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         List<AdGroup> GetAdGroupsForUser(long personaId);
 
         List<AdGroup> GetUserManagementADGroupsByProduct(long productId);
+        List<ProductAdGroupsCount> GetPersonaProductsAdGroupsCount(long personaId);
 
     }
 }

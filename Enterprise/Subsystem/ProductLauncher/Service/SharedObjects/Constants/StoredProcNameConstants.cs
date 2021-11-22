@@ -117,6 +117,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         public const string SP_GetPersona = "Person.GetPersona";
         public const string SP_GetPersonaEnvironment = "Person.ListPersonaEnvironmentType";
         public const string SP_CreatePersona = "Person.CreatePersona";
+        public const string SP_CreateAdditionalPersona = "Person.CreateAdditionalPersona";
         public const string SP_CreatePersonaType = "Person.CreatePersonaType";
         public const string SP_ListPersona = "Person.ListPersona";
         public const string SP_ListActivePersona = "Person.ListActivePersona";
@@ -458,6 +459,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         public const string SP_GetADGroupsForUser = "Security.GetADGroupsByPersona";
         public const string SP_GetADGroupsForProduct = "Security.GetADGroupsByProductId";
         public const string SP_GetUserManagementADGroupsByProduct = "Security.GetUserManagementADGroupsByProduct";
+        public const string SP_GetPersonaProductADGroupCount = "Security.GetPersonaProductsADGroupsCount";
 
         //AD User Details
         public const string SP_GetADDetailsForUser = "Security.GetADDetailsForUser";

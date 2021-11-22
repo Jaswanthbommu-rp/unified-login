@@ -72,7 +72,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             if (companyRealPageId == Guid.Empty)
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Company ID not supplied.");
             
-            return Request.CreateResponse(HttpStatusCode.OK, _manageEmployeeAccess.GetOrCreateEmployeePersonaId(companyRealPageId, _userClaims.LoginName));
+            return Request.CreateResponse(HttpStatusCode.OK, _manageEmployeeAccess.GetOrCreateEmployeePersonaId(companyRealPageId, _userClaims));
         }
 
         /// <summary>

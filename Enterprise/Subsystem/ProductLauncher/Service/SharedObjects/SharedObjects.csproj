@@ -326,6 +326,7 @@
     <Compile Include="Landing\ObjectUserListOutput.cs" />
     <Compile Include="Landing\OrganizationDelete.cs" />
     <Compile Include="Landing\PersonaProductProperty.cs" />
+    <Compile Include="Landing\ProductAdGroupsCount.cs" />
     <Compile Include="Landing\ProductPrimaryProperties.cs" />
     <Compile Include="Landing\ProductSuggestedProperties.cs" />
     <Compile Include="Landing\SettingPickList.cs" />
