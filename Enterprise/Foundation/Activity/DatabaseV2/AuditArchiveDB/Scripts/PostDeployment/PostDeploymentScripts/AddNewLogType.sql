@@ -97,3 +97,24 @@ BEGIN
 End
 
 GO
+
+IF NOT EXISTS(SELECT TOP 1 1 FROM Logging.LogType WHERE NAME = 'Product Details Update')
+BEGIN
+	DECLARE @catId INT;
+	DECLARE @logId INT;
+	
+	SELECT @catId = LogCategoryTypeId
+	FROM logging.LogCategoryType 
+	WHERE NAME = 'InternalProductSettings'
+	
+	SELECT @logId = MAX(LogTypeId) + 1
+	FROM Logging.LogType
+	
+	SELECT @catId, @logId
+	
+	INSERT INTO Logging.LogType (LogTypeId, LogcategoryTypeId, Name, Description)
+	VALUES (@logId, @catId, 'Product Details Update', 'Product Details Update')
+	
+End
+
+GO
