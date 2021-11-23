@@ -5,9 +5,10 @@ CREATE PROCEDURE [Security].[GetADGroupsByPersona]
 AS
 BEGIN
 	SELECT  
-		ADGroupId
-		,CreatedDate 
+		ADG.ADGroupId
+		,ADG.CreatedDate 
 		,GETUTCDATE() as SystemDBDateTime
-	FROM Security.ADGroupUser  
-	WHERE PersonaId=@PersonaId
+	FROM Security.ADGroupUser  ADU
+	INNER JOIN Security.ADGroup ADG ON ADG.ADGroupId = ADU.ADGroupId
+	WHERE PersonaId=@PersonaId AND ADG.IsActive = 1
 END

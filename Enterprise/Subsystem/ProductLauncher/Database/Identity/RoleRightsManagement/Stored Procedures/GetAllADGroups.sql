@@ -6,4 +6,5 @@ BEGIN
 		,DisplayName
 		,ActiveDirectoryId
  FROM Security.ADGroup
+ WHERE Security.ADGroup.IsActive = 1
 END

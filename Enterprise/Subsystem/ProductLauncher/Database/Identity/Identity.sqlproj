@@ -1222,6 +1222,7 @@
     <Build Include="RoleRightsManagement\Stored Procedures\GetPersonaProductADGroupCount.sql" />
     <Build Include="Person\Stored Procedures\CreateAdditionalPersona.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\GetPersonasAssignedToRole.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\DeactivateAdGroup.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

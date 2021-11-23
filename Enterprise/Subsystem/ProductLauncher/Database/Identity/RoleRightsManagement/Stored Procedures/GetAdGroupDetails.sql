@@ -86,6 +86,7 @@ SELECT ADG.ADGroupId,
 	   (SELECT COUNT(1) FROM [Security].ADGroupProduct ADP WHERE ADG.ADGroupId = ADP.ADGroupId) [ProductCount],
 	   (SELECT COUNT(1) FROM [Security].ADGroupRight ADR WHERE ADG.ADGroupId = ADR.ADGroupId) [RightCount]
 FROM [Security].ADGroup ADG
+WHERE ADG.IsActive = 1
 
 ;WITH cteADGroupFinal  
  (  
@@ -106,6 +107,7 @@ SELECT ADG.ADGroupId,
 	   COUNT(1) OVER () AS TotalRecords
 FROM [Security].ADGroup ADG
 WHERE  (    
+	ADG.IsActive = 1 AND
     (@filterName IS NULL)    
     OR (CHARINDEX(@filterName, ADG.DisplayName, 1) > 0)    
 ))

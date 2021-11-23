@@ -3,7 +3,8 @@
 	[DisplayName] [nvarchar](255) NULL,
 	[ActiveDirectoryId] [uniqueidentifier] ROWGUIDCOL  NOT NULL,
 	[CreatedBy] [nvarchar](25) NOT NULL,
-	[CreatedDate] [datetime] NOT NULL
+	[CreatedDate] [datetime] NOT NULL,
+	[IsActive] [bit] NOT NULL DEFAULT(1)
  CONSTRAINT [PK_ADGroup] PRIMARY KEY CLUSTERED 
 (
 	[ADGroupId] ASC

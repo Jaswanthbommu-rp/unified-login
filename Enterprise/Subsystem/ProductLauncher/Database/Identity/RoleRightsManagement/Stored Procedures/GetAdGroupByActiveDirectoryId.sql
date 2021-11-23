@@ -9,5 +9,5 @@ BEGIN
 			CreatedBy,
 			CreatedDate
 	FROM [Security].[ADGroup]
-	WHERE ActiveDirectoryId = @ActiveDirectoryId
+	WHERE ActiveDirectoryId = @ActiveDirectoryId AND IsActive = 1
 END
