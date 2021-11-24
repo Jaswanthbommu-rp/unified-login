@@ -3295,7 +3295,8 @@ insert into @productlist values
 (18, 'GetPropertyEndpoint', '/property/{0}'),
 (18, 'GetPropertyGroupsEndpoint', '/propertygroups?companyId={0}'),
 (18, 'GetListUsersEndpoint', '/user/{companyId}'),
-(18, 'ProductIntegrationType', 'Standard v1');
+(18, 'ProductIntegrationType', 'Standard v1'),
+(18, 'TokenAuthScopes', 'greenbooknwpapi');
 
 declare @MAX_ID INT
 declare @Current_ID INT = 1
@@ -3351,4 +3352,18 @@ begin
 	end	
 	set @Current_ID = @Current_ID + 1
 end
+GO
+
+IF NOT EXISTS (SELECT TOP 1 1
+FROM Auth.Clients c
+	INNER JOIN Auth.ClientScopes cs on cs.ClientId = c.ClientId
+WHERE ClientCode = 'unifiedlogin-server'
+	AND cs.Scope = 'greenbooknwpapi')
+BEGIN
+	INSERT INTO Auth.ClientScopes (ClientId, Scope)
+	SELECT ClientId, 'greenbooknwpapi'
+	FROM Auth.Clients
+	WHERE ClientCode = 'unifiedlogin-server'
+END
+
 GO
