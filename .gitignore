@@ -14,6 +14,7 @@
 *.zip
 *.bak.*
 *.bak
+*.rsuser
 package-lock.json
 Enterprise/Subsystem/ProductLauncher/Service/LandingAPI/RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.XML
 Enterprise/Subsystem/ProductLauncher/Service/LandingAPIEnterprise/RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.xml

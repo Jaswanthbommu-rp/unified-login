@@ -1,0 +1,30 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31409.214
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{F14B399A-7131-4C87-9E4B-1186C45EF12D}") = "Unified Login SSRS Reports", "Unified Login SSRS Reports.rptproj", "{AB5A5CA9-A2C2-456C-8118-1E2A90752970}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Default = Debug|Default
+		DebugLocal|Default = DebugLocal|Default
+		Release|Default = Release|Default
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AB5A5CA9-A2C2-456C-8118-1E2A90752970}.Debug|Default.ActiveCfg = Debug
+		{AB5A5CA9-A2C2-456C-8118-1E2A90752970}.Debug|Default.Build.0 = Debug
+		{AB5A5CA9-A2C2-456C-8118-1E2A90752970}.Debug|Default.Deploy.0 = Debug
+		{AB5A5CA9-A2C2-456C-8118-1E2A90752970}.DebugLocal|Default.ActiveCfg = DebugLocal
+		{AB5A5CA9-A2C2-456C-8118-1E2A90752970}.DebugLocal|Default.Build.0 = DebugLocal
+		{AB5A5CA9-A2C2-456C-8118-1E2A90752970}.Release|Default.ActiveCfg = Release
+		{AB5A5CA9-A2C2-456C-8118-1E2A90752970}.Release|Default.Build.0 = Release
+		{AB5A5CA9-A2C2-456C-8118-1E2A90752970}.Release|Default.Deploy.0 = Release
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E2B94DC8-25F3-44D4-909B-EB7AF05FEF10}
+	EndGlobalSection
+EndGlobal

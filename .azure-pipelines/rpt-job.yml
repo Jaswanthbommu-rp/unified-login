@@ -1,0 +1,46 @@
+jobs:
+- job: rpt
+  displayName: Reports
+
+  steps:
+  - task: ArtifactoryToolsInstaller@1
+    inputs:
+      artifactoryService: 'artifactory'
+      cliInstallationRepo: 'jfrog-cli'
+
+  - task: CopyFiles@2
+    displayName: 'Copy Report Files'
+    inputs:
+      SourceFolder: 'Enterprise\Subsystem\ProductLauncher\SSRS Reports'
+      Contents: |
+        **\*.rdl
+      TargetFolder: '$(Build.ArtifactStagingDirectory)\rpt'
+  
+  - task: ArchiveFiles@2
+    displayName: 'Zip Reports Build'
+    inputs:
+      rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/rpt'
+      includeRootFolder: false
+      archiveType: 'zip'
+      archiveFile: '$(Build.ArtifactStagingDirectory)/rpt.zip'
+      replaceExistingArchive: true
+
+  - task: ArtifactoryGenericUpload@2
+    displayName: 'Upload Reports to Artifactory'
+    inputs:
+      artifactoryService: 'Artifactory'
+      specSource: 'taskConfiguration'
+      fileSpec: |
+        {
+          "files": [
+            {
+              "pattern": "$(Build.ArtifactStagingDirectory)\rpt.zip",
+              "target": "$(ArtifactoryDeployablesPath)/rpt.zip"
+            }
+          ]
+        }
+      collectBuildInfo: true
+      buildName: '$(Build.DefinitionName)'
+      buildNumber: '$(Build.BuildNumber)'
+      includeEnvVars: true
+      failNoOp: true

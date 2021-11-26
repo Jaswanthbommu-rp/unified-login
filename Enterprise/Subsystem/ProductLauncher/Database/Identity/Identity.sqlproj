@@ -1337,6 +1337,7 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\UserManagementData.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\_SeedData.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2021Q1Release.sql" />
+    <None Include="Person\Stored Procedures\PlatformUsers_Report.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />

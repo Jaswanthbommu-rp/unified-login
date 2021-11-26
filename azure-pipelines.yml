@@ -1,0 +1,17 @@
+name: $(Date:yyyyMMdd).$(Rev:r)-$(Build.SourceBranchName)
+trigger:
+- master
+- release/*
+
+pool:
+  name: UTY-BLD-POOL
+
+variables:
+  BuildPlatform: 'any cpu'
+  BuildConfiguration: 'Release'
+  ArtifactoryDeployablesPath: 'rp-deployables-local/uty/UnifiedLogin/Master/$(Build.BuildNumber)'
+
+jobs:
+
+  - template: .azure-pipelines/rpt-job.yml
+  
