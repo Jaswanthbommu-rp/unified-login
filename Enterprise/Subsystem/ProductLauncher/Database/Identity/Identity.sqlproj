@@ -1200,6 +1200,11 @@
     <Build Include="RoleRightsManagement\Tables\ADUserDetails.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\GetADDetailsForUser.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\GetRightsList.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\GetADGroupsForRight.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\GetOrganizationOverRideRights.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\GetRolesForRight.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\GetRoutesForRight.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\DeleteRightInternal.sql" />
     <Build Include="Security\GetRightDetailsByRightId.sql" />
     <Build Include="Enterprise\Tables\EmployeeProductMapping.sql" />
     <Build Include="Enterprise\Stored Procedures\GetEmployeeProductADGroupMapping.sql" />

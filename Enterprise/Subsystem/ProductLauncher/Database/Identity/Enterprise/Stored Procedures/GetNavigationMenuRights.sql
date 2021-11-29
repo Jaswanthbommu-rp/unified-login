@@ -1,6 +1,6 @@
 ﻿CREATE PROCEDURE [Enterprise].[GetNavigationMenuRights]
 AS
-	SELECT NavigationMenuId, r.RightName
+	SELECT NavigationMenuId, r.RightName, r.RightId
 	FROM Enterprise.NavigationMenuRights nmr
 		INNER JOIN [Security].[Right] r on nmr.RightId = r.RightId
 		INNER JOIN [Security].[RightRoute] rgr ON

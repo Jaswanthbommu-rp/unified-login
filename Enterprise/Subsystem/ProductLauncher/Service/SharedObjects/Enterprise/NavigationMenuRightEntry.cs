@@ -5,5 +5,7 @@
         public int NavigationMenuId;
 
         public string RightName;
+
+        public int RightId { get; set; }
     }
 }
