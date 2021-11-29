@@ -14,7 +14,8 @@ BEGIN
 		PortalId varchar(255) NULL,
 		OrganizationId varchar(255) NULL,
 		NWPUserType varchar(255) NULL,
-		ParentProductTypeId INT NULL
+		ParentProductTypeId INT NULL,
+		ProductEnabled TINYINT NOT NULL
 	)
 
     DECLARE @NOW DATETIME= GETUTCDATE();
@@ -36,21 +37,24 @@ BEGIN
 				INNER JOIN Enterprise.ProductType pt on pt.ProductTypeId = p.ProductTypeId and pt.ParentProductTypeId =400
 		END		
 	
-        INSERT INTO @productData(ProductId,ProductName,ProductDescription,ProductStatus, ParentProductTypeId)
+        INSERT INTO @productData(ProductId,ProductName,ProductDescription,ProductStatus, ParentProductTypeId,ProductEnabled)
 		SELECT DISTINCT                
                 p.ProductId,
                 prod.[Name] ,
                 prod.Description ,               
                 ST.Name ,
-				OP.ParentProductTypeId 
+				OP.ParentProductTypeId,
+				CASE WHEN op.productid IS NOT NULL THEN 1 ELSE 0 END [ProductEnabled]
+				
          FROM Enterprise.PersonaConfiguration p
 			JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = p.ConfigurationId
 			INNER JOIN Enterprise.productSetting PS ON PC.productsettingid = ps.productsettingid
 			INNER JOIN Enterprise.ProductSettingType PST ON PS.productsettingtypeid = PST.ProductSettingTypeId AND PST.Name = 'ProductStatus'
 			JOIN Enterprise.Product prod ON prod.ProductId = p.ProductId
 			INNER JOIN Person.Persona per ON(p.PersonaId = per.PersonaId)
-			INNER JOIN @CompanyOrganizationProduct OP ON OP.ProductId = prod.ProductId
-			INNER JOIN [Enterprise].[StatusType] ST ON ST.StatusTypeId = CONVERT(INT,PS.value)				
+			
+			INNER JOIN [Enterprise].[StatusType] ST ON ST.StatusTypeId = CONVERT(INT,PS.value)	
+			LEFT JOIN @CompanyOrganizationProduct OP ON OP.ProductId = prod.ProductId
          WHERE p.PersonaId = @PersonaId
                AND ((@NOW BETWEEN p.FromDate AND p.ThruDate)
                     OR (@NOW >= p.FromDate
@@ -61,7 +65,7 @@ BEGIN
 			AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate)
                     OR (@NOW >= pc.FromDate
                         AND pc.ThruDate IS NULL))  
-   
+    
 
 	   Update @productData SET UserID = sua.Value
 	   From Ident.SamlUserAttribute sua
@@ -136,6 +140,22 @@ BEGIN
 	   And sa.Name = 'NWPUserType'
 	   AND ((@NOW BETWEEN sua.FromDate AND sua.ThruDate) OR (@NOW >= sua.FromDate AND sua.ThruDate IS NULL))
 	
-	   Select * from @productData	
-	   order by ProductName
+	
+
+	   Select 
+		ProductId
+		, ProductName	
+		, ProductDescription
+		, ProductStatus
+		, UserID
+		, ProductUserName	
+		, PMCID	
+		, RoleType	
+		, PortalId	
+		, OrganizationId	
+		, NWPUserType	
+		, ParentProductTypeId	
+		, ProductEnabled
+	from @productData	
+	   order by ProductEnabled desc,ProductName asc
 END;
