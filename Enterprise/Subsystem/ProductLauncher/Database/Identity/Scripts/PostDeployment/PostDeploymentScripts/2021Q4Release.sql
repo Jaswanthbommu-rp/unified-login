@@ -3129,7 +3129,8 @@ END
 GO
 
 --- 1002362
-UPDATE Enterprise.NavigationMenu SET Title = 'Platform Setup Activity Log' WHERE Title = 'Company Setup Activity Log' AND Origin = 'unified-login'
+UPDATE Enterprise.NavigationMenu SET Title = 'Platform Setup Activity Log' 
+	WHERE Title = 'Company Setup Activity Log' AND Origin = 'unified-login'
 GO
 
 IF NOT EXISTS ( SELECT TOP (1) 1 FROM enterprise.NavigationMenuRights nmr 
@@ -3365,5 +3366,21 @@ BEGIN
 	FROM Auth.Clients
 	WHERE ClientCode = 'unifiedlogin-server'
 END
+
+GO
+
+-- 996366 update route for platform activity LOG
+UPDATE enterprise.NavigationMenu 
+	SET PageId = 'platform-setup-activity-log', 
+	url = '/home/platform-setup-activity-log', 
+	OrderIndex = 141 
+WHERE 
+	origin = 'unified-login' and title = 'Platform Setup Activity Log' and pageid = 'company-setup-activity-log'
+
+UPDATE enterprise.NavigationMenu 
+	SET OrderIndex = 145
+WHERE 
+	origin = 'unified-login' and title = 'Login Page Setup' and orderindex <> 145
+-- 996366
 
 GO
