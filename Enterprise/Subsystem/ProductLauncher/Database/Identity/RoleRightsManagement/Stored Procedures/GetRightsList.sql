@@ -49,14 +49,15 @@ DECLARE @sortValue INT
    ELSE 107
   END * CASE UPPER(@SortDirection) WHEN N'ASC' THEN 1 WHEN N'DESC' THEN -1 END;
     
-
 WITH RolesForRight 
 AS
 (
-	 SELECT RightId 
-			,COUNT(ROLEID) AS RoleCount
-	 FROM Security.RoleRight
-	 GROUP BY RightId
+	 SELECT RR.RightId 
+			,COUNT(RR.ROLEID) AS RoleCount
+	 FROM Security.RoleRight RR
+		INNER JOIN Security.Role R ON R.RoleId = RR.RoleId
+		WHERE R.RoleTypeID NOT IN ( 2 )
+	 GROUP BY RR.RightId
 ),
 RoutesForRight
 AS

@@ -23,8 +23,9 @@ BEGIN
 	SELECT rl.RoleId, rl.RoleName, p.ProductId, p.Name as ProductName
 	FROM SECURITY.[RoleRight] rr
 		JOIN SECURITY.[Role] rl on rl.RoleId = rr.RoleId
+		INNER JOIN Security.Role R ON R.RoleId = RR.RoleId
 		JOIN Enterprise.Product p on p.ProductId = rl.ProductId
-	WHERE rr.RightId = @rightId
+	WHERE rr.RightId = @rightId AND R.RoleTypeID NOT IN ( 2 )
 	
 	
 	SELECT r.RouteId, RouteValue as RouteName
