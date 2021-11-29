@@ -119,3 +119,29 @@ BEGIN
 End
 
 GO
+
+
+-- 1011098
+
+IF NOT EXISTS ( SELECT TOP (1) 1 FROM Logging.LogType lt 
+						INNER JOIN logging.LogCategoryType lct ON lct.LogCategoryTypeId = lt.LogcategoryTypeId 
+						WHERE lct.Name = 'InternalProductSettings' AND lt.Name = 'Client Settings Update' )
+BEGIN
+	DECLARE @catId INT;
+	DECLARE @logId INT;
+	
+	SELECT @catId = LogCategoryTypeId
+	FROM logging.LogCategoryType 
+	WHERE NAME = 'InternalProductSettings'
+	
+	SELECT @logId = MAX(LogTypeId) + 1
+	FROM Logging.LogType
+	
+	SELECT @catId, @logId
+	
+	INSERT INTO Logging.LogType (LogTypeId, LogcategoryTypeId, Name, Description)
+	VALUES (@logId, @catId, 'Client Settings Update', 'Client Settings actvities, such as add/update clients, client urls, etc.')						
+END
+
+-- 1011098
+GO

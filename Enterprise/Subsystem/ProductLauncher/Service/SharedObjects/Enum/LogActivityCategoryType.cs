@@ -9,6 +9,7 @@
         User = 2,
         ProductAccess = 3,
         Email = 4,
-        CompanySetup = 5
+        CompanySetup = 5,
+        InternalProductSettings = 6,
     }
 }

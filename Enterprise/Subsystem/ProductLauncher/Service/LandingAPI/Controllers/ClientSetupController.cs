@@ -51,7 +51,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		{
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 			return mcs.GetClientsWithDetails();
 		}
 
@@ -70,7 +70,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		{
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 			return mcs.GetClientDetails(id);
 		}
 
@@ -97,7 +97,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			}
 
 			ClientsSetupRepository csr = new ClientsSetupRepository();
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 
 			Client clientResult = mcs.InsertClient(client);
 			output.obj = clientResult;
@@ -134,7 +134,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			}
 
 			ClientsSetupRepository csr = new ClientsSetupRepository();
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 
 			clientUpdate.client.ClientId = id;
 			clientUpdate.originalClient.ClientId = id;
@@ -194,7 +194,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		{
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 			
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 			client.ClientId = id;
 			int result = mcs.DeleteClient(client);
 			if (result == 0)
@@ -223,7 +223,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		{
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 			return mcs.GetClientClaim();
 		}
 
@@ -251,7 +251,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 			ClientClaim clientClaimResult = mcs.InsertClientClaim(clientClaim);
 			output.obj = clientClaimResult;
 
@@ -288,7 +288,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			}
 
 			ClientsSetupRepository csr = new ClientsSetupRepository();
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 
 			clientClaim.clientClaim.Id = id;
 			clientClaim.originalClientClaim.Id = id;
@@ -325,7 +325,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			ObjectOutput<ClientClaim, IErrorData> output = new ObjectOutput<ClientClaim, IErrorData>();
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 			clientClaim.Id = id;
 			int result = mcs.DeleteClientClaim(clientClaim);
 			if (result == 0)
@@ -356,7 +356,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		{
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 			return mcs.GetScopes();
 		}
 
@@ -375,7 +375,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		{
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 			return mcs.GetScopeById(id);
 		}
 
@@ -394,7 +394,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		{
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 			return mcs.InsertScope(scope);
 		}
 
@@ -414,7 +414,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		{
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 
 			scope.scope.ScopeId = id;
 			scope.originalScope.ScopeId = id;
@@ -460,7 +460,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		{
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 			return mcs.GetClientScope();
 		}
 
@@ -479,7 +479,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		{
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 			return mcs.InsertClientScope(clientScope);
 		}
 
@@ -499,7 +499,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		{
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 
 			// verify the client id exists
 			if (!ClientIdExists(clientScope.clientScope.ClientId))
@@ -540,7 +540,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		{
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 			clientScope.Id = id;
 			int result= mcs.DeleteClientScope(clientScope);
 			if (result == 0)
@@ -567,7 +567,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		{
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 			return mcs.GetClientRedirectUri();
 		}
 
@@ -585,8 +585,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		{
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
-			return mcs.InsertClientRedirectUri(clientRedirectUri);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
+			var result = mcs.InsertClientRedirectUri(clientRedirectUri);
+			if (result.Id > 0)
+			{
+				mcs.WriteToLog(clientRedirectUri.ClientId, $"{{0}} {{1}} added URI {clientRedirectUri.Uri} to {{2}}.");
+			}
+			return result;
 		}
 
 		/// <summary>
@@ -603,7 +608,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		{
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 			clientRedirectUri.clientRedirectUri.Id = id;
 			clientRedirectUri.originalClientRedirectUri.Id = id;
 			ClientRedirectUri clientRedirectUriResult = mcs.UpdateClientRedirectUri(clientRedirectUri.originalClientRedirectUri, clientRedirectUri.clientRedirectUri);
@@ -618,7 +623,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
 				return Request.CreateResponse(HttpStatusCode.BadRequest, output);
 			}
-
+			mcs.WriteToLog(clientRedirectUri.clientRedirectUri.ClientId, $"{{0}} {{1}} edited URI ID {id} for {{2}}. From {clientRedirectUri.originalClientRedirectUri.Uri} to {clientRedirectUri.clientRedirectUri.Uri}.");
 			return Request.CreateResponse(HttpStatusCode.OK, output);
 		}
 
@@ -638,7 +643,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		{
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 			clientRedirectUri.Id = id;
 			int result = mcs.DeleteClientRedirectUri(clientRedirectUri);
 			if (result == 0)
@@ -646,6 +651,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				return Request.CreateResponse(HttpStatusCode.BadRequest, "No records deleted");
 			}
 
+			mcs.WriteToLog(clientRedirectUri.ClientId, $"{{0}} {{1}} deleted URI {clientRedirectUri.Uri} from {{2}}.");
 			return Request.CreateResponse(HttpStatusCode.OK);
 		}
 
@@ -666,7 +672,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		{
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 			return mcs.GetClientPostLogoutRedirectUri();
 		}
 
@@ -692,7 +698,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 			ClientPostLogoutRedirectUri clientPostLogoutRedirectUriResult = mcs.InsertClientPostLogoutRedirectUri(clientPostLogoutRedirectUri);
 			output.obj = clientPostLogoutRedirectUriResult;
 
@@ -727,7 +733,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 			clientPostLogoutRedirectUri.clientPostLogoutRedirectUri.Id = id;
 			clientPostLogoutRedirectUri.originalClientPostLogoutRedirectUri.Id = id;
 			ClientPostLogoutRedirectUri clientPostLogoutRedirectUriResult = mcs.UpdateClientPostLogoutRedirectUri(clientPostLogoutRedirectUri.originalClientPostLogoutRedirectUri, clientPostLogoutRedirectUri.clientPostLogoutRedirectUri);
@@ -763,7 +769,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			ObjectOutput<ClientPostLogoutRedirectUri, IErrorData> output = new ObjectOutput<ClientPostLogoutRedirectUri, IErrorData>();
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 			clientPostLogoutRedirectUri.Id = id;
 			int result = mcs.DeleteClientPostLogoutRedirectUri(clientPostLogoutRedirectUri);
 			if (result == 0)
@@ -793,7 +799,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		{
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 			
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 			IEnumerable<ClientSecret> clientSecrets = mcs.GetClientSecret();
 			return clientSecrets;
 		}
@@ -812,7 +818,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		{
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 			return mcs.InsertClientSecret(clientSecret);
 		}
 
@@ -830,7 +836,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		{
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 			clientSecret.clientSecret.Id = id;
 			clientSecret.originalClientSecret.Id = id;
 			ClientSecret clientSecretResult = mcs.UpdateClientSecret(clientSecret.originalClientSecret, clientSecret.clientSecret);
@@ -867,7 +873,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		{
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 			clientSecret.Id = id;
 			int result = mcs.DeleteClientSecret(clientSecret);
 			if (result == 0)
@@ -894,7 +900,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		{
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 			return mcs.GetScopeSecrets();
 		}
 
@@ -922,7 +928,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 			ScopeSecret scopeSecretResult = mcs.InsertScopeSecret(scopeSecret);
 			output.obj = scopeSecretResult;
 
@@ -959,7 +965,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			}
 
 			ClientsSetupRepository csr = new ClientsSetupRepository();
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 
 			scopeSecret.scopeSecret.Id = id;
 			scopeSecret.originalScopeSecret.Id = id;
@@ -997,7 +1003,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		{
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 			scopeSecret.Id = id;
 			int result = mcs.DeleteScopeSecret(scopeSecret);
 			if (result == 0)
@@ -1024,7 +1030,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		{
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 			return mcs.GetScopeClaims();
 		}
 
@@ -1052,7 +1058,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 			ScopeClaim scopeClaimResult = mcs.InsertScopeClaim(scopeClaim);
 			output.obj = scopeClaimResult;
 
@@ -1089,7 +1095,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			}
 
 			ClientsSetupRepository csr = new ClientsSetupRepository();
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 
 			scopeClaim.scopeClaim.Id = id;
 			scopeClaim.originalScopeClaim.Id = id;
@@ -1126,7 +1132,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		{
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 			scopeClaim.Id = id;
 			int result = mcs.DeleteScopeClaim(scopeClaim);
 			if (result == 0)
@@ -1153,7 +1159,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		{
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 			return mcs.GetClaims();
 		}
 
@@ -1172,7 +1178,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		{
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 			return mcs.GetClaimById(id);
 		}
 
@@ -1191,7 +1197,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		{
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 			return mcs.InsertClaim(claim);
 		}
 
@@ -1211,7 +1217,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		{
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 
 			claim.claim.ClaimId = id;
 			claim.originalClaim.ClaimId = id;
@@ -1247,7 +1253,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         {
             ClientsSetupRepository csr = new ClientsSetupRepository();
 
-            ManageClientsSetup mcs = new ManageClientsSetup(csr);
+            ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 
 			// verify it is not in use by any clients
             IEnumerable<ClientClaimMapping> mappingList = mcs.GetClientClaimMapping();
@@ -1282,7 +1288,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		{
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 			return mcs.GetClientClaimMapping();
 		}
 
@@ -1301,7 +1307,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		{
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 			return mcs.GetClientClaimMappingByClientId(clientId);
 		}
 
@@ -1320,7 +1326,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		{
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 
 			// verify the client and claim exist
             IEnumerable<Client> clientList = mcs.GetClientsNoDetails();
@@ -1355,7 +1361,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         {
             ClientsSetupRepository csr = new ClientsSetupRepository();
 
-            ManageClientsSetup mcs = new ManageClientsSetup(csr);
+            ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 
             claimMapping.ClientUserClaimId = id;
             int result = mcs.DeleteClientClaimMapping(claimMapping);
@@ -1396,7 +1402,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		{
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 			IEnumerable<Client> clientList = mcs.GetClientsWithDetails();
 			// verify the client id exists
 			if (!clientList.Any(p => p.ClientId == clientId))
@@ -1416,7 +1422,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		{
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
-			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 			IEnumerable<Scope> scopeList = mcs.GetScopes();
 			// verify the scope id exists
 			if (!scopeList.Any(p => p.ScopeId == scopeId))
@@ -1457,6 +1463,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			}
 			return "";
 		}
+
 		#endregion
 
 		#endregion

@@ -1,18 +1,20 @@
-﻿using System;
+﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Clients;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Clients;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Clients
 {
-	public class ManageClientsSetup
+    public class ManageClientsSetup
 	{
 		#region Private Variables
-
+		private DefaultUserClaim _userClaims;
 		private readonly ClientsSetupRepository _clientsSetupRepository;
 
 		#endregion
@@ -20,9 +22,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Client
 		/// <summary>
 		/// Default constructor
 		/// </summary>
+		/// <param name="userClaim"></param>
 		/// <param name="clientsSetupRepository"></param>
-		public ManageClientsSetup(ClientsSetupRepository clientsSetupRepository)
+		public ManageClientsSetup(DefaultUserClaim userClaim, ClientsSetupRepository clientsSetupRepository)
 		{
+			_userClaims = userClaim;
 			_clientsSetupRepository = clientsSetupRepository;
 		}
 
@@ -328,6 +332,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Client
 			return _clientsSetupRepository.DeleteScopeClaim(scopeClaim);
 		}
 		#endregion
+
+		public void WriteToLog(int clientId, string logMessage)
+		{
+			var clientName = GetClientsNoDetails().FirstOrDefault(c => c.ClientId == clientId)?.ClientName;
+			
+			LogActivity.WriteActivity(new ActivityDetails
+			{
+				LogActivityTypeName = LogActivityTypeConstants.CLIENT_SETTINGS_UPDATE,
+				LogCategoryName = LogActivityCategoryType.InternalProductSettings.ToString(),
+				CorrelationId = _userClaims.CorrelationId.ToString(),
+				BooksMasterOrganizationId = _userClaims.OrganizationMasterId,
+				OrganizationPartyId = _userClaims.OrganizationPartyId,
+				Message = string.Format(logMessage, _userClaims.FirstName, _userClaims.LastName, clientName),
+				FromUserLoginName = _userClaims.LoginName,
+				FromUserLoginId = _userClaims.UserId,
+				FromUserFirstName = _userClaims.FirstName,
+				FromUserLastName = _userClaims.LastName,
+				FromUserRealpageId = _userClaims.UserRealPageGuid.ToString()
+			});
+		}
 
 		#region Claim
         public IEnumerable<ULClaim> GetClaims()
