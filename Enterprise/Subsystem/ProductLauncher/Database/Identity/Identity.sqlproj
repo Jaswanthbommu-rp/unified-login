@@ -974,6 +974,7 @@
     <Build Include="RoleRightsManagement\Stored Procedures\SetDefaultRole.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\SetupSuperUser.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\SetupSuperUserEnterpriseRoles.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\GetRightsForRoute.sql" />
     <Build Include="Enterprise\Tables\PropertyInstance.sql" />
     <Build Include="Enterprise\Tables\PropertyInstanceMapping.sql" />
     <Build Include="Enterprise\PropertyInstanceType.sql" />
