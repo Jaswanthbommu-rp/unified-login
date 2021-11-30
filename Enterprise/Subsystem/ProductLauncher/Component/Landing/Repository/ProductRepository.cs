@@ -310,6 +310,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             || r.ProductId == (int)ProductEnum.HelpCenter
                             || r.ProductId == (int)ProductEnum.PMEDasboard
                             || r.ProductId == (int)ProductEnum.P2EngagementQueue
+                            || r.ProductId == (int)ProductEnum.UnifiedSettings
                         )
                         {
                             userProducts.Add(new PersonaProductUserDetails
@@ -396,6 +397,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     }
                 }
 
+                if (_userClaim.Rights.All(rght => rght != null && !rght.Equals("ViewUnifiedSettings", StringComparison.OrdinalIgnoreCase) &&
+                                                                    !rght.Equals("Settings", StringComparison.OrdinalIgnoreCase) &&
+                                                                     !rght.Equals("ManageSettingsTemplates", StringComparison.OrdinalIgnoreCase) &&
+                                                                      !rght.Equals("Managecompanylevelsettings", StringComparison.OrdinalIgnoreCase)))
+                {
+                    if (userProducts.Any(a => a.ProductId == (int)ProductEnum.UnifiedSettings))
+                    {
+                        userProducts.Remove(userProducts.First(a => a.ProductId == (int)ProductEnum.UnifiedSettings));
+                    }
+                }
+
                 if ((listProductUI != null) && (listProductUI.Count > 0))
                 {
                     //Remove Product Learning Portal access if the user has access to EasyLMS
@@ -453,6 +465,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         {
                             AddAdditionalProduct(persona, listProductUI, userProducts, ProductEnum.PropertyPhotos, isFavouriteProducts.Any(p => p == ProductEnum.PropertyPhotos));
                         }
+                    }
+                    if (_userClaim.Rights.Any(rght => rght != null && rght.Equals("AccessUnifiedReporting", StringComparison.OrdinalIgnoreCase)) || _userClaim.Rights.Any(rght => rght != null && rght.Equals("EmployeeAccessUnifiedReportingAdminConsole", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        AddAdditionalProduct(persona, listProductUI, userProducts, ProductEnum.Reporting, isFavouriteProducts.Any(p => p == ProductEnum.Reporting));
                     }
                 }
             }
