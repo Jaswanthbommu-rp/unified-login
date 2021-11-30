@@ -255,35 +255,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Controllers
             return GetProductDetails((int)ProductEnum.PropertyPhotos, personaId);
         }
 
-        /// <summary>
-        /// Used to log a user into an OAuth client
-        /// </summary>
-        /// <param name="personaId">If passed, it will contain the unique id of the Persona to use to log into the product</param>
-        /// <returns></returns>
-        [Authorize]
-		public ActionResult UtilityManagement(long personaId = 0)
-		{
-			try
-			{
-				if (CheckForViewOnlyAccess())
-				{
-					return RedirectToAction("ReadOnly", "Error");
-				}
-				else
-				{
-					var returnUrlForGreenBook = BuildLoginToken(ProductEnum.UtilityManagement, "rum", personaId, "id_token token", "openid profile roles nwpscope apibrowser managerapi", "form_post", Request["access_token"]);
-					Response.Redirect(returnUrlForGreenBook, false);
-				}
-
-			}
-			catch (Exception ex)
-			{
-				System.Web.Http.HttpResponseException innerException = (System.Web.Http.HttpResponseException)ex.InnerException;
-				return new HttpStatusCodeResult(innerException.Response.StatusCode, innerException.Message);
-			}
-			return View();
-		}
-
 		/// <summary>
 		/// Used to log a user into an OAuth client
 		/// </summary>
