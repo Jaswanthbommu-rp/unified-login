@@ -4004,15 +4004,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 {
                     foreach (var product in userProducts)
                     {
-                        ProductBatch pb = new ProductBatch()
+                        if (!ProductEnumHelper.GetAoProductList().Contains((ProductEnum)product.ProductId))
                         {
-                            ProductId = product.ProductId,
-                            StatusTypeId = 5,
-                            RetryCount = 0,
-                            BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
-                            InputJson = new RolePropertyList() { PropertyList = new List<string>(), RoleList = new List<string>(), IsAssigned = true }
-                        };
-                        productListToCreate.Add(pb);
+                            ProductBatch pb = new ProductBatch()
+                            {
+                                ProductId = product.ProductId,
+                                StatusTypeId = 5,
+                                RetryCount = 0,
+                                BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
+                                InputJson = new RolePropertyList() { PropertyList = new List<string>(), RoleList = new List<string>(), IsAssigned = true }
+                            };
+                            productListToCreate.Add(pb);
+                        }
                     }
                 }
             }
