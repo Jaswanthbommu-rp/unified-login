@@ -257,7 +257,6 @@
     <Compile Include="Logic\Product\Interfaces\IManageProductProspectContact.cs" />
     <Compile Include="Logic\Product\Interfaces\IManageProductRentersInsurance.cs" />
     <Compile Include="Logic\Product\Interfaces\IManageProductResidentPortal.cs" />
-    <Compile Include="Logic\Product\Interfaces\IManageProductRum.cs" />
     <Compile Include="Logic\Product\Interfaces\IManageProductSelfProvisioningPortal.cs" />
     <Compile Include="Logic\Interfaces\IManageProductUser.cs" />
     <Compile Include="Logic\Product\Interfaces\IManageProductVendorServices.cs" />
@@ -307,7 +306,6 @@
     <Compile Include="Logic\Product\ManageProductProspectContact.cs" />
     <Compile Include="Logic\Product\ManageProductRentersInsurance.cs" />
     <Compile Include="Logic\Product\ManageProductResidentPortal.cs" />
-    <Compile Include="Logic\Product\ManageProductRum.cs" />
     <Compile Include="Logic\Product\ManageProductSelfProvisioningPortal.cs" />
     <Compile Include="Logic\Product\ManageProductUser.cs" />
     <Compile Include="Logic\Product\ManageProductVendorServices.cs" />
