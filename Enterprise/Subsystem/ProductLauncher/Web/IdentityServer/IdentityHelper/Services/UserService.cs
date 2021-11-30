@@ -791,11 +791,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
                         throw new Exception("User not authorized for this product");
                     }
                     break;
-
-                case "RUM":
-                    //TODO:  NWP access token is not cached -- should it be??
-                    claims.AddRange(GetClaimsFromUtilityManagement(persona.PersonaId));
-                    break;
             }
 
             claims.AddRange(GetPortfolioProductUserClaims(persona.OrganizationPartyId, clientId, userInfo.UserId));
