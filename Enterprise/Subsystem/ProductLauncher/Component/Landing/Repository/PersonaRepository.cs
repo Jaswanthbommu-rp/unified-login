@@ -332,6 +332,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
 
         /// <summary>
+		/// Lists Employee Personas by Enterprise UserId,org partyid
+		/// </summary>
+		/// <param name="userId">Person Enterprise Id</param>
+        /// <param name="orgPartyId">Person org PartyId</param>
+		/// <returns>A List of Persona Object(s)</returns>
+		public IList<Persona> ListEmployeePersonas(long userId, long orgPartyId)
+        {
+            dynamic param = new
+            {
+                UserId = userId,
+                OrgPartyId = orgPartyId
+            };
+
+            using (var repository = GetRepository())
+            {
+                IList<Persona> personaList = repository.GetMany<Persona>(StoredProcNameConstants.SP_ListEmployeePersonas, param);
+               
+                return personaList;
+            }
+        }
+
+        /// <summary>
         /// Lists only active personas by Enterprise UserId, does NOT include rights correctly!
         /// </summary>
         /// <param name="realPageId">Person Enterprise Id</param>

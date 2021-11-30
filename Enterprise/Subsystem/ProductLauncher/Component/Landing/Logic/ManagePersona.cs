@@ -215,6 +215,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return _personaRepository.ListActivePersona(realPageId, includeOrganization);
         }
 
+        public IList<Persona> ListEmployeePersonas(long userId, long orgPartyId)
+        {
+            if (userId == 0)
+            {
+                throw new Exception("Invalid parameter userId.");
+            }
+            if (orgPartyId == 0)
+            {
+                throw new Exception("Invalid parameter orgPartyId.");
+            }
+
+            return _personaRepository.ListEmployeePersonas(userId, orgPartyId);
+        }
         /// <summary>
         /// List Persona by Enterprise Organization PartyId
         /// </summary>

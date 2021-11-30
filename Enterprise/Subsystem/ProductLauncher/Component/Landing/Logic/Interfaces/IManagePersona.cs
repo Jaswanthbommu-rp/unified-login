@@ -50,6 +50,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         IList<Persona> ListActivePersona(Guid realPageId, bool includeOrganization);
 
         /// <summary>
+        /// List Employee Persona by Enterprise UserId
+        /// </summary>
+        /// <param name="userId">Person Enterprise Id</param>
+        /// <param name="orgPartyId">org oarty id</param>
+        /// <returns>A List of Persona Object(s)</returns>
+        IList<Persona> ListEmployeePersonas(long userId, long orgPartyId);
+
+        /// <summary>
         /// List Persona by Enterprise Organization PartyId
         /// </summary>
         /// <param name="organizationPartyId">Organization Party Id</param>

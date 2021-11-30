@@ -959,8 +959,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
                 if (person != null)
                 {
-                    IList<Persona> personaList = _managePersona.ListActivePersona(persona.RealPageId, false);
-
+                    IList<Persona> personaList = new List<Persona>();
+                    IList<Persona> employeePersonaList = new List<Persona>();
+                    
+                    personaList = _managePersona.ListActivePersona(persona.RealPageId, false);
                     persona.hasMultiPersona = personaList.Count(p => p.OrganizationPartyId == persona.OrganizationPartyId) > 1;
                     persona.hasMultiCompany = personaList.Count(p => p.OrganizationPartyId != persona.OrganizationPartyId && p.Organization.RealPageId != DefaultUserClaim.ExternalCompanyRealPageId) > 0;
 
@@ -972,8 +974,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                         PersonaId = persona.PersonaId,
                         Title = persona.Name,
                         HasMultiCompany = persona.hasMultiCompany,
+                        HasMultiPersona = false
                     };
-
+                    if (_userClaims.IsRPEmployee)
+                    {
+                        employeePersonaList = _managePersona.ListEmployeePersonas(_userClaims.UserId, _userClaims.OrganizationPartyId);
+                        productResult.User.HasMultiPersona = employeePersonaList?.Count > 1;
+                    }
                     var productList = _manageProduct.GetAllProductsByPersona(personaId.Value, ProductBatchStatusType.Success);
 
                     List<UserProducts> userProducts = ConvertPersonaProductsToRAUL(productList, personaId.Value);
@@ -1120,6 +1127,37 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
             pcl = pcl.OrderBy(p => p.CompanyName).ToList();
             output.list = pcl;
+
+            return Request.CreateResponse(HttpStatusCode.OK, output);
+        }
+
+        /// <summary>
+        /// Get Employee Personas list
+        /// </summary>
+        /// <returns>List of persona for the given user</returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when Persona object have invalid entries)")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "List of Employee personas", Type = typeof(PersonaCompanyDetails))]
+       // [SwaggerResponseExamples(typeof(PersonaCompany), typeof(PersonaCompanyListExample))]
+        [Route("user/employeepersonas")]
+        [AuthorizeScope("userinfoapi")]
+        [HttpGet]
+        public HttpResponseMessage GetEmployeePersonasList()
+        {
+            ObjectListOutput<PersonaCompanyDetails, IErrorData> output = new ObjectListOutput<PersonaCompanyDetails, IErrorData>();
+            var personaList = _managePersona.ListEmployeePersonas(_userClaims.UserId, _userClaims.OrganizationPartyId);
+            List<PersonaCompanyDetails> pcl = new List<PersonaCompanyDetails>();
+            foreach (var persona in personaList)
+            {
+                pcl.Add(new PersonaCompanyDetails()
+                {
+                    PersonaId = persona.PersonaId,
+                    Name = persona.Name,
+                });
+            }
+
+           output.list = pcl;
 
             return Request.CreateResponse(HttpStatusCode.OK, output);
         }
@@ -1718,6 +1756,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             /// Does the user have multiple companies
             /// </summary>
             public bool HasMultiCompany { get; set; }
+            /// <summary>
+            /// Does the user have multiple personas
+            /// </summary>
+            public bool HasMultiPersona { get; set; } = false;
 
         }
 

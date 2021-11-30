@@ -120,6 +120,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         public const string SP_CreateAdditionalPersona = "Person.CreateAdditionalPersona";
         public const string SP_CreatePersonaType = "Person.CreatePersonaType";
         public const string SP_ListPersona = "Person.ListPersona";
+        public const string SP_ListEmployeePersonas = "Person.ListEmployeePersonas";
         public const string SP_ListActivePersona = "Person.ListActivePersona";
         public const string SP_ListPersonaByOrganizationPartyId = "Person.ListPersonaByOrganizationPartyId_Ver01";
         public const string SP_GetActivePersona = "Person.GetActivePersona";
