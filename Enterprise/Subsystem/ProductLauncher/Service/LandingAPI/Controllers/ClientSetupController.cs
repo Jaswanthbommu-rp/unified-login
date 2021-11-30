@@ -480,7 +480,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
 			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
-			return mcs.InsertClientScope(clientScope);
+			var insert = mcs.InsertClientScope(clientScope);
+
+			if(insert.Id > 0)
+				mcs.WriteToLog(clientScope.ClientId, $"{{0}} {{1}} added {clientScope.Scope} to {{2}} scopes.");
+
+			return insert;
 		}
 
 		/// <summary>
@@ -547,6 +552,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			{
 				return Request.CreateResponse(HttpStatusCode.BadRequest, "No records deleted");
 			}
+
+			mcs.WriteToLog(clientScope.ClientId, $"{{0}} {{1}} removed {clientScope.Scope} from {{2}} scopes.");
 
 			return Request.CreateResponse(HttpStatusCode.OK);
 		}
