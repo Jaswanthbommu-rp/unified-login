@@ -10,16 +10,18 @@ CREATE PROCEDURE [UserManagement].[GetControl] (
  AS 
 
 	SELECT
-		 [ControlId]
-		,[ParentControlId]
-		,[ControlTypeId]
-		,[UIId]
-		,[DisplayName]
-		,[DataSource]
-		,[Sequence]
-		,[CreatedBy]
-		,[CreatedDate]
+		 C.[ControlId] AS ControlId
+		,C.[ParentControlId] AS ParentControlId
+		,C.[ControlTypeId] AS ControlTypeId
+		,C.[UIId] AS UIId
+		,C.[DisplayName] AS DisplayName
+		,C.[DataSource] AS DataSource
+		,C.[Sequence] AS Sequence
+		,C.[CreatedBy] AS CreatedBy
+		,C.[CreatedDate] AS CreatedDate
+		,CT.[Name] AS ControlType
 	FROM
-		[UserManagement].[Control]
+		[UserManagement].[Control] C
+		INNER JOIN [UserManagement].[ControlType] CT ON CT.ControlTypeId = C.ControlTypeId
 	WHERE
 		[ControlId] = @ControlId
