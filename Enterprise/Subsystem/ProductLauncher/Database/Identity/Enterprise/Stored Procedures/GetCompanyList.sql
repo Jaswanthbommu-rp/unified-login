@@ -96,8 +96,6 @@ BEGIN
 			  INNER JOIN Ident.UserLoginPersona ULP ON oau.UserLoginPersonaId = ulp.UserLoginPersonaId
 			  INNER JOIN Ident.UserLogin UL ON UL.UserId = ulp.UserLoginId
 			  INNER JOIN Enterprise.Party P2 ON P2.PartyId = UL.PersonPartyId
-	UNION
-		SELECT CAST(PartyId AS BIGINT), 'nouser@realpage.com', CAST('00000000-0000-0000-0000-000000000000' AS UNIQUEIDENTIFIER) FROM Enterprise.Party WHERE RealPageId = '0d018e46-c20e-477d-aded-4e5a35fb8f99'
 
 	INSERT INTO #tempOrganizations(OrganizationPartyId,		
 								   OrganizationName,		
