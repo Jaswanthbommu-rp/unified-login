@@ -327,9 +327,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 							auditMessage = "User {0} {1} originally cloned from user " + person.FirstName + " " + person.LastName + " by RealPage user {2}.";
 						}
 					}
+					else if(profile.organization[0].RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId)
+                    {
+						auditMessage = "New User {0} {1} successfully created by RealPage user {2}.";
+					}
 					else
 					{
-						auditMessage = "New User {0} {1} successfully created by RealPage user {2}.";
+						auditMessage = "New User {0} {1} successfully created by user {2}.";
 					}
 				}
 				else
@@ -351,8 +355,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 						if (isNotified)
 						{
 							//Log Activity
-							message = "Welcome Email sent to user {0} {1} by RealPage user {2}.";
-							LogAuditActivity(LogActivityTypeConstants.EMAIL_SENT, LogActivityCategoryType.Email, message, "CreateUser", profile);
+							message = profile.organization[0].RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId
+								? "Welcome Email sent to user {0} {1} by RealPage user {2}."
+                                : "Welcome Email sent to user {0} {1} by user {2}.";
+                            LogAuditActivity(LogActivityTypeConstants.EMAIL_SENT, LogActivityCategoryType.Email, message, "CreateUser", profile);
 						}
 						else
 						{
