@@ -11,7 +11,7 @@ jobs:
   - task: CopyFiles@2
     displayName: 'Copy Report Files'
     inputs:
-      SourceFolder: 'Enterprise\Subsystem\ProductLauncher\SSRS Reports'
+      SourceFolder: 'SSRSReports'
       Contents: |
         **\*.rdl
       TargetFolder: '$(Build.ArtifactStagingDirectory)\rpt'
