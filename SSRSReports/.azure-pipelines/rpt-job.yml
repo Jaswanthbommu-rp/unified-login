@@ -19,10 +19,10 @@ jobs:
   - task: ArchiveFiles@2
     displayName: 'Zip Reports Build'
     inputs:
-      rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/rpt'
+      rootFolderOrFile: '$(Build.ArtifactStagingDirectory)\rpt'
       includeRootFolder: false
       archiveType: 'zip'
-      archiveFile: '$(Build.ArtifactStagingDirectory)/rpt.zip'
+      archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
       replaceExistingArchive: true
 
   - task: ArtifactoryGenericUpload@2
@@ -34,8 +34,8 @@ jobs:
         {
           "files": [
             {
-              "pattern": "$(Build.ArtifactStagingDirectory)\rpt.zip",
-              "target": "$(ArtifactoryDeployablesPath)/rpt.zip"
+              "pattern": "$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip",
+              "target": "rp-deployables-local/uty/UnifiedLogin/SSRS/$(Build.BuildId).zip"
             }
           ]
         }
