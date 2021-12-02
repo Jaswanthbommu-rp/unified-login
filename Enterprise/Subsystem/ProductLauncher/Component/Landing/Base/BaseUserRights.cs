@@ -90,7 +90,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
                     AddRightFromImpersonator(identity, impersonateUserRights, distinctUserRights, "MANAGEPLATFORMSECURITY");
                     AddRightFromImpersonator(identity, impersonateUserRights, distinctUserRights, "MANAGESETTINGSTEMPLATES");
                     AddRightFromImpersonator(identity, impersonateUserRights, distinctUserRights, "ACCESSSETTINGSADMIN");
-                    AddRightFromImpersonator(identity, impersonateUserRights, distinctUserRights, "EMPLOYEEACCESSTOMANAGESETTINGSTEMPLATES"); 
+
                     // check for import user right
                     AddRightFromImpersonator(identity, impersonateUserRights, distinctUserRights, "ABILITYTOIMPORTUSERS");
 
