@@ -3396,35 +3396,35 @@ Begin
   INSERT INTO  Security.[Right](RightName,Description,Value,StatusTypeId,VisibilityStatusId,ProductId,TargetProductId,CreatedBy,CreatedDate)
                         Values ('ReadOnly','ReadOnly','ReadOnly',13,9,81,81,@UserId,GETDATE());
 End
-IF NOT EXISTS(SELECT 1 FROM Security.Role WHERE RoleName = 'Admin' AND OrgPartyID IS NULL AND ProductId = 38)
+IF NOT EXISTS(SELECT 1 FROM Security.Role WHERE RoleName = 'Admin' AND OrgPartyID IS NULL AND ProductId = 81)
 BEGIN
 	INSERT INTO Security.Role(RoleName, ShortName, Description, RoleTypeID, OrgPartyID, ProductId, CreatedBy, CreatedDate)
-	VALUES('Admin', 'Admin', 'Admin', 3, NULL, 38, @UserId, GETDATE())	
+	VALUES('Admin', 'Admin', 'Admin', 3, NULL, 81, @UserId, GETDATE())	
 END	
-IF NOT EXISTS(SELECT 1 FROM Security.Role WHERE RoleName = 'SuperAdmin' AND OrgPartyID IS NULL AND ProductId = 38)
+IF NOT EXISTS(SELECT 1 FROM Security.Role WHERE RoleName = 'SuperAdmin' AND OrgPartyID IS NULL AND ProductId = 81)
 BEGIN
 	INSERT INTO Security.Role(RoleName, ShortName, Description, RoleTypeID, OrgPartyID, ProductId, CreatedBy, CreatedDate)
-	VALUES('SuperAdmin', 'SuperAdmin', 'SuperAdmin', 3, NULL, 38, @UserId, GETDATE())	
+	VALUES('SuperAdmin', 'SuperAdmin', 'SuperAdmin', 3, NULL, 81, @UserId, GETDATE())	
 END	
-IF NOT EXISTS(SELECT 1 FROM Security.Role WHERE RoleName = 'AIP' AND OrgPartyID IS NULL AND ProductId = 38)
+IF NOT EXISTS(SELECT 1 FROM Security.Role WHERE RoleName = 'AIP' AND OrgPartyID IS NULL AND ProductId = 81)
 BEGIN
 	INSERT INTO Security.Role(RoleName, ShortName, Description, RoleTypeID, OrgPartyID, ProductId, CreatedBy, CreatedDate)
-	VALUES('AIP', 'AIP', 'AIP', 3, NULL, 38, @UserId, GETDATE())	
+	VALUES('AIP', 'AIP', 'AIP', 3, NULL, 81, @UserId, GETDATE())	
 END	
-IF NOT EXISTS(SELECT 1 FROM Security.Role WHERE RoleName = 'Credentialing' AND OrgPartyID IS NULL AND ProductId = 38)
+IF NOT EXISTS(SELECT 1 FROM Security.Role WHERE RoleName = 'Credentialing' AND OrgPartyID IS NULL AND ProductId = 81)
 BEGIN
 	INSERT INTO Security.Role(RoleName, ShortName, Description, RoleTypeID, OrgPartyID, ProductId, CreatedBy, CreatedDate)
-	VALUES('Credentialing', 'Credentialing', 'Credentialing', 3, NULL, 38, @UserId, GETDATE())	
+	VALUES('Credentialing', 'Credentialing', 'Credentialing', 3, NULL, 81, @UserId, GETDATE())	
 END	
-IF NOT EXISTS(SELECT 1 FROM Security.Role WHERE RoleName = 'CredentialingAdmin' AND OrgPartyID IS NULL AND ProductId = 38)
+IF NOT EXISTS(SELECT 1 FROM Security.Role WHERE RoleName = 'CredentialingAdmin' AND OrgPartyID IS NULL AND ProductId = 81)
 BEGIN
 	INSERT INTO Security.Role(RoleName, ShortName, Description, RoleTypeID, OrgPartyID, ProductId, CreatedBy, CreatedDate)
-	VALUES('CredentialingAdmin', 'CredentialingAdmin', 'Credentialing Admin', 3, NULL, 38, @UserId, GETDATE())	
+	VALUES('CredentialingAdmin', 'CredentialingAdmin', 'Credentialing Admin', 3, NULL, 81, @UserId, GETDATE())	
 END	
-IF NOT EXISTS(SELECT 1 FROM Security.Role WHERE RoleName = 'PasswordViewerInternal' AND OrgPartyID IS NULL AND ProductId = 38)
+IF NOT EXISTS(SELECT 1 FROM Security.Role WHERE RoleName = 'PasswordViewerInternal' AND OrgPartyID IS NULL AND ProductId = 81)
 BEGIN
 	INSERT INTO Security.Role(RoleName, ShortName, Description, RoleTypeID, OrgPartyID, ProductId, CreatedBy, CreatedDate)
-	VALUES('PasswordViewerInternal', 'PasswordViewerInternal', 'Password Viewer - Internal', 3, NULL, 38, @UserId, GETDATE())	
+	VALUES('PasswordViewerInternal', 'PasswordViewerInternal', 'Password Viewer - Internal', 3, NULL, 81, @UserId, GETDATE())	
 END	
 
 -- ROLERIGHTS
