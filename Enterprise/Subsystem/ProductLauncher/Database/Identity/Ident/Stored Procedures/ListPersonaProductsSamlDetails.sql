@@ -43,14 +43,15 @@ BEGIN
                 prod.[Name] ,
                 prod.Description ,               
                 ST.Name ,
-				OP.ParentProductTypeId,
+				pt.ParentProductTypeId,
 				CASE WHEN op.productid IS NOT NULL THEN 1 ELSE 0 END [ProductEnabled]
 				
          FROM Enterprise.PersonaConfiguration p
 			JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = p.ConfigurationId
 			INNER JOIN Enterprise.productSetting PS ON PC.productsettingid = ps.productsettingid
 			INNER JOIN Enterprise.ProductSettingType PST ON PS.productsettingtypeid = PST.ProductSettingTypeId AND PST.Name = 'ProductStatus'
-			JOIN Enterprise.Product prod ON prod.ProductId = p.ProductId
+			INNER JOIN Enterprise.Product prod ON prod.ProductId = p.ProductId
+			INNER JOIN Enterprise.ProductType pt on pt.ProductTypeId = prod.ProductTypeId  
 			INNER JOIN Person.Persona per ON(p.PersonaId = per.PersonaId)
 			
 			INNER JOIN [Enterprise].[StatusType] ST ON ST.StatusTypeId = CONVERT(INT,PS.value)	
