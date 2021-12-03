@@ -1010,22 +1010,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// ProductBase
         /// </summary>
         /// <param name="productId"></param>
-        /// <param name="productInternalSettingRepository"></param>
-        public ProductBase(int productId, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository)
-        {
-            _productId = productId;
-            _productInternalSettingRepository = productInternalSettingRepository;
-            _productRepository = productRepository;
-            _activityLogHelper = new SaveInteralSamlAttrLog(_userClaim);
-            _samlRepository = new SamlRepository();
-        }
-
-        /// <summary>
-        /// ProductBase
-        /// </summary>
-        /// <param name="productId"></param>
         /// <param name="userClaim"></param>
         /// <param name="productInternalSettingRepository"></param>
+        /// <param name="productRepository"></param>
         public ProductBase(int productId, DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository)
         {
             _productId = productId;
@@ -1433,7 +1420,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             //SeniorLeadManagement
             if (combinedRoleProp.Any(p => p.Key == ProductEnum.SeniorLeadManagement.ToString()) && string.IsNullOrEmpty(productResult))
             {
-                var productSeniorLeadManagement = new SeniorLeadManagementProduct(base.UserClaim, ProductEnum.SeniorLeadManagement);
+                var productSeniorLeadManagement = new SeniorLeadManagementProduct(base.UserClaim);
 
                 // assign user
                 if (roleProp.IsAssigned)
@@ -2750,7 +2737,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// Test constructor
         /// </summary>
         /// <param name="productInternalSettingRepository">Internal settings for a product</param>
-        public RentersInsuranceProduct(IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.Insurance, productInternalSettingRepository, productRepository)
+        public RentersInsuranceProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.Insurance, userClaim, productInternalSettingRepository, productRepository)
         {
         }
 
@@ -3198,15 +3185,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// default constructor
         /// </summary>
-        public LeadManagementProduct(ProductEnum productType) : base((int)productType, null, null)
+        public LeadManagementProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.LeadManagement, userClaim, null, null)
         {
         }
 
         /// <summary>
-        /// Test constructor
+        /// Used by update process
         /// </summary>
-        /// <param name="productInternalSettingRepository">Internal settings for a product</param>
-        public LeadManagementProduct(IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.LeadManagement, productInternalSettingRepository, productRepository)
+        /// <param name="userClaim"></param>
+        /// <param name="productInternalSettingRepository"></param>
+        /// <param name="productRepository"></param>
+        public LeadManagementProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.LeadManagement, userClaim, productInternalSettingRepository, productRepository)
         {
         }
 
@@ -3400,8 +3389,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// default constructor
         /// </summary>
-        /// <param name="productType">Identify products by id</param>
-        public PortfolioManagementProduct(ProductEnum productType) : base((int)productType, null, null)
+        /// <param name="userClaim"></param>
+        public PortfolioManagementProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.PortfolioManagement, userClaim, null, null)
+        {
+        }
+
+        /// <summary>
+        /// Used by update process
+        /// </summary>
+        /// <param name="userClaim"></param>
+        /// <param name="productInternalSettingRepository"></param>
+        /// <param name="productRepository"></param>
+        public PortfolioManagementProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.PortfolioManagement, userClaim, productInternalSettingRepository, productRepository)
         {
         }
 
@@ -3484,8 +3483,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// default constructor
         /// </summary>
-        /// <param name="productType">Identify products by id</param>
-        public DepositAlternativeProduct(ProductEnum productType) : base((int)productType, null, null)
+        /// <param name="userClaim"></param>
+        public DepositAlternativeProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.DepositAlternative, userClaim, null, null)
+        {
+        }
+
+        /// <summary>
+        /// Used by update process
+        /// </summary>
+        /// <param name="userClaim"></param>
+        /// <param name="productInternalSettingRepository"></param>
+        /// <param name="productRepository"></param>
+        public DepositAlternativeProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.DepositAlternative, userClaim, productInternalSettingRepository, productRepository)
         {
         }
 
@@ -3569,8 +3578,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// default constructor
         /// </summary>
-        /// <param name="productType">Identify products by id</param>
-        public ClickPayProduct(ProductEnum productType) : base((int)productType, null, null)
+        /// <param name="userClaim"></param>
+        public ClickPayProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.ClickPay, userClaim, null, null)
+        {
+        }
+
+        /// <summary>
+        /// Used by update process
+        /// </summary>
+        /// <param name="userClaim"></param>
+        /// <param name="productInternalSettingRepository"></param>
+        /// <param name="productRepository"></param>
+        public ClickPayProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.ClickPay, userClaim, productInternalSettingRepository, productRepository)
         {
         }
 
@@ -3653,9 +3672,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// default constructor
         /// </summary>
-        /// <param name="userClaim">Use to hold user claim related information</param>
-        /// <param name="productType">Product Type</param>
-        public SeniorLeadManagementProduct(DefaultUserClaim userClaim, ProductEnum productType) : base((int)productType, userClaim, null, null)
+        /// <param name="userClaim"></param>
+        public SeniorLeadManagementProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.SeniorLeadManagement, userClaim, null, null)
+        {
+        }
+
+        /// <summary>
+        /// Used by update process
+        /// </summary>
+        /// <param name="userClaim"></param>
+        /// <param name="productInternalSettingRepository"></param>
+        /// <param name="productRepository"></param>
+        public SeniorLeadManagementProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.SeniorLeadManagement, userClaim, productInternalSettingRepository, productRepository)
         {
         }
 
@@ -3802,8 +3830,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// default constructor
         /// </summary>
-        /// <param name="productType">Identify products by id</param>
-        public RenovationManagerProduct(ProductEnum productType) : base((int)productType, null, null)
+        /// <param name="userClaim"></param>
+        public RenovationManagerProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.RenovationManager, userClaim, null, null)
+        {
+        }
+
+        /// <summary>
+        /// Used by update process
+        /// </summary>
+        /// <param name="userClaim"></param>
+        /// <param name="productInternalSettingRepository"></param>
+        /// <param name="productRepository"></param>
+        public RenovationManagerProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.RenovationManager, userClaim, productInternalSettingRepository, productRepository)
         {
         }
 

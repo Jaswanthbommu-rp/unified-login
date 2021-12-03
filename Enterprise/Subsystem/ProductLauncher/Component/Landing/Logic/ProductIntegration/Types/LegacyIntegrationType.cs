@@ -558,7 +558,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     break;
 
                 case (int)ProductEnum.LeadManagement:
-                    product = new LeadManagementProduct((ProductEnum)productUser.ProductId);
+                    product = new LeadManagementProduct(_userClaims);
                     productPropertiesRoles =
                         DeserializeJSON<ProductUserRolePropertiesGroups>(productUser.InputJson);
                     result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
@@ -566,7 +566,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     break;
 
                 case (int)ProductEnum.LeadAnalytics:
-                    product = new LeadManagementProduct((ProductEnum)productUser.ProductId);
+                    product = new LeadManagementProduct(_userClaims);
                     productPropertiesRoles =
                         DeserializeJSON<ProductUserRolePropertiesGroups>(productUser.InputJson);
                     result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
@@ -581,7 +581,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     break;
 
                 case (int)ProductEnum.PortfolioManagement:
-                    product = new PortfolioManagementProduct((ProductEnum)productUser.ProductId);
+                    product = new PortfolioManagementProduct(_userClaims);
                     productPropertiesRoles =
                         DeserializeJSON<ProductUserRolePropertiesGroups>(productUser.InputJson);
                     result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
@@ -589,7 +589,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     break;
 
                 case (int)ProductEnum.DepositAlternative:
-                    product = new DepositAlternativeProduct((ProductEnum)productUser.ProductId);
+                    product = new DepositAlternativeProduct(_userClaims);
                     productPropertiesRoles =
                         DeserializeJSON<ProductUserRolePropertiesGroups>(productUser.InputJson);
                     result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
@@ -597,7 +597,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     break;
 
                 case (int)ProductEnum.ClickPay:
-                    product = new ClickPayProduct((ProductEnum)productUser.ProductId);
+                    product = new ClickPayProduct(_userClaims);
                     productPropertiesRoles =
                         DeserializeJSON<ProductUserRolePropertiesGroups>(productUser.InputJson);
                     result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
@@ -605,7 +605,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     break;
 
                 case (int)ProductEnum.SeniorLeadManagement:
-                    product = new SeniorLeadManagementProduct(_userClaims, (ProductEnum)productUser.ProductId);
+                    product = new SeniorLeadManagementProduct(_userClaims);
                     productPropertiesRoles =
                         DeserializeJSON<ProductUserRolePropertiesGroups>(productUser.InputJson);
                     result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
@@ -613,7 +613,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     break;
 
                 case (int)ProductEnum.RenovationManager:
-                    product = new RenovationManagerProduct((ProductEnum)productUser.ProductId);
+                    product = new RenovationManagerProduct(_userClaims);
                     productPropertiesRoles =
                         DeserializeJSON<ProductUserRolePropertiesGroups>(productUser.InputJson);
                     result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
@@ -742,13 +742,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
                     break;
                 case (int)ProductEnum.LeadManagement:
-                    product = new LeadManagementProduct((ProductEnum)batchRecord.ProductId);
+                    product = new LeadManagementProduct(_userClaims);
                     productPropertiesRoles =
                         DeserializeJSON<ProductUserRolePropertiesGroups>(batchRecord.InputJson);
                     result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
                     break;
                 case (int)ProductEnum.LeadAnalytics:
-                    product = new LeadManagementProduct((ProductEnum)batchRecord.ProductId);
+                    product = new LeadManagementProduct(_userClaims);
                     productPropertiesRoles =
                         DeserializeJSON<ProductUserRolePropertiesGroups>(batchRecord.InputJson);
                     result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
@@ -759,31 +759,31 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
                     break;
                 case (int)ProductEnum.PortfolioManagement:
-                    product = new PortfolioManagementProduct((ProductEnum)batchRecord.ProductId);
+                    product = new PortfolioManagementProduct(_userClaims);
                     productPropertiesRoles =
                         DeserializeJSON<ProductUserRolePropertiesGroups>(batchRecord.InputJson);
                     result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
                     break;
                 case (int)ProductEnum.DepositAlternative:
-                    product = new DepositAlternativeProduct((ProductEnum)batchRecord.ProductId);
+                    product = new DepositAlternativeProduct(_userClaims);
                     productPropertiesRoles =
                         DeserializeJSON<ProductUserRolePropertiesGroups>(batchRecord.InputJson);
                     result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
                     break;
                 case (int)ProductEnum.ClickPay:
-                    product = new ClickPayProduct((ProductEnum)batchRecord.ProductId);
+                    product = new ClickPayProduct(_userClaims);
                     productPropertiesRoles =
                         DeserializeJSON<ProductUserRolePropertiesGroups>(batchRecord.InputJson);
                     result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
                     break;
                 case (int)ProductEnum.SeniorLeadManagement:
-                    product = new SeniorLeadManagementProduct(_userClaims, (ProductEnum)batchRecord.ProductId);
+                    product = new SeniorLeadManagementProduct(_userClaims);
                     productPropertiesRoles =
                         DeserializeJSON<ProductUserRolePropertiesGroups>(batchRecord.InputJson);
                     result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
                     break;
                 case (int)ProductEnum.RenovationManager:
-                    product = new RenovationManagerProduct((ProductEnum)batchRecord.ProductId);
+                    product = new RenovationManagerProduct(_userClaims);
                     productPropertiesRoles =
                         DeserializeJSON<ProductUserRolePropertiesGroups>(batchRecord.InputJson);
                     result = product.CreateUser(batchRecord.RealPageId, batchRecord.CreateUserPersonaId,
@@ -1010,11 +1010,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
                     break;
                 case (int)ProductEnum.LeadManagement:
-                    product = new LeadManagementProduct((ProductEnum)productUser.ProductId);
+                    product = new LeadManagementProduct(_userClaims);
                     result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
                     break;
                 case (int)ProductEnum.LeadAnalytics:
-                    product = new LeadManagementProduct((ProductEnum)productUser.ProductId);
+                    product = new LeadManagementProduct(_userClaims);
                     result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
                     break;
                 case (int)ProductEnum.RPDocumentManagement:
@@ -1022,26 +1022,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
                     break;
                 case (int)ProductEnum.PortfolioManagement:
-                    product = new PortfolioManagementProduct((ProductEnum)productUser.ProductId);
+                    product = new PortfolioManagementProduct(_userClaims);
                     result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
                     break;
                 case (int)ProductEnum.IntegrationMarketplace:
                     _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Stop, null, "Batch Process stopped since IntegrationMarketplace doesn't required update profile.");
                     return string.Empty;
                 case (int)ProductEnum.DepositAlternative:
-                    product = new DepositAlternativeProduct((ProductEnum)productUser.ProductId);
+                    product = new DepositAlternativeProduct(_userClaims);
                     result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
                     break;
                 case (int)ProductEnum.ClickPay:
-                    product = new ClickPayProduct((ProductEnum)productUser.ProductId);
+                    product = new ClickPayProduct(_userClaims);
                     result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
                     break;
                 case (int)ProductEnum.SeniorLeadManagement:
-                    product = new SeniorLeadManagementProduct(_userClaims, (ProductEnum)productUser.ProductId);
+                    product = new SeniorLeadManagementProduct(_userClaims);
                     result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
                     break;
                 case (int)ProductEnum.RenovationManager:
-                    product = new RenovationManagerProduct((ProductEnum)productUser.ProductId);
+                    product = new RenovationManagerProduct(_userClaims);
                     result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
                     break;
                 //case ProductEnum.IntelligentBuilding:
@@ -1158,7 +1158,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
                 case (int)ProductEnum.Insurance:
-                    product = new RentersInsuranceProduct(_productInternalSettingRepository, _productRepository);
+                    product = new RentersInsuranceProduct(_userClaims, _productInternalSettingRepository, _productRepository);
                     result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
                 case (int)ProductEnum.ResearchApplication:
@@ -1182,11 +1182,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
                 case (int)ProductEnum.LeadManagement:
-                    product = new LeadManagementProduct(ProductEnum.LeadManagement);
+                    product = new LeadManagementProduct(_userClaims, _productInternalSettingRepository, _productRepository);
                     result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
                 case (int)ProductEnum.LeadAnalytics:
-                    product = new LeadManagementProduct(ProductEnum.LeadAnalytics);
+                    product = new LeadManagementProduct(_userClaims, _productInternalSettingRepository, _productRepository);
                     result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
                 case (int)ProductEnum.RPDocumentManagement:
@@ -1194,23 +1194,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
                 case (int)ProductEnum.PortfolioManagement:
-                    product = new PortfolioManagementProduct(ProductEnum.PortfolioManagement);
+                    product = new PortfolioManagementProduct(_userClaims, _productInternalSettingRepository, _productRepository);
                     result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
                 case (int)ProductEnum.DepositAlternative:
-                    product = new DepositAlternativeProduct(ProductEnum.DepositAlternative);
+                    product = new DepositAlternativeProduct(_userClaims, _productInternalSettingRepository, _productRepository);
                     result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
                 case (int)ProductEnum.ClickPay:
-                    product = new ClickPayProduct(ProductEnum.ClickPay);
+                    product = new ClickPayProduct(_userClaims, _productInternalSettingRepository, _productRepository);
                     result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
                 case (int)ProductEnum.SeniorLeadManagement:
-                    product = new SeniorLeadManagementProduct(_userClaims, ProductEnum.SeniorLeadManagement);
+                    product = new SeniorLeadManagementProduct(_userClaims, _productInternalSettingRepository, _productRepository);
                     result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
                 case (int)ProductEnum.RenovationManager:
-                    product = new RenovationManagerProduct(ProductEnum.RenovationManager);
+                    product = new RenovationManagerProduct(_userClaims, _productInternalSettingRepository, _productRepository);
                     result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
                 default:
