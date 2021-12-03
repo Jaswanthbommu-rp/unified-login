@@ -3384,3 +3384,113 @@ WHERE
 -- 996366
 
 GO
+ --Vendor Login Management (Employee Access)
+
+Declare @UserId BIGINT;
+SELECT @UserId = UserId
+FROM Ident.UserLogin
+WHERE LoginName LIKE 'realpagead@%';
+
+If NOT Exists (Select Top 1 1 from Security.[Right] where RightName ='ReadOnly' and ProductID =81)
+Begin
+  INSERT INTO  Security.[Right](RightName,Description,Value,StatusTypeId,VisibilityStatusId,ProductId,TargetProductId,CreatedBy,CreatedDate)
+                        Values ('ReadOnly','ReadOnly','ReadOnly',13,9,81,81,@UserId,GETDATE());
+End
+IF NOT EXISTS(SELECT 1 FROM Security.Role WHERE RoleName = 'Admin' AND OrgPartyID IS NULL AND ProductId = 38)
+BEGIN
+	INSERT INTO Security.Role(RoleName, ShortName, Description, RoleTypeID, OrgPartyID, ProductId, CreatedBy, CreatedDate)
+	VALUES('Admin', 'Admin', 'Admin', 3, NULL, 38, @UserId, GETDATE())	
+END	
+IF NOT EXISTS(SELECT 1 FROM Security.Role WHERE RoleName = 'SuperAdmin' AND OrgPartyID IS NULL AND ProductId = 38)
+BEGIN
+	INSERT INTO Security.Role(RoleName, ShortName, Description, RoleTypeID, OrgPartyID, ProductId, CreatedBy, CreatedDate)
+	VALUES('SuperAdmin', 'SuperAdmin', 'SuperAdmin', 3, NULL, 38, @UserId, GETDATE())	
+END	
+IF NOT EXISTS(SELECT 1 FROM Security.Role WHERE RoleName = 'AIP' AND OrgPartyID IS NULL AND ProductId = 38)
+BEGIN
+	INSERT INTO Security.Role(RoleName, ShortName, Description, RoleTypeID, OrgPartyID, ProductId, CreatedBy, CreatedDate)
+	VALUES('AIP', 'AIP', 'AIP', 3, NULL, 38, @UserId, GETDATE())	
+END	
+IF NOT EXISTS(SELECT 1 FROM Security.Role WHERE RoleName = 'Credentialing' AND OrgPartyID IS NULL AND ProductId = 38)
+BEGIN
+	INSERT INTO Security.Role(RoleName, ShortName, Description, RoleTypeID, OrgPartyID, ProductId, CreatedBy, CreatedDate)
+	VALUES('Credentialing', 'Credentialing', 'Credentialing', 3, NULL, 38, @UserId, GETDATE())	
+END	
+IF NOT EXISTS(SELECT 1 FROM Security.Role WHERE RoleName = 'CredentialingAdmin' AND OrgPartyID IS NULL AND ProductId = 38)
+BEGIN
+	INSERT INTO Security.Role(RoleName, ShortName, Description, RoleTypeID, OrgPartyID, ProductId, CreatedBy, CreatedDate)
+	VALUES('CredentialingAdmin', 'CredentialingAdmin', 'Credentialing Admin', 3, NULL, 38, @UserId, GETDATE())	
+END	
+IF NOT EXISTS(SELECT 1 FROM Security.Role WHERE RoleName = 'PasswordViewerInternal' AND OrgPartyID IS NULL AND ProductId = 38)
+BEGIN
+	INSERT INTO Security.Role(RoleName, ShortName, Description, RoleTypeID, OrgPartyID, ProductId, CreatedBy, CreatedDate)
+	VALUES('PasswordViewerInternal', 'PasswordViewerInternal', 'Password Viewer - Internal', 3, NULL, 38, @UserId, GETDATE())	
+END	
+
+-- ROLERIGHTS
+IF EXISTS ( SELECT TOP(1) 1 FROM Security.Role r WHERE r.RoleName = 'Admin' AND r.ProductId = 81 )
+BEGIN
+	IF NOT EXISTS ( SELECT TOP(1) 1 FROM Security.Role R INNER JOIN Security.RoleRight RR ON RR.RoleId = R.RoleId INNER JOIN Security.[Right] R2 ON R2.RightId = RR.RightId
+		WHERE r.RoleName = 'Admin' AND r2.RightName = 'ReadOnly' AND r.ProductId = 81 AND r2.ProductId = 81 )
+	BEGIN
+		INSERT INTO Security.RoleRight (RoleId, RightId, CreatedBy, CreatedDate )
+		SELECT R.RoleId, R2.RightId, @UserId, GETUTCDATE() FROM Security.Role R CROSS JOIN Security.[Right] R2 
+			WHERE r.RoleName = 'Admin' AND R2.RightName = 'ReadOnly' AND r.ProductId = 81 AND r2.ProductId = 81
+	END
+END
+
+IF EXISTS ( SELECT TOP(1) 1 FROM Security.Role r WHERE r.RoleName = 'SuperAdmin' AND r.ProductId = 81 )
+BEGIN
+	IF NOT EXISTS ( SELECT TOP(1) 1 FROM Security.Role R INNER JOIN Security.RoleRight RR ON RR.RoleId = R.RoleId INNER JOIN Security.[Right] R2 ON R2.RightId = RR.RightId
+		WHERE r.RoleName = 'SuperAdmin' AND r2.RightName = 'ReadOnly' AND r.ProductId = 81 AND r2.ProductId = 81 )
+	BEGIN
+		INSERT INTO Security.RoleRight (RoleId, RightId, CreatedBy, CreatedDate )
+		SELECT R.RoleId, R2.RightId, @UserId, GETUTCDATE() FROM Security.Role R CROSS JOIN Security.[Right] R2 
+			WHERE r.RoleName = 'SuperAdmin' AND R2.RightName = 'ReadOnly' AND r.ProductId = 81 AND r2.ProductId = 81
+	END
+END
+
+IF EXISTS ( SELECT TOP(1) 1 FROM Security.Role r WHERE r.RoleName = 'AIP' AND r.ProductId = 81 )
+BEGIN
+	IF NOT EXISTS ( SELECT TOP(1) 1 FROM Security.Role R INNER JOIN Security.RoleRight RR ON RR.RoleId = R.RoleId INNER JOIN Security.[Right] R2 ON R2.RightId = RR.RightId
+		WHERE r.RoleName = 'AIP' AND r2.RightName = 'ReadOnly' AND r.ProductId = 81 AND r2.ProductId = 81 )
+	BEGIN
+		INSERT INTO Security.RoleRight (RoleId, RightId, CreatedBy, CreatedDate )
+		SELECT R.RoleId, R2.RightId, @UserId, GETUTCDATE() FROM Security.Role R CROSS JOIN Security.[Right] R2 
+			WHERE r.RoleName = 'AIP' AND R2.RightName = 'ReadOnly' AND r.ProductId = 81 AND r2.ProductId = 81
+	END
+END
+
+IF EXISTS ( SELECT TOP(1) 1 FROM Security.Role r WHERE r.RoleName = 'CredentialingAdmin' AND r.ProductId = 81 )
+BEGIN
+	IF NOT EXISTS ( SELECT TOP(1) 1 FROM Security.Role R INNER JOIN Security.RoleRight RR ON RR.RoleId = R.RoleId INNER JOIN Security.[Right] R2 ON R2.RightId = RR.RightId
+		WHERE r.RoleName = 'CredentialingAdmin' AND r2.RightName = 'ReadOnly' AND r.ProductId = 81 AND r2.ProductId = 81 )
+	BEGIN
+		INSERT INTO Security.RoleRight (RoleId, RightId, CreatedBy, CreatedDate )
+		SELECT R.RoleId, R2.RightId, @UserId, GETUTCDATE() FROM Security.Role R CROSS JOIN Security.[Right] R2 
+			WHERE r.RoleName = 'CredentialingAdmin' AND R2.RightName = 'ReadOnly' AND r.ProductId = 81 AND r2.ProductId = 81
+	END
+END
+
+IF EXISTS ( SELECT TOP(1) 1 FROM Security.Role r WHERE r.RoleName = 'PasswordViewerInternal' AND r.ProductId = 81 )
+BEGIN
+	IF NOT EXISTS ( SELECT TOP(1) 1 FROM Security.Role R INNER JOIN Security.RoleRight RR ON RR.RoleId = R.RoleId INNER JOIN Security.[Right] R2 ON R2.RightId = RR.RightId
+		WHERE r.RoleName = 'PasswordViewerInternal' AND r2.RightName = 'ReadOnly' AND r.ProductId = 81 AND r2.ProductId = 81 )
+	BEGIN
+		INSERT INTO Security.RoleRight (RoleId, RightId, CreatedBy, CreatedDate )
+		SELECT R.RoleId, R2.RightId, @UserId, GETUTCDATE() FROM Security.Role R CROSS JOIN Security.[Right] R2 
+			WHERE r.RoleName = 'PasswordViewerInternal' AND R2.RightName = 'ReadOnly' AND r.ProductId = 81 AND r2.ProductId = 81
+	END
+END
+
+IF EXISTS ( SELECT TOP(1) 1 FROM Security.Role r WHERE r.RoleName = 'Credentialing' AND r.ProductId = 81 )
+BEGIN
+	IF NOT EXISTS ( SELECT TOP(1) 1 FROM Security.Role R INNER JOIN Security.RoleRight RR ON RR.RoleId = R.RoleId INNER JOIN Security.[Right] R2 ON R2.RightId = RR.RightId
+		WHERE r.RoleName = 'Credentialing' AND r2.RightName = 'ReadOnly' AND r.ProductId = 81 AND r2.ProductId = 81 )
+	BEGIN
+		INSERT INTO Security.RoleRight (RoleId, RightId, CreatedBy, CreatedDate )
+		SELECT R.RoleId, R2.RightId, @UserId, GETUTCDATE() FROM Security.Role R CROSS JOIN Security.[Right] R2 
+			WHERE r.RoleName = 'Credentialing' AND R2.RightName = 'ReadOnly' AND r.ProductId = 81 AND r2.ProductId = 81
+	END
+END
+GO 
