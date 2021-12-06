@@ -5,7 +5,9 @@ CREATE PROCEDURE [Enterprise].[ManagePersonaProductError]
 AS
 BEGIN
 BEGIN TRY
-	IF EXISTS(SELECT 1 FROM Enterprise.PersonaConfiguration WHERE PersonaId = @PersonaId AND StatusTypeId = 7)
+	IF EXISTS(SELECT 1 FROM Enterprise.PersonaConfiguration pc
+					inner join Enterprise.OrganizationProduct op on op.ProductId = pc.ProductId AND op.ThruDate IS NULL AND pc.ThruDate IS NULL
+	WHERE PersonaId = @PersonaId AND StatusTypeId = 7)
 	BEGIN
 		IF NOT EXISTS(SELECT 1 FROM Enterprise.PersonaProductError WHERE PersonaId = @PersonaId)
 		BEGIN
