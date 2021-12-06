@@ -2,7 +2,7 @@
 AS
 BEGIN
 	SELECT AGP.ProductId, COUNT(1) AS ADGroupCount
-	FROM [UPQA].[Security].[ADGroupUser] AU
+	FROM [Security].[ADGroupUser] AU
 	  JOIN Security.ADGroupProduct AGP on au.ADGroupId = AGP.ADGroupId	
 	WHERE AU.PersonaId = @PersonaId
 	GROUP BY AGP.ProductId
