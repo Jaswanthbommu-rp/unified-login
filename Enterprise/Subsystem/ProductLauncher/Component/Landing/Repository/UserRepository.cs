@@ -6234,7 +6234,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     {
                         LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, "{0} {1} user type changed from regular (No Email) to regular user by {2}.", "UpdateUser", updateUserProfileEntity.NewProfile);
                     }
-                    else if (updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId == new Guid("0D018E46-C20E-477D-ADED-4E5A35FB8F99")) //Compare with RealPage employee GUID
+                    else if (updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId) //Compare with RealPage employee GUID
                     {
                         LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, "User {0} {1} successfully updated by RealPage user {2}.", "UpdateUser", updateUserProfileEntity.NewProfile);
                     }

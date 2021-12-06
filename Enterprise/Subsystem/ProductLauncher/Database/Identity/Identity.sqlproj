@@ -1231,6 +1231,8 @@
     <Build Include="RoleRightsManagement\Stored Procedures\DeactivateAdGroup.sql" />
     <Build Include="Person\Stored Procedures\ListEmployeePersonas.sql" />
     <Build Include="Person\Stored Procedures\PlatformUsers_Report.sql" />
+    <Build Include="Security\UpdateAdGroupAssingment.sql" />
+    <Build Include="UserManagement\ADGroupAssignmentType.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

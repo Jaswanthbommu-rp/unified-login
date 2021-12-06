@@ -1,7 +1,6 @@
 ﻿Create PROCEDURE [Enterprise].[ListEmployeeProductsByOrganization]
 (
-	@LoginName varchar(256),
-	@PartyId  bigint,
+	@PersonaId  BIGINT,
 	@ProductStatusValue int = NULL
 )
 AS
@@ -10,19 +9,21 @@ BEGIN
 		 
 		 Declare   @RealPageId UniqueIdentifier,
                    @Name Varchar(256),
-				   @PersonaId  BIGINT,
+				   @PartyId  bigint,
 				   @PersonPartyId bigint,
+				   @LoginName varchar(256),
 				   @EmployeePersonaId bigint;
 
 		 Declare @CompanyOrganizationProduct TABLE ( ProductId INT, ProductStatus varchar(100) NULL, SupportsEmployeeCreation bit  ) 
 		 Declare @EmployeeADGroupProduct TABLE ( ProductId INT ) 
 
-		 SELECT @PersonPartyId = UL.PersonPartyId,@PersonaId = per.PersonaId
+		 SELECT @PersonPartyId = UL.PersonPartyId,
+				@PartyId =ULP.OrganizationPartyId,
+				@LoginName = UL.LoginName
 		 FROM Ident.UserLogin UL
 		 INNER JOIN Ident.UserLoginPersona ULP ON UL.UserId = ULP.UserLoginId
 		 INNER JOIN  Person.Persona per ON ULP.UserLoginPersonaId = per.UserLoginPersonaId
-		 WHERE UL.LoginName = @LoginName
-		 AND ULP.OrganizationPartyId = @PartyId
+		 WHERE per.PersonaId = @PersonaId
 		 
 		 SELECT @EmployeePersonaId = per.PersonaId
 		 FROM Ident.UserLogin UL
