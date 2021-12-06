@@ -1,7 +1,14 @@
 name: $(Date:yyyyMMdd).$(Rev:r)-$(Build.SourceBranchName)
 trigger:
-- master
-- release/*
+  branches:
+    include:
+      - master
+      - release/*
+  paths:
+    include:
+      - SSRSReports
+    exclude:
+      - Enterprise    
 
 pool:
   name: UTY-BLD-POOL

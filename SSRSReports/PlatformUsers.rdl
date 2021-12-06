@@ -1792,7 +1792,7 @@ WHERE OrgPartyID = @PartyId</CommandText>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>PLATFORM USERS</Value>
+                    <Value>UL PLATFORM USERS</Value>
                     <Style>
                       <FontSize>20pt</FontSize>
                       <Color>CornflowerBlue</Color>
