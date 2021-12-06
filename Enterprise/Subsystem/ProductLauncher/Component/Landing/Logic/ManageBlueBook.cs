@@ -164,9 +164,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <returns>List of CompanyMapResource</returns>
         public IList<CustomerCompanyMap> GetCompanyMap(Guid companyRealPageId, long booksCompanyMasterId, string source, string domain, string includeExtra = "", bool includeGreenBookCares = true, bool useTranslate = true)
         {
-            if (booksCompanyMasterId == -1 || companyRealPageId == DefaultUserClaim.EmployeeCompanyRealPageId || companyRealPageId == DefaultUserClaim.ContractCompanyRealPageId)
+            if (companyRealPageId == DefaultUserClaim.ContractCompanyRealPageId)
             {
-                // shortcut out for RealPage Employee company
+                // shortcut out for Contractor company
                 return null;
             }
             IList<CustomerCompanyMap> companyMap = new List<CustomerCompanyMap>();
@@ -175,7 +175,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 companyMap = GetTranslateFromUPFMToProductv2(companyRealPageId.ToString(), source);
 
-                if (companyMap != null)
+                if (companyMap != null || (companyRealPageId == DefaultUserClaim.EmployeeCompanyRealPageId && companyMap == null))
                 {
                     return companyMap;
                 }
