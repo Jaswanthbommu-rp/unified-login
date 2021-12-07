@@ -325,7 +325,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var contactId = string.Empty;
                 string accountId = string.Empty;
                 isMultiCompanyUser = (isExternalUser || string.IsNullOrEmpty(_productUsername) || clientPortalContactResults.Count > 0) && !isUserUpdate;
-                var uniqueProductLoginName = isMultiCompanyUser ? IterateUserNameIfExists(productLoginName) : productLoginName;
+                var uniqueProductLoginName = !isUserUpdate ? IterateUserNameIfExists(productLoginName) : productLoginName;
 
                 // If no contact then create new contact in salesforce
                 if (clientPortalContactResults == null || clientPortalContactResults.Count == 0 || isMultiCompanyUser)
@@ -358,7 +358,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         contactId = contact.Id;
 
                         // PMC to PMC OMS change is not allowed for same user login
-                        if (contact.OMS_ID__c != searchOmsId)
+                        if (!string.IsNullOrEmpty(contact.OMS_ID__c) && !string.IsNullOrEmpty(searchOmsId) && contact.OMS_ID__c != searchOmsId)
                         {
                             if (searchOmsId[0] == 'C' && contact.OMS_ID__c[0] == 'C')
                             {
@@ -367,14 +367,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             }
                         }
 
-                        if (contact.OMS_ID__c != searchOmsId)
+                        if (!string.IsNullOrEmpty(contact.OMS_ID__c) && !string.IsNullOrEmpty(searchOmsId) && contact.OMS_ID__c != searchOmsId)
                         {
                             // update salesforce contact with new OMS ID
                             UpdateContact(contactId, searchOmsId, false, true);
                         }
                         
                     }
-
                 }                
 
                 var clientPortalUser = new ClientPortalUser
@@ -403,17 +402,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                     return insertResult;
                 }
+                else
+                {
+                    // Update User & return result
+                    WriteToDiagnosticLog(
+                        $"ManageProductClientPortal.ManageClientPortalUser - trying to UPDATE user with editorPersona id - {editorPersonaId}.");
 
-                // Update User & return result
-                WriteToDiagnosticLog(
-                    $"ManageProductClientPortal.ManageClientPortalUser - trying to UPDATE user with editorPersona id - {editorPersonaId}.");
+                    // set fields to null which we can't update
+                    clientPortalUser.ContactId = null;
 
-                // set fields to null which we can't update
-                clientPortalUser.ContactId = null;
+                    var updateResult = UpdateClientPortalUser(clientPortalUser, _productUserId, userPersonaId);
 
-                var updateResult = UpdateClientPortalUser(clientPortalUser, _productUserId, userPersonaId);
-
-                return updateResult;
+                    return updateResult;
+                }
             }
             catch (Exception ex)
             {
