@@ -5,7 +5,7 @@ CREATE PROCEDURE [Security].[GetRightsList] (
 	@FilterByStatusType INT = 0,
 	@FilterByProduct VARCHAR(MAX) = NULL,
 	@FilterByTargetProduct VARCHAR(MAX) = NULL,
-	@SortColumn    VARCHAR(256) = 'RightName',  
+	@SortColumn    VARCHAR(256) = 'Value',  
 	@SortDirection   VARCHAR(4) = 'Asc',  
 	@RowsPerPage   INT     = 0,  
 	@PageNumber    INT     = 1 
@@ -46,7 +46,8 @@ DECLARE @sortValue INT
    WHEN N'Routes' THEN 105
    WHEN N'TargetProduct' THEN 106
    WHEN N'Visibility' THEN 107
-   ELSE 107
+   WHEN N'Value' THEN 108
+   ELSE 108
   END * CASE UPPER(@SortDirection) WHEN N'ASC' THEN 1 WHEN N'DESC' THEN -1 END;
     
 WITH RolesForRight 
@@ -105,6 +106,7 @@ AS
 		AND
 		((@RightId = 0) OR (R.RightId = @RightId))
 		AND	(((@FilterByName IS NULL) OR (R.RightName LIKE '%' + @FilterByName + '%'))
+				OR ((@FilterByName IS NULL) OR (R.[Value] LIKE '%' + @FilterByName + '%'))
 				OR ((@FilterByName IS NULL) OR (R.Description LIKE '%' + @FilterByName + '%'))
 				OR ((@FilterByName IS NULL) OR (P.[Name] LIKE '%' + @FilterByName + '%'))				
 			)
@@ -122,7 +124,7 @@ AS
 		RightId
 		, RightName
 		, Description
-		, Value
+		, [Value]
 		, VisibilityStatusId
 		, Visibility
 		, Product
@@ -142,6 +144,7 @@ AS
 			WHEN 105 THEN ROW_NUMBER() OVER (ORDER BY [Routes] ASC)
 			WHEN 106 THEN ROW_NUMBER() OVER (ORDER BY [TargetProduct] ASC) 
 			WHEN 107 THEN ROW_NUMBER() OVER (ORDER BY [VisibilityStatusId] ASC) 
+			WHEN 108 THEN ROW_NUMBER() OVER (ORDER BY [Value] ASC) 
 			WHEN -100 THEN ROW_NUMBER() OVER (ORDER BY RightName DESC)  
 			WHEN -101 THEN ROW_NUMBER() OVER (ORDER BY Description DESC)  
 			WHEN -102 THEN ROW_NUMBER() OVER (ORDER BY Product DESC)  
@@ -150,6 +153,7 @@ AS
 			WHEN -105 THEN ROW_NUMBER() OVER (ORDER BY [Routes] DESC) 
 			WHEN -106 THEN ROW_NUMBER() OVER (ORDER BY [TargetProduct] DESC)
 			WHEN -107 THEN ROW_NUMBER() OVER (ORDER BY [VisibilityStatusId] DESC) 
+			WHEN -108 THEN ROW_NUMBER() OVER (ORDER BY [Value] DESC) 
 	   END AS [RowNumber]
 	FROM CTERightsWithFilter
 )
@@ -159,7 +163,7 @@ SELECT
 		RightId
 		, RightName
 		, Description
-		, Value
+		, [Value]
 		, VisibilityStatusId
 		, Visibility
 		, Product
@@ -205,4 +209,5 @@ SELECT distinct
 	st.StatusTypeId as Id
 	, st.Name
 FROM SECURITY.[Right] r INNER JOIN Enterprise.StatusType st on st.StatusTypeId = r.StatusTypeId
-END	
+END
+GO
