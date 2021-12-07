@@ -584,6 +584,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					PropertyList.Add("ALL");
 				}
 			}
+			else if (_integrationTypeFactory.GetIntegrationTypeForProductId(productID) == ProductIntegrationTypeEnum.StandardV1)
+			{
+				foreach (object item in propertiesCollection)
+				{
+					if (((ProductIntegration.Model.ProductProperties)item).IsAssigned)
+					{
+						PropertyList.Add(((ProductIntegration.Model.ProductProperties)item).GetPropertyId);
+					}
+				}
+			}
 			else
 			{
 				foreach (object item in propertiesCollection)
