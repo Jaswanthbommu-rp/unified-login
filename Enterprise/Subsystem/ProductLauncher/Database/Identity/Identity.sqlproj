@@ -1233,6 +1233,7 @@
     <Build Include="Person\Stored Procedures\PlatformUsers_Report.sql" />
     <Build Include="Security\UpdateAdGroupAssingment.sql" />
     <Build Include="UserManagement\ADGroupAssignmentType.sql" />
+    <Build Include="Security\UpdateAdGroupStatus.sql" />
     <Build Include="Security\GetADGroupsPriorityByProductId.sql" />
   </ItemGroup>
   <ItemGroup>
