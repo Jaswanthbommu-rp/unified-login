@@ -238,8 +238,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// Default constructor with correlationId
         /// </summary>
         /// <param name="productId"></param>
-        /// <param name="userClaim">The information about the user calling the service</param>
+        /// <param name="userClaim"></param>
         /// <param name="productInternalSettingRepository"></param>
+        /// <param name="productRepository"></param>
         public ManageProductBase(int productId, DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository)
         {
             _productId = productId;

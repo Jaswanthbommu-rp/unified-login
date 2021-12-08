@@ -1270,24 +1270,46 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // gather AD info
             var adUserInfo = _dataCollector.GetAzureUserDetails(SubjectUserDetails.UserId);
             productUser.EmployeeAdditional.SAMAccountName = adUserInfo?.SamAccountName;
+            var existingProductAdGroupInfo = _dataCollector.GetEmployeeProductADGroupMapping(SubjectUserDetails.PersonaId, ProductId).FirstOrDefault();
 
             var productAdGroups = _productRepository.GetAdGroupsForProduct(ProductId);
             if (productAdGroups.Count > 0)
             {
+                var companyPersonaList = personaList.Where(p => p.OrganizationPartyId == SubjectUserDetails.OrganizationPartyId).ToList();
                 var orderedAdGroup = productAdGroups.OrderBy(p => p.AssignmentOrder);
                 var userAdGroups = _productRepository.GetAdGroupsForUser(employeePersona.PersonaId);
+                var usedGroups = new List<AdGroup>();
+
+                // if the user more than 1 persona in the company, record which groups have already been assigned
+                if (companyPersonaList.Count > 1)
+                {
+                    // the user has multiple persona, so we need to figure out if any of the others already have product logins assigned and what adgroup they are using
+                    companyPersonaList.ForEach(p =>
+                    {
+                        if (p.PersonaId != SubjectUserDetails.PersonaId)
+                        {
+                            var prodAdgroupInfo = _dataCollector.GetEmployeeProductADGroupMapping(p.PersonaId, ProductId)?.FirstOrDefault();
+                            if (prodAdgroupInfo != null)
+                            {
+                                usedGroups.Add(new AdGroup() { ADGroupId = prodAdgroupInfo.ADGroupId });
+                            }
+                        }
+                    });
+                }
+
                 foreach (var adGroupProduct in orderedAdGroup)
                 {
-                    if (userAdGroups.All(p => p.ADGroupId != adGroupProduct.ADGroupId)) continue;
+                    if (userAdGroups.All(adg => adg.ADGroupId != adGroupProduct.ADGroupId)) continue;
+                    if (usedGroups.Any(adg => adg.ADGroupId == adGroupProduct.ADGroupId)) continue;
                     productUser.EmployeeAdditional.AzureADGroup = adGroupProduct.ActiveDirectoryId.ToString();
                     productUser.EmployeeAdditional.AzureADGroupId = adGroupProduct.ADGroupId;
                     break;
                 }
             }
-
+            
             if (string.IsNullOrEmpty(productUser.EmployeeAdditional.AzureADGroup))
             {
-                productUser.IsActive = false;
+                throw new Exception("No ADGroups available to assign to create new product user.");
             }
         }
 

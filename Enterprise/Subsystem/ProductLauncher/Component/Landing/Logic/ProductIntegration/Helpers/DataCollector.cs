@@ -145,6 +145,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return _productRepository.GetAdGroupsForUser(personaId);
         }
 
+		public IList<EmployeeProductMapping> GetEmployeeProductADGroupMapping(long personaId, int productId)
+        {
+			return _userRepository.GetEmployeeProductADGroupMapping(personaId, productId);
+		}
+
 		private void GetUserSamlDetails(UserDetails userDetails, int productId)
 		{
 			IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(userDetails.PersonaId, productId);
