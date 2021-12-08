@@ -61,6 +61,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI
         private Guid _correlationId;
         private long _organizationMasterId;
         private string _organizationName;
+        private string _OrgType;
         private Guid _organizationRealPageGuid;
 
         public long _personaId;
@@ -112,6 +113,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI
 
                     identity.AddClaim(new Claim("sub", userLogin.UserId.ToString()));
                     identity.AddClaim(new Claim("orgPartyId", persona.Organization.PartyId.ToString()));
+                    identity.AddClaim(new Claim("orgType", persona.Organization.organizationType.Name.ToString()));
                     identity.AddClaim(new Claim("ORGID", persona.Organization.RealPageId.ToString()));
                     identity.AddClaim(new Claim("LOGINNAME", userLogin.LoginName));
                     identity.AddClaim(new Claim("ORGMASTERID", persona.Organization.BooksMasterId.ToString()));
@@ -131,6 +133,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI
                 _loginName = _userClaims.LoginName;
                 _organizationMasterId = _userClaims.OrganizationMasterId;
                 _organizationName = _userClaims.OrganizationName;
+                _OrgType = _userClaims.OrganizationType;
                 _realpageUserId = _userClaims.UserRealPageGuid;
                 _correlationId = _userClaims.CorrelationId;
                 _organizationRealPageGuid = _userClaims.OrganizationRealPageGuid;

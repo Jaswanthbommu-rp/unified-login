@@ -11,7 +11,7 @@ Post-Deployment Script Template
 */
 :r .\PostDeploymentScripts\_SeedData.sql
 
-:r .\PostDeploymentScripts\2021Q3Release.10WMU.sql
+:r .\PostDeploymentScripts\2021Q3Release.12WMU.sql
 
 :r .\PostDeploymentScripts\UpdateStatistics.sql
 :r .\PostDeploymentScripts\RecompileAllProcs.sql

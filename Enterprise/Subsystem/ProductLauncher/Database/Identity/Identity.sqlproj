@@ -1307,5 +1307,6 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\October2020Release.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\November2020Release.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\December2020Release.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\2021Q3Release.12WMU.sql" />
   </ItemGroup>
 </Project>

@@ -1658,6 +1658,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 }
             });
 
+            //// Removing Vendor Marketplace product for Vendor & Other OrgTypes
+            var disableusermanagementOrgtype = _productInternalSettingRepository.GetProductSettingByType("DisableUserManagementForOrgType");
+            var organizationsTypeName = _userClaim.OrganizationType;
+            foreach (var items in disableusermanagementOrgtype)
+            {
+                if (items.Value != String.Empty)
+                {
+                    string[] types = items.Value.Split(',');
+                    if (types.Contains(organizationsTypeName))
+                    {
+                        productFamilyList.ToList().ForEach(x =>
+                        {
+                            Solution solution = new Solution();
+                            if (x.Name.Equals("Administration", StringComparison.OrdinalIgnoreCase))
+                            {
+                                foreach (var soln in x.Solutions.ToList())
+                                {
+                                    if (soln.ProductId == items.ProductId)
+                                    {
+                                        x.Solutions.Remove(soln);
+                                    }
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+
             try
             {
                 // add benchmarking as sub product
