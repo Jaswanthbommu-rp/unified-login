@@ -31,6 +31,16 @@
 AS
 BEGIN
 	SET NOCOUNT OFF;
+	
+	IF @Original_Name <> @Name
+	BEGIN
+		-- UPDATE ANY CLIENTS WITH THE OLD NAME TO THE NEW NAME
+		UPDATE Auth.ClientScopes
+			SET Scope = @Name
+		WHERE
+			Scope = @Original_Name
+	END
+
 	UPDATE [Auth].[Scopes] 
 	SET 
 		[Name] = @Name
