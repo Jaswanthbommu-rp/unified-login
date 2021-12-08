@@ -6188,17 +6188,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             var auditMessage = $"RealPage user {{2}} changed the Unified Platform role for {{0}} {{1}}. Previous role(s): {joinedOldRoles}. New role(s) : {joinedNewRoles}.";
                             LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, auditMessage, "UpdateUser", updateUserProfileEntity.NewProfile);
                         }
-					}					
+					}
 
+                    //Log Activity
                     if (userBatchEntity.IsUserTypeChangedFromNoEmailToRegular)
                     {
-                        //Log Activity
                         LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, "{0} {1} user type changed from regular (No Email) to regular user by {2}.", "UpdateUser", updateUserProfileEntity.NewProfile);
+                    }
+                    else if (updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId == new Guid("0D018E46-C20E-477D-ADED-4E5A35FB8F99")) //Compare with RealPage employee GUID
+                    {
+                        LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, "User {0} {1} successfully updated by RealPage user {2}.", "UpdateUser", updateUserProfileEntity.NewProfile);
                     }
                     else
                     {
-                        //Log Activity
-                        LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, "User {0} {1} successfully updated by RealPage user {2}.", "UpdateUser", updateUserProfileEntity.NewProfile);
+                        LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, "User {0} {1} successfully updated by user {2}.", "UpdateUser", updateUserProfileEntity.NewProfile);
                     }
                 }
 
