@@ -411,8 +411,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 }
 
                 //Remove Resource Vendor Marketplace if the user does not have the Ability to access Vendor Marketplace right
-                if (_userClaim.Rights.All(rght => !(rght.Equals("AccessVendorMarketplace", StringComparison.OrdinalIgnoreCase) ||
-                                                  rght.Equals("EmployeeAccessVendorMarketPlace", StringComparison.OrdinalIgnoreCase))))
+                if (_userClaim.Rights.All(rght => rght.Equals("EmployeeAccessVendorMarketPlace", StringComparison.OrdinalIgnoreCase)))
+                                                 
                 {
                     if (userProducts.Any(a => a.ProductId == (int)ProductEnum.VendorMarketplace))
                     {
