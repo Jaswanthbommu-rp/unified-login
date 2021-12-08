@@ -553,8 +553,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			{
 				allProperties = CheckForAllProperties(propertiesResponse.Additional);
 			}
-
-			if (productID != (int)ProductEnum.ProspectContactCenter)
+			if (_integrationTypeFactory.GetIntegrationTypeForProductId(productID) == ProductIntegrationTypeEnum.StandardV1)
+			{
+				if (rolesResponse.Records != null)
+				{
+					IEnumerable<object> roleCollection = (IEnumerable<object>)rolesResponse.Records;
+					foreach (object item in roleCollection)
+					{
+						if (((ProductIntegration.Model.ProductRole)item).IsAssigned)
+						{
+							RoleList.Add(((ProductIntegration.Model.ProductRole)item).GetRoleId);
+						}
+					}
+				}
+			}
+			else if(productID != (int)ProductEnum.ProspectContactCenter)
 			{
 				if (rolesResponse.Records != null)
 				{
@@ -579,9 +592,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				else if (productID == (int)ProductEnum.OneSite ||
 						 productID == (int)ProductEnum.FinancialSuite ||
 						 productID == (int)ProductEnum.ProspectContactCenter ||
-						 productID == (int)ProductEnum.MarketingCenter)
+						 productID == (int)ProductEnum.MarketingCenter ||
+						_integrationTypeFactory.GetIntegrationTypeForProductId(productID) == ProductIntegrationTypeEnum.StandardV1)
 				{
 					PropertyList.Add("ALL");
+				}
+			}
+			else if (_integrationTypeFactory.GetIntegrationTypeForProductId(productID) == ProductIntegrationTypeEnum.StandardV1)
+			{
+				foreach (object item in propertiesCollection)
+				{
+					if (((ProductIntegration.Model.ProductProperties)item).IsAssigned)
+					{
+						PropertyList.Add(((ProductIntegration.Model.ProductProperties)item).GetPropertyId);
+					}
 				}
 			}
 			else
