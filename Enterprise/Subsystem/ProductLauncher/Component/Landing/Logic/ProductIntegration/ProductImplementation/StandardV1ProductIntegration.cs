@@ -1291,7 +1291,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             var prodAdgroupInfo = _dataCollector.GetEmployeeProductADGroupMapping(p.PersonaId, ProductId)?.FirstOrDefault();
                             if (prodAdgroupInfo != null)
                             {
-                                usedGroups.Add(new AdGroup() { ADGroupId = prodAdgroupInfo.ADGroupId });
+                                var isProductAssigned = _productRepository.isProductAssigned(p.PersonaId, 8, ProductId);
+                                if (isProductAssigned)
+                                {
+                                    usedGroups.Add(new AdGroup() { ADGroupId = prodAdgroupInfo.ADGroupId });
+                                }
                             }
                         }
                     });

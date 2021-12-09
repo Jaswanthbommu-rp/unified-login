@@ -329,13 +329,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     if (userAdGroups.All(p => p.ADGroupId != existingProductAdGroupInfo?.ADGroupId))
                     {
                         // see if the user has any other adgroups for the product that might work, otherwise disable product and reject access
+                        //if (companyPersonaList.Count() == 1 && userAdGroups.All(p => p.ADGroupId != productAdGroups?.FirstOrDefault(p1 => p1.ADGroupId == p.ADGroupId)?.ADGroupId))
                         if (companyPersonaList.Count() == 1 && userAdGroups.All(p => p.ADGroupId != productAdGroups?.FirstOrDefault(p1 => p1.ADGroupId == p.ADGroupId)?.ADGroupId))
                         {
                             ManageProductBase mpb = new ManageProductBase(productId, _userClaim, _productInternalSettingRepository, _productRepository);
                             mpb.UpdateProductSettingProductStatus(personaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
                             return "You are no longer in an ADGroup for this product.";
                         }
-                        //return "no adgroup access";
+
+                        if (userAdGroups.All(p => p.ADGroupId != existingProductAdGroupInfo.ADGroupId))
+                        {
+                            ManageProductBase mpb = new ManageProductBase(productId, _userClaim, _productInternalSettingRepository, _productRepository);
+                            mpb.UpdateProductSettingProductStatus(personaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
+                            return "DeletedProductLogin";
+                        }
                     }
 
                 }
