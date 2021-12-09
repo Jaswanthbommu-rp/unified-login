@@ -311,9 +311,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             else
             {
                 //Activity log
-                var activityMessageResult = "An error occurred during the update process for employee {3} {4} to product {2} in company " + employeeInfo.OrganizationName + ". " + result;
+                var activityMessageResult = "An error occurred during the update process for employee {3} {4} to product {2} in company " + employeeInfo.OrganizationName + ".";
                 WriteActivityLogWithMessage(productUser.RealPageEmployeePersonaId, 0, activityMessageResult, productId);
-                return String.IsNullOrEmpty(result) ? "An unknown error occurred during the update process" : result;
+                return "An unknown error occurred during the update process";
             }
 
             return result;
