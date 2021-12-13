@@ -14,7 +14,7 @@ BEGIN
      ULP.StatusTypeId,  
      pe.PersonaTypeId,  
      pe.PersonaEnvironmentTypeId,  
-     pt.Name,  
+     pe.PersonaName AS 'Name', 
      pe.FromDate,  
      pe.ThruDate,  
      pe.IsDefault ,  
@@ -23,8 +23,7 @@ BEGIN
  FROM  Person.Persona PE  
      INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginPersonaId = PE.UserLoginPersonaId  
      INNER JOIN Ident.UserLogin UL ON UL.UserId = ULP.UserLoginId  
-     INNER JOIN Enterprise.Party p ON UL.PersonPartyId = P.PartyId  
-     INNER JOIN Person.PersonaType pt ON PE.PersonaTypeId = pt.PersonaTypeId  
+     INNER JOIN Enterprise.Party p ON UL.PersonPartyId = P.PartyId
  WHERE p.RealPageId = @RealPageId  
  AND   ((@IsDefault IS NULL) OR (pe.IsDefault = @IsDefault))  
  AND   ((@NOW BETWEEN pe.FromDate AND pe.ThruDate) OR (@NOW >= pe.FromDate AND pe.ThruDate IS NULL))  

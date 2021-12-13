@@ -2,6 +2,7 @@
 	 @OrganizationRealPageId uniqueidentifier
 	,@UserId bigint  
 	,@CreatedBy bigint
+    ,@PersonaName nvarchar(50)
 	,@PersonaId bigint = NULL OUTPUT)
 AS
 BEGIN
@@ -44,8 +45,9 @@ BEGIN
 			,PersonaTypeId
 			,PersonaEnvironmentTypeId
 			,FromDate
-			,ThruDate)
-          VALUES (@UserLoginPersonaId, @PersonaTypeId, @PersonaEnvironmentTypeId, @FromDate, NULL);
+			,ThruDate
+            ,PersonaName)
+          VALUES (@UserLoginPersonaId, @PersonaTypeId, @PersonaEnvironmentTypeId, @FromDate, NULL,@PersonaName);
         SET @PersonaId = SCOPE_IDENTITY();
       END;
 

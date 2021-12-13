@@ -261,11 +261,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 if (maxCount > 0 && orgPersonaCount > 0)
                 {
                     //add new persons based on max count and existing persona count
-                    int newPersonasTobeCreatedCount = 0;
+                    int newPersonasTobeCreatedCount = 0;                  
                     newPersonasTobeCreatedCount = maxCount - orgPersonaCount;
                     for (int i = 1; i <= newPersonasTobeCreatedCount; i++)
                     {
-                        var repoResponse = _managePersona.CreateAdditionalPersona(companyRealPageId, userClaim.UserId, userClaim.UserId);
+                        //set name based on count
+                        string personaName = "Secondary";
+                        if (orgPersonaCount >= 2)
+                        {
+                            personaName = personaName + " " + orgPersonaCount.ToString();                           
+                        }
+                        var repoResponse = _managePersona.CreateAdditionalPersona(companyRealPageId, userClaim.UserId, userClaim.UserId,personaName);
+                        orgPersonaCount++;
                     }
                 }
                              
@@ -501,6 +508,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
 
             persona.Name = newProfile.UserTypeId == (int)UserRoleType.SuperUser ? "System Administrator" : "Primary";
+            persona.PersonaName = "Primary";
             persona.PersonaEnvironmentTypeId = (int)personaEnv.PersonaEnvironmentTypeId;
             persona.FromDate = utcNow.AddMinutes(-5);
             persona.ThruDate = null;

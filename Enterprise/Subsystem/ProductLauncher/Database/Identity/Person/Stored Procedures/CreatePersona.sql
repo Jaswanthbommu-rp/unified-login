@@ -7,6 +7,7 @@
 	,@PersonaEnvironmentTypeId int
 	,@FromDate datetime
 	,@ThruDate datetime = NULL
+    ,@PersonaName nvarchar(50) = 'Primary'
 	,@PersonaId bigint = NULL OUTPUT)
 AS
 BEGIN
@@ -54,8 +55,9 @@ BEGIN
 			,PersonaTypeId
 			,PersonaEnvironmentTypeId
 			,FromDate
-			,ThruDate)
-          VALUES (@UserLoginPersonaId, @PersonaTypeId, @PersonaEnvironmentTypeId, @FromDate, @ThruDate);
+			,ThruDate
+            ,PersonaName)
+          VALUES (@UserLoginPersonaId, @PersonaTypeId, @PersonaEnvironmentTypeId, @FromDate, @ThruDate,@PersonaName);
         SET @PersonaId = SCOPE_IDENTITY();
       END;
 

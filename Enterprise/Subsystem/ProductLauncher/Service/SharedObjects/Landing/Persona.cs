@@ -11,6 +11,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         /// Organization Detail
         /// </summary>
         public Organization Organization { get; set; }
+        /// <summary>
+        /// Persona Name
+        /// </summary>
+        public string PersonaName { get; set; } = "Primary";
 
         /// <summary>
         /// Persona Type

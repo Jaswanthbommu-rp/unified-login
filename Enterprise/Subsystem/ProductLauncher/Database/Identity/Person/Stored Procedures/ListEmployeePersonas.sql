@@ -7,11 +7,10 @@ BEGIN
 	DECLARE @NOW datetime = GETUTCDATE()
 
 	SELECT	pe.PersonaId,					
-			pt.Name
+			pe.PersonaName AS 'Name'
 	FROM Person.Persona PE
 		 INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginPersonaId = PE.UserLoginPersonaId
-		 INNER JOIN Ident.UserLogin UL ON UL.UserId = ULP.UserLoginId					
-		 INNER JOIN Person.PersonaType pt ON PE.PersonaTypeId = pt.PersonaTypeId
+		 INNER JOIN Ident.UserLogin UL ON UL.UserId = ULP.UserLoginId
 	WHERE	UL.UserId = @UserId
 	AND     ULP.OrganizationPartyId = @OrgPartyId
 	AND		ULP.IsRPEmployee = 1
