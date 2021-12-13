@@ -122,3 +122,9 @@ if NOT EXISTS (
 		end
 	END
 GO
+
+ -- Updating Setting URL for Admin Console (Settings)
+IF EXISTS (Select Top 1 1 from ENterprise.NavigationMenu where PageId = 'Admin Console' and Origin = 'unified-settings' and [URL] = '/settings')
+BEGIN
+   UPDATE ENterprise.NavigationMenu SET [URL] = '/settings/admin' where PageId = 'Admin Console' and Origin = 'unified-settings' and [URL] = '/settings';
+END
