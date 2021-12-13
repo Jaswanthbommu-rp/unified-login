@@ -22,5 +22,10 @@
         /// </summary>
         public int ProductId { get; set; }
 
+        /// <summary>
+        /// The product name to retrieve the claim for
+        /// </summary>
+        public string ProductName { get; set; }
+
     }
 }
