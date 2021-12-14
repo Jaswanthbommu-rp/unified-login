@@ -27,5 +27,9 @@
         /// </summary>
         public string ProductName { get; set; }
 
+        /// <summary>
+        /// Count of amount of users using this claim
+        /// </summary>
+        public int UsedCount { get; set; }
     }
 }
