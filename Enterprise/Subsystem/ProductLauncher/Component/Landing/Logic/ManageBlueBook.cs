@@ -186,8 +186,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="includeExtra">Extra Uri Includes (Optional)</param>
         /// <param name="includeGreenBookCares">Filter result using greenbook cares flag</param>
         /// <param name="useTranslate"></param>
+        /// <param name="isCompanyMap"></param>
         /// <returns>List of CompanyMapResource</returns>
-        public IList<CustomerCompanyMap> GetCompanyMap(Guid companyRealPageId, long booksCompanyMasterId, string source, string domain, string includeExtra = "", bool includeGreenBookCares = true, bool useTranslate = true)
+        public IList<CustomerCompanyMap> GetCompanyMap(Guid companyRealPageId, long booksCompanyMasterId, string source, string domain, string includeExtra = "", bool includeGreenBookCares = true, bool useTranslate = true, bool isCompanyMap = false)
         {
             if (companyRealPageId == DefaultUserClaim.ContractCompanyRealPageId)
             {
@@ -259,7 +260,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     logData = new Dictionary<string, object>() {{"response", response}};
                     WriteToLog(LogEventLevel.Debug, "GetCompanyMap - No info found.", logData);
 
-                    if (response.StatusCode == HttpStatusCode.NotFound)
+                    if (response.StatusCode == HttpStatusCode.NotFound && !isCompanyMap)
                     {
                         throw new BlueBookException(CommonMessageConstants.CompanyErrorMessage);
                     }

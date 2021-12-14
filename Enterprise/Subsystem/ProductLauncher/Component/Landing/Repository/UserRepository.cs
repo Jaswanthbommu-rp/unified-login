@@ -48,6 +48,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         private IManagePersona _managePersona;
         private IOrganizationRepository _organizationRepository;
         IProductInternalSettingRepository _productInternalSettingRepository;
+        ManageBlueBook _blueBook;
 
         #region Ctor
 
@@ -260,6 +261,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             IOrganizationRepository organizationRepository = new OrganizationRepository();
             Organization organizationExternalUser = organizationRepository.GetOrganization(realPageId: DefaultUserClaim.ExternalCompanyRealPageId);
+
+            Organization editorOrganizationDetails = organizationRepository.GetOrganization(realPageId: _userClaim.OrganizationRealPageGuid);
 
             IContactMechanismUsageTypeRepository contactMechanismUsageTypeRepository = new ContactMechanismUsageTypeRepository();
             IList<ContactMechanismUsageType> emailUsageType = contactMechanismUsageTypeRepository.ListContactMechanismUsageType(ContactMechanismUsageTypeName: "Email Notification");
@@ -1568,7 +1571,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     }
 
                     processTracker = "SaveProductDetails";
-                    int productCount = SaveProductDetails(repository, newProfile.productBatch, createUserResponse, CreateUserPersonaId, AssignUserPersonaId, userClaim.UserRealPageGuid, organizationRealPageId, errorStatus, newProfile.UserTypeId, true, aoProductsAvailableForUser, newProfile.MigratedUser, true, greenBookRole, "add");
+                    int productCount = SaveProductDetails(repository, newProfile.productBatch, createUserResponse, CreateUserPersonaId, AssignUserPersonaId, userClaim.UserRealPageGuid, organizationRealPageId, errorStatus, newProfile.UserTypeId, true, aoProductsAvailableForUser, newProfile.MigratedUser, true, greenBookRole, "add", editorOrganizationDetails);
 
                     #endregion
 
@@ -3428,7 +3431,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="userIsActive">Is the user active</param>
         /// <param name="aoProducts">Applicable if PMC has AO products</param>
         /// <returns>Number of Products</returns>
-        private int SaveProductDetails(IRepository repository, IList<ProductBatch> productList, CreateUserResponse<IErrorData> createUserResponse, long CreateUserPersonaId, long AssignUserPersonaId, Guid realPageId, Guid organizationRealPageId, Status<IErrorData> errorStatus, int userTypeId, bool userIsActive, IList<string> aoProducts = null, bool migratedUser = false, bool isCreateUser = false, int unifiedPlatformRole = 0, string operationType = "update")
+        private int SaveProductDetails(IRepository repository, IList<ProductBatch> productList, CreateUserResponse<IErrorData> createUserResponse, long CreateUserPersonaId, long AssignUserPersonaId, Guid realPageId, Guid organizationRealPageId, Status<IErrorData> errorStatus, int userTypeId, bool userIsActive, IList<string> aoProducts = null, bool migratedUser = false, bool isCreateUser = false, int unifiedPlatformRole = 0, string operationType = "update", Organization editorOrganizationDetails = null)
         {
             int productCount = 0;
             int enterpriseRoleId = 0;
@@ -3505,6 +3508,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     }
                 }
 
+                if(operationType == "add" && editorOrganizationDetails != null)
+                {
+                    var productRepo = new ProductRepository();
+                    foreach (var productmap in productListToCreate)
+                    {
+                        var productDetails = productRepo.GetBooksMasterProductDetail(productmap.ProductId);
+                        string udmSource = productDetails.UDMSourceCode?.Length > 0 ? productDetails.UDMSourceCode : productDetails.BooksProductCode;
+                        IList<CustomerCompanyMap> companyMapping = _blueBook.GetCompanyMap(companyRealPageId: _userClaim.OrganizationRealPageGuid, booksCompanyMasterId: editorOrganizationDetails.BooksCustomerMasterId, source: udmSource, domain: editorOrganizationDetails.OrganizationDomain.Name, isCompanyMap: true);
+                        if (companyMapping == null)
+                        {
+                            productListToCreate.Remove(productmap);
+                        }
+                    }
+                }
+               
                 productList = productListToCreate;
             }
 

@@ -37,8 +37,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <param name="includeExtra">Extra Uri Includes (Optional)</param>
         /// <param name="includeGreenBookCares">Filter result using greenbook cares flag</param>
         /// <param name="useTranslate"></param>
+        /// <param name="isCompanyMap"></param>
         /// <returns>List of CompanyMapResource</returns>
-        IList<CustomerCompanyMap> GetCompanyMap(Guid companyRealPageId, long booksCompanyMasterId, string source, string domain, string includeExtra = "", bool includeGreenBookCares = true, bool useTranslate = true);
+        IList<CustomerCompanyMap> GetCompanyMap(Guid companyRealPageId, long booksCompanyMasterId, string source, string domain, string includeExtra = "", bool includeGreenBookCares = true, bool useTranslate = true, bool isCompanyMap = false);
 
         /// <summary>
         /// Get a list of property instances under the given company instance in the BlueBook system
