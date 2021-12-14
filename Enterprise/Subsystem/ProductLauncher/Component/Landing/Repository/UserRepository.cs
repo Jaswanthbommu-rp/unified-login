@@ -96,19 +96,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         #region Public methods
 
         /// <summary>
-        /// Get User Product Details By UserId
-        /// </summary>
-        /// <param name="userId">UserId</param>
-        /// <returns>UserProduct object</returns>
-        public UserProduct GetUserProductDetailsByUserId(int userId)
-        {
-            using (var repo = GetRepository())
-            {
-                return repo.GetOne<UserProduct>("Auth.GetUserProductDetailsByUserId", new { userId });
-            }
-        }
-
-        /// <summary>
         /// Get Enterprise User
         /// </summary>
         /// <param name="enterpriseUserName">Enterprise UserName</param>

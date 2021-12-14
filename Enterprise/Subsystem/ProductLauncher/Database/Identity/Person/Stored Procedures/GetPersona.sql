@@ -8,7 +8,7 @@ AS
                 ULP.OrganizationPartyId,
                 pe.PersonaTypeId,
                 pe.PersonaEnvironmentTypeId,
-                pt.Name,
+                pe.PersonaName AS 'Name',
                 pe.FromDate,
                 pe.ThruDate,
                 pe.IsDefault,
@@ -19,7 +19,6 @@ AS
 		INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginPersonaId = PE.UserLoginPersonaId
 		INNER JOIN Ident.UserLogin UL ON UL.UserId = ULP.UserLoginId
 		INNER JOIN Enterprise.Party p ON UL.PersonPartyId = P.PartyId
-		INNER JOIN Person.PersonaType pt ON(pe.PersonaTypeId = pt.PersonaTypeId)
 		INNER JOIN Enterprise.PartyRelationship PR ON(PR.PartyIdFrom = UL.PersonPartyId AND PR.PartyIdTo = ULP.OrganizationPartyId
                                                             AND PR.RoleTypeIdTo = 205
                                                             AND PR.ThruDate IS NULL)

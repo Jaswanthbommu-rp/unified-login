@@ -3494,3 +3494,8 @@ BEGIN
 	END
 END
 GO 
+--Persona name update
+Update P Set p.PersonaName = pt.Name
+From Person.Persona P
+Join Person.PersonaType PT ON P.PersonaTypeId = PT.PersonaTypeId
+GO

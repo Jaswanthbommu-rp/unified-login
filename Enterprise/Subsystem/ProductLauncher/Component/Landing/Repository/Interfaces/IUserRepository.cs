@@ -15,13 +15,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 	public interface IUserRepository
 	{
 		/// <summary>
-		/// Get User Product Details By UserId
-		/// </summary>
-		/// <param name="userId">UserLogin Id</param>
-		/// <returns>UserProduct object</returns>
-		UserProduct GetUserProductDetailsByUserId(int userId);
-
-		/// <summary>
 		/// Get user by enterprise username
 		/// </summary>
 		/// <param name="enterpriseUserName">enterprise UserName</param>
