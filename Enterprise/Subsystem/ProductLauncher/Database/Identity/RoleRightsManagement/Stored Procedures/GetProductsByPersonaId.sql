@@ -57,8 +57,8 @@ BEGIN
   inner join Enterprise.ProductSetting ps on ps.ProductSettingId = config.ProductSettingId    
   inner join Enterprise.ProductSettingType pst on (ps.ProductSettingTypeId = pst.ProductSettingTypeId and pst.Name ='GetUserProductCenterEnabled')   
   inner join Enterprise.ProductUserDependency pud on p.ProductId = pud.ProductId  
-  inner join Enterprise.PersonaConfiguration PC on pc.ProductId = pud.DependentProductId  
-  WHERE ps.Value = 1    
+  inner join Enterprise.PersonaConfiguration PC on pc.ProductId = pud.DependentProductId AND pc.PersonaId = ppc.PersonaId
+  WHERE ps.Value = '1'    
   and ppc.PersonaId = @PersonaId    
   and gpc.ThruDate is null    
   and config.ThruDate is null    
