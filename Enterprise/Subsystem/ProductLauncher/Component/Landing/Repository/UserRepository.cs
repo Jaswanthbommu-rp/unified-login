@@ -48,7 +48,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         private IManagePersona _managePersona;
         private IOrganizationRepository _organizationRepository;
         IProductInternalSettingRepository _productInternalSettingRepository;
-        private IManageBlueBook _blueBook;
 
         #region Ctor
 
@@ -72,7 +71,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             _managePersona = new ManagePersona(repository, userClaim, messageHandler);
             _organizationRepository = new OrganizationRepository(repository);
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
-            _blueBook = new ManageBlueBook(userClaim, repository, messageHandler);
         }
 
         /// <summary>
@@ -90,7 +88,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             _managePersona = new ManagePersona(_userClaim);
             _organizationRepository = new OrganizationRepository();
             _productInternalSettingRepository = new ProductInternalSettingRepository();
-            _blueBook = new ManageBlueBook(userClaim);
         }
 
         #endregion
@@ -3500,16 +3497,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 {
                     IList<GbProductMap> allProducts =repository.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, null).ToList();
                     var productRepo = new ProductRepository();
+                    IManageBlueBook _blueBook = new ManageBlueBook();
                     foreach (var productmap in productListToCreate)
                     {
                         var productDetails = allProducts.FirstOrDefault(x => x.ProductId == productmap.ProductId);
                         string udmSource = productDetails.UDMSourceCode?.Length > 0 ? productDetails.UDMSourceCode : productDetails.BooksProductCode;
-                        IList<CustomerCompanyMap>  companyMapping = _blueBook.GetProductCompanyMapping(_userClaim.OrganizationRealPageGuid, udmSource);
+                        IList<CustomerCompanyMap> companyMapping = _blueBook.GetProductCompanyMapping(_userClaim.OrganizationRealPageGuid, udmSource);
                         if (companyMapping != null)
                         {
                             productList.Add(productmap);
                         }
-                
                     }
                 }
                 else
@@ -3518,7 +3515,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 }
 
             }
-
 
             if (userIsActive && userTypeId != (int)UserRoleType.SuperUser && !migratedUser && enterpriseRoleId > 0 && operationType == "add")
             {
