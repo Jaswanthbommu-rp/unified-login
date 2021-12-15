@@ -3008,6 +3008,13 @@ BEGIN
 END
 GO
 
+IF NOT EXISTS (SELECT TOP (1) 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'SI_IgnoreApiBasicAuthHeader')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
+	VALUES ('SI_IgnoreApiBasicAuthHeader', 'Standard Integration - Ignore adding the basic auth header if the ApiUser/Password values exist.', 0);
+END
+GO
+
 IF EXISTS ( SELECT TOP (1) 1 FROM Security.ADGroupProduct )
 BEGIN
 	UPDATE agp
