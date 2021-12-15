@@ -1236,6 +1236,7 @@
     <Build Include="Security\UpdateAdGroupStatus.sql" />
     <Build Include="Security\GetADGroupsPriorityByProductId.sql" />
     <Build Include="Enterprise\Stored Procedures\GetAllStatusTypes.sql" />
+    <Build Include="Security\GetRightDetails.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
