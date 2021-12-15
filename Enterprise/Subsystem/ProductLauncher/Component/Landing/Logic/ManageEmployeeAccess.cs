@@ -298,6 +298,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 return "Product does not support employee creation.";
             }
 
+            if (supportsEmployeeAccess == "-1") // for products that don't need user management but use other products for user info
+            {
+                return "";
+            }
+
             var userPersona = _managePersona.GetPersona(personaId);
             var personaList = _managePersona.ListPersona(userPersona.RealPageId);
             var companyPersonaList = personaList.Where(p => p.OrganizationPartyId == userPersona.OrganizationPartyId);
