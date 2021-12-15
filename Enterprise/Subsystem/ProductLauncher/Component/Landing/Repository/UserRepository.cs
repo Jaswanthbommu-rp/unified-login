@@ -48,7 +48,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         private IManagePersona _managePersona;
         private IOrganizationRepository _organizationRepository;
         IProductInternalSettingRepository _productInternalSettingRepository;
-        ManageBlueBook _blueBook;
+        private IManageBlueBook _blueBook;
 
         #region Ctor
 
@@ -72,7 +72,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             _managePersona = new ManagePersona(repository, userClaim, messageHandler);
             _organizationRepository = new OrganizationRepository(repository);
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
-		}
+            _blueBook = new ManageBlueBook(userClaim, repository, messageHandler);
+        }
 
         /// <summary>
         /// Used when the user is known
@@ -89,6 +90,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             _managePersona = new ManagePersona(_userClaim);
             _organizationRepository = new OrganizationRepository();
             _productInternalSettingRepository = new ProductInternalSettingRepository();
+            _blueBook = new ManageBlueBook(userClaim);
         }
 
         #endregion
@@ -248,8 +250,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             IOrganizationRepository organizationRepository = new OrganizationRepository();
             Organization organizationExternalUser = organizationRepository.GetOrganization(realPageId: DefaultUserClaim.ExternalCompanyRealPageId);
-
-            Organization editorOrganizationDetails = organizationRepository.GetOrganization(realPageId: _userClaim.OrganizationRealPageGuid);
 
             IContactMechanismUsageTypeRepository contactMechanismUsageTypeRepository = new ContactMechanismUsageTypeRepository();
             IList<ContactMechanismUsageType> emailUsageType = contactMechanismUsageTypeRepository.ListContactMechanismUsageType(ContactMechanismUsageTypeName: "Email Notification");
@@ -1558,7 +1558,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     }
 
                     processTracker = "SaveProductDetails";
-                    int productCount = SaveProductDetails(repository, newProfile.productBatch, createUserResponse, CreateUserPersonaId, AssignUserPersonaId, userClaim.UserRealPageGuid, organizationRealPageId, errorStatus, newProfile.UserTypeId, true, aoProductsAvailableForUser, newProfile.MigratedUser, true, greenBookRole, "add", editorOrganizationDetails);
+                    int productCount = SaveProductDetails(repository, newProfile.productBatch, createUserResponse, CreateUserPersonaId, AssignUserPersonaId, userClaim.UserRealPageGuid, organizationRealPageId, errorStatus, newProfile.UserTypeId, true, aoProductsAvailableForUser, newProfile.MigratedUser, true, greenBookRole, "add");
 
                     #endregion
 
@@ -3418,7 +3418,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="userIsActive">Is the user active</param>
         /// <param name="aoProducts">Applicable if PMC has AO products</param>
         /// <returns>Number of Products</returns>
-        private int SaveProductDetails(IRepository repository, IList<ProductBatch> productList, CreateUserResponse<IErrorData> createUserResponse, long CreateUserPersonaId, long AssignUserPersonaId, Guid realPageId, Guid organizationRealPageId, Status<IErrorData> errorStatus, int userTypeId, bool userIsActive, IList<string> aoProducts = null, bool migratedUser = false, bool isCreateUser = false, int unifiedPlatformRole = 0, string operationType = "update", Organization editorOrganizationDetails = null)
+        private int SaveProductDetails(IRepository repository, IList<ProductBatch> productList, CreateUserResponse<IErrorData> createUserResponse, long CreateUserPersonaId, long AssignUserPersonaId, Guid realPageId, Guid organizationRealPageId, Status<IErrorData> errorStatus, int userTypeId, bool userIsActive, IList<string> aoProducts = null, bool migratedUser = false, bool isCreateUser = false, int unifiedPlatformRole = 0, string operationType = "update")
         {
             int productCount = 0;
             int enterpriseRoleId = 0;
@@ -3495,22 +3495,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     }
                 }
 
-                if(operationType == "add" && editorOrganizationDetails != null)
+                // For System Admin if Products that are not Configured are not processed
+                if (operationType == "add")
                 {
+                    IList<GbProductMap> allProducts =repository.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, null).ToList();
                     var productRepo = new ProductRepository();
                     foreach (var productmap in productListToCreate)
                     {
-                        var productDetails = productRepo.GetBooksMasterProductDetail(productmap.ProductId);
+                        var productDetails = allProducts.FirstOrDefault(x => x.ProductId == productmap.ProductId);
                         string udmSource = productDetails.UDMSourceCode?.Length > 0 ? productDetails.UDMSourceCode : productDetails.BooksProductCode;
-                        IList<CustomerCompanyMap> companyMapping = _blueBook.GetCompanyMap(companyRealPageId: _userClaim.OrganizationRealPageGuid, booksCompanyMasterId: editorOrganizationDetails.BooksCustomerMasterId, source: udmSource, domain: editorOrganizationDetails.OrganizationDomain.Name, isCompanyMap: true);
-                        if (companyMapping == null)
+                        IList<CustomerCompanyMap>  companyMapping = _blueBook.GetProductCompanyMapping(_userClaim.OrganizationRealPageGuid, udmSource);
+                        if (companyMapping != null)
                         {
-                            productListToCreate.Remove(productmap);
+                            productList.Add(productmap);
                         }
+                
                     }
                 }
-               
-                productList = productListToCreate;
+                else
+                {
+                    productList = productListToCreate;
+                }
+
             }
 
 

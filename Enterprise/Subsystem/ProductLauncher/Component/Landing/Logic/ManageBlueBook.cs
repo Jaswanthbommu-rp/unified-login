@@ -186,9 +186,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="includeExtra">Extra Uri Includes (Optional)</param>
         /// <param name="includeGreenBookCares">Filter result using greenbook cares flag</param>
         /// <param name="useTranslate"></param>
-        /// <param name="isCompanyMap"></param>
         /// <returns>List of CompanyMapResource</returns>
-        public IList<CustomerCompanyMap> GetCompanyMap(Guid companyRealPageId, long booksCompanyMasterId, string source, string domain, string includeExtra = "", bool includeGreenBookCares = true, bool useTranslate = true, bool isCompanyMap = false)
+        public IList<CustomerCompanyMap> GetCompanyMap(Guid companyRealPageId, long booksCompanyMasterId, string source, string domain, string includeExtra = "", bool includeGreenBookCares = true, bool useTranslate = true)
         {
             if (companyRealPageId == DefaultUserClaim.ContractCompanyRealPageId)
             {
@@ -260,7 +259,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     logData = new Dictionary<string, object>() {{"response", response}};
                     WriteToLog(LogEventLevel.Debug, "GetCompanyMap - No info found.", logData);
 
-                    if (response.StatusCode == HttpStatusCode.NotFound && !isCompanyMap)
+                    if (response.StatusCode == HttpStatusCode.NotFound)
                     {
                         throw new BlueBookException(CommonMessageConstants.CompanyErrorMessage);
                     }
@@ -270,6 +269,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
 
             return companyMap;
+        }
+        /// <summary>
+        /// used to check product is mapped or not
+        /// </summary>
+        /// <param name="companyRealPageId"></param>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public IList<CustomerCompanyMap> GetProductCompanyMapping(Guid companyRealPageId, string source)
+        {
+          return GetTranslateFromUPFMToProductv2(companyRealPageId.ToString(), source);
         }
 
         /// <summary>
