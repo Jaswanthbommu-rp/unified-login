@@ -71,7 +71,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             _managePersona = new ManagePersona(repository, userClaim, messageHandler);
             _organizationRepository = new OrganizationRepository(repository);
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
-		}
+        }
 
         /// <summary>
         /// Used when the user is known
@@ -3492,9 +3492,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     }
                 }
 
-                productList = productListToCreate;
-            }
+                // For System Admin if Products that are not Configured are not processed
+                if (operationType == "add")
+                {
+                    IList<GbProductMap> allProducts =repository.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, null).ToList();
+                    var productRepo = new ProductRepository();
+                    IManageBlueBook _blueBook = new ManageBlueBook();
+                    foreach (var productmap in productListToCreate)
+                    {
+                        var productDetails = allProducts.FirstOrDefault(x => x.ProductId == productmap.ProductId);
+                        string udmSource = productDetails.UDMSourceCode?.Length > 0 ? productDetails.UDMSourceCode : productDetails.BooksProductCode;
+                        IList<CustomerCompanyMap> companyMapping = _blueBook.GetProductCompanyMapping(_userClaim.OrganizationRealPageGuid, udmSource);
+                        if (companyMapping != null)
+                        {
+                            productList.Add(productmap);
+                        }
+                    }
+                }
+                else
+                {
+                    productList = productListToCreate;
+                }
 
+            }
 
             if (userIsActive && userTypeId != (int)UserRoleType.SuperUser && !migratedUser && enterpriseRoleId > 0 && operationType == "add")
             {
