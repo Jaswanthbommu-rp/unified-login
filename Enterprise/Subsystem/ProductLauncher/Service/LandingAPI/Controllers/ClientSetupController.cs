@@ -1352,7 +1352,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			if (result.ClientUserClaimId > 0)
 			{
 				var claim = mcs.GetClaims().Where(x => x.ClaimId == claimMapping.ClaimId).First();
-				mcs.WriteToLog(claimMapping.ClientId, $"{{0}} {{1}}added User Claim {claim.ProductName} : {claim.ClaimName} to {{2}}.");
+				mcs.WriteToLog(claimMapping.ClientId, $"{{0}} {{1}} added User Claim {claim.ProductName} : {claim.ClaimName} to {{2}}.");
 			}
 			return Request.CreateResponse(HttpStatusCode.OK, result);
 		}
@@ -1382,7 +1382,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "No records deleted");
             }
 			var claim = mcs.GetClaims().Where(x => x.ClaimId == claimMapping.ClaimId).First();
-			mcs.WriteToLog(claimMapping.ClientId, $"{{0}} {{1}}removed User Claim {claim.ProductName} : {claim.ClaimName} from {{2}}.");
+			mcs.WriteToLog(claimMapping.ClientId, $"{{0}} {{1}}  removed User Claim {claim.ProductName} : {claim.ClaimName} from {{2}}.");
 
 			return Request.CreateResponse(HttpStatusCode.OK);
         }
