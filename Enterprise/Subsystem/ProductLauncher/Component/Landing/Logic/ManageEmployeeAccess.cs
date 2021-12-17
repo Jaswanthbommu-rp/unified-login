@@ -261,11 +261,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 if (maxCount > 0 && orgPersonaCount > 0)
                 {
                     //add new persons based on max count and existing persona count
-                    int newPersonasTobeCreatedCount = 0;
+                    int newPersonasTobeCreatedCount = 0;                  
                     newPersonasTobeCreatedCount = maxCount - orgPersonaCount;
                     for (int i = 1; i <= newPersonasTobeCreatedCount; i++)
                     {
-                        var repoResponse = _managePersona.CreateAdditionalPersona(companyRealPageId, userClaim.UserId, userClaim.UserId);
+                        //set name based on count
+                        string personaName = "Secondary";
+                        if (orgPersonaCount >= 2)
+                        {
+                            personaName = personaName + " " + orgPersonaCount.ToString();                           
+                        }
+                        var repoResponse = _managePersona.CreateAdditionalPersona(companyRealPageId, userClaim.UserId, userClaim.UserId,personaName);
+                        orgPersonaCount++;
                     }
                 }
                              
@@ -288,15 +295,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var supportsEmployeeAccess = productInternalSettingList.FirstOrDefault(s => s.Name.Equals("SI_SupportsEmployeeCreation", StringComparison.OrdinalIgnoreCase))?.Value;
             if (string.IsNullOrEmpty(supportsEmployeeAccess) || supportsEmployeeAccess == "0")
             {
-                return "Product does not support employee creation";
+                return "Product does not support employee creation.";
+            }
+
+            if (supportsEmployeeAccess == "-1") // for products that don't need user management but use other products for user info
+            {
+                return "";
             }
 
             var userPersona = _managePersona.GetPersona(personaId);
             var personaList = _managePersona.ListPersona(userPersona.RealPageId);
+            var companyPersonaList = personaList.Where(p => p.OrganizationPartyId == userPersona.OrganizationPartyId);
+
             var employeePersona = personaList.FirstOrDefault(p => p.Organization.RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId);
             if (employeePersona == null)
             {
-                return "Employee persona could not be found in RealPage Employee company";
+                return "Employee persona could not be found in RealPage Employee company.";
             }
 
             var productAdGroups = _productRepository.GetAdGroupsForProduct(productId);
@@ -305,17 +319,47 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 var userAdGroups = _productRepository.GetAdGroupsForUser(employeePersona.PersonaId);
                 var userProductToADGroups = _userRepository.GetEmployeeProductADGroupMapping(personaId, productId);
                 var isProductAssigned = _productRepository.isProductAssigned(personaId, (int)ProductBatchStatusType.Success, productId);
+                var existingProductAdGroupInfo = _userRepository.GetEmployeeProductADGroupMapping(personaId, productId).FirstOrDefault();
+
                 if (isProductAssigned)
                 {
+                    if (productAdGroups.All(p => p.ADGroupId != existingProductAdGroupInfo?.ADGroupId))
+                    {
+                        ManageProductBase mpb = new ManageProductBase(productId, _userClaim, _productInternalSettingRepository, _productRepository);
+                        mpb.UpdateProductSettingProductStatus(personaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
+                        return "DeletedProductLogin";
+                    }
+
                     var productAddedToUserDate = userProductToADGroups.Count > 0 ? userProductToADGroups.Max(p => p.CreatedDate) : DateTime.MinValue;
                     var userLastADUpdateDate = userAdGroups.Count > 0 ? userAdGroups.Max(p => p.CreatedDate) : DateTime.MinValue;
                     if (userProductToADGroups.Any(userProductToAdGroup => userAdGroups.Any(p => p.ADGroupId == userProductToAdGroup.ADGroupId) && productAddedToUserDate > userLastADUpdateDate))
                     {
                         return "";
                     }
+
+                    // check if user lost access to the adgroup that was used to assign it to the product
+                    if (userAdGroups.All(p => p.ADGroupId != existingProductAdGroupInfo?.ADGroupId))
+                    {
+                        // see if the user has any other adgroups for the product that might work, otherwise disable product and reject access
+                        //if (companyPersonaList.Count() == 1 && userAdGroups.All(p => p.ADGroupId != productAdGroups?.FirstOrDefault(p1 => p1.ADGroupId == p.ADGroupId)?.ADGroupId))
+                        if (companyPersonaList.Count() == 1 && userAdGroups.All(p => p.ADGroupId != productAdGroups?.FirstOrDefault(p1 => p1.ADGroupId == p.ADGroupId)?.ADGroupId))
+                        {
+                            ManageProductBase mpb = new ManageProductBase(productId, _userClaim, _productInternalSettingRepository, _productRepository);
+                            mpb.UpdateProductSettingProductStatus(personaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
+                            return "You are no longer in an ADGroup for this product.";
+                        }
+
+                        if (userAdGroups.All(p => p.ADGroupId != existingProductAdGroupInfo.ADGroupId))
+                        {
+                            ManageProductBase mpb = new ManageProductBase(productId, _userClaim, _productInternalSettingRepository, _productRepository);
+                            mpb.UpdateProductSettingProductStatus(personaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
+                            return "DeletedProductLogin";
+                        }
+                    }
+
                 }
             }
-            
+
             if (userPersona.Organization.RealPageId != Guid.Empty)
             {
                 adminCreatorRealPageId = _manageOrganization.GetOrganizationAdminUserRealPageId(userPersona.Organization.RealPageId);
@@ -469,6 +513,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
 
             persona.Name = newProfile.UserTypeId == (int)UserRoleType.SuperUser ? "System Administrator" : "Primary";
+            persona.PersonaName = "Primary";
             persona.PersonaEnvironmentTypeId = (int)personaEnv.PersonaEnvironmentTypeId;
             persona.FromDate = utcNow.AddMinutes(-5);
             persona.ThruDate = null;

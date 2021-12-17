@@ -1,6 +1,7 @@
 ﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using System.Collections.Generic;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Helpers
 {
@@ -16,5 +17,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         void CreateSamlUserAttribute(long subjectPersonaId, int productId, SamlAttributeEnum samlAttributeEnum, string value);
         AdUserDetail GetAzureUserDetails(long userId);
         void AddUpdateEmployeeProductADGroupMapping(long personaId, int productId, int adGroupId);
+        IList<EmployeeProductMapping> GetEmployeeProductADGroupMapping(long personaId, int productId);
     }
 }

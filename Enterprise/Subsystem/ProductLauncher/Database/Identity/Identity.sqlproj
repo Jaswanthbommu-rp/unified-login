@@ -1233,7 +1233,11 @@
     <Build Include="Person\Stored Procedures\PlatformUsers_Report.sql" />
     <Build Include="Security\UpdateAdGroupAssingment.sql" />
     <Build Include="UserManagement\ADGroupAssignmentType.sql" />
+    <Build Include="Security\UpdateAdGroupStatus.sql" />
     <Build Include="Security\GetADGroupsPriorityByProductId.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetAllStatusTypes.sql" />
+    <Build Include="Security\GetRightDetails.sql" />
+    <Build Include="Security\GetRoleTypes.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

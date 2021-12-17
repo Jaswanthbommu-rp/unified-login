@@ -447,8 +447,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="userId">User unique identifier</param>
         /// <param name="organizationRealPageId">Organization unique identifier</param>
         /// <param name="createdBy">created by</param>
+        /// <param name="personaName">Persona Name</param>
         /// <returns>Repository response object</returns>
-        public RepositoryResponse CreateAdditionalPersona(Guid organizationRealPageId, long userId, long createdBy)
+        public RepositoryResponse CreateAdditionalPersona(Guid organizationRealPageId, long userId, long createdBy, string personaName)
         {
             long PersonaId = 0;
             dynamic param = new
@@ -456,6 +457,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 OrganizationRealPageId = organizationRealPageId,
                 UserId = userId,
                 CreatedBy = createdBy,
+                PersonaName = @personaName,
                 PersonaId = PersonaId
             };
 

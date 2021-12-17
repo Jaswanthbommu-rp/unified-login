@@ -1,5 +1,5 @@
 ﻿
-CREATE PROCEDURE [Person].[ListPersons_Ver04] (  
+CREATE PROCEDURE [Person].[ListPersons_Ver04] ( 
  @RealPageId uniqueidentifier = NULL,  
  @ParentPartyRoleTypeId int = NULL,  
  @UserListFilterType tinyint = 0,  
@@ -27,7 +27,8 @@ BEGIN
   @csvStatus varchar(max),  
   @csvEnterpriseRole varchar(max),  
   @ProductSettingTypeId int,  
-  @OffsetMinutes smallint;    
+  @OffsetMinutes smallint;   
+
   
  DECLARE @filterStatus TABLE (  
   StatusTypeId int PRIMARY KEY  
@@ -234,28 +235,28 @@ BEGIN
   
   SET @filterProductId = 9  -- Marketing Center product Id  
    
-  INSERT INTO #PersonaProduct (  
+  INSERT INTO #PersonaProduct 
+  (  
   PersonaId,  
-  ProductId)  
-   
-    SELECT p.PersonaID,  
+  ProductId
+  )  
+  SELECT p.PersonaID,  
    pec.ProductId  
   FROM   
    Person.Persona p  
    INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginPersonaId = p.UserLoginPersonaId  
    INNER JOIN Enterprise.PersonaConfiguration pec ON p.PersonaId = pec.PersonaId  
-   INNER JOIN Enterprise.ProductConfiguration prc ON pec.ConfigurationId = prc.ConfigurationId  
-   INNER JOIN Enterprise.ProductSetting ps ON prc.ProductSettingId = ps.ProductSettingId AND ps.Value = '8' AND ps.ProductSettingTypeId = @ProductSettingTypeId  
    INNER JOIN [security].PersonaRole sp on sp.PersonaId = p.PersonaId   
    INNER JOIN [Security].RoleRight srr on srr.RoleId = sp.RoleId   
    INNER JOIN [Security].[Right] sr on sr.RightId = srr.RightId AND sr.RightName = 'AccessPropertyPhotos' --- Access to Property Photos (requires Marketing Center access)  
   WHERE  
     ULP.OrganizationPartyId = @PartyId  
   AND  pec.ProductId = 9  
+  AND pec.StatusTypeId = 8
   AND  ((@NOW >= p.FromDate AND p.ThruDate IS NULL) OR (@NOW BETWEEN p.FromDate AND p.ThruDate))  
         AND     ((@NOW >= pec.FromDate AND pec.ThruDate IS NULL) OR (@NOW BETWEEN pec.FromDate AND pec.ThruDate))  
-        AND     ((@NOW >= prc.FromDate AND prc.ThruDate IS NULL) OR (@NOW BETWEEN prc.FromDate AND prc.ThruDate))  
-        AND     ((@NOW >= ps.FromDate AND ps.ThruDate IS NULL) OR (@NOW BETWEEN ps.FromDate AND ps.ThruDate))   
+       
+
  END  
  ELSE  
  BEGIN  
@@ -269,17 +270,16 @@ BEGIN
     Person.Persona p  
     INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginPersonaId = p.UserLoginPersonaId  
     INNER JOIN Enterprise.PersonaConfiguration pec ON p.PersonaId = pec.PersonaId  
-    INNER JOIN Enterprise.ProductConfiguration prc ON pec.ConfigurationId = prc.ConfigurationId  
-    INNER JOIN Enterprise.ProductSetting ps ON prc.ProductSettingId = ps.ProductSettingId AND ps.Value = '8' AND ps.ProductSettingTypeId = @ProductSettingTypeId  
    WHERE  
      ULP.OrganizationPartyId = @PartyId  
+	AND pec.StatusTypeId = 8
    AND  pec.ProductId NOT IN (14, 19, 24, 25, 34, 39) --Client Portal, Product Learning Portal, Black Book, Self-provisioning portal, Benchmarking, Integration Marketplace  
    AND  ((@NOW >= p.FromDate AND p.ThruDate IS NULL) OR (@NOW BETWEEN p.FromDate AND p.ThruDate))  
    AND     ((@NOW >= pec.FromDate AND pec.ThruDate IS NULL) OR (@NOW BETWEEN pec.FromDate AND pec.ThruDate))  
-   AND     ((@NOW >= prc.FromDate AND prc.ThruDate IS NULL) OR (@NOW BETWEEN prc.FromDate AND prc.ThruDate))  
-   AND     ((@NOW >= ps.FromDate AND ps.ThruDate IS NULL) OR (@NOW BETWEEN ps.FromDate AND ps.ThruDate))  
-  
+
+
  END  
+
 
  INSERT INTO #PersonaProductError (  
    PersonaId,IsProductError  
@@ -291,7 +291,7 @@ BEGIN
   WHERE  ULP.OrganizationPartyId = @PartyId 
   
  DROP INDEX IF EXISTS [NCI_Temp_PersonaProduct_ProductId] ON [dbo].[#PersonaProduct]  
- CREATE NONCLUSTERED INDEX [NCI_Temp_PersonaProduct_ProductId] ON [dbo].[#PersonaProduct] ([ProductId]) INCLUDE ([PersonaId])  
+ CREATE NONCLUSTERED INDEX [NCI_Temp_PersonaProduct_ProductId] ON [dbo].[#PersonaProduct] (PersonaId) INCLUDE (ProductId) 
    
  DROP TABLE IF EXISTS #UserLogin  
   
@@ -378,25 +378,6 @@ BEGIN
   Where PersonaId NOT IN (SELECT PersonaId FROM #UserEnterpriseRole)  
  END   
   
- DROP TABLE IF EXISTS #ProductCount  
-  
- CREATE TABLE #ProductCount  
- (  
- PersonaId INT NOT NULL PRIMARY KEY,  
- ProductCount INT NOT NULL  
- )  
-  
- INSERT INTO #ProductCount  
- (  
-  PersonaId,ProductCount  
- )  
- SELECT   
-  pp.PersonaId,    
-  COUNT(pp.ProductId) AS ProductCount  
- FROM #PersonaProduct pp    
-  INNER JOIN @AssignedProductIds ap ON (ap.ProductId = pp.ProductId)    
- GROUP BY pp.PersonaId    
-  
  DROP TABLE IF EXISTS #PartyContactMechanism  
   
  CREATE TABLE #PartyContactMechanism  
@@ -437,7 +418,6 @@ BEGIN
   StatusName,
   StatusThruDate,
   Is3rdPartyIDP,  
-  Products,  
   UserType,  
   PartyRoleTypeId, 
   PasswordModifiedDate,
@@ -446,7 +426,8 @@ BEGIN
   PersonaHasProductError,
   OffsetMinutes,  
   TotalRecords,  
-  RowNumber  
+  RowNumber,
+  PersonaId
  )  
  AS   
  (  
@@ -469,7 +450,6 @@ BEGIN
      WHEN ipt.Name = 'ID3' THEN 0    
      ELSE 1    
     END AS 'Is3rdPartyIDP',    
-    ISNULL(pct.ProductCount, 0) AS Products,    
     ISNULL(rt.Name, '') AS UserType,    
     prs.RoleTypeIdFrom AS PartyRoleTypeId,  
 	ulp.PasswordModifiedDate,
@@ -480,20 +460,21 @@ BEGIN
     COUNT(1) OVER () AS TotalRecords,  
     CASE @sortValue    
       WHEN 100 THEN ROW_NUMBER() OVER (ORDER BY p.FirstName + ' ' + p.LastName ASC)    
-      WHEN 101 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(pct.ProductCount,0) ASC, p.FirstName + ' ' + p.LastName ASC)    
+     -- WHEN 101 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(pct.ProductCount,0) ASC, p.FirstName + ' ' + p.LastName ASC)     
       WHEN 102 THEN ROW_NUMBER() OVER (ORDER BY ulp.LastLogin ASC, p.FirstName + ' ' + p.LastName ASC)    
       WHEN 103 THEN ROW_NUMBER() OVER (ORDER BY ulp.LoginName ASC, p.FirstName + ' ' + p.LastName ASC)    
       WHEN 104 THEN ROW_NUMBER() OVER (ORDER BY ulp.StatusName ASC, p.FirstName + ' ' + p.LastName ASC)    
       WHEN 105 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(UE.Employee,'') ASC, p.FirstName + ' ' + p.LastName ASC)  
       WHEN 106 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(UER.EnterpriseRoleName,'') ASC, p.FirstName + ' ' + p.LastName ASC)   
       WHEN -100 THEN ROW_NUMBER() OVER (ORDER BY p.FirstName + ' ' + p.LastName DESC)    
-      WHEN -101 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(pct.ProductCount,0)  DESC, p.FirstName + ' ' + p.LastName DESC)    
+     -- WHEN -101 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(pct.ProductCount,0)  DESC, p.FirstName + ' ' + p.LastName DESC)      
       WHEN -102 THEN ROW_NUMBER() OVER (ORDER BY ulp.LastLogin DESC, p.FirstName + ' ' + p.LastName DESC)    
       WHEN -103 THEN ROW_NUMBER() OVER (ORDER BY ulp.LoginName DESC, p.FirstName + ' ' + p.LastName DESC)    
       WHEN -104 THEN ROW_NUMBER() OVER (ORDER BY ulp.StatusName DESC, p.FirstName + ' ' + p.LastName DESC)    
       WHEN -105 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(UE.Employee,'') DESC, p.FirstName + ' ' + p.LastName DESC)    
       WHEN -106 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(UER.EnterpriseRoleName,'') DESC, p.FirstName + ' ' + p.LastName DESC)   
-     END AS RowNumber  
+     END AS RowNumber,
+	 ulp.PersonaId 
     FROM #UserLogin ulp    
     INNER JOIN Person.Person p ON p.PartyId = ulp.PersonPartyId    
     INNER JOIN Enterprise.Party pa ON p.PartyId = pa.PartyID    
@@ -502,8 +483,7 @@ BEGIN
     INNER JOIN Enterprise.PartyRelationship prs ON prs.PartyIdFrom = ulp.PersonPartyId AND prs.PartyIdTo = @PartyId    
     INNER JOIN Enterprise.RelationshipType rst ON rst.RelationshipTypeId = prs.PartyRelationshipTypeId    
     INNER JOIN Enterprise.RoleType rt ON (rt.PartyRoleTypeId = rst.RoleTypeIdValidFrom)    
-    INNER JOIN Ident.IdentityProviderType ipt ON ulp.IdentityProviderTypeId = ipt.IdentityProviderTypeId    
-    LEFT OUTER JOIN #ProductCount pct ON pct.PersonaId = ulp.PersonaId    
+    INNER JOIN Ident.IdentityProviderType ipt ON ulp.IdentityProviderTypeId = ipt.IdentityProviderTypeId     
     LEFT OUTER JOIN Enterprise.UserEmployeeId UE ON ulp.UserLoginPersonaId = UE.UserLoginPersonaId    
     LEFT OUTER JOIN #UserEnterpriseRole UER  ON ulp.PersonaId  = UER.PersonaId
 	LEFT OUTER JOIN #PersonaProductError PPE ON PPE.PersonaId = ulp.PersonaId
@@ -519,7 +499,8 @@ BEGIN
     AND  ((@filterPartyRoleTypeId IS NULL) OR (prs.RoleTypeIdFrom = @filterPartyRoleTypeId))   
 	AND  ((@filterPersonaProductError IS NULL) OR (PPE.IsProductError = @filterPersonaProductError))
  )  
- SELECT  TotalRecords,  
+ SELECT  
+	TotalRecords,  
     RealPageID,  
     PartyId,  
     FirstName,  
@@ -540,20 +521,65 @@ BEGIN
     Is3rdPartyIDP, 
 	PasswordModifiedDate,
     OffsetMinutes,      
-    Products,  
     UserType,  
-    PartyRoleTypeId       
+    PartyRoleTypeId,
+	PersonaId
+ INTO #Temp_Final
  FROM cteUsersFinal  
  ORDER BY RowNumber  
  OFFSET ((@PageNumber - 1) * @RowsPerPage) ROWS  
  FETCH NEXT(@RowsPerPage) ROWS ONLY  
  OPTION (RECOMPILE)  
+
+ 
+
+;WITH CTE AS 
+(
+	 SELECT   
+	  pp.PersonaId,    
+	  COUNT(pp.ProductId) AS ProductCount  
+	 FROM #PersonaProduct pp    
+	  INNER JOIN @AssignedProductIds ap ON (ap.ProductId = pp.ProductId)   
+	  INNER JOIN #Temp_Final F ON pp.PersonaId = F.PersonaId
+	 GROUP BY pp.PersonaId 
+)
+SELECT 
+	F.TotalRecords,  
+    F.RealPageID,  
+    F.PartyId,  
+    F.FirstName,  
+    F.MiddleName,  
+    F.LastName,  
+    F.EmployeeId,  
+    F.EntepriseRoleName,  
+    F.RoleTemplateId,
+	F.PersonaHasProductError,
+    F.UserId,  
+    F.LoginName,
+	F.LastLogin,
+	F.FromDate,
+	F.ThruDate,
+    F.StatusId,  
+    F.StatusName,
+	F.StatusThruDate,
+    F.Is3rdPartyIDP, 
+	F.PasswordModifiedDate,
+    F.OffsetMinutes,      
+    ISNULL(pct.ProductCount, 0) AS Products,  
+    F.UserType,  
+    F.PartyRoleTypeId
+	
+FROM 
+	#Temp_Final F
+LEFT JOIN CTE pct ON pct.PersonaId = F.PersonaId 
+
   
  DROP INDEX IF EXISTS [NCI_cteUserLogin_PersonPartyId] ON [dbo].[#UserLogin]  
- DROP TABLE IF EXISTS #ProductCount   
  DROP TABLE IF EXISTS #UserLogin  
  DROP TABLE IF EXISTS #PersonaProduct  
  DROP TABLE IF EXISTS #PartyContactMechanism 
  DROP TABLE IF EXISTS #PersonaProductError
-  
+ DROP TABLE IF EXISTS #Temp_Final
+
 END;
+

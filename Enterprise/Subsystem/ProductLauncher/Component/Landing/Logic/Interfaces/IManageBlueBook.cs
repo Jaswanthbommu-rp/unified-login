@@ -41,6 +41,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         IList<CustomerCompanyMap> GetCompanyMap(Guid companyRealPageId, long booksCompanyMasterId, string source, string domain, string includeExtra = "", bool includeGreenBookCares = true, bool useTranslate = true);
 
         /// <summary>
+        /// used to check product is mapped or not
+        /// </summary>
+        /// <param name="companyRealPageId"></param>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        IList<CustomerCompanyMap> GetProductCompanyMapping(Guid companyRealPageId, string source);
+        /// <summary>
         /// Get a list of property instances under the given company instance in the BlueBook system
         /// </summary>
         /// <param name="companyInstanceId">Ids of the company instances element</param>

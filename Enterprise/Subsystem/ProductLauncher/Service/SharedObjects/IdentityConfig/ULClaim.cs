@@ -22,5 +22,14 @@
         /// </summary>
         public int ProductId { get; set; }
 
+        /// <summary>
+        /// The product name to retrieve the claim for
+        /// </summary>
+        public string ProductName { get; set; }
+
+        /// <summary>
+        /// Count of amount of users using this claim
+        /// </summary>
+        public int UsedCount { get; set; }
     }
 }

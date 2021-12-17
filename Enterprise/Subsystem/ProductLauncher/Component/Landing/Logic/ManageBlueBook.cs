@@ -270,6 +270,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             return companyMap;
         }
+        /// <summary>
+        /// used to check product is mapped or not
+        /// </summary>
+        /// <param name="companyRealPageId"></param>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public IList<CustomerCompanyMap> GetProductCompanyMapping(Guid companyRealPageId, string source)
+        {
+          return GetTranslateFromUPFMToProductv2(companyRealPageId.ToString(), source);
+        }
 
         /// <summary>
         /// Used to get a specific product instance by source and source instance id

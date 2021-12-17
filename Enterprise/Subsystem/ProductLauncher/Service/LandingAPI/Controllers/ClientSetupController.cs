@@ -1336,29 +1336,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 
 			// verify the client and claim exist
-            IEnumerable<Client> clientList = mcs.GetClientsNoDetails();
+			IEnumerable<Client> clientList = mcs.GetClientsNoDetails();
 
-            if (clientList.All(p => p.ClientId != claimMapping.ClientId))
-            {
-                return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid client id given");
-            }
+			if (clientList.All(p => p.ClientId != claimMapping.ClientId))
+			{
+				return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid client id given");
+			}
 
-            if (mcs.GetClaims().All(p => p.ClaimId != claimMapping.ClaimId))
-            {
-                return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid claim id given");
-            }
+			if (mcs.GetClaims().All(p => p.ClaimId != claimMapping.ClaimId))
+			{
+				return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid claim id given");
+			}
 
 			ClientClaimMapping result = mcs.InsertClientClaimMapping(claimMapping);
+			if (result.ClientUserClaimId > 0)
+			{
+				var claim = mcs.GetClaims().Where(x => x.ClaimId == claimMapping.ClaimId).First();
+				mcs.WriteToLog(claimMapping.ClientId, $"{{0}} {{1}}added User Claim {claim.ProductName} : {claim.ClaimName} to {{2}}.");
+			}
 			return Request.CreateResponse(HttpStatusCode.OK, result);
-        }
-		
-        /// <summary>
-        /// Used to delete a claim to client mapping
-        /// </summary>
-        /// <param name="id"></param>
-        /// <param name="claimMapping"></param>
-        /// <returns></returns>
-        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		}
+
+		/// <summary>
+		/// Used to delete a claim to client mapping
+		/// </summary>
+		/// <param name="id"></param>
+		/// <param name="claimMapping"></param>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [SwaggerResponse(HttpStatusCode.OK, Description = "The claim mapping deleted")]
@@ -1376,8 +1381,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "No records deleted");
             }
+			var claim = mcs.GetClaims().Where(x => x.ClaimId == claimMapping.ClaimId).First();
+			mcs.WriteToLog(claimMapping.ClientId, $"{{0}} {{1}}removed User Claim {claim.ProductName} : {claim.ClaimName} from {{2}}.");
 
-            return Request.CreateResponse(HttpStatusCode.OK);
+			return Request.CreateResponse(HttpStatusCode.OK);
         }
 		#endregion
 
