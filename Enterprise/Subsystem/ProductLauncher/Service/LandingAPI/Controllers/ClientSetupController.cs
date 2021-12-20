@@ -11,6 +11,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using Swashbuckle.Swagger.Annotations;
+using System.Text;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -395,7 +396,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
 			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
-			return mcs.InsertScope(scope);
+			var insert = mcs.InsertScope(scope);
+
+			if (insert.ScopeId > 0)
+				mcs.WriteToLog(0, $"{{0}} {{1}} added scope {scope.Name}");
+
+			return insert;
 		}
 
 		/// <summary>
@@ -422,8 +428,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			ObjectOutput<Scope, IErrorData> output = new ObjectOutput<Scope, IErrorData>() { obj = scopeResult };
 
 			if (scopeResult == null
-			    || scope.scope.Type != scopeResult.Type
-			    || scope.scope.AllowUnrestrictedIntrospection != scopeResult.AllowUnrestrictedIntrospection
+				|| scope.scope.Type != scopeResult.Type
+				|| scope.scope.AllowUnrestrictedIntrospection != scopeResult.AllowUnrestrictedIntrospection
 				|| scope.scope.Emphasize != scopeResult.Emphasize
 				|| scope.scope.ClaimsRule != scopeResult.ClaimsRule
 				|| scope.scope.Name != scopeResult.Name
@@ -438,8 +444,54 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				output.Status = new Status<IErrorData>() { ErrorMsg = "Update failed", Success = false };
 				return Request.CreateResponse(HttpStatusCode.BadRequest, output);
 			}
+			else
+			{
+				var o = scope.originalScope;
+				var n = scope.scope;
 
-			return Request.CreateResponse(HttpStatusCode.OK, output);
+				StringBuilder logMessage = new StringBuilder($"{{0}} {{1}} updated scope {o.Name}. ");
+
+				if (o.Enabled != n.Enabled)
+					logMessage.Append($"From Enabled: \"{o.Enabled}\" to \"{n.Enabled}\". ");
+
+				if (o.Required != n.Required)
+					logMessage.Append($"From Required: \"{o.Required}\" to \"{n.Required}\". ");
+
+				if (o.Name != n.Name)
+					logMessage.Append($"From Name: \"{o.Name}\" to \"{n.Name}\". ");
+
+				if (o.DisplayName != n.DisplayName)
+					logMessage.Append($"From Display Name: \"{o.DisplayName}\" to \"{n.DisplayName}\". ");
+
+				if (o.Description != n.Description)
+					logMessage.Append($"From Description: \"{o.Description}\" to \"{n.Description}\". ");
+
+				if (o.Emphasize != n.Emphasize)
+					logMessage.Append($"From Emphasize: \"{o.Emphasize}\" to \"{n.Emphasize}\". ");
+
+				if (o.IncludeAllClaimsForUser != n.IncludeAllClaimsForUser)
+					logMessage.Append($"From Include All Claims For User: \"{o.IncludeAllClaimsForUser}\" to \"{n.IncludeAllClaimsForUser}\". ");
+				
+				if (o.ShowInDiscoveryDocument != n.ShowInDiscoveryDocument)
+					logMessage.Append($"From Show In Discovery Document: \"{o.ShowInDiscoveryDocument}\" to \"{n.ShowInDiscoveryDocument}\". ");
+
+				if (o.AllowUnrestrictedIntrospection != n.AllowUnrestrictedIntrospection)
+					logMessage.Append($"From Allow Unrestricted Introspection: \"{o.AllowUnrestrictedIntrospection}\" to \"{n.AllowUnrestrictedIntrospection}\". ");
+
+				
+				if (o.Type != n.Type) 
+				{
+					// Either Identity (OpenID Connect related) or Resource (OAuth2 resources)
+					var oldtype = o.Type == 0 ? "Identity" : "Resource";
+					var newtype = n.Type == 0 ? "Identity" : "Resource";
+
+					logMessage.Append($"From Type: \"{oldtype}\" to \"{newtype}\"");
+				}
+
+				mcs.WriteToLog(0, logMessage.ToString());
+
+				return Request.CreateResponse(HttpStatusCode.OK, output);
+			}
 		}
 
 		#endregion
@@ -1352,7 +1404,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			if (result.ClientUserClaimId > 0)
 			{
 				var claim = mcs.GetClaims().Where(x => x.ClaimId == claimMapping.ClaimId).First();
-				mcs.WriteToLog(claimMapping.ClientId, $"{{0}} {{1}}added User Claim {claim.ProductName} : {claim.ClaimName} to {{2}}.");
+				mcs.WriteToLog(claimMapping.ClientId, $"{{0}} {{1}} added User Claim {claim.ProductName} : {claim.ClaimName} to {{2}}.");
 			}
 			return Request.CreateResponse(HttpStatusCode.OK, result);
 		}
@@ -1382,7 +1434,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "No records deleted");
             }
 			var claim = mcs.GetClaims().Where(x => x.ClaimId == claimMapping.ClaimId).First();
-			mcs.WriteToLog(claimMapping.ClientId, $"{{0}} {{1}}removed User Claim {claim.ProductName} : {claim.ClaimName} from {{2}}.");
+			mcs.WriteToLog(claimMapping.ClientId, $"{{0}} {{1}}  removed User Claim {claim.ProductName} : {claim.ClaimName} from {{2}}.");
 
 			return Request.CreateResponse(HttpStatusCode.OK);
         }
