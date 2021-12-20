@@ -29,7 +29,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.C
 			IEnumerable<ClientScope> clientScopes = GetClientScope();
 			IEnumerable<ClientSecret> clientSecrets = GetClientSecret();
 			IEnumerable<ClientPostLogoutRedirectUri> clientPostLogoutRedirectUris = GetClientPostLogoutRedirectUri();
-			IEnumerable<ClientClaim> clientClaims = GetClientClaim();
+			IEnumerable<ClientClaim> clientClaims =  GetClientClaim();
+			IEnumerable<ClientClaimMapping> clientUserClaims = GetClaimClientMapping();
 
 			using (var repository = GetRepository())
 			{
@@ -43,6 +44,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.C
 				c.ClientSecrets = clientSecrets.Where(p => p.ClientId == c.ClientId);
 				c.ClientPostLogoutRedirectUris = clientPostLogoutRedirectUris.Where(p => p.ClientId == c.ClientId);
 				c.ClientClaims = clientClaims.Where(p => p.ClientId == c.ClientId);
+				c.ClientUserClaims = clientUserClaims.Where(p => p.ClientId == c.ClientId);
 			});
 			return clientList;
 		}

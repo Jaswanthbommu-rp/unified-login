@@ -184,5 +184,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
 		/// Collection of Client Claims
 		/// </summary>
 		public IEnumerable<ClientClaim> ClientClaims { get; set; }
+		/// <summary>
+		/// Collection of Client Claims Mapping
+		/// </summary>
+		public IEnumerable<ClientClaimMapping> ClientUserClaims { get; set; }
 	}
 }
