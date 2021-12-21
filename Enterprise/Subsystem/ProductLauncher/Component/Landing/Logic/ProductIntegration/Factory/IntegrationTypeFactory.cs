@@ -45,7 +45,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 [ProductIntegrationTypeEnum.Legacy] = (productId, userClaims, manageUnifiedLogin, manageProductOneSite, manageProduct, productRepository, productInternalSettingRepository) =>
                     new LegacyIntegrationType(productId, userClaims, manageUnifiedLogin, manageProductOneSite, manageProduct, productRepository, productInternalSettingRepository),
-                [ProductIntegrationTypeEnum.UPFM] = (productId, userClaims, _1, _2, _3, _4, _5) => new UPFMIntegrationType(productId, userClaims),
+                [ProductIntegrationTypeEnum.UPFM] = (productId, userClaims, _1, _2, _3, _4, productInternalSettingRepository) => new UPFMIntegrationType(productId, userClaims, productInternalSettingRepository),
                 [ProductIntegrationTypeEnum.StandardV1] = (productId, userClaims, _1, _2, _3, productRepository, productInternalSettingRepository) => new StandardV1IntegrationType(productId, userClaims, productRepository, productInternalSettingRepository)
             };
 
