@@ -16,5 +16,8 @@
         /// The claim id
         /// </summary>
         public int ClaimId { get;set; }
+        public string ClaimName { get; set; }
+        public string SAMLAttributeName { get; set; }
+        public string ProductName { get; set; }
     }
 }

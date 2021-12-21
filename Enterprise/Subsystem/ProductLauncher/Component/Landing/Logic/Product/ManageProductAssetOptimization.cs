@@ -493,7 +493,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				string product = Convert.ToString((int)ProductEnum.AssetOptimizer);
 				IList<SharedObjects.Product.OrganizationProductUser> productUserList = productRepository.GetProductUsersByCompany(_editorPersona.OrganizationPartyId, product);
 				List<AssetOptimizationMigrationUser> usersData = new List<AssetOptimizationMigrationUser>();
-				var orgMigrationUsersData = migrationResponse.Where(m => m.CompanySourceInstanceId.Equals(blueAOCompanyInfo.CompanyInstanceSourceId)).ToList();
+				var orgMigrationUsersData = migrationResponse.Where(m => m.CompanySourceInstanceId != null && m.CompanySourceInstanceId.Equals(blueAOCompanyInfo.CompanyInstanceSourceId)).ToList();
 				if (productUserList?.Count > 0)
 				{
 					orgMigrationUsersData.RemoveAll(o => productUserList.Any(p => p.ProductUserName == o.UserName));
