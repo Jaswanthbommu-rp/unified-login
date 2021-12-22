@@ -324,7 +324,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 						person = personLogic.GetPerson(cloneUserRealpageId);
 						if (person != null)
 						{
-							auditMessage = "User {0} {1} originally cloned from user " + person.FirstName + " " + person.LastName + " by RealPage user {2}.";
+							auditMessage = "User {0} {1} originally cloned from user " + person.FirstName + " " + person.LastName + " by " + ((profile.organization[0].RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId) ? "RealPage user " : string.Empty) + "{2}.";
 						}
 					}
 					else if(profile.organization[0].RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId)
@@ -363,7 +363,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 						else
 						{
 							//Log Activity
-							message = "Unable to Resend Welcome Email to user {0} {1} by RealPage user {2}.";
+							message = profile.organization[0].RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId
+								? "Unable to Resend Welcome Email to user {0} {1} by RealPage user {2}."
+								: "Unable to Resend Welcome Email to user {0} {1} by user {2}.";
 							LogAuditActivity(LogActivityTypeConstants.EMAIL_RESENT, LogActivityCategoryType.Email, message, "CreateUser", profile);
 						}
 					}
@@ -458,13 +460,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					if (isNotified)
 					{
 						//Log Activity
-						message = "Welcome Email sent to user {0} {1} by RealPage user {2}.";
+						message = profile.organization[0].RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId
+								? "Welcome Email sent to user {0} {1} by RealPage user {2}."
+								: "Welcome Email sent to user {0} {1} by user {2}.";
 						LogAuditActivity(LogActivityTypeConstants.EMAIL_SENT, LogActivityCategoryType.Email, message, "UpdateUser", profile);
 					}
 					else
 					{
 						//Log Activity
-						message = "Unable to Resend Welcome Email to user {0} {1} by RealPage user {2}.";
+						message = profile.organization[0].RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId
+								? "Unable to Resend Welcome Email to user {0} {1} by RealPage user {2}."
+								: "Unable to Resend Welcome Email to user {0} {1} by user {2}.";
 						LogAuditActivity(LogActivityTypeConstants.EMAIL_RESENT, LogActivityCategoryType.Email, message, "UpdateUser", profile);
 					}
 				}

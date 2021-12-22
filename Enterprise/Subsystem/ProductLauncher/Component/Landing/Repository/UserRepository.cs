@@ -5326,7 +5326,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 oldUser.UserType = ((UserRoleType)oldProfile.UserTypeId).ToEnumDescription();
             }
 
-            var auditResult = ExtensionMethods.GenerateUpdateAudit(oldUser, newUser, "user profile");
+            var auditResult = ExtensionMethods.GenerateUpdateAudit(oldUser, newUser, "user profile", oldProfile.Persona[0].Organization.RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId);
 
             auditResult.ForEach(x => LogAuditActivity(x.LogActivityType,
                                                       x.LogActivityType == LogActivityTypeConstants.UPDATE_USER ? LogActivityCategoryType.User : LogActivityCategoryType.ProductAccess,
@@ -6252,7 +6252,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         {
                             string joinedOldRoles = string.Join(", ", oldRoles);
                             string joinedNewRoles = string.Join(", ", newRoles);
-                            var auditMessage = $"RealPage user {{2}} changed the Unified Platform role for {{0}} {{1}}. Previous role(s): {joinedOldRoles}. New role(s) : {joinedNewRoles}.";
+                            var auditMessage = $"{(updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId ? "RealPage user " : String.Empty)}{{2}} changed the Unified Platform role for {{0}} {{1}}. Previous role(s): {joinedOldRoles}. New role(s) : {joinedNewRoles}.";
                             LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, auditMessage, "UpdateUser", updateUserProfileEntity.NewProfile);
                         }
 					}
