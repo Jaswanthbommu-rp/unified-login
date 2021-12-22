@@ -3506,3 +3506,11 @@ Update P Set p.PersonaName = pt.Name
 From Person.Persona P
 Join Person.PersonaType PT ON P.PersonaTypeId = PT.PersonaTypeId
 GO
+
+--Removing Right "Manage Custom User Fields Settings" from RealPage Employee Company
+Declare @RightID BIGINT;
+Select @RightID =RightId from Security.[Right] where Value = 'Manage Custom User Fields Settings'
+IF EXISTS(Select TOP 1 1 from Security.OrganizationOverRideRight where RightID =@RightID)
+BEGIN
+   Delete from Security.OrganizationOverRideRight where RightId = @RightID
+END
