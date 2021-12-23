@@ -3514,3 +3514,48 @@ IF EXISTS(Select TOP 1 1 from Security.OrganizationOverRideRight where RightID =
 BEGIN
    Delete from Security.OrganizationOverRideRight where RightId = @RightID
 END
+GO
+
+--Removing Markets Tab for Axiometrics Product
+
+Declare @ControlID1 BigINT,@ControlID2 BigINT,@ControlID3 BigINT;
+
+Select @ControlID1 =ControlId  from UserManagement.Control where UIId = 'AxiometricsProductAccessPropertyGroupsMultiSelectGridUIId';
+Delete from  UserManagement.Control where ParentControlId = @ControlID1;
+Delete from UserManagement.ControlAttribute where ControlID = @ControlID1;
+
+Select @ControlID2 =ControlId  from UserManagement.Control where UIId = 'AxiometricsProductAccessPropertyGroupsTabUIId';
+Delete from  UserManagement.Control where ParentControlId = @ControlID2;
+
+Select @ControlID3 =ControlId  from UserManagement.Control where UIId = 'AxiometricsProductAccessTabGroupUIId';
+Delete from  UserManagement.Control where ParentControlId = @ControlID3 and DisplayName ='Markets';
+
+--Removing  Markets Tab for Investment Product
+
+Declare @Attribute1 BigINT,@Attribute2 BigINT,@Attribute3 BigINT;
+
+Select @Attribute1 =ControlId  from UserManagement.Control where UIId = 'InvestmentAnalyticsProductAccessPropertyGroupsMultiSelectGridUIId';
+Delete from  UserManagement.Control where ParentControlId = @Attribute1;
+Delete from UserManagement.ControlAttribute where ControlID = @Attribute1;
+
+Select @Attribute2 =ControlId  from UserManagement.Control where UIId = 'InvestmentAnalyticsProductAccessPropertyGroupsTabUIId';
+Delete from  UserManagement.Control where ParentControlId = @Attribute2;
+
+Select @Attribute3 =ControlId  from UserManagement.Control where UIId = 'InvestmentAnalyticsProductAccessTabGroupUIId';
+Delete from  UserManagement.Control where ParentControlId = @Attribute3 and DisplayName ='Markets';
+
+--Removing  Markets Tab for Market Analytics Product
+
+Declare @Market1 BigINT,@Market2 BigINT,@Market13 BigINT;
+
+Select @Market1 =ControlId  from UserManagement.Control where UIId = 'MarketAnalyticsProductAccessMarketsMultiSelectGridUIId';
+Delete from  UserManagement.Control where ParentControlId = @Market1;
+Delete from UserManagement.ControlAttribute where ControlID = @Market1;
+
+Select @Market2 =ControlId  from UserManagement.Control where UIId = 'MarketAnalyticsProductAccessMarketsTabUIId';
+Delete from  UserManagement.Control where ParentControlId = @Market2;
+
+Select @Market13 =ControlId  from UserManagement.Control where UIId = 'MarketAnalyticsProductAccessTabGroupUIId';
+Delete from  UserManagement.Control where ParentControlId = @Market13 and DisplayName ='Markets';
+
+GO
