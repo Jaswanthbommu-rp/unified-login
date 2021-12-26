@@ -1,4 +1,4 @@
 ﻿CREATE PROCEDURE [Enterprise].[GetAllStatusTypes]
 AS
-	SELECT StatusTypeId, [Name]
+	SELECT StatusTypeId As Id, [Name]
 	FROM Enterprise.StatusType;
