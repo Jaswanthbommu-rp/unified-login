@@ -1050,6 +1050,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             //GetProductSamlDetails before update
             IList<SamlAttributes> oldSamlAttributes = _samlRepository.GetProductSamlDetails(assignUserPersonaId, _productId);
+            var productsWithStatus = _samlRepository.ListAllProductsByPersonaId(productUserAccountDetails.PersonaId, productUserAccountDetails.ProductId, null);
 
             // Handle AO user products separately 
             if (_productId == (int)ProductEnum.AssetOptimizer)
@@ -1059,7 +1060,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     var productNameString = product.Name;
                     GenerateInternalUpdateAttrLogMessage(assignUserPersonaId, changedAttribute, changedAttrValues, oldSamlAttributes);
-                    GenerateInternalUpdateStatusLogMessage(productUserAccountDetails, changedAttribute, changedAttrValues);
+                    GenerateInternalUpdateStatusLogMessage(productUserAccountDetails, changedAttribute, changedAttrValues, productsWithStatus);
 
                     var aoProducts = _productRepository.ListProducts(null, null, null, null);
                     var subProucts = productUserAccountDetails.SubProducts.ToList();
@@ -1084,9 +1085,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (internalChange)
                 {
                     GenerateInternalUpdateAttrLogMessage(assignUserPersonaId, changedAttribute, changedAttrValues, oldSamlAttributes);
+                    GenerateInternalUpdateStatusLogMessage(productUserAccountDetails, changedAttribute, changedAttrValues, productsWithStatus);
                     if (changedAttrValues.Count > 0)
-                    {
-                        GenerateInternalUpdateStatusLogMessage(productUserAccountDetails, changedAttribute, changedAttrValues);
+                    {                       
                         CreateInternalUpdateLogMessage(messageTolog, fromuserInfo, touserInfo, changedAttribute, changedAttrValues, product.Name);
                     }
                 }
@@ -1126,9 +1127,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
-        private void GenerateInternalUpdateStatusLogMessage(ProductUserAccountDetails productUserAccountDetails, List<string> changedAttribute, List<string> changedAttrValues)
+        private void GenerateInternalUpdateStatusLogMessage(ProductUserAccountDetails productUserAccountDetails, List<string> changedAttribute, List<string> changedAttrValues, IList<PersonaProductUserDetails> productsWithStatus)
         {
-            var productsWithStatus = _samlRepository.ListAllProductsByPersonaId(productUserAccountDetails.PersonaId, productUserAccountDetails.ProductId, null);
+           // var productsWithStatus = _samlRepository.ListAllProductsByPersonaId(productUserAccountDetails.PersonaId, productUserAccountDetails.ProductId, null);
 
             if (productsWithStatus.Count > 0)
             {
