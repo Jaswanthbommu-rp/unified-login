@@ -1033,7 +1033,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // Handle all other products than AO
             long assignUserPersonaId = productUserAccountDetails.PersonaId;
             var userClaim = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
-            var manageProductBase = new ManageProductBase(_productId, userClaim, _productInternalSettingRepository, _productRepository);
+            var manageProductBase = new ManageProductBase(productUserAccountDetails.ProductId, userClaim, _productInternalSettingRepository, _productRepository);
 
             StringBuilder messageTolog = new StringBuilder();
             UserActivityLogInfo fromuserInfo = _activityLogHelper.GetUserActivityLogInfo(_userClaim.PersonaId);
@@ -1049,11 +1049,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
 
             //GetProductSamlDetails before update
-            IList<SamlAttributes> oldSamlAttributes = _samlRepository.GetProductSamlDetails(assignUserPersonaId, _productId);
+            IList<SamlAttributes> oldSamlAttributes = _samlRepository.GetProductSamlDetails(assignUserPersonaId, productUserAccountDetails.ProductId);
             var productsWithStatus = _samlRepository.ListAllProductsByPersonaId(productUserAccountDetails.PersonaId, productUserAccountDetails.ProductId, null);
 
             // Handle AO user products separately 
-            if (_productId == (int)ProductEnum.AssetOptimizer)
+            if (productUserAccountDetails.ProductId == (int)ProductEnum.AssetOptimizer)
             {
                 updates = UpdateAoUserDetails(productUserAccountDetails);
                 if (internalChange)
