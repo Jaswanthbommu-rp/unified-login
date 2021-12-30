@@ -879,6 +879,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
 			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
+			var response = mcs.InsertClientSecret(clientSecret);
+
+            if (response.ClientId > 0)
+            {
+				var client = mcs.GetClientDetails(clientSecret.ClientId);
+				mcs.WriteToLog(clientSecret.ClientId, $"{{0}} {{1}} added secret {clientSecret.Description} to {client.ClientName} client.");
+			}
+
 			return mcs.InsertClientSecret(clientSecret);
 		}
 
@@ -913,8 +921,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				
 				return Request.CreateResponse(HttpStatusCode.BadRequest, output);
 			}
+            else
+            {
+				var o = clientSecret.originalClientSecret;
+				var n = clientSecret.clientSecret;
 
-			return Request.CreateResponse(HttpStatusCode.OK, output);
+				var client = mcs.GetClientDetails(clientSecret.clientSecret.ClientId);
+
+				StringBuilder logMessage = new StringBuilder($"{{0}} {{1}} updated secret {o.Description} for {client.ClientName} client. ");
+
+				if (o.Description != n.Description)
+					logMessage.Append($"From Description: \"{o.Description}\" to \"{n.Description}\". ");
+
+				if (o.Value != n.Value)
+					logMessage.Append($"From Value: \"{o.Value}\" to \"{n.Value}\". ");
+
+				if (o.Expiration!= n.Expiration)
+					logMessage.Append($"From Expiration: \"{o.Expiration}\" to \"{n.Expiration}\". ");
+
+				mcs.WriteToLog(0, logMessage.ToString());
+
+				return Request.CreateResponse(HttpStatusCode.OK, output);
+            }
 		}
 
 		/// <summary>
@@ -940,8 +968,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			{
 				return Request.CreateResponse(HttpStatusCode.BadRequest, "No records deleted");
 			}
-
-			return Request.CreateResponse(HttpStatusCode.OK);
+            else
+            {
+				var client = mcs.GetClientDetails(clientSecret.ClientId);
+				mcs.WriteToLog(0, $"{{0}} {{1}} deleted secret {clientSecret.Description} from {client.ClientName} client.");
+				return Request.CreateResponse(HttpStatusCode.OK);
+            }
 		}
 		#endregion
 
