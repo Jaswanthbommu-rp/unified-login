@@ -1059,7 +1059,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (internalChange)
                 {
                     var productNameString = product.Name;
-                    GenerateInternalUpdateAttrLogMessage(assignUserPersonaId, changedAttribute, changedAttrValues, oldSamlAttributes);
+                    GenerateInternalUpdateAttrLogMessage(assignUserPersonaId, changedAttribute, changedAttrValues, oldSamlAttributes, productUserAccountDetails.ProductId);
                     GenerateInternalUpdateStatusLogMessage(productUserAccountDetails, changedAttribute, changedAttrValues, productsWithStatus);
 
                     var aoProducts = _productRepository.ListProducts(null, null, null, null);
@@ -1084,7 +1084,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (internalChange)
                 {
-                    GenerateInternalUpdateAttrLogMessage(assignUserPersonaId, changedAttribute, changedAttrValues, oldSamlAttributes);
+                    GenerateInternalUpdateAttrLogMessage(assignUserPersonaId, changedAttribute, changedAttrValues, oldSamlAttributes, productUserAccountDetails.ProductId);
                     GenerateInternalUpdateStatusLogMessage(productUserAccountDetails, changedAttribute, changedAttrValues, productsWithStatus);
                     if (changedAttrValues.Count > 0)
                     {                       
@@ -1160,9 +1160,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
-        private void GenerateInternalUpdateAttrLogMessage(long assignUserPersonaId, List<string> changedAttribute, List<string> changedAttrValues, IList<SamlAttributes> oldSamlAttributes)
+        private void GenerateInternalUpdateAttrLogMessage(long assignUserPersonaId, List<string> changedAttribute, List<string> changedAttrValues, IList<SamlAttributes> oldSamlAttributes, int productId)
         {
-            var newSamlAttributes = _samlRepository.GetProductSamlDetails(assignUserPersonaId, _productId);
+            var newSamlAttributes = _samlRepository.GetProductSamlDetails(assignUserPersonaId, productId);
 
             if (oldSamlAttributes.Count == 0 && newSamlAttributes.Count > 0)
             {
