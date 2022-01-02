@@ -767,8 +767,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				output.Status = new Status<IErrorData>() { ErrorMsg = "Insert failed", Success = false };
 				return Request.CreateResponse(HttpStatusCode.BadRequest, output);
 			}
+			else
+			{
+				//[Employee first name and last name] added post-logout uri [post-lougout redirect uri] to [client name].
+				var client = mcs.GetClientDetails(clientPostLogoutRedirectUri.ClientId);
+				mcs.WriteToLog(clientPostLogoutRedirectUri.ClientId, $"{{0}} {{1}} added post-logout uri \"{clientPostLogoutRedirectUri.Uri}\" to {client.ClientName}.");
 
-			return Request.CreateResponse(HttpStatusCode.OK, output);
+				return Request.CreateResponse(HttpStatusCode.OK, output);
+			}
 		}
 
 		/// <summary>
@@ -808,8 +814,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
 				return Request.CreateResponse(HttpStatusCode.BadRequest, output);
 			}
+			else
+			{
+				var o = clientPostLogoutRedirectUri.originalClientPostLogoutRedirectUri;
+				var n = clientPostLogoutRedirectUri.clientPostLogoutRedirectUri;
 
-			return Request.CreateResponse(HttpStatusCode.OK, output);
+				//[Employee first name and last name] updated post-logout redirect uri for [client name]. From [field 1]: "[previous value]" to "[new value]".
+				if (o.Uri != n.Uri) 
+				{
+					var client = mcs.GetClientDetails(clientPostLogoutRedirectUri.clientPostLogoutRedirectUri.ClientId);
+					mcs.WriteToLog(o.ClientId, $"{{0}} {{1}} updated post-logout uri for {client.ClientName}. From URI: \"{o.Uri}\" to \"{n.Uri}\".");
+				}
+				return Request.CreateResponse(HttpStatusCode.OK, output);
+			}
 		}
 
 		/// <summary>
@@ -837,9 +854,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				output.Status = new Status<IErrorData>() { ErrorMsg = "Delete failed, no records deleted", Success = false };
 				return Request.CreateResponse(HttpStatusCode.BadRequest, output);
 			}
-
-			output.Status = new Status<IErrorData>() { Success = true };
-			return Request.CreateResponse(HttpStatusCode.OK, output);
+			else
+			{
+				//[Employee first name and last name] deleted post-logout uri [post-lougout redirect uri] from [client name].
+				var client = mcs.GetClientDetails(clientPostLogoutRedirectUri.ClientId);
+				mcs.WriteToLog(clientPostLogoutRedirectUri.ClientId, $"{{0}} {{1}} deleted post-logout uri \"{clientPostLogoutRedirectUri.Uri}\" from {client.ClientName}.");
+				output.Status = new Status<IErrorData>() { Success = true };
+				return Request.CreateResponse(HttpStatusCode.OK, output);
+			}
 		}
 
 		#endregion
