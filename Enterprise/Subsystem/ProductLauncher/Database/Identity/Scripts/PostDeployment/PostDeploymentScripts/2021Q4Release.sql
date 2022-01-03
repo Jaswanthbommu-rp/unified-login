@@ -3559,3 +3559,21 @@ Select @Market13 =ControlId  from UserManagement.Control where UIId = 'MarketAna
 Delete from  UserManagement.Control where ParentControlId = @Market13 and DisplayName ='Markets';
 
 GO
+
+-- Adding Dashboard Right for "Manage ALL Unified Settings" Role
+
+
+Declare @RightID BIGINT,@RoleID BIGINT,@UserId BIGINT;
+Select @RightID = RightId from Security.[Right] where RightName = 'Dashboard';
+
+Select @RoleID = RoleId from Security.Role where RoleName = 'Manage ALL Unified Settings';
+
+SELECT	@UserId = UserId
+	FROM	Ident.UserLogin
+	WHERE	LoginName LIKE 'realpagead@%';
+
+IF NOT EXISTS (Select Top 1 1 from Security.RoleRight where RoleId = @RoleID and RightId = @RightID)
+BEGIN
+   INSERT INTO  Security.RoleRight (RoleID,RightID,CreatedBy,CreatedDate)
+                        Values (@RoleID,@RightID,@UserId,GETUTCDATE());
+END

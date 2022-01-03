@@ -12,13 +12,14 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityCo
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using Swashbuckle.Swagger.Annotations;
 using System.Text;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
 	public class ClientSetupController : BaseApiController
     {
-	    #region Private variables
-	    IRepositoryResponse repositoryResponse = new RepositoryResponse();
+		#region Private variables
+		IRepositoryResponse repositoryResponse = new RepositoryResponse();
 		#endregion
 
 		#region Constructor
@@ -26,10 +27,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		/// Default constructor
 		/// </summary>
 		public ClientSetupController() : base() { }
-        #endregion
+		#endregion
 
-        #region Public Methods
-        [AllowAnonymous]
+		#region Public Methods
+		[AllowAnonymous]
         [Route("clientsetup/test")]
         [HttpGet]
         public HttpResponseMessage GetSuccessResult()
@@ -399,7 +400,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			var insert = mcs.InsertScope(scope);
 
 			if (insert.ScopeId > 0)
-				mcs.WriteToLog(0, $"{{0}} {{1}} added scope {scope.Name}");
+				mcs.WriteToLog(0, $"{{0}} {{1}} added scope {scope.Name}.");
 
 			return insert;
 		}
@@ -485,7 +486,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 					var oldtype = o.Type == 0 ? "Identity" : "Resource";
 					var newtype = n.Type == 0 ? "Identity" : "Resource";
 
-					logMessage.Append($"From Type: \"{oldtype}\" to \"{newtype}\"");
+					logMessage.Append($"From Type: \"{oldtype}\" to \"{newtype}\".");
 				}
 
 				mcs.WriteToLog(0, logMessage.ToString());
@@ -766,8 +767,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				output.Status = new Status<IErrorData>() { ErrorMsg = "Insert failed", Success = false };
 				return Request.CreateResponse(HttpStatusCode.BadRequest, output);
 			}
+			else
+			{
+				//[Employee first name and last name] added post-logout uri [post-lougout redirect uri] to [client name].
+				var client = mcs.GetClientDetails(clientPostLogoutRedirectUri.ClientId);
+				mcs.WriteToLog(clientPostLogoutRedirectUri.ClientId, $"{{0}} {{1}} added post-logout uri \"{clientPostLogoutRedirectUri.Uri}\" to {client.ClientName}.");
 
-			return Request.CreateResponse(HttpStatusCode.OK, output);
+				return Request.CreateResponse(HttpStatusCode.OK, output);
+			}
 		}
 
 		/// <summary>
@@ -807,8 +814,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
 				return Request.CreateResponse(HttpStatusCode.BadRequest, output);
 			}
+			else
+			{
+				var o = clientPostLogoutRedirectUri.originalClientPostLogoutRedirectUri;
+				var n = clientPostLogoutRedirectUri.clientPostLogoutRedirectUri;
 
-			return Request.CreateResponse(HttpStatusCode.OK, output);
+				//[Employee first name and last name] updated post-logout redirect uri for [client name]. From [field 1]: "[previous value]" to "[new value]".
+				if (o.Uri != n.Uri) 
+				{
+					var client = mcs.GetClientDetails(clientPostLogoutRedirectUri.clientPostLogoutRedirectUri.ClientId);
+					mcs.WriteToLog(o.ClientId, $"{{0}} {{1}} updated post-logout uri for {client.ClientName}. From URI: \"{o.Uri}\" to \"{n.Uri}\".");
+				}
+				return Request.CreateResponse(HttpStatusCode.OK, output);
+			}
 		}
 
 		/// <summary>
@@ -836,9 +854,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				output.Status = new Status<IErrorData>() { ErrorMsg = "Delete failed, no records deleted", Success = false };
 				return Request.CreateResponse(HttpStatusCode.BadRequest, output);
 			}
-
-			output.Status = new Status<IErrorData>() { Success = true };
-			return Request.CreateResponse(HttpStatusCode.OK, output);
+			else
+			{
+				//[Employee first name and last name] deleted post-logout uri [post-lougout redirect uri] from [client name].
+				var client = mcs.GetClientDetails(clientPostLogoutRedirectUri.ClientId);
+				mcs.WriteToLog(clientPostLogoutRedirectUri.ClientId, $"{{0}} {{1}} deleted post-logout uri \"{clientPostLogoutRedirectUri.Uri}\" from {client.ClientName}.");
+				output.Status = new Status<IErrorData>() { Success = true };
+				return Request.CreateResponse(HttpStatusCode.OK, output);
+			}
 		}
 
 		#endregion
@@ -878,6 +901,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
 			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
+			var response = mcs.InsertClientSecret(clientSecret);
+
+            if (response.ClientId > 0)
+            {
+				var client = mcs.GetClientDetails(clientSecret.ClientId);
+				mcs.WriteToLog(clientSecret.ClientId, $"{{0}} {{1}} added secret {clientSecret.Description} to {client.ClientName} client.");
+			}
+
 			return mcs.InsertClientSecret(clientSecret);
 		}
 
@@ -912,8 +943,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				
 				return Request.CreateResponse(HttpStatusCode.BadRequest, output);
 			}
+            else
+            {
+				var o = clientSecret.originalClientSecret;
+				var n = clientSecret.clientSecret;
 
-			return Request.CreateResponse(HttpStatusCode.OK, output);
+				var client = mcs.GetClientDetails(clientSecret.clientSecret.ClientId);
+
+				StringBuilder logMessage = new StringBuilder($"{{0}} {{1}} updated secret {o.Description} for {client.ClientName} client. ");
+
+				if (o.Description != n.Description)
+					logMessage.Append($"From Description: \"{o.Description}\" to \"{n.Description}\". ");
+
+				if (o.Value != n.Value)
+					logMessage.Append($"From Value: \"{o.Value}\" to \"{n.Value}\". ");
+
+				if (o.Expiration!= n.Expiration)
+					logMessage.Append($"From Expiration: \"{o.Expiration}\" to \"{n.Expiration}\". ");
+
+				mcs.WriteToLog(0, logMessage.ToString());
+
+				return Request.CreateResponse(HttpStatusCode.OK, output);
+            }
 		}
 
 		/// <summary>
@@ -939,8 +990,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			{
 				return Request.CreateResponse(HttpStatusCode.BadRequest, "No records deleted");
 			}
-
-			return Request.CreateResponse(HttpStatusCode.OK);
+            else
+            {
+				var client = mcs.GetClientDetails(clientSecret.ClientId);
+				mcs.WriteToLog(0, $"{{0}} {{1}} deleted secret {clientSecret.Description} from {client.ClientName} client.");
+				return Request.CreateResponse(HttpStatusCode.OK);
+            }
 		}
 		#endregion
 
@@ -1257,7 +1312,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
 			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
-			return mcs.InsertClaim(claim);
+
+			var insert = mcs.InsertClaim(claim);
+			if (insert.ClaimId > 0)
+				mcs.WriteToLog(0, $"{{0}} {{1}} added claim {claim.ClaimName}.");
+
+			return insert;
 		}
 
 		/// <summary>
@@ -1278,6 +1338,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
 			ManageClientsSetup mcs = new ManageClientsSetup(_userClaims, csr);
 
+			ProductRepository productRepository = new ProductRepository();
+			
 			claim.claim.ClaimId = id;
 			claim.originalClaim.ClaimId = id;
 			ULClaim claimResult = mcs.UpdateClaim(claim.originalClaim, claim.claim);
@@ -1292,8 +1354,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				output.Status = new Status<IErrorData>() { ErrorMsg = "Update failed", Success = false };
 				return Request.CreateResponse(HttpStatusCode.BadRequest, output);
 			}
+            else
+            {
+				var o = claim.originalClaim;
+				var n = claim.claim;
+				var product = productRepository.GetAllProducts().Where(x => x.ProductId == n.ProductId).FirstOrDefault();
+				if (product != null)
+					n.ProductName = product.Name;
 
-			return Request.CreateResponse(HttpStatusCode.OK, output);
+				StringBuilder logMessage = new StringBuilder($"{{0}} {{1}} updated claim {o.ClaimName}. ");
+
+				if (o.ClaimName != n.ClaimName) 
+					logMessage.Append($"From Claim Name: \"{o.ClaimName}\" to \"{n.ClaimName}\". ");
+				
+				if (o.SAMLAttributeName != n.SAMLAttributeName)
+					logMessage.Append($"From SAMLAttributeName: \"{o.SAMLAttributeName}\" to \"{n.SAMLAttributeName}\". ");
+
+				if (o.ProductName != n.ProductName)
+					logMessage.Append($"From Product: \"{o.ProductName}\" to \"{n.ProductName}\". ");
+
+				mcs.WriteToLog(0, logMessage.ToString());
+
+				return Request.CreateResponse(HttpStatusCode.OK, output);
+            }
 		}
 
         /// <summary>
@@ -1327,8 +1410,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "No records deleted");
             }
-
-            return Request.CreateResponse(HttpStatusCode.OK);
+            else
+            {
+				mcs.WriteToLog(0, $"{{0}} {{1}} deleted claim {claim.ClaimName}.");
+				return Request.CreateResponse(HttpStatusCode.OK);
+            }
         }
 		#endregion
 
