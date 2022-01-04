@@ -909,7 +909,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				mcs.WriteToLog(clientSecret.ClientId, $"{{0}} {{1}} added secret {clientSecret.Description} to {client.ClientName} client.");
 			}
 
-			return mcs.InsertClientSecret(clientSecret);
+			return response;
 		}
 
 		/// <summary>
