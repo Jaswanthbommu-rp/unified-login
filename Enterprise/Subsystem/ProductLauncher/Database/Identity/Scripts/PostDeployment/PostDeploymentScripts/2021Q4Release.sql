@@ -3288,6 +3288,14 @@ END
 
 GO
 
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'TokenAuthScopes')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
+	VALUES ('TokenAuthScopes', 'Unified Login token scopes to request for product API authentication', 0);
+END
+
+GO
+
 -- RUM API Configuration
 DECLARE @NOW DATETIME = GETUTCDATE(); 
 declare @productlist table ( entid int identity, productid int, productsettingtype varchar(500), productsettingvalue varchar(2000))
@@ -3300,7 +3308,7 @@ insert into @productlist values
 (18, 'PutUserEndpoint', '/user'),
 (18, 'PatchMigrateUsersEndpoint', '/user/{0}/migrate'),
 (18, 'GetPropertyByGroupEndpoint', '/property?groupId={0}'),
-(18, 'GetPropertyEndpoint', '/property/{0}'),
+(18, 'GetPropertyEndpoint', '/property?companyId={0}'),
 (18, 'GetPropertyGroupsEndpoint', '/propertygroups?companyId={0}'),
 (18, 'GetListUsersEndpoint', '/user/{companyId}'),
 (18, 'ProductIntegrationType', 'Standard v1'),
