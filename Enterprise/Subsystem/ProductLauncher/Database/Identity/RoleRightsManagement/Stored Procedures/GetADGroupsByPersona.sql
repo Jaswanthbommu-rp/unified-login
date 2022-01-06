@@ -6,7 +6,7 @@ AS
 BEGIN
 	SELECT  
 		ADG.ADGroupId
-		,ADG.CreatedDate 
+		,ADU.CreatedDate 
 		,GETUTCDATE() as SystemDBDateTime
 	FROM Security.ADGroupUser  ADU
 	INNER JOIN Security.ADGroup ADG ON ADG.ADGroupId = ADU.ADGroupId
