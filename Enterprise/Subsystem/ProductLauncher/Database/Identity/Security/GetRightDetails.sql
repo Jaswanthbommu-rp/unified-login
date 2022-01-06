@@ -1,7 +1,7 @@
 ﻿CREATE Procedure [Security].[GetRightDetails] (@rightId int)
 AS
 Begin
-	select r.RightId, RightName, r.Description, 
+	select r.RightId, RightName, r.Description, r.Value,
 	p.ProductId, p.Name as ProductName, r.TargetProductId, p1.Name as TargetProductName, st.StatusTypeId, st.Name as StatusType, 
 	r.VisibilityStatusId, st1.Name as Visibility
 	from Security.[Right] r

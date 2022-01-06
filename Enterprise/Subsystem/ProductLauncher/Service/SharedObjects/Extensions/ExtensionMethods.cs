@@ -57,7 +57,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
         /// <param name="newEntity">New entity</param>
         /// <param name="entityAffected">Name of the affected entity</param>
         /// <returns>A list of audit records</returns>
-        public static List<AuditRecord> GenerateUpdateAudit<O, N>(O oldEntity, N newEntity, string entityAffected) where O : N
+        public static List<AuditRecord> GenerateUpdateAudit<O, N>(O oldEntity, N newEntity, string entityAffected, bool isRealPageUser) where O : N
         {
             List<AuditRecord> result = new List<AuditRecord>();
 
@@ -135,7 +135,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
                                 }
                                 else
                                 {
-                                    auditRecord.AuditMessage = string.Concat("RealPage User {2} updated the ",
+                                    
+                                    auditRecord.AuditMessage = string.Concat((isRealPageUser ? "RealPage User " : String.Empty), "{2} updated the ",
                                        internalAttribute.ColumnName,
                                        newValueIsDate || oldValueIsDate ? " date from " :" from ", auditRecord.OldValue == null ? internalAttribute.NullBlankValue : auditRecord.OldValue.ToString() == string.Empty ? internalAttribute.NullBlankValue : auditRecord.OldValue,
                                        " to ", auditRecord.NewValue == null ? internalAttribute.NullBlankValue : auditRecord.NewValue.ToString() == string.Empty ? internalAttribute.NullBlankValue : auditRecord.NewValue,

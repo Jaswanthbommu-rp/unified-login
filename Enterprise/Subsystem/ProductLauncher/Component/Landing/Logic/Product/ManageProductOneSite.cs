@@ -1730,9 +1730,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 pmcInfo.ID = pmcInfoCache.ID;
                 pmcInfo.PMCURL = pmcInfoCache.PMCURL.ToString();
             }
-
-            Dictionary<string, object> logData = new Dictionary<string, object> { { "pmcInfo", pmcInfo } };
-            WriteToDiagnosticLog($"GetPMCInfo - Got info {pmcId}", logData);
+            // removing to see if this is the reason logging is stopping in early mornings
+            //Dictionary<string, object> logData = new Dictionary<string, object> { { "pmcInfo", pmcInfo } };
+            //WriteToDiagnosticLog($"GetPMCInfo - Got info {pmcId}", logData);
             return pmcInfo;
         }
 

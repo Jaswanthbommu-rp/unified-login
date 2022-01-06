@@ -785,9 +785,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 else
                 {
                     IList<Persona> personaList = new List<Persona>() { editor };
-                    logData = new Dictionary<string, object>();
-                    logData.Add("personaList", personaList);
-                    WriteToDiagnosticLog($"verifyPersona - Found persona. personaId={personaId}", logData);
+                    // removing to see if this is the reason logging is stopping in early mornings
+                    //logData = new Dictionary<string, object>();
+                    //logData.Add("personaList", personaList);
+                    //WriteToDiagnosticLog($"verifyPersona - Found persona. personaId={personaId}", logData);
                     response = new ListResponse()
                     {
                         Records = personaList.Cast<object>().ToList(),

@@ -3496,7 +3496,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 if (operationType == "add")
                 {
                     IList<GbProductMap> allProducts =repository.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, null).ToList();
-                    var productRepo = new ProductRepository();
                     IManageBlueBook _blueBook = new ManageBlueBook();
                     foreach (var productmap in productListToCreate)
                     {
@@ -3770,6 +3769,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             IList<PersonaProductUserDetails> userProducts = repository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = assignUserPersonaId, ProductStatusValue = ((Int32)UserUiStatusType.AccountCreationSuccessful).ToString() }).ToList();
             IList<ProductBatch> productListToCreate = new List<ProductBatch>();
+            IList<ProductBatch> productListMapping = new List<ProductBatch>();
             var primaryPropertyBatch = productBatchData.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedUI);
 
             if (primaryPropertyBatch != null)
@@ -4003,6 +4003,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                     // AO product handling - removes AO products from list & returns JSON string
                     aoInputJsonString = BundleAoProducts(productListToCreate, batchGroup.BatchProcessorGroupId);
+
+                    // For System Admin if Products that are not Configured are not processed
+                    IList<GbProductMap> allProducts = repository.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, null).ToList();
+                    IManageBlueBook _blueBook = new ManageBlueBook();
+
+                    foreach (var prod in productListToCreate)
+                    {
+                        var productDetails = allProducts.FirstOrDefault(x => x.ProductId == prod.ProductId);
+                        string udmSource = productDetails.UDMSourceCode?.Length > 0 ? productDetails.UDMSourceCode : productDetails.BooksProductCode;
+                        IList<CustomerCompanyMap> companyMapping = _blueBook.GetProductCompanyMapping(_userClaim.OrganizationRealPageGuid, udmSource);
+                        if (companyMapping != null)
+                        {
+                            productListMapping.Add(prod);
+                        }
+                    }
+
+                    if(productListMapping != null)
+                    {
+                        productListToCreate = productListMapping;
+                    }
+
                 }
             }
             else if (batchProcessTypeId == (int)BatchProcessType.ProfileUpdate)
@@ -5305,7 +5326,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 oldUser.UserType = ((UserRoleType)oldProfile.UserTypeId).ToEnumDescription();
             }
 
-            var auditResult = ExtensionMethods.GenerateUpdateAudit(oldUser, newUser, "user profile");
+            var auditResult = ExtensionMethods.GenerateUpdateAudit(oldUser, newUser, "user profile", oldProfile.Persona[0].Organization.RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId);
 
             auditResult.ForEach(x => LogAuditActivity(x.LogActivityType,
                                                       x.LogActivityType == LogActivityTypeConstants.UPDATE_USER ? LogActivityCategoryType.User : LogActivityCategoryType.ProductAccess,
@@ -6231,7 +6252,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         {
                             string joinedOldRoles = string.Join(", ", oldRoles);
                             string joinedNewRoles = string.Join(", ", newRoles);
-                            var auditMessage = $"RealPage user {{2}} changed the Unified Platform role for {{0}} {{1}}. Previous role(s): {joinedOldRoles}. New role(s) : {joinedNewRoles}.";
+                            var auditMessage = $"{(updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId ? "RealPage user " : String.Empty)}{{2}} changed the Unified Platform role for {{0}} {{1}}. Previous role(s): {joinedOldRoles}. New role(s) : {joinedNewRoles}.";
                             LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, auditMessage, "UpdateUser", updateUserProfileEntity.NewProfile);
                         }
 					}

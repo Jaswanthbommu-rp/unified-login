@@ -19,19 +19,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private readonly int _productId;
 
         private readonly DefaultUserClaim _userClaims;
-
+        private readonly IProductInternalSettingRepository _productInternalSettingRepository;
         private IProductRepository _productRepository;
 
         private ManageUPFMProductsIntegration _manageUPFMProductIntegration => new ManageUPFMProductsIntegration(_productId, _userClaims);
 
         private IUPFMProduct _upfmProductIntegration => new UPFMProductIntegration(_productId, _userClaims);
 
-        public UPFMIntegrationType(int productId, DefaultUserClaim userClaims)
+        public UPFMIntegrationType(int productId, DefaultUserClaim userClaims, IProductInternalSettingRepository productInternalSettingRepository)
         {
             _productId = productId;
             _userClaims = userClaims;
-
+            
             _productRepository = new ProductRepository(_userClaims);
+            _productInternalSettingRepository = productInternalSettingRepository;
         }
 
         public ListResponse GetRoles(long editorPersonaId, long userPersonaId, long partyId, AccessType? accessType, RequestParameter dataFilter) =>
@@ -127,8 +128,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             throw new NotImplementedException();
         }
 
-        public string UpdateUserDetails(ProductUserAccountDetails productUserAccountDetails, bool internalChange = false) => "User details Change not implemented for this Product.";
-
+        public string UpdateUserDetails(ProductUserAccountDetails productUserAccountDetails, bool internalChange = false)
+        {
+            var product = new ProductBase(_productId, _userClaims, _productInternalSettingRepository, _productRepository);
+            return product.UpdateUserDetails(productUserAccountDetails, internalChange);
+        }
 
         public ListResponse GetAccessTypes(long editorPersonaId, long userPersonaId) => new ListResponse();
     }

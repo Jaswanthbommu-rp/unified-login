@@ -3288,6 +3288,14 @@ END
 
 GO
 
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'TokenAuthScopes')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
+	VALUES ('TokenAuthScopes', 'Unified Login token scopes to request for product API authentication', 0);
+END
+
+GO
+
 -- RUM API Configuration
 DECLARE @NOW DATETIME = GETUTCDATE(); 
 declare @productlist table ( entid int identity, productid int, productsettingtype varchar(500), productsettingvalue varchar(2000))
@@ -3300,7 +3308,7 @@ insert into @productlist values
 (18, 'PutUserEndpoint', '/user'),
 (18, 'PatchMigrateUsersEndpoint', '/user/{0}/migrate'),
 (18, 'GetPropertyByGroupEndpoint', '/property?groupId={0}'),
-(18, 'GetPropertyEndpoint', '/property/{0}'),
+(18, 'GetPropertyEndpoint', '/property?companyId={0}'),
 (18, 'GetPropertyGroupsEndpoint', '/propertygroups?companyId={0}'),
 (18, 'GetListUsersEndpoint', '/user/{companyId}'),
 (18, 'ProductIntegrationType', 'Standard v1'),
@@ -3505,4 +3513,110 @@ GO
 Update P Set p.PersonaName = pt.Name
 From Person.Persona P
 Join Person.PersonaType PT ON P.PersonaTypeId = PT.PersonaTypeId
+GO
+
+--Removing Right "Manage Custom User Fields Settings" from RealPage Employee Company
+Declare @RightID BIGINT;
+Select @RightID =RightId from Security.[Right] where Value = 'Manage Custom User Fields Settings'
+IF EXISTS(Select TOP 1 1 from Security.OrganizationOverRideRight where RightID =@RightID)
+BEGIN
+   Delete from Security.OrganizationOverRideRight where RightId = @RightID
+END
+GO
+
+--Removing Markets Tab for Axiometrics Product
+
+Declare @ControlID1 BigINT,@ControlID2 BigINT,@ControlID3 BigINT;
+
+Select @ControlID1 =ControlId  from UserManagement.Control where UIId = 'AxiometricsProductAccessPropertyGroupsMultiSelectGridUIId';
+Delete from  UserManagement.Control where ParentControlId = @ControlID1;
+Delete from UserManagement.ControlAttribute where ControlID = @ControlID1;
+
+Select @ControlID2 =ControlId  from UserManagement.Control where UIId = 'AxiometricsProductAccessPropertyGroupsTabUIId';
+Delete from  UserManagement.Control where ParentControlId = @ControlID2;
+
+Select @ControlID3 =ControlId  from UserManagement.Control where UIId = 'AxiometricsProductAccessTabGroupUIId';
+Delete from  UserManagement.Control where ParentControlId = @ControlID3 and DisplayName ='Markets';
+
+--Removing  Markets Tab for Investment Product
+
+Declare @Attribute1 BigINT,@Attribute2 BigINT,@Attribute3 BigINT;
+
+Select @Attribute1 =ControlId  from UserManagement.Control where UIId = 'InvestmentAnalyticsProductAccessPropertyGroupsMultiSelectGridUIId';
+Delete from  UserManagement.Control where ParentControlId = @Attribute1;
+Delete from UserManagement.ControlAttribute where ControlID = @Attribute1;
+
+Select @Attribute2 =ControlId  from UserManagement.Control where UIId = 'InvestmentAnalyticsProductAccessPropertyGroupsTabUIId';
+Delete from  UserManagement.Control where ParentControlId = @Attribute2;
+
+Select @Attribute3 =ControlId  from UserManagement.Control where UIId = 'InvestmentAnalyticsProductAccessTabGroupUIId';
+Delete from  UserManagement.Control where ParentControlId = @Attribute3 and DisplayName ='Markets';
+
+--Removing  Markets Tab for Market Analytics Product
+
+Declare @Market1 BigINT,@Market2 BigINT,@Market13 BigINT;
+
+Select @Market1 =ControlId  from UserManagement.Control where UIId = 'MarketAnalyticsProductAccessMarketsMultiSelectGridUIId';
+Delete from  UserManagement.Control where ParentControlId = @Market1;
+Delete from UserManagement.ControlAttribute where ControlID = @Market1;
+
+Select @Market2 =ControlId  from UserManagement.Control where UIId = 'MarketAnalyticsProductAccessMarketsTabUIId';
+Delete from  UserManagement.Control where ParentControlId = @Market2;
+
+Select @Market13 =ControlId  from UserManagement.Control where UIId = 'MarketAnalyticsProductAccessTabGroupUIId';
+Delete from  UserManagement.Control where ParentControlId = @Market13 and DisplayName ='Markets';
+
+GO
+
+-- Adding Dashboard Right for "Manage ALL Unified Settings" Role
+
+
+Declare @RightID BIGINT,@RoleID BIGINT,@UserId BIGINT;
+Select @RightID = RightId from Security.[Right] where RightName = 'Dashboard';
+
+Select @RoleID = RoleId from Security.Role where RoleName = 'Manage ALL Unified Settings';
+
+SELECT	@UserId = UserId
+	FROM	Ident.UserLogin
+	WHERE	LoginName LIKE 'realpagead@%';
+
+IF NOT EXISTS (Select Top 1 1 from Security.RoleRight where RoleId = @RoleID and RightId = @RightID)
+BEGIN
+   INSERT INTO  Security.RoleRight (RoleID,RightID,CreatedBy,CreatedDate)
+                        Values (@RoleID,@RightID,@UserId,GETUTCDATE());
+END
+
+GO
+declare @id int
+  declare @rightid int
+   select @rightid = RightId from Security.[Right] where RightName = 'EmployeeAccessToInternalClientSettings'
+  IF NOT EXISTS(Select 1 From Enterprise.NavigationMenu Where Title = 'Claim Setup')
+  Begin
+	  Insert into [Enterprise].[NavigationMenu](Title,PageId,Icon,URL,OrderIndex,ParentId,Origin)
+	  Select 'Claim Setup','claim-setup',null,'/home/claim-setup',142,9,'unified-login'
+	  
+	  Select @id = id From Enterprise.NavigationMenu Where Title = 'Claim Setup'
+	  Insert into [Enterprise].[NavigationMenuRights](NavigationMenuId,RightId)
+	  Select @id,@rightid
+  End 
+
+   IF NOT EXISTS(Select 1 From Enterprise.NavigationMenu Where Title = 'CORS Setup')
+   Begin
+	Insert into [Enterprise].[NavigationMenu](Title,PageId,Icon,URL,OrderIndex,ParentId,Origin)
+	  Select 'CORS Setup','cors-setup',null,'/home/cors-setup',143,9,'unified-login'
+	  
+	  Select @id = id From Enterprise.NavigationMenu Where Title = 'CORS Setup'
+	  Insert into [Enterprise].[NavigationMenuRights](NavigationMenuId,RightId)
+	  Select @id,@rightid
+   End
+   
+      IF NOT EXISTS(Select 1 From Enterprise.NavigationMenu Where Title = 'Scope Setup')
+   Begin
+	  Insert into [Enterprise].[NavigationMenu](Title,PageId,Icon,URL,OrderIndex,ParentId,Origin)
+	  Select 'Scope Setup','scope-setup',null,'/home/scope-setup',144,9,'unified-login'
+	  
+	  Select @id = id From Enterprise.NavigationMenu Where Title = 'Scope Setup'
+	  Insert into [Enterprise].[NavigationMenuRights](NavigationMenuId,RightId)
+	  Select @id,@rightid
+   End
 GO
