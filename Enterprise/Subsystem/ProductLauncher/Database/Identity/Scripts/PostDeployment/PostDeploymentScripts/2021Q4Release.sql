@@ -3288,6 +3288,14 @@ END
 
 GO
 
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'TokenAuthScopes')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
+	VALUES ('TokenAuthScopes', 'Unified Login token scopes to request for product API authentication', 0);
+END
+
+GO
+
 -- RUM API Configuration
 DECLARE @NOW DATETIME = GETUTCDATE(); 
 declare @productlist table ( entid int identity, productid int, productsettingtype varchar(500), productsettingvalue varchar(2000))
@@ -3300,7 +3308,7 @@ insert into @productlist values
 (18, 'PutUserEndpoint', '/user'),
 (18, 'PatchMigrateUsersEndpoint', '/user/{0}/migrate'),
 (18, 'GetPropertyByGroupEndpoint', '/property?groupId={0}'),
-(18, 'GetPropertyEndpoint', '/property/{0}'),
+(18, 'GetPropertyEndpoint', '/property?companyId={0}'),
 (18, 'GetPropertyGroupsEndpoint', '/propertygroups?companyId={0}'),
 (18, 'GetListUsersEndpoint', '/user/{companyId}'),
 (18, 'ProductIntegrationType', 'Standard v1'),
@@ -3577,3 +3585,38 @@ BEGIN
    INSERT INTO  Security.RoleRight (RoleID,RightID,CreatedBy,CreatedDate)
                         Values (@RoleID,@RightID,@UserId,GETUTCDATE());
 END
+
+GO
+declare @id int
+  declare @rightid int
+   select @rightid = RightId from Security.[Right] where RightName = 'EmployeeAccessToInternalClientSettings'
+  IF NOT EXISTS(Select 1 From Enterprise.NavigationMenu Where Title = 'Claim Setup')
+  Begin
+	  Insert into [Enterprise].[NavigationMenu](Title,PageId,Icon,URL,OrderIndex,ParentId,Origin)
+	  Select 'Claim Setup','claim-setup',null,'/home/claim-setup',142,9,'unified-login'
+	  
+	  Select @id = id From Enterprise.NavigationMenu Where Title = 'Claim Setup'
+	  Insert into [Enterprise].[NavigationMenuRights](NavigationMenuId,RightId)
+	  Select @id,@rightid
+  End 
+
+   IF NOT EXISTS(Select 1 From Enterprise.NavigationMenu Where Title = 'CORS Setup')
+   Begin
+	Insert into [Enterprise].[NavigationMenu](Title,PageId,Icon,URL,OrderIndex,ParentId,Origin)
+	  Select 'CORS Setup','cors-setup',null,'/home/cors-setup',143,9,'unified-login'
+	  
+	  Select @id = id From Enterprise.NavigationMenu Where Title = 'CORS Setup'
+	  Insert into [Enterprise].[NavigationMenuRights](NavigationMenuId,RightId)
+	  Select @id,@rightid
+   End
+   
+      IF NOT EXISTS(Select 1 From Enterprise.NavigationMenu Where Title = 'Scope Setup')
+   Begin
+	  Insert into [Enterprise].[NavigationMenu](Title,PageId,Icon,URL,OrderIndex,ParentId,Origin)
+	  Select 'Scope Setup','scope-setup',null,'/home/scope-setup',144,9,'unified-login'
+	  
+	  Select @id = id From Enterprise.NavigationMenu Where Title = 'Scope Setup'
+	  Insert into [Enterprise].[NavigationMenuRights](NavigationMenuId,RightId)
+	  Select @id,@rightid
+   End
+GO

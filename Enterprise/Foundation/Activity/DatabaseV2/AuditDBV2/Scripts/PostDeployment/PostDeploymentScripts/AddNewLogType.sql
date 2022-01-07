@@ -43,7 +43,7 @@ BEGIN
 	
 	SELECT @catId = LogCategoryTypeId
 	FROM logging.LogCategoryType 
-	WHERE NAME = 'Internal Product Settings'
+	WHERE NAME = 'InternalProductSettings'
 	
 	SELECT @logId = MAX(LogTypeId) + 1
 	FROM Logging.LogType
