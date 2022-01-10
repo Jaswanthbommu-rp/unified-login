@@ -228,6 +228,10 @@
       <Project>{5794a497-56d2-4b0c-a168-d0f75bb21ff9}</Project>
       <Name>Component.Landing</Name>
     </ProjectReference>
+    <ProjectReference Include="..\LandingAPI\Service.LandingAPI.csproj">
+      <Project>{6579D576-A2BB-441D-A638-8DD5E39DB642}</Project>
+      <Name>Service.LandingAPI</Name>
+    </ProjectReference>
     <ProjectReference Include="..\SharedObjects\SharedObjects.csproj">
       <Project>{941e5338-b2c7-41fd-bad5-a34a8e732e19}</Project>
       <Name>SharedObjects</Name>
