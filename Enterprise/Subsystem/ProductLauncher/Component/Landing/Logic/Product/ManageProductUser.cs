@@ -193,7 +193,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             bool isUpdateUser = false;
             bool usePrimaryProperties = false;
-            //RolePropertyList roleProp = new RolePropertyList();
 
             Dictionary<int, RolePropertyList> rolePropDictionary = new Dictionary<int, RolePropertyList>();
             Dictionary<int, RolePropertyList> rolePrimaryPropDictionary = new Dictionary<int, RolePropertyList>();
@@ -238,9 +237,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     productUser.InputJson = prodUserInputJson;
                 }
-                //roleProp = GetProductPropertiesRoles<RolePropertyList>(productUser.InputJson) as RolePropertyList;
-                //usePrimaryProperties = roleProp.UsePrimaryProperties;
-                //roleProp = AssignPrimaryPropertiesToProductBatchOnUserCreate(productUser, roleProp);
 
                 var integration = _integrationTypeFactory.GetIntegration(productUser.ProductId);
                 result = integration.CreateUser(productUser);
