@@ -330,9 +330,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         return "DeletedProductLogin";
                     }
 
-                    var productAddedToUserDate = userProductToADGroups.Count > 0 ? userProductToADGroups.Max(p => p.CreatedDate) : DateTime.MinValue;
-                    var userLastADUpdateDate = userAdGroups.Count > 0 ? userAdGroups.Max(p => p.CreatedDate) : DateTime.MinValue;
-                    if (userProductToADGroups.Any(userProductToAdGroup => userAdGroups.Any(p => p.ADGroupId == userProductToAdGroup.ADGroupId) && productAddedToUserDate > userLastADUpdateDate))
+                    if (userProductToADGroups.Any(userProductToAdGroup => userAdGroups.Any(p => p.ADGroupId == userProductToAdGroup.ADGroupId)))
                     {
                         return "";
                     }
@@ -349,7 +347,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             return "You are no longer in an ADGroup for this product.";
                         }
 
-                        if (userAdGroups.All(p => p.ADGroupId != existingProductAdGroupInfo.ADGroupId))
+                        if (userAdGroups.All(p => p.ADGroupId != existingProductAdGroupInfo?.ADGroupId))
                         {
                             ManageProductBase mpb = new ManageProductBase(productId, _userClaim, _productInternalSettingRepository, _productRepository);
                             mpb.UpdateProductSettingProductStatus(personaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
