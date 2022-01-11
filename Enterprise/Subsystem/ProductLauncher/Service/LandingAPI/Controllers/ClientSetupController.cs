@@ -959,7 +959,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 					logMessage.Append($"From Value: \"{o.Value}\" to \"{n.Value}\". ");
 
 				if (o.Expiration!= n.Expiration)
-					logMessage.Append($"From Expiration: \"{o.Expiration}\" to \"{n.Expiration}\". ");
+                {
+					var oldShortExpDate = o.Expiration.UtcDateTime.ToShortDateString();
+					var newShortExpDate = n.Expiration.UtcDateTime.ToShortDateString();
+
+					logMessage.Append($"From Expiration: \"{oldShortExpDate}\" to \"{newShortExpDate}\". ");
+                }
 
 				mcs.WriteToLog(0, logMessage.ToString());
 
