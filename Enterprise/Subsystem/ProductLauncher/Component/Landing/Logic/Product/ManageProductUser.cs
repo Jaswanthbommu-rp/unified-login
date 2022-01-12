@@ -193,7 +193,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             bool isUpdateUser = false;
             bool usePrimaryProperties = false;
-            RolePropertyList roleProp = new RolePropertyList();
+
+            Dictionary<int, RolePropertyList> rolePropDictionary = new Dictionary<int, RolePropertyList>();
+            Dictionary<int, RolePropertyList> rolePrimaryPropDictionary = new Dictionary<int, RolePropertyList>();
+            Dictionary<int, bool> usePrimaryPropertyFlags = new Dictionary<int, bool>();
+            string prodUserInputJson = string.Empty;
+
+            if (ValidateDictionaryMapping(productUser.InputJson))
+            {
+                prodUserInputJson = productUser.InputJson;
+                var roleProp = JsonConvert.DeserializeObject<Dictionary<string, RolePropertyList>>(productUser.InputJson.Trim());
+                foreach (var rolePropertyList in roleProp)
+                {
+                    //rolePropertyList.Key Convert to enum to get product id;
+                    rolePropDictionary.Add((int)Enum.Parse(typeof(ProductEnum), rolePropertyList.Key), rolePropertyList.Value);
+                }
+            }
+            else
+            {
+                var roleProp = JsonConvert.DeserializeObject<RolePropertyList>(productUser.InputJson);
+                rolePropDictionary.Add(productUser.ProductId, roleProp);
+
+            }
             try
             {
                 IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(productUser.AssignUserPersonaId, productUser.ProductId);
@@ -202,9 +223,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     isUpdateUser = true;
                 }
 
-                roleProp = GetProductPropertiesRoles<RolePropertyList>(productUser.InputJson) as RolePropertyList;
-                usePrimaryProperties = roleProp.UsePrimaryProperties;
-                roleProp = AssignPrimaryPropertiesToProductBatchOnUserCreate(productUser, roleProp);
+                foreach (var rolePropertyList in rolePropDictionary)
+                {
+                    usePrimaryPropertyFlags.Add(rolePropertyList.Key, rolePropertyList.Value.UsePrimaryProperties);
+                    var foundPrimaryProperties = AssignPrimaryPropertiesToProductBatchOnUserCreate(productUser, rolePropertyList.Value);
+                    if (foundPrimaryProperties != null)
+                    {
+                        rolePrimaryPropDictionary.Add(rolePropertyList.Key, foundPrimaryProperties);
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(prodUserInputJson))
+                {
+                    productUser.InputJson = prodUserInputJson;
+                }
 
                 var integration = _integrationTypeFactory.GetIntegration(productUser.ProductId);
                 result = integration.CreateUser(productUser);
@@ -223,7 +255,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // If result OK then update Success status else Error
             if (string.IsNullOrEmpty(result))
             {
-                SavePersonaProductProperties(usePrimaryProperties, productUser.AssignUserPersonaId, productUser.ProductId, roleProp, productUser.InputJson);
+                foreach (var rolePropertyList in rolePrimaryPropDictionary)
+                {
+                    var thisProductUserPrimaryProperty = usePrimaryPropertyFlags.FirstOrDefault(p => p.Key == rolePropertyList.Key).Value;
+                    SavePersonaProductProperties(thisProductUserPrimaryProperty, productUser.AssignUserPersonaId, rolePropertyList.Key, rolePropertyList.Value, productUser.InputJson);
+                }
+
                 isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Success);
             }
             else
