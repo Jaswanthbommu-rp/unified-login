@@ -1,12 +1,15 @@
-﻿
-CREATE PROCEDURE [Enterprise].[ListOrganizations_Ver01] 
+﻿CREATE PROCEDURE [Enterprise].[ListOrganizations_Ver01] 
 (
     @RealPageId UNIQUEIDENTIFIER = NULL,  
     @Filter VARCHAR(100) = NULL 
 )
 AS  
 BEGIN 
-
+	IF @Filter = ''
+	BEGIN
+		SET @Filter = NULL
+	END
+	
 	IF (@RealPageId IS NOT NULL)
 	BEGIN
 
