@@ -483,6 +483,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return integrationType.GetPropertiesByGroup(editorPersonaId, userPersonaId, propertyGroupId, datafilter);
         }
 
+        public ListResponse GetProductRights(long editorPersonaId, long userPersonaId, long partyId, int productId, RequestParameter datafilter)
+        {
+            ListResponse result = new ListResponse();
+            switch (productId)
+            {
+                case (int)ProductEnum.UtilityManagement:
+                    var manageProductRum = new ManageProductRum(_userClaims);
+                    result = manageProductRum.GetRoles(editorPersonaId, userPersonaId, datafilter);
+                    break;
+
+                default:
+                    break;
+            }
+            return result;
+        }
+
         public ListResponse GetProductOrganizations(long editorPersonaId, long userPersonaId, int productId, string organizationRoleId, string organizationType)
         {
             ListResponse result;
@@ -496,12 +512,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public ListResponse GetProductLocationGroups(long editorPersonaId, long userPersonaId, int productId, RequestParameter datafilter, bool assignedOnly = false, string userLoginName = "")
         {
             ListResponse result = new ListResponse();
-
+           
             switch (productId)
             {
                 case (int)ProductEnum.FinancialSuite:
                     var manageProductOneSiteAccounting = new ManageProductOneSiteAccounting(_userClaims);
                     result = manageProductOneSiteAccounting.GetUserPropertyGroups(editorPersonaId, userPersonaId, datafilter);
+                    break;
+                case (int)ProductEnum.UtilityManagement:
+                    var manageProductRum = new ManageProductRum(_userClaims);
+                    result = manageProductRum.GetUMGlobalRoles(editorPersonaId, userPersonaId, datafilter);
                     break;
                 default:
                     break;
@@ -509,15 +529,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (result.IsError)
             {
                 throw new Exception(result.ErrorReason);
-            }
-
+            }           
+           
             return result;
-        }
-
-        public ListResponse GetProductAccessTypes(long editorPersonaId, long userPersonaId, int productId)
-        {
-            var integrationType = _integrationTypeFactory.GetIntegration(productId);
-            return integrationType.GetAccessTypes(editorPersonaId, userPersonaId);
         }
 
         /// <summary>

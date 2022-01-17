@@ -15,6 +15,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
 {
     public partial class UserService
     {
+        private IEnumerable<Claim> GetClaimsFromUtilityManagement(long personaId)
+        {
+            var claimsToReturn = new List<Claim>();
+            IList<SamlAttributes> samlAttributes;
+
+            var userClaim = GetSamlUserClaimAndAttributesForProduct("productuserid", "UserId", personaId, ProductEnum.UtilityManagement, out samlAttributes);
+            if (samlAttributes != null)
+            {
+                claimsToReturn.Add(userClaim);
+
+                var productInternalSettingList = GetProductInternalSettings(ProductEnum.UtilityManagement);
+                var apiEndPoint = productInternalSettingList.First(a => a.Name.Equals("APIENDPOINT", StringComparison.OrdinalIgnoreCase)).Value;
+                var apiSecret = productInternalSettingList.First(a => a.Name.Equals("APISECRET", StringComparison.OrdinalIgnoreCase)).Value;
+                var nwpclientId = productInternalSettingList.First(a => a.Name.Equals("CLIENTID", StringComparison.OrdinalIgnoreCase)).Value;
+                var nwpIssueUri = productInternalSettingList.First(a => a.Name.Equals("TOKENURL", StringComparison.OrdinalIgnoreCase)).Value;
+
+                var accessToken = GetToken(nwpIssueUri, nwpclientId, apiSecret, "greenbooknwpapi");
+
+                var apiPathAndQuery = "/user/getuser?userId=" + userClaim.Value;
+                claimsToReturn.AddRange(GetClaimsFromProductApiEndpoint(apiEndPoint + apiPathAndQuery, accessToken, userClaim.Value));
+
+            }
+
+            return claimsToReturn;
+        }
+
         private IEnumerable<Claim> GetClaimsFromUnifiedAmenities(Persona persona)
         {
             var claims = new List<Claim>();
