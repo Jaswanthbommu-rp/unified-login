@@ -313,15 +313,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 WriteToDiagnosticLog(
                     $"{nameof(StandardV1ProductIntegration)}.{nameof(GetProductAccessTypes)} - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method.");
-                WriteToDiagnosticLog("GetProductAccessTypes Product 18 editorPersona id . At beginning of the method.");
                 string baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetAccessTypesEndpoint);
                 baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, SubjectUserDetails.ProductUserName);
-                WriteToDiagnosticLog("GetProductAccessTypes Product 18 editorPersona id . At End of the method.");
                 WriteToDiagnosticLog(
                     $"{nameof(StandardV1ProductIntegration)}.{nameof(GetProductAccessTypes)} - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At API calling - {baseUrlAndQuery}");
 
                 var accessTypes = GetResultFromApi<IList<ProductAccessType>>(baseUrlAndQuery);
-                WriteToDiagnosticLog("GetProductAccessTypes Product 18 editorPersona id . At End of the method.....");
                 WriteToDiagnosticLog(
                     $"{nameof(StandardV1ProductIntegration)}.{nameof(GetProductAccessTypes)} - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Received propertyList with count = {accessTypes?.Count}");
 
@@ -1355,15 +1352,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         protected string GetOperationEndPoint(ProductEntityEndpointKeyEnum entityType)
         {
-            WriteToDiagnosticLog("GetOperationEndPoint Product 18 editorPersona id . At beginning of the method.");
             // Get partial api query based on end point                         
             var partialApiQueryUrl = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals(entityType.ToString(), StringComparison.OrdinalIgnoreCase))?.Value;
-            WriteToDiagnosticLog("GetOperationEndPoint Product 18 editorPersona id . At beginning of the method.1");
             if (string.IsNullOrEmpty(partialApiQueryUrl))
             {
                 throw new Exception($"Unable to find setting for {entityType}");
             }
-            WriteToDiagnosticLog("GetOperationEndPoint Product 18 editorPersona id . At beginning of the method.2");
             return ProductApiBaseUrl + partialApiQueryUrl;
         }
 
