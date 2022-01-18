@@ -3324,7 +3324,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// default constructor
         /// </summary>
-        public LeadManagementProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.LeadManagement, userClaim, null, null)
+        public LeadManagementProduct(DefaultUserClaim userClaim, ProductEnum productType) : base((int)productType, userClaim, null, null)
         {
         }
 
