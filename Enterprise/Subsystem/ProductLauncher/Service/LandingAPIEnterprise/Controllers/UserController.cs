@@ -28,6 +28,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
 using RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Dto;
 using RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Helpers;
 using static RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers.SamlController;
+
 using Serilog;
 using Serilog.Events;
 using Swashbuckle.Swagger.Annotations;
@@ -1099,6 +1100,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [SwaggerResponse(HttpStatusCode.OK, Description = "Update successful", Type = typeof(HttpResponseMessage))]
         [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
         [Route("user/productuser/details")]
+        [AuthorizeScope("internalapi")]
         [HttpPut]
         public HttpResponseMessage UpdateProductUserAccountDetails([FromBody] ProductUserAccountDetails productUser)
         {
