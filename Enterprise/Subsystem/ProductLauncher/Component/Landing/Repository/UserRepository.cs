@@ -3708,7 +3708,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             continue;
                         }
 
-                        if (product.ProductId == (int)ProductEnum.AssetOptimizer)
+                        if (product.ProductId == (int)ProductEnum.AssetOptimizer && !string.IsNullOrEmpty(aoInputJsonString))
                         {
                             // special treatment for bundled AO products
                             SaveProductBatch(repository, product, createUserResponse, saveProductBatchError, CreateUserPersonaId, AssignUserPersonaId, realPageId, errorStatus, aoInputJsonString, batchProcessTypeId);
