@@ -4146,12 +4146,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             continue;
                         }
 
-                        if (product.ProductId == (int)ProductEnum.AssetOptimizer && !string.IsNullOrEmpty(aoInputJsonString))
+                        if (product.ProductId == (int)ProductEnum.AssetOptimizer)
                         {
                             // special treatment for bundled AO products
-                            SaveProductBatch(repository, product, createUserResponse,
-                                saveProductBatchError, createUserPersonaId, assignUserPersonaId,
-                                realPageId, errorStatus, aoInputJsonString, batchProcessTypeId);
+                            if (!string.IsNullOrEmpty(aoInputJsonString)) {
+                                SaveProductBatch(repository, product, createUserResponse,
+                                    saveProductBatchError, createUserPersonaId, assignUserPersonaId,
+                                    realPageId, errorStatus, aoInputJsonString, batchProcessTypeId);
+                            }
+                            
                         }
                         else
                         {
