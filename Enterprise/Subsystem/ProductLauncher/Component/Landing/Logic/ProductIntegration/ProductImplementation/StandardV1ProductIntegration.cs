@@ -883,50 +883,57 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         protected virtual string UpdateUser(IntegrationProductUser productUser, BatchProcessType batchProcessType)
         {
-            WriteToDiagnosticLog(
-                $"{nameof(StandardV1ProductIntegration)}.UpdateUser - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method.");
-
-            var baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.PutUserEndpoint);
-
-            WriteToDiagnosticLog(
-                $"{nameof(StandardV1ProductIntegration)}.UpdateUser - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling API - {baseUrlAndQuery}.");
-
-            // dump API call info
-            DumpApiCallInfoToDiagnosticLog(baseUrlAndQuery, productUser);
-
-            var integration = new ApiIntegration(_httpClient, baseUrlAndQuery);
-            var result = integration.PutEntity<IntegrationProductUser>(productUser);
-
-            if (result.IsSuccessStatusCode)
+            try
             {
                 WriteToDiagnosticLog(
-                    $"{nameof(StandardV1ProductIntegration)}.UpdateUser - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Received success. Updating Greenbook mapping.");
+                $"{nameof(StandardV1ProductIntegration)}.UpdateUser - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method.");
 
-                if (batchProcessType == BatchProcessType.UserTypeAdminToRegular || batchProcessType ==
-                    BatchProcessType.UserTypeRegularToAdmin || batchProcessType == BatchProcessType.UserTypeAdminToExternal || batchProcessType == BatchProcessType.UserTypeExternalToAdmin)
+                var baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.PutUserEndpoint);
+
+                WriteToDiagnosticLog(
+                    $"{nameof(StandardV1ProductIntegration)}.UpdateUser - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling API - {baseUrlAndQuery}.");
+
+                // dump API call info
+                DumpApiCallInfoToDiagnosticLog(baseUrlAndQuery, productUser);
+
+                var integration = new ApiIntegration(_httpClient, baseUrlAndQuery);
+                var result = integration.PutEntity<IntegrationProductUser>(productUser);
+
+                if (result.IsSuccessStatusCode)
                 {
-                    // activity logging
-                    ProductActivityLogger.WriteUpdateUserTypeActivityLog(EditorUserDetails, SubjectUserDetails,
-                        BlueBookGbProductMap.Name, BlueBookGbProductMap.BooksProductCode, CorrelationId, batchProcessType);
+                    WriteToDiagnosticLog(
+                        $"{nameof(StandardV1ProductIntegration)}.UpdateUser - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Received success. Updating Greenbook mapping.");
+
+                    if (batchProcessType == BatchProcessType.UserTypeAdminToRegular || batchProcessType ==
+                        BatchProcessType.UserTypeRegularToAdmin || batchProcessType == BatchProcessType.UserTypeAdminToExternal || batchProcessType == BatchProcessType.UserTypeExternalToAdmin)
+                    {
+                        // activity logging
+                        ProductActivityLogger.WriteUpdateUserTypeActivityLog(EditorUserDetails, SubjectUserDetails,
+                            BlueBookGbProductMap.Name, BlueBookGbProductMap.BooksProductCode, CorrelationId, batchProcessType);
+                    }
+
+                    _dataCollector.UpdateProductSettingProductStatus(SubjectUserDetails.PersonaId, PRODUCT_SETTINGTYPE_STATUS, ProductId, (int)ProductBatchStatusType.Success);
+
+                    if (!ProductAcceptsUniqueProductUserName)
+                        UpdateSamlUserAttribute(SubjectUserDetails.PersonaId, ProductId, productUser.UserId, productUser.LoginName, productUser.Email);
+
+                    if (productUser.EmployeeAdditional != null)
+                    {
+                        _dataCollector.AddUpdateEmployeeProductADGroupMapping(SubjectUserDetails.PersonaId, ProductId, productUser.EmployeeAdditional.AzureADGroupId);
+                    }
+
+                    return string.Empty;
                 }
-
-                _dataCollector.UpdateProductSettingProductStatus(SubjectUserDetails.PersonaId, PRODUCT_SETTINGTYPE_STATUS, ProductId, (int) ProductBatchStatusType.Success);
-
-                if (!ProductAcceptsUniqueProductUserName)
-                    UpdateSamlUserAttribute(SubjectUserDetails.PersonaId, ProductId, productUser.UserId, productUser.LoginName, productUser.Email);
-
-                if (productUser.EmployeeAdditional != null)
-                {
-                    _dataCollector.AddUpdateEmployeeProductADGroupMapping(SubjectUserDetails.PersonaId, ProductId, productUser.EmployeeAdditional.AzureADGroupId);
-                }
-
-                return string.Empty;
+                Dictionary<string, object> logData = new Dictionary<string, object> { { "result", result } };
+                WriteToErrorLog(
+                    $"{nameof(StandardV1ProductIntegration)}.UpdateUser - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}.", logData);
+                return result.Content;
             }
-            Dictionary<string, object> logData = new Dictionary<string, object> {{"result", result}};
-            WriteToErrorLog(
-                $"{nameof(StandardV1ProductIntegration)}.UpdateUser - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}.", logData);
-
-            return result.Content;
+            catch (Exception ex)
+            {
+                WriteToErrorLog($"{nameof(StandardV1ProductIntegration)}.UpdateUser - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Error - {ex.Message}", null, ex);
+                return ex.Message;
+            }
         }
 
         /// <summary>
