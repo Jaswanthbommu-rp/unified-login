@@ -1,26 +1,19 @@
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Swagger;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
-using Swashbuckle.Application;
-using System;
-using System.IO;
-using System.Linq;
-using System.Reflection;
 using System.Web.Http;
-using System.Web.Http.Description;
-using System.Xml.XPath;
+using WebActivatorEx;
+using RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI;
+using Swashbuckle.Application;
+
+[assembly: PreApplicationStartMethod(typeof(SwaggerConfig), "Register")]
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI
 {
-	public class SwaggerConfig
+    public class SwaggerConfig
     {
-        private static string routePath = "/api";
-
-        public static void Register(HttpConfiguration config)
+        public static void Register()
         {
-			var thisAssembly = typeof(SwaggerConfig).Assembly;
+            var thisAssembly = typeof(SwaggerConfig).Assembly;
 
-			config
+            GlobalConfiguration.Configuration
                 .EnableSwagger(c =>
                     {
                         // By default, the service root url is inferred from the request used to access the docs.
@@ -28,7 +21,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI
                         // resolve correctly. You can workaround this by providing your own code to determine the root URL.
                         //
                         //c.RootUrl(req => GetRootUrlFromAppConfig());
-                        c.RootUrl((req) => new SwaggerUtil().GetUrl(req, routePath));
 
                         // If schemes are not explicitly provided in a Swagger 2.0 document, then the scheme used to access
                         // the docs is taken as the default. If your API supports multiple schemes and you want to be explicit
@@ -40,8 +32,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI
                         // hold additional metadata for an API. Version and title are required but you can also provide
                         // additional fields by chaining methods off SingleApiVersion.
                         //
-                        //c.SingleApiVersion("v1", typeof(SwaggerConfig).Namespace);
-                        c.SingleApiVersion("v1", "RealPage Unified Login API");
+                        c.SingleApiVersion("v1", "RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI");
+
+                        // If you want the output Swagger docs to be indented properly, enable the "PrettyPrint" option.
+                        //
+                        //c.PrettyPrint();
 
                         // If your API has multiple versions, use "MultipleApiVersions" instead of "SingleApiVersion".
                         // In this case, you must provide a lambda that tells Swashbuckle which actions should be
@@ -66,64 +61,47 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI
                         //c.BasicAuth("basic")
                         //    .Description("Basic HTTP Authentication");
                         //
-                        // NOTE: You must also configure 'EnableApiKeySupport' below in the SwaggerUI section
+						// NOTE: You must also configure 'EnableApiKeySupport' below in the SwaggerUI section
                         //c.ApiKey("apiKey")
                         //    .Description("API Key Authentication")
                         //    .Name("apiKey")
                         //    .In("header");
                         //
-                        // for client auth
                         //c.OAuth2("oauth2")
-                        //    .Description("OAuth2 Client credentials Grant Flow")
-                        //    .Flow("application")
-                        //    .TokenUrl(ConfigReader.GetIssuerUri + "/connect/token")
-                        //    //.AuthorizationUrl(ConfigReader.GetIssuerUri + "/connect/authorize")
-                        //    .Scopes(scopes => { scopes.Add("rplandingapiserver", "Access to the RealPage Landing API"); })
-                        //;
-                        // for client auth
-                        c.OAuth2("oauth2")
-                            .Description("OAuth2 Implicit Grant")
-                            .Flow("implicit")
-                            .AuthorizationUrl($"{ConfigReader.GetIssuerUri}/connect/authorize")
-                            .Scopes(scopes =>
-                            {
-                                scopes.Add("rplandingapi", "Access to the RealPage Landing API");
-	                            scopes.Add("userinfoapi", "Access to the User Info API");
-	                            scopes.Add("unifiedsettingsapi", "Access to the Unified Settings API");
-								scopes.Add("companyfunctions", "Access to the RealPage Landing API");
-							});
-	                    c.ApiKey("Token")
-		                    .Description("Enter client bearer token here")
-		                    .Name("Authorization")
-		                    .In("header");
-						// Set this flag to omit descriptions for any actions decorated with the Obsolete attribute
-						//c.IgnoreObsoleteActions();
+                        //    .Description("OAuth2 Implicit Grant")
+                        //    .Flow("implicit")
+                        //    .AuthorizationUrl("http://petstore.swagger.wordnik.com/api/oauth/dialog")
+                        //    //.TokenUrl("https://tempuri.org/token")
+                        //    .Scopes(scopes =>
+                        //    {
+                        //        scopes.Add("read", "Read access to protected resources");
+                        //        scopes.Add("write", "Write access to protected resources");
+                        //    });
 
-						// Each operation be assigned one or more tags which are then used by consumers for various reasons.
-						// For example, the swagger-ui groups operations according to the first tag of each operation.
-						// By default, this will be controller name but you can use the "GroupActionsBy" option to
-						// override with any value.
-						//
-						//c.GroupActionsBy(apiDesc => apiDesc.HttpMethod.ToString());
+                        // Set this flag to omit descriptions for any actions decorated with the Obsolete attribute
+                        //c.IgnoreObsoleteActions();
 
-						// You can also specify a custom sort order for groups (as defined by "GroupActionsBy") to dictate
-						// the order in which operations are listed. For example, if the default grouping is in place
-						// (controller name) and you specify a descending alphabetic sort order, then actions from a
-						// ProductsController will be listed before those from a CustomersController. This is typically
-						// used to customize the order of groupings in the swagger-ui.
-						//
-						//c.OrderActionGroupsBy(new DescendingAlphabeticComparer());
+                        // Each operation be assigned one or more tags which are then used by consumers for various reasons.
+                        // For example, the swagger-ui groups operations according to the first tag of each operation.
+                        // By default, this will be controller name but you can use the "GroupActionsBy" option to
+                        // override with any value.
+                        //
+                        //c.GroupActionsBy(apiDesc => apiDesc.HttpMethod.ToString());
 
-						// If you annotate Controllers and API Types with
-						// Xml comments (http://msdn.microsoft.com/en-us/library/b2s063f7(v=vs.110).aspx), you can incorporate
-						// those comments into the generated docs and UI. You can enable this by providing the path to one or
-						// more Xml comment files.
-						//
+                        // You can also specify a custom sort order for groups (as defined by "GroupActionsBy") to dictate
+                        // the order in which operations are listed. For example, if the default grouping is in place
+                        // (controller name) and you specify a descending alphabetic sort order, then actions from a
+                        // ProductsController will be listed before those from a CustomersController. This is typically
+                        // used to customize the order of groupings in the swagger-ui.
+                        //
+                        //c.OrderActionGroupsBy(new DescendingAlphabeticComparer());
 
-						//c.IncludeXmlComments(string.Format(@"{0}\bin\RPLandingAPI.XML",
-						//   System.AppDomain.CurrentDomain.BaseDirectory));
-
-						ImportXmlComments(c);
+                        // If you annotate Controllers and API Types with
+                        // Xml comments (http://msdn.microsoft.com/en-us/library/b2s063f7(v=vs.110).aspx), you can incorporate
+                        // those comments into the generated docs and UI. You can enable this by providing the path to one or
+                        // more Xml comment files.
+                        //
+                        //c.IncludeXmlComments(GetXmlCommentsPath());
 
                         // Swashbuckle makes a best attempt at generating Swagger compliant JSON schemas for the various types
                         // exposed in your API. However, there may be occasions when more control of the output is needed.
@@ -149,23 +127,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI
                         // Swagger docs and UI. However, if you have multiple types in your API with the same class name, you'll
                         // need to opt out of this behavior to avoid Schema Id conflicts.
                         //
-                        c.UseFullTypeNameInSchemaIds();
+                        //c.UseFullTypeNameInSchemaIds();
 
                         // Alternatively, you can provide your own custom strategy for inferring SchemaId's for
                         // describing "complex" types in your API.
-                        //  
+                        //
                         //c.SchemaId(t => t.FullName.Contains('`') ? t.FullName.Substring(0, t.FullName.IndexOf('`')) : t.FullName);
-                        c.OperationFilter(() => new ExamplesOperationFilter());
+
                         // Set this flag to omit schema property descriptions for any type properties decorated with the
-                        // Obsolete attribute 
+                        // Obsolete attribute
                         //c.IgnoreObsoleteProperties();
 
                         // In accordance with the built in JsonSerializer, Swashbuckle will, by default, describe enums as integers.
                         // You can change the serializer behavior by configuring the StringToEnumConverter globally or for a given
                         // enum type. Swashbuckle will honor this change out-of-the-box. However, if you use a different
                         // approach to serialize enums as strings, you can also force Swashbuckle to describe them as strings.
-                        // 
-                        c.DescribeAllEnumsAsStrings();
+                        //
+                        //c.DescribeAllEnumsAsStrings();
 
                         // Similar to Schema filters, Swashbuckle also supports Operation and Document filters:
                         //
@@ -178,10 +156,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI
                         // to inspect some attribute on each action and infer which (if any) OAuth2 scopes are required
                         // to execute the operation
                         //
-                        // for client auth
-                        //c.OperationFilter<AssignOAuth2SettingsServer>();
-                        // for client auth
-                        c.OperationFilter<AssignOAuth2Settings>();
+                        //c.OperationFilter<AssignOAuth2SecurityRequirements>();
 
                         // Post-modify the entire Swagger document by wiring up one or more Document filters.
                         // This gives full control to modify the final SwaggerDocument. You should have a good understanding of
@@ -193,7 +168,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI
                         // In contrast to WebApi, Swagger 2.0 does not include the query string component when mapping a URL
                         // to an action. As a result, Swashbuckle will raise an exception if it encounters multiple actions
                         // with the same path (sans query string) and HTTP method. You can workaround this by providing a
-                        // custom strategy to pick a winner or merge the descriptions for the purposes of the Swagger docs 
+                        // custom strategy to pick a winner or merge the descriptions for the purposes of the Swagger docs
                         //
                         //c.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
 
@@ -204,6 +179,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI
                     })
                 .EnableSwaggerUi(c =>
                     {
+                        // Use the "DocumentTitle" option to change the Document title.
+                        // Very helpful when you have multiple Swagger pages open, to tell them apart.
+                        //
+                        //c.DocumentTitle("My Swagger UI");
+
                         // Use the "InjectStylesheet" option to enrich the UI with one or more additional CSS stylesheets.
                         // The file must be included in your project as an "Embedded Resource", and then the resource's
                         // "Logical Name" is passed to the method as shown below.
@@ -226,7 +206,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI
                         // in a badge at the bottom of the page. Use these options to set a different validator URL or to disable the
                         // feature entirely.
                         //c.SetValidatorUrl("http://localhost/validator");
-                        c.DisableValidator();
+                        //c.DisableValidator();
 
                         // Use this option to control how the Operation listing is displayed.
                         // It can be set to "None" (default), "List" (shows operations for each resource),
@@ -245,9 +225,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI
                         // in your project as an "Embedded Resource", and then the resource's "Logical Name" is passed to
                         // the method as shown below.
                         //
-                        // c.CustomAsset("index", containingAssembly, "YourWebApiProject.SwaggerExtensions.index.html");
-                        //c.CustomAsset("index", thisAssembly, Assembly.GetExecutingAssembly().GetName().Name + ".Content.CustomSwagger.html");
-
+                        //c.CustomAsset("index", containingAssembly, "YourWebApiProject.SwaggerExtensions.index.html");
 
                         // If your API has multiple versions and you've applied the MultipleApiVersions setting
                         // as described above, you can also enable a select box in the swagger-ui, that displays
@@ -266,64 +244,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI
                         //    appName: "Swagger UI"
                         //    //additionalQueryStringParams: new Dictionary<string, string>() { { "foo", "bar" } }
                         //);
-                        // for client auth
-                        //c.EnableOAuth2Support(
-                        //        clientId: "rplandingapiserver",
-                        //        clientSecret: "B06AEA04-383B-4AB2-A46A-42218940C811",
-                        //        realm: "RealPage",
-                        //        appName: "Swagger UI"
-                        // );
-                        // for client auth
-                        c.EnableOAuth2Support("rplandingapi", "RealPage", "Swagger UI");
-	                    c.EnableApiKeySupport("Authorization", "header");
-						// If your API supports ApiKey, you can override the default values.
-						// "apiKeyIn" can either be "query" or "header"                                                
-						//
-						//c.EnableApiKeySupport("apiKey", "header");
-					});
-        }
 
-        /// <summary>
-        /// Used to import all RealPage*.xml comment files into the system
-        /// </summary>
-        /// <param name="c"></param>
-        private static void ImportXmlComments(SwaggerDocsConfig c)
-        {
-            //System.AppDomain.CurrentDomain.BaseDirectory
-            DirectoryInfo di = new DirectoryInfo(System.AppDomain.CurrentDomain.BaseDirectory + @"\bin");
-            FileInfo[] xmlFiles = di.GetFiles("RP.Enterprise*.xml");
-            foreach (FileInfo fi in xmlFiles)
-            {
-                // including new alternative to loading xml docs
-                //c.IncludeXmlComments(fi.FullName);
-                c.IncludeXmlComments(new Func<XPathDocument>(() => { return new XPathDocument(fi.FullName); }));
-            }
-        }
-
-        /// <summary>
-        /// This method is used to decorate a controller or class with the targeted api version to use when building the documentation for Swagger. The controllers methods will be included
-        /// if it does not contain a VersionedRouteAttribute attribute or if the attribute matches the version being requested.
-        /// </summary>
-        /// <param name="apiDesc"></param>
-        /// <param name="targetApiVersion"></param>
-        /// <returns></returns>
-        public static bool ResolveVersionSupportByRouteConstraint(ApiDescription apiDesc, string targetApiVersion)
-        {
-            //var attr = apiDesc.ActionDescriptor.GetCustomAttributes<VersionedRouteAttribute>().FirstOrDefault();
-            var attr = apiDesc.ActionDescriptor.ControllerDescriptor.GetCustomAttributes<VersionedRouteAttribute>().FirstOrDefault();
-            if (attr == null)
-            {
-                return true;
-            }
-
-            int targetVersion;
-
-            if (int.TryParse(targetApiVersion.TrimStart('v'), out targetVersion))
-            {
-                return attr.AllowedVersion == targetVersion;
-            };
-
-            return true;
+                        // If your API supports ApiKey, you can override the default values.
+                        // "apiKeyIn" can either be "query" or "header"
+                        //
+                        //c.EnableApiKeySupport("apiKey", "header");
+                    });
         }
     }
 }

@@ -60,7 +60,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise
 
             if (!(ConfigReader.Environment == "PROD"))
             {
-                SwaggerConfig.Register(config);
+                //SwaggerConfig.Register(config);
+                SwaggerConfig.Register();
+
             }
 
             var formatters = config.Formatters;
