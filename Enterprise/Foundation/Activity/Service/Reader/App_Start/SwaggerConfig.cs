@@ -1,21 +1,19 @@
 using System.Web.Http;
+using WebActivatorEx;
+using RP.Enterprise.Foundation.Activity.Service.Logging.Reader;
 using Swashbuckle.Application;
-using System;
-using System.IO;
-using System.Xml.XPath;
-using RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Helper;
- 
+
+[assembly: PreApplicationStartMethod(typeof(SwaggerConfig), "Register")]
+
 namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader
 {
     public class SwaggerConfig
     {
-        private static string routePath = "";
-
-        public static void Register(HttpConfiguration config)
+        public static void Register()
         {
             var thisAssembly = typeof(SwaggerConfig).Assembly;
 
-            config
+            GlobalConfiguration.Configuration
                 .EnableSwagger(c =>
                     {
                         // By default, the service root url is inferred from the request used to access the docs.
@@ -23,7 +21,6 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader
                         // resolve correctly. You can workaround this by providing your own code to determine the root URL.
                         //
                         //c.RootUrl(req => GetRootUrlFromAppConfig());
-                        c.RootUrl((req) => new SwaggerUtil().GetUrl(req, routePath));
 
                         // If schemes are not explicitly provided in a Swagger 2.0 document, then the scheme used to access
                         // the docs is taken as the default. If your API supports multiple schemes and you want to be explicit
@@ -35,8 +32,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader
                         // hold additional metadata for an API. Version and title are required but you can also provide
                         // additional fields by chaining methods off SingleApiVersion.
                         //
-                        //c.SingleApiVersion("v1", "RP.Enterprise.Foundation.Activity.Service.Logging.Reader");
-                        c.SingleApiVersion("v1", "Activity Reader");
+                        c.SingleApiVersion("v1", "RP.Enterprise.Foundation.Activity.Service.Logging.Reader");
 
                         // If you want the output Swagger docs to be indented properly, enable the "PrettyPrint" option.
                         //
@@ -65,7 +61,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader
                         //c.BasicAuth("basic")
                         //    .Description("Basic HTTP Authentication");
                         //
-                        // NOTE: You must also configure 'EnableApiKeySupport' below in the SwaggerUI section
+						// NOTE: You must also configure 'EnableApiKeySupport' below in the SwaggerUI section
                         //c.ApiKey("apiKey")
                         //    .Description("API Key Authentication")
                         //    .Name("apiKey")
@@ -81,20 +77,6 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader
                         //        scopes.Add("read", "Read access to protected resources");
                         //        scopes.Add("write", "Write access to protected resources");
                         //    });
-
-                        c.OAuth2("oauth2")
-                            .Description("OAuth2 Implicit Grant")
-                            .Flow("implicit")
-                            .AuthorizationUrl($"{ConfigReader.GetIssuerUri}/connect/authorize")
-                            .Scopes(scopes =>
-                            {
-                                scopes.Add("activityreader", "Access to the RealPage Activity API");
-                                scopes.Add("companyfunctions", "Access to the delete activity function");
-                            });
-                        c.ApiKey("Token")
-                            .Description("Enter client bearer token here")
-                            .Name("Authorization")
-                            .In("header");
 
                         // Set this flag to omit descriptions for any actions decorated with the Obsolete attribute
                         //c.IgnoreObsoleteActions();
@@ -120,8 +102,6 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader
                         // more Xml comment files.
                         //
                         //c.IncludeXmlComments(GetXmlCommentsPath());
-
-                        ImportXmlComments(c);
 
                         // Swashbuckle makes a best attempt at generating Swagger compliant JSON schemas for the various types
                         // exposed in your API. However, there may be occasions when more control of the output is needed.
@@ -154,8 +134,6 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader
                         //
                         //c.SchemaId(t => t.FullName.Contains('`') ? t.FullName.Substring(0, t.FullName.IndexOf('`')) : t.FullName);
 
-                       // c.OperationFilter(() => new ExamplesOperationFilter());
-
                         // Set this flag to omit schema property descriptions for any type properties decorated with the
                         // Obsolete attribute
                         //c.IgnoreObsoleteProperties();
@@ -165,7 +143,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader
                         // enum type. Swashbuckle will honor this change out-of-the-box. However, if you use a different
                         // approach to serialize enums as strings, you can also force Swashbuckle to describe them as strings.
                         //
-                         c.DescribeAllEnumsAsStrings();
+                        //c.DescribeAllEnumsAsStrings();
 
                         // Similar to Schema filters, Swashbuckle also supports Operation and Document filters:
                         //
@@ -179,7 +157,6 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader
                         // to execute the operation
                         //
                         //c.OperationFilter<AssignOAuth2SecurityRequirements>();
-                        c.OperationFilter<AssignOAuth2Settings>();
 
                         // Post-modify the entire Swagger document by wiring up one or more Document filters.
                         // This gives full control to modify the final SwaggerDocument. You should have a good understanding of
@@ -229,7 +206,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader
                         // in a badge at the bottom of the page. Use these options to set a different validator URL or to disable the
                         // feature entirely.
                         //c.SetValidatorUrl("http://localhost/validator");
-                        c.DisableValidator();
+                        //c.DisableValidator();
 
                         // Use this option to control how the Operation listing is displayed.
                         // It can be set to "None" (default), "List" (shows operations for each resource),
@@ -268,30 +245,11 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader
                         //    //additionalQueryStringParams: new Dictionary<string, string>() { { "foo", "bar" } }
                         //);
 
-                        c.EnableOAuth2Support("activityreader", "RealPage", "Swagger UI");
-                        c.EnableApiKeySupport("Authorization", "header");
-                        
                         // If your API supports ApiKey, you can override the default values.
                         // "apiKeyIn" can either be "query" or "header"
                         //
+                        //c.EnableApiKeySupport("apiKey", "header");
                     });
-        }
-
-        /// <summary>
-        /// Used to import all RealPage*.xml comment files into the system
-        /// </summary>
-        /// <param name="c"></param>
-        private static void ImportXmlComments(SwaggerDocsConfig c)
-        {
-            //System.AppDomain.CurrentDomain.BaseDirectory
-            DirectoryInfo di = new DirectoryInfo(System.AppDomain.CurrentDomain.BaseDirectory + @"\bin");
-            FileInfo[] xmlFiles = di.GetFiles("RP.Enterprise*.xml");
-            foreach (FileInfo fi in xmlFiles)
-            {
-                // including new alternative to loading xml docs
-                //c.IncludeXmlComments(fi.FullName);
-                c.IncludeXmlComments(new Func<XPathDocument>(() => { return new XPathDocument(fi.FullName); }));
-            }
         }
     }
 }
