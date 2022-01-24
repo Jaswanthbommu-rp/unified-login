@@ -36,6 +36,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private readonly IManageProductOneSite _manageProductOneSite;
         readonly IManageUnifiedLogin _manageUnifiedLogin;
         private IManageProductUser _manageProductUser;
+        private IUserRepository _userRepository;
         IProductInternalSettingRepository _productInternalSettingRepository;
         #region Ctor
 
@@ -57,7 +58,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _manageUnifiedLogin = new ManageUnifiedLogin(_userClaim);
             _manageProductOneSite = new ManageProductOneSite(_userClaim);
             _manageProductUser = new ManageProductUser(_userClaim);
-
+            _userRepository = new UserRepository(_userClaim);
             var manageProduct = new ManageProduct(_userClaim);
             _productInternalSettingRepository = new ProductInternalSettingRepository();
             _integrationTypeFactory = new IntegrationTypeFactory(manageProduct, _manageUnifiedLogin, _manageProductOneSite, _productRepository, _productInternalSettingRepository, _userClaim);
@@ -84,6 +85,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _manageProductOneSite = new ManageProductOneSite(repository, userClaim, messageHandler, oneSiteProductService);
             _manageProductUser = new ManageProductUser(repository, userClaim, messageHandler, oneSiteProductService);
             _manageOrganization = new ManageOrganization(repository, userClaim, messageHandler, _manageProductOneSite);
+            _userRepository = new UserRepository(repository, userClaim, messageHandler);
 
             var manageProduct = new ManageProduct(repository, userClaim, messageHandler);
             var productInternalSettingRepository = new ProductInternalSettingRepository(repository);
@@ -231,7 +233,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             if (userPersonaOrganizationList != null && userPersonaOrganizationList.Count > 0)
             {
                 //First get count of ad groups and products for employee persona
-                //if company does'nt have product do not create second persona
+                //if company doesn't have product do not create second persona
                 //rethink how  return correct persona based on ad group data
                 var userProductAdGroups = _productRepository.GetPersonaProductsAdGroupsCount(userClaim.PersonaId);
                 //Get Organization product id's
@@ -245,9 +247,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     maxCount = matchedProductData.Max(x => x.ADGroupCount);
                 }
                 //Get User persona count
-                int orgPersonaCount = userPersonaOrganizationList.Where(x => x.OrganizationRealPageId == companyRealPageId).Count();
+                var orgPersonaList = userPersonaOrganizationList.Where(x => x.OrganizationRealPageId == companyRealPageId).ToList();
+                int orgPersonaCount = orgPersonaList.Count();
+                var isRealPageEmployeeInOrg = true;
 
-                var user = userPersonaOrganizationList.Where(x => x.OrganizationRealPageId == companyRealPageId).FirstOrDefault();
+                foreach (var userPersona in orgPersonaList)
+                {
+                    var userOrgInfo = _userRepository.GetUserDetails(userPersona.PersonaId);
+                    // see if the employee already exists in the company but not as the new isrpemployee type
+                    if (userOrgInfo != null && !userOrgInfo.IsRPEmployee)
+                    {
+                        isRealPageEmployeeInOrg = false;
+                        break;
+                    }
+                }
+                
+                var user = userPersonaOrganizationList.FirstOrDefault(x => x.OrganizationRealPageId == companyRealPageId);
                 if (user != null)
                 {
                     employeePersona.PersonaId = user.PersonaId;
@@ -258,7 +273,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     orgPersonaCount++;
                 }
 
-                if (maxCount > 0 && orgPersonaCount > 0)
+                if (isRealPageEmployeeInOrg && maxCount > 0 && orgPersonaCount > 0)
                 {
                     //add new persons based on max count and existing persona count
                     int newPersonasTobeCreatedCount = 0;                  
@@ -330,9 +345,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         return "DeletedProductLogin";
                     }
 
-                    var productAddedToUserDate = userProductToADGroups.Count > 0 ? userProductToADGroups.Max(p => p.CreatedDate) : DateTime.MinValue;
-                    var userLastADUpdateDate = userAdGroups.Count > 0 ? userAdGroups.Max(p => p.CreatedDate) : DateTime.MinValue;
-                    if (userProductToADGroups.Any(userProductToAdGroup => userAdGroups.Any(p => p.ADGroupId == userProductToAdGroup.ADGroupId) && productAddedToUserDate > userLastADUpdateDate))
+                    if (userProductToADGroups.Any(userProductToAdGroup => userAdGroups.Any(p => p.ADGroupId == userProductToAdGroup.ADGroupId)))
                     {
                         return "";
                     }
@@ -349,7 +362,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             return "You are no longer in an ADGroup for this product.";
                         }
 
-                        if (userAdGroups.All(p => p.ADGroupId != existingProductAdGroupInfo.ADGroupId))
+                        if (userAdGroups.All(p => p.ADGroupId != existingProductAdGroupInfo?.ADGroupId))
                         {
                             ManageProductBase mpb = new ManageProductBase(productId, _userClaim, _productInternalSettingRepository, _productRepository);
                             mpb.UpdateProductSettingProductStatus(personaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);

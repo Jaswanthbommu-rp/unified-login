@@ -481,7 +481,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         {
             productLoginResponseDenied = null;
 
-            if (string.IsNullOrEmpty(_userClaims.ImpersonatedByName) || !_userClaims.IsRPEmployee)
+            if (string.IsNullOrEmpty(_userClaims.ImpersonatedByName))
             {
                 return false;
             }

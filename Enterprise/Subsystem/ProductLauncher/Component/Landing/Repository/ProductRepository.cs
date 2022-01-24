@@ -2210,7 +2210,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             List<string> editorRights = _userClaim.Rights;
             foreach (var s in productFamily.Solutions)
             {
-                s.LockOnProductAccess = false;
+                //s.LockOnProductAccess = false; don't override the setting from the database
                 var productAccessRight = lockOnProductAccessRights.FirstOrDefault(f => f.ProductId == s.ProductId)?.Value;
                 var productcheckADGroupUserMgmt = checkADGroupUserMgmt.FirstOrDefault(p => p.ProductId == s.ProductId);
                 if (productcheckADGroupUserMgmt != null && productcheckADGroupUserMgmt.Value == "1" && impersonatePersonaId > 0)

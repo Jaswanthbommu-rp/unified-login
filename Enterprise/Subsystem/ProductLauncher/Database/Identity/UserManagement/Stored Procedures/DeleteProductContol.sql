@@ -7,6 +7,9 @@ BEGIN
 	DELETE FROM UserManagement.ControlAttribute  
 	WHERE ControlId = @controlId  
   
+	DELETE FROM UserManagement.ProductPageControl
+	WHERE ControlId = @controlId
+
 	DELETE FROM UserManagement.Control  
 	WHERE ControlId = @controlId  
  END
