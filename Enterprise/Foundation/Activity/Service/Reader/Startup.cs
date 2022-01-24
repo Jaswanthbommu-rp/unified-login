@@ -43,7 +43,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader
 
             if (!ConfigReader.Environment.Equals("PROD", StringComparison.OrdinalIgnoreCase))
             {
-                    SwaggerConfig.Register(config);
+                    SwaggerConfig.Register();
             }
 
 
