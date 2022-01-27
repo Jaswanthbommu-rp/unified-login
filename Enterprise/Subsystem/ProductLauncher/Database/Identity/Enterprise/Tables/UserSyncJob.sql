@@ -8,3 +8,6 @@
 	CONSTRAINT [FK_UserSyncJob_Persona] FOREIGN KEY ([PersonaId]) REFERENCES [Person].[Persona]([PersonaId]),
 	CONSTRAINT [FK_UserSyncJob_StatusType] FOREIGN KEY ([StatusTypeId]) REFERENCES [Enterprise].[StatusType]([StatusTypeId])
 )
+GO
+CREATE NONCLUSTERED INDEX [ix_Enterprise_UserSyncJob_PersonaId] ON [Enterprise].[UserSyncJob] ([PersonaId])
+GO
