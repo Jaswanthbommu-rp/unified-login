@@ -1370,9 +1370,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         private List<UserAccessGroup> GetUserAccessGroupsByAcessType(AccessType accessType, bool isSuperUser = false)
         {
+            int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
+            string rolesEndpoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "GETROLEENDPOINT").Value;
+
             // get access groups from Vendor Credentialing product
             var allUserAccessGroups = GetResultFromApi<List<UserAccessGroup>>(_accessToken,
-                $"{_apiEndPoint}/api/UserAccessGroups", false);
+                $"{_apiEndPoint}/{string.Format(rolesEndpoint, companyInstanceSourceId)}", false);
 
             if (allUserAccessGroups != null)
             {
