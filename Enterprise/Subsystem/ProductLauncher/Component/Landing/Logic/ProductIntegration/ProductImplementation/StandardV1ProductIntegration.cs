@@ -313,15 +313,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 WriteToDiagnosticLog(
                     $"{nameof(StandardV1ProductIntegration)}.{nameof(GetProductAccessTypes)} - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method.");
-
+                
                 string baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetAccessTypesEndpoint);
                 baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, SubjectUserDetails.ProductUserName);
-
+                
                 WriteToDiagnosticLog(
                     $"{nameof(StandardV1ProductIntegration)}.{nameof(GetProductAccessTypes)} - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At API calling - {baseUrlAndQuery}");
 
                 var accessTypes = GetResultFromApi<IList<ProductAccessType>>(baseUrlAndQuery);
-
+                
                 WriteToDiagnosticLog(
                     $"{nameof(StandardV1ProductIntegration)}.{nameof(GetProductAccessTypes)} - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Received propertyList with count = {accessTypes?.Count}");
 
