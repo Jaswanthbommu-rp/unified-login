@@ -1377,30 +1377,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var allUserAccessGroups = GetResultFromApi<List<UserAccessGroup>>(_accessToken,
                 $"{_apiEndPoint}/{string.Format(rolesEndpoint, companyInstanceSourceId)}", false);
 
-            if (allUserAccessGroups != null)
-            {
-                // always remove CliVndInfo from access groups
-                allUserAccessGroups.RemoveAll(x => x.AccessGroupCode.Equals("CliVndInfo", StringComparison.InvariantCultureIgnoreCase));
-
-                if (isSuperUser)
-                {
-                    allUserAccessGroups.RemoveAll(
-                       x => x.AccessGroupCode.Equals("CliVndRO", StringComparison.InvariantCultureIgnoreCase) ||
-                       x.AccessGroupCode.Equals("CliVndInfA", StringComparison.InvariantCultureIgnoreCase) ||
-                       x.AccessGroupCode.Equals("CliVndOnly", StringComparison.InvariantCultureIgnoreCase) ||
-                       x.AccessGroupCode.Equals("User", StringComparison.InvariantCultureIgnoreCase));
-                }
-
-                // filter based on access Type
-                if (accessType == AccessType.Property)
-                {
-                    // remove CliAcct and CliVndOnly from access groups
-                    allUserAccessGroups.RemoveAll(x => x.AccessGroupCode.Equals("CliAcct", StringComparison.InvariantCultureIgnoreCase) ||
-                                                       x.AccessGroupCode.Equals("CliVndOnly", StringComparison.InvariantCultureIgnoreCase));
-                }
-
-            }
-
             return allUserAccessGroups;
         }
 
