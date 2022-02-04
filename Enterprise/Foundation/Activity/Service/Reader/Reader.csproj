@@ -193,8 +193,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="App_Start\SwaggerUtil.cs" />
     <Compile Include="App_Start\SwaggerConfig.cs" />
+    <Compile Include="App_Start\SwaggerUtil.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="AllowCorsAttribute.cs" />
     <Compile Include="AuthorizeScopeAttribute.cs" />
