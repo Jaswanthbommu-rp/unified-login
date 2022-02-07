@@ -1,4 +1,10 @@
-﻿-- Add GetAccessTypesEndpoint product setting
+﻿IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'TokenAuthScopes')
+BEGIN
+    INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
+    VALUES ('TokenAuthScopes', 'Unified Login token scopes to request for product API authentication', 0);
+END
+
+-- Add GetAccessTypesEndpoint product setting
 
 IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'GetAccessTypesEndpoint')
 BEGIN
