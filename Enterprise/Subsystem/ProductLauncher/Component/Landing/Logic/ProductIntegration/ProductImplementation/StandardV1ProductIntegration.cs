@@ -1507,6 +1507,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 _httpClient = new HttpClient();
                 _httpClient.DefaultRequestHeaders.Clear();
+                _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
 
                 string tokenScopes = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("TokenAuthScopes", StringComparison.OrdinalIgnoreCase))?.Value;
 
