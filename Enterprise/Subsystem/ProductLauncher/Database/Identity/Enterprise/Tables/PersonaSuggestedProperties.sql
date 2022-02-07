@@ -41,3 +41,6 @@ GO
 
 ALTER TABLE [Enterprise].[PersonaSuggestedProperties] CHECK CONSTRAINT [FK_Property_Instance]
 GO
+
+CREATE NONCLUSTERED INDEX [IDX_PersonaSuggestedProperties_PersonaId] ON [Enterprise].[PersonaSuggestedProperties] ([PersonaId])
+GO

@@ -9,3 +9,8 @@
 	CONSTRAINT [FK_UserSyncJobTask_SyncJob] FOREIGN KEY ([UserSyncJobId]) REFERENCES [Enterprise].[UserSyncJob]([UserSyncJobId]),
 	CONSTRAINT [FK_UserSyncJobTask_StatusType] FOREIGN KEY ([StatusTypeId]) REFERENCES [Enterprise].[StatusType]([StatusTypeId])
 )
+GO
+CREATE NONCLUSTERED INDEX [ix_Enterprise_UserSyncJobTask_CreatedDate_StatusTypeId] ON [Enterprise].[UserSyncJobTask] ([CreatedDate], [StatusTypeId])
+GO
+CREATE NONCLUSTERED INDEX [IDX_UserSyncJobTask_UserSyncJobId] ON [Enterprise].[UserSyncJobTask] ([UserSyncJobId])
+GO
