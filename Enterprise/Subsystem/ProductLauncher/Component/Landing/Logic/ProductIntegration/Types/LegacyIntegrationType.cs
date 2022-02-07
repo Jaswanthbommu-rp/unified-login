@@ -558,7 +558,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     break;
 
                 case (int)ProductEnum.LeadManagement:
-                    product = new LeadManagementProduct(_userClaims);
+                    product = new LeadManagementProduct(_userClaims, (ProductEnum)productUser.ProductId);
                     productPropertiesRoles =
                         DeserializeJSON<ProductUserRolePropertiesGroups>(productUser.InputJson);
                     result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
@@ -566,7 +566,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     break;
 
                 case (int)ProductEnum.LeadAnalytics:
-                    product = new LeadManagementProduct(_userClaims);
+                    product = new LeadManagementProduct(_userClaims, (ProductEnum)productUser.ProductId);
                     productPropertiesRoles =
                         DeserializeJSON<ProductUserRolePropertiesGroups>(productUser.InputJson);
                     result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
@@ -742,13 +742,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
                     break;
                 case (int)ProductEnum.LeadManagement:
-                    product = new LeadManagementProduct(_userClaims);
+                    product = new LeadManagementProduct(_userClaims, ProductEnum.LeadManagement);
                     productPropertiesRoles =
                         DeserializeJSON<ProductUserRolePropertiesGroups>(batchRecord.InputJson);
                     result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
                     break;
                 case (int)ProductEnum.LeadAnalytics:
-                    product = new LeadManagementProduct(_userClaims);
+                    product = new LeadManagementProduct(_userClaims, ProductEnum.LeadAnalytics);
                     productPropertiesRoles =
                         DeserializeJSON<ProductUserRolePropertiesGroups>(batchRecord.InputJson);
                     result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
@@ -1010,11 +1010,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
                     break;
                 case (int)ProductEnum.LeadManagement:
-                    product = new LeadManagementProduct(_userClaims);
+                    product = new LeadManagementProduct(_userClaims, ProductEnum.LeadManagement);
                     result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
                     break;
                 case (int)ProductEnum.LeadAnalytics:
-                    product = new LeadManagementProduct(_userClaims);
+                    product = new LeadManagementProduct(_userClaims, ProductEnum.LeadAnalytics);
                     result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
                     break;
                 case (int)ProductEnum.RPDocumentManagement:

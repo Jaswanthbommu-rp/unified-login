@@ -2277,7 +2277,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 if (result != null)
                 {
                     //Found the RealPage Employee Access for the Organization.
-                    RealPageEmployeeAccessID = new Guid(result.PersonRealPageId);
+                    RealPageEmployeeAccessID = new Guid(result.PersonRealPageId.ToString());
                     //Use RealPage Employee Access PersonaId when creating the Product Patches.
                     createUserPersonaId = repository.GetOne<long>(StoredProcNameConstants.SP_GetActivePersona, new { RealPageId = RealPageEmployeeAccessID });
 

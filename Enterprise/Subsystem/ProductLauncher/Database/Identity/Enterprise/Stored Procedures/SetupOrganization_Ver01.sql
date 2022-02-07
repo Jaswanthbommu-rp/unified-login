@@ -132,7 +132,7 @@ BEGIN
 		SELECT @OrganizationId,SettingCategoryTypeId,MappingName,MappingValue,Editable,[Hidden],@UserId,GETDATE()
 		FROM [Settings].[OrganizationSettings] OS 
 			INNER JOIN Enterprise.Party P ON OS.PartyId = P.PartyId
-			WHERE P.RealPageId = '0d018e46-c20e-477d-aded-4e5a35fb8f99' -- RealPage Employee Company			
+			WHERE P.RealPageId = 'eeface50-9f75-4dce-b133-a97ee0e0d723' -- External Users Company			
 	END;
 
 	--Setup thirdparty IDP
