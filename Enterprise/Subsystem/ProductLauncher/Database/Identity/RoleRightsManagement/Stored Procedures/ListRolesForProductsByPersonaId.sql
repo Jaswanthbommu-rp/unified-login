@@ -89,7 +89,6 @@ BEGIN
 			  INNER JOIN Ident.UserLoginPersona ULP ON 
 					ULP.UserLoginPersonaId = PE.UserLoginPersonaId
 			  WHERE	P.ProductId = @ProductId
-			    AND	((@PersonaId IS NULL) OR (pe.PersonaId = @PersonaId))
-			    AND	((@PartyId IS NULL) OR (ULP.OrganizationPartyId = @PartyId))
+			     AND pe.PersonaId = @PersonaId 
 		END
 END;

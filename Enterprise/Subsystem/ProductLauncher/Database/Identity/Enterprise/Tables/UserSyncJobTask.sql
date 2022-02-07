@@ -12,5 +12,6 @@
 GO
 CREATE NONCLUSTERED INDEX [ix_Enterprise_UserSyncJobTask_CreatedDate_StatusTypeId] ON [Enterprise].[UserSyncJobTask] ([CreatedDate], [StatusTypeId])
 GO
+
 CREATE NONCLUSTERED INDEX [IDX_UserSyncJobTask_UserSyncJobId] ON [Enterprise].[UserSyncJobTask] ([UserSyncJobId])
 GO

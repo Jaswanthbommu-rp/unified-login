@@ -3384,6 +3384,14 @@ BEGIN
 END
 
 GO
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'TokenAuthScopes')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
+	VALUES ('TokenAuthScopes', 'Unified Login token scopes to request for product API authentication', 0);
+END
+
+GO
+
 GO
 
 -- 996366 update route for platform activity LOG
