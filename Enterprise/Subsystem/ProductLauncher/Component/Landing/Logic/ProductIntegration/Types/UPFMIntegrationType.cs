@@ -133,5 +133,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var product = new ProductBase(_productId, _userClaims, _productInternalSettingRepository, _productRepository);
             return product.UpdateUserDetails(productUserAccountDetails, internalChange);
         }
+
+        public ListResponse GetAccessTypes(long editorPersonaId, long userPersonaId) => new ListResponse();
     }
 }
