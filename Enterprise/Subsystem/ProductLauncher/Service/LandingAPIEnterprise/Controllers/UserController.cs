@@ -24,6 +24,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.Se
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ops;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.ResponseObject;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
 using RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Dto;
 using RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Helpers;
 using Serilog;
@@ -1071,6 +1072,54 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             return Request.CreateResponse(HttpStatusCode.OK, productResult);
         }
 
+        /// <summary>
+		/// Get Saml product attributes by  ProductId
+		/// </summary>
+		/// <param name="ProductId"></param>
+		/// <returns>List of Saml Attributes</returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about the user", Type = typeof(SamlProductAttributes))]
+        [SwaggerResponseExamples(typeof(SamlProductAttributes), typeof(SamlProductAttributesExample))]
+        [Authorize]
+        [Route("user/productuser/attributes")]
+        [HttpGet]
+        public IList<SamlProductAttributes> GetSamlProductAttributes(int ProductId)
+        {
+            var samlRepository = new SamlRepository();
+            return samlRepository.GetSamlProductAttributes(ProductId);
+        }
+        /// <summary>
+        /// Used to update details for a Realpage product (OneSite, Accounting, VendorServices) user for the given GreenBook user
+        /// </summary>
+        /// <param name="productUser">Details to save for a user</param>
+        /// <remarks>Possible values for ProductStatus : (Sucess, Hidden, Deactivated, Error,etc). ProductId can be retrieved from /products endpoint. Product Saml Attributes can be retrieved from /user/productuser/attributes endpoint.
+        /// </remarks>
+
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Update successful", Type = typeof(HttpResponseMessage))]
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
+        [Route("user/productuser/details")]
+        [AuthorizeScope("internalapi")]
+        [HttpPut]
+        public HttpResponseMessage UpdateProductUserAccountDetails([FromBody] ProductUserAccountDetails productUser)
+        {
+            if (productUser == null)
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "productUser null.");
+
+            if (productUser.ProductId <= 0)
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "ProductName empty.");
+
+            ManageProductUser manageProduct = new ManageProductUser(_userClaims);
+            string result = manageProduct.UpdateProductUserAccountDetails(productUser, true);
+
+            if (string.IsNullOrEmpty(result))
+                result = "Success";
+
+            return Request.CreateResponse(HttpStatusCode.OK, result);
+        }
+
 
         /// <summary>
         /// Get the user details for the OmniBar
@@ -1926,6 +1975,43 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         }
 
         #region GetExamples
+
+        //SamlProductAttributes
+        /// <summary>
+        /// Used to document examples of the Product Saml setting webapi result
+        /// </summary>
+        [ExcludeFromCodeCoverage]
+        public class SamlProductAttributesExample : IProvideExamples
+        {
+            /// <summary>
+            /// Example object data used by Swagger to document the output of the webapi method
+            /// </summary>
+            /// <returns>User List example</returns>
+            public object GetExamples()
+            {
+                List<SamlProductAttributes> example = new List<SamlProductAttributes>();
+                example.Add(new SamlProductAttributes()
+                {
+                    DisplayName = "Username",
+                    ProductID = 1,
+                    SamlAttributeName = "productUsername"
+                });
+                example.Add(new SamlProductAttributes()
+                {
+                    DisplayName = "PMC ID",
+                    ProductID = 1,
+                    SamlAttributeName = "PMCID"
+                });
+                example.Add(new SamlProductAttributes()
+                {
+                    DisplayName = "User ID",
+                    ProductID = 1,
+                    SamlAttributeName = "UserId"
+                });
+
+                return example;
+            }
+        }
 
         /// <summary>
         /// Used to document examples of the UserProducts result

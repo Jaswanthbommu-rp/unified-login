@@ -1278,6 +1278,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private IManagePerson _managePerson;
         private IManageUserLogin _manageUserLogin;
         private DefaultUserClaim _defaultUserClaim;
+        private IManageOrganization _manageOrganization;
 
         public SaveInteralSamlAttrLog(DefaultUserClaim defaultUserClaim)
         {
@@ -1285,25 +1286,48 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _managePersona = new ManagePersona(_defaultUserClaim);
             _managePerson = new ManagePerson();
             _manageUserLogin = new ManageUserLogin(_defaultUserClaim);
+            _manageOrganization = new ManageOrganization(_defaultUserClaim);
         }
 
-        public UserActivityLogInfo GetUserActivityLogInfo(long personaId)
+        public UserActivityLogInfo GetUserActivityLogInfo(long personaId, DefaultUserClaim userClaim = null)
         {
-            var persona = _managePersona.GetPersona(personaId);
-            var userLogin = _manageUserLogin.GetUserLoginOnly(persona.RealPageId);
-            var person = _managePerson.GetPerson(persona.RealPageId);
-
-            return new UserActivityLogInfo
+            if (personaId == 0)
             {
-                FirstName = person.FirstName,
-                LastName = person.LastName,
-                RealPageId = userLogin.RealPageId,
-                LoginName = userLogin.LoginName,
-                BooksOrganizationMasterId = persona.Organization.BooksMasterId,
-                OrganizationPartyId = persona.OrganizationPartyId,
-                OrganizationName = persona.Organization.Name,
-                UserId = userLogin.UserId
-            };
+                Guid employeeRealPageId = _manageOrganization.GetOrganizationAdminUserRealPageId(DefaultUserClaim.EmployeeCompanyRealPageId);
+                var person = _managePerson.GetPerson(employeeRealPageId);
+                var userLogin = _manageUserLogin.GetUserLoginOnly(employeeRealPageId);
+                var persona = _managePersona.GetActivePersona(employeeRealPageId);
+                return new UserActivityLogInfo
+                {
+                    FirstName = person.FirstName,
+                    LastName = person.LastName,
+                    RealPageId = userLogin.RealPageId,
+                    LoginName = userLogin.LoginName,
+                    BooksOrganizationMasterId = persona.Organization.BooksMasterId,
+                    OrganizationPartyId = persona.OrganizationPartyId,
+                    OrganizationName = persona.Organization.Name,
+                    UserId = userLogin.UserId,
+                    ClientCode = userClaim.ClientCode
+                };
+            }
+            else
+            {
+                var persona = _managePersona.GetPersona(personaId);
+                var userLogin = _manageUserLogin.GetUserLoginOnly(persona.RealPageId);
+                var person = _managePerson.GetPerson(persona.RealPageId);
+
+                return new UserActivityLogInfo
+                {
+                    FirstName = person.FirstName,
+                    LastName = person.LastName,
+                    RealPageId = userLogin.RealPageId,
+                    LoginName = userLogin.LoginName,
+                    BooksOrganizationMasterId = persona.Organization.BooksMasterId,
+                    OrganizationPartyId = persona.OrganizationPartyId,
+                    OrganizationName = persona.Organization.Name,
+                    UserId = userLogin.UserId
+                };
+            }
         }
 
         public void PushToQueue(UserActivityLogInfo fromUserLogInfo, UserActivityLogInfo toUserLogInfo, String message, string logActivityType)
