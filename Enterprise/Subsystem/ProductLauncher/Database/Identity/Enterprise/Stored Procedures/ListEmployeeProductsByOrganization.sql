@@ -41,7 +41,7 @@ BEGIN
 		INSERT INTO @CompanyOrganizationProduct ( ProductId , SupportsEmployeeCreation )
 		SELECT distinct ProductId , 0 from Enterprise.OrganizationProduct 
 		WHERE PartyId = @PartyId
-		And ProductId NOT IN (3,36,56)
+		And ProductId NOT IN (3,36,56,67)
 		AND ((@NOW BETWEEN FromDate AND ThruDate) OR (@NOW >= FromDate	AND ThruDate IS NULL))
 
 		--AD Groups
