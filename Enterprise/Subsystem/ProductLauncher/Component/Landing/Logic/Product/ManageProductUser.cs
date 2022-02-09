@@ -1073,7 +1073,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var manageProductBase = new ManageProductBase(productUserAccountDetails.ProductId, userClaim, _productInternalSettingRepository, _productRepository);
 
             StringBuilder messageTolog = new StringBuilder();
-            UserActivityLogInfo fromuserInfo = _activityLogHelper.GetUserActivityLogInfo(_userClaim.PersonaId);
+            UserActivityLogInfo fromuserInfo = _activityLogHelper.GetUserActivityLogInfo(_userClaim.PersonaId, _userClaim);
             UserActivityLogInfo touserInfo = _activityLogHelper.GetUserActivityLogInfo(assignUserPersonaId);
             GbProductMap product = _productRepository.ListProducts(productUserAccountDetails.ProductId, null, null, null).First();
             List<string> changedAttribute = new List<string>();
@@ -1151,7 +1151,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (commaAttributes.Length > 0)
             {
                 messageTolog.Append($"{fromuserInfo.FirstName} {fromuserInfo.LastName} updated {commaAttributes} " +
-                    $"of {touserInfo.FirstName} {touserInfo.LastName} for {productName}. ");
+                    $"of {touserInfo.FirstName} {touserInfo.LastName} for {productName}");
+                if (!string.IsNullOrEmpty(fromuserInfo.ClientCode))
+                {
+                    messageTolog.Append($" by Client {fromuserInfo.ClientCode}");
+                }
+                messageTolog.Append($". \n");
             }
             else
             {
