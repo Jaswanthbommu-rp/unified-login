@@ -302,6 +302,7 @@
     <Compile Include="Controllers\ProductController.cs" />
     <Compile Include="Controllers\Product\ProductOpsController.cs" />
     <Compile Include="Controllers\ProductProspectContactController.cs" />
+    <Compile Include="Controllers\ProductRumController.cs" />
     <Compile Include="Controllers\Product\UnifiedAmenitiesController.cs" />
     <Compile Include="Controllers\ProductUserController.cs" />
     <Compile Include="Controllers\ProfileController.cs" />

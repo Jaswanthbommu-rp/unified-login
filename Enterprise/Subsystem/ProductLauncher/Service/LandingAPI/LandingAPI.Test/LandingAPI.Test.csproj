@@ -179,6 +179,7 @@
     <Compile Include="ControllerTest\Product\ProductOnSiteTest.cs" />
     <Compile Include="ControllerTest\Product\ProductOpsTest.cs" />
     <Compile Include="ControllerTest\Product\ProductMarketingCenterTest.cs" />
+    <Compile Include="ControllerTest\Product\ProductRumTest.cs" />
     <Compile Include="ControllerTest\Product\ProductVendorServiceTest.cs" />
     <Compile Include="ControllerTest\StatusTypeTests.cs" />
     <Compile Include="ControllerTest\UserTests.cs" />
@@ -222,6 +223,7 @@
     <Compile Include="Logic\Product\ManageMarketingCenterProductTests.cs" />
     <Compile Include="Logic\Product\ManageProspectContactProductTests.cs" />
     <Compile Include="Logic\Product\ManageRPDocumentManagementTests.cs" />
+    <Compile Include="Logic\Product\ManageRumProductTests.cs" />
     <Compile Include="Logic\Product\ManageVendorServicesProductTests.cs" />
     <Compile Include="Logic\Security\ManageSecurityTests.cs" />
     <Compile Include="Logic\ManageStatusTypeTests.cs" />

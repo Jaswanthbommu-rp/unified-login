@@ -520,6 +520,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				var regionResponse = manageProductOnSite.GetRegions(editorUserPersonaId, subjectUserPersonaId, null);
 				return BatchHelper.CreateOnSiteBatchRecord(propertiesResponse, rolesResponse, regionResponse, product, usePrimaryProperties);
 			}
+			else if (product == (int)ProductEnum.UtilityManagement)
+			{
+				ManageProductRum manageProductrum = new ManageProductRum(_userClaim);
+				propertyGroupResponse = manageProductrum.GetPropertyGroups(editorUserPersonaId, subjectUserPersonaId, null);
+				var regionResponse = manageProductrum.GetRegions(editorUserPersonaId, subjectUserPersonaId, null);
+
+				return BatchHelper.CreateRumProductBatchRecord(propertiesResponse, propertyGroupResponse, regionResponse, rolesResponse, usePrimaryProperties) ;
+			}
 			//else if (product == (int)ProductEnum.ClickPay)
 			//{
 			//	//Don't know how it works with enterprise role, since it need more information along with the role
