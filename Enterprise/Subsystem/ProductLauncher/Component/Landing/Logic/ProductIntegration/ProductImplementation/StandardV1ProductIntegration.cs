@@ -838,6 +838,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // dump api info
             DumpApiCallInfoToDiagnosticLog(baseUrlAndQuery, productUser);
 
+            List<KeyValuePair<string, string>> additionalFields = new List<KeyValuePair<string, string>>();
+            additionalFields.Add(new KeyValuePair<string, string>("AnswerAutomation", "false"));
+            productUser.AdditionalFields = additionalFields;
+
             var integration = new ApiIntegration(_httpClient, baseUrlAndQuery);
             var result = integration.PostEntity<IntegrationProductUser>(productUser);
 
