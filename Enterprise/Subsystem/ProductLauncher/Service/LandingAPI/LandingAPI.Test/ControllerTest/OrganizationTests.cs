@@ -676,7 +676,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 {
                     FirstName = "Jack",
                     LastName = "Doe",
-                    Email = "jack.doe@example.com",
+                    //Email = "jack.doe@example.com",
                     Suffix = string.Empty,
                     Title = string.Empty
                 }
