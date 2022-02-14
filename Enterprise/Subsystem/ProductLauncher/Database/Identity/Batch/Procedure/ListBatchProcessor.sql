@@ -8,6 +8,7 @@ AS
 BEGIN  
   
     SET NOCOUNT ON;  
+    SET @BatchSize = 30;
     DECLARE @PBFiltered TABLE  
     (  
         [BatchProcessorId] [INT] NOT NULL,  
