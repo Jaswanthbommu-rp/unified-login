@@ -634,7 +634,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             Assert.True(expectedValue == message);
         }
 
-        [Fact]
+        [Fact(Skip ="Scenario not in use")]
         public void InsertOrganization_AdminExits_BadRequest()
         {
             _mockRepository
@@ -839,7 +839,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             mockRepository
                 .SetupSequence(m => m.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, It.IsAny<object>()))
-                .Returns(userLoginOnlyNull)
                 .Returns(userLoginOnly);
 
             mockRepository
