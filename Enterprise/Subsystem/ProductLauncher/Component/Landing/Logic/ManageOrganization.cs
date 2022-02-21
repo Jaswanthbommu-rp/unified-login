@@ -222,8 +222,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             try
             {
-                var emailAdditional = organization.OrganizationDomain.Equals("Primary", StringComparison.OrdinalIgnoreCase) ? "" : organization.OrganizationDomain.ToLower();
-                aUser.Email = $"{org.PartyId}{emailAdditional}admin@realpage.com".Replace(" ", "");
+                aUser.Email = $"{org.PartyId}admin@realpage.com".Replace(" ", "");
                 CreateInitialOrgSuperUser(org.PartyId, aUser.FirstName, "", aUser.LastName, aUser.Title, aUser.Suffix, aUser.Email, true, null, organizationRealPageId);
             }
             catch (Exception ex)
