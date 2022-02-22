@@ -72,6 +72,14 @@ BEGIN
 
 		INSERT INTO Security.PersonaRole(PersonaId,RoleId,CreatedBy, FromDate,ThruDate)
 		SELECT @PersonaId,@RoleId,@CreatedBy,@FromDate,NULL
+
+        IF NOT EXISTS ( SELECT TOP (1) 1 FROM Enterprise.PropertyInstanceMapping 
+                        WHERE PersonaId  = @PersonaId AND ProductId = 3 
+                        AND PropertyInstanceId = -1  AND ThruDate IS NULL)
+		BEGIN
+			INSERT INTO Enterprise.PropertyInstanceMapping(PersonaId,PropertyInstanceId,ProductId,FromDate,ThruDate,Active)
+			VALUES(@PersonaId, -1, 3, @NOW, NULL, 1)
+		END
 		
 	END    
       SELECT
