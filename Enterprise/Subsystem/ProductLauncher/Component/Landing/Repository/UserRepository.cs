@@ -3501,9 +3501,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     var productDetails = allProducts.FirstOrDefault(x => x.ProductId == productmap.ProductId);
                     string udmSource = productDetails.UDMSourceCode?.Length > 0 ? productDetails.UDMSourceCode : productDetails.BooksProductCode;
                     IList<CustomerCompanyMap> companyMapping = _blueBook.GetProductCompanyMapping(_userClaim.OrganizationRealPageGuid, udmSource);
-                    
-                    IList<ProductInternalSetting> productInternalSettingList = GetProductInternalSettings((ProductEnum)productmap.ProductId);
-                    string isProductAPIRequiresUser = productInternalSettingList.FirstOrDefault(s => s.Name.Equals("ProductAPIRequiresUser", StringComparison.OrdinalIgnoreCase))?.Value;
+                    dynamic param = new { ProductId = productmap.ProductId };
+                    IList<ProductInternalSetting> productInternalSettingList = repository.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, param);
+                    var isProductAPIRequiresUser = productInternalSettingList.FirstOrDefault(s => s.Name.Equals("ProductAPIRequiresUser", StringComparison.OrdinalIgnoreCase))?.Value;
                     bool isProductRequired = false;
                     if (isProductAPIRequiresUser != null)
                     {
@@ -6302,18 +6302,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             return schemaName;
         }
 
-        private IList<ProductInternalSetting> GetProductInternalSettings(ProductEnum product)
-        {
-            var rpcache = new RPObjectCache();
-            var cacheKey = $"productInternalSetting_{(int)product}";
-            IList<ProductInternalSetting> productInternalSettingList = rpcache.GetFromCache<IList<ProductInternalSetting>>(cacheKey, 600, () =>
-            {
-                // load from database
-                return _productInternalSettingRepository.GetProductInternalSettings((int)product).ToList();
-            });
-
-            return productInternalSettingList;
-        }
 
         private bool CompareList(List<long> first, List<long> second) 
         {
