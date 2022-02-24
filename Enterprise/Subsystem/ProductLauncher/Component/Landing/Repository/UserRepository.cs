@@ -3493,26 +3493,38 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 }
 
                 // For System Admin if Products that are not Configured are not processed
-                if (operationType == "add")
+                IList<PersonaProductUserDetails> creatorUserProducts = repository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = CreateUserPersonaId }).ToList();
+                IList<GbProductMap> allProducts =repository.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, null).ToList();
+                IManageBlueBook _blueBook = new ManageBlueBook();
+                foreach (var productmap in productListToCreate)
                 {
-                    IList<GbProductMap> allProducts =repository.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, null).ToList();
-                    IManageBlueBook _blueBook = new ManageBlueBook();
-                    foreach (var productmap in productListToCreate)
+                    var productDetails = allProducts.FirstOrDefault(x => x.ProductId == productmap.ProductId);
+                    string udmSource = productDetails.UDMSourceCode?.Length > 0 ? productDetails.UDMSourceCode : productDetails.BooksProductCode;
+                    IList<CustomerCompanyMap> companyMapping = _blueBook.GetProductCompanyMapping(_userClaim.OrganizationRealPageGuid, udmSource);
+                    
+                    IList<ProductInternalSetting> productInternalSettingList = GetProductInternalSettings((ProductEnum)productmap.ProductId);
+                    string isProductAPIRequiresUser = productInternalSettingList.FirstOrDefault(s => s.Name.Equals("ProductAPIRequiresUser", StringComparison.OrdinalIgnoreCase))?.Value;
+                    bool isProductRequired = false;
+                    if (isProductAPIRequiresUser != null)
                     {
-                        var productDetails = allProducts.FirstOrDefault(x => x.ProductId == productmap.ProductId);
-                        string udmSource = productDetails.UDMSourceCode?.Length > 0 ? productDetails.UDMSourceCode : productDetails.BooksProductCode;
-                        IList<CustomerCompanyMap> companyMapping = _blueBook.GetProductCompanyMapping(_userClaim.OrganizationRealPageGuid, udmSource);
-                        if (companyMapping != null)
+                        isProductRequired = (isProductAPIRequiresUser == "0") ? false: true;
+                    }
+                    
+                    if (companyMapping != null)
+                    {
+                        if (isProductRequired)
+                        {
+                            if (creatorUserProducts.Any(x => x.ProductId == productmap.ProductId))
+                            {
+                                productList.Add(productmap);
+                            }
+                        }
+                        else
                         {
                             productList.Add(productmap);
                         }
                     }
                 }
-                else
-                {
-                    productList = productListToCreate;
-                }
-
             }
 
             if (userIsActive && userTypeId != (int)UserRoleType.SuperUser && !migratedUser && enterpriseRoleId > 0 && operationType == "add")
@@ -6288,6 +6300,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             });
 
             return schemaName;
+        }
+
+        private IList<ProductInternalSetting> GetProductInternalSettings(ProductEnum product)
+        {
+            var rpcache = new RPObjectCache();
+            var cacheKey = $"productInternalSetting_{(int)product}";
+            IList<ProductInternalSetting> productInternalSettingList = rpcache.GetFromCache<IList<ProductInternalSetting>>(cacheKey, 600, () =>
+            {
+                // load from database
+                return _productInternalSettingRepository.GetProductInternalSettings((int)product).ToList();
+            });
+
+            return productInternalSettingList;
         }
 
         private bool CompareList(List<long> first, List<long> second) 
