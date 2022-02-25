@@ -1530,7 +1530,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public string ChangeProductUserType(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, BatchProcessType batchProcessType, object rolePropList)
         {
             string changeProductUserTypeResponse = string.Empty;
-
+            bool isUserDemoted = false;
             // try initially getting just the OneSite data
             var rpList = rolePropList as RolePropertyList;
             var combinedRoleProp = new Dictionary<string, RolePropertyList>();
@@ -1549,6 +1549,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (rpList == null)
             {
                 return "Input JSON parsing issue; Null object.";
+            }
+            else if ((batchProcessType == BatchProcessType.UserTypeAdminToRegular || batchProcessType == BatchProcessType.UserTypeAdminToExternal) &&
+                rpList.PropertyList.Count == 0 && rpList.RoleList.Count == 0 && !rpList.IsAssigned)
+            {
+                isUserDemoted = true;
             }
             else if ((batchProcessType == BatchProcessType.UserTypeAdminToRegular) && (rpList.PropertyList.Count == 0))
             {
@@ -1572,7 +1577,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // Unassign User
             bool deleteSamlUserProductInfoAndStatus = true;
             changeProductUserTypeResponse = os.UnassignUser(createUserPersonaId, assignUserPersonaId, deleteSamlUserProductInfoAndStatus);
-            if (string.IsNullOrWhiteSpace(changeProductUserTypeResponse))
+            if (string.IsNullOrWhiteSpace(changeProductUserTypeResponse) && !isUserDemoted)
             {
                 changeProductUserTypeResponse = os.ManageOneSiteUser(createUserPersonaId, assignUserPersonaId, rpList.RoleList, rpList.PropertyList, false);
             }
@@ -1586,7 +1591,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 productLead2Lease.WriteToDiagnosticLog("OneSite.ChangeProductUserType.UnassignUser");
                 // Unassign User
                 lead2leaseresult = productLead2Lease.UnassignUser(createUserPersonaId, assignUserPersonaId);
-                if (string.IsNullOrEmpty(lead2leaseresult))
+                if (string.IsNullOrEmpty(lead2leaseresult) && !isUserDemoted)
                 {
                     productLead2Lease.WriteToDiagnosticLog("OneSite.ChangeProductUserType.ReassignUser");
                     // assign user
