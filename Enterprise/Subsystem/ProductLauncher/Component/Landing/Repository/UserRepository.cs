@@ -3504,15 +3504,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     dynamic param = new { ProductId = productmap.ProductId };
                     IList<ProductInternalSetting> productInternalSettingList = repository.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, param);
                     var isProductAPIRequiresUser = productInternalSettingList.FirstOrDefault(s => s.Name.Equals("ProductAPIRequiresUser", StringComparison.OrdinalIgnoreCase))?.Value;
-                    bool isProductRequired = false;
-                    if (isProductAPIRequiresUser != null)
-                    {
-                        isProductRequired = (isProductAPIRequiresUser == "0") ? false: true;
-                    }
-                    
+                    bool isProductUserRequired = isProductAPIRequiresUser != null && isProductAPIRequiresUser != "0" ;
                     if (companyMapping != null)
                     {
-                        if (isProductRequired)
+                        if (isProductUserRequired)
                         {
                             if (creatorUserProducts.Any(x => x.ProductId == productmap.ProductId))
                             {
