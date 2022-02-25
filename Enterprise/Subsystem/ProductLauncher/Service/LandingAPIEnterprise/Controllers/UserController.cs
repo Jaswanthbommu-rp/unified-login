@@ -973,7 +973,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                         RealPageId = person.RealPageId,
                         CompanyName = persona.Organization.Name,
                         PersonaId = persona.PersonaId,
-                        Title = persona.Name,
+                        Title = persona.hasMultiPersona == true ? persona.Name : "",
                         HasMultiCompany = persona.hasMultiCompany,
                         HasMultiPersona = false
                     };

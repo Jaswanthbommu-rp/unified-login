@@ -177,13 +177,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
             }
 
-            // see if the given email already exists and reject it if it is found
-            UserLoginOnly findExistingUser = _userLoginRepository.GetUserLoginOnly(aUser.Email);
-            if (findExistingUser != null)
-            {
-                outputResult.Status.ErrorMsg = "Admin email already exists";
-                return outputResult;
-            }
 
             // create the organization
             Organization org = new Organization()
@@ -229,6 +222,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             try
             {
+                aUser.Email = $"{org.PartyId}admin@realpage.com".Replace(" ", "");
                 CreateInitialOrgSuperUser(org.PartyId, aUser.FirstName, "", aUser.LastName, aUser.Title, aUser.Suffix, aUser.Email, true, null, organizationRealPageId);
             }
             catch (Exception ex)
@@ -250,7 +244,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             //Create an additional admin user for the Company
             if (processBlueBookMessage && organization.CompanyAdminUser != null && !string.IsNullOrWhiteSpace(organization.CompanyAdminUser.Email))
             {
-                findExistingUser = _userLoginRepository.GetUserLoginOnly(organization.CompanyAdminUser.Email);
+                UserLoginOnly findExistingUser = _userLoginRepository.GetUserLoginOnly(organization.CompanyAdminUser.Email);
 
                 ManageUser manageUser = new ManageUser(_defaultUserClaim);
                 IList<Persona> personaList = new List<Persona>();
