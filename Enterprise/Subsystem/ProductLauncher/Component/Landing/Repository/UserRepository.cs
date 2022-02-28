@@ -3503,11 +3503,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     IList<CustomerCompanyMap> companyMapping = _blueBook.GetProductCompanyMapping(_userClaim.OrganizationRealPageGuid, udmSource);
                     dynamic param = new { ProductId = productmap.ProductId };
                     IList<ProductInternalSetting> productInternalSettingList = repository.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, param);
-                    var isProductAPIRequiresUser = productInternalSettingList.FirstOrDefault(s => s.Name.Equals("ProductAPIRequiresUser", StringComparison.OrdinalIgnoreCase))?.Value;
-                    bool isProductUserRequired = isProductAPIRequiresUser != null && isProductAPIRequiresUser != "0" ;
+                    var editUserRequiresProduct = productInternalSettingList.FirstOrDefault(s => s.Name.Equals("IsEditUserRequiresProduct", StringComparison.OrdinalIgnoreCase))?.Value;
+                    bool isEditUserRequiresProduct = editUserRequiresProduct != null && editUserRequiresProduct != "0" ;
                     if (companyMapping != null)
                     {
-                        if (isProductUserRequired)
+                        if (isEditUserRequiresProduct)
                         {
                             if (creatorUserProducts.Any(x => x.ProductId == productmap.ProductId))
                             {
