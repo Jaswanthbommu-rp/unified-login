@@ -3493,26 +3493,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 }
 
                 // For System Admin if Products that are not Configured are not processed
-                if (operationType == "add")
+                IList<PersonaProductUserDetails> creatorUserProducts = repository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = CreateUserPersonaId }).ToList();
+                IList<GbProductMap> allProducts =repository.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, null).ToList();
+                IManageBlueBook _blueBook = new ManageBlueBook();
+                foreach (var productmap in productListToCreate)
                 {
-                    IList<GbProductMap> allProducts =repository.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, null).ToList();
-                    IManageBlueBook _blueBook = new ManageBlueBook();
-                    foreach (var productmap in productListToCreate)
+                    var productDetails = allProducts.FirstOrDefault(x => x.ProductId == productmap.ProductId);
+                    string udmSource = productDetails.UDMSourceCode?.Length > 0 ? productDetails.UDMSourceCode : productDetails.BooksProductCode;
+                    IList<CustomerCompanyMap> companyMapping = _blueBook.GetProductCompanyMapping(_userClaim.OrganizationRealPageGuid, udmSource);
+                    dynamic param = new { ProductId = productmap.ProductId };
+                    IList<ProductInternalSetting> productInternalSettingList = repository.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, param);
+                    var editUserRequiresProduct = productInternalSettingList.FirstOrDefault(s => s.Name.Equals("IsEditUserRequiresProduct", StringComparison.OrdinalIgnoreCase))?.Value;
+                    bool isEditUserRequiresProduct = editUserRequiresProduct != null && editUserRequiresProduct != "0" ;
+                    if (companyMapping != null)
                     {
-                        var productDetails = allProducts.FirstOrDefault(x => x.ProductId == productmap.ProductId);
-                        string udmSource = productDetails.UDMSourceCode?.Length > 0 ? productDetails.UDMSourceCode : productDetails.BooksProductCode;
-                        IList<CustomerCompanyMap> companyMapping = _blueBook.GetProductCompanyMapping(_userClaim.OrganizationRealPageGuid, udmSource);
-                        if (companyMapping != null)
+                        if (isEditUserRequiresProduct)
+                        {
+                            if (creatorUserProducts.Any(x => x.ProductId == productmap.ProductId))
+                            {
+                                productList.Add(productmap);
+                            }
+                        }
+                        else
                         {
                             productList.Add(productmap);
                         }
                     }
                 }
-                else
-                {
-                    productList = productListToCreate;
-                }
-
             }
 
             if (userIsActive && userTypeId != (int)UserRoleType.SuperUser && !migratedUser && enterpriseRoleId > 0 && operationType == "add")

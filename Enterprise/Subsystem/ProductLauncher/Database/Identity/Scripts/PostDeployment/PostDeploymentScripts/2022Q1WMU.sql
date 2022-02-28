@@ -101,3 +101,13 @@ BEGIN
 END
 
 GO
+
+-- Add IsEditUserRequiresProduct product setting
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'IsEditUserRequiresProduct')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
+	VALUES ('IsEditUserRequiresProduct', 'Does edit user requires product', 0);
+END
+
+GO
