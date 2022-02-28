@@ -6301,7 +6301,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             return schemaName;
         }
 
-
         private bool CompareList(List<long> first, List<long> second) 
         {
             bool isequal = false;
