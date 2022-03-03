@@ -121,3 +121,114 @@ BEGIN
 END
 
 GO
+-- Enabling 
+GO
+DECLARE @settingTypeId INT = 0;
+SELECT @settingTypeId = ProductSettingTypeId FROM Enterprise.ProductSettingType WHERE NAME = 'IsEditUserRequiresProduct'
+IF @settingTypeId > 0
+BEGIN
+	CREATE TABLE #Temp(ProductId INT);
+	INSERT INTO #Temp
+	Values 
+        (4),(20),(8),(15),(13)
+	
+	WHILE (Select COUNT(*) FROM #Temp) > 0
+	BEGIN
+		DECLARE @id int;
+		SELECT TOP 1 @id= ProductId from #Temp;
+		
+		IF NOT EXISTS (
+			SELECT TOP 1 1
+			FROM Enterprise.ProductSetting PS
+			JOIN Enterprise.ProductSettingType PST on PST.ProductSettingTypeId = PS.ProductSettingTypeId
+			WHERE ProductId = @id
+			AND PST.ProductSettingTypeId = @settingTypeId)
+		BEGIN
+			EXEC Enterprise.SetProductSetting 0, @id, @settingTypeId, N'1'
+		END
+		
+		DELETE From #Temp WHERE ProductId = @id
+	END
+
+	SELECT ProductId INTO #Temp2
+	FROM Enterprise.Product
+	WHERE ProductId NOT IN (SELECT ProductId FROM #Temp)
+
+	WHILE (Select COUNT(*) FROM #Temp2) > 0
+	BEGIN
+		DECLARE @id1 int;
+		SELECT TOP 1 @id1 = ProductId from #Temp2;
+		
+		IF NOT EXISTS (
+			SELECT TOP 1 1
+			FROM Enterprise.ProductSetting PS
+			JOIN Enterprise.ProductSettingType PST on PST.ProductSettingTypeId = PS.ProductSettingTypeId
+			WHERE ProductId = @id1
+			AND PST.ProductSettingTypeId = @settingTypeId)
+		BEGIN
+			EXEC Enterprise.SetProductSetting 0, @id1, @settingTypeId, N'0'
+		END
+		
+		DELETE From #Temp2 WHERE ProductId = @id1
+	END
+
+	DROP Table #Temp
+	DROP Table #Temp2
+END
+GO
+DECLARE @settingTypeId INT = 0;
+SELECT @settingTypeId = ProductSettingTypeId FROM Enterprise.ProductSettingType WHERE NAME = 'IsGreenbookCaresCheckRequired'
+IF @settingTypeId > 0
+BEGIN
+	CREATE TABLE #Temp(ProductId INT);
+	INSERT INTO #Temp
+	Values 
+		(4),(48),(77),(47),(20),(8),(63),
+		(40),(41),(6),(9),(60),(1),(23),(44),
+		(10),(73),(15),(17),(65),(58),(57),
+		(70),(59),(13),(18),(16),(14),(26)
+
+	WHILE (Select COUNT(*) FROM #Temp) > 0
+	BEGIN
+		DECLARE @id int;
+		SELECT TOP 1 @id= ProductId from #Temp;
+		
+		IF NOT EXISTS (
+			SELECT TOP 1 1
+			FROM Enterprise.ProductSetting PS
+			JOIN Enterprise.ProductSettingType PST on PST.ProductSettingTypeId = PS.ProductSettingTypeId
+			WHERE ProductId = @id
+			AND PST.ProductSettingTypeId = @settingTypeId)
+		BEGIN
+			EXEC Enterprise.SetProductSetting 0, @id, @settingTypeId, N'1'
+		END
+		
+		DELETE From #Temp WHERE ProductId = @id
+	END
+
+	SELECT ProductId INTO #Temp2
+	FROM Enterprise.Product
+	WHERE ProductId NOT IN (SELECT ProductId FROM #Temp)
+
+	WHILE (Select COUNT(*) FROM #Temp2) > 0
+	BEGIN
+		DECLARE @id1 int;
+		SELECT TOP 1 @id1 = ProductId from #Temp2;
+		
+		IF NOT EXISTS (
+			SELECT TOP 1 1
+			FROM Enterprise.ProductSetting PS
+			JOIN Enterprise.ProductSettingType PST on PST.ProductSettingTypeId = PS.ProductSettingTypeId
+			WHERE ProductId = @id1
+			AND PST.ProductSettingTypeId = @settingTypeId)
+		BEGIN
+			EXEC Enterprise.SetProductSetting 0, @id1, @settingTypeId, N'0'
+		END
+		
+		DELETE From #Temp2 WHERE ProductId = @id1
+	END
+
+	DROP Table #Temp
+	DROP Table #Temp2
+END
+Go
