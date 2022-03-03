@@ -111,3 +111,13 @@ BEGIN
 END
 
 GO
+
+-- Add IsGreenbookCaresCheckRequired product setting
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'IsGreenbookCaresCheckRequired')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
+	VALUES ('IsGreenbookCaresCheckRequired', 'Does greenbook check flag is required to add product', 0);
+END
+
+GO
