@@ -24,7 +24,7 @@ BEGIN
 		SELECT
 			O.Name [CompanyName],
 			UL.LoginName [Username],
-			NE.NotificationEmail [NotificationEmail],
+			CASE WHEN ert.PartyRoleTypeId = 404 THEN NE.NotificationEmail ELSE ISNULL(NE.NotificationEmail,UL.LoginName) END AS [NotificationEmail],
 			CASE
 				WHEN ert.PartyRoleTypeId = 401 THEN 'Regular User'
 				WHEN ert.PartyRoleTypeId = 402 THEN 'RealPage System Administrator'
