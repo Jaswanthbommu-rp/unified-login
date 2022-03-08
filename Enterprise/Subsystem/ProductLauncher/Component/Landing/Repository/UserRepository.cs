@@ -3493,26 +3493,68 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 }
 
                 // For System Admin if Products that are not Configured are not processed
-                if (operationType == "add")
+                IList<PersonaProductUserDetails> creatorUserProducts = repository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = CreateUserPersonaId }).ToList();
+                IList<GbProductMap> allProducts = repository.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, null).ToList();
+                IManageBlueBook _blueBook = new ManageBlueBook();
+                foreach (var productmap in productListToCreate)
                 {
-                    IList<GbProductMap> allProducts =repository.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, null).ToList();
-                    IManageBlueBook _blueBook = new ManageBlueBook();
-                    foreach (var productmap in productListToCreate)
+                    bool isGreenBookCaresEnabled = false;
+                    dynamic param = new { ProductId = productmap.ProductId };
+                    IList<ProductInternalSetting> productInternalSettingList = repository.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, param);
+                    var editUserRequiresProduct = productInternalSettingList.FirstOrDefault(s => s.Name.Equals("IsEditUserRequiresProduct", StringComparison.OrdinalIgnoreCase))?.Value;
+                    var greenbookCaresCheckRequired = productInternalSettingList.FirstOrDefault(s => s.Name.Equals("IsGreenbookCaresCheckRequired", StringComparison.OrdinalIgnoreCase))?.Value;
+
+                    bool isEditUserRequiresProduct = editUserRequiresProduct != null && editUserRequiresProduct != "0";
+                    bool isGreenbookCaresCheckRequired = greenbookCaresCheckRequired != null && greenbookCaresCheckRequired != "0";
+
+                    if (isGreenbookCaresCheckRequired)
                     {
                         var productDetails = allProducts.FirstOrDefault(x => x.ProductId == productmap.ProductId);
                         string udmSource = productDetails.UDMSourceCode?.Length > 0 ? productDetails.UDMSourceCode : productDetails.BooksProductCode;
                         IList<CustomerCompanyMap> companyMapping = _blueBook.GetProductCompanyMapping(_userClaim.OrganizationRealPageGuid, udmSource);
-                        if (companyMapping != null)
+
+                        var booksCompanyInstance = _blueBook.GetCompanyInstanceByUPFMCompanyId(_userClaim.OrganizationRealPageGuid.ToString().ToLower());
+                        int customerCompanyId = booksCompanyInstance?.Attributes?.CustomerCompanyMap.FirstOrDefault()?.CustomerCompanyId ?? 0;
+                        string domain = booksCompanyInstance?.Attributes?.Domain;
+
+                        if (!string.IsNullOrEmpty(domain) && customerCompanyId != 0)
+                        {
+                            var booksCustomerCompanyMap = _blueBook.GetCustomerCompanyMapByCustomerCompanyId(customerCompanyId, domain);
+                            var findBooksProductCode = booksCustomerCompanyMap?.Where(p => p.Source == (!string.IsNullOrEmpty(productDetails.UDMSourceCode) ? productDetails.UDMSourceCode : productDetails.BooksProductCode));
+                            if (findBooksProductCode != null && findBooksProductCode.Count() == 1)
+                            {
+                                isGreenBookCaresEnabled = findBooksProductCode.FirstOrDefault().CompanyInstance.FirstOrDefault().GreenBookCares;
+                            }
+                        }
+
+                        if (companyMapping != null && isGreenBookCaresEnabled)
+                        {
+                            if (isEditUserRequiresProduct)
+                            {
+                                if (creatorUserProducts.Any(x => x.ProductId == productmap.ProductId && x.ProductStatus == 8))
+                                {
+                                    productList.Add(productmap);
+                                }
+                            }
+                            else
+                            {
+                                productList.Add(productmap);
+                            }
+                        }
+
+                    }
+                    else if (isEditUserRequiresProduct)
+                    {
+                        if (creatorUserProducts.Any(x => x.ProductId == productmap.ProductId && x.ProductStatus == 8))
                         {
                             productList.Add(productmap);
                         }
                     }
+                    else
+                    {
+                        productList.Add(productmap);
+                    }
                 }
-                else
-                {
-                    productList = productListToCreate;
-                }
-
             }
 
             if (userIsActive && userTypeId != (int)UserRoleType.SuperUser && !migratedUser && enterpriseRoleId > 0 && operationType == "add")
