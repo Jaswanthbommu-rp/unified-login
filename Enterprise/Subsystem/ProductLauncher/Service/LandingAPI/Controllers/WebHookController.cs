@@ -676,8 +676,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
 
             organization.OrganizationDomain = domain;
-            var emailAdditional = domain.Equals("Primary", StringComparison.OrdinalIgnoreCase) ? "" : domain.ToLower();
-            organization.AdminUser.Email = $"{customerCompany.CustomerCompanyId}{emailAdditional}admin@realpage.com";
 
             var addProductList = new List<int>(productIdList);
 
