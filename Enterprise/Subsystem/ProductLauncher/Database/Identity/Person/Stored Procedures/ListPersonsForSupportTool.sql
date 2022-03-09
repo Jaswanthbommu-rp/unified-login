@@ -15,14 +15,8 @@ BEGIN
 					INNER JOIN Enterprise.ContactMechanism cm ON cm.ContactMechanismID = pcm.ContactMechanismId
 					INNER JOIN Enterprise.ElectronicAddress ea ON ea.ContactMechanismID = cm.ContactMechanismID
 					INNER JOIN Enterprise.Party p ON p.PartyId = pcm.PartyId
-					INNER JOIN Person.Person PE ON PE.PartyId = p.PartyId
-					INNER JOIN Ident.UserLogin UL ON UL.PersonPartyId = p.PartyId
 	WHERE	(pcm.ThruDate IS NULL OR pcm.ThruDate > GETUTCDATE())
-	AND (	(@Name IS NULL)
-			OR (CHARINDEX(@Name, FirstName + ' ' + LastName, 1) > 0)
-			OR (CHARINDEX(@Name, ul.LoginName, 1) > 0)
-			OR (ea.ElectronicAddressString <> '' AND CHARINDEX(@Name, ea.ElectronicAddressString, 1) > 0)
-		)
+	AND (ea.ElectronicAddressString <> '' AND CHARINDEX(@Name, ea.ElectronicAddressString, 1) > 0)
 	AND			cmu.ContactMechanismUsageTypeID = 301
 
 	;WITH resultList ( CompanyName, Username, NotificationEmail, UserType, FirstName, LastName, PartyId, UserId, ThirdPartyIDPDesc, PersonaId, PersonaRealPageId, UserStatus )
