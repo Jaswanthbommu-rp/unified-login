@@ -4001,15 +4001,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     //Loop through the rest of the products list and create the Batch records
                     foreach (IProductBatch product in productListToRemove)
                     {
+                        int finalBatchProcessorTypeId = (int)BatchProcessType.CreateUpdateProductUser;
                         if (product.ProductId == (int)ProductEnum.UnifiedPlatform)
                         {
                             continue;
                         }
+                        if (product.ProductId == (int)ProductEnum.OneSite && !product.InputJson.IsAssigned && (batchProcessTypeId == (int)BatchProcessType.UserTypeAdminToRegular || batchProcessTypeId == (int)BatchProcessType.UserTypeAdminToExternal))
+                        {
+                            finalBatchProcessorTypeId = batchProcessTypeId;
+                        }
 
                         SaveProductBatch(repository, product, createUserResponse, saveProductBatchError,
                             createUserPersonaId, assignUserPersonaId, realPageId, errorStatus,
-                            JsonConvert.SerializeObject(product.InputJson),
-                            (int)BatchProcessType.CreateUpdateProductUser);
+                            JsonConvert.SerializeObject(product.InputJson), finalBatchProcessorTypeId);
                     }
 
                     if (errorStatus.Success == false)
