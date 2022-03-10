@@ -375,10 +375,6 @@
       <Project>{5794A497-56D2-4B0C-A168-D0F75BB21FF9}</Project>
       <Name>Component.Landing</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Web\IdentityServer\IdentityHelper\IdentityHelper.csproj">
-      <Project>{86748C72-89F8-438D-81D7-419007606978}</Project>
-      <Name>IdentityHelper</Name>
-    </ProjectReference>
     <ProjectReference Include="..\SharedObjects\SharedObjects.csproj">
       <Project>{941e5338-b2c7-41fd-bad5-a34a8e732e19}</Project>
       <Name>SharedObjects</Name>
