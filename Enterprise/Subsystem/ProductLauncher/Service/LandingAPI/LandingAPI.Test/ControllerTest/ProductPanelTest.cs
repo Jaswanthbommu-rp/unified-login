@@ -1,25 +1,14 @@
-﻿using Castle.Components.DictionaryAdapter;
-using JsonApiSerializer;
-using Moq;
-using Newtonsoft.Json;
+﻿using Moq;
 using RP.Enterprise.Foundation.DataAccess.Component;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Extensions;
-using RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic;
-using RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI;
-using RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers;
 using RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers.Product;
 using System;
 using System.Collections.Generic;
@@ -28,7 +17,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
-using System.Web.Http.Dispatcher;
 using Xunit;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
