@@ -80,18 +80,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 }
 
                 roleTypeList = (List<RoleType>)roleTypeLogic.GetRoleTypeDependency(roleTypeId: persona.UserTypeId, partyId: base._orgPartyId, orgMasterId: persona.Organization.BooksCustomerMasterId, loginName: loginName);
-            }
+				if ((DefaultUserClaim.EmployeeCompanyRealPageId != base._userClaims.OrganizationRealPageGuid && !base._userClaims.IsRPEmployee))
+				{
+					roleTypeList.RemoveAll(x => x.Name.Equals("SuperUser", StringComparison.OrdinalIgnoreCase));
+				}
+			}
             else
             {
                 roleTypeList = (List<RoleType>)roleTypeLogic.GetRoleType(roleTypeName: roleTypeName, partyId: null, orgMasterId: null, loginName: loginName);
             }
-            
+
 			// remove the RealPage employee role from showing for unauthenticated requests
 			if (base._orgPartyId == 0)
 			{
-                roleTypeList.RemoveAll(x => x.Name.Equals("RealPage Employee", StringComparison.OrdinalIgnoreCase));
-            }
-			
+				roleTypeList.RemoveAll(x => x.Name.Equals("RealPage Employee", StringComparison.OrdinalIgnoreCase));
+			}
 			if (roleTypeList != null)
 			{
 				roleTypeList = roleTypeList.OrderBy(r => r.Name).ToList();
