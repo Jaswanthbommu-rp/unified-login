@@ -1,4 +1,4 @@
-﻿CREATE OR alter PROCEDURE [Enterprise].[UpdateExternalUserRelationship]
+﻿CREATE PROCEDURE [Enterprise].[UpdateExternalUserRelationship]
 (
 	@UserLoginPersonaId BIGINT,
 	@ThirdPartyRelationshipId TINYINT,
