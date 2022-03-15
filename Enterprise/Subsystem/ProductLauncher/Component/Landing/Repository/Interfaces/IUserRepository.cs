@@ -176,5 +176,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 
         RepositoryResponse AddUpdateEmployeeProductADGroupMapping(long personaId, int productId, int adGroupId);
 
-    }
+		ExternalUserRelationship GetExternalUserRelationship(long userLoginPersonaId);
+
+	}
 }

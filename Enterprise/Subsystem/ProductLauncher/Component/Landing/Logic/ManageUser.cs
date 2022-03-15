@@ -760,6 +760,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					profileDetail.UserTypeId = partyRelationship.RoleTypeIdFrom;
 				}
 
+				//todo: check for feature flag, if turned on exceute following
+				if (true) 
+				{
+					var data = _userRepository.GetExternalUserRelationship(userLoginPersonaList[0].UserLoginPersonaId);
+
+					profileDetail.ExternalUserRelationship = data == null ? new ExternalUserRelationship() { 
+						UserLoginPersonaId = userLoginPersonaList[0].UserLoginPersonaId } : data;
+				}
+
 				output.obj = profileDetail;
 				output.Status = errorStatus;
 				return output;
