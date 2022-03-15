@@ -1,9 +1,0 @@
-<div class="document-management-access" ng-show="dmpa.isActive()" detect-product-change="{onChange: dmpa.setChanged}" ng-controller="DocumentManagementProductAccess as dmpa">
-    <h3 class="assign-product-access-title">
-        {{dmpa.panelName}}
-    </h3>
-    <rp-scrolling-tabs-menu class="document-management-tabs" ng-class="{visible: dmpa.model.tabsReady}" model="dmpa.tabsMenu">
-    </rp-scrolling-tabs-menu>
-    <ng-include src="tab.incUrl" ng-show="tab.isActive" ng-repeat="tab in dmpa.tabsList">
-    </ng-include>
-</div>

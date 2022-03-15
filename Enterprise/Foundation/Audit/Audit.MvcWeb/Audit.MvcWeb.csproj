@@ -9,12 +9,13 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>RP.Enterprise.Foundation.Audit.MvcWeb.Component</RootNamespace>
     <AssemblyName>RP.Enterprise.Foundation.Audit.MvcWeb.Component</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SccProjectName>SAK</SccProjectName>
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -89,6 +90,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Audit.Core\Audit.Core.csproj">
+      <Project>{6F35C5E7-05CE-48D8-8ED5-FA191F57AE46}</Project>
+      <Name>Audit.Core</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Audit.WebApi\Audit.WebApi.csproj">
       <Project>{FFAD1EF8-C442-499B-9959-8F8D43A84515}</Project>
       <Name>Audit.WebApi</Name>
