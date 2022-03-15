@@ -527,7 +527,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 				{
 					filterUserList = UserListTypeFilter.ExcludeSupportUsers;
 				}
-				if (_userClaim.RealPageEmployee || _userClaim.ImpersonatedBy != Guid.Empty)
+				if (_userClaim.RealPageEmployee || (_userClaim.IsRPEmployee  && _userClaim.OrganizationRealPageGuid != DefaultUserClaim.EmployeeCompanyRealPageId) || _userClaim.ImpersonatedBy != Guid.Empty)
 				{
 					filterUserList = UserListTypeFilter.ViewAllUsers;
 				}
