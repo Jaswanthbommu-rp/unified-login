@@ -971,7 +971,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         #region GetPropertiesForCompany
         public List<CompanyPropertySetup> GetPropertiesForCompany(Guid companyInstanceId, string propertyName = null, string domain = null, 
                         int? blueId = null, int? status = null, IDictionary<object, object> globals = null, long editorPersonaId = 0, 
-                        long userPersonaId = 0, bool? isSelectedProperties = null, List<Guid> selectedProperties = null)
+                        long userPersonaId = 0, bool? isSelectedProperties = null, List<Guid> selectedProperties = null, Guid? operatorInstanceId = null)
         {
             RequestParameter dataFilter = new RequestParameter();
 
@@ -983,7 +983,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             List<PropertySetup> propertyDetails = new List<PropertySetup>();
             List<UPFMPropertyInstance> selectedPropertyInstances = new List<UPFMPropertyInstance>();
             List<int> userProperties = null;
-            List<BooksPropertyInstance> booksPropertyInstance = GetPropertyInstanceFromBooks(companyInstanceId);
+            List<BooksPropertyInstance> booksPropertyInstance = null;
+
+            if (!operatorInstanceId.HasValue)
+            {
+                booksPropertyInstance = GetPropertyInstanceFromBooks(companyInstanceId);
+            }
+            else
+            {
+                booksPropertyInstance = GetPropertyInstanceForCompanyByOperatorId(companyInstanceId, operatorInstanceId.Value);
+            }
 
             if (domain != null)
             {
@@ -1046,6 +1055,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			};
 			return _propertyRepository.ListUPFMPropertyInstanceIdByInstanceIds(propGuidList);
         }
+
         #endregion
 
         #region UpdateProperty
@@ -1605,6 +1615,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         {                    
             return _manageBlueBook.GetPropertyInstanceForCompany(companyInstanceId);
         }
+
+        private List<BooksPropertyInstance> GetPropertyInstanceForCompanyByOperatorId(Guid companyInstanceId, Guid operatorInstanceId)
+        {
+            return _manageBlueBook.GetPropertyInstanceForCompanyByOperatorId(companyInstanceId, operatorInstanceId);
+        }
+
 
         private List<BooksPropertyInstance> GetAllProductsPropertyInstanceFromBooks(string customerPropertyId)
         {

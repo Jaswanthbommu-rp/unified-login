@@ -14,6 +14,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
@@ -320,5 +321,217 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
         }
 
+        [Fact]
+        public void GetUPFMOperators_Valid()
+        {
+            var organizationList = new List<Organization>()
+            {
+                new Organization()
+                {
+                    RealPageId = _RealPageId,
+                    CreateDate = _CreateDate,
+                    Name = _CompanyName,
+                    PartyId = _PartyId,
+                    BooksMasterId = _BooksMasterId,
+                    BooksCustomerMasterId = _BooksCompanyMasterId,
+                    organizationType = new OrganizationType()
+                    {
+                        OrganizationTypeId = _organizationTypeId,
+                        Name = "Multifamily",
+                        CreateDate = new DateTime()
+                    },
+                    OrganizationTypeId = _organizationTypeId,
+                    OrganizationDomainId = 1,
+                    OrganizationDomain = new OrganizationDomain()
+                    {
+                        OrganizationDomainId = 1,
+                        Name = "Primary",
+                        CreateDate = new DateTime()
+                    },
+                }
+            };
+
+            DefaultUserClaim _userClaims = new DefaultUserClaim()
+            {
+                LoginName = "MocTest",
+                CorrelationId = Guid.NewGuid(),
+                OrganizationName = "MocTest",
+                OrganizationPartyId = 1,
+                OrganizationRealPageGuid = Guid.NewGuid(),
+                OrganizationMasterId = 1,
+                UserRealPageGuid = Guid.NewGuid(),
+                PersonaId = 33
+            };
+
+            UDMOperatorsRootObject operatorsRoot = new UDMOperatorsRootObject()
+            {
+                Data = new UDMOperatorsDataObject()
+                {
+                    type = "Operators",
+                    attributes = new UDMOperatorsAttributesObject()
+                    {
+                        booksOperators = new List<UDMOperators>()
+                        {
+                            new UDMOperators()
+                            {
+                                Origin = new UDMOperatorsDetails()
+                                {
+                                    Source = "AO", CompanyName = "AO Company", CompanyInstanceSourceId = "1234"
+                                },
+                                Translations = new List<UDMOperatorsDetails>()
+                                {
+                                    new UDMOperatorsDetails()
+                                    {
+                                        Source = "UPFM", CompanyName = "UPFM Operator Company", CompanyInstanceSourceId = "cb1f5a51-56cc-415c-9d8e-3d5e3f0f8b68"
+                                    }
+                                }
+                            },
+                            new UDMOperators()
+                            {
+                                Origin = new UDMOperatorsDetails()
+                                {
+                                    Source = "AO", CompanyName = "AO Company 2", CompanyInstanceSourceId = "5432"
+                                },
+                                Translations = new List<UDMOperatorsDetails>()
+                                {
+                                    new UDMOperatorsDetails()
+                                    {
+                                        Source = "UPFM", CompanyName = "UPFM Operator Company 2", CompanyInstanceSourceId = "d0ab0e33-4c04-4028-97f8-cda5a8423a30"
+                                    }
+                                }
+                            },
+                            new UDMOperators()
+                            {
+                                Origin = new UDMOperatorsDetails()
+                                {
+                                    Source = "AO", CompanyName = "AO Company 3 no translate", CompanyInstanceSourceId = "6666"
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
+            List<ProductInternalSetting> productInternalSettings = new List<ProductInternalSetting>()
+            {
+                new ProductInternalSetting() {Name = "BooksUseDomains", Value = "1"},
+                new ProductInternalSetting() {Name = "BooksUseUPFMId", Value = "1"},
+                new ProductInternalSetting() {Name = "BooksUseTranslatev2", Value = "1"}
+            };
+
+            HttpResponseMessage responseMapResource = new HttpResponseMessage(HttpStatusCode.OK);
+            var jsonToSave = JsonConvert.SerializeObject(operatorsRoot);
+            responseMapResource.Content = new StringContent(jsonToSave);
+
+            Mock<IRepository> _mockRepository = new Mock<IRepository>();
+            Mock<HttpMessageHandler> _mockHttpMessageHandler = new Mock<HttpMessageHandler>();
+
+            //Arrange
+            long booksCompanyMasterId = 0;
+            string include = null;
+            string filter = null;
+            string productSource = "OS";
+            string domain = "Primary";
+
+            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/operators/{organizationList[0].RealPageId}/UPFM", responseMapResource);
+
+            _mockRepository
+                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
+                .Returns(productInternalSettings);
+
+            ProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository(_mockRepository.Object);
+
+            IManageBlueBook _manageBlueBook = new ManageBlueBook(_userClaims, _mockRepository.Object, productInternalSettingRepository, _mockHttpMessageHandler.Object);
+
+            new RPObjectCache().BustCache();
+
+            //Act
+            var result = _manageBlueBook.GetOperatorListForUPFMCompany(organizationList[0].RealPageId, "UPFM");
+
+            //Assert
+            Assert.True(result.Count() == 2);
+
+        }
+
+        [Fact]
+        public void GetUPFMOperators_NotFound()
+        {
+            var organizationList = new List<Organization>()
+            {
+                new Organization()
+                {
+                    RealPageId = _RealPageId,
+                    CreateDate = _CreateDate,
+                    Name = _CompanyName,
+                    PartyId = _PartyId,
+                    BooksMasterId = _BooksMasterId,
+                    BooksCustomerMasterId = _BooksCompanyMasterId,
+                    organizationType = new OrganizationType()
+                    {
+                        OrganizationTypeId = _organizationTypeId,
+                        Name = "Multifamily",
+                        CreateDate = new DateTime()
+                    },
+                    OrganizationTypeId = _organizationTypeId,
+                    OrganizationDomainId = 1,
+                    OrganizationDomain = new OrganizationDomain()
+                    {
+                        OrganizationDomainId = 1,
+                        Name = "Primary",
+                        CreateDate = new DateTime()
+                    },
+                }
+            };
+
+            DefaultUserClaim _userClaims = new DefaultUserClaim()
+            {
+                LoginName = "MocTest",
+                CorrelationId = Guid.NewGuid(),
+                OrganizationName = "MocTest",
+                OrganizationPartyId = 1,
+                OrganizationRealPageGuid = Guid.NewGuid(),
+                OrganizationMasterId = 1,
+                UserRealPageGuid = Guid.NewGuid(),
+                PersonaId = 33
+            };
+            
+            List<ProductInternalSetting> productInternalSettings = new List<ProductInternalSetting>()
+            {
+                new ProductInternalSetting() {Name = "BooksUseDomains", Value = "1"},
+                new ProductInternalSetting() {Name = "BooksUseUPFMId", Value = "1"},
+                new ProductInternalSetting() {Name = "BooksUseTranslatev2", Value = "1"}
+            };
+
+            HttpResponseMessage responseMapResource = new HttpResponseMessage(HttpStatusCode.NotFound);
+
+            Mock<IRepository> _mockRepository = new Mock<IRepository>();
+            Mock<HttpMessageHandler> _mockHttpMessageHandler = new Mock<HttpMessageHandler>();
+
+            //Arrange
+            long booksCompanyMasterId = 0;
+            string include = null;
+            string filter = null;
+            string productSource = "OS";
+            string domain = "Primary";
+
+            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/operators/{organizationList[0].RealPageId}/UPFM", responseMapResource);
+
+            _mockRepository
+                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
+                .Returns(productInternalSettings);
+
+            ProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository(_mockRepository.Object);
+
+            IManageBlueBook _manageBlueBook = new ManageBlueBook(_userClaims, _mockRepository.Object, productInternalSettingRepository, _mockHttpMessageHandler.Object);
+
+            new RPObjectCache().BustCache();
+
+            //Act
+            var result = _manageBlueBook.GetOperatorListForUPFMCompany(organizationList[0].RealPageId, "UPFM");
+
+            //Assert
+            Assert.True(!result.Any());
+
+        }
     }
 }

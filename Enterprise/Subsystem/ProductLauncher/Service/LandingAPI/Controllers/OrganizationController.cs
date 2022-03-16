@@ -1270,6 +1270,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		/// <param name="editorPersonaId">editorPersonaId</param>
 		/// <param name="isSelectedProperties">isSelectedProperties</param>
 		/// <param name="selectedProperties"></param>
+		/// <param name="operatorInstanceId">The guid of the operator to filter the property list to</param>
 		/// <returns>List of Properties for a company </returns>
 		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
@@ -1278,7 +1279,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [Route("CompanySetup/CompanyPropertyList")]
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         [HttpPost]
-        public HttpResponseMessage GetPropertiesForCompany(Guid companyInstanceId, [FromBody] List<Guid> selectedProperties, string domain = null, string propertyName = null, int? blueId = null, int? status = null, [FromUri] RequestParameter datafilter = null, long userPersonaId = 0, long editorPersonaId = 0, bool? isSelectedProperties = null)
+        public HttpResponseMessage GetPropertiesForCompany(Guid companyInstanceId, [FromBody] List<Guid> selectedProperties, string domain = null, string propertyName = null, int? blueId = null, int? status = null, [FromUri] RequestParameter datafilter = null, long userPersonaId = 0, long editorPersonaId = 0, bool? isSelectedProperties = null, [FromUri] Guid? operatorInstanceId = null)
         {
             if (companyInstanceId == Guid.Empty)
             {
@@ -1296,8 +1297,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             globals.Add(BaseType.RequestParameter, datafilter);
             var cacheKey = $"getPropertyInstanceForCompany_{companyInstanceId}";
+            //todo add launchdarkly setting check
+            if (operatorInstanceId.HasValue)
+            {
+                cacheKey = $"getPropertyInstanceForCompanyByOperatorId_{companyInstanceId}_{operatorInstanceId}";
+            }
+            
+
             RPObjectCache.RemoveFromCache(cacheKey);
-            List<CompanyPropertySetup> companyPropertySetup = _manageOrganization.GetPropertiesForCompany(companyInstanceId, propertyName, domain, blueId, status, globals, editorPersonaId, userPersonaId, isSelectedProperties, selectedProperties);
+            List<CompanyPropertySetup> companyPropertySetup = _manageOrganization.GetPropertiesForCompany(companyInstanceId, propertyName, domain, blueId, status, globals, editorPersonaId, userPersonaId, isSelectedProperties, selectedProperties, operatorInstanceId);
 
             int totalRecords = 0;
             if (companyPropertySetup.Count > 0)
@@ -1584,7 +1592,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 errorStatus.Success = false;
                 errorStatus.ErrorCode = "CompanySetup.ListPropertyExport.1";
-                errorStatus.ErrorMsg = "List Proeprty Export: No data";
+                errorStatus.ErrorMsg = "List Property Export: No data";
                 output.Status = errorStatus;
                 return Request.CreateResponse(HttpStatusCode.OK, output);
             }

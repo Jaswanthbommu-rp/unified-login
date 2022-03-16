@@ -400,6 +400,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             return _manageBlueBook.GetUDMSourceList();
         }
 
+        /// <summary>
+        /// Get the list of operators for the current UPFM company
+        /// </summary>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "The list of operators for the current UPFM company", Type = typeof(UPFMOperators))]
+        [Route("operators")]
+        [Authorize]
+        [HttpGet]
+        public IEnumerable<UPFMOperators> GetUDMOperators()
+        {
+            return _manageBlueBook.GetOperatorListForUPFMCompany(_userClaims.OrganizationRealPageGuid, "UPFM");
+        }
+
+
         [Route("product/{productId:int}/persona/{personaId}")]
         [Authorize]
         [HttpGet]

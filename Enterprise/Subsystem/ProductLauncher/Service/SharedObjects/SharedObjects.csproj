@@ -152,6 +152,7 @@
     <Compile Include="Base\RequestParameterModelBinder.cs" />
     <Compile Include="Batch\BatchProcessorGroup.cs" />
     <Compile Include="Batch\EnterpriseRoleBatch.cs" />
+    <Compile Include="BlackBook\UDMOperators.cs" />
     <Compile Include="BlackBook\BooksPropertyInstance.cs" />
     <Compile Include="BlackBook\Company.cs" />
     <Compile Include="BlackBook\CompanyInstance.cs" />
@@ -182,6 +183,7 @@
     <Compile Include="BlackBook\TranslateCompanyInstance.cs" />
     <Compile Include="BlackBook\TranslatePropertyInstance.cs" />
     <Compile Include="BlackBook\UDMSource.cs" />
+    <Compile Include="BlackBook\UPFMOperators.cs" />
     <Compile Include="BlackBook\UPFMProductPropertyInstanceMap.cs" />
     <Compile Include="BlackBook\UPFMProperty.cs" />
     <Compile Include="Constants\BlueBookProductConstants.cs" />

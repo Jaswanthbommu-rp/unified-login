@@ -225,6 +225,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <returns></returns>
         List<BooksPropertyInstance> GetPropertyInstanceForCompany(Guid companyRealPageId);
 
+        /// <summary>
+        /// Used to get the Properties of the company, using the books customer master id or the UPFM id
+        /// </summary>
+        /// <param name="companyRealPageId"></param>
+        /// <param name="operatorRealPageId"></param>
+        /// <returns></returns>
+        List<BooksPropertyInstance> GetPropertyInstanceForCompanyByOperatorId(Guid companyRealPageId, Guid operatorRealPageId);
+
         ///// <summary>
         ///// Get Property Details By CustomerPropertyId(blue book Id)
         ///// </summary>
@@ -296,5 +304,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// </summary>
         /// <returns></returns>
         IEnumerable<UDMSource> GetUDMSourceList();
+
+        IEnumerable<UDMOperators> GetAllOperatorDetailsForUPFMCompany(Guid companyRealPageId, string source);
+        IEnumerable<UPFMOperators> GetOperatorListForUPFMCompany(Guid companyRealPageId, string source);
     }
 }

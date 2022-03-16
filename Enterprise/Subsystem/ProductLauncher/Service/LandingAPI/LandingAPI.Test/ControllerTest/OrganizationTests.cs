@@ -318,6 +318,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             _mockHttpMessageHandler.SetupPatch($"http://localhost/companyinstance/C802694D-5553-4527-8616-3C0F434AE62D/UPFM", new HttpResponseMessage(HttpStatusCode.OK) {Content = new StringContent("{ \"result\" : \"success\"}")});
             _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/propertyinstance?filter[source]=UPFM&filter[companyPropertyInstanceMap.companyInstance.companyInstanceSourceId]=11111111-1111-1111-1111-111111111111&page[size]=9999&include=customerPropertyMap.customerProperty&fields[propertyinstance]=propertyInstanceId,propertyInstanceSourceId,propertyName,source,domain,address&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName", booksPropertyResponse);
             _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/propertyinstance?filter[source]=UPFM&filter[companyPropertyInstanceMap.companyInstance.companyInstanceSourceId]=22222222-2222-2222-2222-222222222222&page[size]=9999&include=customerPropertyMap.customerProperty&fields[propertyinstance]=propertyInstanceId,propertyInstanceSourceId,propertyName,source,domain,address&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName", booksEmptyPropertyResponse);
+
             _mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/translate/v3/propertyinstance/UPFM/OS", booksTranslateOneSiteResponse);
             _mockHttpMessageHandler.Setup(HttpMethod.Put, $"http://localhost/propertyinstance/{propertyGuid}/{ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)}", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
             _mockHttpMessageHandler.Setup(HttpMethod.Put, $"http://localhost/companyinstance/" + _RealPageId.ToString().ToLower() + "/UPFM", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
@@ -2135,10 +2136,129 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             Assert.True(propertyOutput.list[0].Property[0].InstanceId == setup[0].Property[0].InstanceId);
             Assert.True(propertyOutput.list[0].Domain[0] == setup[0].Domain[0]);
         }
+
+        [Fact]
+        public void GetPropertiesForCompanyByOperator_ValidRealPageId_ReturnOrganization()
+        {
+            //Arrange		
+            Guid companyRealPageId = new Guid("11111111-1111-1111-1111-111111111111");
+            //string _companyRealPageId = companyRealPageId.ToString();
+
+            Guid operatorRealPageId = new Guid("22222222-2222-2222-2222-222222222222");
+            //string _operatorRealPageId = operatorRealPageId.ToString();
+
+            var propertySetupList = new List<PropertySetup>()
+            {
+                 new PropertySetup()
+                {
+                    PropertyInstanceId = 105294,
+                    Name = "WOODVILLE VILLAGE",
+                    ContractedName = "WOODVILLE VILLAGE",
+                    Address = "151 CO. RD. 63",
+                    City = "WOODVILLE",
+                    State = "AL",
+                    PostalCode = "35776",
+                    Country = "UNITED STATES",
+                    County = null,
+                    InstanceId = Guid.Parse("003b0509-1189-49dc-bbe6-01c5b6277a83"),
+                    CustomerPropertyId = "1409051",
+                    Domain = "Primary",
+                    TotalRecords = 573
+                 }
+            };
+            List<string> domain = new List<string>()
+            {
+                "Primary"
+            };
+            List<CompanyPropertySetup> setup = new List<CompanyPropertySetup>()
+            {
+                new CompanyPropertySetup()
+                {
+                    Domain = domain,
+                    Property = propertySetupList
+                }
+            };
+            List<ProductInternalSetting> productInternalSettings = new List<ProductInternalSetting>()
+            {
+                new ProductInternalSetting() {Name = "BooksUseDomains", Value = "1"},
+                new ProductInternalSetting() {Name = "BooksUseUPFMId", Value = "1"},
+                new ProductInternalSetting() {Name = "BooksUseTranslatev2", Value = "0"}
+            };
+
+            _mockRepository
+               .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
+               .Returns(productInternalSettings);
+
+            Mock<IRepository> _mockPropertyRepository = new Mock<IRepository>();
+            _mockRepository
+               .Setup(m => m.GetMany<PropertySetup>(StoredProcNameConstants.SP_GetPropertyInstanceListByIdWithPaging,
+                   It.IsAny<object>()))
+               .Returns(propertySetupList);
+
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            )
+            { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
+
+
+            //Act
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
+            List<BooksPropertyInstance> mapResource = new List<BooksPropertyInstance>()
+            {
+                new BooksPropertyInstance()
+                {
+                    id = "1234",
+                    attributes =  new PropertyAttributesInstance()
+                    {
+                        propertyInstanceId = "1005251854",
+                        propertyInstanceSourceId = "003b0509-1189-49dc-bbe6-01c5b6277a83",
+                        propertyName = "COBBLESTONE COVE",
+                        source = "UPFM",
+                        domain = "UAT",
+                        deletedReason =  "Deprecated Field"
+                    }
+                }
+            };
+
+            var mockManageBlueBook = new Mock<IManageBlueBook>();
+            mockManageBlueBook
+                .Setup(m => m.GetPropertyInstanceForCompany(
+                    It.IsAny<Guid>()
+                 ))
+                 .Returns(mapResource);
+
+            HttpResponseMessage responseMapResource = new HttpResponseMessage(HttpStatusCode.OK);
+            var jsonToSave = JsonConvert.SerializeObject(mapResource, new JsonApiSerializerSettings());
+            responseMapResource.Content = new StringContent("{\"data\":[{\"type\":\"bookspropertyinstance\",\"attributes\":{\"propertyInstanceId\":\"1005251854\",\"propertyInstanceSourceId\":\"003b0509-1189-49dc-bbe6-01c5b6277a83\",\"propertyName\":\"COBBLESTONE COVE\",\"source\":\"UPFM\",\"domain\":\"Primary\",\"deletedReason\":\"Deprecated Field\"}}]}");
+
+            HttpResponseMessage responseEmptyMapResource = new HttpResponseMessage(HttpStatusCode.NotFound);
+
+            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/propertyinstance?scope[operatedBy]={companyRealPageId},UPFM,{operatorRealPageId}&page[size]=9999&include=customerPropertyMap.customerProperty&fields[propertyinstance]=propertyInstanceId,propertyInstanceSourceId,propertyName,source,domain,address&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName", responseMapResource);
+            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/propertyinstance?scope[operatedBy]={operatorRealPageId},UPFM,{companyRealPageId}&page[size]=9999&include=customerPropertyMap.customerProperty&fields[propertyinstance]=propertyInstanceId,propertyInstanceSourceId,propertyName,source,domain,address&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName", responseEmptyMapResource);
+
+            HttpResponseMessage response = organizationController.GetPropertiesForCompany(companyRealPageId, null, null, null, operatorInstanceId: operatorRealPageId);
+            ObjectListOutput<CompanyPropertySetup, IErrorData> propertyOutput = new ObjectListOutput<CompanyPropertySetup, IErrorData>();
+            propertyOutput = response.Content.ReadAsAsync<ObjectListOutput<CompanyPropertySetup, IErrorData>>().Result;
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
+            Assert.True(propertyOutput.list[0].Property[0].InstanceId == setup[0].Property[0].InstanceId);
+            Assert.True(propertyOutput.list[0].Domain[0] == setup[0].Domain[0]);
+
+            response = organizationController.GetPropertiesForCompany(operatorRealPageId, null, null, null, operatorInstanceId: companyRealPageId);
+            propertyOutput = response.Content.ReadAsAsync<ObjectListOutput<CompanyPropertySetup, IErrorData>>().Result;
+            Assert.Equal(0, propertyOutput.list[0].Property.Count);
+        }
+
         #endregion
-        
+
         #region Audit property Tests
-        
+
         [Fact]
         public void AuditCompanyProductPropertiesToUPFM_InvalidUserCompany()
         {
