@@ -17,6 +17,7 @@ using System.Collections.Generic;
 using System.Linq;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using System.Net.Http;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.ThirdParty;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -760,17 +761,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					profileDetail.UserTypeId = partyRelationship.RoleTypeIdFrom;
 				}
 
-				//todo: check for feature flag, if turned on exceute following
-				if (true) 
-				{
+                if (FeatureFlag.GetUserCompanyAssociationFeatureFlag())
+                {
 					var data = _userRepository.GetExternalUserRelationship(userLoginPersonaList[0].UserLoginPersonaId);
-
-					profileDetail.ExternalUserRelationship = data == null ? new ExternalUserRelationship() { 
-						UserLoginPersonaId = userLoginPersonaList[0].UserLoginPersonaId } : data;
+					profileDetail.ExternalUserRelationship = data == null ? new ExternalUserRelationship()
+					{
+						UserLoginPersonaId = userLoginPersonaList[0].UserLoginPersonaId
+					} : data;
 				}
+				
 
 				output.obj = profileDetail;
 				output.Status = errorStatus;
+
 				return output;
 			}
 
