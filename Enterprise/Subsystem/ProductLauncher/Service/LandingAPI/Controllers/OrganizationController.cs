@@ -27,6 +27,7 @@ using System.Web.Http.Controllers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using System.ComponentModel.DataAnnotations;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.ThirdParty;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Maintenance;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
@@ -1297,12 +1298,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             globals.Add(BaseType.RequestParameter, datafilter);
             var cacheKey = $"getPropertyInstanceForCompany_{companyInstanceId}";
-            //todo add launchdarkly setting check
-            if (operatorInstanceId.HasValue)
+            if (!FeatureFlag.GetUserCompanyAssociationFeatureFlag())
             {
-                cacheKey = $"getPropertyInstanceForCompanyByOperatorId_{companyInstanceId}_{operatorInstanceId}";
+                operatorInstanceId = null;
             }
-            
+            else
+            {
+                if (operatorInstanceId.HasValue)
+                {
+                    cacheKey = $"getPropertyInstanceForCompanyByOperatorId_{companyInstanceId}_{operatorInstanceId}";
+                }
+            }
 
             RPObjectCache.RemoveFromCache(cacheKey);
             List<CompanyPropertySetup> companyPropertySetup = _manageOrganization.GetPropertiesForCompany(companyInstanceId, propertyName, domain, blueId, status, globals, editorPersonaId, userPersonaId, isSelectedProperties, selectedProperties, operatorInstanceId);
