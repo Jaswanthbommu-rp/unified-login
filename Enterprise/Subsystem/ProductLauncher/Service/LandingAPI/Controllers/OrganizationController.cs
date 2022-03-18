@@ -27,6 +27,7 @@ using System.Web.Http.Controllers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using System.ComponentModel.DataAnnotations;
+using LaunchDarkly.Sdk.Server.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.ThirdParty;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Maintenance;
 
@@ -70,6 +71,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _propertyRepository = new PropertyRepository(repository);
             _manageProduct = new ManageProduct(repository, userClaims, messageHandler);
             _manageOrganizationProduct = new ManageOrganizationProduct(userClaims, repository, _manageBlueBook, _manageProduct);
+        }
+
+        /// <summary>
+        /// Unit test constructor
+        /// </summary>
+        /// <param name="repository"></param>
+        /// <param name="repositoryResponse"></param>
+        /// <param name="messageHandler"></param>
+        /// <param name="userClaims"></param>
+        public OrganizationController(IRepository repository, IRepositoryResponse repositoryResponse, HttpMessageHandler messageHandler, ILdClient ldClient, DefaultUserClaim userClaims)
+        {
+            _repository = repository;
+            _repositoryResponse = repositoryResponse;
+            _organizationProductRepository = new OrganizationProductRepository(repository);
+            _manageCustomFields = new ManageCustomFields(new CustomFieldsRepository(repository), userClaims);
+            _manageUserLogin = new ManageUserLogin(repository, userClaims, messageHandler);
+            _managePartyRelationship = new ManagePartyRelationship(new PartyRelationshipRepository(repository));
+            _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
+            _manageBlueBook = new ManageBlueBook(userClaims, repository, _productInternalSettingRepository, messageHandler);
+            _manageOrganization = new ManageOrganization(repository, userClaims, messageHandler);
+            _messageHandler = messageHandler;
+            _userClaims = userClaims;
+            _propertyRepository = new PropertyRepository(repository);
+            _manageProduct = new ManageProduct(repository, userClaims, messageHandler);
+            _manageOrganizationProduct = new ManageOrganizationProduct(userClaims, repository, _manageBlueBook, _manageProduct);
+            FeatureFlag.LdClient = ldClient;
         }
 
         /// <summary>
@@ -1298,6 +1325,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             globals.Add(BaseType.RequestParameter, datafilter);
             var cacheKey = $"getPropertyInstanceForCompany_{companyInstanceId}";
+
             if (!FeatureFlag.GetUserCompanyAssociationFeatureFlag())
             {
                 operatorInstanceId = null;

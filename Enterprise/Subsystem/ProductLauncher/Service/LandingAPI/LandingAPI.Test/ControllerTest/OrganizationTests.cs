@@ -27,10 +27,11 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Web.Http;
 using System.Web.Http.Dispatcher;
+using LaunchDarkly.Sdk.Server.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Maintenance;
 using Xunit;
+using HttpConfiguration = System.Web.Http.HttpConfiguration;
 using RoleType = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig.RoleType;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
@@ -39,8 +40,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
     public class OrganizationTests
     {
         #region Private Variables
+
         public static readonly Guid EmployeeCompanyRealPageId = new Guid("0D018E46-C20E-477D-ADED-4E5A35FB8F99");
-        
+
         Mock<IRepository> _mockRepository = new Mock<IRepository>();
         Mock<IUnitOfWork> _mockUnitofWork = new Mock<IUnitOfWork>();
         Mock<IRepositoryResponse> _mockRepositoryResponse = new Mock<IRepositoryResponse>();
@@ -71,80 +73,80 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         {
             _gbProductMap = new List<GbProductMap>
             {
-                new GbProductMap() {BooksProductCode = "OS", Name = "OneSite", ProductId = 1, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "UI", Name = "UnifiedUI", ProductId = 2, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "UPFM", Name = "Unified Platform", ProductId = 3, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "AO", Name = "Asset Optimization", ProductId = 4, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "PW", Name = "Propertyware", ProductId = 5, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "L2L", Name = "Lead2Lease", ProductId = 6, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "YS", Name = "YieldStar", ProductId = 7, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "ACCT", Name = "Financial Suite", ProductId = 8, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "LS", Name = "Marketing Center", ProductId = 9, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "LVL1", Name = "Prospect Contact Center", ProductId = 10, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "??", Name = "Social", ProductId = 11, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "OPSB", Name = "Ops Bid", ProductId = 12, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "OPS", Name = "Spend Management", ProductId = 13, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "OMS", Name = "Client Portal", ProductId = 14, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "LD", Name = "Renters Insurance", ProductId = 15, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "CD", Name = "Vendor Credentialing", ProductId = 16, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "AB", Name = "Resident Portals", ProductId = 17, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "NWP", Name = "Utility Management", ProductId = 18, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "LP", Name = "Product Learning Portal", ProductId = 19, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "DOC", Name = "Document Director", ProductId = 20, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "OSC", Name = "L&R Conversion Utility", ProductId = 21, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "OC", Name = "OmniChannel", ProductId = 22, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "ONST", Name = "On-Site", ProductId = 23, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "RA", Name = "Unified Data Management", ProductId = 24, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "SP", Name = "Self-provisioning portal", ProductId = 25, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "UA", Name = "Unified Amenities", ProductId = 26, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "MT", Name = "Migration Tool Application", ProductId = 27, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "PUPDATE", Name = "Product Updates", ProductId = 28, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "BI", Name = "Business Intelligence", ProductId = 29, UDMSourceCode = "AO"},
-                new GbProductMap() {BooksProductCode = "PA", Name = "Performance Analytics", ProductId = 30, UDMSourceCode = "AO"},
-                new GbProductMap() {BooksProductCode = "MA", Name = "Investment Analytics", ProductId = 31, UDMSourceCode = "AO"},
-                new GbProductMap() {BooksProductCode = "PO", Name = "YieldStar", ProductId = 32, UDMSourceCode = "AO"},
-                new GbProductMap() {BooksProductCode = "AX", Name = "Axiometrics", ProductId = 33, UDMSourceCode = "AO"},
-                new GbProductMap() {BooksProductCode = "BM", Name = "Benchmarking", ProductId = 34, UDMSourceCode = "AO"},
-                new GbProductMap() {BooksProductCode = "null", Name = "Support Tool", ProductId = 35, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "ELMS", Name = "EasyLMS", ProductId = 36, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "PHOTO", Name = "Property Photos", ProductId = 37, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "VMP", Name = "Vendor Marketplace", ProductId = 38, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "IMP", Name = "Integration Marketplace", ProductId = 39, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "ILMLM", Name = "ILM Lead Management", ProductId = 40, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "ILMLA", Name = "ILM Leasing Analytics", ProductId = 41, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "SM", Name = "Settings Management", ProductId = 43, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "RPM", Name = "Portfolio Management", ProductId = 44, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "CIMPL", Name = "CIMPL", ProductId = 45, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "SSM", Name = "Site Spend Management Portal", ProductId = 46, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "DIQ", Name = "Deposit Alternative", ProductId = 47, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "CPAY", Name = "ClickPay", ProductId = 48, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "HLP", Name = "Simon Help Center", ProductId = 49, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "SLM", Name = "Senior Lead Management", ProductId = 50, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "LRO", Name = "LRO", ProductId = 51, UDMSourceCode = "AO"},
-                new GbProductMap() {BooksProductCode = "AA", Name = "Amenity Optimization", ProductId = 52, UDMSourceCode = "AO"},
-                new GbProductMap() {BooksProductCode = "AIRM", Name = "AI Revenue Management", ProductId = 53, UDMSourceCode = "AO"},
-                new GbProductMap() {BooksProductCode = "RC", Name = "Rent Control", ProductId = 54, UDMSourceCode = "AO"},
-                new GbProductMap() {BooksProductCode = "RENO", Name = "Renovation Manager", ProductId = 55, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "SET", Name = "Unified Settings", ProductId = 56, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "SMS-T", Name = "Intelligent Building", ProductId = 57, UDMSourceCode = "IB"},
-                new GbProductMap() {BooksProductCode = "SMS-E", Name = "Intelligent Building Energy", ProductId = 58, UDMSourceCode = "IB"},
-                new GbProductMap() {BooksProductCode = "SMS-W", Name = "Intelligent Building Water", ProductId = 59, UDMSourceCode = "IB"},
-                new GbProductMap() {BooksProductCode = "HAAS", Name = "Home Sharing", ProductId = 60, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "PME", Name = "PME Dashboard", ProductId = 62, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "RMA", Name = "Market Analytics", ProductId = 66, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "ST", Name = "Support Tool", ProductId = 35, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "HOTS", Name = "Hands On Training System", ProductId = 63, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "PEQ", Name = "P2 Engagement Queue", ProductId = 64, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "LeaseLabs", Name = "LeaseLabs", ProductId = 68, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "RPT", Name = "Reporting", ProductId = 67, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "6247", Name = "Self-Guided Tour", ProductId = 65, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode = "LST", Name = "Lead Scoring", ProductId = 69, UDMSourceCode = null},
-                new GbProductMap() {BooksProductCode ="SMS-TC",Name="Smart Waste Commercial",ProductId =70, UDMSourceCode ="IB"},
-                new GbProductMap() {BooksProductCode ="OS",Name="Facilities",ProductId =75, UDMSourceCode =null}
+                new GbProductMap() { BooksProductCode = "OS", Name = "OneSite", ProductId = 1, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "UI", Name = "UnifiedUI", ProductId = 2, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "UPFM", Name = "Unified Platform", ProductId = 3, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "AO", Name = "Asset Optimization", ProductId = 4, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "PW", Name = "Propertyware", ProductId = 5, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "L2L", Name = "Lead2Lease", ProductId = 6, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "YS", Name = "YieldStar", ProductId = 7, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "ACCT", Name = "Financial Suite", ProductId = 8, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "LS", Name = "Marketing Center", ProductId = 9, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "LVL1", Name = "Prospect Contact Center", ProductId = 10, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "??", Name = "Social", ProductId = 11, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "OPSB", Name = "Ops Bid", ProductId = 12, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "OPS", Name = "Spend Management", ProductId = 13, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "OMS", Name = "Client Portal", ProductId = 14, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "LD", Name = "Renters Insurance", ProductId = 15, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "CD", Name = "Vendor Credentialing", ProductId = 16, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "AB", Name = "Resident Portals", ProductId = 17, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "NWP", Name = "Utility Management", ProductId = 18, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "LP", Name = "Product Learning Portal", ProductId = 19, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "DOC", Name = "Document Director", ProductId = 20, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "OSC", Name = "L&R Conversion Utility", ProductId = 21, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "OC", Name = "OmniChannel", ProductId = 22, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "ONST", Name = "On-Site", ProductId = 23, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "RA", Name = "Unified Data Management", ProductId = 24, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "SP", Name = "Self-provisioning portal", ProductId = 25, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "UA", Name = "Unified Amenities", ProductId = 26, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "MT", Name = "Migration Tool Application", ProductId = 27, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "PUPDATE", Name = "Product Updates", ProductId = 28, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "BI", Name = "Business Intelligence", ProductId = 29, UDMSourceCode = "AO" },
+                new GbProductMap() { BooksProductCode = "PA", Name = "Performance Analytics", ProductId = 30, UDMSourceCode = "AO" },
+                new GbProductMap() { BooksProductCode = "MA", Name = "Investment Analytics", ProductId = 31, UDMSourceCode = "AO" },
+                new GbProductMap() { BooksProductCode = "PO", Name = "YieldStar", ProductId = 32, UDMSourceCode = "AO" },
+                new GbProductMap() { BooksProductCode = "AX", Name = "Axiometrics", ProductId = 33, UDMSourceCode = "AO" },
+                new GbProductMap() { BooksProductCode = "BM", Name = "Benchmarking", ProductId = 34, UDMSourceCode = "AO" },
+                new GbProductMap() { BooksProductCode = "null", Name = "Support Tool", ProductId = 35, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "ELMS", Name = "EasyLMS", ProductId = 36, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "PHOTO", Name = "Property Photos", ProductId = 37, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "VMP", Name = "Vendor Marketplace", ProductId = 38, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "IMP", Name = "Integration Marketplace", ProductId = 39, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "ILMLM", Name = "ILM Lead Management", ProductId = 40, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "ILMLA", Name = "ILM Leasing Analytics", ProductId = 41, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "SM", Name = "Settings Management", ProductId = 43, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "RPM", Name = "Portfolio Management", ProductId = 44, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "CIMPL", Name = "CIMPL", ProductId = 45, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "SSM", Name = "Site Spend Management Portal", ProductId = 46, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "DIQ", Name = "Deposit Alternative", ProductId = 47, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "CPAY", Name = "ClickPay", ProductId = 48, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "HLP", Name = "Simon Help Center", ProductId = 49, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "SLM", Name = "Senior Lead Management", ProductId = 50, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "LRO", Name = "LRO", ProductId = 51, UDMSourceCode = "AO" },
+                new GbProductMap() { BooksProductCode = "AA", Name = "Amenity Optimization", ProductId = 52, UDMSourceCode = "AO" },
+                new GbProductMap() { BooksProductCode = "AIRM", Name = "AI Revenue Management", ProductId = 53, UDMSourceCode = "AO" },
+                new GbProductMap() { BooksProductCode = "RC", Name = "Rent Control", ProductId = 54, UDMSourceCode = "AO" },
+                new GbProductMap() { BooksProductCode = "RENO", Name = "Renovation Manager", ProductId = 55, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "SET", Name = "Unified Settings", ProductId = 56, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "SMS-T", Name = "Intelligent Building", ProductId = 57, UDMSourceCode = "IB" },
+                new GbProductMap() { BooksProductCode = "SMS-E", Name = "Intelligent Building Energy", ProductId = 58, UDMSourceCode = "IB" },
+                new GbProductMap() { BooksProductCode = "SMS-W", Name = "Intelligent Building Water", ProductId = 59, UDMSourceCode = "IB" },
+                new GbProductMap() { BooksProductCode = "HAAS", Name = "Home Sharing", ProductId = 60, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "PME", Name = "PME Dashboard", ProductId = 62, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "RMA", Name = "Market Analytics", ProductId = 66, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "ST", Name = "Support Tool", ProductId = 35, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "HOTS", Name = "Hands On Training System", ProductId = 63, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "PEQ", Name = "P2 Engagement Queue", ProductId = 64, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "LeaseLabs", Name = "LeaseLabs", ProductId = 68, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "RPT", Name = "Reporting", ProductId = 67, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "6247", Name = "Self-Guided Tour", ProductId = 65, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "LST", Name = "Lead Scoring", ProductId = 69, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "SMS-TC", Name = "Smart Waste Commercial", ProductId = 70, UDMSourceCode = "IB" },
+                new GbProductMap() { BooksProductCode = "OS", Name = "Facilities", ProductId = 75, UDMSourceCode = null }
 
 
             };
-            
+
             _defaultUserClaim.CorrelationId = new Guid();
             _defaultUserClaim.CustomerMasterId = _BooksCompanyMasterId;
             _defaultUserClaim.OrganizationPartyId = _PartyId;
@@ -218,19 +220,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                     CompanyInstanceSourceId = _RealPageId.ToString(), Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
                     CompanyInstance = new List<CompanyInstance>()
                     {
-                        new CompanyInstance() {CustomerEnvironment = "Primary", IsActive = true}
+                        new CompanyInstance() { CustomerEnvironment = "Primary", IsActive = true }
                     }
                 }
             };
 
             List<ProductInternalSetting> productInternalSettings = new List<ProductInternalSetting>()
             {
-                new ProductInternalSetting() {Name = "BooksUseDomains", Value = "1"}, 
-                new ProductInternalSetting() {Name = "BooksUseUPFMId", Value = "1"},
-                new ProductInternalSetting() {Name = "SettingsApiEndPoint", Value = "http://localhost"},
-                new ProductInternalSetting() {Name = "UnifiedLoginServerClientName", Value = "unifiedlogin-server"},
-                new ProductInternalSetting() {Name = "UnifiedLoginServerClientSecret", Value = "abcdefgh"},
-                new ProductInternalSetting() {Name = "UpdateProductInUDM", Value = "1"},
+                new ProductInternalSetting() { Name = "BooksUseDomains", Value = "1" },
+                new ProductInternalSetting() { Name = "BooksUseUPFMId", Value = "1" },
+                new ProductInternalSetting() { Name = "SettingsApiEndPoint", Value = "http://localhost" },
+                new ProductInternalSetting() { Name = "UnifiedLoginServerClientName", Value = "unifiedlogin-server" },
+                new ProductInternalSetting() { Name = "UnifiedLoginServerClientSecret", Value = "abcdefgh" },
+                new ProductInternalSetting() { Name = "UpdateProductInUDM", Value = "1" },
             };
 
             HttpResponseMessage responseMapResource = new HttpResponseMessage(HttpStatusCode.OK);
@@ -307,16 +309,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Returns(productInternalSettings);
 
             _mockTokenHelper
-                  .Setup(m => m.GetUnifiedLoginServerToken("unifiedsettingsapi"))
-              .Returns("abcdedfghijklmnilol");
+                .Setup(m => m.GetUnifiedLoginServerToken("unifiedsettingsapi"))
+                .Returns("abcdedfghijklmnilol");
 
             _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompanymap?filter[companyInstanceSourceId]={_RealPageId}&include=companyInstance", responseMapResource);
             _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompanymap?filter[companyInstance.domain]=Primary&filter[customerCompanyId]={_BooksCompanyMasterId}&include=companyInstance&include=companyInstance.attributes&filter[source]=UPFM", responseMapResource);
             _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompanymap?filter[companyInstance.greenBookCares]=true&filter[customerCompanyId]={_BooksCompanyMasterId}&include=companyInstance&include=companyInstance.attributes", responseMapResource);
             _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompanymap?filter[customerCompanyId]={_BooksCompanyMasterId}&include=companyInstance&include=companyInstance.attributes&filter[source]=UPFM", responseMapResource);
-            _mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/companyinstance", new HttpResponseMessage(HttpStatusCode.OK) {Content = new StringContent("{ \"result\" : \"success\"}")});
-            _mockHttpMessageHandler.Setup(HttpMethod.Delete, $"http://localhost/companyinstance/54321?modifiedBy=UPFM+Automation", new HttpResponseMessage(HttpStatusCode.OK) {Content = new StringContent("{ \"result\" : \"success\"}")});
-            _mockHttpMessageHandler.SetupPatch($"http://localhost/companyinstance/C802694D-5553-4527-8616-3C0F434AE62D/UPFM", new HttpResponseMessage(HttpStatusCode.OK) {Content = new StringContent("{ \"result\" : \"success\"}")});
+            _mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/companyinstance", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
+            _mockHttpMessageHandler.Setup(HttpMethod.Delete, $"http://localhost/companyinstance/54321?modifiedBy=UPFM+Automation", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
+            _mockHttpMessageHandler.SetupPatch($"http://localhost/companyinstance/C802694D-5553-4527-8616-3C0F434AE62D/UPFM", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
             _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/propertyinstance?filter[source]=UPFM&filter[companyPropertyInstanceMap.companyInstance.companyInstanceSourceId]=11111111-1111-1111-1111-111111111111&page[size]=9999&include=customerPropertyMap.customerProperty&fields[propertyinstance]=propertyInstanceId,propertyInstanceSourceId,propertyName,source,domain,address&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName", booksPropertyResponse);
             _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/propertyinstance?filter[source]=UPFM&filter[companyPropertyInstanceMap.companyInstance.companyInstanceSourceId]=22222222-2222-2222-2222-222222222222&page[size]=9999&include=customerPropertyMap.customerProperty&fields[propertyinstance]=propertyInstanceId,propertyInstanceSourceId,propertyName,source,domain,address&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName", booksEmptyPropertyResponse);
 
@@ -327,10 +329,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompany?filter[customerCompanyId]=in:1&include=customerCompanyLocation", booksCustomerCompanyResponse);
             _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/domain/customercompany/1", booksCompanyMasterDomainListResponse);
             _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/companyinstance?filter[source]=UPFM&filter[customerCompanyMap.customerCompanyId]=1&fields[companyinstance]=companyInstanceId,source,companyInstanceSourceId,companyName,companyType,isActive,domain", booksCompanyInstancesResponse);
-        
-            
+
+
             _mockHttpMessageHandler.Setup(HttpMethod.Put, $"http://localhost/v2/provisioning/property", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
-            
+
         }
 
         #region Controller Unit Tests
@@ -364,7 +366,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         {
             return obj.ToString().Contains($"BlackBookId = {booksMasterId}");
         }
-        
+
         public bool TestSqlParameter(object p, string value)
         {
             return value.Equals(p.ToString(), StringComparison.OrdinalIgnoreCase);
@@ -374,13 +376,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         {
             return p.ToString().ToLower().Contains(value);
         }
-        
+
         //public bool TestSqlParameterTableValueParameter(object p, string value)
         //{
         //    (Dapper.TableValuedParameter)
         //    return p.ToString().ToLower().Contains(value);
         //}
-          
+
 
         [Fact]
         public void InsertOrganization_VerifyRouteToAction_ReturnAction()
@@ -436,7 +438,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 , _mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
-            ) {Request = new HttpRequestMessage(), Configuration = new HttpConfiguration()};
+            ) { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
 
             //Act
             RPObjectCache rPObjectCache = new RPObjectCache();
@@ -480,7 +482,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 , _mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
-            ) {Request = new HttpRequestMessage(), Configuration = new HttpConfiguration()};
+            ) { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
 
             //Act
             RPObjectCache rPObjectCache = new RPObjectCache();
@@ -522,7 +524,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 , _mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
-            ) {Request = new HttpRequestMessage(), Configuration = new HttpConfiguration()};
+            ) { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
 
             //Act
             RPObjectCache rPObjectCache = new RPObjectCache();
@@ -571,7 +573,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 , _mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
-            ) {Request = new HttpRequestMessage(), Configuration = new HttpConfiguration()};
+            ) { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
 
             //Act
             RPObjectCache rPObjectCache = new RPObjectCache();
@@ -620,7 +622,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 , _mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
-            ) {Request = new HttpRequestMessage(), Configuration = new HttpConfiguration()};
+            ) { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
 
             //Act
             RPObjectCache rPObjectCache = new RPObjectCache();
@@ -635,7 +637,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             Assert.True(expectedValue == message);
         }
 
-        [Fact(Skip ="Scenario not in use")]
+        [Fact(Skip = "Scenario not in use")]
         public void InsertOrganization_AdminExits_BadRequest()
         {
             _mockRepository
@@ -661,7 +663,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 , _mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
-            ) {Request = new HttpRequestMessage(), Configuration = new HttpConfiguration()};
+            ) { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
 
             OrganizationCreate organizationCreate = new OrganizationCreate()
             {
@@ -728,7 +730,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 , _mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
-            ) {Request = new HttpRequestMessage(), Configuration = new HttpConfiguration()};
+            ) { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
 
             OrganizationCreate organizationCreate = new OrganizationCreate()
             {
@@ -818,8 +820,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             List<ProductInternalSetting> productInternalSettings = new List<ProductInternalSetting>()
             {
-                new ProductInternalSetting() {Name = "UpdateProductInUDM", Value = "1"},
-                new ProductInternalSetting() {Name = "SettingsApiEndPoint", Value = "http://localhost"}
+                new ProductInternalSetting() { Name = "UpdateProductInUDM", Value = "1" },
+                new ProductInternalSetting() { Name = "SettingsApiEndPoint", Value = "http://localhost" }
             };
 
             var mockRepository = new Mock<IRepository>();
@@ -835,8 +837,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Returns(repositoryResponse);
 
             mockRepository
-              .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_CreateUsePrimaryPropertyMasterConfigurationSetting, It.IsAny<object>()))
-              .Returns(repositoryResponse);
+                .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_CreateUsePrimaryPropertyMasterConfigurationSetting, It.IsAny<object>()))
+                .Returns(repositoryResponse);
 
             mockRepository
                 .SetupSequence(m => m.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, It.IsAny<object>()))
@@ -849,7 +851,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             mockRepository
                 .Setup(m => m.GetMany<OrganizationDomain>(StoredProcNameConstants.SP_ListOrganizationDomain, null))
                 .Returns(organizationDomainList);
-            
+
             mockRepository
                 .Setup(m => m.UnitOfWork)
                 .Returns(_mockUnitofWork.Object);
@@ -869,15 +871,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Setup(m => m.GetMany<ProductUI>(StoredProcNameConstants.SP_ListProductsByOrganization,
                     It.Is<object>(
                         d => TestIsRealPageId(d, _RealPageId))))
-                .Returns(new List<ProductUI>(){ new PersonaProductUserDetails() { ProductId = 1}});
+                .Returns(new List<ProductUI>() { new PersonaProductUserDetails() { ProductId = 1 } });
 
             mockRepository
                 .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
                 .Returns(productInternalSettings);
 
-            mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/companyinstance", new HttpResponseMessage(HttpStatusCode.OK) {Content = new StringContent("{ \"result\" : \"success\"}")});
-            mockHttpMessageHandler.Setup(HttpMethod.Put, $"http://localhost/companyinstance/" + _RealPageId.ToString().ToLower() + "/UPFM", new HttpResponseMessage(HttpStatusCode.OK) {Content = new StringContent("{ \"result\" : \"success\"}")});
-            mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/systemproductcenter", new HttpResponseMessage(HttpStatusCode.OK) {Content = new StringContent("{ \"result\" : \"success\"}")});
+            mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/companyinstance", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
+            mockHttpMessageHandler.Setup(HttpMethod.Put, $"http://localhost/companyinstance/" + _RealPageId.ToString().ToLower() + "/UPFM", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
+            mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/systemproductcenter", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
             mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/companyinstance/1051412/OS", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("\r\n{\"data\":{\"type\":\"companyinstance\",\"id\":\"651250\",\"attributes\":{\"companyInstanceId\":651250,\"source\":\"OS\",\"companyInstanceSourceId\":\"1051412\",\"companyName\":\"Camden\",\"phoneNumber\":\"(713) 354-2500\",\"formerlyKnownAs\":null,\"legalEntityName\":null,\"companyType\":null,\"website\":\"camdenproperty.onesite.realpage.com\",\"isActive\":true,\"isUat\":false,\"createdAt\":\"2017-04-13 11:56:12.000000-0500\",\"modifiedAt\":\"2020-09-14 16:35:16.000000-0500\",\"createdBy\":null,\"modifiedBy\":\"x - API\",\"deletedAt\":null,\"nrrReason\":null,\"deletedBy\":null,\"greenBookCares\":true,\"marketSegment\":[],\"nrr\":false,\"modifiedSource\":null,\"isAcquired\":false,\"customerEnvironment\":\"Primary\",\"domain\":\"Primary\",\"deletedReason\":\"Deprecated Field\"},\"links\":{\"self\":\"\\/companyinstance\\/651250\"}}}") });
             mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/v2/provisioning/company", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
             OrganizationController organizationController = new OrganizationController(
@@ -885,7 +887,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 , _mockRepositoryResponse.Object
                 , mockHttpMessageHandler.Object
                 , _defaultUserClaim
-            ) {Request = new HttpRequestMessage(), Configuration = new HttpConfiguration()};
+            ) { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
 
             OrganizationCreate organizationCreate = new OrganizationCreate()
             {
@@ -909,7 +911,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 },
                 CompanyInstancePartner = "OS",
                 CompanyInstancePartnerSourceId = "1051412",
-                CompanyAddress = new CompanyInstanceAddress() { Address = "1234 Address", City = "Some City", State = "State", Country = "USA", PostalCode = "12345"}
+                CompanyAddress = new CompanyInstanceAddress() { Address = "1234 Address", City = "Some City", State = "State", Country = "USA", PostalCode = "12345" }
             };
 
             //Act
@@ -938,7 +940,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             var companySetupList = new List<CompanySetup>()
             {
-                 new CompanySetup()
+                new CompanySetup()
                 {
                     OrganizationPartyId = 3,
                     OrganizationName = "RealPage",
@@ -951,7 +953,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                     OrganizationDomainId = 1,
                     Domain = "Primary",
                     Products = 3
-                 }
+                }
             };
 
             Organization organization = new Organization();
@@ -967,17 +969,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Returns(repositoryResponse);
 
             _mockRepository
-            .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_CreateUsePrimaryPropertyMasterConfigurationSetting, It.IsAny<object>()))
-            .Returns(repositoryResponse);
+                .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_CreateUsePrimaryPropertyMasterConfigurationSetting, It.IsAny<object>()))
+                .Returns(repositoryResponse);
 
             _mockRepository
-           .Setup(m => m.Execute<string>(StoredProcNameConstants.SP_GetOrganizationSettingValue, null))
-           .Returns("0");
+                .Setup(m => m.Execute<string>(StoredProcNameConstants.SP_GetOrganizationSettingValue, null))
+                .Returns("0");
 
             _mockRepository
-               .Setup(m => m.GetMany<CompanySetup>(StoredProcNameConstants.SP_ListCompanySetup,
-                   It.IsAny<object>()))
-               .Returns(companySetupList);
+                .Setup(m => m.GetMany<CompanySetup>(StoredProcNameConstants.SP_ListCompanySetup,
+                    It.IsAny<object>()))
+                .Returns(companySetupList);
 
             new RPObjectCache().BustCache();
 
@@ -986,7 +988,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 , _mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
-            ) {Request = new HttpRequestMessage(), Configuration = new HttpConfiguration()};
+            ) { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
 
             OrganizationUpdate organizationUpdate = new OrganizationUpdate()
             {
@@ -1003,12 +1005,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             List<Company> mapResource = new List<Company>()
             {
-               new Company()
-               {
-                   Id = "775",
-                   CustomerCompanyId = 775,
-                   CompanyName = "121 7TH STREET, LLC"
-               }
+                new Company()
+                {
+                    Id = "775",
+                    CustomerCompanyId = 775,
+                    CompanyName = "121 7TH STREET, LLC"
+                }
             };
 
             var upfmCompanyInstancesJson = "{\"data\":[{\"type\":\"companyinstance\",\"id\":\"1049316\",\"attributes\":{\"companyInstanceId\":1049316,\"source\":\"UPFM\",\"companyInstanceSourceId\":\"daf71f77-4558-4cb0-91b8-29d8b0e62f15\",\"companyName\":\"CF Real Estate Services\",\"companyType\":\"Multifamily\",\"isActive\":true,\"domain\":\"Primary\",\"deletedReason\":\"Deprecated Field\",\"marketSegment\":[]},\"links\":{\"self\":\"\\/companyinstance\\/1049316\"}},{\"type\":\"companyinstance\",\"id\":\"1068792\",\"attributes\":{\"companyInstanceId\":1068792,\"source\":\"UPFM\",\"companyInstanceSourceId\":\"e072dcfc-99b8-493d-8f8d-26786c965d08\",\"companyName\":\"CF REAL ESTATE SERVICES - UAT\",\"companyType\":null,\"isActive\":true,\"domain\":\"UAT\",\"deletedReason\":\"Deprecated Field\",\"marketSegment\":[]},\"links\":{\"self\":\"\\/companyinstance\\/1068792\"}}]}";
@@ -1044,7 +1046,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             var companySetupList = new List<CompanySetup>()
             {
-                 new CompanySetup()
+                new CompanySetup()
                 {
                     OrganizationPartyId = 3,
                     OrganizationName = "RealPage",
@@ -1057,7 +1059,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                     OrganizationDomainId = 1,
                     Domain = "Primary",
                     Products = 3
-                 }
+                }
             };
 
             UserLoginOnly userLoginOnlyNull = null;
@@ -1074,25 +1076,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Returns(repositoryResponse);
 
             _mockRepository
-               .Setup(m => m.GetMany<CompanySetup>(StoredProcNameConstants.SP_ListCompanySetup,
-                   It.IsAny<object>()))
-               .Returns(companySetupList);
+                .Setup(m => m.GetMany<CompanySetup>(StoredProcNameConstants.SP_ListCompanySetup,
+                    It.IsAny<object>()))
+                .Returns(companySetupList);
 
             OrganizationController organizationController = new OrganizationController(
                 _mockRepository.Object
                 , _mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
-            ) {Request = new HttpRequestMessage(), Configuration = new HttpConfiguration()};
+            ) { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
 
             List<Company> mapResource = new List<Company>()
             {
-               new Company()
-               {
-                   Id = "775",
-                   CustomerCompanyId = 775,
-                   CompanyName = "121 7TH STREET, LLC"
-               }
+                new Company()
+                {
+                    Id = "775",
+                    CustomerCompanyId = 775,
+                    CompanyName = "121 7TH STREET, LLC"
+                }
             };
 
             var upfmCompanyInstancesJson = "{\"data\":[{\"type\":\"companyinstance\",\"id\":\"1049316\",\"attributes\":{\"companyInstanceId\":1049316,\"source\":\"UPFM\",\"companyInstanceSourceId\":\"daf71f77-4558-4cb0-91b8-29d8b0e62f15\",\"companyName\":\"CF Real Estate Services\",\"companyType\":\"Multifamily\",\"isActive\":true,\"domain\":\"Primary\",\"deletedReason\":\"Deprecated Field\",\"marketSegment\":[]},\"links\":{\"self\":\"\\/companyinstance\\/1049316\"}},{\"type\":\"companyinstance\",\"id\":\"1068792\",\"attributes\":{\"companyInstanceId\":1068792,\"source\":\"UPFM\",\"companyInstanceSourceId\":\"e072dcfc-99b8-493d-8f8d-26786c965d08\",\"companyName\":\"CF REAL ESTATE SERVICES - UAT\",\"companyType\":null,\"isActive\":true,\"domain\":\"UAT\",\"deletedReason\":\"Deprecated Field\",\"marketSegment\":[]},\"links\":{\"self\":\"\\/companyinstance\\/1068792\"}}]}";
@@ -1318,7 +1320,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 , _mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
-            ) {Request = new HttpRequestMessage(), Configuration = new HttpConfiguration()};
+            ) { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
 
             //Act
             RPObjectCache rPObjectCache = new RPObjectCache();
@@ -1375,7 +1377,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 , _mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
-            ) {Request = new HttpRequestMessage(), Configuration = new HttpConfiguration()};
+            ) { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
 
             //Act
             RPObjectCache rPObjectCache = new RPObjectCache();
@@ -1418,7 +1420,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             datafilter.Pages.StartRow = 1;
             IDictionary<object, object> globals = new Dictionary<object, object>();
             globals.Add(BaseType.RequestParameter, datafilter);
-            int bookMasterTypeId = (int) BookMasterType.CustomerMasterId;
+            int bookMasterTypeId = (int)BookMasterType.CustomerMasterId;
             Type type = typeof(IList<CustomField>);
 
             DefaultUserClaim userClaim = new DefaultUserClaim()
@@ -1460,7 +1462,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 , _mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
-            ) {Request = new HttpRequestMessage(), Configuration = new HttpConfiguration()};
+            ) { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
 
             //Act
             RPObjectCache rPObjectCache = new RPObjectCache();
@@ -1539,7 +1541,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 , _mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
-            ) {Request = new HttpRequestMessage(), Configuration = new HttpConfiguration()};
+            ) { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
 
             //Act
             RPObjectCache rPObjectCache = new RPObjectCache();
@@ -1565,7 +1567,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 , _mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
-            ) {Request = new HttpRequestMessage(), Configuration = new HttpConfiguration()};
+            ) { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
 
             //Act
             RPObjectCache rPObjectCache = new RPObjectCache();
@@ -1583,12 +1585,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         public void OrganizationProductTest()
         {
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
-                , _mockHttpMessageHandler.Object
-                , _defaultUserClaim
-            )
-            { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
+                    _mockRepository.Object
+                    , _mockRepositoryResponse.Object
+                    , _mockHttpMessageHandler.Object
+                    , _defaultUserClaim
+                )
+                { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
 
             List<int> productList = new List<int>();
             List<string> blueBookProductList = new List<string>();
@@ -1637,7 +1639,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 , _mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
-            ) {Request = new HttpRequestMessage(), Configuration = new HttpConfiguration()};
+            ) { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
 
             //Act
             RPObjectCache rPObjectCache = new RPObjectCache();
@@ -1684,7 +1686,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             RoleType roleTypeFrom = new RoleType()
             {
-                PartyRoleTypeId = (int) UserRoleType.User,
+                PartyRoleTypeId = (int)UserRoleType.User,
                 ParentPartyRoleTypeId = 400,
                 Name = "User"
             };
@@ -1699,7 +1701,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             RelationshipType relationshipType = new RelationshipType()
             {
                 RelationshipTypeId = 44,
-                RoleTypeIdValidFrom = (int) UserRoleType.User,
+                RoleTypeIdValidFrom = (int)UserRoleType.User,
                 RoleTypeIdValidTo = 202,
                 Name = "User Relationship",
                 Description = ""
@@ -1712,7 +1714,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 RealPageIdFrom = new Guid("8946d26d-8ede-40d1-b6c3-d52bc903f202"),
                 PartyIdTo = 6,
                 RealPageIdTo = new Guid("724DE532-7969-42B5-9E71-2955167179BA"),
-                RoleTypeIdFrom = (int) UserRoleType.User,
+                RoleTypeIdFrom = (int)UserRoleType.User,
                 RoleTypeFrom = roleTypeFrom,
                 RoleTypeIdTo = 202,
                 RoleTypeTo = roleTypeTo,
@@ -1740,17 +1742,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 }
             };
 
-            IList<OrganizationType> organizationTypeList = new List<OrganizationType>() {organizationType};
+            IList<OrganizationType> organizationTypeList = new List<OrganizationType>() { organizationType };
             IList<RelationshipType> relationshipTypeList = new List<RelationshipType>();
-            relationshipTypeList.Add(new RelationshipType() {RelationshipTypeId = 44, Name = "test"});
+            relationshipTypeList.Add(new RelationshipType() { RelationshipTypeId = 44, Name = "test" });
             IList<RoleType> roleTypeList = new List<RoleType>();
-            roleTypeList.Add(new RoleType() {Name = "User", PartyRoleTypeId = 401, ParentPartyRoleTypeId = 400});
-            roleTypeList.Add(new RoleType() {Name = "Property Management Company", PartyRoleTypeId = 202, ParentPartyRoleTypeId = 200});
+            roleTypeList.Add(new RoleType() { Name = "User", PartyRoleTypeId = 401, ParentPartyRoleTypeId = 400 });
+            roleTypeList.Add(new RoleType() { Name = "Property Management Company", PartyRoleTypeId = 202, ParentPartyRoleTypeId = 200 });
 
             List<ProductInternalSetting> productInternalSettings = new List<ProductInternalSetting>()
             {
-                new ProductInternalSetting() {Name = "BooksUseDomains", Value = "1"}, 
-                new ProductInternalSetting() {Name = "BooksUseUPFMId", Value = "1"}
+                new ProductInternalSetting() { Name = "BooksUseDomains", Value = "1" },
+                new ProductInternalSetting() { Name = "BooksUseUPFMId", Value = "1" }
             };
 
             _mockRepository
@@ -1782,7 +1784,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 , _mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
-            ) {Request = new HttpRequestMessage(), Configuration = new HttpConfiguration()};
+            ) { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
 
             //Act
             RPObjectCache rPObjectCache = new RPObjectCache();
@@ -1799,6 +1801,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         #endregion
 
         #region Get Organization
+
         [Fact]
         public void GetCompanyList_VerifyRouteToAction_ReturnAction()
         {
@@ -1838,79 +1841,79 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             HttpResponseMessage response = organizationController.GetCompanyList(null, null, null, null, null);
 
             //Assert
-            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));           
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
         }
 
-		[Fact]
-		public void GetCompanyList_ValidRealPageId_ReturnOrganization()
-		{
-			//Arrange		
+        [Fact]
+        public void GetCompanyList_ValidRealPageId_ReturnOrganization()
+        {
+            //Arrange		
 
-			var companySetupList = new List<CompanySetup>()
-			{
-				 new CompanySetup()
-				{
-					OrganizationPartyId = 3,
-					OrganizationName = "RealPage",
-					ContractedName = "RealPage",
-					RealPageId = new Guid("daf71f77-4558-4cb0-91b8-29d8b0e62f15"),
+            var companySetupList = new List<CompanySetup>()
+            {
+                new CompanySetup()
+                {
+                    OrganizationPartyId = 3,
+                    OrganizationName = "RealPage",
+                    ContractedName = "RealPage",
+                    RealPageId = new Guid("daf71f77-4558-4cb0-91b8-29d8b0e62f15"),
                     BooksMasterId = "1",
-					BooksCustomerMasterId = "379",
-					OrganizationTypeId = 1,
-					OrganizationType = "Multifamily",
-					OrganizationDomainId = 1,
-					Domain = "Primary",
-					Products = 3
-				 }
+                    BooksCustomerMasterId = "379",
+                    OrganizationTypeId = 1,
+                    OrganizationType = "Multifamily",
+                    OrganizationDomainId = 1,
+                    Domain = "Primary",
+                    Products = 3
+                }
             };
 
-			List<ProductInternalSetting> productInternalSettings = new List<ProductInternalSetting>()
-			{
-				new ProductInternalSetting() {Name = "BooksUseDomains", Value = "1"},
-				new ProductInternalSetting() {Name = "BooksUseUPFMId", Value = "1"},
-				new ProductInternalSetting() {Name = "BooksUseTranslatev2", Value = "0"}
-			};
+            List<ProductInternalSetting> productInternalSettings = new List<ProductInternalSetting>()
+            {
+                new ProductInternalSetting() { Name = "BooksUseDomains", Value = "1" },
+                new ProductInternalSetting() { Name = "BooksUseUPFMId", Value = "1" },
+                new ProductInternalSetting() { Name = "BooksUseTranslatev2", Value = "0" }
+            };
 
-			_mockRepository
-			   .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
-			   .Returns(productInternalSettings);
+            _mockRepository
+                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
+                .Returns(productInternalSettings);
 
-			_mockRepository
-			   .Setup(m => m.GetMany<CompanySetup>(StoredProcNameConstants.SP_ListCompanySetup,
-				   It.IsAny<object>()))
-			   .Returns(companySetupList);
+            _mockRepository
+                .Setup(m => m.GetMany<CompanySetup>(StoredProcNameConstants.SP_ListCompanySetup,
+                    It.IsAny<object>()))
+                .Returns(companySetupList);
 
-			OrganizationController organizationController = new OrganizationController(
-				_mockRepository.Object
-				, _mockRepositoryResponse.Object
-				, _mockHttpMessageHandler.Object
-				, _defaultUserClaim
-			)
-			{ Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
+            OrganizationController organizationController = new OrganizationController(
+                    _mockRepository.Object
+                    , _mockRepositoryResponse.Object
+                    , _mockHttpMessageHandler.Object
+                    , _defaultUserClaim
+                )
+                { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
 
-			//Act
-			RPObjectCache rPObjectCache = new RPObjectCache();
-			rPObjectCache.BustCache();
+            //Act
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
 
-			List<Company> mapResource = new List<Company>()
-			{
-			   new Company()
-			   {
-				   Id = "775",
-				   CustomerCompanyId = 775,
-				   CompanyName = "121 7TH STREET, LLC"
-			   }
-			};
+            List<Company> mapResource = new List<Company>()
+            {
+                new Company()
+                {
+                    Id = "775",
+                    CustomerCompanyId = 775,
+                    CompanyName = "121 7TH STREET, LLC"
+                }
+            };
 
             var upfmCompanyInstancesJson = "{\"data\":[{\"type\":\"companyinstance\",\"id\":\"1049316\",\"attributes\":{\"companyInstanceId\":1049316,\"source\":\"UPFM\",\"companyInstanceSourceId\":\"daf71f77-4558-4cb0-91b8-29d8b0e62f15\",\"companyName\":\"CF Real Estate Services\",\"companyType\":\"Multifamily\",\"isActive\":true,\"domain\":\"Primary\",\"deletedReason\":\"Deprecated Field\",\"marketSegment\":[]},\"links\":{\"self\":\"\\/companyinstance\\/1049316\"}},{\"type\":\"companyinstance\",\"id\":\"1068792\",\"attributes\":{\"companyInstanceId\":1068792,\"source\":\"UPFM\",\"companyInstanceSourceId\":\"e072dcfc-99b8-493d-8f8d-26786c965d08\",\"companyName\":\"CF REAL ESTATE SERVICES - UAT\",\"companyType\":null,\"isActive\":true,\"domain\":\"UAT\",\"deletedReason\":\"Deprecated Field\",\"marketSegment\":[]},\"links\":{\"self\":\"\\/companyinstance\\/1068792\"}}]}";
             HttpResponseMessage upfmCompanyInstancesResponse = new HttpResponseMessage(HttpStatusCode.OK);
             upfmCompanyInstancesResponse.Content = new StringContent(upfmCompanyInstancesJson);
 
             HttpResponseMessage responseMapResource = new HttpResponseMessage(HttpStatusCode.OK);
-			var jsonToSave = JsonConvert.SerializeObject(mapResource, new JsonApiSerializerSettings());
-			responseMapResource.Content = new StringContent(jsonToSave);
+            var jsonToSave = JsonConvert.SerializeObject(mapResource, new JsonApiSerializerSettings());
+            responseMapResource.Content = new StringContent(jsonToSave);
 
-			_mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompany?filter[customerCompanyId]=in:{_BooksCompanyMasterId}&include=customerCompanyLocation&fields[customercompany]=customerCompanyId,companyName,phoneNumber&fields[customerCompanyLocation]=customerCompanyLocationId,customerCompanyId,address,city,state,country,postalCode,isPrimary&page[size]=9999", responseMapResource);
+            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompany?filter[customerCompanyId]=in:{_BooksCompanyMasterId}&include=customerCompanyLocation&fields[customercompany]=customerCompanyId,companyName,phoneNumber&fields[customerCompanyLocation]=customerCompanyLocationId,customerCompanyId,address,city,state,country,postalCode,isPrimary&page[size]=9999", responseMapResource);
             _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/companyinstance?filter[source]=UPFM&include=companyInstanceLocation&filter[companyInstanceSourceId]=in:daf71f77-4558-4cb0-91b8-29d8b0e62f15", upfmCompanyInstancesResponse);
 
 
@@ -1919,15 +1922,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             ObjectListOutput<CompanySetup, IErrorData> propertyOutput = new ObjectListOutput<CompanySetup, IErrorData>();
             propertyOutput = response.Content.ReadAsAsync<ObjectListOutput<CompanySetup, IErrorData>>().Result;
 
-			//Assert
-			Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
             Assert.True(propertyOutput.list[0].RealPageId == companySetupList[0].RealPageId);
-		}
-		#endregion
+        }
 
-		#region getUpdatePropertyList       
+        #endregion
 
-		[Fact]
+        #region getUpdatePropertyList
+
+        [Fact]
         public void GetPropertiesForCompany_InvalidInstanceId_ReturnBadRequest()
         {
             //Arrange
@@ -1943,7 +1947,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             };
 
             //Act           
-            HttpResponseMessage response = organizationController.GetPropertiesForCompany(Guid.Empty, null,null,null);
+            HttpResponseMessage response = organizationController.GetPropertiesForCompany(Guid.Empty, null, null, null);
 
             //Assert
             Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
@@ -1966,7 +1970,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             var upfmPropertyInstances = new UPFMPropertyInstance()
             {
-                InstanceId =  Guid.Empty,
+                InstanceId = Guid.Empty,
                 Name = "test property 1"
             };
             //Act           
@@ -1993,7 +1997,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             var upfmPropertyInstances = new UPFMPropertyInstance()
             {
-                InstanceId =  Guid.Empty, 
+                InstanceId = Guid.Empty,
                 Name = "test property 1"
             };
             //Act           
@@ -2031,7 +2035,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         }
 
 
-        //[Fact]
+        [Fact]
         public void GetPropertiesForCompany_ValidRealPageId_ReturnOrganization()
         {
             //Arrange		
@@ -2040,7 +2044,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             var propertySetupList = new List<PropertySetup>()
             {
-                 new PropertySetup()
+                new PropertySetup()
                 {
                     PropertyInstanceId = 105294,
                     Name = "WOODVILLE VILLAGE",
@@ -2055,7 +2059,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                     CustomerPropertyId = "1409051",
                     Domain = "Primary",
                     TotalRecords = 573
-                 }
+                }
             };
             List<string> domain = new List<string>()
             {
@@ -2071,29 +2075,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             };
             List<ProductInternalSetting> productInternalSettings = new List<ProductInternalSetting>()
             {
-                new ProductInternalSetting() {Name = "BooksUseDomains", Value = "1"},
-                new ProductInternalSetting() {Name = "BooksUseUPFMId", Value = "1"},
-                new ProductInternalSetting() {Name = "BooksUseTranslatev2", Value = "0"}
+                new ProductInternalSetting() { Name = "BooksUseDomains", Value = "1" },
+                new ProductInternalSetting() { Name = "BooksUseUPFMId", Value = "1" },
+                new ProductInternalSetting() { Name = "BooksUseTranslatev2", Value = "0" }
             };
 
             _mockRepository
-               .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
-               .Returns(productInternalSettings);
+                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
+                .Returns(productInternalSettings);
 
             Mock<IRepository> _mockPropertyRepository = new Mock<IRepository>();
             _mockRepository
-               .Setup(m => m.GetMany<PropertySetup>(StoredProcNameConstants.SP_GetPropertyInstanceListByIdWithPaging,
-                   It.IsAny<object>()))
-               .Returns(propertySetupList);
+                .Setup(m => m.GetMany<PropertySetup>(StoredProcNameConstants.SP_GetPropertyInstanceListByIdWithPaging,
+                    It.IsAny<object>()))
+                .Returns(propertySetupList);
+
+            Mock<ILdClient> mockLdClient = new Mock<ILdClient>();
+            mockLdClient.Setup(m => m.BoolVariation(It.IsAny<string>(), It.IsAny<LaunchDarkly.Sdk.User>(), false))
+                .Returns(true);
 
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
-                , _mockHttpMessageHandler.Object
-                , _defaultUserClaim
-            )
-            { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
-
+                    _mockRepository.Object
+                    , _mockRepositoryResponse.Object
+                    , _mockHttpMessageHandler.Object
+                    , mockLdClient.Object
+                    , _defaultUserClaim)
+                { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
 
             //Act
             RPObjectCache rPObjectCache = new RPObjectCache();
@@ -2104,26 +2111,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 new BooksPropertyInstance()
                 {
                     id = "1234",
-                    attributes =  new PropertyAttributesInstance()
+                    attributes = new PropertyAttributesInstance()
                     {
                         propertyInstanceId = "1005251854",
                         propertyInstanceSourceId = "003b0509-1189-49dc-bbe6-01c5b6277a83",
                         propertyName = "COBBLESTONE COVE",
                         source = "UPFM",
                         domain = "UAT",
-                        deletedReason =  "Deprecated Field"
+                        deletedReason = "Deprecated Field"
                     }
                 }
             };
 
-			var mockManageBlueBook = new Mock<IManageBlueBook>();
-			mockManageBlueBook
-				.Setup(m => m.GetPropertyInstanceForCompany(
-					It.IsAny<Guid>()
-				 ))
-				 .Returns(mapResource);
-			
-			HttpResponseMessage responseMapResource = new HttpResponseMessage(HttpStatusCode.OK);
+            var mockManageBlueBook = new Mock<IManageBlueBook>();
+            mockManageBlueBook
+                .Setup(m => m.GetPropertyInstanceForCompany(
+                    It.IsAny<Guid>()
+                ))
+                .Returns(mapResource);
+
+            HttpResponseMessage responseMapResource = new HttpResponseMessage(HttpStatusCode.OK);
             var jsonToSave = JsonConvert.SerializeObject(mapResource, new JsonApiSerializerSettings());
             responseMapResource.Content = new StringContent("{\"data\":[{\"type\":\"bookspropertyinstance\",\"attributes\":{\"propertyInstanceId\":\"1005251854\",\"propertyInstanceSourceId\":\"003b0509-1189-49dc-bbe6-01c5b6277a83\",\"propertyName\":\"COBBLESTONE COVE\",\"source\":\"UPFM\",\"domain\":\"Primary\",\"deletedReason\":\"Deprecated Field\"}}]}");
 
@@ -2138,7 +2145,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             Assert.True(propertyOutput.list[0].Domain[0] == setup[0].Domain[0]);
         }
 
-        //[Fact]
+        [Fact]
         public void GetPropertiesForCompanyByOperator_ValidRealPageId_ReturnOrganization()
         {
             //Arrange		
@@ -2150,7 +2157,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             var propertySetupList = new List<PropertySetup>()
             {
-                 new PropertySetup()
+                new PropertySetup()
                 {
                     PropertyInstanceId = 105294,
                     Name = "WOODVILLE VILLAGE",
@@ -2165,7 +2172,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                     CustomerPropertyId = "1409051",
                     Domain = "Primary",
                     TotalRecords = 573
-                 }
+                }
             };
             List<string> domain = new List<string>()
             {
@@ -2181,28 +2188,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             };
             List<ProductInternalSetting> productInternalSettings = new List<ProductInternalSetting>()
             {
-                new ProductInternalSetting() {Name = "BooksUseDomains", Value = "1"},
-                new ProductInternalSetting() {Name = "BooksUseUPFMId", Value = "1"},
-                new ProductInternalSetting() {Name = "BooksUseTranslatev2", Value = "0"}
+                new ProductInternalSetting() { Name = "BooksUseDomains", Value = "1" },
+                new ProductInternalSetting() { Name = "BooksUseUPFMId", Value = "1" },
+                new ProductInternalSetting() { Name = "BooksUseTranslatev2", Value = "0" }
             };
 
             _mockRepository
-               .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
-               .Returns(productInternalSettings);
+                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
+                .Returns(productInternalSettings);
 
             Mock<IRepository> _mockPropertyRepository = new Mock<IRepository>();
             _mockRepository
-               .Setup(m => m.GetMany<PropertySetup>(StoredProcNameConstants.SP_GetPropertyInstanceListByIdWithPaging,
-                   It.IsAny<object>()))
-               .Returns(propertySetupList);
+                .Setup(m => m.GetMany<PropertySetup>(StoredProcNameConstants.SP_GetPropertyInstanceListByIdWithPaging,
+                    It.IsAny<object>()))
+                .Returns(propertySetupList);
+
+            Mock<ILdClient> mockLdClient = new Mock<ILdClient>();
+            mockLdClient.Setup(m => m.BoolVariation(It.IsAny<string>(), It.IsAny<LaunchDarkly.Sdk.User>(), false))
+                .Returns(true);
 
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
-                , _mockHttpMessageHandler.Object
-                , _defaultUserClaim
-            )
-            { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
+                    _mockRepository.Object
+                    , _mockRepositoryResponse.Object
+                    , _mockHttpMessageHandler.Object
+                    , mockLdClient.Object
+                    , _defaultUserClaim
+                )
+                { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
 
 
             //Act
@@ -2214,14 +2226,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 new BooksPropertyInstance()
                 {
                     id = "1234",
-                    attributes =  new PropertyAttributesInstance()
+                    attributes = new PropertyAttributesInstance()
                     {
                         propertyInstanceId = "1005251854",
                         propertyInstanceSourceId = "003b0509-1189-49dc-bbe6-01c5b6277a83",
                         propertyName = "COBBLESTONE COVE",
                         source = "UPFM",
                         domain = "UAT",
-                        deletedReason =  "Deprecated Field"
+                        deletedReason = "Deprecated Field"
                     }
                 }
             };
@@ -2230,8 +2242,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             mockManageBlueBook
                 .Setup(m => m.GetPropertyInstanceForCompany(
                     It.IsAny<Guid>()
-                 ))
-                 .Returns(mapResource);
+                ))
+                .Returns(mapResource);
 
             HttpResponseMessage responseMapResource = new HttpResponseMessage(HttpStatusCode.OK);
             var jsonToSave = JsonConvert.SerializeObject(mapResource, new JsonApiSerializerSettings());
@@ -2267,7 +2279,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             {
                 CorrelationId = new Guid(), CustomerMasterId = _BooksCompanyMasterId, OrganizationRealPageGuid = Guid.NewGuid()
             };
-            
+
             //Arrange
             OrganizationController organizationController = new OrganizationController(
                 _mockRepository.Object
@@ -2316,7 +2328,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
         }
 
-        
+
         [Fact]
         public void AuditCompanyProductPropertiesToUPFM_AuditOneSite()
         {
@@ -2324,10 +2336,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             {
                 CorrelationId = new Guid(), CustomerMasterId = _BooksCompanyMasterId, OrganizationRealPageGuid = EmployeeCompanyRealPageId
             };
-            
+
             var userLogin = new UserLogin() { UserId = 1234, LoginName = "admin@test.com", RealPageId = new Guid("99999999-9999-9999-9999-999999999999") };
             var userLogin2 = new UserLogin() { UserId = 4321, LoginName = "admin2@other.com", RealPageId = new Guid("88888888-8888-8888-8888-888888888888") };
-            
+
             var organizationList = new List<Organization>()
             {
                 new Organization()
@@ -2378,18 +2390,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 }
 
             };
-            
+
             List<dynamic> companyList = new List<dynamic>();
             List<dynamic> companyList2 = new List<dynamic>();
 
             var org = organizationList.FirstOrDefault(p => p.PartyId == 12345);
-            string _mockJsonCompanyList = "{\r\n\t\t\"PartyId\": \""+org.PartyId+"\",\r\n\t\t\"Name\": \""+org.Name+"\",\r\n\t\t\"OrganizationRealPageId\": \""+org.RealPageId+"\",\r\n\t\t\"BooksMasterId\": \""+org.BooksMasterId+"\",\r\n\t\t\"BooksCustomerMasterId\": \""+org.BooksCustomerMasterId+"\",\r\n\t\t\"SettingName\": \"RealPageEmployeeAccessID\",\r\n\t\t\"PersonRealPageId\": \""+userLogin.RealPageId+"\",\r\n\t\t\"LoginName\": \""+userLogin.LoginName+"\",\r\n\t}";
+            string _mockJsonCompanyList = "{\r\n\t\t\"PartyId\": \"" + org.PartyId + "\",\r\n\t\t\"Name\": \"" + org.Name + "\",\r\n\t\t\"OrganizationRealPageId\": \"" + org.RealPageId + "\",\r\n\t\t\"BooksMasterId\": \"" + org.BooksMasterId + "\",\r\n\t\t\"BooksCustomerMasterId\": \"" + org.BooksCustomerMasterId + "\",\r\n\t\t\"SettingName\": \"RealPageEmployeeAccessID\",\r\n\t\t\"PersonRealPageId\": \"" + userLogin.RealPageId + "\",\r\n\t\t\"LoginName\": \"" + userLogin.LoginName + "\",\r\n\t}";
             companyList.Add(JsonConvert.DeserializeObject<dynamic>(_mockJsonCompanyList));
-            
+
             var org2 = organizationList.FirstOrDefault(p => p.PartyId == 54321);
-            _mockJsonCompanyList = "{\r\n\t\t\"PartyId\": \""+org2.PartyId+"\",\r\n\t\t\"Name\": \""+org2.Name+"\",\r\n\t\t\"OrganizationRealPageId\": \""+org2.RealPageId+"\",\r\n\t\t\"BooksMasterId\": \""+org2.BooksMasterId+"\",\r\n\t\t\"BooksCustomerMasterId\": \""+org2.BooksCustomerMasterId+"\",\r\n\t\t\"SettingName\": \"RealPageEmployeeAccessID\",\r\n\t\t\"PersonRealPageId\": \""+userLogin2.RealPageId+"\",\r\n\t\t\"LoginName\": \""+userLogin2.LoginName+"\",\r\n\t}";
+            _mockJsonCompanyList = "{\r\n\t\t\"PartyId\": \"" + org2.PartyId + "\",\r\n\t\t\"Name\": \"" + org2.Name + "\",\r\n\t\t\"OrganizationRealPageId\": \"" + org2.RealPageId + "\",\r\n\t\t\"BooksMasterId\": \"" + org2.BooksMasterId + "\",\r\n\t\t\"BooksCustomerMasterId\": \"" + org2.BooksCustomerMasterId + "\",\r\n\t\t\"SettingName\": \"RealPageEmployeeAccessID\",\r\n\t\t\"PersonRealPageId\": \"" + userLogin2.RealPageId + "\",\r\n\t\t\"LoginName\": \"" + userLogin2.LoginName + "\",\r\n\t}";
             companyList2.Add(JsonConvert.DeserializeObject<dynamic>(_mockJsonCompanyList));
-            
+
             OrganizationStatus organizationStatus = new OrganizationStatus()
             {
                 PartyId = org.PartyId,
@@ -2398,10 +2410,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 IsExpired = false,
                 StatusTypeId = (int)UserUiStatusType.Active,
                 Status = UserUiStatusType.Active,
-                FromDate = new DateTime(2019,1,1)
+                FromDate = new DateTime(2019, 1, 1)
             };
-            
-            var orgStatusList = new List<OrganizationStatus>() {organizationStatus};
+
+            var orgStatusList = new List<OrganizationStatus>() { organizationStatus };
 
             OrganizationStatus organizationStatus2 = new OrganizationStatus()
             {
@@ -2411,10 +2423,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 IsExpired = false,
                 StatusTypeId = (int)UserUiStatusType.Active,
                 Status = UserUiStatusType.Active,
-                FromDate = new DateTime(2019,1,1)
+                FromDate = new DateTime(2019, 1, 1)
             };
-            
-            var org2StatusList = new List<OrganizationStatus>() {organizationStatus2};
+
+            var org2StatusList = new List<OrganizationStatus>() { organizationStatus2 };
 
             var userOrganizationList = new List<UserOrganization>()
             {
@@ -2439,10 +2451,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                     PersonaId = 5555
                 }
             };
-            
+
             IList<ProductProperty> list = new List<ProductProperty>();
-            list.Add(new ProductProperty() { ID = "1234567", Name = "OneSite property 1"});
-            
+            list.Add(new ProductProperty() { ID = "1234567", Name = "OneSite property 1" });
+
             var oneSitePropertyResponse = new ListResponse()
             {
                 TotalRows = list.Count,
@@ -2458,9 +2470,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             List<UPFMPropertyInstance> upfmPropertyInstances = new List<UPFMPropertyInstance>()
             {
-                new UPFMPropertyInstance(){InstanceId = new Guid("a5192995-aaaa-bbbb-8df2-f30f1b8dc752"), Name = "test property 1"}
+                new UPFMPropertyInstance() { InstanceId = new Guid("a5192995-aaaa-bbbb-8df2-f30f1b8dc752"), Name = "test property 1" }
             };
-            
+
             _mockRepository
                 .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization,
                     It.Is<object>(
@@ -2472,57 +2484,57 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                     It.Is<object>(
                         d => TestIsRealPageId(d, org2.RealPageId))))
                 .Returns(org2);
-            
+
             _mockRepository
-                .Setup(m => m.GetMany<dynamic>(StoredProcNameConstants.SP_ListOrganizations, 
+                .Setup(m => m.GetMany<dynamic>(StoredProcNameConstants.SP_ListOrganizations,
                     It.Is<object>(
                         d => TestIsRealPageId(d, org.RealPageId))))
                 .Returns(companyList);
 
             _mockRepository
-                .Setup(m => m.GetMany<dynamic>(StoredProcNameConstants.SP_ListOrganizations, 
+                .Setup(m => m.GetMany<dynamic>(StoredProcNameConstants.SP_ListOrganizations,
                     It.Is<object>(
                         d => TestIsRealPageId(d, org2.RealPageId))))
                 .Returns(companyList2);
-            
-            _mockRepository.Setup(m => m.GetOne<UserLogin>(StoredProcNameConstants.SP_GetUserLogin, 
+
+            _mockRepository.Setup(m => m.GetOne<UserLogin>(StoredProcNameConstants.SP_GetUserLogin,
                     It.Is<object>(
                         d => TestIsRealPageId(d, userLogin.RealPageId))))
                 .Returns(userLogin);
 
-            _mockRepository.Setup(m => m.GetOne<UserLogin>(StoredProcNameConstants.SP_GetUserLogin, 
+            _mockRepository.Setup(m => m.GetOne<UserLogin>(StoredProcNameConstants.SP_GetUserLogin,
                     It.Is<object>(
                         d => TestIsRealPageId(d, userLogin2.RealPageId))))
                 .Returns(userLogin2);
 
             _mockRepository.Setup(m => m.GetOne<string>(StoredProcNameConstants.SP_GetIdentityProviderTypeByLoginName, It.IsAny<object>()))
                 .Returns("local");
-            
-            _mockRepository.Setup(m => m.GetMany<OrganizationStatus>(StoredProcNameConstants.SP_ListOrganizationStatusByUserId, 
-                    It.Is<object>(data => TestSqlParameter(data, "{ userId = "+ userLogin.UserId+" }"))))
+
+            _mockRepository.Setup(m => m.GetMany<OrganizationStatus>(StoredProcNameConstants.SP_ListOrganizationStatusByUserId,
+                    It.Is<object>(data => TestSqlParameter(data, "{ userId = " + userLogin.UserId + " }"))))
                 .Returns(orgStatusList);
 
-            _mockRepository.Setup(m => m.GetMany<OrganizationStatus>(StoredProcNameConstants.SP_ListOrganizationStatusByUserId, 
-                    It.Is<object>(data => TestSqlParameter(data, "{ userId = "+ userLogin2.UserId+" }"))))
+            _mockRepository.Setup(m => m.GetMany<OrganizationStatus>(StoredProcNameConstants.SP_ListOrganizationStatusByUserId,
+                    It.Is<object>(data => TestSqlParameter(data, "{ userId = " + userLogin2.UserId + " }"))))
                 .Returns(org2StatusList);
 
-            _mockRepository.Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, 
+            _mockRepository.Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
                     It.Is<object>(data => TestSqlParameter(data, "{ ProductId = , ProductGUID = , Name = , BooksProductCode =  }"))))
                 .Returns(_gbProductMap);
 
-            _mockRepository.Setup(m => m.GetMany<UserOrganization> (StoredProcNameConstants.SP_ListOrganizationByLoginName, 
+            _mockRepository.Setup(m => m.GetMany<UserOrganization>(StoredProcNameConstants.SP_ListOrganizationByLoginName,
                     It.Is<object>(data => TestSqlParameterContains(data, userLogin.LoginName))))
                 .Returns(userOrganizationList);
 
-            _mockRepository.Setup(m => m.GetMany<UserOrganization> (StoredProcNameConstants.SP_ListOrganizationByLoginName, 
+            _mockRepository.Setup(m => m.GetMany<UserOrganization>(StoredProcNameConstants.SP_ListOrganizationByLoginName,
                     It.Is<object>(data => TestSqlParameterContains(data, userLogin2.LoginName))))
                 .Returns(userOrganizationList2);
-            
-            _mockRepository.Setup(m => m.GetMany<UPFMPropertyInstance> (StoredProcNameConstants.SP_GetPropertyInstanceListById, 
+
+            _mockRepository.Setup(m => m.GetMany<UPFMPropertyInstance>(StoredProcNameConstants.SP_GetPropertyInstanceListById,
                     It.Is<object>(data => TestSqlParameter(data, "{ InstanceList = Dapper.TableValuedParameter }"))))
                 .Returns(upfmPropertyInstances);
-            
-            
+
+
             Mock<IManageProductOneSite> mockManageProductOneSite = new Mock<IManageProductOneSite>();
 
             mockManageProductOneSite.Setup(m => m.GetOneSitePropertyList(
@@ -2554,7 +2566,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 Configuration = new HttpConfiguration()
             };
 
-           
+
             //Act
             new RPObjectCache().BustCache();
 
@@ -2566,15 +2578,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             var validProductResponse = responseResult.list.FirstOrDefault(p => p.ProductInstanceId == "1234567");
 
             //Assert
-            Assert.True(missingProductResponse != null 
-                        && missingProductResponse.Status.Equals("No Product", StringComparison.OrdinalIgnoreCase) 
-                        && string.IsNullOrEmpty(missingProductResponse.Name) 
-                        && string.IsNullOrEmpty(missingProductResponse.Domain) 
-                        && missingProductResponse.UPFMInstanceId.Equals("a5192995-aaaa-bbbb-8df2-f30f1b8dc752", StringComparison.OrdinalIgnoreCase) 
-                        && missingProductResponse.UPFMName.Equals("test property 1", StringComparison.OrdinalIgnoreCase) 
+            Assert.True(missingProductResponse != null
+                        && missingProductResponse.Status.Equals("No Product", StringComparison.OrdinalIgnoreCase)
+                        && string.IsNullOrEmpty(missingProductResponse.Name)
+                        && string.IsNullOrEmpty(missingProductResponse.Domain)
+                        && missingProductResponse.UPFMInstanceId.Equals("a5192995-aaaa-bbbb-8df2-f30f1b8dc752", StringComparison.OrdinalIgnoreCase)
+                        && missingProductResponse.UPFMName.Equals("test property 1", StringComparison.OrdinalIgnoreCase)
                         && response.StatusCode.Equals(HttpStatusCode.OK));
 
-            Assert.True(validProductResponse != null 
+            Assert.True(validProductResponse != null
                         && validProductResponse.Status.Equals("OK", StringComparison.OrdinalIgnoreCase)
                         && validProductResponse.Name.Equals("OneSite property 1", StringComparison.OrdinalIgnoreCase)
                         && validProductResponse.Domain.Equals("Primary", StringComparison.OrdinalIgnoreCase)
@@ -2587,7 +2599,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             {
                 CorrelationId = new Guid(), CustomerMasterId = _BooksCompanyMasterId, OrganizationRealPageGuid = EmployeeCompanyRealPageId
             };
-            
+
             organizationController = new OrganizationController(
                 _mockRepository.Object
                 , _mockRepositoryResponse.Object
@@ -2599,7 +2611,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()
             };
-            
+
             new RPObjectCache().BustCache();
 
             // OneSite data exists but no UPFM property instances can be found
@@ -2617,6 +2629,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         #endregion
 
         #region AuditPropertyExport
+
         [Fact]
         public void AuditCompanyProductPropertiesToUPFMExport_InvalidUserCompany()
         {
@@ -2674,9 +2687,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
 
         }
+
         #endregion
 
         #region AddProperty
+
         [Fact]
         public void AddPropertyForOrganization_InvalidPropertyObject_ReturnBadRequest()
         {
@@ -2860,21 +2875,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             List<ProductInternalSetting> productInternalSettings = new List<ProductInternalSetting>()
             {
-                new ProductInternalSetting() {Name = "BooksUseDomains", Value = "1"},
-                new ProductInternalSetting() {Name = "BooksUseUPFMId", Value = "1"},
-                new ProductInternalSetting() {Name = "BooksUseTranslatev2", Value = "0"},
-                new ProductInternalSetting() {Name = "SettingsApiEndPoint", Value = "http://localhost"},
-                new ProductInternalSetting() {Name = "UnifiedLoginServerClientName", Value = "unifiedlogin-server"},
-                new ProductInternalSetting() {Name = "UnifiedLoginServerClientSecret", Value = "abcdefgh"}
+                new ProductInternalSetting() { Name = "BooksUseDomains", Value = "1" },
+                new ProductInternalSetting() { Name = "BooksUseUPFMId", Value = "1" },
+                new ProductInternalSetting() { Name = "BooksUseTranslatev2", Value = "0" },
+                new ProductInternalSetting() { Name = "SettingsApiEndPoint", Value = "http://localhost" },
+                new ProductInternalSetting() { Name = "UnifiedLoginServerClientName", Value = "unifiedlogin-server" },
+                new ProductInternalSetting() { Name = "UnifiedLoginServerClientSecret", Value = "abcdefgh" }
             };
 
             _mockRepository
-               .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
-               .Returns(productInternalSettings);
+                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
+                .Returns(productInternalSettings);
 
             _mockTokenHelper
-                  .Setup(m => m.GetUnifiedLoginServerToken("unifiedsettingsapi"))
-              .Returns("abcdedfghijklmnilol");
+                .Setup(m => m.GetUnifiedLoginServerToken("unifiedsettingsapi"))
+                .Returns("abcdedfghijklmnilol");
             _mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/v2/provisioning/property", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
 
             OrganizationController organizationController = new OrganizationController(
@@ -2886,28 +2901,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()
-            };   
-            
+            };
+
             //Act           
             HttpResponseMessage response = organizationController.AddPropertyForOrganization(_propertyInstance, EmployeeCompanyRealPageId);
 
             //Assert
             Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
         }
+
         #endregion
 
         #region SearchPropertyByPropertyId
+
         [Fact]
         public void SearchPropertyByBlueId_InvalidPropertyObject_ReturnBadRequest()
         {
             //Arrange
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
-                , _mockHttpMessageHandler.Object
-                , _defaultUserClaim
-            )
-            { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
+                    _mockRepository.Object
+                    , _mockRepositoryResponse.Object
+                    , _mockHttpMessageHandler.Object
+                    , _defaultUserClaim
+                )
+                { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
 
             //Act           
             HttpResponseMessage response = organizationController.SearchPropertyByBlueId("0", "1");
@@ -2921,12 +2938,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         {
             //Arrange
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
-                , _mockHttpMessageHandler.Object
-                , _defaultUserClaim
-            )
-            { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
+                    _mockRepository.Object
+                    , _mockRepositoryResponse.Object
+                    , _mockHttpMessageHandler.Object
+                    , _defaultUserClaim
+                )
+                { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
 
             //Act           
             HttpResponseMessage response = organizationController.SearchPropertyByBlueId("1234", "0");
@@ -2934,9 +2951,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             //Assert
             Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
         }
+
         [Fact]
         public void SearchPropertyByBlueId_ReturnsValidResponse()
-		{
+        {
             //Arrange
             OrganizationController organizationController = new OrganizationController(
                 _mockRepository.Object
@@ -2948,7 +2966,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()
             };
-            var booksPropertyInstanceJson = "{\r\n\"data\": [\r\n{\r\n\"type\": \"propertyinstance\",\r\n\"id\": \"1005251854\",\r\n\"attributes\": {\r\n\"propertyInstanceId\": 1005251854,\r\n\"propertyInstanceSourceId\": \"003b0509-1189-49dc-bbe6-01c5b6277a83\",\r\n\"propertyName\": \"Cobblestone Cove\",\r\n\"source\": \"UPFM\",\r\n\"address\": {\r\n\"address\": null,\r\n\"city\": null,\r\n\"state\": null,\r\n\"country\": null,\r\n\"county\": null,\r\n\"postalCode\": null\r\n},\r\n\"domain\": \"Primary\",\r\n\"deletedReason\": \"Deprecated Field\",\r\n\"customerPropertyMap\": [\r\n{\r\n\"customerPropertyId\": 1234,\r\n\"propertyInstanceId\": 1005251854,\r\n\"customerProperty\": [\r\n{\r\n\"customerPropertyId\": 1405001,\r\n\"propertyName\": \"COBBLESTONE COVE\",\r\n\"hasMedia\": \"Deprecated Field\"\r\n}\r\n]\r\n}\r\n]\r\n}\r\n}\r\n],\r\n\"meta\": {\r\n\"totalEntities\": 610,\r\n\"totalPages\": 610\r\n}\r\n}"; ;
+            var booksPropertyInstanceJson = "{\r\n\"data\": [\r\n{\r\n\"type\": \"propertyinstance\",\r\n\"id\": \"1005251854\",\r\n\"attributes\": {\r\n\"propertyInstanceId\": 1005251854,\r\n\"propertyInstanceSourceId\": \"003b0509-1189-49dc-bbe6-01c5b6277a83\",\r\n\"propertyName\": \"Cobblestone Cove\",\r\n\"source\": \"UPFM\",\r\n\"address\": {\r\n\"address\": null,\r\n\"city\": null,\r\n\"state\": null,\r\n\"country\": null,\r\n\"county\": null,\r\n\"postalCode\": null\r\n},\r\n\"domain\": \"Primary\",\r\n\"deletedReason\": \"Deprecated Field\",\r\n\"customerPropertyMap\": [\r\n{\r\n\"customerPropertyId\": 1234,\r\n\"propertyInstanceId\": 1005251854,\r\n\"customerProperty\": [\r\n{\r\n\"customerPropertyId\": 1405001,\r\n\"propertyName\": \"COBBLESTONE COVE\",\r\n\"hasMedia\": \"Deprecated Field\"\r\n}\r\n]\r\n}\r\n]\r\n}\r\n}\r\n],\r\n\"meta\": {\r\n\"totalEntities\": 610,\r\n\"totalPages\": 610\r\n}\r\n}";
+            ;
             HttpResponseMessage booksPropertyInstanceResponse = new HttpResponseMessage(HttpStatusCode.OK);
             booksPropertyInstanceResponse.Content = new StringContent(booksPropertyInstanceJson);
 
@@ -2975,9 +2994,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             //Assert
             Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
         }
+
         #endregion
 
         #region Delete Property
+
         [Fact]
         public void DeletePropertyForOrganization_InvalidPropertyObject_ReturnBadRequest()
         {
@@ -3008,17 +3029,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             List<ProductInternalSetting> productInternalSettings = new List<ProductInternalSetting>()
             {
-                new ProductInternalSetting() {Name = "BooksUseDomains", Value = "1"},
-                new ProductInternalSetting() {Name = "BooksUseUPFMId", Value = "1"},
-                new ProductInternalSetting() {Name = "BooksUseTranslatev2", Value = "0"},
-                new ProductInternalSetting() {Name = "SettingsApiEndPoint", Value = "http://localhost"},
-                new ProductInternalSetting() {Name = "UnifiedLoginServerClientName", Value = "unifiedlogin-server"},
-                new ProductInternalSetting() {Name = "UnifiedLoginServerClientSecret", Value = "abcdefgh"}
+                new ProductInternalSetting() { Name = "BooksUseDomains", Value = "1" },
+                new ProductInternalSetting() { Name = "BooksUseUPFMId", Value = "1" },
+                new ProductInternalSetting() { Name = "BooksUseTranslatev2", Value = "0" },
+                new ProductInternalSetting() { Name = "SettingsApiEndPoint", Value = "http://localhost" },
+                new ProductInternalSetting() { Name = "UnifiedLoginServerClientName", Value = "unifiedlogin-server" },
+                new ProductInternalSetting() { Name = "UnifiedLoginServerClientSecret", Value = "abcdefgh" }
             };
 
             _mockRepository
-               .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
-               .Returns(productInternalSettings);
+                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
+                .Returns(productInternalSettings);
             Guid propertyInstance = new Guid("a1ef0ac9-2f84-4288-b369-e59b1d6c13de");
             RepositoryResponse repository = new RepositoryResponse()
             {
@@ -3031,9 +3052,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             Mock<IRepository> _mockPropertyRepository = new Mock<IRepository>();
             _mockRepository
-               .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_DeletePropertyInstance,
-                   It.IsAny<object>()))
-               .Returns(repository);
+                .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_DeletePropertyInstance,
+                    It.IsAny<object>()))
+                .Returns(repository);
 
             var booksTranslateOneSiteJson = "{\n\t\"data\": {\n\t\t\"type\": \"propertyinstancetranslations\",\n\t\t\"attributes\": [\n\t\t\t{\n\t\t\t\t\"propertyInstanceSourceId\": \"a1ef0ac9-2f84-4288-b369-e59b1d6c13de\",\n\t\t\t\t\"source\": \"UPFM\",\n\t\t\t\t\"translatedPropertyInstances\": [\n\t\t\t\t\t{\n\t\t\t\t\t\t\"source\": \"SET\",\n\t\t\t\t\t\t\"propertyInstanceSourceId\": \"e89233ef-6fae-4da6-8953-8a2b6814c960\"\n\t\t\t\t\t}\n\t\t\t\t]\n\t\t\t},\n\t\t\t{\n\t\t\t\t\"propertyInstanceSourceId\": \"a5192995-aaaa-bbbb-8df2-f30f1b8dc752\",\n\t\t\t\t\"source\": \"UPFM\",\n\t\t\t\t\"translatedPropertyInstances\": [\n\t\t\t\t\t{\n\t\t\t\t\t\t\"source\": \"AB\",\n\t\t\t\t\t\t\"propertyInstanceSourceId\": \"7654321\"\n\t\t\t\t\t}\n\t\t\t\t]\n\t\t\t}\n\t\t]\n\t}\n}";
             HttpResponseMessage booksTranslateOneSiteResponse = new HttpResponseMessage(HttpStatusCode.OK);
@@ -3069,20 +3090,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         public void DeletePropertyForOrganization_ValidPropertyObject_Returns_Success()
         {
             //Arrange
-            
+
             List<ProductInternalSetting> productInternalSettings = new List<ProductInternalSetting>()
             {
-                new ProductInternalSetting() {Name = "BooksUseDomains", Value = "1"},
-                new ProductInternalSetting() {Name = "BooksUseUPFMId", Value = "1"},
-                new ProductInternalSetting() {Name = "BooksUseTranslatev2", Value = "0"},
-                new ProductInternalSetting() {Name = "SettingsApiEndPoint", Value = "http://localhost"},
-                new ProductInternalSetting() {Name = "UnifiedLoginServerClientName", Value = "unifiedlogin-server"},
-                new ProductInternalSetting() {Name = "UnifiedLoginServerClientSecret", Value = "abcdefgh"}
+                new ProductInternalSetting() { Name = "BooksUseDomains", Value = "1" },
+                new ProductInternalSetting() { Name = "BooksUseUPFMId", Value = "1" },
+                new ProductInternalSetting() { Name = "BooksUseTranslatev2", Value = "0" },
+                new ProductInternalSetting() { Name = "SettingsApiEndPoint", Value = "http://localhost" },
+                new ProductInternalSetting() { Name = "UnifiedLoginServerClientName", Value = "unifiedlogin-server" },
+                new ProductInternalSetting() { Name = "UnifiedLoginServerClientSecret", Value = "abcdefgh" }
             };
 
             _mockRepository
-               .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
-               .Returns(productInternalSettings);
+                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
+                .Returns(productInternalSettings);
             Guid propertyInstance = new Guid("a1ef0ac9-2f84-4288-b369-e59b1d6c13de");
             RepositoryResponse repository = new RepositoryResponse()
             {
@@ -3090,17 +3111,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 Id = 0,
                 ErrorMessage = ""
             };
-           
+
             Mock<ManageBlueBook> _manageBlueBook = new Mock<ManageBlueBook>();
 
-			Mock <IRepository> _mockPropertyRepository = new Mock<IRepository>();
+            Mock<IRepository> _mockPropertyRepository = new Mock<IRepository>();
             _mockRepository
-               .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_DeletePropertyInstance,
-                   It.IsAny<object>()))
-               .Returns(repository);
+                .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_DeletePropertyInstance,
+                    It.IsAny<object>()))
+                .Returns(repository);
             List<UPFMPropertyInstance> upfmPropertyInstances = new List<UPFMPropertyInstance>()
             {
-                new UPFMPropertyInstance(){InstanceId = new Guid("a5192995-aaaa-bbbb-8df2-f30f1b8dc752"), Name = "test property 1"}
+                new UPFMPropertyInstance() { InstanceId = new Guid("a5192995-aaaa-bbbb-8df2-f30f1b8dc752"), Name = "test property 1" }
             };
             var booksTranslateOneSiteJson = "{\n\t\"data\": {\n\t\t\"type\": \"propertyinstancetranslations\",\n\t\t\"attributes\": [\n\t\t\t{\n\t\t\t\t\"propertyInstanceSourceId\": \"a1ef0ac9-2f84-4288-b369-e59b1d6c13de\",\n\t\t\t\t\"source\": \"UPFM\",\n\t\t\t\t\"translatedPropertyInstances\": [\n\t\t\t\t\t{\n\t\t\t\t\t\t\"source\": \"SET\",\n\t\t\t\t\t\t\"propertyInstanceSourceId\": \"e89233ef-6fae-4da6-8953-8a2b6814c960\"\n\t\t\t\t\t}\n\t\t\t\t]\n\t\t\t},\n\t\t\t{\n\t\t\t\t\"propertyInstanceSourceId\": \"a5192995-aaaa-bbbb-8df2-f30f1b8dc752\",\n\t\t\t\t\"source\": \"UPFM\",\n\t\t\t\t\"translatedPropertyInstances\": [\n\t\t\t\t\t{\n\t\t\t\t\t\t\"source\": \"AB\",\n\t\t\t\t\t\t\"propertyInstanceSourceId\": \"7654321\"\n\t\t\t\t\t}\n\t\t\t\t]\n\t\t\t}\n\t\t]\n\t}\n}";
             HttpResponseMessage booksTranslateOneSiteResponse = new HttpResponseMessage(HttpStatusCode.OK);
@@ -3128,20 +3149,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             //Assert
             Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
         }
+
         #endregion
 
         #region GetProductStatusDetails
+
         [Fact]
         public void GetProductStatusDetails_InvalidProductInstanceId_ReturnBadRequest()
         {
             //Arrange
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
-                , _mockHttpMessageHandler.Object
-                , _defaultUserClaim
-            )
-            { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
+                    _mockRepository.Object
+                    , _mockRepositoryResponse.Object
+                    , _mockHttpMessageHandler.Object
+                    , _defaultUserClaim
+                )
+                { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
 
             //Act           
             HttpResponseMessage response = organizationController.GetProductStatusDetails("0", "OS");
@@ -3155,12 +3178,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         {
             //Arrange
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
-                , _mockHttpMessageHandler.Object
-                , _defaultUserClaim
-            )
-            { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
+                    _mockRepository.Object
+                    , _mockRepositoryResponse.Object
+                    , _mockHttpMessageHandler.Object
+                    , _defaultUserClaim
+                )
+                { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
 
             //Act           
             HttpResponseMessage response = organizationController.GetProductStatusDetails("1234", "");
@@ -3193,7 +3216,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/propertyinstance/12345/OS?include=customerPropertyMap.customerProperty", booksProductDetailResponse);
             _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/propertyinstance?filter[source]=UPFM&filter[customerPropertyMap.customerPropertyId]=123456&page[size]=9999& fields[propertyinstance]=propertyInstanceId,propertyName,domain,propertyInstanceSourceId,isActive&include=customerPropertyMap.customerProperty&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName,address", booksCustomerPropertyInstanceResponse);
-           
+
 
             //Act           
             HttpResponseMessage response = organizationController.GetProductStatusDetails("12345", "OS");
@@ -3201,9 +3224,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             //Assert
             Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
         }
+
         #endregion
 
         #region GetCompanyMasterByCustomerCompanyId
+
         [Fact]
         public void SearchCompanyDetailsByCustomerCompanyId_InvalidCustomerCompanyId_ReturnBadRequest()
         {
@@ -3251,17 +3276,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         #endregion
 
         #region UpdateUsePrimaryPropertyForOrganizationProduct
+
         [Fact]
         public void UpdateUsePrimaryPropertyForOrganizationProduct_InvalidorganizationPartyId_ReturnBadRequest()
         {
             //Arrange
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
-                , _mockHttpMessageHandler.Object
-                , _defaultUserClaim
-            )
-            { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
+                    _mockRepository.Object
+                    , _mockRepositoryResponse.Object
+                    , _mockHttpMessageHandler.Object
+                    , _defaultUserClaim
+                )
+                { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
 
             //Act           
             HttpResponseMessage response = organizationController.UpdateUsePrimaryPropertyForOrganizationProduct(0, 1, false);
@@ -3275,19 +3301,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         {
             //Arrange
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
-                , _mockHttpMessageHandler.Object
-                , _defaultUserClaim
-            )
-            { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
+                    _mockRepository.Object
+                    , _mockRepositoryResponse.Object
+                    , _mockHttpMessageHandler.Object
+                    , _defaultUserClaim
+                )
+                { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
 
             //Act           
-            HttpResponseMessage response = organizationController.UpdateUsePrimaryPropertyForOrganizationProduct(1234, 0 , true);
+            HttpResponseMessage response = organizationController.UpdateUsePrimaryPropertyForOrganizationProduct(1234, 0, true);
 
             //Assert
             Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
         }
+
         #endregion
 
 
@@ -3297,7 +3324,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         public void InsertOrganizationRemovalQueue_Success()
         {
             //Arrange
-            OrganizationDelete organizationDelete = new OrganizationDelete() {OrganizationRealPageId = _RealPageId, RequestedBy = "Unit test"};
+            OrganizationDelete organizationDelete = new OrganizationDelete() { OrganizationRealPageId = _RealPageId, RequestedBy = "Unit test" };
             OrganizationRemovalQueue organizationRemovalQueue = new OrganizationRemovalQueue()
             {
                 OrganizationRealPageId = organizationDelete.OrganizationRealPageId,
@@ -3312,7 +3339,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Setup(m => m.GetOne<OrganizationRemovalQueue>(StoredProcNameConstants.SP_InsertOrganizationRemovalQueue,
                     It.IsAny<object>()))
                 .Returns(organizationRemovalQueue);
-            
+
             OrganizationController organizationController = new OrganizationController(
                 _mockRepository.Object
                 , _mockRepositoryResponse.Object
@@ -3336,7 +3363,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         {
             //Arrange
             OrganizationDelete organizationDelete = new OrganizationDelete() { OrganizationRealPageId = Guid.Empty, RequestedBy = "Unit test" };
-            
+
             OrganizationController organizationController = new OrganizationController(
                 _mockRepository.Object
                 , _mockRepositoryResponse.Object
@@ -3362,7 +3389,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             Mock<IRepository> mockRepository = new Mock<IRepository>();
 
             List<OrganizationRemovalQueue> organizationToDeletes =
-                new List<OrganizationRemovalQueue>() {new OrganizationRemovalQueue() {OrganizationPartyId = 123, OrganizationRealPageId = _RealPageId, OrganizationRemovalQueueId = 20, OrganizationRemoveUDMData = true, OrganizationRemovalQueueStatusId = 0, OrganizationRemovalRetryCount = 0}};
+                new List<OrganizationRemovalQueue>() { new OrganizationRemovalQueue() { OrganizationPartyId = 123, OrganizationRealPageId = _RealPageId, OrganizationRemovalQueueId = 20, OrganizationRemoveUDMData = true, OrganizationRemovalQueueStatusId = 0, OrganizationRemovalRetryCount = 0 } };
 
             mockRepository
                 .Setup(m => m.GetMany<OrganizationRemovalQueue>(StoredProcNameConstants.SP_ListOrganizationToDelete,
@@ -3378,7 +3405,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Setup(m => m.GetOne<int>(StoredProcNameConstants.SP_UpdateOrganizationRemovalQueueStatus,
                     It.IsAny<object>()))
                 .Returns(organizationToDeletes[0].OrganizationRemovalQueueId);
-            
+
             OrganizationController organizationController = new OrganizationController(
                 mockRepository.Object
                 , _mockRepositoryResponse.Object
