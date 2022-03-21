@@ -72,6 +72,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         /// </summary>
         public Dictionary<string, List<string>> Restricted { get; set; }
 
+        /// <summary>
+        /// The name of the users primary company
+        /// </summary>
+        public string PrimaryCompanyName { get; set; } = "";
+
         #region Examples
         /// <summary>
         /// Example for UserOrganizationExists
