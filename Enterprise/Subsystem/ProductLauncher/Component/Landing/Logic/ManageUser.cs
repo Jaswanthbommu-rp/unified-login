@@ -17,6 +17,7 @@ using System.Collections.Generic;
 using System.Linq;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using System.Net.Http;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.ThirdParty;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -758,6 +759,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				if (partyRelationship != null)
 				{
 					profileDetail.UserTypeId = partyRelationship.RoleTypeIdFrom;
+				}
+
+				if (FeatureFlag.GetUserCompanyAssociationFeatureFlag()) 
+				{
+					var data = _userRepository.GetExternalUserRelationship(userLoginPersonaList[0].UserLoginPersonaId);
+
+					profileDetail.ExternalUserRelationship = data == null ? new ExternalUserRelationship() { 
+						UserLoginPersonaId = userLoginPersonaList[0].UserLoginPersonaId } : data;
 				}
 
 				output.obj = profileDetail;

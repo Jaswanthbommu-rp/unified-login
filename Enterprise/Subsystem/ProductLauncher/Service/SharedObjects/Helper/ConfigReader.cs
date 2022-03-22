@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Specialized;
+﻿using System.Collections.Specialized;
 using System.Configuration;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper
@@ -23,7 +22,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper
 
         #region Common Configurations
         /// <summary>
-        /// Get the enviroment of the system
+        /// Get the environment of the system
         /// </summary>
         public static string Environment { get; } = ConfigurationManager.AppSettings["logging:environment"];
         
@@ -153,16 +152,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper
         public static string GetVendorServicesIssueUri => ConfigSection["VendorServicesIssueUri"];
 
 		/// <summary>
-		/// Used to store the IdentityAPI client id
-		/// </summary>
-		public static string IdentityAPIId => ConfigSection["IdentityAPIId"];
-
-		/// <summary>
-		/// Used to store the IdentityAPI client key
-		/// </summary>
-		public static string IdentityAPIKey => ConfigSection["IdentityAPIKey"];
-
-		/// <summary>
 		/// Used to store the RealPage company master company id
 		/// </summary>
 	    public static string OrgMasterId => ConfigSection["OrgMasterId"];
@@ -171,6 +160,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper
         /// Used to store the MQ Name
         /// </summary>
         public static string GetActivityMQName { get; } = ConfigurationManager.AppSettings["ActivityMQName"];
+
+        public static string GetLaunchdarklyRelayProxyUrl { get; } = ConfigurationManager.AppSettings["launchdarkly:RelayProxyUrl"];
+
+        public static string GetLaunchdarklySdkKey { get; } = ConfigurationManager.AppSettings["launchdarkly:SdkKey"];
 
         #endregion
     }

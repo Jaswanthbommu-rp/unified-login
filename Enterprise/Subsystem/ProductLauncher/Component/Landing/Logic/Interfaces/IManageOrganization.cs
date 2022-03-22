@@ -7,6 +7,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
 using System;
 using System.Collections.Generic;
+using System.Web.Configuration;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
 {
@@ -151,13 +152,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="userPersonaId">userPersonaId</param>
 		/// <param name="isSelectedProperties">isSelectedProperties</param>
 		/// <param name="selectedProperties">selected/Unselected Properties</param>
+		/// <param name="operatorInstanceId">The guid of the operator to filter the property list to</param>
 		/// <returns>List of Properties for a company </returns>
 		List<CompanyPropertySetup> GetPropertiesForCompany(Guid companyInstanceId, string propertyName = null, string domain = null, int? blueId = null, 
 							int? status = null, IDictionary<object, object> globals = null, long editorPersonaId = 0, long userPersonaId = 0, 
-							bool? isSelectedProperties = null, List<Guid> selectedProperties = null);
+							bool? isSelectedProperties = null, List<Guid> selectedProperties = null, Guid? operatorInstanceId = null);
 
 		/// <summary>
-		/// Get Property By PeropertyId
+		/// Get Property By PropertyId
 		/// </summary>
 		/// <param name="propertyInstanceId"></param>
 		/// <returns></returns>

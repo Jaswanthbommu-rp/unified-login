@@ -5,6 +5,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.ThirdParty;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Dtos;
@@ -883,6 +884,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     int userStatusId = (int)UserUiStatusType.Active;
 
                     long AssignUserPersonaId = 0L;
+                    long userLoginPersonaId = 0L;
 
                     foreach (OrganizationPrimary currentOrg in orgnanizationList)
                     {
@@ -1032,7 +1034,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             return createUserResponse;
                         }
 
-                        long userLoginPersonaId = repositoryResponse.Id;
+                        userLoginPersonaId = repositoryResponse.Id;
 
                         switch (personaFromUI.Name.ToLowerInvariant())
                         {
@@ -1559,6 +1561,31 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                     #endregion
 
+                    #region create user company association
+                    
+                    if (FeatureFlag.GetUserCompanyAssociationFeatureFlag())
+                    {
+                        if (newProfile.ExternalUserRelationship != null)
+                        {
+                            param = new
+                            {
+                                UserLoginPersonaId = userLoginPersonaId,
+                                ThirdPartyRelationshipId = newProfile.ExternalUserRelationship.ThirdPartyRelationShipId,
+                                CompanyName = newProfile.ExternalUserRelationship.ThirdPartyCompanyName,
+                                ThirdPartyCompanyRealPageId = newProfile.ExternalUserRelationship.ThirdPartyCompanyRealPageId
+                            };
+
+                            repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateExternalUserRelationship, param);
+
+                            if (repositoryResponse.Id == 0)
+                            {
+                                repositoryResponse.ErrorMessage = "Create ExternalUser Relationship: Create External User Relationship failed.";
+                                throw new Exception(repositoryResponse.ErrorMessage);
+                            }
+                        }
+                    }
+                    #endregion
+
                     // used to pass back user id for logging
                     newProfile.userLogin.UserId = userId;
                     newProfile.userLogin.RealPageId = personRealPageId;
@@ -1577,6 +1604,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     errorStatus.ErrorMsg = "Create User Error: " + exception.Message + ". Process: " + processTracker;
                     createUserResponse.Status = errorStatus;
                     createUserResponse.UserStatus = errorStatus.ErrorMsg;
+                    
+                    WriteToLog(LogEventLevel.Error, $"UserRepository.CreateUser", null, exception);
+
                     return createUserResponse;
                 }
 
@@ -2838,6 +2868,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
+        public ExternalUserRelationship GetExternalUserRelationship(long userLoginPersonaId)
+        {
+            using (var repository = GetRepository())
+            {
+                return repository.GetOne<ExternalUserRelationship>(StoredProcNameConstants.SP_GetExternalUserRelationship, new { userLoginPersonaId });
+            }
+        }
         #endregion
 
         #region Private methods
@@ -6100,6 +6137,31 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
                         #endregion
 
+                        #region update external user company association
+                        if (FeatureFlag.GetUserCompanyAssociationFeatureFlag()) 
+                        {
+                            if (updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyCompanyName != updateUserProfileEntity.OldProfile.ExternalUserRelationship.ThirdPartyCompanyName ||
+                                updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyRelationShipId != updateUserProfileEntity.OldProfile.ExternalUserRelationship.ThirdPartyRelationShipId ||
+                                updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyCompanyRealPageId != updateUserProfileEntity.OldProfile.ExternalUserRelationship.ThirdPartyCompanyRealPageId) 
+                             {
+                                param = new
+                                {
+                                    UserLoginPersonaId = updateUserProfileEntity.NewProfile.ExternalUserRelationship.UserLoginPersonaId,
+                                    ThirdPartyRelationshipId = updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyRelationShipId,
+                                    CompanyName = updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyCompanyName,
+                                    ThirdPartyCompanyRealPageId = updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyCompanyRealPageId
+                                };
+
+                                repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateExternalUserRelationship, param);
+
+                                if (repositoryResponse.Id == 0)
+                                {
+                                    repositoryResponse.ErrorMessage = "Update ExternalUser Relationship: Update External User Relationship failed.";
+                                    throw new Exception(repositoryResponse.ErrorMessage);
+                                }
+                             }
+                        }
+                        #endregion
                         var primaryPropertyBatch = updateUserProfileEntity.NewProfile.productBatch.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedUI);
                         //Update Enterprise role template to persona                        
                         if (primaryPropertyBatch?.InputJson?.RoleList != null && primaryPropertyBatch?.InputJson?.RoleList.Count > 0)
@@ -6522,6 +6584,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 return enterpriseRoles.FirstOrDefault(rl => rl.Role == "Basic End User").RoleId ;
             }            
         }
+
         #endregion
     }
 }

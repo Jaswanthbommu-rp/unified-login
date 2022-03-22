@@ -191,5 +191,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 		/// Is the person been created a RP employee
 		/// </summary>
         public bool IsRPEmployee { get; set; }
-    }
+
+		/// <summary>
+		/// ExternalUserRelationship
+		/// </summary>
+		[JsonProperty("ExternalUserRelationship")]
+		public ExternalUserRelationship ExternalUserRelationship { get; set; }
+	}
 }

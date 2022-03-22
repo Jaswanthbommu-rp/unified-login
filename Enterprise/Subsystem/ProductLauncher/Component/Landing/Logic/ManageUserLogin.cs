@@ -1489,8 +1489,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 throw new Exception("Invalid parameter loginName.");
             }
-
-
+            
             bool isAdminUser = false;
             bool isRegularUser = false;
             //Remove all leading and Trailing white-space characters
@@ -1549,6 +1548,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 UserOrganization userOrganization = userPersonaOrganizationList.ToList().FirstOrDefault(m => m.PrimaryOrganization.Equals(true));
                 if (userOrganization != null)
                 {
+                    if (userOrganization.OrganizationRealPageId != DefaultUserClaim.EmployeeCompanyRealPageId && userOrganization.OrganizationRealPageId != DefaultUserClaim.ExternalCompanyRealPageId && userOrganization.OrganizationRealPageId != DefaultUserClaim.ContractCompanyRealPageId)
+                    {
+                        userOrganizationExists.PrimaryCompanyName = userOrganization.OrganizationName;
+                    }
+
                     //Get user details (includes the status)
                     UserLogin userLogin = GetUserLogin(realPageId: ulo.RealPageId, orgPartyId: userOrganization.OrganizationPartyId, userLogin: null, userStatuses: null);
                     if (userLogin != null)

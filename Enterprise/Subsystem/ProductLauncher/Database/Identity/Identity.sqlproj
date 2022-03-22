@@ -16,7 +16,7 @@
     <ModelCollation>1033,CI</ModelCollation>
     <DefaultFileStructure>BySchemaAndSchemaType</DefaultFileStructure>
     <DeployToDatabase>True</DeployToDatabase>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <TargetLanguage>CS</TargetLanguage>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <SqlServerVerification>False</SqlServerVerification>
@@ -1241,6 +1241,8 @@
     <Build Include="Enterprise\Tables\ExternalUserRelationship.sql" />
     <Build Include="Enterprise\Tables\ThirdPartyRelationship.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2022Q1Release.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetExternalUserRelationship.sql" />
+    <Build Include="Enterprise\Stored Procedures\UpdateExternalUserRelationship.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

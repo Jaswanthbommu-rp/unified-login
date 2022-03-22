@@ -1,8 +1,0 @@
-.md-check input[type="checkbox"]:checked + i.primary {
-	&:before {
-		border: 1px solid $ash-gray;
-	}
-	&:after {
-		border-color: $white;
-	}
-}

@@ -147,7 +147,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         /// <summary>
-        /// Unit test
+        /// DI Constructor
         /// </summary>
         /// <param name="userClaim"></param>
         /// <param name="repository"></param>
@@ -1514,11 +1514,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <returns></returns>
         public List<BooksPropertyInstance> GetPropertyInstanceForCompany(Guid companyRealPageId)
         {
-            List<BooksPropertyInstance> propertyInstance = new List<BooksPropertyInstance>(); 
-            RPObjectCache rpcache = new RPObjectCache();
+            var propertyInstance = new List<BooksPropertyInstance>(); 
+            var rpcache = new RPObjectCache();
             var cacheKey = $"getPropertyInstanceForCompany_{companyRealPageId}";
 
-			propertyInstance = rpcache.GetFromCache<List<BooksPropertyInstance>>(cacheKey, 3600, () =>
+			propertyInstance = rpcache.GetFromCache(cacheKey, 600, () =>
 			{
 
 				/*
@@ -1537,7 +1537,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                           "&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId"+
                              "&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName";
               
-                Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
+                var logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
                 WriteToLog(LogEventLevel.Debug, "getPropertyInstanceForCompany - Getting info.", logData);
                 var response = GetAsync(uri).Result;
                 if (response.IsSuccessStatusCode)
@@ -1558,6 +1558,57 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			});
 			return propertyInstance;
 		}
+
+        /// <summary>
+        /// Used to get the Properties of the company, using the books customer master id or the UPFM id
+        /// </summary>
+        /// <param name="companyRealPageId"></param>
+        /// <param name="operatorRealPageId"></param>
+        /// <returns></returns>
+        public List<BooksPropertyInstance> GetPropertyInstanceForCompanyByOperatorId(Guid companyRealPageId, Guid operatorRealPageId)
+        {
+            var propertyInstance = new List<BooksPropertyInstance>();
+            var rpcache = new RPObjectCache();
+            var cacheKey = $"getPropertyInstanceForCompanyByOperatorId_{companyRealPageId}_{operatorRealPageId}";
+
+            propertyInstance = rpcache.GetFromCache(cacheKey, 600, () =>
+            {
+                /*
+                 https://booksapi.realpage.com/propertyinstance
+                    ?page[size]=9999&include=customerPropertyMap.customerProperty
+                    &fields[propertyinstance]=propertyInstanceId,propertyInstanceSourceId,propertyName,source,domain,address
+                    &fields[customerPropertyMap]=customerPropertyId,propertyInstanceId
+                    &fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName
+                    &scope[operatedBy]=4bdcddef-5dc3-48e9-9cd0-102b875c6ad9,UPFM,59b56f19-fd91-486d-ac2a-64176a2a6c91 (scope[operatedBy]={ownerId},{source},{operatorId})
+                */
+                string uri = $"propertyinstance?scope[operatedBy]={companyRealPageId.ToString().ToLower()},UPFM,{operatorRealPageId.ToString().ToLower()}" +
+                      "&page[size]=9999&include=customerPropertyMap.customerProperty" +
+                       "&fields[propertyinstance]=propertyInstanceId,propertyInstanceSourceId,propertyName,source,domain,address" +
+                          "&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId" +
+                             "&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName";
+
+                var logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
+                WriteToLog(LogEventLevel.Debug, "getPropertyInstanceForCompanyByOperatorId - Getting info.", logData);
+                var response = GetAsync(uri).Result;
+                if (response.IsSuccessStatusCode)
+                {
+                    //companyInstance = response.Content.ReadAsJsonApiAsync<CompanyResource>(_contractResolver, _cache).Result;
+                    propertyInstance = JsonConvert.DeserializeObject<List<BooksPropertyInstance>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
+                    logData = new Dictionary<string, object>() { { "getPropertyInstanceForCompanyByOperatorId", propertyInstance } };
+                    WriteToLog(LogEventLevel.Debug, "getPropertyInstanceForCompanyByOperatorId - Got info.", logData);
+                }
+                else
+                {
+                    logData = new Dictionary<string, object>() { { "response", response } };
+                    WriteToLog(LogEventLevel.Debug, "getPropertyInstanceForCompanyByOperatorId - No info found.", logData);
+                    return null;
+                }
+
+                return propertyInstance;
+            });
+            return propertyInstance;
+        }
+
 
         /// <summary>
         /// Used to get the Properties of the company, using the books customer Property Id or Blue Id
@@ -2058,6 +2109,53 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
 
             return new List<UDMSource>();
+        }
+
+        public IEnumerable<UDMOperators> GetAllOperatorDetailsForUPFMCompany(Guid companyRealPageId, string source)
+        {
+            var booksOperators = new UDMOperatorsRootObject();
+
+            string uri = $"operators/{companyRealPageId}/{source}";
+
+            Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
+            WriteToLog(LogEventLevel.Debug, "GetOperatorListForUPFMCompany - Getting info.", logData);
+            var response = GetAsync(uri).Result;
+            if (response.IsSuccessStatusCode)
+            {
+                booksOperators = JsonConvert.DeserializeObject<UDMOperatorsRootObject>(response.Content.ReadAsStringAsync().Result);
+            }
+            else
+            {
+                logData = new Dictionary<string, object>() { { "response", response } };
+                WriteToLog(LogEventLevel.Debug, "GetOperatorListForUPFMCompany - Error.", logData);
+                return null;
+            }
+            return booksOperators.Data.attributes.booksOperators;
+        }
+
+        public IEnumerable<UPFMOperators> GetOperatorListForUPFMCompany(Guid companyRealPageId, string source)
+        {
+            var operatorsWithUPFM = new List<UPFMOperators>();
+            var operatorList = GetAllOperatorDetailsForUPFMCompany(companyRealPageId, source);
+
+            if (operatorList != null)
+            {
+                foreach (var op in operatorList)
+                {
+                    if (op.Translations != null && op.Translations.Count > 0)
+                    {
+                        foreach (var translation in op.Translations)
+                        {
+                            if (!operatorsWithUPFM.Any(p => p.CompanyName.Equals(translation.CompanyInstanceSourceId, StringComparison.OrdinalIgnoreCase)))
+                            {
+                                operatorsWithUPFM.Add(new UPFMOperators() { CompanyName = translation.CompanyName, CompanyGuid = new Guid(translation.CompanyInstanceSourceId) });
+                            }
+                        }
+                    }
+                }
+            }
+
+            return operatorsWithUPFM.OrderBy(o => o.CompanyName);
         }
 
         #region Privates
