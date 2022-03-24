@@ -1565,7 +1565,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     
                     if (FeatureFlag.GetUserCompanyAssociationFeatureFlag())
                     {
-                        if (newProfile.ExternalUserRelationship != null)
+                        if (newProfile.ExternalUserRelationship != null && newProfile.ExternalUserRelationship.ThirdPartyRelationShipId > 0)
                         {
                             param = new
                             {
@@ -6140,9 +6140,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         #region update external user company association
                         if (FeatureFlag.GetUserCompanyAssociationFeatureFlag()) 
                         {
-                            if (updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyCompanyName != updateUserProfileEntity.OldProfile.ExternalUserRelationship.ThirdPartyCompanyName ||
+                            if (updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyRelationShipId > 0 &&
+                                (updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyCompanyName != updateUserProfileEntity.OldProfile.ExternalUserRelationship.ThirdPartyCompanyName ||
                                 updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyRelationShipId != updateUserProfileEntity.OldProfile.ExternalUserRelationship.ThirdPartyRelationShipId ||
-                                updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyCompanyRealPageId != updateUserProfileEntity.OldProfile.ExternalUserRelationship.ThirdPartyCompanyRealPageId) 
+                                updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyCompanyRealPageId != updateUserProfileEntity.OldProfile.ExternalUserRelationship.ThirdPartyCompanyRealPageId)) 
                              {
                                 param = new
                                 {
