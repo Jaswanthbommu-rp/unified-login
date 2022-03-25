@@ -1260,35 +1260,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 //Disable the Resident Portal Enterprise Admin role if the user has the Enterprise Standard role
                 if (sLevel.Equals("ENTERPRISESTANDARD"))
                 {
-                    _levelList.Find(item => item.Id.Equals("ENTERPRISEADMIN")).IsDisabled = true;
+                    _levelList = _levelList.Where(m => m.Id != "ENTERPRISEADMIN").ToList();
                 }
 
                 //Disable the Resident Portal Enterprise Admin and Standard roles if the user has any of the Staff roles
                 if (sLevel.Contains("STAFF"))
-                {
-                    ILevel level = new Level();
-                    level = _levelList.Find(item => item.Id.Equals("ENTERPRISEADMIN"));
-                    if (level != null)
-                    {
-                        level.IsDisabled = true;
-                    }
-                    level = _levelList.Find(item => item.Id.Equals("ENTERPRISESTANDARD"));
-                    if (level != null)
-                    {
-                        level.IsDisabled = true;
-                    }
+                {         
+                    _levelList = _levelList.Where(m => m.Id != "ENTERPRISEADMIN").ToList();
+                    _levelList = _levelList.Where(m => m.Id != "ENTERPRISESTANDARD").ToList();
 
                     //Disable the Resident Portal Staff Admin role if the user has the Staff Standard role
                     if (sLevel.Equals("STAFFSTANDARD"))
                     {
-                        _levelList.Find(item => item.Id.Equals("STAFFADMIN")).IsDisabled = true;
+                        _levelList = _levelList.Where(m => m.Id != "STAFFADMIN").ToList();
                     }
 
                     //Disable the Resident Portal Staff Admin and Standard roles if the user has the Staff Limited role
                     if (sLevel.Equals("STAFFLIMITED"))
                     {
-                        _levelList.Find(item => item.Id.Equals("STAFFADMIN")).IsDisabled = true;
-                        _levelList.Find(item => item.Id.Equals("STAFFSTANDARD")).IsDisabled = true;
+                        _levelList = _levelList.Where(m => m.Id != "STAFFADMIN").ToList();
+                        _levelList = _levelList.Where(m => m.Id != "STAFFSTANDARD").ToList();
                     }
                 }
             }
