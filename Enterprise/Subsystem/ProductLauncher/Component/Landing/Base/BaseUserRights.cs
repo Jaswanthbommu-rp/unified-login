@@ -59,7 +59,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
             {
                 // get the impersonators details
                 ManagePersona mp = new ManagePersona();
-                Persona impersonateUserPersona = mp.GetActivePersonaWithoutRights(userClaim.ImpersonatedBy); // safe to use because we just came from it
+                Persona impersonateUserPersona = mp.GetActivePersonaWithoutRights(userClaim.ImpersonatedBy != Guid.Empty ? userClaim.ImpersonatedBy : userClaim.UserRealPageGuid); // safe to use because we just came from it
 
                 // get impersonator company roles
                 IList<UserRoleRights> impersonateCompanyRoleList = GetCompanyRoles(userClaim, impersonateUserPersona.OrganizationPartyId, impersonateUserPersona.Organization.RealPageId);
@@ -76,7 +76,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
                 {
                     List<string> impersonateUserRights = GetRights(impersonateCompanyRoleList, roleId, impersonateUserPersona.PersonaId, impersonateUserPersona.OrganizationPartyId);
 
-                    List<string> persistRightsList = GetPersistRights(impersonateCompanyRoleList, roleId, impersonateUserPersona.PersonaId, impersonateUserPersona.OrganizationPartyId);
+                    List<string> persistRightsList = GetPersistRights(impersonateCompanyRoleList, roleId);
 
                     if(userClaim.ImpersonatedBy != Guid.Empty)
                     {
@@ -256,9 +256,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
         /// <summary>
         /// Get Persist rights list
         /// </summary>
-        /// <param name="impersonateUserRights"></param>
+        /// <param name="companyRoles"></param>
+        /// <param name="roleId"></param>
         /// <returns></returns>
-        private static List<string> GetPersistRights(IList<UserRoleRights> companyRoles, long roleId, long personaId, long orgPartyId)
+        private static List<string> GetPersistRights(IList<UserRoleRights> companyRoles, long roleId)
         {
             List<string> userRights = new List<string>();
 
