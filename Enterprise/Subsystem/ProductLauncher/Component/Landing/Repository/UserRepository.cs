@@ -48,6 +48,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         private IUserLoginRepository _userLoginRepository;
         private IManagePersona _managePersona;
         private IOrganizationRepository _organizationRepository;
+        private PropertyRepository _propertyRepository;
         IProductInternalSettingRepository _productInternalSettingRepository;
 
         #region Ctor
@@ -72,6 +73,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             _managePersona = new ManagePersona(repository, userClaim, messageHandler);
             _organizationRepository = new OrganizationRepository(repository);
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
+            _propertyRepository = new PropertyRepository();
         }
 
         /// <summary>
@@ -89,6 +91,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             _managePersona = new ManagePersona(_userClaim);
             _organizationRepository = new OrganizationRepository();
             _productInternalSettingRepository = new ProductInternalSettingRepository();
+            _propertyRepository = new PropertyRepository();
         }
 
         #endregion
@@ -4877,10 +4880,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="message"></param>
         /// <param name="stepName"></param>
         /// <param name="profile"></param>
-        private void LogAuditActivity(string logActivityType, LogActivityCategoryType logActivityCategoryType, string message, string stepName, IProfileDetail profile)
+        /// <param name="additionalInformation"></param>
+        private void LogAuditActivity(string logActivityType, LogActivityCategoryType logActivityCategoryType, string message, string stepName, IProfileDetail profile, List<AdditionalParameters> additionalInformation = null)
         {
             string userName = string.IsNullOrEmpty(_userClaim.ImpersonatedByName) ? _userClaim.FirstName + " " + _userClaim.LastName : _userClaim.ImpersonatedByName;
-            LogActivity.WriteActivity(new ActivityDetails
+
+            var activityDetails = new ActivityDetails
             {
                 LogActivityTypeName = logActivityType,
                 LogCategoryName = logActivityCategoryType.ToString(),
@@ -4899,8 +4904,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 ToUserLoginId = profile.userLogin.UserId,
                 ToUserFirstName = profile.FirstName,
                 ToUserLastName = profile.LastName,
-                ToUserRealpageId = profile.userLogin.RealPageId.ToString()
-            });
+                ToUserRealpageId = profile.userLogin.RealPageId.ToString(),
+            };
+
+            if (additionalInformation != null)
+            {
+                activityDetails.AdditionalInformation = additionalInformation; 
+            }
+
+            LogActivity.WriteActivity(activityDetails);
         }
 
         private void AddActivityLog(string logActivityType, LogActivityCategoryType logActivityCategoryType, string message, IPerson person, IUserLoginOnly userLogin = null, IUserOrganization userOrg = null, DefaultUserClaim defaultUserClaim = null)
@@ -5647,6 +5659,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 bool loginNamechanged = isUserLoginNameChanged(updateUserProfileEntity.NewProfile, updateUserProfileEntity.OldProfile);
                 bool employeeIdChanged = isEmployeeIdChanged(updateUserProfileEntity.NewProfile, updateUserProfileEntity.OldProfile);
 
+                bool isPrimaryPropertiesUpdated = false;
+                List<string> addedPrimaryProperty = new List<string>();
+                List<string> removedPrimaryProperty = new List<string>();
+
                 var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesByRealPageID" : StoredProcNameConstants.SP_ListRolesByRealPageID;
                 var enterpriseRoles = repository.GetMany<EnterpriseRole>(procName, new { realPageId = updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId });
                 try
@@ -6316,6 +6332,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                             if (primaryPropertyBatch != null && ((primaryPropertyBatch.InputJson?.PropertyList?.Count > 0) || (primaryPropertyBatch.InputJson?.RemovedPropertyList?.Count > 0)))
                             {
+                                addedPrimaryProperty = primaryPropertyBatch.InputJson?.PropertyList;
+                                removedPrimaryProperty = primaryPropertyBatch.InputJson?.RemovedPropertyList;
+
+                                isPrimaryPropertiesUpdated = true;
                                 string primaryPropertyJSON = JsonConvert.SerializeObject(primaryPropertyBatch);
                                 repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdatePropertyInstanceMapping, new { PersonaId = updateUserProfileEntity.OldProfile.Persona[0].PersonaId, ProductId = (int)ProductEnum.UnifiedUI, PropertyInstanceJSON = primaryPropertyJSON });
                             }
@@ -6341,6 +6361,59 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         repository.UnitOfWork.Commit();
 
                         AuditUserUpdate(updateUserProfileEntity.OldProfile, updateUserProfileEntity.NewProfile);
+
+                        //add activity log for Primary property
+                        if (isPrimaryPropertiesUpdated)
+                        {
+                            string message = "User {2} updated Primary Properties for {0} {1}.";
+                            List<AdditionalParameters> additionalParameters = new List<AdditionalParameters>();
+
+                            if (addedPrimaryProperty.Count > 0) 
+                            {
+                                List<Guid> addedGuid = new List<Guid>();
+                                foreach (var item in addedPrimaryProperty)
+                                {
+                                    addedGuid.Add(new Guid(item));
+                                }
+                                var properties = _propertyRepository.ListUPFMPropertyInstanceIdByInstanceIds(addedGuid);
+
+                                foreach (var item in properties)
+                                {
+                                    additionalParameters.Add(new AdditionalParameters()
+                                    {
+                                        Key = "Primary Properties",
+                                        Value = "{\"action\" : \"Assigned\", \"value\" : \"" + item.Name + "\"}"
+                                    });
+                                }
+
+                                LogAuditActivity(LogActivityTypeConstants.PRIMARY_PROPERTIES, LogActivityCategoryType.User, message, "Update primary property", updateUserProfileEntity.NewProfile, additionalParameters);
+                            }
+                            
+                            if (removedPrimaryProperty.Count > 0) 
+                            {
+                                List<Guid> removedGuid = new List<Guid>();
+
+                                foreach (var item in removedPrimaryProperty)
+                                {
+                                    removedGuid.Add(new Guid(item));
+                                }
+
+                                var properties = _propertyRepository.ListUPFMPropertyInstanceIdByInstanceIds(removedGuid);
+
+                                foreach (var item in properties)
+                                {
+                                    additionalParameters.Add(new AdditionalParameters()
+                                    {
+                                        Key = "Primary Properties",
+                                        Value = "{\"action\" : \"Removed\", \"value\" : \"" + item.Name + "\"}"
+                                    });
+                                }
+
+                                LogAuditActivity(LogActivityTypeConstants.PRIMARY_PROPERTIES, LogActivityCategoryType.User, message, "Update primary property", updateUserProfileEntity.NewProfile, additionalParameters);
+                            }
+
+                            
+                        }
                     }
                     else
                     {
