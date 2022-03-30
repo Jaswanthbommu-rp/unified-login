@@ -6366,7 +6366,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         //add activity log for Primary property
                         if (isPrimaryPropertiesUpdated)
                         {
-                            string message = "User {2} updated Primary Properties for {0} {1}.";
+                            string message = "{2} updated Primary Properties for {0} {1}.";
                             List<AdditionalParameters> additionalParameters = new List<AdditionalParameters>();
 
                             if (addedPrimaryProperty.Count > 0) 
@@ -6386,8 +6386,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                         Value = "{\"action\" : \"Assigned\", \"value\" : \"" + item.Name + "\"}"
                                     });
                                 }
-
-                                LogAuditActivity(LogActivityTypeConstants.PRIMARY_PROPERTIES, LogActivityCategoryType.User, message, "Update primary property", updateUserProfileEntity.NewProfile, additionalParameters);
                             }
                             
                             if (removedPrimaryProperty.Count > 0) 
@@ -6409,11 +6407,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                         Value = "{\"action\" : \"Removed\", \"value\" : \"" + item.Name + "\"}"
                                     });
                                 }
-
-                                LogAuditActivity(LogActivityTypeConstants.PRIMARY_PROPERTIES, LogActivityCategoryType.User, message, "Update primary property", updateUserProfileEntity.NewProfile, additionalParameters);
                             }
-
                             
+                            LogAuditActivity(LogActivityTypeConstants.PRIMARY_PROPERTIES, LogActivityCategoryType.User, message, "Update primary property", updateUserProfileEntity.NewProfile, additionalParameters);
+
                         }
                     }
                     else
