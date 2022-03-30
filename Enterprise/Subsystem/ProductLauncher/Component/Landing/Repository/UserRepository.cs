@@ -4813,7 +4813,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             var newEmployeeId = string.IsNullOrEmpty(profile.EmployeeId) ? "" : profile.EmployeeId;
             return !newEmployeeId.Equals(oldEmployeeId);
         }
-
+        
         /// <summary>
         /// isNotificationEmailChanged
         /// </summary>
@@ -5665,6 +5665,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesByRealPageID" : StoredProcNameConstants.SP_ListRolesByRealPageID;
                 var enterpriseRoles = repository.GetMany<EnterpriseRole>(procName, new { realPageId = updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId });
+
+                bool externalUserRelationUpdated = IsExternaUserlRelationUpdated(updateUserProfileEntity);
+                
                 try
                 {
                     repositoryResponse.Id = updateUserProfileEntity.OldProfile.Persona[0].PersonPartyId;
@@ -6156,10 +6159,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         #region update external user company association
                         if (FeatureFlag.GetUserCompanyAssociationFeatureFlag()) 
                         {
-                            if (updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyRelationShipId > 0 &&
-                                (updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyCompanyName != updateUserProfileEntity.OldProfile.ExternalUserRelationship.ThirdPartyCompanyName ||
-                                updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyRelationShipId != updateUserProfileEntity.OldProfile.ExternalUserRelationship.ThirdPartyRelationShipId ||
-                                updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyCompanyRealPageId != updateUserProfileEntity.OldProfile.ExternalUserRelationship.ThirdPartyCompanyRealPageId)) 
+                            if (updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyRelationShipId > 0 && externalUserRelationUpdated) 
                              {
                                 param = new
                                 {
@@ -6179,6 +6179,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                              }
                         }
                         #endregion
+
                         var primaryPropertyBatch = updateUserProfileEntity.NewProfile.productBatch.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedUI);
                         //Update Enterprise role template to persona                        
                         if (primaryPropertyBatch?.InputJson?.RoleList != null && primaryPropertyBatch?.InputJson?.RoleList.Count > 0)
@@ -6452,6 +6453,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     {
                         LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, "User {0} {1} successfully updated by user {2}.", "UpdateUser", updateUserProfileEntity.NewProfile);
                     }
+                    if (externalUserRelationUpdated) 
+                    {
+                        string mainMessage = "{2} updated company association field(s) for external user {0} {1}.";
+                        var additionalParam = CreateExternalUpdatelogParams(updateUserProfileEntity);
+
+                        LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, mainMessage, "Update User External Relationship", updateUserProfileEntity.NewProfile, additionalParam);
+                    }
                 }
 
                 return repositoryResponse;
@@ -6601,6 +6609,85 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 PersonaId = personaId
             };
             return repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UnassignEnterpriseRoleFromUser, param);
+        }
+
+        private bool IsExternaUserlRelationUpdated(UpdateUserProfileEntity updateUserProfileEntity) 
+        {
+            bool isUpdated = false;
+            isUpdated = (updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyCompanyName != updateUserProfileEntity.OldProfile.ExternalUserRelationship.ThirdPartyCompanyName ||
+                                updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyRelationShipId != updateUserProfileEntity.OldProfile.ExternalUserRelationship.ThirdPartyRelationShipId ||
+                                updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyCompanyRealPageId != updateUserProfileEntity.OldProfile.ExternalUserRelationship.ThirdPartyCompanyRealPageId);
+            return isUpdated;
+        }
+
+        private List<AdditionalParameters> CreateExternalUpdatelogParams(UpdateUserProfileEntity updateUserProfileEntity) 
+        {
+            List<AdditionalParameters> additionalParams = new List<AdditionalParameters>();
+            
+            var oldData = updateUserProfileEntity.OldProfile.ExternalUserRelationship;
+            var newData = updateUserProfileEntity.NewProfile.ExternalUserRelationship;
+
+            if (oldData.ThirdPartyRelationShipId == newData.ThirdPartyRelationShipId)
+            {
+                if (oldData.ThirdPartyRelationShipId == 1)
+                {
+                    if (oldData.ThirdPartyCompanyRealPageId != newData.ThirdPartyCompanyRealPageId)
+                    {
+                        var organization = _organizationRepository.GetOrganization(newData.ThirdPartyCompanyRealPageId);
+
+                        additionalParams.Add(new AdditionalParameters()
+                        {
+                            Key = "Operator Field",
+                            Value = "{\"old\" : \"" + oldData.ThirdPartyCompanyName + "\", \"new\" : \""
+                                    + organization.Name + "\"}"
+                        });
+                    }
+                }
+                else
+                {
+                    if (oldData.ThirdPartyCompanyName != newData.ThirdPartyCompanyName)
+                    {
+                        additionalParams.Add(new AdditionalParameters()
+                        {
+                            Key = "Company Name",
+                            Value = "{\"old\" : \"" + oldData.ThirdPartyCompanyName + "\", \"new\" : \""
+                                    + newData.ThirdPartyCompanyName + "\"}"
+                        });
+                    }
+                }
+            }
+            else 
+            {
+                additionalParams.Add(new AdditionalParameters()
+                {
+                    Key = "User Relationship",
+                    Value = "{\"old\" : \"" + oldData.ThirdPartyRelationShip + "\", \"new\" : \""
+                                    + newData.ThirdPartyRelationShip + "\"}"
+                });
+
+                //if changed to 1
+                if (newData.ThirdPartyRelationShipId == 1)
+                {
+                    var organization = _organizationRepository.GetOrganization(newData.ThirdPartyCompanyRealPageId);
+                    additionalParams.Add(new AdditionalParameters()
+                    {
+                        Key = "Operator Field",
+                        Value = "{\"old\" : \"\", \"new\" : \"" + organization.Name + "\"}"
+                    });
+                }
+                //if changed away from 1
+                else 
+                {
+                    additionalParams.Add(new AdditionalParameters()
+                    {
+                        Key = "Company Name",
+                        Value = "{\"old\" : \"\", \"new\" : \"" + newData.ThirdPartyCompanyName + "\"}"
+                    });
+                }
+            }
+            
+            
+            return additionalParams;
         }
         #endregion
 
