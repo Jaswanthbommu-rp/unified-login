@@ -2490,8 +2490,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             emailUsageType = contactMechanismUsageTypeRepository.ListContactMechanismUsageType(ContactMechanismUsageTypeName: "Email Notification");
 
-            var primaryPropertyBatch = newProfile.productBatch.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedPlatform);//TODiscuss
-            var enterpriseRole = newProfile.productBatch.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedUI);//TODiscuss : this is to add enterprise role
+            var primaryPropertyBatch = newProfile.productBatch.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedPlatform);
+            var enterpriseRole = newProfile.productBatch.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedUI);
             int enterpriseRoleId = newProfile.RoleTemplateId;
             if (enterpriseRole?.InputJson?.RoleList != null && enterpriseRole?.InputJson?.RoleList.Count > 0)
             {
