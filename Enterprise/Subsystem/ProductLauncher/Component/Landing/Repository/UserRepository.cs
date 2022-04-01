@@ -266,7 +266,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             string schemaName = getRoleRightsSchemaName();
             bool usePropertyInstanceUnifiedLogin = getPropertyInstanceUnifiedLogin();
             bool usePropertyInstanceUnifiedAmenities = getPropertyInstanceUnifiedAmenities();
-            primaryPropertiesBatch = newProfile.productBatch?.FirstOrDefault<ProductBatch>((Func<ProductBatch, bool>)(p => p.ProductId == (int)ProductEnum.UnifiedUI));
+            primaryPropertiesBatch = newProfile.productBatch?.FirstOrDefault<ProductBatch>((Func<ProductBatch, bool>)(p => p.ProductId == (int)ProductEnum.UnifiedPlatform));
             var productSuggestedProperties = newProfile.SuggestedProductPropertyList;
 
             //NOTE TO DEVELOPERS
@@ -1095,9 +1095,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
 
                         //Link persona to enterprise Role ID
-                        if (primaryPropertiesBatch?.InputJson?.RoleList != null && primaryPropertiesBatch?.InputJson?.RoleList.Count > 0)
+                        var enterpriseRole = newProfile.productBatch?.FirstOrDefault<ProductBatch>((Func<ProductBatch, bool>)(p => p.ProductId == (int)ProductEnum.UnifiedUI));
+                        if (enterpriseRole?.InputJson?.RoleList != null && enterpriseRole?.InputJson?.RoleList.Count > 0)
                         {
-                            int roleTemplateId = Convert.ToInt32(primaryPropertiesBatch.InputJson.RoleList.FirstOrDefault());
+                            int roleTemplateId = Convert.ToInt32(enterpriseRole.InputJson.RoleList.FirstOrDefault());
                             repositoryResponse = InsertUpdateEnterpriseRoleToUser(repository, roleTemplateId, personaId);
                             if (repositoryResponse.Id == 0)
                             {
@@ -1261,7 +1262,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             if (primaryPropertiesBatch != null && ((primaryPropertiesBatch.InputJson?.PropertyList?.Count > 0) || (primaryPropertiesBatch.InputJson?.RemovedPropertyList?.Count > 0)))
                             {
                                 string primaryPropertyJSON = JsonConvert.SerializeObject(primaryPropertiesBatch);
-                                repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdatePropertyInstanceMapping, new { PersonaId = personaId, ProductId = (int)ProductEnum.UnifiedUI, PropertyInstanceJSON = primaryPropertyJSON });
+                                repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdatePropertyInstanceMapping, new { PersonaId = personaId, ProductId = (int)ProductEnum.UnifiedPlatform, PropertyInstanceJSON = primaryPropertyJSON });
 
                                 if (repositoryResponse.Id == 0)
                                 {
@@ -2489,11 +2490,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             emailUsageType = contactMechanismUsageTypeRepository.ListContactMechanismUsageType(ContactMechanismUsageTypeName: "Email Notification");
 
-            var primaryPropertyBatch = newProfile.productBatch.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedUI);
+            var primaryPropertyBatch = newProfile.productBatch.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedPlatform);//TODiscuss
+            var enterpriseRole = newProfile.productBatch.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedUI);//TODiscuss : this is to add enterprise role
             int enterpriseRoleId = newProfile.RoleTemplateId;
-            if (primaryPropertyBatch?.InputJson?.RoleList != null && primaryPropertyBatch?.InputJson?.RoleList.Count > 0)
+            if (enterpriseRole?.InputJson?.RoleList != null && enterpriseRole?.InputJson?.RoleList.Count > 0)
             {
-                enterpriseRoleId = Convert.ToInt32(primaryPropertyBatch.InputJson.RoleList.FirstOrDefault());
+                enterpriseRoleId = Convert.ToInt32(enterpriseRole.InputJson.RoleList.FirstOrDefault());
             }
 
             //TODO:CG.WE CAN DELETEDE DE USERDETAILS BECAUSE WE ARE SENDING THE OLDPROFILE
@@ -2551,7 +2553,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 List<string> currentprimaryProperties = new List<string>();
 
                 List<UPFMPropertyInstance> ulPropertyInstances = new List<UPFMPropertyInstance>();
-                ulPropertyInstances = propertyRepository.ListUPFMPropertyInstanceByPersona(oldProfile.Persona[0].PersonaId, ProductEnum.UnifiedUI);
+                ulPropertyInstances = propertyRepository.ListUPFMPropertyInstanceByPersona(oldProfile.Persona[0].PersonaId, ProductEnum.UnifiedPlatform);
 
                 foreach (var property in ulPropertyInstances)
                 {

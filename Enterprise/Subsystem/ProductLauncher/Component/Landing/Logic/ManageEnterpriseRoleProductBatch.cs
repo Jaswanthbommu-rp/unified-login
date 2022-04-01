@@ -353,7 +353,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			IManageProductPanel manageProductPanel = new ManageProductPanel(_userClaim);
 			ListResponse result = new ListResponse();
 
-			var userProperties = _propertyRepository.ListUPFMPropertyInstanceByPersona(userPersonaId, ProductEnum.UnifiedUI);
+			var userProperties = _propertyRepository.ListUPFMPropertyInstanceByPersona(userPersonaId, ProductEnum.UnifiedPlatform);
 			result = manageProductPanel.GetProductProperties(editorPersonaId, userPersonaId, productId, null);
 			if (!result.IsError)
 			{

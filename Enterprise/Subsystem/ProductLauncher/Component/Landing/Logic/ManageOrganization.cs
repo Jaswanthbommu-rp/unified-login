@@ -1007,8 +1007,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 status = 1; //Hardcoding status to 1, because primary properties tab should only get active properties
                 userProperties = new List<int>();
-                userProperties = _propertyRepository.ListUPFMPropertyInstanceIdByPersona(userPersonaId, ProductEnum.UnifiedUI);
-                selectedPropertyInstances = _propertyRepository.ListUPFMPropertyInstanceByPersona(userPersonaId, ProductEnum.UnifiedUI);
+                userProperties = _propertyRepository.ListUPFMPropertyInstanceIdByPersona(userPersonaId, ProductEnum.UnifiedPlatform);
+                selectedPropertyInstances = _propertyRepository.ListUPFMPropertyInstanceByPersona(userPersonaId, ProductEnum.UnifiedPlatform);
                 List<Guid> selectedPropertyInstanceIds = selectedPropertyInstances?.Select(p => p.InstanceId).ToList();
                 if ((selectedProperties != null && selectedProperties.Count > 0))
                 {
