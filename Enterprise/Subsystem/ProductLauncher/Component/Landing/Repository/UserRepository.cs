@@ -48,6 +48,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         private IUserLoginRepository _userLoginRepository;
         private IManagePersona _managePersona;
         private IOrganizationRepository _organizationRepository;
+        private PropertyRepository _propertyRepository;
         IProductInternalSettingRepository _productInternalSettingRepository;
 
         #region Ctor
@@ -72,6 +73,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             _managePersona = new ManagePersona(repository, userClaim, messageHandler);
             _organizationRepository = new OrganizationRepository(repository);
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
+            _propertyRepository = new PropertyRepository();
         }
 
         /// <summary>
@@ -89,6 +91,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             _managePersona = new ManagePersona(_userClaim);
             _organizationRepository = new OrganizationRepository();
             _productInternalSettingRepository = new ProductInternalSettingRepository();
+            _propertyRepository = new PropertyRepository();
         }
 
         #endregion
@@ -1565,7 +1568,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     
                     if (FeatureFlag.GetUserCompanyAssociationFeatureFlag())
                     {
-                        if (newProfile.ExternalUserRelationship != null)
+                        if (newProfile.ExternalUserRelationship != null && newProfile.ExternalUserRelationship.ThirdPartyRelationShipId > 0)
                         {
                             param = new
                             {
@@ -4810,7 +4813,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             var newEmployeeId = string.IsNullOrEmpty(profile.EmployeeId) ? "" : profile.EmployeeId;
             return !newEmployeeId.Equals(oldEmployeeId);
         }
-
+        
         /// <summary>
         /// isNotificationEmailChanged
         /// </summary>
@@ -4877,10 +4880,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="message"></param>
         /// <param name="stepName"></param>
         /// <param name="profile"></param>
-        private void LogAuditActivity(string logActivityType, LogActivityCategoryType logActivityCategoryType, string message, string stepName, IProfileDetail profile)
+        /// <param name="additionalInformation"></param>
+        private void LogAuditActivity(string logActivityType, LogActivityCategoryType logActivityCategoryType, string message, string stepName, IProfileDetail profile, List<AdditionalParameters> additionalInformation = null)
         {
             string userName = string.IsNullOrEmpty(_userClaim.ImpersonatedByName) ? _userClaim.FirstName + " " + _userClaim.LastName : _userClaim.ImpersonatedByName;
-            LogActivity.WriteActivity(new ActivityDetails
+
+            var activityDetails = new ActivityDetails
             {
                 LogActivityTypeName = logActivityType,
                 LogCategoryName = logActivityCategoryType.ToString(),
@@ -4899,8 +4904,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 ToUserLoginId = profile.userLogin.UserId,
                 ToUserFirstName = profile.FirstName,
                 ToUserLastName = profile.LastName,
-                ToUserRealpageId = profile.userLogin.RealPageId.ToString()
-            });
+                ToUserRealpageId = profile.userLogin.RealPageId.ToString(),
+            };
+
+            if (additionalInformation != null)
+            {
+                activityDetails.AdditionalInformation = additionalInformation; 
+            }
+
+            LogActivity.WriteActivity(activityDetails);
         }
 
         private void AddActivityLog(string logActivityType, LogActivityCategoryType logActivityCategoryType, string message, IPerson person, IUserLoginOnly userLogin = null, IUserOrganization userOrg = null, DefaultUserClaim defaultUserClaim = null)
@@ -5647,8 +5659,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 bool loginNamechanged = isUserLoginNameChanged(updateUserProfileEntity.NewProfile, updateUserProfileEntity.OldProfile);
                 bool employeeIdChanged = isEmployeeIdChanged(updateUserProfileEntity.NewProfile, updateUserProfileEntity.OldProfile);
 
+                bool isPrimaryPropertiesUpdated = false;
+                List<string> addedPrimaryProperty = new List<string>();
+                List<string> removedPrimaryProperty = new List<string>();
+
                 var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesByRealPageID" : StoredProcNameConstants.SP_ListRolesByRealPageID;
                 var enterpriseRoles = repository.GetMany<EnterpriseRole>(procName, new { realPageId = updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId });
+
+                bool externalUserRelationUpdated = IsExternaUserlRelationUpdated(updateUserProfileEntity);
+                
                 try
                 {
                     repositoryResponse.Id = updateUserProfileEntity.OldProfile.Persona[0].PersonPartyId;
@@ -6140,9 +6159,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         #region update external user company association
                         if (FeatureFlag.GetUserCompanyAssociationFeatureFlag()) 
                         {
-                            if (updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyCompanyName != updateUserProfileEntity.OldProfile.ExternalUserRelationship.ThirdPartyCompanyName ||
-                                updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyRelationShipId != updateUserProfileEntity.OldProfile.ExternalUserRelationship.ThirdPartyRelationShipId ||
-                                updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyCompanyRealPageId != updateUserProfileEntity.OldProfile.ExternalUserRelationship.ThirdPartyCompanyRealPageId) 
+                            if (updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyRelationShipId > 0 && externalUserRelationUpdated) 
                              {
                                 param = new
                                 {
@@ -6162,6 +6179,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                              }
                         }
                         #endregion
+
                         var primaryPropertyBatch = updateUserProfileEntity.NewProfile.productBatch.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedUI);
                         //Update Enterprise role template to persona                        
                         if (primaryPropertyBatch?.InputJson?.RoleList != null && primaryPropertyBatch?.InputJson?.RoleList.Count > 0)
@@ -6315,6 +6333,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                             if (primaryPropertyBatch != null && ((primaryPropertyBatch.InputJson?.PropertyList?.Count > 0) || (primaryPropertyBatch.InputJson?.RemovedPropertyList?.Count > 0)))
                             {
+                                addedPrimaryProperty = primaryPropertyBatch.InputJson?.PropertyList;
+                                removedPrimaryProperty = primaryPropertyBatch.InputJson?.RemovedPropertyList;
+
+                                isPrimaryPropertiesUpdated = true;
                                 string primaryPropertyJSON = JsonConvert.SerializeObject(primaryPropertyBatch);
                                 repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdatePropertyInstanceMapping, new { PersonaId = updateUserProfileEntity.OldProfile.Persona[0].PersonaId, ProductId = (int)ProductEnum.UnifiedUI, PropertyInstanceJSON = primaryPropertyJSON });
                             }
@@ -6340,6 +6362,56 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         repository.UnitOfWork.Commit();
 
                         AuditUserUpdate(updateUserProfileEntity.OldProfile, updateUserProfileEntity.NewProfile);
+
+                        //add activity log for Primary property
+                        if (isPrimaryPropertiesUpdated)
+                        {
+                            string message = "{2} updated Primary Properties for {0} {1}.";
+                            List<AdditionalParameters> additionalParameters = new List<AdditionalParameters>();
+
+                            if (addedPrimaryProperty.Count > 0) 
+                            {
+                                List<Guid> addedGuid = new List<Guid>();
+                                foreach (var item in addedPrimaryProperty)
+                                {
+                                    addedGuid.Add(new Guid(item));
+                                }
+                                var properties = _propertyRepository.ListUPFMPropertyInstanceIdByInstanceIds(addedGuid);
+
+                                foreach (var item in properties)
+                                {
+                                    additionalParameters.Add(new AdditionalParameters()
+                                    {
+                                        Key = "Primary Properties",
+                                        Value = "{\"action\" : \"Assigned\", \"value\" : \"" + item.Name + "\"}"
+                                    });
+                                }
+                            }
+                            
+                            if (removedPrimaryProperty.Count > 0) 
+                            {
+                                List<Guid> removedGuid = new List<Guid>();
+
+                                foreach (var item in removedPrimaryProperty)
+                                {
+                                    removedGuid.Add(new Guid(item));
+                                }
+
+                                var properties = _propertyRepository.ListUPFMPropertyInstanceIdByInstanceIds(removedGuid);
+
+                                foreach (var item in properties)
+                                {
+                                    additionalParameters.Add(new AdditionalParameters()
+                                    {
+                                        Key = "Primary Properties",
+                                        Value = "{\"action\" : \"Removed\", \"value\" : \"" + item.Name + "\"}"
+                                    });
+                                }
+                            }
+                            
+                            LogAuditActivity(LogActivityTypeConstants.PRIMARY_PROPERTIES, LogActivityCategoryType.User, message, "Update primary property", updateUserProfileEntity.NewProfile, additionalParameters);
+
+                        }
                     }
                     else
                     {
@@ -6377,6 +6449,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     else
                     {
                         LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, "User {0} {1} successfully updated by user {2}.", "UpdateUser", updateUserProfileEntity.NewProfile);
+                    }
+                    if (externalUserRelationUpdated) 
+                    {
+                        string mainMessage = "{2} updated company association field(s) for external user {0} {1}.";
+                        var additionalParam = CreateExternalUpdatelogParams(updateUserProfileEntity);
+
+                        LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, mainMessage, "Update User External Relationship", updateUserProfileEntity.NewProfile, additionalParam);
                     }
                 }
 
@@ -6527,6 +6606,85 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 PersonaId = personaId
             };
             return repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UnassignEnterpriseRoleFromUser, param);
+        }
+
+        private bool IsExternaUserlRelationUpdated(UpdateUserProfileEntity updateUserProfileEntity) 
+        {
+            bool isUpdated = false;
+            isUpdated = (updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyCompanyName != updateUserProfileEntity.OldProfile.ExternalUserRelationship.ThirdPartyCompanyName ||
+                                updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyRelationShipId != updateUserProfileEntity.OldProfile.ExternalUserRelationship.ThirdPartyRelationShipId ||
+                                updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyCompanyRealPageId != updateUserProfileEntity.OldProfile.ExternalUserRelationship.ThirdPartyCompanyRealPageId);
+            return isUpdated;
+        }
+
+        private List<AdditionalParameters> CreateExternalUpdatelogParams(UpdateUserProfileEntity updateUserProfileEntity) 
+        {
+            List<AdditionalParameters> additionalParams = new List<AdditionalParameters>();
+            
+            var oldData = updateUserProfileEntity.OldProfile.ExternalUserRelationship;
+            var newData = updateUserProfileEntity.NewProfile.ExternalUserRelationship;
+
+            if (oldData.ThirdPartyRelationShipId == newData.ThirdPartyRelationShipId)
+            {
+                if (oldData.ThirdPartyRelationShipId == 1)
+                {
+                    if (oldData.ThirdPartyCompanyRealPageId != newData.ThirdPartyCompanyRealPageId)
+                    {
+                        var organization = _organizationRepository.GetOrganization(newData.ThirdPartyCompanyRealPageId);
+
+                        additionalParams.Add(new AdditionalParameters()
+                        {
+                            Key = "Operator Field",
+                            Value = "{\"old\" : \"" + oldData.ThirdPartyCompanyName + "\", \"new\" : \""
+                                    + organization.Name + "\"}"
+                        });
+                    }
+                }
+                else
+                {
+                    if (oldData.ThirdPartyCompanyName != newData.ThirdPartyCompanyName)
+                    {
+                        additionalParams.Add(new AdditionalParameters()
+                        {
+                            Key = "Company Name",
+                            Value = "{\"old\" : \"" + oldData.ThirdPartyCompanyName + "\", \"new\" : \""
+                                    + newData.ThirdPartyCompanyName + "\"}"
+                        });
+                    }
+                }
+            }
+            else 
+            {
+                additionalParams.Add(new AdditionalParameters()
+                {
+                    Key = "User Relationship",
+                    Value = "{\"old\" : \"" + oldData.ThirdPartyRelationShip + "\", \"new\" : \""
+                                    + newData.ThirdPartyRelationShip + "\"}"
+                });
+
+                //if changed to 1
+                if (newData.ThirdPartyRelationShipId == 1)
+                {
+                    var organization = _organizationRepository.GetOrganization(newData.ThirdPartyCompanyRealPageId);
+                    additionalParams.Add(new AdditionalParameters()
+                    {
+                        Key = "Operator Field",
+                        Value = "{\"old\" : \"\", \"new\" : \"" + organization.Name + "\"}"
+                    });
+                }
+                //if changed away from 1
+                else 
+                {
+                    additionalParams.Add(new AdditionalParameters()
+                    {
+                        Key = "Company Name",
+                        Value = "{\"old\" : \"\", \"new\" : \"" + newData.ThirdPartyCompanyName + "\"}"
+                    });
+                }
+            }
+            
+            
+            return additionalParams;
         }
         #endregion
 

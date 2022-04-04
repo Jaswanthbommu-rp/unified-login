@@ -55,11 +55,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
 
             identity.AddClaims(distinctUserRights.Select(a => new Claim("right", a)).ToList());
 
-            if (userClaim.ImpersonatedBy != Guid.Empty)
+            if (userClaim.ImpersonatedBy != Guid.Empty || userClaim.IsRPEmployee)
             {
                 // get the impersonators details
                 ManagePersona mp = new ManagePersona();
-                Persona impersonateUserPersona = mp.GetActivePersonaWithoutRights(userClaim.ImpersonatedBy); // safe to use because we just came from it
+                Persona impersonateUserPersona = mp.GetActivePersonaWithoutRights(userClaim.ImpersonatedBy != Guid.Empty ? userClaim.ImpersonatedBy : userClaim.UserRealPageGuid); // safe to use because we just came from it
 
                 // get impersonator company roles
                 IList<UserRoleRights> impersonateCompanyRoleList = GetCompanyRoles(userClaim, impersonateUserPersona.OrganizationPartyId, impersonateUserPersona.Organization.RealPageId);
@@ -75,31 +75,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
                 foreach (long roleId in impersonateUserRoles)
                 {
                     List<string> impersonateUserRights = GetRights(impersonateCompanyRoleList, roleId, impersonateUserPersona.PersonaId, impersonateUserPersona.OrganizationPartyId);
-                    // check for impersonator right
-                    AddRightFromImpersonator(identity, impersonateUserRights, distinctUserRights, "ACCESSTOUNIFIEDPLATFORM");
 
-                    // check for view only access
-                    AddRightFromImpersonator(identity, impersonateUserRights, distinctUserRights, "VIEWONLYSUPPORTTOOLACCESS");
+                    List<string> persistRightsList = GetPersistRights(impersonateCompanyRoleList, roleId);
 
-                    // check for unified settings rights
-                    AddRightFromImpersonator(identity, impersonateUserRights, distinctUserRights, "VIEWUNIFIEDSETTINGS");
-                    AddRightFromImpersonator(identity, impersonateUserRights, distinctUserRights, "MANAGEUNIFIEDSETTINGS");
-                    AddRightFromImpersonator(identity, impersonateUserRights, distinctUserRights, "INTERNALADMINACCESSTOUNIFIEDSETTINGS");
+                    if(userClaim.ImpersonatedBy != Guid.Empty)
+                    {
+                        // check for view only access
+                        AddRightFromImpersonator(identity, impersonateUserRights, distinctUserRights, "VIEWONLYSUPPORTTOOLACCESS");
+                        AddRemoveRightForCIMPL(identity, impersonateUserRights, distinctUserRights, "CIMPLManagePII");
+                        AddRemoveRightForCIMPL(identity, impersonateUserRights, distinctUserRights, "CIMPLManageSensitiveFinancialData");
+                    }
 
-                    AddRightFromImpersonator(identity, impersonateUserRights, distinctUserRights, "MANAGECUSTOMFIELDS");
-                    AddRightFromImpersonator(identity, impersonateUserRights, distinctUserRights, "MANAGEPLATFORMSECURITY");
-                    AddRightFromImpersonator(identity, impersonateUserRights, distinctUserRights, "MANAGESETTINGSTEMPLATES");
-                    AddRightFromImpersonator(identity, impersonateUserRights, distinctUserRights, "ACCESSSETTINGSADMIN");
-                    AddRightFromImpersonator(identity, impersonateUserRights, distinctUserRights, "EmployeeAccesstoManageSettingsTemplates");
-
-                    // check for import user right
-                    AddRightFromImpersonator(identity, impersonateUserRights, distinctUserRights, "ABILITYTOIMPORTUSERS");
-
-                    AddRightFromImpersonator(identity, impersonateUserRights, distinctUserRights, "MANAGENOTIFICATIONS");
-
-                    AddRemoveRightForCIMPL(identity, impersonateUserRights, distinctUserRights, "CIMPLManagePII");
-                    AddRemoveRightForCIMPL(identity, impersonateUserRights, distinctUserRights, "CIMPLManageSensitiveFinancialData");
-
+                    foreach(var right in persistRightsList)
+                    {
+                        AddRightFromImpersonator(identity, impersonateUserRights, distinctUserRights, right.ToUpper());
+                    }
                 }
             }
 
@@ -262,6 +252,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
 
             return userRights;
         }
-    }
 
+        /// <summary>
+        /// Get Persist rights list
+        /// </summary>
+        /// <param name="companyRoles"></param>
+        /// <param name="roleId"></param>
+        /// <returns></returns>
+        private static List<string> GetPersistRights(IList<UserRoleRights> companyRoles, long roleId)
+        {
+            List<string> userRights = new List<string>();
+
+            if (companyRoles.Any(r => r.RoleId == roleId))
+            {
+                foreach (Right right in companyRoles.FirstOrDefault(r => r.RoleId == roleId).UserRights)
+                {
+                    if (!string.IsNullOrWhiteSpace(right.RightNickName) && !string.IsNullOrWhiteSpace(right.RightNickName.Trim()) && !userRights.Contains(right.RightNickName) && right.PersistRight)
+                    {
+                        userRights.Add(right.RightNickName);
+                    }
+                }
+            }
+
+            return userRights;
+        }
+    }
 }

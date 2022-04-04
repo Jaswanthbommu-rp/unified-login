@@ -35,6 +35,7 @@
         public const string USER_REQUESTED_NEW_ACTIVATION_LINK = "User requested new activation link";
         public const string USER_UPDATE_INTERNAL = "User Update - Internal";
         public const string CLIENT_SETTINGS_UPDATE = "Client Settings Update";
+        public const string PRIMARY_PROPERTIES = "Primary Properties";
     }
 
     //public static class SecurityActivityMessageConstants
