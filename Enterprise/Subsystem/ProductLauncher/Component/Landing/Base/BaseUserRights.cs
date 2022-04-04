@@ -55,40 +55,49 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
 
             identity.AddClaims(distinctUserRights.Select(a => new Claim("right", a)).ToList());
 
-            if (userClaim.ImpersonatedBy != Guid.Empty || userClaim.IsRPEmployee)
+            if (userClaim.ImpersonatedBy != Guid.Empty)
             {
                 // get the impersonators details
                 ManagePersona mp = new ManagePersona();
-                Persona impersonateUserPersona = mp.GetActivePersonaWithoutRights(userClaim.ImpersonatedBy != Guid.Empty ? userClaim.ImpersonatedBy : userClaim.UserRealPageGuid); // safe to use because we just came from it
+                Persona impersonateUserPersona = mp.GetActivePersonaWithoutRights(userClaim.ImpersonatedBy); // safe to use because we just came from it
 
                 // get impersonator company roles
                 IList<UserRoleRights> impersonateCompanyRoleList = GetCompanyRoles(userClaim, impersonateUserPersona.OrganizationPartyId, impersonateUserPersona.Organization.RealPageId);
 
                 // get impersonator user roles
                 List<Component.SharedObjects.Product.UserManagement.Role> impersonateUserRoleList = GetUserRoles(impersonateUserPersona.PersonaId, impersonateUserPersona.OrganizationPartyId);
-                List<long> impersonateUserRoles = new List<long>();
+                //List<long> impersonateUserRoles = new List<long>();
                 foreach (Component.SharedObjects.Product.UserManagement.Role role in impersonateUserRoleList)
                 {
-                    impersonateUserRoles.Add(role.RoleID);
-                }
+                    List<string> impersonateUserRights = GetRights(impersonateCompanyRoleList, role.RoleID, impersonateUserPersona.PersonaId, impersonateUserPersona.OrganizationPartyId);
+                    List<Right> persistRightsList = GetPersistRights();
 
-                foreach (long roleId in impersonateUserRoles)
-                {
-                    List<string> impersonateUserRights = GetRights(impersonateCompanyRoleList, roleId, impersonateUserPersona.PersonaId, impersonateUserPersona.OrganizationPartyId);
+                    // check for view only access
+                    AddRemoveRightForCIMPL(identity, impersonateUserRights, distinctUserRights, "CIMPLManagePII");
+                    AddRemoveRightForCIMPL(identity, impersonateUserRights, distinctUserRights, "CIMPLManageSensitiveFinancialData");
 
-                    List<string> persistRightsList = GetPersistRights(impersonateCompanyRoleList, roleId);
-
-                    if(userClaim.ImpersonatedBy != Guid.Empty)
+                    foreach (var right in persistRightsList)
                     {
-                        // check for view only access
-                        AddRightFromImpersonator(identity, impersonateUserRights, distinctUserRights, "VIEWONLYSUPPORTTOOLACCESS");
-                        AddRemoveRightForCIMPL(identity, impersonateUserRights, distinctUserRights, "CIMPLManagePII");
-                        AddRemoveRightForCIMPL(identity, impersonateUserRights, distinctUserRights, "CIMPLManageSensitiveFinancialData");
+                        AddRightFromImpersonator(identity, impersonateUserRights, distinctUserRights, right.RightName.ToUpper());
                     }
+                }
+            }
+            else if (userClaim.IsRPEmployee)
+            {
+                // get the impersonators details
+                ManagePersona mp = new ManagePersona();
+                Persona rpEmployeePersona = mp.ListPersona(userClaim.UserRealPageGuid).Where(c => c.Organization.RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId).FirstOrDefault();
 
-                    foreach(var right in persistRightsList)
+                // RP Employee-Get ADGroup Rights for the persona
+                UserRoleRightRepository urr = new UserRoleRightRepository();
+                List<Right> adGroupRights = urr.GetADGroupRightsByPersonaId(rpEmployeePersona.PersonaId)?.ToList();
+                if(adGroupRights != null && adGroupRights.Count > 0)
+                {
+                    List<string> adRights = adGroupRights.Select(x => x.RightNickName).ToList();
+                    List<Right> persistRightsList = GetPersistRights();
+                    foreach (var right in persistRightsList)
                     {
-                        AddRightFromImpersonator(identity, impersonateUserRights, distinctUserRights, right.ToUpper());
+                        AddRightFromImpersonator(identity, adRights, distinctUserRights, right.RightName.ToUpper());
                     }
                 }
             }
@@ -256,25 +265,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
         /// <summary>
         /// Get Persist rights list
         /// </summary>
-        /// <param name="companyRoles"></param>
-        /// <param name="roleId"></param>
         /// <returns></returns>
-        private static List<string> GetPersistRights(IList<UserRoleRights> companyRoles, long roleId)
+        private static List<Right> GetPersistRights()
         {
-            List<string> userRights = new List<string>();
-
-            if (companyRoles.Any(r => r.RoleId == roleId))
-            {
-                foreach (Right right in companyRoles.FirstOrDefault(r => r.RoleId == roleId).UserRights)
-                {
-                    if (!string.IsNullOrWhiteSpace(right.RightNickName) && !string.IsNullOrWhiteSpace(right.RightNickName.Trim()) && !userRights.Contains(right.RightNickName) && right.PersistRight)
-                    {
-                        userRights.Add(right.RightNickName);
-                    }
-                }
-            }
-
-            return userRights;
+            UserRoleRightRepository urr = new UserRoleRightRepository();
+            return urr.GetPersistRights().ToList();
         }
     }
 }
