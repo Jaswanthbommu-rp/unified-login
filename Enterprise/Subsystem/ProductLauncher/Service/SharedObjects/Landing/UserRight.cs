@@ -23,6 +23,11 @@
 		/// <summary>
 		/// Right ShortName (NickName)
 		/// </summary>
-        public string RightNickName { get; set; }		
+        public string RightNickName { get; set; }
+
+		/// <summary>
+		/// If true the right will carry forward when impersonation or log in as myself
+		/// </summary>
+		public bool PersistRight { get; set; }
 	}
 }

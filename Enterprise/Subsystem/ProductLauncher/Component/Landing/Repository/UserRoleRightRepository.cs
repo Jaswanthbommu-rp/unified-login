@@ -265,6 +265,47 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
+        /// <summary>
+        /// Get the list of persist rights that should be carry forwarded
+        /// </summary>
+        /// <returns>Persist rights list</returns>
+        public IList<Right> GetPersistRights()
+        {
+            RPObjectCache rpCache = new RPObjectCache();
+            var cacheKey = $"getPersistRights";
+
+            return rpCache.GetFromCache<IList<Right>>(cacheKey, 180, () =>
+            {
+                using (var repository = GetRepository())
+                {
+                    return repository.GetMany<Right>(StoredProcNameConstants.SP_GetPersistRights, null).ToList();
+                }
+            });
+        }
+
+        /// <summary>
+		/// Get Rights for ad group by persona
+		/// </summary>
+		/// <returns>list of ad group rights for the persona</returns>
+		public IList<Right> GetADGroupRightsByPersonaId(long userPersonaId)
+        {
+            RPObjectCache rpCache = new RPObjectCache();
+            var cacheKey = $"getADGroupRights_{userPersonaId}";
+            dynamic param = new
+            {
+                PersonaId = userPersonaId
+            };
+
+            return rpCache.GetFromCache<IList<Right>>(cacheKey, 180, () =>
+            {
+                using (var repository = GetRepository())
+                {
+                    return repository.GetMany<Right>(StoredProcNameConstants.SP_GetADGroupRightsByPersona, param);
+                }
+            });
+        }
+
+
         #region Private Methods
         private string getRoleRightsSchemaName()
         {
