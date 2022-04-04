@@ -1,5 +1,4 @@
-﻿using Castle.Components.DictionaryAdapter;
-using JsonApiSerializer;
+﻿using JsonApiSerializer;
 using Moq;
 using Newtonsoft.Json;
 using RP.Enterprise.Foundation.DataAccess.Component;
@@ -1589,7 +1588,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             )
             { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
 
-            List<int> productList = new EditableList<int>();
+            List<int> productList = new List<int>();
             List<string> blueBookProductList = new List<string>();
 
             // verify all blue book enums match a product
@@ -2281,7 +2280,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 FromDate = new DateTime(2019,1,1)
             };
             
-            var orgStatusList = new EditableList<OrganizationStatus>() {organizationStatus};
+            var orgStatusList = new List<OrganizationStatus>() {organizationStatus};
 
             OrganizationStatus organizationStatus2 = new OrganizationStatus()
             {
@@ -2294,7 +2293,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 FromDate = new DateTime(2019,1,1)
             };
             
-            var org2StatusList = new EditableList<OrganizationStatus>() {organizationStatus2};
+            var org2StatusList = new List<OrganizationStatus>() {organizationStatus2};
 
             var userOrganizationList = new List<UserOrganization>()
             {

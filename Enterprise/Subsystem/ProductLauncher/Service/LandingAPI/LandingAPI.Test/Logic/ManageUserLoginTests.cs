@@ -3,16 +3,14 @@ using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using Castle.Components.DictionaryAdapter;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
-using RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers;
 using Xunit;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
@@ -116,7 +114,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 }
             };
 
-            _orgStatusList = new EditableList<OrganizationStatus>() {organizationStatus};
+            _orgStatusList = new List<OrganizationStatus>() {organizationStatus};
             
             _userLoginOnly = new UserLoginOnly() {UserId = 1234, LoginName = _loginName, RealPageId = _userRealPageId};
             _userLogin = new UserLogin() { UserId = 1234, LoginName = _loginName, RealPageId = _userRealPageId };

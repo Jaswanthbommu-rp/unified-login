@@ -1,9 +1,0 @@
-{{{ include("controllers/assign-products.js") }}}
-{{{ include("directives/assign-product-family.js") }}}
-{{{ include("filters/assign-products-text.js") }}}
-{{{ include("models/assign-products.js") }}}
-{{{ include("models/assign-product-family.js") }}}
-{{{ include("models/assign-product-solution.js") }}}
-{{{ include("models/family-accordion-panels.js") }}}
-{{{ include("services/assign-products.js") }}}
-{{{ include("templates/templates.inc.js") }}}
