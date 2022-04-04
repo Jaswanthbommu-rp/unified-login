@@ -80,7 +80,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 }
 
                 roleTypeList = (List<RoleType>)roleTypeLogic.GetRoleTypeDependency(roleTypeId: persona.UserTypeId, partyId: base._orgPartyId, orgMasterId: persona.Organization.BooksCustomerMasterId, loginName: loginName);
-            }
+				if (!base._userClaims.IsRPEmployee && persona.UserTypeId == (int)UserRoleType.ExternalUser)
+				{
+					roleTypeList.RemoveAll(x => x.Name.Equals("SuperUser", StringComparison.OrdinalIgnoreCase));
+				}
+			}
             else
             {
                 roleTypeList = (List<RoleType>)roleTypeLogic.GetRoleType(roleTypeName: roleTypeName, partyId: null, orgMasterId: null, loginName: loginName);
