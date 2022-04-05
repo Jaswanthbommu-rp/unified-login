@@ -6619,70 +6619,98 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
         private List<AdditionalParameters> CreateExternalUpdatelogParams(UpdateUserProfileEntity updateUserProfileEntity) 
         {
+            IManageBlueBook _manageBlueBook = new ManageBlueBook(_userClaim);
+            var data = _manageBlueBook.GetOperatorListForUPFMCompany(_userClaim.OrganizationRealPageGuid, "UPFM");
+
             List<AdditionalParameters> additionalParams = new List<AdditionalParameters>();
             
             var oldData = updateUserProfileEntity.OldProfile.ExternalUserRelationship;
             var newData = updateUserProfileEntity.NewProfile.ExternalUserRelationship;
 
-            if (oldData.ThirdPartyRelationShipId == newData.ThirdPartyRelationShipId)
+            if (data.Count() == 0) //Operator Settig is NOT ENABLED for the company
             {
-                if (oldData.ThirdPartyRelationShipId == 1)
+                if (oldData.ThirdPartyRelationShipId != newData.ThirdPartyRelationShipId)
                 {
-                    if (oldData.ThirdPartyCompanyRealPageId != newData.ThirdPartyCompanyRealPageId)
-                    {
-                        var organization = _organizationRepository.GetOrganization(newData.ThirdPartyCompanyRealPageId);
-
-                        additionalParams.Add(new AdditionalParameters()
-                        {
-                            Key = "Operator Field",
-                            Value = "{\"old\" : \"" + oldData.ThirdPartyCompanyName + "\", \"new\" : \""
-                                    + organization.Name + "\"}"
-                        });
-                    }
-                }
-                else
-                {
-                    if (oldData.ThirdPartyCompanyName != newData.ThirdPartyCompanyName)
-                    {
-                        additionalParams.Add(new AdditionalParameters()
-                        {
-                            Key = "Company Name",
-                            Value = "{\"old\" : \"" + oldData.ThirdPartyCompanyName + "\", \"new\" : \""
-                                    + newData.ThirdPartyCompanyName + "\"}"
-                        });
-                    }
-                }
-            }
-            else 
-            {
-                additionalParams.Add(new AdditionalParameters()
-                {
-                    Key = "User Relationship",
-                    Value = "{\"old\" : \"" + oldData.ThirdPartyRelationShip + "\", \"new\" : \""
-                                    + newData.ThirdPartyRelationShip + "\"}"
-                });
-
-                //if changed to 1
-                if (newData.ThirdPartyRelationShipId == 1)
-                {
-                    var organization = _organizationRepository.GetOrganization(newData.ThirdPartyCompanyRealPageId);
                     additionalParams.Add(new AdditionalParameters()
                     {
-                        Key = "Operator Field",
-                        Value = "{\"old\" : \"\", \"new\" : \"" + organization.Name + "\"}"
+                        Key = "User Relationship",
+                        Value = "{\"old\" : \"" + oldData.ThirdPartyRelationShip + "\", \"new\" : \""
+                                    + newData.ThirdPartyRelationShip + "\"}"
                     });
                 }
-                //if changed away from 1
-                else 
+
+                if (oldData.ThirdPartyCompanyName != newData.ThirdPartyCompanyName)
                 {
                     additionalParams.Add(new AdditionalParameters()
                     {
                         Key = "Company Name",
-                        Value = "{\"old\" : \"\", \"new\" : \"" + newData.ThirdPartyCompanyName + "\"}"
+                        Value = "{\"old\" : \"" + oldData.ThirdPartyCompanyName + "\", \"new\" : \""
+                                + newData.ThirdPartyCompanyName + "\"}"
                     });
                 }
             }
-            
+
+            else //Operator Settig is ENABLED for the company
+            {
+                if (oldData.ThirdPartyRelationShipId == newData.ThirdPartyRelationShipId)
+                {
+                    if (oldData.ThirdPartyRelationShipId == 1)
+                    {
+                        if (oldData.ThirdPartyCompanyRealPageId != newData.ThirdPartyCompanyRealPageId)
+                        {
+                            var organization = _organizationRepository.GetOrganization(newData.ThirdPartyCompanyRealPageId);
+
+                            additionalParams.Add(new AdditionalParameters()
+                            {
+                                Key = "Operator Field",
+                                Value = "{\"old\" : \"" + oldData.ThirdPartyCompanyName + "\", \"new\" : \""
+                                        + organization.Name + "\"}"
+                            });
+                        }
+                    }
+                    else
+                    {
+                        if (oldData.ThirdPartyCompanyName != newData.ThirdPartyCompanyName)
+                        {
+                            additionalParams.Add(new AdditionalParameters()
+                            {
+                                Key = "Company Name",
+                                Value = "{\"old\" : \"" + oldData.ThirdPartyCompanyName + "\", \"new\" : \""
+                                        + newData.ThirdPartyCompanyName + "\"}"
+                            });
+                        }
+                    }
+                }
+                else
+                {
+                    additionalParams.Add(new AdditionalParameters()
+                    {
+                        Key = "User Relationship",
+                        Value = "{\"old\" : \"" + oldData.ThirdPartyRelationShip + "\", \"new\" : \""
+                                        + newData.ThirdPartyRelationShip + "\"}"
+                    });
+
+                    //if changed to 1
+                    if (newData.ThirdPartyRelationShipId == 1)
+                    {
+                        var organization = _organizationRepository.GetOrganization(newData.ThirdPartyCompanyRealPageId);
+                        additionalParams.Add(new AdditionalParameters()
+                        {
+                            Key = "Operator Field",
+                            Value = "{\"old\" : \"\", \"new\" : \"" + organization.Name + "\"}"
+                        });
+                    }
+                    //if changed away from 1
+                    else
+                    {
+                        additionalParams.Add(new AdditionalParameters()
+                        {
+                            Key = "Company Name",
+                            Value = "{\"old\" : \"\", \"new\" : \"" + newData.ThirdPartyCompanyName + "\"}"
+                        });
+                    }
+                }
+            }
             
             return additionalParams;
         }
