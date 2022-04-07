@@ -28,5 +28,10 @@
 		/// Is Setting Hidden
 		/// </summary>
 		bool Hidden { get; set; }
+
+		/// <summary>
+		/// Category
+		/// </summary>
+		string Category { get; set; }
 	}
 }

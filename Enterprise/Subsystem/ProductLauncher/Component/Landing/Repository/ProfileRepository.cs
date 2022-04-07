@@ -563,7 +563,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 					(f.Key.Equals("UserType", StringComparison.OrdinalIgnoreCase)) ||
 					(f.Key.Equals("OffsetMinutes", StringComparison.OrdinalIgnoreCase)) ||
 					(f.Key.Equals("RoleTemplateId", StringComparison.OrdinalIgnoreCase)) ||
-					(f.Key.Equals("PersonaHasProductError", StringComparison.OrdinalIgnoreCase))
+					(f.Key.Equals("PersonaHasProductError", StringComparison.OrdinalIgnoreCase)) ||
+					(f.Key.Equals("Operator", StringComparison.OrdinalIgnoreCase))
 					)
 				{
 					filterBy.Add(
@@ -626,6 +627,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 						profiledetail.TelecommunicationNumber = null;
 						profiledetail.InactivePersona = null;
 						profiledetail.Persona = null;
+						profiledetail.Operator = profiledetail.Operator;
+						profiledetail.UserRelationshipType = profiledetail.UserRelationshipType;
+						profiledetail.CompanyName = profiledetail.CompanyName;
 
 						if (userType != null)
 						{

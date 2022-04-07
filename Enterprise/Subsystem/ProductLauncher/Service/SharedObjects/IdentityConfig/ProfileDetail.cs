@@ -197,5 +197,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 		/// </summary>
 		[JsonProperty("ExternalUserRelationship")]
 		public ExternalUserRelationship ExternalUserRelationship { get; set; }
+
+		/// <summary>
+		/// Operator
+		/// </summary>
+		[JsonProperty("Operator")]
+		public string Operator { get; set; }
+
+		/// <summary>
+		/// UserRelationshipType
+		/// </summary>
+		[JsonProperty("UserRelationshipType")]
+		public string UserRelationshipType { get; set; }
+
+		/// <summary>
+		/// CompanyName
+		/// </summary>
+		[JsonProperty("CompanyName")]
+		public string CompanyName { get; set; }
 	}
 }

@@ -2,6 +2,7 @@
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Attributes;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.ThirdParty;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Attribute;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
@@ -253,38 +254,38 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// <param name="internationalDateFormat">InternationalDateFormat</param>
         /// <returns>List of Person object</returns>
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
-		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
-		[SwaggerResponse(HttpStatusCode.OK, Description = "Get information about a list of person profiles", Type = typeof(IProfileDetail))]
-		[SwaggerResponseExamples(typeof(IProfileDetail), typeof(ListPersonsExample))]
-		[Route("persons/export")]
-		[AuthorizeRight("viewusers")]
-		[HttpGet]
-		public HttpResponseMessage ListUsersExport([FromUri]RequestParameter datafilter, SaveFormat dataFormat = SaveFormat.CSV, string internationalDateFormat = "mmddyyyy")
-		{
-			string jsonString = string.Empty;
-			byte[] plainBytes;
-			IDictionary<object, object> globals = new Dictionary<object, object>();
-			ObjectOutput<string, IErrorData> output = new ObjectOutput<string, IErrorData>();
-			DateTime parsedMaxValueDate = DateTime.Parse("Dec 31, 9999");
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about a list of person profiles", Type = typeof(IProfileDetail))]
+        [SwaggerResponseExamples(typeof(IProfileDetail), typeof(ListPersonsExample))]
+        [Route("persons/export")]
+        [AuthorizeRight("viewusers")]
+        [HttpGet]
+        public HttpResponseMessage ListUsersExport([FromUri] RequestParameter datafilter, SaveFormat dataFormat = SaveFormat.CSV, string internationalDateFormat = "mmddyyyy")
+        {
+            string jsonString = string.Empty;
+            byte[] plainBytes;
+            IDictionary<object, object> globals = new Dictionary<object, object>();
+            ObjectOutput<string, IErrorData> output = new ObjectOutput<string, IErrorData>();
+            DateTime parsedMaxValueDate = DateTime.Parse("Dec 31, 9999");
 
-			Status<IErrorData> errorStatus = new Status<IErrorData>();
+            Status<IErrorData> errorStatus = new Status<IErrorData>();
 
-			if (datafilter == null)
-			{
-				datafilter = new RequestParameter();
-			}
+            if (datafilter == null)
+            {
+                datafilter = new RequestParameter();
+            }
 
-			globals.Add(BaseType.RequestParameter, datafilter);
+            globals.Add(BaseType.RequestParameter, datafilter);
             globals.Add("isExport", true);
 
             IManageProfile manageProfile = new ManageProfile(_userClaims);
-			IList<ProfileDetail> profileDetailList = manageProfile.ListProfileDetails(globals);
+            IList<ProfileDetail> profileDetailList = manageProfile.ListProfileDetails(globals);
 
-			List<LE.User> listUsers = new List<LE.User>();
+            List<LE.User> listUsers = new List<LE.User>();
 
-			ManageUserLogin manageUserLogin = new ManageUserLogin(_userClaims);
-			var userLogin = manageUserLogin.GetUserLogin(_realpageUserId, _orgPartyId); // keep for now
-            string dateFormat =string.Empty;
+            ManageUserLogin manageUserLogin = new ManageUserLogin(_userClaims);
+            var userLogin = manageUserLogin.GetUserLogin(_realpageUserId, _orgPartyId); // keep for now
+            string dateFormat = string.Empty;
             switch (internationalDateFormat.Trim().ToLower())
             {
                 case "mmddyyyy":
@@ -302,82 +303,97 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
 
             if (profileDetailList != null)
-			{
-				profileDetailList.ToList().ForEach(p =>
-				{
-					//User Type
-					string userType = string.Empty;
-					if (p.userLogin.UserRoleType != null)
-					{
-						Enum enumUserRole = p.userLogin.UserRoleType;
-						Type enumUserRoleType = enumUserRole.GetType();
-						System.Reflection.FieldInfo fieldInfoUserRole = enumUserRoleType.GetField(enumUserRole.ToString());
-						object[] userRoleAttributes = fieldInfoUserRole.GetCustomAttributes(typeof(DescriptionAttribute), false);
-						userType = userRoleAttributes.Length == 0 ? enumUserRole.ToString() : ((DescriptionAttribute)userRoleAttributes[0]).Description;
-					}
-					listUsers.Add(
-						new LE.User()
-						{
-							UserType = userType,
-							FirstName = p.FirstName,
-							MiddleName = p.MiddleName,
-							LastName = p.LastName,
-							LoginName = p.userLogin.LoginName,
-							Products = p.SummaryCount.TotalAssignedProducts,
-							LastLogin = p.userLogin.LastLogin != null ? p.userLogin.LastLogin?.ToString(dateFormat) : string.Empty,
+            {
+                profileDetailList.ToList().ForEach(p =>
+                {
+                    //User Type
+                    string userType = string.Empty;
+                    if (p.userLogin.UserRoleType != null)
+                    {
+                        Enum enumUserRole = p.userLogin.UserRoleType;
+                        Type enumUserRoleType = enumUserRole.GetType();
+                        System.Reflection.FieldInfo fieldInfoUserRole = enumUserRoleType.GetField(enumUserRole.ToString());
+                        object[] userRoleAttributes = fieldInfoUserRole.GetCustomAttributes(typeof(DescriptionAttribute), false);
+                        userType = userRoleAttributes.Length == 0 ? enumUserRole.ToString() : ((DescriptionAttribute)userRoleAttributes[0]).Description;
+                    }
+                    listUsers.Add(
+                        new LE.User()
+                        {
+                            UserType = userType,
+                            FirstName = p.FirstName,
+                            MiddleName = p.MiddleName,
+                            LastName = p.LastName,
+                            LoginName = p.userLogin.LoginName,
+                            Products = p.SummaryCount.TotalAssignedProducts,
+                            LastLogin = p.userLogin.LastLogin != null ? p.userLogin.LastLogin?.ToString(dateFormat) : string.Empty,
                             Status = p.userLogin.Status.ToString().Equals("disabled", StringComparison.OrdinalIgnoreCase) ? "Deactivated" : p.userLogin.Status.ToString(),
                             IDP = p.userLogin.Is3rdPartyIDP ? "Yes" : "No",
-							EffectiveDate = p.userLogin.FromDate != null ? p.userLogin.FromDate?.ToString(dateFormat) : string.Empty,
-							ExpireDate = ((p.userLogin.ThruDate == null) || (DateTime.Compare(p.userLogin.ThruDate.Value, parsedMaxValueDate) == 0)) ? string.Empty : p.userLogin.ThruDate?.ToString(dateFormat),
-							CustomField = p.CustomField,
-							EmployeeId = p.EmployeeId
-						}
-					);
-				});				
-				errorStatus = DataExport.SetAsposeLicense();
-				if (errorStatus.Success)
-				{
-					List<ExportDataFileConfiguration> exportConfigurations = new List<ExportDataFileConfiguration>
-					{
-						new ExportDataFileConfiguration { Header = "User Type", MappedField = "UserType", PDFColumnWidth = "1.30", Preference = 1 },
-						new ExportDataFileConfiguration { Header = "First Name", MappedField = "FirstName", PDFColumnWidth = "0.85", Preference = 2 },
-						new ExportDataFileConfiguration { Header = "Last Name", MappedField = "LastName", PDFColumnWidth = "0.85", Preference = 3 },
-						new ExportDataFileConfiguration { Header = "Employee ID", MappedField = "EmployeeId", PDFColumnWidth = "0.85", Preference = 4 },
-						new ExportDataFileConfiguration { Header = "Username", MappedField = "LoginName", PDFColumnWidth = "2.25", Preference = 5 },
-						new ExportDataFileConfiguration { Header = "Products", MappedField = "Products", PDFColumnWidth = "0.60", Preference = 6 },
-						new ExportDataFileConfiguration { Header = "Last Login", MappedField = "LastLogin", PDFColumnWidth = "1.00", Preference = 7 },
-						new ExportDataFileConfiguration { Header = "Status", MappedField = "Status", PDFColumnWidth = "0.50", Preference = 8 },
-						new ExportDataFileConfiguration { Header = "IDP Flag", MappedField = "IDP", PDFColumnWidth = "0.55", Preference = 9 },
-						new ExportDataFileConfiguration { Header = "User Effective", MappedField = "EffectiveDate", PDFColumnWidth = "0.95", Preference = 10 },
-						new ExportDataFileConfiguration { Header = "User Expires", MappedField = "ExpireDate", PDFColumnWidth = "0.90", Preference = 11 }
-					};
+                            EffectiveDate = p.userLogin.FromDate != null ? p.userLogin.FromDate?.ToString(dateFormat) : string.Empty,
+                            ExpireDate = ((p.userLogin.ThruDate == null) || (DateTime.Compare(p.userLogin.ThruDate.Value, parsedMaxValueDate) == 0)) ? string.Empty : p.userLogin.ThruDate?.ToString(dateFormat),
+                            CustomField = p.CustomField,
+                            EmployeeId = p.EmployeeId,
+                            Operator = p.Operator,
+                            UserRelationshipType = p.UserRelationshipType,
+                            CompanyName = p.CompanyName
+                        }
+                    );
+                });
+                errorStatus = DataExport.SetAsposeLicense();
+                if (errorStatus.Success)
+                {
+                    List<ExportDataFileConfiguration> exportConfigurations = new List<ExportDataFileConfiguration>
+                    {
+                        new ExportDataFileConfiguration { Header = "User Type", MappedField = "UserType", PDFColumnWidth = "1.30", Preference = 1 },
+                        new ExportDataFileConfiguration { Header = "First Name", MappedField = "FirstName", PDFColumnWidth = "0.85", Preference = 2 },
+                        new ExportDataFileConfiguration { Header = "Last Name", MappedField = "LastName", PDFColumnWidth = "0.85", Preference = 3 },
+                        new ExportDataFileConfiguration { Header = "Employee ID", MappedField = "EmployeeId", PDFColumnWidth = "0.85", Preference = 4 },
+                        new ExportDataFileConfiguration { Header = "Username", MappedField = "LoginName", PDFColumnWidth = "2.25", Preference = 5 },
+                        new ExportDataFileConfiguration { Header = "Products", MappedField = "Products", PDFColumnWidth = "0.60", Preference = 6 },
+                        new ExportDataFileConfiguration { Header = "Last Login", MappedField = "LastLogin", PDFColumnWidth = "1.00", Preference = 7 },
+                        new ExportDataFileConfiguration { Header = "Status", MappedField = "Status", PDFColumnWidth = "0.60", Preference = 8 },
+                        new ExportDataFileConfiguration { Header = "IDP Flag", MappedField = "IDP", PDFColumnWidth = "0.55", Preference = 9 },
+                        new ExportDataFileConfiguration { Header = "User Effective", MappedField = "EffectiveDate", PDFColumnWidth = "0.95", Preference = 10 },
+                        new ExportDataFileConfiguration { Header = "User Expires", MappedField = "ExpireDate", PDFColumnWidth = "0.90", Preference = 11 }
+                    };
+                    if (FeatureFlag.GetUserCompanyAssociationFeatureFlag())
+                    {
+                        if (GetUnifiedSettingsForOperator(_userClaims.OrganizationRealPageGuid, "company")) //Operator Setting is ENABLED for the company
+                        {
+                            List<ExportDataFileConfiguration> exportConfigurations_operator = new List<ExportDataFileConfiguration>
+                            {
+                                new ExportDataFileConfiguration { Header = "Operator", MappedField = "Operator", PDFColumnWidth = "2.30", Preference = 12 },
+                                new ExportDataFileConfiguration { Header = "User Relationship Type", MappedField = "UserRelationshipType", PDFColumnWidth = "1.90", Preference = 13 },
+                                new ExportDataFileConfiguration { Header = "Company Name", MappedField = "CompanyName", PDFColumnWidth = "1.30", Preference = 14 }
+                            };
+                            exportConfigurations.AddRange(exportConfigurations_operator);
+                        }
+                    }
+                    IDictionary<object, object> CFglobals = new Dictionary<object, object>();
+                    //get the enabled custom field with the smallest sequence
+                    RequestParameter customFieldsDataFilter = new RequestParameter();
+                    customFieldsDataFilter.Pages.ResultsPerPage = 1;
+                    customFieldsDataFilter.Pages.StartRow = 1;
+                    customFieldsDataFilter.SortBy.Add("Sequence", "ASC");
+                    customFieldsDataFilter.FilterBy.Add("Enabled", "1");
+                    CFglobals.Add(BaseType.RequestParameter, customFieldsDataFilter);
 
-					IDictionary<object, object> CFglobals = new Dictionary<object, object>();
-					//get the enabled custom field with the smallest sequence
-					RequestParameter customFieldsDataFilter = new RequestParameter();
-					customFieldsDataFilter.Pages.ResultsPerPage = 1;
-					customFieldsDataFilter.Pages.StartRow = 1;
-					customFieldsDataFilter.SortBy.Add("Sequence", "ASC");
-					customFieldsDataFilter.FilterBy.Add("Enabled", "1");
-					CFglobals.Add(BaseType.RequestParameter, customFieldsDataFilter);
-
-					ManageCustomFields manageCustomFields = new ManageCustomFields(_userClaims);
-					IList<CustomField> customFieldList = manageCustomFields.GetCustomField(globals: CFglobals, partyId: _userClaims.OrganizationPartyId);
+                    ManageCustomFields manageCustomFields = new ManageCustomFields(_userClaims);
+                    IList<CustomField> customFieldList = manageCustomFields.GetCustomField(globals: CFglobals, partyId: _userClaims.OrganizationPartyId);
                     bool customFieldsEnabled = ((customFieldList != null) && (customFieldList.Count > 0));
-					if (customFieldsEnabled)
-					{
-						string customFieldName = customFieldList[0].Name;
-						exportConfigurations.Add(new ExportDataFileConfiguration { Header = customFieldName, MappedField = "CustomField", PDFColumnWidth = "", Preference = 12 });
-					}
+                    if (customFieldsEnabled)
+                    {
+                        string customFieldName = customFieldList[0].Name;
+                        exportConfigurations.Add(new ExportDataFileConfiguration { Header = customFieldName, MappedField = "CustomField", PDFColumnWidth = "", Preference = 12 });
+                    }
 
-					plainBytes = DataExport.ExportDataToFile<LE.User>(exportConfigurations.OrderBy(p => p.Preference).ToList(), listUsers, dataFormat);
-					output = new ObjectOutput<string, IErrorData>()
-					{
-						obj = Convert.ToBase64String(plainBytes),
-						Status = errorStatus
-					};
+                    plainBytes = DataExport.ExportDataToFile<LE.User>(exportConfigurations.OrderBy(p => p.Preference).ToList(), listUsers, dataFormat);
+                    output = new ObjectOutput<string, IErrorData>()
+                    {
+                        obj = Convert.ToBase64String(plainBytes),
+                        Status = errorStatus
+                    };
 
-					/*
+                    /*
 					DO NOT REMOVE
 					SerializerContractResolver jsonResolver = new SerializerContractResolver();
 					jsonResolver.RenameProperty(typeof(ObjectOutput<string, IErrorData>), "data", "fileContent");
@@ -387,23 +403,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 					jsonString = JsonConvert.SerializeObject(output, serializerSettings);
 					object newOutput = JsonConvert.DeserializeObject(jsonString);
 					*/
-					return Request.CreateResponse(HttpStatusCode.OK, output);
-				}
-				else
-				{
-					output.Status = errorStatus;
-					return Request.CreateResponse(HttpStatusCode.OK, output);
-				}
-			}
-			else
-			{
-				errorStatus.Success = false;
-				errorStatus.ErrorCode = "Person.ListUsersExport.1";
-				errorStatus.ErrorMsg = "List Users Export: No data";
-				output.Status = errorStatus;
-				return Request.CreateResponse(HttpStatusCode.OK, output);
-			}
-		}
+                    return Request.CreateResponse(HttpStatusCode.OK, output);
+                }
+                else
+                {
+                    output.Status = errorStatus;
+                    return Request.CreateResponse(HttpStatusCode.OK, output);
+                }
+            }
+            else
+            {
+                errorStatus.Success = false;
+                errorStatus.ErrorCode = "Person.ListUsersExport.1";
+                errorStatus.ErrorMsg = "List Users Export: No data";
+                output.Status = errorStatus;
+                return Request.CreateResponse(HttpStatusCode.OK, output);
+            }
+        }
 		#endregion
 
 		#region Persona
@@ -473,6 +489,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
         #endregion
 
+        private bool GetUnifiedSettingsForOperator(Guid realPageId, string settingType)
+		{
+            ManageUnifiedSettings manageUnifiedSettings = new ManageUnifiedSettings(_userClaims);
+            var data = manageUnifiedSettings.GetCompanyInternalSettings(realPageId, "UPFM", settingType);
+            return data?.Keys?.Where(p => p.Name == "owneroperatorrelationship")?.FirstOrDefault()?.Value == "1";           
+		}
 
         #region Get Examples
         /// <summary>

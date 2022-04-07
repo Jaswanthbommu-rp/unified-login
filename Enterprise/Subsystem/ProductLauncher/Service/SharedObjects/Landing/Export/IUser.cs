@@ -64,6 +64,21 @@
 		/// When the account can no longer be used
 		/// </summary>
 		string ExpireDate { get; set; }
+
+		/// <summary>
+		/// Operator
+		/// </summary>		
+		string Operator { get; set; }
+
+		/// <summary>
+		/// UserRelationshipType
+		/// </summary>		
+		string UserRelationshipType { get; set; }
+
+		/// <summary>
+		/// CompanyName
+		/// </summary>		
+		string CompanyName { get; set; }
 	}
 
 }

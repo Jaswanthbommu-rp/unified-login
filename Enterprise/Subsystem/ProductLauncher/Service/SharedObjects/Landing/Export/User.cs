@@ -84,5 +84,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		/// </summary>
 		[JsonProperty(PropertyName = "EmployeeId")]
 		public string EmployeeId { get; set; } = "";
+
+		/// <summary>
+		/// Operator
+		/// </summary>		
+		public string Operator { get; set; }
+
+		/// <summary>
+		/// UserRelationshipType
+		/// </summary>		
+		public string UserRelationshipType { get; set; }
+
+		/// <summary>
+		/// CompanyName
+		/// </summary>		
+		public string CompanyName { get; set; }
 	}
 }

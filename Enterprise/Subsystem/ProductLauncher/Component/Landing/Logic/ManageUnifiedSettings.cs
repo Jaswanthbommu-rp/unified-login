@@ -242,6 +242,69 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return false;
         }
 
+
+        public InternalSettingResponse GetCompanyInternalSettings(Guid companyId, string source, string settingType)
+        {
+            InternalSettingResponse internalSetting = new InternalSettingResponse();
+            if (!string.IsNullOrEmpty(settingType))
+            {
+                Guid correlationId = Guid.NewGuid();
+                string kongUri = string.Empty;
+                string kongVanityUrl = string.Empty;
+                var productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
+                kongUri = productInternalSettingList.First(a => a.Name.Equals("KongApiEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
+                string kongKey = productInternalSettingList.First(a => a.Name.Equals("KONG_KEY", StringComparison.OrdinalIgnoreCase)).Value;
+                var vanityUrl = productInternalSettingList.FirstOrDefault(p => p.Name == "Kong-Vanity-url");
+                if (productInternalSettingList.FirstOrDefault(p => p.Name == "Kong-Vanity-url") != null)
+                {
+                    kongVanityUrl = productInternalSettingList.First(a => a.Name.Equals("Kong-Vanity-url", StringComparison.OrdinalIgnoreCase)).Value;
+                }
+                string companyinternalSettingsAPI = productInternalSettingList.First(a => a.Name.Equals("CompanyInternationalSettingsAPI", StringComparison.OrdinalIgnoreCase)).Value;
+                if (!string.IsNullOrEmpty(kongUri) && !string.IsNullOrEmpty(kongKey) && !string.IsNullOrEmpty(companyinternalSettingsAPI))
+                {
+                    _httpClient.BaseAddress = new Uri(kongUri);
+                    string uri = string.Format(companyinternalSettingsAPI, source, companyId, settingType);
+                    uri = _httpClient.BaseAddress + uri;
+
+                    var logData = new Dictionary<string, object>() { { "Uri", _httpClient.BaseAddress + uri } };
+                    WriteToLog(LogEventLevel.Debug, "GetCompanySettings using Kong API - Getting info.", correlationId, logData);
+                    var options = new System.Text.Json.JsonSerializerOptions
+					{
+                        PropertyNameCaseInsensitive = true
+                    };
+
+                    _httpClient.DefaultRequestHeaders.Add("apikey", kongKey);
+                    if (!string.IsNullOrEmpty(kongVanityUrl))
+                    {
+                        _httpClient.DefaultRequestHeaders.Add("vanity-host", kongVanityUrl);
+                    }
+                    var response = _httpClient.GetAsync(uri).Result;
+                    if (response.IsSuccessStatusCode)
+                    {
+                        if (response.StatusCode == System.Net.HttpStatusCode.NoContent) { return internalSetting; }
+                        if (!string.IsNullOrEmpty(response.Content.ReadAsStringAsync().Result))
+                        {
+                            internalSetting = System.Text.Json.JsonSerializer.Deserialize<InternalSettingResponse>(response.Content.ReadAsStringAsync().Result, options);
+                        }
+                        else
+                        {
+                            WriteToLog(LogEventLevel.Debug, "GetCompanySettings using Kong API - No Content -", correlationId, logData);
+                        }
+                        logData = new Dictionary<string, object>() { { "InternationalCompanySetting", internalSetting } };
+                        WriteToLog(LogEventLevel.Debug, "GetCompanySettings using Kong API - Got info -",correlationId, logData);
+                        return internalSetting;
+                    }
+                    logData = new Dictionary<string, object>() { { "response", response } };
+                    WriteToLog(LogEventLevel.Debug, "GetCompanySettings using Kong API - No info found", correlationId, logData);
+                }
+                else
+                {
+                    WriteToLog(LogEventLevel.Debug, "GetCompanySettings using Kong API - KongApiEndPoint/KONG_KEY/CompanyInternationalSettingsAPI not found in database", correlationId, null);
+                }
+            }
+            return internalSetting;
+        }
+
         #endregion
         #endregion
 

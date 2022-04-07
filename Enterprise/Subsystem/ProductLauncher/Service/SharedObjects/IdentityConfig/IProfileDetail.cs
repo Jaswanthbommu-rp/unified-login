@@ -138,5 +138,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 		/// ExternalUserRelationship
 		/// </summary>
 		ExternalUserRelationship ExternalUserRelationship { get; set; }
+
+		/// <summary>
+		/// Operator
+		/// </summary>		
+		string Operator { get; set; }
+
+		/// <summary>
+		/// UserRelationshipType
+		/// </summary>		
+		string UserRelationshipType { get; set; }
+
+		/// <summary>
+		/// CompanyName
+		/// </summary>		
+		string CompanyName { get; set; }
 	}
 }

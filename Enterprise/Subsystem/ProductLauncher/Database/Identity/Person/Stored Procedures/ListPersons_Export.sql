@@ -27,7 +27,9 @@ BEGIN
 		@csvStatus varchar(max),
 		@csvEnterpriseRole varchar(max),
 		@ProductSettingTypeId int,
-		@OffsetMinutes smallint;  
+		@OffsetMinutes smallint,
+		@csvOperator varchar(max),
+		@filterOperatorCount int = NULL;
 
 	DECLARE @filterStatus TABLE (
 		StatusTypeId int PRIMARY KEY
@@ -45,10 +47,15 @@ BEGIN
 		ProductId int PRIMARY KEY
 	)
 
+	DECLARE @filterOperator TABLE (  
+		OperatorPartyId bigint PRIMARY KEY  
+	 )
+
 	DECLARE @tblFilterBy TABLE (
 		ColumnName varchar(128),
 		SearchValue varchar(max)
 	)
+
 
 	CREATE TABLE #PersonaProduct(
 		PersonaId bigint,
@@ -97,6 +104,7 @@ BEGIN
 				WHEN N'Status' THEN 104
 				WHEN N'EmployeeId' THEN 105
 				WHEN N'EnterpriseRoleName' THEN 106
+				WHEN N'Operator' THEN 107 
 				ELSE 100
 			END * CASE SortDirection WHEN N'ASC' THEN 1 ELSE -1 END 
 	FROM	OPENJSON (JSON_QUERY(@SortBy, '$.sortBy'))
@@ -170,6 +178,23 @@ BEGIN
 
 	SELECT @filterEnterpriseRoleCount = COUNT(RoleTemplateId)
 	FROM @filterEnterpriseRole
+
+	--operator logic 
+	 SELECT @csvOperator = SearchValue  
+	 FROM  @tblFilterBy  
+	 WHERE ColumnName = 'Operator'
+	 AND   SearchValue NOT IN ( '%', '') 
+
+	 IF (LEN(@csvOperator) > 0)  
+	 BEGIN  
+	  INSERT INTO @filterOperator (  
+	   OperatorPartyId  
+	  )
+	  SELECT PartyId FROM Enterprise.Party WHERE RealPageId in (
+	  SELECT CONVERT(uniqueidentifier, value)  
+	  FROM STRING_SPLIT(@csvOperator, ','));  
+	 END
+	SELECT @filterOperatorCount = COUNT(OperatorPartyId) FROM  @filterOperator
 
 	SELECT	@filterStatusTypeId = COUNT(StatusTypeId)
 	FROM		@filterStatus
@@ -461,6 +486,9 @@ BEGIN
 		PasswordModifiedDate,
 		EntepriseRoleName,
 		RoleTemplateId,
+		Operator,
+		UserRelationshipType,
+		CompanyName,
 		OffsetMinutes,
 		TotalRecords,
 		RowNumber
@@ -499,6 +527,15 @@ BEGIN
 			 ulp.PasswordModifiedDate, 
 			 UER.EnterpriseRoleName,
 			 UER.RoleTemplateId,
+			 CASE 
+				WHEN TPR.ThirdPartyRelationshipId = 1 THEN 
+				O.Name		
+				ELSE NULL END AS Operator,		
+			TPR.ThirdPartyRelationship as UserRelationshipType,
+			CASE 
+				WHEN TPR.ThirdPartyRelationshipId = 1 THEN NULL		
+				WHEN TPR.ThirdPartyRelationshipId in (2,3) THEN EUR.CompanyName
+				END AS CompanyName,
 			 @OffsetMinutes,  
 			 COUNT(1) OVER () AS TotalRecords,
 			 CASE @sortValue  
@@ -509,6 +546,7 @@ BEGIN
 				  WHEN 104 THEN ROW_NUMBER() OVER (ORDER BY ulp.StatusName ASC, p.FirstName + ' ' + p.LastName ASC)  
 				  WHEN 105 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(UE.Employee,'') ASC, p.FirstName + ' ' + p.LastName ASC)
 				  WHEN 106 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(UER.EnterpriseRoleName,'') ASC, p.FirstName + ' ' + p.LastName ASC) 
+				  WHEN 107 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(EUR.ThirdPartyCompanyPartyId,0) ASC, p.FirstName + ' ' + p.LastName ASC)
 				  WHEN -100 THEN ROW_NUMBER() OVER (ORDER BY p.FirstName + ' ' + p.LastName DESC)  
 				  WHEN -101 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(pct.ProductCount,0)  DESC, p.FirstName + ' ' + p.LastName DESC)  
 				  WHEN -102 THEN ROW_NUMBER() OVER (ORDER BY ulp.LastLogin DESC, p.FirstName + ' ' + p.LastName DESC)  
@@ -516,6 +554,7 @@ BEGIN
 				  WHEN -104 THEN ROW_NUMBER() OVER (ORDER BY ulp.StatusName DESC, p.FirstName + ' ' + p.LastName DESC)  
 				  WHEN -105 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(UE.Employee,'') DESC, p.FirstName + ' ' + p.LastName DESC)  
 				  WHEN -106 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(UER.EnterpriseRoleName,'') DESC, p.FirstName + ' ' + p.LastName DESC) 
+				  WHEN -107 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(EUR.ThirdPartyCompanyPartyId,0) DESC, p.FirstName + ' ' + p.LastName DESC) 
 				 END AS RowNumber
 		  FROM #UserLogin ulp  
 			 INNER JOIN Person.Person p ON p.PartyId = ulp.PersonPartyId  
@@ -530,6 +569,9 @@ BEGIN
 			 LEFT OUTER JOIN #CustomFields cf ON (cf.UserLoginPersonaId = ulp.UserLoginPersonaId)  
 			 LEFT OUTER JOIN Enterprise.UserEmployeeId UE ON ulp.UserLoginPersonaId = UE.UserLoginPersonaId  
 			 LEFT OUTER JOIN #UserEnterpriseRole UER  ON ulp.PersonaId  = UER.PersonaId
+			 LEFT OUTER JOIN Enterprise.ExternalUserRelationship EUR ON EUR.UserLoginPersonaId = ulp.UserLoginPersonaId
+			 LEFT OUTER JOIN Enterprise.ThirdPartyRelationship TPR ON TPR.ThirdPartyRelationshipId = EUR.ThirdPartyRelationshipId
+			 LEFT OUTER JOIN Enterprise.Organization O ON O.PartyId = EUR.ThirdPartyCompanyPartyId 
 		  WHERE  (  
 				(@filterName IS NULL)  
 				OR (CHARINDEX(@filterName, FirstName + ' ' + LastName, 1) > 0)  
@@ -540,7 +582,8 @@ BEGIN
 			   )  
 		  AND  ((@NOW BETWEEN prs.FromDate AND prs.ThruDate) OR (@NOW >= prs.FromDate AND prs.ThruDate IS NULL))  
 		  AND  ((@ParentPartyRoleTypeId IS NULL) OR (rt.ParentPartyRoleTypeId = @ParentPartyRoleTypeId))  
-		  AND  ((@filterPartyRoleTypeId IS NULL) OR (prs.RoleTypeIdFrom = @filterPartyRoleTypeId))  		 
+		  AND  ((@filterPartyRoleTypeId IS NULL) OR (prs.RoleTypeIdFrom = @filterPartyRoleTypeId))
+		  AND ((@filterOperatorCount = 0 ) OR (EUR.ThirdPartyCompanyPartyId in (select OperatorPartyId from @filterOperator)))
 	)
 	SELECT	TotalRecords,
 				RealPageID,
@@ -554,6 +597,9 @@ BEGIN
 				CustomField,
 				EntepriseRoleName,
 				RoleTemplateId,
+				Operator,
+				UserRelationshipType,
+				CompanyName,
 				UserId,
 				LoginName,
 				LastLogin,
@@ -568,7 +614,7 @@ BEGIN
 				Products,
 				Properties,
 				UserType,
-				PartyRoleTypeId					
+				PartyRoleTypeId				
 	FROM	cteUsersFinal
 	ORDER BY RowNumber
 	OFFSET ((@PageNumber - 1) * @RowsPerPage) ROWS

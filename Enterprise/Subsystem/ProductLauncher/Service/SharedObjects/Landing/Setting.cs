@@ -28,5 +28,10 @@
 		/// Is Setting Hidden
 		/// </summary>
 		public bool Hidden { get; set; } = false;
+
+		/// <summary>
+		/// Category
+		/// </summary>
+		public string Category { get; set; } = string.Empty;
 	}
 }

@@ -43,5 +43,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="propertyInstance"></param>
 		/// <returns></returns>
 		bool DeletePropertyInSetting(string propertyInstance);
+
+		InternalSettingResponse GetCompanyInternalSettings(Guid companyId, string source, string settingType);
 	}
 }
