@@ -546,7 +546,7 @@ BEGIN
 				  WHEN 104 THEN ROW_NUMBER() OVER (ORDER BY ulp.StatusName ASC, p.FirstName + ' ' + p.LastName ASC)  
 				  WHEN 105 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(UE.Employee,'') ASC, p.FirstName + ' ' + p.LastName ASC)
 				  WHEN 106 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(UER.EnterpriseRoleName,'') ASC, p.FirstName + ' ' + p.LastName ASC) 
-				  WHEN 107 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(EUR.ThirdPartyCompanyPartyId,0) ASC, p.FirstName + ' ' + p.LastName ASC)
+				  WHEN 107 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(O.Name,'') ASC, p.FirstName + ' ' + p.LastName ASC)
 				  WHEN -100 THEN ROW_NUMBER() OVER (ORDER BY p.FirstName + ' ' + p.LastName DESC)  
 				  WHEN -101 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(pct.ProductCount,0)  DESC, p.FirstName + ' ' + p.LastName DESC)  
 				  WHEN -102 THEN ROW_NUMBER() OVER (ORDER BY ulp.LastLogin DESC, p.FirstName + ' ' + p.LastName DESC)  
@@ -554,7 +554,7 @@ BEGIN
 				  WHEN -104 THEN ROW_NUMBER() OVER (ORDER BY ulp.StatusName DESC, p.FirstName + ' ' + p.LastName DESC)  
 				  WHEN -105 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(UE.Employee,'') DESC, p.FirstName + ' ' + p.LastName DESC)  
 				  WHEN -106 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(UER.EnterpriseRoleName,'') DESC, p.FirstName + ' ' + p.LastName DESC) 
-				  WHEN -107 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(EUR.ThirdPartyCompanyPartyId,0) DESC, p.FirstName + ' ' + p.LastName DESC) 
+				  WHEN -107 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(O.Name,'') DESC, p.FirstName + ' ' + p.LastName DESC) 
 				 END AS RowNumber
 		  FROM #UserLogin ulp  
 			 INNER JOIN Person.Person p ON p.PartyId = ulp.PersonPartyId  
