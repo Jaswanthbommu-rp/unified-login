@@ -5639,6 +5639,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             //We can get this with the oldProfile
             string schemaName = getRoleRightsSchemaName();
 
+            bool externalUserRelationUpdated = IsExternaUserlRelationUpdated(updateUserProfileEntity);
             using (var repository = GetRepository())
             {
                 //Begin the transaction
@@ -5666,7 +5667,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesByRealPageID" : StoredProcNameConstants.SP_ListRolesByRealPageID;
                 var enterpriseRoles = repository.GetMany<EnterpriseRole>(procName, new { realPageId = updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId });
 
-                bool externalUserRelationUpdated = IsExternaUserlRelationUpdated(updateUserProfileEntity);
+                
                 
                 try
                 {
@@ -6611,23 +6612,39 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         private bool IsExternaUserlRelationUpdated(UpdateUserProfileEntity updateUserProfileEntity) 
         {
             bool isUpdated = false;
-            isUpdated = (updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyCompanyName != updateUserProfileEntity.OldProfile.ExternalUserRelationship.ThirdPartyCompanyName ||
-                                updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyRelationShipId != updateUserProfileEntity.OldProfile.ExternalUserRelationship.ThirdPartyRelationShipId ||
-                                updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyCompanyRealPageId != updateUserProfileEntity.OldProfile.ExternalUserRelationship.ThirdPartyCompanyRealPageId);
+
+            var newData = updateUserProfileEntity.NewProfile.ExternalUserRelationship;
+            var oldData = updateUserProfileEntity.OldProfile.ExternalUserRelationship;
+
+            //if id == 1 ui will not send the comapny name but company guid
+            if (newData.ThirdPartyRelationShipId == 1)
+            {
+                var org = _organizationRepository.GetOrganization(newData.ThirdPartyCompanyRealPageId);
+
+                if (newData.ThirdPartyRelationShipId != oldData.ThirdPartyRelationShipId ||
+                    org.Name != oldData.ThirdPartyCompanyName)
+                {
+                    isUpdated = true;
+                }
+            }
+            else 
+            {
+                isUpdated = (updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyCompanyName != updateUserProfileEntity.OldProfile.ExternalUserRelationship.ThirdPartyCompanyName ||
+                                    updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyRelationShipId != updateUserProfileEntity.OldProfile.ExternalUserRelationship.ThirdPartyRelationShipId ||
+                                    updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyCompanyRealPageId != updateUserProfileEntity.OldProfile.ExternalUserRelationship.ThirdPartyCompanyRealPageId);
+            }
+            
             return isUpdated;
         }
 
         private List<AdditionalParameters> CreateExternalUpdatelogParams(UpdateUserProfileEntity updateUserProfileEntity) 
         {
-            IManageBlueBook _manageBlueBook = new ManageBlueBook(_userClaim);
-            var data = _manageBlueBook.GetOperatorListForUPFMCompany(_userClaim.OrganizationRealPageGuid, "UPFM");
-
             List<AdditionalParameters> additionalParams = new List<AdditionalParameters>();
             
             var oldData = updateUserProfileEntity.OldProfile.ExternalUserRelationship;
             var newData = updateUserProfileEntity.NewProfile.ExternalUserRelationship;
 
-            if (data.Count() == 0) //Operator Settig is NOT ENABLED for the company
+            if (!IsOperatorSettingsEnabled()) //Operator Settig is NOT ENABLED for the company
             {
                 if (oldData.ThirdPartyRelationShipId != newData.ThirdPartyRelationShipId)
                 {
@@ -6713,6 +6730,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
             
             return additionalParams;
+        }
+
+        private bool IsOperatorSettingsEnabled()
+        {
+            ManageUnifiedSettings manageUnifiedSettings = new ManageUnifiedSettings(_userClaim);
+            var data = manageUnifiedSettings.GetCompanyInternalSettings(_userClaim.OrganizationRealPageGuid, "UPFM", "company");
+            bool value = data?.Keys?.Where(p => p.Name == "owneroperatorrelationship")?.FirstOrDefault()?.Value == "1";
+            return value;
         }
         #endregion
 
