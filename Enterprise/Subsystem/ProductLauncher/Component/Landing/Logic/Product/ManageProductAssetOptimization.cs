@@ -710,6 +710,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						}
 					}
 				}
+				
+                foreach (var item in aoGbUserCompanyPropertyRoleDetails)
+                {
+					if (item.SelectedPortfolioValues[0] == -1)
+					{
+						item.allProperties = true;
+						item.SelectedPortfolioValues.Clear();
+					}
+				}
 
 				// Check if GB super user
 				if (IsSuperUser(productUserPersonaId))
@@ -2306,7 +2315,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						DivisionName = aoUserCompanyPropertyRoleDetail.DivisionName,
 						Product = aoUserCompanyPropertyRoleDetail.ProductName,
 						SelectedPortfolioValues = aoUserCompanyPropertyRoleDetail.SelectedPortfolioValues ?? new List<int>(),
-						SelectedRoleValues = aoUserCompanyPropertyRoleDetail.SelectedRoleValues ?? new List<string>()
+						SelectedRoleValues = aoUserCompanyPropertyRoleDetail.SelectedRoleValues ?? new List<string>(),
+						allProperties = aoUserCompanyPropertyRoleDetail.allProperties
 					};
 
 					models.Add(model);
@@ -2987,6 +2997,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		[JsonProperty("companyId")] public int CompanyId { get; set; }
 
 		[JsonProperty("product")] public string Product { get; set; }
+		[JsonProperty("allProperties")] public bool allProperties { get; set; } = false;
 	}
 
 	public class GroupModel
@@ -3024,6 +3035,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// </summary>
 		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
 		public List<ProductPrimaryProperties> ProductPrimaryProperties { get; set; }
+		[JsonProperty("allProperties")]
+		public bool allProperties { get; set; } = false;
 	}
 
 	public class AoUserCompanyPropertyRoleDetails
