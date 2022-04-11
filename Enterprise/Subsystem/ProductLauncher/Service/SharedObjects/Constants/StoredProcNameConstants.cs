@@ -83,6 +83,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         public const string SP_GetUserBySearchCriteria = "Auth.GetUserBySearchCriteria";
         public const string SP_GetExternalUserRelationship = "Enterprise.GetExternalUserRelationship";
         public const string SP_UpdateExternalUserRelationship = "Enterprise.UpdateExternalUserRelationship";
+        public const string SP_DeleteExternalUserRelationship = "Enterprise.DeleteExternalUserRelationship";
 
         //UserLogin
         public const string SP_CreateUserLogin = "Ident.CreateUserLogin";

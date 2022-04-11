@@ -1251,6 +1251,7 @@
     <Build Include="Batch\Procedure\InsertBatchPersonaIdToPrimaryPropertiesBatchProcess.sql" />
     <Build Include="Batch\Procedure\ListPrimaryPropertiesBatchProcessor.sql" />
     <Build Include="Batch\Procedure\UpdatePrimaryPropertiesProductBatch.sql" />
+    <Build Include="Enterprise\Stored Procedures\DeleteExternalUserRelationship.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
