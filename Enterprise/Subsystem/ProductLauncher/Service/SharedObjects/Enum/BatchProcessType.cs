@@ -57,6 +57,6 @@
 		/// <summary>
 		/// Primary Properties Update Product User
 		/// </summary>
-		PrimaryPropertiesUpdateProductUser = 13
+		PrimaryPropertiesUpdateProductUser = 14
 	}
 }

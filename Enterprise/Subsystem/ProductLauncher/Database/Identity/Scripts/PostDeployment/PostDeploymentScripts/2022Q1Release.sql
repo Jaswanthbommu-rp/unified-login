@@ -216,6 +216,7 @@ GO
 	Select 3, 'PrimaryPropertiesBulkUpdateApiEndpoint' ,'API Endpoint to be invoked by batch processor'
   END  
 GO
+
 IF NOT EXISTS (Select 1 From [Batch].[BatchProcessConfiguration] Where BatchProcessConfigurationId = 3)
   BEGIN
 	Declare @ServerName SYSNAME = @@SERVERNAME,
@@ -246,4 +247,11 @@ IF NOT EXISTS (Select 1 From [Batch].[BatchProcessType] Where BatchProcessTypeId
 	 Insert Into [Batch].[BatchProcessType]( BatchProcessTypeId,BatchProcessConfigurationId,Description,Name)
 	 Select 13, 3, 'Batch to create Primary Properties Bulk Update Users','PrimaryPropertiesBulkUpdateProductUser'
   END
+GO
+IF NOT EXISTS (Select 1 From [Batch].[BatchProcessType] Where BatchProcessTypeId = 14)
+  BEGIN
+	 Insert Into [Batch].[BatchProcessType]( BatchProcessTypeId,BatchProcessConfigurationId,Description,Name)
+	 Select 14, 1, 'Batch to update user Primary Properties','PrimaryPropertiesUpdateProductUser'
+  END
+GO
  
