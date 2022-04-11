@@ -18,9 +18,9 @@
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-CREATE INDEX [IX_BatchProcessor_SubjectUserPersonaId_StatusTypeId] ON [Batch].[BatchProcessor] ([SubjectUserPersonaId], [StatusTypeId]) INCLUDE ([ProductId])
-GO
-CREATE INDEX [IX_BatchProcessor_EditorUserPersonaId_SubjectUserPersonaId]
-ON [Batch].[BatchProcessor]
-( [EditorUserPersonaId], [SubjectUserPersonaId]
-);
+CREATE NONCLUSTERED INDEX [IX_BatchProcessor_CreateDateTime] ON [Batch].[BatchProcessor]
+(
+[CreatedDateTime] ASC,
+[EditorUserPartyId] ASC
+)
+INCLUDE([BatchProcessorId],[CorrelationId],[BatchProcessorGroupId],[EditorUserPersonaId],[SubjectUserPersonaId],[BatchProcessTypeId],[ProductId],[StatusTypeId],[RetryCount],[InputJSON],[LastRunDateTime]) WITH (SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]

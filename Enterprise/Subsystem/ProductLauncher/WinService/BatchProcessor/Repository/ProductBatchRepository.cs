@@ -44,6 +44,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
 			}
 		}
 
+		public IList<PrimaryPropertyBatch> GetPrimaryPropertyProductUpdateBatchToProcess(int batchSize)
+		{
+			using (var repository = GetRepository())
+			{
+				var result = repository.GetMany<PrimaryPropertyBatch>(StoredProcNameConstants.SP_PrimaryPropertiesBatch,
+					new { batchSize = batchSize }).ToList();
+
+				return result;
+			}
+		}
+
 		public int UpdateBatchRecord(int productBatchId, BatchStatusType batchStatusType, string inputJson = null, string errorDetails = null)
 		{
 			using (var repository = GetRepository())
@@ -74,6 +85,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
 			foreach (var record in batch)
 			{
 				UpdateBatchRecord(record.BatchProcessorId, batchStatusType, inputJson, errorDetails);
+			}
+		}
+
+		public void UpdatePrimaryPropertyProductBatch(long productBatchId, int statusTypeId)
+		{
+			using (var repository = GetRepository())
+			{
+				var result = repository.Execute<bool>(StoredProcNameConstants.SP_UpdatePrimaryPropertyProductBatch,
+				   new { productBatchId, statusTypeId });
 			}
 		}
 

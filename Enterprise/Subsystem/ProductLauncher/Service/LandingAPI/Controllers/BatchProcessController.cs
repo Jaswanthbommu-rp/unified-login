@@ -69,7 +69,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             return Request.CreateResponse(HttpStatusCode.Created, result);
         }
 
+        /// <summary>
+        /// Used to process product Primary Properties  update to user batch record by windows service
+        /// </summary>
+        /// <param name="batchRecord">Details to send to Realpage product for a user</param> 
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Update successful", Type = typeof(HttpResponseMessage))]
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
+        [Route("ppbatchprocessor")]
+        [AllowAnonymous]//TODO: Make it authorize by having client id for Windows Service in ID server
+        [HttpPost]
+        public HttpResponseMessage ProductPrimaryPropertyProcessBatch(PrimaryPropertyBatch batchRecord)
+        {
+            if (batchRecord == null)
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "product primary property batchRecord null.");
 
+            ManagePrimaryPropertiesBatch manageBatchProcess = new ManagePrimaryPropertiesBatch(_userClaims);
+            string result = manageBatchProcess.GeneratePrimaryPropertiesUserProductBatch(batchRecord);
+
+            if (string.IsNullOrEmpty(result))
+                result = "Success";
+
+            return Request.CreateResponse(HttpStatusCode.Created, result);
+        }
         #endregion
     }
 } 

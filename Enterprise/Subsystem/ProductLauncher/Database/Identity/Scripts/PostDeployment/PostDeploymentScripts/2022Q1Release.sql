@@ -208,3 +208,42 @@ BEGIN
 END
 
 GO
+
+GO
+  IF NOT EXISTS (Select 1 From [Batch].[BatchProcessConfigurationType] Where BatchProcessConfigurationTypeId = 3)
+  BEGIN
+	Insert into [Batch].[BatchProcessConfigurationType] (BatchProcessConfigurationTypeId ,Name,Description)
+	Select 3, 'PrimaryPropertiesBulkUpdateApiEndpoint' ,'API Endpoint to be invoked by batch processor'
+  END  
+GO
+IF NOT EXISTS (Select 1 From [Batch].[BatchProcessConfiguration] Where BatchProcessConfigurationId = 3)
+  BEGIN
+	Declare @ServerName SYSNAME = @@SERVERNAME,
+			@apiendpoint varchar(256)
+	SET @apiendpoint = '';
+	IF @ServerName IN ('RCDUSODBSQL001')
+	BEGIN
+		SET @apiendpoint = 'https://my2dev.realpage.com/api/ppbatchprocessor';
+	END
+	IF @ServerName IN ('rctusodbsql001')
+	BEGIN
+		SET @apiendpoint = 'https://my2qa.realpage.com/api/ppbatchprocessor';
+	END
+	IF @ServerName IN ('RCQUSODBSQL001')
+	BEGIN
+		SET @apiendpoint = 'https://my2sat.realpage.com/api/ppbatchprocessor';
+	END
+	IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B')
+	BEGIN
+		SET @apiendpoint = 'https://my2.realpage.com/api/ppbatchprocessor';
+	END
+	Insert into [Batch].[BatchProcessConfiguration](BatchProcessConfigurationId, BatchProcessConfigurationTypeId, Value)
+	Select 3,3, @apiendpoint
+  END  
+GO
+IF NOT EXISTS (Select 1 From [Batch].[BatchProcessType] Where BatchProcessTypeId = 13)
+  BEGIN
+	 Insert Into [Batch].[BatchProcessType]( BatchProcessTypeId,BatchProcessConfigurationId,Description,Name)
+	 Select 13, 3, 'Batch to create Primary Properties Bulk Update Users','PrimaryPropertiesBulkUpdateProductUser'
+  END
+ 

@@ -7,5 +7,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
     {
         Task<string> ProcessBatchRecord(BatchProcessorInput batchProcessorInput);
         Task<string> ProcessEnterpriseRoleBatchRecord(EnterpriseRoleBatch batchProcessorInput, string processApiEndPoint);
+        Task<string> ProcessPrimaryPropertyBatchRecord(PrimaryPropertyBatch batchProcessorInput, string processApiEndPoint);
     }
 }

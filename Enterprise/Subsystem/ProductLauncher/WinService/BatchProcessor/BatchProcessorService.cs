@@ -70,15 +70,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
                 Task assignPendingProductTask = new Task(RunPendingProcess, _cts.Token, TaskCreationOptions.LongRunning);
                 assignPendingProductTask.Start();
 
-                Log.Information("Launched polling task...");
+                Log.Information("Launched retry polling task...");
 
                 Task assignRetryProductsTask = new Task(RunRetryProcess, _cts.Token, TaskCreationOptions.LongRunning);
                 assignRetryProductsTask.Start();
 
-                Log.Information("Launched retry polling task...");
+                Log.Information("Launched Enterprise Role Update task...");
 
                 Task enterpriseRoleProductUpdateTask = new Task(RunEnterpriseRoleUpdateProcess, _cts.Token, TaskCreationOptions.LongRunning);
                 enterpriseRoleProductUpdateTask.Start();
+
+                Log.Information("Launched Primary Properties Update task...");
+
+                Task primaryPropertyProductUpdateTask = new Task(RunPrimaryPropertiesUpdateProcess, _cts.Token, TaskCreationOptions.LongRunning);
+                primaryPropertyProductUpdateTask.Start();
 
                 Log.Information("Launched enterprise role product update polling task...");
 #if (DEBUG)
@@ -291,6 +296,62 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
 
         #endregion
 
+        #region Primary Properties Product Update Tasks-Threads
+
+        private void RunPrimaryPropertiesUpdateProcess()
+        {
+            Log.Debug($"RunPrimaryPropertiesUpdateProcess - Starting in polling main task :threadCount - {ThreadCount}, batchSize - {BatchSize}, pollingInterval - {PollingInterval}");
+            #if (DEBUG)
+            Console.WriteLine("-------------------------------------------------------------------------------");
+            #endif
+            CancellationToken cancellation = _cts.Token;
+            TimeSpan interval = TimeSpan.Zero;
+            IList<PrimaryPropertyBatch> batch = null;
+
+            while (!cancellation.WaitHandle.WaitOne(interval))
+            {
+                try
+                {
+                    Log.Debug("RunPrimaryPropertiesUpdateProcess - Getting product batch to process.");
+
+                    // Get Db data by batchSize
+                    var repository = new BatchRepository();
+                    batch = repository.GetPrimaryPropertyProductUpdateBatchToProcess(BatchSize);
+
+                    if (batch == null || batch.Count <= 0)
+                    {
+                        Log.Debug("RunPrimaryPropertiesUpdateProcess - No items to process in the batch.");
+                        interval = _waitAfterSuccessInterval;
+                        continue;
+                    }
+
+                    Log.Debug($"RunPrimaryPropertiesUpdateProcess - Launching threads to process {batch.Count} products.");
+
+                    // Launch threads
+                    Parallel.ForEach(batch, new ParallelOptions { MaxDegreeOfParallelism = ThreadCount }, CallApiToProcessPrimaryPropertiesBatchRecord);
+
+                    Log.Debug("RunPrimaryPropertiesUpdateProcess - All threads processed.");
+
+                    // Occasionally check the cancellation state.
+                    if (cancellation.IsCancellationRequested)
+                    {
+                        Log.Information("RunPrimaryPropertiesUpdateProcess - Thread cancellation requested.");
+                        break;
+                    }
+                    interval = _waitAfterSuccessInterval;
+                }
+                catch (Exception ex)
+                {
+                    // Log the exception. 
+                    Log.Error(ex, "RunPrimaryPropertiesUpdateProcess - Exception in main task.");
+
+                    interval = _waitAfterErrorInterval;
+                }
+            }
+        }
+
+        #endregion
+
         #region Assign Product by calling API
 
         private void CallApiToProcessBatchRecord(Batch batch)
@@ -408,6 +469,54 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
                 if (batch.EnterpriseRoleBatchProcessId > 0)
                 {
                     new BatchRepository().UpdateEnterpriseRoleProductBatch(batch.EnterpriseRoleBatchProcessId, (int)BatchStatusType.Error);
+                }
+            }
+        }
+
+        private void CallApiToProcessPrimaryPropertiesBatchRecord(PrimaryPropertyBatch batch)
+        {
+            var additionalInfo = new Dictionary<string, object>();
+
+            try
+            {
+                var processEndpoint = GetBatchConfigurationByType(new Guid(), batch.BatchProcessTypeId, ConfigurationType.PrimaryPropertiesBulkUpdateApiEndpoint.ToString());
+
+                additionalInfo = new Dictionary<string, object>
+                {
+                    {"EditorUserPersonaId", batch.EditorUserPersonaId},
+                    {"SubjectUserPersonaId", batch.SubjectUserPersonaId},
+                    {"BatchProcessorId", batch.PrimaryPropertyBatchProcessId},                   
+                    {"StatusTypeId", batch.StatusTypeId},
+                    {"BatchProcessTypeId",batch.BatchProcessTypeId},
+                    {"processEndpoint",processEndpoint }
+                };
+
+                //Log.Debug($"CallApiToAssignProducts-Working to assign product {batch.ProductId} to user {batch.SubjectUserPersonaId}.", additionalInfo);
+                var logger = Log.Logger;
+                logger = logger.ForContext($"AdditionalInfo", JsonConvert.SerializeObject(additionalInfo, Formatting.Indented), true);
+                logger = logger.ForContext("ProductModule", this.GetType());
+                logger.Debug($"CallApiToProcessPrimaryPropertiesBatchRecord -Working to update products to user with primary properties {batch.PrimaryPropertyBatchProcessId} to user {batch.SubjectUserPersonaId}.");
+
+                var landingApiCaller = new ProductApiCaller();
+                var result = landingApiCaller.ProcessPrimaryPropertyBatchRecord(batch, processEndpoint);
+
+                logger.Information($"CallApiToProcessPrimaryPropertiesBatchRecord-Result received for User {batch.SubjectUserPersonaId} - {result.Result}.");
+            }
+            catch (Exception ex)
+            {
+                Exception realError = ex;
+                while (realError.InnerException != null)
+                    realError = realError.InnerException;
+                // Log the exception. 
+                //Log.Error(ex, $"Exception while calling API for ProductId {batch.ProductId}.", additionalInfo);
+                var logger = Log.Logger;
+                logger = logger.ForContext($"AdditionalInfo", JsonConvert.SerializeObject(additionalInfo, Formatting.Indented), true);
+                logger = logger.ForContext("ProductModule", this.GetType());
+                logger = logger.ForContext("InnerException", realError);
+                logger.Error(ex, $"Exception while CallApiToProcessPrimaryPropertiesBatchRecord {batch.PrimaryPropertyBatchProcessId}.");
+                if (batch.PrimaryPropertyBatchProcessId > 0)
+                {
+                    new BatchRepository().UpdatePrimaryPropertyProductBatch(batch.PrimaryPropertyBatchProcessId, (int)BatchStatusType.Error);
                 }
             }
         }

@@ -7,5 +7,7 @@
 		internal const string SP_UpdateBatch = "Enterprise.UpdateProductBatch";
 		internal const string SP_EnterpriseRoleListBatch = "Batch.ListEnterpriseRoleBatchProcessor";
 		internal const string SP_UpdateEnterpriseRoleProductBatch = "Batch.UpdateEnterpriseRoleProductBatch";
+		internal const string SP_PrimaryPropertiesBatch = "Batch.ListPrimaryPropertiesBatchProcessor";
+		internal const string SP_UpdatePrimaryPropertyProductBatch = "Batch.UpdatePrimaryPropertiesProductBatch";
 	}
 }

@@ -787,19 +787,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private RolePropertyList AssignPrimaryPropertiesToProductBatchOnUserCreate(ProductUserProperitiesRoles productUser, RolePropertyList roleProp)
         {
             IManagePersona _managePersona = new ManagePersona(_defaultUserClaim);
-            ManageEnterpriseRoleProductBatch manageEnterpriseRoleProductBatch = new ManageEnterpriseRoleProductBatch(_defaultUserClaim);
+            //ManageEnterpriseRoleProductBatch manageEnterpriseRoleProductBatch = new ManageEnterpriseRoleProductBatch(_defaultUserClaim);
+            ManageProductBatch manageProductBatch = new ManageProductBatch(_defaultUserClaim);
             var editorPersona = _managePersona.GetPersona(productUser.CreateUserPersonaId);
             var userPersona = _managePersona.GetPersona(productUser.AssignUserPersonaId);
             _defaultUserClaim.UserRealPageGuid = editorPersona.RealPageId;
             _defaultUserClaim.OrganizationRealPageGuid = editorPersona.Organization.RealPageId;
-            _defaultUserClaim.Rights = manageEnterpriseRoleProductBatch.GetPersonaRoleRights(productUser.CreateUserPersonaId, editorPersona.OrganizationPartyId);
+            _defaultUserClaim.Rights = manageProductBatch.GetPersonaRoleRights(productUser.CreateUserPersonaId, editorPersona.OrganizationPartyId);
 
             var productInternalSettingsByType = _productInternalSettingRepository.GetProductSettingByType("ProductIntegrationType");
             var productType = productInternalSettingsByType?.FirstOrDefault(p => p.ProductId == productUser.ProductId)?.Value;
 
             if (productUser.ProductId != 4 && roleProp.UsePrimaryProperties)
             {
-                ListResponse propertyList = manageEnterpriseRoleProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, productUser.ProductId);
+                ListResponse propertyList = manageProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, productUser.ProductId);
                 if (propertyList.Records.Count > 0)
                 {
                     roleProp.PropertyList = new List<string>();
@@ -819,7 +820,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     if (data.UsePrimaryProperties == true)
                     {
-                        ListResponse propertyList = manageEnterpriseRoleProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, data.ProductId);
+                        ListResponse propertyList = manageProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, data.ProductId);
                         if (propertyList.Records.Count > 0)
                         {
                             data.ProductPrimaryProperties = GetSelectedProperties(propertyList, productType);

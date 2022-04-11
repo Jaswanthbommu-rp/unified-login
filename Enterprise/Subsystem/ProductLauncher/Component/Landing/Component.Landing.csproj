@@ -252,6 +252,8 @@
     <Compile Include="Logic\ManageEnterpriseRoleProductBatch.cs" />
     <Compile Include="Logic\ManageHotsCloneUsers.cs" />
     <Compile Include="Logic\ManageMicrosoftAzure.cs" />
+    <Compile Include="Logic\ManagePrimaryPropertiesBatch.cs" />
+    <Compile Include="Logic\ManageProductBatch.cs" />
     <Compile Include="Logic\ManageUnifiedSettings.cs" />
     <Compile Include="Logic\ManageUserLoginPersona.cs" />
     <Compile Include="Logic\ProductIntegration\Factory\IIntegrationTypeFactory.cs" />
@@ -400,7 +402,7 @@
     <Compile Include="Repository\CustomFieldsRepository.cs" />
     <Compile Include="Repository\ElectronicAddressRepository.cs" />
     <Compile Include="Repository\EmailRepository.cs" />
-    <Compile Include="Repository\EnterpriseRoleProductRepository.cs" />
+    <Compile Include="Repository\BatchProductBulkUpdateRepository.cs" />
     <Compile Include="Repository\Enterprise\EntUserRepository.cs" />
     <Compile Include="Repository\Enterprise\IEntUserRepository.cs" />
     <Compile Include="Repository\GeographicBoundaryRepository.cs" />

@@ -66,15 +66,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		{
 			IList<ProductBatch> productListToCreate = new List<ProductBatch>();
 			IManagePersona _managePersona = new ManagePersona();
+			ManageProductBatch manageProductBatch = new ManageProductBatch(_userClaim);
 			var editorPersona = _managePersona.GetPersona(batch.EditorUserPersonaId);
 			var userPersona = _managePersona.GetPersona(batch.SubjectUserPersonaId);
 			_userClaim.UserRealPageGuid = editorPersona.RealPageId;
 			_userClaim.OrganizationRealPageGuid = editorPersona.Organization.RealPageId;
-			_userClaim.Rights = GetPersonaRoleRights(batch.EditorUserPersonaId, editorPersona.OrganizationPartyId);
+			_userClaim.Rights = manageProductBatch.GetPersonaRoleRights(batch.EditorUserPersonaId, editorPersona.OrganizationPartyId);
 
 			IPersonaRepository personaRepository = new PersonaRepository();
 			IUserLoginRepository userLoginRepository = new UserLoginRepository();
-			EnterpriseRoleProductRepository enterpriseRoleProductRepository = new EnterpriseRoleProductRepository();
+			BatchProductBulkUpdateRepository enterpriseRoleProductRepository = new BatchProductBulkUpdateRepository();
 
 			IList<Organization> organizationList = userLoginRepository.ListOrganizationByEnterpriseUserId(userPersona.RealPageId, null);
 			var personaOrganization = organizationList.FirstOrDefault(i => i.PartyId == userPersona.OrganizationPartyId);
@@ -104,7 +105,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				personaProductUsePrimaryProperty = false;
 				usePrimaryProperties = false;
 
-				bool productEnabledForPrimaryProperty = IsProductEnabledForUsePrimaryProperty(product);
+				bool productEnabledForPrimaryProperty = manageProductBatch.IsProductEnabledForUsePrimaryProperty(product);
 				if (productEnabledForPrimaryProperty){
 					var integrationType = _integrationTypeFactory.GetIntegrationTypeForProductId(product);
 
@@ -118,7 +119,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 						ErrorReason = ""
 					};
 
-					propertiesResponse = GetEnterpriseRoleUserPrimaryPropertiesData(batch.EditorUserPersonaId, batch.SubjectUserPersonaId, product);
+					propertiesResponse = manageProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(batch.EditorUserPersonaId, batch.SubjectUserPersonaId, product);
 
 					if (propertiesResponse.Records?.Count > 0)
 					{
@@ -131,7 +132,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 							}
 						}
 						else{
-							var productBatchRecord = GetProductBatchRecord(batch.EditorUserPersonaId, batch.SubjectUserPersonaId, productRoles, propertiesResponse, rolesResponse, product, true);
+							var productBatchRecord = manageProductBatch.GetProductBatchRecord(batch.EditorUserPersonaId, batch.SubjectUserPersonaId, productRoles, propertiesResponse, rolesResponse, product, true);
 							productListToCreate.Add(productBatchRecord);
 						}							
 					}
@@ -149,7 +150,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					personaProductUsePrimaryProperty = false;
 					usePrimaryProperties = false;
 
-					bool productEnabledForPrimaryProperty = IsProductEnabledForUsePrimaryProperty(product);
+					bool productEnabledForPrimaryProperty = manageProductBatch.IsProductEnabledForUsePrimaryProperty(product);
 					var integrationType = _integrationTypeFactory.GetIntegrationTypeForProductId(product);
 
 					var productSetting = personaProductSettings.FirstOrDefault(item => item.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase) && item.ProductId == product);
@@ -175,7 +176,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					//Get Properties
 					if (product != (int)ProductEnum.DepositAlternative)
 					{
-						propertiesResponse = GetProductProperties(batch.EditorUserPersonaId, batch.SubjectUserPersonaId, product, _userClaim);
+						propertiesResponse = manageProductBatch.GetProductProperties(batch.EditorUserPersonaId, batch.SubjectUserPersonaId, product, _userClaim);
 						if (propertiesResponse.IsError == true)
 						{
 							string PropertyErrorMessage = $"Enterprise role product update - There was a problem getting the list of properties for product {product} - user persona {batch.SubjectUserPersonaId}";
@@ -202,7 +203,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					}
 					else
 					{
-						var productBatchRecord = GetProductBatchRecord(batch.EditorUserPersonaId, batch.SubjectUserPersonaId, productRoles, propertiesResponse, rolesResponse, product, usePrimaryProperties);
+						var productBatchRecord = manageProductBatch.GetProductBatchRecord(batch.EditorUserPersonaId, batch.SubjectUserPersonaId, productRoles, propertiesResponse, rolesResponse, product, usePrimaryProperties);
 						productListToCreate.Add(productBatchRecord);
 					}
 				}
@@ -276,7 +277,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				if (productListToCreate?.Count > 0)
 				{
 					int statusTypeId = (int)ProductBatchStatusType.Success;
-					bool isBatchCompleted = enterpriseRoleProductRepository.SaveProductBatch(batch.EditorUserPersonaId, batch.SubjectUserPersonaId, editorPersona.RealPageId, productListToCreate, JsonConvert.SerializeObject(oneSiteAndOtherProducts), isOnesiteMix);
+					bool isBatchCompleted = enterpriseRoleProductRepository.SaveProductBatch(batch.EditorUserPersonaId, batch.SubjectUserPersonaId, editorPersona.RealPageId, productListToCreate, JsonConvert.SerializeObject(oneSiteAndOtherProducts), isOnesiteMix, (int)BatchProcessType.EnterpriseRoleCreateUpdateProductUser);
 					if (!isBatchCompleted)
 					{
 						statusTypeId = (int)ProductBatchStatusType.Error;
@@ -293,80 +294,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			}
 
 			return "";
-		}
-
-		private ListResponse GetProductProperties(long editorPersonaId, long userPersonaId, int productId, DefaultUserClaim userClaim)
-		{
-			ManageProductPanel manageProductPanel = new ManageProductPanel(userClaim);
-			var productResult = manageProductPanel.GetProductProperties(editorPersonaId, userPersonaId, productId, null);
-			return productResult;
-		}
-
-		private bool IsProductEnabledForUsePrimaryProperty(int productId)
-		{
-			ProductInternalSetting productInternalSetting = new ProductInternalSetting();
-			IProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository();
-			IList<ProductInternalSetting> productInternalSettingList = productInternalSettingRepository.GetProductInternalSettings(productId);
-			productInternalSetting = productInternalSettingList.FirstOrDefault(item => item.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase));
-
-			if (productInternalSetting != null)
-			{
-				return productInternalSetting.Value.Trim() == "1" ? true : false;
-			}
-			return false;
-		}
-
-		public List<string> GetPersonaRoleRights(long personaId, long orgPartyId)
-		{
-			List<string> userRights = new List<string>();
-			UserRoleRightRepository urr = new UserRoleRightRepository();
-			List<SharedObjects.Product.UserManagement.Role> userRoles = urr.ListRoleByPersona((int)ProductEnum.UnifiedPlatform, personaId, orgPartyId);
-
-			RPObjectCache rpCache = new RPObjectCache();
-			var cacheKey = $"enterpriseRoleProcessgetRolesByParty_{orgPartyId}_{(int)ProductEnum.UnifiedPlatform}";
-			IList<UserRoleRights> roleList = rpCache.GetFromCache<IList<UserRoleRights>>(cacheKey, 60, () =>
-			{
-				SharedDataRepository sdr = new SharedDataRepository();
-				IList<int> productList = sdr.GetProductIdsByCompany(orgPartyId);
-				UserRoleRightRepository urrCache = new UserRoleRightRepository();
-				return urrCache.GetAllRoleRights(orgPartyId, productList, (int)ProductEnum.UnifiedPlatform);
-			});
-
-			foreach (SharedObjects.Product.UserManagement.Role userRole in userRoles)
-			{
-				foreach (Right right in roleList.FirstOrDefault(r => r.RoleId == userRole.RoleID).UserRights)
-				{
-					if (!string.IsNullOrWhiteSpace(right.RightNickName) && !string.IsNullOrWhiteSpace(right.RightNickName.Trim()) && !userRights.Contains(right.RightNickName))
-					{
-						userRights.Add(right.RightNickName);
-					}
-				}
-			}
-
-			return userRights;
-		}
-
-		//private List<string> GetEnterpriseRoleUserPrimaryPropertiesData(long editorPersonaId, long userPersonaId, int productId)
-		public ListResponse GetEnterpriseRoleUserPrimaryPropertiesData(long editorPersonaId, long userPersonaId, int productId)
-		{
-			var productPropertyIdList = new List<string>();
-			IManageProductPanel manageProductPanel = new ManageProductPanel(_userClaim);
-			ListResponse result = new ListResponse();
-
-			var userProperties = _propertyRepository.ListUPFMPropertyInstanceByPersona(userPersonaId, ProductEnum.UnifiedUI);
-			result = manageProductPanel.GetProductProperties(editorPersonaId, userPersonaId, productId, null);
-			if (!result.IsError)
-			{
-				UPFMProperty upfmProperty = new UPFMProperty();
-				upfmProperty.id = userProperties?.Select(p => p.InstanceId.ToString()).ToList();
-
-				result = manageProductPanel.CompareProductAndPrimaryProperties(upfmProperty, productId, result);
-				//if (result.Records.Count > 0)
-				//{
-				//	productPropertyIdList = GetSelectedProperties(result);
-				//}
-			}
-			return result;
 		}
 
 		private List<string> GetSelectedProperties(ListResponse productResult)
@@ -480,107 +407,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			}
 
 			return productRoles;
-		}
-
-		private ProductBatch GetProductBatchRecord(long editorUserPersonaId, long subjectUserPersonaId,IList<ProductRole> productRoles, ListResponse propertiesResponse, ListResponse rolesResponse, int product, bool usePrimaryProperties)
-		{
-			ProductBatch batchRecord = new ProductBatch();
-			ListResponse propertyGroupResponse = new ListResponse();
-			if (product == (int)ProductEnum.FinancialSuite)
-			{
-				ManageProductOneSiteAccounting accounting = new ManageProductOneSiteAccounting(_userClaim);
-				propertyGroupResponse = accounting.GetUserPropertyGroups(editorUserPersonaId, subjectUserPersonaId, null);
-				ListResponse companiesResponse = accounting.GetUserCompanies(editorUserPersonaId, subjectUserPersonaId, null);
-				return BatchHelper.CreateFinancialSuiteProductBatchRecord(propertiesResponse, rolesResponse, product, companiesResponse, propertyGroupResponse, usePrimaryProperties);
-			}
-			else if (product == (int)ProductEnum.VendorServices)
-			{
-				ManageProductVendorServices vs = new ManageProductVendorServices(_userClaim);
-				var notifications = vs.GetNotificationSettings(editorUserPersonaId, subjectUserPersonaId);
-				propertyGroupResponse = vs.GetPropertyGroups(editorUserPersonaId, subjectUserPersonaId, null);
-				return BatchHelper.CreateVendorServiceProductBatchRecord(propertiesResponse, rolesResponse, propertyGroupResponse, notifications, product, usePrimaryProperties);
-			}
-			else if (product == (int)ProductEnum.ResidentPortal)
-			{
-				ManageProductResidentPortal manageProductResidentPortal = new ManageProductResidentPortal(_userClaim);
-				
-				List<ILevel> LevelList = new List<ILevel>();
-				foreach (var rRole in productRoles)
-				{
-					LevelList.Add(new Level { Id = rRole.ID, Name = rRole.Name, IsAssigned = rRole.IsAssigned });
-				}
-
-				Notifications notifications = manageProductResidentPortal.GetNotificationSettings(editorUserPersonaId, subjectUserPersonaId);
-				List<IMessagingGroups> messagingGroups = manageProductResidentPortal.ListMessageGroups(editorUserPersonaId,subjectUserPersonaId);
-				return BatchHelper.CreateResidentPortalProductBatchRecord(propertiesResponse, LevelList, notifications, messagingGroups, product, usePrimaryProperties);
-			}
-			else if (product == (int)ProductEnum.OnSite)
-			{
-				ManageProductOnSite manageProductOnSite = new ManageProductOnSite(_userClaim);
-				var regionResponse = manageProductOnSite.GetRegions(editorUserPersonaId, subjectUserPersonaId, null);
-				return BatchHelper.CreateOnSiteBatchRecord(propertiesResponse, rolesResponse, regionResponse, product, usePrimaryProperties);
-			}
-			//else if (product == (int)ProductEnum.ClickPay)
-			//{
-			//	//Don't know how it works with enterprise role, since it need more information along with the role
-				
-			//	//var productLogic = ManageProductFactory.GetProductLogic(product, batch.EditorUserPersonaId, batch.SubjectUserPersonaId, _userClaim);
-			//	//var productUser = productLogic.GetProductUser();
-			//	//var organizationRoles = productUser.OrganizationRoles;
-
-			//	//productListToCreate.Add(CreateProductBatchRecordForClickPay(organizationRoles, usePrimaryProperties));
-			//}
-			else if (product == (int)ProductEnum.DepositAlternative)
-			{
-				var productLogic = ManageProductFactory.GetProductLogic(product, editorUserPersonaId, subjectUserPersonaId, _userClaim);
-				var productUser = productLogic.GetProductUser();
-				productUser.RoleList = productRoles.Select(p => p.ID).ToList();
-				return BatchHelper.CreateProductBatchRecordForDepositIQ(productUser, usePrimaryProperties);
-			}
-			else if (product == (int)ProductEnum.IntegrationMarketplace)
-			{
-				var existingRoleId = Convert.ToInt32(productRoles.Select(p => p.ID).FirstOrDefault());
-				return BatchHelper.CreateIntegrationMarketplaceBatchRecord(existingRoleId, product, usePrimaryProperties) ;
-			}
-			else if (product == (int)ProductEnum.LeadManagement)
-			{
-				var productLogic = ManageProductFactory.GetProductLogic(product, editorUserPersonaId,subjectUserPersonaId, _userClaim);
-				var productUser = productLogic.GetProductUser();
-
-				return BatchHelper.CreateILMProductBatchRecord(ProductEnum.LeadManagement, productUser.Properties,
-					productRoles.Select(p => p.ID).ToList(), null, usePrimaryProperties);//no groups for LM
-			}
-			else if (product == (int)ProductEnum.LeadAnalytics)
-			{
-				var productLogic = ManageProductFactory.GetProductLogic(product, editorUserPersonaId, subjectUserPersonaId, _userClaim);
-				var productUser = productLogic.GetProductUser();
-
-				return BatchHelper.CreateILMProductBatchRecord(ProductEnum.LeadAnalytics, productUser.Properties, productRoles.Select(p => p.ID).ToList(), productUser.PropertyGroups, usePrimaryProperties) ;
-			}
-			//else if (product == (int)ProductEnum.RPDocumentManagement)
-			//{
-			//	//Don't know how it works with enterprise role, since it need more information along with the role
-			//	break;
-			//}
-			else if (product == (int)ProductEnum.PortfolioManagement)
-			{
-				var productLogic = ManageProductFactory.GetProductLogic(product, editorUserPersonaId, subjectUserPersonaId, _userClaim);
-				var productUser = productLogic.GetProductUser();
-				var propertyRoles = productUser.PropertyRoleList;
-				var roles = productRoles.Select(p => p.ID).ToList();
-
-				return BatchHelper.CreateProductBatchRecordForPortfolioManagement(propertyRoles, roles, usePrimaryProperties) ;
-			}			
-			else
-			{
-				var type = _integrationTypeFactory.GetIntegrationTypeForProductId(product);
-
-				var productBatchRecord = BatchHelper.CreateProductBatchRecord(propertiesResponse, rolesResponse, product, usePrimaryProperties, type);
-				return productBatchRecord;
-			}
-
-			return batchRecord;
-		}
-
+		}		
 	}
 }

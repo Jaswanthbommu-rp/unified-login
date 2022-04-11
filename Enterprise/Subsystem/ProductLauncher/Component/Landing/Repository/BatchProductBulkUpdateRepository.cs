@@ -14,13 +14,13 @@ using System.Threading.Tasks;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 {
-	public class EnterpriseRoleProductRepository : BaseRepository
+	public class BatchProductBulkUpdateRepository : BaseRepository
 	{
 		#region Constructor
 		/// <summary>
 		/// Base constructor
 		/// </summary>
-		public EnterpriseRoleProductRepository() : base(DbConnectionEnum.IdpConfigurationDb)
+		public BatchProductBulkUpdateRepository() : base(DbConnectionEnum.IdpConfigurationDb)
 		{
 		}
 
@@ -28,12 +28,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		/// Unit test constructor
 		/// </summary>
 		/// <param name="repository"></param>
-		public EnterpriseRoleProductRepository(IRepository repository) : base(repository)
+		public BatchProductBulkUpdateRepository(IRepository repository) : base(repository)
 		{
 		}
 		#endregion
 		public bool SaveProductBatch(long editorUserPersonaId, long subjectUserPersonaId, Guid editorUserRealPageId,
-			IList<ProductBatch> userProductList, string onesiteWithOherProductsJson, bool isOnesiteMix)
+			IList<ProductBatch> userProductList, string onesiteWithOherProductsJson, bool isOnesiteMix, int batchProcessType)
 		{
 			var batchGroup = CreateBatchProcessGroup();
 
@@ -41,7 +41,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 			{
 				foreach (var prod in userProductList)
 				{
-					int statusType = prod.InputJson.IsAssigned ? (int)BatchProcessType.EnterpriseRoleCreateUpdateProductUser : (int)BatchProcessType.CreateUpdateProductUser;
+					int statusType = prod.InputJson.IsAssigned ? batchProcessType : (int)BatchProcessType.CreateUpdateProductUser;
 
 					string inputJson = JsonConvert.SerializeObject(prod.InputJson);
 					
@@ -85,6 +85,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 			using (var repository = GetRepository())
 			{
 				var result = repository.Execute<bool>(StoredProcNameConstants.SP_UpdateEnterpriseRoleProductBatch,
+				   new { productBatchId, statusTypeId });
+
+				return result;
+			}
+		}
+
+		/// <summary>
+		/// Update a Primary Property Product Batch
+		/// </summary>
+		/// <returns>Repository response object</returns>
+		public bool UpdatePrimaryPropertyProductBatch(long productBatchId, int statusTypeId)
+		{
+			using (var repository = GetRepository())
+			{
+				var result = repository.Execute<bool>(StoredProcNameConstants.SP_UpdatePrimaryPropertyProductBatch,
 				   new { productBatchId, statusTypeId });
 
 				return result;

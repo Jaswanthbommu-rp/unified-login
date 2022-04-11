@@ -306,6 +306,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         public const string SP_CreateBatchProcessorGroup = "Batch.CreateBatchProcessorGroup";
         public const string SP_UpdateProcessorGroupStatus = "Batch.UpdateBatchProcessorGroupStatus";
         public const string SP_UpdateEnterpriseRoleProductBatch = "Batch.UpdateEnterpriseRoleProductBatch";
+        public const string SP_UpdatePrimaryPropertyProductBatch = "Batch.UpdatePrimaryPropertiesProductBatch";
 
         //Green Book
         public const string SP_CreatePropertyMapping = "Enterprise.CreatePropertyMapping";

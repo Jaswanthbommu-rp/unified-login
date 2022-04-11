@@ -10,5 +10,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
         int UpdateBatchRecord(int productBatchId, BatchStatusType batchStatusType, string inputJson = null, string errorDetails = null);
         IList<EnterpriseRoleBatch> GetEnterpriseRoleProductUpdateBatchToProcess(int batchSize);
         void UpdateEnterpriseRoleProductBatch(long productBatchId, int statusTypeId);
+        IList<PrimaryPropertyBatch> GetPrimaryPropertyProductUpdateBatchToProcess(int batchSize);
+        void UpdatePrimaryPropertyProductBatch(long productBatchId, int statusTypeId);
     }
 }

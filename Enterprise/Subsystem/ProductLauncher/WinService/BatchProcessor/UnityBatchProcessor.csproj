@@ -140,6 +140,7 @@
     <Compile Include="Model\BatchStatusType.cs" />
     <Compile Include="Model\BatchProcessorInput.cs" />
     <Compile Include="Model\EnterpriseRoleBatch.cs" />
+    <Compile Include="Model\PrimaryPropertyBatch.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="ProjectInstaller.cs">
       <SubType>Component</SubType>

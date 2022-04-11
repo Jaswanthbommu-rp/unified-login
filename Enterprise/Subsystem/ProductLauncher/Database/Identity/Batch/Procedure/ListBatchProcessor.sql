@@ -51,20 +51,24 @@ BEGIN
   FROM Batch.[BatchProcessor] BP  
    JOIN Enterprise.Party P  
     ON BP.EditorUserPartyId = P.PartyId  
-  WHERE (  
-      @IncludeErrorRecord = 'True'  
-      AND  
-      (  
-       BP.StatusTypeId = 7  
-       AND BP.RetryCount < @RetryCount  
-      )  
-     )  
-     OR  
-     (  
-      @IncludeErrorRecord = 'False'  
-      AND BP.StatusTypeID = 5  
-     )  
- )  
+  WHERE bp.createddatetime > dateadd(dd, -3, getutcdate())
+  AND
+  (
+        (
+              @IncludeErrorRecord = 'True'  
+              AND  
+              (  
+               BP.StatusTypeId = 7  
+               AND BP.RetryCount < @RetryCount  
+              )  
+             )  
+             OR  
+             (  
+              @IncludeErrorRecord = 'False'  
+              AND BP.StatusTypeID = 5  
+             )  
+        ) 
+   )
     INSERT INTO @PBFiltered  
     (  
         [BatchProcessorId],  

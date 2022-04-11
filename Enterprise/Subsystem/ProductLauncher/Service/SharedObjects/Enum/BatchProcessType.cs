@@ -53,6 +53,10 @@
 		/// <summary>
 		/// Enterprise Role Create Update Product User
 		/// </summary>
-		EnterpriseRoleCreateUpdateProductUser = 10
+		EnterpriseRoleCreateUpdateProductUser = 10,
+		/// <summary>
+		/// Primary Properties Update Product User
+		/// </summary>
+		PrimaryPropertiesUpdateProductUser = 13
 	}
 }

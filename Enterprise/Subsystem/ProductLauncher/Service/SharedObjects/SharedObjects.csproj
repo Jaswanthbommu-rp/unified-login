@@ -157,6 +157,7 @@
     <Compile Include="Base\RequestParameterModelBinder.cs" />
     <Compile Include="Batch\BatchProcessorGroup.cs" />
     <Compile Include="Batch\EnterpriseRoleBatch.cs" />
+    <Compile Include="Batch\PrimaryPropertyBatch.cs" />
     <Compile Include="BlackBook\UDMOperators.cs" />
     <Compile Include="BlackBook\BooksPropertyInstance.cs" />
     <Compile Include="BlackBook\Company.cs" />
