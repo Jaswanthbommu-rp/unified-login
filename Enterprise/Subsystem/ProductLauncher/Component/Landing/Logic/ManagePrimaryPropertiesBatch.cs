@@ -68,6 +68,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			_userClaim.UserRealPageGuid = editorPersona.RealPageId;
 			_userClaim.OrganizationRealPageGuid = editorPersona.Organization.RealPageId;
 			_userClaim.Rights = manageProductBatch.GetPersonaRoleRights(batch.EditorUserPersonaId, editorPersona.OrganizationPartyId);
+			_userClaim.OrganizationPartyId = editorPersona.OrganizationPartyId;
 
 			IPersonaRepository personaRepository = new PersonaRepository();
 			IUserLoginRepository userLoginRepository = new UserLoginRepository();
