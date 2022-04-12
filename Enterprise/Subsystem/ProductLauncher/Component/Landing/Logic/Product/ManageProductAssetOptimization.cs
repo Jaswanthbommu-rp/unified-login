@@ -2588,9 +2588,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			objAoPropertyList.Properties = GetPropertiesForNewUser(productPropertyApiUrl).ToList();
 			objAoPropertyList.Properties = objAoPropertyList.Properties.Where(a => a.PropertyProducts.Contains(productName)).ToList();
 			//objAoPropertyList.IsAllProperties = false;
-			WriteToDiagnosticLog(
-				$"ManageProductAssetOptimization.GetProperties-Received {objAoPropertyList.Properties.Count} properties for new user with _editorProductUserId{_editorProductUserId} _productUserId {_productUserId}  companyId - {companyId} productName {productName}");
-
+			
 			string productUserId = _productUserId;
 			if (string.IsNullOrEmpty(_productUserId) && !string.IsNullOrWhiteSpace(userLoginName))
 			{
