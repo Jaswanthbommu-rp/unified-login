@@ -29,6 +29,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.BatchP
             Factories.Add(BatchProcessType.UserTypeExternalToAdmin, typeof(ChangeProductUserType));
 
             Factories.Add(BatchProcessType.EnterpriseRoleCreateUpdateProductUser, typeof(EnterpriseCreateUpdateProductUser));
+            Factories.Add(BatchProcessType.PrimaryPropertiesUpdateProductUser, typeof(CreateUpdateProductUser));
         }
 
 		/// <summary>
