@@ -326,8 +326,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 							IsAssigned = company.IsAssigned,
 							Status = company.Status,
 							AssignedProperties = assignedCount,
-							Properties = objAoPropertyList.Properties,
-							IsAllPropertiesAssigned = objAoPropertyList.IsAllProperties
+							Properties = objAoPropertyList.Properties
 						});
 					}
 				}
@@ -2025,7 +2024,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 		private bool GetAllPropertiesStatusForExistingProductUser(string productPropertyApiUrl, string productName)
 		{
-			var aoUserProps = GetResultFromApi<IList<AoAllPropertiesList>>(productPropertyApiUrl);
+			var aoUserProps = GetResultFromApi<IList<AoPropertyList>>(productPropertyApiUrl);
 			bool isAllProperties = false;
 			if (aoUserProps != null)
 			{
@@ -2331,8 +2330,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						DivisionName = aoUserCompanyPropertyRoleDetail.DivisionName,
 						Product = aoUserCompanyPropertyRoleDetail.ProductName,
 						SelectedPortfolioValues = aoUserCompanyPropertyRoleDetail.SelectedPortfolioValues ?? new List<int>(),
-						SelectedRoleValues = aoUserCompanyPropertyRoleDetail.SelectedRoleValues ?? new List<string>(),
-						allProperties = aoUserCompanyPropertyRoleDetail.allProperties
+						SelectedRoleValues = aoUserCompanyPropertyRoleDetail.SelectedRoleValues ?? new List<string>()
 					};
 
 					models.Add(model);
@@ -2587,7 +2585,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			string productPropertyApiUrl = $"{_apiEndPoint}company/propertiesByDivision/{companyId}/{ProductEnumHelper.GetAoDivisionName(ProductEnumHelper.GetAoProductEnum(productName))}"; //https://aodev.realpage.com/ysconfig/ws/company/propertiesByDivision/6698/BI
 			AoPropertyList objAoPropertyList = new AoPropertyList();
-			objAoPropertyList.Properties = GetPropertiesForNewUser(productPropertyApiUrl);
+			objAoPropertyList.Properties = GetPropertiesForNewUser(productPropertyApiUrl).ToList();
 			objAoPropertyList.Properties = objAoPropertyList.Properties.Where(a => a.PropertyProducts.Contains(productName)).ToList();
 			//objAoPropertyList.IsAllProperties = false;
 			WriteToDiagnosticLog(
@@ -2898,8 +2896,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		public IList<AoProperty> Properties { get; set; }
 
 		public string AssignedProperties { get; set; }
-
-		public bool IsAllPropertiesAssigned { get; set; }
 	}
 
 	public class AOUser
@@ -2974,14 +2970,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 	{
 		public bool IsAllProperties { get; set; } = false;
 		public IList<AoProperty> Properties { get; set; }
-	}
-	public class AoAllPropertiesList
-	{
 		[JsonProperty("enabled")] public bool IsProductEnabled { get; set; }
 		[JsonProperty("product")] public string ProductName { get; set; }
-		[JsonProperty("allProperties")] public bool IsAllProperties { get; set; }
-
 	}
+
 
 	public class AoProperty
 	{
