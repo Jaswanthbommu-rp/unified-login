@@ -328,7 +328,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				{
 					if (property.IsAssigned == true)
 					{
-						selectedProperties.Add(property.ID);
+						selectedProperties.Add(property.AssetID);
 					}
 				}
 			}

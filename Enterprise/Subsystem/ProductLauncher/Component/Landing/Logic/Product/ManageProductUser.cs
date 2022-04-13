@@ -876,11 +876,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 foreach (var property in productResult.Records.Cast<AssetGroup>())
                 {
-                    if (property.IsAssigned == true)
+                    if (property.IsAssigned)
                     {
                         ProductPrimaryProperties productPrimaryProperties = new ProductPrimaryProperties
                         {
-                            ProductPropertyId = property.ID,
+                            ProductPropertyId = property.AssetID,
                             PropertyInstanceId = property.InstanceId
                         };
                         selectedProperties.Add(productPrimaryProperties);
