@@ -2587,8 +2587,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			AoPropertyList objAoPropertyList = new AoPropertyList();
 			objAoPropertyList.Properties = GetPropertiesForNewUser(productPropertyApiUrl).ToList();
 			objAoPropertyList.Properties = objAoPropertyList.Properties.Where(a => a.PropertyProducts.Contains(productName)).ToList();
-			//objAoPropertyList.IsAllProperties = false;
 			
+			WriteToDiagnosticLog(
+						   $"ManageProductAssetOptimization.GetProperties-Received {objAoPropertyList.Properties.Count} properties for new user with _editorProductUserId{_editorProductUserId} _productUserId {_productUserId}  companyId - {companyId} productName {productName}");
+
 			string productUserId = _productUserId;
 			if (string.IsNullOrEmpty(_productUserId) && !string.IsNullOrWhiteSpace(userLoginName))
 			{
@@ -2604,11 +2606,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			{
 				productPropertyApiUrl = $"{_apiEndPoint}user/products/{productUserId.ToLower()}/{companyId}";
 				objAoPropertyList.IsAllProperties = GetAllPropertiesStatusForExistingProductUser(productPropertyApiUrl, productName);
-				if (!objAoPropertyList.IsAllProperties)
-				{
-					productPropertyApiUrl = $"{_apiEndPoint}user/active-portfolio/{_editorProductUserId.ToLower()}/{productUserId.ToLower()}/"; //https://aodev.realpage.com/ysconfig/ws/user/active-portfolio/tmilburn/acroyle
-					objAoPropertyList.Properties = GetPropertiesForExistingProductUser(objAoPropertyList.Properties, productPropertyApiUrl, productName);
-				}
+				
+			    productPropertyApiUrl = $"{_apiEndPoint}user/active-portfolio/{_editorProductUserId.ToLower()}/{productUserId.ToLower()}/"; //https://aodev.realpage.com/ysconfig/ws/user/active-portfolio/tmilburn/acroyle
+			    objAoPropertyList.Properties = GetPropertiesForExistingProductUser(objAoPropertyList.Properties, productPropertyApiUrl, productName);
+				
 
 				WriteToDiagnosticLog(
 					$"ManageProductAssetOptimization.GetProperties-Received {objAoPropertyList.Properties.Count} properties for existing user _editorProductUserId{_editorProductUserId} _productUserId {productUserId}  companyId - {companyId} productName {productName}.");
