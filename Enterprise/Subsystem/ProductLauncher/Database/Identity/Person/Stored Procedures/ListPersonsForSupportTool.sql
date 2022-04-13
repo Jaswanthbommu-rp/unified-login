@@ -39,7 +39,11 @@ BEGIN
 			IPT.Description [ThirdPartyIDPDesc],
 			P.PersonaId,
 			prt.realpageId,
-			st.Name
+			   (CASE          
+        WHEN ((ULP.StatusTypeId = 12) AND (UL.LastLoginDate IS NULL)) THEN 'Pending'          
+        WHEN ((ULP.StatusTypeId = 12) AND (UL.LastLoginDate IS NOT NULL)) THEN 'Active'          
+        ELSE st.Name          
+        END ) AS  UserStatus
 		FROM	Ident.UserLogin UL
 					INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginId = ul.UserId
 					INNER JOIN Enterprise.StatusType st on ulp.StatusTypeId = st.StatusTypeId
@@ -77,7 +81,12 @@ BEGIN
 			IPT.Description [ThirdPartyIDPDesc],
 			P.PersonaId,
 			prt.realpageId,
-			st.Name
+	    (CASE          
+        WHEN ((ULP.StatusTypeId = 12) AND (UL.LastLoginDate IS NULL)) THEN 'Pending'          
+        WHEN ((ULP.StatusTypeId = 12) AND (UL.LastLoginDate IS NOT NULL)) THEN 'Active'          
+        ELSE st.Name          
+        END ) AS  UserStatus 
+
 		FROM	Ident.UserLogin UL
 					INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginId = ul.UserId
 					INNER JOIN Enterprise.StatusType st on ulp.StatusTypeId = st.StatusTypeId
