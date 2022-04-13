@@ -196,62 +196,73 @@ UPDATE [Security].[Right] SET PersistRight = 1 WHERE RightName IN (
 'ACCESSTOUNIFIEDPLATFORM','VIEWUNIFIEDSETTINGS','MANAGEUNIFIEDSETTINGS'
 ,'INTERNALADMINACCESSTOUNIFIEDSETTINGS','MANAGECUSTOMFIELDS','MANAGEPLATFORMSECURITY'
 ,'MANAGESETTINGSTEMPLATES','ACCESSSETTINGSADMIN','EMPLOYEEACCESSTOMANAGESETTINGSTEMPLATES'
-,'ABILITYTOIMPORTUSERS','MANAGENOTIFICATIONS','VIEWONLYSUPPORTTOOLACCESS')
-
+,'ABILITYTOIMPORTUSERS','MANAGENOTIFICATIONS')
 
 GO
---USER STORY 1109853
-IF NOT EXISTS( SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'EnableEditofPrimaryPropertyToggle')
+--AO products properties Toggle
+
+Declare @UserId BigINT,@BusinessIntelligenceParentControlID BIGINT,@AIRevenueManagementParentControlID BIGINT,@AmenityOptimizationParentControlID BIGINT,
+@BenchmarkingParentControlID BIGINT,@LROParentControlID BIGINT,
+@RentControlParentControlID BIGINT,@YieldStarParentControlID BIGINT;
+SELECT @UserId = UserId FROM Ident.UserLogin WHERE LoginName like 'realpagead@%';
+
+Select @BenchmarkingParentControlID = ControlId from UserManagement.Control where UIId = 'PerformanceAnalyticsProductAccessPropertiesTabUIId' and DisplayName = 'Properties';
+IF NOT EXISTS (Select TOP 1 1 from UserManagement.Control where UIId = 'PerformanceAnalyticsProductAccessAllowaccesstoallcurrentandfuturepropertiesPropertiesSwitchUIId')
 BEGIN
-	INSERT INTO Enterprise.ProductSettingType(Name, Description, SensitiveData)
-	VALUES ('EnableEditofPrimaryPropertyToggle', 'Enable Edit of Primary Property Toggle When Operator setting is Enabled', 0)
+Insert into UserManagement.Control (ParentControlID,ControlTypeID,UIID,DisplayName,DataSource,Sequence,CreatedBy,CreatedDate)
+                           values(@BenchmarkingParentControlID,1,'PerformanceAnalyticsProductAccessAllowaccesstoallcurrentandfuturepropertiesPropertiesSwitchUIId',
+						   'Assign access to current and new properties automatically','allProperties',1,@UserId,GETUTCDATE());
+END
+ 
+Select @BusinessIntelligenceParentControlID = ControlId from UserManagement.Control where UIId = 'BusinessIntelligenceProductAccessPropertiesTabUIId' and DisplayName = 'Properties';
+IF NOT EXISTS (Select TOP 1 1 from UserManagement.Control where UIId = 'BusinessIntelligenceProductAccessAllowaccesstoallcurrentandfuturepropertiesPropertiesSwitchUIId')
+BEGIN
+Insert into UserManagement.Control (ParentControlID,ControlTypeID,UIID,DisplayName,DataSource,Sequence,CreatedBy,CreatedDate)
+                           values(@BusinessIntelligenceParentControlID,1,'BusinessIntelligenceProductAccessAllowaccesstoallcurrentandfuturepropertiesPropertiesSwitchUIId',
+						   'Assign access to current and new properties automatically','allProperties',1,@UserId,GETUTCDATE());
+END
+
+Select @AIRevenueManagementParentControlID = ControlId from UserManagement.Control where UIId = 'AIRevenueManagementProductAccessPropertiesTabUIId' and DisplayName = 'Properties';
+IF NOT EXISTS (Select TOP 1 1 from UserManagement.Control where UIId = 'AIRevenueManagementProductAccessAllowaccesstoallcurrentandfuturepropertiesPropertiesSwitchUIId')
+BEGIN
+Insert into UserManagement.Control (ParentControlID,ControlTypeID,UIID,DisplayName,DataSource,Sequence,CreatedBy,CreatedDate)
+                           values(@AIRevenueManagementParentControlID,1,'AIRevenueManagementProductAccessAllowaccesstoallcurrentandfuturepropertiesPropertiesSwitchUIId',
+						   'Assign access to current and new properties automatically','allProperties',1,@UserId,GETUTCDATE());
+END
+
+Select @AmenityOptimizationParentControlID = ControlId from UserManagement.Control where UIId = 'AmenityOptimizationProductAccessPropertiesTabUIId' and DisplayName = 'Properties';
+IF NOT EXISTS (Select TOP 1 1 from UserManagement.Control where UIId = 'AmenityOptimizationProductAccessAllowaccesstoallcurrentandfuturepropertiesPropertiesSwitchUIId')
+BEGIN
+Insert into UserManagement.Control (ParentControlID,ControlTypeID,UIID,DisplayName,DataSource,Sequence,CreatedBy,CreatedDate)
+                           values(@AmenityOptimizationParentControlID,1,'AmenityOptimizationProductAccessAllowaccesstoallcurrentandfuturepropertiesPropertiesSwitchUIId',
+						   'Assign access to current and new properties automatically','allProperties',1,@UserId,GETUTCDATE());
+END
+
+Select @LROParentControlID = ControlId from UserManagement.Control where UIId = 'LROProductAccessPropertiesTabUIId' and DisplayName = 'Properties';
+IF NOT EXISTS (Select TOP 1 1 from UserManagement.Control where UIId = 'LROProductAccessAllowaccesstoallcurrentandfuturepropertiesPropertiesSwitchUIId')
+BEGIN
+Insert into UserManagement.Control (ParentControlID,ControlTypeID,UIID,DisplayName,DataSource,Sequence,CreatedBy,CreatedDate)
+                           values(@LROParentControlID,1,'LROProductAccessAllowaccesstoallcurrentandfuturepropertiesPropertiesSwitchUIId',
+						   'Assign access to current and new properties automatically','allProperties',1,@UserId,GETUTCDATE());
+END
+
+
+Select @RentControlParentControlID = ControlId from UserManagement.Control where UIId = 'RentControlProductAccessPropertiesTabUIId' and DisplayName = 'Properties';
+IF NOT EXISTS (Select TOP 1 1 from UserManagement.Control where UIId = 'RentControlProductAccessAllowaccesstoallcurrentandfuturepropertiesPropertiesSwitchUIId')
+BEGIN
+Insert into UserManagement.Control (ParentControlID,ControlTypeID,UIID,DisplayName,DataSource,Sequence,CreatedBy,CreatedDate)
+                           values(@RentControlParentControlID,1,'RentControlProductAccessAllowaccesstoallcurrentandfuturepropertiesPropertiesSwitchUIId',
+						   'Assign access to current and new properties automatically','allProperties',1,@UserId,GETUTCDATE());
+END
+
+
+
+Select @YieldStarParentControlID = ControlId from UserManagement.Control where UIId = 'YieldStarProductAccessPropertiesTabUIId' and DisplayName = 'Properties';
+IF NOT EXISTS (Select TOP 1 1 from UserManagement.Control where UIId = 'YieldStarProductAccessAllowaccesstoallcurrentandfuturepropertiesPropertiesSwitchUIId')
+BEGIN
+Insert into UserManagement.Control (ParentControlID,ControlTypeID,UIID,DisplayName,DataSource,Sequence,CreatedBy,CreatedDate)
+                           values(@YieldStarParentControlID,1,'YieldStarProductAccessAllowaccesstoallcurrentandfuturepropertiesPropertiesSwitchUIId',
+						   'Assign access to current and new properties automatically','allProperties',1,@UserId,GETUTCDATE());
 END
 
 GO
-
-GO
-  IF NOT EXISTS (Select 1 From [Batch].[BatchProcessConfigurationType] Where BatchProcessConfigurationTypeId = 3)
-  BEGIN
-	Insert into [Batch].[BatchProcessConfigurationType] (BatchProcessConfigurationTypeId ,Name,Description)
-	Select 3, 'PrimaryPropertiesBulkUpdateApiEndpoint' ,'API Endpoint to be invoked by batch processor'
-  END  
-GO
-
-IF NOT EXISTS (Select 1 From [Batch].[BatchProcessConfiguration] Where BatchProcessConfigurationId = 3)
-  BEGIN
-	Declare @ServerName SYSNAME = @@SERVERNAME,
-			@apiendpoint varchar(256)
-	SET @apiendpoint = '';
-	IF @ServerName IN ('RCDUSODBSQL001')
-	BEGIN
-		SET @apiendpoint = 'https://my2dev.realpage.com/api/ppbatchprocessor';
-	END
-	IF @ServerName IN ('rctusodbsql001')
-	BEGIN
-		SET @apiendpoint = 'https://my2qa.realpage.com/api/ppbatchprocessor';
-	END
-	IF @ServerName IN ('RCQUSODBSQL001')
-	BEGIN
-		SET @apiendpoint = 'https://my2sat.realpage.com/api/ppbatchprocessor';
-	END
-	IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B')
-	BEGIN
-		SET @apiendpoint = 'https://my2.realpage.com/api/ppbatchprocessor';
-	END
-	Insert into [Batch].[BatchProcessConfiguration](BatchProcessConfigurationId, BatchProcessConfigurationTypeId, Value)
-	Select 3,3, @apiendpoint
-  END  
-GO
-IF NOT EXISTS (Select 1 From [Batch].[BatchProcessType] Where BatchProcessTypeId = 13)
-  BEGIN
-	 Insert Into [Batch].[BatchProcessType]( BatchProcessTypeId,BatchProcessConfigurationId,Description,Name)
-	 Select 13, 3, 'Batch to create Primary Properties Bulk Update Users','PrimaryPropertiesBulkUpdateProductUser'
-  END
-GO
-IF NOT EXISTS (Select 1 From [Batch].[BatchProcessType] Where BatchProcessTypeId = 14)
-  BEGIN
-	 Insert Into [Batch].[BatchProcessType]( BatchProcessTypeId,BatchProcessConfigurationId,Description,Name)
-	 Select 14, 1, 'Batch to update user Primary Properties','PrimaryPropertiesUpdateProductUser'
-  END
-GO
- 
