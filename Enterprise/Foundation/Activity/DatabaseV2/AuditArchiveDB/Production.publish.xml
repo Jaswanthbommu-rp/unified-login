@@ -5,5 +5,9 @@
 		<DeployScriptFileName>AuditArchiveDB.sql</DeployScriptFileName>
 		<TargetConnectionString>Integrated Security=True;Persist Security Info=False;Pooling=False;MultipleActiveResultSets=False;Connect Timeout=60;Encrypt=False;TrustServerCertificate=True</TargetConnectionString>
 		<ProfileVersionNumber>1</ProfileVersionNumber>
+		<BlockWhenDriftDetected>False</BlockWhenDriftDetected>
+		<BlockOnPossibleDataLoss>False</BlockOnPossibleDataLoss>
+		<IgnoreExtendedProperties>True</IgnoreExtendedProperties>
+		<BackupDatabaseBeforeChanges>False</BackupDatabaseBeforeChanges>
 	</PropertyGroup>
 </Project>
