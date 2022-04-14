@@ -1164,7 +1164,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 					// get division
 					var divisionName = ProductEnumHelper.GetAoDivisionName(ProductEnumHelper.GetAoProductEnum(aoProduct));
-
+	
 					aoUserCompanyPropertyRoleDetails.Add(new AoUserCompanyPropertyRoleDetail
 					{
 						CompanyId = companyId,
@@ -2330,7 +2330,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						DivisionName = aoUserCompanyPropertyRoleDetail.DivisionName,
 						Product = aoUserCompanyPropertyRoleDetail.ProductName,
 						SelectedPortfolioValues = aoUserCompanyPropertyRoleDetail.SelectedPortfolioValues ?? new List<int>(),
-						SelectedRoleValues = aoUserCompanyPropertyRoleDetail.SelectedRoleValues ?? new List<string>()
+						SelectedRoleValues = aoUserCompanyPropertyRoleDetail.SelectedRoleValues ?? new List<string>(),
+						allProperties = aoUserCompanyPropertyRoleDetail.allProperties
 					};
 
 					models.Add(model);
