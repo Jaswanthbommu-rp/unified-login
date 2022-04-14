@@ -6630,19 +6630,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             //if id == 1 ui will not send the comapny name but company guid
             if (newData.ThirdPartyRelationShipId == 1)
             {
-                var org = _organizationRepository.GetOrganization(newData.ThirdPartyCompanyRealPageId);
+                if (IsOperatorSettingsEnabled()) {
+                    
+                    var org = _organizationRepository.GetOrganization();
 
-                if (newData.ThirdPartyRelationShipId != oldData.ThirdPartyRelationShipId ||
-                    org.Name != oldData.ThirdPartyCompanyName)
-                {
-                    isUpdated = true;
+                    if (newData.ThirdPartyRelationShipId != oldData.ThirdPartyRelationShipId ||
+                        org.Name != oldData.ThirdPartyCompanyName)
+                    {
+                        isUpdated = true;
+                    }
                 }
+                else {
+                    var externalRelationship = GetExternalUserRelationship(updateUserProfileEntity.NewProfile.ExternalUserRelationship.UserLoginPersonaId);
+                    if (newData.ThirdPartyRelationShipId != oldData.ThirdPartyRelationShipId ||
+                        externalRelationship.ThirdPartyCompanyName != newData.ThirdPartyCompanyName)
+                    {
+                        isUpdated = true;
+                    }
+                }
+                
             }
             else 
             {
                 isUpdated = (updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyCompanyName != updateUserProfileEntity.OldProfile.ExternalUserRelationship.ThirdPartyCompanyName ||
-                                    updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyRelationShipId != updateUserProfileEntity.OldProfile.ExternalUserRelationship.ThirdPartyRelationShipId ||
-                                    updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyCompanyRealPageId != updateUserProfileEntity.OldProfile.ExternalUserRelationship.ThirdPartyCompanyRealPageId);
+                                    updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyRelationShipId != updateUserProfileEntity.OldProfile.ExternalUserRelationship.ThirdPartyRelationShipId);
             }
             
             return isUpdated;
