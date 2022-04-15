@@ -298,8 +298,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         public const string SP_ListCommunicationEvents = "Enterprise.ListCommunicationEvents";
 
         //ProductBatch
-        public const string SP_CreateProductBatch = "Enterprise.CreateProductBatch";
-        public const string SP_UpdateProductBatch = "Enterprise.UpdateProductBatch";
+        public const string SP_CreateProductBatch = "Batch.CreateProductBatch";
+        public const string SP_UpdateProductBatch = "Batch.UpdateProductBatch";
         public const string SP_SavePersonaProductProperties = "Enterprise.SavePersonaProductProperties";
 
         //BatchProcessor
