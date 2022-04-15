@@ -2284,7 +2284,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             int productCount = 0;
             long createUserPersonaId = 0;
             bool? IsDefault = null;
-            IList<ProductBatch> productList = new List<ProductBatch>();
+            
             IList<string> aoProductsAvailableForUser = null;
             Guid RealPageEmployeeAccessID = Guid.Empty;
 
@@ -2314,13 +2314,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     //Use RealPage Employee Access PersonaId when creating the Product Patches.
                     createUserPersonaId = repository.GetOne<long>(StoredProcNameConstants.SP_GetActivePersona, new { RealPageId = RealPageEmployeeAccessID });
 
-
                     personaList.ToList().ForEach(o =>
-                        productCount = SaveProductDetails(repository, productList, null, createUserPersonaId, o.PersonaId, RealPageEmployeeAccessID, organizationRealPageId, null, (int)UserRoleType.SuperUser, true, aoProductsAvailableForUser, false, false)
+                        {
+                            IList<ProductBatch> productList = new List<ProductBatch>();
+                            dynamic param = new
+                            {
+                                UserLoginId = o.UserId,
+                                OrganizationPartyId = organization.PartyId
+                            };
+                            IList<UserLoginPersona> userLoginPersonaList = repository.GetMany<UserLoginPersona>(StoredProcNameConstants.SP_GetUserLoginPersona, param);
+                            if (userLoginPersonaList != null)
+                            {
+                                if (!(userLoginPersonaList[0].StatusTypeId == 23 || userLoginPersonaList[0].StatusTypeId == 24))
+                                {
+                                    // don't update disabled or expired admins
+                                    productCount = SaveProductDetails(repository, productList, null, createUserPersonaId, o.PersonaId, RealPageEmployeeAccessID, organizationRealPageId, null, (int)UserRoleType.SuperUser, true, aoProductsAvailableForUser, false, false);
+                                }
+                            }
+                        }
                     );
                     if ((personaList.Count > 0) && (productCount > 0))
                     {
-                        string logMessage = $"{{0}} {{1}} performed Refresh Admin Users for {personaList.Count} ";
+                        string logMessage = $"{{0}} {{1}} performed Refresh Admin Users in {result.Name} for {personaList.Count} ";
                         logMessage += (personaList.Count > 1) ? "administrators" : "administrator";
                         logMessage += $"; {productCount} new product user";
                         logMessage += (productCount > 1) ? "s were created" : " was created.";
@@ -3387,7 +3402,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="realPageId">enterprise User Id</param>
         /// <param name="organizationRealPageId">enterprise Organization Id</param>		
         /// <param name="aoProducts">Applicable if PMC has AO products</param>
-        private List<ProductUI> GetOrganizationProductListForAdmiinUser(IRepository repository, Guid realPageId, Guid organizationRealPageId, IList<string> aoProducts = null)
+        private List<ProductUI> GetOrganizationProductListForAdminUser(IRepository repository, Guid realPageId, Guid organizationRealPageId, IList<string> aoProducts = null)
         {
             RPObjectCache rpCache = new RPObjectCache();
             var cacheKey = $"getListProductsByOrganizationForAdminUser_{organizationRealPageId}";
@@ -3493,7 +3508,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 IList<ProductBatch> productListToCreate = new List<ProductBatch>();
                 IList<PersonaProductUserDetails> userProducts = repository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = AssignUserPersonaId }).ToList();
-                List<ProductUI> productsAssignedToCompany = GetOrganizationProductListForAdmiinUser(repository, realPageId, organizationRealPageId, aoProducts);
+                List<ProductUI> productsAssignedToCompany = GetOrganizationProductListForAdminUser(repository, realPageId, organizationRealPageId, aoProducts);
 
                 foreach (ProductUI prod in productsAssignedToCompany)
                 {
@@ -3519,7 +3534,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
                     }
                 }
-
                 // add edited products for admin with other list
                 if (productList != null)
                 {
@@ -3540,7 +3554,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 {
                     bool isGreenBookCaresEnabled = false;
                     dynamic param = new { ProductId = productmap.ProductId };
-                    IList<ProductInternalSetting> productInternalSettingList = repository.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, param);
+                    IList<ProductInternalSetting> productInternalSettingList;
+
+                    var rpcache = new RPObjectCache();
+                    var cacheKey = $"listGlobalSettingsForProduct_{productmap.ProductId}";
+                    productInternalSettingList = rpcache.GetFromCache(cacheKey, 30, () =>
+                    {
+                        return repository.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, param);
+                    });
                     var editUserRequiresProduct = productInternalSettingList.FirstOrDefault(s => s.Name.Equals("IsEditUserRequiresProduct", StringComparison.OrdinalIgnoreCase))?.Value;
                     var greenbookCaresCheckRequired = productInternalSettingList.FirstOrDefault(s => s.Name.Equals("IsGreenbookCaresCheckRequired", StringComparison.OrdinalIgnoreCase))?.Value;
 
@@ -3552,7 +3573,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         var productDetails = allProducts.FirstOrDefault(x => x.ProductId == productmap.ProductId);
                         string udmSource = productDetails.UDMSourceCode?.Length > 0 ? productDetails.UDMSourceCode : productDetails.BooksProductCode;
                         IList<CustomerCompanyMap> companyMapping = _blueBook.GetProductCompanyMapping(_userClaim.OrganizationRealPageGuid, udmSource);
-
                         var booksCompanyInstance = _blueBook.GetCompanyInstanceByUPFMCompanyId(_userClaim.OrganizationRealPageGuid.ToString().ToLower());
                         int customerCompanyId = booksCompanyInstance?.Attributes?.CustomerCompanyMap.FirstOrDefault()?.CustomerCompanyId ?? 0;
                         string domain = booksCompanyInstance?.Attributes?.Domain;
@@ -3566,33 +3586,43 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 isGreenBookCaresEnabled = findBooksProductCode.FirstOrDefault().CompanyInstance.FirstOrDefault().GreenBookCares;
                             }
                         }
-
                         if (companyMapping != null && isGreenBookCaresEnabled)
                         {
                             if (isEditUserRequiresProduct)
                             {
                                 if (creatorUserProducts.Any(x => x.ProductId == productmap.ProductId && x.ProductStatus == 8))
                                 {
-                                    productList.Add(productmap);
+                                    if (!productList.Any(p => p.ProductId == productmap.ProductId))
+                                    {
+                                        productList.Add(productmap);
+                                    }
                                 }
                             }
                             else
                             {
-                                productList.Add(productmap);
+                                if (!productList.Any(p => p.ProductId == productmap.ProductId))
+                                {
+                                    productList.Add(productmap);
+                                }
                             }
                         }
-
                     }
                     else if (isEditUserRequiresProduct)
                     {
                         if (creatorUserProducts.Any(x => x.ProductId == productmap.ProductId && x.ProductStatus == 8))
                         {
-                            productList.Add(productmap);
+                            if (!productList.Any(p => p.ProductId == productmap.ProductId))
+                            {
+                                productList.Add(productmap);
+                            }
                         }
                     }
                     else
                     {
-                        productList.Add(productmap);
+                        if (!productList.Any(p => p.ProductId == productmap.ProductId))
+                        {
+                            productList.Add(productmap);
+                        }
                     }
                 }
             }
@@ -3657,14 +3687,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 UsePrimaryProperties = true
                             }
                         };
-                        productList.Add(pb);
+                        if (!productList.Any(p => p.ProductId == product))
+                        {
+                            productList.Add(pb);
+                        }
                     }
                 }
             }
 
             if (productList != null)
             {
-
                 //Product EasyLMS is assigned and the tile is display for all users if it's assigned to the Organization 
                 //No need to add an EasyLMS ProductPatch eventhough it's included in the ProductBatch product list from the UI
                 ProductBatch easyLMSProductBatch = productList.ToList().FirstOrDefault(p => p.ProductId == (int)ProductEnum.EasyLMS);
@@ -3686,7 +3718,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
                             InputJson = new RolePropertyList() { PropertyList = new List<string>(), RoleList = new List<string>(), IsAssigned = (isCreateUser || userIsActive) }
                         };
-                        productList.Add(pb);
+                        if (!productList.Any(p => p.ProductId == (int)ProductEnum.SalesForce))
+                        {
+                            productList.Add(pb);
+                        }
                     }
                 }
 
@@ -3709,7 +3744,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     productList.Add(pb);
                 }
             }
-
             //Save selected products
             if ((productList != null) && (productList.Count > 0))
             {
@@ -3755,7 +3789,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
 
                         pbOneSite.BatchProcessorGroupId = batchGroup.BatchProcessorGroupId;
-
                         SaveProductBatch(repository, pbOneSite, createUserResponse, saveProductBatchError, CreateUserPersonaId, AssignUserPersonaId, realPageId, errorStatus, JsonConvert.SerializeObject(oneSiteAndOtherProducts), batchProcessTypeId);
 
                         if (errorStatus.Success == false)
@@ -3801,7 +3834,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             SaveProductBatch(repository, product, createUserResponse, saveProductBatchError, CreateUserPersonaId, AssignUserPersonaId, realPageId, errorStatus, JsonConvert.SerializeObject(product.InputJson), batchProcessTypeId);
                         }
                     }
-
                     if (errorStatus.Success == false)
                     {
                         errorStatus.ErrorMsg = saveProductBatchError;
@@ -4064,7 +4096,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 else //UserTypeRegularToAdmin || UserTypeExternalToAdmin
                 {
                     // Get products assigned to company including AO products
-                    List<ProductUI> productsAssignedToCompany = GetOrganizationProductListForAdmiinUser(repository, realPageId, organizationRealPageId, aoProductsAvailableForUser);
+                    List<ProductUI> productsAssignedToCompany = GetOrganizationProductListForAdminUser(repository, realPageId, organizationRealPageId, aoProductsAvailableForUser);
 
                     //Regular to Admin
                     foreach (ProductUI prod in productsAssignedToCompany)

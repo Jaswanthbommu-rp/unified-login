@@ -5,16 +5,32 @@
 )
 AS
 BEGIN
-	SELECT	UserLoginPersonaId,
-					UserLoginId,
-					StatusTypeId,
-					OrganizationPartyId,
-					PrimaryOrganization,
-					FromDate,
-					ThruDate,
-					StatusThruDate
-	FROM		Ident.UserLoginPersona
-	WHERE	((@UserLoginPersonaId IS NULL) OR (UserLoginPersonaId = @UserLoginPersonaId))
-	AND			((@UserLoginId IS NULL) OR (UserLoginId = @UserLoginId))
-	AND			((@OrganizationPartyId IS NULL) OR (OrganizationPartyId = @OrganizationPartyId))
+	IF @UserLoginPersonaId IS NOT NULL
+	BEGIN
+		SELECT	UserLoginPersonaId,
+						UserLoginId,
+						StatusTypeId,
+						OrganizationPartyId,
+						PrimaryOrganization,
+						FromDate,
+						ThruDate,
+						StatusThruDate
+		FROM		Ident.UserLoginPersona
+		WHERE	UserLoginPersonaId = @UserLoginPersonaId
+	END
+	ELSE
+	BEGIN    
+		SELECT	UserLoginPersonaId,
+						UserLoginId,
+						StatusTypeId,
+						OrganizationPartyId,
+						PrimaryOrganization,
+						FromDate,
+						ThruDate,
+						StatusThruDate
+		FROM		Ident.UserLoginPersona
+		WHERE
+			UserLoginId = @UserLoginId
+			AND OrganizationPartyId = @OrganizationPartyId
+	END
 END
