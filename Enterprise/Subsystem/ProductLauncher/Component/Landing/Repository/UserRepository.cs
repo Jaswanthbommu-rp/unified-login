@@ -6699,7 +6699,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 if (IsOperatorSettingsEnabled())
                 {
 
-                    var org = _organizationRepository.GetOrganization();
+                    var org = _organizationRepository.GetOrganization(newData.ThirdPartyCompanyRealPageId);
 
                     if (newData.ThirdPartyRelationShipId != oldData.ThirdPartyRelationShipId ||
                         org.Name != oldData.ThirdPartyCompanyName)
