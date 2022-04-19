@@ -1252,6 +1252,7 @@
     <Build Include="Batch\Procedure\ListPrimaryPropertiesBatchProcessor.sql" />
     <Build Include="Batch\Procedure\UpdatePrimaryPropertiesProductBatch.sql" />
     <Build Include="Enterprise\Stored Procedures\DeleteExternalUserRelationship.sql" />
+    <Build Include="Enterprise\Stored Procedures\DeletePropertyInstanceMapping.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

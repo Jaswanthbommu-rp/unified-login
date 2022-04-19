@@ -318,6 +318,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         public const string SP_CreatePropertyInstance = "Enterprise.CreatePropertyInstance";
         public const string SP_CreatePropertyInstanceMapping = "Enterprise.CreatePropertyInstanceMapping";
         public const string SP_AddUpdatePropertyInstanceMapping = "Enterprise.AddUpdatePropertyInstanceMapping";
+        public const string SP_DeletePropertyInstanceMapping = "Enterprise.DeletePropertyInstanceMapping";
         
         public const string SP_GetPropertyInstanceByPersonaId = "Enterprise.GetPropertyInstanceByPersonaId";
         public const string SP_GetPropertyInstanceIdsByPersonaId = "Enterprise.GetPropertyInstanceIdsByPersonaId";

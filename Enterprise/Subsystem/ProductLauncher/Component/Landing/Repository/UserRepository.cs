@@ -5700,7 +5700,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             //We can get this with the oldProfile
             string schemaName = getRoleRightsSchemaName();
 
-            bool externalUserRelationUpdated = IsExternaUserlRelationUpdated(updateUserProfileEntity);
+            bool isOperatorSettingsEnabled = IsOperatorSettingsEnabled();
+            bool deleteOldPropertyInstanceMapping = false;
+            bool externalUserRelationUpdated = IsExternaUserlRelationUpdated(updateUserProfileEntity, out deleteOldPropertyInstanceMapping);
+            
             using (var repository = GetRepository())
             {
                 //Begin the transaction
@@ -6411,6 +6414,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 removedPrimaryProperty = primaryPropertyBatch.InputJson?.RemovedPropertyList;
 
                                 isPrimaryPropertiesUpdated = true;
+
+                                if (FeatureFlag.GetUserCompanyAssociationFeatureFlag() && deleteOldPropertyInstanceMapping) 
+                                {
+                                    repository.Execute(StoredProcNameConstants.SP_DeletePropertyInstanceMapping, new { PersonaId = updateUserProfileEntity.OldProfile.Persona[0].PersonaId, ProductId = (int)ProductEnum.UnifiedUI });
+                                }
+
                                 string primaryPropertyJSON = JsonConvert.SerializeObject(primaryPropertyBatch);
                                 repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdatePropertyInstanceMapping, new { PersonaId = updateUserProfileEntity.OldProfile.Persona[0].PersonaId, ProductId = (int)ProductEnum.UnifiedUI, PropertyInstanceJSON = primaryPropertyJSON });
                             }
@@ -6686,9 +6695,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             return repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UnassignEnterpriseRoleFromUser, param);
         }
 
-        private bool IsExternaUserlRelationUpdated(UpdateUserProfileEntity updateUserProfileEntity)
+        private bool IsExternaUserlRelationUpdated(UpdateUserProfileEntity updateUserProfileEntity, out bool delOldProperyInstanceMapping)
         {
             bool isUpdated = false;
+            delOldProperyInstanceMapping = false;
 
             var newData = updateUserProfileEntity.NewProfile.ExternalUserRelationship;
             var oldData = updateUserProfileEntity.OldProfile.ExternalUserRelationship;
@@ -6705,6 +6715,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         org.Name != oldData.ThirdPartyCompanyName)
                     {
                         isUpdated = true;
+                        delOldProperyInstanceMapping = true;
                     }
                 }
                 else
@@ -6827,6 +6838,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             ManageUnifiedSettings manageUnifiedSettings = new ManageUnifiedSettings(_userClaim);
             var data = manageUnifiedSettings.GetCompanyInternalSettings(_userClaim.OrganizationRealPageGuid, "UPFM", "company");
             bool value = data?.Keys?.Where(p => p.Name == "owneroperatorrelationship")?.FirstOrDefault()?.Value == "1";
+            
             return value;
         }
 
