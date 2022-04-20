@@ -1240,7 +1240,6 @@
     <Build Include="Security\GetRoleTypes.sql" />
     <Build Include="Enterprise\Tables\ExternalUserRelationship.sql" />
     <Build Include="Enterprise\Tables\ThirdPartyRelationship.sql" />
-    <None Include="Scripts\PostDeployment\PostDeploymentScripts\2022Q1Release.sql" />
     <Build Include="Enterprise\Stored Procedures\GetExternalUserRelationship.sql" />
     <Build Include="Enterprise\Stored Procedures\UpdateExternalUserRelationship.sql" />
     <Build Include="Enterprise\IntListType.sql" />
@@ -1384,5 +1383,6 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\October2020Release.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\November2020Release.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\December2020Release.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\2022-PrimaryProperty-Operator.sql" />
   </ItemGroup>
 </Project>
