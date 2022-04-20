@@ -155,7 +155,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
                new ProspectContactCenterUserProfile() { FirstName = "Person", LastName = "1", Email = "person1@test.com", LoginName = "person1" },
                new ProspectContactCenterUserProfile() { FirstName = "Person", LastName = "2", Email = "person2@test.com", LoginName = "person2" },
                     new ProspectContactCenterUserProfile() { FirstName = "Person", LastName = "3", Email = "person3@test.com", LoginName = "person3" },
-                    new ProspectContactCenterUserProfile() { FirstName = "Person", LastName = "4", Email = "person4@test.com", LoginName = "person4", PropertyID ="1" },
+                    new ProspectContactCenterUserProfile() { FirstName = "Person", LastName = "4", Email = "person4@test.com", LoginName = "person4", Properties = new List<string>(){"1" } },
                     new ProspectContactCenterUserProfile() { FirstName = "Person", LastName = "5", Email = "person5@test.com", LoginName = "person5" }
             };
             HttpResponseMessage userResponse = new HttpResponseMessage(HttpStatusCode.OK)
