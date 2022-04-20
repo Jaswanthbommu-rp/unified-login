@@ -838,6 +838,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // dump api info
             DumpApiCallInfoToDiagnosticLog(baseUrlAndQuery, productUser);
 
+            var isAnswerAutomation = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("IsAnswerAutomation", StringComparison.OrdinalIgnoreCase));
+            if (isAnswerAutomation != null)
+            {
+                Dictionary<string, bool> additionalFields = new Dictionary<string, bool>();
+                additionalFields.Add("IsAnswerAutomation", isAnswerAutomation.Value.Trim().Equals("1") ? true : false);
+                productUser.AdditionalFields = additionalFields;
+            }
+
             var integration = new ApiIntegration(_httpClient, baseUrlAndQuery);
             var result = integration.PostEntity<IntegrationProductUser>(productUser);
 
