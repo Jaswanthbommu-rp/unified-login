@@ -392,7 +392,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				if (objAoPropertyList.Properties != null)
 				{
 					string assignedCount = $"{objAoPropertyList.Properties.Count(p => p.IsAssigned)} of {objAoPropertyList.Properties.Count}";
-					allProperties.Add("allProperties", objAoPropertyList.IsAllProperties);
+					allProperties.Add("allProperties", objAoPropertyList.allProperties);
 					foreach (var property in objAoPropertyList.Properties)
 					{
 						companyProperties.Add(new ProductProperty
@@ -2028,7 +2028,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			bool isAllProperties = false;
 			if (aoUserProps != null)
 			{
-				isAllProperties = aoUserProps.Any(x => x.IsAllProperties && x.ProductName.Equals(productName));
+				isAllProperties = aoUserProps.Any(x => x.allProperties && x.ProductName.Equals(productName));
 			}
 
 			return isAllProperties;
@@ -2606,7 +2606,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			if (!string.IsNullOrEmpty(productUserId))
 			{
 				productPropertyApiUrl = $"{_apiEndPoint}user/products/{productUserId.ToLower()}/{companyId}";
-				objAoPropertyList.IsAllProperties = GetAllPropertiesStatusForExistingProductUser(productPropertyApiUrl, productName);
+				objAoPropertyList.allProperties = GetAllPropertiesStatusForExistingProductUser(productPropertyApiUrl, productName);
 				
 			    productPropertyApiUrl = $"{_apiEndPoint}user/active-portfolio/{_editorProductUserId.ToLower()}/{productUserId.ToLower()}/"; //https://aodev.realpage.com/ysconfig/ws/user/active-portfolio/tmilburn/acroyle
 			    objAoPropertyList.Properties = GetPropertiesForExistingProductUser(objAoPropertyList.Properties, productPropertyApiUrl, productName);
@@ -2968,9 +2968,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 	}
 	public class AoPropertyList
 	{
-		public bool IsAllProperties { get; set; } = false;
+		public bool allProperties { get; set; } = false;
 		public IList<AoProperty> Properties { get; set; }
-		[JsonProperty("enabled")] public bool IsProductEnabled { get; set; }
+		[JsonProperty("division")] public string Division { get; set; }
 		[JsonProperty("product")] public string ProductName { get; set; }
 	}
 
