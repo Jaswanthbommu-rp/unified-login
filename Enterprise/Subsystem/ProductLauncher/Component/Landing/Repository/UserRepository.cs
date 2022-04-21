@@ -1139,7 +1139,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             }
                             else
                             {
-                                if (gbProductBatch != null)
+                                if (gbProductBatch != null && gbProductBatch.InputJson.RoleList?.Count > 0)
                                 {
                                     greenBookRoles = GetGreenBookRoles(gbProductBatch);
                                 }
