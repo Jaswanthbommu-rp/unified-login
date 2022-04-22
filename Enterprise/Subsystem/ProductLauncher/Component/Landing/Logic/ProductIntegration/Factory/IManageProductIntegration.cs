@@ -101,5 +101,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="baseUrlAndQuery">Base url</param>
 		/// <returns>A response list</returns>
 		ListResponse GetAllRights(RequestParameter dataFilter, string baseUrlAndQuery = null);
+
+		/// <summary>
+		/// Getting user groups by ProductId.
+		/// </summary>
+		/// <param name="dataFilter"></param>
+		/// <param name="baseUrlAndQuery"></param>
+		/// <returns></returns>
+		ListResponse GetProductUserGroups(RequestParameter dataFilter, string baseUrlAndQuery = null);
 	}
 }

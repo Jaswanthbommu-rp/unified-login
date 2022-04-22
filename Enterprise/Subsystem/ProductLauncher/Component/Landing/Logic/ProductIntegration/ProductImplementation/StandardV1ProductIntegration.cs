@@ -200,6 +200,73 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
+
+        /// <summary>
+        /// Returns Product Roles
+        /// </summary>
+        public virtual ListResponse GetProductUserGroups(RequestParameter dataFilter, string baseUrlAndQuery = null)
+        {
+            try
+            {
+                WriteToDiagnosticLog(
+                    $"{nameof(StandardV1ProductIntegration)}.GetProductUserGroups - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method.");
+
+                if (string.IsNullOrEmpty(baseUrlAndQuery))
+                    baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserGroupEndpoint);
+
+                WriteToDiagnosticLog(
+                    $"{nameof(StandardV1ProductIntegration)}.GetProductUserGroups - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At API calling - {baseUrlAndQuery}");
+
+                bool isCompanyIdRequiredToQuery = baseUrlAndQuery.Contains("{0}");
+                if (isCompanyIdRequiredToQuery)
+                    baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, "false");
+
+                var userGroupList = GetResultFromApi<IList<ProductUserGroup>>(baseUrlAndQuery);
+
+                WriteToDiagnosticLog(
+                    $"{nameof(StandardV1ProductIntegration)}.GetProductUserGroups - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Received roleList with count = {userGroupList?.Count}");
+
+                if (!string.IsNullOrEmpty(SubjectUserDetails?.ProductUserName))
+                {
+                    WriteToDiagnosticLog(
+                        $"{nameof(StandardV1ProductIntegration)}.GetProductUserGroups - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling GetUser for subject persona Id -{SubjectUserDetails.PersonaId}");
+                    var user = GetProductUser();
+
+                    // map user roles
+                    if (user != null)
+                    {
+                        WriteToDiagnosticLog(
+                            $"{nameof(StandardV1ProductIntegration)}.GetProductUserGroups - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling Merge for subject persona Id -{SubjectUserDetails.PersonaId}");
+
+                        var userGroups = user.UserGroups;
+                        MergeUserGroup(userGroupList, userGroups);
+                    }
+                }
+
+                if (userGroupList == null)
+                    throw new Exception("Null Product User Groups.");
+
+                return new ListResponse
+                {
+                    Records = userGroupList.Cast<object>().ToList(),
+                    TotalRows = userGroupList.Count,
+                    RowsPerPage = 9999,
+                    ErrorReason = string.Empty,
+                    TotalPages = 1
+                };
+            }
+            catch (Exception ex)
+            {
+                WriteToErrorLog($"{nameof(StandardV1ProductIntegration)}.GetProductUserGroups - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Error - {ex.Message}", null, ex);
+                return new ListResponse()
+                {
+                    ErrorReason = ex.Message,
+                    IsError = true
+                };
+            }
+        }
+
+
         /// <summary>
         /// Returns Product Rights for a Role
         /// </summary>
@@ -1090,6 +1157,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (userRoles != null && userRoles.Contains(role.GetRoleId))
                 {
                     role.IsAssigned = true;
+                }
+            }
+        }
+
+        protected void MergeUserGroup(IList<ProductUserGroup> userGroupList, List<string> userGroups)
+        {
+            foreach (var userGroup in userGroupList)
+            {
+                if (userGroups != null && userGroups.Contains(userGroup.UserGroupId))
+                {
+                    userGroup.IsAssigned = true;
                 }
             }
         }

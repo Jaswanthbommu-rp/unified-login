@@ -36,6 +36,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 		[JsonProperty(PropertyName = "additionalFields")]
 		public List<KeyValuePair<string , string>> AdditionalFields { get; set; } //SLM
+
+		[JsonProperty(PropertyName = "usergroups", NullValueHandling = NullValueHandling.Ignore)]
+		public List<string> UserGroups { get; set; }
 	}
 
 	public class BaseIntegrationProductUser

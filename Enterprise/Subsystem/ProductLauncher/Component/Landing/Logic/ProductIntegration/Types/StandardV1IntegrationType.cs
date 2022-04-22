@@ -88,6 +88,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return productIntegration.GetProductRoles(dataFilter);
         }
 
+        public ListResponse GetUserGroups(long editorPersonaId, long userPersonaId, long partyId, RequestParameter dataFilter)
+        {
+            var productIntegration = new StandardV1ProductIntegration(_productId, editorPersonaId, userPersonaId, _userClaims);
+            return productIntegration.GetProductUserGroups(dataFilter);
+        }
+
+
         public ListResponse GetAllRights(long editorPersonaId, long userPersonaId, RequestParameter dataFilter)
         {
             var productIntegration = new StandardV1ProductIntegration(_productId, editorPersonaId, userPersonaId, _userClaims);

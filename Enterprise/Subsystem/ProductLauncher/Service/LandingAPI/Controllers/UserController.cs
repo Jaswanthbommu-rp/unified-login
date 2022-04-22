@@ -335,7 +335,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             IRepositoryResponse repositoryResponse = new RepositoryResponse();
             ObjectOutput<IProfileDetail, IErrorData> output = new ObjectOutput<IProfileDetail, IErrorData>();
             Status<IErrorData> errorStatus = new Status<IErrorData>();
-            output.obj = profile;
+            output.obj = profile; 
 
 			IManageUserLogin manageUserLogin = new ManageUserLogin(_userClaims);
 			IUserLoginOnly userLoginOnly = manageUserLogin.GetUserLoginOnly(profile.RealPageId);
@@ -350,8 +350,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				errorStatus.ErrorMsg = "User roles are missing.";
 				output.Status = errorStatus;
 				return Request.CreateResponse(HttpStatusCode.OK, output);
-			}
-
+			}			
+			
 			if (profile == null)
 			{
 				errorStatus.Success = false;
@@ -417,6 +417,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				output.Status = errorStatus;
 				return Request.CreateResponse(HttpStatusCode.OK, output);
 			}
+			
 
 			ProductBatch resPortal = profile.productBatch.FirstOrDefault<ProductBatch>((Func<ProductBatch, bool>)(p => p.ProductId == (int)ProductEnum.ResidentPortal));
             if (resPortal != null)
@@ -493,7 +494,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		        output.Status = errorStatus;
 		        return Request.CreateResponse(HttpStatusCode.OK, output);
 	        }
-
+		
 			//Pass the _realpageUserId: User unique enterpriseId
 			repositoryResponse = manageUser.UpdateUser(_realpageUserId, profile);
 			if ((repositoryResponse.Id == 0) && (!string.IsNullOrWhiteSpace(repositoryResponse.ErrorMessage)))

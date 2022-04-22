@@ -144,5 +144,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="userPersonaId"></param>
 		/// <returns></returns>
 		List<PersonaProductProperty> GetPersonaProductPrimaryProperties(long userPersonaId);
+
+		ListResponse GetProductUserGroups(long editorPersonaId, long userPersonaId, long partyId, int productId, RequestParameter datafilter);
 	}
 }
