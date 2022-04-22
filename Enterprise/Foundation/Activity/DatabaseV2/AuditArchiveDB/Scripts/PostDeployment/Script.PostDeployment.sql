@@ -12,5 +12,6 @@ Post-Deployment Script Template
 
 :r .\PostDeploymentScripts\User_Creation.sql
 :r .\PostDeploymentScripts\AddNewLogType.sql
+:r .\PostDeploymentScripts\2022-logtype-cleanup.sql
 
 

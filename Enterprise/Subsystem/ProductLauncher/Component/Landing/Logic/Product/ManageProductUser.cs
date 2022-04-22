@@ -1349,7 +1349,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 else if (logActivityType == "USER_UPDATE_INTERNAL")
                 {
                     activityName = LogActivityTypeConstants.USER_UPDATE_INTERNAL;
-                    categoryName = LogActivityCategoryType.User.ToString();
+                    categoryName = LogActivityCategoryType.CompanySetup.ToString();
                 }
 
                 LogActivity.WriteActivity(new ActivityDetails

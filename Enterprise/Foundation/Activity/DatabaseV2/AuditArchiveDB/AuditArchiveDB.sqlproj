@@ -87,5 +87,6 @@
     <Build Include="dbo\User Defined Types\SearchCriteria.sql" />
     <Build Include="Logging\Stored Procedures\ListActivityDetails.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\AddNewLogType.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\2022-logtype-cleanup.sql" />
   </ItemGroup>
 </Project>
