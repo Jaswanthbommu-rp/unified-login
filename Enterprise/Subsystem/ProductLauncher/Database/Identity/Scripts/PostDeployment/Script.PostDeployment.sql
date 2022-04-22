@@ -13,6 +13,8 @@ Post-Deployment Script Template
 
 :r .\PostDeploymentScripts\2022Q1Release.sql
 
+:r .\PostDeploymentScripts\2022.05.WMU.Release.sql
+
 :r .\PostDeploymentScripts\UpdateStatistics.sql
 :r .\PostDeploymentScripts\RecompileAllProcs.sql
 

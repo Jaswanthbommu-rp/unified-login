@@ -1252,6 +1252,10 @@
     <Build Include="Batch\Procedure\UpdatePrimaryPropertiesProductBatch.sql" />
     <Build Include="Enterprise\Stored Procedures\DeleteExternalUserRelationship.sql" />
     <Build Include="Enterprise\Stored Procedures\DeletePropertyInstanceMapping.sql" />
+    <Build Include="RoleRightsManagement\Tables\ADGroupRole.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\GetRolesForADGroup.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\UpdateRolesAssignedToADGroup.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\GetRolesForADGroupByPersona.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
@@ -1366,6 +1370,7 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\UserManagementData.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\_SeedData.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2021Q1Release.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\2022.05.WMU.Release.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />

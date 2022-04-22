@@ -336,6 +336,7 @@
     <Compile Include="IdentityConfig\UserLoginPersona.cs" />
     <Compile Include="Landing\AdGroup.cs" />
     <Compile Include="Landing\AdGroupProduct.cs" />
+    <Compile Include="Landing\AdGroupRole.cs" />
     <Compile Include="Landing\AdUserDetail.cs" />
     <Compile Include="Landing\ApiError.cs" />
     <Compile Include="Landing\AzureUser.cs" />

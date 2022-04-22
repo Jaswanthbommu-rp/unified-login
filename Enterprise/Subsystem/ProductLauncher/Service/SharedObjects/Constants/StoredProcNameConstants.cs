@@ -345,6 +345,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         public const string SP_UnassignEnterpriseRoleFromUser = "Security.DeleteRoleTemplateUserMappingByPersona";
         public const string SP_GetPersistRights = "Security.GetPersistRights";
         public const string SP_GetADGroupRightsByPersona = "Security.GetADGroupRightsByPersona";
+        public const string SP_GetRolesForADGroupByPersona = "Security.GetRolesForADGroupByPersona";
 
         //Configuration Settings
         public const string SP_ListUserLoginSettings = "Enterprise.ListUserLoginSettings";
