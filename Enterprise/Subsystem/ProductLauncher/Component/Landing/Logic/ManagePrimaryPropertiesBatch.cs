@@ -114,21 +114,31 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 					if (propertiesResponse.Records?.Count > 0 && rolesResponse.Records?.Count > 0)
 					{
-						if (ProductEnumHelper.GetAoProductList().Contains((ProductEnum)product.ProductId))
-						{
-							var batchRecords = BatchHelper.CreateAoBatchRecords(_userClaim, batch.EditorUserPersonaId, batch.SubjectUserPersonaId, isExternalUser, true);
-							foreach (var productBatch in batchRecords)
+                        if (ProductEnumHelper.GetAoProductList().Contains((ProductEnum)product.ProductId))
+                        {
+                            var batchRecords = BatchHelper.CreateAoBatchRecords(_userClaim, batch.EditorUserPersonaId, batch.SubjectUserPersonaId, isExternalUser, true);
+                            foreach (var productBatch in batchRecords)
+                            {
+                                productListToCreate.Add(productBatch);
+                            }
+                        }
+                        else
+                        {
+                            var productRoles = rolesResponse.Records?.Cast<ProductRole>().ToList();
+                            var productBatchRecord = manageProductBatch.GetProductBatchRecord(batch.EditorUserPersonaId, batch.SubjectUserPersonaId, productRoles, propertiesResponse, rolesResponse, product.ProductId, true);
+							if (integrationType == ProductIntegrationTypeEnum.UPFM)
 							{
-								productListToCreate.Add(productBatch);
-							}
-						}
-						else
-						{
-							var productRoles = rolesResponse.Records?.Cast<ProductRole>().ToList();
-							var productBatchRecord = manageProductBatch.GetProductBatchRecord(batch.EditorUserPersonaId, batch.SubjectUserPersonaId, productRoles, propertiesResponse, rolesResponse, product.ProductId, true);
+								var currentProductPropertiesData = manageProductBatch.GetExistingUserPrimaryPropertiesData(batch.SubjectUserPersonaId, product.ProductId);
+								var currentUnifiedUIPropertiesData = manageProductBatch.GetExistingUserPrimaryPropertiesData(batch.SubjectUserPersonaId, (int)ProductEnum.UnifiedUI);
+								var propertiesToRemove = currentProductPropertiesData.Except(currentUnifiedUIPropertiesData).ToList();
+								if (propertiesToRemove?.Count > 0)
+                                {
+									productBatchRecord.InputJson.RemovedPropertyList = propertiesToRemove.Select(i => i.ToString()).ToList();
+								}
+							}							
 							productListToCreate.Add(productBatchRecord);
-						}
-					}
+                        }
+                    }
 				}				
 			}
 			try
