@@ -713,16 +713,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						}
 					}
 				}
-				
-                foreach (var item in aoGbUserCompanyPropertyRoleDetails)
-                {
-					if (item.SelectedPortfolioValues[0] == -1)
+				if (aoGbUserCompanyPropertyRoleDetails.Any(x => x.SelectedPortfolioValues != null))
+				{
+					foreach (var item in aoGbUserCompanyPropertyRoleDetails)
 					{
-						item.allProperties = true;
-						item.SelectedPortfolioValues = new List<int>();
+						if (item.SelectedPortfolioValues[0] == -1)
+						{
+							item.allProperties = true;
+							item.SelectedPortfolioValues = new List<int>();
+						}
 					}
 				}
-
 				// Check if GB super user
 				if (IsSuperUser(productUserPersonaId))
 				{
