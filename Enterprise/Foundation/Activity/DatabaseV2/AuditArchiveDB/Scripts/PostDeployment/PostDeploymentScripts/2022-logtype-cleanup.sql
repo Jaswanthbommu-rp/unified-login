@@ -24,9 +24,9 @@ Begin
 	select @companysetupcategory = LogCategoryTypeId from logging.logcategorytype where name = 'companysetup'
 	update logging.logtype set logcategorytypeid = @companysetupcategory where name = 'User Update - Internal'
 	
-	
-	
-	
+	declare @migrationCatId int
+	select @migrationCatId = LogCategoryTypeId from logging.logcategorytype where name = 'Migration'
+	update logging.logtype set logcategorytypeid = @migrationCatId where name = 'Refresh User Data' 
 	
 	-- activity details
 	Delete ad
