@@ -713,16 +713,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						}
 					}
 				}
-				
-                foreach (var item in aoGbUserCompanyPropertyRoleDetails)
-                {
-					if (item.SelectedPortfolioValues[0] == -1)
+
+				if (aoGbUserCompanyPropertyRoleDetails.Any(x => x.SelectedPortfolioValues != null))
+				{
+					if (aoGbUserCompanyPropertyRoleDetails.Any(x => x.SelectedPortfolioValues.Count() > 0))
 					{
-						item.allProperties = true;
-						item.SelectedPortfolioValues = new List<int>();
+						foreach (var item in aoGbUserCompanyPropertyRoleDetails)
+						{
+							if (item.SelectedPortfolioValues[0] == -1)
+							{
+								item.allProperties = true,
+                                item.SelectedPortfolioValues = new List<int>();
+							}
+						}
 					}
 				}
-
 				// Check if GB super user
 				if (IsSuperUser(productUserPersonaId))
 				{
@@ -736,7 +741,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						// For Investment Analytics (MA) assign US market to super user
 						var allGroups = GetAllPropertyGroups();
 						var usGroupId = allGroups.Groups.FirstOrDefault(x => x.GroupName == "US")?.GroupId;
-
+				
 						if (usGroupId != null && usGroupId != 0)
 						{
 							var ss =
@@ -2319,7 +2324,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		private IList<Model> GetModel(IList<AoUserCompanyPropertyRoleDetail> aoUserCompanyPropertyRoleDetails)
 		{
 			IList<Model> models = new List<Model>();
-
+			
 			foreach (var aoUserCompanyPropertyRoleDetail in aoUserCompanyPropertyRoleDetails)
 			{
 				if (aoUserCompanyPropertyRoleDetail.IsAssigned)
