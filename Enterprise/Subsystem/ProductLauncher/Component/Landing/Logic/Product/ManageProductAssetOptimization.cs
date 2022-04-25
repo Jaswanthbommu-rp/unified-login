@@ -713,17 +713,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						}
 					}
 				}
-				if (aoGbUserCompanyPropertyRoleDetails.Any(x => x.SelectedPortfolioValues != null))
-				{
-					foreach (var item in aoGbUserCompanyPropertyRoleDetails)
-					{
-						if (item.SelectedPortfolioValues[0] == -1)
-						{
-							item.allProperties = true;
-							item.SelectedPortfolioValues = new List<int>();
-						}
-					}
-				}
+			
 				// Check if GB super user
 				if (IsSuperUser(productUserPersonaId))
 				{
@@ -759,6 +749,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					}
 					catch
 					{
+					}
+				}
+
+				if (!IsSuperUser(productUserPersonaId))
+				{
+					foreach (var item in aoGbUserCompanyPropertyRoleDetails.Where(x=>x.SelectedPortfolioValues !=null && x.SelectedPortfolioValues.Count() > 0))
+					{
+						
+						if (item.SelectedPortfolioValues[0] == -1)
+						{
+							item.allProperties = true;
+							item.SelectedPortfolioValues = new List<int>();
+						}
 					}
 				}
 
@@ -2799,11 +2802,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						PropertyGroups = propertyGroupList,
 						SelectedPortfolioValues = propertyList,
 						SelectedRoleValues = roleList,
-						IsAssigned = true
+						IsAssigned = true,
+						allProperties = true
 					});
 				}
 			}
 
+			
 			WriteToDiagnosticLog(
 				$"ManageProductAssetOptimization.CopyEditorUserToCreateSuperUser - End - sourceUserPersonaId id - {sourceUserPersonaId}.");
 
