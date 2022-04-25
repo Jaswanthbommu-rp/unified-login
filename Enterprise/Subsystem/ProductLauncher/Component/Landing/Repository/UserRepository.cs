@@ -6330,7 +6330,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         {
                             greenBookRoles = GetGreenBookRoles(gbProdBatch);
 
-                            if (userBatchEntity.UserTypeChanged && greenBookRoles.Count == 0)
+                            if (greenBookRoles.Count == 0)
                             {
                                 greenBookRoles.Add(GetUnifiedPlatformDefaultRole(repository, updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId, enterpriseRoles));
                             }
