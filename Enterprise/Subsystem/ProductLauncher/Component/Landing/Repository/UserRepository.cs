@@ -6405,44 +6405,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             if ((gbProdBatch != null) && ((gbProdBatch.InputJson?.PropertyList?.Count > 0) || (gbProdBatch.InputJson?.RemovedPropertyList?.Count > 0)))
                             {
                                 string propertyJSON = JsonConvert.SerializeObject(gbProdBatch);
-                                if (!usePropertyInstances)
-                                {
-                                    repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdatePropertyMapping, new { PersonaId = updateUserProfileEntity.OldProfile.Persona[0].PersonaId, ProductId = (int)ProductEnum.UnifiedPlatform, PropertyJSON = propertyJSON });
-                                }
-                                else
-                                {
-                                    addedPrimaryProperty = primaryPropertyBatch.InputJson?.PropertyList;
-                                    removedPrimaryProperty = primaryPropertyBatch.InputJson?.RemovedPropertyList;
-
-                                    isPrimaryPropertiesUpdated = true;
-
-                                    if (FeatureFlag.GetUserCompanyAssociationFeatureFlag() && deleteOldPropertyInstanceMapping)
-                                    {
-                                        repository.Execute(StoredProcNameConstants.SP_DeletePropertyInstanceMapping, new { PersonaId = updateUserProfileEntity.OldProfile.Persona[0].PersonaId, ProductId = (int)ProductEnum.UnifiedPlatform });
-                                    }
-
-                                    string primaryPropertyJSON = JsonConvert.SerializeObject(primaryPropertyBatch);
-                                    repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdatePropertyInstanceMapping, new { PersonaId = updateUserProfileEntity.OldProfile.Persona[0].PersonaId, ProductId = (int)ProductEnum.UnifiedPlatform, PropertyInstanceJSON = primaryPropertyJSON });
-                                }
-                            }
-                            
-                            /*
-                            if (primaryPropertyBatch != null && ((primaryPropertyBatch.InputJson?.PropertyList?.Count > 0) || (primaryPropertyBatch.InputJson?.RemovedPropertyList?.Count > 0)))
-                            {
                                 addedPrimaryProperty = primaryPropertyBatch.InputJson?.PropertyList;
                                 removedPrimaryProperty = primaryPropertyBatch.InputJson?.RemovedPropertyList;
 
                                 isPrimaryPropertiesUpdated = true;
 
-                                if (FeatureFlag.GetUserCompanyAssociationFeatureFlag() && deleteOldPropertyInstanceMapping) 
+                                if (FeatureFlag.GetUserCompanyAssociationFeatureFlag() && deleteOldPropertyInstanceMapping)
                                 {
-                                    repository.Execute(StoredProcNameConstants.SP_DeletePropertyInstanceMapping, new { PersonaId = updateUserProfileEntity.OldProfile.Persona[0].PersonaId, ProductId = (int)ProductEnum.UnifiedUI });
+                                    repository.Execute(StoredProcNameConstants.SP_DeletePropertyInstanceMapping, new { PersonaId = updateUserProfileEntity.OldProfile.Persona[0].PersonaId, ProductId = (int)ProductEnum.UnifiedPlatform });
                                 }
 
                                 string primaryPropertyJSON = JsonConvert.SerializeObject(primaryPropertyBatch);
-                                repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdatePropertyInstanceMapping, new { PersonaId = updateUserProfileEntity.OldProfile.Persona[0].PersonaId, ProductId = (int)ProductEnum.UnifiedUI, PropertyInstanceJSON = primaryPropertyJSON });
+                                repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdatePropertyInstanceMapping, new { PersonaId = updateUserProfileEntity.OldProfile.Persona[0].PersonaId, ProductId = (int)ProductEnum.UnifiedPlatform, PropertyInstanceJSON = primaryPropertyJSON });
+
                             }
-                            */
                         }
                     }
                 }
