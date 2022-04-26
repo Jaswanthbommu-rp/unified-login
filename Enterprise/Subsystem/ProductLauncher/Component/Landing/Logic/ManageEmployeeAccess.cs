@@ -402,8 +402,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     List<string> propertyList = hasProperties == "0" ? new List<string>(): new List<string>() { "-1" };
                     List<string> roleList = userADGroupsRoles.Where(x => x.ProductId == productId).Select(y => y.RoleId.ToString()).ToList();
                     UPFMProductPropertyRole upfmPropertyRole = new UPFMProductPropertyRole() { IsAssigned = true, PropertyList = propertyList, RoleList = roleList };
-
-                    return _manageUPFMProductsIntegration.ManageUPFMProductUser(_userClaim.PersonaId, personaId, upfmPropertyRole);
+                    _manageUPFMProductsIntegration = new ManageUPFMProductsIntegration(productId, _userClaim);
+                    return _manageUPFMProductsIntegration.ManageUPFMProductUser(_userClaim.PersonaId, personaId, upfmPropertyRole, true);
                 }
 
                 return "No ADGroups for UPFM products.";

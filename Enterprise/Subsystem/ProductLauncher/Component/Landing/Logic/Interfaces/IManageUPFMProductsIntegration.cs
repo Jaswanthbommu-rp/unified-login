@@ -15,8 +15,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="editorPersonaId"></param>
 		/// <param name="userPersonaId"></param>
 		/// <param name="userAssignProductPropertyRole"></param>
+		/// <param name="isEmpAccess"></param>
 		/// <returns></returns>
-		string ManageUPFMProductUser(long editorPersonaId, long userPersonaId, UPFMProductPropertyRole userAssignProductPropertyRole);
+		string ManageUPFMProductUser(long editorPersonaId, long userPersonaId, UPFMProductPropertyRole userAssignProductPropertyRole, bool isEmpAccess = false);
 
 		/// <summary>
 		/// Used to unassign a user from IntelligentBuilding

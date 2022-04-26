@@ -623,8 +623,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="editorPersonaId"></param>
         /// <param name="userPersonaId"></param>
         /// <param name="userAssignProductPropertyRole"></param>
+        /// <param name="isEmpAccess"></param>
         /// <returns></returns>
-        public string ManageUPFMProductUser(long editorPersonaId, long userPersonaId, UPFMProductPropertyRole userAssignProductPropertyRole)
+        public string ManageUPFMProductUser(long editorPersonaId, long userPersonaId, UPFMProductPropertyRole userAssignProductPropertyRole, bool isEmpAccess = false)
         {
             WriteToDiagnosticLog($"ManageUPFMProductUser - Begin create/update user for user with userPersonaId id - {userPersonaId}.");
             try
@@ -785,7 +786,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         foreach (string propertyId in assignedPropertyList)
                         {
-                            if (userPropertyIdList.All(p => p != Convert.ToInt32(propertyId)))
+                            if (userPropertyIdList.All(p => p != Convert.ToInt32(propertyId)) || isEmpAccess)
                             {
                                 // new property to be added
                                 assignedProperties.Add(propertyId);
