@@ -1166,6 +1166,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					// assign active properties of the user
 					var props = GetActiveProperties(samlEditorProductUserName, samlSubjectProductUserName, aoProduct, companyId);
 
+					var propertyApiUrl = $"{_apiEndPoint}user/products/{samlSubjectProductUserName.ToLower()}/{companyId}";
+					bool isAllProperties = GetAllPropertiesStatusForExistingProductUser(propertyApiUrl, aoProduct);
 					// get division
 					var divisionName = ProductEnumHelper.GetAoDivisionName(ProductEnumHelper.GetAoProductEnum(aoProduct));
 	
@@ -1177,7 +1179,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						PropertyGroups = propertyGroupList,
 						SelectedPortfolioValues = props,
 						SelectedRoleValues = roleNames,
-						IsAssigned = true
+						IsAssigned = true,
+						allProperties = isAllProperties
 					});
 				}
 			}
