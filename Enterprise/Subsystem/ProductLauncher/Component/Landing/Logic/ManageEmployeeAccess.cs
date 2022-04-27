@@ -391,15 +391,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var productIntegrationType = productInternalSettingList.FirstOrDefault(s => s.Name.Equals("ProductIntegrationType", StringComparison.OrdinalIgnoreCase))?.Value;
             if (productIntegrationType.ToUpper() == "UPFM")
             {
-                //get user adgroups and products
-                var existingProductAdGroupInfo = _userRepository.GetEmployeeProductADGroupMapping(personaId, productId).FirstOrDefault();
-                var productAdGroupsUPFM = _productRepository.GetAdGroupsForProduct(productId).Where(c => c.ADGroupId == existingProductAdGroupInfo.ADGroupId).FirstOrDefault();
+                var productAdGroupsUPFM = _productRepository.GetAdGroupsForProduct(productId);
                 var userADGroupsRoles = _productRepository.GetAdGroupRolesByPersona(employeePersona.PersonaId);
-                if (productAdGroupsUPFM != null && existingProductAdGroupInfo != null && userADGroupsRoles.Any(y => y.ProductId == productId))
+                var adGroupIds = userADGroupsRoles?.Where(y => y.ProductId == productId)?.Select(x => x.ADGroupId);
+                if (adGroupIds != null && productAdGroupsUPFM != null && productAdGroupsUPFM.Any(y => adGroupIds.Contains(y.ADGroupId)))
                 {
-                    //loop of adgrps for that product and get user roles and prop
                     var hasProperties = productInternalSettingList.FirstOrDefault(s => s.Name.Equals("UPFMProductsHasProperties", StringComparison.OrdinalIgnoreCase))?.Value;
-                    List<string> propertyList = hasProperties == "0" ? new List<string>(): new List<string>() { "-1" };
+                    List<string> propertyList = hasProperties == "0" ? new List<string>() : new List<string>() { "-1" };
                     List<string> roleList = userADGroupsRoles.Where(x => x.ProductId == productId).Select(y => y.RoleId.ToString()).ToList();
                     UPFMProductPropertyRole upfmPropertyRole = new UPFMProductPropertyRole() { IsAssigned = true, PropertyList = propertyList, RoleList = roleList };
                     _manageUPFMProductsIntegration = new ManageUPFMProductsIntegration(productId, _userClaim);
