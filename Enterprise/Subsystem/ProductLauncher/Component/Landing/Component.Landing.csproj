@@ -265,6 +265,7 @@
     <Compile Include="Logic\ProductIntegration\Model\ProductAccessType.cs" />
     <Compile Include="Logic\ProductIntegration\Model\ProductRight.cs" />
     <Compile Include="Logic\ProductIntegration\Model\ProductRightRole.cs" />
+    <Compile Include="Logic\ProductIntegration\Model\ProductUserGroup.cs" />
     <Compile Include="Logic\ProductIntegration\Model\SeniorLeadManagement\OneSiteUserInfo.cs" />
     <Compile Include="Logic\ProductIntegration\Model\SeniorLeadManagement\ProductPropertiesSLM.cs" />
     <Compile Include="Logic\ProductIntegration\Model\SeniorLeadManagement\SLMUserExist.cs" />

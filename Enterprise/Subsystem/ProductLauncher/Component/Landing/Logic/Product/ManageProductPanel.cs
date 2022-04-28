@@ -244,6 +244,65 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return result;
         }
 
+        public ListResponse GetProductUserGroups(long editorPersonaId, long userPersonaId, long partyId, int productId, RequestParameter datafilter)
+        {
+            ListResponse result;
+            try
+            {
+                var integration = _integrationTypeFactory.GetIntegration(productId);
+                result = integration.GetUserGroups(editorPersonaId, userPersonaId, partyId, datafilter);
+
+                if (result.IsError)
+                {
+                    throw new Exception(result.ErrorReason);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                result = new ListResponse { IsError = true };
+
+                if (ex is BlueBookException || (ex?.InnerException is BlueBookException))
+                {
+                    result.ErrorReason = CommonMessageConstants.CompanyErrorMessage;
+                }
+                else
+                {
+                    //UI calls Get User Groups but sometimes it displays the data in Right tab for some products, that's why this validation was added
+                    if (ex.Message.Equals(CommonMessageConstants.UserGroupsErrorMessage, StringComparison.OrdinalIgnoreCase))
+                    {
+                        result.ErrorReason = ex.Message;
+                        return result;
+                    }
+
+                    if (ex.Message.Equals(CommonMessageConstants.CompanyErrorMessage, StringComparison.OrdinalIgnoreCase))
+                    {
+                        result.ErrorReason = CommonMessageConstants.CompanyErrorMessage;
+                    }
+                    else
+                    {
+                        if (ex.InnerException != null)
+                        {
+                            if (ex.InnerException.Message.Equals(CommonMessageConstants.CompanyErrorMessage, StringComparison.OrdinalIgnoreCase))
+                            {
+                                result.ErrorReason = CommonMessageConstants.CompanyErrorMessage;
+                            }
+                            else
+                            {
+                                result.ErrorReason = CommonMessageConstants.UserGroupsErrorMessage;
+                            }
+                        }
+                        else
+                        {
+                            result.ErrorReason = CommonMessageConstants.UserGroupsErrorMessage;
+                        }
+                    }
+                }
+            }
+
+            return result;
+        }
+
         public RoleTemplateProductRoleMapping GetUserProductRoles(long editorPersonaId, long userPersonaId, long partyId)
         {
             RequestParameter datafilter = new RequestParameter();           

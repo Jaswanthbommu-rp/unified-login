@@ -18,6 +18,7 @@
 	    GetCompanyEndpoint,
 	    GetParentCompanyEndpoint,
         GetUserExistEndpoint,
-        GetAccessTypesEndpoint
+        GetAccessTypesEndpoint,
+        GetUserGroupEndpoint
     }
 }

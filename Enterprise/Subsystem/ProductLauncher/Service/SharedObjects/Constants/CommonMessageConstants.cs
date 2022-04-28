@@ -38,6 +38,11 @@
         /// </summary>
         public const string RightErrorMessage = "There was a problem getting the list of rights.  If the problem persists, please contact support.";
 
+        /// <summary>
+        /// User Groups ErrorMessage
+        /// </summary>
+        public const string UserGroupsErrorMessage = "There was a problem getting the list of user groups.  If the problem persists, please contact support.";
+
         #endregion
 
         #region Additional Rights

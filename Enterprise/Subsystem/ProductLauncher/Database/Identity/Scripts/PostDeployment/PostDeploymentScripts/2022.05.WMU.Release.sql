@@ -6,3 +6,11 @@ BEGIN
 END
 
 GO
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM [Enterprise].ProductSettingType WHERE [NAME] = 'GetUserGroupEndpoint')
+BEGIN
+INSERT INTO [Enterprise].ProductSettingType ([Name], [Description],SensitiveData) 
+VALUES ('GetUserGroupEndpoint','GET user groups end point for product API',0)
+END
+
+GO
