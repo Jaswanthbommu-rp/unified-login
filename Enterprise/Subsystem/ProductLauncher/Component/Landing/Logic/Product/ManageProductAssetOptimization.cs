@@ -754,13 +754,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				if (!IsSuperUser(productUserPersonaId))
 				{
+					
 					foreach (var item in aoGbUserCompanyPropertyRoleDetails.Where(x=>x.SelectedPortfolioValues !=null && x.SelectedPortfolioValues.Count() > 0))
 					{
 						
 						if (item.SelectedPortfolioValues[0] == -1)
 						{
+							// assign ALL properties 
+							var  propertiesResponse = GetProperties(item.CompanyId, item.ProductName);
+							var propertyList = (from i in propertiesResponse.Properties select i.PropertyId).ToList();
+
 							item.allProperties = true;
-							item.SelectedPortfolioValues = new List<int>();
+							item.SelectedPortfolioValues = propertyList;
 						}
 					}
 				}
