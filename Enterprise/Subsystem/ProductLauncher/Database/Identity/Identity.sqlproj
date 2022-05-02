@@ -1258,6 +1258,10 @@
     <Build Include="RoleRightsManagement\Stored Procedures\GetRolesForADGroupByPersona.sql" />
     <Build Include="Batch\Table\BatchProcessorLog.sql" />
     <Build Include="Batch\Procedure\InsertBatchProcessorLog.sql" />
+    <Build Include="Enterprise\Tables\UserSyncJobType.sql" />
+    <Build Include="Enterprise\Tables\UserSyncJob_V2.sql" />
+    <Build Include="Enterprise\Tables\UserSyncJobTask_V2.sql" />
+    <Build Include="Enterprise\Tables\UserSyncProductPrimaryPropertiesStaging.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
