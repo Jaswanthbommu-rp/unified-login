@@ -202,6 +202,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// Search by company, product ids, roles, rights propertyId and returns userlist
         /// </summary>
         /// <param name="companyId"></param>
+        /// <param name="upfmId"></param>
         /// <param name="products"></param>
         /// <param name="rowsPerPage"></param>
         /// <param name="pageNumber"></param>
@@ -210,7 +211,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="propertyIds"></param>
         /// <param name="companyDomain"></param>
         /// <returns>List of Users by product or company</returns>
-        IList<EnterpriseProductUser> GetUsersByCompanyorProducts(string companyId, IList<int> products, int rowsPerPage, int pageNumber,
+        IList<EnterpriseProductUser> GetUsersByCompanyorProducts(string companyId, string upfmId, IList<int> products, int rowsPerPage, int pageNumber,
                                                                  IList<string> roles, IList<string> rights, List<string> propertyIds, string companyDomain);
 
         /// <summary>

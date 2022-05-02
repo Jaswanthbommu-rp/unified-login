@@ -2,7 +2,8 @@
 --EXEC [Person].[ListUsersWithCompanyId_Ver3]  9895,'BlueBook','26',0,1,'analyst',NULL,NULL
 --EXEC [Person].[ListUsersWithCompanyId_Ver3]  9895,'BlueBook','26',0,1,NULL,NULL,NULL
 CREATE PROCEDURE [Person].[ListUsersWithCompanyId_Ver3]  
-(@CompanyId   INT,   
+(@CompanyId   NVARCHAR(100) = 0,     
+ @UPFMId UNIQUEIDENTIFIER = NULL,
  @Source      NVARCHAR(50)  = 'BlueBook',   
  @ProductId   NVARCHAR(200) = NULL,   
  @RowsPerPage INT           = 0,   
@@ -32,21 +33,29 @@ BEGIN
                         THEN 2147483647  
                         ELSE @RowsPerPage  
     END;  
-  
 
-SELECT @domainId = OrganizationDomainId
-FROM Enterprise.OrganizationDomain
-WHERE NAME = @CompanyDomain
+IF(@UPFMId IS NOT NULL)
+BEGIN
+	select @OrganizationPartyId = ep.PartyId from enterprise.party ep
+	join Enterprise.Organization eo on ep.PartyId = eo.PartyId
+	where RealPageId = @UPFMId
+END
+ELSE
+BEGIN
+    SELECT @domainId = OrganizationDomainId
+    FROM Enterprise.OrganizationDomain
+    WHERE NAME = @CompanyDomain
 
-SELECT @OrganizationPartyId = m.PartyId
-FROM Enterprise.VW_DataImportMapping m
-JOIN Enterprise.Organization org on org.PartyId = m.PartyId
-Where m.CompanyMasterId = @CompanyId
-AND org.OrganizationDomainId = @domainId
+	SELECT @OrganizationPartyId = m.PartyId  
+		FROM Enterprise.VW_DataImportMapping m  
+		JOIN Enterprise.Organization org on org.PartyId = m.PartyId  
+		Where m.CompanyMasterId = @CompanyId  
+		AND org.OrganizationDomainId = @domainId
+END
 
  IF (@Roles IS NULL AND @Rights IS NULL AND @Properties IS NULL)  
  BEGIN  
-  EXEC [Person].[ListUsersWithCompanyId_VER2] @CompanyId = @CompanyId , @ProductId = @ProductId, @RowsPerPage = @RowsPerPage , @PageNumber = @PageNumber, @companyDomain = @CompanyDomain;  
+  EXEC [Person].[ListUsersWithCompanyId_VER2] @OrgPartyIdId = @OrganizationPartyId , @ProductId = @ProductId, @RowsPerPage = @RowsPerPage , @PageNumber = @PageNumber, @companyDomain = @CompanyDomain;  
   RETURN;  
  END  
   

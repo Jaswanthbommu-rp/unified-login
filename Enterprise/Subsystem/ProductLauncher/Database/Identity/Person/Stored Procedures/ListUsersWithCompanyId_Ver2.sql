@@ -1,6 +1,6 @@
 --EXEC [Person].[ListUsersWithCompanyId_VER2]
 CREATE PROCEDURE [Person].[ListUsersWithCompanyId_VER2]     
-(@CompanyId   NVARCHAR(100) = NULL,     
+(@OrgPartyIdId   BIGINT,     
  @Source      NVARCHAR(50)  = 'BlueBook',     
  @ProductId   NVARCHAR(200) = NULL,     
  @RowsPerPage INT           = 0,     
@@ -13,12 +13,8 @@ AS
         DECLARE @Now DATETIME= GETUTCDATE();    
         DECLARE @ProductIdList TABLE(ProductId INT);    
   DECLARE @ProductIdRightList TABLE(ProductId INT);    
-    
-        DECLARE @CompanyIdList TABLE(CompanyId INT);  
-		DECLARE @PartyIdList TABLE(PartyId INT);
   
-        DECLARE @ProductCount INT= 1;    
-        DECLARE @CompanyIdCount INT= 1;    
+        DECLARE @ProductCount INT= 1; 
         CREATE TABLE #UserList    
         (      
 			UserId        BIGINT,     
@@ -33,32 +29,12 @@ AS
 		  
         INSERT INTO @ProductIdList(ProductId)    
                SELECT *    
-               FROM STRING_SPLIT(@ProductId, ',');    
-
-        INSERT INTO @CompanyIdList(CompanyId)    
-            SELECT *    
-            FROM STRING_SPLIT(@companyid, ',')    
+               FROM STRING_SPLIT(@ProductId, ','); 
 
         IF (SELECT COUNT(*) FROM @ProductIdList) = 0    
             BEGIN    
                 SET @ProductCount = NULL;    
 			END;    
-        IF (SELECT COUNT(*) FROM @CompanyIdList) = 0    
-            BEGIN    
-                SET @CompanyIdCount = NULL;    
-			END;    
-    
-	SELECT @domainId = OrganizationDomainId
-	FROM Enterprise.OrganizationDomain
-	WHERE NAME = @CompanyDomain
-
-		INSERT INTO @PartyIdList(PartyId)
-		SELECT m.PartyId
-		FROM @CompanyIdList c
-		JOIN Enterprise.VW_DataImportMapping m on m.CompanyMasterID = c.CompanyId
-		JOIN Enterprise.Organization org on org.PartyId = m.PartyId
-		Where org.OrganizationDomainId = @domainId
-
 
         SELECT @RowsPerPage = CASE    
                                   WHEN @RowsPerPage <= 0    
@@ -77,11 +53,7 @@ AS
 		 ON CMP.ContactMechanismID = PCM.ContactMechanismId AND (PCM.ThruDate IS NULL OR PCM.ThruDate > GETUTCDATE())
 		 JOIN Ident.UserLogin ul on ul.PersonPartyId = pcm.PartyId
 		 JOIN Ident.UserLoginPersona ulp on ulp.UserLoginId = ul.UserId
-		 Where ((@CompanyIdCount IS NULL) OR ulp.OrganizationPartyId in  
-                 (    
-                     SELECT PartyId   
-                     FROM @PartyIdList AS cil 
-                 ))
+		 Where ulp.OrganizationPartyId = @OrgPartyIdId
 
   --Notification Email    
   DECLARE @NotificationEmail TABLE (PartyId BIGINT, Email VARCHAR(255))    
@@ -99,11 +71,7 @@ AS
   WHERE    
    (pcm.ThruDate IS NULL OR pcm.ThruDate > GETUTCDATE())    
    AND cmu.ContactMechanismUsageTypeID = 301
-   AND ((@CompanyIdCount IS NULL) OR ulp.OrganizationPartyId in  
-                 (    
-                     SELECT PartyId   
-                     FROM @PartyIdList AS cil 
-                 ));    
+   AND ulp.OrganizationPartyId = @OrgPartyIdId;
     
         WITH Products    
              AS (SELECT     
@@ -155,13 +123,7 @@ AS
                       LEFT OUTER JOIN  @ContactPreference AS CTPREF ON CTPREF.PartyId = PA.PartyId      
 					  LEFT OUTER JOIN @NotificationEmail ne ON ne.PartyId = p.PartyId    
                           
-                 WHERE ulp.StatusTypeId = 1    
-                       AND ((@CompanyIdCount IS NULL)    
-                       OR ulp.OrganizationPartyId in  
-                 (    
-                     SELECT PartyId   
-                     FROM @PartyIdList AS cil 
-                 )))    
+                 WHERE ulp.StatusTypeId = 1 AND ulp.OrganizationPartyId  = @OrgPartyIdId)    
     
    --- Add the users that UL is not thier user management     
    INSERT INTO #UserList    
@@ -230,12 +192,7 @@ AS
 		FROM Enterprise.OrganizationAdminUser OAU
 			INNER JOIN Ident.UserLoginPersona ULP ON OAU.UserLoginPersonaId = ULP.UserLoginPersonaId
 			INNER JOIN Person.Persona PE ON PE.UserLoginPersonaId = ULP.UserLoginPersonaId   
-     )  AND ((@CompanyIdCount IS NULL)    
-      OR ulp.OrganizationPartyId in
-      (    
-       SELECT PartyId    
-       FROM @PartyIdList AS cil    
-      ));    
+     )  AND ulp.OrganizationPartyId  = @OrgPartyIdId;    
         END;    
     
   ;with totalusers (UserId,     

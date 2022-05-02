@@ -159,14 +159,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [Route("users")]
         [AuthorizeScope("userinfoapi")]
         [HttpGet]
-        public HttpResponseMessage GetUsersByCompanyorProductCodes(string companyid, [FromUri] List<string> productcode, int? rowsPerPage = 5000, int? pageNumber = 1,
+        public HttpResponseMessage GetUsersByCompanyorProductCodes([FromUri] List<string> productcode, string companyid = null, string upfmId = null, int? rowsPerPage = 5000, int? pageNumber = 1,
                                                                     [FromUri] List<string> roles = null, [FromUri] List<string> rights = null, [FromUri]List<string> propertyIds = null, string companyDomain = null)
         {
             WriteToLog(LogEventLevel.Information, "Enterprise - ProductController - GetUsersByCompanyorProducts - Started");
 
             PagedResponse response = new PagedResponse() { Meta = new Meta() };
 
-            if (string.IsNullOrEmpty(companyid) || !productcode.Any())
+            if ((string.IsNullOrEmpty(companyid) && string.IsNullOrEmpty(upfmId)) || !productcode.Any())
             {
                 IList<ProductUsers> productUsers = new List<ProductUsers>();
 
@@ -191,7 +191,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             productcode.ForEach(x => products.Add(ProductEnumHelper.GetProductIdByProductCode(x, productList)));
 
             IProductRepository productRepository = new ProductRepository();
-            var result = productRepository.GetUsersByCompanyorProducts(companyid, products, rowsPerPage.Value, pageNumber.Value, roles, rights, propertyIds, companyDomain);
+            var result = productRepository.GetUsersByCompanyorProducts(companyid, upfmId, products, rowsPerPage.Value, pageNumber.Value, roles, rights, propertyIds, companyDomain);
 
             if (result == null)
             {

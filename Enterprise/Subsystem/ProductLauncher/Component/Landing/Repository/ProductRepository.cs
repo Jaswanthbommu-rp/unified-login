@@ -1950,7 +1950,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// </summary>
         /// <param name="companyId"></param>
         /// <param name="products"></param>
-        /// <param name="version"></param>
+        /// <param name="upfmId"></param>
         /// <param name="rowsPerPage"></param>
         /// <param name="pageNumber"></param>
         /// <param name="roles"></param>
@@ -1958,13 +1958,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="propertyIds"></param>
         /// <param name="companyDomain"></param>
         /// <returns>List of Users by product or company</returns>
-        public IList<EnterpriseProductUser> GetUsersByCompanyorProducts(string companyId, IList<int> products, int rowsPerPage, int pageNumber,
+        public IList<EnterpriseProductUser> GetUsersByCompanyorProducts(string companyId, string upfmId, IList<int> products, int rowsPerPage, int pageNumber,
                                                                 IList<string> roles, IList<string> rights, List<string> propertyIds = null, string companyDomain = null)
         {
 
             dynamic param = new  
             {
                 CompanyId = companyId,
+                UPFMId = upfmId,
                 ProductId = products.Any() ? string.Join(",", products) : null,
                 RowsPerPage = rowsPerPage,
                 PageNumber = pageNumber,
