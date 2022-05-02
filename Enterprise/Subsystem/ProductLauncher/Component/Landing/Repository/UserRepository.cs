@@ -6234,7 +6234,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         if (FeatureFlag.GetUserCompanyAssociationFeatureFlag())
                         {
-                            if (updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyRelationShipId > 0 && externalUserRelationUpdated)
+                            if (updateUserProfileEntity.NewProfile != null 
+                                && updateUserProfileEntity.NewProfile.ExternalUserRelationship != null 
+                                && updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyRelationShipId > 0 
+                                && externalUserRelationUpdated)
                             {
                                 param = new
                                 {
@@ -6700,37 +6703,39 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             var oldData = updateUserProfileEntity.OldProfile.ExternalUserRelationship;
 
             //if id == 1 ui will not send the comapny name but company guid
-            if (newData.ThirdPartyRelationShipId == 1)
+            if (newData != null)
             {
-                if (IsOperatorSettingsEnabled())
+                if (newData.ThirdPartyRelationShipId == 1)
                 {
-
-                    var org = _organizationRepository.GetOrganization(newData.ThirdPartyCompanyRealPageId);
-
-                    if (newData.ThirdPartyRelationShipId != oldData.ThirdPartyRelationShipId ||
-                        org.Name != oldData.ThirdPartyCompanyName)
+                    if (IsOperatorSettingsEnabled())
                     {
-                        isUpdated = true;
-                        delOldProperyInstanceMapping = true;
+
+                        var org = _organizationRepository.GetOrganization(newData.ThirdPartyCompanyRealPageId);
+
+                        if (newData.ThirdPartyRelationShipId != oldData.ThirdPartyRelationShipId ||
+                            org.Name != oldData.ThirdPartyCompanyName)
+                        {
+                            isUpdated = true;
+                            delOldProperyInstanceMapping = true;
+                        }
                     }
+                    else
+                    {
+                        var externalRelationship = GetExternalUserRelationship(updateUserProfileEntity.NewProfile.ExternalUserRelationship.UserLoginPersonaId);
+                        if (newData.ThirdPartyRelationShipId != oldData.ThirdPartyRelationShipId ||
+                            externalRelationship.ThirdPartyCompanyName != newData.ThirdPartyCompanyName)
+                        {
+                            isUpdated = true;
+                        }
+                    }
+
                 }
                 else
                 {
-                    var externalRelationship = GetExternalUserRelationship(updateUserProfileEntity.NewProfile.ExternalUserRelationship.UserLoginPersonaId);
-                    if (newData.ThirdPartyRelationShipId != oldData.ThirdPartyRelationShipId ||
-                        externalRelationship.ThirdPartyCompanyName != newData.ThirdPartyCompanyName)
-                    {
-                        isUpdated = true;
-                    }
+                    isUpdated = (newData.ThirdPartyCompanyName != oldData.ThirdPartyCompanyName ||
+                                 newData.ThirdPartyRelationShipId != oldData.ThirdPartyRelationShipId);
                 }
-
             }
-            else
-            {
-                isUpdated = (updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyCompanyName != updateUserProfileEntity.OldProfile.ExternalUserRelationship.ThirdPartyCompanyName ||
-                             updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyRelationShipId != updateUserProfileEntity.OldProfile.ExternalUserRelationship.ThirdPartyRelationShipId);
-            }
-
             return isUpdated;
         }
 
