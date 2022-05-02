@@ -24,4 +24,10 @@ GO
 ALTER TABLE [Security].[OrganizationDefaultRole]  WITH CHECK ADD  CONSTRAINT [FK_OrganizationDefaultRole_Party] FOREIGN KEY([OrgPartyID])
 REFERENCES [Enterprise].[Organization] ([PartyId])
 ON UPDATE CASCADE
+
+GO
+
+CREATE NONCLUSTERED INDEX [IDX_OrganizationDefaultRole_OrgPartyId]
+ON [Security].[OrganizationDefaultRole] ([OrgPartyId])
+
 GO

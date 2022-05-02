@@ -1,16 +1,17 @@
 CREATE PROCEDURE [Ident].[UpdateActivityAttemptOnLoginSuccess]  
-(@enterpriseUserName AS      NVARCHAR(255),  
-@ActivityTypeId AS          INT,  
-@browserName AS             NVARCHAR(20)  = '',  
-@browserType AS             NVARCHAR(20)  = '',  
-@ipAddress AS               NVARCHAR(50)  = '',  
-@isMobile AS                BIT           = 0,  
-@platform AS                NVARCHAR(20)  = '',  
-@version AS                 NVARCHAR(10)  = '',  
-@deviceType AS              NVARCHAR(20)  = '',  
-@timezone AS                NVARCHAR(100) = '',  
-@authenticationServiceId AS NVARCHAR(50)  = '',  
-@PartyId                 INT  
+(
+	@enterpriseUserName AS      VARCHAR(255),  
+	@ActivityTypeId AS          INT,  
+	@browserName AS             NVARCHAR(20)  = '',  
+	@browserType AS             NVARCHAR(20)  = '',  
+	@ipAddress AS               NVARCHAR(50)  = '',  
+	@isMobile AS                BIT           = 0,  
+	@platform AS                NVARCHAR(20)  = '',  
+	@version AS                 NVARCHAR(10)  = '',  
+	@deviceType AS              NVARCHAR(20)  = '',  
+	@timezone AS                NVARCHAR(100) = '',  
+	@authenticationServiceId AS NVARCHAR(50)  = '',  
+	@PartyId                    BIGINT  
 )  
 AS  
      BEGIN  

@@ -11,3 +11,9 @@
 )
 GO
 CREATE INDEX IDX_DataImportMapping ON Enterprise.DataImportMapping (DataImportApplicationId) INCLUDE (SourceId, PartyId)
+GO
+
+
+CREATE NONCLUSTERED INDEX [IDX_DataImportMapping_PartyId]
+			ON [Enterprise].[DataImportMapping] ([DataImportApplicationId],[PartyId]) INCLUDE ([SourceId])
+GO
