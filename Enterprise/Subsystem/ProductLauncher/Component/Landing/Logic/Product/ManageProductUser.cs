@@ -238,7 +238,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 var integration = _integrationTypeFactory.GetIntegration(productUser.ProductId);
+                Dictionary<string, object> logData = new Dictionary<string, object>();
+                logData.Add("productUser", productUser);
+                WriteToLog(LogEventLevel.Debug, $"Begin create user", logData);
                 result = integration.CreateUser(productUser);
+                WriteToLog(LogEventLevel.Debug, $"End create user", logData);
             }
             catch (Exception ex)
             {
@@ -250,6 +254,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
 
             var isBatchCompleted = false;
+            WriteToLog(LogEventLevel.Debug, $"Begin product batch editorpersona:{productUser.AssignUserPersonaId}");
             WriteToLog(LogEventLevel.Debug, $"Begin product batch update {productUser.ProductBatchId} - groupid:{productUser.BatchProcessorGroupId} productid:{productUser.ProductId} createpersona:{productUser.CreateUserPersonaId} editorpersona:{productUser.AssignUserPersonaId}");
             // If result OK then update Success status else Error
             if (string.IsNullOrEmpty(result))
