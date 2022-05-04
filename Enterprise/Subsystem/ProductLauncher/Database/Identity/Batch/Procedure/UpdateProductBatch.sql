@@ -1,21 +1,24 @@
 ﻿CREATE PROCEDURE [Batch].[UpdateProductBatch]  
-(@ProductBatchID INT,  
+(@ProductBatchID BIGINT,  
  @StatusTypeId   INT,  
  @InputJson      NVARCHAR(MAX) = NULL,  
- @ErrorDetails   VARCHAR(MAX)  = NULL  
+ @ErrorDetails   VARCHAR(MAX)  = NULL
 )  
 AS  
      BEGIN  
          SET NOCOUNT ON;  
          DECLARE @NOW DATETIME= GETUTCDATE();  
-         DECLARE @RetryCount TINYINT;  
+         DECLARE @RetryCount TINYINT;
+		 DECLARE @BatchComplete TINYINT = 0
+		 DECLARE @groupID AS BIGINT, @subjectUserPersonId AS BIGINT, @editoruserId AS BIGINT;
+		 DECLARE @BatchStatusCheckCount TINYINT = 0
+		 DECLARE @DelayLength char(10)
+
          BEGIN TRY  
              BEGIN TRAN;  
-
-             DECLARE @groupID AS BIGINT, @subjectUserPersonId AS BIGINT, @editoruserId AS BIGINT;  
              SELECT @groupID = p.BatchProcessorGroupId, @subjectUserPersonId = p.SubjectUserPersonaId, @editoruserId = p.EditorUserPersonaId  
-             FROM Batch.BatchProcessor p WITH(UPDLOCK)
-             WHERE p.BatchProcessorId = @ProductBatchID;
+				FROM Batch.BatchProcessor p WITH(UPDLOCK)
+					WHERE p.BatchProcessorId = @ProductBatchID;
 
              IF @StatusTypeId = 7 --Error  
                  BEGIN  
@@ -39,33 +42,40 @@ AS
                                            THEN @NOW  
                                            ELSE [LastRunDateTime]  
                                        END --Running  
+               WHERE BatchProcessorId = @ProductBatchID;  
   
-             WHERE BatchProcessorId = @ProductBatchID;  
-  
-             --Insert record in error table  
-             INSERT INTO Batch.[BatchProcessorError] ([BatchProcessorId], [Error]) 
+			 IF @StatusTypeId NOT IN (5,6)
+			 BEGIN
+				 WHILE (@BatchStatusCheckCount < 5)
+				 BEGIN
+					SELECT @BatchComplete = CASE WHEN COUNT(*) > 0 THEN 0 ELSE 1 END
+						FROM Batch.BatchProcessor   
+							WHERE BatchProcessorGroupId = @groupID
+								AND SubjectUserPersonaId = @subjectUserPersonId  
+								AND EditorUserPersonaId = @editoruserId
+								AND ( (StatusTypeId <> 8)   
+								AND (StatusTypeId <> 7 OR (StatusTypeId = 7 AND RetryCount < 3)))  
+					IF @BatchComplete = 1 OR @BatchStatusCheckCount > 4
+						BREAK
+
+					SET @BatchStatusCheckCount = @BatchStatusCheckCount + 1
+					SET @DelayLength = '00:00:00:' + CONVERT(VARCHAR,FLOOR(RAND(@ProductBatchID+@BatchStatusCheckCount)*(10))+1)
+					WAITFOR DELAY @DelayLength
+				END
+			END
+            
+			--Insert record in error table
+            INSERT INTO Batch.[BatchProcessorError] ([BatchProcessorId], [Error]) 
 				VALUES (@ProductBatchID,@ErrorDetails);  
-  
-             SELECT @groupID = p.BatchProcessorGroupId, @subjectUserPersonId = p.SubjectUserPersonaId, @editoruserId = p.EditorUserPersonaId  
-             FROM Batch.BatchProcessor p  
-             Where p.BatchProcessorId = @ProductBatchID;  
-  
-             SELECT   
-				CAST(CASE WHEN COUNT(*) > 0 THEN 0 ELSE 1 END AS BIT)
-             FROM Batch.BatchProcessor   
-             WHERE BatchProcessorGroupId = @groupID
-             AND SubjectUserPersonaId = @subjectUserPersonId  
-			 AND EditorUserPersonaId = @editoruserId
-			 AND ( (StatusTypeId <> 8)   
-			 AND (StatusTypeId <> 7 OR (StatusTypeId = 7 AND RetryCount < 3)))  
-  
-            COMMIT;   
+
+            COMMIT;
+			SELECT @BatchComplete
          END TRY  
          BEGIN CATCH  
              ROLLBACK;  
              DECLARE @ErrorLogID INT;  
              EXEC dbo.LogError  
                   @ErrorLogID = @ErrorLogID OUTPUT;  
-             
+             SELECT 0
          END CATCH;  
      END;
