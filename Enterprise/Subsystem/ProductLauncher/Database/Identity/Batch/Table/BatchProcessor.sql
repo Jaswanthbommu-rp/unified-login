@@ -24,3 +24,16 @@ CREATE NONCLUSTERED INDEX [IX_BatchProcessor_CreateDateTime] ON [Batch].[BatchPr
 [EditorUserPartyId] ASC
 )
 INCLUDE([BatchProcessorId],[CorrelationId],[BatchProcessorGroupId],[EditorUserPersonaId],[SubjectUserPersonaId],[BatchProcessTypeId],[ProductId],[StatusTypeId],[RetryCount],[InputJSON],[LastRunDateTime]) WITH (SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
+
+GO
+
+CREATE NONCLUSTERED INDEX [IDX_BatchProcessor_BatchProcessorGroupId_EditorUserPersonaId] ON [Batch].[BatchProcessor] 
+(
+	[BatchProcessorGroupId],
+	[EditorUserPersonaId],
+	[SubjectUserPersonaId],
+	[BatchProcessorId],
+	[StatusTypeId]
+)
+INCLUDE ([RetryCount])
+GO
