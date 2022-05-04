@@ -255,7 +255,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             var isBatchCompleted = false;
             WriteToLog(LogEventLevel.Debug, $"Begin product batch editorpersona:{productUser.AssignUserPersonaId}");
-            WriteToLog(LogEventLevel.Debug, $"Begin product batch update {productUser.ProductBatchId} - groupid:{productUser.BatchProcessorGroupId} productid:{productUser.ProductId} createpersona:{productUser.CreateUserPersonaId} editorpersona:{productUser.AssignUserPersonaId}");
+            WriteToLog(LogEventLevel.Debug, $"Begin product batch update {productUser.ProductBatchId} - groupid:{productUser.BatchProcessorGroupId} productid:{productUser.ProductId} createpersona:{productUser.CreateUserPersonaId} editorpersona:{productUser.AssignUserPersonaId} result:({result})");
             // If result OK then update Success status else Error
             if (string.IsNullOrEmpty(result))
             {

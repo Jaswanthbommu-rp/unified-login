@@ -68,6 +68,8 @@ AS
                                AND ProductId = @ProductID
                                AND PropertyInstanceId = @PropertyInstanceId
                                AND Active = 1
+                         SELECT 1 AS PropertyInstanceMappingID,
+                                '' AS ErrorMessage;
                  END;
          END;
 END;

@@ -1236,10 +1236,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 //var result = repository.Execute<RepositoryResponse>(StoredProcNameConstants.SP_UpdateProductBatch,
                 //    new { productBatchId, statusTypeId, inputJson, errorDetails });
                 
-                var result = repository.Execute<bool>(StoredProcNameConstants.SP_UpdateProductBatch,
+                var result = repository.Execute<int>(StoredProcNameConstants.SP_UpdateProductBatch,
                    new { productBatchId, statusTypeId, inputJson, errorDetails });
-                
-                return result;
+
+                return result == 1;
             }
         }
 
