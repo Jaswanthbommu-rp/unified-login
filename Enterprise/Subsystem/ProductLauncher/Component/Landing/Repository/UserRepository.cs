@@ -229,6 +229,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             IUserLoginRepository userLoginRepository = new UserLoginRepository();
             IUserLoginOnly userLoginOnly = userLoginRepository.GetUserLoginOnly(newProfile.userLogin.LoginName);
+            newProfile.IsRPEmployee = newProfile.organization[0].RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId ? true : false;
             if (userLoginOnly != null)
             {
                 //Get User Details before save
