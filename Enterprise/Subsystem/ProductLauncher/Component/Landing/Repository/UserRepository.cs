@@ -233,7 +233,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 newProfile.IsRPEmployee = newProfile.organization[0].RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId;
             }
-            
             if (userLoginOnly != null)
             {
                 //Get User Details before save
@@ -2333,25 +2332,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     createUserPersonaId = repository.GetOne<long>(StoredProcNameConstants.SP_GetActivePersona, new { RealPageId = RealPageEmployeeAccessID });
 
                     personaList.ToList().ForEach(o =>
+                    {
+                        IList<ProductBatch> productList = new List<ProductBatch>();
+                        dynamic param = new
                         {
-                            IList<ProductBatch> productList = new List<ProductBatch>();
-                            dynamic param = new
+                            UserLoginId = o.UserId,
+                            OrganizationPartyId = organization.PartyId
+                        };
+                        IList<UserLoginPersona> userLoginPersonaList = repository.GetMany<UserLoginPersona>(StoredProcNameConstants.SP_GetUserLoginPersona, param);
+                        if (userLoginPersonaList != null)
+                        {
+                            if (!(userLoginPersonaList[0].StatusTypeId == 23 || userLoginPersonaList[0].StatusTypeId == 24))
                             {
-                                UserLoginId = o.UserId,
-                                OrganizationPartyId = organization.PartyId
-                            };
-                            IList<UserLoginPersona> userLoginPersonaList = repository.GetMany<UserLoginPersona>(StoredProcNameConstants.SP_GetUserLoginPersona, param);
-                            if (userLoginPersonaList != null)
-                            {
-                                if (!(userLoginPersonaList[0].StatusTypeId == 23 || userLoginPersonaList[0].StatusTypeId == 24))
-                                {
-                                    // don't update disabled or expired admins
-                                    var productCount = SaveProductDetails(repository, productList, null, createUserPersonaId, o.PersonaId, RealPageEmployeeAccessID, organizationRealPageId, null, (int)UserRoleType.SuperUser, true, aoProductsAvailableForUser, false, false);
-                                    adminsUpdated++;
-                                    totalProductCount = productCount > totalProductCount ? productCount : totalProductCount;
-                                }
+                                // don't update disabled or expired admins
+                                var productCount = SaveProductDetails(repository, productList, null, createUserPersonaId, o.PersonaId, RealPageEmployeeAccessID, organizationRealPageId, null, (int)UserRoleType.SuperUser, true, aoProductsAvailableForUser, false, false);
+                                adminsUpdated++;
+                                totalProductCount = productCount > totalProductCount ? productCount : totalProductCount;
                             }
                         }
+                    }
                     );
                     if ((adminsUpdated > 0) && (totalProductCount > 0))
                     {
@@ -3792,8 +3791,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         Dictionary<string, RolePropertyList> oneSiteAndOtherProducts = new Dictionary<string, RolePropertyList>();
 
                         ProductBatch pbOneSite = (from a in productList
-                            where a.ProductId == (int)ProductEnum.OneSite
-                            select a).FirstOrDefault();
+                                                  where a.ProductId == (int)ProductEnum.OneSite
+                                                  select a).FirstOrDefault();
 
                         ProductBatch pbLead2Lease = null;
                         ProductBatch pbSeniorLead = null;
@@ -3803,8 +3802,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         if (productList.Any(a => a.ProductId == (int)ProductEnum.Lead2Lease))
                         {
                             pbLead2Lease = (from a in productList
-                                where a.ProductId == (int)ProductEnum.Lead2Lease
-                                select a).FirstOrDefault();
+                                            where a.ProductId == (int)ProductEnum.Lead2Lease
+                                            select a).FirstOrDefault();
 
                             oneSiteAndOtherProducts.Add(ProductEnum.Lead2Lease.ToString(), pbLead2Lease.InputJson);
                         }
@@ -3812,8 +3811,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         if (productList.Any(a => a.ProductId == (int)ProductEnum.SeniorLeadManagement))
                         {
                             pbSeniorLead = (from a in productList
-                                where a.ProductId == (int)ProductEnum.SeniorLeadManagement
-                                select a).FirstOrDefault();
+                                            where a.ProductId == (int)ProductEnum.SeniorLeadManagement
+                                            select a).FirstOrDefault();
 
                             oneSiteAndOtherProducts.Add(ProductEnum.Lead2Lease.ToString(), pbSeniorLead.InputJson);
                         }
@@ -4099,7 +4098,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 RetryCount = 0,
                                 BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
                                 InputJson = new RolePropertyList()
-                                    { PropertyList = new List<string>(), RoleList = new List<string>(), IsAssigned = false }
+                                { PropertyList = new List<string>(), RoleList = new List<string>(), IsAssigned = false }
                             };
                             productListToRemove.Add(pbs);
                         }
@@ -4236,8 +4235,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         Dictionary<string, RolePropertyList> oneSiteAndOtherProducts = new Dictionary<string, RolePropertyList>();
 
                         ProductBatch pbOneSite = (from a in productListToCreate
-                            where a.ProductId == (int)ProductEnum.OneSite
-                            select a).FirstOrDefault();
+                                                  where a.ProductId == (int)ProductEnum.OneSite
+                                                  select a).FirstOrDefault();
 
                         ProductBatch pbLead2Lease = null;
                         ProductBatch pbSeniorLead = null;
@@ -4247,8 +4246,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         if (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.Lead2Lease))
                         {
                             pbLead2Lease = (from a in productListToCreate
-                                where a.ProductId == (int)ProductEnum.Lead2Lease
-                                select a).FirstOrDefault();
+                                            where a.ProductId == (int)ProductEnum.Lead2Lease
+                                            select a).FirstOrDefault();
 
                             oneSiteAndOtherProducts.Add(ProductEnum.Lead2Lease.ToString(), pbLead2Lease.InputJson);
                         }
@@ -4256,8 +4255,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         if (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.SeniorLeadManagement))
                         {
                             pbSeniorLead = (from a in productListToCreate
-                                where a.ProductId == (int)ProductEnum.SeniorLeadManagement
-                                select a).FirstOrDefault();
+                                            where a.ProductId == (int)ProductEnum.SeniorLeadManagement
+                                            select a).FirstOrDefault();
 
                             oneSiteAndOtherProducts.Add(ProductEnum.Lead2Lease.ToString(), pbSeniorLead.InputJson);
                         }
@@ -5714,7 +5713,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             bool isOperatorSettingsEnabled = IsOperatorSettingsEnabled();
             bool deleteOldPropertyInstanceMapping = false;
             bool externalUserRelationUpdated = IsExternaUserlRelationUpdated(updateUserProfileEntity, out deleteOldPropertyInstanceMapping);
-            
+
             using (var repository = GetRepository())
             {
                 //Begin the transaction
@@ -6239,9 +6238,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         if (FeatureFlag.GetUserCompanyAssociationFeatureFlag())
                         {
-                            if (updateUserProfileEntity.NewProfile != null 
-                                && updateUserProfileEntity.NewProfile.ExternalUserRelationship != null 
-                                && updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyRelationShipId > 0 
+                            if (updateUserProfileEntity.NewProfile != null
+                                && updateUserProfileEntity.NewProfile.ExternalUserRelationship != null
+                                && updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyRelationShipId > 0
                                 && externalUserRelationUpdated)
                             {
                                 param = new
@@ -6273,7 +6272,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         #endregion
 
-                        var primaryPropertyBatch = updateUserProfileEntity.NewProfile.productBatch.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedPlatform);
                         var enterpriseRole = updateUserProfileEntity.NewProfile.productBatch.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedUI);
                         //Update Enterprise role template to persona                        
                         if (enterpriseRole?.InputJson?.RoleList != null && enterpriseRole?.InputJson?.RoleList.Count > 0)
@@ -6369,6 +6367,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 {
                                     gbProdBatch = new ProductBatch()
                                     {
+                                        ProductId = (int)ProductEnum.UnifiedPlatform,
                                         InputJson = new RolePropertyList()
                                         {
                                             PropertyList = new List<string>()
@@ -6409,12 +6408,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
                         else
                         {
-                            //ProductBatch productBatch = updateUserProfileEntity.NewProfile.productBatch?.FirstOrDefault(p => p.ProductId.Equals((int)ProductEnum.UnifiedPlatform));
                             if ((gbProdBatch != null) && ((gbProdBatch.InputJson?.PropertyList?.Count > 0) || (gbProdBatch.InputJson?.RemovedPropertyList?.Count > 0)))
                             {
                                 string propertyJSON = JsonConvert.SerializeObject(gbProdBatch);
-                                addedPrimaryProperty = primaryPropertyBatch.InputJson?.PropertyList;
-                                removedPrimaryProperty = primaryPropertyBatch.InputJson?.RemovedPropertyList;
 
                                 isPrimaryPropertiesUpdated = true;
 
@@ -6423,8 +6419,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                     repository.Execute(StoredProcNameConstants.SP_DeletePropertyInstanceMapping, new { PersonaId = updateUserProfileEntity.OldProfile.Persona[0].PersonaId, ProductId = (int)ProductEnum.UnifiedPlatform });
                                 }
 
-                                string primaryPropertyJSON = JsonConvert.SerializeObject(primaryPropertyBatch);
-                                repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdatePropertyInstanceMapping, new { PersonaId = updateUserProfileEntity.OldProfile.Persona[0].PersonaId, ProductId = (int)ProductEnum.UnifiedPlatform, PropertyInstanceJSON = primaryPropertyJSON });
+                                repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdatePropertyInstanceMapping, new { PersonaId = updateUserProfileEntity.OldProfile.Persona[0].PersonaId, ProductId = (int)ProductEnum.UnifiedPlatform, PropertyInstanceJSON = propertyJSON });
 
                             }
                         }
@@ -6844,7 +6839,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             ManageUnifiedSettings manageUnifiedSettings = new ManageUnifiedSettings(_userClaim);
             var data = manageUnifiedSettings.GetCompanyInternalSettings(_userClaim.OrganizationRealPageGuid, "UPFM", "company");
             bool value = data?.Keys?.Where(p => p.Name == "owneroperatorrelationship")?.FirstOrDefault()?.Value == "1";
-            
+
             return value;
         }
 
