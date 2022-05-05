@@ -29,7 +29,8 @@ BEGIN
   @ProductSettingTypeId int,      
   @OffsetMinutes smallint,    
   @csvOperator varchar(max),    
-  @filterOperatorCount int = NULL;   
+  @filterOperatorCount int = NULL,
+  @EmployeeCompanyPartyId bigint;   
       
  DECLARE @filterStatus TABLE (      
   StatusTypeId int PRIMARY KEY      
@@ -83,7 +84,11 @@ BEGIN
        
  SELECT @ProductSettingTypeId = ProductSettingTypeId      
  FROM  Enterprise.ProductSettingType      
- WHERE Name = 'ProductStatus'      
+ WHERE Name = 'ProductStatus'    
+
+ select @EmployeeCompanyPartyId = P.PartyId from Enterprise.Organization O 
+ inner join Enterprise.Party P on O.PartyId = P.PartyId 
+ where O.Name = 'Realpage Employee'
       
  SELECT @csvAssignedProducts = ColumnValue      
  FROM OPENJSON (JSON_QUERY(@AssignedProducts, '$.assignedProducts'))      
@@ -363,7 +368,8 @@ BEGIN
   INNER JOIN Ident.UserLogin ul ON iulp.UserLoginId = ul.UserId        
   INNER JOIN Enterprise.StatusType est ON iulp.StatusTypeId = est.StatusTypeId        
   LEFT OUTER JOIN @filterStatus fs ON (est.StatusTypeId = fs.StatusTypeId)        
- WHERE iulp.OrganizationPartyId = @PartyId AND iulp.IsRPEmployee = 0      
+ WHERE iulp.OrganizationPartyId = @PartyId 
+ AND ( iulp.IsRPEmployee = 0 OR @EmployeeCompanyPartyId =  iulp.OrganizationPartyId)
  AND  pe.personaId  NOT IN ( SELECT ISNULL(PersonaId, 0) FROM @HoldPersona)        
  AND  (        
   pe.PersonaId IN        
