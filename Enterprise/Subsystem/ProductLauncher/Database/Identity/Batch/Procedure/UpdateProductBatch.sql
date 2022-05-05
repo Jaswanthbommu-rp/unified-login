@@ -12,25 +12,20 @@ AS
 		 DECLARE @BatchComplete TINYINT = 0
 		 DECLARE @groupID AS BIGINT, @subjectUserPersonId AS BIGINT, @editoruserId AS BIGINT;
 		 DECLARE @BatchStatusCheckCount TINYINT = 0
-		 DECLARE @DelayLength char(10)
+		 DECLARE @DelayLength CHAR(10)
 
          BEGIN TRY  
              BEGIN TRAN;  
-             SELECT @groupID = p.BatchProcessorGroupId, @subjectUserPersonId = p.SubjectUserPersonaId, @editoruserId = p.EditorUserPersonaId  
+             SELECT @groupID = p.BatchProcessorGroupId,
+					@subjectUserPersonId = p.SubjectUserPersonaId,
+					@editoruserId = p.EditorUserPersonaId,
+					@RetryCount = P.RetryCount
 				FROM Batch.BatchProcessor p WITH(UPDLOCK)
 					WHERE p.BatchProcessorId = @ProductBatchID;
 
              IF @StatusTypeId = 7 --Error  
                  BEGIN  
-                     SELECT @RetryCount = RetryCount + 1  
-                     FROM BatchProcessor  
-                     WHERE BatchProcessorId = @ProductBatchID;  
-                 END;  
-                 ELSE  
-                 BEGIN  
-                     SELECT @RetryCount = RetryCount  
-                     FROM BatchProcessor  
-                     WHERE BatchProcessorId = @ProductBatchID;  
+                     SET @RetryCount = @RetryCount + 1  
                  END;  
              UPDATE Batch.[BatchProcessor]  
                SET  
@@ -59,7 +54,7 @@ AS
 						BREAK
 
 					SET @BatchStatusCheckCount = @BatchStatusCheckCount + 1
-					SET @DelayLength = '00:00:00:' + CONVERT(VARCHAR,FLOOR(RAND(@ProductBatchID+@BatchStatusCheckCount)*(10))+1)
+					SET @DelayLength = '00:00:00:' + CONVERT(VARCHAR,FLOOR(RAND()*(10))+1)
 					WAITFOR DELAY @DelayLength
 				END
 			END
