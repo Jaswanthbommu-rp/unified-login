@@ -317,7 +317,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 usePrimaryProperties = roleProp.UsePrimaryProperties;
                 roleProp = AssignPrimaryPropertiesToProductBatchOnUserCreate(productUser, roleProp);
 
-                var integration = _integrationTypeFactory.GetIntegration(productUser.ProductId);
+                var integration = _integrationTypeFactory.GetIntegrationStandardV1(productUser.ProductId);
                 result = integration.CreateUser(productUser);
             }
             catch (Exception ex)
