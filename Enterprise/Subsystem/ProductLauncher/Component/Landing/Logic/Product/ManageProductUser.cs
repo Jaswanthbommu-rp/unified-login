@@ -662,7 +662,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             var data = _productRepository.GetUserBatchDetails(batchGroupId, fromPersonaId, toPersonaId);
 
-            if (data != null & data.Count > 0)
+            if (data != null && data.Count > 0)
             {
                 foreach (var item in data)
                 {
