@@ -2701,15 +2701,15 @@ BEGIN
 	INSERT INTO Security.Role(RoleName, ShortName, Description, RoleTypeID, OrgPartyID, ProductId, CreatedBy, CreatedDate)
 	VALUES('Administrator', 'Administrator', 'Administrator', 3, NULL, 38, @UserId, GETDATE())	
 END	
-IF NOT EXISTS(SELECT 1 FROM Security.Role WHERE RoleName = 'ReadOnlyUser' AND OrgPartyID IS NULL AND ProductId = 38)
+IF NOT EXISTS(SELECT 1 FROM Security.Role WHERE RoleName = 'Read Only User' AND OrgPartyID IS NULL AND ProductId = 38)
 BEGIN
 	INSERT INTO Security.Role(RoleName, ShortName, Description, RoleTypeID, OrgPartyID, ProductId, CreatedBy, CreatedDate)
-	VALUES('ReadOnlyUser', 'ReadOnlyUser', 'Read-Only User', 3, NULL, 38, @UserId, GETDATE())	
+	VALUES('Read Only User', 'ReadOnlyUser', 'Read-Only User', 3, NULL, 38, @UserId, GETDATE())	
 END	
-IF NOT EXISTS(SELECT 1 FROM Security.Role WHERE RoleName = 'StandardUser' AND OrgPartyID IS NULL AND ProductId = 38)
+IF NOT EXISTS(SELECT 1 FROM Security.Role WHERE RoleName = 'Standard User' AND OrgPartyID IS NULL AND ProductId = 38)
 BEGIN
 	INSERT INTO Security.Role(RoleName, ShortName, Description, RoleTypeID, OrgPartyID, ProductId, CreatedBy, CreatedDate)
-	VALUES('StandardUser', 'StandardUser', 'Standard User', 3, NULL, 38, @UserId, GETDATE())	
+	VALUES('Standard User', 'StandardUser', 'Standard User', 3, NULL, 38, @UserId, GETDATE())	
 END	
 IF NOT EXISTS(SELECT 1 FROM Security.[Right] WHERE RightName in ('AccesstoBids&ContractsinVendorMarketplace','ExecuteandCloseContracts','AwardBids','CreateEditorCancelBids', 
                                                                    'CreateEditorCancelContracts','ApproveorRejectContracts') )
