@@ -628,6 +628,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 						profiledetail.InactivePersona = null;
 						profiledetail.Persona = null;
 						profiledetail.Operator = profiledetail.Operator;
+                        profiledetail.OperatorRealPageId = profiledetail.OperatorRealPageId;
 						profiledetail.UserRelationshipType = profiledetail.UserRelationshipType;
 						profiledetail.CompanyName = profiledetail.CompanyName;
 

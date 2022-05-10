@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using System.Collections.Generic;
@@ -203,6 +204,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 		/// </summary>
 		[JsonProperty("Operator")]
 		public string Operator { get; set; }
+
+        /// <summary>
+        /// Operator
+        /// </summary>
+        [JsonProperty("OperatorRealPageId", NullValueHandling = NullValueHandling.Include)]
+        public Guid? OperatorRealPageId { get; set; }
 
 		/// <summary>
 		/// UserRelationshipType

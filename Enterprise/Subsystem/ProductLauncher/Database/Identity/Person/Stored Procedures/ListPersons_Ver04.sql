@@ -1,5 +1,4 @@
-﻿
-CREATE PROCEDURE [Person].[ListPersons_Ver04] (     
+﻿CREATE PROCEDURE [Person].[ListPersons_Ver04] (     
  @RealPageId uniqueidentifier = NULL,      
  @ParentPartyRoleTypeId int = NULL,      
  @UserListFilterType tinyint = 0,      
@@ -86,9 +85,8 @@ BEGIN
  FROM  Enterprise.ProductSettingType      
  WHERE Name = 'ProductStatus'    
 
- select @EmployeeCompanyPartyId = P.PartyId from Enterprise.Organization O 
- inner join Enterprise.Party P on O.PartyId = P.PartyId 
- where O.Name = 'Realpage Employee'
+ select @EmployeeCompanyPartyId = PartyId from Enterprise.Party P
+ where P.RealPageId = '0D018E46-C20E-477D-ADED-4E5A35FB8F99'
       
  SELECT @csvAssignedProducts = ColumnValue      
  FROM OPENJSON (JSON_QUERY(@AssignedProducts, '$.assignedProducts'))      
@@ -207,7 +205,7 @@ BEGIN
    INSERT INTO @filterOperator (      
     OperatorPartyId      
    )    
-   SELECT PartyId FROM Enterprise.Party WHERE RealPageId in (    
+   SELECT PartyId FROM Enterprise.Party P WHERE P.RealPageId in (    
    SELECT CONVERT(uniqueidentifier, value)      
    FROM STRING_SPLIT(@csvOperator, ','));      
   END    
@@ -420,9 +418,9 @@ BEGIN
  SELECT PartyId,ContactMechanismId,RowNo       
  FROM      
  (      
-  SELECT PartyId,ContactMechanismId,ROW_NUMBER() OVER(PARTITION BY PartyId ORDER BY FromDate DESC) AS RowNo      
+ SELECT PartyId,ContactMechanismId,ROW_NUMBER() OVER(PARTITION BY PartyId ORDER BY FromDate DESC) AS RowNo      
   FROm Enterprise.PartyContactMechanism      
-  WHERE ThruDate > GETUTCDATE()      
+  WHERE ThruDate > GETUTCDATE() 
  ) X      
  WHERE X.RowNo = 1      
       
@@ -452,7 +450,8 @@ BEGIN
   PasswordModifiedDate,    
   EntepriseRoleName,      
   RoleTemplateId,  
-   Operator,    
+  Operator,
+  OperatorRealPageId,
   UserRelationshipType,    
   CompanyName,  
   PersonaHasProductError,    
@@ -460,7 +459,7 @@ BEGIN
   TotalRecords,      
   RowNumber,    
   PersonaId    
- )      
+ )    
  AS       
  (      
     SELECT       
@@ -487,10 +486,8 @@ BEGIN
  ulp.PasswordModifiedDate,    
     UER.EnterpriseRoleName,      
     UER.RoleTemplateId,  
- CASE     
-    WHEN TPR.ThirdPartyRelationshipId = 1 THEN     
-    O.Name      
-    ELSE NULL END AS Operator,      
+	CASE WHEN TPR.ThirdPartyRelationshipId = 1 THEN ExtOrg.Name ELSE NULL END AS Operator,
+	CASE WHEN TPR.ThirdPartyRelationshipId = 1 THEN ExpParty.RealPageId ELSE NULL END AS OperatorRealPageId,
    TPR.ThirdPartyRelationship as UserRelationshipType,    
    CASE     
     WHEN TPR.ThirdPartyRelationshipId = 1 THEN NULL      
@@ -507,7 +504,7 @@ BEGIN
       WHEN 104 THEN ROW_NUMBER() OVER (ORDER BY ulp.StatusName ASC, p.FirstName + ' ' + p.LastName ASC)        
       WHEN 105 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(UE.Employee,'') ASC, p.FirstName + ' ' + p.LastName ASC)      
       WHEN 106 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(UER.EnterpriseRoleName,'') ASC, p.FirstName + ' ' + p.LastName ASC)    
-      WHEN 107 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(O.Name,0) ASC, p.FirstName + ' ' + p.LastName ASC)    
+      WHEN 107 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(ExtOrg.Name,0) ASC, p.FirstName + ' ' + p.LastName ASC)    
       WHEN -100 THEN ROW_NUMBER() OVER (ORDER BY p.FirstName + ' ' + p.LastName DESC)        
      -- WHEN -101 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(pct.ProductCount,0)  DESC, p.FirstName + ' ' + p.LastName DESC)          
       WHEN -102 THEN ROW_NUMBER() OVER (ORDER BY ulp.LastLogin DESC, p.FirstName + ' ' + p.LastName DESC)        
@@ -515,7 +512,7 @@ BEGIN
       WHEN -104 THEN ROW_NUMBER() OVER (ORDER BY ulp.StatusName DESC, p.FirstName + ' ' + p.LastName DESC)        
       WHEN -105 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(UE.Employee,'') DESC, p.FirstName + ' ' + p.LastName DESC)        
       WHEN -106 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(UER.EnterpriseRoleName,'') DESC, p.FirstName + ' ' + p.LastName DESC)      
-      WHEN -107 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(O.Name,0) DESC, p.FirstName + ' ' + p.LastName DESC)    
+      WHEN -107 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(ExtOrg.Name,0) DESC, p.FirstName + ' ' + p.LastName DESC)    
      END AS RowNumber,    
   ulp.PersonaId     
     FROM #UserLogin ulp        
@@ -529,11 +526,11 @@ BEGIN
     INNER JOIN Ident.IdentityProviderType ipt ON ulp.IdentityProviderTypeId = ipt.IdentityProviderTypeId         
     LEFT OUTER JOIN Enterprise.UserEmployeeId UE ON ulp.UserLoginPersonaId = UE.UserLoginPersonaId        
     LEFT OUTER JOIN #UserEnterpriseRole UER  ON ulp.PersonaId  = UER.PersonaId  
- LEFT OUTER JOIN Enterprise.ExternalUserRelationship EUR ON EUR.UserLoginPersonaId = ulp.UserLoginPersonaId    
+	LEFT OUTER JOIN Enterprise.ExternalUserRelationship EUR ON EUR.UserLoginPersonaId = ulp.UserLoginPersonaId    
     LEFT OUTER JOIN Enterprise.ThirdPartyRelationship TPR ON TPR.ThirdPartyRelationshipId = EUR.ThirdPartyRelationshipId    
-    LEFT OUTER JOIN Enterprise.Organization O ON O.PartyId = EUR.ThirdPartyCompanyPartyId     
-  
- LEFT OUTER JOIN #PersonaProductError PPE ON PPE.PersonaId = ulp.PersonaId    
+	LEFT OUTER JOIN Enterprise.Organization ExtOrg ON ExtOrg.PartyId = EUR.ThirdPartyCompanyPartyId     
+	LEFT OUTER JOIN Enterprise.Party ExpParty ON ExpParty.PartyId = EUR.ThirdPartyCompanyPartyId    
+	LEFT OUTER JOIN #PersonaProductError PPE ON PPE.PersonaId = ulp.PersonaId   
     WHERE  (        
     (@filterName IS NULL)        
     OR (CHARINDEX(@filterName, FirstName + ' ' + LastName, 1) > 0)        
@@ -549,7 +546,7 @@ BEGIN
  AND  ((@filterPersonaProductError IS NULL) OR (PPE.IsProductError = @filterPersonaProductError))    
  )      
  SELECT      
- TotalRecords,      
+    TotalRecords,      
     RealPageID,      
     PartyId,      
     FirstName,      
@@ -558,27 +555,28 @@ BEGIN
     EmployeeId,      
     EntepriseRoleName,      
     RoleTemplateId,   
- Operator,    
+    Operator,
+	OperatorRealPageId,
     UserRelationshipType,    
     CompanyName,    
- PersonaHasProductError,    
+    PersonaHasProductError,    
     UserId,      
     LoginName,    
- LastLogin,    
- FromDate,    
- ThruDate,    
+    LastLogin,    
+    FromDate,    
+    ThruDate,    
     StatusId,      
     StatusName,    
- StatusThruDate,    
+    StatusThruDate,    
     Is3rdPartyIDP,     
- PasswordModifiedDate,    
+    PasswordModifiedDate,    
     OffsetMinutes,          
     UserType,      
     PartyRoleTypeId,    
- PersonaId    
+    PersonaId    
  INTO #Temp_Final    
- FROM cteUsersFinal      
- ORDER BY RowNumber      
+ FROM cteUsersFinal
+	 ORDER BY RowNumber      
  OFFSET ((@PageNumber - 1) * @RowsPerPage) ROWS      
  FETCH NEXT(@RowsPerPage) ROWS ONLY      
  OPTION (RECOMPILE)      
@@ -596,7 +594,7 @@ BEGIN
   GROUP BY pp.PersonaId     
 )    
 SELECT     
- F.TotalRecords,      
+    F.TotalRecords,      
     F.RealPageID,      
     F.PartyId,      
     F.FirstName,      
@@ -605,29 +603,28 @@ SELECT
     F.EmployeeId,      
     F.EntepriseRoleName,      
     F.RoleTemplateId,    
- Operator,    
+    Operator,
+    OperatorRealPageId,
     UserRelationshipType,    
     CompanyName,    
- F.PersonaHasProductError,    
+    F.PersonaHasProductError,    
     F.UserId,      
     F.LoginName,    
- F.LastLogin,    
- F.FromDate,    
- F.ThruDate,    
+    F.LastLogin,    
+    F.FromDate,    
+    F.ThruDate,    
     F.StatusId,      
     F.StatusName,    
- F.StatusThruDate,    
+    F.StatusThruDate,    
     F.Is3rdPartyIDP,     
- F.PasswordModifiedDate,    
+    F.PasswordModifiedDate,    
     F.OffsetMinutes,          
     ISNULL(pct.ProductCount, 0) AS Products,      
     F.UserType,      
-    F.PartyRoleTypeId    
-     
+    F.PartyRoleTypeId     
 FROM     
  #Temp_Final F    
 LEFT JOIN CTE pct ON pct.PersonaId = F.PersonaId     
-    
       
  DROP INDEX IF EXISTS [NCI_cteUserLogin_PersonPartyId] ON [dbo].[#UserLogin]      
  DROP TABLE IF EXISTS #UserLogin      
