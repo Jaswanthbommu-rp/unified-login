@@ -28,7 +28,7 @@ BEGIN
       row_number() over (partition by subjectuserpersonaid, EnterpriseRoleTemplateId order by EnterpriseRoleBatchProcessId asc ) as rn,  
       row_number() over (partition by editoruserpersonaid order by EnterpriseRoleBatchProcessId asc ) as rn2    
   FROM Batch.[EnterpriseRoleBatchProcess] BP  
-  WHERE BP.StatusTypeID = 5  )  
+  WHERE BP.StatusTypeID = 5 AND bp.createddatetime > dateadd(dd, -3, getutcdate()))  
  
     INSERT INTO @PBFiltered  
     (  

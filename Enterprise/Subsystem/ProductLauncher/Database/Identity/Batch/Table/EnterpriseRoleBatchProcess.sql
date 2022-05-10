@@ -13,9 +13,10 @@
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 )
 GO
-CREATE INDEX [IX_EnterpriseRoleBatchProcess_SubjectUserPersonaId_StatusTypeId] ON [Batch].[EnterpriseRoleBatchProcess] ([SubjectUserPersonaId], [StatusTypeId]) INCLUDE ([EnterpriseRoleTemplateId])
-GO
-CREATE INDEX [IX_EnterpriseRoleBatchProcess_EditorUserPersonaId_SubjectUserPersonaId]
-ON [Batch].[EnterpriseRoleBatchProcess]
-( [EditorUserPersonaId], [SubjectUserPersonaId]
-);
+CREATE NONCLUSTERED INDEX [IDX_EnterpriseRoleBatchProcess_CreateDateTime] ON [Batch].[EnterpriseRoleBatchProcess]
+(
+[CreatedDateTime] ASC
+)
+INCLUDE([EnterpriseRoleBatchProcessId],[EditorUserPersonaId],[SubjectUserPersonaId],[BatchProcessTypeId],[StatusTypeId], [EnterpriseRoleTemplateId]) WITH (SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
+
+
