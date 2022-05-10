@@ -83,7 +83,6 @@ SET NOCOUNT ON;
 	SET @SelectCount = '
     SELECT @TotalRows = COUNT (ActivityId)
     '
-
 	IF EXISTS (SELECT 1 FROM @SearchCriteriaTPV)
 	BEGIN
 
@@ -91,7 +90,7 @@ SET NOCOUNT ON;
 			@SearchCriteria =
 				COALESCE(@SearchCriteria +' AND '+
 				CASE
-					WHEN [Name] = 'Message' THEN 'CHARINDEX(''' + CONVERT(NVARCHAR(200), [Value]) + ''', A.Message, 1) > 0 ' 
+					WHEN [Name] = 'Message' THEN ' ( '+'CHARINDEX(''' + CONVERT(NVARCHAR(200), REPLACE([VALUE],'''','''''')) + ''', A.Message, 1) > 0 ' +' ) ' 
 					WHEN [Name] = 'StartDate' THEN 'A.ApplicationTimeStamp  > ' + '''' + [Value] + '''' 
 					WHEN [Name] =  'EndDate' THEN 'A.ApplicationTimeStamp <= ' + '''' + [Value] + '''' 
 					WHEN [Name] = 'FromRealPageId' THEN 'FUL.RealPageId = ' + '''' + [Value] + '''' 
