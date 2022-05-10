@@ -268,10 +268,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 IList<ResidentPortalProperty> propertyProductList = ListResidentPortalProperties();
 
-                if ((propertyProductList == null) || (propertyProductList.Count == 0))
+                if (propertyProductList == null)
                 {
                     _listResponse.IsError = true;
-                    _listResponse.ErrorReason = $"ManageProductResidentPortal.ManageResidentPortalUser Error for user userPersonaId - {userPersonaId}. Error - No active properties found {propertyProductList}";
+                    _listResponse.ErrorReason = $"ManageProductResidentPortal.ManageResidentPortalUser Error for user userPersonaId - {userPersonaId}.";
                     return _listResponse;
                 }
 
@@ -487,7 +487,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     createUpdateUser = "update";
                     userEmailAddress = _productUsername;
-                    
+
                     _residentPortalUser = GetUserDetails(editorPersonaId, userPersonaId, _productUsername, 0);
 
                     if (_residentPortalUser == null)
@@ -583,7 +583,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         PartyRole partRole = new PartyRole();
                         partRole = partyRoleRepository.GetPartyRoleByEnterpriseUserID(realPageId);
 
-                        residentPortalUser.Title = !string.IsNullOrEmpty(person.Title) ? person.Title 
+                        residentPortalUser.Title = !string.IsNullOrEmpty(person.Title) ? person.Title
                                                    : partRole != null && !partRole.Name.Equals(residentPortalUser.Title, StringComparison.OrdinalIgnoreCase) ? partRole.Name : residentPortalUser.Title;
 
                         foreach (Community community in _residentPortalUser.Communities)
@@ -1037,11 +1037,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         }
 
         /// <summary>
-		/// ValidateUserAccess
-		/// </summary>
-		/// <param name="editorRealpageId">Logged-in user PersonaId</param>
-		/// <param name="userPersonaId">new user PersonaId</param>
-		/// <returns>true or false</returns>
+        /// ValidateUserAccess
+        /// </summary>
+        /// <param name="editorRealpageId">Logged-in user PersonaId</param>
+        /// <param name="userPersonaId">new user PersonaId</param>
+        /// <returns>true or false</returns>
         public bool ValidateUserAccess(Guid editorRealpageId, long userPersonaId)
         {
             bool valid = true;
@@ -1104,10 +1104,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         }
 
         /// <summary>
-		/// ValidateUserAccess
-		/// </summary>
-		/// <param name="persona">Logged-in user Persona</param>		
-		/// <returns>true or false</returns>
+        /// ValidateUserAccess
+        /// </summary>
+        /// <param name="persona">Logged-in user Persona</param> 
+        /// <returns>true or false</returns>
         public bool ValidateCreateUserAccess(Persona persona)
         {
             bool valid = true;
@@ -1184,7 +1184,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 //OR
                 //Has the Unified Login system User Administrator role (includes "Ability to create users" Right)
                 //OR
-                //Has a Custom Role that includes either the Right "Ability to create and manage users for Resident Portal" OR "Ability to create users"			
+                //Has a Custom Role that includes either the Right "Ability to create and manage users for Resident Portal" OR "Ability to create users" 
                 if ((editorPersonaId > 0) && ((isSuperUser || isAddEditResidentPortalUserRightExists || isCreateUserRightExists)))
                 {
                     string url = _residentPortalApiEndPoint + "/roles";
@@ -1685,7 +1685,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             catch (Exception ex)
             {
                 response = new ListResponse
-                { 
+                {
                     IsError = true,
                     ErrorReason = ex.Message
                 };
@@ -1752,7 +1752,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 WriteToErrorLog($"ManageProductResidentPortal.UpdateUsersMigrationStatus Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
 
                 return new MigrateResponse
-                { 
+                {
                     Status = false,
                     Message = ex.Message
                 };
@@ -2146,7 +2146,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     if (addCommunityIdToClient)
                     {
                         IList<ResidentPortalProperty> propertyProductList = ListResidentPortalProperties();
-                        if ((propertyProductList != null) || (propertyProductList.Count > 0))
+                        if ((propertyProductList != null) && (propertyProductList.Count > 0))
                         {
                             _communityId = Convert.ToInt64(propertyProductList[0].CommunityId);
                         }
@@ -2295,7 +2295,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             WriteToDiagnosticLog($"ManageProductResidentPortal.ListResidentPortalProperties-Communities - Found total {communityList.Count} properties with Resident Portal company instance source id {_companyInstanceSourceId}.");
             return communityList;
         }
-        
+
         #endregion
     }
 
@@ -2323,7 +2323,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         /// <summary>
         /// Community Name
-        /// </summary>		
+        /// </summary> 
         public string Title { get; set; }
 
         /// <summary>
@@ -2344,7 +2344,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
     {
         /// <summary>
         /// Address
-        /// </summary>		
+        /// </summary> 
         public Location Location { get; set; }
     }
 
@@ -2355,7 +2355,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
     {
         /// <summary>
         /// Address
-        /// </summary>		
+        /// </summary> 
         public Address Address { get; set; }
     }
 
@@ -2366,27 +2366,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
     {
         /// <summary>
         /// City
-        /// </summary>		
+        /// </summary> 
         public string City { get; set; }
 
         /// <summary>
         /// Country
-        /// </summary>		
+        /// </summary> 
         public string Country { get; set; }
 
         /// <summary>
         /// State
-        /// </summary>		
+        /// </summary> 
         public string State { get; set; }
 
         /// <summary>
         /// Street
-        /// </summary>		
+        /// </summary> 
         public string Street { get; set; }
 
         /// <summary>
         /// ZipCode
-        /// </summary>		
+        /// </summary> 
         public string ZipCode { get; set; }
     }
 
