@@ -2146,7 +2146,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     if (addCommunityIdToClient)
                     {
                         IList<ResidentPortalProperty> propertyProductList = ListResidentPortalProperties();
-                        if ((propertyProductList != null) || (propertyProductList.Count > 0))
+                        if ((propertyProductList != null) && (propertyProductList.Count > 0))
                         {
                             _communityId = Convert.ToInt64(propertyProductList[0].CommunityId);
                         }
