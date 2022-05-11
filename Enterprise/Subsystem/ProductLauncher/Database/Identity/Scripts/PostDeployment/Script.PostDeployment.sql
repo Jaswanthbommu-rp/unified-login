@@ -11,7 +11,6 @@ Post-Deployment Script Template
 */
 :r .\PostDeploymentScripts\_SeedData.sql
 
-:r .\PostDeploymentScripts\2022Q4Release.sql
 
 :r .\PostDeploymentScripts\2022.05.WMU.Release.sql
 
