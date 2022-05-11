@@ -311,12 +311,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				// for each compnay get properties
 				foreach (var company in allCompanies)
 				{
-					List<AoProperty> properties = GetProperties(company.CompanyId, productName, userLoginName, userPersonaId).ToList();
-					properties = properties.OrderBy(x => x.PropertyName).ToList();
+					AoPropertyList objAoPropertyList = GetProperties(company.CompanyId, productName, userLoginName, userPersonaId);
+					objAoPropertyList.Properties = objAoPropertyList.Properties.OrderBy(x => x.PropertyName).ToList();
 
-					if (properties != null)
+
+					if (objAoPropertyList.Properties != null)
 					{
-						string assignedCount = $"{properties.Count(p => p.IsAssigned)} of {properties.Count}";
+						string assignedCount = $"{objAoPropertyList.Properties.Count(p => p.IsAssigned)} of {objAoPropertyList.Properties.Count}";
 
 						companyProperties.Add(new AoCompanyProperties
 						{
@@ -325,7 +326,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 							IsAssigned = company.IsAssigned,
 							Status = company.Status,
 							AssignedProperties = assignedCount,
-							Properties = properties
+							Properties = objAoPropertyList.Properties
 						});
 					}
 				}
@@ -367,6 +368,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			var response = new ListResponse();
 			ListResponse result = new ListResponse();
 			Dictionary<string, object> logData = new Dictionary<string, object>();
+			Dictionary<string, bool> allProperties = new Dictionary<string, bool>();
 			try
 			{
 				result = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
@@ -384,14 +386,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				IList<ProductProperty> companyProperties = new List<ProductProperty>();
 				// for  properties
-				List<AoProperty> properties = GetProperties(Convert.ToInt32(aoCompanyId), productName, userLoginName, userPersonaId).ToList();
-				properties = properties.OrderBy(x => x.PropertyName).ToList();
+				AoPropertyList objAoPropertyList = GetProperties(Convert.ToInt32(aoCompanyId), productName, userLoginName, userPersonaId);
+				objAoPropertyList.Properties = objAoPropertyList.Properties.OrderBy(x => x.PropertyName).ToList();
 
-				if (properties != null)
+				if (objAoPropertyList.Properties != null)
 				{
-					string assignedCount = $"{properties.Count(p => p.IsAssigned)} of {properties.Count}";
-
-					foreach (var property in properties)
+					string assignedCount = $"{objAoPropertyList.Properties.Count(p => p.IsAssigned)} of {objAoPropertyList.Properties.Count}";
+					allProperties.Add("allProperties", objAoPropertyList.allProperties);
+					foreach (var property in objAoPropertyList.Properties)
 					{
 						companyProperties.Add(new ProductProperty
 						{
@@ -409,7 +411,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					TotalRows = companyProperties.Count,
 					RowsPerPage = companyProperties.Count,
 					ErrorReason = string.Empty,
-					TotalPages = 1
+					TotalPages = 1,
+					Additional = allProperties
 				};
 
 				WriteToDiagnosticLog(
@@ -710,6 +713,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						}
 					}
 				}
+				
+                foreach (var item in aoGbUserCompanyPropertyRoleDetails)
+                {
+					if (item.SelectedPortfolioValues[0] == -1)
+					{
+						item.allProperties = true;
+						item.SelectedPortfolioValues = new List<int>();
+					}
+				}
 
 				// Check if GB super user
 				if (IsSuperUser(productUserPersonaId))
@@ -746,6 +758,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					}
 					catch
 					{
+					}
+				}
+
+				if (!IsSuperUser(productUserPersonaId))
+				{
+					
+					foreach (var item in aoGbUserCompanyPropertyRoleDetails.Where(x=>x.SelectedPortfolioValues !=null && x.SelectedPortfolioValues.Count() > 0))
+					{
+						
+						if (item.SelectedPortfolioValues[0] == -1)
+						{
+							// assign ALL properties 
+							var  propertiesResponse = GetProperties(item.CompanyId, item.ProductName);
+							var propertyList = (from i in propertiesResponse.Properties select i.PropertyId).ToList();
+
+							item.allProperties = true;
+							item.SelectedPortfolioValues = propertyList;
+						}
 					}
 				}
 
@@ -1152,7 +1182,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 					// get division
 					var divisionName = ProductEnumHelper.GetAoDivisionName(ProductEnumHelper.GetAoProductEnum(aoProduct));
-
+	
 					aoUserCompanyPropertyRoleDetails.Add(new AoUserCompanyPropertyRoleDetail
 					{
 						CompanyId = companyId,
@@ -2010,6 +2040,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			return allPropList;
 		}
 
+		private bool GetAllPropertiesStatusForExistingProductUser(string productPropertyApiUrl, string productName)
+		{
+			var aoUserProps = GetResultFromApi<IList<AoPropertyList>>(productPropertyApiUrl);
+			bool isAllProperties = false;
+			if (aoUserProps != null)
+			{
+				isAllProperties = aoUserProps.Any(x => x.allProperties && x.ProductName.Equals(productName));
+			}
+
+			return isAllProperties;
+		}
+
 		private T GetResultFromApi<T>(string baseUrlAndQuery) where T : class
 		{
 			T results = null;
@@ -2306,7 +2348,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						DivisionName = aoUserCompanyPropertyRoleDetail.DivisionName,
 						Product = aoUserCompanyPropertyRoleDetail.ProductName,
 						SelectedPortfolioValues = aoUserCompanyPropertyRoleDetail.SelectedPortfolioValues ?? new List<int>(),
-						SelectedRoleValues = aoUserCompanyPropertyRoleDetail.SelectedRoleValues ?? new List<string>()
+						SelectedRoleValues = aoUserCompanyPropertyRoleDetail.SelectedRoleValues ?? new List<string>(),
+						allProperties = aoUserCompanyPropertyRoleDetail.allProperties
 					};
 
 					models.Add(model);
@@ -2554,16 +2597,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			return allRoles;
 		}
 
-		private IList<AoProperty> GetProperties(long companyId, string productName, string userLoginName = "", long userPersonaId = 0)
+		private AoPropertyList GetProperties(long companyId, string productName, string userLoginName = "", long userPersonaId = 0)
 		{
 			WriteToDiagnosticLog(
 				$"ManageProductAssetOptimization.GetProperties - at beginning of method for user with _editorProductUserId{_editorProductUserId} _productUserId {_productUserId}  companyId - {companyId} productName {productName}");
 
 			string productPropertyApiUrl = $"{_apiEndPoint}company/propertiesByDivision/{companyId}/{ProductEnumHelper.GetAoDivisionName(ProductEnumHelper.GetAoProductEnum(productName))}"; //https://aodev.realpage.com/ysconfig/ws/company/propertiesByDivision/6698/BI
-			IList<AoProperty> aoPropertyList = GetPropertiesForNewUser(productPropertyApiUrl);
-			aoPropertyList = aoPropertyList.Where(a => a.PropertyProducts.Contains(productName)).ToList();
+			AoPropertyList objAoPropertyList = new AoPropertyList();
+			objAoPropertyList.Properties = GetPropertiesForNewUser(productPropertyApiUrl).ToList();
+			objAoPropertyList.Properties = objAoPropertyList.Properties.Where(a => a.PropertyProducts.Contains(productName)).ToList();
+			
 			WriteToDiagnosticLog(
-				$"ManageProductAssetOptimization.GetProperties-Received {aoPropertyList.Count} properties for new user with _editorProductUserId{_editorProductUserId} _productUserId {_productUserId}  companyId - {companyId} productName {productName}");
+						   $"ManageProductAssetOptimization.GetProperties-Received {objAoPropertyList.Properties.Count} properties for new user with _editorProductUserId{_editorProductUserId} _productUserId {_productUserId}  companyId - {companyId} productName {productName}");
 
 			string productUserId = _productUserId;
 			if (string.IsNullOrEmpty(_productUserId) && !string.IsNullOrWhiteSpace(userLoginName))
@@ -2578,15 +2623,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			if (!string.IsNullOrEmpty(productUserId))
 			{
-				productPropertyApiUrl = $"{_apiEndPoint}user/active-portfolio/{_editorProductUserId.ToLower()}/{productUserId.ToLower()}/"; //https://aodev.realpage.com/ysconfig/ws/user/active-portfolio/tmilburn/acroyle
-				aoPropertyList = GetPropertiesForExistingProductUser(aoPropertyList, productPropertyApiUrl, productName);
+				productPropertyApiUrl = $"{_apiEndPoint}user/products/{productUserId.ToLower()}/{companyId}";
+				objAoPropertyList.allProperties = GetAllPropertiesStatusForExistingProductUser(productPropertyApiUrl, productName);
+				
+			    productPropertyApiUrl = $"{_apiEndPoint}user/active-portfolio/{_editorProductUserId.ToLower()}/{productUserId.ToLower()}/"; //https://aodev.realpage.com/ysconfig/ws/user/active-portfolio/tmilburn/acroyle
+			    objAoPropertyList.Properties = GetPropertiesForExistingProductUser(objAoPropertyList.Properties, productPropertyApiUrl, productName);
+				
 
 				WriteToDiagnosticLog(
-					$"ManageProductAssetOptimization.GetProperties-Received {aoPropertyList.Count} properties for existing user _editorProductUserId{_editorProductUserId} _productUserId {productUserId}  companyId - {companyId} productName {productName}.");
+					$"ManageProductAssetOptimization.GetProperties-Received {objAoPropertyList.Properties.Count} properties for existing user _editorProductUserId{_editorProductUserId} _productUserId {productUserId}  companyId - {companyId} productName {productName}.");
 			}
 
-			return aoPropertyList;
+			return objAoPropertyList;
 		}
+
 
 		private IList<int> GetActiveProperties(string samlEditorProductUserName, string samlSubjectProductUserName, string productName, int companyId)
 		{
@@ -2753,7 +2803,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 					// assign ALL properties 
 					var propertiesResponse = GetProperties(company.CompanyId, aoProduct);
-					var propertyList = (from i in propertiesResponse select i.PropertyId).ToList();
+					var propertyList = (from i in propertiesResponse.Properties select i.PropertyId).ToList();
 
 					// get division
 					var divisionName = ProductEnumHelper.GetAoDivisionName(ProductEnumHelper.GetAoProductEnum(aoProduct));
@@ -2934,6 +2984,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		[JsonIgnore] public string Division { get; set; }
 		public IList<AoProperty> Properties { get; set; }
 	}
+	public class AoPropertyList
+	{
+		public bool allProperties { get; set; } = false;
+		public IList<AoProperty> Properties { get; set; }
+		[JsonProperty("division")] public string Division { get; set; }
+		[JsonProperty("product")] public string ProductName { get; set; }
+	}
+
 
 	public class AoProperty
 	{
@@ -2987,6 +3045,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		[JsonProperty("companyId")] public int CompanyId { get; set; }
 
 		[JsonProperty("product")] public string Product { get; set; }
+		[JsonProperty("allProperties")] public bool allProperties { get; set; } = false;
 	}
 
 	public class GroupModel
@@ -3024,6 +3083,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// </summary>
 		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
 		public List<ProductPrimaryProperties> ProductPrimaryProperties { get; set; }
+		[JsonProperty("allProperties")]
+		public bool allProperties { get; set; } = false;
 	}
 
 	public class AoUserCompanyPropertyRoleDetails
