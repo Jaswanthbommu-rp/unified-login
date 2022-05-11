@@ -2183,6 +2183,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
+        public List<AdGroupRole> GetAdGroupRolesByPersona(long personaId)
+        {
+            dynamic param = new
+            {
+                PersonaId = personaId
+            };
+            using (var repository = GetRepository())
+            {
+                return repository.GetMany<AdGroupRole>(StoredProcNameConstants.SP_GetRolesForADGroupByPersona, param);
+            }
+        }
+
         #endregion
 
         #region Private Methods

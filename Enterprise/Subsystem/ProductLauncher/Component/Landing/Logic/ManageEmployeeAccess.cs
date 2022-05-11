@@ -15,6 +15,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Em
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSite;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ResidentPortal;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UPFMProduct;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,6 +39,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private IManageProductUser _manageProductUser;
         private IUserRepository _userRepository;
         IProductInternalSettingRepository _productInternalSettingRepository;
+        private IManageUPFMProductsIntegration _manageUPFMProductsIntegration;
         #region Ctor
 
 
@@ -62,6 +64,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var manageProduct = new ManageProduct(_userClaim);
             _productInternalSettingRepository = new ProductInternalSettingRepository();
             _integrationTypeFactory = new IntegrationTypeFactory(manageProduct, _manageUnifiedLogin, _manageProductOneSite, _productRepository, _productInternalSettingRepository, _userClaim);
+            _manageUPFMProductsIntegration = new ManageUPFMProductsIntegration(_productId, _userClaim);
         }
 
         /// <summary>
@@ -223,13 +226,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <summary>
         /// Gets personaId if existed else, creates and gets one
         /// </summary>
-        public EmployeePersona GetOrCreateEmployeePersonaId(Guid companyRealPageId, DefaultUserClaim userClaim) 
+        public EmployeePersona GetOrCreateEmployeePersonaId(Guid companyRealPageId, DefaultUserClaim userClaim)
         {
             EmployeePersona employeePersona = new EmployeePersona();
             employeePersona.RealpageUserId = _userClaim.UserRealPageGuid;
 
             var userPersonaOrganizationList = _userLoginRepository.ListOrganizationByLoginName(userClaim.LoginName);
-            
+
             if (userPersonaOrganizationList != null && userPersonaOrganizationList.Count > 0)
             {
                 //First get count of ad groups and products for employee persona
@@ -261,7 +264,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         break;
                     }
                 }
-                
+
                 var user = userPersonaOrganizationList.FirstOrDefault(x => x.OrganizationRealPageId == companyRealPageId);
                 if (user != null)
                 {
@@ -276,7 +279,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 if (isRealPageEmployeeInOrg && maxCount > 0 && orgPersonaCount > 0)
                 {
                     //add new persons based on max count and existing persona count
-                    int newPersonasTobeCreatedCount = 0;                  
+                    int newPersonasTobeCreatedCount = 0;
                     newPersonasTobeCreatedCount = maxCount - orgPersonaCount;
                     for (int i = 1; i <= newPersonasTobeCreatedCount; i++)
                     {
@@ -284,15 +287,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         string personaName = "Secondary";
                         if (orgPersonaCount >= 2)
                         {
-                            personaName = personaName + " " + orgPersonaCount.ToString();                           
+                            personaName = personaName + " " + orgPersonaCount.ToString();
                         }
-                        var repoResponse = _managePersona.CreateAdditionalPersona(companyRealPageId, userClaim.UserId, userClaim.UserId,personaName);
+                        var repoResponse = _managePersona.CreateAdditionalPersona(companyRealPageId, userClaim.UserId, userClaim.UserId, personaName);
                         orgPersonaCount++;
                     }
                 }
-                             
+
             }
-            return employeePersona;            
+            return employeePersona;
         }
 
         /// <summary>
@@ -385,25 +388,46 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 _manageProductUser = new ManageProductUser(_userClaim);
             }
 
-            // not used
-            var rolePropertyList = new RolePropertyList
+            var productIntegrationType = productInternalSettingList.FirstOrDefault(s => s.Name.Equals("ProductIntegrationType", StringComparison.OrdinalIgnoreCase))?.Value;
+            if (productIntegrationType.ToUpper() == "UPFM")
             {
-                PropertyList = new List<string>() { "-1" }
-            };
+                var productAdGroupsUPFM = _productRepository.GetAdGroupsForProduct(productId);
+                var userADGroupsRoles = _productRepository.GetAdGroupRolesByPersona(employeePersona.PersonaId);
+                var adGroupIds = userADGroupsRoles?.Where(y => y.ProductId == productId)?.Select(x => x.ADGroupId);
+                if (adGroupIds != null && productAdGroupsUPFM != null && productAdGroupsUPFM.Any(y => adGroupIds.Contains(y.ADGroupId)))
+                {
+                    var hasProperties = productInternalSettingList.FirstOrDefault(s => s.Name.Equals("UPFMProductsHasProperties", StringComparison.OrdinalIgnoreCase))?.Value;
+                    List<string> propertyList = hasProperties == "0" ? new List<string>() : new List<string>() { "-1" };
+                    List<string> roleList = userADGroupsRoles.Where(x => x.ProductId == productId).Select(y => y.RoleId.ToString()).ToList();
+                    UPFMProductPropertyRole upfmPropertyRole = new UPFMProductPropertyRole() { IsAssigned = true, PropertyList = propertyList, RoleList = roleList };
+                    _manageUPFMProductsIntegration = new ManageUPFMProductsIntegration(productId, _userClaim);
+                    return _manageUPFMProductsIntegration.ManageUPFMProductUser(_userClaim.PersonaId, personaId, upfmPropertyRole, true);
+                }
 
-            var productUser = new ProductUserProperitiesRoles()
+                return "No ADGroups for UPFM products.";
+            }
+            else
             {
-                RealPageId = adminCreatorRealPageId,
-                ProductId = productId,
-                CreateUserPersonaId = adminUserPersonaId,
-                AssignUserPersonaId = personaId,
-                CorrelationId = _userClaim.CorrelationId,
-                InputJson = JsonConvert.SerializeObject(rolePropertyList),
-                CreateRealPageEmployee = true,
-                RealPageEmployeePersonaId = employeePersona.PersonaId
-            };
-            
-            return _manageProductUser.CreateEmployeeProductUser(productUser);
+                // not used
+                var rolePropertyList = new RolePropertyList
+                {
+                    PropertyList = new List<string>() { "-1" }
+                };
+
+                var productUser = new ProductUserProperitiesRoles()
+                {
+                    RealPageId = adminCreatorRealPageId,
+                    ProductId = productId,
+                    CreateUserPersonaId = adminUserPersonaId,
+                    AssignUserPersonaId = personaId,
+                    CorrelationId = _userClaim.CorrelationId,
+                    InputJson = JsonConvert.SerializeObject(rolePropertyList),
+                    CreateRealPageEmployee = true,
+                    RealPageEmployeePersonaId = employeePersona.PersonaId
+                };
+
+                return _manageProductUser.CreateEmployeeProductUser(productUser);
+            }
         }
 
         #endregion
@@ -476,7 +500,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
             return ulusers;
         }
-        
+
         private string GetCompanyIds(List<UnifiedLoginCompany> companies)
         {
             string compIds = "";
@@ -496,7 +520,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return compIds;
         }
 
-        private long CreatePersonaInCompany(string loginName, Guid companyRealPageId) 
+        private long CreatePersonaInCompany(string loginName, Guid companyRealPageId)
         {
             long persona = 0;
 
@@ -510,17 +534,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         private ProfileDetail CreateNewProfile(Guid companyRealPageId)
         {
-            
+
             ProfileDetail newProfile = new ProfileDetail();
-            newProfile.FirstName = _userClaim.FirstName; 
-            newProfile.LastName = _userClaim.LastName; 
+            newProfile.FirstName = _userClaim.FirstName;
+            newProfile.LastName = _userClaim.LastName;
             newProfile.CreateUserSourceType = CreateUserSourceType.UnifiedPlatform;
 
             IList<Persona> personaList = new List<Persona>();
             Persona persona = new Persona();
             DateTime utcNow = DateTime.UtcNow;
             DateTime utcMaxValue = DateTime.MaxValue.ToUniversalTime();
-            
+
             IList<PersonaEnvironment> personaEnvironment = _managePersona.GetPersonaEnvironmentType();
             var personaEnv = personaEnvironment.SingleOrDefault<PersonaEnvironment>(p => p.Name == "Production");
             var productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
@@ -535,11 +559,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             var org = _manageOrganization.GetOrganization(companyRealPageId);
             newProfile.organization.Add(org);
-            
+
             newProfile.UserTypeId = 405;
 
             UserLogin ul = new UserLogin();
-            ul.LoginName = _userClaim.LoginName; 
+            ul.LoginName = _userClaim.LoginName;
             ul.IsActive = true;
             ul.IsPending = false;
             ul.IsExpired = false;
@@ -559,8 +583,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             rpl.IsInsuranceExpired = false;
             rpl.IsVendorNotLinkedToAnyProperty = false;
 
-            Notifications notification = new Notifications() { 
-                amenitiesViaEmail = false, managerFdiViaEmail = false, managerMrViaEmail = false 
+            Notifications notification = new Notifications()
+            {
+                amenitiesViaEmail = false,
+                managerFdiViaEmail = false,
+                managerMrViaEmail = false
             };
 
             rpl.Notifications = notification;
@@ -575,11 +602,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             ListResponse result = integration.GetRoles(_userClaim.PersonaId, 0, org.PartyId, null, null);
 
             List<UnifiedLoginRoleRights> roleRights = new List<UnifiedLoginRoleRights>();
-            
+
             foreach (var item in result.Records)
                 roleRights.Add((UnifiedLoginRoleRights)item);
 
-            var defaultRole = productInternalSettingList.FirstOrDefault(s => s.Name.Equals("EmployeeExternelUserDefautRole", StringComparison.OrdinalIgnoreCase))?.Value ;
+            var defaultRole = productInternalSettingList.FirstOrDefault(s => s.Name.Equals("EmployeeExternelUserDefautRole", StringComparison.OrdinalIgnoreCase))?.Value;
             defaultRole = defaultRole != null ? defaultRole : "User Administrator";
             var role = roleRights.Where(x => x.Role == defaultRole && x.Roletype == "System").FirstOrDefault();
 
@@ -587,7 +614,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 rpl.RoleList = new List<string>() { role.RoleId.ToString() };
 
             rpl.PropertyList = new List<string>() { "-1" };
-            
+
 
             pb.InputJson = rpl;
 
