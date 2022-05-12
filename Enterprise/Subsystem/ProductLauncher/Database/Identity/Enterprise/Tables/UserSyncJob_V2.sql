@@ -29,7 +29,7 @@ ALTER TABLE [Enterprise].[UserSyncJob_V2]  WITH CHECK ADD  CONSTRAINT [FK_UserSy
 REFERENCES [Enterprise].[StatusType] ([StatusTypeId])
 GO
 
-ALTER TABLE [Enterprise].[UserSyncJob_V2b] CHECK CONSTRAINT [FK_UserSyncJob_V2_StatusType]
+ALTER TABLE [Enterprise].[UserSyncJob_V2] CHECK CONSTRAINT [FK_UserSyncJob_V2_StatusType]
 GO
 
 ALTER TABLE [Enterprise].[UserSyncJob_V2]  WITH CHECK ADD  CONSTRAINT [FK_UserSyncJob_V2_UserSyncJobType] FOREIGN KEY([UserSyncJobTypeId])

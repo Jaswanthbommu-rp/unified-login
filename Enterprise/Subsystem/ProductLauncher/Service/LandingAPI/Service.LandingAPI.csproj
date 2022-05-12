@@ -374,6 +374,7 @@
     <Compile Include="Controllers\ProductVendorServicesController.cs" />
     <Compile Include="Controllers\UnifiedLoginController.cs" />
     <Compile Include="Controllers\UserNotificationController.cs" />
+    <Compile Include="Controllers\UserPropertiesSyncController.cs" />
     <Compile Include="Controllers\UserPropertyController.cs" />
     <Compile Include="Controllers\WebHookController.cs" />
     <Compile Include="Global.asax.cs">
@@ -423,9 +424,11 @@
     <Folder Include="Views\ProductUser\" />
     <Folder Include="Views\Profile\" />
     <Folder Include="Views\TelecommunicationNumber\" />
+    <Folder Include="Views\Test2\" />
     <Folder Include="Views\UnifiedSettings\" />
     <Folder Include="Views\UserLogin\" />
     <Folder Include="Views\UserManagement\" />
+    <Folder Include="Views\UserPropertiesSync\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\Foundation\DataAccess\DataAccess.csproj">

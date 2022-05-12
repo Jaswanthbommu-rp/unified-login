@@ -1262,6 +1262,13 @@
     <Build Include="Enterprise\Tables\UserSyncJob_V2.sql" />
     <Build Include="Enterprise\Tables\UserSyncJobTask_V2.sql" />
     <Build Include="Enterprise\Tables\UserSyncProductPrimaryPropertiesStaging.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetUserSyncJobTaskDetails.sql" />
+    <Build Include="Enterprise\Stored Procedures\CreateUserSyncJob_V2.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetUserSyncJobTask_V2.sql" />
+    <Build Include="Enterprise\Stored Procedures\UpdateUserSyncJobTask_V2.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetUserSyncJobTopics.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetUserSyncJobTaskTopicName.sql" />
+    <Build Include="Enterprise\Stored Procedures\AddPersonaProductMatchedPrimaryProperties.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

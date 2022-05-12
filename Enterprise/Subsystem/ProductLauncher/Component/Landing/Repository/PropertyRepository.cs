@@ -388,6 +388,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
         #endregion
 
+        #region Stage User Product Primary Properties
+        public RepositoryResponse StageUserProductPrimaryProperties(string stagingData, long userPersonaId, int productId, long createdBy)
+        {
+            RepositoryResponse result = new RepositoryResponse() { Id = 0, ErrorMessage = "" };
+
+            using (var repository = GetRepository())
+            {
+                dynamic param = new
+                {
+                    @ProductId = productId,
+                    @PersonaId = userPersonaId,
+                    @ModifiedBy = createdBy,
+                    @PropertyInstanceJSON = stagingData                    
+                };
+
+                result = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddPersonaProductMatchedPrimaryProperties, param);
+            }
+            return result;
+
+        }
+        #endregion
+
         #region Private methods
 
         #endregion

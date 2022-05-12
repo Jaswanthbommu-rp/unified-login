@@ -474,6 +474,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         public const string SP_GetADDetailsForUser = "Security.GetADDetailsForUser";
         public const string SP_GetEmployeeProductADGroupMapping = "Enterprise.GetEmployeeProductADGroupMapping";
         public const string SP_AddUpdateEmployeeProductADGroupMapping = "Enterprise.AddUpdateEmployeeProductADGroupMapping";
+
+        //User Sync Properties
+        public const string SP_GetUserSyncJobTaskDetails = "Enterprise.GetUserSyncJobTaskDetails";
+        public const string SP_AddPersonaProductMatchedPrimaryProperties = "Enterprise.AddPersonaProductMatchedPrimaryProperties";
     }
 
     public static class EnterpriseStoredProcNameConstants

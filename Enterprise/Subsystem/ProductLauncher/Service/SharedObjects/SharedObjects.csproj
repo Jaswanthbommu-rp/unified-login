@@ -487,6 +487,8 @@
     <Compile Include="Landing\Product\Ops\Extensions\RoleExtensions.cs" />
     <Compile Include="Landing\SerializerContractResolver.cs" />
     <Compile Include="Landing\UserDetails.cs" />
+    <Compile Include="Landing\UserSyncData.cs" />
+    <Compile Include="Landing\UserSyncJobTask.cs" />
     <Compile Include="Landing\UserUpdate\UpdateUserProfileEntity.cs" />
     <Compile Include="Landing\UserUpdate\EditorAssignedPersona.cs" />
     <Compile Include="Landing\UserUpdate\UserBatchEntity.cs" />
