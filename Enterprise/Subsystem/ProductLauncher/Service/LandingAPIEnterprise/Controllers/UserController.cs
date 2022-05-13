@@ -1128,7 +1128,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [SwaggerResponse(HttpStatusCode.OK, Description = "Update successful", Type = typeof(HttpResponseMessage))]
         [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
-        [Route("user/productuser/details")]
+        [Route("user/productuser/detailsdelete")]
         [AuthorizeScope("internalapi")]
         [HttpDelete]
         public HttpResponseMessage DeleteSamlUserProductInfoAndStatus([FromBody] ProductUserAccountDetails productUser)
