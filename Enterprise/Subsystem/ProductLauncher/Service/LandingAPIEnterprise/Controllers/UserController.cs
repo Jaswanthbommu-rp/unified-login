@@ -1130,7 +1130,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
         [Route("user/productuser/detailsdelete")]
         [AuthorizeScope("internalapi")]
-        [HttpPut]
+        [HttpGet]
         public HttpResponseMessage DeleteSamlUserProductInfoAndStatus([FromBody] ProductUserAccountDetails productUser)
         {
             if (productUser == null)
