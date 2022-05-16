@@ -1121,16 +1121,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         }
 
         /// <summary>
-		/// Used to delete all SAML product information and status for a user
-		/// </summary>
-		/// <param name="productUser">Details to save for a user</param> 
+        /// Used to delete details for a Realpage product (OneSite, Accounting, VendorServices) user for the given GreenBook user
+        /// </summary>
+        /// <param name="productUser">Details to delete for a user</param>
+        /// <remarks>Possible values for ProductStatus : (Sucess, Hidden, Deactivated, Error,etc). ProductId can be retrieved from /products endpoint. Product Saml Attributes can be retrieved from /user/productuser/attributes endpoint.
+        /// </remarks>
 		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [SwaggerResponse(HttpStatusCode.OK, Description = "Update successful", Type = typeof(HttpResponseMessage))]
         [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
         [Route("user/productuser/detailsdelete")]
         [AuthorizeScope("internalapi")]
-        [HttpGet]
+        [HttpDelete]
         public HttpResponseMessage DeleteSamlUserProductInfoAndStatus([FromBody] ProductUserAccountDetails productUser)
         {
             if (productUser == null)
