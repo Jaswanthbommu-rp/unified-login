@@ -126,8 +126,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             if (internalChange)
             {
+                var result = "Activity 1 : Before";
+                WriteActivityLogWithMessage(productUserAccountDetails.PersonaId, 0, result, productUserAccountDetails.ProductId);
                 var fromuserInfo = _activityLogHelper.GetUserActivityLogInfo(_defaultUserClaim.PersonaId);
+                result = "Activity 1 : After";
+                WriteActivityLogWithMessage(productUserAccountDetails.PersonaId, 0, result, productUserAccountDetails.ProductId);
+                result = "Activity 2 : Before";
                 var touserInfo = _activityLogHelper.GetUserActivityLogInfo(assignUserPersonaId);
+                result = "Activity 2 : After";
                 var product = _productRepository.ListProducts(productUserAccountDetails.ProductId, null, null, null).First();
 
                 var logMessage = $"{fromuserInfo.FirstName} {fromuserInfo.LastName} " +
