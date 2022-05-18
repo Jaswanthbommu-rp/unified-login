@@ -1291,24 +1291,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         public SaveInteralSamlAttrLog(DefaultUserClaim defaultUserClaim)
         {
-             var message = "GetUserActivityLogInfo 1 : ";
-             var k = _manageOrganization.writelogs(message.ToString());
             _defaultUserClaim = defaultUserClaim;
-
-             message = "GetUserActivityLogInfo 2 : ";
-             k = _manageOrganization.writelogs(message.ToString());
             _managePersona = new ManagePersona(_defaultUserClaim);
-
-            message = "GetUserActivityLogInfo 2 : ";
-            k = _manageOrganization.writelogs(message.ToString());
             _managePerson = new ManagePerson();
-
-            message = "GetUserActivityLogInfo 2 : ";
-            k = _manageOrganization.writelogs(message.ToString());
             _manageUserLogin = new ManageUserLogin(_defaultUserClaim);
-
-            message = "GetUserActivityLogInfo 2 : ";
-            k = _manageOrganization.writelogs(message.ToString());
             _manageOrganization = new ManageOrganization(_defaultUserClaim);
         }
 
