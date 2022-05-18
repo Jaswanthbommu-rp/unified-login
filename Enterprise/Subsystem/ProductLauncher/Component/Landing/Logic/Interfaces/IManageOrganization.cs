@@ -62,12 +62,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <returns></returns>
         Guid GetOrganizationAdminUserRealPageId(Guid organizationRealPageId);
 
-        /// <summary>
-        /// Used to get the Organization Identity ProviderType by realPageId
-        /// </summary>
-        /// <param name="realPageId">Organization unique identifier</param>
-        /// <returns>Identity Provider Type object</returns>
-        IList<IdentityProviderType> GetOrganizationIdentityProviderType(Guid realPageId);
+		/// <summary>
+		/// Used to get the RealPageId of the admin user of the organization
+		/// </summary>
+		/// <param name="message"></param>
+		/// <returns></returns>
+		RepositoryResponse writelogs(string message);
+
+
+		/// <summary>
+		/// Used to get the Organization Identity ProviderType by realPageId
+		/// </summary>
+		/// <param name="realPageId">Organization unique identifier</param>
+		/// <returns>Identity Provider Type object</returns>
+		IList<IdentityProviderType> GetOrganizationIdentityProviderType(Guid realPageId);
 
 		/// <summary>
 		/// Check if organization is the same

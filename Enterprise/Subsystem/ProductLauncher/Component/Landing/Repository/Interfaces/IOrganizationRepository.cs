@@ -67,6 +67,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         Guid GetOrganizationAdminUserRealPageId(Guid organizationRealPageId);
 
         /// <summary>
+        /// Used to get the RealPageId of the admin user of the organization
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        RepositoryResponse writeActivityLogs(string message);
+
+        /// <summary>
         /// Used to get the Organization Identity ProviderType by realPageId
         /// </summary>
         /// <param name="realPageId">Organization unique identifier</param>

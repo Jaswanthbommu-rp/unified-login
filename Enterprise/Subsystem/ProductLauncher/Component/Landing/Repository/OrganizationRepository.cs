@@ -268,6 +268,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             return realPageEmployeeAccessId;
         }
 
+        public RepositoryResponse writeActivityLogs(string message)
+        {
+                using (var repository = GetRepository())
+                {
+                    dynamic param = new
+                    {
+                        message = message
+                    };
+                    var result = repository.GetMany<dynamic>(StoredProcNameConstants.SP_LogErrorMessage, param);
+                    return result;
+                }
+        }
+
         /// <summary>
         /// Used to update any company master id records that match the old id to a new id
         /// </summary>

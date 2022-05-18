@@ -352,6 +352,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         public const string SP_UpdateMasterConfigurationSetting = "Enterprise.UpdateMasterConfigurationSetting";
         public const string SP_ListOrganizationSettings = "Enterprise.ListOrganizationSettings";
         public const string SP_ListOrganizations = "Enterprise.ListOrganizations_Ver01";
+        public const string SP_LogErrorMessage = "Enterprise.LogErrorMessage";
         public const string SP_CreateMasterConfigurationSetting = "Enterprise.CreateMasterConfigurationSetting";
         public const string SP_GetOrganizationMasterConfiguration = "Enterprise.GetOrganizationMasterConfiguration";
         public const string SP_CreateUsePrimaryPropertyMasterConfigurationSetting = "Enterprise.CreateUsePrimaryPropertyMasterConfigurationSetting";

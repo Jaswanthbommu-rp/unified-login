@@ -642,6 +642,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         /// <summary>
+        /// Used to get the RealPageId of the admin user of the organization
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        public RepositoryResponse writelogs(string message)
+        {
+            return _organizationRepository.writeActivityLogs(message);
+        }
+
+        /// <summary>
         /// Used to get the Organization Identity ProviderType by realPageId
         /// </summary>
         /// <param name="realPageId">Organization unique identifier</param>

@@ -1300,42 +1300,73 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         public UserActivityLogInfo GetUserActivityLogInfo(long personaId, DefaultUserClaim userClaim = null)
         {
-            if (personaId == 0)
+            try
             {
-                Guid employeeRealPageId = _manageOrganization.GetOrganizationAdminUserRealPageId(DefaultUserClaim.EmployeeCompanyRealPageId);
-                var person = _managePerson.GetPerson(employeeRealPageId);
-                var userLogin = _manageUserLogin.GetUserLoginOnly(employeeRealPageId);
-                var persona = _managePersona.GetActivePersona(employeeRealPageId);
-                return new UserActivityLogInfo
+                if (personaId == 0)
                 {
-                    FirstName = person.FirstName,
-                    LastName = person.LastName,
-                    RealPageId = userLogin.RealPageId,
-                    LoginName = userLogin.LoginName,
-                    BooksOrganizationMasterId = persona.Organization.BooksMasterId,
-                    OrganizationPartyId = persona.OrganizationPartyId,
-                    OrganizationName = persona.Organization.Name,
-                    UserId = userLogin.UserId,
-                    ClientCode = userClaim.ClientCode
-                };
+                    var message = "GetUserActivityLogInfo 1 : ";
+                    var k = _manageOrganization.writelogs(message.ToString());
+                    Guid employeeRealPageId = _manageOrganization.GetOrganizationAdminUserRealPageId(DefaultUserClaim.EmployeeCompanyRealPageId);
+
+                    message = "GetUserActivityLogInfo 2 : ";
+                    _manageOrganization.writelogs(message.ToString());
+                    var person = _managePerson.GetPerson(employeeRealPageId);
+
+                    message = "GetUserActivityLogInfo 3 : ";
+                    _manageOrganization.writelogs(message.ToString());
+                    var userLogin = _manageUserLogin.GetUserLoginOnly(employeeRealPageId);
+
+                    message = "GetUserActivityLogInfo 4 : ";
+                    _manageOrganization.writelogs(message.ToString());
+                    var persona = _managePersona.GetActivePersona(employeeRealPageId);
+                    return new UserActivityLogInfo
+                    {
+                        FirstName = person.FirstName,
+                        LastName = person.LastName,
+                        RealPageId = userLogin.RealPageId,
+                        LoginName = userLogin.LoginName,
+                        BooksOrganizationMasterId = persona.Organization.BooksMasterId,
+                        OrganizationPartyId = persona.OrganizationPartyId,
+                        OrganizationName = persona.Organization.Name,
+                        UserId = userLogin.UserId,
+                        ClientCode = userClaim.ClientCode
+                    };
+                }
+                else
+                {
+                    var message = "LogInfo 1 : ";
+                    var k = _manageOrganization.writelogs(message.ToString());
+                    var persona = _managePersona.GetPersona(personaId);
+
+                    message = "LogInfo 2 : ";
+                    k = _manageOrganization.writelogs(message.ToString());
+                    var userLogin = _manageUserLogin.GetUserLoginOnly(persona.RealPageId);
+
+                    message = "LogInfo 3 : ";
+                    k = _manageOrganization.writelogs(message.ToString());
+                    var person = _managePerson.GetPerson(persona.RealPageId);
+
+                    return new UserActivityLogInfo
+                    {
+                        FirstName = person.FirstName,
+                        LastName = person.LastName,
+                        RealPageId = userLogin.RealPageId,
+                        LoginName = userLogin.LoginName,
+                        BooksOrganizationMasterId = persona.Organization.BooksMasterId,
+                        OrganizationPartyId = persona.OrganizationPartyId,
+                        OrganizationName = persona.Organization.Name,
+                        UserId = userLogin.UserId
+                    };
+                }
+
             }
-            else
+            catch (Exception ex)
             {
-                var persona = _managePersona.GetPersona(personaId);
-                var userLogin = _manageUserLogin.GetUserLoginOnly(persona.RealPageId);
-                var person = _managePerson.GetPerson(persona.RealPageId);
-                return new UserActivityLogInfo
-                {
-                    FirstName = person.FirstName,
-                    LastName = person.LastName,
-                    RealPageId = userLogin.RealPageId,
-                    LoginName = userLogin.LoginName,
-                    BooksOrganizationMasterId = persona.Organization.BooksMasterId,
-                    OrganizationPartyId = persona.OrganizationPartyId,
-                    OrganizationName = persona.Organization.Name,
-                    UserId = userLogin.UserId
-                };
+                var message = "Exception : " + ex.Message;
+                _manageOrganization.writelogs(message.ToString());
+                return null;
             }
+            
         }
 
         public void PushToQueue(UserActivityLogInfo fromUserLogInfo, UserActivityLogInfo toUserLogInfo, String message, string logActivityType)
