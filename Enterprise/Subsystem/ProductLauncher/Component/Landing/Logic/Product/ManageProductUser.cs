@@ -135,6 +135,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     WriteActivityLogWithMessage(productUserAccountDetails.PersonaId, 0, result, productUserAccountDetails.ProductId);
                     result = "Exception :" + fromuserInfo.LastName;
                     WriteActivityLogWithMessage(productUserAccountDetails.PersonaId, 0, result, productUserAccountDetails.ProductId);
+                    result = "ClientInfo :" + fromuserInfo.OrganizationName;
+                    WriteActivityLogWithMessage(productUserAccountDetails.PersonaId, 0, result, productUserAccountDetails.ProductId);
                 }
                 result = "Activity 1 : After";
                 WriteActivityLogWithMessage(productUserAccountDetails.PersonaId, 0, result, productUserAccountDetails.ProductId);
@@ -1310,19 +1312,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             string message = "";
             try
             {
-                
                 if (personaId == 0)
                 {
                     //var result = "Activity 1 : Before";
-                    message += message + "1";
+                    message += "1";
                     Guid employeeRealPageId = _manageOrganization.GetOrganizationAdminUserRealPageId(DefaultUserClaim.EmployeeCompanyRealPageId);
-                    message += message + "2";
+                    message +=  "2";
                     var person = _managePerson.GetPerson(employeeRealPageId);
-                    message += message + "3";
+                    message +=  "3";
                     var userLogin = _manageUserLogin.GetUserLoginOnly(employeeRealPageId);
-                    message += message + "4";
+                    message +=  "4";
                     var persona = _managePersona.GetActivePersona(employeeRealPageId);
-                    message += message + "5";
+                    message +=  "5";
+                    message += "--" + persona.Organization.BooksMasterId.ToString() ;
+                    message += "--" + persona.OrganizationPartyId.ToString();
+                    message += "--" + persona.Organization.Name.ToString();
                     return new UserActivityLogInfo
                     {
                         FirstName = person.FirstName,
@@ -1333,7 +1337,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         OrganizationPartyId = persona.OrganizationPartyId,
                         OrganizationName = persona.Organization.Name,
                         UserId = userLogin.UserId,
-                        ClientCode = userClaim.ClientCode
+                        ClientCode = userClaim?.ClientCode
                     };
                 }
                 else
@@ -1361,6 +1365,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
+                string clientcode = "";
+                if (userClaim != null) 
+                {
+                    clientcode = userClaim.ClientCode;
+                }
                 return new UserActivityLogInfo
                 {
                     FirstName = "Error",
@@ -1369,7 +1378,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     LoginName = message,
                     BooksOrganizationMasterId = 1002,
                     OrganizationPartyId = 350,
-                    OrganizationName = "Realpage Employee",
+                    OrganizationName = clientcode,
                     UserId = 1111
                 };
             }
