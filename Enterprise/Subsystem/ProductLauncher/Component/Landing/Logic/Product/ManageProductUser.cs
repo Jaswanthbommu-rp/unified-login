@@ -126,9 +126,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             if (internalChange)
             {
-                var result = "Activity 1 : Before";
+                var result = "Activity 1 : Before : DefaultPersonaId" + _defaultUserClaim.PersonaId;
                 WriteActivityLogWithMessage(productUserAccountDetails.PersonaId, 0, result, productUserAccountDetails.ProductId);
                 var fromuserInfo = _activityLogHelper.GetUserActivityLogInfo(_defaultUserClaim.PersonaId);
+                if (fromuserInfo.FirstName.Equals("Error"))
+                {
+                    result = "Flow :" + fromuserInfo.LoginName;
+                    WriteActivityLogWithMessage(productUserAccountDetails.PersonaId, 0, result, productUserAccountDetails.ProductId);
+                    result = "Exception :" + fromuserInfo.LastName;
+                    WriteActivityLogWithMessage(productUserAccountDetails.PersonaId, 0, result, productUserAccountDetails.ProductId);
+                }
                 result = "Activity 1 : After";
                 WriteActivityLogWithMessage(productUserAccountDetails.PersonaId, 0, result, productUserAccountDetails.ProductId);
                 result = "Activity 2 : Before";
@@ -1297,76 +1304,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _manageUserLogin = new ManageUserLogin(_defaultUserClaim);
             _manageOrganization = new ManageOrganization(_defaultUserClaim);
         }
-        private void WriteActivityLogWithMessage(long fromPersonaId, long toPersonaId, string message, int productId)
-        {
-            UserActivityLogInfo toUserLogDetail = null;
-            // log product user updated activity
-            var fromUserLogDetail = GetUserActivityLogInfo(fromPersonaId);
-            toUserLogDetail = toPersonaId != 0 ? GetUserActivityLogInfo(toPersonaId) : null;
 
-            var logMessage = string.Format(message, toUserLogDetail?.FirstName, toUserLogDetail?.LastName,
-                "Onesite", fromUserLogDetail.FirstName, fromUserLogDetail.LastName);
-
-            WriteActivityLog(fromUserLogDetail, toUserLogDetail, "OS", logMessage);
-        }
-
-        private void WriteActivityLog(UserActivityLogInfo fromUserLogInfo, UserActivityLogInfo toUserLogInfo, string booksProductCode, string message)
-        {
-            long booksMasterOrgId = toUserLogInfo?.BooksOrganizationMasterId ?? fromUserLogInfo.BooksOrganizationMasterId;
-            long orgPartyId = toUserLogInfo?.OrganizationPartyId ?? fromUserLogInfo.OrganizationPartyId;
-
-            // log product user updated activity
-            try
-            {
-                LogActivity.WriteActivity(new ActivityDetails
-                {
-                    LogActivityTypeName = LogActivityTypeConstants.PRODUCT_ACCESS,
-                    LogCategoryName = LogActivityCategoryType.ProductAccess.ToString(),
-                    CorrelationId = Guid.NewGuid().ToString(),
-                    BooksMasterOrganizationId = booksMasterOrgId,
-                    OrganizationPartyId = orgPartyId,
-                    Message = message,
-
-                    FromUserLoginName = fromUserLogInfo.LoginName,
-                    FromUserLoginId = fromUserLogInfo.UserId,
-                    FromUserFirstName = fromUserLogInfo.FirstName,
-                    FromUserLastName = fromUserLogInfo.LastName,
-                    FromUserRealpageId = fromUserLogInfo.RealPageId.ToString(),
-
-                    ToUserLoginId = toUserLogInfo?.UserId,
-                    ToUserLoginName = toUserLogInfo?.LoginName,
-                    ToUserFirstName = toUserLogInfo?.FirstName,
-                    ToUserLastName = toUserLogInfo?.LastName,
-                    ToUserRealpageId = toUserLogInfo?.RealPageId.ToString(),
-
-                    BooksProductCode = booksProductCode
-                });
-            }
-            catch (Exception ex)
-            {
-            }
-        }
         public UserActivityLogInfo GetUserActivityLogInfo(long personaId, DefaultUserClaim userClaim = null)
         {
+            string message = "";
             try
             {
+                
                 if (personaId == 0)
                 {
-                    var result = "Activity 1 : Before";
-                    WriteActivityLogWithMessage(personaId, 0, result, 16);
+                    //var result = "Activity 1 : Before";
+                    message += message + "1";
                     Guid employeeRealPageId = _manageOrganization.GetOrganizationAdminUserRealPageId(DefaultUserClaim.EmployeeCompanyRealPageId);
-
-                    result = "Activity 1 : Before";
-                    WriteActivityLogWithMessage(personaId, 0, result, 16);
+                    message += message + "2";
                     var person = _managePerson.GetPerson(employeeRealPageId);
-
-                    result = "Activity 1 : Before";
-                    WriteActivityLogWithMessage(personaId, 0, result, 16);
+                    message += message + "3";
                     var userLogin = _manageUserLogin.GetUserLoginOnly(employeeRealPageId);
-
-                    result = "Activity 1 : Before";
-                    WriteActivityLogWithMessage(personaId, 0, result, 16);
+                    message += message + "4";
                     var persona = _managePersona.GetActivePersona(employeeRealPageId);
+                    message += message + "5";
                     return new UserActivityLogInfo
                     {
                         FirstName = person.FirstName,
@@ -1382,18 +1338,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 else
                 {
-                    var result = "Activity 1 : Before";
-                    WriteActivityLogWithMessage(personaId, 0, result, 16);
+                    message += message + "a";
                     var persona = _managePersona.GetPersona(personaId);
-
-                    result = "Activity 1 : Before";
-                    WriteActivityLogWithMessage(personaId, 0, result, 16);
+                    message += message + "b";
                     var userLogin = _manageUserLogin.GetUserLoginOnly(persona.RealPageId);
-
-                    result = "Activity 1 : Before";
-                    WriteActivityLogWithMessage(personaId, 0, result, 16);
+                    message += message + "c";
                     var person = _managePerson.GetPerson(persona.RealPageId);
-
+                    message += message + "d";
                     return new UserActivityLogInfo
                     {
                         FirstName = person.FirstName,
@@ -1410,9 +1361,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                var result = "Exception : " + ex.Message;
-                WriteActivityLogWithMessage(personaId, 0, result, 16);
-                return null;
+                return new UserActivityLogInfo
+                {
+                    FirstName = "Error",
+                    LastName = "excp"+ex.Message,
+                    RealPageId = DefaultUserClaim.EmployeeCompanyRealPageId,
+                    LoginName = message,
+                    BooksOrganizationMasterId = 1002,
+                    OrganizationPartyId = 350,
+                    OrganizationName = "Realpage Employee",
+                    UserId = 1111
+                };
             }
             
         }
