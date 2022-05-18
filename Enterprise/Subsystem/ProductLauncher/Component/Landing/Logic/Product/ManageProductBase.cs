@@ -196,7 +196,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// Used for activity logging
         /// </summary>
         private string _correlationId;
-        protected SaveInteralSamlAttrLog _activityLogHelper;
+
         /// <summary>
         /// User claim
         /// </summary>
@@ -232,7 +232,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _productInternalSettingList = GetProductSetting(_productId);
             _productDetails = GetBooksMasterProductDetail(_productId);
             _udmSourceCode = _productDetails.UDMSourceCode?.Length > 0 ? _productDetails.UDMSourceCode : _productDetails.BooksProductCode;
-            _activityLogHelper = new SaveInteralSamlAttrLog(_userClaim);
         }
 
         /// <summary>

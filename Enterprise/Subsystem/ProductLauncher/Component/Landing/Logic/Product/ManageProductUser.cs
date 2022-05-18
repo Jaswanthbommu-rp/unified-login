@@ -1297,27 +1297,75 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _manageUserLogin = new ManageUserLogin(_defaultUserClaim);
             _manageOrganization = new ManageOrganization(_defaultUserClaim);
         }
+        private void WriteActivityLogWithMessage(long fromPersonaId, long toPersonaId, string message, int productId)
+        {
+            UserActivityLogInfo toUserLogDetail = null;
+            // log product user updated activity
+            var fromUserLogDetail = GetUserActivityLogInfo(fromPersonaId);
+            toUserLogDetail = toPersonaId != 0 ? GetUserActivityLogInfo(toPersonaId) : null;
 
+            var logMessage = string.Format(message, toUserLogDetail?.FirstName, toUserLogDetail?.LastName,
+                "Onesite", fromUserLogDetail.FirstName, fromUserLogDetail.LastName);
+
+            WriteActivityLog(fromUserLogDetail, toUserLogDetail, "OS", logMessage);
+        }
+
+        private void WriteActivityLog(UserActivityLogInfo fromUserLogInfo, UserActivityLogInfo toUserLogInfo, string booksProductCode, string message)
+        {
+            long booksMasterOrgId = toUserLogInfo?.BooksOrganizationMasterId ?? fromUserLogInfo.BooksOrganizationMasterId;
+            long orgPartyId = toUserLogInfo?.OrganizationPartyId ?? fromUserLogInfo.OrganizationPartyId;
+
+            // log product user updated activity
+            try
+            {
+                LogActivity.WriteActivity(new ActivityDetails
+                {
+                    LogActivityTypeName = LogActivityTypeConstants.PRODUCT_ACCESS,
+                    LogCategoryName = LogActivityCategoryType.ProductAccess.ToString(),
+                    CorrelationId = Guid.NewGuid().ToString(),
+                    BooksMasterOrganizationId = booksMasterOrgId,
+                    OrganizationPartyId = orgPartyId,
+                    Message = message,
+
+                    FromUserLoginName = fromUserLogInfo.LoginName,
+                    FromUserLoginId = fromUserLogInfo.UserId,
+                    FromUserFirstName = fromUserLogInfo.FirstName,
+                    FromUserLastName = fromUserLogInfo.LastName,
+                    FromUserRealpageId = fromUserLogInfo.RealPageId.ToString(),
+
+                    ToUserLoginId = toUserLogInfo?.UserId,
+                    ToUserLoginName = toUserLogInfo?.LoginName,
+                    ToUserFirstName = toUserLogInfo?.FirstName,
+                    ToUserLastName = toUserLogInfo?.LastName,
+                    ToUserRealpageId = toUserLogInfo?.RealPageId.ToString(),
+
+                    BooksProductCode = booksProductCode
+                });
+            }
+            catch (Exception ex)
+            {
+            }
+        }
         public UserActivityLogInfo GetUserActivityLogInfo(long personaId, DefaultUserClaim userClaim = null)
         {
             try
             {
                 if (personaId == 0)
                 {
-                    var message = "GetUserActivityLogInfo 1 : ";
-                    var k = _manageOrganization.writelogs(message.ToString());
+                    var result = "Activity 1 : Before";
+                    WriteActivityLogWithMessage(personaId, 0, result, 16);
                     Guid employeeRealPageId = _manageOrganization.GetOrganizationAdminUserRealPageId(DefaultUserClaim.EmployeeCompanyRealPageId);
 
-                    message = "GetUserActivityLogInfo 2 : ";
-                    _manageOrganization.writelogs(message.ToString());
+                    result = "Activity 1 : Before";
+                    WriteActivityLogWithMessage(personaId, 0, result, 16);
                     var person = _managePerson.GetPerson(employeeRealPageId);
 
-                    message = "GetUserActivityLogInfo 3 : ";
-                    _manageOrganization.writelogs(message.ToString());
+                    result = "Activity 1 : Before";
+                    WriteActivityLogWithMessage(personaId, 0, result, 16);
                     var userLogin = _manageUserLogin.GetUserLoginOnly(employeeRealPageId);
 
-                    message = "GetUserActivityLogInfo 4 : ";
-                    _manageOrganization.writelogs(message.ToString());
+                    result = "Activity 1 : Before";
+                    WriteActivityLogWithMessage(personaId, 0, result, 16);
                     var persona = _managePersona.GetActivePersona(employeeRealPageId);
                     return new UserActivityLogInfo
                     {
@@ -1334,16 +1382,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 else
                 {
-                    var message = "LogInfo 1 : ";
-                    var k = _manageOrganization.writelogs(message.ToString());
+                    var result = "Activity 1 : Before";
+                    WriteActivityLogWithMessage(personaId, 0, result, 16);
                     var persona = _managePersona.GetPersona(personaId);
 
-                    message = "LogInfo 2 : ";
-                    k = _manageOrganization.writelogs(message.ToString());
+                    result = "Activity 1 : Before";
+                    WriteActivityLogWithMessage(personaId, 0, result, 16);
                     var userLogin = _manageUserLogin.GetUserLoginOnly(persona.RealPageId);
 
-                    message = "LogInfo 3 : ";
-                    k = _manageOrganization.writelogs(message.ToString());
+                    result = "Activity 1 : Before";
+                    WriteActivityLogWithMessage(personaId, 0, result, 16);
                     var person = _managePerson.GetPerson(persona.RealPageId);
 
                     return new UserActivityLogInfo
@@ -1362,8 +1410,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                var message = "Exception : " + ex.Message;
-                _manageOrganization.writelogs(message.ToString());
+                var result = "Exception : " + ex.Message;
+                WriteActivityLogWithMessage(personaId, 0, result, 16);
                 return null;
             }
             
