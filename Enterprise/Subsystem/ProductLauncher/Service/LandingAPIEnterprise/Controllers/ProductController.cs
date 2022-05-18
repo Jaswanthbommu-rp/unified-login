@@ -101,7 +101,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         }
 
         /// <summary>
-	    /// Get Unified Login User Mapping id for given Product user Id's by  Blue Book Company ID and ProductId.
+	    /// Get Unified Login User Mapping id for given Product user Id's by  Blue Book Company ID or upfmId and ProductId.
 	    /// </summary>
 	    /// <returns></returns>
         [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
@@ -120,6 +120,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             {
                 CompanyId = productUserIDMappingRequest.CompanyId,
                 ProductCode = productUserIDMappingRequest.ProductCode,
+                upfmId= productUserIDMappingRequest.upfmId,
                 ULMappedPersonaId = new List<ULMappedPersonaIds>()
             };
 
@@ -127,7 +128,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             productId = result.Where(x => x.BooksProductCode == productUserIDMappingRequest.ProductCode).FirstOrDefault().ProductId;
 
             if (productUserIDMappingRequest == null ||
-                productUserIDMappingRequest.CompanyId < 0 ||
+                productUserIDMappingRequest.CompanyId < 0 || 
                 string.IsNullOrEmpty(productUserIDMappingRequest.ProductCode) ||
                 productUserIDMappingRequest.ProductUserId?.Count == 0 ||
                 productId <= 0)
@@ -137,6 +138,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
             IProductRepository productRepository = new ProductRepository();
             mappedUnifiedLoginUserDetails.ULMappedPersonaId = productRepository.GetULMappingPersonaIDsByCompanyAndProducts(productUserIDMappingRequest.CompanyId,
+                                                                                 productUserIDMappingRequest.upfmId,
                                                                                  productId,
                                                                                  productUserIDMappingRequest.ProductUserId);
             var logData = new Dictionary<string, object>();

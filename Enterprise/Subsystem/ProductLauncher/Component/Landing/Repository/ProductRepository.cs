@@ -1982,19 +1982,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
 
         /// <summary>
-        /// Get Unified Login mapping PersonaId for Product UserId by company and product id
+        /// Get Unified Login mapping PersonaId for Product UserId by company or upfmId and product id
         /// </summary>
         /// <param name="companyId"></param>
+        /// <param name="upfmId"></param>
         /// <param name="productId"></param>
         /// <param name="productUserIds"></param>
         /// <returns>List of Unified Login mapping UserId by product and company</returns>
-        public List<ULMappedPersonaIds> GetULMappingPersonaIDsByCompanyAndProducts(int companyId, int productId, List<string> productUserIds)
+        public List<ULMappedPersonaIds> GetULMappingPersonaIDsByCompanyAndProducts(int companyId, string upfmId, int productId, List<string> productUserIds)
         {
             List<ULMappedPersonaIds> mappingUserList = new List<ULMappedPersonaIds>();
 
             dynamic param = new
             {
                 CompanyId = companyId,
+                UPFMId = upfmId,
                 ProductId = productId,
                 TargetProductUserIds = productUserIds.Count > 0 ? string.Join(",", productUserIds) : string.Empty,
             };
