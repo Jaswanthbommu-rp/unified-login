@@ -721,13 +721,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         // if not superuser, take what was passed to the call and assign it if it is found
                         if (assetGroupList.Any(a => (
                                  (isSuperUser && a.GroupType.Equals("COMPANY", StringComparison.OrdinalIgnoreCase)) ||
-                                 (!isSuperUser && a.ID == PropertyList[0].ToString())))
+                                 (!isSuperUser && a.AssetID == PropertyList[0].ToString())))
                            )
                         {
                             AssetGroup ag = (from a in assetGroupList
                                              where
                                                 ((isSuperUser && a.GroupType.Equals("COMPANY", StringComparison.OrdinalIgnoreCase)) ||
-                                                (!isSuperUser && a.ID == PropertyList[0].ToString()))
+                                                (!isSuperUser && a.AssetID == PropertyList[0].ToString()))
                                              select a).FirstOrDefault();
                             if (ag != null)
                             {
@@ -1549,7 +1549,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             };
                             return result;
                         }
-                        List<AssetGroup> assetGroups = JsonConvert.DeserializeObject<List<AssetGroup>>(response.Content.ReadAsStringAsync().Result);
+                        List<AssetGroup> assetGroups = JsonConvert.DeserializeObject<List<AssetGroup>>(response.Content.ReadAsStringAsync().Result);                        
+                        foreach (AssetGroup ag in assetGroups)
+                        {
+                            ag.ID = ag.AssetID;
+                        }
                         logData = new Dictionary<string, object>();
                         logData.Add("assetGroups", assetGroups);
                         WriteToDiagnosticLog("GetCompanyAssetDetails - Got asset groups. ", logData);
