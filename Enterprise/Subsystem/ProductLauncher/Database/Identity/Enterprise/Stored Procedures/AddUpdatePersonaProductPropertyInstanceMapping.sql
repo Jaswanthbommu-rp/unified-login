@@ -36,7 +36,7 @@ BEGIN
 			WHERE PersonaId = @personaId
 			AND ProductId = @ProductId
 			EXCEPT
-			SELECT PropertyInstanceId
+			SELECT PersonaId,ProductId,PropertyInstanceId
 			FROM	Enterprise.PropertyInstanceMapping
 			WHERE PersonaId = @personaId
 			AND ProductId = @ProductId
