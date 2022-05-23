@@ -1324,6 +1324,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         new NameValuePair() { Name = "Pin", Value = onesitePin },
                         new NameValuePair() { Name = "ReferenceNumber", Value = userThirdPartyReference },
                         new NameValuePair() { Name = "PMCID", Value = _pmcID },
+                        new NameValuePair() { Name = "Title", Value = string.IsNullOrEmpty(person.Title) ? "Title example": person.Title },
                         new NameValuePair() { Name = "IsSuperuser", Value = "0" },
                         new NameValuePair() { Name = "LogonName", Value = onesiteLoginName }, // leave empty login name so OneSite will create one
 						new NameValuePair() { Name = "IsULLinked", Value = "1" }, // Set the user is using UnifiedLogin
