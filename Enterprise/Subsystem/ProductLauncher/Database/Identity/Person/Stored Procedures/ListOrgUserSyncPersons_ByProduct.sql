@@ -141,7 +141,8 @@ BEGIN
 		  StatusName VARCHAR(50) NULL,
 		  AssignedCount INT NULL,
 		  MatchedCount INT NULL,
-		  LastRefreshed DATETIME NULL
+		  LastRefreshed DATETIME NULL,
+		  LastSynced DATETIME NULL
 	 )  
 	 
 	 IF (@filterPartyRoleTypeId IS NULL)
@@ -207,6 +208,13 @@ BEGIN
 			FROM @ValidPersona F
 			LEFT JOIN [Enterprise].[UserSyncJob_V2] USJ ON
 				F.PersonaId = USJ.UserPersonaId AND USJ.UserSyncJobTypeId = 2
+		  ),
+	   CTE_UserPropertiesSynced(PersonaId,LastSyncDate )
+	   AS (
+			SELECT P.PersonaId,PMH.ProductPropertiesSyncDate
+			FROM @ValidPersona P
+			INNER JOIN Enterprise.PersonaProductPropertiesSyncHistory PMH ON
+				PMH.PersonaId = P.PersonaId And PMH.ProductId = @ProductId
 		  )
 
 	  INSERT INTO #UserSync
@@ -226,7 +234,8 @@ BEGIN
 			  END AS 'StatusName'  ,
 			  ISNULL(AssignedCount,0),
 			  ISNULL(MatchedCount,0),		  
-			  ISNULL(LastRefreshDate, Null)  AS 'LastRefreshDate'
+			  ISNULL(LastRefreshDate, Null)  AS 'LastRefreshDate',
+			  ISNULL(LastSyncDate, Null)  AS 'LastSyncDate'
 	  FROM @ValidPersona pe        
 	  INNER JOIN Ident.UserLoginPersona iulp ON 
 		pe.UserLoginPersonaId = iulp.UserLoginPersonaId	   
@@ -239,6 +248,8 @@ BEGIN
 		pe.PersonaId = CPMP.PersonaId
 	  LEFT JOIN CTE_UserSyncJobStatus CUSJ ON
 		pe.PersonaId = CUSJ.PersonaId
+	  LEFT JOIN CTE_UserPropertiesSynced CUPS ON
+		pe.PersonaId = CUPS.PersonaId
 	  LEFT JOIN Enterprise.StatusType est ON CUSJ.StatusId = est.StatusTypeId  
 	  LEFT OUTER JOIN @filterStatus fs ON (est.StatusTypeId = fs.StatusTypeId)      
 	  WHERE ((@filterStatusTypeId = 0) OR (NOT fs.StatusTypeId IS NULL)) 
@@ -253,6 +264,7 @@ BEGIN
 		StatusId,      
 		StatusName,
 		LastRefreshDate,
+		LastSyncDate,
 		AssignedCount,
 		MatchedCount,
 		TotalRecords,      
@@ -267,6 +279,7 @@ BEGIN
 		   StatusId,
 		   StatusName,
 		   LastRefreshed,
+		   LastSynced,
 		   AssignedCount,
 		   MatchedCount,
 		   COUNT(1) OVER () AS TotalRecords,      
@@ -294,6 +307,7 @@ BEGIN
 		StatusId,      
 		StatusName,
 		LastRefreshDate,
+		LastSyncDate,
 		AssignedCount,
 		MatchedCount,
 		TotalRecords
