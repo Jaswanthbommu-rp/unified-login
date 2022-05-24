@@ -1327,7 +1327,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				if (!string.IsNullOrWhiteSpace(propertyIDAddList))
 				{
 					user[4].Name = "PropertyIdsToAdd";
-					user[4].Value = "";
+					user[4].Value = propertyIDAddList;
 					logData = new Dictionary<string, object>();
 					logData.Add("user[0]", user[0]);
 					logData.Add("user[1]", user[1]);
