@@ -22,7 +22,8 @@ BEGIN
 	  @csvStatus varchar(max),
 	  @ProductSettingTypeId int,      
 	  @OffsetMinutes smallint,
-	  @filterOperatorCount int = NULL;
+	  @filterOperatorCount int = NULL,
+	  @ProductSource varchar(10);
 	        
 	 DECLARE @filterStatus TABLE (      
 	  StatusTypeId int PRIMARY KEY      
@@ -118,6 +119,7 @@ BEGIN
 	  FROM STRING_SPLIT(@csvStatus, ',');      
 	 END      
       
+	 SELECT @ProductSource = BooksProductCode FROM Enterprise.Product Where ProductId = @ProductId
 
 	 SELECT @filterStatusTypeId = COUNT(StatusTypeId)      
 	 FROM  @filterStatus      
@@ -208,6 +210,8 @@ BEGIN
 			FROM @ValidPersona F
 			LEFT JOIN [Enterprise].[UserSyncJob_V2] USJ ON
 				F.PersonaId = USJ.UserPersonaId AND USJ.UserSyncJobTypeId = 2
+			LEFT JOIN Enterprise.UserSyncJobTask_V2 USJT ON
+				USJ.UserSyncJobId = USJT.UserSyncJobId AND USJT.Source = @ProductSource
 		  ),
 	   CTE_UserPropertiesSynced(PersonaId,LastSyncDate )
 	   AS (
@@ -288,9 +292,9 @@ BEGIN
 			  WHEN 101 THEN ROW_NUMBER() OVER (ORDER BY LoginName ASC, FirstName + ' ' + LastName ASC)        
 			  WHEN 102 THEN ROW_NUMBER() OVER (ORDER BY StatusName ASC, FirstName + ' ' + LastName ASC)        
 			  WHEN 103 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(LastRefreshed,'') ASC, FirstName + ' ' + LastName ASC)      
-			  WHEN -101 THEN ROW_NUMBER() OVER (ORDER BY LoginName ASC, FirstName + ' ' + LastName ASC)        
-			  WHEN -102 THEN ROW_NUMBER() OVER (ORDER BY StatusName ASC, FirstName + ' ' + LastName ASC)        
-			  WHEN -103 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(LastRefreshed,'') ASC, FirstName + ' ' + LastName ASC)  
+			  WHEN -101 THEN ROW_NUMBER() OVER (ORDER BY LoginName DESC, FirstName + ' ' + LastName DESC)        
+			  WHEN -102 THEN ROW_NUMBER() OVER (ORDER BY StatusName DESC, FirstName + ' ' + LastName DESC)        
+			  WHEN -103 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(LastRefreshed,'') DESC, FirstName + ' ' + LastName DESC)  
 			 END AS RowNumber
 		FROM #UserSync UY
 		 WHERE  (        
