@@ -714,18 +714,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					}
 				}
 				
-                foreach (var item in aoGbUserCompanyPropertyRoleDetails)
-                {
-					if (item.SelectedPortfolioValues[0] == -1)
-					{
-						// assign ALL properties 
-						var propertiesResponse = GetProperties(item.CompanyId, item.ProductName);
-						var propertyList = (from i in propertiesResponse.Properties select i.PropertyId).ToList();
-						item.allProperties = true;
-						item.SelectedPortfolioValues = propertyList;
-					}
-				}
-
 				// Check if GB super user
 				if (IsSuperUser(productUserPersonaId))
 				{
@@ -1183,6 +1171,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					// assign active properties of the user
 					var props = GetActiveProperties(samlEditorProductUserName, samlSubjectProductUserName, aoProduct, companyId);
 
+					var propertyApiUrl = $"{_apiEndPoint}user/products/{samlSubjectProductUserName.ToLower()}/{companyId}";
+					bool isAllProperties = GetAllPropertiesStatusForExistingProductUser(propertyApiUrl, aoProduct);
 					// get division
 					var divisionName = ProductEnumHelper.GetAoDivisionName(ProductEnumHelper.GetAoProductEnum(aoProduct));
 	
@@ -1194,7 +1184,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						PropertyGroups = propertyGroupList,
 						SelectedPortfolioValues = props,
 						SelectedRoleValues = roleNames,
-						IsAssigned = true
+						IsAssigned = true,
+						allProperties = isAllProperties
 					});
 				}
 			}
@@ -2819,7 +2810,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						PropertyGroups = propertyGroupList,
 						SelectedPortfolioValues = propertyList,
 						SelectedRoleValues = roleList,
-						IsAssigned = true
+						IsAssigned = true,
+						allProperties = true
 					});
 				}
 			}
