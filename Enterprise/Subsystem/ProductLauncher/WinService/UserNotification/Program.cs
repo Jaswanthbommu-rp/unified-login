@@ -1,4 +1,6 @@
-﻿using RealPage.Logging.Serilog;
+﻿using Elastic.Apm;
+using Elastic.Apm.AspNetFullFramework;
+using RealPage.Logging.Serilog;
 using RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification.Helper;
 using Serilog;
 using System;
@@ -19,6 +21,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
 
             var userNotificationService = new UserNotificationService();
+
+            // set up agent with components
+            var agentComponents = ElasticApmModule.CreateAgentComponents();
+            Agent.Setup(agentComponents);
 
             if (Environment.UserInteractive)
             {

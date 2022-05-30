@@ -47,4 +47,31 @@
              defaultValue="#{ActivityCorsUrls}#">
     <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='CorsUrls']/@value" />
   </parameter>
+
+  <!--APM settings-->
+  <parameter name="ElasticApm_Enabled"
+  	   description="Flag to on and off the APM"
+  	   defaultValue="#{ElasticApm.Enabled}#">
+  	<parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='ElasticApm:Enabled']/@value" />
+  </parameter>
+  <parameter name="Environment"
+  	   description="Used by APM"
+  	   defaultValue="#{Environment}#">
+  	<parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='ElasticApm:Environment']/@value" />
+  </parameter>
+  <parameter name="ElasticApm_ServerUrl"
+  	   description="APM Server Url"
+  	   defaultValue="#{ElasticApm.ServerUrl}#">
+  	<parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='ElasticApm:ServerUrl']/@value" />
+  </parameter>
+  <parameter name="ElasticApm_ServiceVersion"
+  	   description="APM Server Version / Branch Name"
+  	   defaultValue="#{ElasticApm.ServiceVersion}#">
+  	<parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='ElasticApm:ServiceVersion']/@value" />
+  </parameter>
+  <parameter name="ElasticApm_TransactionSampleRate"
+  	   description="TransactionSampleRate 1.0 for lower and 0.1 for PROD"
+  	   defaultValue="#{ElasticApm.TransactionSampleRate}#">
+  	<parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='ElasticApm:TransactionSampleRate']/@value" />
+  </parameter>
 </parameters>

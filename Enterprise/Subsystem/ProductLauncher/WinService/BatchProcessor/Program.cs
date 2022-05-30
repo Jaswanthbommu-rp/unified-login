@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Net;
 using System.ServiceProcess;
+using Elastic.Apm;
+using Elastic.Apm.AspNetFullFramework;
 using RealPage.Logging.Serilog;
 using Serilog;
 
@@ -18,6 +20,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
             var productAssignService = new BatchProcessorService();
 
             SerilogHelpers.ConfigureSerilog("Unified Login");
+
+            // set up agent with components
+            var agentComponents = ElasticApmModule.CreateAgentComponents();
+            Agent.Setup(agentComponents);
 
             if (Environment.UserInteractive)
             {

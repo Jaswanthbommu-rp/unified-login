@@ -11,6 +11,8 @@ using IdentityServer3.AccessTokenValidation;
 using Newtonsoft.Json.Serialization;
 using RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Helper;
 using RealPage.Logging.Serilog;
+using Elastic.Apm.AspNetFullFramework;
+using Elastic.Apm;
 
 [assembly: OwinStartup(typeof(Startup))]
 
@@ -25,6 +27,10 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader
             System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
 
 			HttpConfiguration config = new HttpConfiguration();
+
+            // set up agent with components
+            var agentComponents = ElasticApmModule.CreateAgentComponents();
+            Agent.Setup(agentComponents);
 
             app.UseIdentityServerBearerTokenAuthentication(new IdentityServerBearerTokenAuthenticationOptions
             {

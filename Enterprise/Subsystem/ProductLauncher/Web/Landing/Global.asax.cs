@@ -5,6 +5,9 @@ using System.Web.Helpers;
 using System.Web.Http;
 using System.Web.Mvc;
 using System.Web.Routing;
+using Elastic.Apm;
+using Elastic.Apm.Api;
+using Elastic.Apm.AspNetFullFramework;
 using RealPage.Logging.Serilog;
 using RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Controllers;
 using RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Logging;
@@ -23,6 +26,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing
             GlobalConfiguration.Configure(WebApiConfig.Register);
             //BundleConfig.RegisterBundles(BundleTable.Bundles);
             AntiForgeryConfig.UniqueClaimTypeIdentifier = ClaimTypes.NameIdentifier;
+
+            // set up agent with components
+            var agentComponents = ElasticApmModule.CreateAgentComponents();
+            Agent.Setup(agentComponents);
         }
 
         protected void Application_Error(object sender, EventArgs e)
