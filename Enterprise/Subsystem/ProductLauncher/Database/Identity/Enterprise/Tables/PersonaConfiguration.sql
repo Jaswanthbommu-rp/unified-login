@@ -39,7 +39,12 @@ INCLUDE ( 	[ConfigurationId]) WITH (SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, O
 GO
 CREATE NONCLUSTERED INDEX [IX_PersonaConfiguration_ProductId_FromDate_ThruDate]
     ON [Enterprise].[PersonaConfiguration]([ProductId] ASC, [FromDate] ASC, [ThruDate] ASC)
-    INCLUDE([PersonaId], [ConfigurationId]);
+    INCLUDE([PersonaId], [ConfigurationId])
+GO
+CREATE NONCLUSTERED INDEX [IX_PersonaConfiguration_ThruDate]
+ON [Enterprise].[PersonaConfiguration] ([ThruDate])
+INCLUDE ([PersonaId],[ProductId],[StatusTypeId],[IsFavorite])
+GO
 
 
 

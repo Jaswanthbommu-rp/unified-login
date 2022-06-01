@@ -15,3 +15,9 @@
 GO
 ALTER TABLE [Enterprise].[Organization]  WITH CHECK ADD  CONSTRAINT [FK_Organization_OrganizationType] FOREIGN KEY([OrganizationTypeId])
 REFERENCES [Enterprise].[OrganizationType] ([OrganizationTypeId])
+GO
+
+CREATE NONCLUSTERED INDEX [IX_Organization_OrganizationDomainId]
+ON [Enterprise].[Organization] ([OrganizationDomainId])
+INCLUDE (PartyId)
+GO
