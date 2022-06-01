@@ -1328,7 +1328,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 ApplySuperUserData(productUser);
             }
 
-            if (SubjectUserDetails.IsRPEmployee)
+            var supportsEmployeeAccess = GetProductInternalSettingValue("SI_SupportsEmployeeCreation");
+            if (SubjectUserDetails.IsRPEmployee && supportsEmployeeAccess == "1")
             {
                 ApplyEmployeeData(productUser);
             }
@@ -1447,7 +1448,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         protected string GetProductInternalSettingValue(string settingName)
         {
             // Get product setting value
-            var settingValue = ProductInternalSettingList.First(a => a.Name.ToUpper() == settingName.ToUpper()).Value;
+            var settingValue = ProductInternalSettingList.FirstOrDefault(a => a.Name.ToUpper() == settingName.ToUpper())?.Value;
             return settingValue;
         }
 
