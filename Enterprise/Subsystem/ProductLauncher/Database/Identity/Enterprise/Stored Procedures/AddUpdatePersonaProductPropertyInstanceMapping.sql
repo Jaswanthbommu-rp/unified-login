@@ -53,6 +53,8 @@ BEGIN
 				WHERE PersonaId = @personaId
 				AND ProductId = @ProductId
 			END
+
+			Set @Current_ID = @Current_ID + 1
 		END
 
 		SELECT	1 AS Id,'' AS ErrorMessage;
