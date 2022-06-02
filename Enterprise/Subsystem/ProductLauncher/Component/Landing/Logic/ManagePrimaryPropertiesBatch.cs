@@ -124,8 +124,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         }
                         else
                         {
-                            var productRoles = rolesResponse.Records?.Cast<ProductRole>().ToList();
-                            var productBatchRecord = manageProductBatch.GetProductBatchRecord(batch.EditorUserPersonaId, batch.SubjectUserPersonaId, productRoles, propertiesResponse, rolesResponse, product.ProductId, true);
+							List<ProductRole> productRoles = null;
+							if (product.ProductId == (int)ProductEnum.ResidentPortal ||
+								product.ProductId == (int)ProductEnum.DepositAlternative ||
+								product.ProductId == (int)ProductEnum.IntegrationMarketplace ||
+								product.ProductId == (int)ProductEnum.LeadManagement ||
+								product.ProductId == (int)ProductEnum.LeadAnalytics ||
+								product.ProductId == (int)ProductEnum.PortfolioManagement)
+							{
+								productRoles = rolesResponse.Records?.Cast<ProductRole>().ToList();
+							}
+
+							var productBatchRecord = manageProductBatch.GetProductBatchRecord(batch.EditorUserPersonaId, batch.SubjectUserPersonaId, productRoles, propertiesResponse, rolesResponse, product.ProductId, true);
 							if (integrationType == ProductIntegrationTypeEnum.UPFM)
 							{
 								var currentProductPropertiesData = manageProductBatch.GetExistingUserPrimaryPropertiesData(batch.SubjectUserPersonaId, product.ProductId);
