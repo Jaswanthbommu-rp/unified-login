@@ -14,3 +14,16 @@ VALUES ('GetUserGroupEndpoint','GET user groups end point for product API',0)
 END
 
 GO
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'AOSpecialEditorUser')
+BEGIN
+	DECLARE @settingTypeId INT = 0;
+	
+	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
+	VALUES ('AOSpecialEditorUser', 'Automate RealPage Access user creation', 0);
+
+	SELECT @settingTypeId = ProductSettingTypeId FROM Enterprise.ProductSettingType WHERE NAME = 'AOSpecialEditorUser'
+	EXEC Enterprise.SetProductSetting 0, 4, @settingTypeId, N'ulserviceuser@realpage.com'
+END
+
+GO

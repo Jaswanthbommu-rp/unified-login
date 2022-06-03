@@ -22,6 +22,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -37,7 +38,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		private readonly string _apiPassword;
 		private readonly string _apiEndPoint;
 		private readonly string _aoSuperUser;
-		private DefaultUserClaim _userClaims;		
+		private DefaultUserClaim _userClaims;
+		private IManageOrganization _manageOrganization;
+
 		const int CacheTimeSeconds = 300;
 		#endregion
 
@@ -63,6 +66,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					Convert.FromBase64String(
 						_productInternalSettingList.First(a => a.Name.Equals("APIPassword", StringComparison.OrdinalIgnoreCase)).Value));
 			_aoSuperUser = _productInternalSettingList.First(a => a.Name.Equals("ProductSuperUserLoginName", StringComparison.OrdinalIgnoreCase)).Value;
+			_manageOrganization = new ManageOrganization(userClaims);
 
 			WriteToDiagnosticLog("ManageProductAssetOptimization.Ctor - Received Product settings.");
 		}		
@@ -638,6 +642,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				string returnResult = "";
 				List<string> userAOProducts = new List<string>();
+				bool isRealpageAccessUser = false;
 				var persona = _managePersona.GetPersona(productUserPersonaId);
 				var realPageId = persona.RealPageId;
 				var person = _managePerson.GetPerson(realPageId);
@@ -699,175 +704,240 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					LastName = person.LastName,
 				};
 
-				userAOProducts = GetAOProductsForNewMultiCompanyUser(editorPersonaId, productUserGbLogin.LoginName);
+				List<CompanySetup> companyList = _manageOrganization.GetCompanyList(persona.Organization.Name, 0, null, 0, new Dictionary<object, object>());
+				isRealpageAccessUser = companyList.Where(a => a.RealPageAccessUser == productUserGbLogin.LoginName).Distinct().Count() > 0;
 
-				if (string.IsNullOrEmpty(_productUsername))
-				{
-					//Check to see if user has multicompany, then get user products and assign before any updates
-					if (organizationList?.Count > 1)
-					{
-						if (userAOProducts?.Count > 0)
-						{
-							CreateProductUserInGreenBook(editorPersonaId, productUserPersonaId, userAOProducts, productUserGbLogin.LoginName.ToLower());
-							_productUsername = productUserGbLogin.LoginName.ToLower();
-						}
-					}
-				}
-			
-				// Check if GB super user
-				if (IsSuperUser(productUserPersonaId))
+				if (string.IsNullOrEmpty(productUserName) && isRealpageAccessUser)
 				{
 					WriteToDiagnosticLog(
-						$"ManageProductAssetOptimization.ManageAssetOptimizationUser user is super user with editorPersona id - {editorPersonaId} and userPersonaId {productUserPersonaId}.");
+						$"ManageProductAssetOptimization.ManageAssetOptimizationUser Begining realpage access user creation process with editorPersona id - {editorPersonaId} and userPersonaId {productUserPersonaId}.");
 
-					aoGbUserCompanyPropertyRoleDetails = CopyEditorUserToCreateSuperUser(editorPersonaId);
+					var aOSpecialEditorUser = _productInternalSettingList.First(a => a.Name.Equals("AOSpecialEditorUser", StringComparison.OrdinalIgnoreCase)).Value;
+					
+					// Get all ao products available in the company
+					var productsApiUrl = $"{_apiEndPoint}company/{blueAOCompanyInfo.CompanyInstanceSourceId}/products";
+					var allAOProducts = GetResultFromApi<IList<GroupModel>>(productsApiUrl);
 
-					try
+					IList<GroupModel> groupsModel = new List<GroupModel>();
+					IList<Model> modelList = new List<Model>();
+					foreach (var item in allAOProducts)
 					{
-						// For Investment Analytics (MA) assign US market to super user
-						var allGroups = GetAllPropertyGroups();
-						var usGroupId = allGroups.Groups.FirstOrDefault(x => x.GroupName == "US")?.GroupId;
-
-						if (usGroupId != null && usGroupId != 0)
+						if (ProductEnumHelper.CheckAoProductSupportedByGreenBook(item.ProductName))
 						{
-							var ss =
-								aoGbUserCompanyPropertyRoleDetails.Where(x => x.ProductName == "MA")
-									.SelectMany(c => c.PropertyGroups)
-									.ToList();
-							if (!ss.Contains(usGroupId.Value))
+							var groupModel = new GroupModel
 							{
-								// aoGbUserCompanyPropertyRoleDetails.Where(x => x.ProductName == "MA").SelectMany(c => c.PropertyGroups).ToList().Add(usGroupId.Value);
-								foreach (var c in aoGbUserCompanyPropertyRoleDetails)
+								Division = item.Division,
+								ProductName = item.ProductName,
+								IsEnabled = true
+							};
+
+							var model = new Model
+							{
+								CompanyId = Convert.ToInt32(blueAOCompanyInfo.CompanyInstanceSourceId),
+								DivisionName = item.Division,
+								Product = item.ProductName,
+								SelectedPortfolioValues = new List<int>(),
+								SelectedRoleValues = new List<string>(),
+								allProperties = true
+							};
+							groupsModel.Add(groupModel);
+							modelList.Add(model);
+
+						}
+					}
+
+					aoUser.GroupsModel = groupsModel;
+					aoUser.Model = modelList;
+
+					//Create user method with AO Special Editor user
+					returnResult = PostApi($"{_apiEndPoint}user/profile/{aOSpecialEditorUser.ToLower()}/", aoUser);
+					if (string.IsNullOrEmpty(returnResult))
+					{
+						// Create GB Product association - for realpage access user
+						var productList = (from x in aoUser.Model select x.Product).Distinct().ToList();
+
+						CreateProductUserInGreenBook(editorPersonaId, productUserPersonaId, productList, productUserGbLogin.LoginName.ToLower());
+					}
+
+					WriteToDiagnosticLog(
+						$"ManageProductAssetOptimization.ManageAssetOptimizationUser completed realpage access user creation process with editorPersona id - {editorPersonaId} and userPersonaId {productUserPersonaId}.");
+
+					return returnResult;
+				}
+				else
+				{
+					userAOProducts = GetAOProductsForNewMultiCompanyUser(editorPersonaId, productUserGbLogin.LoginName);
+
+					if (string.IsNullOrEmpty(_productUsername))
+					{
+						//Check to see if user has multicompany, then get user products and assign before any updates
+						if (organizationList?.Count > 1)
+						{
+							if (userAOProducts?.Count > 0)
+							{
+								CreateProductUserInGreenBook(editorPersonaId, productUserPersonaId, userAOProducts, productUserGbLogin.LoginName.ToLower());
+								_productUsername = productUserGbLogin.LoginName.ToLower();
+							}
+						}
+					}
+				
+					// Check if GB super user
+					if (IsSuperUser(productUserPersonaId))
+					{
+						WriteToDiagnosticLog(
+							$"ManageProductAssetOptimization.ManageAssetOptimizationUser user is super user with editorPersona id - {editorPersonaId} and userPersonaId {productUserPersonaId}.");
+
+						aoGbUserCompanyPropertyRoleDetails = CopyEditorUserToCreateSuperUser(editorPersonaId);
+
+						try
+						{
+							// For Investment Analytics (MA) assign US market to super user
+							var allGroups = GetAllPropertyGroups();
+							var usGroupId = allGroups.Groups.FirstOrDefault(x => x.GroupName == "US")?.GroupId;
+
+							if (usGroupId != null && usGroupId != 0)
+							{
+								var ss =
+									aoGbUserCompanyPropertyRoleDetails.Where(x => x.ProductName == "MA")
+										.SelectMany(c => c.PropertyGroups)
+										.ToList();
+								if (!ss.Contains(usGroupId.Value))
 								{
-									if (c.ProductName == "MA")
+									// aoGbUserCompanyPropertyRoleDetails.Where(x => x.ProductName == "MA").SelectMany(c => c.PropertyGroups).ToList().Add(usGroupId.Value);
+									foreach (var c in aoGbUserCompanyPropertyRoleDetails)
 									{
-										c.PropertyGroups.Add(usGroupId.Value);
+										if (c.ProductName == "MA")
+										{
+											c.PropertyGroups.Add(usGroupId.Value);
+										}
 									}
 								}
 							}
 						}
-					}
-					catch
-					{
-					}
-				}
-
-				if (!IsSuperUser(productUserPersonaId))
-				{
-					
-					foreach (var item in aoGbUserCompanyPropertyRoleDetails.Where(x=>x.SelectedPortfolioValues !=null && x.SelectedPortfolioValues.Count() > 0))
-					{
-						
-						if (item.SelectedPortfolioValues[0] == -1)
+						catch
 						{
-							// assign ALL properties 
-							var  propertiesResponse = GetProperties(item.CompanyId, item.ProductName);
-							var propertyList = (from i in propertiesResponse.Properties select i.PropertyId).ToList();
-
-							item.allProperties = true;
-							item.SelectedPortfolioValues = propertyList;
 						}
 					}
-				}
 
-				//Create/Update single/multi company AO Products
-				if (aoGbUserCompanyPropertyRoleDetails.Count > 0)
-				{					
-					if (userAOProducts?.Count == 0)
+					if (!IsSuperUser(productUserPersonaId))
 					{
-						aoUser.GroupsModel = GetBundledGroups(aoGbUserCompanyPropertyRoleDetails);
-						aoUser.Divisions = new List<Divisions>();
-						aoUser.Model = GetModel(aoGbUserCompanyPropertyRoleDetails);
+						
+						foreach (var item in aoGbUserCompanyPropertyRoleDetails.Where(x=>x.SelectedPortfolioValues !=null && x.SelectedPortfolioValues.Count() > 0))
+						{
+							
+							if (item.SelectedPortfolioValues[0] == -1)
+							{
+								// assign ALL properties 
+								var  propertiesResponse = GetProperties(item.CompanyId, item.ProductName);
+								var propertyList = (from i in propertiesResponse.Properties select i.PropertyId).ToList();
 
-						returnResult = PostApi($"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/", aoUser);
+								item.allProperties = true;
+								item.SelectedPortfolioValues = propertyList;
+							}
+						}
+					}
+
+					//Create/Update single/multi company AO Products
+					if (aoGbUserCompanyPropertyRoleDetails.Count > 0)
+					{					
+						if (userAOProducts?.Count == 0)
+						{
+							aoUser.GroupsModel = GetBundledGroups(aoGbUserCompanyPropertyRoleDetails);
+							aoUser.Divisions = new List<Divisions>();
+							aoUser.Model = GetModel(aoGbUserCompanyPropertyRoleDetails);
+
+							returnResult = PostApi($"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/", aoUser);
+
+							if (string.IsNullOrEmpty(returnResult))
+							{
+								// Create GB Product association - for new user insert record
+								var productList = (from x in aoUser.Model select x.Product).Distinct().ToList();
+
+								CreateProductUserInGreenBook(editorPersonaId, productUserPersonaId, productList, productUserGbLogin.LoginName.ToLower());
+							}
+
+							WriteToDiagnosticLog(
+								$"ManageProductAssetOptimization.ManageAssetOptimizationUser completed user creation process with editorPersona id - {editorPersonaId} and userPersonaId {productUserPersonaId}.");
+
+							return returnResult;
+						}
+						// Update User logic
+						// Get Copy of User from AO
+						var copiedAoUserCompanyPropertyRoleDetails = CopyRegularUser(editorPersonaId, productUserPersonaId);
+						// store existing assigned products
+						var existingAoProducts = copiedAoUserCompanyPropertyRoleDetails;
+
+						UpdateProductRolePropertyDetails(aoGbUserCompanyPropertyRoleDetails, copiedAoUserCompanyPropertyRoleDetails, persona);
+
+						aoUser.GroupsModel = GetBundledGroups(copiedAoUserCompanyPropertyRoleDetails);
+						aoUser.Divisions = new List<Divisions>();
+						aoUser.Model = GetModel(copiedAoUserCompanyPropertyRoleDetails);
+
+						aoUser.UserId = _productUserId.ToLower();
+						//aoUser.Login = _productUsername.ToLower();
+						aoUser.OldUserId = _productUserId.ToLower();
+						if (!IsRegularUserNoEmail(productUserPersonaId)) 
+						{
+							aoUser.Email = _productUsername.ToLower();
+						}
+
+						returnResult = PutApi($"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/", aoUser);
 
 						if (string.IsNullOrEmpty(returnResult))
 						{
-							// Create GB Product association - for new user insert record
-							var productList = (from x in aoUser.Model select x.Product).Distinct().ToList();
-
-							CreateProductUserInGreenBook(editorPersonaId, productUserPersonaId, productList, productUserGbLogin.LoginName.ToLower());
+							UpdateProductUserInGreenBook(editorPersonaId, productUserPersonaId, productUserGbLogin.LoginName.ToLower(), existingAoProducts, aoGbUserCompanyPropertyRoleDetails);
 						}
-
-						WriteToDiagnosticLog(
-							$"ManageProductAssetOptimization.ManageAssetOptimizationUser completed user creation process with editorPersona id - {editorPersonaId} and userPersonaId {productUserPersonaId}.");
-
-						return returnResult;
-					}
-					// Update User logic
-					// Get Copy of User from AO
-					var copiedAoUserCompanyPropertyRoleDetails = CopyRegularUser(editorPersonaId, productUserPersonaId);
-					// store existing assigned products
-					var existingAoProducts = copiedAoUserCompanyPropertyRoleDetails;
-
-					UpdateProductRolePropertyDetails(aoGbUserCompanyPropertyRoleDetails, copiedAoUserCompanyPropertyRoleDetails, persona);
-
-					aoUser.GroupsModel = GetBundledGroups(copiedAoUserCompanyPropertyRoleDetails);
-					aoUser.Divisions = new List<Divisions>();
-					aoUser.Model = GetModel(copiedAoUserCompanyPropertyRoleDetails);
-
-					aoUser.UserId = _productUserId.ToLower();
-					//aoUser.Login = _productUsername.ToLower();
-					aoUser.OldUserId = _productUserId.ToLower();
-					if (!IsRegularUserNoEmail(productUserPersonaId)) 
-					{
-						aoUser.Email = _productUsername.ToLower();
-					}
-
-					returnResult = PutApi($"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/", aoUser);
-
-					if (string.IsNullOrEmpty(returnResult))
-					{
-						UpdateProductUserInGreenBook(editorPersonaId, productUserPersonaId, productUserGbLogin.LoginName.ToLower(), existingAoProducts, aoGbUserCompanyPropertyRoleDetails);
-					}
-					else
-					{
-						// check if error is because of removing all products
-						try
+						else
 						{
-							var jsObj = JsonConvert.DeserializeObject<dynamic>(returnResult);
-							if (
-								jsObj.errorResults[0].message.Value.Equals(
-									"A user must be attached to at least one company and one role",
-									StringComparison.OrdinalIgnoreCase))
+							// check if error is because of removing all products
+							try
 							{
-								// keep old products to avoid API error
-								copiedAoUserCompanyPropertyRoleDetails = CopyRegularUser(editorPersonaId, productUserPersonaId);
-								// store existing assigned products
-								existingAoProducts = copiedAoUserCompanyPropertyRoleDetails;
-								UnAssignProductRolePropertyDetails(aoGbUserCompanyPropertyRoleDetails, copiedAoUserCompanyPropertyRoleDetails, persona);
-								// get existing AP details
-								aoUser.GroupsModel = GetBundledGroups(copiedAoUserCompanyPropertyRoleDetails);
-								aoUser.Divisions = new List<Divisions>();
-								aoUser.Model = GetModel(copiedAoUserCompanyPropertyRoleDetails);
-								// disable user
-								aoUser.IsEnabled = false;
-								var disableUserResult = PutApi($"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/",
-									aoUser);
-								if (string.IsNullOrEmpty(disableUserResult))
+								var jsObj = JsonConvert.DeserializeObject<dynamic>(returnResult);
+								if (
+									jsObj.errorResults[0].message.Value.Equals(
+										"A user must be attached to at least one company and one role",
+										StringComparison.OrdinalIgnoreCase))
 								{
-									// Disable products from GB
-									UpdateProductUserInGreenBook(editorPersonaId, productUserPersonaId,
-										productUserGbLogin.LoginName.ToLower(), existingAoProducts,
-										aoGbUserCompanyPropertyRoleDetails);
-									return string.Empty;
+									// keep old products to avoid API error
+									copiedAoUserCompanyPropertyRoleDetails = CopyRegularUser(editorPersonaId, productUserPersonaId);
+									// store existing assigned products
+									existingAoProducts = copiedAoUserCompanyPropertyRoleDetails;
+									UnAssignProductRolePropertyDetails(aoGbUserCompanyPropertyRoleDetails, copiedAoUserCompanyPropertyRoleDetails, persona);
+									// get existing AP details
+									aoUser.GroupsModel = GetBundledGroups(copiedAoUserCompanyPropertyRoleDetails);
+									aoUser.Divisions = new List<Divisions>();
+									aoUser.Model = GetModel(copiedAoUserCompanyPropertyRoleDetails);
+									// disable user
+									aoUser.IsEnabled = false;
+									var disableUserResult = PutApi($"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/",
+										aoUser);
+									if (string.IsNullOrEmpty(disableUserResult))
+									{
+										// Disable products from GB
+										UpdateProductUserInGreenBook(editorPersonaId, productUserPersonaId,
+											productUserGbLogin.LoginName.ToLower(), existingAoProducts,
+											aoGbUserCompanyPropertyRoleDetails);
+										return string.Empty;
+									}
+
+									return
+										$"Error while setting disable flag on user {aoUser.Login} API -{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()} , disableUserResult - {disableUserResult}";
 								}
 
-								return
-									$"Error while setting disable flag on user {aoUser.Login} API -{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()} , disableUserResult - {disableUserResult}";
+								return returnResult;
 							}
+							catch (Exception ex)
+							{
+								WriteToErrorLog(
+									$"ManageProductAssetOptimization ManageAssetOptimizationUser - ERROR for user {productUserGbLogin.LoginName.ToLower()} while parsing AO PUT API response to check condition if all products removed. Result from API {_apiEndPoint}user/profile/{_editorProductUserId.ToLower()} is {returnResult}");
+								return returnResult;
+							}
+						}
+					}				
+					return returnResult;
 
-							return returnResult;
-						}
-						catch (Exception ex)
-						{
-							WriteToErrorLog(
-								$"ManageProductAssetOptimization ManageAssetOptimizationUser - ERROR for user {productUserGbLogin.LoginName.ToLower()} while parsing AO PUT API response to check condition if all products removed. Result from API {_apiEndPoint}user/profile/{_editorProductUserId.ToLower()} is {returnResult}");
-							return returnResult;
-						}
-					}
-				}				
-				return returnResult;
+				}
+				
 			}
 			catch (Exception ex)
 			{
