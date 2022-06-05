@@ -65,8 +65,9 @@ BEGIN
 		WHEN N'InitialSort' THEN 100      
 		WHEN N'Name' THEN 100      
 		WHEN N'LoginName' THEN 101      
-		WHEN N'Status' THEN 102 
+		WHEN N'StatusName' THEN 102 
 		WHEN N'LastRefreshed' THEN 103  
+		WHEN N'LastSynced' THEN 104
 		ELSE 100      
 	   END * CASE SortDirection WHEN N'ASC' THEN 1 ELSE -1 END       
 	 FROM OPENJSON (JSON_QUERY(@SortBy, '$.sortBy'))      
@@ -206,12 +207,13 @@ BEGIN
 		  ),
 	   CTE_UserSyncJobStatus(PersonaId,StatusId,LastRefreshDate )
 	   AS (
-			SELECT F.PersonaId,ISNULL(USJ.StatusTypeId ,1),USJ.CreatedDate
+			SELECT TOP 1 F.PersonaId,ISNULL(USJ.StatusTypeId ,1),USJ.CreatedDate
 			FROM @ValidPersona F
 			LEFT JOIN [Enterprise].[UserSyncJob_V2] USJ ON
 				F.PersonaId = USJ.UserPersonaId AND USJ.UserSyncJobTypeId = 2
 			LEFT JOIN Enterprise.UserSyncJobTask_V2 USJT ON
 				USJ.UserSyncJobId = USJT.UserSyncJobId AND USJT.Source = @ProductSource
+			ORDER BY USJ.UserSyncJobId desc
 		  ),
 	   CTE_UserPropertiesSynced(PersonaId,LastSyncDate )
 	   AS (
@@ -280,8 +282,8 @@ BEGIN
 		   MiddleName,
 		   LastName,
 		   LoginName,
-		   StatusId,
-		   StatusName,
+		   ISNULL(StatusId,1),      
+		   ISNULL(StatusName,'New'),
 		   LastRefreshed,
 		   LastSynced,
 		   AssignedCount,
@@ -290,11 +292,13 @@ BEGIN
 		   CASE @sortValue        
 			  WHEN 100 THEN ROW_NUMBER() OVER (ORDER BY FirstName + ' ' + LastName ASC)        
 			  WHEN 101 THEN ROW_NUMBER() OVER (ORDER BY LoginName ASC, FirstName + ' ' + LastName ASC)        
-			  WHEN 102 THEN ROW_NUMBER() OVER (ORDER BY StatusName ASC, FirstName + ' ' + LastName ASC)        
-			  WHEN 103 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(LastRefreshed,'') ASC, FirstName + ' ' + LastName ASC)      
+			  WHEN 102 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(StatusName,'New') ASC, FirstName + ' ' + LastName ASC)        
+			  WHEN 103 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(LastRefreshed,'') ASC, FirstName + ' ' + LastName ASC) 
+			  WHEN 104 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(LastSynced,'') ASC, FirstName + ' ' + LastName ASC)     
 			  WHEN -101 THEN ROW_NUMBER() OVER (ORDER BY LoginName DESC, FirstName + ' ' + LastName DESC)        
-			  WHEN -102 THEN ROW_NUMBER() OVER (ORDER BY StatusName DESC, FirstName + ' ' + LastName DESC)        
+			  WHEN -102 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(StatusName,'New') DESC, FirstName + ' ' + LastName DESC)        
 			  WHEN -103 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(LastRefreshed,'') DESC, FirstName + ' ' + LastName DESC)  
+			  WHEN -104 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(LastSynced,'') ASC, FirstName + ' ' + LastName ASC) 
 			 END AS RowNumber
 		FROM #UserSync UY
 		 WHERE  (        
