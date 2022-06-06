@@ -122,7 +122,7 @@ BEGIN
       
 	 SELECT @ProductSource = BooksProductCode FROM Enterprise.Product Where ProductId = @ProductId
 
-	 SELECT @filterStatusTypeId = COUNT(StatusTypeId)      
+	 SELECT @filterStatusTypeId = StatusTypeId      
 	 FROM  @filterStatus      
 	 WHERE StatusTypeId > 0      
       
