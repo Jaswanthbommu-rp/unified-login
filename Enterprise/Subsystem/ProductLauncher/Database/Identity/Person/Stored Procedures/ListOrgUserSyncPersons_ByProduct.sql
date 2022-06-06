@@ -231,7 +231,7 @@ BEGIN
 			  p.MiddleName,
 			  p.LastName,
 			  ul.LoginName ,
-			  StatusId,
+			  ISNULL(CUSJ.StatusId,1),
 			  CASE        
 				  WHEN (StatusId = 1) THEN 'New'        
 				  WHEN (StatusId = 6) THEN 'In Progress'
@@ -258,7 +258,7 @@ BEGIN
 		pe.PersonaId = CUPS.PersonaId
 	  LEFT JOIN Enterprise.StatusType est ON CUSJ.StatusId = est.StatusTypeId  
 	  LEFT OUTER JOIN @filterStatus fs ON (est.StatusTypeId = fs.StatusTypeId)      
-	  WHERE ((@filterStatusTypeId = 0) OR (NOT fs.StatusTypeId IS NULL)) 
+	   WHERE ((@filterStatusTypeId = 0) OR (NOT fs.StatusTypeId IS NULL) OR (ISNULL(CUSJ.StatusId,1) = @filterStatusTypeId))  
 
 	  ;WITH cteUsersFinal      
 	  (     
