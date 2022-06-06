@@ -298,7 +298,7 @@ BEGIN
 			  WHEN -101 THEN ROW_NUMBER() OVER (ORDER BY LoginName DESC, FirstName + ' ' + LastName DESC)        
 			  WHEN -102 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(StatusName,'New') DESC, FirstName + ' ' + LastName DESC)        
 			  WHEN -103 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(LastRefreshed,'') DESC, FirstName + ' ' + LastName DESC)  
-			  WHEN -104 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(LastSynced,'') ASC, FirstName + ' ' + LastName ASC) 
+			  WHEN -104 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(LastSynced,'') DESC, FirstName + ' ' + LastName DESC) 
 			 END AS RowNumber
 		FROM #UserSync UY
 		 WHERE  (        
