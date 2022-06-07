@@ -26,8 +26,8 @@ BEGIN
 
 			INSERT INTO Enterprise.PropertyInstanceMapping (
 						PersonaId,
-						PropertyInstanceId,
-						ProductId
+						ProductId,
+						PropertyInstanceId
 			)
 			SELECT @personaId,
 				   @ProductId,
