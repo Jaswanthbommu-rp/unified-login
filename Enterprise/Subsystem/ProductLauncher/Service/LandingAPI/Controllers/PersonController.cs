@@ -200,8 +200,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
 			output = new ObjectUserListOutput<ProfileDetail, IErrorData>() { list = profileDetailList, Status = errorStatus };
 			output.pagingSummary = pagingSummary;
-            output.OrganizationHasProductAssignmentError = manageProfile.GetOrganizationHasProductAssignmentError(_userClaims.OrganizationPartyId);
-			return Request.CreateResponse(HttpStatusCode.OK, output);
+            output.OrganizationHasProductAssignmentError = profileDetailList != null && profileDetailList.Count > 0 ? profileDetailList.Any(x => x.PersonaHasProductError) : false;
+            return Request.CreateResponse(HttpStatusCode.OK, output);
         }
 
 	    /// <summary>
