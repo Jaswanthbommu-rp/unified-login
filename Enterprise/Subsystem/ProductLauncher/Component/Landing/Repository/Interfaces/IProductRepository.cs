@@ -214,13 +214,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
                                                                  IList<string> roles, IList<string> rights, List<string> propertyIds, string companyDomain);
 
         /// <summary>
-        /// Get Unified Login mapping PersonaId for Product UserId by company and product id
+        /// Get Unified Login mapping PersonaId for Product UserId by company or upfmId and product id
         /// </summary>
         /// <param name="companyId"></param>
+        /// <param name="upfmId"></param>
         /// <param name="productId"></param>
         /// <param name="productUserIds"></param>
         /// <returns>List of Unified Login mapping UserId by product and company</returns>
-        List<ULMappedPersonaIds> GetULMappingPersonaIDsByCompanyAndProducts(int companyId, int productId, List<string> productUserIds);
+        List<ULMappedPersonaIds> GetULMappingPersonaIDsByCompanyAndProducts(int companyId, string upfmId, int productId, List<string> productUserIds);
 
         /// <summary>
         /// Used to get a list of products for the given persona id

@@ -9,6 +9,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterp
     public class ProductUserIDMappingRequest
     {
         public int CompanyId { get; set; }
+        public string upfmId { get; set; }
         public string ProductCode { get; set; }
         public List<string> ProductUserId { get; set; }
     }

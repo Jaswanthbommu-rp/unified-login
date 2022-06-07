@@ -7,6 +7,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterp
     {
         public int CompanyId { get; set; }
         public string ProductCode { get; set; }
+        public string upfmId { get; set; }
         public List<ULMappedPersonaIds> ULMappedPersonaId { get; set; }
     }
     public class ULMappedPersonaIds
