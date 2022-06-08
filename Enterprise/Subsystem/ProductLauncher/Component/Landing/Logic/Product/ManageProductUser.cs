@@ -1312,7 +1312,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     OrganizationPartyId = persona.OrganizationPartyId,
                     OrganizationName = persona.Organization.Name,
                     UserId = userLogin.UserId,
-                    ClientCode = userClaim.ClientCode
+                    ClientCode = userClaim?.ClientCode
                 };
             }
             else
