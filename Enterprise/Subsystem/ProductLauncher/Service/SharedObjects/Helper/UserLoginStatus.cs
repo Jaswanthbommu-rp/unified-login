@@ -78,7 +78,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper
 						{
 							userLogin.IsActive = false;
 							userLogin.Status = UserUiStatusType.Disabled;
-						}						
+						}				
+						else if (userLogin.StatusThruDate != null && userLogin.StatusThruDate.Value < utcNowWithOffset)
+						{
+							userLogin.IsExpired = true;
+							userLogin.IsActive = true;
+							userLogin.Status = UserUiStatusType.Expired;
+						}		
 						break;
 					case UserUiStatusType.Locked:
 						userLogin.IsLocked = true;
