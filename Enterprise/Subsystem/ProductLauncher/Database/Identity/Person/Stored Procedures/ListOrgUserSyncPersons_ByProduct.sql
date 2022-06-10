@@ -32,7 +32,8 @@ BEGIN
        
 	 DECLARE @ValidPersona TABLE (      
 	  PersonaId bigint  ,
-	  UserLoginPersonaId BIGINT
+	  UserLoginPersonaId BIGINT,
+      UserType nvarchar(100) null
 	 )      
       
  
@@ -132,7 +133,8 @@ BEGIN
  
 	 DROP TABLE IF EXISTS #UserSync  
 	 CREATE TABLE #UserSync      
-	 (      
+	 (   
+		  UserType nvarchar(100) NULL,
 		  PersonaId BIGINT ,        
 		  UserLoginPersonaId BIGINT NULL,
 		  UserId BIGINT NULL,
@@ -151,9 +153,9 @@ BEGIN
 	 IF (@filterPartyRoleTypeId IS NULL)
 	 BEGIN
 		  INSERT INTO @ValidPersona (      
-		   PersonaId   ,UserLoginPersonaId   
+		   PersonaId   ,UserLoginPersonaId, UserType  
 		  )      
-		  SELECT P.PersonaId  , ulp.UserLoginPersonaId  
+		  SELECT P.PersonaId  , ulp.UserLoginPersonaId, rt.Name  
 		  FROM Person.Persona p      
 			 INNER JOIN Ident.UserLoginPersona ulp ON p.UserLoginPersonaId = ulp.UserLoginPersonaId      
 			 INNER JOIN Ident.UserLogin ul ON ulp.UserLoginId = ul.UserId      
@@ -171,9 +173,9 @@ BEGIN
 	 ELSE
 	 BEGIN
 		  INSERT INTO @ValidPersona (      
-		   PersonaId,UserLoginPersonaId      
+		   PersonaId,UserLoginPersonaId, UserType      
 		  )      
-		  SELECT P.PersonaId  , ulp.UserLoginPersonaId    
+		  SELECT P.PersonaId  , ulp.UserLoginPersonaId, rt.Name    
 		  FROM Person.Persona p      
 			 INNER JOIN Ident.UserLoginPersona ulp ON p.UserLoginPersonaId = ulp.UserLoginPersonaId      
 			 INNER JOIN Ident.UserLogin ul ON ulp.UserLoginId = ul.UserId      
@@ -224,7 +226,8 @@ BEGIN
 		  )
 
 	  INSERT INTO #UserSync
-	  Select  pe.PersonaId,       
+	  Select  pe.UserType,
+			  pe.PersonaId,       
 			  iulp.UserLoginPersonaId,
 			  ul.UserId, 
 			  p.FirstName,
@@ -261,7 +264,7 @@ BEGIN
 	   WHERE ((@filterStatusTypeId = 0) OR (NOT fs.StatusTypeId IS NULL) OR (ISNULL(CUSJ.StatusId,1) = @filterStatusTypeId))  
 
 	  ;WITH cteUsersFinal      
-	  (     
+	  ( UserType,    
 		PersonaId,  
 		FirstName,      
 		MiddleName,      
@@ -277,7 +280,8 @@ BEGIN
 		RowNumber
 		)
 		AS
-	   (SELECT PersonaId,
+	   (SELECT UserType,
+		   PersonaId,
 		   FirstName,
 		   MiddleName,
 		   LastName,
@@ -307,7 +311,8 @@ BEGIN
 				OR (CHARINDEX(@filterName, LoginName, 1) > 0)    
 	 ))
 
-	 SELECT PersonaId,  
+	 SELECT UserType,
+	    PersonaId,  
 		FirstName,      
 		MiddleName,      
 		LastName,      
