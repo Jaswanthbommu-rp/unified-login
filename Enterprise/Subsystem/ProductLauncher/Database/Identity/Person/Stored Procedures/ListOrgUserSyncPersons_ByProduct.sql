@@ -205,16 +205,16 @@ BEGIN
 				PM.PersonaId = pl.PersonaId And PM.ProductId = @ProductId
 			GROUP BY pl.PersonaId
 		  ),
-	   CTE_UserSyncJobStatus(PersonaId,StatusId,LastRefreshDate )
-	   AS (
-			SELECT TOP 1 F.PersonaId,ISNULL(USJ.StatusTypeId ,1),USJ.CreatedDate
-			FROM @ValidPersona F
-			LEFT JOIN [Enterprise].[UserSyncJob_V2] USJ ON
-				F.PersonaId = USJ.UserPersonaId AND USJ.UserSyncJobTypeId = 2
-			LEFT JOIN Enterprise.UserSyncJobTask_V2 USJT ON
-				USJ.UserSyncJobId = USJT.UserSyncJobId AND USJT.Source = @ProductSource
-			ORDER BY USJ.UserSyncJobId desc
-		  ),
+	    CTE_UserSyncJobStatus(PersonaId,StatusId,LastRefreshDate, RowRank )  
+		AS (  
+			   SELECT  F.PersonaId,ISNULL(USJ.StatusTypeId,1) ,USJ.CreatedDate  ,
+					 row_number() over (partition by USJ.UserPersonaId order by USJ.UserSyncJobId desc ) as RowRank
+			   FROM @ValidPersona F  
+			   LEFT OUTER JOIN [Enterprise].[UserSyncJob_V2] USJ ON  
+				F.PersonaId = USJ.UserPersonaId AND USJ.UserSyncJobTypeId = 2  
+			   LEFT OUTER JOIN Enterprise.UserSyncJobTask_V2 USJT ON  
+				USJ.UserSyncJobId = USJT.UserSyncJobId AND USJT.Source = @ProductSource  		  
+		),
 	   CTE_UserPropertiesSynced(PersonaId,LastSyncDate )
 	   AS (
 			SELECT P.PersonaId,PMH.ProductPropertiesSyncDate
@@ -253,7 +253,7 @@ BEGIN
 	  LEFT JOIN CTE_PersonaMatchedPrimaryProperties CPMP ON
 		pe.PersonaId = CPMP.PersonaId
 	  LEFT JOIN CTE_UserSyncJobStatus CUSJ ON
-		pe.PersonaId = CUSJ.PersonaId
+		pe.PersonaId = CUSJ.PersonaId AND CUSJ.RowRank = 1
 	  LEFT JOIN CTE_UserPropertiesSynced CUPS ON
 		pe.PersonaId = CUPS.PersonaId
 	  LEFT JOIN Enterprise.StatusType est ON CUSJ.StatusId = est.StatusTypeId  
