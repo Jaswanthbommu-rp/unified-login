@@ -3498,7 +3498,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="userIsActive">Is the user active</param>
         /// <param name="aoProducts">Applicable if PMC has AO products</param>
         /// <returns>Number of Products</returns>
-        private int SaveProductDetails(IRepository repository, IList<ProductBatch> productList, CreateUserResponse<IErrorData> createUserResponse, long CreateUserPersonaId, long AssignUserPersonaId, Guid realPageId, Guid organizationRealPageId, Status<IErrorData> errorStatus, int userTypeId, bool userIsActive, IList<string> aoProducts = null, bool migratedUser = false, bool isCreateUser = false, int unifiedPlatformRole = 0, string operationType = "update")
+        private int SaveProductDetails(IRepository repository, IList<ProductBatch> productList, CreateUserResponse<IErrorData> createUserResponse, long CreateUserPersonaId, long AssignUserPersonaId, Guid realPageId, Guid organizationRealPageId, Status<IErrorData> errorStatus, int userTypeId, bool userIsActive, IList<string> aoProducts = null, bool migratedUser = false, bool isCreateUser = false, int unifiedPlatformRole = 0, string operationType = "update", bool isRealpageAccessUser = false)
         {
             int productCount = 0;
             int enterpriseRoleId = 0;
@@ -3545,6 +3545,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         || (!userProducts.Any(a => a.ProductId == prod.ProductId))
                         || (userProducts.Any(a => a.ProductId == prod.ProductId && a.ProductStatus == (int)ProductBatchStatusType.Deleted))
                         || (userProducts.Any(a => a.ProductId == prod.ProductId && a.ProductStatus == (int)ProductBatchStatusType.Deactivated))
+                        || isRealpageAccessUser
                        )
                     {
                         // don't add the product if it is already in the list
@@ -3843,6 +3844,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     // Handle Ao Products if any
                     var aoInputJsonString = BundleAoProducts(productList, batchGroup.BatchProcessorGroupId);
 
+                    if (isRealpageAccessUser)
+                    {
+                        var aOInputJson = new RolePropertyList()
+                       {
+                           PropertyList = new List<string>(),
+                           RoleList = new List<string>(),
+                           IsAssigned = true,
+                           CompanyId = 0
+                       };
+                        aoInputJsonString = JsonConvert.SerializeObject(aOInputJson).ToString();
+                    }
                     //Loop through the rest of the products list and create the Batch records
 
                     //Loop through the rest of the products list and create the Batch records
@@ -5713,6 +5725,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             bool isOperatorSettingsEnabled = IsOperatorSettingsEnabled();
             bool deleteOldPropertyInstanceMapping = false;
             bool externalUserRelationUpdated = IsExternaUserlRelationUpdated(updateUserProfileEntity, out deleteOldPropertyInstanceMapping);
+            RequestParameter dataFilter = new RequestParameter();
+            List<CompanySetup> companyList = _organizationRepository.GetCompanyList(_userClaim.OrganizationName, 0, null, 0, dataFilter);
+            bool isRealpageAccessUser = companyList.Where(a => a.RealPageAccessUser == _userClaim.LoginName).Distinct().Count() > 0;
 
             using (var repository = GetRepository())
             {
@@ -6316,7 +6331,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         if (updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue() && !userBatchEntity.UserTypeChanged)
                         {
-                            int productCount = SaveProductDetails(repository, updateUserProfileEntity.ProductBatchData, null, updateUserProfileEntity.CreateUserPersonaId, updateUserProfileEntity.OldProfile.Persona[0].PersonaId, updateUserProfileEntity.LoggedInUserRealPageId, updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId, null, updateUserProfileEntity.NewProfile.UserTypeId, updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue(), updateUserProfileEntity.AoProductsAvailableForUser, false, false);
+                            int productCount = SaveProductDetails(repository, updateUserProfileEntity.ProductBatchData, null, updateUserProfileEntity.CreateUserPersonaId, updateUserProfileEntity.OldProfile.Persona[0].PersonaId, updateUserProfileEntity.LoggedInUserRealPageId, updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId, null, updateUserProfileEntity.NewProfile.UserTypeId, updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue(), updateUserProfileEntity.AoProductsAvailableForUser, false, false,0,"update",isRealpageAccessUser);
                         }
 
                         if (!updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue())

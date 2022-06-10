@@ -165,18 +165,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 var aoRoleProp = productPropertiesRoles as AoUserCompanyPropertyRoleDetails;
                 IList<AoUserCompanyPropertyRoleDetail> aoGbUserCompanyPropertyRoleDetails = aoRoleProp.AoUserCompanyPropertyRoleDetailList;
-                foreach (var data in aoGbUserCompanyPropertyRoleDetails)
+                if (aoGbUserCompanyPropertyRoleDetails != null)
                 {
-                    if (data.ProductPrimaryProperties != null && data.ProductId != 0)
+                    foreach (var data in aoGbUserCompanyPropertyRoleDetails)
                     {
-                        if (data.UsePrimaryProperties == true)
+                        if (data.ProductPrimaryProperties != null && data.ProductId != 0)
                         {
-                            string jsonSecuritySettings = JsonConvert.SerializeObject(data.ProductPrimaryProperties);
-                            _productRepository.SavePersonaProductProperties(assignUserPersonaId, data.ProductId, jsonSecuritySettings);
+                            if (data.UsePrimaryProperties == true)
+                            {
+                                string jsonSecuritySettings = JsonConvert.SerializeObject(data.ProductPrimaryProperties);
+                                _productRepository.SavePersonaProductProperties(assignUserPersonaId, data.ProductId, jsonSecuritySettings);
+                            }
                         }
+                        UpdateProductPrimaryPropertyProductStatus(assignUserPersonaId, data.ProductId, data.UsePrimaryProperties == true ? 1 : 0);
                     }
-                    UpdateProductPrimaryPropertyProductStatus(assignUserPersonaId, data.ProductId, data.UsePrimaryProperties == true ? 1 : 0);
                 }
+                
             }
         }
 
@@ -814,16 +818,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 var aoRoleProp = productPropertiesRoles as AoUserCompanyPropertyRoleDetails;
                 IList<AoUserCompanyPropertyRoleDetail> aoGbUserCompanyPropertyRoleDetails = aoRoleProp.AoUserCompanyPropertyRoleDetailList;
-                foreach (var data in aoGbUserCompanyPropertyRoleDetails)
+                if (aoRoleProp.AoUserCompanyPropertyRoleDetailList != null)
                 {
-                    if (data.UsePrimaryProperties == true)
+                    foreach (var data in aoGbUserCompanyPropertyRoleDetails)
                     {
-                        ListResponse propertyList = manageProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, data.ProductId);
-                        if (propertyList.Records.Count > 0)
+                        if (data.UsePrimaryProperties == true)
                         {
-                            data.ProductPrimaryProperties = GetSelectedProperties(propertyList, productType);
-                            List<string> aoPropList = data.ProductPrimaryProperties?.Select(p => p.ProductPropertyId).ToList<string>();
-                            data.SelectedPortfolioValues = aoPropList.Select(int.Parse).ToList();
+                            ListResponse propertyList = manageProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, data.ProductId);
+                            if (propertyList.Records.Count > 0)
+                            {
+                                data.ProductPrimaryProperties = GetSelectedProperties(propertyList, productType);
+                                List<string> aoPropList = data.ProductPrimaryProperties?.Select(p => p.ProductPropertyId).ToList<string>();
+                                data.SelectedPortfolioValues = aoPropList.Select(int.Parse).ToList();
+                            }
                         }
                     }
                 }

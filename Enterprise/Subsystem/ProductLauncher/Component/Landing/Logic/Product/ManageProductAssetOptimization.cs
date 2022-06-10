@@ -674,14 +674,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					return "Company Setup Error: Please Contact Support.";
 				}
 
-				foreach (var data in aoGbUserCompanyPropertyRoleDetails)
-				{
-					if (data.CompanyId == 0)
-					{
-						data.CompanyId = Convert.ToInt32(blueAOCompanyInfo.CompanyInstanceSourceId);
-					}
-				}
-
 				string userEmailAddress = GetUserEmailAddress(realPageId, productUserGbLogin.LoginName, productUserPersonaId);
 				if (string.IsNullOrEmpty(userEmailAddress))
 				{
@@ -766,6 +758,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 				else
 				{
+					foreach (var data in aoGbUserCompanyPropertyRoleDetails)
+					{
+						if (data.CompanyId == 0)
+						{
+							data.CompanyId = Convert.ToInt32(blueAOCompanyInfo.CompanyInstanceSourceId);
+						}
+					}
+
 					userAOProducts = GetAOProductsForNewMultiCompanyUser(editorPersonaId, productUserGbLogin.LoginName);
 
 					if (string.IsNullOrEmpty(_productUsername))
