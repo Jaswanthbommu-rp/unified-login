@@ -278,7 +278,7 @@ BEGIN
      ISNULL(LastRefreshDate, Null)  AS 'LastRefreshDate',      
      ISNULL(LastSyncDate, Null)  AS 'LastSyncDate',    
   o.CompanyName,    
-  'propertyOperator',    
+  po.PropertyOperator,    
   pst.upfmpropertyname,    
   pst.upfminstanceid,    
   --pp.PropertyName,    
@@ -308,7 +308,8 @@ BEGIN
   pe.PersonaId = pun.PersonaId    
    LEFT JOIN CTE_ProductSite pst ON    
   pe.PersonaId = pst.PersonaId    
-   LEFT JOIN Enterprise.StatusType est ON CUSJ.StatusId = est.StatusTypeId        
+   LEFT JOIN Enterprise.StatusType est ON CUSJ.StatusId = est.StatusTypeId
+   LEFT JOIN @ProperyOperators po on po.PropertyInstanceSourceId = pst.upfminstanceid
    LEFT OUTER JOIN @filterStatus fs ON (est.StatusTypeId = fs.StatusTypeId)            
    WHERE ((@filterStatusTypeId = 0) OR (NOT fs.StatusTypeId IS NULL))       
       
