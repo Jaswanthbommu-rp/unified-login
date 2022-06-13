@@ -908,6 +908,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                         if (p.OrganizationRemoveUDMData)
                         {
+                            // get list of current properties for the company being deleted
+                            var propertyToDeleteList = _manageBlueBook.GetPropertyInstanceForCompany(p.OrganizationRealPageId);
+                            foreach (var propertyToDelete in propertyToDeleteList)
+                            {
+                                var propertyInstanceToDelete = new Guid(propertyToDelete.attributes.propertyInstanceSourceId);
+                                WriteToLog(LogEventLevel.Debug, $"{GetType()} - deleting property instance {propertyInstanceToDelete} from UPFM Company {p.OrganizationRealPageId}.");
+                                _propertyRepository.DeleteUPFMPropertyInstance(propertyInstanceToDelete);
+                                DeletePropertyForOrganization(propertyInstanceToDelete, p.OrganizationRealPageId);
+                            }
                             // post to UDM to remove 
                             var result = _manageBlueBook.DeleteBooksGreenBookCompanyInstance(new CompanyInstance() {CompanyInstanceSourceId = p.OrganizationRealPageId.ToString(), ModifiedBy = "UPFM Delete company"});
                             _organizationRepository.UpdateOrganizationRemovalQueueStatus(p.OrganizationRemovalQueueId, result ? "UDMData Removed" : "UDMData Removal Failed");

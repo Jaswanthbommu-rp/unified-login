@@ -1,7 +1,8 @@
 ﻿CREATE PROCEDURE [Maintenance].[DeleteOrganization]
     @OrganizationPartyId BIGINT,
 	@OrganizationRealPageId UNIQUEIDENTIFIER,
-	@OrganizationRemovalQueueId INT = 0
+	@OrganizationRemovalQueueId INT = 0,
+	@LogExecutionTime INT = 0
 AS
     BEGIN
 		BEGIN TRY
@@ -110,6 +111,10 @@ AS
 						INNER JOIN Enterprise.[Group] eg ON (eg.GroupId = epp.GroupId)
 						INNER JOIN @Organization o ON (o.PartyId = eg.OrganizationPartyId)
 
+			DELETE epp
+			FROM	Enterprise.PersonaPrivilege epp
+						INNER JOIN Enterprise.Role R ON (r.RoleID = epp.roleid)
+						INNER JOIN @Organization o ON (o.PartyId = r.PartyID)
 			DELETE	eg
 			FROM	Enterprise.[Group] eg
 						INNER JOIN @Organization o ON (o.PartyId = eg.OrganizationPartyId)
@@ -181,10 +186,14 @@ AS
 							INNER JOIN @Right ri ON (ri.RightValueTypeId = erivt.RightValueTypeId)
 							INNER JOIN Enterprise.[Right] eri ON (eri.RightValueTypeId = erivt.RightValueTypeId AND eri.PartyId = ri.PartyId)
 
+			if @LogExecutionTime = 1 begin print convert(varchar(max),dateadd(hh,-5,getutcdate()),121) + ': RightValueType' end
+
 			DELETE PR 
 					FROM Security.PersonaRole PR 
 					INNER JOIN Security.[Role] R ON PR.RoleId = r.RoleId
 					INNER JOIN @Organization o ON (o.PartyId = R.OrgPartyID)
+
+			if @LogExecutionTime = 1 begin print convert(varchar(max),dateadd(hh,-5,getutcdate()),121) + ': PersonaRole' end
 
 			DELETE	epp
 			FROM	Enterprise.PersonaPrivilege epp
@@ -202,6 +211,11 @@ AS
 							INNER JOIN @Right ri ON (ero.PartyID = ri.PartyId AND ero.RoleID = ri.RoleID)
 							INNER JOIN Enterprise.[Right] eri ON (eri.RoleID = ri.RoleID AND eri.PartyId = ri.PartyId)
 
+			DELETE AGR
+					FROM Security.ADGroupRole AGR 
+					INNER JOIN Security.[Role] R ON R.RoleId = AGR.RoleId
+					INNER JOIN @Organization o ON (o.PartyId = R.OrgPartyID)
+
 			DELETE RR
 					FROM Security.RoleRight RR 
 					INNER JOIN Security.[Role] R ON R.RoleId = RR.RoleId
@@ -212,15 +226,20 @@ AS
 					INNER JOIN @Organization o ON (o.PartyId = ODR.OrgPartyId)
 					INNER JOIN Security.[Role] R ON R.RoleId = ODR.RoleId
 
+			DELETE OOR
+					FROM Security.OrganizationOverRideRole OOR
+					INNER JOIN @Organization o ON (o.PartyId = OOR.OrgPartyId)
+
 			DELETE R 
 					FROM Security.[Role] R 
 					INNER JOIN @Organization o ON (o.PartyId = R.OrgPartyID)
-
 
 			DELETE	ero
 			FROM		Enterprise.Role ero
 							INNER JOIN @Right ri ON (ero.PartyID = ri.PartyId AND ero.RoleID = ri.RoleID)
 							INNER JOIN Enterprise.[Right] eri ON (eri.RoleID = ri.RoleID AND eri.PartyId = ri.PartyId)
+
+			if @LogExecutionTime = 1 begin print convert(varchar(max),dateadd(hh,-5,getutcdate()),121) + ': Enterprise.Role' end
 
 			DELETE	erovt
 			FROM		Enterprise.RoleValueType erovt
@@ -248,6 +267,8 @@ AS
 			DELETE	ipp
 			FROM	Ident.PasswordPolicy ipp
 						INNER JOIN @Organization o ON (o.PartyId = ipp.PartyId)
+			
+			if @LogExecutionTime = 1 begin print convert(varchar(max),dateadd(hh,-5,getutcdate()),121) + ': PasswordPolicy' end
 
 			DELETE	epr
 			FROM	Enterprise.PartyRelationship epr
@@ -270,7 +291,9 @@ AS
 						INNER JOIN Ident.UserLogin iul ON (iul.PersonPartyId = pp.PartyId)
 						INNER JOIN Ident.UserLoginPersona iulp ON (iulp.UserLoginId = iul.UserId)
 						INNER JOIN @Organization o ON (o.PartyId = iulp.OrganizationPartyId)
-						
+			
+			if @LogExecutionTime = 1 begin print convert(varchar(max),dateadd(hh,-5,getutcdate()),121) + ': ElectronicAddress' end
+
 			DELETE esa
 			FROM	Enterprise.StreetAddress esa
 						INNER JOIN Enterprise.PartyContactMechanism epcm ON (epcm.ContactMechanismId = esa.ContactMechanismID)
@@ -312,7 +335,9 @@ AS
 						INNER JOIN Ident.UserLogin iul ON (iul.PersonPartyId = pp.PartyId)
 						INNER JOIN Ident.UserLoginPersona iulp ON (iulp.UserLoginId = iul.UserId)
 						INNER JOIN @Organization o ON (o.PartyId = iulp.OrganizationPartyId)
-
+			
+			if @LogExecutionTime = 1 begin print convert(varchar(max),dateadd(hh,-5,getutcdate()),121) + ': ContactMechanism' end
+			
 			DELETE pap
 			FROM	Person.ActivePersona pap
 						INNER JOIN Person.Person pp ON (pp.PartyId = pap.PartyId)
@@ -326,6 +351,8 @@ AS
 						INNER JOIN Ident.UserLogin iul ON (iul.PersonPartyId = pp.PartyId)
 						INNER JOIN Ident.UserLoginPersona iulp ON (iulp.UserLoginId = iul.UserId)
 						INNER JOIN @Organization o ON (o.PartyId = iulp.OrganizationPartyId)
+			
+			if @LogExecutionTime = 1 begin print convert(varchar(max),dateadd(hh,-5,getutcdate()),121) + ': ProductBatch' end
 
 			INSERT INTO @Person (
 				PartyID
@@ -341,6 +368,8 @@ AS
 						INNER JOIN Ident.UserLogin iul ON (iul.PersonPartyId = pp.PartyId)
 						INNER JOIN Ident.UserLoginPersona iulp ON (iulp.UserLoginId = iul.UserId)
 						INNER JOIN @Organization o ON (o.PartyId = iulp.OrganizationPartyId)
+
+			if @LogExecutionTime = 1 begin print convert(varchar(max),dateadd(hh,-5,getutcdate()),121) + ': Person' end
 
 			DELETE ue
 			FROM	Enterprise.UserEmployeeId ue
@@ -363,15 +392,34 @@ AS
 			FROM	Settings.SettingTable str2
 					INNER JOIN @Organization o ON (o.PartyId = str2.PartyId)
 
+			DELETE rtpm
+			FROM Security.RoleTemplateAdditionalProductRoleMapping rtpm
+					INNER JOIN Security.RoleTemplateProduct rtp ON rtpm.RoleTemplateProductId = rtp.RoleTemplateProductId
+					INNER JOIN Security.RoleTemplate rt ON rt.RoleTemplateId = rtp.RoleTemplateId
+					INNER JOIN @Organization o ON (o.PartyId = rt.PartyID)
+
+			DELETE rtpm
+			FROM Security.RoleTemplateProductRoleMapping rtpm
+					INNER JOIN Security.RoleTemplateProduct rtp ON rtpm.RoleTemplateProductId = rtp.RoleTemplateProductId
+					INNER JOIN Security.RoleTemplate rt ON rt.RoleTemplateId = rtp.RoleTemplateId
+					INNER JOIN @Organization o ON (o.PartyId = rt.PartyID)
+
 			DELETE rtp
 			FROM	Security.RoleTemplateProduct rtp
 					INNER JOIN Security.RoleTemplate rt ON rt.RoleTemplateId = rtp.RoleTemplateId
 					INNER JOIN @Organization o ON (o.PartyId = rt.PartyID)
 
+			DELETE rtum
+			FROM	Security.RoleTemplateUserMapping rtum
+					INNER JOIN Security.RoleTemplate rt ON rt.RoleTemplateId = rtum.RoleTemplateId
+					INNER JOIN @Organization o ON (o.PartyId = rt.PartyID)
+
 			DELETE rt
 			FROM	Security.RoleTemplate rt
 					INNER JOIN @Organization o ON (o.PartyId = rt.PartyID)
-
+			
+			if @LogExecutionTime = 1 begin print convert(varchar(max),dateadd(hh,-5,getutcdate()),121) + ': RoleTemplate' end
+			
 			DELETE oor
 			FROM	Security.OrganizationOverRideRight oor
 					INNER JOIN @Organization o ON (o.PartyId = oor.OrgPartyId)
@@ -386,10 +434,28 @@ AS
 						INNER JOIN Ident.UserLoginPersona iulp ON (iulp.UserLoginPersonaId = pp.UserLoginPersonaId)
 						INNER JOIN @Organization o ON (o.PartyId = iulp.OrganizationPartyId)
 
+			if @LogExecutionTime = 1 begin print convert(varchar(max),dateadd(hh,-5,getutcdate()),121) + ': PropertyInstanceMapping' end
+
 			DECLARE @PropertyInstanceToDelete TABLE ( propertyinstanceid BIGINT NOT NULL )
 			INSERT INTO @PropertyInstanceToDelete ( propertyinstanceid )
 				SELECT PRR.ClonePropertyInstanceId FROM Hots.PropertyRelationship PRR 
 					INNER JOIN @Organization o ON (o.PartyId = PRR.CloneCompanyPartyId) 
+
+			DELETE	psp
+			FROM	Enterprise.PersonaSuggestedProperties psp
+						INNER JOIN Person.Persona pp ON pp.PersonaId = psp.PersonaID
+						INNER JOIN Ident.UserLoginPersona iulp ON iulp.UserLoginPersonaId = pp.UserLoginPersonaId
+						INNER JOIN @Organization o ON o.PartyId = iulp.OrganizationPartyId
+			
+			if @LogExecutionTime = 1 begin print convert(varchar(max),dateadd(hh,-5,getutcdate()),121) + ': PersonaSuggestedProperties' end
+			
+			DELETE	usppp
+			FROM	Enterprise.UserSyncProductPrimaryPropertiesStaging usppp
+						INNER JOIN Person.Persona pp ON pp.PersonaId = usppp.PersonaID
+						INNER JOIN Ident.UserLoginPersona iulp ON iulp.UserLoginPersonaId = pp.UserLoginPersonaId
+						INNER JOIN @Organization o ON o.PartyId = iulp.OrganizationPartyId
+
+			if @LogExecutionTime = 1 begin print convert(varchar(max),dateadd(hh,-5,getutcdate()),121) + ': UserSyncProductPrimaryPropertiesStaging' end
 
 			DELETE pim
 			FROM	Enterprise.PropertyInstance pim
@@ -398,6 +464,16 @@ AS
 			DELETE prr
 			FROM	Hots.PropertyRelationship prr
 					INNER JOIN @Organization o ON (o.PartyId = prr.CloneCompanyPartyId)
+			
+			DELETE	ut
+			FROM		Ident.UserTokens ut
+						INNER JOIN Ident.UserLoginPersona iulp ON (iulp.UserLoginId = ut.UserId)
+						INNER JOIN @Organization o ON (o.PartyId = iulp.OrganizationPartyId)
+						
+			DELETE	SMS
+			FROM		Ident.SMSAuthenticationCode SMS
+						INNER JOIN Ident.UserLoginPersona iulp ON (iulp.UserLoginId = SMS.UserId)
+						INNER JOIN @Organization o ON (o.PartyId = iulp.OrganizationPartyId)
 
 			DELETE	iulp
 			FROM		Ident.UserLoginPersona iulp
@@ -411,6 +487,8 @@ AS
 			DELETE	ep
 			FROM		Enterprise.Party ep
 							INNER JOIN @Person p ON (p.PartyID = ep.PartyId)
+
+			if @LogExecutionTime = 1 begin print convert(varchar(max),dateadd(hh,-5,getutcdate()),121) + ': Enterprise.Party Person' end
 
 			DELETE	epiul
 			FROM	Enterprise.PersonaIdentityUserLogin epiul
@@ -461,6 +539,8 @@ AS
 						INNER JOIN Ident.UserLoginPersona iulp ON (iulp.UserLoginPersonaId = pp.UserLoginPersonaId)
 						INNER JOIN @Organization o ON (o.PartyId = iulp.OrganizationPartyId)
 
+			if @LogExecutionTime = 1 begin print convert(varchar(max),dateadd(hh,-5,getutcdate()),121) + ': Person.Persona' end
+
 			DELETE	eri
 			FROM	Enterprise.[Right] eri
 						INNER JOIN Enterprise.Role ero ON (ero.RoleID = eri.RoleID)
@@ -471,6 +551,8 @@ AS
 			FROM	Enterprise.Role ero
 						INNER JOIN Enterprise.Party ep ON (ep.PartyId = ero.PartyID)
 						INNER JOIN @Organization o ON (o.PartyId = ep.PartyId)
+
+			if @LogExecutionTime = 1 begin print convert(varchar(max),dateadd(hh,-5,getutcdate()),121) + ': Enterprise.Role' end
 
 			DELETE	ep
 			FROM	Enterprise.Party ep
@@ -527,4 +609,4 @@ AS
 					
 		END CATCH
     END;
- 
+GO
