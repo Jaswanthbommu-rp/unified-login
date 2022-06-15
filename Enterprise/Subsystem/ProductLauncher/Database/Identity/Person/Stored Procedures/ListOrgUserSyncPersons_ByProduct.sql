@@ -162,7 +162,7 @@ BEGIN
 			 INNER JOIN Enterprise.PartyRelationship pr ON pr.PartyIdFrom = ul.PersonPartyId and pr.PartyIdTo = ulp.OrganizationPartyId and pr.ThruDate is null      
 			 INNER JOIN Enterprise.RoleType rt ON rt.PartyRoleTYpeId = pr.RoleTypeIdFrom  
 			 INNER JOIN Enterprise.PersonaConfiguration pec ON p.PersonaId = pec.PersonaId  
-			 INNER JOIN Enterprise.StatusType est ON ulp.StatusTypeId = est.StatusTypeId  And est.StatusTypeId NOT IN (12,23,24)
+			 INNER JOIN Enterprise.StatusType est ON ulp.StatusTypeId = est.StatusTypeId  And est.StatusTypeId <> 24 -- Disabled users filter
 		  WHERE rt.PartyRoleTYpeId IN (401,404,405) --user,User (No Email),external    
 		  AND  ulp.OrganizationPartyId = @PartyId 
 		  AND pec.StatusTypeId = 8    
@@ -182,7 +182,7 @@ BEGIN
 			 INNER JOIN Enterprise.PartyRelationship pr ON pr.PartyIdFrom = ul.PersonPartyId and pr.PartyIdTo = ulp.OrganizationPartyId and pr.ThruDate is null      
 			 INNER JOIN Enterprise.RoleType rt ON rt.PartyRoleTYpeId = pr.RoleTypeIdFrom
 			 INNER JOIN Enterprise.PersonaConfiguration pec ON p.PersonaId = pec.PersonaId 
-			 INNER JOIN Enterprise.StatusType est ON ulp.StatusTypeId = est.StatusTypeId  And est.StatusTypeId NOT IN (12,23,24)
+			 INNER JOIN Enterprise.StatusType est ON ulp.StatusTypeId = est.StatusTypeId  And est.StatusTypeId <> 24 -- Disabled users filter
 		  WHERE rt.PartyRoleTYpeId = @filterPartyRoleTypeId   
 		  AND  ulp.OrganizationPartyId = @PartyId
 		  AND pec.StatusTypeId = 8    
