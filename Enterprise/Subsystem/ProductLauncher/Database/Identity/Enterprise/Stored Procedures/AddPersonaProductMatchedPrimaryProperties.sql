@@ -25,7 +25,7 @@ BEGIN
 		SELECT @ProductId,@PersonaId, pa.PropertyInstanceId, JSON1.productPropertyId,JSON1.propertyName, @ModifiedBy,@ModifiedDate, @CreateDate
 		FROM Enterprise.PropertyInstance pa
 				INNER JOIN 
-			(SELECT productPropertyId, propertyInstanceId  FROM
+			(SELECT productPropertyId, propertyInstanceId,propertyName  FROM
 				OPENJSON (@PropertyInstanceJSON)  
 				WITH (
 				           productPropertyId bigint '$.productPropertyId',
