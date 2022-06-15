@@ -149,7 +149,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 {
                     UserId = (int)userLogin.UserId,
                     OrganizationPartyId = persona.Organization.PartyId,
-                    LoginName = userLogin.LoginName,
+                    LoginName = userLogin.LoginName,                    
                     OrganizationMasterId = (long)persona.Organization.BooksMasterId,
                     CustomerMasterId = (long)persona.Organization.BooksMasterId,
                     OrganizationName = persona.Organization.Name.ToString(),
@@ -161,6 +161,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     CorrelationId = Guid.NewGuid(),
                     RealPageEmployee = (persona.Organization.RealPageId == EmployeeCompanyRealPageId)
                 };
+
+                ManageProductBatch manageProductBatch = new ManageProductBatch(userClaim);
+                userClaim.Rights = manageProductBatch.GetPersonaRoleRights(persona.PersonaId, persona.Organization.PartyId);
             }
 
             return userClaim;
