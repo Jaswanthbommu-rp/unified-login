@@ -16,19 +16,21 @@ BEGIN
 			,[PersonaId]
 			,[PropertyInstanceId]
 			,[ProductPropertyId]
+			,[ProductPropertyName]
 			,[ModifiedBy]
 			,[ModifiedDate]
 			,[CreateDate]
 		)
 
-		SELECT @ProductId,@PersonaId, pa.PropertyInstanceId, JSON1.productPropertyId, @ModifiedBy,@ModifiedDate, @CreateDate
+		SELECT @ProductId,@PersonaId, pa.PropertyInstanceId, JSON1.productPropertyId,JSON1.propertyName, @ModifiedBy,@ModifiedDate, @CreateDate
 		FROM Enterprise.PropertyInstance pa
 				INNER JOIN 
 			(SELECT productPropertyId, propertyInstanceId  FROM
 				OPENJSON (@PropertyInstanceJSON)  
 				WITH (
 				           productPropertyId bigint '$.productPropertyId',
-				           propertyInstanceId varchar(max) '$.propertyInstanceId'
+				           propertyInstanceId varchar(max) '$.propertyInstanceId',
+						   propertyName varchar(max) '$.propertyName'
 				 )
 			 )
 			 AS JSON1 ON PA.InstanceId = JSON1.propertyInstanceId 

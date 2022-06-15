@@ -122,12 +122,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="UserLoginPersonaId"></param>
 		/// <param name="OrganizationPartyId"></param>
 		IUserEmployeeId GetUserEmployeeId(long UserLoginPersonaId, long OrganizationPartyId);
-
-		/// <summary>
-		/// Get Suggested properties by productId for persona
-		/// </summary>
-		/// <param name="personaId">Persona Id</param>
-		/// <returns>List of suggested properties by product, for persona/returns>
-		List<ProductSuggestedProperties> GetSuggetedPropertiesForUserByPersona(long? personaId = null);
+		
 	}
 }

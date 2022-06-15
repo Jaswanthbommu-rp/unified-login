@@ -461,6 +461,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 return settingValue;
             }
         }
+        public string GetOrganizationSettingValueByPersonaId(string settingName, long personaId)
+        {
+            RPObjectCache rpCache = new RPObjectCache();
+            var cacheKey = $"getOrganizationSettingValueByPersonaId_{personaId}_{settingName}";
+            string settingValue = "";
+
+            settingValue = rpCache.GetFromCache<string>(cacheKey, 180, () =>
+            {
+                using (var repository = GetRepository())
+                {                    
+                    DynamicParameters param = new DynamicParameters();
+                    param.Add("@PersonaId", personaId, dbType: DbType.Int32, direction: ParameterDirection.Input);
+                    param.Add("@SettingName", settingName, dbType: DbType.String, direction: ParameterDirection.Input);
+                    param.Add("@SettingValue", settingValue, dbType: DbType.String, direction: ParameterDirection.Output);
+
+                    repository.Execute(StoredProcNameConstants.SP_GetOrganizationSettingValueByPersonaId, param);
+                    settingValue = param.Get<string>("@SettingValue");
+                    return settingValue;
+                }
+            });
+            return settingValue;
+        }
         #endregion
 
         #region public Organization type methods

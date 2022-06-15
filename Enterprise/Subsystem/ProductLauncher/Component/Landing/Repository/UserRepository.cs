@@ -273,8 +273,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             bool usePropertyInstanceUnifiedLogin = getPropertyInstanceUnifiedLogin();
             bool usePropertyInstanceUnifiedAmenities = getPropertyInstanceUnifiedAmenities();
             primaryPropertiesBatch = newProfile.productBatch?.FirstOrDefault<ProductBatch>((Func<ProductBatch, bool>)(p => p.ProductId == (int)ProductEnum.UnifiedPlatform));
-            var productSuggestedProperties = newProfile.SuggestedProductPropertyList;
-
+            
             //NOTE TO DEVELOPERS
             //Any new products are added down the line,we need to update the logic in "getProductBatchForUserClone" to get new products to clone.
             if (newProfile.ClonedUser)
@@ -1267,50 +1266,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                     return createUserResponse;
                                 }
                             }
-
-                            /*
-                             * we don't need to save this logic if unified properties are saving in above code 
-                             * TODO: Delete this commented code once we are done testing with this user story 1108156
-                            if (primaryPropertiesBatch != null && ((primaryPropertiesBatch.InputJson?.PropertyList?.Count > 0) || (primaryPropertiesBatch.InputJson?.RemovedPropertyList?.Count > 0)))
-                            {
-                                string primaryPropertyJSON = JsonConvert.SerializeObject(primaryPropertiesBatch);
-                                repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdatePropertyInstanceMapping, new { PersonaId = personaId, ProductId = (int)ProductEnum.UnifiedUI, PropertyInstanceJSON = primaryPropertyJSON });
-
-                                if (repositoryResponse.Id == 0)
-                                {
-                                    repository.UnitOfWork.Rollback();
-                                    errorStatus.Success = false;
-                                    errorStatus.ErrorCode = "User.CreateUser.28";
-                                    errorStatus.ErrorMsg = "There was an error assigning primary properties to persona: {personaId}.";
-                                    createUserResponse.Status = errorStatus;
-                                    createUserResponse.UserStatus = errorStatus.ErrorMsg;
-                                    return createUserResponse;
-                                }
-                            }*/
-
-                            if (productSuggestedProperties != null && (productSuggestedProperties?.Count > 0))
-                            {
-                                foreach (var product in productSuggestedProperties)
-                                {
-                                    if (product.SuggestedPropertiesList != null && product?.SuggestedPropertiesList.Count > 0)
-                                    {
-                                        string suggestedPropertiesForProductJSON = JsonConvert.SerializeObject(product.SuggestedPropertiesList);
-
-                                        repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddPersonaSuggestedProperties, new { PersonaId = personaId, ProductId = product.ProductId, ModifiedBy = _userClaim.UserId, PropertyInstanceJSON = suggestedPropertiesForProductJSON });
-
-                                        if (repositoryResponse.Id == 0)
-                                        {
-                                            repository.UnitOfWork.Rollback();
-                                            errorStatus.Success = false;
-                                            errorStatus.ErrorCode = "User.CreateUser.30";
-                                            errorStatus.ErrorMsg = $"There was an error assigning suggested properties to persona: {personaId}, and product: {product.ProductId}.";
-                                            createUserResponse.Status = errorStatus;
-                                            createUserResponse.UserStatus = errorStatus.ErrorMsg;
-                                            return createUserResponse;
-                                        }
-                                    }
-                                }
-                            }
+                            
                         }
 
                         //End Create Persona
@@ -2803,19 +2759,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 return repository.GetOne<UserEmployee>(StoredProcNameConstants.SP_GetEmployeeId, param);
             }
         }
-
-        /// <summary>
-        /// return list of suggested properties for persona<
-        /// </summary>
-        /// <param name="personaId"></param>
-        /// <returns>list of suggested properties for persona</returns>
-        public IList<SuggestedPropertyResult> GetSuggetedPropertiesForUserByPersona(long? personaId = null)
-        {
-            using (var repository = GetRepository())
-            {
-                return repository.GetMany<SuggestedPropertyResult>(StoredProcNameConstants.SP_ListSuggestedPropertiesForPersona, new { personaId }).ToList();
-            }
-        }
+        
 
         /// <summary>
         /// Gets the list of possible navigation menu entries
@@ -6393,24 +6337,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             }
                         }
 
-                        var suggestedProperties = ((ProfileDetail)updateUserProfileEntity.NewProfile).SuggestedProductPropertyList;
                         var personaId = updateUserProfileEntity.OldProfile.Persona[0].PersonaId;
-                        repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_DeletePersonaSuggestedProperties, new { PersonaId = personaId });
-                        ;
-
-                        if (suggestedProperties != null && suggestedProperties?.Count > 0)
-                        {
-                            foreach (var product in suggestedProperties)
-                            {
-                                if (product.SuggestedPropertiesList != null && product?.SuggestedPropertiesList.Count > 0)
-                                {
-                                    string suggestedPropertiesForProductJSON = JsonConvert.SerializeObject(product.SuggestedPropertiesList);
-
-                                    repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddPersonaSuggestedProperties, new { PersonaId = personaId, ProductId = product.ProductId, ModifiedBy = _userClaim.UserId, PropertyInstanceJSON = suggestedPropertiesForProductJSON });
-                                }
-                            }
-                        }
-
+                                                
                         var duplicateGreenBookroles = new List<int>(greenBookRoles);
                         var duplicateExistingroles = new List<long>(updateUserProfileEntity.ExistingRoleIds);
 

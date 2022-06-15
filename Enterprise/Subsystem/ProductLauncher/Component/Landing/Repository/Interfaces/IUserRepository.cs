@@ -157,13 +157,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		/// <returns></returns>
 		RepositoryResponse UpdateUserEmployeeId(IUserEmployeeId employeeIdDetail);
 
-		/// <summary>
-		/// return list of suggested properties for persona<
-		/// </summary>
-		/// <param name="personaId"></param>
-		/// <returns>list of suggested properties for persona</returns>
-		IList<SuggestedPropertyResult> GetSuggetedPropertiesForUserByPersona(long? personaId = null);
-
 		IList<NavigationMenuEntry> GetNavigationMenu();
 
 		IList<NavigationMenuRightEntry> GetNavigationMenuRights();

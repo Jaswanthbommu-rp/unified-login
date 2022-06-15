@@ -7,7 +7,21 @@ BEGIN
 	DECLARE @Now datetime = GETUTCDATE()
 	declare @MAX_ID INT
 	declare @Current_ID INT = 1
+	Declare @UPFMProductId int = 3
+	DECLARE @SyncUserProductPrimaryPropertiesForPlatformProduct varchar(2);
 	BEGIN TRY
+
+			SELECT	@SyncUserProductPrimaryPropertiesForPlatformProduct = ISNULL(ps.Value,'0')				
+			FROM	Enterprise.GlobalProductConfiguration gpc
+					JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId
+					JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId
+					JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId
+			WHERE  gpc.ProductId = @ProductId
+			AND (gpc.ThruDate IS NULL)
+			AND ( pc.ThruDate IS NULL)
+			AND ( ps.ThruDate IS NULL)
+			And PST.Name = 'SyncUserProductPrimaryPropertiesForPlatformProduct'
+
 		DECLARE @personaList TABLE (
 			Id int identity,
 			PersonaId bigint
@@ -52,6 +66,26 @@ BEGIN
 				UPDATE Enterprise.PersonaProductPropertiesSyncHistory SET ProductPropertiesSyncDate = @Now
 				WHERE PersonaId = @personaId
 				AND ProductId = @ProductId
+			END
+
+			IF (@SyncUserProductPrimaryPropertiesForPlatformProduct = '1')
+			BEGIN
+				INSERT INTO Enterprise.PropertyInstanceMapping (
+						PersonaId,
+						ProductId,
+						PropertyInstanceId
+				)
+				SELECT @personaId,
+					   @UPFMProductId,
+					   PropertyInstanceId
+				FROM Enterprise.PropertyInstanceMapping
+				WHERE PersonaId = @personaId
+				AND ProductId = @ProductId
+				AND ThruDate IS NULL
+				AND PropertyInstanceId NOT IN (SELECT Distinct PropertyInstanceId	FROM	Enterprise.PropertyInstanceMapping
+					WHERE PersonaId = @personaId
+					AND ProductId = @UPFMProductId
+					AND ThruDate IS NULL)				
 			END
 
 			Set @Current_ID = @Current_ID + 1

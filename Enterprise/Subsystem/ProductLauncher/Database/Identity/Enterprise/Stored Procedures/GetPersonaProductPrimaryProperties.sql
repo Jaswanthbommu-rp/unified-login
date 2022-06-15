@@ -4,12 +4,11 @@ CREATE PROCEDURE [Enterprise].[GetPersonaProductPrimaryProperties]
 )
 AS
 BEGIN
-	SELECT 
-		PersonaProductPropertyId
+	SELECT UserSyncPrimaryPropertyId AS	'PersonaProductPropertyId'
 		,PersonaId
 		,ProductId
-		,PropertyId
+		,ProductPropertyId AS 'PropertyId'
 		,PropertyInstanceId		
-		FROM Enterprise.PersonaProductProperty
+		FROM Enterprise.UserSyncProductPrimaryPropertiesStaging
 		WHERE PersonaId = @PersonaId
 END

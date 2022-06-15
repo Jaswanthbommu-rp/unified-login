@@ -172,7 +172,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         public const string SP_DisableUsersForProduct = "Enterprise.DisableUsersForProduct";
         public const string SP_CreateOrganizationProductConfiguration = "Enterprise.CreateOrganizationProductConfiguration";
         public const string SP_CreateOrganizationProductConfigurationbyPartyId = "Enterprise.CreateOrganizationProductConfigurationbyPartyId";
-        public const string SP_GetOrganizationSettingValue = "Enterprise.GetOrganizationSettingValue";        
+        public const string SP_GetOrganizationSettingValue = "Enterprise.GetOrganizationSettingValue";
+        public const string SP_GetOrganizationSettingValueByPersonaId = "Enterprise.GetOrganizationSettingValueByPersonaId";
         //PartyRelationship
         public const string SP_GetPartyRelationshipByRealPageId = "Enterprise.GetPartyRelationshipByRealPageId";
 
@@ -214,11 +215,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
 
         public const string SP_GetProductsByPersonaId = "Security.GetProductsByPersonaId";
         public const string SP_GetPersonaProductPrimaryProperties = "Enterprise.GetPersonaProductPrimaryProperties";
-
-        //SuggestedProperties 
-        public const string SP_AddPersonaSuggestedProperties = "Enterprise.AddPersonaSuggestedProperties";
-        public const string SP_DeletePersonaSuggestedProperties = "Enterprise.DeletePersonaSuggestedProperties";
-        public const string SP_ListSuggestedPropertiesForPersona = "Enterprise.ListSuggestedPropertiesForPersona";
 
         //Remove
         public const string SP_ListProductTypes = "Enterprise.ListProductTypes";
@@ -478,6 +474,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         //User Sync Properties
         public const string SP_GetUserSyncJobTaskDetails = "Enterprise.GetUserSyncJobTaskDetails";
         public const string SP_AddPersonaProductMatchedPrimaryProperties = "Enterprise.AddPersonaProductMatchedPrimaryProperties";
+        public const string SP_AddUpdatePersonaProductPropertyInstanceMapping = "Enterprise.AddUpdatePersonaProductPropertyInstanceMapping";
     }
 
     public static class EnterpriseStoredProcNameConstants

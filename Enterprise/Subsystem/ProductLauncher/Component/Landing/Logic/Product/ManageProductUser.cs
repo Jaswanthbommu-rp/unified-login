@@ -38,6 +38,8 @@ using System.Threading.Tasks;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using System.Net.Http;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSite;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterprise.Helpers;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -55,7 +57,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         IManageProduct _manageProduct;
         private readonly IIntegrationTypeFactory _integrationTypeFactory;
         private SaveInteralSamlAttrLog _activityLogHelper;
-
+        readonly ITokenHelper _tokenHelper;
+        private IOrganizationRepository _organizationRepository;
         #endregion
 
         #region Constructors
@@ -63,14 +66,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// Manages Product User constructor
         /// </summary>
         public ManageProductUser(IProductRepository productRepository,
-            IProductInternalSettingRepository productInternalSettingRepository, ISamlRepository samlRepository, IManageProduct manageProduct)
+            IProductInternalSettingRepository productInternalSettingRepository, ISamlRepository samlRepository, IManageProduct manageProduct, 
+            IOrganizationRepository organizationRepository)
         {
             _productRepository = productRepository;
             _productInternalSettingRepository = productInternalSettingRepository;
             _samlRepository = samlRepository;
             _manageProduct = manageProduct;
+            _tokenHelper = new TokenHelper();
+            _organizationRepository = organizationRepository;
         }
-
+       
         /// <summary>
         /// Unit test constructor
         /// </summary>
@@ -86,7 +92,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var manageUnifiedLogin = new ManageUnifiedLogin(repository, userClaims, messageHandler);
             var manageProductOneSite = new ManageProductOneSite(repository, userClaims, messageHandler, oneSiteProductService);
             _integrationTypeFactory = new IntegrationTypeFactory(_manageProduct, manageUnifiedLogin, manageProductOneSite, _productRepository, _productInternalSettingRepository, userClaims);
-
+            _tokenHelper = new TokenHelper(repository);
+            _organizationRepository = new OrganizationRepository(repository);
         }
 
         /// <summary>
@@ -105,7 +112,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _integrationTypeFactory = new IntegrationTypeFactory(_manageProduct, manageUnifiedLogin, manageProductOneSite, _productRepository, _productInternalSettingRepository, _defaultUserClaim);
 
             _activityLogHelper = new SaveInteralSamlAttrLog(_defaultUserClaim);
-
+            _tokenHelper = new TokenHelper();
+            _organizationRepository = new OrganizationRepository();
         }
         #endregion
 
@@ -147,7 +155,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return string.Empty;
         }
 
-        private void SavePersonaProductProperties(bool usePrimaryProperties, long assignUserPersonaId, int productId, RolePropertyList roleProp, string inputJson)
+        private void SavePersonaProductPrimaryProperties(bool usePrimaryProperties, long assignUserPersonaId, int productId, RolePropertyList roleProp, string inputJson)
         {
             if (productId != 4)
             {
@@ -257,13 +265,31 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // If result OK then update Success status else Error
             if (string.IsNullOrEmpty(result))
             {
-                foreach (var rolePropertyList in rolePrimaryPropDictionary)
-                {
-                    var thisProductUserPrimaryProperty = usePrimaryPropertyFlags.FirstOrDefault(p => p.Key == rolePropertyList.Key).Value;
-                    SavePersonaProductProperties(thisProductUserPrimaryProperty, productUser.AssignUserPersonaId, rolePropertyList.Key, rolePropertyList.Value, productUser.InputJson);
-                }
-
+                
                 isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Success);
+                if (isBatchCompleted)
+                {
+                   
+                    var OrgUsePrimaryProperties = _organizationRepository.GetOrganizationSettingValueByPersonaId("EnablePrimaryPropertiesAndEnterpriseRoles", productUser.AssignUserPersonaId);
+                    var productSettings = GetProductInternalSettings(productUser.ProductId);
+                    var productInternalSetting = productSettings.FirstOrDefault(item => item.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase));
+                    var integrationType = _integrationTypeFactory.GetIntegrationTypeForProductId(productUser.ProductId);
+
+                    if (integrationType == ProductIntegrationTypeEnum.Legacy && OrgUsePrimaryProperties.Trim().Equals("1") && productInternalSetting.Value.Trim().Equals("1"))
+                    {
+                        foreach (var rolePropertyList in rolePrimaryPropDictionary)
+                        {
+                            var thisProductUserPrimaryProperty = usePrimaryPropertyFlags.FirstOrDefault(p => p.Key == rolePropertyList.Key).Value;
+                            SavePersonaProductPrimaryProperties(thisProductUserPrimaryProperty, productUser.AssignUserPersonaId, rolePropertyList.Key, rolePropertyList.Value, productUser.InputJson);
+                        }
+                    }
+
+                    if (OrgUsePrimaryProperties != null && OrgUsePrimaryProperties.Trim() == "0")
+                    {                        
+                        //call apicore kafka publish
+                         SyncUserProductProperties(productUser.ProductId, productUser.AssignUserPersonaId, productUser.CreateUserPersonaId);
+                    }                    
+                }
             }
             else
             {
@@ -337,7 +363,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // If result OK then update Success status else Error
             if (string.IsNullOrEmpty(result))
             {
-                SavePersonaProductProperties(usePrimaryProperties, productUser.AssignUserPersonaId, productUser.ProductId, roleProp, productUser.InputJson);
+                SavePersonaProductPrimaryProperties(usePrimaryProperties, productUser.AssignUserPersonaId, productUser.ProductId, roleProp, productUser.InputJson);
                 WriteActivityLogWithMessage(productUser.RealPageEmployeePersonaId, 0, "Employee {3} {4} added/updated to product {2} in company " + employeeInfo.OrganizationName, productId);
                 return "";
             }
@@ -414,7 +440,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (string.IsNullOrEmpty(result))
             {
                 isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Success);
-                SavePersonaProductProperties(usePrimaryProperties, productUser.AssignUserPersonaId, productUser.ProductId, roleProp, productUser.InputJson);
+                SavePersonaProductPrimaryProperties(usePrimaryProperties, productUser.AssignUserPersonaId, productUser.ProductId, roleProp, productUser.InputJson);
             }
             else
             {
@@ -758,7 +784,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             string title = "User Update Exception";
             List<string> users = new List<string>() { notificationTo.ToString() };
 
-            var productInternalSettingList = GetProductInternalSettings(ProductEnum.UnifiedPlatform);
+            var productInternalSettingList = GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
 
             var notificationsApiEndPoint = productInternalSettingList.First(a => a.Name.Equals("NotificationsApiEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
             var notificationsEventsEndPoint = productInternalSettingList.First(a => a.Name.Equals("NotificationsEventsEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
@@ -771,16 +797,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             RealPage.UnifiedNotifications.Notification notification = new RealPage.UnifiedNotifications.Notification(clientId, apiSecret, tokenEndpoint, notificationsApiEndPoint + "/v1/notifications", notificationsApiEndPoint + "/" + notificationsEventsEndPoint);
             var result = Task.Run(() => notification.SendNotification(title, message, users, categoryCode)).Result;
         }
-
-        private IList<ProductInternalSetting> GetProductInternalSettings(ProductEnum product)
+       
+        private IList<ProductInternalSetting> GetProductInternalSettings(int productId)
         {
             var rpcache = new RPObjectCache();
-            var cacheKey = $"productInternalSetting_{(int)product}";
+            var cacheKey = $"productInternalSetting_{productId}";
             IList<ProductInternalSetting> productInternalSettingList = rpcache.GetFromCache<IList<ProductInternalSetting>>(cacheKey, 600, () =>
             {
-                // load from database
-
-                return _productInternalSettingRepository.GetProductInternalSettings((int)product).ToList();
+                return _productInternalSettingRepository.GetProductInternalSettings(productId).ToList();
             });
 
             return productInternalSettingList;
@@ -954,7 +978,62 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             return selectedProperties;
         }
+       
+        private void SyncUserProductProperties(int productId, long personaId, long editorPersonaId)
+        {
+            var productInternalSettingList = GetProductInternalSettings(3);
+            var baseApiUri = productInternalSettingList.First(a => a.Name.Equals("UnifiedLoginApiBaseUri", StringComparison.OrdinalIgnoreCase)).Value;            
+            string ulInternalClientTokenScopes = productInternalSettingList.First(a => a.Name.Equals("ULInternalClientTokenScopes", StringComparison.OrdinalIgnoreCase)).Value;
+           
+            var uri = $"/apicore/v2/UserSync?syncJobType=2&forceCreate=false&editorPersonaId={editorPersonaId}";
 
+            var products = _productRepository.GetAllProducts();
+            string productCode = ProductEnumHelper.GetBooksSourceCodeByProductId(productId, products);
+
+            List<UserSyncRequest> userSyncRequest = new List<UserSyncRequest>();
+            List<string> sources = new List<string>();
+            sources.Add(productCode);
+            UserSyncRequest syncRequest = new UserSyncRequest
+            {
+                PersonaId = personaId,
+                Sources = sources,
+                ForceCreate = false
+            };
+            userSyncRequest.Add(syncRequest);
+
+
+            var ulClientToken = _tokenHelper.GetUnifiedLoginServerToken(ulInternalClientTokenScopes);
+            
+            using (var httpClient = new HttpClient())
+            {
+                httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", ulClientToken);
+                httpClient.BaseAddress = new Uri(baseApiUri);
+
+                var payload = new StringContent(JsonConvert.SerializeObject(userSyncRequest), Encoding.UTF8, "application/json");
+                Dictionary<string, object> logData = new Dictionary<string, object>()
+                {
+                    {"UserSyncRequest",  userSyncRequest}
+                };
+                WriteToLog(LogEventLevel.Debug, $"ManageProductUser.SyncUserProductProperties: Sending User Sync Request from {httpClient.BaseAddress} {uri}", logData);
+                var request = new HttpRequestMessage
+                {
+                    Method = HttpMethod.Post,
+                    Content = payload,
+                    RequestUri = new Uri(String.Concat(baseApiUri,uri)),
+                };
+                var response = httpClient.SendAsync(request).Result;
+                var responseContent = response.Content.ReadAsStringAsync().Result;
+
+                if (response != null && !response.IsSuccessStatusCode)
+                {
+                    Dictionary<string, object> logErrorData = new Dictionary<string, object>()
+                    {
+                        {"UserSyncRequest responseContent",  responseContent}
+                    };
+                    WriteToLog(LogEventLevel.Error, $"ManageProductUser.SyncUserProductProperties: Error while User Sync Request.", logErrorData);
+                }
+            }
+        }
         #endregion
         /// <summary>
         /// Used to write to the log

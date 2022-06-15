@@ -223,6 +223,7 @@
     <Compile Include="Enterprise\UserProductDetails.cs" />
     <Compile Include="Enterprise\UserProductSAMLDetail.cs" />
     <Compile Include="Enterprise\UsersData.cs" />
+    <Compile Include="Enterprise\UserSyncRequest.cs" />
     <Compile Include="Enum\AccessType.cs" />
     <Compile Include="Enum\BatchProcessType.cs" />
     <Compile Include="Enum\BookMasterType.cs" />

@@ -128,14 +128,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     var productList = productResult.Records.Cast<ProductProperty>();
                     foreach (var property in productList)
-                    {
-                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.ID ));
-                        if (instanceExists != null && property.IsAssigned == true)
+                    {                        
+                        if (property.IsAssigned == true)
                         {
+                            var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.ID));
                             propertiesStagingData.Add(new SuggestedProperty
                             {
                                 ProductPropertyId = long.Parse(property.ID),
-                                PropertyInstanceId = Guid.Parse(instanceExists.PropertyInstanceSourceId)
+                                PropertyInstanceId = instanceExists != null ? Guid.Parse(instanceExists.PropertyInstanceSourceId) : Guid.Empty,
+                                PropertyName = property.Name
                             });
                         }                        
                     }
@@ -144,13 +145,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     foreach (var property in productResult.Records.Cast<ACProperty>())
                     {
-                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.Id));
-                        if (instanceExists != null && property.IsAssigned == true)
+                        if (property.IsAssigned == true)
                         {
+                            var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.Id));
                             propertiesStagingData.Add(new SuggestedProperty
                             {
                                 ProductPropertyId = long.Parse(property.Id),
-                                PropertyInstanceId = Guid.Parse(instanceExists.PropertyInstanceSourceId)
+                                PropertyInstanceId = instanceExists != null ? Guid.Parse(instanceExists.PropertyInstanceSourceId) : Guid.Empty,
+                                PropertyName = property.PropertyName
                             });
                         }
                     }
@@ -158,14 +160,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 else if (productPropertyType == typeof(AssetGroup))
                 {
                     foreach (var property in productResult.Records.Cast<AssetGroup>())
-                    {
-                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.AssetID));
-                        if (instanceExists != null && property.IsAssigned == true)
+                    {                        
+                        if (property.IsAssigned == true)
                         {
+                            var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.AssetID));
                             propertiesStagingData.Add(new SuggestedProperty
                             {
                                 ProductPropertyId = long.Parse(property.AssetID),
-                                PropertyInstanceId = Guid.Parse(instanceExists.PropertyInstanceSourceId)
+                                PropertyInstanceId = instanceExists != null ? Guid.Parse(instanceExists.PropertyInstanceSourceId) : Guid.Empty,
+                                PropertyName = property.Name
                             });
                         }
                     }
@@ -174,13 +177,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     foreach (var property in productResult.Records.Cast<OnSiteProperty>())
                     {
-                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.GetPropertyId.ToString()));
-                        if (instanceExists != null && property.IsAssigned == true)
+                        if (property.IsAssigned == true)
                         {
+                            var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.GetPropertyId.ToString()));
                             propertiesStagingData.Add(new SuggestedProperty
                             {
                                 ProductPropertyId = long.Parse(property.GetPropertyId.ToString()),
-                                PropertyInstanceId = Guid.Parse(instanceExists.PropertyInstanceSourceId)
+                                PropertyInstanceId = instanceExists != null ? Guid.Parse(instanceExists.PropertyInstanceSourceId) : Guid.Empty,
+                                PropertyName = property.GetName
                             });
                         }
                     }
@@ -189,13 +193,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     foreach (var property in productResult.Records.Cast<RumPropertyGroup>())
                     {
-                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.Id.ToString()));
-                        if (instanceExists != null && property.IsAssigned == true)
+                        if (property.IsAssigned == true)
                         {
+                            var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.Id.ToString()));
                             propertiesStagingData.Add(new SuggestedProperty
                             {
                                 ProductPropertyId = long.Parse(property.Id.ToString()),
-                                PropertyInstanceId = Guid.Parse(instanceExists.PropertyInstanceSourceId)
+                                PropertyInstanceId = instanceExists != null ? Guid.Parse(instanceExists.PropertyInstanceSourceId) : Guid.Empty,
+                                PropertyName = property.Name
                             });
                         }
                     }
@@ -204,13 +209,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     foreach (var property in productResult.Records.Cast<ProductProperties>())
                     {
-                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.GetPropertyId));
-                        if (instanceExists != null && property.IsAssigned == true)
+                        if (property.IsAssigned == true)
                         {
+                            var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.GetPropertyId));
                             propertiesStagingData.Add(new SuggestedProperty
                             {
                                 ProductPropertyId = long.Parse(property.GetPropertyId),
-                                PropertyInstanceId = Guid.Parse(instanceExists.PropertyInstanceSourceId)
+                                PropertyInstanceId = instanceExists != null ? Guid.Parse(instanceExists.PropertyInstanceSourceId) : Guid.Empty,
+                                PropertyName = property.GetName
                             });
                         }
                     }
@@ -219,13 +225,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     foreach (var property in productResult.Records.Cast<Portfolio>())
                     {
-                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.ID));
-                        if (instanceExists != null && property.IsAssigned == true)
+                        if (property.IsAssigned == true)
                         {
+                            var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.ID));
                             propertiesStagingData.Add(new SuggestedProperty
                             {
                                 ProductPropertyId = long.Parse(property.ID),
-                                PropertyInstanceId = Guid.Parse(instanceExists.PropertyInstanceSourceId)
+                                PropertyInstanceId = instanceExists != null ? Guid.Parse(instanceExists.PropertyInstanceSourceId) : Guid.Empty,
+                                PropertyName = property.Name
                             });
                         }
                     }

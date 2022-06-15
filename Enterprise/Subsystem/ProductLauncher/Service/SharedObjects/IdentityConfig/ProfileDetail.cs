@@ -170,12 +170,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 		public int UserEmployeeId { get; set; }
 
 		/// <summary>
-		/// SuggestedPropertyList
-		/// </summary>
-		[JsonProperty("SuggestedPropertyList", NullValueHandling = NullValueHandling.Ignore)]
-		public List<ProductSuggestedProperties> SuggestedProductPropertyList { get; set; }
-
-		/// <summary>
 		/// User Enterprise Role Name
 		/// </summary>		
 		public string EntepriseRoleName { get; set; }

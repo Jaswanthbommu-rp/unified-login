@@ -23,5 +23,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
 		/// </summary>
 		[JsonProperty(PropertyName = "propertyInstanceId")]
 		public Guid PropertyInstanceId { get; set; }
-	}
+
+		[JsonProperty(PropertyName = "propertyName")]
+		public string PropertyName { get; set; }
+    }
 }

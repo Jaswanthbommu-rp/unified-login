@@ -247,7 +247,7 @@ GO
 		AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))  
 		AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))  
 		AND pst.Name = 'UnifiedLoginApiBaseUri'
-		AND ps.Value = @apiendpoint
+		--AND ps.Value = @apiendpoint
 	)
 	begin
 		declare @currentproductconfigurationid INT
@@ -291,7 +291,7 @@ GO
 		AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))  
 		AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))  
 		AND pst.Name = 'ULInternalClientTokenScopes'
-		AND ps.Value = 'enterpriseapi unifiedsettingsapi internalapi'
+		--AND ps.Value = 'enterpriseapi unifiedsettingsapi internalapi rplandingapi'
 	)
 	begin
 		declare @currentproductconfigurationid INT
@@ -349,17 +349,132 @@ begin
 	--print 'productid = ' + convert(varchar,@currentproductid)
 
 	if not exists (
-	select top 1 1 
+		SELECT TOP 1 1 
 		FROM Enterprise.GlobalProductConfiguration gpc  
 		JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId  
 		JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId  
 		JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId  
-			WHERE  gpc.ProductId = @CurrentProductId  
+		WHERE  gpc.ProductId = @CurrentProductId  
 		AND ((@NOW BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@NOW >= gpc.FromDate AND gpc.ThruDate IS NULL))  
 		AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))  
 		AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))  
 		AND pst.Name = @currentSettingType
-		AND ps.Value = @currentsettingValue
+		--AND ps.Value = @currentsettingValue
+	)
+	begin
+		declare @currentproductconfigurationid INT
+		select distinct top 1 @currentproductconfigurationid = pc.configurationid
+			FROM Enterprise.GlobalProductConfiguration gpc  
+			JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId  
+			JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId  
+			JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId  
+				WHERE  gpc.ProductId = @CurrentProductId
+			AND ((@NOW BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@NOW >= gpc.FromDate AND gpc.ThruDate IS NULL))  
+			AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))  
+			AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))  
+		order by pc.ConfigurationId desc
+
+		if (@currentproductconfigurationid is not null)
+		begin
+			insert into enterprise.ProductSetting ( productid, ProductSettingTypeId, value, FromDate )
+				select @CurrentProductId, productsettingtypeid, @currentSettingValue, GETUTCDATE()
+					from enterprise.ProductSettingType where name = @currentSettingType
+			insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate, ThruDate )
+				values ( @currentproductconfigurationid, @@IDENTITY, GETUTCDATE(), null )
+		end
+	end
+	
+	set @Current_ID = @Current_ID + 1
+end
+
+GO
+	if not exists ( select top 1 1 from enterprise.PropertyInstance where PropertyInstanceId = 0 )
+	begin
+		SET IDENTITY_INSERT [enterprise].[PropertyInstance] ON
+		INSERT INTO enterprise.PropertyInstance
+		(
+			PropertyInstanceId,
+			Name,
+			Address,
+			City,
+			State,
+			PostalCode,
+			Country,
+			County,
+			Latitude,
+			Longitude,
+			InstanceId,
+			CustomerPropertyId,
+			Domain,
+			IsDeleted,
+			ThruDate,
+			IsActive
+		)
+		VALUES
+		(	0, 
+			N'Not Mapped', -- Name - nvarchar(250)
+			N'', -- Address - nvarchar(200)
+			N'', -- City - nvarchar(60)
+			NULL, -- State - nvarchar(20)
+			NULL, -- PostalCode - nvarchar(25)
+			NULL, -- Country - nvarchar(25)
+			NULL, -- County - nvarchar(60)
+			NULL, -- Latitude - decimal(9, 6)
+			NULL, -- Longitude - decimal(9, 6)
+			'00000000-0000-0000-0000-000000000000', -- InstanceId - uniqueidentifier
+			0, -- CustomerPropertyId - bigint
+			N'Primary', -- Domain - nvarchar(50)
+			0, -- IsDeleted - tinyint
+			NULL, -- ThruDate - datetime2(7)
+			1 -- IsActive - tinyint
+		)
+		SET IDENTITY_INSERT [enterprise].[PropertyInstance] OFF
+	end
+
+	
+
+GO
+if not exists ( select top 1 1 from Enterprise.ProductSettingType where name = 'SyncUserProductPrimaryPropertiesForPlatformProduct' )
+begin
+	insert into enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'SyncUserProductPrimaryPropertiesForPlatformProduct', 'Sync User Product Properties With Translated Properties For Unified Platform Product', 0)
+end
+
+DECLARE @NOW DATETIME = GETUTCDATE(); 
+declare @productlist table ( entid int identity, productid int, productsettingtype varchar(500), productsettingvalue varchar(2000))
+insert into @productlist values 
+	(1, 'SyncUserProductPrimaryPropertiesForPlatformProduct', '1' )
+	
+	
+--select * from @productlist
+
+declare @MAX_ID INT
+declare @Current_ID INT = 1
+declare @CurrentProductId INT = 1
+
+select @MAX_ID = max(entid) from @productlist
+
+while @Current_ID <= @MAX_ID
+begin
+	declare @currentSettingType varchar(500)
+	declare @currentsettingValue varchar(2000)
+
+	select @CurrentProductId = productid , @currentSettingType = productsettingtype, @currentSettingValue = productsettingvalue
+		from @productlist where entid = @Current_ID
+
+	--print 'productid = ' + convert(varchar,@currentproductid)
+
+	if not exists (
+		SELECT TOP 1 1 
+		FROM Enterprise.GlobalProductConfiguration gpc  
+		JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId  
+		JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId  
+		JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId  
+		WHERE  gpc.ProductId = @CurrentProductId  
+		AND ((@NOW BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@NOW >= gpc.FromDate AND gpc.ThruDate IS NULL))  
+		AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))  
+		AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))  
+		AND pst.Name = @currentSettingType
+		--AND ps.Value = @currentsettingValue
 	)
 	begin
 		declare @currentproductconfigurationid INT

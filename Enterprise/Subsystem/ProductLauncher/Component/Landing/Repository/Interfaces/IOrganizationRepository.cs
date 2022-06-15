@@ -94,6 +94,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="partyId">partyId</param>
         /// </summary>
         string GetOrganizationSettingValue(string settingName, long partyId);
+        string GetOrganizationSettingValueByPersonaId(string settingName, long personaId);
         #endregion
 
         #region Organization Type methods

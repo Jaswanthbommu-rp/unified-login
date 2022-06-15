@@ -963,23 +963,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			List<string> userRights = _userClaims.Rights;
 
 			return Request.CreateResponse(HttpStatusCode.OK, userRights);
-		}
-
-		/// <summary>
-		/// Gets list of suggested properties for a user, by his persona
-		/// </summary>
-		/// <returns>A list of the suggested properties for a user</returns>
-		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
-		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
-		[SwaggerResponse(HttpStatusCode.OK, Description = "Get the suggested properties for a user")]
-		[Route("suggestedProperties")]
-		[HttpGet]
-		public HttpResponseMessage GetSuggetedPropertiesForUserByPersona(long? userLoginPersonaId = null)
-		{
-			ManageUser manageUser = new ManageUser(_userClaims);
-			List<ProductSuggestedProperties> suggestedPropertiesByProductsList = manageUser.GetSuggetedPropertiesForUserByPersona(userLoginPersonaId);
-			return Request.CreateResponse(HttpStatusCode.OK, suggestedPropertiesByProductsList);
-		}
+		}		
 
 		#endregion
 	}
