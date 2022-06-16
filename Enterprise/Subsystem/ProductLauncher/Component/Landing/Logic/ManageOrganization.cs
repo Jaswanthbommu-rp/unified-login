@@ -1439,9 +1439,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     bool foundProperty = false;
                     udmProperty.TranslatedPropertyInstances.ForEach(instances =>
                     {
-                        if (foundProductPropertyIdList.Any(p => p.Equals(instances.PropertyInstanceSourceId, StringComparison.OrdinalIgnoreCase)))
+                        foundProperty = foundProductPropertyIdList.Any(p => p.Equals(instances.PropertyInstanceSourceId, StringComparison.OrdinalIgnoreCase));
+                        // check for a variation of the property id and update it
+                        if (!foundProperty)
                         {
-                            foundProperty = true;
+                            foundProductPropertyIdList.ForEach(propertyId =>
+                            {
+                                if (!instances.PropertyInstanceSourceId.ToLower().Contains(propertyId.ToLower())) return;
+                                foundProperty = true;
+                                var updateAuditRow = propertyAuditResult.FirstOrDefault(x => x.ProductInstanceId.Equals(propertyId, StringComparison.OrdinalIgnoreCase));
+                                updateAuditRow.ProductInstanceId = instances.PropertyInstanceSourceId;
+                            });
+
                         }
                     });
                     if (!foundProperty && upfmPropertyDetails != null)
