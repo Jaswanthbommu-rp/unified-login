@@ -758,13 +758,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 				else
 				{
-					foreach (var data in aoGbUserCompanyPropertyRoleDetails)
+					if (aoGbUserCompanyPropertyRoleDetails != null)
 					{
-						if (data.CompanyId == 0)
+						foreach (var data in aoGbUserCompanyPropertyRoleDetails)
 						{
-							data.CompanyId = Convert.ToInt32(blueAOCompanyInfo.CompanyInstanceSourceId);
+							if (data.CompanyId == 0)
+							{
+								data.CompanyId = Convert.ToInt32(blueAOCompanyInfo.CompanyInstanceSourceId);
+							}
 						}
 					}
+					
 
 					userAOProducts = GetAOProductsForNewMultiCompanyUser(editorPersonaId, productUserGbLogin.LoginName);
 
