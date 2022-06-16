@@ -686,45 +686,58 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                     // map userAssignProductPropertyRole to ProductPropertyRole
                     var productPropertyRole = MapGbObjectToProduct(userAssignProductPropertyRole);
-                    long existingRoleId = 0;
+                    List<long> existinguserRoleIds = new List<long>();
+                    List<long> userassignedRoles = new List<long>();
 
                     if (productPropertyRole.RoleList?.Count > 0)
                     {
-                        role.RoleID = long.Parse(productPropertyRole.RoleList[0]);
-
+                        //role.RoleID = long.Parse(productPropertyRole.RoleList[0]);
+                        foreach (var item in productPropertyRole.RoleList)
+                        {
+                            userassignedRoles.Add(long.Parse(item));
+                        }
+                        // Existing user Roles
                         List<UL.Role> roleList = GetAssignedRoleForPersona(userPersonaId);
 
-                        if (roleList?.Count > 0) // Existing user
+                        if (roleList?.Count > 0)
                         {
-                            existingRoleId = roleList[0].RoleID;
+                            foreach (var item in roleList)
+                            {
+                                existinguserRoleIds.Add(item.RoleID);
+                            }
                         }
 
-                        if (role.RoleID != existingRoleId)
+                        if (existinguserRoleIds.Count > 0)
                         {
-                            if (existingRoleId != 0)
+                            foreach (var item in existinguserRoleIds.ToList())
                             {
                                 // remove the existing role
-                                WriteToDiagnosticLog($"ManageUPFMProductUser - removing role for user userPersonaId id - {userPersonaId}, RoleId - {existingRoleId}.");
-                                result = _userRoleRightRepository.InsertAssignedRoleToUser(userPersonaId: userPersonaId, roleId: existingRoleId, userId: _userClaims.UserId, deleteRole: true);
+                                //WriteToDiagnosticLog($"ManageUPFMProductUser - removing role for user userPersonaId id - {userPersonaId}, RoleId - {existingRoleId}.");
+                                result = _userRoleRightRepository.InsertAssignedRoleToUser(userPersonaId: userPersonaId, roleId: item, userId: _userClaims.UserId, deleteRole: true);
                                 if (result.Id < 0)
                                 {
-                                    WriteToErrorLog($"ManageUPFMProductUser - Unable to delete role for user with userPersonaId - {userPersonaId}, RoleId - {existingRoleId}");
+                                    WriteToErrorLog($"ManageUPFMProductUser - Unable to delete role for user with userPersonaId - {userPersonaId}, RoleId - {item}");
                                     return result.ErrorMessage;
                                 }
                             }
 
-                            if (role.RoleID != 0)
+                        }
+                        if (userassignedRoles.Count > 0)
+                        {
+                            foreach (var item in userassignedRoles.ToList())
                             {
-                                // add the role
-                                WriteToDiagnosticLog($"ManageUPFMProductUser - adding role for userPersonaId id - {userPersonaId}, RoleId - {role.RoleID}.");
-                                result = _userRoleRightRepository.InsertAssignedRoleToUser(userPersonaId: userPersonaId, roleId: role.RoleID, userId: _userClaims.UserId, deleteRole: false);
+                                //add the role
+                                WriteToDiagnosticLog($"ManageUPFMProductUser - adding role for userPersonaId id - {userPersonaId}, RoleId - {item}.");
+                                result = _userRoleRightRepository.InsertAssignedRoleToUser(userPersonaId: userPersonaId, roleId: item, userId: _userClaims.UserId, deleteRole: false);
                                 if (result.Id < 0)
                                 {
-                                    WriteToErrorLog($"ManageUPFMProductUser - Unable to add role for user with userPersonaId - {userPersonaId}, RoleId - {role.RoleID}");
+                                    WriteToErrorLog($"ManageUPFMProductUser - Unable to add role for user with userPersonaId - {userPersonaId}, RoleId - {item}");
                                     return result.ErrorMessage;
                                 }
                             }
+
                         }
+
                     }
 
                     if (userAssignProductPropertyRole.PropertyList != null && userAssignProductPropertyRole.PropertyList.Count > 0 && userAssignProductPropertyRole.PropertyList[0].ToUpper() == "ALL")
@@ -733,8 +746,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         var gbAllRoles = _productRepository.ListRolesForProductByParty(userPersona.OrganizationPartyId, productIdList, _productId) ?? new List<ProductRole>();
                         if (gbAllRoles != null)
                         {
-                            role.RoleID = long.Parse(productPropertyRole.RoleList[0]);
-                            if (gbAllRoles.Any(r => long.Parse(r.ID) == role.RoleID && (r.accessAllProperties)))
+                            // role.RoleID = long.Parse(productPropertyRole.RoleList[0]);
+
+                            //if (gbAllRoles.Any(r => long.Parse(r.ID) == role.RoleID && (r.accessAllProperties)))
+                            if (gbAllRoles.Any(r => userassignedRoles.Contains(long.Parse(r.ID)) && (r.accessAllProperties)))
                             {
                                 userAssignProductPropertyRole.PropertyList = new List<string> { "-1" };
                             }
