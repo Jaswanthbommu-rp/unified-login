@@ -1153,7 +1153,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             if (response.ErrorMessage.Length == 0)
             {
                 var orgName = GetOrganization(companyInstanceID)?.Name;
-                var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} created a new property, {property.Name} with ID {response.Id} in the {property.Domain} domain for {orgName}";
+                var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} created a new property, {property.Name} with ID {property.InstanceId} in the {property.Domain} domain for {orgName}";
                 LogAuditActivity(LogActivityTypeConstants.PROPERTY_CREATED, LogActivityCategoryType.CompanySetup, message);
 
                 bool booksResponse = AddPropertyToBooks(property, companyInstanceID);
