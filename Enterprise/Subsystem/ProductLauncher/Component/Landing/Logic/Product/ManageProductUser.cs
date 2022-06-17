@@ -275,6 +275,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     var productInternalSetting = productSettings.FirstOrDefault(item => item.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase));
                     var integrationType = _integrationTypeFactory.GetIntegrationTypeForProductId(productUser.ProductId);
 
+                    //Company and product useprimary property turned on, for legecy products store primary properties in propertyinstancemapping table and turn on useprimaryproperties persona level
                     if (integrationType == ProductIntegrationTypeEnum.Legacy && OrgUsePrimaryProperties.Trim().Equals("1") && productInternalSetting.Value.Trim().Equals("1"))
                     {
                         foreach (var rolePropertyList in rolePrimaryPropDictionary)
@@ -283,11 +284,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             SavePersonaProductPrimaryProperties(thisProductUserPrimaryProperty, productUser.AssignUserPersonaId, rolePropertyList.Key, rolePropertyList.Value, productUser.InputJson);
                         }
                     }
-
+                    //Company and product useprimary property turned on, for UPFM products  turn on useprimaryproperties persona level setting
+                    if (integrationType == ProductIntegrationTypeEnum.UPFM && OrgUsePrimaryProperties.Trim().Equals("1") && productInternalSetting.Value.Trim().Equals("1"))
+                    {
+                        foreach (var rolePropertyList in rolePrimaryPropDictionary)
+                        {
+                            var thisProductUserPrimaryProperty = usePrimaryPropertyFlags.FirstOrDefault(p => p.Key == rolePropertyList.Key).Value;
+                            UpdateProductPrimaryPropertyProductStatus(productUser.AssignUserPersonaId, productUser.ProductId, thisProductUserPrimaryProperty == true ? 1 : 0);
+                        }
+                    }
+                    //Company and product useprimary property turned off, then translate selected product properties and save in staging table
                     if (OrgUsePrimaryProperties != null && OrgUsePrimaryProperties.Trim() == "0")
                     {                        
                         //call apicore kafka publish
-                         SyncUserProductProperties(productUser.ProductId, productUser.AssignUserPersonaId, productUser.CreateUserPersonaId);
+                        if (productUser.ProductId != (int)ProductEnum.SalesForce)
+                        {
+                            SyncUserProductProperties(productUser.ProductId, productUser.AssignUserPersonaId, productUser.CreateUserPersonaId);
+                        }                         
                     }                    
                 }
             }

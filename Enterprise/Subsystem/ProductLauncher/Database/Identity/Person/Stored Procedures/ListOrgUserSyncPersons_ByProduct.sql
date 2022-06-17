@@ -214,7 +214,7 @@ BEGIN
 			   FROM @ValidPersona F  
 			   LEFT OUTER JOIN [Enterprise].[UserSyncJob_V2] USJ ON  
 				F.PersonaId = USJ.UserPersonaId AND USJ.UserSyncJobTypeId = 2  
-			   LEFT OUTER JOIN Enterprise.UserSyncJobTask_V2 USJT ON  
+			   INNER JOIN Enterprise.UserSyncJobTask_V2 USJT ON  
 				USJ.UserSyncJobId = USJT.UserSyncJobId AND USJT.Source = @ProductSource  		  
 		),
 	   CTE_UserPropertiesSynced(PersonaId,LastSyncDate )
