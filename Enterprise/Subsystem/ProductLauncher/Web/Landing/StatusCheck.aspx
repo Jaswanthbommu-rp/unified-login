@@ -235,7 +235,7 @@
 		Response.Write($"<th>Server</th>" + Environment.NewLine);
 		Response.Write($"<th>Status</th>" + Environment.NewLine);
 		Response.Write($"<th>Actions not logged</th>" + Environment.NewLine);
-		foreach (var serviceName in serviceListByEnvironment)
+		foreach (var serviceName in serviceListByEnvironment.Distinct())
 		{
 			Response.Write($"<th>{serviceName}</th>" + Environment.NewLine);
 		}
@@ -321,7 +321,7 @@
 					#region services
 
 
-					foreach (string serviceName in serviceListByEnvironment)
+					foreach (string serviceName in serviceListByEnvironment.Distinct())
 					{
 						Response.Write("<td>");
 						if (resultList.ContainsKey("services"))
