@@ -634,7 +634,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             string loginUri = productRedirectUrl.RedirectUrl;
 
-            AddActivityLog((int) product);
+
 
             response.IsRedirect = true;
             response.RedirectUrl = client.CreateAuthorizeUrl(productName, responseType, scopesForAuth,
