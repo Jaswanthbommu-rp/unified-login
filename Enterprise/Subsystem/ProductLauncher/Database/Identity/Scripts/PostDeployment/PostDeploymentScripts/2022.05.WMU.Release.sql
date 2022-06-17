@@ -27,16 +27,3 @@ BEGIN
 END
 
 GO 
-
-IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'IsAnswerAutomation')
-BEGIN
-	DECLARE @settingTypeId INT = 0;
-	
-	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
-	VALUES ('IsAnswerAutomation', 'Answer Automation check flag is required to verify whether product is Answer automation', 0);
-
-	SELECT @settingTypeId = ProductSettingTypeId FROM Enterprise.ProductSettingType WHERE NAME = 'IsAnswerAutomation'
-	EXEC Enterprise.SetProductSetting 0, 78, @settingTypeId, N'0'
-END
-
-GO
