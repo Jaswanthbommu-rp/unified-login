@@ -699,7 +699,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				List<CompanySetup> companyList = _manageOrganization.GetCompanyList(persona.Organization.Name, 0, null, 0, new Dictionary<object, object>());
 				isRealpageAccessUser = companyList.Where(a => a.RealPageAccessUser == productUserGbLogin.LoginName).Distinct().Count() > 0;
 
-				if (string.IsNullOrEmpty(productUserName) && isRealpageAccessUser)
+				if (isRealpageAccessUser)
 				{
 					WriteToDiagnosticLog(
 						$"ManageProductAssetOptimization.ManageAssetOptimizationUser Begining realpage access user creation process with editorPersona id - {editorPersonaId} and userPersonaId {productUserPersonaId}.");
@@ -742,7 +742,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					aoUser.Model = modelList;
 
 					//Create user method with AO Special Editor user
-					returnResult = PostApi($"{_apiEndPoint}user/profile/{aOSpecialEditorUser.ToLower()}/", aoUser);
+					if (string.IsNullOrEmpty(productUserName))
+					{
+						returnResult = PostApi($"{_apiEndPoint}user/profile/{aOSpecialEditorUser.ToLower()}/", aoUser);
+					}
+					else
+					{
+						returnResult = PutApi($"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/", aoUser);
+					}
 					if (string.IsNullOrEmpty(returnResult))
 					{
 						// Create GB Product association - for realpage access user
