@@ -1,4 +1,4 @@
-﻿
+﻿GO
 --User Story 624898 Independent Facilities Product Integrations - standalone
 
 Declare @UserId BigINT;
