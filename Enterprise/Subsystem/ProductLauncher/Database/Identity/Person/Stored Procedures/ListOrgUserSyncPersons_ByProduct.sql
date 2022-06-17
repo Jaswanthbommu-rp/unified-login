@@ -196,7 +196,7 @@ BEGIN
 			Select pl.PersonaId, COUNT(PM.PropertyInstanceId)
 			FROM	@ValidPersona pl
 			INNER JOIN Enterprise.PropertyInstanceMapping PM ON
-				PM.PersonaId = pl.PersonaId And PM.ProductId = @ProductId
+				PM.PersonaId = pl.PersonaId And PM.ProductId = @ProductId AND PM.PropertyInstanceId <> 0
 			GROUP BY pl.PersonaId
 		  ),
 	   CTE_PersonaMatchedPrimaryProperties(PersonaId,MatchedCount) 
@@ -204,7 +204,7 @@ BEGIN
 			Select pl.PersonaId, COUNT(PM.PropertyInstanceId)
 			FROM	@ValidPersona pl
 			INNER JOIN Enterprise.UserSyncProductPrimaryPropertiesStaging PM ON
-				PM.PersonaId = pl.PersonaId And PM.ProductId = @ProductId AND PM.PropertyInstanceId <> '0'
+				PM.PersonaId = pl.PersonaId And PM.ProductId = @ProductId AND PM.PropertyInstanceId <> 0
 			GROUP BY pl.PersonaId
 		  ),
 	    CTE_UserSyncJobStatus(PersonaId,StatusId,LastRefreshDate, RowRank )  

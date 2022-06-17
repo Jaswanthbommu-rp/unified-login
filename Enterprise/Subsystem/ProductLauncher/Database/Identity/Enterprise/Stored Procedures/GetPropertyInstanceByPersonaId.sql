@@ -28,5 +28,6 @@ BEGIN
 		AND	pim.ProductId = @ProductID
 		AND	pim.Active = 1
 		AND pi1.IsDeleted = 0
+		AND pim.PropertyInstanceId <> 0
 	ORDER BY Name
 END

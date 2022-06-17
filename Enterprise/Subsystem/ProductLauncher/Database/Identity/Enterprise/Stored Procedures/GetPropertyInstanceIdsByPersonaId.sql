@@ -9,10 +9,8 @@ BEGIN
 	FROM 
 		Enterprise.PropertyInstanceMapping pim 
 
-	WHERE
-		pim.PersonaId = @PersonaId 
-		AND
-		pim.ProductId = @ProductID
-		AND
-		pim.Active = 1
+	WHERE	pim.PersonaId = @PersonaId 
+	AND		pim.ProductId = @ProductID
+	AND		pim.Active = 1
+	AND     pim.PropertyInstanceId <> 0
 END
