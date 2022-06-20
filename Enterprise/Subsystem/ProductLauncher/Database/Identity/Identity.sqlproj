@@ -1265,14 +1265,15 @@
     <Build Include="Enterprise\Stored Procedures\GetUserSyncJobTopics.sql" />
     <Build Include="Enterprise\Stored Procedures\GetUserSyncJobTaskTopicName.sql" />
     <Build Include="Enterprise\Stored Procedures\AddPersonaProductMatchedPrimaryProperties.sql" />
-	<Build Include="Person\Stored Procedures\UserSyncPersonsWithPropertiesExport.sql" />
+    <Build Include="Person\Stored Procedures\UserSyncPersonsWithPropertiesExport.sql" />
     <Build Include="Enterprise\Tables\PersonaProductPropertiesSyncHistory.sql" />
     <Build Include="Enterprise\SyncPersonaList.sql" />
     <Build Include="Enterprise\Stored Procedures\AddUpdatePersonaProductPropertyInstanceMapping.sql" />
-	<Build Include="Person\BookPropertyOperatorType.sql" />
+    <Build Include="Person\BookPropertyOperatorType.sql" />
     <Build Include="Person\Stored Procedures\ListOrgUserSyncPersons_ByProduct.sql" />
     <Build Include="Enterprise\Stored Procedures\GetOrganizationSettingValueByPersonaId.sql" />
     <Build Include="Enterprise\Stored Procedures\SavePersonaProductProperties.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetUserPropertiesSyncJobTask.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

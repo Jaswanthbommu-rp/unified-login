@@ -1,6 +1,7 @@
 ﻿CREATE PROCEDURE [Enterprise].[AddUpdatePersonaProductPropertyInstanceMapping] (
 @Personas	[Enterprise].[SyncPersonaList] READONLY,
-@ProductId int)
+@ProductId int,
+@RealPageId uniqueidentifier )
 AS
 BEGIN
 	SET NOCOUNT ON
@@ -8,20 +9,11 @@ BEGIN
 	declare @MAX_ID INT
 	declare @Current_ID INT = 1
 	Declare @UPFMProductId int = 3
+	Declare @PartyId bigint
+	Declare @OrgSettingValue varchar(2)
 	DECLARE @SyncUserProductPrimaryPropertiesForPlatformProduct varchar(2);
 	BEGIN TRY
-
-			SELECT	@SyncUserProductPrimaryPropertiesForPlatformProduct = ISNULL(ps.Value,'0')				
-			FROM	Enterprise.GlobalProductConfiguration gpc
-					JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId
-					JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId
-					JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId
-			WHERE  gpc.ProductId = @ProductId
-			AND (gpc.ThruDate IS NULL)
-			AND ( pc.ThruDate IS NULL)
-			AND ( ps.ThruDate IS NULL)
-			And PST.Name = 'SyncUserProductPrimaryPropertiesForPlatformProduct'
-
+		
 		DECLARE @personaList TABLE (
 			Id int identity,
 			PersonaId bigint
@@ -29,6 +21,31 @@ BEGIN
 
 		Insert Into @personaList(PersonaId)
 		Select PersonaId From @Personas
+		
+		SELECT @PartyId = PartyId      
+		FROM  Enterprise.Party      
+		WHERE RealPageId = @RealPageId  
+
+		SELECT @OrgSettingValue = ISNULL(MS.Value,'0')            
+			FROM Enterprise.MasterConfigurationSetting mcs
+			INNER JOIN Enterprise.MasterConfiguration mc ON mc.MasterConfigurationId = mcs.MasterConfigurationId
+			INNER JOIN Enterprise.MasterSetting ms ON mcs.MasterSettingId = ms.MasterSettingId
+			INNER JOIN Enterprise.MasterSettingType mst ON mst.MasterSettingTypeId = ms.MasterSettingTypeId
+			INNER JOIN Enterprise.MasterConfigurationType mct ON mct.MasterConfigurationTypeId = mst.MasterConfigurationTypeId
+		WHERE MST.Name = 'EnablePrimaryPropertiesAndEnterpriseRoles'
+		AND MCT.Name = 'Organization'
+		AND  MC.AttributeId = @PartyId;
+
+		SELECT	@SyncUserProductPrimaryPropertiesForPlatformProduct = ISNULL(ps.Value,'0')				
+		FROM	Enterprise.GlobalProductConfiguration gpc
+				JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId
+				JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId
+				JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId
+		WHERE  gpc.ProductId = @ProductId
+		AND (gpc.ThruDate IS NULL)
+		AND ( pc.ThruDate IS NULL)
+		AND ( ps.ThruDate IS NULL)
+		And PST.Name = 'SyncUserProductPrimaryPropertiesForPlatformProduct'		
 
 		SELECT @MAX_ID = max(Id) from @personaList
 
@@ -66,9 +83,9 @@ BEGIN
 				UPDATE Enterprise.PersonaProductPropertiesSyncHistory SET ProductPropertiesSyncDate = @Now
 				WHERE PersonaId = @personaId
 				AND ProductId = @ProductId
-			END
+			END			
 
-			IF (@SyncUserProductPrimaryPropertiesForPlatformProduct = '1')
+			IF (@SyncUserProductPrimaryPropertiesForPlatformProduct = '1' AND @OrgSettingValue = '0')
 			BEGIN
 				INSERT INTO Enterprise.PropertyInstanceMapping (
 						PersonaId,
