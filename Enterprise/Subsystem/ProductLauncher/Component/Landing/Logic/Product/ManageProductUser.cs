@@ -272,7 +272,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var productInternalSetting = productSettings.FirstOrDefault(item => item.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase));
                 var integrationType = _integrationTypeFactory.GetIntegrationTypeForProductId(productUser.ProductId);
 
-                WriteToLog(LogEventLevel.Debug, $"ManageProductUser.CreateProductUser: User Sync Request process settings organization use primaryproperties: {OrgUsePrimaryProperties} product use primaryproperties: {productInternalSetting.Value.Trim()} integrationType: {integrationType}");
+                WriteToLog(LogEventLevel.Debug, $"ManageProductUser.CreateProductUser: User Sync Request process for product: {productUser.ProductId} settings and persona: {productUser.AssignUserPersonaId}, organization use primaryproperties: {OrgUsePrimaryProperties} product use primaryproperties: {productInternalSetting.Value.Trim()} integrationType: {integrationType}");
 
                 //Company and product useprimary property turned on, for legecy products store primary properties in propertyinstancemapping table and turn on useprimaryproperties persona level
                 if (integrationType == ProductIntegrationTypeEnum.Legacy && OrgUsePrimaryProperties.Trim().Equals("1") && productInternalSetting.Value.Trim().Equals("1"))
