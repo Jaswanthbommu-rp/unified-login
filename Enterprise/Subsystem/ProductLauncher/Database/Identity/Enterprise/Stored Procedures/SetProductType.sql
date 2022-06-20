@@ -28,7 +28,9 @@ BEGIN
    SET @ProductTypeId = (SELECT MAX(productTypeid) + 1 'ProductTypeId'  FROM [Enterprise].[ProductType]    
    WHERE ParentProductTypeId = @ParentProductTypeId)          
   end      
-       
+
+  if(@ProductTypeId is not null)      
+  begin       
   INSERT INTO [Enterprise].[ProductType]      
   (        
    [ProductTypeId]        
@@ -46,7 +48,8 @@ BEGIN
    ,@Name        
    ,@Description        
    ,@ProductTypeGUID        
-  )        
+  )
+  end        
   end      
   --if product exists update      
   else      
