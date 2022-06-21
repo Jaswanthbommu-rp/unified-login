@@ -63,8 +63,7 @@ BEGIN
                 (@PersonaID,
                  @PropertyInstanceID,
                  @ProductID
-                );
-                SELECT '' AS ErrorMessage;
+                );                
         END TRY
         BEGIN CATCH
                 DECLARE @ErrorLogID INT;
@@ -77,4 +76,5 @@ BEGIN
         END CATCH;
 		set @Current_ID = @Current_ID + 1
 	end
+    SELECT	1 AS Id,'' AS ErrorMessage;
 END

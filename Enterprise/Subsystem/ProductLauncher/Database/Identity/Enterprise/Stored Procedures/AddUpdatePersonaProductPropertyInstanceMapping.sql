@@ -85,7 +85,7 @@ BEGIN
 				AND ProductId = @ProductId
 			END			
 
-			IF (@SyncUserProductPrimaryPropertiesForPlatformProduct = '1' AND @OrgSettingValue = '0')
+			IF ((@SyncUserProductPrimaryPropertiesForPlatformProduct = '1' AND  @OrgSettingValue = '0') OR (@OrgSettingValue = '1'))
 			BEGIN
 				INSERT INTO Enterprise.PropertyInstanceMapping (
 						PersonaId,
