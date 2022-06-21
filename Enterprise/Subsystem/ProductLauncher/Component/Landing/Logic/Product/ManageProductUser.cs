@@ -278,7 +278,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Success);
 
                 //call apicore kafka publish to sync translated properties
-                if (productUser.ProductId != (int)ProductEnum.SalesForce)
+                var roleProp = JsonConvert.DeserializeObject<RolePropertyList>(productUser.InputJson);
+                if (productUser.ProductId != (int)ProductEnum.SalesForce && roleProp.IsAssigned)
                 {
                     SyncUserProductProperties(productUser.ProductId, productUser.AssignUserPersonaId, productUser.CreateUserPersonaId);
                 }
