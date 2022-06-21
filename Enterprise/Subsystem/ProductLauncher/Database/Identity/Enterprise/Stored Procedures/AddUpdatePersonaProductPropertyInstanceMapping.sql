@@ -60,6 +60,7 @@ BEGIN
 				   PropertyInstanceId
 			FROM [Enterprise].[UserSyncProductPrimaryPropertiesStaging]
 			WHERE PersonaId = @personaId
+			AND PropertyInstanceId <> 0
 			AND ProductId = @ProductId
 			EXCEPT
 			SELECT PersonaId,ProductId,PropertyInstanceId
@@ -93,6 +94,7 @@ BEGIN
 				FROM Enterprise.PropertyInstanceMapping
 				WHERE PersonaId = @personaId
 				AND ProductId = @ProductId
+				AND PropertyInstanceId <> 0
 				AND ThruDate IS NULL
 				AND PropertyInstanceId NOT IN (SELECT Distinct PropertyInstanceId	FROM	Enterprise.PropertyInstanceMapping
 					WHERE PersonaId = @personaId

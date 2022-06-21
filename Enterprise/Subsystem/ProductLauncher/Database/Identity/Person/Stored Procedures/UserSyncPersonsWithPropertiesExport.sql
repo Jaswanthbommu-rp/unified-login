@@ -209,7 +209,7 @@ BEGIN
    Select pl.PersonaId, COUNT(PM.PropertyInstanceId)        
    FROM @ValidPersona pl        
    INNER JOIN Enterprise.UserSyncProductPrimaryPropertiesStaging PM ON        
-    PM.PersonaId = pl.PersonaId And PM.ProductId = @ProductId        
+    PM.PersonaId = pl.PersonaId And PM.ProductId = @ProductId  AND PM.PropertyInstanceId <> 0       
    GROUP BY pl.PersonaId        
  ),        
     CTE_UserSyncJobStatus(PersonaId,StatusId,LastRefreshDate, RowRank )        
@@ -248,17 +248,17 @@ BEGIN
    ),      
    CTE_ProductSite(PersonaId, SiteId, upfmpropertyname, upfminstanceid)      
    AS(      
-   select p.personaId, s.ProductPropertyId, pi1.Name, pi1.InstanceId      
-  from @ValidPersona p      
-  left outer join enterprise.UserSyncProductPrimaryPropertiesStaging s on p.PersonaId = s.personaId       
-  LEFT OUTER JOIN enterprise.PropertyInstance pi1 ON pi1.PropertyInstanceId = s.PropertyInstanceId      
-  WHERE s.productId = @productId      
+       select p.personaId, s.ProductPropertyId, pi1.Name, pi1.InstanceId      
+       from @ValidPersona p      
+        LEFT OUTER JOIN enterprise.UserSyncProductPrimaryPropertiesStaging s on p.PersonaId = s.personaId  AND s.PropertyInstanceId <> 0      
+        INNER JOIN enterprise.PropertyInstance pi1 ON pi1.PropertyInstanceId = s.PropertyInstanceId      
+       WHERE s.productId = @productId      
    )      
         
    INSERT INTO #UserSync        
    Select      
-  pe.UserType,      
-  pe.PersonaId,               
+     pe.UserType,      
+     pe.PersonaId,               
      iulp.UserLoginPersonaId,        
      ul.UserId,         
      p.FirstName,        
@@ -293,7 +293,7 @@ BEGIN
    LEFT JOIN CTE_PersonaMatchedPrimaryProperties CPMP ON        
   pe.PersonaId = CPMP.PersonaId        
    LEFT JOIN CTE_UserSyncJobStatus CUSJ ON        
-  pe.PersonaId = CUSJ.PersonaId        
+  pe.PersonaId = CUSJ.PersonaId  AND CUSJ.RowRank = 1      
    LEFT JOIN CTE_UserPropertiesSynced CUPS ON        
   pe.PersonaId = CUPS.PersonaId       
    LEFT JOIN CTE_UserOperator o ON      
