@@ -275,14 +275,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     var thisProductUserPrimaryProperty = usePrimaryPropertyFlags.FirstOrDefault(p => p.Key == rolePropertyList.Key).Value;
                     SavePersonaProductPrimaryProperties(thisProductUserPrimaryProperty, productUser.AssignUserPersonaId, rolePropertyList.Key, rolePropertyList.Value, productUser.InputJson);
                 }
+                isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Success);
 
-                //call apicore kafka publish to sunc translated properties
+                //call apicore kafka publish to sync translated properties
                 if (productUser.ProductId != (int)ProductEnum.SalesForce)
                 {
                     SyncUserProductProperties(productUser.ProductId, productUser.AssignUserPersonaId, productUser.CreateUserPersonaId);
                 }
-
-                isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Success);
+                
             }
             else
             {
@@ -974,58 +974,69 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
        
         private void SyncUserProductProperties(int productId, long personaId, long editorPersonaId)
         {
-            var productInternalSettingList = GetProductInternalSettings(3);
-            var baseApiUri = productInternalSettingList.First(a => a.Name.Equals("UnifiedLoginApiBaseUri", StringComparison.OrdinalIgnoreCase)).Value;            
-            string ulInternalClientTokenScopes = productInternalSettingList.First(a => a.Name.Equals("ULInternalClientTokenScopes", StringComparison.OrdinalIgnoreCase)).Value;
-           
-            var uri = $"/apicore/v2/UserSync?syncJobType=2&forceCreate=false&editorPersonaId={editorPersonaId}";
-
-            var products = _productRepository.GetAllProducts();
-            string productCode = ProductEnumHelper.GetBooksSourceCodeByProductId(productId, products);
-
-            List<UserSyncRequest> userSyncRequest = new List<UserSyncRequest>();
-            List<string> sources = new List<string>();
-            sources.Add(productCode);
-            UserSyncRequest syncRequest = new UserSyncRequest
-            {
-                PersonaId = personaId,
-                Sources = sources,
-                ForceCreate = false
-            };
-            userSyncRequest.Add(syncRequest);
-
-
-            var ulClientToken = _tokenHelper.GetUnifiedLoginServerToken(ulInternalClientTokenScopes);
             
-            using (var httpClient = new HttpClient())
+            try
             {
-                httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", ulClientToken);
-                httpClient.BaseAddress = new Uri(baseApiUri);
+                var productInternalSettingList = GetProductInternalSettings(3);
+                var baseApiUri = productInternalSettingList.First(a => a.Name.Equals("UnifiedLoginApiBaseUri", StringComparison.OrdinalIgnoreCase)).Value;
+                string ulInternalClientTokenScopes = productInternalSettingList.First(a => a.Name.Equals("ULInternalClientTokenScopes", StringComparison.OrdinalIgnoreCase)).Value;
 
-                var payload = new StringContent(JsonConvert.SerializeObject(userSyncRequest), Encoding.UTF8, "application/json");
+                var uri = $"/apicore/v2/UserSync?syncJobType=2&forceCreate=false&editorPersonaId={editorPersonaId}";
+
+                var products = _productRepository.GetAllProducts();
+                string productCode = ProductEnumHelper.GetBooksSourceCodeByProductId(productId, products);
+
+                List<UserSyncRequest> userSyncRequest = new List<UserSyncRequest>();
+                List<string> sources = new List<string>();
+                sources.Add(productCode);
+                UserSyncRequest syncRequest = new UserSyncRequest
+                {
+                    PersonaId = personaId,
+                    Sources = sources,
+                    ForceCreate = false
+                };
+                userSyncRequest.Add(syncRequest);
+
                 Dictionary<string, object> logData = new Dictionary<string, object>()
                 {
                     {"UserSyncRequest",  userSyncRequest}
                 };
-                WriteToLog(LogEventLevel.Debug, $"ManageProductUser.SyncUserProductProperties: Sending User Sync Request from {httpClient.BaseAddress} {uri}", logData);
-                var request = new HttpRequestMessage
-                {
-                    Method = HttpMethod.Post,
-                    Content = payload,
-                    RequestUri = new Uri(String.Concat(baseApiUri,uri)),
-                };
-                var response = httpClient.SendAsync(request).Result;
-                var responseContent = response.Content.ReadAsStringAsync().Result;
 
-                if (response != null && !response.IsSuccessStatusCode)
+                var ulClientToken = _tokenHelper.GetUnifiedLoginServerToken(ulInternalClientTokenScopes);
+                logData.Add("UlClientToken", ulClientToken);
+                using (var httpClient = new HttpClient())
                 {
-                    Dictionary<string, object> logErrorData = new Dictionary<string, object>()
+                    httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", ulClientToken);
+                    httpClient.BaseAddress = new Uri(baseApiUri);
+
+                    var payload = new StringContent(JsonConvert.SerializeObject(userSyncRequest), Encoding.UTF8, "application/json");
+
+                    WriteToLog(LogEventLevel.Debug, $"ManageProductUser.SyncUserProductProperties: Sending User Sync Request from {baseApiUri} {uri}", logData);
+                    var request = new HttpRequestMessage
+                    {
+                        Method = HttpMethod.Post,
+                        Content = payload,
+                        RequestUri = new Uri(String.Concat(baseApiUri, uri)),
+                    };
+                    var response = httpClient.SendAsync(request).Result;
+                    var responseContent = response.Content.ReadAsStringAsync().Result;
+
+                    if (response != null && !response.IsSuccessStatusCode)
+                    {
+                        Dictionary<string, object> logErrorData = new Dictionary<string, object>()
                     {
                         {"UserSyncRequest responseContent",  responseContent}
                     };
-                    WriteToLog(LogEventLevel.Error, $"ManageProductUser.SyncUserProductProperties: Error while User Sync Request.", logErrorData);
+                        WriteToLog(LogEventLevel.Error, $"ManageProductUser.SyncUserProductProperties: Error while User Sync Request.", logErrorData);
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+                WriteToLog(LogEventLevel.Error,
+                    $"{GetType()} - Error while posting SyncUserProductProperties for persona {personaId} and product {productId}.", exception: ex);
+            }
+            
         }
         #endregion
         /// <summary>
