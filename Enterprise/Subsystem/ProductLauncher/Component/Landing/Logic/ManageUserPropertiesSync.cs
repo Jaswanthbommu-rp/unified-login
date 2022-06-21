@@ -124,22 +124,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
                
                 var productPropertyType = productResult.Records[0].GetType();
+                var instanceExists = new TranslatePropertyInstanceAttribute();
                 if (productPropertyType == typeof(ProductProperty))
                 {
                     var productList = productResult.Records.Cast<ProductProperty>();
+                    
                     foreach (var property in productList)
                     {                        
                         if (property.IsAssigned == true)
                         {
-                            var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.ID));
+                            instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.ID));
+                            if (instanceExists == null)
+                            {
+                                instanceExists = translatedData.Data?.Attributes.FirstOrDefault(o => o.PropertyInstanceSourceId == property.InstanceId);
+                            }
                             propertiesStagingData.Add(new SuggestedProperty
                             {
                                 ProductPropertyId = long.Parse(property.ID),
                                 PropertyInstanceId = instanceExists != null ? Guid.Parse(instanceExists.PropertyInstanceSourceId) : Guid.Empty,
                                 PropertyName = property.Name
                             });
+                            instanceExists = null;
                         }                        
                     }
+                    
                 }
                 else if (productPropertyType == typeof(ACProperty))
                 {
@@ -147,13 +155,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     {
                         if (property.IsAssigned == true)
                         {
-                            var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.Id));
+                            instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.Id));
+                            if (instanceExists == null)
+                            {
+                                instanceExists = translatedData.Data?.Attributes.FirstOrDefault(o => o.PropertyInstanceSourceId == property.InstanceId);
+                            }
                             propertiesStagingData.Add(new SuggestedProperty
                             {
                                 ProductPropertyId = long.Parse(property.Id),
                                 PropertyInstanceId = instanceExists != null ? Guid.Parse(instanceExists.PropertyInstanceSourceId) : Guid.Empty,
                                 PropertyName = property.PropertyName
                             });
+                            instanceExists = null;
                         }
                     }
                 }
@@ -163,13 +176,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     {                        
                         if (property.IsAssigned == true)
                         {
-                            var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.AssetID));
+                            instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.AssetID));
+                            if (instanceExists == null)
+                            {
+                                instanceExists = translatedData.Data?.Attributes.FirstOrDefault(o => o.PropertyInstanceSourceId == property.InstanceId);
+                            }
                             propertiesStagingData.Add(new SuggestedProperty
                             {
                                 ProductPropertyId = long.Parse(property.AssetID),
                                 PropertyInstanceId = instanceExists != null ? Guid.Parse(instanceExists.PropertyInstanceSourceId) : Guid.Empty,
                                 PropertyName = property.Name
                             });
+                            instanceExists = null;
                         }
                     }
                 }
@@ -179,13 +197,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     {
                         if (property.IsAssigned == true)
                         {
-                            var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.GetPropertyId.ToString()));
+                            instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.GetPropertyId.ToString()));
+                            if (instanceExists == null)
+                            {
+                                instanceExists = translatedData.Data?.Attributes.FirstOrDefault(o => o.PropertyInstanceSourceId == property.InstanceId);
+                            }
                             propertiesStagingData.Add(new SuggestedProperty
                             {
                                 ProductPropertyId = long.Parse(property.GetPropertyId.ToString()),
                                 PropertyInstanceId = instanceExists != null ? Guid.Parse(instanceExists.PropertyInstanceSourceId) : Guid.Empty,
                                 PropertyName = property.GetName
                             });
+                            instanceExists = null;
                         }
                     }
                 }
@@ -195,13 +218,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     {
                         if (property.IsAssigned == true)
                         {
-                            var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.Id.ToString()));
+                            instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.Id.ToString()));
+                            if (instanceExists == null)
+                            {
+                                instanceExists = translatedData.Data?.Attributes.FirstOrDefault(o => o.PropertyInstanceSourceId == property.InstanceId);
+                            }
                             propertiesStagingData.Add(new SuggestedProperty
                             {
                                 ProductPropertyId = long.Parse(property.Id.ToString()),
                                 PropertyInstanceId = instanceExists != null ? Guid.Parse(instanceExists.PropertyInstanceSourceId) : Guid.Empty,
                                 PropertyName = property.Name
                             });
+                            instanceExists = null;
                         }
                     }
                 }
@@ -211,13 +239,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     {
                         if (property.IsAssigned == true)
                         {
-                            var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.GetPropertyId));
+                            instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.GetPropertyId));
+                            if (instanceExists == null)
+                            {
+                                instanceExists = translatedData.Data?.Attributes.FirstOrDefault(o => o.PropertyInstanceSourceId == property.InstanceId);
+                            }
                             propertiesStagingData.Add(new SuggestedProperty
                             {
                                 ProductPropertyId = long.Parse(property.GetPropertyId),
                                 PropertyInstanceId = instanceExists != null ? Guid.Parse(instanceExists.PropertyInstanceSourceId) : Guid.Empty,
                                 PropertyName = property.GetName
                             });
+                            instanceExists = null;
                         }
                     }
                 }
@@ -227,13 +260,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     {
                         if (property.IsAssigned == true)
                         {
-                            var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.ID));
+                            instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.ID));
+                            if (instanceExists == null)
+                            {
+                                instanceExists = translatedData.Data?.Attributes.FirstOrDefault(o => o.PropertyInstanceSourceId == property.InstanceId);
+                            }
                             propertiesStagingData.Add(new SuggestedProperty
                             {
                                 ProductPropertyId = long.Parse(property.ID),
                                 PropertyInstanceId = instanceExists != null ? Guid.Parse(instanceExists.PropertyInstanceSourceId) : Guid.Empty,
                                 PropertyName = property.Name
                             });
+                            instanceExists = null;
                         }
                     }
                 }

@@ -26,15 +26,10 @@ BEGIN
 		FROM  Enterprise.Party      
 		WHERE RealPageId = @RealPageId  
 
-		SELECT @OrgSettingValue = ISNULL(MS.Value,'0')            
-			FROM Enterprise.MasterConfigurationSetting mcs
-			INNER JOIN Enterprise.MasterConfiguration mc ON mc.MasterConfigurationId = mcs.MasterConfigurationId
-			INNER JOIN Enterprise.MasterSetting ms ON mcs.MasterSettingId = ms.MasterSettingId
-			INNER JOIN Enterprise.MasterSettingType mst ON mst.MasterSettingTypeId = ms.MasterSettingTypeId
-			INNER JOIN Enterprise.MasterConfigurationType mct ON mct.MasterConfigurationTypeId = mst.MasterConfigurationTypeId
-		WHERE MST.Name = 'EnablePrimaryPropertiesAndEnterpriseRoles'
-		AND MCT.Name = 'Organization'
-		AND  MC.AttributeId = @PartyId;
+		SELECT  @OrgSettingValue = ISNULL(MappingValue,0)  
+		FROM [Settings].[OrganizationSettings] 
+        WHERE  MappingName = 'PrimaryPropertyEnterpriseRole'
+		AND PartyId = @PartyId
 
 		SELECT	@SyncUserProductPrimaryPropertiesForPlatformProduct = ISNULL(ps.Value,'0')				
 		FROM	Enterprise.GlobalProductConfiguration gpc
