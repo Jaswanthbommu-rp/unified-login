@@ -748,7 +748,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					}
 					else
 					{
-						returnResult = PutApi($"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/", aoUser);
+						returnResult = PutApi($"{_apiEndPoint}user/profile/{aOSpecialEditorUser.ToLower()}/", aoUser);
 					}
 					if (string.IsNullOrEmpty(returnResult))
 					{
