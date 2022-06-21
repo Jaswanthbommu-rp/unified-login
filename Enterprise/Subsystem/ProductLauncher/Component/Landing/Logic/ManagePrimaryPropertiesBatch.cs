@@ -135,7 +135,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 								productRoles = rolesResponse.Records?.Cast<ProductRole>().ToList();
 							}
 
-							var productBatchRecord = manageProductBatch.GetProductBatchRecord(batch.EditorUserPersonaId, batch.SubjectUserPersonaId, productRoles, propertiesResponse, rolesResponse, product.ProductId, true);
+							var productBatchRecord = manageProductBatch.GetProductBatchRecord(batch.EditorUserPersonaId, batch.SubjectUserPersonaId, productRoles, propertiesResponse, rolesResponse, product.ProductId, usePrimaryProperties);
 							if (integrationType == ProductIntegrationTypeEnum.UPFM)
 							{
 								var currentProductPropertiesData = manageProductBatch.GetExistingUserPrimaryPropertiesData(batch.SubjectUserPersonaId, product.ProductId);
