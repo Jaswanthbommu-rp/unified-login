@@ -571,7 +571,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 						new FilterTableType()
 						{
 							ColumnName = f.Key,
-							SearchValue = f.Value.Substring(0, Math.Min(128, f.Value.Length))
+							SearchValue = f.Value
 						}
 					);
 				}
