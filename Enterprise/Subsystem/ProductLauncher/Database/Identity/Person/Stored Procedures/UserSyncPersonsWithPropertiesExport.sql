@@ -169,7 +169,8 @@ BEGIN
     INNER JOIN Enterprise.StatusType est ON ulp.StatusTypeId = est.StatusTypeId  And est.StatusTypeId <> 24 -- Disabled users filter      
     WHERE rt.PartyRoleTYpeId IN (401,404,405) --user,User (No Email),external            
     AND  ulp.OrganizationPartyId = @PartyId         
-    AND pec.StatusTypeId = 8            
+    AND pec.StatusTypeId = 8    
+    AND ulp.IsRPEmployee = 0
     AND  pec.ProductId = @ProductId        
     AND  ((@NOW >= p.FromDate AND p.ThruDate IS NULL) OR (@NOW BETWEEN p.FromDate AND p.ThruDate))        
     AND  ((@NOW >= pec.FromDate AND pec.ThruDate IS NULL) OR (@NOW BETWEEN pec.FromDate AND pec.ThruDate))      
@@ -189,7 +190,8 @@ BEGIN
     INNER JOIN Enterprise.StatusType est ON ulp.StatusTypeId = est.StatusTypeId  And est.StatusTypeId <> 24 -- Disabled users filter         
     WHERE rt.PartyRoleTYpeId = @filterPartyRoleTypeId           
     AND  ulp.OrganizationPartyId = @PartyId        
-    AND pec.StatusTypeId = 8            
+    AND pec.StatusTypeId = 8 
+    AND ulp.IsRPEmployee = 0
     AND  pec.ProductId = @ProductId        
     AND  ((@NOW >= p.FromDate AND p.ThruDate IS NULL) OR (@NOW BETWEEN p.FromDate AND p.ThruDate))    
     AND  ((@NOW >= pec.FromDate AND pec.ThruDate IS NULL) OR (@NOW BETWEEN pec.FromDate AND pec.ThruDate))            

@@ -166,6 +166,7 @@ BEGIN
 		  WHERE rt.PartyRoleTYpeId IN (401,404,405) --user,User (No Email),external    
 		  AND  ulp.OrganizationPartyId = @PartyId 
 		  AND pec.StatusTypeId = 8    
+		  AND ulp.IsRPEmployee = 0
 		  AND  pec.ProductId = @ProductId
 		  AND  ((@NOW >= p.FromDate AND p.ThruDate IS NULL) OR (@NOW BETWEEN p.FromDate AND p.ThruDate))      
 		  AND  ((@NOW >= pec.FromDate AND pec.ThruDate IS NULL) OR (@NOW BETWEEN pec.FromDate AND pec.ThruDate))    
@@ -186,6 +187,7 @@ BEGIN
 		  WHERE rt.PartyRoleTYpeId = @filterPartyRoleTypeId   
 		  AND  ulp.OrganizationPartyId = @PartyId
 		  AND pec.StatusTypeId = 8    
+		  AND ulp.IsRPEmployee = 0
 		  AND  pec.ProductId = @ProductId
 		  AND  ((@NOW >= p.FromDate AND p.ThruDate IS NULL) OR (@NOW BETWEEN p.FromDate AND p.ThruDate))      
 		  AND  ((@NOW >= pec.FromDate AND pec.ThruDate IS NULL) OR (@NOW BETWEEN pec.FromDate AND pec.ThruDate))    
