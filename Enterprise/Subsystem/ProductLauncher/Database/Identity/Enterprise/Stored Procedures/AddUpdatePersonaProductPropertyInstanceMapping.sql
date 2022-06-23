@@ -10,8 +10,7 @@ BEGIN
 	declare @Current_ID INT = 1
 	Declare @UPFMProductId int = 3
 	Declare @PartyId bigint
-	Declare @OrgSettingValue varchar(2)
-	DECLARE @SyncUserProductPrimaryPropertiesForPlatformProduct varchar(2);
+	
 	BEGIN TRY
 		
 		DECLARE @personaList TABLE (
@@ -24,23 +23,7 @@ BEGIN
 		
 		SELECT @PartyId = PartyId      
 		FROM  Enterprise.Party      
-		WHERE RealPageId = @RealPageId  
-
-		SELECT  @OrgSettingValue = ISNULL(MappingValue,0)  
-		FROM [Settings].[OrganizationSettings] 
-        WHERE  MappingName = 'PrimaryPropertyEnterpriseRole'
-		AND PartyId = @PartyId
-
-		SELECT	@SyncUserProductPrimaryPropertiesForPlatformProduct = ISNULL(ps.Value,'0')				
-		FROM	Enterprise.GlobalProductConfiguration gpc
-				JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId
-				JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId
-				JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId
-		WHERE  gpc.ProductId = @ProductId
-		AND (gpc.ThruDate IS NULL)
-		AND ( pc.ThruDate IS NULL)
-		AND ( ps.ThruDate IS NULL)
-		And PST.Name = 'SyncUserProductPrimaryPropertiesForPlatformProduct'		
+		WHERE RealPageId = @RealPageId  		
 
 		SELECT @MAX_ID = max(Id) from @personaList
 
@@ -81,26 +64,25 @@ BEGIN
 				AND ProductId = @ProductId
 			END			
 
-			IF ((@SyncUserProductPrimaryPropertiesForPlatformProduct = '1' AND  @OrgSettingValue = '0') OR (@OrgSettingValue = '1'))
-			BEGIN
-				INSERT INTO Enterprise.PropertyInstanceMapping (
-						PersonaId,
-						ProductId,
-						PropertyInstanceId
-				)
-				SELECT @personaId,
-					   @UPFMProductId,
-					   PropertyInstanceId
-				FROM Enterprise.PropertyInstanceMapping
+			--platform properties add for product 3
+			INSERT INTO Enterprise.PropertyInstanceMapping (
+					PersonaId,
+					ProductId,
+					PropertyInstanceId
+			)
+			SELECT @personaId,
+					@UPFMProductId,
+					PropertyInstanceId
+			FROM Enterprise.PropertyInstanceMapping
+			WHERE PersonaId = @personaId
+			AND ProductId = @ProductId
+			AND PropertyInstanceId <> 0
+			AND ThruDate IS NULL
+			AND PropertyInstanceId NOT IN (SELECT Distinct PropertyInstanceId	FROM	Enterprise.PropertyInstanceMapping
 				WHERE PersonaId = @personaId
-				AND ProductId = @ProductId
-				AND PropertyInstanceId <> 0
-				AND ThruDate IS NULL
-				AND PropertyInstanceId NOT IN (SELECT Distinct PropertyInstanceId	FROM	Enterprise.PropertyInstanceMapping
-					WHERE PersonaId = @personaId
-					AND ProductId = @UPFMProductId
-					AND ThruDate IS NULL)				
-			END
+				AND ProductId = @UPFMProductId
+				AND ThruDate IS NULL)				
+			
 
 			Set @Current_ID = @Current_ID + 1
 		END
