@@ -1856,7 +1856,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 if (upfmPropertiesType == typeof(ProductProperty))
                 {
                     var products = _productRepository.GetAllProducts();
-                    string productcode = ProductEnumHelper.GetProductCodeByProductId(productId, products);
+                    var udmSourceCode = ProductEnumHelper.GetUDMSourceCodeByProductId(productId, products);
+                    var productcode = ProductEnumHelper.GetProductCodeByProductId(productId, products);
+                    if (!string.IsNullOrEmpty(udmSourceCode))
+                    {
+                        productcode = udmSourceCode;
+                    }
+
                     translatedData = GetTranslatePropertiesFromUPFMToProductv3(primaryPropertyIds, productcode);
                     var productPropertyType = productResult.Records[0].GetType();
 
@@ -1893,7 +1899,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             else
             {
                 var products = _productRepository.GetAllProducts();
-                string productcode = ProductEnumHelper.GetProductCodeByProductId(productId, products);
+                var udmSourceCode = ProductEnumHelper.GetUDMSourceCodeByProductId(productId, products);
+                var productcode = ProductEnumHelper.GetProductCodeByProductId(productId, products);
+                if (!string.IsNullOrEmpty(udmSourceCode))
+                {
+                    productcode = udmSourceCode;
+                }
+
                 translatedData = GetTranslatePropertiesFromUPFMToProductv3(primaryPropertyIds, productcode);
                 var productPropertyType = productResult.Records[0].GetType();
 

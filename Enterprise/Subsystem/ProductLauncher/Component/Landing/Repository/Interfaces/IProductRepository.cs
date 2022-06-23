@@ -63,8 +63,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="personaId">personaId</param>
         /// <param name="resourceOnly">Only return resource type products</param>
         /// <param name="allProducts">Return all product types</param>
+        /// <param name="replaceProductCodeWithUDMIfExists">True when the product code being returned should be the UDM code if one exists, otherwise leave productcode alone</param>
         /// <returns></returns>
-        IList<ProductUI> GetProducts(Guid organizationRealPageId, long personaId, bool resourceOnly = false, bool allProducts = false);
+        IList<ProductUI> GetProducts(Guid organizationRealPageId, long personaId, bool resourceOnly = false, bool allProducts = false, bool replaceProductCodeWithUDMIfExists = true);
 
         /// <summary>
         /// Returns a list of productTypes

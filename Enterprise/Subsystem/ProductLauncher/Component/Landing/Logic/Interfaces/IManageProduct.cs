@@ -20,7 +20,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <param name="realPageId">realPageId</param>
         /// <param name="personaId">personaId</param>
         /// <param name="allProducts">Return all product types</param>
-        IList<ProductUI> GetProducts(Guid realPageId, long personaId = 0, bool allProducts = false);
+        /// <param name="replaceProductCodeWithUDMIfExists">True when the product code being returned should be the UDM code if one exists, otherwise leave productcode alone</param>
+        IList<ProductUI> GetProducts(Guid realPageId, long personaId = 0, bool allProducts = false, bool replaceProductCodeWithUDMIfExists = true);
 
         ///// <summary>
         ///// Used to return a list of productfamilies

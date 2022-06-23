@@ -610,7 +610,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 id = upfmProperty.id.ConvertAll(d => d.ToLower())
             };
             var productList = _productRepository.GetAllProducts();
-            string productcode = ProductEnumHelper.GetProductCodeByProductId(productId, productList);
+            var udmSourceCode = ProductEnumHelper.GetUDMSourceCodeByProductId(productId, productList);
+            var productcode = ProductEnumHelper.GetProductCodeByProductId(productId, productList);
+            if (!string.IsNullOrEmpty(udmSourceCode))
+            {
+                productcode = udmSourceCode;
+            }
+
             var translatedData = _manageBlueBook.GetTranslatePropertiesFromProductToUPFM(primaryPropertyIds, productcode);
             List<string> translatedUPFMInstances = new List<string>();
             if (translatedData != null)

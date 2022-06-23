@@ -139,7 +139,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             IList<ProductInternalSetting> productInternalSettingList = new List<ProductInternalSetting>();
             IList<PersonaProductUserDetails> userProducts = new List<PersonaProductUserDetails>();
 
-            IList<ProductUI> listProductUI = this.GetProducts(organizationRealPageId: persona.Organization.RealPageId, allProducts: true);
+            IList<ProductUI> listProductUI = this.GetProducts(organizationRealPageId: persona.Organization.RealPageId, allProducts: true, replaceProductCodeWithUDMIfExists: true);
 
             using (var repository = GetRepository())
             {
@@ -783,8 +783,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="personaId">personaId</param>
         /// <param name="resourceOnly">Only return resource type products</param>
         /// <param name="allProducts">Return all product types</param>
+        /// <param name="replaceProductCodeWithUDMIfExists">True when the product code being returned should be the UDM code if one exists, otherwise leave productcode alone</param>
         /// <returns>List of Products</returns>
-        public IList<ProductUI> GetProducts(Guid organizationRealPageId, long personaId = 0, bool resourceOnly = false, bool allProducts = false)
+        public IList<ProductUI> GetProducts(Guid organizationRealPageId, long personaId = 0, bool resourceOnly = false, bool allProducts = false, bool replaceProductCodeWithUDMIfExists = true)
         {
             //IList<ProductUI> cachedProducts = new List<ProductUI>();
             RPObjectCache rpCache = new RPObjectCache();
@@ -820,7 +821,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 p.ProductCode = ProductEnumHelper.GetProductCodeByProductId(p.ProductId, productList);
                 p.UDMSourceCode = ProductEnumHelper.GetUDMSourceCodeByProductId(p.ProductId, productList);
-
+                if (replaceProductCodeWithUDMIfExists && !string.IsNullOrEmpty(p.UDMSourceCode))
+                {
+                    p.ProductCode = p.UDMSourceCode;
+                }
                 var personaSetting = personaProductSettings.Where(i => i.ProductId == p.ProductId);
 
                 personaSetting.ToList().ForEach(s =>

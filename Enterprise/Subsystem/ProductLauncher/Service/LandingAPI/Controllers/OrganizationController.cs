@@ -833,7 +833,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 var cacheKey = $"getListProductsByOrganization_{org.RealPageId}";
                 MemoryCache.Default.Remove(cacheKey);
 
-                IList<ProductUI> productList = _manageProduct.GetProducts(org.RealPageId, personaId, (allProducts.HasValue ? allProducts.Value : false));
+                IList<ProductUI> productList = _manageProduct.GetProducts(realPageId: org.RealPageId, personaId: personaId, allProducts: (allProducts.HasValue ? allProducts.Value : false), replaceProductCodeWithUDMIfExists: false);
                 if (allProducts.HasValue && allProducts.Value)
                 {
                     output.list = _manageProduct.AddProductSourceAndGreenBookCareFlagToProducts(org.RealPageId, org.PartyId, productList);

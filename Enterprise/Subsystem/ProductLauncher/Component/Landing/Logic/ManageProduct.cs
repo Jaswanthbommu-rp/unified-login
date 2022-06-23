@@ -211,8 +211,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="realPageId">realPageId</param>
         /// <param name="personaId">personaId</param>
         /// <param name="allProducts">Return all product types</param>
+        /// <param name="replaceProductCodeWithUDMIfExists">True when the product code being returned should be the UDM code if one exists, otherwise leave productcode alone</param>
         /// <returns></returns>
-        public IList<ProductUI> GetProducts(Guid realPageId, long personaId = 0, bool allProducts = false)
+        public IList<ProductUI> GetProducts(Guid realPageId, long personaId = 0, bool allProducts = false, bool replaceProductCodeWithUDMIfExists = true)
         {
             var listResponse = new ListResponse();
 
@@ -221,7 +222,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 throw new ArgumentNullException(nameof(realPageId), "Null realPageId.");
             }
 
-            IList<ProductUI> productList = _productRepository.GetProducts(organizationRealPageId: realPageId, personaId:personaId, allProducts:allProducts);
+            IList<ProductUI> productList = _productRepository.GetProducts(organizationRealPageId: realPageId, personaId:personaId, allProducts:allProducts, replaceProductCodeWithUDMIfExists: replaceProductCodeWithUDMIfExists);
 
             if (personaId > 0)
             {

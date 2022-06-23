@@ -164,8 +164,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 			return lookupValue.ProductId;
 		}
 
-		public static string GetProductCodeByProductId(int productId, IList<GbProductMap> products) =>
-			products.FirstOrDefault(a => a.ProductId == productId)?.UDMSourceCode ?? products.FirstOrDefault(a => a.ProductId == productId)?.BooksProductCode;
+        /// <summary>
+        /// Do NOT override the BooksProductCode with the UDMSourceCode in this call, it will break other areas!
+        /// </summary>
+        /// <param name="productId"></param>
+        /// <param name="products"></param>
+        /// <returns></returns>
+        public static string GetProductCodeByProductId(int productId, IList<GbProductMap> products) =>
+            products.FirstOrDefault(a => a.ProductId == productId)?.BooksProductCode;
 
 		public static string GetUDMSourceCodeByProductId(int productId, IList<GbProductMap> products) =>
 			products.FirstOrDefault(a => a.ProductId == productId)?.UDMSourceCode;
