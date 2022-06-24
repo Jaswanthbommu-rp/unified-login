@@ -35,7 +35,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		public List<string> PhoneNumbers { get; set; } //SLM
 
 		[JsonProperty(PropertyName = "additionalFields")]
-		public Dictionary<string, bool> AdditionalFields { get; set; } //SLM
+		public List<KeyValuePair<string , string>> AdditionalFields { get; set; } //SLM
 
 		[JsonProperty(PropertyName = "usergroups", NullValueHandling = NullValueHandling.Ignore)]
 		public List<string> UserGroups { get; set; }
