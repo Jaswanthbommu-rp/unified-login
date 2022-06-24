@@ -331,16 +331,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				if (userProspectContactPropertyRole.PropertyList[0].Trim().ToUpper() == "ALL") //all properties
 				{
 					prospectContactCenterUser.User.ManagementCompanyID = company.CompanyInstanceSourceId;
-					prospectContactCenterUser.User.Properties = new List<string>() { "0" };
 					prospectContactCenterUser.User.PropertyID = "0";
 					prospectContactCenterUser.User.UserType = "M";
 				}
 				else
 				{
-					prospectContactCenterUser.User.ManagementCompanyID = company.CompanyInstanceSourceId;
+					prospectContactCenterUser.User.ManagementCompanyID = "0";
+					prospectContactCenterUser.User.PropertyID = userProspectContactPropertyRole.PropertyList[0];
 					prospectContactCenterUser.User.UserType = "C"; // community level
-					prospectContactCenterUser.User.PropertyID = "0";
-					prospectContactCenterUser.User.Properties = userProspectContactPropertyRole.PropertyList;
 				}
 
 				WriteToDiagnosticLog($"ManageProductProspectContact.ManageProductProspectContactUser - Json to call product API for user with editorPersona id " +
@@ -594,13 +592,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						Email = user.Email,
 						CompanyInstanceSourceId = companyInstanceSourceId.ToString()
 					};
-					if (user.Properties?.Count() > 0)
+					if (user.PropertyID != "0")
 					{
-						foreach (var item in user.Properties)
-						{
-							migrationUser.Properties.Add(new MigrationProperty() { PropertyInstanceSourceId = item });
-						}
-						//migrationUser.Properties.Add(new MigrationProperty() { PropertyInstanceSourceId = user.PropertyID });
+						migrationUser.Properties.Add(new MigrationProperty() { PropertyInstanceSourceId = user.PropertyID });
 					}
 					migrationUsers.Add(migrationUser);
 				}
@@ -731,12 +725,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			{
 				additionalData.Add("allProperties", true);
 			}
-			else if (prospectContactCenterUser.Properties.Count() > 0)
+			else if (prospectContactCenterUser.PropertyID != "0")
 			{
-				foreach (var item in prospectContactCenterUser.Properties)
+				// if a user record exists
+				ProductProperty pp = (from a in propertyList
+									  where a.ID == prospectContactCenterUser.PropertyID
+									  select a).FirstOrDefault();
+				if (pp != null)
 				{
-					propertyList.FirstOrDefault(x => x.ID == item).IsAssigned = true;
+					pp.IsAssigned = true;
 				}
+
 				additionalData.Add("allProperties", false);
 			}
 
@@ -826,7 +825,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						UserType = currentProspectContactCenterUser.UserType,
 						ManagementCompanyID = currentProspectContactCenterUser.ManagementCompanyID,
 						PropertyID = currentProspectContactCenterUser.PropertyID,
-						//Properties = currentProspectContactCenterUser.Properties,
 						UserActive = true
 					}
 				};
@@ -852,18 +850,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 
 			// Check if property Id changed
-			//if (currentProspectContactCenterUser.PropertyID != prospectContactCenterUser.User.PropertyID)
-			//{
+			if (currentProspectContactCenterUser.PropertyID != prospectContactCenterUser.User.PropertyID)
+			{
 				WriteToDiagnosticLog(
 				 $"ManageProductProspectContact.UpdateProspectContactCenterPropertyUser - property changed for user with persona id {userPersonaId}.");
 
 				// update property
 
-				var resultUpdateUserProperty = UpdateUserProperty(prospectContactCenterUser.User.Properties,
-					prospectContactCenterUser.ModifyingUser, prospectContactCenterUser.User.ManagementCompanyID);
+				var resultUpdateUserProperty = UpdateUserProperty(prospectContactCenterUser.User.PropertyID,
+					prospectContactCenterUser.ModifyingUser);
 				if (resultUpdateUserProperty != string.Empty)
 					return resultUpdateUserProperty;
-			//}
+			}
 
 			WriteToDiagnosticLog(
 				$"ManageProductProspectContact.UpdateProspectContactCenterPropertyUser - updating user with persona id {userPersonaId}.");
@@ -938,16 +936,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 		}
 
-		private string UpdateUserProperty(IList<string> propertyId, string modifyingUserId,string companyID)
+		private string UpdateUserProperty(string propertyId, string modifyingUserId)
 		{
 
 			WriteToDiagnosticLog($"ManageProductProspectContact.UpdateUserProperty - propertyId={propertyId}modifyingUserId={modifyingUserId}");
 
 			dynamic userPropObj = new ExpandoObject();
-			userPropObj.PropertyID = 0;
+			userPropObj.PropertyID = propertyId;
 			userPropObj.ModifyingUser = modifyingUserId;
-			userPropObj.Properties = propertyId;
-			userPropObj.ManagementCompanyID = companyID;
 
 			var apiUrl = $"{_apiEndPoint}/User/{_productUserId}/relationships/property?_HttpMethod=PATCH";
 
@@ -1101,6 +1097,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		public string UserType { get; set; }
 		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
 		public string ManagementCompanyID { get; set; }
+		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
 		public string PropertyID { get; set; }
 		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
 		public string Email { get; set; }
@@ -1108,10 +1105,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
 		public string SystemIdentifier { get; set; } = null;
 		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-		public DateTime LastLogin { get; set; }
-
-		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-		public IList<string> Properties { get; set; }
-		
+		public DateTime LastLogin { get; set; }		
 	}
 }
