@@ -233,6 +233,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 new ProductInternalSetting() { Name = "UnifiedLoginServerClientName", Value = "unifiedlogin-server" },
                 new ProductInternalSetting() { Name = "UnifiedLoginServerClientSecret", Value = "abcdefgh" },
                 new ProductInternalSetting() { Name = "UpdateProductInUDM", Value = "1" },
+                new ProductInternalSetting() { Name = "productintegrationtype", Value = "Legacy" },
             };
 
             HttpResponseMessage responseMapResource = new HttpResponseMessage(HttpStatusCode.OK);

@@ -4,6 +4,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterprise
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Factory;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
@@ -55,7 +56,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private IManageProduct _manageProduct;
         private ITokenHelper _tokenHelper;
         private IHOTSCloneUserRepository _hotsCloneUserRepository;
-
+        private IIntegrationTypeFactory _integrationTypeFactory;
+        private IManageUnifiedLogin _manageUnifiedLogin;
         private DefaultUserClaim _defaultUserClaim;
         #endregion
         
@@ -83,6 +85,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _manageOrganizationProduct = new ManageOrganizationProduct(userClaim, repository, _manageBlueBook, _manageProduct);
             _tokenHelper = new TokenHelper(repository);
             _hotsCloneUserRepository = new HOTSCloneUserRepository(repository);
+            _manageUnifiedLogin = new ManageUnifiedLogin(repository, userClaim, messageHandler);
+            _integrationTypeFactory = new IntegrationTypeFactory(_manageProduct, _manageUnifiedLogin, null, _productRepository,
+                _productInternalSettingRepository, userClaim);
         }
 
         /// <summary>
@@ -106,7 +111,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _manageProduct = new ManageProduct(repository, userClaim, messageHandler);
             _manageOrganizationProduct = new ManageOrganizationProduct(userClaim, repository, _manageBlueBook, _manageProduct);
             _tokenHelper = new TokenHelper(repository);
-
+            _manageUnifiedLogin = new ManageUnifiedLogin(repository, userClaim, messageHandler);
+            _integrationTypeFactory = new IntegrationTypeFactory(_manageProduct, _manageUnifiedLogin, null, _productRepository,
+                _productInternalSettingRepository, userClaim);
         }
 
         /// <summary>
@@ -130,6 +137,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _manageProductPanel = new ManageProductPanel(userClaim);
             _manageProduct = new ManageProduct(userClaim);
             _tokenHelper = new TokenHelper();
+            _manageUnifiedLogin = new ManageUnifiedLogin(userClaim);
+            _integrationTypeFactory = new IntegrationTypeFactory(_manageProduct, _manageUnifiedLogin, null, _productRepository,
+                _productInternalSettingRepository, userClaim);
         }
 
         #endregion
@@ -1300,8 +1310,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         {
             var propertyAuditResult = new List<PropertyAudit>();
             var upfmPropertyDetails = new List<PropertySetup>();
-            var productResult = _manageProductPanel.GetProductProperties(_defaultUserClaim.PersonaId, 0, productId, null);
+            var productResult = new ListResponse();
+
+            var productInternalSettings = _manageProduct.GetProductInternalSettings(productId);
             
+            // get product type
+            var producIntegrationType = productInternalSettings.FirstOrDefault(p => p.Name.Equals("productintegrationtype", StringComparison.OrdinalIgnoreCase)).Value;
+            if (producIntegrationType.Equals("UPFM"))
+            {
+                var integration = _integrationTypeFactory.GetIntegration(productId);
+                productResult = integration.GetEnterpriseProperties(_defaultUserClaim.PersonaId);
+            }
+            else
+            {
+                productResult = _manageProductPanel.GetProductProperties(_defaultUserClaim.PersonaId, 0, productId, null);
+            }
+
             if (productResult.Records != null)
             {
                 var upfmProperties = new UPFMProperty();
@@ -1439,18 +1463,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     bool foundProperty = false;
                     udmProperty.TranslatedPropertyInstances.ForEach(instances =>
                     {
-                        foundProperty = foundProductPropertyIdList.Any(p => p.Equals(instances.PropertyInstanceSourceId, StringComparison.OrdinalIgnoreCase));
-                        // check for a variation of the property id and update it
-                        if (!foundProperty)
+                        if (foundProductPropertyIdList.Any(p => p.Equals(instances.PropertyInstanceSourceId, StringComparison.OrdinalIgnoreCase)))
                         {
-                            foundProductPropertyIdList.ForEach(propertyId =>
-                            {
-                                if (!instances.PropertyInstanceSourceId.ToLower().Contains(propertyId.ToLower())) return;
-                                foundProperty = true;
-                                var updateAuditRow = propertyAuditResult.FirstOrDefault(x => x.ProductInstanceId.Equals(propertyId, StringComparison.OrdinalIgnoreCase));
-                                updateAuditRow.ProductInstanceId = instances.PropertyInstanceSourceId;
-                            });
-
+                            foundProperty = true;
                         }
                     });
                     if (!foundProperty && upfmPropertyDetails != null)
@@ -1521,7 +1536,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
             }
 
-            propertyAuditResult.Add(pa);
+            if (!propertyAuditResult.Any(p => p.ProductInstanceId.Equals(pa.ProductInstanceId, StringComparison.OrdinalIgnoreCase) &&
+                                              p.ContractedName.Equals(pa.ContractedName, StringComparison.OrdinalIgnoreCase) &&
+                                              p.Domain.Equals(pa.Domain, StringComparison.OrdinalIgnoreCase) &&
+                                              p.Name.Equals(pa.Name, StringComparison.OrdinalIgnoreCase) &&
+                                              p.UPFMInstanceId.Equals(pa.UPFMInstanceId, StringComparison.OrdinalIgnoreCase) &&
+                                              p.UPFMName.Equals(pa.UPFMName, StringComparison.OrdinalIgnoreCase)))
+            {
+                propertyAuditResult.Add(pa);
+            }
         }
 
         #endregion
