@@ -1069,8 +1069,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					ID = property.PropertyId,
 					Name = property.PropertyName,
 					State = property.State,
-                    Active = property.Active,
-					Status = property.Active == "true" ? "Active" : "Inactive"
+                    Active = property.Active
 				});
 			}
 			return results;
