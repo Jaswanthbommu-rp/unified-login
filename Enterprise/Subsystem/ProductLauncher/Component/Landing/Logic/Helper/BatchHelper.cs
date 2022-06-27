@@ -6,6 +6,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Accounting;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ops;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ResidentPortal;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Rum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
@@ -53,13 +54,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Helper
 				if (rolesResponse.Records != null)
 				{
 					IEnumerable<object> roleCollection = (IEnumerable<object>)rolesResponse.Records;
-					foreach (object item in roleCollection)
+					foreach (var item in roleCollection)
 					{
-						if (((SharedObjects.Product.ProductRole)item).IsAssigned)
-						{
-							RoleList.Add(((SharedObjects.Product.ProductRole)item).ID);
+                        if (item.GetType() == typeof(ProductIntegration.Model.ProductRole))
+                        {
+                            if (((ProductIntegration.Model.ProductRole)item).IsAssigned)
+                            {
+                                RoleList.Add(((ProductIntegration.Model.ProductRole)item).GetRoleId);
+                            }
 						}
-					}
+
+                        if (item.GetType() == typeof(SharedObjects.Product.ProductRole))
+                        {
+                            if (((SharedObjects.Product.ProductRole)item).IsAssigned)
+                            {
+                                RoleList.Add(((SharedObjects.Product.ProductRole)item).ID);
+                            }
+                        }
+                    }
 				}
 			}
 
@@ -83,29 +95,66 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Helper
 			}
 			else
 			{
+                
 				foreach (object item in propertiesCollection)
 				{
-					if (productID == (int)ProductEnum.OpsBuyer)
-					{
-						if (((Component.SharedObjects.Product.Ops.AssetGroup)item).IsAssigned)
-						{
-							PropertyList.Add(((Component.SharedObjects.Product.Ops.AssetGroup)item).ID);
-						}
-					}
-					else if (((ProductProperty)item).IsAssigned.Value)
-					{
-						if (integrationType == ProductIntegrationTypeEnum.UPFM)
-						{
-							PropertyList.Add(((ProductProperty)item).Alias);
-						}
-						else
-						{
-							PropertyList.Add(((ProductProperty)item).ID);
-						}
-					}
-				}
+                    var productPropertyType = item.GetType();
 
-			}
+					if (productPropertyType == typeof(ProductProperty))
+					{
+                        if (integrationType == ProductIntegrationTypeEnum.UPFM)
+                        {
+                            PropertyList.Add(((ProductProperty)item).Alias);
+                        }
+                        else
+                        {
+                            PropertyList.Add(((ProductProperty)item).ID);
+                        }
+					}
+					else if (productPropertyType == typeof(ACProperty))
+					{
+                        if (((ACProperty)item).IsAssigned)
+                        {
+                            PropertyList.Add(((ACProperty)item).Id);
+						}
+					}
+					else if (productPropertyType == typeof(AssetGroup))
+					{
+                        if (((AssetGroup)item).IsAssigned)
+                        {
+                            PropertyList.Add(((AssetGroup)item).AssetID);
+						}
+					}
+					else if (productPropertyType == typeof(OnSiteProperty))
+					{
+                        if (((OnSiteProperty)item).IsAssigned)
+                        {
+                            PropertyList.Add(((OnSiteProperty)item).GetPropertyId.ToString());
+						}
+					}
+					else if (productPropertyType == typeof(RumPropertyGroup))
+					{
+                        if (((RumPropertyGroup)item).IsAssigned)
+                        {
+                            PropertyList.Add(((RumPropertyGroup)item).Id.ToString());
+                        }
+					}
+					else if (productPropertyType == typeof(ProductProperties))
+					{
+                        if (((ProductProperties)item).IsAssigned)
+                        {
+                            PropertyList.Add(((ProductProperties)item).GetPropertyId);
+						}
+					}
+					else if (productPropertyType == typeof(Portfolio))
+					{
+                        if (((Portfolio)item).IsAssigned)
+                        {
+                            PropertyList.Add(((Portfolio)item).ID);
+						}
+					}
+                }
+            }
 
 			ProductBatch pb = new ProductBatch()
 			{
