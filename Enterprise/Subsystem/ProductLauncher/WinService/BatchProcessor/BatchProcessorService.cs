@@ -22,7 +22,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
         private readonly string _dbServerName = "";
 
         // batch related config
-        private static readonly int ThreadCount = int.Parse(ConfigReader.GetThreadCount);
+        private int ThreadCount = int.Parse(ConfigReader.GetThreadCount);
         private static readonly int BatchSize = int.Parse(ConfigReader.GetBatchSize);
         private static readonly int PollingInterval = int.Parse(ConfigReader.GetPollingInterval);
         private static readonly int RetryPollingInterval = int.Parse(ConfigReader.GetRetryPollingInterval);
@@ -138,6 +138,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
 
                     Log.Debug($"RunRetryProcess - Launching threads to process {batch.Count} products.");
 
+                    ThreadCount = GetProductInternalSettings("BatchProcessorRetryThread");
+
                     // Launch threads
                     Parallel.ForEach(batch, new ParallelOptions { MaxDegreeOfParallelism = ThreadCount }, CallApiToProcessBatchRecord);
 
@@ -205,6 +207,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
 
                     Log.Debug($"RunPendingProcess - Launching threads to process {batch.Count} products.");
 
+                    ThreadCount = GetProductInternalSettings("BatchProcessorPendingThread");
                     // Launch threads
                     Parallel.ForEach(batch, new ParallelOptions { MaxDegreeOfParallelism = ThreadCount }, CallApiToProcessBatchRecord);
 
@@ -271,6 +274,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
 
                     Log.Debug($"RunEnterpriseRoleUpdateProcess - Launching threads to process {batch.Count} products.");
 
+                    ThreadCount = GetProductInternalSettings("BatchProcessorEnterpriseRoleThread");
                     // Launch threads
                     Parallel.ForEach(batch, new ParallelOptions { MaxDegreeOfParallelism = ThreadCount }, CallApiToProcessEnterpriseRoleBatchRecord);
 
@@ -326,7 +330,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
                     }
 
                     Log.Debug($"RunPrimaryPropertiesUpdateProcess - Launching threads to process {batch.Count} products.");
-
+                    ThreadCount = GetProductInternalSettings("BatchProcessorPrimaryPropertiesThread");
                     // Launch threads
                     Parallel.ForEach(batch, new ParallelOptions { MaxDegreeOfParallelism = ThreadCount }, CallApiToProcessPrimaryPropertiesBatchRecord);
 
@@ -400,6 +404,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
 
                 var landingApiCaller = new ProductApiCaller();
                 var result = landingApiCaller.ProcessBatchRecord(input);
+
+                //Handle records which never comeback and update status to failed
+                if(result.Result == null)
+                {
+                    throw new Exception($"Unable to process the batch request - {batch.BatchProcessorId}. Response is null.");
+                }
 
                 logger.Information($"CallApiToAssignProducts-Result received for Product {input.ProductId} & for User {batch.SubjectUserPersonaId} - {result.Result}. Calling API Completed to assign product {input.ProductId} to user {batch.SubjectUserPersonaId }.");
             }
@@ -544,6 +554,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
             logger.Debug($"GetBatchConfigurationByType - Endpoint received for {batchBatchProcessTypeId} - {endpoint}");
 
             return endpoint;
+        }
+
+        private int GetProductInternalSettings(string key)
+        {
+            var settings = new BatchRepository().GetProductInternalSettings(3).ToList();
+            if(!string.IsNullOrEmpty(settings.FirstOrDefault(a => a.Name.Equals(key, StringComparison.OrdinalIgnoreCase))?.Value))
+            {
+                return Convert.ToInt32(settings.FirstOrDefault(a => a.Name.Equals(key, StringComparison.OrdinalIgnoreCase)).Value);
+            }
+            else
+            {
+                return int.Parse(ConfigReader.GetThreadCount);
+            }
         }
 
         #endregion

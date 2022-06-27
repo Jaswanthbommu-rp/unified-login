@@ -126,6 +126,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
 			return batchConfigs;
 		}
 
+		public IList<ProductInternalSetting> GetProductInternalSettings(int productId)
+		{
+			// cache the configurations
+			ObjectCache tokenCache = MemoryCache.Default;
+
+			// Get   values from cache 
+			var productsettings = tokenCache[$"productsettings_{productId}"] as List<ProductInternalSetting>;
+
+			if (productsettings == null)
+			{
+				using (var repository = GetRepository())
+				{
+					dynamic param = new { ProductId = productId };
+					productsettings = repository.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, param);
+				}
+
+				var cachePolicy = new CacheItemPolicy
+				{
+					// Expire cache every 15 minutes  
+					AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(15)
+				};
+
+				tokenCache.Set($"productsettings_{productId}", productsettings, cachePolicy);
+			}
+
+			return productsettings;
+		}
+
 		#endregion
 	}
 }
