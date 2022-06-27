@@ -281,7 +281,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var roleProp = JsonConvert.DeserializeObject<RolePropertyList>(productUser.InputJson);
                 if (productUser.ProductId != (int)ProductEnum.SalesForce && roleProp.IsAssigned)
                 {
-                    SyncUserProductProperties(productUser.ProductId, productUser.AssignUserPersonaId, productUser.CreateUserPersonaId);
+                    //product combination check
+                    if (rolePropDictionary?.Count > 1)
+                    {
+                        foreach (var product in rolePropDictionary)
+                        {
+                            SyncUserProductProperties(product.Key, productUser.AssignUserPersonaId, productUser.CreateUserPersonaId);
+                        }
+                    }
+                    else
+                    {
+                        SyncUserProductProperties(productUser.ProductId, productUser.AssignUserPersonaId, productUser.CreateUserPersonaId);
+                    }
+                    
                 }
                 
             }

@@ -203,7 +203,7 @@ BEGIN
    Select pl.PersonaId, COUNT(PM.PropertyInstanceId)  
    FROM @ValidPersona pl  
    INNER JOIN Enterprise.PropertyInstanceMapping PM ON  
-    PM.PersonaId = pl.PersonaId And PM.ProductId = 3 AND PM.PropertyInstanceId <> 0  
+    PM.PersonaId = pl.PersonaId And PM.ProductId = 3 AND PM.PropertyInstanceId <> 0  AND PM.Active = 1
    GROUP BY pl.PersonaId     
     ),        
     CTE_PersonaMatchedPrimaryProperties(PersonaId,MatchedCount)         

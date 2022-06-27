@@ -6560,11 +6560,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 UPFMProperty upfmProperty = new UPFMProperty();
                 var userPersona = _managePersona.GetPersona(userPersonaId);
+                List<string> filteredList = null;
                 List<string> updatedPrimaryProperties = primaryPropertiesBatch.InputJson.PropertyList.ToList();
+                List<string> removedPrimaryProperties = primaryPropertiesBatch.InputJson.RemovedPropertyList.ToList();
+               
+                if (removedPrimaryProperties?.Count > 0)
+                {
+                    currentprimaryProperties = currentprimaryProperties.Except(removedPrimaryProperties, StringComparer.OrdinalIgnoreCase).ToList();
+                }
 
-                var filteredList = updatedPrimaryProperties.Except(currentprimaryProperties, StringComparer.OrdinalIgnoreCase).ToList();
+                if (updatedPrimaryProperties?.Count > 0)
+                {
+                    currentprimaryProperties.AddRange(updatedPrimaryProperties);
+                    filteredList = currentprimaryProperties;
+                }
+                else
+                {
+                    filteredList = currentprimaryProperties;
+                }
 
-                if (filteredList.Count > 0)
+                var logData = new Dictionary<string, object> { { "updatedprimarypropertieslist", filteredList } };
+                WriteToLog(LogEventLevel.Debug, $"UpdateProductBatchDataWithPrimaryProperties.Generating data for persona {userPersonaId}", logData);
+
+                if (filteredList?.Count > 0)
                 {
                     upfmProperty.id = filteredList;
 
