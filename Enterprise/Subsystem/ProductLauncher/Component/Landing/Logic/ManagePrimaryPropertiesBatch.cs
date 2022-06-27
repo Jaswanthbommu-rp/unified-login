@@ -126,15 +126,31 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         {
 							List<ProductRole> productRoles = null;
 
-							if (product.ProductId == (int)ProductEnum.ResidentPortal ||
-								product.ProductId == (int)ProductEnum.DepositAlternative ||
-								product.ProductId == (int)ProductEnum.IntegrationMarketplace ||
-								product.ProductId == (int)ProductEnum.LeadManagement ||
-								product.ProductId == (int)ProductEnum.LeadAnalytics ||
-								product.ProductId == (int)ProductEnum.PortfolioManagement)
+							if (product.ProductId == (int)ProductEnum.DepositAlternative ||
+                                product.ProductId == (int)ProductEnum.IntegrationMarketplace ||
+                                product.ProductId == (int)ProductEnum.LeadManagement ||
+                                product.ProductId == (int)ProductEnum.LeadAnalytics ||
+                                product.ProductId == (int)ProductEnum.PortfolioManagement)
 							{
 								productRoles = rolesResponse.Records?.Cast<ProductRole>().ToList();
 							}
+
+                            if (product.ProductId == (int)ProductEnum.ResidentPortal)
+                            {
+                                
+								var levels = rolesResponse.Records?.Cast<Level>().ToList();
+                                if (levels.Count > 0)
+                                {
+                                    productRoles = new List<ProductRole>();
+								}
+                                levels.ForEach(p =>
+                                {
+                                    if (p.IsAssigned)
+                                    {
+                                        productRoles.Add(new ProductRole() { ID = p.Id, Name = p.Name, IsAssigned = p.IsAssigned });
+                                    }
+                                });
+                            }
 
 							var productBatchRecord = manageProductBatch.GetProductBatchRecord(batch.EditorUserPersonaId, batch.SubjectUserPersonaId, productRoles, propertiesResponse, rolesResponse, product.ProductId, usePrimaryProperties);
 							if (integrationType == ProductIntegrationTypeEnum.UPFM)
