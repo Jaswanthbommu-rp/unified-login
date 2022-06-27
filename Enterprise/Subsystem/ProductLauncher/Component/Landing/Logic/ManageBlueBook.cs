@@ -2200,8 +2200,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     }
                 }
             }
-            Dictionary<string, bool> additionalDataCollection = productResult.Additional as Dictionary<string, bool>;
-            additionalDataCollection.Add("dirtyProductPropertyData", dirtyProductPropertyData);
+            if (productResult.Additional != null)
+            {
+                Dictionary<string, bool> additionalDataCollection = productResult.Additional as Dictionary<string, bool>;
+                additionalDataCollection.Add("dirtyProductPropertyData", dirtyProductPropertyData);
+            }
+           
             return productResult;
 		}
 
