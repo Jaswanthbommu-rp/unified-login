@@ -125,6 +125,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         else
                         {
 							List<ProductRole> productRoles = null;
+
 							if (product.ProductId == (int)ProductEnum.ResidentPortal ||
 								product.ProductId == (int)ProductEnum.DepositAlternative ||
 								product.ProductId == (int)ProductEnum.IntegrationMarketplace ||
@@ -204,6 +205,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 						statusTypeId = (int)ProductBatchStatusType.Error;
 					}
 					bool status = productBulkUpdateRepository.UpdatePrimaryPropertyProductBatch(batch.PrimaryPropertyBatchProcessId, statusTypeId);
+				}
+                else
+                {
+                    productBulkUpdateRepository.UpdatePrimaryPropertyProductBatch(batch.PrimaryPropertyBatchProcessId, (int)ProductBatchStatusType.Success);
 				}
 			}
 			catch (Exception ex)
