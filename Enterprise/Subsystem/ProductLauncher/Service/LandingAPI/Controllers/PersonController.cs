@@ -200,7 +200,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
 			output = new ObjectUserListOutput<ProfileDetail, IErrorData>() { list = profileDetailList, Status = errorStatus };
 			output.pagingSummary = pagingSummary;
-            output.OrganizationHasProductAssignmentError = profileDetailList != null && profileDetailList.Count > 0 ? profileDetailList.Any(x => x.PersonaHasProductError) : false;
+            output.OrganizationHasProductAssignmentError = profileDetailList != null && profileDetailList.Count > 0 ? profileDetailList.Any(x => x.PersonaHasProductError && x.userLogin.Status != UserUiStatusType.Deactivated) : false;
             return Request.CreateResponse(HttpStatusCode.OK, output);
         }
 
