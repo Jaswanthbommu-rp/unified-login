@@ -54,5 +54,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         /// The UPFM property instance id
         /// </summary>
         public string InstanceId { get; set; }
+
+        /// <summary>
+        /// BookID
+        /// </summary>
+        public string BookID { get; set; }
     }
 }

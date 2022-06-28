@@ -2098,6 +2098,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         
         private string entityNameField;
         
+        private string bookIDField;
+        
         private string assignedField;
         
         private string mConsoleEntityIDField;
@@ -2142,6 +2144,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
                 this.entityNameField = value;
             }
         }
+        
+        /// <remarks/>
+		public string BookID
+		{
+			get
+			{
+				return this.bookIDField;
+			}
+			set
+			{
+				this.bookIDField = value;
+			}
+		}
         
         /// <remarks/>
         public string Assigned {
@@ -2254,6 +2269,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         private string parentIdField;
 
         private string parentNameField;
+
+        private string membersField;
+
         /// <remarks/>
         public string ID
         {
@@ -2292,6 +2310,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
                 this.descriptionField = value;
             }
         }
+        
+        
+		/// <remarks/>
+		public string Members
+		{
+			get
+			{
+				return this.membersField;
+			}
+			set
+			{
+				this.membersField = value;
+			}
+		}
 
         /// <remarks/>
         public string Assigned
@@ -2367,6 +2399,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
 
         private string assignedField;
 
+		private string bookIDField;
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute("LocationID")]
         public string LocationID1
@@ -2471,6 +2504,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
                 this.assignedField = value;
             }
         }
+		/// <remarks/>
+		public string BookID
+		{
+			get
+			{
+				return this.bookIDField;
+			}
+			set
+			{
+				this.bookIDField = value;
+			}
+		}
     }
 
     /// <remarks/>

@@ -155,7 +155,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     {
                         if (property.IsAssigned == true)
                         {
-                            instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.Id));
+                            instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.BookID));
                             if (instanceExists == null)
                             {
                                 instanceExists = translatedData.Data?.Attributes.FirstOrDefault(o => o.PropertyInstanceSourceId == property.InstanceId);

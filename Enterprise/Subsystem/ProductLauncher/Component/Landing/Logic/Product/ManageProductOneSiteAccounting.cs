@@ -3589,7 +3589,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     CompanyName = loc.CompanyName,
                     IsAssigned = loc.Assigned == string.Empty ? false : bool.Parse(loc.Assigned),
                     MConsoleId = loc.MConsoleEntityID, 
-                    IsCompanyAssigned = loc.Assigned == string.Empty  ? false :  (bool.Parse(loc.Assigned) == true && loc.EntityID1 == string.Empty) ? true : false
+                    IsCompanyAssigned = loc.Assigned == string.Empty  ? false :  (bool.Parse(loc.Assigned) == true && loc.EntityID1 == string.Empty) ? true : false,
+					BookID = loc.BookID
 
                 });
             }

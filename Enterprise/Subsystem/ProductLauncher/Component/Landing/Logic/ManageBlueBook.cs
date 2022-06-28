@@ -1957,7 +1957,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     bool isAssignedFlag = false;
                     foreach (var property in productResult.Records.Cast<ACProperty>())
                     {
-                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.Id));
+                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.BookID));
                         if (instanceExists != null)
                         {
                             if ((!string.IsNullOrEmpty(restrictToSinglePropertyForProductValue) && restrictToSinglePropertyForProductValue == "1"))

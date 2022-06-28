@@ -1395,8 +1395,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     {
                         foreach (var property in productResult.Records.Cast<ACProperty>())
                         {
-                            AuditPropertyCompare(property.Id, property.PropertyName, null, translatedData, instanceIds, upfmPropertyDetails, propertyAuditResult);
-                            foundProductPropertyIdList.Add(property.Id);
+                            AuditPropertyCompare(property.BookID, property.PropertyName, null, translatedData, instanceIds, upfmPropertyDetails, propertyAuditResult);
+                            foundProductPropertyIdList.Add(property.BookID);
                         }
                     }
                     else if (productPropertyType == typeof(AssetGroup))
