@@ -6562,7 +6562,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 var userPersona = _managePersona.GetPersona(userPersonaId);
                 List<string> filteredList = null;
                 List<string> updatedPrimaryProperties = primaryPropertiesBatch.InputJson.PropertyList.ToList();
-                List<string> removedPrimaryProperties = primaryPropertiesBatch.InputJson.RemovedPropertyList.ToList();
+                List<string> removedPrimaryProperties = (primaryPropertiesBatch.InputJson.RemovedPropertyList == null) ? new List<string>(): primaryPropertiesBatch.InputJson.RemovedPropertyList.ToList();
                
                 if (removedPrimaryProperties?.Count > 0)
                 {
