@@ -199,6 +199,7 @@ BEGIN
 			FROM	@ValidPersona pl
 			INNER JOIN Enterprise.PropertyInstanceMapping PM ON
 				PM.PersonaId = pl.PersonaId And PM.ProductId = 3 AND PM.PropertyInstanceId <> 0 AND PM.Active = 1
+			INNER JOIN Enterprise.PropertyInstance PI1 ON PI1.PropertyInstanceId = PM.PropertyInstanceId AND PI1.IsActive = 1
 			GROUP BY pl.PersonaId
 		  ),
 	   CTE_PersonaMatchedPrimaryProperties(PersonaId,MatchedCount) 
