@@ -170,22 +170,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 return outputResult;
             }
 
-            if (processBlueBookMessage)
-            {
-                IList<Organization> organizationList = GetOrganizationList();
-                if (organizationList.Any(c => c.Name.Equals(organization.Name, StringComparison.OrdinalIgnoreCase)))
-                {
-                    outputResult.Status.ErrorMsg = $"MessageHandler.Handle - Company: {organization.Name} with BlueBookId: {organization.BooksCustomerMasterId} already exists!";
-                    return outputResult;
-                }
-
-                // TODO update for domain?
-                if (organizationList.Any(c => c.BooksCustomerMasterId == organization.BooksCustomerMasterId))
-                {
-                    outputResult.Status.ErrorMsg = $"MessageHandler.Handle - Bluebook customer master id {organization.BooksCustomerMasterId} already in use!";
-                    return outputResult;
-                }
-            }
 
 
             // create the organization
