@@ -14,6 +14,7 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\2022.05.WMU.Release.sql
 :r .\PostDeploymentScripts\2022-primaryproperty-operator.sql
 :r .\PostDeploymentScripts\Batchprocessor-settings.sql
+:r .\PostDeploymentScripts\624898-independent-facilities.sql
 
 :r .\PostDeploymentScripts\UpdateStatistics.sql
 :r .\PostDeploymentScripts\RecompileAllProcs.sql
