@@ -275,7 +275,7 @@ AS
 						INNER JOIN Person.Person pp ON (pp.PartyId = epr.PartyIdFrom)
 						INNER JOIN Ident.UserLogin iul ON (iul.PersonPartyId = pp.PartyId)
 						INNER JOIN Ident.UserLoginPersona iulp ON (iulp.UserLoginId = iul.UserId)
-						INNER JOIN @Organization o ON (o.PartyId = iulp.OrganizationPartyId)	
+						INNER JOIN @Organization o ON (o.PartyId = iulp.OrganizationPartyId) AND epr.PartyIdTo = o.PartyID	
 						
 			DELETE	epr
 			FROM	Enterprise.PartyRole epr
@@ -360,22 +360,21 @@ AS
 			SELECT	pp.PartyId
 			FROM	Person.Person pp
 						INNER JOIN Ident.UserLogin iul ON (iul.PersonPartyId = pp.PartyId)
-						INNER JOIN Ident.UserLoginPersona iulp ON (iulp.UserLoginId = iul.UserId)
+						INNER JOIN Ident.UserLoginPersona iulp ON (iulp.UserLoginId = iul.UserId) AND iulp.PrimaryOrganization = 1
 						INNER JOIN @Organization o ON (o.PartyId = iulp.OrganizationPartyId)
 
 			DELETE pp
 			FROM	Person.Person pp
 						INNER JOIN Ident.UserLogin iul ON (iul.PersonPartyId = pp.PartyId)
-						INNER JOIN Ident.UserLoginPersona iulp ON (iulp.UserLoginId = iul.UserId)
+						INNER JOIN Ident.UserLoginPersona iulp ON (iulp.UserLoginId = iul.UserId) AND iulp.PrimaryOrganization = 1
 						INNER JOIN @Organization o ON (o.PartyId = iulp.OrganizationPartyId)
 
 			if @LogExecutionTime = 1 begin print convert(varchar(max),dateadd(hh,-5,getutcdate()),121) + ': Person' end
-
+			
 			DELETE ue
 			FROM	Enterprise.UserEmployeeId ue
 						INNER JOIN Ident.UserLoginPersona iulp ON (iulp.UserLoginPersonaId = ue.UserLoginPersonaId)
-						INNER JOIN Ident.UserLogin iul ON (iul.UserId = iulp.UserLoginId)
-						INNER JOIN @Person p ON (p.PartyID = iul.PersonPartyId)
+						INNER JOIN @Organization o ON (o.PartyId = iulp.OrganizationPartyId)
 			
 			DELETE strv
 			FROM	Settings.SettingTableRowValue strv
@@ -503,17 +502,19 @@ AS
 			SELECT	iulp.UserLoginId,
 						iulp.OrganizationPartyId
 			FROM	Ident.UserLoginPersona iulp
-						INNER JOIN @Organization o ON (o.PartyId = iulp.OrganizationPartyId)
+						INNER JOIN @Organization o ON (o.PartyId = iulp.OrganizationPartyId) AND iulp.PrimaryOrganization = 1
 
 			DELETE	iulp
 			FROM	Ident.UserLoginPersona iulp
 						INNER JOIN @Organization o ON (o.PartyId = iulp.OrganizationPartyId)
-
+		
+			IF @LogExecutionTime = 1 begin print convert(varchar(max),dateadd(hh,-5,getutcdate()),121) + ': UserLoginPersona' END
+            
 			DELETE	iul
 			FROM	Ident.UserLogin iul
 						INNER JOIN @UserLoginPersona ulp ON (ulp.UserLoginId = iul.UserId)
 						INNER JOIN @Organization o ON (o.PartyId = ulp.OrganizationPartyId)
-						INNER JOIN Ident.UserLoginPersona iulp ON (iulp.UserLoginId = ulp.UserLoginId AND iulp.OrganizationPartyId = ulp.OrganizationPartyId)
+						INNER JOIN Ident.UserLoginPersona iulp ON (iulp.UserLoginId = ulp.UserLoginId AND iulp.OrganizationPartyId = ulp.OrganizationPartyId AND iulp.PrimaryOrganization = 1)
 
 			INSERT INTO @Configuration (
 				ConfigurationId
