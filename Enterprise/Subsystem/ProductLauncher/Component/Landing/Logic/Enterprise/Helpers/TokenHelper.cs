@@ -67,7 +67,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
             var productInternalSettingList = GetProductInternalSettings(ProductEnum.UnifiedPlatform);
             try
             {
-                string issuerUri = ConfigReader.GetIssuerUri;
+                string tokenEndPoint = productInternalSettingList.First(a => a.Name.Equals("TokenEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
                 string clientId = productInternalSettingList.First(a => a.Name.Equals("UnifiedLoginServerClientName", StringComparison.OrdinalIgnoreCase)).Value;
                 string apiSecret = Encoding.UTF8.GetString(Convert.FromBase64String(productInternalSettingList.First(a => a.Name.Equals("UnifiedLoginServerClientSecret", StringComparison.OrdinalIgnoreCase)).Value));
 
@@ -76,7 +76,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 
                 string accessToken = rpCache.GetFromCache<string>(cacheKey, 300, () =>
                 {
-                    TokenClient tokenClient = new TokenClient($"{issuerUri}/connect/token", clientId, apiSecret);
+                    TokenClient tokenClient = new TokenClient(tokenEndPoint, clientId, apiSecret);
 
                     var tokenResponse = tokenClient.RequestClientCredentialsAsync(scopes).Result;
 
