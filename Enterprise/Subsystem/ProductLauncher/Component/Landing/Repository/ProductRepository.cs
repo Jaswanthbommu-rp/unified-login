@@ -1247,6 +1247,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
+                /// <summary>
+        /// Update a Product Batch
+        /// </summary>
+        /// <returns>Repository response object</returns>
+        public bool GetProductBatchStatus(int productBatchId)
+        {
+            using (var repository = GetRepository())
+            {
+                //var result = repository.Execute<RepositoryResponse>(StoredProcNameConstants.SP_UpdateProductBatch,
+                //    new { productBatchId, statusTypeId, inputJson, errorDetails });
+
+                var result = repository.Execute<int>(StoredProcNameConstants.SP_GetProductBatchStatus,
+                   new { productBatchId });
+
+                return result == 1;
+            }
+        }
+
         /// <summary>
         /// Save Persona product Properties
         /// </summary>
