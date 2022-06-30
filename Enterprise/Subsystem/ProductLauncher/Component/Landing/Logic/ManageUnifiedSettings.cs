@@ -331,6 +331,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         private void GetConfigurationSetting()
         {
+            if (_httpClient.BaseAddress != null)
+            {
+                return;
+            }
             string bbUri = "";
 
             #region GetSettings

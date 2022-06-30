@@ -864,6 +864,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     var deleteResult = _organizationRepository.DeleteOrganization(p.OrganizationRemovalQueueId, p.OrganizationPartyId, p.OrganizationRealPageId);
                     if (deleteResult == p.OrganizationPartyId)
                     {
+                        if (p.OrganizationRemoveUDMData)
+                        {
+                            // get list of current properties for the company being deleted
+                            var propertyToDeleteList = _manageBlueBook.GetPropertyInstanceForCompany(p.OrganizationRealPageId);
+                            if (propertyToDeleteList != null)
+                            {
+                                foreach (var propertyToDelete in propertyToDeleteList)
+                                {
+                                    var propertyInstanceToDelete = new Guid(propertyToDelete.attributes.propertyInstanceSourceId);
+                                    WriteToLog(LogEventLevel.Debug, $"{GetType()} - deleting property instance {propertyInstanceToDelete} from UPFM Company {p.OrganizationRealPageId}.");
+                                    _propertyRepository.DeleteUPFMPropertyInstance(propertyInstanceToDelete);
+                                    DeletePropertyForOrganization(propertyInstanceToDelete, p.OrganizationRealPageId);
+                                }
+                            }
+
+                            // post to UDM to remove 
+                            var result = _manageBlueBook.DeleteBooksGreenBookCompanyInstance(new CompanyInstance() {CompanyInstanceSourceId = p.OrganizationRealPageId.ToString(), ModifiedBy = "UPFM Delete company"});
+                            _organizationRepository.UpdateOrganizationRemovalQueueStatus(p.OrganizationRemovalQueueId, result ? "UDMData Removed" : "UDMData Removal Failed");
+                        }
+
                         // delete activity log data
                         try
                         {
@@ -878,7 +898,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                                     {
                                         httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", ulClientToken);
                                         var deleteUri = new Uri(activityUri + $"api/activity/organization/{p.OrganizationPartyId}");
-                                        Dictionary<string, object> logData = new Dictionary<string, object>() {{"deleteUri", deleteUri}};
+                                        Dictionary<string, object> logData = new Dictionary<string, object>() { { "deleteUri", deleteUri } };
                                         logData.Add("UlClientToken", ulClientToken);
                                         WriteToLog(LogEventLevel.Debug, $"{GetType()} - Posting to ActivityLog.Delete", logData);
                                         var response = httpClient.DeleteAsync(deleteUri).Result;
@@ -899,23 +919,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             WriteToLog(LogEventLevel.Error,
                                 $"{GetType()} - Error while executing ActivityLog.Delete " + $" Company {p.OrganizationRealPageId} , " + $" OrganizationRemovalQueueId {p.OrganizationRemovalQueueId}", exception: ex);
                         }
-
-                        if (p.OrganizationRemoveUDMData)
-                        {
-                            // get list of current properties for the company being deleted
-                            var propertyToDeleteList = _manageBlueBook.GetPropertyInstanceForCompany(p.OrganizationRealPageId);
-                            foreach (var propertyToDelete in propertyToDeleteList)
-                            {
-                                var propertyInstanceToDelete = new Guid(propertyToDelete.attributes.propertyInstanceSourceId);
-                                WriteToLog(LogEventLevel.Debug, $"{GetType()} - deleting property instance {propertyInstanceToDelete} from UPFM Company {p.OrganizationRealPageId}.");
-                                _propertyRepository.DeleteUPFMPropertyInstance(propertyInstanceToDelete);
-                                DeletePropertyForOrganization(propertyInstanceToDelete, p.OrganizationRealPageId);
-                            }
-                            // post to UDM to remove 
-                            var result = _manageBlueBook.DeleteBooksGreenBookCompanyInstance(new CompanyInstance() {CompanyInstanceSourceId = p.OrganizationRealPageId.ToString(), ModifiedBy = "UPFM Delete company"});
-                            _organizationRepository.UpdateOrganizationRemovalQueueStatus(p.OrganizationRemovalQueueId, result ? "UDMData Removed" : "UDMData Removal Failed");
-                        }
-
                         _organizationRepository.UpdateOrganizationRemovalQueueStatus(p.OrganizationRemovalQueueId, "Complete");
                     }
                 }
