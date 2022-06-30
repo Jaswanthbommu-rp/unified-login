@@ -330,5 +330,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <returns></returns>
         List<AdGroupRole> GetAdGroupRolesByPersona(long personaId);
 
+        /// <summary>
+        /// Get a Product Batch Status
+        /// </summary> 
+        /// <returns>Repository response object</returns>
+        bool GetProductBatchStatus(int productBatchId);
+
     }
 }
