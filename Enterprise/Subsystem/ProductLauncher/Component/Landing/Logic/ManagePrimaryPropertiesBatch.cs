@@ -27,6 +27,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Helper;
 using Newtonsoft.Json;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ops;
+using Role = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ops.Role;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -125,34 +126,48 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         else
                         {
 							List<ProductRole> productRoles = null;
-
-							if (product.ProductId == (int)ProductEnum.DepositAlternative ||
-                                product.ProductId == (int)ProductEnum.IntegrationMarketplace ||
-                                product.ProductId == (int)ProductEnum.LeadManagement ||
-                                product.ProductId == (int)ProductEnum.LeadAnalytics ||
-                                product.ProductId == (int)ProductEnum.PortfolioManagement)
-							{
-								productRoles = rolesResponse.Records?.Cast<ProductRole>().ToList();
-							}
-
-                            if (product.ProductId == (int)ProductEnum.ResidentPortal)
+                            if (rolesResponse.Records.Count > 0)
                             {
-                                
-								var levels = rolesResponse.Records?.Cast<Level>().ToList();
-                                if (levels.Count > 0)
+                                var roleType = rolesResponse.Records[0].GetType();
+                                if (roleType == typeof(SharedObjects.Product.ProductRole))
                                 {
-                                    productRoles = new List<ProductRole>();
-								}
-                                levels.ForEach(p =>
+                                    productRoles = rolesResponse.Records?.Cast<ProductRole>().ToList();
+                                }
+                                else if (roleType == typeof(ProductIntegration.Model.ProductRole))
                                 {
-                                    if (p.IsAssigned)
+                                    var rolesToProcess = rolesResponse.Records?.Cast<ProductIntegration.Model.ProductRole>().ToList();
+                                    if (rolesToProcess.Count > 0)
                                     {
-                                        productRoles.Add(new ProductRole() { ID = p.Id, Name = p.Name, IsAssigned = p.IsAssigned });
+                                        productRoles = new List<ProductRole>();
+                                        rolesToProcess.ForEach(p =>
+                                        {
+                                            if (p.IsAssigned)
+                                            {
+                                                productRoles.Add(new ProductRole() { ID = p.GetRoleId, Name = p.GetName, IsAssigned = p.IsAssigned });
+                                            }
+                                        });
                                     }
-                                });
+                                }
+
+                                if (product.ProductId == (int)ProductEnum.ResidentPortal)
+                                {
+                                    var levels = rolesResponse.Records?.Cast<Level>().ToList();
+                                    if (levels.Count > 0)
+                                    {
+                                        productRoles = new List<ProductRole>();
+
+                                        levels.ForEach(p =>
+                                        {
+                                            if (p.IsAssigned)
+                                            {
+                                                productRoles.Add(new ProductRole() { ID = p.Id, Name = p.Name, IsAssigned = p.IsAssigned });
+                                            }
+                                        });
+                                    }
+                                }
                             }
 
-							var productBatchRecord = manageProductBatch.GetProductBatchRecord(batch.EditorUserPersonaId, batch.SubjectUserPersonaId, productRoles, propertiesResponse, rolesResponse, product.ProductId, usePrimaryProperties);
+                            var productBatchRecord = manageProductBatch.GetProductBatchRecord(batch.EditorUserPersonaId, batch.SubjectUserPersonaId, productRoles, propertiesResponse, rolesResponse, product.ProductId, usePrimaryProperties);
 							if (integrationType == ProductIntegrationTypeEnum.UPFM)
 							{
 								var currentProductPropertiesData = manageProductBatch.GetExistingUserPrimaryPropertiesData(batch.SubjectUserPersonaId, product.ProductId);
