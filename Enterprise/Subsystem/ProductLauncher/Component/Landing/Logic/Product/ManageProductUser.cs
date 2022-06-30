@@ -336,7 +336,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 WriteToLog(LogEventLevel.Debug, $"Batch process for activity log exception: {ex.Message} and isBatchCompleted {isBatchCompleted} ");          
             }
-            WriteToLog(LogEventLevel.Debug, $"Batch process for activity log : {isBatchCompleted} , product: {productUser.ProductId}");
+            WriteToLog(LogEventLevel.Debug, $"Batch process for activity log : {isBatchCompleted} , product: {productUser.ProductId} , CreateUserPersonaId : {productUser.CreateUserPersonaId} ,AssignUserPersonaId: {productUser.AssignUserPersonaId} ,BatchProcessorGroupId{productUser.BatchProcessorGroupId}");
+            isBatchCompleted = _productRepository.GetProductBatchStatus(productUser.ProductBatchId);
 
             if (isBatchCompleted)
             {
