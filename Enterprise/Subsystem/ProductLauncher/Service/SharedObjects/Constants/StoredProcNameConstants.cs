@@ -296,6 +296,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         //ProductBatch
         public const string SP_CreateProductBatch = "Batch.CreateProductBatch";
         public const string SP_UpdateProductBatch = "Batch.UpdateProductBatch";
+        public const string SP_GetProductBatchStatus = "Batch.GetBatchProcessStatus";
         public const string SP_SavePersonaProductProperties = "Enterprise.SavePersonaProductProperties";
 
         //BatchProcessor
