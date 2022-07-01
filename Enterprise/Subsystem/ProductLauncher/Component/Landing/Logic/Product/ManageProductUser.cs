@@ -2731,6 +2731,107 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
     }
     #endregion
 
+    #region Utility Management
+    /// <summary>
+    /// A 'Concrete implementation for Utility Management Product  
+    /// </summary>
+    public class UtilityManagementProduct : ProductBase, IProduct
+    {
+        /// <summary>
+        /// default constructor
+        /// </summary>
+        /// <param name="userClaim">Use to hold user claim related information</param>
+        public UtilityManagementProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.UtilityManagement, userClaim, null, null)
+        {
+        }
+
+        /// <summary>
+        /// Test constructor
+        /// </summary>
+        /// <param name="userClaim">User claim related information</param>
+        /// <param name="productInternalSettingRepository">Internal settings for a product</param>
+        public UtilityManagementProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.UtilityManagement, userClaim, productInternalSettingRepository, productRepository)
+        {
+        }
+
+        /// <summary>
+        /// Create Utility Management user
+        /// </summary> 
+        /// <param name="createUserRealPageId">Logged-in user Enterprise UserId</param>
+        /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
+        /// <param name="assignUserPersonaId">new user PersonaId</param>
+        /// <param name="roleProperty">Utility Management Role And Property List</param>
+        /// <returns>String.empty if success else error</returns>
+        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object roleProperty)
+        {
+            var roleProp = roleProperty as RumUserPropertyRegionRole;
+            if (roleProp == null)
+            {
+                return "Input JSON parsing issue; Null object.";
+            }
+
+            base.UserClaim.UserRealPageGuid = createUserRealPageId;
+            var productRum = new ManageProductRum(base.UserClaim);
+
+            // assign user
+            if (roleProp.IsAssigned)
+            {
+                return productRum.ManageRumUser(createUserPersonaId, assignUserPersonaId, roleProp);
+            }
+
+            // Unassign User
+            return productRum.UnassignRumUser(createUserPersonaId, assignUserPersonaId);
+        }
+
+        /// <summary>
+        /// Update Product User Profile
+        /// </summary> 
+        /// <param name="createUserRealPageId">Logged-in user Enterprise UserId</param>
+        /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
+        /// <param name="assignUserPersonaId">new user PersonaId</param>
+        /// <param name="rolePropList">Utility Management Role And Property List</param>
+        /// <returns>String.empty if success else error</returns>
+        public string UpdateProductUserProfile(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId)
+        {
+            base.UserClaim.UserRealPageGuid = createUserRealPageId;
+            var productRum = new ManageProductRum(base.UserClaim);
+
+            return productRum.UpdateUserProfile(createUserPersonaId, assignUserPersonaId);
+        }
+
+        /// <summary>
+        /// Change Product User Type from Admin to Regular or Regular to Admin
+        /// </summary>
+        /// <param name="createUserRealPageId">Logged-in user Enterprise UserId</param>
+        /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
+        /// <param name="assignUserPersonaId">new user PersonaId</param>
+        /// <param name="batchProcessType">Batch Process Type</param>
+        /// <param name="rolePropList">OneSite Role And Property List</param>
+        /// <returns>String.empty if success else error</returns>
+        public string ChangeProductUserType(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, BatchProcessType batchProcessType, object rolePropList)
+        {
+            string changeProductUserTypeResponse = string.Empty;
+
+            var rpList = rolePropList as RumUserPropertyRegionRole;
+
+            if (rpList == null)
+            {
+                return "Input JSON parsing issue; Null object.";
+            }
+            else if ((batchProcessType == BatchProcessType.UserTypeAdminToRegular) && (rpList.PropertyList.Count == 0 && rpList.PropertyGroupList.Count == 0 && rpList.RegionList.Count == 0))
+            {
+                return "At least one Property or Group or Region is required in the Input JSON when changing a Utility Management user type from Admin to Regular.";
+            }
+
+
+            base.UserClaim.UserRealPageGuid = createUserRealPageId;
+            var rum = new ManageProductRum(base.UserClaim);
+
+            return rum.ManageRumUser(createUserPersonaId, assignUserPersonaId, rpList);
+        }
+    }
+    #endregion
+
     #region Omni Channel
     /// <summary>
     /// A 'Concrete implementation for OmniChannel Product
