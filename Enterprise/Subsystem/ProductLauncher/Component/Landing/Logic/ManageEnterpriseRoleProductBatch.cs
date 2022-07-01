@@ -408,5 +408,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 			return productRoles;
 		}	
+			else if (product == (int)ProductEnum.UtilityManagement)
+			{
+				ManageProductRum manageProductrum = new ManageProductRum(_userClaim);
+				propertyGroupResponse = manageProductrum.GetPropertyGroups(editorUserPersonaId, subjectUserPersonaId, null);
+				var regionResponse = manageProductrum.GetRegions(editorUserPersonaId, subjectUserPersonaId, null);
+
+				return BatchHelper.CreateRumProductBatchRecord(propertiesResponse, propertyGroupResponse, regionResponse, rolesResponse, usePrimaryProperties) ;
+			}
 	}
 }

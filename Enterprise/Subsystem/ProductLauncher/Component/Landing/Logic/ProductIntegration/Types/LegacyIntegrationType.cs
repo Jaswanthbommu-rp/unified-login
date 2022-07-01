@@ -1257,8 +1257,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return result;
         }
 
-        public ListResponse GetAccessTypes(long editorPersonaId, long userPersonaId) => new ListResponse();
-
         public ListResponse GetUserGroups(long editorPersonaId, long userPersonaId, long partyId, RequestParameter dataFilter)
         {
             throw new NotImplementedException();
