@@ -542,6 +542,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return integrationType.GetPropertiesByGroup(editorPersonaId, userPersonaId, propertyGroupId, datafilter);
         }
 
+        public ListResponse GetProductRights(long editorPersonaId, long userPersonaId, long partyId, int productId, RequestParameter datafilter)
+        {
+            ListResponse result = new ListResponse();
+            switch (productId)
+            {
+                case (int)ProductEnum.UtilityManagement:
+                    var manageProductRum = new ManageProductRum(_userClaims);
+                    result = manageProductRum.GetRoles(editorPersonaId, userPersonaId, datafilter);
+                    break;
+
+                default:
+                    break;
+            }
+            return result;
+        }
+
         public ListResponse GetProductOrganizations(long editorPersonaId, long userPersonaId, int productId, string organizationRoleId, string organizationType)
         {
             ListResponse result;
@@ -561,6 +577,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.FinancialSuite:
                     var manageProductOneSiteAccounting = new ManageProductOneSiteAccounting(_userClaims);
                     result = manageProductOneSiteAccounting.GetUserPropertyGroups(editorPersonaId, userPersonaId, datafilter);
+                    break;
+                case (int)ProductEnum.UtilityManagement:
+                    var manageProductRum = new ManageProductRum(_userClaims);
+                    result = manageProductRum.GetUMGlobalRoles(editorPersonaId, userPersonaId, datafilter);
                     break;
                 default:
                     break;

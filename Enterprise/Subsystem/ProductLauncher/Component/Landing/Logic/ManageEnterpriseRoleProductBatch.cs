@@ -407,6 +407,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			}
 
 			return productRoles;
-		}		
+		}	
 	}
 }

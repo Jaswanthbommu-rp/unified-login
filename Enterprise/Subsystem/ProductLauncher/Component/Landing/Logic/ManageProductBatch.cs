@@ -149,6 +149,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 				return BatchHelper.CreateProductBatchRecordForPortfolioManagement(propertyRoles, roles, usePrimaryProperties);
 			}
+			else if (product == (int)ProductEnum.UtilityManagement)
+			{
+				ManageProductRum manageProductrum = new ManageProductRum(_userClaims);
+				propertyGroupResponse = manageProductrum.GetPropertyGroups(editorUserPersonaId, subjectUserPersonaId, null);
+				var regionResponse = manageProductrum.GetRegions(editorUserPersonaId, subjectUserPersonaId, null);
+
+				return BatchHelper.CreateRumProductBatchRecord(propertiesResponse, propertyGroupResponse, regionResponse, rolesResponse, usePrimaryProperties);
+			}
 			else
 			{
 				var type = _integrationTypeFactory.GetIntegrationTypeForProductId(product);
