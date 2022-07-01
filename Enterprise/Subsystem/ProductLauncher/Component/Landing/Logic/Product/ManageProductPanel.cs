@@ -571,7 +571,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public ListResponse GetProductLocationGroups(long editorPersonaId, long userPersonaId, int productId, RequestParameter datafilter, bool assignedOnly = false, string userLoginName = "")
         {
             ListResponse result = new ListResponse();
-
+           
             switch (productId)
             {
                 case (int)ProductEnum.FinancialSuite:
@@ -588,15 +588,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (result.IsError)
             {
                 throw new Exception(result.ErrorReason);
-            }
-
+            }           
+           
             return result;
-        }
-
-        public ListResponse GetProductAccessTypes(long editorPersonaId, long userPersonaId, int productId)
-        {
-            var integrationType = _integrationTypeFactory.GetIntegration(productId);
-            return integrationType.GetAccessTypes(editorPersonaId, userPersonaId);
         }
 
         /// <summary>
