@@ -375,7 +375,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			return selectedProperties;
 		}
 
-		private IList<ProductRole>  GetProductRoleList (List<RoleTemplateProductRole> roleTemplateProductRole, int productId)
+		private IList<ProductRole> GetProductRoleList(List<RoleTemplateProductRole> roleTemplateProductRole, int productId)
 		{
 			ListResponse rolesResponse = new ListResponse();
 			IList<ProductRole> productRoles = new List<ProductRole>();
@@ -407,6 +407,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			}
 
 			return productRoles;
-		}		
+		}
 	}
 }
