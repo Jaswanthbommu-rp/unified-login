@@ -650,6 +650,68 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Helper
 			return productBatchList;
 		}
 
+		public static ProductBatch CreateRumProductBatchRecord(ListResponse propertiesResponse, ListResponse groupResponse, ListResponse regionResponse, ListResponse rolesResponse, bool usePrimaryProperties)
+		{
+			List<string> propertyList = new List<string>();
+			List<string> propertyGroupList = new List<string>();
+			List<string> regionsList = new List<string>();
+			List<string> roleList = new List<string>();
+
+			IEnumerable<object> roleCollection = (IEnumerable<object>)rolesResponse.Records;
+			foreach (object item in roleCollection)
+			{
+				if (((RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Rum.Role)item).IsAssigned)
+				{
+					roleList.Add(((RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Rum.Role)item).Name);
+				}
+			}
+
+			IEnumerable<object> regionCollection = (IEnumerable<object>)regionResponse.Records;
+			foreach (object item in regionCollection)
+			{
+				if (((RumPropertyGroup)item).IsAssigned)
+				{
+					regionsList.Add(((RumPropertyGroup)item).Id.ToString());
+				}
+			}
+
+			IEnumerable<object> groupCollection = (IEnumerable<object>)groupResponse.Records;
+			foreach (object item in groupCollection)
+			{
+				if (((RumPropertyGroup)item).IsAssigned)
+				{
+					propertyGroupList.Add(((RumPropertyGroup)item).Id.ToString());
+				}
+			}
+
+			IEnumerable<object> propertiesCollection = (IEnumerable<object>)propertiesResponse.Records;
+			foreach (object item in propertiesCollection)
+			{
+				if (((RumPropertyGroup)item).IsAssigned)
+				{
+					propertyList.Add(((RumPropertyGroup)item).Id.ToString());
+				}
+			}
+
+			// Below logic is applied when a user is being cloned from a user that has access to all properties. 
+			if (propertiesCollection != null && propertyGroupList.Count == 0)
+			{
+				var unselectedPropertiesCount = propertiesCollection.Where(p => ((RumPropertyGroup)p).IsAssigned == false).Count();
+				if (unselectedPropertiesCount == propertiesCollection.Count())
+					propertyList.Add("All");
+			}
+
+			ProductBatch pb = new ProductBatch()
+			{
+				ProductId = (int)ProductEnum.UtilityManagement,
+				StatusTypeId = 5,
+				RetryCount = 0,
+				InputJson = new RolePropertyList() { PropertyList = propertyList, PropertyGroupList = propertyGroupList, RegionList = regionsList, RoleList = roleList, UsePrimaryProperties = usePrimaryProperties }
+			};
+
+			return pb;
+		}
+
 		/// <summary>
 		/// Create ResidentPortal ProductBatch Record
 		/// </summary>

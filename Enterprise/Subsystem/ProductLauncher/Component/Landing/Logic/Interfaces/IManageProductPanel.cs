@@ -84,6 +84,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// Get Product Rights
 		/// </summary> 
 		/// <param name="editorPersonaId">editorPersonaId</param>
+		/// <param name="partyId"></param>
+		/// <param name="productId"></param>
+		/// <param name="userPersonaId"></param>
+		/// <param name="datafilter"></param>			
+		/// <returns>String.empty if success else error</returns>
+		ListResponse GetProductRights(long editorPersonaId, long userPersonaId, long partyId, int productId, RequestParameter datafilter);
+
+		/// <summary>
+		/// Get Product Rights
+		/// </summary> 
+		/// <param name="editorPersonaId">editorPersonaId</param>
 		/// <param name="userPersonaId"></param>
 		/// <param name="productId"></param>
 		/// <param name="organizationRoleId"></param>

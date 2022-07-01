@@ -125,6 +125,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     result = manageProductRentersInsurance.ListRolesResponse(editorPersonaId, userPersonaId);
                     break;
 
+                case (int)ProductEnum.UtilityManagement:
+                    var manageProductRum = new ManageProductRum(_userClaims);
+                    result = manageProductRum.GetRoles(editorPersonaId, userPersonaId, dataFilter);
+                    break;
+
                 case (int)ProductEnum.UnifiedAmenities:
                     IManageUnifiedAmenities manageUnifiedAmenities = new ManageUnifiedAmenities(_userClaims);
                     result = manageUnifiedAmenities.GetRoles(editorPersonaId, userPersonaId, partyId);
@@ -293,6 +298,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.Insurance:
                     ManageProductRentersInsurance manageProductRentersInsurance = new ManageProductRentersInsurance(_userClaims);
                     result = manageProductRentersInsurance.ListProperties(editorPersonaId, userPersonaId, dataFilter);
+                    break;
+
+                case (int)ProductEnum.UtilityManagement:
+                    var manageProductRum = new ManageProductRum(_userClaims);
+                    result = manageProductRum.GetProperties(editorPersonaId, userPersonaId, dataFilter);
                     break;
 
                 case (int)ProductEnum.UnifiedAmenities:
@@ -525,6 +535,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         productUser.AssignUserPersonaId, productPropertiesRoles);
                     break;
 
+                case (int)ProductEnum.UtilityManagement:
+                    product = new UtilityManagementProduct(_userClaims);
+                    productPropertiesRoles =
+                        DeserializeJSON<RumUserPropertyRegionRole>(productUser.InputJson);
+                    result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
+                        productUser.AssignUserPersonaId, productPropertiesRoles);
+                    break;
+
                 case (int)ProductEnum.ResearchApplication:
                     product = new ResearchApplicationProduct(_userClaims);
                     productPropertiesRoles =
@@ -717,6 +735,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         DeserializeJSON<RentersInsuranceRoleAndPropertyList>(batchRecord.InputJson);
                     result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
                     break;
+                case (int)ProductEnum.UtilityManagement:
+                    product = new UtilityManagementProduct(_userClaims);
+                    productPropertiesRoles =
+                        DeserializeJSON<RumUserPropertyRegionRole>(batchRecord.InputJson);
+                    result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
+                    break;
                 case (int)ProductEnum.ResearchApplication:
                     product = new ResearchApplicationProduct(_userClaims);
                     productPropertiesRoles =
@@ -847,6 +871,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     var productList = _productRepository.GetAllProducts();
                     string productcode = ProductEnumHelper.GetBooksSourceCodeByProductId(_productId, productList);
                     result = manageProductAo.GetProductPropertyGroups(editorPersonaId, userPersonaId, productcode, userLoginName);
+                    break;
+                case (int)ProductEnum.UtilityManagement:
+                    var manageProductRum = new ManageProductRum(_userClaims);
+                    result = manageProductRum.GetPropertyGroups(editorPersonaId, userPersonaId, datafilter);
                     break;
                 case (int)ProductEnum.DepositAlternative:
                     var productDALogic = ManageProductFactory.GetProductLogic(_productId, editorPersonaId, userPersonaId, _userClaims);
@@ -991,6 +1019,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     break;
                 case (int)ProductEnum.Insurance:
                     product = new RentersInsuranceProduct(_userClaims);
+                    result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
+                    break;
+                case (int)ProductEnum.UtilityManagement:
+                    product = new UtilityManagementProduct(_userClaims);
                     result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
                     break;
                 case (int)ProductEnum.ResearchApplication:
@@ -1171,6 +1203,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     break;
                 case (int)ProductEnum.SelfProvisioningPortal:
                     product = new SelfProvisioningPortalProduct(_userClaims, _productInternalSettingRepository, _productRepository);
+                    result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
+                    break;
+                case (int)ProductEnum.UtilityManagement:
+                    product = new UtilityManagementProduct(_userClaims, _productInternalSettingRepository, _productRepository);
                     result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
                 case (int)ProductEnum.AssetOptimizer:
