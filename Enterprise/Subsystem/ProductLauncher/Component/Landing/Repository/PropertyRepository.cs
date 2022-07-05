@@ -408,6 +408,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             return result;
 
         }
+
+        public RepositoryResponse DeleteStagedUserProductPrimaryProperties(long userPersonaId, int productId)
+        {
+            RepositoryResponse result = new RepositoryResponse() { Id = 0, ErrorMessage = "" };
+
+            using (var repository = GetRepository())
+            {
+                dynamic param = new
+                {
+                    @ProductId = productId,
+                    @PersonaId = userPersonaId
+                };
+
+                result = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_DeletePersonaProductMatchedPrimaryProperties, param);
+            }
+            return result;
+        }
         #endregion
 
         #region Private methods

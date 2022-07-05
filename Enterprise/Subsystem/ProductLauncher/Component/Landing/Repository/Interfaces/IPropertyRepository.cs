@@ -115,5 +115,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         RepositoryResponse DeleteUPFMPropertyInstance(Guid propertyInstanceID);
 
         RepositoryResponse StageUserProductPrimaryProperties(string stagingData, long userPersonaId, int productId, long createdBy);
+        RepositoryResponse DeleteStagedUserProductPrimaryProperties(long userPersonaId, int productId);
     }
 }

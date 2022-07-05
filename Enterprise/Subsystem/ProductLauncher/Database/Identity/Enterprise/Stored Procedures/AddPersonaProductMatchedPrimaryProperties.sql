@@ -55,7 +55,7 @@ BEGIN
 			(SELECT productPropertyId, propertyInstanceId,propertyName  FROM
 				OPENJSON (@PropertyInstanceJSON)  
 				WITH (
-				           productPropertyId bigint '$.productPropertyId',
+				           productPropertyId varchar(100) '$.productPropertyId',
 				           propertyInstanceId varchar(max) '$.propertyInstanceId',
 						   propertyName varchar(max) '$.propertyName'
 				 )

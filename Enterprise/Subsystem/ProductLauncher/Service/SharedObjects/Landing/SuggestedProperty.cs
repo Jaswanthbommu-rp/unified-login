@@ -16,7 +16,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
 		/// productPropertyId
 		/// </summary>
 		[JsonProperty(PropertyName = "productPropertyId")]
-		public long ProductPropertyId { get; set; } = 0;
+		public string ProductPropertyId { get; set; } = "0";
 
 		/// <summary>
 		///propertyInstanceId
