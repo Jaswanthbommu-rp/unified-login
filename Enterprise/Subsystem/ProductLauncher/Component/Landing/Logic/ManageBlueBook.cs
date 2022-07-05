@@ -53,8 +53,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         readonly IProductInternalSettingRepository _productInternalSettingRepository;
         readonly IProductRepository _productRepository;
 
-        readonly AuthTokenData _authTokenInfo = new AuthTokenData();
-
         private bool useDomains = false;
         private bool useUPFMId = false;
 
@@ -86,11 +84,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             #endregion
 
-            bbUri = productInternalSettingList.First(a => a.Name.Equals("BlueBookAPIEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
             useDomains = GetBooleanProductSettings("BooksUseDomains");
             useUPFMId = GetBooleanProductSettings("BooksUseUPFMId");
 
-            _httpClient = new HttpClient {BaseAddress = new Uri(bbUri)};
+            string udmViaKong = productInternalSettingList.Any(a => a.Name.Equals("UDMViaKong", StringComparison.OrdinalIgnoreCase)) ? productInternalSettingList.First(a => a.Name.Equals("UDMViaKong", StringComparison.OrdinalIgnoreCase)).Value : string.Empty;
+
+            if (!string.IsNullOrEmpty(udmViaKong) && udmViaKong == "0")
+            {
+                bbUri = productInternalSettingList.First(a => a.Name.Equals("BlueBookAPIEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
+                _httpClient = new HttpClient { BaseAddress = new Uri(bbUri) };
+            }
+            else
+            {
+                bbUri = productInternalSettingList.First(a => a.Name.Equals("KongApiEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
+                string kongKey = productInternalSettingList.First(a => a.Name.Equals("KONG_KEY", StringComparison.OrdinalIgnoreCase)).Value;
+
+                _httpClient = new HttpClient { BaseAddress = new Uri(bbUri + "/books/") };
+                _httpClient.DefaultRequestHeaders.Add("apikey", kongKey);
+            }
+
         }
 
         /// <summary>
@@ -119,12 +131,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             #endregion
 
-            bbUri = productInternalSettingList.First(a => a.Name.Equals("BlueBookAPIEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
             useDomains = GetBooleanProductSettings("BooksUseDomains");
             useUPFMId = GetBooleanProductSettings("BooksUseUPFMId");
 
-            //bbUri = "https://booksapi.realpage.com";
-            _httpClient = new HttpClient {BaseAddress = new Uri(bbUri)};
+            string udmViaKong = productInternalSettingList.Any(a => a.Name.Equals("UDMViaKong", StringComparison.OrdinalIgnoreCase))? productInternalSettingList.First(a => a.Name.Equals("UDMViaKong", StringComparison.OrdinalIgnoreCase)).Value : string.Empty ;
+            
+            if (!string.IsNullOrEmpty(udmViaKong) && udmViaKong == "0")
+            {
+                bbUri = productInternalSettingList.First(a => a.Name.Equals("BlueBookAPIEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
+                _httpClient = new HttpClient { BaseAddress = new Uri(bbUri) };
+            }
+            else
+            {
+                bbUri = productInternalSettingList.First(a => a.Name.Equals("KongApiEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
+                string kongKey = productInternalSettingList.First(a => a.Name.Equals("KONG_KEY", StringComparison.OrdinalIgnoreCase)).Value;
+
+                _httpClient = new HttpClient { BaseAddress = new Uri(bbUri + "/books/") };
+                _httpClient.DefaultRequestHeaders.Add("apikey", kongKey);
+            }
+
         }
 
         /// <summary>
@@ -2295,12 +2320,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             int failedCount = 0;
             HttpResponseMessage response = new HttpResponseMessage();
 
-            if (!AddAuthHeader())
-            {
-                response.StatusCode = HttpStatusCode.BadRequest;
-                return response;
-            }
-
             while (!doneProcessing)
             {
                 response = _httpClient.GetAsync(uri).Result;
@@ -2313,10 +2332,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     }
                     else
                     {
-                        // reset the token so it gets a new one if we got an unauthorized error
-                        _manageBlueBookCache.Remove("bluebookToken");
-                        AddAuthHeader();
-                        failedCount += 1;
+                      failedCount += 1;
                     }
 
                     if (failedCount >= MAXRETRYCOUNT)
@@ -2329,80 +2345,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return response;
         }
 
-        /// <summary>
-        /// Used to add the token header for Books
-        /// </summary>
-        /// <returns></returns>
-        private bool AddAuthHeader()
-        {
-            return true; // don't do the auth header right now
-
-            string _token = _manageBlueBookCache["bluebookToken"] as string;
-            if (_token == null)
-            {
-                if (!GetAuthToken())
-                {
-                    //return false;
-                }
-
-                _token = _manageBlueBookCache["bluebookToken"] as string;
-            }
-
-            if (_token != null)
-            {
-                _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
-            }
-
-            return true;
-        }
-
-        /// <summary>
-        /// Used to get the auth token for the books
-        /// </summary>
-        /// <returns></returns>
-        private bool GetAuthToken()
-        {
-            try
-            {
-                string url = "/login";
-                HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Post, url);
-                req.Content = new StringContent(JsonConvert.SerializeObject(_authTokenInfo), System.Text.Encoding.Default, "application/vnd.api+json");
-                // need to blank out the content charset because the books api doesn't like if one is sent with the content type
-                req.Content.Headers.ContentType.CharSet = "";
-                if (!_httpClient.DefaultRequestHeaders.Contains("Accept"))
-                {
-                    _httpClient.DefaultRequestHeaders.Add("Accept", "application/vnd.api+json");
-                }
-
-                var response = _httpClient.SendAsync(req);
-
-                if (response.Result.IsSuccessStatusCode)
-                {
-                    var tokenResult = JsonConvert.DeserializeObject<dynamic>(response.Result.Content.ReadAsStringAsync().Result);
-                    if (tokenResult.token != null)
-                    {
-                        string _token = tokenResult.token;
-                        CacheItemPolicy policy = new CacheItemPolicy();
-                        policy.AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(AuthTokenRefreshMinutes);
-                        _manageBlueBookCache.Set("bluebookToken", _token, policy);
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            catch (Exception ex)
-            {
-                return false;
-            }
-        }
-
+        
         #endregion
 
         /// <summary>
@@ -2411,37 +2354,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         public void Dispose()
         {
             _httpClient.Dispose();
-        }
-
-        /// <summary>
-        /// Used to get an auth token for the books
-        /// </summary>
-        private class AuthTokenData
-        {
-            [JsonProperty("data")] public AuthToken Data { get; set; }
-
-            public AuthTokenData()
-            {
-                Data = new AuthToken();
-            }
-        }
-
-        /// <summary>
-        /// Used to get an auth token for the books
-        /// </summary>
-        private class AuthToken
-        {
-            /// <summary>
-            /// The email to use for the token
-            /// </summary>
-            [JsonProperty("name")]
-            public string Name { get; set; }
-
-            /// <summary>
-            /// The password to use for the token
-            /// </summary>
-            [JsonProperty("password")]
-            public string Password { get; set; }
         }
 
         /// <summary>

@@ -1409,5 +1409,6 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\November2020Release.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\December2020Release.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2022-PrimaryProperty-Operator.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\AccessUDM-viaKongOrDirectly.sql" />
   </ItemGroup>
 </Project>
