@@ -84,6 +84,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     WriteToLog(LogEventLevel.Debug, $"Translated User Product Properties Saved");
                 }
             }
+            else
+            {
+                repositoryResponse = _propertyRepository.DeleteStagedUserProductPrimaryProperties(userData.PersonaId, productId);
+            }
             WriteToLog(LogEventLevel.Debug, $"End Translate And Save User Product Properties");
             return repositoryResponse;
         }
@@ -140,7 +144,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             }
                             propertiesStagingData.Add(new SuggestedProperty
                             {
-                                ProductPropertyId = long.Parse(property.ID),
+                                ProductPropertyId = property.ID,
                                 PropertyInstanceId = instanceExists != null ? Guid.Parse(instanceExists.PropertyInstanceSourceId) : Guid.Empty,
                                 PropertyName = property.Name
                             });
@@ -162,7 +166,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             }
                             propertiesStagingData.Add(new SuggestedProperty
                             {
-                                ProductPropertyId = long.Parse(property.Id),
+                                ProductPropertyId = property.Id,
                                 PropertyInstanceId = instanceExists != null ? Guid.Parse(instanceExists.PropertyInstanceSourceId) : Guid.Empty,
                                 PropertyName = property.PropertyName
                             });
@@ -183,7 +187,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             }
                             propertiesStagingData.Add(new SuggestedProperty
                             {
-                                ProductPropertyId = long.Parse(property.AssetID),
+                                ProductPropertyId = property.AssetID,
                                 PropertyInstanceId = instanceExists != null ? Guid.Parse(instanceExists.PropertyInstanceSourceId) : Guid.Empty,
                                 PropertyName = property.Name
                             });
@@ -204,7 +208,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             }
                             propertiesStagingData.Add(new SuggestedProperty
                             {
-                                ProductPropertyId = long.Parse(property.GetPropertyId.ToString()),
+                                ProductPropertyId = property.GetPropertyId.ToString(),
                                 PropertyInstanceId = instanceExists != null ? Guid.Parse(instanceExists.PropertyInstanceSourceId) : Guid.Empty,
                                 PropertyName = property.GetName
                             });
@@ -225,7 +229,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             }
                             propertiesStagingData.Add(new SuggestedProperty
                             {
-                                ProductPropertyId = long.Parse(property.Id.ToString()),
+                                ProductPropertyId = property.Id.ToString(),
                                 PropertyInstanceId = instanceExists != null ? Guid.Parse(instanceExists.PropertyInstanceSourceId) : Guid.Empty,
                                 PropertyName = property.Name
                             });
@@ -246,7 +250,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             }
                             propertiesStagingData.Add(new SuggestedProperty
                             {
-                                ProductPropertyId = long.Parse(property.GetPropertyId),
+                                ProductPropertyId = property.GetPropertyId,
                                 PropertyInstanceId = instanceExists != null ? Guid.Parse(instanceExists.PropertyInstanceSourceId) : Guid.Empty,
                                 PropertyName = property.GetName
                             });
@@ -267,7 +271,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             }
                             propertiesStagingData.Add(new SuggestedProperty
                             {
-                                ProductPropertyId = long.Parse(property.ID),
+                                ProductPropertyId = property.ID,
                                 PropertyInstanceId = instanceExists != null ? Guid.Parse(instanceExists.PropertyInstanceSourceId) : Guid.Empty,
                                 PropertyName = property.Name
                             });
