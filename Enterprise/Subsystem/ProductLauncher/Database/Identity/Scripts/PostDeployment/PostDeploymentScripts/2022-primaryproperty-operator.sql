@@ -97,14 +97,9 @@ WHERE	UIId='UnifiedPlatformProductAccessAllowaccesstoallcurrentandfutureproperti
 GO
 Declare @ServerName SYSNAME = @@SERVERNAME
 	Declare @topicName1 varchar(256),@topicName2 varchar(256),@topicName3 varchar(256)
-	SET @topicName1 = '';
-	SET @topicName2 = '';
-	IF @ServerName IN ('RCDUSODBSQL001')  --DEV
-	BEGIN
-		SET @topicName1 = 'RPUS-UNITY-USERS-INTERNAL-SYNC-DEV';
-		SET @topicName2 = 'RPUS-UNITY-USERS-INTERNAL-PRODUCT-PROPERTY-SYNC-DEV';
-		SET @topicName3 = 'RPUS-UNITY-USERS-DASHBOARD-DEV'
-	END
+	SET @topicName1 = 'RPUS-UNITY-USERS-INTERNAL-SYNC-DEV';
+	SET @topicName2 = 'RPUS-UNITY-USERS-INTERNAL-PRODUCT-PROPERTY-SYNC-DEV';
+	SET @topicName3 = 'RPUS-UNITY-USERS-DASHBOARD-DEV'
 	IF @ServerName IN ('rctusodbsql001') --QA
 	BEGIN
 		SET @topicName1 = 'RPUS-UNITY-USERS-INTERNAL-SYNC-QA';
