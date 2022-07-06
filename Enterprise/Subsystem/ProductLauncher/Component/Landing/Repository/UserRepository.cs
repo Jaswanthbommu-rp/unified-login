@@ -5694,13 +5694,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 bool employeeIdChanged = isEmployeeIdChanged(updateUserProfileEntity.NewProfile, updateUserProfileEntity.OldProfile);
 
                 bool isPrimaryPropertiesUpdated = false;
-                List<string> addedPrimaryProperty = new List<string>();
-                List<string> removedPrimaryProperty = new List<string>();
 
                 var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesByRealPageID" : StoredProcNameConstants.SP_ListRolesByRealPageID;
                 var enterpriseRoles = repository.GetMany<EnterpriseRole>(procName, new { realPageId = updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId });
 
-
+                var gbProdBatch = new ProductBatch();
 
                 try
                 {
@@ -6289,7 +6287,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
 
                         // GreenBook - UnifiedLogin call updating GB Role
-                        var gbProdBatch = updateUserProfileEntity.NewProfile.productBatch.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedPlatform);
+                        gbProdBatch = updateUserProfileEntity.NewProfile.productBatch.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedPlatform);
 
                         if (gbProdBatch != null)
                         {
@@ -6394,10 +6392,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             string message = "{2} updated Primary Properties for {0} {1}.";
                             List<AdditionalParameters> additionalParameters = new List<AdditionalParameters>();
 
-                            if (addedPrimaryProperty.Count > 0)
+                            if (gbProdBatch.InputJson?.PropertyList?.Count > 0)
                             {
                                 List<Guid> addedGuid = new List<Guid>();
-                                foreach (var item in addedPrimaryProperty)
+                                foreach (var item in gbProdBatch.InputJson?.PropertyList)
                                 {
                                     addedGuid.Add(new Guid(item));
                                 }
@@ -6414,11 +6412,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 }
                             }
 
-                            if (removedPrimaryProperty.Count > 0)
+                            if (gbProdBatch.InputJson?.RemovedPropertyList?.Count > 0)
                             {
                                 List<Guid> removedGuid = new List<Guid>();
 
-                                foreach (var item in removedPrimaryProperty)
+                                foreach (var item in gbProdBatch.InputJson?.RemovedPropertyList)
                                 {
                                     removedGuid.Add(new Guid(item));
                                 }
