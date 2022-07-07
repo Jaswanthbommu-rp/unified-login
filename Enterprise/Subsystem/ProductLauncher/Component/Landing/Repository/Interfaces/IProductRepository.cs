@@ -255,6 +255,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 
         void UpdateBatchGroupStatus(int groupId, bool isLogged);
 
+        void UpdateBatchProcessorLog(int batchProcessorId, DateTime? startDateTime, DateTime? endDateTime);
+
         /// <summary>
         /// GetEnterpriseRoleForPersona
         /// </summary>

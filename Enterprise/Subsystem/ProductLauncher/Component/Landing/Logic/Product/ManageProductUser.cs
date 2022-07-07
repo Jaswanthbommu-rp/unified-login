@@ -254,6 +254,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 var integration = _integrationTypeFactory.GetIntegration(productUser.ProductId);
+                _productRepository.UpdateBatchProcessorLog(productUser.ProductBatchId, DateTime.UtcNow, null);
                 result = integration.CreateUser(productUser);
             }
             catch (Exception ex)
@@ -265,6 +266,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 result = realError.Message;
                 WriteToLog(LogEventLevel.Debug, $"ManageProductUser.CreateProductUser: User Sync Request process for product: {productUser.ProductId} settings and persona: {productUser.AssignUserPersonaId} and realerror : {realError.Message}");
 
+            }
+            finally
+            {
+                _productRepository.UpdateBatchProcessorLog(productUser.ProductBatchId, null, DateTime.UtcNow);
             }
 
             var isBatchCompleted = false;
@@ -1106,7 +1111,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             logger = logger.ForContext("CorrelationId", correlationId);
             logger.Write(logType, exception, message);
         }
-
+        
     }
 
 

@@ -4,7 +4,7 @@ CREATE TABLE [Batch].[BatchProcessorLog]
 	BatchProcessorLogId [bigint] IDENTITY(1,1) NOT NULL,
 	[BatchProcessorId] [bigint] NOT NULL,
 	StartDatetime DATETIME2 NOT NULL,
-	EndDatetime DATETIME2 NOT NULL,
+	EndDatetime DATETIME2 NULL,
 	[CreatedDateTime] [datetime] NOT NULL,
  CONSTRAINT [PK_BatchProcessorLogId] PRIMARY KEY CLUSTERED 
 (

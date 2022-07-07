@@ -2337,6 +2337,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 });
             }
         }
+
+        public void UpdateBatchProcessorLog(int batchProcessorId, DateTime? startDateTime, DateTime? endDateTime)
+        {
+            using (var repo = GetRepository())
+            {
+                repo.ExecuteNonQuery(StoredProcNameConstants.SP_InsertBatchProcessorLog, new
+                {
+                    batchProcessorId = batchProcessorId,
+                    startDateTime = startDateTime,
+                    endDateTime = endDateTime
+                });
+            }
+        }
         #endregion
     }
 }
