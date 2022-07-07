@@ -6395,19 +6395,39 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             if (gbProdBatch.InputJson?.PropertyList?.Count > 0)
                             {
                                 List<Guid> addedGuid = new List<Guid>();
+                                bool allProperties = false;
                                 foreach (var item in gbProdBatch.InputJson?.PropertyList)
                                 {
-                                    addedGuid.Add(new Guid(item));
+                                    if (!item.Equals("-1"))
+                                    {
+                                        addedGuid.Add(new Guid(item));
+                                    }
+                                    else
+                                    {
+                                        allProperties = true;
+                                        break;
+                                    }
                                 }
 
-                                var properties = _propertyRepository.ListUPFMPropertyInstanceIdByInstanceIds(addedGuid);
+                                if (!allProperties)
+                                {
+                                    var properties = _propertyRepository.ListUPFMPropertyInstanceIdByInstanceIds(addedGuid);
 
-                                foreach (var item in properties)
+                                    foreach (var item in properties)
+                                    {
+                                        additionalParameters.Add(new AdditionalParameters()
+                                        {
+                                            Key = "Primary Properties",
+                                            Value = "{\"action\" : \"Assigned\", \"value\" : \"" + item.Name + "\"}"
+                                        });
+                                    }
+                                }
+                                else
                                 {
                                     additionalParameters.Add(new AdditionalParameters()
                                     {
                                         Key = "Primary Properties",
-                                        Value = "{\"action\" : \"Assigned\", \"value\" : \"" + item.Name + "\"}"
+                                        Value = "{\"action\" : \"Assigned\", \"value\" : \"All Properties\"}"
                                     });
                                 }
                             }
@@ -6418,7 +6438,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                                 foreach (var item in gbProdBatch.InputJson?.RemovedPropertyList)
                                 {
-                                    removedGuid.Add(new Guid(item));
+                                    if (Guid.TryParse(item, out Guid propertyGuid))
+                                    {
+                                        removedGuid.Add(propertyGuid);
+                                    }
                                 }
 
                                 var properties = _propertyRepository.ListUPFMPropertyInstanceIdByInstanceIds(removedGuid);
