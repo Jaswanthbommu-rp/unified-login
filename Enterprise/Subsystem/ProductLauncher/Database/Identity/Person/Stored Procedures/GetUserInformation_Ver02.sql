@@ -147,6 +147,7 @@ BEGIN
 		UserId,
 		PersonaId,
 		UserEffectiveDate,
+		LastLogin,
 		UserExpirationDate,
 		IsExternalIdp,
 		[Status],
@@ -200,6 +201,7 @@ BEGIN
 					ul.UserId AS 'UserId',
 					p.PersonaId AS 'PersonaId',
 					ul.CreateDate AS 'UserEffectiveDate',
+					ul.LastLoginDate AS 'LastLogin',
 					ULP.Thrudate AS 'UserExpirationDate',
 					CASE
 						WHEN ipt.[Name] = 'ID3' THEN 0
@@ -269,6 +271,7 @@ BEGIN
 				UserId,
 				PersonaId,
 				UserEffectiveDate,
+				LastLogin,
 				UserExpirationDate,
 				IsExternalIdp,
 				[Status],

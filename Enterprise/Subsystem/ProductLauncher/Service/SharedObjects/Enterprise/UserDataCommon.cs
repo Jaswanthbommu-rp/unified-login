@@ -13,6 +13,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterp
 		private bool _userEffectiveDateNull = true;
 		private DateTime _userExprirationDate;
 		private bool _userExpirationDateNull = true;
+		private DateTime _LastLogin;
+		private bool _LastLoginNull = true;
 		#endregion
 
 		/// <summary>
@@ -126,5 +128,39 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterp
 		/// </summary>
 		[JsonProperty("EmployeeId", NullValueHandling = NullValueHandling.Ignore)]
 		public string EmployeeId { get; set; }
+
+		/// <summary>
+		/// User last login date
+		/// </summary>
+		[JsonProperty(PropertyName = "LastLogin")]
+		//public DateTime? LastLogin { get; set; }
+		public DateTime? LastLogin
+		{
+			get
+			{
+				if (!_LastLoginNull)
+				{
+					return DateTime.SpecifyKind(_LastLogin, DateTimeKind.Utc);
+				}
+				else
+				{
+					return null;
+				}
+			}
+
+			set
+			{
+				if (value.HasValue)
+				{
+					_LastLogin = value.Value;
+					_LastLoginNull = false;
+				}
+				else
+				{
+					_LastLoginNull = true;
+				}
+			}
+		}
+
 	}
 }
