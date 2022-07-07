@@ -780,7 +780,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     List<string> unassignedProperties = new List<string>();
                     List<string> assignedProperties = new List<string>();
 
-                    //var product = ProductEnumHelper.GetUPFMProductEnum(_upfmProductId);
+                    if (!IsSuperUser(userPersonaId) && userAssignProductPropertyRole.IsAssigned && assignedPropertyList?.Count == 0 && unassignedProperties?.Count == 0)
+                    {
+                        WriteToErrorLog($"ManageUPFMProductUser - No Properties are found to assign/unassign for user with userPersonaId - {userPersonaId}");
+                        return "No Properties are found to assign/unassign";
+                    }
 
                     if (assignedPropertyList != null)
                     {
