@@ -257,7 +257,7 @@ BEGIN
 		AND		pr.ThruDate IS null AND ulp.IsRPEmployee = 0
 	)
 
-	SELECT	CompanyName,
+	SELECT distinct	CompanyName,
 				FirstName,
 				MiddleName,
 				LastName,
