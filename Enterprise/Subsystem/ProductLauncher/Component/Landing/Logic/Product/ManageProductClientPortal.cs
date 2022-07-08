@@ -341,7 +341,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                       CreateClientPortalContact(new ClientPortalContact
                       {
                           AccountId = accountId,
-                          Email = uniqueProductLoginName,
+                          Email = productLoginName,
                           FirstName = person.FirstName,
                           LastName = person.LastName,
                           Unified_Platform_User__c = true
@@ -387,7 +387,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     TimeZoneSidKey = "America/Chicago",
                     Username = uniqueProductLoginName,
                     LocaleSidKey = "en_US",
-                    CommunityNickname = uniqueProductLoginName.Substring(0, uniqueProductLoginName.Length >= 40 ? 40 : uniqueProductLoginName.Length),
+                    CommunityNickname = userLogin.LoginName.Substring(0, userLogin.LoginName.Length >= 40 ? 40 : userLogin.LoginName.Length), 
                     Alias = GetAliasFromLogin(uniqueProductLoginName),
                     ProfileId = clientPortalPropertyRole.RoleList[0],
                     IsActive = true
