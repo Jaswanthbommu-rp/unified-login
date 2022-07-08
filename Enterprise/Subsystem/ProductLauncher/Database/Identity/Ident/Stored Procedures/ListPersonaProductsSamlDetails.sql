@@ -40,7 +40,7 @@ BEGIN
 	    
 		SELECT  @userStatus = ST.Name
 		   FROM Ident.UserLoginPersona ULP
-		       INNER JOIN Person.Persona PP  on ULP.UserLoginPersonaId = PP.PersonaId
+		       INNER JOIN Person.Persona PP  on ULP.UserLoginPersonaId = PP.UserLoginPersonaId
 		       INNER JOIN Enterprise.StatusType ST  on ST.StatusTypeId = ULP.StatusTypeId
 		   where PP.PersonaId = @PersonaId
 
