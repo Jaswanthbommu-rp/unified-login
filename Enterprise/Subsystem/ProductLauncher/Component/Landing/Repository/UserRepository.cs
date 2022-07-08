@@ -6772,7 +6772,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                             additionalParams.Add(new AdditionalParameters()
                             {
-                                Key = "Operator Field",
+                                Key = "Operator",
                                 Value = "{\"old\" : \"" + oldData.ThirdPartyCompanyName + "\", \"new\" : \""
                                         + organization.Name + "\"}"
                             });
@@ -6806,7 +6806,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         var organization = _organizationRepository.GetOrganization(newData.ThirdPartyCompanyRealPageId);
                         additionalParams.Add(new AdditionalParameters()
                         {
-                            Key = "Operator Field",
+                            Key = "Operator",
                             Value = "{\"old\" : \"\", \"new\" : \"" + organization.Name + "\"}"
                         });
                     }
