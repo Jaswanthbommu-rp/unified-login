@@ -18,6 +18,7 @@ BEGIN
 		ProductEnabled TINYINT NOT NULL
 	)
 
+	Declare @userStatus varchar(50);
     DECLARE @NOW DATETIME= GETUTCDATE();
 	Declare @CompanyOrganizationProduct TABLE ( ProductId INT, ParentProductTypeId INT NULL ) 
  
@@ -36,13 +37,19 @@ BEGIN
 			FROM Enterprise.Product p 
 				INNER JOIN Enterprise.ProductType pt on pt.ProductTypeId = p.ProductTypeId and pt.ParentProductTypeId =400
 		END		
-	
+	    
+		SELECT  @userStatus = ST.Name
+		   FROM Ident.UserLoginPersona ULP
+		       INNER JOIN Person.Persona PP  on ULP.UserLoginPersonaId = PP.PersonaId
+		       INNER JOIN Enterprise.StatusType ST  on ST.StatusTypeId = ULP.StatusTypeId
+		   where PP.PersonaId = @PersonaId
+
         INSERT INTO @productData(ProductId,ProductName,ProductDescription,ProductStatus, ParentProductTypeId,ProductEnabled)
 		SELECT DISTINCT                
                 p.ProductId,
                 prod.[Name] ,
-                prod.Description ,               
-                ST.Name ,
+                prod.Description ,
+			    CASE  WHEN  @userStatus ='Disabled' then 'Deactivated' else ST.Name END,
 				pt.ParentProductTypeId,
 				CASE WHEN op.productid IS NOT NULL THEN 1 ELSE 0 END [ProductEnabled]
 				
