@@ -218,7 +218,8 @@ BEGIN
 				INNER JOIN Person.Persona p ON p.UserLoginPersonaId = ULP.UserLoginPersonaId
 				INNER JOIN Enterprise.Organization o ON o.PartyId = ULP.OrganizationPartyId
 				INNER JOIN Person.Person pe ON pe.PartyId = ul.PersonPartyId
-				INNER JOIN Enterprise.PartyRelationship pr ON pr.PartyIdFrom = pe.PartyId
+				--INNER JOIN Enterprise.PartyRelationship pr ON pr.PartyIdFrom = pe.PartyId
+				INNER JOIN Enterprise.PartyRelationship pr ON pr.PartyIdFrom = ul.PersonPartyId AND pr.PartyIdTo = ulp.OrganizationPartyId
 				INNER JOIN Enterprise.RoleType rt ON rt.PartyRoleTypeId = pr.RoleTypeIdFrom
 				INNER JOIN Ident.IdentityProviderType ipt ON ipt.IdentityProviderTypeId = ul.IdentityProviderTypeId
 				INNER JOIN AssignedRole ar ON ar.PersonaId = p.PersonaId
@@ -251,9 +252,10 @@ BEGIN
 		AND		((@RealPageId IS NULL) OR (pa.RealPageId =@RealPageId))
 		AND		ULP.UserLoginPersonaId NOT IN (SELECT UserLoginPersonaId FROM Enterprise.OrganizationAdminUser WHERE OrganizationPartyId = @OrganizationId)
 		AND		((@NOW BETWEEN pr.FromDate AND pr.ThruDate) OR (@NOW >= pr.FromDate AND pr.ThruDate IS NULL))
+		AND		pr.ThruDate IS null AND ulp.IsRPEmployee = 0
 	)
 
-	SELECT	CompanyName,
+	SELECT distinct	CompanyName,
 				FirstName,
 				MiddleName,
 				LastName,
