@@ -95,7 +95,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         {
             var propertiesStagingData = new List<SuggestedProperty>();
             var productResult = _manageProductPanel.GetProductProperties(_defaultUserClaim.PersonaId, userPersonaId, productId, null);
-            if (productResult.Records != null)
+            if (productResult.Records != null && productResult.Records.Count > 0)
             {
                 var upfmProperties = new UPFMProperty();
                 var instanceIds = new List<string>();
