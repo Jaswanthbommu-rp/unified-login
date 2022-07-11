@@ -599,7 +599,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 result = realError.Message;
             }
-            var isBatchCompleted = false;
+
             // If result OK then update Success status else Error
             if (string.IsNullOrEmpty(result))
             {
@@ -609,21 +609,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 if (result.ToUpper() == ProductBatchStatusType.Stop.ToString().ToUpper())
                 {
-                    isBatchCompleted = _productRepository.UpdateProductBatch(batchRecord.ProductBatchId, (int)ProductBatchStatusType.Stop, null, "Batch Process stopped due to internal error for this product.");
+                    _productRepository.UpdateProductBatch(batchRecord.ProductBatchId, (int)ProductBatchStatusType.Stop, null, "Batch Process stopped due to internal error for this product.");
                 }
                 else
                 {
-                    isBatchCompleted = _productRepository.UpdateProductBatch(batchRecord.ProductBatchId, (int)ProductBatchStatusType.Error, null, result);
+                    _productRepository.UpdateProductBatch(batchRecord.ProductBatchId, (int)ProductBatchStatusType.Error, null, result);
                     //Activity log
                     result = "An error occurred during the change user type process";
                     WriteActivityLogWithMessage(batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, result, batchRecord.ProductId);
 
                 }
-            }
-
-            if (isBatchCompleted)
-            {
-               WriteActivityLog(batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessorGroupId);
             }
 
             return result;
