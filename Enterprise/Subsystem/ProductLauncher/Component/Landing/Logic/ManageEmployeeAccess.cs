@@ -330,9 +330,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 return "Employee persona could not be found in RealPage Employee company.";
             }
-            WriteToDiagnosticLog(
-                 $"EmployeeAccess - ManageEmployeeAccess.CreateEmployeeProductUser at beginning of method for productAdGroups.Count - {productAdGroups.Count}");
-           
+
             var productAdGroups = _productRepository.GetAdGroupsForProduct(productId);
             if (productAdGroups.Count > 0)
             {
