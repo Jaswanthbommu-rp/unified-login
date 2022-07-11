@@ -356,32 +356,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         new ExportDataFileConfiguration { Header = "User Expires", MappedField = "ExpireDate", PDFColumnWidth = "0.90", Preference = 11 }
                         
                     };
-                    if (FeatureFlag.GetUserCompanyAssociationFeatureFlag())
-                    {
-                        List<ExportDataFileConfiguration> exportConfigurationsAdditionalFields = new List<ExportDataFileConfiguration>
-                        {
-                            new ExportDataFileConfiguration { Header = "User Relationship Type", MappedField = "UserRelationshipType", PDFColumnWidth = "1.90", Preference = 12 },
-                            new ExportDataFileConfiguration { Header = "Company Name", MappedField = "CompanyName", PDFColumnWidth = "1.30", Preference = 13 }
-                        };
-                        exportConfigurations.AddRange(exportConfigurationsAdditionalFields);
-                        if (GetUnifiedSettingsForOperator(_userClaims.OrganizationRealPageGuid, "company")) //Operator Setting is ENABLED for the company
-                        {
-                            List<ExportDataFileConfiguration> exportConfigurations_operator = new List<ExportDataFileConfiguration>
-                            {
-                                new ExportDataFileConfiguration { Header = "Operator", MappedField = "Operator", PDFColumnWidth = "2.30", Preference = 14 }
-                            };
-                            exportConfigurations.AddRange(exportConfigurations_operator);
-                        }
-                    }
                     IDictionary<object, object> CFglobals = new Dictionary<object, object>();
-                    //get the enabled custom field with the smallest sequence
-                    RequestParameter customFieldsDataFilter = new RequestParameter();
-                    customFieldsDataFilter.Pages.ResultsPerPage = 1;
-                    customFieldsDataFilter.Pages.StartRow = 1;
-                    customFieldsDataFilter.SortBy.Add("Sequence", "ASC");
-                    customFieldsDataFilter.FilterBy.Add("Enabled", "1");
-                    CFglobals.Add(BaseType.RequestParameter, customFieldsDataFilter);
-
                     ManageCustomFields manageCustomFields = new ManageCustomFields(_userClaims);
                     IList<CustomField> customFieldList = manageCustomFields.GetCustomField(globals: CFglobals, partyId: _userClaims.OrganizationPartyId);
                     bool customFieldsEnabled = ((customFieldList != null) && (customFieldList.Count > 0));
@@ -390,6 +365,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         string customFieldName = customFieldList[0].Name;
                         exportConfigurations.Add(new ExportDataFileConfiguration { Header = customFieldName, MappedField = "CustomField", PDFColumnWidth = "", Preference = 12 });
                     }
+
+                    if (FeatureFlag.GetUserCompanyAssociationFeatureFlag())
+                    {
+                        List<ExportDataFileConfiguration> exportConfigurationsAdditionalFields = new List<ExportDataFileConfiguration>
+                        {
+                            new ExportDataFileConfiguration { Header = "User Relationship Type", MappedField = "UserRelationshipType", PDFColumnWidth = "1.90", Preference = 13 },
+                            new ExportDataFileConfiguration { Header = "Company Name", MappedField = "CompanyName", PDFColumnWidth = "1.30", Preference = 14 }
+                        };
+                        exportConfigurations.AddRange(exportConfigurationsAdditionalFields);
+                        if (GetUnifiedSettingsForOperator(_userClaims.OrganizationRealPageGuid, "company")) //Operator Setting is ENABLED for the company
+                        {
+                            List<ExportDataFileConfiguration> exportConfigurations_operator = new List<ExportDataFileConfiguration>
+                            {
+                                new ExportDataFileConfiguration { Header = "Operator", MappedField = "Operator", PDFColumnWidth = "2.30", Preference = 15 }
+                            };
+                            exportConfigurations.AddRange(exportConfigurations_operator);
+                        }
+                    }
+                   
+                    //get the enabled custom field with the smallest sequence
+                    RequestParameter customFieldsDataFilter = new RequestParameter();
+                    customFieldsDataFilter.Pages.ResultsPerPage = 1;
+                    customFieldsDataFilter.Pages.StartRow = 1;
+                    customFieldsDataFilter.SortBy.Add("Sequence", "ASC");
+                    customFieldsDataFilter.FilterBy.Add("Enabled", "1");
+                    CFglobals.Add(BaseType.RequestParameter, customFieldsDataFilter);                   
 
                     plainBytes = DataExport.ExportDataToFile<LE.User>(exportConfigurations.OrderBy(p => p.Preference).ToList(), listUsers, dataFormat);
                     output = new ObjectOutput<string, IErrorData>()
