@@ -330,7 +330,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 return "Employee persona could not be found in RealPage Employee company.";
             }
-
+            WriteToDiagnosticLog(
+                 $"EmployeeAccess - ManageEmployeeAccess.CreateEmployeeProductUser at beginning of method for productAdGroups.Count - {productAdGroups.Count}");
+           
             var productAdGroups = _productRepository.GetAdGroupsForProduct(productId);
             if (productAdGroups.Count > 0)
             {
@@ -338,7 +340,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 var userProductToADGroups = _userRepository.GetEmployeeProductADGroupMapping(personaId, productId);
                 var isProductAssigned = _productRepository.isProductAssigned(personaId, (int)ProductBatchStatusType.Success, productId);
                 var existingProductAdGroupInfo = _userRepository.GetEmployeeProductADGroupMapping(personaId, productId).FirstOrDefault();
-
+              WriteToDiagnosticLog(
+                $"EmployeeAccess - ManageEmployeeAccess.CreateEmployeeProductUser at isProductAssigned - {isProductAssigned}");
+                
                 if (isProductAssigned)
                 {
                     if (productAdGroups.All(p => p.ADGroupId != existingProductAdGroupInfo?.ADGroupId))
@@ -360,6 +364,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         //if (companyPersonaList.Count() == 1 && userAdGroups.All(p => p.ADGroupId != productAdGroups?.FirstOrDefault(p1 => p1.ADGroupId == p.ADGroupId)?.ADGroupId))
                         if (companyPersonaList.Count() == 1 && userAdGroups.All(p => p.ADGroupId != productAdGroups?.FirstOrDefault(p1 => p1.ADGroupId == p.ADGroupId)?.ADGroupId))
                         {
+                                  WriteToDiagnosticLog(
+                                  $"EmployeeAccess - ManageEmployeeAccess.CreateEmployeeProductUser at 367");
+                          
                             ManageProductBase mpb = new ManageProductBase(productId, _userClaim, _productInternalSettingRepository, _productRepository);
                             mpb.UpdateProductSettingProductStatus(personaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
                             return "You are no longer in an ADGroup for this product.";
@@ -367,6 +374,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                         if (userAdGroups.All(p => p.ADGroupId != existingProductAdGroupInfo?.ADGroupId))
                         {
+                                WriteToDiagnosticLog(
+                             $"EmployeeAccess - ManageEmployeeAccess.CreateEmployeeProductUser at 377");
+                          
                             ManageProductBase mpb = new ManageProductBase(productId, _userClaim, _productInternalSettingRepository, _productRepository);
                             mpb.UpdateProductSettingProductStatus(personaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
                             return "DeletedProductLogin";
@@ -391,6 +401,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var productIntegrationType = productInternalSettingList.FirstOrDefault(s => s.Name.Equals("ProductIntegrationType", StringComparison.OrdinalIgnoreCase))?.Value;
             if (productIntegrationType.ToUpper() == "UPFM")
             {
+                         WriteToDiagnosticLog(
+                   $"EmployeeAccess - ManageEmployeeAccess.CreateEmployeeProductUser UPFM");
+              
                 var productAdGroupsUPFM = _productRepository.GetAdGroupsForProduct(productId);
                 var userADGroupsRoles = _productRepository.GetAdGroupRolesByPersona(employeePersona.PersonaId);
                 var adGroupIds = userADGroupsRoles?.Where(y => y.ProductId == productId)?.Select(x => x.ADGroupId);
@@ -408,6 +421,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
             else
             {
+                       WriteToDiagnosticLog(
+                   $"EmployeeAccess - ManageEmployeeAccess.CreateEmployeeProductUser 422");
+          
                 // not used
                 var rolePropertyList = new RolePropertyList
                 {
