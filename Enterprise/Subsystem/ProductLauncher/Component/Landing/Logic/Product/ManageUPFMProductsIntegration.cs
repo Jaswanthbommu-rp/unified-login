@@ -697,14 +697,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         // Existing user Roles
                         List<UL.Role> roleList = GetAssignedRoleForPersona(userPersonaId);
 
-                        if (roleList?.Count > 0) 
+                        if (roleList?.Count > 0)
                         {
                             foreach (var item in roleList)
                             {
                                 existinguserRoleIds.Add(item.RoleID);
                             }
                         }
-                 
+
                         if (existinguserRoleIds.Count > 0)
                         {
                             foreach (var item in existinguserRoleIds.ToList())
@@ -718,14 +718,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                                     return result.ErrorMessage;
                                 }
                             }
-                           
+
                         }
                         if (userassignedRoles.Count > 0)
                         {
                             foreach (var item in userassignedRoles.ToList())
                             {
                                 //add the role
-                                        WriteToDiagnosticLog($"ManageUPFMProductUser - adding role for userPersonaId id - {userPersonaId}, RoleId - {item}.");
+                                WriteToDiagnosticLog($"ManageUPFMProductUser - adding role for userPersonaId id - {userPersonaId}, RoleId - {item}.");
                                 result = _userRoleRightRepository.InsertAssignedRoleToUser(userPersonaId: userPersonaId, roleId: item, userId: _userClaims.UserId, deleteRole: false);
                                 if (result.Id < 0)
                                 {
@@ -735,97 +735,98 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             }
 
                         }
-                       
+
                     }
-
-                    if (userAssignProductPropertyRole.PropertyList != null && userAssignProductPropertyRole.PropertyList.Count > 0 && userAssignProductPropertyRole.PropertyList[0].ToUpper() == "ALL")
+                    if (userAssignProductPropertyRole.PropertyList != null && userAssignProductPropertyRole.PropertyList.Count > 0)
                     {
-                        IList<int> productIdList = _productRepository.GetProductIdsByCompany(userPersona.OrganizationPartyId);
-                        var gbAllRoles = _productRepository.ListRolesForProductByParty(userPersona.OrganizationPartyId, productIdList, _productId) ?? new List<ProductRole>();
-                        if (gbAllRoles != null)
+                        if (userAssignProductPropertyRole.PropertyList[0].ToUpper() == "ALL")
                         {
-                            // role.RoleID = long.Parse(productPropertyRole.RoleList[0]);
-
-                            //if (gbAllRoles.Any(r => long.Parse(r.ID) == role.RoleID && (r.accessAllProperties)))
-                            if (gbAllRoles.Any(r => userassignedRoles.Contains(long.Parse(r.ID)) && (r.accessAllProperties)))
+                            IList<int> productIdList = _productRepository.GetProductIdsByCompany(userPersona.OrganizationPartyId);
+                            var gbAllRoles = _productRepository.ListRolesForProductByParty(userPersona.OrganizationPartyId, productIdList, _productId) ?? new List<ProductRole>();
+                            if (gbAllRoles != null)
                             {
-                                userAssignProductPropertyRole.PropertyList = new List<string> { "-1" };
+                                // role.RoleID = long.Parse(productPropertyRole.RoleList[0]);
+
+                                //if (gbAllRoles.Any(r => long.Parse(r.ID) == role.RoleID && (r.accessAllProperties)))
+                                if (gbAllRoles.Any(r => userassignedRoles.Contains(long.Parse(r.ID)) && (r.accessAllProperties)))
+                                {
+                                    userAssignProductPropertyRole.PropertyList = new List<string> { "-1" };
+                                }
                             }
+
                         }
 
-                    }
-
-                    List<string> assignedPropertyList = (userAssignProductPropertyRole.PropertyList == null) ? new List<string>() : userAssignProductPropertyRole.PropertyList;
-                    List<string> unAssignedPropertyList = (userAssignProductPropertyRole?.RemovedPropertyList == null) ? new List<string>() : userAssignProductPropertyRole.RemovedPropertyList;
-                    /*
-                     *Unassign all the individual properties if property list has -1(all properties selection is true)
-                     */
-                    if (userAssignProductPropertyRole.PropertyList != null && userAssignProductPropertyRole.PropertyList.Contains("-1"))
-                    {
-                        List<string> removePropList = new List<string>();
-                        if (userPropertyIdList != null)
+                        List<string> assignedPropertyList = (userAssignProductPropertyRole.PropertyList == null) ? new List<string>() : userAssignProductPropertyRole.PropertyList;
+                        List<string> unAssignedPropertyList = (userAssignProductPropertyRole?.RemovedPropertyList == null) ? new List<string>() : userAssignProductPropertyRole.RemovedPropertyList;
+                        /*
+                         *Unassign all the individual properties if property list has -1(all properties selection is true)
+                         */
+                        if (userAssignProductPropertyRole.PropertyList != null && userAssignProductPropertyRole.PropertyList.Contains("-1"))
                         {
-                            foreach (var propId in userPropertyIdList)
+                            List<string> removePropList = new List<string>();
+                            if (userPropertyIdList != null)
                             {
-                                if (propId != -1)
+                                foreach (var propId in userPropertyIdList)
                                 {
-                                    removePropList.Add(propId.ToString());
+                                    if (propId != -1)
+                                    {
+                                        removePropList.Add(propId.ToString());
+                                    }
+                                }
+                            }
+
+                            unAssignedPropertyList.AddRange(removePropList);
+                        }
+
+                        List<string> unassignedProperties = new List<string>();
+                        List<string> assignedProperties = new List<string>();
+
+                        if (!IsSuperUser(userPersonaId) && userAssignProductPropertyRole.IsAssigned && assignedPropertyList?.Count == 0 && unassignedProperties?.Count == 0)
+                        {
+                            WriteToErrorLog($"ManageUPFMProductUser - No Properties are found to assign/unassign for user with userPersonaId - {userPersonaId}");
+                            return "No Properties are found to assign/unassign";
+                        }
+
+                        if (assignedPropertyList != null)
+                        {
+                            foreach (string propertyId in assignedPropertyList)
+                            {
+                                if (userPropertyIdList.All(p => p != Convert.ToInt32(propertyId)) || isEmpAccess)
+                                {
+                                    // new property to be added
+                                    assignedProperties.Add(propertyId);
                                 }
                             }
                         }
 
-                        unAssignedPropertyList.AddRange(removePropList);
-                    }
-
-                    List<string> unassignedProperties = new List<string>();
-                    List<string> assignedProperties = new List<string>();
-
-                    if (!IsSuperUser(userPersonaId) && userAssignProductPropertyRole.IsAssigned && assignedPropertyList?.Count == 0 && unassignedProperties?.Count == 0)
-                    {
-                        WriteToErrorLog($"ManageUPFMProductUser - No Properties are found to assign/unassign for user with userPersonaId - {userPersonaId}");
-                        return "No Properties are found to assign/unassign";
-                    }
-
-                    if (assignedPropertyList != null)
-                    {
-                        foreach (string propertyId in assignedPropertyList)
+                        if (unAssignedPropertyList != null)
                         {
-                            if (userPropertyIdList.All(p => p != Convert.ToInt32(propertyId)) || isEmpAccess)
+                            foreach (string propertyId in unAssignedPropertyList)
                             {
-                                // new property to be added
-                                assignedProperties.Add(propertyId);
+                                // remove property
+                                unassignedProperties.Add(propertyId);
                             }
                         }
-                    }
 
-                    if (unAssignedPropertyList != null)
-                    {
-                        foreach (string propertyId in unAssignedPropertyList)
+                        if ((unAssignedPropertyList == null || unAssignedPropertyList?.Count == 0) && assignedProperties?.Count > 0)
                         {
-                            // remove property
-                            unassignedProperties.Add(propertyId);
+                            if (userPropertyIdList.Any(p => p == -1))
+                            {
+                                unassignedProperties.Add("-1");
+                            }
                         }
-                    }
 
-                    if ((unAssignedPropertyList == null || unAssignedPropertyList?.Count == 0) && assignedProperties?.Count > 0)
-                    {
-                        if (userPropertyIdList.Any(p => p == -1))
+                        if (unassignedProperties.Count > 0)
                         {
-                            unassignedProperties.Add("-1");
+                            Parallel.ForEach(unassignedProperties, property => { result = DeleteAssignedPropertyInstanceData(userPersonaId, _productId, Convert.ToInt64(property)); });
                         }
-                    }
 
-                    if (unassignedProperties.Count > 0)
-                    {
-                        Parallel.ForEach(unassignedProperties, property => { result = DeleteAssignedPropertyInstanceData(userPersonaId, _productId, Convert.ToInt64(property)); });
-                    }
-
-                    if (assignedProperties.Count > 0)
-                    {
-                        Parallel.ForEach(assignedProperties, property => { result = InsertAssignedPropertyInstanceData(userPersonaId, _productId, Convert.ToInt64(property)); });
+                        if (assignedProperties.Count > 0)
+                        {
+                            Parallel.ForEach(assignedProperties, property => { result = InsertAssignedPropertyInstanceData(userPersonaId, _productId, Convert.ToInt64(property)); });
+                        }
                     }
                 }
-
                 UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
 
                 return string.Empty;
