@@ -973,7 +973,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <returns></returns>
         public bool ProductCenterDisable(SystemProductCenter systemProductCenter)
         {
-            string uri = $"/systemproductcenter/{systemProductCenter.Source}/{systemProductCenter.ProductCenterSourceId}/{systemProductCenter.CompanyInstanceSourceId}?modifiedBy={WebUtility.UrlEncode(systemProductCenter.CreatedBy)}";
+            string uri = $"systemproductcenter/{systemProductCenter.Source}/{systemProductCenter.ProductCenterSourceId}/{systemProductCenter.CompanyInstanceSourceId}?modifiedBy={WebUtility.UrlEncode(systemProductCenter.CreatedBy)}";
 
             ///systemproductcenter/{source}/{productCenterSourceId}/{companyInstanceSourceId}/{propertyInstanceSourceId}
             Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "systemProductCenter", systemProductCenter } };
@@ -1286,7 +1286,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         public List<CustomerCompanyInstance> GetCompanyInstancesByCustomerCompanyId(long customerCompanyId)
         {
             var companyInstances = new List<CustomerCompanyInstance>();
-            string uri = $"/companyinstance?filter[source]=UPFM&filter[customerCompanyMap.customerCompanyId]={customerCompanyId}&fields[companyinstance]=companyInstanceId,source,companyInstanceSourceId,companyName,companyType,isActive,domain";
+            string uri = $"companyinstance?filter[source]=UPFM&filter[customerCompanyMap.customerCompanyId]={customerCompanyId}&fields[companyinstance]=companyInstanceId,source,companyInstanceSourceId,companyName,companyType,isActive,domain";
 
             var logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
             WriteToLog(LogEventLevel.Debug, $"GetCompanyInstancesByCustomerCompanyId - Getting info - customerCompanyId:{customerCompanyId}", logData, correlationId: _defaultUserClaim.CorrelationId.ToString());
@@ -1773,7 +1773,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             companyInstance = rpcache.GetFromCache(cacheKey, 30, () =>
             {
-                string uri = $"/companyinstance/{upfmCompanyId.ToString().ToLower()}/UPFM?include=customerCompanyMap";
+                string uri = $"companyinstance/{upfmCompanyId.ToString().ToLower()}/UPFM?include=customerCompanyMap";
 
                 Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
                 WriteToLog(LogEventLevel.Debug, "GetCompanyInstanceByUPFMCompanyId - Getting info.", logData);
@@ -1810,7 +1810,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             customerCompanyMap = rpcache.GetFromCache(cacheKey, 30, () =>
             {
-                string uri = $"/customercompanymap?filter[customerCompanyId]={customerCompanyId}&filter[companyInstance.domain]={companyDomain}&include=companyInstance&fields[companyInstance]=greenBookCares,companyInstanceSourceId,domain";
+                string uri = $"customercompanymap?filter[customerCompanyId]={customerCompanyId}&filter[companyInstance.domain]={companyDomain}&include=companyInstance&fields[companyInstance]=greenBookCares,companyInstanceSourceId,domain";
 
                 Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
                 WriteToLog(LogEventLevel.Debug, "GetCustomerCompanyMapByCustomerCompanyId - Getting info.", logData);
@@ -2240,7 +2240,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <returns></returns>
         public IEnumerable<UDMSource> GetUDMSourceList()
         {
-            string uri = $"/source";
+            string uri = $"source";
 
             WriteToLog(LogEventLevel.Debug, "BooksCompanyInstance - Getting info.");
             try
