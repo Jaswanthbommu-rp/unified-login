@@ -6570,19 +6570,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 userProducts = pbRepository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = userPersonaId, ProductStatusValue = ((Int32)ProductBatchStatusType.Success).ToString() }).ToList();
             }
-            using (var pbRepository = GetRepository())
-            {
-                var editorUserProducts = pbRepository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = editorPersonaId, ProductStatusValue = ((Int32)ProductBatchStatusType.Success).ToString() }).ToList();
-                var aoProductListforEditorUser = editorUserProducts.Any(y => ProductEnumHelper.GetAoProductList().Contains((ProductEnum)y.ProductId));
-                if (!aoProductListforEditorUser)
-                {
-                    foreach (var item in userProducts.Where(y => ProductEnumHelper.GetAoProductList().Contains((ProductEnum)y.ProductId)).ToList())
-                    {
-                        userProducts.Remove(item);
-                    }
-                }
-            }
-
+            
             if (userProducts.Count > 0)
             {
                 DefaultUserClaim userClaim = new DefaultUserClaim(ClaimsPrincipal.Current);
