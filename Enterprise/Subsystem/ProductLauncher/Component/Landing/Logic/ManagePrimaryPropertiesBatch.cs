@@ -107,7 +107,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 				usePrimaryProperties = productEnabledForPrimaryProperty && personaProductUsePrimaryProperty;
 
-				if (productEnabledForPrimaryProperty)
+				if (usePrimaryProperties)
 				{
 					rolesResponse = manageProductBatch.GetProductRoles(editorPersona.PersonaId, userPersona.PersonaId, product.ProductId, userPersona.OrganizationPartyId, _userClaim);				
 					
