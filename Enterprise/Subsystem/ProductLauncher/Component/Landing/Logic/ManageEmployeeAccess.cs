@@ -311,6 +311,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             var productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings(productId);
             var supportsEmployeeAccess = productInternalSettingList.FirstOrDefault(s => s.Name.Equals("SI_SupportsEmployeeCreation", StringComparison.OrdinalIgnoreCase))?.Value;
+            var userCreationNotRequired = productInternalSettingList.FirstOrDefault(s => s.Name.Equals("IsCreateUserNotRequiredForProduct", StringComparison.OrdinalIgnoreCase))?.Value;
+
             if (string.IsNullOrEmpty(supportsEmployeeAccess) || supportsEmployeeAccess == "0")
             {
                 return "Product does not support employee creation.";
@@ -318,6 +320,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             if (supportsEmployeeAccess == "-1") // for products that don't need user management but use other products for user info
             {
+                return "";
+            }
+            if (userCreationNotRequired == "1")
+            {
+                _productRepository.UpdateProductSettingProductStatus(personaId, productId, "ProductStatus", (int)ProductBatchStatusType.Success);
                 return "";
             }
 
