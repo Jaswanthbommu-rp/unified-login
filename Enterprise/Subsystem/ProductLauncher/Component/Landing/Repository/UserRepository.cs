@@ -3788,7 +3788,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     // Handle Ao Products if any
                     var aoInputJsonString = BundleAoProducts(productList, batchGroup.BatchProcessorGroupId);
 
-                    if (isRealpageAccessUser)
+                    if (isRealpageAccessUser && CreateUserPersonaId == AssignUserPersonaId)
                     {
                         var aOInputJson = new RolePropertyList()
                        {
@@ -5670,7 +5670,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             bool deleteOldPropertyInstanceMapping = false;
             bool externalUserRelationUpdated = IsExternaUserlRelationUpdated(updateUserProfileEntity, out deleteOldPropertyInstanceMapping);
             RequestParameter dataFilter = new RequestParameter();
-            List<CompanySetup> companyList = _organizationRepository.GetCompanyList(_userClaim.OrganizationName, 0, null, 0, dataFilter);
+            List<CompanySetup> companyList = _organizationRepository.GetCompanyList(null, 0, null, (int)_userClaim.OrganizationPartyId, dataFilter);
             bool isRealpageAccessUser = companyList.Where(a => a.RealPageAccessUser == _userClaim.LoginName).Distinct().Count() > 0;
 
             using (var repository = GetRepository())
