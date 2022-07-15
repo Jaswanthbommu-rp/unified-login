@@ -6593,7 +6593,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 {
                     currentprimaryProperties.Add(Convert.ToString(property.InstanceId));
                 }
-
+                //Check
                 if (currentprimaryProperties?.Count > 0)
                 {
                     if (removedPrimaryProperties?.Count > 0)
