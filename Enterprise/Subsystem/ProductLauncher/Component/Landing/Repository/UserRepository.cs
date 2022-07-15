@@ -6646,14 +6646,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     var personaProductSettings = personaRepository.GetPersonaProductSettings(userPersonaId);
                     //Then Get Product Batch Data
                     IList<ProductBatch> pbData = manageProductBatch.GetUserProductBatchData(userPersonaId, userProducts, editorPersonaId, upfmProperty, personaProductSettings, isExternalUser, usePropertyInstanceUnifiedAmenities);
-
-                    if(removedPropertyInstances != null)
+                    
+                    foreach (ProductBatch pb in pbData)
                     {
-                        foreach (ProductBatch pb in pbData)
-                        {
+                        if (removedPropertyInstances != null)
                             pb.InputJson.PropertyList = pb.InputJson.PropertyList.Except(removedPropertyInstances, StringComparer.OrdinalIgnoreCase).ToList();
-                            finalProductBatch.Add(pb);
-                        }
+                        finalProductBatch.Add(pb);
                     }
                     return finalProductBatch;
                 }
