@@ -36,6 +36,17 @@ BEGIN
   DELETE FROM @CompanyOrganizationProduct WHERE ProductId = 4    
  END     
     
+    INSERT INTO @UserProducts ( ProductId, isFavorite, StatusTypeId )
+   SELECT ps.productid, 0, 8 from enterprise.GlobalProductConfiguration GPC         
+   INNER JOIN Enterprise.ProductConfiguration PC on GPC.ConfigurationId = PC.ConfigurationId        
+   INNER JOIN enterprise.ProductSetting ps ON PC.ProductSettingId = PS.ProductSettingId        
+   INNER JOIN enterprise.ProductSettingType pst on ps.ProductSettingTypeId = pst.ProductSettingTypeId 
+   inner join [Security].[ADGroupProduct] adgp on  adgp.ProductId = ps.ProductId
+   inner join [Security].[ADGroup] adg on adg.ADGroupId = adgp.ADGroupId
+   INNER JOIN [Security].[ADGroupUser] adgu on adg.ADGroupId = adgu.ADGroupId  
+   WHERE pst.name in ( 'SI_SupportsEmployeeCreation' ) and ps.[Value] = '-1' and adgu.PersonaId = @PersonaId
+   AND gpc.ThruDate is null AND pc.ThruDate is null AND ps.ThruDate is null  
+
  -- ADD EASYLMS OR FIX ITS STATUS    
  IF EXISTS (SELECT TOP 1 1 FROM @UserProducts WHERE ProductId = @LearningProductID)    
  BEGIN    
