@@ -826,7 +826,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             Parallel.ForEach(assignedProperties, property => { result = InsertAssignedPropertyInstanceData(userPersonaId, _productId, Convert.ToInt64(property)); });
                         }
                     }
+                    else
+                    {
+
+                        if (!IsSuperUser(userPersonaId) && userAssignProductPropertyRole.IsAssigned && userAssignProductPropertyRole.PropertyList?.Count == 0)
+                        {
+                            WriteToErrorLog($"ManageUPFMProductUser - No Properties are found to assign/unassign for user with userPersonaId - {userPersonaId}");
+                            return "No Properties are found to assign/unassign";
+                        }
+                    }
                 }
+                
                 UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
 
                 return string.Empty;
