@@ -6647,15 +6647,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     //Then Get Product Batch Data
                     IList<ProductBatch> pbData = manageProductBatch.GetUserProductBatchData(userPersonaId, userProducts, editorPersonaId, upfmProperty, personaProductSettings, isExternalUser, usePropertyInstanceUnifiedAmenities);
 
-                    foreach (ProductBatch pb in pbData)
+                    if(removedPropertyInstances != null)
                     {
-                        pb.InputJson.PropertyList = pb.InputJson.PropertyList.Except(removedPropertyInstances, StringComparer.OrdinalIgnoreCase).ToList();
-                        finalProductBatch.Add(pb);
+                        foreach (ProductBatch pb in pbData)
+                        {
+                            pb.InputJson.PropertyList = pb.InputJson.PropertyList.Except(removedPropertyInstances, StringComparer.OrdinalIgnoreCase).ToList();
+                            finalProductBatch.Add(pb);
+                        }
                     }
-
                     return finalProductBatch;
                 }
-
             }
 
             return productBatch;
