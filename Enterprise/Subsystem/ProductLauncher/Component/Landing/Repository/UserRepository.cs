@@ -2538,7 +2538,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             if (primaryPropertyBatch != null && enterpriseRoleId == 0)
             {
                 IPropertyRepository propertyRepository = new PropertyRepository();
-                // get persona primary properties              
+                // get persona primary properties             
 
                 List<UPFMPropertyInstance> ulPropertyInstances = new List<UPFMPropertyInstance>();
                 ulPropertyInstances = propertyRepository.ListUPFMPropertyInstanceByPersona(oldProfile.Persona[0].PersonaId, ProductEnum.UnifiedPlatform);
