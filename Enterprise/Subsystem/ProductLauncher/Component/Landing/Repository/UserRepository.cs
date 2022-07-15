@@ -2538,21 +2538,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             if (primaryPropertyBatch != null && enterpriseRoleId == 0)
             {
                 IPropertyRepository propertyRepository = new PropertyRepository();
-                // get persona primary properties
-                List<string> currentprimaryProperties = new List<string>();
+                // get persona primary properties              
 
                 List<UPFMPropertyInstance> ulPropertyInstances = new List<UPFMPropertyInstance>();
                 ulPropertyInstances = propertyRepository.ListUPFMPropertyInstanceByPersona(oldProfile.Persona[0].PersonaId, ProductEnum.UnifiedPlatform);
 
-                foreach (var property in ulPropertyInstances)
+                if (ulPropertyInstances?.Count > 0)
                 {
-                    currentprimaryProperties.Add(Convert.ToString(property.InstanceId));
-                }
-
-
-                if (currentprimaryProperties?.Count > 0)
-                {
-                    productBatchData = UpdateProductBatchDataWithPrimaryProperties(createUserPersonaId, oldProfile.Persona[0].PersonaId, primaryPropertyBatch, productBatchData.ToList(), currentprimaryProperties);
+                    productBatchData = UpdateProductBatchDataWithPrimaryProperties(createUserPersonaId, oldProfile.Persona[0].PersonaId, primaryPropertyBatch, productBatchData.ToList(), ulPropertyInstances);
                 }
 
             }
@@ -6562,7 +6555,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             return usePropertyInstanceUnifiedAmenities == "1";
         }
 
-        private List<ProductBatch> UpdateProductBatchDataWithPrimaryProperties(long editorPersonaId, long userPersonaId, ProductBatch primaryPropertiesBatch, List<ProductBatch> productBatch, List<string> currentprimaryProperties)
+        private List<ProductBatch> UpdateProductBatchDataWithPrimaryProperties(long editorPersonaId, long userPersonaId, ProductBatch primaryPropertiesBatch, List<ProductBatch> productBatch,  List<UPFMPropertyInstance> ulPropertyInstances)
         {
             List<ProductBatch> finalProductBatch = new List<ProductBatch>();
             List<PersonaProductUserDetails> userProducts = new List<PersonaProductUserDetails>();
@@ -6593,21 +6586,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 List<string> filteredList = null;
                 List<string> updatedPrimaryProperties = primaryPropertiesBatch.InputJson.PropertyList.ToList();
                 List<string> removedPrimaryProperties = (primaryPropertiesBatch.InputJson.RemovedPropertyList == null) ? new List<string>(): primaryPropertiesBatch.InputJson.RemovedPropertyList.ToList();
-               
-                if (removedPrimaryProperties?.Count > 0)
+                List<string> removedPropertyInstances = null;
+                List<string> currentprimaryProperties = new List<string>();
+
+                foreach (var property in ulPropertyInstances)
                 {
-                    currentprimaryProperties = currentprimaryProperties.Except(removedPrimaryProperties, StringComparer.OrdinalIgnoreCase).ToList();
+                    currentprimaryProperties.Add(Convert.ToString(property.InstanceId));
                 }
 
-                if (updatedPrimaryProperties?.Count > 0)
+                if (currentprimaryProperties?.Count > 0)
                 {
-                    currentprimaryProperties.AddRange(updatedPrimaryProperties);
-                    filteredList = currentprimaryProperties;
-                }
-                else
-                {
-                    filteredList = currentprimaryProperties;
-                }
+                    if (removedPrimaryProperties?.Count > 0)
+                    {
+                        currentprimaryProperties = currentprimaryProperties.Except(removedPrimaryProperties, StringComparer.OrdinalIgnoreCase).ToList();
+                        removedPropertyInstances = ulPropertyInstances.Where(u => removedPrimaryProperties.Contains(u.InstanceId.ToString())).Select(r => r.PropertyInstanceId.ToString()).ToList();
+                    }
+
+                    if (updatedPrimaryProperties?.Count > 0)
+                    {
+                        currentprimaryProperties.AddRange(updatedPrimaryProperties);
+                        filteredList = currentprimaryProperties;
+                    }
+                    else
+                    {
+                        filteredList = currentprimaryProperties;
+                    }
+                }               
 
                 var logData = new Dictionary<string, object> { { "updatedprimarypropertieslist", filteredList } };
                 WriteToLog(LogEventLevel.Debug, $"UpdateProductBatchDataWithPrimaryProperties.Generating data for persona {userPersonaId}", logData);
@@ -6642,6 +6646,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                     foreach (ProductBatch pb in pbData)
                     {
+                        pb.InputJson.PropertyList = pb.InputJson.PropertyList.Except(removedPropertyInstances, StringComparer.OrdinalIgnoreCase).ToList();
                         finalProductBatch.Add(pb);
                     }
 
