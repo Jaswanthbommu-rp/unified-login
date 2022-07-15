@@ -6598,13 +6598,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 {
                     if (removedPrimaryProperties?.Count > 0)
                     {
-                        currentprimaryProperties = currentprimaryProperties.Except(removedPrimaryProperties, StringComparer.OrdinalIgnoreCase).ToList();
                         removedPropertyInstances = ulPropertyInstances.Where(u => removedPrimaryProperties.Contains(u.InstanceId.ToString())).Select(r => r.PropertyInstanceId.ToString()).ToList();
                     }
 
                     if (updatedPrimaryProperties?.Count > 0)
                     {
                         currentprimaryProperties.AddRange(updatedPrimaryProperties);
+                        if (removedPrimaryProperties?.Count > 0)
+                        {
+                            currentprimaryProperties = currentprimaryProperties.Except(removedPrimaryProperties, StringComparer.OrdinalIgnoreCase).ToList();                            
+                        }
                         filteredList = currentprimaryProperties;
                     }
                     else
@@ -6616,7 +6619,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 var logData = new Dictionary<string, object> { { "updatedprimarypropertieslist", filteredList } };
                 WriteToLog(LogEventLevel.Debug, $"UpdateProductBatchDataWithPrimaryProperties.Generating data for persona {userPersonaId}", logData);
 
-                if (filteredList?.Count > 0)
+                if (filteredList?.Count > 0 )
                 {
                     upfmProperty.id = filteredList;
 
