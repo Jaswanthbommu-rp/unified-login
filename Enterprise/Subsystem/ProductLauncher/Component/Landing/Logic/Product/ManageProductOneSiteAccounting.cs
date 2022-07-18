@@ -1397,26 +1397,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (batchProcessType == BatchProcessType.UserTypeRegularToAdmin ||  batchProcessType == BatchProcessType.UserTypeExternalToAdmin)
                 {
                     WriteToDiagnosticLog($"UpdateRolesToUser-BatchProcessType.UserTypeRegularToAdmin - START");
-                    foreach (ProductRole role in currentRoleList.Records)
-                    {                        
-                        if (role.IsAssigned)
-                        {                                
-                            rolesToRemove.Add(role.ID);
-                        }                        
-                    }
-
-                    if (rolesToRemove.Count > 0)
-                    {
-                        roleIDRemoveList = string.Join(",", rolesToRemove);
-                    }
-                    WriteToDiagnosticLog($"UpdateRolesToUser-BatchProcessType.UserTypeRegularToAdmin - roleIDRemoveList = {roleIDRemoveList}");
-
+                    
                     // Add all ADMIN roles 
                     List<ProductRole> currentList = currentRoleList.Records.Cast<ProductRole>().ToList();
                     rolesToAssign = new List<string>();
                     foreach (ProductRole role in currentList)
                     {
-                        if (role.Name.ToUpper().Contains("ADMIN") && role.IsAssigned == false)
+                        if (role.Name.ToUpper().Contains("ADMIN") && role.IsAssigned == false || role.IsAssigned)
                         {
                             rolesToAssign.Add(role.ID);
                         }
