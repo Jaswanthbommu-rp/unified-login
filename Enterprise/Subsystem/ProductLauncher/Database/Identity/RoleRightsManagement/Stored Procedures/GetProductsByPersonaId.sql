@@ -41,10 +41,13 @@ BEGIN
    INNER JOIN Enterprise.ProductConfiguration PC on GPC.ConfigurationId = PC.ConfigurationId        
    INNER JOIN enterprise.ProductSetting ps ON PC.ProductSettingId = PS.ProductSettingId        
    INNER JOIN enterprise.ProductSettingType pst on ps.ProductSettingTypeId = pst.ProductSettingTypeId 
-   inner join [Security].[ADGroupProduct] adgp on  adgp.ProductId = ps.ProductId
-   inner join [Security].[ADGroup] adg on adg.ADGroupId = adgp.ADGroupId
+   INNER JOIN [Security].[ADGroupProduct] adgp on  adgp.ProductId = ps.ProductId
+   INNER JOIN enterprise.ProductSetting ps2 on ps2.ProductId = adgp.ProductId 
+   INNER JOIN enterprise.ProductSettingType pst2 on ps2.ProductSettingTypeId = pst2.ProductSettingTypeId and pst2.[Name] = 'IsAvailableForRealPageEmployeeOnly'   
+   INNER JOIN [Security].[ADGroup] adg on adg.ADGroupId = adgp.ADGroupId
    INNER JOIN [Security].[ADGroupUser] adgu on adg.ADGroupId = adgu.ADGroupId  
-   WHERE pst.name in ( 'ProductAssignedViaADGroupWithoutUserCreation' ) and ps.[Value] = '1' and adgu.PersonaId = @PersonaId
+   WHERE pst.name in ( 'ProductAssignedViaADGroupWithoutUserCreation' ) and ps.[Value] = '1' and ps2.[Value]='1' and adgu.PersonaId = @PersonaId
+
     
  -- ADD EASYLMS OR FIX ITS STATUS    
  IF EXISTS (SELECT TOP 1 1 FROM @UserProducts WHERE ProductId = @LearningProductID)    
