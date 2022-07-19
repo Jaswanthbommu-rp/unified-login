@@ -8,8 +8,38 @@ BEGIN
  DECLARE @NOW DATETIME= GETUTCDATE();    
  DECLARE @CompanyOrganizationProduct TABLE ( ProductId INT )     
  DECLARE @UserProducts TABLE ( ProductId INT, isFavorite TINYINT, StatusTypeId INT )    
- DECLARE @LearningProductID INT = 19    
+ DECLARE @LearningProductID INT = 19   
+ 
     
+    DROP TABLE IF EXISTS #TEMPProductSetting
+
+    CREATE TABLE #TEMPProductSetting
+    (
+	[ProductSettingId] [int] PRIMARY KEY,
+	[ProductId] [int] NOT NULL,
+	[ProductSettingTypeId] [int] NOT NULL,
+	[Value] [nvarchar](1000) NOT NULL,
+	[ThruDate] [datetime] NULL
+    )
+
+    DROP TABLE IF EXISTS #TEMPProductSettingType
+
+    CREATE TABLE #TEMPProductSettingType
+    (
+	[ProductSettingTypeId] [int] PRIMARY KEY ,
+	[Name] [nvarchar](50) NOT NULL
+    )
+
+    INSERT INTO #TEMPProductSetting ([ProductSettingId],[ProductId],[ProductSettingTypeId],[Value],[ThruDate])
+    SELECT [ProductSettingId],[ProductId],[ProductSettingTypeId],[Value],[ThruDate] 
+    from enterprise.ProductSetting
+
+    INSERT INTO #TEMPProductSettingType ([ProductSettingTypeId],[Name])
+    SELECT [ProductSettingTypeId],[Name] 
+    FROM Enterprise.ProductSettingType 
+    WHERE [Name] in ('IsAvailableForRealPageEmployeeOnly','ProductAssignedViaADGroupWithoutUserCreation','GetUserProductCenterEnabled','isresource', 'isnewtab', 'ProductUrl', 'ShowInAppSwitcher')
+
+
  INSERT INTO @CompanyOrganizationProduct ( ProductId )    
  SELECT     
   DISTINCT OP.ProductId     
@@ -35,6 +65,20 @@ BEGIN
    Select ProductId from Enterprise.Product where ProductTypeId IN ( SELECT ProductTypeId FROM Enterprise.ProductType where ParentProductTypeId = 400 )    
   DELETE FROM @CompanyOrganizationProduct WHERE ProductId = 4    
  END     
+
+ -- User should subscribe to AD Group and access to employee company users only.
+  INSERT INTO @UserProducts ( ProductId, isFavorite, StatusTypeId )
+   SELECT ps.productid, 0, 8 from enterprise.GlobalProductConfiguration GPC         
+   INNER JOIN Enterprise.ProductConfiguration PC on GPC.ConfigurationId = PC.ConfigurationId        
+   INNER JOIN #TEMPProductSetting ps ON PC.ProductSettingId = PS.ProductSettingId        
+   INNER JOIN #TEMPProductSettingType pst on ps.ProductSettingTypeId = pst.ProductSettingTypeId AND pst.[name] =  'ProductAssignedViaADGroupWithoutUserCreation' 
+   INNER JOIN [Security].[ADGroupProduct] adgp on  adgp.ProductId = ps.ProductId
+   INNER JOIN #TEMPProductSetting ps2 on ps2.ProductId = adgp.ProductId 
+   INNER JOIN #TEMPProductSettingType pst2 on ps2.ProductSettingTypeId = pst2.ProductSettingTypeId and pst2.[Name] = 'IsAvailableForRealPageEmployeeOnly'   
+   INNER JOIN [Security].[ADGroup] adg on adg.ADGroupId = adgp.ADGroupId
+   INNER JOIN [Security].[ADGroupUser] adgu on adg.ADGroupId = adgu.ADGroupId  
+   WHERE  adgu.PersonaId = @PersonaId and ps.[Value] = '1' and ps2.[Value]='1' 
+   AND gpc.ThruDate IS NULL AND pc.ThruDate IS NULL AND ps.ThruDate IS NULL AND ps2.ThruDate IS NULL 
     
  -- ADD EASYLMS OR FIX ITS STATUS    
  IF EXISTS (SELECT TOP 1 1 FROM @UserProducts WHERE ProductId = @LearningProductID)    
@@ -54,8 +98,8 @@ BEGIN
   inner join Enterprise.ProductProductCenter p on ppc.ProductCenterId = p.ProductCenterId    
   inner join Enterprise.GlobalProductConfiguration gpc on gpc.ProductId = p.productId    
   inner join Enterprise.ProductConfiguration config on config.ConfigurationID = gpc.ConfigurationID   
-  inner join Enterprise.ProductSetting ps on ps.ProductSettingId = config.ProductSettingId    
-  inner join Enterprise.ProductSettingType pst on (ps.ProductSettingTypeId = pst.ProductSettingTypeId and pst.Name ='GetUserProductCenterEnabled')   
+  inner join #TEMPProductSetting ps on ps.ProductSettingId = config.ProductSettingId    
+  inner join #TEMPProductSettingType pst on (ps.ProductSettingTypeId = pst.ProductSettingTypeId and pst.Name ='GetUserProductCenterEnabled')   
   inner join Enterprise.ProductUserDependency pud on p.ProductId = pud.ProductId  
   inner join Enterprise.PersonaConfiguration PC on pc.ProductId = pud.DependentProductId AND pc.PersonaId = ppc.PersonaId
   WHERE ps.Value = '1'    
@@ -79,8 +123,8 @@ BEGIN
  ;with ProductSettings AS (    
   SELECT ps.productid, pst.name, ps.value from enterprise.GlobalProductConfiguration GPC     
    INNER JOIN Enterprise.ProductConfiguration PC on GPC.ConfigurationId = PC.ConfigurationId    
-   INNER JOIN enterprise.ProductSetting ps ON PC.ProductSettingId = PS.ProductSettingId    
-   INNER JOIN enterprise.ProductSettingType pst on ps.ProductSettingTypeId = pst.ProductSettingTypeId     
+   INNER JOIN #TEMPProductSetting ps ON PC.ProductSettingId = PS.ProductSettingId    
+   INNER JOIN #TEMPProductSettingType pst on ps.ProductSettingTypeId = pst.ProductSettingTypeId     
   WHERE    
    pst.name in ( 'isresource', 'isnewtab', 'ProductUrl', 'ShowInAppSwitcher' )    
    AND gpc.ThruDate is null    
@@ -146,5 +190,9 @@ BEGIN
   ppv.PersonaId = @personaid    
     
  ORDER BY isFavorite, IsResource, P.Name    
+
+   DROP TABLE IF EXISTS #TEMPProductSetting
+
+   DROP TABLE IF EXISTS #TEMPProductSettingType
      
 END

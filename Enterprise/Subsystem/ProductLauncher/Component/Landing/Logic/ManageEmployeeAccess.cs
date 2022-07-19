@@ -311,12 +311,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             var productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings(productId);
             var supportsEmployeeAccess = productInternalSettingList.FirstOrDefault(s => s.Name.Equals("SI_SupportsEmployeeCreation", StringComparison.OrdinalIgnoreCase))?.Value;
+            var aDGroupWithoutUserCreation = productInternalSettingList.FirstOrDefault(s => s.Name.Equals("ProductAssignedViaADGroupWithoutUserCreation", StringComparison.OrdinalIgnoreCase))?.Value;
             if (string.IsNullOrEmpty(supportsEmployeeAccess) || supportsEmployeeAccess == "0")
             {
                 return "Product does not support employee creation.";
             }
 
-            if (supportsEmployeeAccess == "-1") // for products that don't need user management but use other products for user info
+            if (supportsEmployeeAccess == "-1" || aDGroupWithoutUserCreation == "1") // for products that don't need user management but use other products for user info
             {
                 return "";
             }
