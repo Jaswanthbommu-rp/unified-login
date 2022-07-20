@@ -1194,7 +1194,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.RemoveRolesFromUser(
                     It.IsAny<NameValuePair[]>()
                 ))
-                .Returns("PROVIDED USER ROLES REMOVED SUCCESSFULLY");
+                .Returns("REMOVED PROVIDED ROLES SUCCESSFULLY");
 
             mockService
                 .Setup(m => m.AssignRolesToUser(
@@ -1261,7 +1261,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             manageProduct = new ManageProductOneSiteAccounting(_editorRealPageId, _userUserClaim, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object, mockManageElectronicAddress.Object, mockManagePerson.Object, mockManageUserLogin.Object, mockManagePartyRelationship.Object);
 
-            result = manageProduct.ManageAccountingUser(_editorPersonaId, _newUserPersonaId, null, null, null, false, false, false);
+            result = manageProduct.ManageAccountingUser(_editorPersonaId, _userPersonaId, null, null, null, false, false, false);
             Assert.True(string.IsNullOrEmpty(result)); // success creating user
 
             // Test 3
@@ -1318,7 +1318,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             manageProduct = new ManageProductOneSiteAccounting(_editorRealPageId, _userUserClaim, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object, mockManageElectronicAddress.Object, mockManagePerson.Object, mockManageUserLogin.Object, mockManagePartyRelationship.Object);
 
-            result = manageProduct.ManageAccountingUser(_editorPersonaId, _newUserPersonaId, null, null, null, false, false, false);
+            result = manageProduct.ManageAccountingUser(_editorPersonaId, _userPersonaId, null, null, null, false, false, false);
             Assert.True(string.IsNullOrEmpty(result)); // success creating user
         }
 

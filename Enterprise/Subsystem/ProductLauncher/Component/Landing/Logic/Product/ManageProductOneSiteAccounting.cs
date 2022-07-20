@@ -1397,13 +1397,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (batchProcessType == BatchProcessType.UserTypeRegularToAdmin ||  batchProcessType == BatchProcessType.UserTypeExternalToAdmin)
                 {
                     WriteToDiagnosticLog($"UpdateRolesToUser-BatchProcessType.UserTypeRegularToAdmin - START");
-                    
-                    // Add all ADMIN roles 
-                    List<ProductRole> currentList = currentRoleList.Records.Cast<ProductRole>().ToList();
+
+					// Add all ADMIN roles 
+					List<ProductRole> currentList = currentRoleList.Records.Cast<ProductRole>().ToList();
                     rolesToAssign = new List<string>();
                     foreach (ProductRole role in currentList)
                     {
-                        if (role.Name.ToUpper().Contains("ADMIN") && role.IsAssigned == false || role.IsAssigned)
+                        if ((role.Name.ToUpper().Contains("ADMIN") && role.IsAssigned == false) || role.IsAssigned)
                         {
                             rolesToAssign.Add(role.ID);
                         }
@@ -1804,17 +1804,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     PropertyList = new List<string>();
                 }
 
-                // For SuperUser users -  Accounting sets the Admin related roles - no need to clear prev roles
-                if (RoleList.Count > 0)
-                {
-                    string updateResultRoles = UpdateRolesToUser(editorPersonaId, userPersonaId, RoleList, isAccountingAdmin, batchProcessType);
-                    if (!string.IsNullOrEmpty(updateResultRoles))
-                    {
-                        return updateResultRoles;
-                    }
-
-                }
-
+				// For SuperUser users -  Accounting sets the Admin related roles - no need to clear prev roles			
+					string updateResultRoles = UpdateRolesToUser(editorPersonaId, userPersonaId, RoleList, isAccountingAdmin, batchProcessType);
+					if (!string.IsNullOrEmpty(updateResultRoles))
+					{
+						return updateResultRoles;
+					}
+				
                 // For Accounting Admin users, assign the selected companies. GB-7188
                 if(isAccountingAdmin && CompanyList.Count > 0 && PropertyList[0].ToUpper() == "ALL")
                 {
