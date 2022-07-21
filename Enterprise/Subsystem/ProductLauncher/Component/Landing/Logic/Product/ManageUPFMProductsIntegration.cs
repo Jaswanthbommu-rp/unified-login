@@ -642,13 +642,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
                 var productInternalSettingList = GetProductSetting((int)ProductEnum.UnifiedPlatform);
                 var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, _upfmProductId);
-
+                var productSettingList = GetProductSetting(_productId);
                 // super user
                 // TODO what to do here?
                 if (IsSuperUser(userPersonaId))
                 {
                     WriteToDiagnosticLog($"ManageUPFMProductUser - new user is Super user with userPersonaId id - {userPersonaId}.");
-                    var productSettingList = GetProductSetting(_productId);
                     var superUserRoleId = "0";
                     if (productSettingList.Any(a => a.Name.Equals("SuperUserRoleId", StringComparison.OrdinalIgnoreCase)))
                     {
@@ -783,8 +782,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                         if (!IsSuperUser(userPersonaId) && userAssignProductPropertyRole.IsAssigned && assignedPropertyList?.Count == 0 && unassignedProperties?.Count == 0)
                         {
-                            WriteToErrorLog($"ManageUPFMProductUser - No Properties are found to assign/unassign for user with userPersonaId - {userPersonaId}");
-                            return "No Properties are found to assign/unassign";
+                            var doesNotUseProperties = productSettingList.FirstOrDefault(a => a.Name.Equals("DoesNotUseProperties", StringComparison.OrdinalIgnoreCase))?.Value;
+                            if (doesNotUseProperties == null || doesNotUseProperties != "1")
+                            {
+                                WriteToErrorLog($"ManageUPFMProductUser - No Properties are found to assign/unassign for user with userPersonaId - {userPersonaId}");
+                                return "No Properties are found to assign/unassign";
+                            }
                         }
 
                         if (assignedPropertyList != null)
@@ -824,6 +827,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         if (assignedProperties.Count > 0)
                         {
                             Parallel.ForEach(assignedProperties, property => { result = InsertAssignedPropertyInstanceData(userPersonaId, _productId, Convert.ToInt64(property)); });
+                        }
+                    }
+                    else
+                    {
+                        if (!IsSuperUser(userPersonaId) && userAssignProductPropertyRole.IsAssigned && userAssignProductPropertyRole.PropertyList?.Count == 0)
+                        {
+                            var doesNotUseProperties = productSettingList.FirstOrDefault(a => a.Name.Equals("DoesNotUseProperties", StringComparison.OrdinalIgnoreCase))?.Value;
+                            if (doesNotUseProperties == null || doesNotUseProperties != "1")
+                            {
+                                WriteToErrorLog($"ManageUPFMProductUser - No Properties are found to assign/unassign for user with userPersonaId - {userPersonaId}");
+                                return "No Properties are found to assign/unassign";
+                            }
                         }
                     }
                 }

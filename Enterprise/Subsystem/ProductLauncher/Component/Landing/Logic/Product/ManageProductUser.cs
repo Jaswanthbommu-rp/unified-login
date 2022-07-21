@@ -289,7 +289,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 //call apicore kafka publish to sync translated properties
                 var roleProp = JsonConvert.DeserializeObject<RolePropertyList>(productUser.InputJson);
-                if (productUser.ProductId != (int)ProductEnum.SalesForce && roleProp.IsAssigned)
+                var productInternalSettingList = GetProductInternalSettings(productUser.ProductId);
+                var doesNotUseProperties = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("DoesNotUseProperties", StringComparison.OrdinalIgnoreCase))?.Value;
+                if ((doesNotUseProperties == null || doesNotUseProperties != "1") && roleProp.IsAssigned)
                 {
                     //product combination check
                     if (rolePropDictionary?.Count > 1)
