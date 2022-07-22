@@ -74,6 +74,7 @@
              description="Launchdarkly RelayProxy-Url"
              defaultValue="#{LaunchDarkly.RelayProxyUrl}#">
     <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='launchdarkly:RelayProxyUrl']/@value" />
+    <parameterValidation kind="AllowEmpty" />
   </parameter>
 
   
