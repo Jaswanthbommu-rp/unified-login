@@ -74,7 +74,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader
             //            return new X509Certificate2(AppDomain.CurrentDomain.BaseDirectory + "\\bin\\SomeCert.pfx", "idsrv3test");
             //#endif
             var certStore = new X509Store(StoreName.My, StoreLocation.LocalMachine);
-            certStore.Open(OpenFlags.ReadOnly);
+            certStore.Open(OpenFlags.ReadOnly | OpenFlags.IncludeArchived);
             // IF THE CERT CAN'T BE FOUND MAKE SURE IT DOESN'T HAVE THE HIDDEN UNICODE CHARACTER IN THE BEGINNING IN THE WEB.CONFIG!
             var certCollection = certStore.Certificates.Find(
                 X509FindType.FindByThumbprint, ConfigReader.GetIdentityServerSigningCertThumbprint, false);
