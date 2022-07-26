@@ -689,6 +689,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 newProductUser.UserId = productUser.UserId;
                 newProductUser.LoginName = productUser.LoginName;
+            }
+
+            if (SubjectUserDetails.UserRoleTypeId == (int)UserRoleType.SuperUser)
+            {
+                var IsSuperUserProperties = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("SuperUserPropertiesId", StringComparison.OrdinalIgnoreCase));
+                if (IsSuperUserProperties != null)
+                {
+                    List<string> PropertiesList = new List<string>();
+                    PropertiesList.Add(IsSuperUserProperties.Value.ToString());
+                    newProductUser.Properties = PropertiesList;
+                }
+                
             }                      
 
             if (!isProductUser && string.IsNullOrEmpty(SubjectUserDetails.ProductUserName))
