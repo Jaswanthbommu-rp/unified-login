@@ -597,6 +597,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
             }
 
+            if (isBatchCompleted)
+            {
+                WriteActivityLog(batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessorGroupId);
+            }
+
             return result;
         }
         #endregion
