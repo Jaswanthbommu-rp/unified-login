@@ -16,6 +16,7 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\Batchprocessor-settings.sql
 :r .\PostDeploymentScripts\624898-independent-facilities.sql
 :r .\PostDeploymentScripts\AccessUDM-viaKongOrDirectly.sql
+:r .\PostDeploymentScripts\1213354-add-operators.sql
 
 :r .\PostDeploymentScripts\UpdateStatistics.sql
 :r .\PostDeploymentScripts\RecompileAllProcs.sql
