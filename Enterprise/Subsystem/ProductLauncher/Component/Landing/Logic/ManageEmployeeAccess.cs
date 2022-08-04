@@ -229,16 +229,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         public EmployeePersona GetOrCreateEmployeePersonaId(Guid companyRealPageId, DefaultUserClaim userClaim)
         {
             EmployeePersona employeePersona = new EmployeePersona();
-            employeePersona.RealpageUserId = _userClaim.UserRealPageGuid;
-
-            var userPersonaOrganizationList = _userLoginRepository.ListOrganizationByLoginName(userClaim.LoginName);
-
+            IList<UserOrganization> userPersonaOrganizationList = new List<UserOrganization>();
+            UserDetails currentUser = new UserDetails();
+            if (userClaim.ImpersonatedBy != Guid.Empty)
+            {
+                employeePersona.RealpageUserId = userClaim.ImpersonatedBy;
+                currentUser = _userRepository.GetUserDetails(null, userClaim.ImpersonatedBy.ToString());
+                userPersonaOrganizationList = _userLoginRepository.ListOrganizationByLoginName(currentUser.LoginName);
+            }
+            else
+            {
+                employeePersona.RealpageUserId = _userClaim.UserRealPageGuid;
+                currentUser = _userRepository.GetUserDetails(null, _userClaim.UserRealPageGuid.ToString());
+                userPersonaOrganizationList = _userLoginRepository.ListOrganizationByLoginName(userClaim.LoginName);
+            }
+            
             if (userPersonaOrganizationList != null && userPersonaOrganizationList.Count > 0)
             {
                 //First get count of ad groups and products for employee persona
                 //if company doesn't have product do not create second persona
                 //rethink how  return correct persona based on ad group data
-                var userProductAdGroups = _productRepository.GetPersonaProductsAdGroupsCount(userClaim.PersonaId);
+                var userProductAdGroups = _productRepository.GetPersonaProductsAdGroupsCount(currentUser.PersonaId);
                 //Get Organization product id's
                 IList<int> orgProducts = _productRepository.GetProductIdsByCompany(companyRealPageId);
                 //Filter adgroup data with valid org products
@@ -272,7 +283,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
                 else
                 {
-                    employeePersona.PersonaId = CreatePersonaInCompany(userClaim.LoginName, companyRealPageId);
+                    employeePersona.PersonaId = CreatePersonaInCompany(currentUser.LoginName, companyRealPageId, currentUser);
                     orgPersonaCount++;
                 }
 
@@ -289,7 +300,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         {
                             personaName = personaName + " " + orgPersonaCount.ToString();
                         }
-                        var repoResponse = _managePersona.CreateAdditionalPersona(companyRealPageId, userClaim.UserId, userClaim.UserId, personaName);
+                        var repoResponse = _managePersona.CreateAdditionalPersona(companyRealPageId, currentUser.UserId, currentUser.UserId, personaName);
                         orgPersonaCount++;
                     }
                 }
@@ -521,11 +532,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return compIds;
         }
 
-        private long CreatePersonaInCompany(string loginName, Guid companyRealPageId)
+        private long CreatePersonaInCompany(string loginName, Guid companyRealPageId, UserDetails currentUser)
         {
             long persona = 0;
 
-            var newProfile = CreateNewProfile(companyRealPageId);
+            var newProfile = CreateNewProfile(companyRealPageId, currentUser);
             newProfile.IsRPEmployee = true;
             var newUser = _manageUser.CreateUser(newProfile, newProfile.Persona);
             persona = newUser.PersonaId;
@@ -533,12 +544,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return persona;
         }
 
-        private ProfileDetail CreateNewProfile(Guid companyRealPageId)
+        private ProfileDetail CreateNewProfile(Guid companyRealPageId, UserDetails currentUser)
         {
 
             ProfileDetail newProfile = new ProfileDetail();
-            newProfile.FirstName = _userClaim.FirstName;
-            newProfile.LastName = _userClaim.LastName;
+            newProfile.FirstName = currentUser.FirstName;
+            newProfile.LastName = currentUser.LastName;
             newProfile.CreateUserSourceType = CreateUserSourceType.UnifiedPlatform;
 
             IList<Persona> personaList = new List<Persona>();
@@ -564,7 +575,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             newProfile.UserTypeId = 405;
 
             UserLogin ul = new UserLogin();
-            ul.LoginName = _userClaim.LoginName;
+            ul.LoginName = currentUser.LoginName;
             ul.IsActive = true;
             ul.IsPending = false;
             ul.IsExpired = false;
