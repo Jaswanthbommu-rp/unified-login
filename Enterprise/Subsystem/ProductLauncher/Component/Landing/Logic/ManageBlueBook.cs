@@ -1815,8 +1815,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             TranslatePropertyInstance translatedData = new TranslatePropertyInstance();            
             var productInternalSettingsByType = _productInternalSettingRepository.GetProductSettingByType("ProductIntegrationType");
             var productType = productInternalSettingsByType?.FirstOrDefault(p => p.ProductId == productId)?.Value;
-            var restrictToSinglePropertyForProduct = _productInternalSettingRepository.GetProductSettingByType("RestrictProductToSingleProperty");
-            string restrictToSinglePropertyForProductValue = restrictToSinglePropertyForProduct?.FirstOrDefault(p => p.ProductId == productId)?.Value.ToString();
             //IManageBlueBook _manageBlueBook = new ManageBlueBook(_userClaims);
             List<UPFMPropertyInstance> _upfmPropertyInstance = new List<UPFMPropertyInstance>();
             IPropertyRepository propertyRepository = new PropertyRepository();
@@ -1911,36 +1909,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                 if (productPropertyType == typeof(ProductProperty))
                 {
-                    bool isAssignedFlag = false;
                     var productList = productResult.Records.Cast<ProductProperty>();
                     foreach (var property in productList)
                     {
                         var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.ID));
                         if (instanceExists != null)
                         {
-                            if ((!string.IsNullOrEmpty(restrictToSinglePropertyForProductValue) && restrictToSinglePropertyForProductValue == "1"))
+                            if (upfmProperty != null && (upfmProperty.id.Contains("-1") || upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
                             {
-                                var response = RestrictProductToSingleProperty(restrictToSinglePropertyForProductValue, isPrimaryProperty, ref isAssignedFlag, upfmProperty, instanceExists);
-                                property.IsAssigned = response.Item1;
-                                property.InstanceId = response.Item2;
-                                if (isAssignedFlag)
-                                {
-                                    break;
-                                }
+                                property.IsAssigned = true;
                             }
-							else
+                            else if (upfmProperty != null && (!upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
                             {
-                                if (upfmProperty != null && (upfmProperty.id.Contains("-1") || upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
-                                {
-                                    property.IsAssigned = true;
-                                }
-                                else if (upfmProperty != null && (!upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
-                                {
-                                    property.IsAssigned = false;
-                                }
-                                property.InstanceId = instanceExists.PropertyInstanceSourceId;
-
+                                property.IsAssigned = false;
                             }
+                            property.InstanceId = instanceExists.PropertyInstanceSourceId;
                         }
                         else if (isPrimaryProperty)
                         {
@@ -1954,34 +1937,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
                 else if (productPropertyType == typeof(ACProperty))
                 {
-                    bool isAssignedFlag = false;
                     foreach (var property in productResult.Records.Cast<ACProperty>())
                     {
                         var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.BookID));
                         if (instanceExists != null)
                         {
-                            if ((!string.IsNullOrEmpty(restrictToSinglePropertyForProductValue) && restrictToSinglePropertyForProductValue == "1"))
+                            if (upfmProperty != null && (upfmProperty.id.Contains("-1") || upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
                             {
-                                var response = RestrictProductToSingleProperty(restrictToSinglePropertyForProductValue, isPrimaryProperty, ref isAssignedFlag, upfmProperty, instanceExists);
-                                property.IsAssigned = response.Item1;
-                                property.InstanceId = response.Item2;
-                                if (isAssignedFlag)
-                                {
-                                    break;
-                                }
+                                property.IsAssigned = true;
                             }
-                            else
+                            else if (upfmProperty != null && (!upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
                             {
-                                if (upfmProperty != null && (upfmProperty.id.Contains("-1") || upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
-                                {
-                                    property.IsAssigned = true;
-                                }
-                                else if (upfmProperty != null && (!upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
-                                {
-                                    property.IsAssigned = false;
-                                }
-                                property.InstanceId = instanceExists.PropertyInstanceSourceId.ToLower();
+                                property.IsAssigned = false;
                             }
+                            property.InstanceId = instanceExists.PropertyInstanceSourceId.ToLower();
                         }
                         else if (isPrimaryProperty)
                         {
@@ -1995,35 +1964,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
                 else if (productPropertyType == typeof(AssetGroup))
                 {
-                    bool isAssignedFlag = false;
                     foreach (var property in productResult.Records.Cast<AssetGroup>())
                     {                        
                         var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.AssetID));
                         if (instanceExists != null)
-                        {                           
-                            if((!string.IsNullOrEmpty(restrictToSinglePropertyForProductValue) && restrictToSinglePropertyForProductValue == "1"))
-							{
-                                var response = RestrictProductToSingleProperty(restrictToSinglePropertyForProductValue, isPrimaryProperty, ref isAssignedFlag, upfmProperty, instanceExists);
-                                property.IsAssigned = response.Item1;
-                                property.InstanceId = response.Item2;
-                                if (isAssignedFlag)
-								{
-                                    break;
-								}
+                        {
+                            if (upfmProperty != null && (upfmProperty.id.Contains("-1") || upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
+                            {
+                                property.IsAssigned = true;
                             }
-                            else
-							{
-								if (upfmProperty != null && (upfmProperty.id.Contains("-1") || upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
-								{
-									property.IsAssigned = true;
-								}
-								else if (upfmProperty != null && (!upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
-								{
-									property.IsAssigned = false;
-								}
-                                property.InstanceId = instanceExists.PropertyInstanceSourceId.ToLower();
-									
-							}
+                            else if (upfmProperty != null && (!upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
+                            {
+                                property.IsAssigned = false;
+                            }
+                            property.InstanceId = instanceExists.PropertyInstanceSourceId.ToLower();
                         }
                         else if (isPrimaryProperty)
                         {
@@ -2037,34 +1991,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
                 else if (productPropertyType == typeof(OnSiteProperty))
                 {
-                    bool isAssignedFlag = false;
                     foreach (var property in productResult.Records.Cast<OnSiteProperty>())
                     {
                         var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.GetPropertyId.ToString()));
                         if (instanceExists != null)
                         {
-                            if ((!string.IsNullOrEmpty(restrictToSinglePropertyForProductValue) && restrictToSinglePropertyForProductValue == "1"))
+                            if (upfmProperty != null && (upfmProperty.id.Contains("-1") || upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
                             {
-                                var response = RestrictProductToSingleProperty(restrictToSinglePropertyForProductValue, isPrimaryProperty, ref isAssignedFlag, upfmProperty, instanceExists);
-                                property.IsAssigned = response.Item1;
-                                property.InstanceId = response.Item2;
-                                if (isAssignedFlag)
-                                {
-                                    break;
-                                }
+                                property.IsAssigned = true;
                             }
-                            else
+                            else if (upfmProperty != null && (!upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
                             {
-                                if (upfmProperty != null && (upfmProperty.id.Contains("-1") || upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
-                                {
-                                    property.IsAssigned = true;
-                                }
-                                else if (upfmProperty != null && (!upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
-                                {
-                                    property.IsAssigned = false;
-                                }
-                                property.InstanceId = instanceExists.PropertyInstanceSourceId.ToLower();
+                                property.IsAssigned = false;
                             }
+                            property.InstanceId = instanceExists.PropertyInstanceSourceId.ToLower();
                         }
                         else if (isPrimaryProperty)
                         {
@@ -2078,34 +2018,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
                 else if (productPropertyType == typeof(RumPropertyGroup))
                 {
-                    bool isAssignedFlag = false;
                     foreach (var property in productResult.Records.Cast<RumPropertyGroup>())
                     {
                         var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.Id.ToString()));
                         if (instanceExists != null)
                         {
-                            if ((!string.IsNullOrEmpty(restrictToSinglePropertyForProductValue) && restrictToSinglePropertyForProductValue == "1"))
+                            if (upfmProperty != null && (upfmProperty.id.Contains("-1") || upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
                             {
-                                var response = RestrictProductToSingleProperty(restrictToSinglePropertyForProductValue, isPrimaryProperty, ref isAssignedFlag, upfmProperty, instanceExists);
-                                property.IsAssigned = response.Item1;
-                                property.InstanceId = response.Item2;
-                                if (isAssignedFlag)
-                                {
-                                    break;
-                                }
+                                property.IsAssigned = true;
                             }
-                            else
+                            else if (upfmProperty != null && (!upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
                             {
-                                if (upfmProperty != null && (upfmProperty.id.Contains("-1") || upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
-                                {
-                                    property.IsAssigned = true;
-                                }
-                                else if (upfmProperty != null && (!upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
-                                {
-                                    property.IsAssigned = false;
-                                }
-                                property.InstanceId = instanceExists.PropertyInstanceSourceId.ToLower();
+                                property.IsAssigned = false;
                             }
+                            property.InstanceId = instanceExists.PropertyInstanceSourceId.ToLower();
                         }
                         else if (isPrimaryProperty)
                         {
@@ -2119,34 +2045,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
                 else if (productPropertyType == typeof(ProductProperties))
                 {
-                    bool isAssignedFlag = false;
                     foreach (var property in productResult.Records.Cast<ProductProperties>())
                     {
                         var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.GetPropertyId));
                         if (instanceExists != null)
                         {
-                            if ((!string.IsNullOrEmpty(restrictToSinglePropertyForProductValue) && restrictToSinglePropertyForProductValue == "1"))
+                            if (upfmProperty != null && (upfmProperty.id.Contains("-1") || upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
                             {
-                                var response = RestrictProductToSingleProperty(restrictToSinglePropertyForProductValue, isPrimaryProperty, ref isAssignedFlag, upfmProperty, instanceExists);
-                                property.IsAssigned = response.Item1;
-                                property.InstanceId = response.Item2;
-                                if (isAssignedFlag)
-                                {
-                                    break;
-                                }
+                                property.IsAssigned = true;
                             }
-                            else
+                            else if (upfmProperty != null && (!upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
                             {
-                                if (upfmProperty != null && (upfmProperty.id.Contains("-1") || upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
-                                {
-                                    property.IsAssigned = true;
-                                }
-                                else if (upfmProperty != null && (!upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
-                                {
-                                    property.IsAssigned = false;
-                                }
-                                property.InstanceId = instanceExists.PropertyInstanceSourceId.ToLower();
+                                property.IsAssigned = false;
                             }
+                            property.InstanceId = instanceExists.PropertyInstanceSourceId.ToLower();
                         }
                         else if (isPrimaryProperty)
                         {
@@ -2160,34 +2072,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
                 else if (productPropertyType == typeof(Portfolio))
                 {
-                    bool isAssignedFlag = false;
                     foreach (var property in productResult.Records.Cast<Portfolio>())
                     {
                         var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.ID));
                         if (instanceExists != null)
                         {
-                            if ((!string.IsNullOrEmpty(restrictToSinglePropertyForProductValue) && restrictToSinglePropertyForProductValue == "1"))
+                            if (upfmProperty != null && (upfmProperty.id.Contains("-1") || upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
                             {
-                                var response = RestrictProductToSingleProperty(restrictToSinglePropertyForProductValue, isPrimaryProperty, ref isAssignedFlag, upfmProperty, instanceExists);
-                                property.IsAssigned = response.Item1;
-                                property.InstanceId = response.Item2;
-                                if (isAssignedFlag)
-                                {
-                                    break;
-                                }
+                                property.IsAssigned = true;
                             }
-                            else
+                            else if (upfmProperty != null && (!upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
                             {
-                                if (upfmProperty != null && (upfmProperty.id.Contains("-1") || upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
-                                {
-                                    property.IsAssigned = true;
-                                }
-                                else if (upfmProperty != null && (!upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
-                                {
-                                    property.IsAssigned = false;
-                                }
-                                property.InstanceId = instanceExists.PropertyInstanceSourceId.ToLower();
+                                property.IsAssigned = false;
                             }
+                            property.InstanceId = instanceExists.PropertyInstanceSourceId.ToLower();
                         }
                         else if (isPrimaryProperty)
                         {
@@ -2512,29 +2410,5 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     $"author user login name {_defaultUserClaim.LoginName}", exception: ex);
             }
         }
-		
-
-		private Tuple<bool,string> RestrictProductToSingleProperty( string restrictToSinglePropertyForProductValue, bool isPrimaryProperty, ref bool isAssignedFlag, UPFMProperty upfmProperty, TranslatePropertyInstanceAttribute instanceExists)
-        {
-            bool isAssigned = false;
-            string instanceId = null;
-
-            if (upfmProperty != null && (upfmProperty.id.Contains("-1") || upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty && ((!isAssignedFlag && upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId))))
-            {
-                isAssigned = true;
-            }
-            else if (upfmProperty != null && (!upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
-            {
-                isAssigned = false;
-            }
-            if ((upfmProperty != null && !isAssignedFlag && upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)))
-            {
-                instanceId = instanceExists.PropertyInstanceSourceId.ToLower();
-                isAssignedFlag = true;
-            }
-
-            return new Tuple<bool, string>(isAssigned, instanceId);
-        }
-
     }
 }
