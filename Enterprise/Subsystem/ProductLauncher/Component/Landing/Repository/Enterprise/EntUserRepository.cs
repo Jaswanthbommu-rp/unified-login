@@ -116,7 +116,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.E
 			{
 				using (var repository = GetRepository())
 				{
-					usersDataList = repository.GetMany<UsersData>(EnterpriseStoredProcNameConstants.SP_ListUserInformation, param);					
+					usersDataList = repository.GetMany<UsersData>(EnterpriseStoredProcNameConstants.SP_ListUserInformation, param, 0);					
 				}
 			}
 			catch (Exception exception)
