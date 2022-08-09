@@ -1400,7 +1400,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 					// Add all ADMIN roles 
 					List<ProductRole> currentList = currentRoleList.Records.Cast<ProductRole>().ToList();
-                    rolesToAssign = new List<string>();
                     foreach (ProductRole role in currentList)
                     {
                         if ((role.Name.ToUpper().Contains("ADMIN") && role.IsAssigned == false) || role.IsAssigned)
@@ -1597,8 +1596,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             try
             {
-
-                ListResponse listResponse = new ListResponse();
+				bool isAdmin = false;
+				List<string> rolesToCarryForward = new List<string>();
+				ListResponse listResponse = new ListResponse();
                 listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
                 if (listResponse.IsError) { return listResponse.ErrorReason; }
 
@@ -1770,7 +1770,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     if (batchProcessType == BatchProcessType.UserTypeAdminToRegular || batchProcessType == BatchProcessType.UserTypeRegularToAdmin || batchProcessType == BatchProcessType.UserTypeAdminToExternal || batchProcessType == BatchProcessType.UserTypeExternalToAdmin)
                     {
-                        bool isAdmin = false; // batchProcessType == BatchProcessType.UserTypeRegularToAdmin;
                         if (batchProcessType == BatchProcessType.UserTypeRegularToAdmin || batchProcessType == BatchProcessType.UserTypeExternalToAdmin)
                         {
                             isAdmin = true;
@@ -1787,9 +1786,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     logData.Add("user", RemovePrivateData(user));
                     //WriteToDiagnosticLog($"ManageAccountingUser - Updating user. userPersonaId = {userPersonaId}", logData);
                     WriteToDiagnosticLog($"ManageAccountingUser - JSON input - UpdateUser " + JsonConvert.SerializeObject(logData));
-                    userResultString = _service.UpdateUser(user);
-                    
-                    ChangeStatusAccountingUser(editorPersonaId, userPersonaId, true);
+					if (isAdmin)
+					{
+						RequestParameter datafilter = new RequestParameter();
+						ListResponse currentRoleList = GetUserRoles(editorPersonaId, userPersonaId, datafilter);
+						foreach (ProductRole role in currentRoleList.Records)
+						{
+							if (role.IsAssigned == true)
+							{
+								rolesToCarryForward.Add(role.ID);
+							}
+						}
+					}
+					userResultString = _service.UpdateUser(user);
+
+					ChangeStatusAccountingUser(editorPersonaId, userPersonaId, true);
                 }
 
                 UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
@@ -1803,9 +1814,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     PropertyList = new List<string>();
                 }
-
+				if (isAdmin)
+				{
+					RoleList = rolesToCarryForward; // batchProcessType == BatchProcessType.UserTypeRegularToAdmin;
+				}
+				
 				// For SuperUser users -  Accounting sets the Admin related roles - no need to clear prev roles			
-					string updateResultRoles = UpdateRolesToUser(editorPersonaId, userPersonaId, RoleList, isAccountingAdmin, batchProcessType);
+				string updateResultRoles = UpdateRolesToUser(editorPersonaId, userPersonaId, RoleList, isAccountingAdmin, batchProcessType);
 					if (!string.IsNullOrEmpty(updateResultRoles))
 					{
 						return updateResultRoles;
