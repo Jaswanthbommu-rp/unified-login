@@ -1392,6 +1392,7 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2021Q1Release.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2022.05.WMU.Release.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\Batchprocessor-settings.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\1213354-add-operators.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />
