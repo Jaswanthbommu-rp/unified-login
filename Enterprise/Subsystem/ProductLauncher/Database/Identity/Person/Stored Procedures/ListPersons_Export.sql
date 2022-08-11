@@ -534,7 +534,7 @@ BEGIN
 			TPR.ThirdPartyRelationship as UserRelationshipType,
 			CASE 
 				WHEN TPR.ThirdPartyRelationshipId = 1 THEN NULL		
-				WHEN TPR.ThirdPartyRelationshipId in (2,3) THEN EUR.CompanyName
+				WHEN TPR.ThirdPartyRelationshipId in (2,3,4,5) THEN EUR.CompanyName
 				END AS CompanyName,
 			 @OffsetMinutes,  
 			 COUNT(1) OVER () AS TotalRecords,
