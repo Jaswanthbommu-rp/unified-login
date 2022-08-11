@@ -7,12 +7,12 @@ using System.Web.Http.Cors;
 using Microsoft.Owin;
 using Owin;
 using RP.Enterprise.Foundation.Activity.Service.Logging.Reader;
-using IdentityServer3.AccessTokenValidation;
 using Newtonsoft.Json.Serialization;
 using RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Helper;
 using RealPage.Logging.Serilog;
 using Elastic.Apm.AspNetFullFramework;
 using Elastic.Apm;
+using RealPage.IdentityServer4.AccessTokenValidation;
 
 [assembly: OwinStartup(typeof(Startup))]
 
@@ -39,7 +39,6 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader
                 RequiredScopes = new[] { ConfigReader.GetRequiredScope },
                 EnableValidationResultCache = true,
                 PreserveAccessToken = true,
-                SigningCertificate = GetSigningCertificate(),
                 IssuerName = ConfigReader.GetIssuerUri,
 
             });

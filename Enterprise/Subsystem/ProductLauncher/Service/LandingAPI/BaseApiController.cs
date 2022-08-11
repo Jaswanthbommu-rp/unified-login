@@ -6,15 +6,12 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
-using Serilog;
-using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Web.Http;
 using System.Web.Http.Controllers;
-using Newtonsoft.Json;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI
 {
@@ -152,37 +149,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI
                 _userClaims = new DefaultUserClaim() { CorrelationId = Guid.NewGuid() };
                 _correlationId = _userClaims.CorrelationId;
             }
-        }
-
-        /// <summary>
-        /// Used to write to the error log
-        /// </summary>
-        protected void WriteToErrorLog(string message = null, Dictionary<string, object> logData = null, Exception exception = null)
-        {
-            var logger = Log.Logger;
-            if (logData?.Keys != null)
-            {
-                logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
-            }
-			logger = logger.ForContext("ProductModule", this.GetType());
-            logger.Write(LogEventLevel.Error, exception, message );
-        }
-
-        /// <summary>
-        /// Write to the diagnostic log
-        /// </summary>
-        /// <param name="message"></param>
-        /// <param name="logData"></param>
-        protected void WriteToDiagnosticLog(string message = null, Dictionary<string, object> logData = null)
-        {
-            var logger = Log.Logger;
-            if (logData?.Keys != null)
-            {
-                logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
-            }
-			logger = logger.ForContext("ProductModule", this.GetType());
-            logger = logger.ForContext("CorrelationId", _correlationId.ToString());
-            logger.Write(LogEventLevel.Debug, message );
         }
     }
 }

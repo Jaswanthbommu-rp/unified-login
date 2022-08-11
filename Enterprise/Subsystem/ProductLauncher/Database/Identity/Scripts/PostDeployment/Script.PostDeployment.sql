@@ -18,6 +18,8 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\AccessUDM-viaKongOrDirectly.sql
 :r .\PostDeploymentScripts\1213354-add-operators.sql
 
+:r .\PostDeploymentScripts\id4-certificate.sql
+
 :r .\PostDeploymentScripts\UpdateStatistics.sql
 :r .\PostDeploymentScripts\RecompileAllProcs.sql
 :r .\PostDeploymentScripts\ADGroupWithoutUserCreationSetting.sql
