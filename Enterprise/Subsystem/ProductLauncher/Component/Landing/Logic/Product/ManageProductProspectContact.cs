@@ -801,6 +801,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		{
 			var currentProspectContactCenterUser = GetProspectContactCenterUser();
 			Dictionary<string, object> logData = new Dictionary<string, object>();
+
+			if (!currentProspectContactCenterUser.UserActive && prospectContactCenterUser.User.UserActive)
+			{
+				ReCreateNewUser(userPersonaId, editorPersonaId, prospectContactCenterUser);
+			}
+
+
 			// Check if UserType changed
 			if (currentProspectContactCenterUser.UserType.Trim() != prospectContactCenterUser.User.UserType.Trim())
 			{
