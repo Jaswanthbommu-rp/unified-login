@@ -18,6 +18,8 @@ using System.Linq;
 using Serilog;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
+using Newtonsoft.Json;
+using Serilog.Events;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -677,5 +679,37 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
         }
         #endregion
+
+        /// <summary>
+        /// Used to write to the error log
+        /// </summary>
+        private void WriteToErrorLog(string message = null, Dictionary<string, object> logData = null, Exception exception = null)
+        {
+            var logger = Log.Logger;
+            if (logData?.Keys != null)
+            {
+                logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
+            }
+            logger = logger.ForContext("ProductModule", this.GetType());
+            logger.Write(LogEventLevel.Error, exception, message);
+        }
+
+        /// <summary>
+        /// Write to the diagnostic log
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="logData"></param>
+        private void WriteToDiagnosticLog(string message = null, Dictionary<string, object> logData = null)
+        {
+            var logger = Log.Logger;
+            if (logData?.Keys != null)
+            {
+                logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
+            }
+            logger = logger.ForContext("ProductModule", this.GetType());
+            logger = logger.ForContext("CorrelationId", _userClaims.CorrelationId.ToString());
+            logger.Write(LogEventLevel.Debug, message);
+        }
+
     }
 }

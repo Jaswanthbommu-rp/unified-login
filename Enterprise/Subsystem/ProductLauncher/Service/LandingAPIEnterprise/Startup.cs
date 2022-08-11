@@ -1,5 +1,4 @@
-﻿using IdentityServer3.AccessTokenValidation;
-using Microsoft.Owin;
+﻿using Microsoft.Owin;
 using Microsoft.Owin.Extensions;
 using Newtonsoft.Json.Serialization;
 using Owin;
@@ -10,6 +9,7 @@ using System.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Web.Http;
 using System.Web.Http.Cors;
+using RealPage.IdentityServer4.AccessTokenValidation;
 
 [assembly: OwinStartup("RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Startup", typeof(RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Startup))]
 
@@ -33,9 +33,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise
                 RequiredScopes = ConfigReader.GetRequiredScope.Split(null),
                 DelayLoadMetadata = true,
                 EnableValidationResultCache = true,
-                SigningCertificate = GetSigningCertificate(),
+                //SigningCertificate = GetSigningCertificate(),
                 IssuerName = ConfigReader.GetIssuerUri,
-
                 //ClientSecret = ConfigReader.GetApiSecret
                 //ValidationMode = ValidationMode.ValidationEndpoint,
             });

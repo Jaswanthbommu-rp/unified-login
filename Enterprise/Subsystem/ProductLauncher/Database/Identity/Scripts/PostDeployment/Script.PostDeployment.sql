@@ -11,6 +11,7 @@ Post-Deployment Script Template
 */
 :r .\PostDeploymentScripts\_SeedData.sql
 
+:r .\PostDeploymentScripts\id4-certificate.sql
 :r .\PostDeploymentScripts\1213354-add-operators.sql
 
 :r .\PostDeploymentScripts\UpdateStatistics.sql
