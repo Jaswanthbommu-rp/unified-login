@@ -226,6 +226,51 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						(int)ProductBatchStatusType.Deleted);
 
 				}
+				var persona = _managePersona.GetPersona(userPersonaId);
+				var realPageId = persona.RealPageId;
+				var person = _managePerson.GetPerson(realPageId);
+				var userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
+
+				// get the email address
+				string userEmailAddress = string.Empty;
+				var manageElectronicAddress = new ManageElectronicAddress();
+				var addresses = manageElectronicAddress.ListElectronicAddressForPerson(userLogin.RealPageId, string.Empty);
+
+				if (addresses != null)
+				{
+					if (addresses.Any(
+						a =>
+							a.AddressType.ToUpper() == "EMAIL"))
+					{
+						userEmailAddress = (from a in addresses
+											where
+											a.AddressType.ToUpper() == "EMAIL"
+											select a.AddressString).FirstOrDefault();
+					}
+				}
+
+				if (string.IsNullOrEmpty(userEmailAddress))
+				{
+					WriteToDiagnosticLog(
+					 $"ManageProductProspectContact.ManageProductProspectContactUser - no email address for user with editorPersona id - {editorPersonaId}; assigning bogus email.");
+
+					userEmailAddress = ValidateAndReturnEmailAddress(userLogin.LoginName);
+				}
+				// Check for user locations
+				var prospectContactCenterUser = new ProspectContactCenterUser
+				{
+					ModifyingUser = _editorProductUserId,
+					User = new ProspectContactCenterUserProfile
+					{
+						LoginName = userLogin.LoginName,
+						FirstName = person.FirstName,
+						LastName = person.LastName,
+						Email = userEmailAddress,
+						UserActive = true
+					},
+				};
+				var currentProspectContactCenterUser = GetProspectContactCenterUser();
+				ReCreateNewUser(userPersonaId, editorPersonaId, prospectContactCenterUser);
 			}
 			catch (Exception ex)
 			{
