@@ -7,9 +7,20 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing {
-    
-    
-    public partial class StatusCheck {
+namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing
+{
+
+
+    public partial class StatusCheck
+    {
+
+        /// <summary>
+        /// timerLabel control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl timerLabel;
     }
 }
