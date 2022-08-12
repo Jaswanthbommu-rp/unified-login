@@ -249,6 +249,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					}
 				}
 
+				CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
+
+				if (string.IsNullOrEmpty(company.CompanyInstanceSourceId))
+				{
+					WriteToErrorLog($"ManageProductProspectContact.ManageProductProspectContactUser - Error for user with editorPersona id - {editorPersonaId} Error - Company not found.");
+					return "Company Setup Error: Please Contact Support.";
+				}
 				if (string.IsNullOrEmpty(userEmailAddress))
 				{
 					WriteToDiagnosticLog(
@@ -269,7 +276,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						UserActive = true
 					},
 				};
-				var currentProspectContactCenterUser = GetProspectContactCenterUser();
+				prospectContactCenterUser.User.ManagementCompanyID = company.CompanyInstanceSourceId;
+				prospectContactCenterUser.User.UserType = "C"; // community level
+				prospectContactCenterUser.User.PropertyID = "0";
+				
+
 				ReCreateNewUser(userPersonaId, editorPersonaId, prospectContactCenterUser);
 			}
 			catch (Exception ex)
