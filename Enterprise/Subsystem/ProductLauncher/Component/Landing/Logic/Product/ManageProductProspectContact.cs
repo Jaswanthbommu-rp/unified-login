@@ -248,7 +248,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 											select a.AddressString).FirstOrDefault();
 					}
 				}
+				CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
 
+				if (string.IsNullOrEmpty(company.CompanyInstanceSourceId))
+				{
+					WriteToErrorLog($"ManageProductProspectContact.ManageProductProspectContactUser - Error for user with editorPersona id - {editorPersonaId} Error - Company not found.");
+					return "Company Setup Error: Please Contact Support.";
+				}
 				if (string.IsNullOrEmpty(userEmailAddress))
 				{
 					WriteToDiagnosticLog(
@@ -257,20 +263,31 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					userEmailAddress = ValidateAndReturnEmailAddress(userLogin.LoginName);
 				}
 				// Check for user locations
-				var prospectContactCenterUser = new ProspectContactCenterUser
+				var currentProspectContactCenterUser = GetProspectContactCenterUser();
+				var userToUpdate = new ProspectContactCenterUser
 				{
 					ModifyingUser = _editorProductUserId,
 					User = new ProspectContactCenterUserProfile
 					{
-						LoginName = userLogin.LoginName,
-						FirstName = person.FirstName,
-						LastName = person.LastName,
-						Email = userEmailAddress,
+						LoginName = $"{currentProspectContactCenterUser.LoginName}_GB{ DateTime.Now.Ticks }",
+						Email = $"{currentProspectContactCenterUser.Email}_GB{ DateTime.Now.Ticks }",
+						FirstName = currentProspectContactCenterUser.FirstName,
+						LastName = currentProspectContactCenterUser.LastName,
+						SystemIdentifier = currentProspectContactCenterUser.SystemIdentifier,
+						UserType = currentProspectContactCenterUser.UserType,
+						ManagementCompanyID = currentProspectContactCenterUser.ManagementCompanyID,
+						PropertyID = currentProspectContactCenterUser.PropertyID,
+						//Properties = currentProspectContactCenterUser.Properties,
 						UserActive = true
-					},
+					}
 				};
-				var currentProspectContactCenterUser = GetProspectContactCenterUser();
-				ReCreateNewUser(userPersonaId, editorPersonaId, prospectContactCenterUser);
+
+				userToUpdate.User.ManagementCompanyID = company.CompanyInstanceSourceId;
+				userToUpdate.User.UserType = "C"; // community level
+				userToUpdate.User.PropertyID = "0";
+				userToUpdate.User.Properties = new List<string>();
+
+				ReCreateNewUser(userPersonaId, editorPersonaId, userToUpdate);
 			}
 			catch (Exception ex)
 			{
