@@ -124,18 +124,6 @@
                             apiResultDict.Add(setting.Apis[x].Name, apiResult);
                         }
 
-                        //string apiResultText = checkApi(serverName, server.ApiUrl, "apicore/health");
-                        //apiResultDict.Add("apicore", apiResultText);
-                        //
-                        //apiResultText = checkApi(serverName, server.ApiUrl, "apicoreenterprise/health");
-                        //apiResultDict.Add("apicoreent", apiResultText);
-                        //
-                        //apiResultText = checkApi(serverName, server.ApiUrl, "api/test/testapi");
-                        //apiResultDict.Add("api", apiResultText);
-                        //
-                        //apiResultText = checkApi(serverName, server.ApiUrl, "apienterprise/test/testapi");
-                        //apiResultDict.Add("api", apiResultText);
-
                         apiStatus.TryAdd(serverName.ToLower(), apiResultDict);
 
                         var serviceResult = checkService(serverName, server);
@@ -146,24 +134,6 @@
                     });
                     identityServerStatus.TryAdd(server.Name, serverStatus);
                 });
-
-
-                //foreach (StatusCheckServerSetting server in setting.Env)
-                //{
-                //	ConcurrentDictionary<string, string> serverStatus = new ConcurrentDictionary<string, string>();
-
-                //	foreach (string serverName in server.Servers)
-                //	{
-                //		serverStatus.TryAdd(serverName.ToLower(), checkServer(serverName, server.LoginHost));
-                //		Dictionary<string, Dictionary<string, string>> serviceResult = checkService(serverName, server.DashboardHost);
-                //		if (serviceResult.Count > 0)
-                //		{
-                //			serviceStatus.TryAdd(serverName.ToLower(), serviceResult);
-                //		}
-                //	}
-                //	envStatus.TryAdd(server.Name, serverStatus);
-                //}
-
             }
             catch (Exception ex)
             {
@@ -176,8 +146,6 @@
     int cardNumber = 0;
     var serviceListByEnvironment = new List<string>();
 
-
-    //foreach (KeyValuePair<string, object> environment in envStatus)
     foreach (var sortedEnv in sortedServerList)
     {
         var id4Status = identityServerStatus.FirstOrDefault(p => p.Key.Equals(sortedEnv, StringComparison.OrdinalIgnoreCase));
@@ -195,20 +163,6 @@
                     somethingDown = true;
                 }
             }
-            //var coreApis = apiStatus.FirstOrDefault(p => p.Key.Equals(server.Key, StringComparison.OrdinalIgnoreCase));
-            //string apiCoreValue = coreApis.Value.FirstOrDefault(p => p.Key.Equals("apicore", StringComparison.OrdinalIgnoreCase)).Value;
-            //string apiCoreStatus = apiCoreValue.Equals("error", StringComparison.OrdinalIgnoreCase) || apiCoreValue.Equals("offline", StringComparison.OrdinalIgnoreCase) ?  "danger" : "success";
-            //if (apiCoreStatus.Equals("danger", StringComparison.OrdinalIgnoreCase))
-            //{
-            //    status = "envDown";
-            //}
-            //
-            //var apiCoreEntValue = coreApis.Value.FirstOrDefault(p => p.Key.Equals("apicoreent", StringComparison.OrdinalIgnoreCase)).Value;
-            //var apiCoreEntStatus = apiCoreEntValue.Equals("error", StringComparison.OrdinalIgnoreCase) || apiCoreEntValue.Equals("offline", StringComparison.OrdinalIgnoreCase) ?  "danger" : "success";
-            //if (apiCoreEntStatus.Equals("danger", StringComparison.OrdinalIgnoreCase))
-            //{
-            //    status = "envDown";
-            //}
             var apiDetails = apiStatus.FirstOrDefault(p => p.Key.Equals(server.Key, StringComparison.OrdinalIgnoreCase)).Value;
 
             foreach (var keyValuePair in apiDetails)
@@ -319,18 +273,6 @@
                 }
             }
             
-            //Response.Write("<td>");
-            //var apiCoreValue = coreApis.Value.FirstOrDefault(p => p.Key.Equals("apicore", StringComparison.OrdinalIgnoreCase)).Value;
-            //var apiCoreStatus = apiCoreValue.Equals("error", StringComparison.OrdinalIgnoreCase) || apiCoreValue.Equals("offline", StringComparison.OrdinalIgnoreCase) ?  "danger" : "success";
-            //Response.Write($"<span class='badge text-bg-{apiCoreStatus}'>{apiCoreValue}</span>");
-            //Response.Write("</td>" + Environment.NewLine);
-            //Response.Write("<td>");
-            //var apiCoreEntValue = coreApis.Value.FirstOrDefault(p => p.Key.Equals("apicoreent", StringComparison.OrdinalIgnoreCase)).Value;
-            //var apiCoreEntStatus = apiCoreEntValue.Equals("error", StringComparison.OrdinalIgnoreCase) || apiCoreEntValue.Equals("offline", StringComparison.OrdinalIgnoreCase) ?  "danger" : "success";
-            //Response.Write($"<span class='badge text-bg-{apiCoreEntStatus}'>{apiCoreEntValue}</span>");
-            //Response.Write("</td>" + Environment.NewLine);
-
-
             var env2 = serviceStatus.FirstOrDefault(p => p.Key.Equals(server.Key, StringComparison.OrdinalIgnoreCase));
             if (env2.Key != null)
             {
@@ -388,7 +330,6 @@
                 }
                 Response.Write("</td>" + Environment.NewLine);
                 #endregion
-
 
                 #region services
                 foreach (string serviceName in serviceListByEnvironment.Distinct())
