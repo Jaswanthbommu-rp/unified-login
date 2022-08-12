@@ -281,7 +281,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				prospectContactCenterUser.User.PropertyID = "0";
 				
 
-				ReCreateNewUser(userPersonaId, editorPersonaId, prospectContactCenterUser);
+				ReCreateNewUser(userPersonaId, editorPersonaId, prospectContactCenterUser,true);
 			}
 			catch (Exception ex)
 			{
@@ -953,7 +953,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			return result;
 		}
 
-		private string ReCreateNewUser(long userPersonaId, long editorPersonaId, ProspectContactCenterUser prospectContactCenterUser)
+		private string ReCreateNewUser(long userPersonaId, long editorPersonaId, ProspectContactCenterUser prospectContactCenterUser,bool isSamlUpdateRequired =false)
 		{
 			// change exsting user name
 			var newProductLoginName = prospectContactCenterUser.User.LoginName; //IncrementCurrentProductLoginName(prospectContactCenterUser.User.LoginName);
@@ -968,8 +968,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			string newProductUserId = InsertProspectContactCenterUser($"{_apiEndPoint}/User", userPersonaId, editorPersonaId, newProductLoginName, prospectContactCenterUser);
 
 			// Update saml settings in GB
-			UpdateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.UserId, newProductUserId);
-			UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
+			if (!isSamlUpdateRequired)
+			{
+				UpdateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.UserId, newProductUserId);
+				UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
+			}
 
 			return string.Empty;
 		}
