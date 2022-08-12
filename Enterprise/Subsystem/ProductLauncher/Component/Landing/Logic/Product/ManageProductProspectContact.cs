@@ -217,7 +217,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			try
 			{
 				WriteToDiagnosticLog($"ManageProductProspectContact.UnassignUser userPersonaId:{userPersonaId}");
-
+                
+				var currentProspectContactCenterUser = GetProspectContactCenterUser();
 				result = DeactivateCurrentUser(_editorProductUserId);
 
 				if (string.IsNullOrEmpty(result))
@@ -281,7 +282,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				prospectContactCenterUser.User.PropertyID = "0";
 				
 
-				ReCreateNewUser(userPersonaId, editorPersonaId, prospectContactCenterUser,true);
+				if (currentProspectContactCenterUser.UserType != prospectContactCenterUser.User.UserType)
+				{
+					ReCreateNewUser(userPersonaId, editorPersonaId, prospectContactCenterUser, true);
+				}
+
 			}
 			catch (Exception ex)
 			{
