@@ -118,12 +118,14 @@
 
                         var apiResultDict = new Dictionary<string, string>();
 
-                        for (var x = 0; x < setting.Apis.Count; x++)
+                        if (setting.Apis != null)
                         {
-                            var apiResult = checkApi(serverName, server.ApiUrl, setting.Apis[x].Route);
-                            apiResultDict.Add(setting.Apis[x].Name, apiResult);
+                            for (var x = 0; x < setting.Apis.Count; x++)
+                            {
+                                var apiResult = checkApi(serverName, server.ApiUrl, setting.Apis[x].Route);
+                                apiResultDict.Add(setting.Apis[x].Name, apiResult);
+                            }
                         }
-
                         apiStatus.TryAdd(serverName.ToLower(), apiResultDict);
 
                         var serviceResult = checkService(serverName, server);
@@ -231,11 +233,13 @@
         Response.Write($"<thead>" + Environment.NewLine);
         Response.Write($"<th>Server</th>" + Environment.NewLine);
         Response.Write($"<th>ID4</th>" + Environment.NewLine);
-        for (var x = 0; x < setting.Apis.Count; x++)
+        if (setting.Apis != null)
         {
-            Response.Write($"<th>{setting.Apis[x].Name}</th>" + Environment.NewLine);
+            for (var x = 0; x < setting.Apis.Count; x++)
+            {
+                Response.Write($"<th>{setting.Apis[x].Name}</th>" + Environment.NewLine);
+            }
         }
-        
         Response.Write($"<th>Queued Activities</th>" + Environment.NewLine);
         foreach (var serviceName in serviceListByEnvironment.Distinct())
         {
@@ -260,19 +264,21 @@
             Response.Write($"<td><span class='badge text-bg-{serverStatus}'>{server.Value}</span></td>" + Environment.NewLine);
 
             var apiResults = apiStatus.FirstOrDefault(p => p.Key.Equals(server.Key, StringComparison.OrdinalIgnoreCase));
-            for (var x = 0; x < setting.Apis.Count; x++)
+            if (setting.Apis != null)
             {
-                var currentApiName = setting.Apis[x].Name;
-                if (apiResults.Value.ContainsKey(currentApiName))
+                for (var x = 0; x < setting.Apis.Count; x++)
                 {
-                    Response.Write("<td>");
-                    var apiCoreValue = apiResults.Value.FirstOrDefault(p => p.Key.Equals(currentApiName, StringComparison.OrdinalIgnoreCase)).Value;
-                    var apiCoreStatus = apiCoreValue.Equals("error", StringComparison.OrdinalIgnoreCase) || apiCoreValue.Equals("offline", StringComparison.OrdinalIgnoreCase) ?  "danger" : "success";
-                    Response.Write($"<span class='badge text-bg-{apiCoreStatus}'>{apiCoreValue}</span>");
-                    Response.Write("</td>" + Environment.NewLine);
+                    var currentApiName = setting.Apis[x].Name;
+                    if (apiResults.Value.ContainsKey(currentApiName))
+                    {
+                        Response.Write("<td>");
+                        var apiCoreValue = apiResults.Value.FirstOrDefault(p => p.Key.Equals(currentApiName, StringComparison.OrdinalIgnoreCase)).Value;
+                        var apiCoreStatus = apiCoreValue.Equals("error", StringComparison.OrdinalIgnoreCase) || apiCoreValue.Equals("offline", StringComparison.OrdinalIgnoreCase) ? "danger" : "success";
+                        Response.Write($"<span class='badge text-bg-{apiCoreStatus}'>{apiCoreValue}</span>");
+                        Response.Write("</td>" + Environment.NewLine);
+                    }
                 }
             }
-            
             var env2 = serviceStatus.FirstOrDefault(p => p.Key.Equals(server.Key, StringComparison.OrdinalIgnoreCase));
             if (env2.Key != null)
             {
