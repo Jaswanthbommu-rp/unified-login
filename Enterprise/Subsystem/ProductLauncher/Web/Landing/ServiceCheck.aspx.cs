@@ -10,7 +10,9 @@ using System.Text;
 namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing
 {
     public partial class ServiceCheck : System.Web.UI.Page
-	{
+    {
+        public string timerLabel { get; set; }
+
 		protected void Page_Load(object sender, EventArgs e)
 		{
 		}

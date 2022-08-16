@@ -68,7 +68,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing
 		}
 
 
-		public string checkServer(string serverName, string hostName, string hostUrl)
+		public string checkIdentityServer(string serverName, string hostName, string hostUrl)
 		{
 			try
 			{
@@ -118,6 +118,42 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing
 			return "offline";
 		}
 
+        public string checkApi(string serverName, string hostName, string apiHealthUrl)
+        {
+			if (hostName == null)
+			{
+				return "missing";
+			}
+
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    client.DefaultRequestHeaders.Host = hostName;
+                    string protocol = "http";
+                    if (hostName.ToUpper().Contains("LOCAL.") || hostName.ToUpper().Contains("LOCAL2."))
+                    {
+                        protocol = "https";
+                    }
+
+                    // need to hit the server directly over port 80, so it doesn't go through bigip
+                    client.BaseAddress = new Uri(protocol + "://" + serverName);
+                    
+                    var response = client.GetAsync(apiHealthUrl).Result;
+					if (response.IsSuccessStatusCode || response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+					{
+						return "running";
+					}
+                }
+            }
+            catch 
+            {
+                return "error";
+            }
+
+            return "offline";
+        }
+
         protected static string MaskServerName(KeyValuePair<string, string> server)
         {
 			var serverName = server.Key.Split('.')[0];
@@ -131,15 +167,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing
 		public Dictionary<string, string> Kibana { get; set; }
 		public List<StatusCheckServerSetting> Env { get; set; }
 		public List<Dictionary<string, string>> Services { get; set; }
-	}
+        public List<ApiInformation> Apis { get; set; }
+    }
 
 	public class StatusCheckServerSetting
 	{
 		public string Name { get; set; }
 		public string LoginHost { get; set; }
 		public string LoginUrl { get; set; }
+		public string ApiUrl { get; set; }
 		public string DashboardHost { get; set; }
 		public string DashboardUrl { get; set; }
 		public List<string> Servers { get; set; }
 	}
+
+    public class ApiInformation
+    {
+		public string Name { get; set; }
+		public string Route { get; set; }
+    }
 }
