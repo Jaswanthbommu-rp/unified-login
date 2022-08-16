@@ -282,8 +282,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				prospectContactCenterUser.User.PropertyID = "0";
 				
 
-			    string existanceuserType =	currentProspectContactCenterUser.UserType.TrimEnd();
-				if (currentProspectContactCenterUser.UserType != existanceuserType)
+			    string existanceuserType = currentProspectContactCenterUser.UserType.TrimEnd();
+				if (existanceuserType != prospectContactCenterUser.User.UserType)
 				{
 					ReCreateNewUser(userPersonaId, editorPersonaId, prospectContactCenterUser, true);
 				}
