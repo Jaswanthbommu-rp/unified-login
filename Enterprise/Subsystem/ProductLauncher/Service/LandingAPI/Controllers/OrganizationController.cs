@@ -1852,7 +1852,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     Id = org.PartyId,
                     CompanyInstanceSourceId = org.RealPageId.ToString().ToLower(),
                     CreatedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
-                    ProductCenterSourceId = product.ToString(),
+                    ProductCenterSourceId = ((int)product).ToString(),
                     PropertyInstanceSourceId = null,
                     Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)
 
