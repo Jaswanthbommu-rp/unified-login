@@ -652,7 +652,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 								UserType = u.UserType,
 								IsExternalIdp = u.IsExternalIdp,
 								Product = DeserializeUserProduct(u.Product ?? ""),
-								EmployeeId = u.EmployeeId
+								EmployeeId = u.EmployeeId,
+                                LastLogin = u.LastLogin
 							}
 						);
 					});

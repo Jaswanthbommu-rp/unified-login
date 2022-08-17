@@ -81,6 +81,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.D
 		/// </summary>
 		[JsonProperty("EmployeeId", NullValueHandling = NullValueHandling.Ignore)]
 		public string EmployeeId { get; set; }
+
+		/// <summary>
+		/// LastLogin date
+		/// </summary>
+		[DataType(DataType.Date)]
+		[JsonConverter(typeof(DateFormatConverter), "yyyy-MM-dd")]
+		public DateTime? LastLogin { get; set; }
 	}
 
 	/// <summary>
