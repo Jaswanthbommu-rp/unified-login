@@ -7,7 +7,7 @@ AS
 BEGIN  
  DECLARE @NOW datetime = GETUTCDATE()  
     
- SELECT pe.PersonaId,  
+ SELECT DISTINCT pe.PersonaId,  
     UL.PersonPartyId,  
     p.RealPageId,  
     ULP.OrganizationPartyId,  
