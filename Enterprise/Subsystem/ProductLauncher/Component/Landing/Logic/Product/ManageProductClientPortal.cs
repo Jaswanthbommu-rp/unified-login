@@ -341,7 +341,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                       CreateClientPortalContact(new ClientPortalContact
                       {
                           AccountId = accountId,
-                          Email = uniqueProductLoginName,
+                          Email = productLoginName,
                           FirstName = person.FirstName,
                           LastName = person.LastName,
                           Unified_Platform_User__c = true
