@@ -562,12 +562,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                     // get access groups from Vendor Credentialing product
                     var allUserAccessGroups = GetUserAccessGroupsByAcessType(AccessType.Client, true);
+                    List<string> list = new List<string>() { "User", "CliVndOnly", "CliVndRO" };
 
                     if (allUserAccessGroups != null)
                     {
                         foreach (var accGrp in allUserAccessGroups)
                         {
-                            userProductPropertyNotification.RoleList.Add(accGrp.AccessGroupCode);
+                            if (!list.Contains(accGrp.AccessGroupCode)) 
+                            {
+                                userProductPropertyNotification.RoleList.Add(accGrp.AccessGroupCode);
+                            }
+                           
                         }
                         WriteToDiagnosticLog($"ManageProductVendorServices.ManageVendorServicesUser - new user is Super user & added {allUserAccessGroups.Count} roles with editorPersona id - {editorPersonaId}.");
                     }
