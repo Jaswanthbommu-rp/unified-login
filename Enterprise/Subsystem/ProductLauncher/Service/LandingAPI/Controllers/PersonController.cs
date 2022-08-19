@@ -357,6 +357,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         
                     };
                     IDictionary<object, object> CFglobals = new Dictionary<object, object>();
+
+                    //get the enabled custom field with the smallest sequence
+                    RequestParameter customFieldsDataFilter = new RequestParameter();
+                    customFieldsDataFilter.Pages.ResultsPerPage = 1;
+                    customFieldsDataFilter.Pages.StartRow = 1;
+                    customFieldsDataFilter.SortBy.Add("Sequence", "ASC");
+                    customFieldsDataFilter.FilterBy.Add("Enabled", "1");
+                    CFglobals.Add(BaseType.RequestParameter, customFieldsDataFilter);
+
                     ManageCustomFields manageCustomFields = new ManageCustomFields(_userClaims);
                     IList<CustomField> customFieldList = manageCustomFields.GetCustomField(globals: CFglobals, partyId: _userClaims.OrganizationPartyId);
                     bool customFieldsEnabled = ((customFieldList != null) && (customFieldList.Count > 0));
@@ -384,13 +393,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         }
                     }
                    
-                    //get the enabled custom field with the smallest sequence
-                    RequestParameter customFieldsDataFilter = new RequestParameter();
-                    customFieldsDataFilter.Pages.ResultsPerPage = 1;
-                    customFieldsDataFilter.Pages.StartRow = 1;
-                    customFieldsDataFilter.SortBy.Add("Sequence", "ASC");
-                    customFieldsDataFilter.FilterBy.Add("Enabled", "1");
-                    CFglobals.Add(BaseType.RequestParameter, customFieldsDataFilter);                   
+                      
 
                     plainBytes = DataExport.ExportDataToFile<LE.User>(exportConfigurations.OrderBy(p => p.Preference).ToList(), listUsers, dataFormat);
                     output = new ObjectOutput<string, IErrorData>()
