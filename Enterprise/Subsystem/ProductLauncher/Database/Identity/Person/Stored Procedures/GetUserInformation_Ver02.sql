@@ -71,26 +71,20 @@ BEGIN
 		AND		cff.[Enabled] = 1
 	),
 	AssignedRole
-	(
-		PersonaId,
-		RoleId,
-		RoleValueTypeId,
-		[Value]
-	)
-	AS
-	(
-		SELECT	DISTINCT
-					pep.PersonaId,
-					pep.RoleId,
-					rvt.RoleValueTypeId,
-					rvt.Value
-		FROM	Person.Persona p
-					INNER JOIN Enterprise.PersonaPrivilege pep ON pep.PersonaId = P.PersonaId
-					INNER JOIN Enterprise.[Role] ro ON ro.RoleId = pep.RoleId
-					INNER JOIN Enterprise.RoleValueType rvt ON rvt.RoleValueTypeId = ro.ROleValueTYpeId
-					INNER JOIN Enterprise.[Right] rt ON rt.RoleId = ro.RoleId
-					INNER JOIN Enterprise.RightValueType rtvt ON rtvt.RightValueTypeId = rt.RightValueTypeId
-		WHERE	rtvt.ProductId = 3 AND ro.PartyID = @OrganizationId
+	(  
+		PersonaId,  
+		[Value]  
+	)  
+	AS  
+	(  
+	  SELECT DISTINCT  
+		p.PersonaId,
+		ro.RoleName 
+	  FROM Person.Persona p  
+		INNER JOIN [Security].PersonaRole pep ON pep.PersonaId = P.PersonaId  
+		INNER JOIN [Security].[Role] ro ON ro.RoleId = pep.RoleId  
+	  WHERE ro.ProductId = 3 
+	  AND ro.OrgPartyID = @OrganizationId
 	),
 	cteUserProductSAML
 	(
