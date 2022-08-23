@@ -13,6 +13,7 @@ Post-Deployment Script Template
 
 :r .\PostDeploymentScripts\id4-certificate.sql
 :r .\PostDeploymentScripts\1213354-add-operators.sql
+:r .\PostDeploymentScripts\2022.06WMU.Release.sql
 
 :r .\PostDeploymentScripts\UpdateStatistics.sql
 :r .\PostDeploymentScripts\RecompileAllProcs.sql
