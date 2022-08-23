@@ -218,7 +218,7 @@ BEGIN
 				INNER JOIN Enterprise.PartyRelationship pr ON pr.PartyIdFrom = ul.PersonPartyId AND pr.PartyIdTo = ulp.OrganizationPartyId
 				INNER JOIN Enterprise.RoleType rt ON rt.PartyRoleTypeId = pr.RoleTypeIdFrom
 				INNER JOIN Ident.IdentityProviderType ipt ON ipt.IdentityProviderTypeId = ul.IdentityProviderTypeId
-				INNER JOIN AssignedRole ar ON ar.PersonaId = p.PersonaId
+				LEFT JOIN AssignedRole ar ON ar.PersonaId = p.PersonaId
 				INNER JOIN Enterprise.StatusType st ON st.StatusTYpeId = ULP.StatusTypeId 
 				LEFT OUTER JOIN
 				(
