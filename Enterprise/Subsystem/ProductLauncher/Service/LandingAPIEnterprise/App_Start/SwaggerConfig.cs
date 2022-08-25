@@ -88,6 +88,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise
 						{
 							scopes.Add("userinfoapi", "Access to the User Info API");
 							scopes.Add("enterpriseapi", "Access to the Enterprise APIs");
+							scopes.Add("internalapi", "Access to the Internal APIs");
 						});
 					c.ApiKey("Token")
 						.Description("Enter client bearer token here")
