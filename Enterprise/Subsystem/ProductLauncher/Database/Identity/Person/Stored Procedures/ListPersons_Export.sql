@@ -29,7 +29,8 @@ BEGIN
 		@ProductSettingTypeId int,
 		@OffsetMinutes smallint,
 		@csvOperator varchar(max),
-		@filterOperatorCount int = NULL;
+		@filterOperatorCount int = NULL,
+		@EmployeeCompanyPartyId bigint;
 
 	DECLARE @filterStatus TABLE (
 		StatusTypeId int PRIMARY KEY
@@ -56,11 +57,13 @@ BEGIN
 		SearchValue varchar(max)
 	)
 
-
 	CREATE TABLE #PersonaProduct(
 		PersonaId bigint,
 		ProductId bigint
 	)
+
+	SELECT @EmployeeCompanyPartyId = PartyId FROM Enterprise.Party P
+	WHERE P.RealPageId = '0D018E46-C20E-477D-ADED-4E5A35FB8F99'
 
 	SELECT	@RowsPerPage = CASE
 		WHEN @RowsPerPage <= 0 THEN 2147483647
@@ -379,7 +382,7 @@ BEGIN
 		INNER JOIN Ident.UserLogin ul ON iulp.UserLoginId = ul.UserId  
 		INNER JOIN Enterprise.StatusType est ON iulp.StatusTypeId = est.StatusTypeId  
 		LEFT OUTER JOIN @filterStatus fs ON (est.StatusTypeId = fs.StatusTypeId)  
-	WHERE iulp.OrganizationPartyId = @PartyId  AND iulp.IsRPEmployee = 0
+	WHERE iulp.OrganizationPartyId = @PartyId  AND ( iulp.IsRPEmployee = 0 OR @EmployeeCompanyPartyId =  iulp.OrganizationPartyId)
 	AND  pe.personaId  NOT IN ( SELECT ISNULL(PersonaId, 0) FROM @HoldPersona)  
 	AND  (  
 		pe.PersonaId IN  
