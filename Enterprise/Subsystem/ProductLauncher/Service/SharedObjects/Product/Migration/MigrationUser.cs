@@ -159,13 +159,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         public bool isRealPageEmployee { get; set; }
 
         /// <summary>
-        /// lastActivity for user
-        /// </summary>
-        /// 
-        [JsonProperty("lastActivity")]
-        public string lastActivity { get; set; }
-
-        /// <summary>
         /// isReadOnly for user
         /// </summary>
         /// 

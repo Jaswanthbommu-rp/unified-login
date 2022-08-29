@@ -1233,7 +1233,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					Properties = x.Properties,
 					isRealPageEmployee = x.isRealPageEmployee,
 					isAdminUser = x.isAdminUser,
-					lastActivity = x.lastActivity,
 					isReadOnly = x.isReadOnly,
 					isMigratedUser = x.isMigratedUser
 				}).ToList();
