@@ -14,6 +14,8 @@ using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Migration;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers.Product
 {
@@ -139,6 +141,51 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		    return Request.CreateResponse(HttpStatusCode.OK, result);
 	    }
 
+		#region Migration API
+		/// <summary>
+		/// Returns product users of an organization for given user.
+		/// </summary>
+		/// 
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "List Document Directory users", Type = typeof(HttpResponseMessage))]
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
+		[Route("products/rpdm/migration-users")]
+		[Authorize] // Todo: Need to implement Resource Scope Based Authorization
+		[HttpGet]
+		public HttpResponseMessage ListRPDMigrationUsers(long editorPersonaId, [FromUri] RequestParameter datafilter)
+		{
+			if (editorPersonaId == 0)
+				return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
+
+			ManagePersona managePersona = new ManagePersona();
+			var persona = managePersona.GetPersona(editorPersonaId);
+			if (persona == null)
+				return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not found.");
+
+			base._userClaims.UserRealPageGuid = persona.RealPageId;
+			IManageProductRPDocumentManagement manageRPDocument = new ManageProductRPDocumentManagement(_userClaims);
+
+			return Request.CreateResponse(HttpStatusCode.OK, manageRPDocument.GetMigrationUsers(editorPersonaId, datafilter));
+		}
+
+		/// <summary>
+		/// Update migration status of users.
+		/// </summary>
+		/// 
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "Mark Document Directory users to migrated", Type = typeof(HttpResponseMessage))]
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
+		[Route("products/rpdm/migrate-users")]
+		[Authorize]
+		[HttpPut]
+		public HttpResponseMessage UpdateUsersMigrationStatus(IList<MigrateUser> migrateUsers)
+		{
+			IManageProductRPDocumentManagement manageRPDocument = new ManageProductRPDocumentManagement(_userClaims);
+			return Request.CreateResponse(HttpStatusCode.OK, manageRPDocument.UpdateUsersMigrationStatus(_personaId, migrateUsers));
+		}
+		#endregion
 		///// <summary>
 		///// Used to create/update Users. Not used from API, should be called though ProductBatch
 		///// </summary>

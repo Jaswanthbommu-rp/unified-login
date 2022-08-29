@@ -1,5 +1,7 @@
 ﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Migration;
+using System.Collections.Generic;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces
 {
@@ -55,5 +57,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="userPersonaId"></param>
 		/// <returns></returns>
 		string UpdateRPDMUserProfile(long editorPersonaId, long userPersonaId);
+
+		/// <summary>
+		/// List all users
+		/// </summary>
+		/// <param name="editorPersonaId"></param>
+		/// <param name="datafilter"></param>
+		/// <returns></returns>
+		ListResponse GetMigrationUsers(long editorPersonaId, RequestParameter datafilter);
+
+		/// <summary>
+		/// Update the users migration status
+		/// </summary>
+		/// <param name="editorPersonaId"></param>
+		/// <param name="migrateUsers"></param>
+		/// <returns></returns>
+		MigrateResponse UpdateUsersMigrationStatus(long editorPersonaId, IList<MigrateUser> migrateUsers);
 	}
 }

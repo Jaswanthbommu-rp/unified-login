@@ -133,5 +133,43 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         /// Employee Id of the user
         /// </summary>
         public string EmployeeId { get; set; }
+
+        [JsonProperty("isActive")]
+        public bool isActive { get; set; }
+
+        /// <summary>
+        /// isMigratedUser for user
+        /// </summary>
+        /// 
+        [JsonProperty("isMigratedUser")]
+        public bool isMigratedUser { get; set; }
+
+        /// <summary>
+        /// isAdminUser for user
+        /// </summary>
+        /// 
+        [JsonProperty("isAdminUser")]
+        public bool isAdminUser { get; set; }
+
+        /// <summary>
+        /// isRealPageEmployee for user
+        /// </summary>
+        /// 
+        [JsonProperty("isRealPageEmployee")]
+        public bool isRealPageEmployee { get; set; }
+
+        /// <summary>
+        /// lastActivity for user
+        /// </summary>
+        /// 
+        [JsonProperty("lastActivity")]
+        public string lastActivity { get; set; }
+
+        /// <summary>
+        /// isReadOnly for user
+        /// </summary>
+        /// 
+        [JsonProperty("isReadOnly")]
+        public bool isReadOnly { get; set; }
     }    
 }
