@@ -1226,7 +1226,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					LastName = x.LastName,
 					MiddleName = x.MiddleName,
 					Phone = x.Phone,
-					Status = x.Status,
+					Status = x.isActive ? "true" : "false",
 					Title = x.Title,
 					UserId = x.UserId,
 					Username = x.Username,
