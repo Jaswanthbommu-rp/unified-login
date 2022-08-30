@@ -689,6 +689,7 @@
     <Compile Include="Product\ProspectContactCenter\ProspectContactPropertyRole.cs" />
     <Compile Include="Product\RPDocumentManagement\RPDMClassifier.cs" />
     <Compile Include="Product\RPDocumentManagement\RPDMDataset.cs" />
+    <Compile Include="Product\RPDocumentManagement\RPDMigrationUser.cs" />
     <Compile Include="Product\RPDocumentManagement\RPDMRole.cs" />
     <Compile Include="Product\RPDocumentManagement\RPDMRoleDetail.cs" />
     <Compile Include="Product\RPDocumentManagement\RPDMUser.cs" />

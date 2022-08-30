@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
@@ -974,7 +975,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="sortBy">Used to sort the result data</param>
 		/// <returns></returns>
 
-		private T GetResultFromApi<T>(string additionalQuery, string sortBy = null) where T : class
+		private T GetResultFromApi<T>(string additionalQuery, string sortBy = null, bool migrationUser = false) where T : class
 		{
 			T results = null;
 			string sortByAdditional = "";
@@ -999,8 +1000,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			{
 				additionalQuery += "?pageSize=9999";
 			}
-
-			var url = _productUrl.Replace("{{domain}}", domain) + $"/api/{domain}" + additionalQuery + sortByAdditional;
+			string url;
+			if (migrationUser)
+			{
+				 url = _productUrl.Replace("{{domain}}", domain) + additionalQuery;
+			}
+			else
+			{
+				 url = _productUrl.Replace("{{domain}}", domain) + $"/api/{domain}" + additionalQuery + sortByAdditional;
+			}
+			
 			Dictionary<string, object> logData = new Dictionary<string, object>() {{"url", url}};
 			WriteToDiagnosticLog("GetResultFromApi - Posting to url. ", logData);
 			try
@@ -1149,6 +1158,167 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				return "There was a problem updating the user";
 			}
 
+		}
+		#endregion
+
+		#region Migration
+		/// <summary>
+		/// List all users
+		/// </summary>
+		/// <param name="editorPersonaId"></param>
+		/// <param name="datafilter"></param>
+		/// <returns></returns>
+		public ListResponse GetMigrationUsers(long editorPersonaId, RequestParameter datafilter)
+		{
+			var response = new ListResponse()
+			{
+				IsError = true,
+				ErrorReason = "No Users."
+			};
+			var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
+			if (claimResposnse.IsError) { response.ErrorReason = claimResposnse.ErrorReason; return response; }
+
+			try
+			{
+
+				string companyInstanceSourceId = GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId;
+				if (companyInstanceSourceId == null)
+				{
+					WriteToErrorLog(
+						$"ManageRPDMUser.GetMigrationUsers.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
+					response.ErrorReason = "Company Setup Error: Please Contact Support.";
+					return response;
+				}
+
+				var filter = "NonMigrated";
+				var resultsperpage = 1000;
+				int pageNumber =1;
+				if (datafilter != null)
+				{
+					if (datafilter.FilterBy.ContainsKey("filter"))
+					{
+						filter = datafilter.FilterBy["filter"];
+					}
+					if (datafilter.Pages != null)
+					{
+						pageNumber = datafilter.Pages.StartRow;
+						resultsperpage = datafilter.Pages.ResultsPerPage;
+					}
+				}
+
+				var url = $"/api/unity/{companyInstanceSourceId}/users?filter={filter}&pageNumber={pageNumber}&resultsperpage={resultsperpage}";
+				WriteToDiagnosticLog("ManageRPDMUser.GetMigrationUsers", new Dictionary<string, object> { { "Url", url } });
+
+				var rPDMigrationList = GetResultFromApi<IList<RPDMigrationUser>>(url,null,true);
+
+				if (rPDMigrationList == null)
+				{
+					WriteToErrorLog($"ManageRPDMUser.GetMigrationUsers-no users received from product for user with editorPersona id - {editorPersonaId}.");
+					return response;
+				}
+				var allUsers = rPDMigrationList.Select(x => new MigrationUser()
+				{
+					CompanyInstanceSourceId = x.companyId,
+					Email = x.Email,
+					Extra = x.Extra,
+					FirstName = x.FirstName,
+					LastActivity = x.LastActivity,
+					LastName = x.LastName,
+					MiddleName = x.MiddleName,
+					Phone = x.Phone,
+					Status = x.Status,
+					Title = x.Title,
+					UserId = x.UserId,
+					Username = x.Username,
+					Properties = x.Properties,
+					isRealPageEmployee = x.isRealPageEmployee,
+					isAdminUser = x.isAdminUser,
+					isReadOnly = x.isReadOnly,
+					isMigratedUser = x.isMigratedUser
+				}).ToList();
+				WriteToDiagnosticLog($"ManageRPDMUser.GetUsers - Received users from product for user with editorPersona id - {editorPersonaId}.");
+				response.RowsPerPage = resultsperpage;
+				response.ErrorReason = string.Empty;
+				response.IsError = false;
+				response.TotalPages = 1;
+				response.Records = allUsers.Cast<object>().ToList();
+				response.TotalRows = allUsers.Count();
+			}
+			catch (Exception ex)
+			{
+				response = new ListResponse
+				{
+					IsError = true,
+					ErrorReason = ex.Message
+				};
+
+				WriteToErrorLog($"ManageRPDMUser.GetMigrationUsers Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+			}
+			return response;
+		}
+
+		/// <summary>
+		/// Update the users migration status
+		/// </summary>
+		/// <param name="editorPersonaId"></param>
+		/// <param name="migrateUsers"></param>
+		/// <returns></returns>
+		public MigrateResponse UpdateUsersMigrationStatus(long editorPersonaId, IList<MigrateUser> migrateUsers)
+		{
+			var migrateResponse = new MigrateResponse()
+			{
+				Status = false
+			};
+
+			var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
+			if (claimResposnse.IsError) { migrateResponse.Message = claimResposnse.ErrorReason; return migrateResponse; }
+			try
+			{
+
+				string companyInstanceSourceId = GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId;
+				if (companyInstanceSourceId == null)
+				{
+					WriteToErrorLog(
+						$"ManageRPDMUser.UpdateUsersMigrationStatus.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
+					migrateResponse.Message = "Company Setup Error: Please Contact Support.";
+					return migrateResponse;
+				}
+				var url = $"{_productUrl}/users/{companyInstanceSourceId}/migrate";
+				var response = _client.PutAsJsonAsync(url, migrateUsers).Result;
+				var responseContent = response.Content.ReadAsStringAsync().Result;
+
+				var logData = new Dictionary<string, object>
+			{
+				{ "Url", url },
+				{ "Response", responseContent },
+				{ "EditorPersonaId", editorPersonaId },
+				{ "MigratedUser", migrateUsers }
+			};
+				if (response.IsSuccessStatusCode)
+				{
+					var migrationResponse = JsonConvert.DeserializeObject<MigrateResponse>(responseContent);
+					WriteToDiagnosticLog("ManageRPDMUser.UpdateUsersMigrationStatus.PostAsJsonAsync", logData);
+					migrateResponse.Message = migrationResponse.Message;
+					migrateResponse.Status = migrationResponse.Status;
+					return migrateResponse;
+				}
+				else
+				{
+					WriteToErrorLog($"ManageRPDMUser.UpdateUsersMigrationStatus.PostAsJsonAsync", logData);
+					migrateResponse.Message = "Cannot update user status to migrated.";
+					return migrateResponse;
+				}
+			}
+			catch (Exception ex)
+			{
+				WriteToErrorLog($"ManageRPDMUser.UpdateUsersMigrationStatus Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+
+				return new MigrateResponse
+				{
+					Status = false,
+					Message = ex.Message
+				};
+			}
 		}
 		#endregion
 	}
