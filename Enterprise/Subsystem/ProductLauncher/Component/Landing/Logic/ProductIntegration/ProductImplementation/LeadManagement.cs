@@ -6,6 +6,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductInt
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.ProductImplementation
@@ -68,7 +69,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 WriteToDiagnosticLog($"LeadManagement.CreateUpdateProductUser - editorPersona id - {EditorUserDetails.PersonaId}. Calling CreateUser.");
                 if (!CheckUserExistInProduct(newProductUser.LoginName))
                 {
-                    newProductUser.LoginName = newProductUser.LoginName + "-" + _productDetails.BooksProductCode + "-" + SubjectUserDetails.PersonaId;
+                    newProductUser.LoginName = $"{newProductUser.FirstName.TrimWhiteSpace().Substring(0, 1)}" + $"{newProductUser.LastName.TrimWhiteSpace()}".ToLower() + "_"+ _productDetails.BooksProductCode + "_" + SubjectUserDetails.PersonaId;
                     result = CreateUser(newProductUser);
                 }
             }
