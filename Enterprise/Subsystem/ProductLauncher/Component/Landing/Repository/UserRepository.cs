@@ -3547,14 +3547,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         var booksCompanyInstance = _blueBook.GetCompanyInstanceByUPFMCompanyId(organizationRealPageId.ToString().ToLower());
                         int customerCompanyId = booksCompanyInstance?.Attributes?.CustomerCompanyMap.FirstOrDefault()?.CustomerCompanyId ?? 0;
                         string domain = booksCompanyInstance?.Attributes?.Domain;
+                        WriteToLog(LogEventLevel.Debug, $"UserRepository.SaveProductDetails:  {AssignUserPersonaId} - BooksProductCode : {productDetails.BooksProductCode} and customerCompanyId - {customerCompanyId}");
 
                         if (!string.IsNullOrEmpty(domain) && customerCompanyId != 0)
                         {
                             var booksCustomerCompanyMap = _blueBook.GetCustomerCompanyMapByCustomerCompanyId(customerCompanyId, domain);
                             var findBooksProductCode = booksCustomerCompanyMap?.Where(p => p.Source == (!string.IsNullOrEmpty(productDetails.UDMSourceCode) ? productDetails.UDMSourceCode : productDetails.BooksProductCode));
+                            WriteToLog(LogEventLevel.Debug, $"UserRepository.SaveProductDetails:  {AssignUserPersonaId} - BooksProductCode : {productDetails.BooksProductCode} and Count - {findBooksProductCode.Count()}");
+
                             if (findBooksProductCode != null && findBooksProductCode.Count() == 1)
                             {
                                 isGreenBookCaresEnabled = findBooksProductCode.FirstOrDefault().CompanyInstance.FirstOrDefault().GreenBookCares;
+                                WriteToLog(LogEventLevel.Debug, $"UserRepository.SaveProductDetails:  {AssignUserPersonaId} - isGreenBookCaresEnabled : {isGreenBookCaresEnabled}");
+
                             }
                         }
 
@@ -3817,6 +3822,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         else
                         {
                             product.BatchProcessorGroupId = batchGroup.BatchProcessorGroupId;
+                            WriteToLog(LogEventLevel.Debug, $"UserRepository.SaveProductDetails SaveProductBatch:  {AssignUserPersonaId} - productId : {product.ProductId}");
+
                             SaveProductBatch(repository, product, createUserResponse, saveProductBatchError, CreateUserPersonaId, AssignUserPersonaId, realPageId, errorStatus, JsonConvert.SerializeObject(product.InputJson), batchProcessTypeId);
                         }
                     }
