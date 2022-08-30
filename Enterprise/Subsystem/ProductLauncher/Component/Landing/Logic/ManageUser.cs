@@ -452,7 +452,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			repositoryResponse = _userRepository.UpdateUser(loggedInUserRealPageId, profile, oldProfile);
 			if (repositoryResponse.Id > 0)
 			{
-				if (sendNotification && !profile.userLogin.Is3rdPartyIDP)
+				if (sendNotification)
 				{
 					IManageUserRegistrationEmail manageUserRegistrationEmail = new ManageUserRegistrationEmail(_userClaim);
 					string message = "";
