@@ -56,5 +56,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 _dataCollector.UpdateSamlUserAttribute(personaId, productId, SamlAttributeEnum.productUsername, productUserEmail);
             }
         }
+        public override string CreateUpdateProductUser(ProductUserRolePropertiesGroups userRolePropertiesRegion, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser)
+        {
+            string result = string.Empty;
+            WriteToDiagnosticLog($"LeadManagement.CreateUpdateProductUser - editorPersona id - {EditorUserDetails.PersonaId}. At beginning of method.");
+            // Get product user object 
+            var newProductUser = GenerateProductUserObject(userRolePropertiesRegion);
+
+            if (string.IsNullOrEmpty(SubjectUserDetails.ProductUserName))
+            {
+                WriteToDiagnosticLog($"LeadManagement.CreateUpdateProductUser - editorPersona id - {EditorUserDetails.PersonaId}. Calling CreateUser.");
+                if (!CheckUserExistInProduct(newProductUser.LoginName))
+                {
+                    newProductUser.LoginName = newProductUser.LoginName + "-" + _productDetails.BooksProductCode + "-" + SubjectUserDetails.PersonaId;
+                    result = CreateUser(newProductUser);
+                }
+            }
+            else
+            {
+                WriteToDiagnosticLog(
+                    $"LeadManagement.CreateUpdateProductUser - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling UpdateUser.");
+                // Update user with Id/Login from product
+                newProductUser.UserId = SubjectUserDetails.ProductUserId;
+                newProductUser.LoginName = SubjectUserDetails.ProductUserName;
+
+                result = UpdateUser(newProductUser, batchProcessType);
+            }
+            return result;
+        }
     }
 }
