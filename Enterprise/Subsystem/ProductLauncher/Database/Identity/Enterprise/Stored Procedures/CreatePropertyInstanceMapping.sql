@@ -71,5 +71,29 @@ AS
                          SELECT 1 AS PropertyInstanceMappingID,
                                 '' AS ErrorMessage;
                  END;
+
+				 IF(@PropertyInstanceID = -1  AND  (SELECT COUNT(1) FROM Enterprise.PropertyInstanceMapping
+                     WHERE PersonaID = @PersonaID AND ProductId = @ProductID AND PropertyInstanceId = @PropertyInstanceId  ) = 0 )
+				 BEGIN
+				  INSERT INTO Enterprise.PropertyInstanceMapping
+                         ( PersonaId,
+                           PropertyInstanceId,
+                           ProductId,
+						   Thrudate,
+						   Active
+                         )
+                         VALUES
+                         (@PersonaID,
+                          @PropertyInstanceID,
+                          @ProductID,
+						  @Now,
+						  0
+                         );
+
+                         SELECT @PropertyInstanceMappingID = SCOPE_IDENTITY();
+                         SELECT @PropertyInstanceMappingID AS PropertyInstanceMappingID,
+                                '' AS ErrorMessage;
+				 END
+
          END;
 END;
