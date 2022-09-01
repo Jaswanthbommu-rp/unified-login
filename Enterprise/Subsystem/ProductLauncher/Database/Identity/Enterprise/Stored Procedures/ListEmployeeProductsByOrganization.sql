@@ -52,7 +52,7 @@ BEGIN
 			adg.ADGroupId = adgp.ADGroupId
 		INNER JOIN Security.ADGroupUser adgu on
 			adg.ADGroupId = adgu.ADGroupId
-		where adgu.PersonaId = @EmployeePersonaId
+		where adgu.PersonaId = @EmployeePersonaId  and adg.IsActive = 1
 
 	  --Persona Product status
 	  IF (@PersonaId > 0 AND @PersonaId IS NOT NULL)
