@@ -374,7 +374,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                     logData = new Dictionary<string, object> {{"error", createResult}};
 
                                     WriteToLog(LogEventLevel.Error, "Error", logData);
-                                    if (createResult.Result.Equals("Company not found in books environment", StringComparison.OrdinalIgnoreCase))
+                                    if (createResult.Result.Equals("Company not found in books environment- test", StringComparison.OrdinalIgnoreCase))
                                     {
                                         // shortcut out, this create may be for another environment
                                         return Request.CreateResponse(HttpStatusCode.Accepted);
