@@ -10,6 +10,13 @@ AS
                JOIN Person.Person per ON per.PartyId = ap.PartyId
                JOIN Enterprise.Party p ON p.PartyId = per.PartyId
         WHERE  p.RealPageId = @RealPageID;
-
+		IF @@ROWCOUNT = 0
+		BEGIN
+			-- PERSONA IS MISSING SO ADD A NEW ONE
+			INSERT INTO Person.ActivePersona ( PartyId, PersonaId )
+			SELECT PartyId, @PersonaId
+				FROM Enterprise.Party P
+			WHERE  P.RealPageId = @RealPageID;
+		END
 
     END;
