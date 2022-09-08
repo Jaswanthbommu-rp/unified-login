@@ -1289,14 +1289,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					 propertyIDAddList = string.Join(",", propertiesToAssign);	
 				}
 
-                if (batchProcessType != BatchProcessType.UserTypeRegularToAdmin )
+                if (batchProcessType != BatchProcessType.UserTypeRegularToAdmin && batchProcessType != BatchProcessType.CreateUpdateProductUser )
                 {               
                     // dont need to assign anything because super users get everything automatically in Acounting
                     //propertyIDAddList = "";
                     propertyIDRemoveList = "";
                 }
-                if (batchProcessType != BatchProcessType.UserTypeExternalToAdmin)
-                {                   
+                if (batchProcessType != BatchProcessType.UserTypeExternalToAdmin && batchProcessType != BatchProcessType.CreateUpdateProductUser)
+				{                   
                     propertyIDRemoveList = "";
                 }
             }
