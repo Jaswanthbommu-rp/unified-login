@@ -1834,7 +1834,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 // For SuperUser/IsAccounting Admin users -  Accounting sets ALL properties as unrestricted- no need to clear properties
-                if ((!isSuperUser && !isUnRestrictedAccessToProp) && PropertyList.Count > 0)
+                if ((!isUnRestrictedAccessToProp) && PropertyList.Count > 0)
                 {
                     string updateResultProp = UpdatePropertiesToUser(editorPersonaId, userPersonaId, PropertyList, isAccountingAdmin, batchProcessType);                    
                     if (!string.IsNullOrEmpty(updateResultProp))
