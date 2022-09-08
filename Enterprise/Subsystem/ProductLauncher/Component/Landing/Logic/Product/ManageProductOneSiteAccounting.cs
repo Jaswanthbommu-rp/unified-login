@@ -1176,7 +1176,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             else
             {
                 //if (!superUser && !isAccountingAdmin && propertiesToAssign[0].ToUpper() != "ALL")
-                if (!superUser && propertiesToAssign[0].ToUpper() != "ALL")
+                if (propertiesToAssign[0].ToUpper() != "ALL")
                 {
                     propertyIDAddList = "";
                     List<ACProperty> currentPropertyList =  GetAllCompanyProperties(editorPersonaId, userPersonaId, datafilter);
