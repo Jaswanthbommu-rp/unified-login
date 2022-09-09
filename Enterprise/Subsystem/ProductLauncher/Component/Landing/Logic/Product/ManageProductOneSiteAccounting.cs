@@ -1176,7 +1176,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             else
             {
                 //if (!superUser && !isAccountingAdmin && propertiesToAssign[0].ToUpper() != "ALL")
-                if (propertiesToAssign[0].ToUpper() != "ALL")
+                if (!superUser && propertiesToAssign[0].ToUpper() != "ALL")
                 {
                     propertyIDAddList = "";
                     List<ACProperty> currentPropertyList =  GetAllCompanyProperties(editorPersonaId, userPersonaId, datafilter);
@@ -1289,13 +1289,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					 propertyIDAddList = string.Join(",", propertiesToAssign);	
 				}
 
-                if (batchProcessType != BatchProcessType.UserTypeRegularToAdmin && batchProcessType != BatchProcessType.CreateUpdateProductUser )
+                if (batchProcessType != BatchProcessType.UserTypeRegularToAdmin)
                 {               
                     // dont need to assign anything because super users get everything automatically in Acounting
                     //propertyIDAddList = "";
                     propertyIDRemoveList = "";
                 }
-                if (batchProcessType != BatchProcessType.UserTypeExternalToAdmin && batchProcessType != BatchProcessType.CreateUpdateProductUser)
+                if (batchProcessType != BatchProcessType.UserTypeExternalToAdmin)
 				{                   
                     propertyIDRemoveList = "";
                 }
@@ -1834,7 +1834,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 // For SuperUser/IsAccounting Admin users -  Accounting sets ALL properties as unrestricted- no need to clear properties
-                if ((!isUnRestrictedAccessToProp) && PropertyList.Count > 0)
+                if ((!isSuperUser && !isUnRestrictedAccessToProp) && PropertyList.Count > 0)
                 {
                     string updateResultProp = UpdatePropertiesToUser(editorPersonaId, userPersonaId, PropertyList, isAccountingAdmin, batchProcessType);                    
                     if (!string.IsNullOrEmpty(updateResultProp))
