@@ -689,6 +689,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 newProductUser.UserId = productUser.UserId;
                 newProductUser.LoginName = productUser.LoginName;
+            
+                string iterateUserNameRequiredForUserCreation = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("IterateUserNameRequiredForUserCreation", StringComparison.OrdinalIgnoreCase))?.Value;
+                if (iterateUserNameRequiredForUserCreation == "1" && string.IsNullOrEmpty(SubjectUserDetails.ProductUserName))
+                {
+                    isProductUser = false;
+                    WriteToErrorLog(
+                    $" {nameof(StandardV1ProductIntegration)}.CreateUpdateProductUser - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Product User {newProductUser.LoginName} ,before iteration username {newProductUser.LoginName}.");
+                    newProductUser.LoginName = IterateUserNameIfExists(newProductUser.LoginName);
+                    WriteToErrorLog(
+                    $" {nameof(StandardV1ProductIntegration)}.CreateUpdateProductUser - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Product User {newProductUser.LoginName} , after iteration username {newProductUser.LoginName}.");
+                }
+
             }
 
             if (SubjectUserDetails.UserRoleTypeId == (int)UserRoleType.SuperUser)
@@ -700,7 +712,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     PropertiesList.Add(IsSuperUserProperties.Value.ToString());
                     newProductUser.Properties = PropertiesList;
                 }
-                
+
+                var defaultRoleToSuperUser = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("SuperUserRoleId", StringComparison.OrdinalIgnoreCase));
+                if (defaultRoleToSuperUser != null)
+                {
+                    List<string> rolesList = new List<string>();
+                    rolesList.Add(defaultRoleToSuperUser.Value.ToString());
+                    newProductUser.Roles = rolesList;
+                }
+
             }                      
 
             if (!isProductUser && string.IsNullOrEmpty(SubjectUserDetails.ProductUserName))
@@ -712,10 +732,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 bool isUserExistInProduct = CheckUserExistInProduct(newProductUser.LoginName);
                 if (isUserExistInProduct)
                 {
-                    WriteToErrorLog(
-                        $"{nameof(StandardV1ProductIntegration)}.CreateUpdateProductUser - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Product User {newProductUser.LoginName} already exist.");
+                        WriteToErrorLog(
+                            $"{nameof(StandardV1ProductIntegration)}.CreateUpdateProductUser - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Product User {newProductUser.LoginName} already exist.");
 
-                    return $"{newProductUser.LoginName} already exist in the product {ProductId}.";
+                        return $"{newProductUser.LoginName} already exist in the product {ProductId}.";
+               
                 }
 
                 // Create User
@@ -739,6 +760,39 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             // Get product user object 
             return result;
+        }
+
+
+        /// <summary>
+        /// Iterate user name if it already exists in product.
+        /// </summary>
+        /// <param name="productLoginName"></param>
+        /// <returns></returns>
+
+        private string IterateUserNameIfExists(string productLoginName)
+        {
+            bool foundUserName = false;
+            int incrementor = 0;
+            string iteratedLoginName = productLoginName;
+
+            while (!foundUserName)
+            {
+                if (CheckUserExistInProduct(iteratedLoginName))
+                {
+                    incrementor++;
+                    iteratedLoginName = productLoginName.Split('@')[0] + incrementor.ToString() + "@" + productLoginName.Split('@')[1];
+                }
+                else
+                {
+                    foundUserName = true;
+                    productLoginName = iteratedLoginName;
+                }
+            }
+
+
+            WriteToDiagnosticLog(
+             $"{nameof(StandardV1ProductIntegration)}.IterateUserNameIfExists - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId} - generated  iterated LoginName = {iteratedLoginName}");
+            return productLoginName;
         }
 
         #region private

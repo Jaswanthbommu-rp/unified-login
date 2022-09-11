@@ -24,3 +24,4 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\RecompileAllProcs.sql
 :r .\PostDeploymentScripts\ADGroupWithoutUserCreationSetting.sql
 :r .\PostDeploymentScripts\ContactCenterMaintenance_Script.sql
+:r .\PostDeploymentScripts\IterateUserNameForUserCreationSetting.sql
