@@ -130,9 +130,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             }
 
-            if (userTypeId != UserTypeConstants.RegularUserNoEmail // not UserNoEmailRole
-                && !userLoginOnly.Is3rdPartyIDP // Not a user using 3rd party IDP
-                && EmailFormatValidation.IsValidEmail(emailAddress) // the email address appears to be valid
+            if (EmailFormatValidation.IsValidEmail(emailAddress) // the email address appears to be valid
+                && (userTypeId != UserTypeConstants.RegularUserNoEmail) // not UserNoEmailRole
+                && (userTypeId == UserTypeConstants.ExternalUser && userLoginOnly.Is3rdPartyIDP) // using 3rd party IDP but external user
             )
             {
                 try
