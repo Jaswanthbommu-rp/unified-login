@@ -14,3 +14,23 @@ BEGIN
     exec [Enterprise].[SetProductSetting] 0,@Productid,@ProductsettingTypeid,1
 END
 GO
+
+declare @UserId bigint
+ SELECT @UserId = UserId
+       FROM   Ident.UserLogin
+       WHERE  LoginName LIKE 'realpagead@%'
+
+IF NOT EXISTS(SELECT TOP 1 1 FROM [Security].[Right]  where [RightName] = 'ManageG5/LLMarketingProductsProductaccess' )
+BEGIN 
+declare @RightId int = 0
+insert into [Security].[Right] 
+values('ManageG5/LLMarketingProductsProductaccess','Manage G5/LL Marketing Products Product access','Manage G5/LL Marketing Products Product access',13,9,3,3,@UserId,getdate(),0)
+
+select @RightId = RightId from [Security].[Right] where [RightName] = 'ManageG5/LLMarketingProductsProductaccess'
+
+insert into [Security].[RoleRight] values (1,@RightId,@UserId,getdate())
+
+END
+
+
+GO
