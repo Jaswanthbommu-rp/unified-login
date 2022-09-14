@@ -3536,8 +3536,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     {
                         var productDetails = allProducts.FirstOrDefault(x => x.ProductId == productmap.ProductId);
                         string udmSource = productDetails.UDMSourceCode?.Length > 0 ? productDetails.UDMSourceCode : productDetails.BooksProductCode;
-                        IList<CustomerCompanyMap> companyMapping = _blueBook.GetProductCompanyMapping(_userClaim.OrganizationRealPageGuid, udmSource);
-                        var booksCompanyInstance = _blueBook.GetCompanyInstanceByUPFMCompanyId(_userClaim.OrganizationRealPageGuid.ToString().ToLower());
+                        IList<CustomerCompanyMap> companyMapping = _blueBook.GetProductCompanyMapping(organizationRealPageId, udmSource);
+                        var booksCompanyInstance = _blueBook.GetCompanyInstanceByUPFMCompanyId(organizationRealPageId.ToString().ToLower());
                         int customerCompanyId = booksCompanyInstance?.Attributes?.CustomerCompanyMap.FirstOrDefault()?.CustomerCompanyId ?? 0;
                         string domain = booksCompanyInstance?.Attributes?.Domain;
 
