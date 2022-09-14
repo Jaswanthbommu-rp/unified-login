@@ -589,7 +589,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// Facilities
 		/// </summary>
 		[Description("OS")]
-		Facilities = 75
+		Facilities = 75,
+		/// <summary>
+		/// L&R Conversion Portal
+		/// </summary>
+		[Description("OSCE")]
+		LRConversionPortal = 85
 	}
 
 	/// <summary>
