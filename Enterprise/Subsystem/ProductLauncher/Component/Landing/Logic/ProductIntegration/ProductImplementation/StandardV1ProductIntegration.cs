@@ -624,39 +624,39 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         }
         /// <summary>
         /// </summary>
-       
+
         private string GetUniqueProductLoginName(UserDetails SubjectUserDetails)
         {
-                WriteToDiagnosticLog(
-                    $"{nameof(StandardV1ProductIntegration)}.GetUniqueProductLoginName - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling CreateUser.");
-                // get a login name that isn't in use for the new user
-                bool foundUserName = false;
-                int incrementor = 0;
-                string updatedproductUsername = (SubjectUserDetails.FirstName.TrimWhiteSpace().Substring(0, 1) + SubjectUserDetails.LastName.TrimWhiteSpace()).ToLower();
-                string newLoginName = updatedproductUsername;
+            WriteToDiagnosticLog(
+                $"{nameof(StandardV1ProductIntegration)}.GetUniqueProductLoginName - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling CreateUser.");
+            // get a login name that isn't in use for the new user
+            bool foundUserName = false;
+            int incrementor = 0;
+            string updatedproductUsername = (SubjectUserDetails.FirstName.TrimWhiteSpace().Substring(0, 1) + SubjectUserDetails.LastName.TrimWhiteSpace()).ToLower();
+            string newLoginName = updatedproductUsername;
 
-                // give up after 10 tries
-                while (!foundUserName)
+            // give up after 10 tries
+            while (!foundUserName)
+            {
+                if (CheckUserExistInProduct(newLoginName))
                 {
-                    if (CheckUserExistInProduct(newLoginName))
-                    {
-                        incrementor++;
-                        newLoginName = updatedproductUsername + incrementor.ToString();
-                    }
-                    else
-                    {
-                        foundUserName = true;
-                        WriteToDiagnosticLog($"{nameof(StandardV1ProductIntegration)} - generated accountingLoginName = {newLoginName}");
-                    }
-
-                    if (incrementor == 10)
-                    {
-                        // after 10 tries something might be wrong, so bail out.
-                        WriteToErrorLog($"{nameof(StandardV1ProductIntegration)} - Error checking for username in use {newLoginName}");
-                        return "An error occurred. Unable to get username.";
-                    }
+                    incrementor++;
+                    newLoginName = updatedproductUsername + incrementor.ToString();
                 }
-                return newLoginName;  
+                else
+                {
+                    foundUserName = true;
+                    WriteToDiagnosticLog($"{nameof(StandardV1ProductIntegration)} - generated accountingLoginName = {newLoginName}");
+                }
+
+                if (incrementor == 10)
+                {
+                    // after 10 tries something might be wrong, so bail out.
+                    WriteToErrorLog($"{nameof(StandardV1ProductIntegration)} - Error checking for username in use {newLoginName}");
+                    return "An error occurred. Unable to get username.";
+                }
+            }
+            return newLoginName;
         }
 
         /// <summary>
@@ -672,23 +672,35 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             if (SubjectUserDetails.UserRoleTypeId == (int)UserRoleType.UserNoEmail && !ProductNotAvailableForRegularUserNoEmail && string.IsNullOrEmpty(SubjectUserDetails.ProductUserName))
             {
-                    newProductUser.LoginName = newProductUser.Email;
-                    var newLoginName = GetUniqueProductLoginName(SubjectUserDetails);
-                    if (string.IsNullOrEmpty(newLoginName))
-                    {
-                        return "An error occurred. Unable to get username.";
-                    }
-                    newProductUser.LoginName = newLoginName;
+                newProductUser.LoginName = newProductUser.Email;
+                var newLoginName = GetUniqueProductLoginName(SubjectUserDetails);
+                if (string.IsNullOrEmpty(newLoginName))
+                {
+                    return "An error occurred. Unable to get username.";
+                }
+                newProductUser.LoginName = newLoginName;
             }
-         
+
             bool isProductUser = false;
             var productUser = GetBaseUserDataFromProduct(newProductUser.LoginName);
             isProductUser = productUser != null && !string.IsNullOrEmpty(productUser.LoginName);
-            
+
             if (isProductUser)
             {
                 newProductUser.UserId = productUser.UserId;
                 newProductUser.LoginName = productUser.LoginName;
+
+                string iterateUserNameRequiredForUserCreation = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("IterateUserNameRequiredForUserCreation", StringComparison.OrdinalIgnoreCase))?.Value;
+                if (iterateUserNameRequiredForUserCreation == "1" && string.IsNullOrEmpty(SubjectUserDetails.ProductUserName))
+                {
+                    isProductUser = false;
+                    WriteToErrorLog(
+                    $" {nameof(StandardV1ProductIntegration)}.CreateUpdateProductUser - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Product User {newProductUser.LoginName} ,before iteration username {newProductUser.LoginName}.");
+                    newProductUser.LoginName = IterateUserNameIfExists(newProductUser.LoginName);
+                    WriteToErrorLog(
+                    $" {nameof(StandardV1ProductIntegration)}.CreateUpdateProductUser - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Product User {newProductUser.LoginName} , after iteration username {newProductUser.LoginName}.");
+                }
+
             }
 
             if (SubjectUserDetails.UserRoleTypeId == (int)UserRoleType.SuperUser)
@@ -699,6 +711,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     List<string> PropertiesList = new List<string>();
                     PropertiesList.Add(IsSuperUserProperties.Value.ToString());
                     newProductUser.Properties = PropertiesList;
+                }
+
+                var defaultRoleToSuperUser = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("SuperUserRoleId", StringComparison.OrdinalIgnoreCase));
+                if (defaultRoleToSuperUser != null)
+                {
+                    List<string> rolesList = new List<string>();
+                    rolesList.Add(defaultRoleToSuperUser.Value.ToString());
+                    newProductUser.Roles = rolesList;
                 }
 
             }
@@ -738,6 +758,39 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             // Get product user object 
             return result;
+        }
+
+
+        /// <summary>
+        /// Iterate user name if it already exists in product.
+        /// </summary>
+        /// <param name="productLoginName"></param>
+        /// <returns></returns>
+
+        private string IterateUserNameIfExists(string productLoginName)
+        {
+            bool foundUserName = false;
+            int incrementor = 0;
+            string iteratedLoginName = productLoginName;
+
+            while (!foundUserName)
+            {
+                if (CheckUserExistInProduct(iteratedLoginName))
+                {
+                    incrementor++;
+                    iteratedLoginName = productLoginName.Split('@')[0] + incrementor.ToString() + "@" + productLoginName.Split('@')[1];
+                }
+                else
+                {
+                    foundUserName = true;
+                    productLoginName = iteratedLoginName;
+                }
+            }
+
+
+            WriteToDiagnosticLog(
+             $"{nameof(StandardV1ProductIntegration)}.IterateUserNameIfExists - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId} - generated  iterated LoginName = {iteratedLoginName}");
+            return productLoginName;
         }
 
         #region private
@@ -1362,7 +1415,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     break;
                 }
             }
-            
+
             if (string.IsNullOrEmpty(productUser.EmployeeAdditional.AzureADGroup))
             {
                 throw new Exception("No ADGroups available to assign to create new product user.");
@@ -1525,7 +1578,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (_productInternalSettingRepository == null)
                     _productInternalSettingRepository = new ProductInternalSettingRepository();
 
-                ProductInternalSettingList = 
+                ProductInternalSettingList =
                     _productInternalSettingRepository.GetProductInternalSettings(ProductId);
 
                 ProductApiBaseUrl = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("ApiEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
@@ -1637,7 +1690,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     userBooksMasterId = SubjectUserDetails.BooksCustomerMasterId;
                 }
-                
+
                 var overrideCompanyInstanceSourceId = CheckForOverrideCompanyIdForProduct();
                 if (string.IsNullOrEmpty(overrideCompanyInstanceSourceId))
                 {
@@ -1653,7 +1706,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     throw new BlueBookException("Company Setup Error: Please Contact Support.");
                 }
 
-                
+
             }
             catch (Exception ex)
             {

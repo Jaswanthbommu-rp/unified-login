@@ -18,3 +18,4 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\UpdateStatistics.sql
 :r .\PostDeploymentScripts\RecompileAllProcs.sql
 :r .\PostDeploymentScripts\ADGroupWithoutUserCreationSetting.sql
+:r .\PostDeploymentScripts\IterateUserNameForUserCreationSetting.sql
