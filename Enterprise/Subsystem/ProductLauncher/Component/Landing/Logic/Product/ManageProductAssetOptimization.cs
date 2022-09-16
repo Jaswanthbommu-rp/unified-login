@@ -695,7 +695,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					FirstName = person.FirstName,
 					LastName = person.LastName,
 				};
-
+				if (IsSuperUser(productUserPersonaId)) 
+				{
+					if (aoGbUserCompanyPropertyRoleDetails.Any(m => m.IsAssigned != true)) 
+					{
+						aoUser.IsEnabled = false;
+					}
+				}
 				List<CompanySetup> companyList = _manageOrganization.GetCompanyList(persona.Organization.Name, 0, null, 0, new Dictionary<object, object>());
 				isRealpageAccessUser = companyList.Where(a => a.RealPageAccessUser == productUserGbLogin.LoginName).Distinct().Count() > 0;
 
