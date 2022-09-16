@@ -132,7 +132,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             if (EmailFormatValidation.IsValidEmail(emailAddress) // the email address appears to be valid
                 && (userTypeId != UserTypeConstants.RegularUserNoEmail) // not UserNoEmailRole
-                && ((userTypeId == UserTypeConstants.SuperUser || userTypeId == UserTypeConstants.RegularUser) && !userLoginOnly.Is3rdPartyIDP) || userTypeId == UserTypeConstants.ExternalUser)
+                && (((userTypeId == UserTypeConstants.SuperUser || userTypeId == UserTypeConstants.RegularUser) && !userLoginOnly.Is3rdPartyIDP)
+                || userTypeId == UserTypeConstants.ExternalUser))
             {
                 try
                 {
