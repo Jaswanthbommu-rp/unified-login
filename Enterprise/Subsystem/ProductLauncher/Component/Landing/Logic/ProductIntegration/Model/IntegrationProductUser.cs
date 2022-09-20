@@ -36,7 +36,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 		[JsonProperty(PropertyName = "additionalFields")]
 		//public Dictionary<string, string> AdditionalFields { get; set; } //SLM
-		public List<KeyValuePair<string, string>> AdditionalFields { get; set; } //SLM
+		public List<KeyValuePair<string, dynamic>> AdditionalFields { get; set; } //SLM
 
 		[JsonProperty(PropertyName = "usergroups", NullValueHandling = NullValueHandling.Ignore)]
 		public List<string> UserGroups { get; set; }
