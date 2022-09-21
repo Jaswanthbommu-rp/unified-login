@@ -555,6 +555,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <returns></returns>
 		public MigrateResponse UpdateUsersMigrationStatus(long editorPersonaId, IList<MigrateUser> migrateUsers)
 		{
+			IList<UserOrganization> userPersonaOrganizationList = new List<UserOrganization>();
 			var migrateResponse = new MigrateResponse()
 			{
 				Status = false
@@ -566,6 +567,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				migrateResponse.Message = claimResposnse.ErrorReason;
 				return migrateResponse;
 			}
+
+			foreach (MigrateUser migrateUser in migrateUsers)
+			{
+				userPersonaOrganizationList = _userLoginRepository.ListOrganizationByLoginName(migrateUser.UnifiedLoginUserName);
+				var externaluser = userPersonaOrganizationList.Where(m => m.OrganizationPartyId == _userClaims.OrganizationPartyId && m.PartyRoleTypeId == UserTypeConstants.ExternalUser).ToList();
+				if (externaluser.Any())
+				{
+					migrateUsers.Remove(migrateUser);
+				}
+			}
+
+			if (!migrateUsers.Any())
+			{
+				WriteToDiagnosticLog("ManageAssetOptimization.UpdateUsersMigrationStatus. Not updating status for AO External user.");
+				migrateResponse.Status = true;
+				migrateResponse.Message = "success";
+				return migrateResponse;
+			}
+
 
 			var url = $"{_apiEndPoint}unity/migration/users";
 			var userIds = migrateUsers.Select(x => x.UserId).ToList();
