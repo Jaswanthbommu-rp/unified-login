@@ -1465,34 +1465,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
 					if (rolesToAssign != null)
 					{
-						
-					}
-					bool isSuperExistsInProduct = superUser && !string.IsNullOrEmpty(_productUserId);
-					// compare the current role list to what was passed to determine what is new and what was removed.
-					foreach (ProductRole role in currentRoleList.Records)
-                    {
-                        if (!(rolesToAssign.Contains(role.ID)))
-                        {
-                            if (role.IsAssigned)
-                            {
-                                // property doesn't exist, so add it to the list
-                                rolesToRemove.Add(role.ID);
-                            }
-                        }
-                        if (rolesToAssign.Contains(role.ID) && role.IsAssigned)
-                        {
-                            rolesToAssign.Remove(role.ID);
-                        }
-
-						if (role.Name.ToUpper().Contains("ADMIN") &&  isSuperExistsInProduct)
+						bool isSuperExistsInProduct = superUser && !string.IsNullOrEmpty(_productUserId);
+						// compare the current role list to what was passed to determine what is new and what was removed.
+						foreach (ProductRole role in currentRoleList.Records)
 						{
-							rolesToRemove.Remove(role.ID);
-							if (!role.IsAssigned)
+							if (!(rolesToAssign.Contains(role.ID)))
 							{
-								rolesToAssign.Add(role.ID);
-							}							
+								if (role.IsAssigned)
+								{
+									// property doesn't exist, so add it to the list
+									rolesToRemove.Add(role.ID);
+								}
+							}
+							if (rolesToAssign.Contains(role.ID) && role.IsAssigned)
+							{
+								rolesToAssign.Remove(role.ID);
+							}
+
+							if (role.Name.ToUpper().Contains("ADMIN") && isSuperExistsInProduct)
+							{
+								rolesToRemove.Remove(role.ID);
+								if (!role.IsAssigned)
+								{
+									rolesToAssign.Add(role.ID);
+								}
+							}
 						}
-					}                    
+					}
                 }
 				if (rolesToAssign.Count > 0)
 				{
