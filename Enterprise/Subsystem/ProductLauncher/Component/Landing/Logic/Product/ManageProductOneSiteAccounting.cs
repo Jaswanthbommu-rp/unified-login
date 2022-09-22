@@ -1463,8 +1463,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
                 else
                 {
-				   if (!string.IsNullOrEmpty(rolesToAssign.ToString()))
-				   {
 					bool isSuperExistsInProduct = superUser && !string.IsNullOrEmpty(_productUserId);
 					// compare the current role list to what was passed to determine what is new and what was removed.
 					foreach (ProductRole role in currentRoleList.Records)
@@ -1491,7 +1489,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 							}							
 						}
 					}
-				   }
 				}
 				if (rolesToAssign.Count > 0)
 				{
@@ -1789,7 +1786,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     logData.Add("user", RemovePrivateData(user));
                     //WriteToDiagnosticLog($"ManageAccountingUser - Updating user. userPersonaId = {userPersonaId}", logData);
                     WriteToDiagnosticLog($"ManageAccountingUser - JSON input - UpdateUser " + JsonConvert.SerializeObject(logData));
-					if (isAdmin)
+					if (isAdmin || isSuperUser)
 					{
 						RequestParameter datafilter = new RequestParameter();
 						ListResponse currentRoleList = GetUserRoles(editorPersonaId, userPersonaId, datafilter);
@@ -1817,7 +1814,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     PropertyList = new List<string>();
                 }
-				if (isAdmin)
+				if (isAdmin || isSuperUser)
 				{
 					RoleList = rolesToCarryForward; // batchProcessType == BatchProcessType.UserTypeRegularToAdmin;
 				}
