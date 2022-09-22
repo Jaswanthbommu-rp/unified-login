@@ -1463,10 +1463,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
                 else
                 {
-					if (rolesToAssign != null)
-					{
-						
-					}
+				   if (rolesToAssign != null)
+				   {
 					bool isSuperExistsInProduct = superUser && !string.IsNullOrEmpty(_productUserId);
 					// compare the current role list to what was passed to determine what is new and what was removed.
 					foreach (ProductRole role in currentRoleList.Records)
@@ -1492,8 +1490,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 								rolesToAssign.Add(role.ID);
 							}							
 						}
-					}                    
-                }
+					}
+				   }
+				}
 				if (rolesToAssign.Count > 0)
 				{
 					roleIDAddList = string.Join(",", rolesToAssign);
