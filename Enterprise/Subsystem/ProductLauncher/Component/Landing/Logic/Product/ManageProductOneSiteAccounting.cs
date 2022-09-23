@@ -1596,8 +1596,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             try
             {
+				
 				bool isAdmin = false;
+				bool adminRoles = false;
 				List<string> rolesToCarryForward = new List<string>();
+				List<string> adminRolesCarryForward = new List<string>();
 				ListResponse listResponse = new ListResponse();
                 listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
                 if (listResponse.IsError) { return listResponse.ErrorReason; }
@@ -1786,15 +1789,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     logData.Add("user", RemovePrivateData(user));
                     //WriteToDiagnosticLog($"ManageAccountingUser - Updating user. userPersonaId = {userPersonaId}", logData);
                     WriteToDiagnosticLog($"ManageAccountingUser - JSON input - UpdateUser " + JsonConvert.SerializeObject(logData));
-					if (isAdmin || isSuperUser)
+					
+					RequestParameter datafilter = new RequestParameter();
+					ListResponse currentRoleList = GetUserRoles(editorPersonaId, userPersonaId, datafilter);
+					if (isAdmin)
 					{
-						RequestParameter datafilter = new RequestParameter();
-						ListResponse currentRoleList = GetUserRoles(editorPersonaId, userPersonaId, datafilter);
 						foreach (ProductRole role in currentRoleList.Records)
 						{
 							if (role.IsAssigned == true)
 							{
-								rolesToCarryForward.Add(role.ID);
+									rolesToCarryForward.Add(role.ID);
+							}
+						}
+					}
+					if (RoleList.Count() == 0 && isSuperUser)
+					{
+						adminRoles = true;
+						foreach (ProductRole role in currentRoleList.Records)
+						{
+							if (!role.Name.ToUpper().Contains("ADMIN"))
+							{
+								if (role.IsAssigned)
+								{
+									adminRolesCarryForward.Add(role.ID);
+								}
 							}
 						}
 					}
@@ -1814,9 +1832,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     PropertyList = new List<string>();
                 }
-				if (isAdmin || isSuperUser)
+				if (isAdmin)
 				{
 					RoleList = rolesToCarryForward; // batchProcessType == BatchProcessType.UserTypeRegularToAdmin;
+				}
+				if (isSuperUser && adminRoles)
+				{
+					RoleList = adminRolesCarryForward;
 				}
 				
 				// For SuperUser users -  Accounting sets the Admin related roles - no need to clear prev roles			
