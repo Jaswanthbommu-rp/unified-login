@@ -1597,6 +1597,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 case UserTypeDto.Employee:
                     userType = (int) UserRoleType.RealPageEmployee;
                     break;
+                case UserTypeDto.External:
+                    userType = (int)UserRoleType.ExternalUser;
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(userTypeDto), userTypeDto, null);
             }
