@@ -7,22 +7,29 @@
 AS
 BEGIN
 	BEGIN TRY
-        BEGIN TRANSACTION;
-		INSERT INTO Enterprise.ProductSettingType (
-			Name,
-			Description,
-			SensitiveData
-		)
-		OUTPUT	Inserted.ProductSettingTypeId AS Id,
-				'' AS ErrorMessage
-		VALUES (
-			@ProductSettingTypeName,
-			@ProductSettingTypeDescription,
-			@ProductSettingTypeSensitiveData
-		);
+		IF EXISTS ( SELECT TOP (1) 1 FROM Enterprise.ProductSettingType WHERE Name = @ProductSettingTypeName )
+		BEGIN
+			SELECT @ProductSettingTypeId = ProductSettingTypeId FROM Enterprise.ProductSettingType WHERE Name = @ProductSettingTypeName
+		END
+		ELSE
+		BEGIN
+			BEGIN TRANSACTION;
+			INSERT INTO Enterprise.ProductSettingType (
+				Name,
+				Description,
+				SensitiveData
+			)
+			OUTPUT	Inserted.ProductSettingTypeId AS Id,
+					'' AS ErrorMessage
+			VALUES (
+				@ProductSettingTypeName,
+				@ProductSettingTypeDescription,
+				@ProductSettingTypeSensitiveData
+			);
 
-		SET @ProductSettingTypeId = SCOPE_IDENTITY();
-		COMMIT;
+			SET @ProductSettingTypeId = SCOPE_IDENTITY();
+			COMMIT;
+		END
 	END TRY  
 	BEGIN CATCH
         ROLLBACK;

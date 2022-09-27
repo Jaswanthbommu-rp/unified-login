@@ -19,6 +19,7 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\1213354-add-operators.sql
 
 :r .\PostDeploymentScripts\AllowChangeCompanyDuringLoginSetting.sql
+:r .\PostDeploymentScripts\elklogsettings.sql
 
 :r .\PostDeploymentScripts\UpdateStatistics.sql
 :r .\PostDeploymentScripts\RecompileAllProcs.sql

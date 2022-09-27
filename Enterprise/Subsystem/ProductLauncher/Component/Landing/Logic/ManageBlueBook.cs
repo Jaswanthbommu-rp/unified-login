@@ -2264,15 +2264,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="correlationId"></param>
         private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null, string correlationId = "" )
         {
+            string logSettings = null;
+            if (productInternalSettingList != null)
+            {
+                logSettings = productInternalSettingList.FirstOrDefault(p => p.Name.Equals("Elk_LogManageBlueBook", StringComparison.OrdinalIgnoreCase))?.Value;
+            }
+
+            if (logSettings != "1" && exception == null) return;
             if (_defaultUserClaim != null)
             {
                 correlationId = (_defaultUserClaim.CorrelationId != Guid.Empty) ? _defaultUserClaim.CorrelationId.ToString() : "";
             }
+
             var logger = Log.Logger;
             if (logData?.Keys != null)
             {
                 logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
             }
+
             logger = logger.ForContext("ProductModule", this.GetType());
             logger = logger.ForContext("CorrelationId", correlationId);
             logger.Write(logType, exception, message);

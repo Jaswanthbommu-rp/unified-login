@@ -693,6 +693,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="exception"></param>
         private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
         {
+            var ulProductInternalSettingList = GetProductSetting(3);
+            string logSettings = null;
+            if (ulProductInternalSettingList != null)
+            {
+                logSettings = ulProductInternalSettingList.FirstOrDefault(p => p.Name.Equals("Elk_LogManageProductBase", StringComparison.OrdinalIgnoreCase))?.Value;
+            }
+
+            if (logSettings != "1" && exception == null) return;
+
             var logger = Log.Logger;
             if (logData?.Keys != null)
             {

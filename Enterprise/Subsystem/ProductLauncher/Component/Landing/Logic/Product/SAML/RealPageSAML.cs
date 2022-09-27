@@ -605,10 +605,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 			}
 
-			if (string.IsNullOrEmpty(samlSubject))
-			{
-				throw new Exception("Empty SAML Subject");
-			}
+            if (string.IsNullOrEmpty(samlSubject))
+            {
+                if (string.IsNullOrEmpty(_userClaims?.LoginName))
+                {
+                    throw new Exception("Empty SAML Subject");
+				}
+                samlSubject = _userClaims.LoginName;
+            }
 
 			X509Certificate2 signingCert = GetSigningCertificate(signingCertThumbprint);
 			RealPageSAML saml = new RealPageSAML(signingCert, issuer, productInternalSettingList)

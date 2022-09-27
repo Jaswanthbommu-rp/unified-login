@@ -4,7 +4,6 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterprise
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
@@ -309,6 +308,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         #endregion
 
         #region Private Methods
+
         /// <summary>
         /// Used to write to the log
         /// </summary>
@@ -319,11 +319,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="correlationId">correlationId</param>
         private void WriteToLog(LogEventLevel logType, string message, Guid correlationId, Dictionary<string, object> logData = null, Exception exception = null)
         {
+            var productInternalSettingList = GetProductInternalSettingList();
+            string logSettings = null;
+            if (productInternalSettingList != null)
+            {
+                logSettings = productInternalSettingList.FirstOrDefault(p => p.Name.Equals("Elk_LogManageUnifiedSettings", StringComparison.OrdinalIgnoreCase))?.Value;
+            }
+
+            if (logSettings != "1" && exception == null) return;
+
             var logger = Log.Logger;
             if (logData?.Keys != null)
             {
                 logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
             }
+
             logger = logger.ForContext("ProductModule", this.GetType());
             logger = logger.ForContext("CorrelationId", correlationId.ToString());
             logger.Write(logType, exception, message);
@@ -337,7 +347,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
             string bbUri = "";
 
-            #region GetSettings
+            var productInternalSettingList = GetProductInternalSettingList();
+
+            bbUri = productInternalSettingList.First(a => a.Name.Equals("SettingsApiEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
+            //useDomains = GetBooleanProductSettings("BooksUseDomains");
+            //useUPFMId = GetBooleanProductSettings("BooksUseUPFMId");
+            //useTranslatev2 = GetBooleanProductSettings("BooksUseTranslatev2");
+            _httpClient.BaseAddress = new Uri(bbUri);
+        }
+
+        private IList<ProductInternalSetting> GetProductInternalSettingList()
+        {
             IList<ProductInternalSetting> productInternalSettingList;
             productInternalSettingList = _manageSettingCache["productInternalSetting_" + (int)ProductEnum.UnifiedPlatform] as List<ProductInternalSetting>;
             if (productInternalSettingList == null)
@@ -348,13 +368,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 _manageSettingCache.Set("productInternalSetting_" + (int)ProductEnum.UnifiedPlatform, productInternalSettingList, policy);
             }
 
-            #endregion
-
-            bbUri = productInternalSettingList.First(a => a.Name.Equals("SettingsApiEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
-            //useDomains = GetBooleanProductSettings("BooksUseDomains");
-            //useUPFMId = GetBooleanProductSettings("BooksUseUPFMId");
-            //useTranslatev2 = GetBooleanProductSettings("BooksUseTranslatev2");
-            _httpClient.BaseAddress = new Uri(bbUri);
+            return productInternalSettingList;
         }
 
         #endregion

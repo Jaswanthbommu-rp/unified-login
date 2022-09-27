@@ -8,6 +8,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Inter
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Accounting;
@@ -19,8 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
+using System.Runtime.Caching;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -32,6 +32,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private IManageBlueBook _manageBlueBook;
         private IManageProductPanel _manageProductPanel;       
         private DefaultUserClaim _defaultUserClaim;
+
+        const int CacheTimeSeconds = 300;
+        ObjectCache _manageSettingCache = MemoryCache.Default;
 
         #region Constructors
 
@@ -284,6 +287,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return propertiesStagingData;
         }
 
+        private IList<ProductInternalSetting> GetProductInternalSettingList()
+        {
+            IList<ProductInternalSetting> productInternalSettingList;
+            productInternalSettingList = _manageSettingCache["productInternalSetting_" + (int)ProductEnum.UnifiedPlatform] as List<ProductInternalSetting>;
+            if (productInternalSettingList == null)
+            {
+                productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
+                CacheItemPolicy policy = new CacheItemPolicy();
+                policy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(CacheTimeSeconds);
+                _manageSettingCache.Set("productInternalSetting_" + (int)ProductEnum.UnifiedPlatform, productInternalSettingList, policy);
+            }
+
+            return productInternalSettingList;
+        }
+
         /// <summary>
 		/// Used to write to the log
 		/// </summary>
@@ -291,6 +309,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         {
             try
             {
+                var productInternalSettingList = GetProductInternalSettingList();
+                string logSettings = null;
+                if (productInternalSettingList != null)
+                {
+                    logSettings = productInternalSettingList.FirstOrDefault(p => p.Name.Equals("Elk_LogManageUserPropertiesSync", StringComparison.OrdinalIgnoreCase))?.Value;
+                }
+
+                if (logSettings != "1" && exception == null) return;
+
                 string correlationId = "";
                 if (_defaultUserClaim != null)
                 {

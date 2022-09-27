@@ -13,7 +13,7 @@
         /// <returns></returns>
         public string GetUrl(System.Net.Http.HttpRequestMessage request, string routePath)
         {
-            string rootUrl = "https://" + request.RequestUri.Host.ToLower() + routePath;
+            string rootUrl = (request.RequestUri.Host.ToLower().Contains("localhost") ? "http://" : "https://") + request.RequestUri.Host.ToLower() + routePath;
             return rootUrl;
         }
     }

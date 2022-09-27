@@ -291,7 +291,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
 
             ProductPanelController productPannelController = new ProductPanelController
-                        (_defaultUserClaim
+                        (defaultUserClaim
                         , _mockRepository.Object
                         , _mockRepositoryResponse.Object
                         , _mockHttpMessageHandler.Object
