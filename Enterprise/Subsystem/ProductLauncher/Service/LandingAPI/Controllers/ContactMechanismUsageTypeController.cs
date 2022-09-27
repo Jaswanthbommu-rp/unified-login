@@ -53,7 +53,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		[SwaggerResponseExamples(typeof(IContactMechanismUsageType), typeof(ContactMechanismUsageTypeExample))]
 		[Route("contactmechanismusagetypes")]
 		[HttpGet]
-        [AllowAnonymous]
+
         public HttpResponseMessage ListContactMechanismUsageType(string ContactMechanismUsageTypeName = null)
 		{
 			IList<ContactMechanismUsageType> contactMechanismUsageTypeList = new List<ContactMechanismUsageType>();

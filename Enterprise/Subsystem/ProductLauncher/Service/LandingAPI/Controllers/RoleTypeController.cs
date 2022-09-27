@@ -46,23 +46,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		{
 			_roleTypeRepository = roleTypeRepository;
 		}
-        #endregion
+		#endregion
 
-        #region Public Methods
-        /// <summary>
-        /// List Role type details
-        /// </summary>
-        /// <param name="roleTypeName">RoleType Name</param>
-        /// <param name="loginName">Optional User LoginName</param>
-        /// <returns>A list of Role type details</returns>
-        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		#region Public Methods
+		/// <summary>
+		/// List Role type details
+		/// </summary>
+		/// <param name="roleTypeName">RoleType Name</param>
+		/// <param name="loginName">Optional User LoginName</param>
+		/// <returns>A list of Role type details</returns>
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
 		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
 		[SwaggerResponse(HttpStatusCode.OK, Description = "Get information about the password policy", Type = typeof(IRoleType))]
 		[SwaggerResponseExamples(typeof(IRoleType), typeof(RoleTypeExample))]
 		[Route("roletypes")]
 		[HttpGet]
-        [AllowAnonymous]
-        public HttpResponseMessage ListRoleType(string roleTypeName = null, string loginName = null)
+
+		public HttpResponseMessage ListRoleType(string roleTypeName = null, string loginName = null)
         {
 			List<RoleType> roleTypeList = new List<RoleType>();
 
