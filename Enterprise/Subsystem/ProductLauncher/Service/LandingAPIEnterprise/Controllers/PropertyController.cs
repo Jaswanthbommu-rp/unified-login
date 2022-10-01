@@ -149,7 +149,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 	    [SwaggerResponseExamples(typeof(ProductProperty), typeof(ProductProperty.PropertySimpleExample))]
 	    [Route("product/{productCode}/properties")]
 	    [AuthorizeScope("enterpriseapi")]
-        [Obsolete]
 	    [HttpGet]
 	    public HttpResponseMessage GetProductProperties(string productCode, string include = null)
 	    {
