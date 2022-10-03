@@ -719,6 +719,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				List<CompanySetup> companyList = _manageOrganization.GetCompanyList(persona.Organization.Name, 0, null, 0, new Dictionary<object, object>());
 				isRealpageAccessUser = companyList.Where(a => a.RealPageAccessUser == productUserGbLogin.LoginName).Distinct().Count() > 0;
 
+				if (IsSuperUser(productUserPersonaId)) 
+				{
+					if (aoGbUserCompanyPropertyRoleDetails.Any(m => m.IsAssigned != true)) 
+					{
+							aoUser.IsEnabled = false;
+					}
+				}
+
 				if (isRealpageAccessUser)
 				{
 					WriteToDiagnosticLog(
@@ -785,13 +793,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 				else
 				{
-					if (IsSuperUser(productUserPersonaId)) 
-					{
-						if (aoGbUserCompanyPropertyRoleDetails.Any(m => m.IsAssigned != true)) 
-						{
-							aoUser.IsEnabled = false;
-						}
-					}
+					
 					if (aoGbUserCompanyPropertyRoleDetails != null)
 					{
 						foreach (var data in aoGbUserCompanyPropertyRoleDetails)
