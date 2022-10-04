@@ -165,7 +165,7 @@ BEGIN
 			WHERE	UserId = @UserId;
 
 			UPDATE	Ident.UserLoginPersona
-			SET			StatusTypeId = 1,
+			SET			StatusTypeId = @UserStatus,
 							StatusThruDate = NULL
 			WHERE	UserLoginId = @UserId
 			AND			OrganizationPartyId = @OrganizationId

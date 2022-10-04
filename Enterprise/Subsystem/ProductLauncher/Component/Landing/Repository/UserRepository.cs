@@ -2478,9 +2478,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
 
             emailUsageType = contactMechanismUsageTypeRepository.ListContactMechanismUsageType(ContactMechanismUsageTypeName: "Email Notification");
-
-            var primaryPropertyBatch = newProfile.productBatch.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedPlatform);
-            var enterpriseRole = newProfile.productBatch.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedUI);
+    
+                     var enterpriseRole = newProfile.productBatch.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedUI);
             int enterpriseRoleId = newProfile.RoleTemplateId;
             if (enterpriseRole?.InputJson?.RoleList != null && enterpriseRole?.InputJson?.RoleList.Count > 0)
             {
@@ -2506,6 +2505,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             var currentOrg = organizationRepository.GetOrganization(organizationPartyId: oldProfile.Persona[0].OrganizationPartyId);
 
             isCurrentOrgThePrimaryOrg = primaryOrg.PartyId.Equals(_userClaim.OrganizationPartyId);
+
+            ProductBatch primaryPropertyBatch = null;
+            if (currentOrg.EnablePrimaryPropertiesAndEnterpriseRoles == 1)
+            {
+                primaryPropertyBatch = newProfile.productBatch.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedPlatform);
+            }
 
             //Update profile (First, Last names, ...) required data per Organization
             IList<EditorAssignedPersona> editorAssignedPersonaList = new List<EditorAssignedPersona>();
