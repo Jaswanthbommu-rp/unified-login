@@ -11,10 +11,10 @@ END
 
 IF NOT EXISTS ( SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE name = 'Elk_LogManageUserPropertiesSync' )
 BEGIN
-	INSERT INTO enterprise.ProductSettingType ( name, Description, SensitiveData ) VALUES ( 'Elk_LogManageUserPropertiesSync', 'Log ManageUserPropertiesSync calls in Elk', 1)
+	INSERT INTO enterprise.ProductSettingType ( name, Description, SensitiveData ) VALUES ( 'Elk_LogManageUserPropertiesSync', 'Log ManageUserPropertiesSync calls in Elk', 0)
 END
 
-IF NOT EXISTS ( SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE name = 'AdditionalValidationCertsThumbprint' )
+IF NOT EXISTS ( SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE name = 'Elk_LogManageProductBase' )
 BEGIN
 	INSERT INTO enterprise.ProductSettingType ( name, Description, SensitiveData ) VALUES ( 'Elk_LogManageProductBase', 'Log ManageProductBase calls in Elk', 0)
 END
