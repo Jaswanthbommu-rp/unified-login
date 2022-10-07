@@ -785,6 +785,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 				else
 				{
+					aoUser.IsEnabled = aoGbUserCompanyPropertyRoleDetails.Count(c => c.IsAssigned == false) == aoGbUserCompanyPropertyRoleDetails.Count() ? false : true;
 					if (IsSuperUser(productUserPersonaId)) 
 					{
 						if (aoGbUserCompanyPropertyRoleDetails.Any(m => m.IsAssigned != true)) 
