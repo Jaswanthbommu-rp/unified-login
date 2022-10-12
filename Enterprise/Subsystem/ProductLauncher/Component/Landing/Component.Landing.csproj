@@ -388,7 +388,6 @@
     <Compile Include="Logic\Product\ManageProductOps.cs" />
     <Compile Include="Logic\Product\ManageProductRPDocumentManagement.cs" />
     <Compile Include="Logic\Product\ManageResearchApplication.cs" />
-    <Compile Include="Logic\Product\ManageUnifiedAmenities.cs" />
     <Compile Include="Logic\Product\ManageUPFMProductsIntegration.cs" />
     <Compile Include="Logic\Product\SAML\RealPageSAML.cs" />
     <Compile Include="Logic\Security\IManageSecurity.cs" />

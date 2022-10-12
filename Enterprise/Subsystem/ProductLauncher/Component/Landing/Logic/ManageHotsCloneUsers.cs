@@ -124,7 +124,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 						// get product batch data
 						IPersonaRepository personaRepository = new PersonaRepository();
 						var personaProductSettings = personaRepository.GetPersonaProductSettings(user.PersonaId);
-						List<ProductBatch> pbData = manageProductBatch.GetUserProductBatchData(user.PersonaId, userProducts, baseOrgAdminPersonaId, upfmProperty, personaProductSettings, false, false).ToList();
+						List<ProductBatch> pbData = manageProductBatch.GetUserProductBatchData(user.PersonaId, userProducts, baseOrgAdminPersonaId, upfmProperty, personaProductSettings, false).ToList();
                         
 						//	get base company product properties
 						//	get clone company product properties
