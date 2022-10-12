@@ -8,8 +8,8 @@ param
 $sspwd = ConvertTo-SecureString -String $certpassword -Force -AsPlainText
 try
 {
-	Import-PfxCertificate -FilePath "$PSScriptRoot\Extra\certs\local\www-local.realpage.com-2022-11-06.pfx" -CertStoreLocation "Cert:\LocalMachine\My" -Password $sspwd
-    Import-PfxCertificate -FilePath "$PSScriptRoot\Extra\certs\local\www-local2.realpage.com-2022-11-06.pfx" -CertStoreLocation "Cert:\LocalMachine\My" -Password $sspwd
+	Import-PfxCertificate -FilePath "$PSScriptRoot\Extra\certs\local\www-local.realpage.com-2024-09-25.pfx" -CertStoreLocation "Cert:\LocalMachine\My" -Password $sspwd
+    Import-PfxCertificate -FilePath "$PSScriptRoot\Extra\certs\local\www-local2.realpage.com-2024-10-07.pfx" -CertStoreLocation "Cert:\LocalMachine\My" -Password $sspwd
     Import-PfxCertificate -FilePath "$PSScriptRoot\Extra\certs\local\myactivitylocal.corp.realpage.com-2024-08-08.pfx" -CertStoreLocation "Cert:\LocalMachine\My" -Password $sspwd
 }
 catch 

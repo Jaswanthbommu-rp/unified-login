@@ -148,6 +148,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         public ObjectOutput<OrganizationCreateResult, IErrorData> CreateOrganization(OrganizationCreate organization, List<int> addProductList, bool processBlueBookMessage = false)
         {
+            WriteToLog(LogEventLevel.Debug, $"organization name {organization.Name}");
             var repositoryResponse = new RepositoryResponse();
             var outputResult = new ObjectOutput<OrganizationCreateResult, IErrorData>() {Status = new Status<IErrorData>() {Success = false}};
            
@@ -159,6 +160,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 			if (organization.OrganizationTypeId == 0)
 			{
+                WriteToLog(LogEventLevel.Error, $"organization.OrganizationTypeId and organization name is: {organization.Name}");
                 outputResult.Status.ErrorMsg = $"An invalid Organization Type id was given: {organization.OrganizationTypeId}";
                 return outputResult;
             }
@@ -166,6 +168,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			OrganizationAdminUser aUser = organization.AdminUser;
             if (aUser == null)
             {
+                WriteToLog(LogEventLevel.Error, $"aUser is null and organization name is: {organization.Name}");
                 outputResult.Status.ErrorMsg = "No admin user information provided";
                 return outputResult;
             }
@@ -234,10 +237,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 BooksCompanyId = org.BooksMasterId,
                 BooksCustomerMasterId = org.BooksCustomerMasterId
             };
-
+            WriteToLog(LogEventLevel.Debug, $"Before in admin user");
             //Create an additional admin user for the Company
             if (processBlueBookMessage && organization.CompanyAdminUser != null && !string.IsNullOrWhiteSpace(organization.CompanyAdminUser.Email))
             {
+                WriteToLog(LogEventLevel.Debug, $"In admin user");
                 UserLoginOnly findExistingUser = _userLoginRepository.GetUserLoginOnly(organization.CompanyAdminUser.Email);
 
                 ManageUser manageUser = new ManageUser(_defaultUserClaim);
@@ -324,10 +328,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     profileDetail.organization.Add(org);
                 }
-
+                WriteToLog(LogEventLevel.Error, $"Before creating user {profileDetail.userLogin.LoginName}");
                 CreateUserResponse<IErrorData> errorDataResponse = manageUser.CreateUser(profileDetail, personaList);
                 if (!errorDataResponse.Status.Success)
                 {
+                    WriteToLog(LogEventLevel.Error, $"In error while creating user {profileDetail.userLogin.LoginName} error message is { errorDataResponse.Status.ErrorMsg}");
+                    WriteToLog(LogEventLevel.Error, $"{profileDetail.userLogin.LoginName}: " + errorDataResponse.Status.ErrorMsg);
                     outputResult.Status.Success = true;
                     outputResult.Status.ErrorMsg = $"{profileDetail.userLogin.LoginName}: " + errorDataResponse.Status.ErrorMsg;
                     return outputResult;
