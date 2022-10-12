@@ -53,7 +53,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		/// <summary>
 		/// Gets Product Batch
 		/// </summary> 
-		public IList<ProductBatch> GetUserProductBatchData(long personaId, List<PersonaProductUserDetails> userProducts, long baseOrgAdminPersonaId, UPFMProperty upfmProperty, List<ProductSettingList> productSettingList, bool externalUser = false, bool usePropertyInstanceUnifiedAmenities = false)
+		public IList<ProductBatch> GetUserProductBatchData(long personaId, List<PersonaProductUserDetails> userProducts, long baseOrgAdminPersonaId, UPFMProperty upfmProperty, List<ProductSettingList> productSettingList, bool externalUser = false)
 		{
 			IList<ProductBatch> productListToCreate = new List<ProductBatch>();
 			IManageBlueBook manageBlueBook = new ManageBlueBook(_userClaim);
@@ -224,27 +224,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					{
 						ManageProductSelfProvisioningPortal manageProductSelfProvisioningPortal = new ManageProductSelfProvisioningPortal(_userClaim);
 						productListToCreate.Add(CreateSelfProvisioningPortalProductBatchRecord(product.ProductId));
-					}
-					else if (product.ProductId == (int)ProductEnum.UnifiedAmenities)
-					{
-						ManageUnifiedAmenities manageUnifiedAmenities = new ManageUnifiedAmenities(_userClaim);
-						if (!usePropertyInstanceUnifiedAmenities)
-						{
-							propertiesResponse = manageUnifiedAmenities.GetProperties(baseOrgAdminPersonaId, personaId, true, null);
-							if (translateProperties)
-							{
-								propertiesResponse = manageBlueBook.TranslateProductPrimaryPropertiesData(upfmProperty, product.ProductId, propertiesResponse);
-							}
-						}
-						else
-						{
-							ManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(_userClaim);
-							propertiesResponse = manageUnifiedLogin.GetUPFMProperties(baseOrgAdminPersonaId, personaId, true, ProductEnum.UnifiedAmenities, null);
-						}
-
-						rolesResponse = manageUnifiedAmenities.GetRoles(baseOrgAdminPersonaId, personaId, product.OrganizationPartyId);
-
-						productListToCreate.Add(CreateProductBatchRecord(propertiesResponse, rolesResponse, product.ProductId, usePrimaryProperties));
 					}
 					else if (product.ProductId == (int)ProductEnum.LeadManagement)
 					{

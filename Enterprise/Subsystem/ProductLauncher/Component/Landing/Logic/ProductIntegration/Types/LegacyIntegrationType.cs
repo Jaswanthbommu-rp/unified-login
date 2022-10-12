@@ -130,11 +130,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     result = manageProductRum.GetRoles(editorPersonaId, userPersonaId, dataFilter);
                     break;
 
-                case (int)ProductEnum.UnifiedAmenities:
-                    IManageUnifiedAmenities manageUnifiedAmenities = new ManageUnifiedAmenities(_userClaims);
-                    result = manageUnifiedAmenities.GetRoles(editorPersonaId, userPersonaId, partyId);
-                    break;
-
                 case (int)ProductEnum.ResearchApplication:
                     ManageResearchApplication manageResearchApplication = new ManageResearchApplication(_userClaims);
                     result = manageResearchApplication.GetRoles(editorPersonaId, userPersonaId, partyId);
@@ -305,11 +300,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     result = manageProductRum.GetProperties(editorPersonaId, userPersonaId, dataFilter);
                     break;
 
-                case (int)ProductEnum.UnifiedAmenities:
-                    IManageUnifiedAmenities manageUnifiedAmenities = new ManageUnifiedAmenities(_userClaims);
-                    result = manageUnifiedAmenities.GetProperties(editorPersonaId, userPersonaId, assignedOnly, dataFilter);
-                    break;
-
                 case (int)ProductEnum.AoBusinessIntelligence:
                 case (int)ProductEnum.AoInvestmentAnalytics:
                 case (int)ProductEnum.AoAxiometrics:
@@ -402,10 +392,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     result = _manageUnifiedLogin.GetRightsByRole(editorPersonaId, partyId, roleId);
                     break;
 
-                case (int)ProductEnum.UnifiedAmenities:
-                    IManageUnifiedAmenities manageUnifiedAmenities = new ManageUnifiedAmenities(_userClaims);
-                    result = manageUnifiedAmenities.GetRightsByRole(editorPersonaId, partyId, roleId);
-                    break;
+                //case (int)ProductEnum.UnifiedAmenities:
+                //    IManageUnifiedAmenities manageUnifiedAmenities = new ManageUnifiedAmenities(_userClaims);
+                //    result = manageUnifiedAmenities.GetRightsByRole(editorPersonaId, partyId, roleId);
+                //    break;
 
                 default:
                     break;
@@ -555,14 +545,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     product = new SelfProvisioningPortalProduct(_userClaims);
                     productPropertiesRoles =
                         DeserializeJSON<SelfProvisioningPortal>(productUser.InputJson);
-                    result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
-                        productUser.AssignUserPersonaId, productPropertiesRoles);
-                    break;
-
-                case (int)ProductEnum.UnifiedAmenities:
-                    product = new UnifiedAmenitiesProduct(_userClaims);
-                    productPropertiesRoles =
-                        DeserializeJSON<UnifiedAmenitiesPropertyRole>(productUser.InputJson);
                     result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
                         productUser.AssignUserPersonaId, productPropertiesRoles);
                     break;
@@ -751,12 +733,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     product = new SelfProvisioningPortalProduct(_userClaims);
                     productPropertiesRoles =
                         DeserializeJSON<SelfProvisioningPortal>(batchRecord.InputJson);
-                    result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
-                    break;
-                case (int)ProductEnum.UnifiedAmenities:
-                    product = new UnifiedAmenitiesProduct(_userClaims);
-                    productPropertiesRoles =
-                        DeserializeJSON<UnifiedAmenitiesPropertyRole>(batchRecord.InputJson);
                     result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
                     break;
                 case (int)ProductEnum.AssetOptimizer:
@@ -1033,10 +1009,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     product = new SelfProvisioningPortalProduct(_userClaims);
                     result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
                     break;
-                case (int)ProductEnum.UnifiedAmenities:
-                    product = new UnifiedAmenitiesProduct(_userClaims);
-                    result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
-                    break;
                 case (int)ProductEnum.AssetOptimizer:
                     product = new AssetOptimizerProduct(_userClaims);
                     result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
@@ -1195,10 +1167,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     break;
                 case (int)ProductEnum.ResearchApplication:
                     product = new ResearchApplicationProduct(_userClaims, _productInternalSettingRepository, _productRepository);
-                    result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
-                    break;
-                case (int)ProductEnum.UnifiedAmenities:
-                    product = new UnifiedAmenitiesProduct(_userClaims, _productInternalSettingRepository, _productRepository);
                     result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
                 case (int)ProductEnum.SelfProvisioningPortal:

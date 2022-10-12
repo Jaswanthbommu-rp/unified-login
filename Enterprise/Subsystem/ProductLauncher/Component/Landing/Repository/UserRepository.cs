@@ -271,7 +271,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             string schemaName = getRoleRightsSchemaName();
             bool usePropertyInstanceUnifiedLogin = getPropertyInstanceUnifiedLogin();
-            bool usePropertyInstanceUnifiedAmenities = getPropertyInstanceUnifiedAmenities();
             primaryPropertiesBatch = newProfile.productBatch?.FirstOrDefault<ProductBatch>((Func<ProductBatch, bool>)(p => p.ProductId == (int)ProductEnum.UnifiedPlatform));
             
             //NOTE TO DEVELOPERS
@@ -315,7 +314,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         var personaProductSettings = personaRepository.GetPersonaProductSettings(cloneUserPersonaId);
 
                         //Then Get Product Batch Data
-                        IList<ProductBatch> pbData = manageProductBatch.GetUserProductBatchData(cloneUserPersonaId, userProducts, createUserPersonaId, upfmProperty, personaProductSettings, isExternalUser, usePropertyInstanceUnifiedAmenities);
+                        IList<ProductBatch> pbData = manageProductBatch.GetUserProductBatchData(cloneUserPersonaId, userProducts, createUserPersonaId, upfmProperty, personaProductSettings, isExternalUser);
 
                         foreach (ProductBatch pb in pbData)
                         {
@@ -6628,7 +6627,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 {
                     upfmProperty.id = filteredList;
 
-                    bool usePropertyInstanceUnifiedAmenities = getPropertyInstanceUnifiedAmenities();
                     var personaOrganization = userPersona.Organization;
                     bool isExternalUser = false;
                     if (personaOrganization.RelationshipType != null && personaOrganization.RoleNameFrom != null)
@@ -6636,6 +6634,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         isExternalUser = personaOrganization.RelationshipType.Equals("User Type", StringComparison.OrdinalIgnoreCase) && personaOrganization.RoleNameFrom.Equals("External User", StringComparison.OrdinalIgnoreCase);
                     }
 
+                    IPersonaRepository personaRepository = new PersonaRepository();
+                    var personaProductSettings = personaRepository.GetPersonaProductSettings(userPersonaId);
+                    
+                    bool personaProductUsePrimaryProperty = false;
+                    bool usePrimaryProperties = false;
+                    
                     //Next Remove products which are exists in product batch
                     foreach (var product in productBatch)
                     {
@@ -6646,11 +6650,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         userProducts.RemoveAll(a => a.ProductId == product.ProductId);
                     }
+                    
+                    foreach (var product in userProducts.ToList())
+                    {
+                        bool productEnabledForPrimaryProperty = IsProductEnabledForUsePrimaryProperty(product.ProductId);
+                        var productSetting = personaProductSettings.FirstOrDefault(item => item.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase) && item.ProductId == product.ProductId);
 
-                    IPersonaRepository personaRepository = new PersonaRepository();
-                    var personaProductSettings = personaRepository.GetPersonaProductSettings(userPersonaId);
+                        if (productSetting != null)
+                        {
+                            personaProductUsePrimaryProperty = productSetting.Value.Trim() == "1" ? true : false;
+                        }
+
+                        usePrimaryProperties = productEnabledForPrimaryProperty && personaProductUsePrimaryProperty;
+                        if (!usePrimaryProperties)
+                        {
+                            userProducts.Remove(product);
+                        }
+                    }
+
                     //Then Get Product Batch Data
-                    IList<ProductBatch> pbData = manageProductBatch.GetUserProductBatchData(userPersonaId, userProducts, editorPersonaId, upfmProperty, personaProductSettings, isExternalUser, usePropertyInstanceUnifiedAmenities);
+                    IList<ProductBatch> pbData = manageProductBatch.GetUserProductBatchData(userPersonaId, userProducts, editorPersonaId, upfmProperty, personaProductSettings, isExternalUser);
 
                     foreach (ProductBatch pb in pbData)
                     {
@@ -6663,6 +6682,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
 
             return productBatch;
+        }
+
+        private bool IsProductEnabledForUsePrimaryProperty(int productId)
+        {
+            ProductInternalSetting productInternalSetting = new ProductInternalSetting();
+            IProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository();
+            IList<ProductInternalSetting> productInternalSettingList = productInternalSettingRepository.GetProductInternalSettings(productId);
+            productInternalSetting = productInternalSettingList.FirstOrDefault(item => item.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase));
+
+            if (productInternalSetting != null)
+            {
+                return productInternalSetting.Value.Trim() == "1" ? true : false;
+            }
+            return false;
         }
 
         /// <summary>
