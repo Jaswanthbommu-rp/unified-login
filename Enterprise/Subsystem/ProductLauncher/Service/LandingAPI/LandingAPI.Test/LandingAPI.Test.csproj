@@ -253,7 +253,6 @@
     <Compile Include="Logic\ManageRentersInsuranceProductTests.cs" />
     <Compile Include="Logic\ManageResidentPortalProductTests.cs" />
     <Compile Include="Logic\ManageStreetAddressTests.cs" />
-    <Compile Include="Logic\ManageUnifiedAmenitiesTest.cs" />
     <Compile Include="Logic\ManageUserTest.cs" />
     <Compile Include="Logic\ManagePersonTests.cs" />
     <Compile Include="ControllerTest\ProfileTest.cs" />

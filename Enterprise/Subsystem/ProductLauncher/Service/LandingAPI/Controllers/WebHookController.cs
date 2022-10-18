@@ -225,6 +225,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             // get the company info
                             var customerCompanyId = Convert.ToInt32(thinEvent.Payload?["company"]["customerCompanyId"] == null || thinEvent.Payload["company"]["customerCompanyId"].Type == JTokenType.Null ? 0 : thinEvent.Payload?["company"]["customerCompanyId"]);
                             var customerDomain = thinEvent.Payload?["company"]["customerEnvironment"] == null || thinEvent.Payload?["company"]["customerEnvironment"].Type == JTokenType.Null ? thinEvent.Payload?["customerEnvironment"].ToString() : thinEvent.Payload?["company"]["customerEnvironment"].ToString();
+                            WriteToLog(LogEventLevel.Debug, $"In provisioning.upfmclone.create {thinEvent.Topic}");
 
                             if (thinEvent.Topic.Equals("provisioning.upfmclone.create", StringComparison.OrdinalIgnoreCase))
                             {
@@ -365,6 +366,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
                             if (existingUnifiedLoginInstanceId == null)
                             {
+                                WriteToLog(LogEventLevel.Debug, $"create company from is calling");
                                 //return Request.CreateResponse(HttpStatusCode.BadRequest, "stop");
                                 var createResult = CreateCompanyFromBooks(thinEvent.Payload?["company"], customerCompanyId, customerDomain, uniqueProductIdList, thinEvent.Topic.ToLowerInvariant());
                                 if (!string.IsNullOrEmpty(createResult.Result))
@@ -679,10 +681,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             var addProductList = new List<int>(productIdList);
 
+            WriteToLog(LogEventLevel.Debug, $"Before creating Organization {companyName}");
             var result = _manageOrganization.CreateOrganization(organization, addProductList, processBlueBookMessage);
 
             if (!result.Status.Success || !string.IsNullOrEmpty(result.Status.ErrorMsg))
             {
+                WriteToLog(LogEventLevel.Error, $"Error Message while creating organization {result.Status.ErrorMsg}");
                 createCompanyResult.Result = result.Status.ErrorMsg;
                 return createCompanyResult;
             }
@@ -720,7 +724,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             // add the new company data back to books
             var booksResult = _manageBlueBook.AddUPFMCompanyFromProvisioningEvent(companyInstance);
 
-            return createCompanyResult;
+           return createCompanyResult;
         }
 
 

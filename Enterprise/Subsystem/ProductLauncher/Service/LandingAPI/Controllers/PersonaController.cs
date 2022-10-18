@@ -139,8 +139,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         public Persona GetPersona(long personaId = 0)
         {
 
-            Persona persona = _managePersona.GetPersona(personaId == 0 ? _userClaims.PersonaId : personaId);
-
+            var persona = _managePersona.GetPersona(personaId == 0 ? _userClaims.PersonaId : personaId);
+            if (persona == null) return null;
             IList<Persona> personaList = _managePersona.ListActivePersona(persona.RealPageId, false);
 
             persona.hasMultiPersona = personaList.Count(p => p.OrganizationPartyId == persona.OrganizationPartyId) > 1;
