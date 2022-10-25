@@ -1277,6 +1277,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (_addresses.Any(a => a.AddressType?.ToUpper() == "EMAIL"))
             {
                 userEmailAddress = (from a in _addresses where a.AddressType.ToUpper() == "EMAIL" select a.AddressString).FirstOrDefault();
+                if (string.IsNullOrEmpty(userEmailAddress) && !IsRegularUserNoEmail(userPersonaId))
+                {
+                    // this must look like a real email address or Intact will fail to create the user
+                    userEmailAddress = userLogin.LoginName;
+                }
             }
             else if (!IsRegularUserNoEmail(userPersonaId))
             {
