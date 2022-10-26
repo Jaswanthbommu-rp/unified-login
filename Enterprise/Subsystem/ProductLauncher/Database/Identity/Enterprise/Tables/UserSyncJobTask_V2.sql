@@ -28,3 +28,11 @@ GO
 
 ALTER TABLE [Enterprise].[UserSyncJobTask_V2] CHECK CONSTRAINT [FK_UserSyncJobTask_V2_SyncJob]
 GO
+
+CREATE NONCLUSTERED INDEX [IDX_UserSyncJobID_NEW]
+ON [Enterprise].[UserSyncJobTask_V2] ([UserSyncJobId])
+GO
+
+CREATE NONCLUSTERED INDEX [IDX_StatusTypeID_CreateDate_NEW]
+ON [Enterprise].[UserSyncJobTask_V2] ([StatusTypeId],[CreatedDate])
+INCLUDE ([UserSyncJobId],[Source])
