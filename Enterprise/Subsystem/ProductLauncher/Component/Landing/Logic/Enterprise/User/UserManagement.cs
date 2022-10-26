@@ -105,7 +105,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 			// custom fields
 			IList<CustomFieldValue> userCustomFields = null;
 			var userCustomFieldValueJson = string.Empty;
-			var errorReason = ValidateAndAssignCustomFieldValues(null, userProductDetails, out userCustomFields);
+			var errorReason = ValidateAndAssignCustomFieldValues(null, userProductDetails.UserProfileDetails.CustomFields, out userCustomFields);
 
 			if (!string.IsNullOrEmpty(errorReason))
 			{
@@ -234,7 +234,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 			// custom fields
 			IList<CustomFieldValue> userCustomFields = null;
 			var userCustomFieldValueJson = string.Empty;
-			var errorReason = ValidateAndAssignCustomFieldValues(userLoginPersonaList[0].UserLoginPersonaId, userProductDetails, out userCustomFields);
+			var errorReason = ValidateAndAssignCustomFieldValues(userLoginPersonaList[0].UserLoginPersonaId, userProductDetails.UserProfileDetails.CustomFields, out userCustomFields);
 
 			if (!string.IsNullOrEmpty(errorReason))
 			{
@@ -714,7 +714,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 			}
 		}
 
-		private string ValidateAndAssignCustomFieldValues(long? userLoginPersonaId, UserProductDetails userProductDetails, out IList<CustomFieldValue> userCustomFieldsOut)
+		public string ValidateAndAssignCustomFieldValues(long? userLoginPersonaId, Dictionary<string, string> customFields, out IList<CustomFieldValue> userCustomFieldsOut)
 		{
 			userCustomFieldsOut = null;
 
@@ -722,7 +722,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 			// Custom Fields validation and assignment
 			try
 			{
-				var userCustomFields = userProductDetails.UserProfileDetails.CustomFields;
+				var userCustomFields = customFields;
 
 				IList<CustomFieldValue> customFieldValueList = manageCustomFields.GetCustomFieldsValues(organizationPartyId: _userClaims.OrganizationPartyId, userLoginPersonaId: userLoginPersonaId, enabled: true);
 				bool customFieldsEnabled = ((customFieldValueList != null) && (customFieldValueList.Count > 0));
@@ -776,7 +776,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 			catch (Exception ex)
 			{
 				//elastic logging
-				WriteToLog(LogEventLevel.Error, $"Exception while ValidateAndAssignCustomFieldValues for user with login name {userProductDetails.UserProfileDetails.LoginName}", exception: ex);
+				WriteToLog(LogEventLevel.Error, $"Exception while ValidateAndAssignCustomFieldValues", exception: ex);
 			}
 
 			// all ok
@@ -792,7 +792,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 			manageUser.UpdateUserStatus(_userClaims.UserRealPageGuid, persona.PersonaId, userLogins, userLoginStatusType);
 		}
 
-		private string ValidateProductData(IList<ProductDetail> productList)
+		public string ValidateProductData(IList<ProductDetail> productList)
 		{
 			var prodRepository = new ProductRepository(_userClaims);
 
