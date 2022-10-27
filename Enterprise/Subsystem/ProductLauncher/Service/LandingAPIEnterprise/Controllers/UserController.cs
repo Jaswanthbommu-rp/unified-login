@@ -147,7 +147,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             _userRepository = new UserRepository(_userClaims);
             _manangeSecurityLogic = new ManageSecurity(_userClaims);
             _integrationTypeFactory = new IntegrationTypeFactory(_manageProduct, manageUnifiedLogin, manageProductOneSite, _productRepository, productInternalSettingRepository, _userClaims);
-            _userManagement = new UserManagement(_userClaims, _greenBookAccessToken);
+            _userManagement = new UserManagement(_userClaims, Request.Headers.Authorization.Parameter);
             _manageUser = new ManageUser(_userClaims);
             userLoginLogic = new ManageUserLogin();
         }
