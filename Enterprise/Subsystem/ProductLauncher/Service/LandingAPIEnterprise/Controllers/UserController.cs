@@ -147,7 +147,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             _userRepository = new UserRepository(_userClaims);
             _manangeSecurityLogic = new ManageSecurity(_userClaims);
             _integrationTypeFactory = new IntegrationTypeFactory(_manageProduct, manageUnifiedLogin, manageProductOneSite, _productRepository, productInternalSettingRepository, _userClaims);
-            _userManagement = new UserManagement(_userClaims, Request.Headers.Authorization.Parameter);
+            _userManagement = new UserManagement(_userClaims, _greenBookAccessToken);
             _manageUser = new ManageUser(_userClaims);
             userLoginLogic = new ManageUserLogin();
         }
@@ -1727,6 +1727,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     break;
                 case UserTypeDto.External:
                     userType = (int)UserRoleType.ExternalUser;
+                    break;
+                case UserTypeDto.SuperUser:
+                    userType = (int)UserRoleType.SuperUser;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(userTypeDto), userTypeDto, null);
