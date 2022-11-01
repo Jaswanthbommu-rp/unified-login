@@ -328,7 +328,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var uniqueProductLoginName = !isUserUpdate ? IterateUserNameIfExists(productLoginName) : productLoginName;
 
                 // If no contact then create new contact in salesforce
-                if (clientPortalContactResults == null || clientPortalContactResults.Count == 0 || isMultiCompanyUser)
+                if (clientPortalContactResults == null || clientPortalContactResults.Count == 0 )
                 {
                     // Find Account Id in salesforce for oms Id
                     accountId = GetClientPortalContactAccountId(searchOmsId);
@@ -374,7 +374,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         }
                         
                     }
-                }                
+                }
+
+                var clientPortaluserDetails = CheckClientPortalContactsExists(userLogin.LoginName, "User");
+
 
                 var clientPortalUser = new ClientPortalUser
                 {
@@ -390,11 +393,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     CommunityNickname = uniqueProductLoginName.Substring(0, uniqueProductLoginName.Length >= 40 ? 40 : uniqueProductLoginName.Length),
                     Alias = GetAliasFromLogin(uniqueProductLoginName),
                     ProfileId = clientPortalPropertyRole.RoleList[0],
-                    IsActive = true
+                    IsActive = true,
+                    Portal_User_Migrated__c = true
                 };
 
                 // Create New User & return result
-                if (string.IsNullOrEmpty(_productUsername))
+                if ((clientPortaluserDetails == null || clientPortaluserDetails.Count == 0) && string.IsNullOrEmpty(_productUsername))
                 {
                     WriteToDiagnosticLog(
                         $"ManageProductClientPortal.ManageClientPortalUser - trying to CREATE user with editorPersona id - {editorPersonaId}.");
@@ -601,7 +605,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             accountObj.AccountId = accountId;
             accountObj.Unified_Platform_User__c = unifiedLoginUser;
             accountObj.Former_Inactive__c = formerInactive;
-
+            accountObj.Portal_User_Migrated__c = true;
             var result = PostApi($"{_apiRoute}sobjects/Contact/{contactId}?_HttpMethod=PATCH", accountObj);
             if (!string.IsNullOrEmpty(result))
             {
@@ -827,6 +831,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             foreach (var migrateUser in migrateUsers)
             {
                 contact.Unified_Platform_User__c = migrateUser.UsingUnifiedLogin;
+                contact.Portal_User_Migrated__c = true;
                 var result = PostApi($"{_apiRoute}sobjects/User/{migrateUser.UserId}/Contact?_HttpMethod=PATCH", contact);
                 if (!string.IsNullOrEmpty(result))
                 {
@@ -1058,12 +1063,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return GetResultFromApi<ClientPortalAccount>($"{_apiRoute}sobjects/user/{_productUserId}/account");
         }
 		
-        private List<ClientPortalContactResult> CheckClientPortalContactsExists(string loginName)
+        private List<ClientPortalContactResult> CheckClientPortalContactsExists(string loginName,string objectType = "Contact")
         {
             List<ClientPortalContactResult> clientPortalContacts = new List<ClientPortalContactResult>();
 
             var jsonQueryString =
-                JObject.Parse("{ \"q\":\"" + loginName + "\",\"sobjects\":[{\"name\": \"Contact\", \"fields\":[\"Id\", \"Email\", \"Account.OMS_ID__c\", \"Former_Inactive__c\"]}]}");
+                JObject.Parse("{ \"q\":\"" + loginName + "\",\"sobjects\":[{\"name\": \"" + objectType + "\", \"fields\":[\"Id\", \"Email\", \"Account.OMS_ID__c\"]}]}");
 
             WriteToDiagnosticLog(
                       $"ManageProductClientPortal.CheckClientPortalContactExists - calling API with - URL '{_apiRoute}parameterizedSearch' and quert string - {jsonQueryString} for user with _productUsername {_productUsername}.");
@@ -1083,8 +1088,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         Id = cpContact.Id,
                         Email = cpContact.Email,
-                        OMS_ID__c = cpContact.Account == null ? "" : cpContact.Account.OMS_ID__c,
-                        IsFormerInactive = cpContact.Former_Inactive__c
+                        OMS_ID__c = cpContact.Account == null ? "" : cpContact.Account.OMS_ID__c              
                     };                    
                     clientPortalContacts.Add(clientPortalContactResult);
                 }
@@ -1389,6 +1393,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public string ContactId { get; set; } //":"0033C0000055jYbQAI"
 
         public bool IsActive { get; set; } //true/false
+        public bool Portal_User_Migrated__c { get; set; }
     }
 
     public class ClientPortalContact
@@ -1399,6 +1404,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public string Email { get; set; }
         public string AccountId { get; set; }
         public bool Unified_Platform_User__c { get; set; }
+
+        public bool Portal_User_Migrated__c { get; set; }
 
     }
 
@@ -1414,7 +1421,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public string Id { get; set; }
         public string Email { get; set; }
         public string OMS_ID__c { get; set; }
-        public bool IsFormerInactive { get; set; }
+
     }
 
     #endregion
