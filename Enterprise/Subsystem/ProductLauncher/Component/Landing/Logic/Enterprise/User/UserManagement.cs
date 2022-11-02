@@ -32,7 +32,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 	{
 		#region Private variables
 		private DefaultUserClaim _userClaims;
-		private string _greenBookAccessToken;
 		#endregion
 
 		#region Ctor
@@ -40,11 +39,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 		/// UserManagement Constructor
 		/// </summary>
 		/// <param name="userClaims"></param>
-		/// <param name="greenBookAccessToken"></param>
-		public UserManagement(DefaultUserClaim userClaims, string greenBookAccessToken)
+		public UserManagement(DefaultUserClaim userClaims)
 		{
 			_userClaims = userClaims;
-			_greenBookAccessToken = greenBookAccessToken;
 		}
 		#endregion
 

@@ -23,7 +23,6 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.Security;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ops;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Rum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.ResponseObject;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
 using RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Dto;
@@ -51,7 +50,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
     public class UserController : BaseApiController
     {
         #region Private variables
-
         IRepositoryResponse _repositoryResponse;
         IManagePersona _managePersona;
         private IManagePerson _personLogic;
@@ -59,27 +57,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         IManageOrganization _manageOrganization;
         private HttpMessageHandler _messageHandler;
         private IManageUnifiedSettings _manageSettings;
-
         private IProductRepository _productRepository;
-
         private IUserRepository _userRepository;
-
         private IManageSecurity _manangeSecurityLogic;
-
         private IManageProductPanel _manageProductPanel;
-
         private IIntegrationTypeFactory _integrationTypeFactory;
-
         private UserManagement _userManagement;
-
         private ManageUser _manageUser;
-        private IManageUserLogin userLoginLogic;
-
-
+        private IManageUserLogin _userLoginLogic;
         #endregion
 
         #region Constructor
-
         /// <summary>
         /// Default constructor
         /// </summary>
@@ -120,9 +108,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             _userRepository = new UserRepository(repository, userClaims, messageHandler);
             _manangeSecurityLogic = new ManageSecurity(userClaims, personaRightRepository);
             _integrationTypeFactory = new IntegrationTypeFactory(_manageProduct, manageUnifiedLogin, manageProductOneSite, _productRepository, productInternalSettingRepository, _userClaims);
-            _userManagement = new UserManagement(userClaims, _greenBookAccessToken);
+            _userManagement = new UserManagement(userClaims);
             _manageUser = new ManageUser(userClaims);
-            userLoginLogic = new ManageUserLogin();
+            _userLoginLogic = new ManageUserLogin();
         }
 
         /// <summary>
@@ -147,25 +135,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             _userRepository = new UserRepository(_userClaims);
             _manangeSecurityLogic = new ManageSecurity(_userClaims);
             _integrationTypeFactory = new IntegrationTypeFactory(_manageProduct, manageUnifiedLogin, manageProductOneSite, _productRepository, productInternalSettingRepository, _userClaims);
-            _userManagement = new UserManagement(_userClaims, Request.Headers.Authorization.Parameter);
+            _userManagement = new UserManagement(_userClaims);
             _manageUser = new ManageUser(_userClaims);
-            userLoginLogic = new ManageUserLogin();
+            _userLoginLogic = new ManageUserLogin(_userClaims);
         }
 
         #endregion
-
 
         /// <summary>
         /// Create a user in RealPage Unified platform and assign product(s).
         /// </summary>
         /// <returns>If success then returns real page id for newly created user else error object.</returns>
-        [SwaggerResponse(HttpStatusCode.BadRequest, Description =
-            "Bad request when Request object have invalid entries.")]
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request when Request object have invalid entries.")]
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error.", Type = typeof(UserProductDetailsDto))]
-        [SwaggerResponse(HttpStatusCode.OK,
-            Description = "Create a user in RealPage Unified platform and allocate product(s).",
-            Type = typeof(UserProductDetailsDto))]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Create a user in RealPage Unified platform and allocate product(s).", Type = typeof(UserProductDetailsDto))]
         [Route("user")]
         [HttpPost]
         public HttpResponseMessage CreateUser(UserProductDetailsDto userProductDetailsDto, Guid? upfmId = null)
@@ -174,7 +158,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             {
                 ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
                 var errorResponse = new ErrorResponse { Errors = new List<Error>() };
-                if (currentClaimPrincipal.HasClaim("scope", "usermanagement"))
+                if (currentClaimPrincipal.HasClaim("scope", "usermanagement") && _userClaims.PersonaId == 0)
                 {
                     if (!string.IsNullOrEmpty(upfmId.ToString()))
                     {
@@ -189,7 +173,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                         RecreateClaimsForClient(AdminCreatorRealPageId);
                         _managePersona = new ManagePersona(_userClaims);
                         _manageProduct = new ManageProduct(_userClaims);
-
+                        _userManagement = new UserManagement(_userClaims);
+                        _manageUser = new ManageUser(_userClaims);
+                        _userLoginLogic = new ManageUserLogin(_userClaims);
                     }
                     else
                     {
@@ -247,10 +233,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 // map dto to business object
                 var userProductDetails = GetUserBusinessObject(userProductDetailsDto);
 
-                // assign default dates if not supplied
-                userProductDetailsDto.UserProfileDetails.UserEffectiveDate = userProductDetailsDto.UserProfileDetails.UserEffectiveDate ?? DateTime.UtcNow;
-                userProductDetailsDto.UserProfileDetails.UserExpirationDate = userProductDetailsDto.UserProfileDetails.UserExpirationDate ?? new DateTime(9999, 12, 31);
-
                 // date validations
                 if (userProductDetailsDto.UserProfileDetails.UserEffectiveDate.HasValue && userProductDetailsDto.UserProfileDetails.UserExpirationDate.HasValue)
                 {
@@ -259,6 +241,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                         errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = "UserExpirationDate should be greater than UserEffectiveDate.", StatusCode = "" });
                     }
                 }
+
+                // assign default dates if not supplied
+                userProductDetailsDto.UserProfileDetails.UserEffectiveDate = userProductDetailsDto.UserProfileDetails.UserEffectiveDate ?? DateTime.UtcNow;
+                userProductDetailsDto.UserProfileDetails.UserExpirationDate = userProductDetailsDto.UserProfileDetails.UserExpirationDate ?? new DateTime(9999, 12, 31);
 
                 //Validate Product data
                 var productData = _userManagement.ValidateProductData(userProductDetails.ProductList);
@@ -295,7 +281,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     persona.FromDate = DateTime.UtcNow;
                     persona.ThruDate = null;
                     userPersona.Add(persona);
-
                     profile.Persona = userPersona;
                 }
 
@@ -312,8 +297,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 }
 
                 var response = _manageUser.CreateUser(profile, userPersona);
-
-
 
                 //WriteToLog(LogEventLevel.Debug, $"Custom fields json - {userCustomFieldValueJson} for new user with login name {userProductDetails.UserProfileDetails.LoginName}");
 
@@ -356,21 +339,42 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         /// Update the user in RealPage Unified platform and if product(s) are provided .
         /// </summary>
         /// <returns>If success then returns updated user else error object.</returns>
-        [SwaggerResponse(HttpStatusCode.BadRequest, Description =
-            "Bad request when Request object have invalid entries.")]
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request when Request object have invalid entries.")]
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error.", Type = typeof(UserProductDetailsDto))]
-        [SwaggerResponse(HttpStatusCode.OK,
-            Description = "Update the user in RealPage Unified platform and of product(s) are provided.",
-            Type = typeof(UserProductDetailsDto))]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Update the user in RealPage Unified platform and of product(s) are provided.", Type = typeof(UserProductDetailsDto))]
         [Route("user")]
         [HttpPut]
-        public HttpResponseMessage UpdateUser(UserProductDetailsDto userProductDetailsDto)
+        public HttpResponseMessage UpdateUser(UserProductDetailsDto userProductDetailsDto, Guid? upfmId = null)
         {
-            var errorResponse = new ErrorResponse { Errors = new List<Error>() };
-
             try
             {
+                ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
+                var errorResponse = new ErrorResponse { Errors = new List<Error>() };
+                if (currentClaimPrincipal.HasClaim("scope", "usermanagement") && _userClaims.PersonaId == 0)
+                {
+                    if (!string.IsNullOrEmpty(upfmId.ToString()))
+                    {
+                        //IManageOrganization manageOrganization = new ManageOrganization(_userClaims);
+                        Guid AdminCreatorRealPageId = _manageOrganization.GetOrganizationAdminUserRealPageId(upfmId ?? default(Guid));
+                        //recreate clams
+                        if (AdminCreatorRealPageId == Guid.Empty)
+                        {
+                            errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = "Invalid UPFMId.", StatusCode = "" });
+                            //return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
+                        }
+                        RecreateClaimsForClient(AdminCreatorRealPageId);
+                        _managePersona = new ManagePersona(_userClaims);
+                        _manageProduct = new ManageProduct(_userClaims);
+                        _userManagement = new UserManagement(_userClaims);
+                        _manageUser = new ManageUser(_userClaims);
+                        _userLoginLogic = new ManageUserLogin(_userClaims);
+                    }
+                    else
+                    {
+                        errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = "Invalid UPFMId.", StatusCode = "" });
+                    }
+                }
                 if (userProductDetailsDto == null)
                 {
                     errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = "Null request received.", StatusCode = "" });
@@ -392,6 +396,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     {
                         errorList.AddRange(DtoValidator.ValidateObject(productDetailDto).ToList());
                     }
+                }
+
+                if (_userClaims.OrganizationRealPageGuid == DefaultUserClaim.ExternalCompanyRealPageId)
+                {
+                    errorList.Add(new ValidationResult("Cannot create new user in External User company."));
                 }
 
                 // loginName & email check
@@ -430,13 +439,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     }
                 }
 
-                if (errorResponse.Errors.Any())
-                {
-                    return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
-                }
-
                 // map dto to business object
                 var userProductDetails = GetUserBusinessObject(userProductDetailsDto);
+
+                // date validations
+                if (userProductDetailsDto.UserProfileDetails.UserEffectiveDate.HasValue && userProductDetailsDto.UserProfileDetails.UserExpirationDate.HasValue)
+                {
+                    if (userProductDetailsDto.UserProfileDetails.UserExpirationDate.Value < userProductDetailsDto.UserProfileDetails.UserEffectiveDate.Value)
+                    {
+                        errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = "UserExpirationDate should be greater than UserEffectiveDate.", StatusCode = "" });
+                    }
+                }
 
                 // Call Logic
                 //var userManagement = new UserManagement(_userClaims, _greenBookAccessToken);
@@ -456,6 +469,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 if (!string.IsNullOrEmpty(customFieldsData))
                 {
                     errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = customFieldsData, StatusCode = "" });
+                }
+
+                if (errorResponse.Errors.Any())
+                {
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
                 }
 
                 List<Persona> userPersona = new List<Persona>();
@@ -552,7 +570,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 }
 
                 // Call Logic
-                var userManagement = new UserManagement(_userClaims, _greenBookAccessToken);
+                var userManagement = new UserManagement(_userClaims);
                 var response = userManagement.ActivateDeactivateUser(unityRealPageUserId, statusTypeName);
 
                 // check response has error
@@ -648,7 +666,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
             try
             {
-                UserManagement userManagement = new UserManagement(_userClaims, _greenBookAccessToken);
+                UserManagement userManagement = new UserManagement(_userClaims);
                 IList<UsersData> usersDataList = userManagement.ListUser(_userClaims.OrganizationPartyId, unityRealPageUserId, name, rowsPerPage, pageNumber);
 
                 if (usersDataList != null && usersDataList.Any())
@@ -881,7 +899,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     error.Errors.Add(new Error() { Title = "Bad request", Detail = "No valid product code could be found", Source = "/user", StatusCode = "" });
                     return Request.CreateResponse(HttpStatusCode.BadRequest, error);
             }
-
         }
 
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
@@ -1311,7 +1328,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         {
             try
             {
-                UserManagement userManagement = new UserManagement(_userClaims, _greenBookAccessToken);
+                UserManagement userManagement = new UserManagement(_userClaims);
                 return Request.CreateResponse(HttpStatusCode.OK, userManagement.ListUserProductDetailsLoginByPersonaId(_userClaims.PersonaId));
             }
             catch (Exception ex)
@@ -1339,7 +1356,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         {
             try
             {
-                UserManagement userManagement = new UserManagement(_userClaims, _greenBookAccessToken);
+                UserManagement userManagement = new UserManagement(_userClaims);
                 return Request.CreateResponse(HttpStatusCode.OK, userManagement.ListUserProductDetailsLoginByLoginName(_userClaims.LoginName));
             }
             catch (Exception ex)
@@ -1419,7 +1436,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             {
                 //Update existing user
                 
-                profileDetail.userLogin = userLoginLogic.GetUserLogin(userProductDetailsDto.UserProfileDetails.UnityRealPageUserId, _orgPartyId);
+                profileDetail.userLogin = _userLoginLogic.GetUserLogin(userProductDetailsDto.UserProfileDetails.UnityRealPageUserId, _orgPartyId);
                 profileDetail.organization.Add(_manageOrganization.GetOrganization(Guid.Empty, _orgPartyId));
                 profileDetail.Persona.Add(_managePersona.GetActivePersona(userProductDetailsDto.UserProfileDetails.UnityRealPageUserId));
                 UserRepository userRepository = new UserRepository();
