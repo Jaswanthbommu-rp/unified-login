@@ -24,7 +24,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.D
 		/// <summary>
 		/// Phone
 		/// </summary>
-		[Phone]
 		public string Phone { get; set; }
 
 		/// <summary>
