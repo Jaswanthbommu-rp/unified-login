@@ -328,7 +328,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var uniqueProductLoginName = !isUserUpdate ? IterateUserNameIfExists(productLoginName) : productLoginName;
 
                 // If no contact then create new contact in salesforce
-                if (clientPortalContactResults == null || clientPortalContactResults.Count == 0 )
+                if (clientPortalContactResults == null || clientPortalContactResults.Count == 0 || isMultiCompanyUser)
                 {
                     // Find Account Id in salesforce for oms Id
                     accountId = GetClientPortalContactAccountId(searchOmsId);
@@ -344,7 +344,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                           Email = productLoginName,
                           FirstName = person.FirstName,
                           LastName = person.LastName,
-                          Unified_Platform_User__c = true
+                          Unified_Platform_User__c = true,                         
+                          Portal_User_Migrated__c = true
                       });
 
                     WriteToDiagnosticLog(
@@ -393,8 +394,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     CommunityNickname = uniqueProductLoginName.Substring(0, uniqueProductLoginName.Length >= 40 ? 40 : uniqueProductLoginName.Length),
                     Alias = GetAliasFromLogin(uniqueProductLoginName),
                     ProfileId = clientPortalPropertyRole.RoleList[0],
-                    IsActive = true,
-                    Portal_User_Migrated__c = true
+                    IsActive = true
                 };
 
                 // Create New User & return result
@@ -1392,8 +1392,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string ContactId { get; set; } //":"0033C0000055jYbQAI"
 
-        public bool IsActive { get; set; } //true/false
-        public bool Portal_User_Migrated__c { get; set; }
+        public bool IsActive { get; set; } //true/false 
     }
 
     public class ClientPortalContact
