@@ -287,7 +287,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 if (profile.organization.Count == 0)
                 {
                     //Active Persona is linked to one organization
-                    var persona = managePersona.GetFirstAvailablePersonaByCompany(_realpageUserId, _orgPartyId);
+                    var persona = managePersona.GetFirstAvailablePersonaByCompany(_userClaims.UserRealPageGuid, _userClaims.OrganizationPartyId);
                     profile.organization.Add(persona.Organization);
                 }
 
@@ -296,7 +296,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
                 }
 
-                var response = _manageUser.CreateUser(profile, userPersona);
+                var manageUser = new ManageUser(_userClaims);
+                var response = manageUser.CreateUser(profile, userPersona);
 
                 //WriteToLog(LogEventLevel.Debug, $"Custom fields json - {userCustomFieldValueJson} for new user with login name {userProductDetails.UserProfileDetails.LoginName}");
 
@@ -480,7 +481,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 ProfileDetail profile = BuildProfileByInput(userProductDetailsDto, userCustomFields);
                 UserDetails userDetails = _userRepository.GetUserDetails(_userClaims.PersonaId, null);
 
-                var response = _manageUser.UpdateUser(userDetails.UserRealPageId, profile);
+                var manageUser = new ManageUser(_userClaims);
+                var response = manageUser.UpdateUser(userDetails.UserRealPageId, profile);
 
                 // check response has error
                 if (!string.IsNullOrEmpty(response.ErrorMessage))
@@ -1432,10 +1434,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             profileDetail.NotificationEmail = userProductDetailsDto.UserProfileDetails.Email;
             profileDetail.CustomFields = userCustomFields;
 
+            //Add support for phone number
+            if (!string.IsNullOrEmpty(userProductDetailsDto.UserProfileDetails.Phone))
+            {
+                profileDetail.TelecommunicationNumber = new List<TelecommunicationNumber>();
+                TelecommunicationNumber number = new TelecommunicationNumber();
+                number.CountryCode = "+1";
+                number.ISOCode = "US";
+                number.PhoneNumber = userProductDetailsDto.UserProfileDetails.Phone;
+                number.IsDeleted = false;
+                number.IsPreferred = false;
+                number.AreaCode = String.Empty;
+                number.contactMechanismUsageType = new ContactMechanismUsageType() { ContactMechanismUsageTypeId = 203, Name = String.Empty };
+                number.PartyContactMechanismId = 0;
+                number.ContactMechanismId = 0;
+                profileDetail.TelecommunicationNumber.Add(number);
+            }
+
             if (userProductDetailsDto.UserProfileDetails.UnityRealPageUserId != Guid.Empty)
             {
-                //Update existing user
-                
+                //Update existing user                
                 profileDetail.userLogin = _userLoginLogic.GetUserLogin(userProductDetailsDto.UserProfileDetails.UnityRealPageUserId, _orgPartyId);
                 profileDetail.organization.Add(_manageOrganization.GetOrganization(Guid.Empty, _orgPartyId));
                 profileDetail.Persona.Add(_managePersona.GetActivePersona(userProductDetailsDto.UserProfileDetails.UnityRealPageUserId));
@@ -1458,7 +1476,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 profileDetail.userLogin.IsExpired = false;
                 profileDetail.userLogin.FromDate = userProductDetailsDto.UserProfileDetails.UserEffectiveDate;
                 profileDetail.userLogin.Is3rdPartyIDP = userProductDetailsDto.UserProfileDetails.IsExternalIdp;
-            }            
+            }
 
             foreach (var pl in userProductDetailsDto.ProductList)
             {
@@ -1472,7 +1490,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 pBatch.InputJson.RoleList = pl.RolesAssigned;
                 pBatch.InputJson.PropertyList = pl.PropertiesAssigned;
 
-                if(pBatch.ProductId == (int)ProductEnum.OpsBuyer && userProductDetailsDto.UserProfileDetails.UnityRealPageUserId != Guid.Empty)
+                if (pBatch.ProductId == (int)ProductEnum.OpsBuyer && userProductDetailsDto.UserProfileDetails.UnityRealPageUserId != Guid.Empty)
                 {
                     var response = _manageProductPanel.GetProductProperties(_userClaims.PersonaId, profileDetail.Persona[0].PersonaId, pBatch.ProductId, null);
                     var removeProp = response.Records?.Cast<AssetGroup>()?.Where(c => c.IsAssigned == true)?.Select(y => y.ID)?.ToList();

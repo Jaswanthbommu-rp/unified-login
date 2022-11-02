@@ -272,7 +272,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             string schemaName = getRoleRightsSchemaName();
             bool usePropertyInstanceUnifiedLogin = getPropertyInstanceUnifiedLogin();
             primaryPropertiesBatch = newProfile.productBatch?.FirstOrDefault<ProductBatch>((Func<ProductBatch, bool>)(p => p.ProductId == (int)ProductEnum.UnifiedPlatform));
-            
+
             //NOTE TO DEVELOPERS
             //Any new products are added down the line,we need to update the logic in "getProductBatchForUserClone" to get new products to clone.
             if (newProfile.ClonedUser)
@@ -1265,7 +1265,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                     return createUserResponse;
                                 }
                             }
-                            
+
                         }
 
                         //End Create Persona
@@ -1502,6 +1502,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         if (userClaim.UserRealPageGuid != Guid.Empty)
                         {
                             CreateUserPersonaId = userClaim.PersonaId; //repository.GetOne<long>(StoredProcNameConstants.SP_GetActivePersona, new { RealPageId = userClaim.UserRealPageGuid });
+                        }
+                        else if (_userClaim.UserRealPageGuid != Guid.Empty)
+                        {
+                            CreateUserPersonaId = _userClaim.PersonaId;
+                            userClaim = _userClaim;
                         }
                     }
                     catch
@@ -2477,8 +2482,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
 
             emailUsageType = contactMechanismUsageTypeRepository.ListContactMechanismUsageType(ContactMechanismUsageTypeName: "Email Notification");
-    
-                     var enterpriseRole = newProfile.productBatch.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedUI);
+
+            var enterpriseRole = newProfile.productBatch.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedUI);
             int enterpriseRoleId = newProfile.RoleTemplateId;
             if (enterpriseRole?.InputJson?.RoleList != null && enterpriseRole?.InputJson?.RoleList.Count > 0)
             {
@@ -2763,7 +2768,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 return repository.GetOne<UserEmployee>(StoredProcNameConstants.SP_GetEmployeeId, param);
             }
         }
-        
+
 
         /// <summary>
         /// Gets the list of possible navigation menu entries
@@ -3800,12 +3805,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     if (isRealpageAccessUser && CreateUserPersonaId == AssignUserPersonaId)
                     {
                         var aOInputJson = new RolePropertyList()
-                       {
-                           PropertyList = new List<string>(),
-                           RoleList = new List<string>(),
-                           IsAssigned = true,
-                           CompanyId = 0
-                       };
+                        {
+                            PropertyList = new List<string>(),
+                            RoleList = new List<string>(),
+                            IsAssigned = true,
+                            CompanyId = 0
+                        };
                         aoInputJsonString = JsonConvert.SerializeObject(aOInputJson).ToString();
                     }
                     //Loop through the rest of the products list and create the Batch records
@@ -6347,7 +6352,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
 
                         var personaId = updateUserProfileEntity.OldProfile.Persona[0].PersonaId;
-                                                
+
                         var duplicateGreenBookroles = new List<int>(greenBookRoles);
                         var duplicateExistingroles = new List<long>(updateUserProfileEntity.ExistingRoleIds);
 
@@ -6604,7 +6609,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 List<string> filteredList = null;
                 List<string> updatedPrimaryProperties = primaryPropertiesBatch.InputJson.PropertyList.ToList();
                 List<string> removedPrimaryProperties = (primaryPropertiesBatch.InputJson.RemovedPropertyList == null) ? new List<string>(): primaryPropertiesBatch.InputJson.RemovedPropertyList.ToList();
-               
+
                 if (removedPrimaryProperties?.Count > 0)
                 {
                     currentprimaryProperties = currentprimaryProperties.Except(removedPrimaryProperties, StringComparer.OrdinalIgnoreCase).ToList();
@@ -6636,10 +6641,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                     IPersonaRepository personaRepository = new PersonaRepository();
                     var personaProductSettings = personaRepository.GetPersonaProductSettings(userPersonaId);
-                    
+
                     bool personaProductUsePrimaryProperty = false;
                     bool usePrimaryProperties = false;
-                    
+
                     //Next Remove products which are exists in product batch
                     foreach (var product in productBatch)
                     {
@@ -6650,7 +6655,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         userProducts.RemoveAll(a => a.ProductId == product.ProductId);
                     }
-                    
+
                     foreach (var product in userProducts.ToList())
                     {
                         bool productEnabledForPrimaryProperty = IsProductEnabledForUsePrimaryProperty(product.ProductId);
