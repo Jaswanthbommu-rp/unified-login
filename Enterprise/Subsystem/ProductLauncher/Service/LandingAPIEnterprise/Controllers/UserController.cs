@@ -15,6 +15,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Secur
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Attribute;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
@@ -252,6 +253,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 {
                     foreach (var item in productData)
                         errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = item, StatusCode = "" });
+                }
+
+                //Check if User type is noemail and no password
+                if(GetGbUserType(userProductDetailsDto.UserProfileDetails.UserType) == UserTypeConstants.RegularUserNoEmail && string.IsNullOrEmpty(userProductDetailsDto.UserProfileDetails.Password))
+                {
+                    errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = "Password field is required for User type with NoEmail.", StatusCode = "" });
                 }
 
                 //Check if user is available in other company
@@ -1483,6 +1490,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 profileDetail.userLogin.IsExpired = false;
                 profileDetail.userLogin.FromDate = userProductDetailsDto.UserProfileDetails.UserEffectiveDate;
                 profileDetail.userLogin.Is3rdPartyIDP = userProductDetailsDto.UserProfileDetails.IsExternalIdp;
+                profileDetail.Password = userProductDetailsDto.UserProfileDetails.Password;
             }
 
             foreach (var pl in userProductDetailsDto.ProductList)
