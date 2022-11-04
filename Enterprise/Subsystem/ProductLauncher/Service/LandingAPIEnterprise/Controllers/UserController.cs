@@ -248,9 +248,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
                 //Validate Product data
                 var productData = _userManagement.ValidateProductData(userProductDetails.ProductList);
-                if (!string.IsNullOrEmpty(productData))
+                if (productData.Count > 0)
                 {
-                    errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = productData, StatusCode = "" });
+                    foreach (var item in productData)
+                        errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = item, StatusCode = "" });
+                }
+
+                //Check if user is available in other company
+                IManageRoleType roleTypeLogic = new ManageRoleType(new RoleTypeRepository());
+                var roleTypeList = (List<RoleType>)roleTypeLogic.GetRoleType(roleTypeName: "user role", partyId: null, orgMasterId: null, loginName: userProductDetailsDto.UserProfileDetails.LoginName);
+                var userTypeId = GetGbUserType(userProductDetailsDto.UserProfileDetails.UserType);
+                if (!roleTypeList.Any(x => x.PartyRoleTypeId == userTypeId))
+                {
+                    errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = "User type with Regular already exists. Please create user type as an External.", StatusCode = "" });
                 }
 
                 // custom fields
@@ -452,15 +462,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     }
                 }
 
-                // Call Logic
-                //var userManagement = new UserManagement(_userClaims, _greenBookAccessToken);
-                //var response = userManagement.UpdateEnterpriseUnityUser(userProductDetails);
-
                 //Validate Product data
                 var productData = _userManagement.ValidateProductData(userProductDetails.ProductList);
-                if (!string.IsNullOrEmpty(productData))
+                if (productData.Count > 0)
                 {
-                    errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = productData, StatusCode = "" });
+                    foreach (var item in productData)
+                        errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = item, StatusCode = "" });
                 }
 
                 // custom fields
