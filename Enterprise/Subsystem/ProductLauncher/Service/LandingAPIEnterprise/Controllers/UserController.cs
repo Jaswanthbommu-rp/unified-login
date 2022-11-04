@@ -1437,7 +1437,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             profileDetail.productBatch = new List<ProductBatch>();
             profileDetail.userLogin = new UserLogin();
 
-
             profileDetail.Suffix = userProductDetailsDto.UserProfileDetails.Suffix;
             profileDetail.Title = userProductDetailsDto.UserProfileDetails.Title;
             profileDetail.UserTypeId = GetGbUserType(userProductDetailsDto.UserProfileDetails.UserType);
@@ -1447,7 +1446,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             profileDetail.CreateUserSourceType = CreateUserSourceType.UnifiedPlatform;
             profileDetail.NotificationEmail = userProductDetailsDto.UserProfileDetails.Email;
             profileDetail.CustomFields = userCustomFields;
-
+            
             //Add support for phone number
             if (!string.IsNullOrEmpty(userProductDetailsDto.UserProfileDetails.Phone))
             {
@@ -1468,8 +1467,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             if (userProductDetailsDto.UserProfileDetails.UnityRealPageUserId != Guid.Empty)
             {
                 //Update existing user                
-                profileDetail.userLogin = _userLoginLogic.GetUserLogin(userProductDetailsDto.UserProfileDetails.UnityRealPageUserId, _orgPartyId);
-                profileDetail.organization.Add(_manageOrganization.GetOrganization(Guid.Empty, _orgPartyId));
+                profileDetail.userLogin = _userLoginLogic.GetUserLogin(userProductDetailsDto.UserProfileDetails.UnityRealPageUserId, _userClaims.OrganizationPartyId);
+                profileDetail.organization.Add(_manageOrganization.GetOrganization(Guid.Empty, _userClaims.OrganizationPartyId));
                 profileDetail.Persona.Add(_managePersona.GetActivePersona(userProductDetailsDto.UserProfileDetails.UnityRealPageUserId));
                 UserRepository userRepository = new UserRepository();
                 profileDetail.PartyId = profileDetail.userLogin.PartyId;
@@ -1478,13 +1477,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 IManageUserLoginPersona manageUserLoginPersona = new ManageUserLoginPersona(_userClaims);
                 IList<UserLoginPersona> userLoginPersonaList = manageUserLoginPersona.ListUserLoginPersona(userLoginPersonaId: null, userLoginId: profileDetail.userLogin.UserId, organizationPartyId: _userClaims.OrganizationPartyId);
                 profileDetail.ExternalUserRelationship = userRepository.GetExternalUserRelationship(userLoginPersonaList[0].UserLoginPersonaId);
-
             }
             else
             {
                 //Create new user
                 profileDetail.userLogin.ThruDate = null;
-                profileDetail.userLogin.LoginName = userProductDetailsDto.UserProfileDetails.LoginName;
                 profileDetail.userLogin.IsActive = true;
                 profileDetail.userLogin.IsPending = false;
                 profileDetail.userLogin.IsExpired = false;
@@ -1493,6 +1490,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 profileDetail.Password = userProductDetailsDto.UserProfileDetails.Password;
             }
 
+            profileDetail.userLogin.LoginName = userProductDetailsDto.UserProfileDetails.LoginName;
             foreach (var pl in userProductDetailsDto.ProductList)
             {
                 ProductBatch pBatch = new ProductBatch();
