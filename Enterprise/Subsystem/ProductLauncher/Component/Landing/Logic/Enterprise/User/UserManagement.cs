@@ -32,7 +32,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 	{
 		#region Private variables
 		private DefaultUserClaim _userClaims;
-		private string _greenBookAccessToken;
 		#endregion
 
 		#region Ctor
@@ -40,11 +39,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 		/// UserManagement Constructor
 		/// </summary>
 		/// <param name="userClaims"></param>
-		/// <param name="greenBookAccessToken"></param>
-		public UserManagement(DefaultUserClaim userClaims, string greenBookAccessToken)
+		public UserManagement(DefaultUserClaim userClaims)
 		{
 			_userClaims = userClaims;
-			_greenBookAccessToken = greenBookAccessToken;
 		}
 		#endregion
 
@@ -82,11 +79,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 			}
 
 			// Check product roles & properties are valid
-			validationError = ValidateProductData(userProductDetails.ProductList);
-			if (!string.IsNullOrEmpty(validationError))
+			var validProductError = ValidateProductData(userProductDetails.ProductList);
+			if (validProductError.Count() > 0)
 			{
 				response.IsError = true;
-				response.ErrorReason = validationError;
+				response.ErrorReason = String.Join(",", validProductError);
 				return response;
 			}
 
@@ -105,7 +102,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 			// custom fields
 			IList<CustomFieldValue> userCustomFields = null;
 			var userCustomFieldValueJson = string.Empty;
-			var errorReason = ValidateAndAssignCustomFieldValues(null, userProductDetails, out userCustomFields);
+			var errorReason = ValidateAndAssignCustomFieldValues(null, userProductDetails.UserProfileDetails.CustomFields, out userCustomFields);
 
 			if (!string.IsNullOrEmpty(errorReason))
 			{
@@ -198,17 +195,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 				return response;
 			}
 
-			// Check product roles & properties are valid
-			validationError = ValidateProductData(userProductDetails.ProductList);
-			if (!string.IsNullOrEmpty(validationError))
-			{
-				response.IsError = true;
-				response.ErrorReason = validationError;
-				return response;
-			}
+            // Check product roles & properties are valid
+            var validProductError = ValidateProductData(userProductDetails.ProductList);
+            if (validProductError.Count() > 0)
+            {
+                response.IsError = true;
+                response.ErrorReason = String.Join(",", validProductError);
+                return response;
+            }
 
-			// Get password hash & salt for non-idp user
-			if (!userProductDetails.UserProfileDetails.IsExternalIdp)
+            // Get password hash & salt for non-idp user
+            if (!userProductDetails.UserProfileDetails.IsExternalIdp)
 			{
 				var pwd = userProductDetails.UserProfileDetails.Password.PasswordHash();
 				userProductDetails.UserProfileDetails.PasswordHash = pwd.PasswordHash;
@@ -234,7 +231,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 			// custom fields
 			IList<CustomFieldValue> userCustomFields = null;
 			var userCustomFieldValueJson = string.Empty;
-			var errorReason = ValidateAndAssignCustomFieldValues(userLoginPersonaList[0].UserLoginPersonaId, userProductDetails, out userCustomFields);
+			var errorReason = ValidateAndAssignCustomFieldValues(userLoginPersonaList[0].UserLoginPersonaId, userProductDetails.UserProfileDetails.CustomFields, out userCustomFields);
 
 			if (!string.IsNullOrEmpty(errorReason))
 			{
@@ -714,7 +711,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 			}
 		}
 
-		private string ValidateAndAssignCustomFieldValues(long? userLoginPersonaId, UserProductDetails userProductDetails, out IList<CustomFieldValue> userCustomFieldsOut)
+		public string ValidateAndAssignCustomFieldValues(long? userLoginPersonaId, Dictionary<string, string> customFields, out IList<CustomFieldValue> userCustomFieldsOut)
 		{
 			userCustomFieldsOut = null;
 
@@ -722,7 +719,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 			// Custom Fields validation and assignment
 			try
 			{
-				var userCustomFields = userProductDetails.UserProfileDetails.CustomFields;
+				var userCustomFields = customFields;
 
 				IList<CustomFieldValue> customFieldValueList = manageCustomFields.GetCustomFieldsValues(organizationPartyId: _userClaims.OrganizationPartyId, userLoginPersonaId: userLoginPersonaId, enabled: true);
 				bool customFieldsEnabled = ((customFieldValueList != null) && (customFieldValueList.Count > 0));
@@ -776,7 +773,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 			catch (Exception ex)
 			{
 				//elastic logging
-				WriteToLog(LogEventLevel.Error, $"Exception while ValidateAndAssignCustomFieldValues for user with login name {userProductDetails.UserProfileDetails.LoginName}", exception: ex);
+				WriteToLog(LogEventLevel.Error, $"Exception while ValidateAndAssignCustomFieldValues", exception: ex);
 			}
 
 			// all ok
@@ -792,16 +789,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 			manageUser.UpdateUserStatus(_userClaims.UserRealPageGuid, persona.PersonaId, userLogins, userLoginStatusType);
 		}
 
-		private string ValidateProductData(IList<ProductDetail> productList)
+		public List<string> ValidateProductData(IList<ProductDetail> productList)
 		{
 			var prodRepository = new ProductRepository(_userClaims);
+			List<string> productData = new List<string>();
 
 			foreach (var product in productList)
 			{
 				var productMap = prodRepository.GetBooksMasterProductDetail(product.ProductCode.ToUpper());
 				if (productMap == null)
 				{
-					return $"Product with code {product.ProductCode} is incorrect.";
+					productData.Add($"Product with code {product.ProductCode} is incorrect.");
 				}
 
 				var productId = productMap.ProductId;
@@ -814,24 +812,38 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 					// validate if propertyId exists for product
 					IManageProductOps manageProductOps = new ManageProductOps(_userClaims);
 					ListResponse productResponse = manageProductOps.GetCompanyAssets(_userClaims.PersonaId, 0, false, null);
-					List<AssetGroup> opsFilteredAssetList = productResponse.Records.Cast<AssetGroup>().ToList();
-					if (opsFilteredAssetList.All(o => o.ID != propertyId))
+					if (!productResponse.IsError)
 					{
-						return $"Product with code {product.ProductCode} has invalid property Id - {propertyId}";
+						List<AssetGroup> opsFilteredAssetList = productResponse.Records.Cast<AssetGroup>().ToList();
+						if (opsFilteredAssetList.All(o => o.ID != propertyId))
+						{
+                            productData.Add($"Product with code {product.ProductCode} has invalid property Id - {propertyId}");
+						}
 					}
+					else 
+					{
+                        productData.Add($"Product with code {product.ProductCode} has invalid property Id - {propertyId}");
+                    }
 
 					// validate if roleId exists for product 
 					productResponse = manageProductOps.GetRoles(_userClaims.PersonaId, 0, "", null);
-					var filteredList = productResponse.Records.Cast<SharedObjects.Product.ProductRole>().ToList();
-					if (filteredList.All(x => x.ID != roleId))
+					if (!productResponse.IsError)
 					{
-						return $"Product with code {product.ProductCode} has invalid role Id - {roleId}";
+						var filteredList = productResponse.Records.Cast<SharedObjects.Product.ProductRole>().ToList();
+						if (filteredList.All(x => x.ID != roleId))
+						{
+                            productData.Add($"Product with code {product.ProductCode} has invalid role Id - {roleId}");
+						}
 					}
-				}
+                    else
+                    {
+                        productData.Add($"Product with code {product.ProductCode} has invalid role Id - {roleId}");
+                    }
+                }
 			}
 
 			// all ok
-			return string.Empty;
+			return productData;
 		}
 
 		#endregion

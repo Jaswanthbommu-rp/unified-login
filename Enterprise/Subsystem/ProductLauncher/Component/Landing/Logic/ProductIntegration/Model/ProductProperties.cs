@@ -45,6 +45,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string State { get; set; }
 
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string City { get; set; }
+
         /// <summary>
         /// The UPFM property instance id
         /// </summary>
