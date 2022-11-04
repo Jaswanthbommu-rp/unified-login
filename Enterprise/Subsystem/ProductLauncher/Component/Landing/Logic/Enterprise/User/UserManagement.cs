@@ -79,11 +79,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 			}
 
 			// Check product roles & properties are valid
-			validationError = ValidateProductData(userProductDetails.ProductList);
-			if (!string.IsNullOrEmpty(validationError))
+			var validProductError = ValidateProductData(userProductDetails.ProductList);
+			if (validProductError.Count() > 0)
 			{
 				response.IsError = true;
-				response.ErrorReason = validationError;
+				response.ErrorReason = String.Join(",", validProductError);
 				return response;
 			}
 
@@ -195,17 +195,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 				return response;
 			}
 
-			// Check product roles & properties are valid
-			validationError = ValidateProductData(userProductDetails.ProductList);
-			if (!string.IsNullOrEmpty(validationError))
-			{
-				response.IsError = true;
-				response.ErrorReason = validationError;
-				return response;
-			}
+            // Check product roles & properties are valid
+            var validProductError = ValidateProductData(userProductDetails.ProductList);
+            if (validProductError.Count() > 0)
+            {
+                response.IsError = true;
+                response.ErrorReason = String.Join(",", validProductError);
+                return response;
+            }
 
-			// Get password hash & salt for non-idp user
-			if (!userProductDetails.UserProfileDetails.IsExternalIdp)
+            // Get password hash & salt for non-idp user
+            if (!userProductDetails.UserProfileDetails.IsExternalIdp)
 			{
 				var pwd = userProductDetails.UserProfileDetails.Password.PasswordHash();
 				userProductDetails.UserProfileDetails.PasswordHash = pwd.PasswordHash;
@@ -789,16 +789,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 			manageUser.UpdateUserStatus(_userClaims.UserRealPageGuid, persona.PersonaId, userLogins, userLoginStatusType);
 		}
 
-		public string ValidateProductData(IList<ProductDetail> productList)
+		public List<string> ValidateProductData(IList<ProductDetail> productList)
 		{
 			var prodRepository = new ProductRepository(_userClaims);
+			List<string> productData = new List<string>();
 
 			foreach (var product in productList)
 			{
 				var productMap = prodRepository.GetBooksMasterProductDetail(product.ProductCode.ToUpper());
 				if (productMap == null)
 				{
-					return $"Product with code {product.ProductCode} is incorrect.";
+					productData.Add($"Product with code {product.ProductCode} is incorrect.");
 				}
 
 				var productId = productMap.ProductId;
@@ -811,24 +812,38 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 					// validate if propertyId exists for product
 					IManageProductOps manageProductOps = new ManageProductOps(_userClaims);
 					ListResponse productResponse = manageProductOps.GetCompanyAssets(_userClaims.PersonaId, 0, false, null);
-					List<AssetGroup> opsFilteredAssetList = productResponse.Records.Cast<AssetGroup>().ToList();
-					if (opsFilteredAssetList.All(o => o.ID != propertyId))
+					if (!productResponse.IsError)
 					{
-						return $"Product with code {product.ProductCode} has invalid property Id - {propertyId}";
+						List<AssetGroup> opsFilteredAssetList = productResponse.Records.Cast<AssetGroup>().ToList();
+						if (opsFilteredAssetList.All(o => o.ID != propertyId))
+						{
+                            productData.Add($"Product with code {product.ProductCode} has invalid property Id - {propertyId}");
+						}
 					}
+					else 
+					{
+                        productData.Add($"Product with code {product.ProductCode} has invalid property Id - {propertyId}");
+                    }
 
 					// validate if roleId exists for product 
 					productResponse = manageProductOps.GetRoles(_userClaims.PersonaId, 0, "", null);
-					var filteredList = productResponse.Records.Cast<SharedObjects.Product.ProductRole>().ToList();
-					if (filteredList.All(x => x.ID != roleId))
+					if (!productResponse.IsError)
 					{
-						return $"Product with code {product.ProductCode} has invalid role Id - {roleId}";
+						var filteredList = productResponse.Records.Cast<SharedObjects.Product.ProductRole>().ToList();
+						if (filteredList.All(x => x.ID != roleId))
+						{
+                            productData.Add($"Product with code {product.ProductCode} has invalid role Id - {roleId}");
+						}
 					}
-				}
+                    else
+                    {
+                        productData.Add($"Product with code {product.ProductCode} has invalid role Id - {roleId}");
+                    }
+                }
 			}
 
 			// all ok
-			return string.Empty;
+			return productData;
 		}
 
 		#endregion
