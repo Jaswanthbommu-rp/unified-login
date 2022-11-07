@@ -26,3 +26,4 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\ADGroupWithoutUserCreationSetting.sql
 :r .\PostDeploymentScripts\ContactCenterMaintenance_Script.sql
 :r .\PostDeploymentScripts\IterateUserNameForUserCreationSetting.sql
+:r .\PostDeploymentScripts\AddingSetting_MenuRights.sql
