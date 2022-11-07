@@ -1446,7 +1446,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             profileDetail.CreateUserSourceType = CreateUserSourceType.UnifiedPlatform;
             profileDetail.NotificationEmail = userProductDetailsDto.UserProfileDetails.Email;
             profileDetail.CustomFields = userCustomFields;
-            
+            profileDetail.EmployeeId = userProductDetailsDto.UserProfileDetails.EmployeeId;
+
             //Add support for phone number
             if (!string.IsNullOrEmpty(userProductDetailsDto.UserProfileDetails.Phone))
             {
