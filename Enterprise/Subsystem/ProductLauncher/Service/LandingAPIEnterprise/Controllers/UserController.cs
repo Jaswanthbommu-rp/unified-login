@@ -1492,26 +1492,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             }
 
             profileDetail.userLogin.LoginName = userProductDetailsDto.UserProfileDetails.LoginName;
-            foreach (var pl in userProductDetailsDto.ProductList)
+            if(userProductDetailsDto.ProductList != null) 
             {
-                ProductBatch pBatch = new ProductBatch();
-                pBatch.InputJson = new RolePropertyList();
-
-                var productList = _productRepository.GetAllProducts();
-                pBatch.ProductId = ProductEnumHelper.GetProductIdByProductCode(pl.ProductCode, productList);
-                pBatch.StatusTypeId = (int)ProductBatchStatusType.Waiting;
-                pBatch.RetryCount = 0;
-                pBatch.InputJson.RoleList = pl.RolesAssigned;
-                pBatch.InputJson.PropertyList = pl.PropertiesAssigned;
-
-                if (pBatch.ProductId == (int)ProductEnum.OpsBuyer && userProductDetailsDto.UserProfileDetails.UnityRealPageUserId != Guid.Empty)
+                foreach (var pl in userProductDetailsDto.ProductList)
                 {
-                    var response = _manageProductPanel.GetProductProperties(_userClaims.PersonaId, profileDetail.Persona[0].PersonaId, pBatch.ProductId, null);
-                    var removeProp = response.Records?.Cast<AssetGroup>()?.Where(c => c.IsAssigned == true)?.Select(y => y.ID)?.ToList();
-                    pBatch.InputJson.RemovedPropertyList = removeProp ?? new List<string>();
-                }
+                    ProductBatch pBatch = new ProductBatch();
+                    pBatch.InputJson = new RolePropertyList();
 
-                profileDetail.productBatch.Add(pBatch);
+                    var productList = _productRepository.GetAllProducts();
+                    pBatch.ProductId = ProductEnumHelper.GetProductIdByProductCode(pl.ProductCode, productList);
+                    pBatch.StatusTypeId = (int)ProductBatchStatusType.Waiting;
+                    pBatch.RetryCount = 0;
+                    pBatch.InputJson.RoleList = pl.RolesAssigned;
+                    pBatch.InputJson.PropertyList = pl.PropertiesAssigned;
+
+                    if (pBatch.ProductId == (int)ProductEnum.OpsBuyer && userProductDetailsDto.UserProfileDetails.UnityRealPageUserId != Guid.Empty)
+                    {
+                        var response = _manageProductPanel.GetProductProperties(_userClaims.PersonaId, profileDetail.Persona[0].PersonaId, pBatch.ProductId, null);
+                        var removeProp = response.Records?.Cast<AssetGroup>()?.Where(c => c.IsAssigned == true)?.Select(y => y.ID)?.ToList();
+                        pBatch.InputJson.RemovedPropertyList = removeProp ?? new List<string>();
+                    }
+
+                    profileDetail.productBatch.Add(pBatch);
+                }
             }
 
             return profileDetail;
