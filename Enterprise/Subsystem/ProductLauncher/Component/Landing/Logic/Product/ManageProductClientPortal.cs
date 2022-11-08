@@ -328,7 +328,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var uniqueProductLoginName = !isUserUpdate ? IterateUserNameIfExists(productLoginName) : productLoginName;
 
                 // If no contact then create new contact in salesforce
-                if (clientPortalContactResults == null || clientPortalContactResults.Count == 0 || isMultiCompanyUser)
+                if (clientPortalContactResults == null || clientPortalContactResults.Count == 0 )
                 {
                     // Find Account Id in salesforce for oms Id
                     accountId = GetClientPortalContactAccountId(searchOmsId);
@@ -441,7 +441,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             while (!foundUserName)
             {
-                if (CheckClientPortalContactsExists(clientPortalLoginName).Count > 0)
+                if (CheckClientPortalUserExists(clientPortalLoginName).Count > 0)
                 {
                     incrementor++;
                     clientPortalLoginName = productLoginName.Split('@')[0] + incrementor.ToString() + "@" + productLoginName.Split('@')[1];
@@ -1098,6 +1098,47 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 WriteToDiagnosticLog(
                       $"ManageProductClientPortal.CheckClientPortalContactExists - no existing contact exists for user with _productUsername {_productUsername}.");
+            }
+
+            return clientPortalContacts;
+        }
+
+
+        private List<ClientPortalContactResult> CheckClientPortalUserExists(string loginName)
+        {
+            List<ClientPortalContactResult> clientPortalContacts = new List<ClientPortalContactResult>();
+
+            var jsonQueryString =
+                JObject.Parse("{ \"q\":\"" + loginName + "\",\"sobjects\":[{\"name\": \"User\", \"fields\":[\"Id\", \"Email\", \"Account.OMS_ID__c\"]}]}");
+
+            WriteToDiagnosticLog(
+                      $"ManageProductClientPortal.CheckClientPortalUserExists - calling API with - URL '{_apiRoute}parameterizedSearch' and quert string - {jsonQueryString} for user with _productUsername {_productUsername}.");
+
+            var response = PostApi($"{_apiRoute}parameterizedSearch", jsonQueryString);
+
+            dynamic data = JObject.Parse(response);
+
+            if (data != null && data.searchRecords != null && data.searchRecords.Count >= 1)
+            {
+                WriteToDiagnosticLog(
+                    $"ManageProductClientPortal.CheckClientPortalUserExists - User exists for user with _productUsername {_productUsername}.");
+
+                foreach (var cpContact in data.searchRecords)
+                {
+                    ClientPortalContactResult clientPortalContactResult = new ClientPortalContactResult
+                    {
+                        Id = cpContact.Id,
+                        Email = cpContact.Email,
+                        OMS_ID__c = cpContact.Account == null ? "" : cpContact.Account.OMS_ID__c
+                    };
+                    clientPortalContacts.Add(clientPortalContactResult);
+                }
+
+            }
+            else
+            {
+                WriteToDiagnosticLog(
+                      $"ManageProductClientPortal.CheckClientPortalUserExists - no existing user exists for user with _productUsername {_productUsername}.");
             }
 
             return clientPortalContacts;
