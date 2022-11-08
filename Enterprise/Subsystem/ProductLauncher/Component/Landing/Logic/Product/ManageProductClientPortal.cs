@@ -320,7 +320,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 
                 // For multiple contacts result
-                var clientPortalContactResults = CheckClientPortalContactsExists(productLoginName);
+                var clientPortalContactResults = CheckClientPortalContactsExistsByAccount(productLoginName, searchOmsId);
 
                 var contactId = string.Empty;
                 string accountId = string.Empty;
@@ -1098,6 +1098,46 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 WriteToDiagnosticLog(
                       $"ManageProductClientPortal.CheckClientPortalContactExists - no existing contact exists for user with _productUsername {_productUsername}.");
+            }
+
+            return clientPortalContacts;
+        }
+
+        private List<ClientPortalContactResult> CheckClientPortalContactsExistsByAccount(string loginName, string accountOmsId )
+        {
+            List<ClientPortalContactResult> clientPortalContacts = new List<ClientPortalContactResult>();
+
+            var jsonQueryString =
+                JObject.Parse("{ \"q\":\"" + loginName + "\",\"sobjects\":[{\"name\": \"Contact\", \"fields\":[\"Id\", \"Email\", \"Account.OMS_ID__c\"], \"where\" : \"Account.OMS_ID__c = \'" + accountOmsId + "\'\"}]}");
+
+            WriteToDiagnosticLog(
+                      $"ManageProductClientPortal.CheckClientPortalContactsExistsByAccount - calling API with - URL '{_apiRoute}parameterizedSearch' and quert string - {jsonQueryString} for user with _productUsername {_productUsername}.");
+
+            var response = PostApi($"{_apiRoute}parameterizedSearch", jsonQueryString);
+
+            dynamic data = JObject.Parse(response);
+
+            if (data != null && data.searchRecords != null && data.searchRecords.Count >= 1)
+            {
+                WriteToDiagnosticLog(
+                    $"ManageProductClientPortal.CheckClientPortalContactsExistsByAccount - Contact exists for user with _productUsername {_productUsername}.");
+
+                foreach (var cpContact in data.searchRecords)
+                {
+                    ClientPortalContactResult clientPortalContactResult = new ClientPortalContactResult
+                    {
+                        Id = cpContact.Id,
+                        Email = cpContact.Email,
+                        OMS_ID__c = cpContact.Account == null ? "" : cpContact.Account.OMS_ID__c
+                    };
+                    clientPortalContacts.Add(clientPortalContactResult);
+                }
+
+            }
+            else
+            {
+                WriteToDiagnosticLog(
+                      $"ManageProductClientPortal.CheckClientPortalContactsExistsByAccount - no existing contact exists for user with _productUsername {_productUsername}.");
             }
 
             return clientPortalContacts;
