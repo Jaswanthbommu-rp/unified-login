@@ -757,7 +757,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             string query = ($"SELECT Id,FirstName,LastName,Email,Username,LastLoginDate,IsActive FROM User" +
                            $" WHERE User.Contact.Account.OMS_ID__c = '{companyInstanceSourceId}'" +
-                           $" AND User.Contact.Unified_Platform_User__c = {filter}" +
+                           $" AND User.Contact.Portal_User_Migrated__c = {filter}" +
                            $" LIMIT {resultPerRow} OFFSET {startRow}").Replace(' ', '+');
 
             var partialurl = $"{_apiRoute}query?q={query}";
