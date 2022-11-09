@@ -99,7 +99,7 @@ BEGIN
 			@Primaryorganization  = 1,
 			@Fromdate = @UserEffectiveDate,
 			@ThruDate = @UserExpirationDate,
-			@StatusThruDate = @UserExpirationDate
+			@StatusThruDate = @Now
 
 		SELECT	@UserLoginPersonaId = UserLoginPersonaId
 		FROM		Ident.UserLoginPersona
@@ -149,7 +149,7 @@ BEGIN
 				UPDATE	Ident.UserLogin
 				SET			PasswordHash = @Pwdhash,
 								PasswordSalt = @PwdSalt,
-								PasswordModifiedDate = DATEADD(YEAR, 50, GETDATE())
+								PasswordModifiedDate = null
 				WHERE UserId = @UserId;
 			END
 
@@ -161,12 +161,12 @@ BEGIN
 		ELSE
 		BEGIN
 			UPDATE	Ident.UserLogin
-			SET			PasswordModifiedDate = DATEADD(YEAR, 50, GETDATE())
+			SET			PasswordModifiedDate = null
 			WHERE	UserId = @UserId;
 
 			UPDATE	Ident.UserLoginPersona
 			SET			StatusTypeId = @UserStatus,
-							StatusThruDate = NULL
+							StatusThruDate = DATEADD(day, 3, FromDate)
 			WHERE	UserLoginId = @UserId
 			AND			OrganizationPartyId = @OrganizationId
 		END;

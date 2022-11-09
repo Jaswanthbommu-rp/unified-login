@@ -15,6 +15,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Secur
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Attribute;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
@@ -40,6 +41,7 @@ using System.Net.Http;
 using System.Security.Claims;
 using System.Web.Http;
 using System.Web.Http.Controllers;
+using ProductRole = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ProductRole;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Controllers
 {
@@ -49,7 +51,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
     public class UserController : BaseApiController
     {
         #region Private variables
-
         IRepositoryResponse _repositoryResponse;
         IManagePersona _managePersona;
         private IManagePerson _personLogic;
@@ -57,21 +58,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         IManageOrganization _manageOrganization;
         private HttpMessageHandler _messageHandler;
         private IManageUnifiedSettings _manageSettings;
-
         private IProductRepository _productRepository;
-
         private IUserRepository _userRepository;
-
         private IManageSecurity _manangeSecurityLogic;
-
         private IManageProductPanel _manageProductPanel;
-
         private IIntegrationTypeFactory _integrationTypeFactory;
-
+        private UserManagement _userManagement;
+        private ManageUser _manageUser;
+        private IManageUserLogin _userLoginLogic;
         #endregion
 
         #region Constructor
-
         /// <summary>
         /// Default constructor
         /// </summary>
@@ -90,37 +87,31 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         /// <param name="manageProductOneSite"></param>
         public UserController(IRepository repository, IRepositoryResponse repositoryResponse, HttpMessageHandler messageHandler, DefaultUserClaim userClaims, IManageProductOneSite manageProductOneSite)
         {
-            _repositoryResponse = repositoryResponse;
-            _managePersona = new ManagePersona(repository, userClaims, messageHandler);
-
-            _personLogic = new ManagePerson(repository);
             ProductRepository productRepository = new ProductRepository(repository, userClaims);
             ProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository(repository);
-            // ManagePersona managePersona = new ManagePersona(repository, userClaims);
-            _manageOrganization = new ManageOrganization(repository, userClaims, messageHandler);
             ManageUserRoleRight manageUserRoleRight = new ManageUserRoleRight(repository, userClaims);
             ManagePartyRelationship managePartyRelationship = new ManagePartyRelationship(repository);
-
             ManageBlueBook manageBlueBook = new ManageBlueBook(userClaims, repository, productInternalSettingRepository, messageHandler);
             ManageProfile manageProfile = new ManageProfile(userClaims);
-            _manageSettings = new ManageUnifiedSettings(repository, userClaims, messageHandler);
+            PersonaRightRepository personaRightRepository = new PersonaRightRepository(repository);
+            ManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(userClaims, productInternalSettingRepository, productRepository, manageBlueBook);
 
+            _repositoryResponse = repositoryResponse;
+            _managePersona = new ManagePersona(repository, userClaims, messageHandler);
+            _personLogic = new ManagePerson(repository);
+            _manageOrganization = new ManageOrganization(repository, userClaims, messageHandler);
+            _manageSettings = new ManageUnifiedSettings(repository, userClaims, messageHandler);
             _manageProduct = new ManageProduct(repository, userClaims, messageHandler);
             _manageProductPanel = new ManageProductPanel(userClaims, repository, manageBlueBook, messageHandler, manageProductOneSite);
-
             _productRepository = new ProductRepository(repository, userClaims);
-
             _messageHandler = messageHandler;
             _userClaims = userClaims;
-
-            var personaRightRepository = new PersonaRightRepository(repository);
-
             _userRepository = new UserRepository(repository, userClaims, messageHandler);
             _manangeSecurityLogic = new ManageSecurity(userClaims, personaRightRepository);
-
-            var manageUnifiedLogin = new ManageUnifiedLogin(userClaims, productInternalSettingRepository, productRepository, manageBlueBook);
-            _integrationTypeFactory = new IntegrationTypeFactory(_manageProduct, manageUnifiedLogin, manageProductOneSite, _productRepository,
-                productInternalSettingRepository, _userClaims);
+            _integrationTypeFactory = new IntegrationTypeFactory(_manageProduct, manageUnifiedLogin, manageProductOneSite, _productRepository, productInternalSettingRepository, _userClaims);
+            _userManagement = new UserManagement(userClaims);
+            _manageUser = new ManageUser(userClaims);
+            _userLoginLogic = new ManageUserLogin();
         }
 
         /// <summary>
@@ -130,6 +121,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         protected override void Initialize(HttpControllerContext controllerContext)
         {
             base.Initialize(controllerContext);
+            var manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
+            var manageProductOneSite = new ManageProductOneSite(_userClaims);
+            var productInternalSettingRepository = new ProductInternalSettingRepository();
+
             _repositoryResponse = new RepositoryResponse();
             _managePersona = new ManagePersona(_userClaims);
             _personLogic = new ManagePerson();
@@ -140,28 +135,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             _productRepository = new ProductRepository(_userClaims);
             _userRepository = new UserRepository(_userClaims);
             _manangeSecurityLogic = new ManageSecurity(_userClaims);
-
-            var manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
-            var manageProductOneSite = new ManageProductOneSite(_userClaims);
-            var productInternalSettingRepository = new ProductInternalSettingRepository();
-            _integrationTypeFactory = new IntegrationTypeFactory(_manageProduct, manageUnifiedLogin, manageProductOneSite, _productRepository,
-                productInternalSettingRepository, _userClaims);
+            _integrationTypeFactory = new IntegrationTypeFactory(_manageProduct, manageUnifiedLogin, manageProductOneSite, _productRepository, productInternalSettingRepository, _userClaims);
+            _userManagement = new UserManagement(_userClaims);
+            _manageUser = new ManageUser(_userClaims);
+            _userLoginLogic = new ManageUserLogin(_userClaims);
         }
 
         #endregion
-
 
         /// <summary>
         /// Create a user in RealPage Unified platform and assign product(s).
         /// </summary>
         /// <returns>If success then returns real page id for newly created user else error object.</returns>
-        [SwaggerResponse(HttpStatusCode.BadRequest, Description =
-            "Bad request when Request object have invalid entries.")]
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request when Request object have invalid entries.")]
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error.", Type = typeof(UserProductDetailsDto))]
-        [SwaggerResponse(HttpStatusCode.OK,
-            Description = "Create a user in RealPage Unified platform and allocate product(s).",
-            Type = typeof(UserProductDetailsDto))]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Create a user in RealPage Unified platform and allocate product(s).", Type = typeof(UserProductDetailsDto))]
         [Route("user")]
         [HttpPost]
         public HttpResponseMessage CreateUser(UserProductDetailsDto userProductDetailsDto, Guid? upfmId = null)
@@ -169,45 +158,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             try
             {
                 ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
-                if (currentClaimPrincipal.HasClaim("scope", "usermanagement"))
+                var errorResponse = new ErrorResponse { Errors = new List<Error>() };
+                if (currentClaimPrincipal.HasClaim("scope", "usermanagement") && _userClaims.PersonaId == 0)
                 {
                     if (!string.IsNullOrEmpty(upfmId.ToString()))
                     {
                         //IManageOrganization manageOrganization = new ManageOrganization(_userClaims);
-                        Guid AdminCreatorRealPageId = _manageOrganization.GetOrganizationAdminUserRealPageId(upfmId??default(Guid));
+                        Guid AdminCreatorRealPageId = _manageOrganization.GetOrganizationAdminUserRealPageId(upfmId ?? default(Guid));
                         //recreate clams
                         if (AdminCreatorRealPageId == Guid.Empty)
                         {
-                            var errorResponse = new ErrorResponse { Errors = new List<Error>() };
-                            errorResponse.Errors.Add(new Error
-                            { Title = "Error", Source = "/user", Detail = "Invalid UPFMId.", StatusCode = "" });
-
-                            // return errors with bad request
-                            return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
+                            errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = "Invalid UPFMId.", StatusCode = "" });
+                            //return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
                         }
                         RecreateClaimsForClient(AdminCreatorRealPageId);
                         _managePersona = new ManagePersona(_userClaims);
                         _manageProduct = new ManageProduct(_userClaims);
-                                              
+                        _userManagement = new UserManagement(_userClaims);
+                        _manageUser = new ManageUser(_userClaims);
+                        _userLoginLogic = new ManageUserLogin(_userClaims);
                     }
                     else
                     {
-                        var errorResponse = new ErrorResponse { Errors = new List<Error>() };
-                        errorResponse.Errors.Add(new Error
-                        { Title = "Error", Source = "/user", Detail = "Invalid UPFMId.", StatusCode = "" });
-
-                        // return errors with bad request
-                        return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
+                        errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = "Invalid UPFMId.", StatusCode = "" });
                     }
                 }
                 if (userProductDetailsDto == null)
                 {
-                    var errorResponse = new ErrorResponse { Errors = new List<Error>() };
-                    errorResponse.Errors.Add(new Error
-                    { Title = "Error", Source = "/user", Detail = "Null request received.", StatusCode = "" });
-
-                    // return errors with bad request
-                    return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
+                    errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = "Null request received.", StatusCode = "" });
                 }
 
                 // request object validation
@@ -247,60 +225,111 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 // send validation error back
                 if (errorList.Any())
                 {
-                    var errorResponse = new ErrorResponse { Errors = new List<Error>() };
-
-                    // iterate through all errors
                     foreach (var item in errorList)
                     {
-                        errorResponse.Errors.Add(new Error
-                        { Title = "Validation Error", Source = "/user", Detail = item.ToString(), StatusCode = "" });
+                        errorResponse.Errors.Add(new Error { Title = "Validation Error", Source = "/user", Detail = item.ToString(), StatusCode = "" });
                     }
-
-                    // return errors with bad request
-                    return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
                 }
 
                 // map dto to business object
                 var userProductDetails = GetUserBusinessObject(userProductDetailsDto);
 
                 // date validations
-                if (userProductDetails.UserProfileDetails.UserEffectiveDate.HasValue &&
-                    userProductDetails.UserProfileDetails.UserExpirationDate.HasValue)
+                if (userProductDetailsDto.UserProfileDetails.UserEffectiveDate.HasValue && userProductDetailsDto.UserProfileDetails.UserExpirationDate.HasValue)
                 {
-                    if (userProductDetails.UserProfileDetails.UserExpirationDate.Value <
-                        userProductDetails.UserProfileDetails.UserEffectiveDate.Value)
+                    if (userProductDetailsDto.UserProfileDetails.UserExpirationDate.Value < userProductDetailsDto.UserProfileDetails.UserEffectiveDate.Value)
                     {
-                        var errorResponse = new ErrorResponse { Errors = new List<Error>() };
-                        errorResponse.Errors.Add(new Error
-                        { Title = "Error", Source = "/user", Detail = "UserExpirationDate should be greater than UserEffectiveDate.", StatusCode = "" });
-
-                        // return errors with bad request
-                        return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
+                        errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = "UserExpirationDate should be greater than UserEffectiveDate.", StatusCode = "" });
                     }
                 }
 
                 // assign default dates if not supplied
-                userProductDetails.UserProfileDetails.UserEffectiveDate =
-                    userProductDetailsDto.UserProfileDetails.UserEffectiveDate ?? DateTime.UtcNow;
-                userProductDetails.UserProfileDetails.UserExpirationDate =
-                    userProductDetailsDto.UserProfileDetails.UserExpirationDate ?? new DateTime(9999,12,31);
+                userProductDetailsDto.UserProfileDetails.UserEffectiveDate = userProductDetailsDto.UserProfileDetails.UserEffectiveDate ?? DateTime.UtcNow;
+                userProductDetailsDto.UserProfileDetails.UserExpirationDate = userProductDetailsDto.UserProfileDetails.UserExpirationDate ?? new DateTime(9999, 12, 31);
 
-                // Call Logic
-                var userManagement = new UserManagement(_userClaims, _greenBookAccessToken);
-                var response = userManagement.CreateEnterpriseUnityUser(userProductDetails);
+                //Validate Product data
+                var productData = _userManagement.ValidateProductData(userProductDetails.ProductList);
+                if (productData.Count > 0)
+                {
+                    foreach (var item in productData)
+                        errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = item, StatusCode = "" });
+                }
+
+                //Check if User type is noemail and no password
+                if(GetGbUserType(userProductDetailsDto.UserProfileDetails.UserType) == UserTypeConstants.RegularUserNoEmail && string.IsNullOrEmpty(userProductDetailsDto.UserProfileDetails.Password))
+                {
+                    errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = "Password field is required for User type with NoEmail.", StatusCode = "" });
+                }
+
+                //Check if user is available in other company
+                IManageRoleType roleTypeLogic = new ManageRoleType(new RoleTypeRepository());
+                var roleTypeList = (List<RoleType>)roleTypeLogic.GetRoleType(roleTypeName: "user role", partyId: null, orgMasterId: null, loginName: userProductDetailsDto.UserProfileDetails.LoginName);
+                var userTypeId = GetGbUserType(userProductDetailsDto.UserProfileDetails.UserType);
+                if (!roleTypeList.Any(x => x.PartyRoleTypeId == userTypeId))
+                {
+                    errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = "User type with Regular already exists. Please create user type as an External.", StatusCode = "" });
+                }
+
+                // custom fields
+                IList<CustomFieldValue> userCustomFields = null;
+                var userCustomFieldValueJson = string.Empty;
+                string customFieldsData = _userManagement.ValidateAndAssignCustomFieldValues(null, userProductDetailsDto.UserProfileDetails.CustomFields, out userCustomFields);
+                if (!string.IsNullOrEmpty(customFieldsData))
+                {
+                    errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = customFieldsData, StatusCode = "" });
+                }
+
+                List<Persona> userPersona = new List<Persona>();
+                ProfileDetail profile = BuildProfileByInput(userProductDetailsDto, userCustomFields);
+
+                //Default Persona
+                IManagePersona managePersona = new ManagePersona(_userClaims);
+                IList<PersonaEnvironment> personaEnvironment = managePersona.GetPersonaEnvironmentType();
+                var personaEnv = personaEnvironment.SingleOrDefault<PersonaEnvironment>(p => p.Name == "Production");
+                if (personaEnv == null)
+                {
+                    errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = "Persona environment is missing.", StatusCode = "" });
+                }
+                else
+                {
+                    Persona persona = new Persona();
+                    persona.Name = profile.UserTypeId == (int)UserRoleType.SuperUser ? "System Administrator" : "Primary";
+                    persona.PersonaEnvironmentTypeId = (int)personaEnv.PersonaEnvironmentTypeId;
+                    persona.FromDate = DateTime.UtcNow;
+                    persona.ThruDate = null;
+                    userPersona.Add(persona);
+                    profile.Persona = userPersona;
+                }
+
+                if (profile.organization.Count == 0)
+                {
+                    //Active Persona is linked to one organization
+                    var persona = managePersona.GetFirstAvailablePersonaByCompany(_userClaims.UserRealPageGuid, _userClaims.OrganizationPartyId);
+                    profile.organization.Add(persona.Organization);
+                }
+
+                if (errorResponse.Errors.Any())
+                {
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
+                }
+
+                var manageUser = new ManageUser(_userClaims);
+                var response = manageUser.CreateUser(profile, userPersona);
+
+                //WriteToLog(LogEventLevel.Debug, $"Custom fields json - {userCustomFieldValueJson} for new user with login name {userProductDetails.UserProfileDetails.LoginName}");
 
                 // check response has error
-                if (response.IsError)
+                if (!response.Status.Success)
                 {
-                    var errorResponse = new ErrorResponse { Errors = new List<Error>() };
+                    //var errorResponse = new ErrorResponse { Errors = new List<Error>() };
                     errorResponse.Errors.Add(new Error
-                    { Title = "Error", Source = "/user", Detail = response.ErrorReason, StatusCode = "" });
+                    { Title = "Error", Source = "/user", Detail = response?.Status?.ErrorMsg + " \n " + response?.Status?.ErrorData, StatusCode = "" });
 
                     // return errors with bad request
                     return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
                 }
 
-                var objectResponse = new ObjectResponse { Data = response.Data };
+                var objectResponse = new ObjectResponse { Data = response.Status };
 
                 // everything good send newly created user real page id
                 return Request.CreateResponse(HttpStatusCode.Created, objectResponse);
@@ -328,38 +357,51 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         /// Update the user in RealPage Unified platform and if product(s) are provided .
         /// </summary>
         /// <returns>If success then returns updated user else error object.</returns>
-        [SwaggerResponse(HttpStatusCode.BadRequest, Description =
-            "Bad request when Request object have invalid entries.")]
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request when Request object have invalid entries.")]
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error.", Type = typeof(UserProductDetailsDto))]
-        [SwaggerResponse(HttpStatusCode.OK,
-            Description = "Update the user in RealPage Unified platform and of product(s) are provided.",
-            Type = typeof(UserProductDetailsDto))]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Update the user in RealPage Unified platform and of product(s) are provided.", Type = typeof(UserProductDetailsDto))]
         [Route("user")]
         [HttpPut]
-        public HttpResponseMessage UpdateUser(UserProductDetailsDto userProductDetailsDto)
+        public HttpResponseMessage UpdateUser(UserProductDetailsDto userProductDetailsDto, Guid? upfmId = null)
         {
             try
             {
+                ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
+                var errorResponse = new ErrorResponse { Errors = new List<Error>() };
+                if (currentClaimPrincipal.HasClaim("scope", "usermanagement") && _userClaims.PersonaId == 0)
+                {
+                    if (!string.IsNullOrEmpty(upfmId.ToString()))
+                    {
+                        //IManageOrganization manageOrganization = new ManageOrganization(_userClaims);
+                        Guid AdminCreatorRealPageId = _manageOrganization.GetOrganizationAdminUserRealPageId(upfmId ?? default(Guid));
+                        //recreate clams
+                        if (AdminCreatorRealPageId == Guid.Empty)
+                        {
+                            errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = "Invalid UPFMId.", StatusCode = "" });
+                            //return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
+                        }
+                        RecreateClaimsForClient(AdminCreatorRealPageId);
+                        _managePersona = new ManagePersona(_userClaims);
+                        _manageProduct = new ManageProduct(_userClaims);
+                        _userManagement = new UserManagement(_userClaims);
+                        _manageUser = new ManageUser(_userClaims);
+                        _userLoginLogic = new ManageUserLogin(_userClaims);
+                    }
+                    else
+                    {
+                        errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = "Invalid UPFMId.", StatusCode = "" });
+                    }
+                }
                 if (userProductDetailsDto == null)
                 {
-                    var errorResponse = new ErrorResponse { Errors = new List<Error>() };
-                    errorResponse.Errors.Add(new Error
-                    { Title = "Error", Source = "/user", Detail = "Null request received.", StatusCode = "" });
-
-                    // return errors with bad request
-                    return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
+                    errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = "Null request received.", StatusCode = "" });
                 }
 
                 // validate realpage guid supplied
                 if (userProductDetailsDto.UserProfileDetails.UnityRealPageUserId == Guid.Empty)
                 {
-                    var errorResponse = new ErrorResponse { Errors = new List<Error>() };
-                    errorResponse.Errors.Add(new Error
-                    { Title = "Error", Source = "/user", Detail = "UnityRealPageUserId not supplied.", StatusCode = "" });
-
-                    // return errors with bad request
-                    return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
+                    errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = "UnityRealPageUserId not supplied.", StatusCode = "" });
                 }
 
                 // request object validation
@@ -372,6 +414,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     {
                         errorList.AddRange(DtoValidator.ValidateObject(productDetailDto).ToList());
                     }
+                }
+
+                if (_userClaims.OrganizationRealPageGuid == DefaultUserClaim.ExternalCompanyRealPageId)
+                {
+                    errorList.Add(new ValidationResult("Cannot create new user in External User company."));
                 }
 
                 // loginName & email check
@@ -394,56 +441,73 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 // send validation error back
                 if (errorList.Any())
                 {
-                    var errorResponse = new ErrorResponse { Errors = new List<Error>() };
-
                     // iterate through all errors
                     foreach (var item in errorList)
                     {
-                        errorResponse.Errors.Add(new Error
-                        { Title = "Validation Error", Source = "/user", Detail = item.ToString(), StatusCode = "" });
+                        errorResponse.Errors.Add(new Error { Title = "Validation Error", Source = "/user", Detail = item.ToString(), StatusCode = "" });
                     }
-
-                    // return errors with bad request
-                    return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
                 }
 
                 // date validations
-                if (userProductDetailsDto.UserProfileDetails.UserEffectiveDate.HasValue &&
-                    userProductDetailsDto.UserProfileDetails.UserExpirationDate.HasValue)
+                if (userProductDetailsDto.UserProfileDetails.UserEffectiveDate.HasValue && userProductDetailsDto.UserProfileDetails.UserExpirationDate.HasValue)
                 {
-                    if (userProductDetailsDto.UserProfileDetails.UserExpirationDate.Value <
-                        userProductDetailsDto.UserProfileDetails.UserEffectiveDate.Value)
+                    if (userProductDetailsDto.UserProfileDetails.UserExpirationDate.Value < userProductDetailsDto.UserProfileDetails.UserEffectiveDate.Value)
                     {
-                        var errorResponse = new ErrorResponse { Errors = new List<Error>() };
-                        errorResponse.Errors.Add(new Error
-                        { Title = "Error", Source = "/user", Detail = "UserExpirationDate should be greater than UserEffectiveDate.", StatusCode = "" });
-
-                        // return errors with bad request
-                        return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
+                        errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = "UserExpirationDate should be greater than UserEffectiveDate.", StatusCode = "" });
                     }
                 }
 
                 // map dto to business object
                 var userProductDetails = GetUserBusinessObject(userProductDetailsDto);
 
-                // Call Logic
-                var userManagement = new UserManagement(_userClaims, _greenBookAccessToken);
-                var response = userManagement.UpdateEnterpriseUnityUser(userProductDetails);
-
-                // check response has error
-                if (!string.IsNullOrEmpty(response.ErrorReason))
+                // date validations
+                if (userProductDetailsDto.UserProfileDetails.UserEffectiveDate.HasValue && userProductDetailsDto.UserProfileDetails.UserExpirationDate.HasValue)
                 {
-                    var errorResponse = new ErrorResponse { Errors = new List<Error>() };
-                    errorResponse.Errors.Add(new Error
-                    { Title = "Error", Source = "/user", Detail = response.ErrorReason, StatusCode = "" });
+                    if (userProductDetailsDto.UserProfileDetails.UserExpirationDate.Value < userProductDetailsDto.UserProfileDetails.UserEffectiveDate.Value)
+                    {
+                        errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = "UserExpirationDate should be greater than UserEffectiveDate.", StatusCode = "" });
+                    }
+                }
 
-                    // return errors with bad request
+                //Validate Product data
+                var productData = _userManagement.ValidateProductData(userProductDetails.ProductList);
+                if (productData.Count > 0)
+                {
+                    foreach (var item in productData)
+                        errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = item, StatusCode = "" });
+                }
+
+                // custom fields
+                IList<CustomFieldValue> userCustomFields = null;
+                var userCustomFieldValueJson = string.Empty;
+                string customFieldsData = _userManagement.ValidateAndAssignCustomFieldValues(null, userProductDetailsDto.UserProfileDetails.CustomFields, out userCustomFields);
+                if (!string.IsNullOrEmpty(customFieldsData))
+                {
+                    errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = customFieldsData, StatusCode = "" });
+                }
+
+                if (errorResponse.Errors.Any())
+                {
                     return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
                 }
 
-                var objectResponse = new ObjectResponse { Data = response.Data };
+                List<Persona> userPersona = new List<Persona>();
+                ProfileDetail profile = BuildProfileByInput(userProductDetailsDto, userCustomFields);
+                UserDetails userDetails = _userRepository.GetUserDetails(_userClaims.PersonaId, null);
 
-                // everything good send newly created user real page id
+                var manageUser = new ManageUser(_userClaims);
+                var response = manageUser.UpdateUser(userDetails.UserRealPageId, profile);
+
+                // check response has error
+                if (!string.IsNullOrEmpty(response.ErrorMessage))
+                {
+                    errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = response.ErrorMessage, StatusCode = "" });
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
+                }
+
+                var objectResponse = new ObjectResponse { Data = response.Id };
+
+                // everything good send updated user realpageid
                 return Request.CreateResponse(HttpStatusCode.OK, objectResponse);
             }
             catch (Exception ex)
@@ -522,7 +586,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 }
 
                 // Call Logic
-                var userManagement = new UserManagement(_userClaims, _greenBookAccessToken);
+                var userManagement = new UserManagement(_userClaims);
                 var response = userManagement.ActivateDeactivateUser(unityRealPageUserId, statusTypeName);
 
                 // check response has error
@@ -581,7 +645,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [SwaggerResponse(HttpStatusCode.OK, Description = "A list of User(s)", Type = typeof(UsersDataDto))]
         [SwaggerResponseExamples(typeof(UsersDataDto), typeof(EnterpriseGetUserExample))]
         [Route("user")]
-        [Component.Landing.Attributes.AuthorizeScope("enterpriseapi")]
+        [AuthorizeScope("enterpriseapi")]
         [HttpGet]
         public HttpResponseMessage GetUser(Guid? unityRealPageUserId = null, string name = null, int rowsPerPage = 1, int pageNumber = 1)
         {
@@ -618,7 +682,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
             try
             {
-                UserManagement userManagement = new UserManagement(_userClaims, _greenBookAccessToken);
+                UserManagement userManagement = new UserManagement(_userClaims);
                 IList<UsersData> usersDataList = userManagement.ListUser(_userClaims.OrganizationPartyId, unityRealPageUserId, name, rowsPerPage, pageNumber);
 
                 if (usersDataList != null && usersDataList.Any())
@@ -636,28 +700,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                             });
                         }
 
-						usersDataDtoList.Add(
-							new UsersDataDto()
-							{
-								FirstName = u.FirstName,
-								MiddleName = u.MiddleName,
-								LastName = u.LastName,
-								UnityRealPageUserId = u.UserRealPageId,
-								LoginName = u.LoginName,
-								UserEffectiveDate = u.UserEffectiveDate,
-								UserExpirationDate = u.UserExpirationDate,
-								UserStatus = u.Status,
-								Email = u.Email,
-								CustomFields = dictionaryCustomFields,
-								UserType = u.UserType,
-								IsExternalIdp = u.IsExternalIdp,
-								Product = DeserializeUserProduct(u.Product ?? ""),
-								EmployeeId = u.EmployeeId,
+                        usersDataDtoList.Add(
+                            new UsersDataDto()
+                            {
+                                FirstName = u.FirstName,
+                                MiddleName = u.MiddleName,
+                                LastName = u.LastName,
+                                UnityRealPageUserId = u.UserRealPageId,
+                                LoginName = u.LoginName,
+                                UserEffectiveDate = u.UserEffectiveDate,
+                                UserExpirationDate = u.UserExpirationDate,
+                                UserStatus = u.Status,
+                                Email = u.Email,
+                                CustomFields = dictionaryCustomFields,
+                                UserType = u.UserType,
+                                IsExternalIdp = u.IsExternalIdp,
+                                Product = DeserializeUserProduct(u.Product ?? ""),
+                                EmployeeId = u.EmployeeId,
                                 LastLogin = u.LastLogin
-							}
-						);
-					});
-				}
+                            }
+                        );
+                    });
+                }
 
                 response.Data = usersDataDtoList.Cast<object>().ToList();
                 response.Meta.CurrentPage = pageNumber;
@@ -690,7 +754,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [SwaggerResponse(HttpStatusCode.OK, Description = "A list of User(s)", Type = typeof(UserRoleAssetDto))]
         [SwaggerResponseExamples(typeof(UserRoleAssetDto), typeof(EnterpriseGetUserRoleAssetExample))]
         [Route("user/{realPageId}/product/{productCode}")]
-        [Component.Landing.Attributes.AuthorizeScope("enterpriseapi")]
+        [AuthorizeScope("enterpriseapi")]
         [HttpGet]
         public HttpResponseMessage GetUserRoleAsset(Guid realPageId, string productCode)
         {
@@ -781,7 +845,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [SwaggerResponse(HttpStatusCode.OK, Description = "A list of User(s)")]
         [Route("user/product/{productCode}")]
-        [Component.Landing.Attributes.AuthorizeScope("enterpriseapi")]
+        [AuthorizeScope("enterpriseapi")]
         [HttpGet]
         public HttpResponseMessage GetProductUsersWithRoleAsset(string productCode, int rowsPerPage = 1, int pageNumber = 1)
         {
@@ -851,14 +915,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     error.Errors.Add(new Error() { Title = "Bad request", Detail = "No valid product code could be found", Source = "/user", StatusCode = "" });
                     return Request.CreateResponse(HttpStatusCode.BadRequest, error);
             }
-
         }
 
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [SwaggerResponse(HttpStatusCode.OK, Description = "Operation successful", Type = typeof(HttpResponseMessage))]
-        [SwaggerResponse(HttpStatusCode.BadRequest, Description =
-             "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
         [Route("user/product/{productCode}/properties")]
         [AuthorizeScope("enterpriseapi")]
         [HttpGet]
@@ -922,7 +984,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [HttpGet]
         public HttpResponseMessage GetUserProductsByPersonaId(long? personaId = 0)
         {
-            UserProductOutputResultv2 productResult = new UserProductOutputResultv2 {Products = new Dictionary<string, List<UserProducts>>(), Settings = new Dictionary<string, object>(), Resources = new List<UserProducts>() };
+            UserProductOutputResultv2 productResult = new UserProductOutputResultv2 { Products = new Dictionary<string, List<UserProducts>>(), Settings = new Dictionary<string, object>(), Resources = new List<UserProducts>() };
 
             if (!personaId.HasValue || personaId == 0)
             {
@@ -963,7 +1025,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 {
                     IList<Persona> personaList = new List<Persona>();
                     IList<Persona> employeePersonaList = new List<Persona>();
-                    
+
                     personaList = _managePersona.ListActivePersona(persona.RealPageId, false);
                     persona.hasMultiPersona = personaList.Count(p => p.OrganizationPartyId == persona.OrganizationPartyId) > 1;
                     persona.hasMultiCompany = personaList.Count(p => p.OrganizationPartyId != persona.OrganizationPartyId && p.Organization.RealPageId != DefaultUserClaim.ExternalCompanyRealPageId) > 0;
@@ -1012,7 +1074,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                             || navigationMenuRights.Where(w => w.NavigationMenuId == nmw.Id).Any(a => rights.Contains(a.RightName))
                         ).ToList();
 
-                    
+
                     var reportingMenuEntry = filteredMenuEntries.FirstOrDefault(f => f.PageId == "reporting");
                     if (reportingMenuEntry != null)
                     {
@@ -1020,7 +1082,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                         string productcode = ProductEnumHelper.GetProductCodeByProductId(67, products);
 
                         var reportsUrl = new Uri(new Uri(ConfigReader.GetLandingUri), reportingMenuEntry.URL);
-                        
+
                         productResult.Resources.Add(new UserProducts()
                         {
                             Name = "Reports",
@@ -1062,9 +1124,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     // Support Tool User should not have access to Client Portal
                     if (_userClaims.ImpersonatedBy != Guid.Empty)
                     {
-                        if (productResult.Resources.Any(a => a.Id == (int) ProductEnum.ClientPortal))
+                        if (productResult.Resources.Any(a => a.Id == (int)ProductEnum.ClientPortal))
                         {
-                            productResult.Resources.Remove(productResult.Resources.First(a => a.Id == (int) ProductEnum.ClientPortal));
+                            productResult.Resources.Remove(productResult.Resources.First(a => a.Id == (int)ProductEnum.ClientPortal));
                         }
                     }
                 }
@@ -1096,7 +1158,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         /// <param name="productUser">Details to save for a user</param>
         /// <remarks>Possible values for ProductStatus : (Sucess, Hidden, Deactivated, Error,etc). ProductId can be retrieved from /products endpoint. Product Saml Attributes can be retrieved from /user/productuser/attributes endpoint.
         /// </remarks>
-        
+
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [SwaggerResponse(HttpStatusCode.OK, Description = "Update successful", Type = typeof(HttpResponseMessage))]
@@ -1218,7 +1280,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [SwaggerResponse(HttpStatusCode.OK, Description = "List of Employee personas", Type = typeof(PersonaCompanyDetails))]
-       // [SwaggerResponseExamples(typeof(PersonaCompany), typeof(PersonaCompanyListExample))]
+        // [SwaggerResponseExamples(typeof(PersonaCompany), typeof(PersonaCompanyListExample))]
         [Route("user/employeepersonas")]
         [AuthorizeScope("userinfoapi")]
         [HttpGet]
@@ -1236,7 +1298,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 });
             }
 
-           output.list = pcl;
+            output.list = pcl;
 
             return Request.CreateResponse(HttpStatusCode.OK, output);
         }
@@ -1282,7 +1344,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         {
             try
             {
-                UserManagement userManagement = new UserManagement(_userClaims, _greenBookAccessToken);
+                UserManagement userManagement = new UserManagement(_userClaims);
                 return Request.CreateResponse(HttpStatusCode.OK, userManagement.ListUserProductDetailsLoginByPersonaId(_userClaims.PersonaId));
             }
             catch (Exception ex)
@@ -1310,7 +1372,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         {
             try
             {
-                UserManagement userManagement = new UserManagement(_userClaims, _greenBookAccessToken);
+                UserManagement userManagement = new UserManagement(_userClaims);
                 return Request.CreateResponse(HttpStatusCode.OK, userManagement.ListUserProductDetailsLoginByLoginName(_userClaims.LoginName));
             }
             catch (Exception ex)
@@ -1337,8 +1399,126 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             return Request.CreateResponse(HttpStatusCode.OK, userRights);
         }
 
+        /// <summary>
+        /// List User Custom Fields
+        /// </summary>
+        /// <returns>A list of user's customfields</returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Gets the User Custom Fields")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "List Organization Types", Type = typeof(ICustomFieldValue))]
+        [SwaggerResponseExamples(typeof(ICustomFieldValue), typeof(UserCustomFieldsExample))]
+        [Route("customfieldsmaster")]
+        [AuthorizeScope("enterpriseapi")]
+        [HttpGet]
+        public HttpResponseMessage UserCustomFields(long? userLoginPersonaId = null)
+        {
+            IManageCustomFields manageCustomFields = new ManageCustomFields(_userClaims);
+
+            IList<CustomFieldValue> customFieldValueList = manageCustomFields.GetCustomFieldsValues(organizationPartyId: _userClaims.OrganizationPartyId, userLoginPersonaId: userLoginPersonaId, enabled: true);
+
+            ListResponse response = new ListResponse()
+            {
+                Records = customFieldValueList.Cast<object>().ToList(),
+                TotalRows = customFieldValueList.Count(),
+                RowsPerPage = customFieldValueList.Count(),
+                ErrorReason = string.Empty,
+                TotalPages = 1
+            };
+            return Request.CreateResponse(HttpStatusCode.OK, response);
+        }
+
         #region Private Methods
 
+        private ProfileDetail BuildProfileByInput(UserProductDetailsDto userProductDetailsDto, IList<CustomFieldValue> userCustomFields)
+        {
+            ProfileDetail profileDetail = new ProfileDetail();
+            profileDetail.CustomFields = new List<CustomFieldValue>();
+            profileDetail.productBatch = new List<ProductBatch>();
+            profileDetail.userLogin = new UserLogin();
+
+            profileDetail.Suffix = userProductDetailsDto.UserProfileDetails.Suffix;
+            profileDetail.Title = userProductDetailsDto.UserProfileDetails.Title;
+            profileDetail.UserTypeId = GetGbUserType(userProductDetailsDto.UserProfileDetails.UserType);
+            profileDetail.FirstName = userProductDetailsDto.UserProfileDetails.FirstName;
+            profileDetail.LastName = userProductDetailsDto.UserProfileDetails.LastName;
+            profileDetail.MiddleName = userProductDetailsDto.UserProfileDetails.MiddleName;
+            profileDetail.CreateUserSourceType = CreateUserSourceType.UnifiedPlatform;
+            profileDetail.NotificationEmail = userProductDetailsDto.UserProfileDetails.Email;
+            profileDetail.CustomFields = userCustomFields;
+            profileDetail.EmployeeId = userProductDetailsDto.UserProfileDetails.EmployeeId;
+
+            //Add support for phone number
+            if (!string.IsNullOrEmpty(userProductDetailsDto.UserProfileDetails.Phone))
+            {
+                profileDetail.TelecommunicationNumber = new List<TelecommunicationNumber>();
+                TelecommunicationNumber number = new TelecommunicationNumber();
+                number.CountryCode = "+1";
+                number.ISOCode = "US";
+                number.PhoneNumber = userProductDetailsDto.UserProfileDetails.Phone;
+                number.IsDeleted = false;
+                number.IsPreferred = false;
+                number.AreaCode = String.Empty;
+                number.contactMechanismUsageType = new ContactMechanismUsageType() { ContactMechanismUsageTypeId = 203, Name = String.Empty };
+                number.PartyContactMechanismId = 0;
+                number.ContactMechanismId = 0;
+                profileDetail.TelecommunicationNumber.Add(number);
+            }
+
+            if (userProductDetailsDto.UserProfileDetails.UnityRealPageUserId != Guid.Empty)
+            {
+                //Update existing user                
+                profileDetail.userLogin = _userLoginLogic.GetUserLogin(userProductDetailsDto.UserProfileDetails.UnityRealPageUserId, _userClaims.OrganizationPartyId);
+                profileDetail.organization.Add(_manageOrganization.GetOrganization(Guid.Empty, _userClaims.OrganizationPartyId));
+                profileDetail.Persona.Add(_managePersona.GetActivePersona(userProductDetailsDto.UserProfileDetails.UnityRealPageUserId));
+                UserRepository userRepository = new UserRepository();
+                profileDetail.PartyId = profileDetail.userLogin.PartyId;
+                profileDetail.RealPageId = userProductDetailsDto.UserProfileDetails.UnityRealPageUserId;
+
+                IManageUserLoginPersona manageUserLoginPersona = new ManageUserLoginPersona(_userClaims);
+                IList<UserLoginPersona> userLoginPersonaList = manageUserLoginPersona.ListUserLoginPersona(userLoginPersonaId: null, userLoginId: profileDetail.userLogin.UserId, organizationPartyId: _userClaims.OrganizationPartyId);
+                profileDetail.ExternalUserRelationship = userRepository.GetExternalUserRelationship(userLoginPersonaList[0].UserLoginPersonaId);
+            }
+            else
+            {
+                //Create new user
+                profileDetail.userLogin.ThruDate = null;
+                profileDetail.userLogin.IsActive = true;
+                profileDetail.userLogin.IsPending = false;
+                profileDetail.userLogin.IsExpired = false;
+                profileDetail.userLogin.FromDate = userProductDetailsDto.UserProfileDetails.UserEffectiveDate;
+                profileDetail.userLogin.Is3rdPartyIDP = userProductDetailsDto.UserProfileDetails.IsExternalIdp;
+                profileDetail.Password = userProductDetailsDto.UserProfileDetails.Password;
+            }
+
+            profileDetail.userLogin.LoginName = userProductDetailsDto.UserProfileDetails.LoginName;
+            if(userProductDetailsDto.ProductList != null) 
+            {
+                foreach (var pl in userProductDetailsDto.ProductList)
+                {
+                    ProductBatch pBatch = new ProductBatch();
+                    pBatch.InputJson = new RolePropertyList();
+
+                    var productList = _productRepository.GetAllProducts();
+                    pBatch.ProductId = ProductEnumHelper.GetProductIdByProductCode(pl.ProductCode, productList);
+                    pBatch.StatusTypeId = (int)ProductBatchStatusType.Waiting;
+                    pBatch.RetryCount = 0;
+                    pBatch.InputJson.RoleList = pl.RolesAssigned;
+                    pBatch.InputJson.PropertyList = pl.PropertiesAssigned;
+
+                    if (pBatch.ProductId == (int)ProductEnum.OpsBuyer && userProductDetailsDto.UserProfileDetails.UnityRealPageUserId != Guid.Empty)
+                    {
+                        var response = _manageProductPanel.GetProductProperties(_userClaims.PersonaId, profileDetail.Persona[0].PersonaId, pBatch.ProductId, null);
+                        var removeProp = response.Records?.Cast<AssetGroup>()?.Where(c => c.IsAssigned == true)?.Select(y => y.ID)?.ToList();
+                        pBatch.InputJson.RemovedPropertyList = removeProp ?? new List<string>();
+                    }
+
+                    profileDetail.productBatch.Add(pBatch);
+                }
+            }
+
+            return profileDetail;
+        }
 
         private HttpResponseMessage GetUserProductDetails(Guid realPageId)
         {
@@ -1532,52 +1712,52 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             return Request.CreateResponse(HttpStatusCode.OK, output);
         }
 
-		private UserProductDetails GetUserBusinessObject(UserProductDetailsDto userProductDetailsDto)
-		{
-			var userProductDetails = new UserProductDetails
-			{
-				EditorRealPageId = _userClaims.UserRealPageGuid,
-				UserProfileDetails = new UserData
-				{
-					UserRealPageId = userProductDetailsDto.UserProfileDetails.UnityRealPageUserId,
-					AdditionalFields = userProductDetailsDto.UserProfileDetails.AdditionalFields,
-					MiddleName = userProductDetailsDto.UserProfileDetails.MiddleName,
-					Password = userProductDetailsDto.UserProfileDetails.Password,
-					LoginName = userProductDetailsDto.UserProfileDetails.LoginName,
-					Title = userProductDetailsDto.UserProfileDetails.Title,
-					Email = userProductDetailsDto.UserProfileDetails.Email,
-					FirstName = userProductDetailsDto.UserProfileDetails.FirstName,
-					UserType = GetGbUserType(userProductDetailsDto.UserProfileDetails.UserType),
-					IsExternalIdp = userProductDetailsDto.UserProfileDetails.IsExternalIdp,
-					LastName = userProductDetailsDto.UserProfileDetails.LastName,
-					OrganizationRealPageId = _userClaims.OrganizationRealPageGuid,
-					OrganizationPartyId = _userClaims.OrganizationPartyId,
-					Phone = userProductDetailsDto.UserProfileDetails.Phone,
-					UserEffectiveDate = userProductDetailsDto.UserProfileDetails.UserEffectiveDate,
-					UserExpirationDate = userProductDetailsDto.UserProfileDetails.UserExpirationDate,
-					CreateUserSourceType = CreateUserSourceType.RPX.ToString(),
-					Suffix = userProductDetailsDto.UserProfileDetails.Suffix,
-					CustomFields = userProductDetailsDto.UserProfileDetails.CustomFields,
-					EmployeeId = userProductDetailsDto.UserProfileDetails.EmployeeId,
+        private UserProductDetails GetUserBusinessObject(UserProductDetailsDto userProductDetailsDto)
+        {
+            var userProductDetails = new UserProductDetails
+            {
+                EditorRealPageId = _userClaims.UserRealPageGuid,
+                UserProfileDetails = new UserData
+                {
+                    UserRealPageId = userProductDetailsDto.UserProfileDetails.UnityRealPageUserId,
+                    //AdditionalFields = userProductDetailsDto.UserProfileDetails.AdditionalFields,
+                    MiddleName = userProductDetailsDto.UserProfileDetails.MiddleName,
+                    Password = userProductDetailsDto.UserProfileDetails.Password,
+                    LoginName = userProductDetailsDto.UserProfileDetails.LoginName,
+                    Title = userProductDetailsDto.UserProfileDetails.Title,
+                    Email = userProductDetailsDto.UserProfileDetails.Email,
+                    FirstName = userProductDetailsDto.UserProfileDetails.FirstName,
+                    UserType = GetGbUserType(userProductDetailsDto.UserProfileDetails.UserType),
+                    IsExternalIdp = userProductDetailsDto.UserProfileDetails.IsExternalIdp,
+                    LastName = userProductDetailsDto.UserProfileDetails.LastName,
+                    OrganizationRealPageId = _userClaims.OrganizationRealPageGuid,
+                    OrganizationPartyId = _userClaims.OrganizationPartyId,
+                    Phone = userProductDetailsDto.UserProfileDetails.Phone,
+                    UserEffectiveDate = userProductDetailsDto.UserProfileDetails.UserEffectiveDate,
+                    UserExpirationDate = userProductDetailsDto.UserProfileDetails.UserExpirationDate,
+                    CreateUserSourceType = CreateUserSourceType.RPX.ToString(),
+                    Suffix = userProductDetailsDto.UserProfileDetails.Suffix,
+                    CustomFields = userProductDetailsDto.UserProfileDetails.CustomFields,
+                    EmployeeId = userProductDetailsDto.UserProfileDetails.EmployeeId,
                     SendInvitationEmail = userProductDetailsDto.UserProfileDetails.SendInvitationEmail
                 },
-				ProductList = new List<ProductDetail>()
-			};
-			if (userProductDetailsDto.ProductList != null)
-			{
-				foreach (var product in userProductDetailsDto.ProductList)
-				{
-					userProductDetails.ProductList.Add(new ProductDetail
-					{
-						ProductCode = product.ProductCode,
-						AdditionalFields = product.AdditionalFields,
-						PropertiesAssigned = product.PropertiesAssigned,
-						RegionsAssigned = product.RegionsAssigned,
-						RolesAssigned = product.RolesAssigned,
-						IsAssigned = product.IsAssigned
-					});
-				}
-			}
+                ProductList = new List<ProductDetail>()
+            };
+            if (userProductDetailsDto.ProductList != null)
+            {
+                foreach (var product in userProductDetailsDto.ProductList)
+                {
+                    userProductDetails.ProductList.Add(new ProductDetail
+                    {
+                        ProductCode = product.ProductCode,
+                        AdditionalFields = product.AdditionalFields,
+                        PropertiesAssigned = product.PropertiesAssigned,
+                        RegionsAssigned = product.RegionsAssigned,
+                        RolesAssigned = product.RolesAssigned,
+                        IsAssigned = product.IsAssigned
+                    });
+                }
+            }
 
             return userProductDetails;
         }
@@ -1595,7 +1775,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     userType = (int)UserRoleType.UserNoEmail; //"Regular User (No Email)";
                     break;
                 case UserTypeDto.Employee:
-                    userType = (int) UserRoleType.RealPageEmployee;
+                    userType = (int)UserRoleType.RealPageEmployee;
                     break;
                 case UserTypeDto.External:
                     userType = (int)UserRoleType.ExternalUser;
@@ -1619,10 +1799,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             try
             {
                 var logger = Log.Logger;
-				if (logData?.Keys != null)
-				{
-					logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
-				}
+                if (logData?.Keys != null)
+                {
+                    logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
+                }
                 logger = logger.ForContext("ProductModule", this.GetType());
                 logger = logger.ForContext("CorrelationId", _userClaims.CorrelationId.ToString());
                 logger.Write(logType, exception, message);
@@ -2009,7 +2189,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
         #region GetExamples
 
-        
+
         //SamlProductAttributes
         /// <summary>
         /// Used to document examples of the Product Saml setting webapi result
@@ -2281,26 +2461,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     dictionaryCustomFields.Add(c.Name, c.Value);
                 });
 
-				IList<UsersDataDto> usersDataDtoList = new List<UsersDataDto>()
-				{
-					new UsersDataDto()
-					{
-						UserStatus = "active",
-						UserType = "RealPage System Administrator",
-						UnityRealPageUserId = new Guid("c9167175-0676-4546-bba7-4a49d5809b1f"),
-						FirstName = "James",
-						MiddleName = "X",
-						LastName = "Jackson",
-						IsExternalIdp = false,
-						LoginName = "james.jackson@example.com",
-						Email = "james.jackson@example.com",
-						UserEffectiveDate = DateTime.Now,
-						UserExpirationDate = DateTime.Now,
-						CustomFields = dictionaryCustomFields,
-						Product = UserProductSAMLDetaillist,
-						EmployeeId = "2020EmployeeId"
-					}
-				};
+                IList<UsersDataDto> usersDataDtoList = new List<UsersDataDto>()
+                {
+                    new UsersDataDto()
+                    {
+                        UserStatus = "active",
+                        UserType = "RealPage System Administrator",
+                        UnityRealPageUserId = new Guid("c9167175-0676-4546-bba7-4a49d5809b1f"),
+                        FirstName = "James",
+                        MiddleName = "X",
+                        LastName = "Jackson",
+                        IsExternalIdp = false,
+                        LoginName = "james.jackson@example.com",
+                        Email = "james.jackson@example.com",
+                        UserEffectiveDate = DateTime.Now,
+                        UserExpirationDate = DateTime.Now,
+                        CustomFields = dictionaryCustomFields,
+                        Product = UserProductSAMLDetaillist,
+                        EmployeeId = "2020EmployeeId"
+                    }
+                };
 
                 PagedResponse response = new PagedResponse()
                 {
@@ -2529,7 +2709,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     { "value","103388"}
                 };
 
-               
+
                 detailsProduct3.Add(detail5);
                 detailsProduct3.Add(detail6);
 
@@ -2566,6 +2746,52 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     }
                 };
 
+                return response;
+            }
+        }
+
+        [ExcludeFromCodeCoverage]
+        public class UserCustomFieldsExample : IProvideExamples
+        {
+            /// <summary>
+            /// Example object data used by Swagger to document the output of the webapi method
+            /// </summary>
+            /// <returns>List of User CustomFields example</returns>
+            public object GetExamples()
+            {
+                IList<CustomFieldValue> customFieldValueList = new List<CustomFieldValue>()
+            {
+                new CustomFieldValue()
+                {
+                    FieldValueId = 1,
+                    UserLoginPersonaId = 1,
+                    Value = "12345",
+                    FieldId = 15,
+                    OrganizationId = 350,
+                    Enabled = true,
+                    Name = "Employee ID",
+                    Description = null,
+                    FieldTypeId = 1,
+                    FieldTypeName = "Alphanumeric",
+                    Required = false,
+                    ReadOnly = false,
+                    DefaultValue = null,
+                    SyncField = null,
+                    Sequence = 1,
+                    HelpText = null,
+                    MinCharLength = 1,
+                    MaxCharLength = 10
+                }
+            };
+
+                ListResponse response = new ListResponse()
+                {
+                    Records = customFieldValueList.Cast<object>().ToList(),
+                    TotalRows = customFieldValueList.Count(),
+                    RowsPerPage = customFieldValueList.Count(),
+                    ErrorReason = string.Empty,
+                    TotalPages = 1
+                };
                 return response;
             }
         }
