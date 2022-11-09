@@ -624,7 +624,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             dynamic contactObj = new ExpandoObject();
             contactObj.Unified_Platform_User__c = (isUnassigned == false);
             contactObj.Former_Inactive__c = isUnassigned;
-
+            contactObj.Portal_User_Migrated__c = true;
             var result = PostApi($"{_apiRoute}sobjects/Contact/{contactId}?_HttpMethod=PATCH", contactObj);
             if (!string.IsNullOrEmpty(result))
             {
@@ -756,9 +756,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
 
             string query = ($"SELECT Id,FirstName,LastName,Email,Username,LastLoginDate,IsActive FROM User" +
-                           $" WHERE User.Contact.Account.OMS_ID__c = '{companyInstanceSourceId}'" +
-                           $" AND User.Contact.Portal_User_Migrated__c = {filter}" +
-                           $" LIMIT {resultPerRow} OFFSET {startRow}").Replace(' ', '+');
+                                      $" WHERE (User.Contact.Account.OMS_ID__c = '{companyInstanceSourceId}' OR User.Contact.Account.Parent.OMS_ID__c = '{companyInstanceSourceId}')" +
+                                      $" AND User.Contact.Portal_User_Migrated__c = {filter}" +
+                                      $" LIMIT {resultPerRow} OFFSET {startRow}").Replace(' ', '+');
 
             var partialurl = $"{_apiRoute}query?q={query}";
 
