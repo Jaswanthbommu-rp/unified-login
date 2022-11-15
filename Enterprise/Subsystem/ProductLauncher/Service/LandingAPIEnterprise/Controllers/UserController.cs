@@ -504,8 +504,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
                 }
 
+                var objectResponse = new ObjectResponse { Data = response.RealPageId, IsError = false, ErrorReason = null };
                 // everything good send updated user realpageid
-                return Request.CreateResponse(HttpStatusCode.OK, response);
+                return Request.CreateResponse(HttpStatusCode.OK, objectResponse);
             }
             catch (Exception ex)
             {
