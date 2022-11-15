@@ -1571,6 +1571,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                     createUserResponse.UserStatus = "User created successfully.";
                     createUserResponse.Status = errorStatus;
+                    createUserResponse.UserRealPageGuid = personRealPageId;
 
                     //COMMIT THE CHANGE
                     repository.UnitOfWork.Commit();
@@ -1583,7 +1584,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     errorStatus.ErrorMsg = "Create User Error: " + exception.Message + ". Process: " + processTracker;
                     createUserResponse.Status = errorStatus;
                     createUserResponse.UserStatus = errorStatus.ErrorMsg;
-
+                    createUserResponse.UserRealPageGuid = Guid.Empty;
                     WriteToLog(LogEventLevel.Error, $"UserRepository.CreateUser", null, exception);
 
                     return createUserResponse;

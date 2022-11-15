@@ -1,4 +1,5 @@
 ﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using System;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
 {
@@ -46,5 +47,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
 		/// Error status object - API/UI Call Success/Error Communication
 		/// </summary>
 		Status<T> Status { get; set; }
-	}
+
+        /// <summary>
+        /// Created user realpage guid
+        /// </summary>
+        Guid UserRealPageGuid { get; set; }
+    }
 }
