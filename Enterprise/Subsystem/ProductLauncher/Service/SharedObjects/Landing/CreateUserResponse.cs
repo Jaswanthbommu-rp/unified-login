@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing
 {	
@@ -47,6 +48,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		/// </summary>
 		[JsonProperty("Status", NullValueHandling = NullValueHandling.Ignore)]
 		public Status<T> Status { get; set; }
-	}
+
+        /// <summary>
+        /// Created user realpage guid
+        /// </summary>
+        public Guid UserRealPageGuid { get; set; }
+    }
 }
 

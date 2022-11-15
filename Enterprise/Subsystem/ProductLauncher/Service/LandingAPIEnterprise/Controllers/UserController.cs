@@ -328,8 +328,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     // return errors with bad request
                     return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
                 }
-
-                var objectResponse = new ObjectResponse { Data = response.Status };
+                var objectResponse = new ObjectResponse { Data = response.UserRealPageGuid, IsError = false, ErrorReason = null };
 
                 // everything good send newly created user real page id
                 return Request.CreateResponse(HttpStatusCode.Created, objectResponse);
@@ -505,10 +504,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
                 }
 
-                var objectResponse = new ObjectResponse { Data = response.Id };
-
                 // everything good send updated user realpageid
-                return Request.CreateResponse(HttpStatusCode.OK, objectResponse);
+                return Request.CreateResponse(HttpStatusCode.OK, response);
             }
             catch (Exception ex)
             {

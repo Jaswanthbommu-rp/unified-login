@@ -91,8 +91,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			Assert.IsType<Exception>(exception);
 		}
 
-		[Fact]
-		public void CreateNewUser_MockInputData_ReturnValidRepositoryResponseObject()
+        [Fact(Skip = "Integration test")]
+        public void CreateNewUser_MockInputData_ReturnValidRepositoryResponseObject()
 		{
 			//Arrange
 			Status<IErrorData> errorStatus = new Status<IErrorData>();
@@ -161,7 +161,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				UserStatus = "User created successfully.",
 				UserToken = userToken,
 				PersonaId = 1,
-				Status = errorStatus
+				Status = errorStatus,
+				UserRealPageGuid = userRealPageId
 			};
 
 			IList<ProductInternalSetting> productInternalSettingList = new List<ProductInternalSetting>()
