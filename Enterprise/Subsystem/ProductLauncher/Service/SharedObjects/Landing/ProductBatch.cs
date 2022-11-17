@@ -103,10 +103,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
 		public List<string> RoleList { get; set; }
 
-		/// <summary>
-		/// A Property Group to assign to the user
-		/// </summary>
-		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// List of userGroups to assign to a user
+        /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public List<string> userGroups { get; set; }
+
+        /// <summary>
+        /// A Property Group to assign to the user
+        /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public List<PropertyGroup> PropertyGroup { get; set; }
 
         /// <summary>
