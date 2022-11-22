@@ -571,13 +571,31 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 var contactId = string.Empty;
 
+                CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
+
+                if (string.IsNullOrEmpty(company.CompanyInstanceSourceId))
+                {
+                    WriteToErrorLog(
+                        $"ManageProductClientPortal.ManageSalesForceUser - Error for user with editorPersona id - {editorPersonaId} Error - Company not found.");
+                }
+
                 // check Contact by Property or PMC to get OMS Id
                 string searchOmsId = string.Empty;
                 if (clientPortalPropertyRole.PropertyList != null && clientPortalPropertyRole.PropertyList.Count > 0 && clientPortalPropertyRole.PropertyList[0] != null &&
                     clientPortalPropertyRole.PropertyList[0].Length > 3)
                 {
                     searchOmsId = clientPortalPropertyRole.PropertyList[0];
+                    WriteToErrorLog(
+                     $"ManageProductClientPortal.ManageSalesForceUser - user with editorPersona id - {editorPersonaId} clientPortalPropertyRole.PropertyList : {clientPortalPropertyRole.PropertyList[0]}");
                 }
+                else
+                {
+                    searchOmsId = company.CompanyInstanceSourceId;
+                }
+
+                WriteToErrorLog(
+                       $"ManageProductClientPortal.ManageSalesForceUser - user with editorPersona id - {editorPersonaId} searchOmsId : {searchOmsId}");
+
                 List<ClientPortalContactResult> clientPortalContactResults = null;
                 // For multiple contacts result
                 if (!string.IsNullOrEmpty(searchOmsId))
@@ -588,7 +606,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 WriteToDiagnosticLog(
              $"ManageProductClientPortal.ManageSalesForceUser - Create/Update user for user with editorPersona id - {editorPersonaId}. clientPortalContactResults Count is : {(clientPortalContactResults != null ? clientPortalContactResults.Count : 0 )}");
 
-           
+
                 // If contact EXIST then update contact in salesforce with => Unified_Platform_User__c
                 if (salesForceContactResults != null && salesForceContactResults.Count > 0)
                 {
