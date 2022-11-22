@@ -571,14 +571,37 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 var contactId = string.Empty;
 
+                // check Contact by Property or PMC to get OMS Id
+                string searchOmsId = string.Empty;
+                if (clientPortalPropertyRole.PropertyList != null && clientPortalPropertyRole.PropertyList.Count > 0 && clientPortalPropertyRole.PropertyList[0] != null &&
+                    clientPortalPropertyRole.PropertyList[0].Length > 3)
+                {
+                    searchOmsId = clientPortalPropertyRole.PropertyList[0];
+                }
+                List<ClientPortalContactResult> clientPortalContactResults = null;
+                // For multiple contacts result
+                if (!string.IsNullOrEmpty(searchOmsId))
+                {
+                    clientPortalContactResults = CheckClientPortalContactsExistsByAccount(productLoginName, searchOmsId);
+                }
+
+                WriteToDiagnosticLog(
+             $"ManageProductClientPortal.ManageSalesForceUser - Create/Update user for user with editorPersona id - {editorPersonaId}. clientPortalContactResults Count is : {(clientPortalContactResults != null ? clientPortalContactResults.Count : 0 )}");
+
+           
                 // If contact EXIST then update contact in salesforce with => Unified_Platform_User__c
                 if (salesForceContactResults != null && salesForceContactResults.Count > 0)
                 {
                     foreach (var contact in salesForceContactResults)
                     {
+                        bool isPortalUserMigrated = false;
                         //contact exists; check update on property if yes then update contact
                         contactId = contact.Id;
-                        UpdateContactSalesForce(contactId, contact.OMS_ID__c, isUnassigned);
+                        if (clientPortalContactResults != null && clientPortalContactResults.Count > 0)
+                        {
+                            isPortalUserMigrated = clientPortalContactResults.Any(m => m.OMS_ID__c == contact.OMS_ID__c);
+                        }
+                        UpdateContactSalesForce(contactId, contact.OMS_ID__c, isUnassigned, isPortalUserMigrated);
                     }
                 }
 
@@ -616,7 +639,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
-        private void UpdateContactSalesForce(string contactId, string searchOmsId, bool isUnassigned)
+        private void UpdateContactSalesForce(string contactId, string searchOmsId, bool isUnassigned,bool isPortalUserMigrated = false)
         {
             WriteToDiagnosticLog(
                 $"ManageProductClientPortal.ManageClientPortalUser.UpdateContact - account id {contactId} received for user with _productUsername {_productUsername}.; OMS ID- {searchOmsId}");
@@ -624,7 +647,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             dynamic contactObj = new ExpandoObject();
             contactObj.Unified_Platform_User__c = (isUnassigned == false);
             contactObj.Former_Inactive__c = isUnassigned;
-   
+            contactObj.Portal_User_Migrated__c = isPortalUserMigrated;
             var result = PostApi($"{_apiRoute}sobjects/Contact/{contactId}?_HttpMethod=PATCH", contactObj);
             if (!string.IsNullOrEmpty(result))
             {
