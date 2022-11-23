@@ -373,6 +373,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             // update salesforce contact with new OMS ID
                             UpdateContact(contactId, searchOmsId, false, true);
                         }
+                        else if(!string.IsNullOrEmpty(contact.OMS_ID__c) && !string.IsNullOrEmpty(contactId) && contact.OMS_ID__c == searchOmsId)
+                        {
+                            UpdatePortalUserMigratedFlag(contactId);
+                        }
 
                     }
                 }
@@ -569,57 +573,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // For multiple contacts result
                 var salesForceContactResults = CheckClientPortalContactsExists(productLoginName);
 
-                var contactId = string.Empty;
-
-                CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
-
-                if (string.IsNullOrEmpty(company.CompanyInstanceSourceId))
-                {
-                    WriteToErrorLog(
-                        $"ManageProductClientPortal.ManageSalesForceUser - Error for user with editorPersona id - {editorPersonaId} Error - Company not found.");
-                }
-
-                // check Contact by Property or PMC to get OMS Id
-                string searchOmsId = string.Empty;
-                if (clientPortalPropertyRole.PropertyList != null && clientPortalPropertyRole.PropertyList.Count > 0 && clientPortalPropertyRole.PropertyList[0] != null &&
-                    clientPortalPropertyRole.PropertyList[0].Length > 3)
-                {
-                    searchOmsId = clientPortalPropertyRole.PropertyList[0];
-                    WriteToErrorLog(
-                     $"ManageProductClientPortal.ManageSalesForceUser - user with editorPersona id - {editorPersonaId} clientPortalPropertyRole.PropertyList : {clientPortalPropertyRole.PropertyList[0]}");
-                }
-                else
-                {
-                    searchOmsId = company.CompanyInstanceSourceId;
-                }
-
-                WriteToErrorLog(
-                       $"ManageProductClientPortal.ManageSalesForceUser - user with editorPersona id - {editorPersonaId} searchOmsId : {searchOmsId}");
-
-                List<ClientPortalContactResult> clientPortalContactResults = null;
-                // For multiple contacts result
-                if (!string.IsNullOrEmpty(searchOmsId))
-                {
-                    clientPortalContactResults = CheckClientPortalContactsExistsByAccount(productLoginName, searchOmsId);
-                }
-
-                WriteToDiagnosticLog(
-             $"ManageProductClientPortal.ManageSalesForceUser - Create/Update user for user with editorPersona id - {editorPersonaId}. clientPortalContactResults Count is : {(clientPortalContactResults != null ? clientPortalContactResults.Count : 0 )}");
-
+                var contactId = string.Empty; 
 
                 // If contact EXIST then update contact in salesforce with => Unified_Platform_User__c
                 if (salesForceContactResults != null && salesForceContactResults.Count > 0)
                 {
                     foreach (var contact in salesForceContactResults)
                     {
-                        bool isPortalUserMigrated = false;
                         //contact exists; check update on property if yes then update contact
-                        contactId = contact.Id;
-                        if (clientPortalContactResults != null && clientPortalContactResults.Count > 0)
-                        {
-                            isPortalUserMigrated = clientPortalContactResults.Any(m => m.OMS_ID__c == contact.OMS_ID__c);
-                        }
-                        UpdateContactSalesForce(contactId, contact.OMS_ID__c, isUnassigned, isPortalUserMigrated);
+                        contactId = contact.Id; 
+                        UpdateContactSalesForce(contactId, contact.OMS_ID__c, isUnassigned);
                     }
                 }
 
@@ -657,15 +620,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
-        private void UpdateContactSalesForce(string contactId, string searchOmsId, bool isUnassigned,bool isPortalUserMigrated = false)
+
+        private void UpdatePortalUserMigratedFlag(string contactId)
+        {
+            WriteToDiagnosticLog(
+                $"ManageProductClientPortal.UpdatePortalUserMigratedFlag.UpdateContact - contactId id {contactId} received for user with _productUsername {_productUsername}. - Portal_User_Migrated__c setting to true.");
+
+            dynamic accountObj = new ExpandoObject(); 
+            accountObj.Portal_User_Migrated__c = true;
+            var result = PostApi($"{_apiRoute}sobjects/Contact/{contactId}?_HttpMethod=PATCH", accountObj);
+            if (!string.IsNullOrEmpty(result))
+            {
+                WriteToErrorLog(
+                  $"ManageProductClientPortal.UpdatePortalUserMigratedFlag.UpdateContact - Error for user with contactId - {contactId}",
+                  result);
+                throw new Exception($"Error while UpdatePortalUserMigratedFlag updating user - {result}");
+            }
+        }
+
+
+
+        private void UpdateContactSalesForce(string contactId, string searchOmsId, bool isUnassigned)
         {
             WriteToDiagnosticLog(
                 $"ManageProductClientPortal.ManageClientPortalUser.UpdateContact - account id {contactId} received for user with _productUsername {_productUsername}.; OMS ID- {searchOmsId}");
 
             dynamic contactObj = new ExpandoObject();
             contactObj.Unified_Platform_User__c = (isUnassigned == false);
-            contactObj.Former_Inactive__c = isUnassigned;
-            contactObj.Portal_User_Migrated__c = isPortalUserMigrated;
+            contactObj.Former_Inactive__c = isUnassigned;     
             var result = PostApi($"{_apiRoute}sobjects/Contact/{contactId}?_HttpMethod=PATCH", contactObj);
             if (!string.IsNullOrEmpty(result))
             {
