@@ -229,16 +229,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					{
 						var productLogic = ManageProductFactory.GetProductLogic(product.ProductId, baseOrgAdminPersonaId, personaId, _userClaim);
 						var productUser = productLogic.GetProductUser();
-
-						productListToCreate.Add(CreateILMProductBatchRecord(ProductEnum.LeadManagement, productUser.Properties,
+                        var integrationType = _integrationTypeFactory.GetIntegration(product.ProductId);
+                        propertiesResponse = integrationType.GetProperties(baseOrgAdminPersonaId, personaId, null);
+                        if (translateProperties)
+                        {              
+                            propertiesResponse = manageBlueBook.TranslateProductPrimaryPropertiesData(upfmProperty, product.ProductId, propertiesResponse);
+                        }
+                        productListToCreate.Add(CreateILMProductBatchRecord(ProductEnum.LeadManagement, propertiesResponse,
 							productUser.Roles.ConvertAll<string>(i => i.ToString()), null, usePrimaryProperties));//no groups for LM
 					}
 					else if (product.ProductId == (int)ProductEnum.LeadAnalytics)
 					{
 						var productLogic = ManageProductFactory.GetProductLogic(product.ProductId, baseOrgAdminPersonaId, personaId, _userClaim);
 						var productUser = productLogic.GetProductUser();
-
-						productListToCreate.Add(CreateILMProductBatchRecord(ProductEnum.LeadAnalytics, productUser.Properties,
+                        var integrationType = _integrationTypeFactory.GetIntegration(product.ProductId);
+                        propertiesResponse = integrationType.GetProperties(baseOrgAdminPersonaId, personaId, null);
+                        if (translateProperties)
+                        {
+                            propertiesResponse = manageBlueBook.TranslateProductPrimaryPropertiesData(upfmProperty, product.ProductId, propertiesResponse);
+                        }
+                        productListToCreate.Add(CreateILMProductBatchRecord(ProductEnum.LeadAnalytics, propertiesResponse,
 							productUser.Roles.ConvertAll<string>(i => i.ToString()), productUser.PropertyGroups, usePrimaryProperties));
 					}
 					else if (product.ProductId == (int)ProductEnum.RPDocumentManagement)
@@ -259,7 +269,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 						var productLogic = ManageProductFactory.GetProductLogic(product.ProductId, baseOrgAdminPersonaId, personaId, _userClaim);
 						var productUser = productLogic.GetProductUser();
 
-						productListToCreate.Add(CreateProductBatchRecordForDepositIQ(productUser, usePrimaryProperties));
+                        productListToCreate.Add(CreateProductBatchRecordForDepositIQ(productUser, usePrimaryProperties));
 					}
 					else if (product.ProductId == (int)ProductEnum.ClickPay)
 					{
@@ -380,17 +390,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			return productBatch;
 		}
 
-		private ProductBatch CreateILMProductBatchRecord(ProductEnum ilmProduct, List<string> productUserProperties,
+		private ProductBatch CreateILMProductBatchRecord(ProductEnum ilmProduct, ListResponse productUserProperties, 
 			List<string> productUserRoles, List<string> productUserGroups, bool usePrimaryProperties)
-		{
-			var pb = new ProductBatch()
+        {
+            List<string> propertyList = new List<string>();
+            IEnumerable<object> propertiesCollection = (IEnumerable<object>)productUserProperties.Records;
+            if (productUserProperties.Records != null)
+            {
+                foreach (object item in propertiesCollection)
+                {
+                    if (((ProductProperties)item).IsAssigned)
+                    {
+                        propertyList.Add(((ProductProperties)item).GetPropertyId.ToString());
+                    }
+                }
+            }
+
+            var pb = new ProductBatch()
 			{
 				ProductId = (int)ilmProduct,
 				StatusTypeId = 5,
 				RetryCount = 0,
 				InputJson = new RolePropertyList()
 				{
-					PropertyList = productUserProperties,
+					PropertyList = propertyList,
 					RoleList = productUserRoles,
 					PropertyGroupList = productUserGroups,
 					UsePrimaryProperties = usePrimaryProperties
