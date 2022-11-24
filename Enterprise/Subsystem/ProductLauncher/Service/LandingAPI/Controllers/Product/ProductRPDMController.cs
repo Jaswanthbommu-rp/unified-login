@@ -16,6 +16,7 @@ using System.Web.Http.Controllers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Migration;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
+using static RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers.Product.ProductOneSiteController;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers.Product
 {
@@ -141,12 +142,39 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		    return Request.CreateResponse(HttpStatusCode.OK, result);
 	    }
 
-		#region Migration API
-		/// <summary>
-		/// Returns product users of an organization for given user.
-		/// </summary>
-		/// 
-		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        #region User-Status
+
+        /// <summary>
+        /// Disable the Document Directory  user.
+        /// </summary>
+        /// <param name="productUser">Product User</param>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "User Deleted Successfully", Type = typeof(HttpResponseMessage))]
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad Request")]
+        [SwaggerResponseExamples(typeof(HttpResponseMessage), typeof(ResponseExample))]
+        [Route("products/rpdm/user/MT/status")]
+        [Authorize]
+        [HttpPut]
+        public HttpResponseMessage UpdateRPDUserStatus(ProductUser productUser)
+        {
+            IManageProductRPDocumentManagement manageRPDocument = new ManageProductRPDocumentManagement(_userClaims);
+		    var result =  manageRPDocument.UnassignUser(_personaId, productUser.UserId);
+			if (!string.IsNullOrEmpty(result))
+			{
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Deactivate DocumentDirectory product user failed.");
+            }
+            return Request.CreateResponse(HttpStatusCode.OK, "Successfully disabled product user.");
+        }
+        #endregion
+
+        #region Migration API
+        /// <summary>
+        /// Returns product users of an organization for given user.
+        /// </summary>
+        /// 
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
 		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
 		[SwaggerResponse(HttpStatusCode.OK, Description = "List Document Directory users", Type = typeof(HttpResponseMessage))]
 		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
