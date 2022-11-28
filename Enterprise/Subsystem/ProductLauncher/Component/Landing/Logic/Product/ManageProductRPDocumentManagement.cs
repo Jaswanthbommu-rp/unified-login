@@ -554,14 +554,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			return userExists;
 		}
 
-		/// <summary>
-		/// Used to unassign a user from the product
-		/// </summary>
-		/// <param name="editorPersonaId"></param>
-		/// <param name="userPersonaId"></param>
-		/// <returns></returns>
-		public string UnassignUser(long editorPersonaId, long userPersonaId)
+        /// <summary>
+        /// Used to unassign a user from the product
+        /// </summary>
+        /// <param name="editorPersonaId"></param>
+        /// <param name="userPersonaId"></param>
+        /// <param name="productUserId"></param>
+        /// <returns></returns>
+        public string UnassignUser(long editorPersonaId, long userPersonaId, int productUserId = 0)
 		{
+			if (productUserId != 0)
+			{
+				_productUserId = productUserId.ToString();
+
+            }
 			ListResponse listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
 			if (listResponse.IsError) { return listResponse.ErrorReason; }
                        

@@ -160,7 +160,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         public HttpResponseMessage UpdateRPDUserStatus(ProductUser productUser)
         {
             IManageProductRPDocumentManagement manageRPDocument = new ManageProductRPDocumentManagement(_userClaims);
-		    var result =  manageRPDocument.UnassignUser(_personaId, productUser.UserId);
+		    var result =  manageRPDocument.UnassignUser(_personaId, 0, productUser.UserId);
 			if (!string.IsNullOrEmpty(result))
 			{
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Deactivate DocumentDirectory product user failed.");
