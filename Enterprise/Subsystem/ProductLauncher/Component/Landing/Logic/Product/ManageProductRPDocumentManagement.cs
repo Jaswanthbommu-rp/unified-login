@@ -13,6 +13,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Migration;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.RPDocumentManagement;
+using Swashbuckle.Swagger;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -581,16 +582,31 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			var postResponse = _client.PostAsJsonAsync(url, "").Result;
 			if (!postResponse.IsSuccessStatusCode)
 			{
-				// write an error
-				UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
-				WriteToDiagnosticLog("ManageRPDMUser - UnassignUser user errored. Set product status to Error");
-				return "Error";
-			}
-			
-			
-			WriteToDiagnosticLog($"ManageRPDMUser - UnassignUser - Successfully Disabled user userPersonaId:{userPersonaId}");
-			UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
+				if (productUserId != 0 && userPersonaId == 0)
+				{
+					logData = new Dictionary<string, object>();
+					var erroMessage = postResponse.Content.ReadAsStringAsync().Result.ToString();
+					logData.Add("error", erroMessage);
+					logData.Add("status", postResponse.StatusCode);
+					WriteToDiagnosticLog("ManageRPDMUser - UnassignUser Product user failed.",logData);
+					return $"There was a problem Delete Document Directory User the user with editorPersona id - {editorPersonaId} - Error-{erroMessage}.";
 
+				}
+				else
+				{
+                    // write an error
+                    UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
+                    WriteToDiagnosticLog("ManageRPDMUser - UnassignUser user errored. Set product status to Error");
+                    return "Error";
+                }
+				
+			}
+
+            WriteToDiagnosticLog($"ManageRPDMUser - UnassignUser - Successfully Disabled user userPersonaId:{userPersonaId}");
+            if (userPersonaId != 0 && productUserId == 0)
+			{
+                UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
+            }
 			return "";
 		}
 
