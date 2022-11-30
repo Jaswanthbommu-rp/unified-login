@@ -497,7 +497,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             WriteToDiagnosticLog(
                 $"ManageProductClientPortal.UpdateClientPortalUserProfile - _productUsername for user is {_productUsername}.");
 
-
+            List<ClientPortalContactResult> clientPortalList = CheckClientPortalUserExists(productLoginName);
+            List<ClientPortalContactResult> salesForceContactResults = null;
             ClientPortalUser clientPortalUser = GetClientPortalUser();
             if (clientPortalUser == null)
             {
@@ -514,6 +515,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             if (string.IsNullOrEmpty(result))
             {
+                // For multiple contacts result
+                if (clientPortalList != null && clientPortalList.Count > 0)
+                {
+                    salesForceContactResults = CheckClientPortalContactsExists(clientPortalList[0].Email);
+                }
+                var contactId = string.Empty;
+
+                // If contact EXIST then update contact in salesforce with => Unified_Platform_User__c
+                if (salesForceContactResults != null && salesForceContactResults.Count > 0)
+                {
+                    foreach (var contact in salesForceContactResults)
+                    {
+                        //contact exists; check update on property if yes then update contact
+                        contactId = contact.Id;
+                        UpdateContactProfile(contactId, person.FirstName, person.LastName, userLogin.LoginName);
+                    }
+                }
+
+
                 WriteToDiagnosticLog($"ManageProductClientPortal.UpdateClientPortalUserProfile - Update in GB -productUsername -{productLoginName} and userId {_productUserId}.");
                 IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(userPersonaId, _productId);
 
@@ -638,6 +658,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
+
+        private void UpdateContactProfile(string contactId, string firstName, string LastName, string email)
+        {
+            WriteToDiagnosticLog(
+                $"ManageProductClientPortal.UpdateContactProfile - contactId id {contactId} received for user with _productUsername {_productUsername}. - Portal_User_Migrated__c setting to true.");
+
+            dynamic accountObj = new ExpandoObject();
+            accountObj.Email = email;
+            accountObj.FirstName = firstName;
+            accountObj.LastName = LastName;
+            var result = PostApi($"{_apiRoute}sobjects/Contact/{contactId}?_HttpMethod=PATCH", accountObj);
+            if (!string.IsNullOrEmpty(result))
+            {
+                WriteToErrorLog(
+                  $"ManageProductClientPortal.UpdateContactProfile - Error for user with contactId - {contactId}",
+                  result);
+                throw new Exception($"Error while updating UpdateContactInfo for user user - {result}");
+            }
+        }
 
 
         private void UpdateContactSalesForce(string contactId, string searchOmsId, bool isUnassigned)
