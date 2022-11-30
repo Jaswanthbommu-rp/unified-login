@@ -721,6 +721,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     newProductUser.Roles = rolesList;
                 }
 
+                var defaultUsergroupsToSuperUser = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("UserGroupsId", StringComparison.OrdinalIgnoreCase));
+                if (defaultUsergroupsToSuperUser != null)
+                {
+                    string baseUrlAndQuery = null;
+                    if (string.IsNullOrEmpty(baseUrlAndQuery))
+                        baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserGroupEndpoint);
+
+                    WriteToDiagnosticLog(
+                       $"{nameof(StandardV1ProductIntegration)}.GetProductUserGroups - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At API calling - {baseUrlAndQuery} for SuperUser");
+
+                    bool isCompanyIdRequiredToQuery = baseUrlAndQuery.Contains("{0}");
+                    if (isCompanyIdRequiredToQuery)
+                        baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, "false");
+
+                    var userGroupList = GetResultFromApi<IList<ProductUserGroup>>(baseUrlAndQuery);
+
+                    WriteToDiagnosticLog(
+                   $"{nameof(StandardV1ProductIntegration)}.GetProductUserGroups - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Received user group list with count = {userGroupList?.Count} for SuperUser");
+
+                    List<string> userGroups = new List<string>();
+                    foreach (var groups in userGroupList)
+                    {
+                        userGroups.Add(groups.UserGroupId.ToString());
+                    }
+                    newProductUser.UserGroups = userGroups;
+                }
+
             }                      
 
             if (!isProductUser && string.IsNullOrEmpty(SubjectUserDetails.ProductUserName))
