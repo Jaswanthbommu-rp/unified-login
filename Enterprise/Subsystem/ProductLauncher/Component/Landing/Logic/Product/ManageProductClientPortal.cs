@@ -373,6 +373,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             // update salesforce contact with new OMS ID
                             UpdateContact(contactId, searchOmsId, false, true);
                         }
+                        else if (!string.IsNullOrEmpty(contact.OMS_ID__c) && !string.IsNullOrEmpty(contactId) && contact.OMS_ID__c == searchOmsId)
+                        {
+                            UpdatePortalUserMigratedFlag(contactId);
+                        }
 
                     }
                 }
@@ -616,6 +620,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
+
+        private void UpdatePortalUserMigratedFlag(string contactId)
+        {
+            WriteToDiagnosticLog(
+                $"ManageProductClientPortal.UpdatePortalUserMigratedFlag.UpdateContact - contactId id {contactId} received for user with _productUsername {_productUsername}. - Portal_User_Migrated__c setting to true.");
+
+            dynamic accountObj = new ExpandoObject();
+            accountObj.Portal_User_Migrated__c = true;
+            var result = PostApi($"{_apiRoute}sobjects/Contact/{contactId}?_HttpMethod=PATCH", accountObj);
+            if (!string.IsNullOrEmpty(result))
+            {
+                WriteToErrorLog(
+                  $"ManageProductClientPortal.UpdatePortalUserMigratedFlag.UpdateContact - Error for user with contactId - {contactId}",
+                  result);
+                throw new Exception($"Error while UpdatePortalUserMigratedFlag updating user - {result}");
+            }
+        }
+
+
+
         private void UpdateContactSalesForce(string contactId, string searchOmsId, bool isUnassigned)
         {
             WriteToDiagnosticLog(
@@ -624,7 +648,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             dynamic contactObj = new ExpandoObject();
             contactObj.Unified_Platform_User__c = (isUnassigned == false);
             contactObj.Former_Inactive__c = isUnassigned;
-   
             var result = PostApi($"{_apiRoute}sobjects/Contact/{contactId}?_HttpMethod=PATCH", contactObj);
             if (!string.IsNullOrEmpty(result))
             {
