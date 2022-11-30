@@ -7,12 +7,14 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Migration;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.RPDocumentManagement;
+using Swashbuckle.Swagger;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -554,47 +556,68 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			return userExists;
 		}
 
-		/// <summary>
-		/// Used to unassign a user from the product
-		/// </summary>
-		/// <param name="editorPersonaId"></param>
-		/// <param name="userPersonaId"></param>
-		/// <returns></returns>
-		public string UnassignUser(long editorPersonaId, long userPersonaId)
-		{
-			ListResponse listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
-			if (listResponse.IsError) { return listResponse.ErrorReason; }
-                       
-            
+        /// <summary>
+        /// Used to unassign a user from the product
+        /// </summary>
+        /// <param name="editorPersonaId"></param>
+        /// <param name="userPersonaId"></param>
+        /// <param name="productUserId"></param>
+        /// <returns></returns>
+        public string UnassignUser(long editorPersonaId, long userPersonaId, int productUserId = 0)
+        {
+            if (productUserId != 0)
+            {
+                _productUserId = productUserId.ToString();
+
+            }
+            ListResponse listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+            if (listResponse.IsError) { return listResponse.ErrorReason; }
+
+
             string domain = GetDomain();
 
-			var url = _productUrl.Replace("{{domain}}", domain) + $"/api/{domain}/users/{_productUserId}/disable";
-			Dictionary<string, object> logData = new Dictionary<string, object>() {{"url", url}};
-			WriteToDiagnosticLog("ManageRPDMUser - UnassignUser - Disable user", logData);
+            var url = _productUrl.Replace("{{domain}}", domain) + $"/api/{domain}/users/{_productUserId}/disable";
+            Dictionary<string, object> logData = new Dictionary<string, object>() { { "url", url } };
+            WriteToDiagnosticLog("ManageRPDMUser - UnassignUser - Disable user", logData);
 
-			var postResponse = _client.PostAsJsonAsync(url, "").Result;
-			if (!postResponse.IsSuccessStatusCode)
-			{
-				// write an error
-				UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
-				WriteToDiagnosticLog("ManageRPDMUser - UnassignUser user errored. Set product status to Error");
-				return "Error";
-			}
-			
-			
-			WriteToDiagnosticLog($"ManageRPDMUser - UnassignUser - Successfully Disabled user userPersonaId:{userPersonaId}");
-			UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
+            var postResponse = _client.PostAsJsonAsync(url, "").Result;
+            if (!postResponse.IsSuccessStatusCode)
+            {
+                if (productUserId != 0 && userPersonaId == 0)
+                {
+                    logData = new Dictionary<string, object>();
+                    var erroMessage = postResponse.Content.ReadAsStringAsync().Result.ToString();
+                    logData.Add("error", erroMessage);
+                    logData.Add("status", postResponse.StatusCode);
+                    WriteToDiagnosticLog("ManageRPDMUser - UnassignUser Product user failed.", logData);
+                    return $"There was a problem Delete Document Directory User the user with editorPersona id - {editorPersonaId} - Error-{erroMessage}.";
 
-			return "";
-		}
+                }
+                else
+                {
+                    // write an error
+                    UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
+                    WriteToDiagnosticLog("ManageRPDMUser - UnassignUser user errored. Set product status to Error");
+                    return "Error";
+                }
 
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="editorPersonaId"></param>
-		/// <param name="userPersonaId"></param>
-		/// <returns></returns>
-		private ListResponse GetRoles(long editorPersonaId, long userPersonaId)
+            }
+
+            WriteToDiagnosticLog($"ManageRPDMUser - UnassignUser - Successfully Disabled user userPersonaId:{userPersonaId}");
+            if (userPersonaId != 0 && productUserId == 0)
+            {
+                UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
+            }
+            return "";
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="editorPersonaId"></param>
+        /// <param name="userPersonaId"></param>
+        /// <returns></returns>
+        private ListResponse GetRoles(long editorPersonaId, long userPersonaId)
 		{
 			ListResponse response = new ListResponse();
 

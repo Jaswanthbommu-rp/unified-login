@@ -35,20 +35,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <returns></returns>
 		string ManageRPDMUser(long editorPersonaId, long userPersonaId, RolePropertyList rolePropertyEntityList);
 
-		/// <summary>
-		/// Used to unassign a user from the product
-		/// </summary>
-		/// <param name="editorPersonaId"></param>
-		/// <param name="userPersonaId"></param>
-		/// <returns></returns>
-		string UnassignUser(long editorPersonaId, long userPersonaId);
+        /// <summary>
+        /// Used to unassign a user from the product
+        /// </summary>
+        /// <param name="editorPersonaId"></param>
+        /// <param name="userPersonaId"></param>
+        ///  <param name="productUserId"></param>
+        /// <returns></returns>
+        string UnassignUser(long editorPersonaId, long userPersonaId, int productUserId = 0);
 
-		/// <summary>
-		/// Used to get the domain for a user persona
-		/// </summary>
-		/// <param name="personaId"></param>
-		/// <returns>The domain of the company</returns>
-		ListResponse GetDomain(long personaId);
+        /// <summary>
+        /// Used to get the domain for a user persona
+        /// </summary>
+        /// <param name="personaId"></param>
+        /// <returns>The domain of the company</returns>
+        ListResponse GetDomain(long personaId);
 
 		/// <summary>
 		/// Used to update the user profile
