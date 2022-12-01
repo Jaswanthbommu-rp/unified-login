@@ -308,6 +308,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 // check Contact by Property or PMC to get OMS Id
                 string searchOmsId = string.Empty;
+                string parentOmsId = company.CompanyInstanceSourceId;
                 if (clientPortalPropertyRole.PropertyList != null && clientPortalPropertyRole.PropertyList.Count > 0 && clientPortalPropertyRole.PropertyList[0] != null &&
                     clientPortalPropertyRole.PropertyList[0].Length > 3)
                 {
@@ -320,8 +321,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 
                 // For multiple contacts result
-                var clientPortalContactResults = CheckClientPortalContactsExistsByAccount(productLoginName, searchOmsId);
-
+                var clientPortalContactAcrossCompanies = CheckClientPortalContactsExists(userLogin.LoginName);
+                List<ClientPortalContactResult> clientPortalContactResults = new List<ClientPortalContactResult>();
+                // 'Contact.Account.Parent.OMS_ID__c'
+                if (clientPortalContactAcrossCompanies != null && clientPortalContactAcrossCompanies.Count > 0) 
+                {
+                    foreach (var item in clientPortalContactAcrossCompanies)
+                    {
+                        if (item.ParentOMS_ID__c == parentOmsId) 
+                        {
+                            clientPortalContactResults.Add(item);
+                        }
+                    }
+                }
+               
                 var contactId = string.Empty;
                 string accountId = string.Empty;
                 isMultiCompanyUser = (isExternalUser || string.IsNullOrEmpty(_productUsername) || clientPortalContactResults.Count > 0) && !isUserUpdate;
@@ -381,7 +394,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                 }
 
-                var clientPortaluserDetails = CheckClientPortalUserExists(userLogin.LoginName, searchOmsId);
+                var clientPortaluserDetails = CheckClientPortalUserExists(userLogin.LoginName);
 
 
                 var clientPortalUser = new ClientPortalUser
@@ -401,16 +414,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     IsActive = true
                 };
 
-                // Create New User & return result
-                if ((clientPortaluserDetails == null || clientPortaluserDetails.Count == 0))
-                {
-                    WriteToDiagnosticLog(
-                        $"ManageProductClientPortal.ManageClientPortalUser - trying to CREATE user with editorPersona id - {editorPersonaId}.");
-                    string insertResult = CreateClientPortalUser(userPersonaId, clientPortalUser);
-
-                    return insertResult;
-                }
-                else
+             
+                if (clientPortaluserDetails != null && clientPortaluserDetails.Count > 0  && (clientPortaluserDetails.Any(m=> m.Id == _productUserId)))
                 {
                     // Update User & return result
                     WriteToDiagnosticLog(
@@ -422,6 +427,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     var updateResult = UpdateClientPortalUser(clientPortalUser, _productUserId, userPersonaId);
 
                     return updateResult;
+                }
+                else
+                {
+                    // Create New User & return result
+                    WriteToDiagnosticLog(
+                        $"ManageProductClientPortal.ManageClientPortalUser - trying to CREATE user with editorPersona id - {editorPersonaId}.");
+                    string insertResult = CreateClientPortalUser(userPersonaId, clientPortalUser);
+
+                    return insertResult;
+
+
                 }
             }
             catch (Exception ex)
@@ -1124,13 +1140,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         $"ManageProductClientPortal.GetClientPortalAccount-Calling API for _productUserId - {_productUserId}.");
             return GetResultFromApi<ClientPortalAccount>($"{_apiRoute}sobjects/user/{_productUserId}/account");
         }
-
+        
         private List<ClientPortalContactResult> CheckClientPortalContactsExists(string loginName)
         {
             List<ClientPortalContactResult> clientPortalContacts = new List<ClientPortalContactResult>();
 
             var jsonQueryString =
-                JObject.Parse("{ \"q\":\"" + loginName + "\",\"sobjects\":[{\"name\": \"Contact\", \"fields\":[\"Id\", \"Email\", \"Account.OMS_ID__c\"]}]}");
+                JObject.Parse("{ \"q\":\"" + loginName + "\",\"sobjects\":[{\"name\": \"Contact\", \"fields\":[\"Id\", \"Email\", \"Account.OMS_ID__c\",\"Account.Parent.OMS_ID__c\"]}]}");
 
             WriteToDiagnosticLog(
                       $"ManageProductClientPortal.CheckClientPortalContactExists - calling API with - URL '{_apiRoute}parameterizedSearch' and quert string - {jsonQueryString} for user with _productUsername {_productUsername}.");
@@ -1150,7 +1166,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         Id = cpContact.Id,
                         Email = cpContact.Email,
-                        OMS_ID__c = cpContact.Account == null ? "" : cpContact.Account.OMS_ID__c
+                        OMS_ID__c = cpContact.Account == null ? "" : cpContact.Account.OMS_ID__c,
+                        ParentOMS_ID__c = cpContact.Account.Parent.OMS_ID__c == null ? "" : cpContact.Account.Parent.OMS_ID__c,
                     };
                     clientPortalContacts.Add(clientPortalContactResult);
                 }
@@ -1604,6 +1621,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public string Id { get; set; }
         public string Email { get; set; }
         public string OMS_ID__c { get; set; }
+
+        public string ParentOMS_ID__c { get; set; }
 
     }
 
