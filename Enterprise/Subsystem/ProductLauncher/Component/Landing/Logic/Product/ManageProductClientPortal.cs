@@ -308,6 +308,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 // check Contact by Property or PMC to get OMS Id
                 string searchOmsId = string.Empty;
+                string parentOmsId = company.CompanyInstanceSourceId;
                 if (clientPortalPropertyRole.PropertyList != null && clientPortalPropertyRole.PropertyList.Count > 0 && clientPortalPropertyRole.PropertyList[0] != null &&
                     clientPortalPropertyRole.PropertyList[0].Length > 3)
                 {
@@ -320,7 +321,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 
                 // For multiple contacts result
-                var clientPortalContactResults = CheckClientPortalContactsExistsByAccount(productLoginName, searchOmsId);
+                var clientPortalContactAcrossCompanies = CheckClientPortalContactsExists(userLogin.LoginName);
+                List<ClientPortalContactResult> clientPortalContactResults = new List<ClientPortalContactResult>();
+                // 'Contact.Account.Parent.OMS_ID__c'
+                if (clientPortalContactAcrossCompanies != null && clientPortalContactAcrossCompanies.Count > 0)
+                {
+                    foreach (var item in clientPortalContactAcrossCompanies)
+                    {
+                        if (item.ParentOMS_ID__c == parentOmsId)
+                        {
+                            clientPortalContactResults.Add(item);
+                        }
+                    }
+                }
 
                 var contactId = string.Empty;
                 string accountId = string.Empty;
@@ -381,7 +394,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                 }
 
-                var clientPortaluserDetails = CheckClientPortalUserExists(userLogin.LoginName, searchOmsId);
+                var clientPortaluserDetails = CheckClientPortalUserExists(userLogin.LoginName);
 
 
                 var clientPortalUser = new ClientPortalUser
@@ -401,16 +414,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     IsActive = true
                 };
 
-                // Create New User & return result
-                if ((clientPortaluserDetails == null || clientPortaluserDetails.Count == 0))
-                {
-                    WriteToDiagnosticLog(
-                        $"ManageProductClientPortal.ManageClientPortalUser - trying to CREATE user with editorPersona id - {editorPersonaId}.");
-                    string insertResult = CreateClientPortalUser(userPersonaId, clientPortalUser);
 
-                    return insertResult;
-                }
-                else
+                if (clientPortaluserDetails != null && clientPortaluserDetails.Count > 0 && (clientPortaluserDetails.Any(m => m.Id == _productUserId)))
                 {
                     // Update User & return result
                     WriteToDiagnosticLog(
@@ -422,6 +427,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     var updateResult = UpdateClientPortalUser(clientPortalUser, _productUserId, userPersonaId);
 
                     return updateResult;
+                }
+                else
+                {
+                    // Create New User & return result
+                    WriteToDiagnosticLog(
+                        $"ManageProductClientPortal.ManageClientPortalUser - trying to CREATE user with editorPersona id - {editorPersonaId}.");
+                    string insertResult = CreateClientPortalUser(userPersonaId, clientPortalUser);
+
+                    return insertResult;
+
+
                 }
             }
             catch (Exception ex)
@@ -497,7 +513,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             WriteToDiagnosticLog(
                 $"ManageProductClientPortal.UpdateClientPortalUserProfile - _productUsername for user is {_productUsername}.");
 
-
+            List<ClientPortalContactResult> clientPortalList = CheckClientPortalUserExists(productLoginName);
+            List<ClientPortalContactResult> salesForceContactResults = null;
             ClientPortalUser clientPortalUser = GetClientPortalUser();
             if (clientPortalUser == null)
             {
@@ -514,6 +531,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             if (string.IsNullOrEmpty(result))
             {
+                // For multiple contacts result
+                if (clientPortalList != null && clientPortalList.Count > 0)
+                {
+                    salesForceContactResults = CheckClientPortalContactsExists(clientPortalList[0].Email);
+                }
+                var contactId = string.Empty;
+
+                // If contact EXIST then update contact in salesforce with => Unified_Platform_User__c
+                if (salesForceContactResults != null && salesForceContactResults.Count > 0)
+                {
+                    foreach (var contact in salesForceContactResults)
+                    {
+                        //contact exists; check update on property if yes then update contact
+                        contactId = contact.Id;
+                        UpdateContactProfile(contactId, person.FirstName, person.LastName, userLogin.LoginName);
+                    }
+                }
+
+
                 WriteToDiagnosticLog($"ManageProductClientPortal.UpdateClientPortalUserProfile - Update in GB -productUsername -{productLoginName} and userId {_productUserId}.");
                 IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(userPersonaId, _productId);
 
@@ -638,6 +674,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
+
+        private void UpdateContactProfile(string contactId, string firstName, string LastName, string email)
+        {
+            WriteToDiagnosticLog(
+                $"ManageProductClientPortal.UpdateContactProfile - contactId id {contactId} received for user with _productUsername {_productUsername}. - Portal_User_Migrated__c setting to true.");
+
+            dynamic accountObj = new ExpandoObject();
+            accountObj.Email = email;
+            accountObj.FirstName = firstName;
+            accountObj.LastName = LastName;
+            var result = PostApi($"{_apiRoute}sobjects/Contact/{contactId}?_HttpMethod=PATCH", accountObj);
+            if (!string.IsNullOrEmpty(result))
+            {
+                WriteToErrorLog(
+                  $"ManageProductClientPortal.UpdateContactProfile - Error for user with contactId - {contactId}",
+                  result);
+                throw new Exception($"Error while updating UpdateContactInfo for user user - {result}");
+            }
+        }
 
 
         private void UpdateContactSalesForce(string contactId, string searchOmsId, bool isUnassigned)
@@ -1091,7 +1146,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             List<ClientPortalContactResult> clientPortalContacts = new List<ClientPortalContactResult>();
 
             var jsonQueryString =
-                JObject.Parse("{ \"q\":\"" + loginName + "\",\"sobjects\":[{\"name\": \"Contact\", \"fields\":[\"Id\", \"Email\", \"Account.OMS_ID__c\"]}]}");
+                JObject.Parse("{ \"q\":\"" + loginName + "\",\"sobjects\":[{\"name\": \"Contact\", \"fields\":[\"Id\", \"Email\", \"Account.OMS_ID__c\",\"Account.Parent.OMS_ID__c\"]}]}");
 
             WriteToDiagnosticLog(
                       $"ManageProductClientPortal.CheckClientPortalContactExists - calling API with - URL '{_apiRoute}parameterizedSearch' and quert string - {jsonQueryString} for user with _productUsername {_productUsername}.");
@@ -1111,7 +1166,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         Id = cpContact.Id,
                         Email = cpContact.Email,
-                        OMS_ID__c = cpContact.Account == null ? "" : cpContact.Account.OMS_ID__c
+                        OMS_ID__c = cpContact.Account == null ? "" : cpContact.Account.OMS_ID__c,
+                        ParentOMS_ID__c = (cpContact.Account == null || cpContact.Account.Parent == null ) ? "" : cpContact.Account.Parent.OMS_ID__c,
                     };
                     clientPortalContacts.Add(clientPortalContactResult);
                 }
@@ -1565,6 +1621,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public string Id { get; set; }
         public string Email { get; set; }
         public string OMS_ID__c { get; set; }
+
+        public string ParentOMS_ID__c { get; set; }
 
     }
 
