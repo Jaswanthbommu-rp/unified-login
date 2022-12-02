@@ -1167,7 +1167,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         Id = cpContact.Id,
                         Email = cpContact.Email,
                         OMS_ID__c = cpContact.Account == null ? "" : cpContact.Account.OMS_ID__c,
-                        ParentOMS_ID__c = cpContact.Account.Parent.OMS_ID__c == null ? "" : cpContact.Account.Parent.OMS_ID__c,
+                        ParentOMS_ID__c = (cpContact.Account == null || cpContact.Account.Parent ==null ) ? "" : cpContact.Account.Parent.OMS_ID__c,
                     };
                     clientPortalContacts.Add(clientPortalContactResult);
                 }
