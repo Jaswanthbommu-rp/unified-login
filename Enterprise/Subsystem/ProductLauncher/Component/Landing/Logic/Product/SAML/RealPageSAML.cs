@@ -756,8 +756,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		private X509Certificate2 GetSigningCertificate(string thumbprint)
 		{
 			var certStore = new X509Store(StoreName.My, StoreLocation.LocalMachine);
-			certStore.Open(OpenFlags.ReadOnly);
-			X509Certificate2Collection certCollection = certStore.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, false);
+            certStore.Open(OpenFlags.ReadOnly | OpenFlags.IncludeArchived);
+            X509Certificate2Collection certCollection = certStore.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, false);
 			// Get the first cert with the thumbprint
 			if (certCollection.Count > 0)
 			{
