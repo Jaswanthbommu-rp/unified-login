@@ -21,6 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.ProductImplementation
 {
@@ -684,7 +685,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             bool isProductUser = false;
             var productUser = GetBaseUserDataFromProduct(newProductUser.LoginName);
             isProductUser = productUser != null && !string.IsNullOrEmpty(productUser.LoginName);
-            
+
+            //Removing Special Characters for First Name and Last Name
+            productUser.FirstName = Regex.Replace(productUser.FirstName, @"[^A-Za-z0-9]+", "");
+            productUser.LastName = Regex.Replace(productUser.LastName, @"[^A-Za-z0-9]+", "");
+
             if (isProductUser)
             {
                 newProductUser.UserId = productUser.UserId;
