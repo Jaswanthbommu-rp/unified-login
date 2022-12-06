@@ -687,8 +687,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             isProductUser = productUser != null && !string.IsNullOrEmpty(productUser.LoginName);
 
             //Removing Special Characters for First Name and Last Name
-            productUser.FirstName = Regex.Replace(productUser.FirstName, @"[^A-Za-z0-9]+", "");
-            productUser.LastName = Regex.Replace(productUser.LastName, @"[^A-Za-z0-9]+", "");
+            newProductUser.FirstName = Regex.Replace(newProductUser.FirstName, @"[^A-Za-z0-9]+", "");
+            newProductUser.LastName = Regex.Replace(newProductUser.LastName, @"[^A-Za-z0-9]+", "");
 
             if (isProductUser)
             {
