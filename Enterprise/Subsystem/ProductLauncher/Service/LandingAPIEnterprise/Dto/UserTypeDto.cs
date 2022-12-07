@@ -5,6 +5,7 @@
 		Regular = 11, // numbers other than 0 & 1 to work validation
 		NoEmail = 22,
 		Employee = 33,
-		External = 44
-	}
+		External = 44,
+        SuperUser =55
+    }
 }

@@ -1778,6 +1778,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 case UserTypeDto.External:
                     userType = (int)UserRoleType.ExternalUser;
                     break;
+                case UserTypeDto.SuperUser:
+                    userType = (int)UserRoleType.SuperUser;
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(userTypeDto), userTypeDto, null);
             }
