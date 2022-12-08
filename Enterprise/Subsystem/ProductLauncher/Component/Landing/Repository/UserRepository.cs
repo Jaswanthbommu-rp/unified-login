@@ -753,23 +753,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             //The user is in one company as external.  Create UserLoginPersona - External Users : Primary
                             if ((userPersonaOrganizationList.Count == 1) && (userPersonaOrganizationList.ToList().Any(i => i.PartyRoleTypeId.Equals((int)UserRoleType.ExternalUser))))
                             {
-                                DateTime newFromDate = fromDate.Value;
-                                if (currentPrimaryOrgStatus.FromDate < fromDate.Value)
+                                if (!userPersonaOrganizationList.ToList().Any(m => m.OrganizationPartyId == organizationExternalUser.PartyId))
                                 {
-                                    newFromDate = currentPrimaryOrgStatus.FromDate;
+                                    DateTime newFromDate = fromDate.Value;
+                                    if (currentPrimaryOrgStatus.FromDate < fromDate.Value)
+                                    {
+                                        newFromDate = currentPrimaryOrgStatus.FromDate;
+                                    }
+
+                                    OrganizationPrimary organizationPrimary = new OrganizationPrimary()
+                                    {
+                                        OrganizationRealPageId = organizationExternalUser.RealPageId,
+                                        OrganizationPartyId = organizationExternalUser.PartyId,
+                                        PrimaryOrganization = true,
+                                        OrganizationFromDate = newFromDate,
+                                        OrganizationThruDate = null
+
+                                    };
+
+                                    orgnanizationList.Add(organizationPrimary);
                                 }
-
-                                OrganizationPrimary organizationPrimary = new OrganizationPrimary()
-                                {
-                                    OrganizationRealPageId = organizationExternalUser.RealPageId,
-                                    OrganizationPartyId = organizationExternalUser.PartyId,
-                                    PrimaryOrganization = true,
-                                    OrganizationFromDate = newFromDate,
-                                    OrganizationThruDate = null
-
-                                };
-
-                                orgnanizationList.Add(organizationPrimary);
                             }
                         }
                         //Adding the User as Non-External and External Users is the Primary Company
