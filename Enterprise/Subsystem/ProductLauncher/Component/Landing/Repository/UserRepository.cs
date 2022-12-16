@@ -6660,30 +6660,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         userProducts.RemoveAll(a => a.ProductId == product.ProductId);
                     }
 
-                    foreach (var product in userProducts.ToList())
-                    {
-                        bool productEnabledForPrimaryProperty = IsProductEnabledForUsePrimaryProperty(product.ProductId);
-                        var productSetting = personaProductSettings.FirstOrDefault(item => item.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase) && item.ProductId == product.ProductId);
+                    //foreach (var product in userProducts.ToList())
+                    //{
+                    //    bool productEnabledForPrimaryProperty = IsProductEnabledForUsePrimaryProperty(product.ProductId);
+                    //    var productSetting = personaProductSettings.FirstOrDefault(item => item.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase) && item.ProductId == product.ProductId);
 
-                        if (productSetting != null)
-                        {
-                            personaProductUsePrimaryProperty = productSetting.Value.Trim() == "1" ? true : false;
-                        }
+                    //    if (productSetting != null)
+                    //    {
+                    //        personaProductUsePrimaryProperty = productSetting.Value.Trim() == "1" ? true : false;
+                    //    }
 
-                        usePrimaryProperties = productEnabledForPrimaryProperty && personaProductUsePrimaryProperty;
-                        if (!usePrimaryProperties)
-                        {
-                            userProducts.Remove(product);
-                        }
-                    }
-
-                    //Then Get Product Batch Data
-                    IList<ProductBatch> pbData = manageProductBatch.GetUserProductBatchData(userPersonaId, userProducts, editorPersonaId, upfmProperty, personaProductSettings, isExternalUser);
-
-                    foreach (ProductBatch pb in pbData)
-                    {
-                        finalProductBatch.Add(pb);
-                    }
+                    //    usePrimaryProperties = productEnabledForPrimaryProperty && personaProductUsePrimaryProperty;
+                    //    if (!usePrimaryProperties )
+                    //    {
+                    //        userProducts.Remove(product);
+                    //    }
+                    //}
+                    //IList<ProductBatch> pbData = new List<ProductBatch>();
+                    ////Then Get Product Batch Data
+                    //if (userProducts != null && userProducts.Count > 0)
+                    //{
+                    //    pbData = manageProductBatch.GetUserProductBatchData(userPersonaId, userProducts, editorPersonaId, upfmProperty, personaProductSettings, isExternalUser);
+                    //}
+                    //foreach (ProductBatch pb in pbData)
+                    //{
+                    //    finalProductBatch.Add(pb);
+                    //}
 
                     return finalProductBatch;
                 }
