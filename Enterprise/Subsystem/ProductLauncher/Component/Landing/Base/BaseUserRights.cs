@@ -55,7 +55,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
 
             identity.AddClaims(distinctUserRights.Select(a => new Claim("right", a)).ToList());
 
-            if (userClaim.ImpersonatedBy != Guid.Empty)
+            if (userClaim.IsRPEmployee)
+            {
+
+                // get the impersonators details
+                ManagePersona mp = new ManagePersona();
+                Persona rpEmployeePersona = mp.ListPersona(userClaim.UserRealPageGuid).Where(c => c.Organization.RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId).FirstOrDefault();
+
+                // RP Employee-Get ADGroup Rights for the persona
+                UserRoleRightRepository urr = new UserRoleRightRepository();
+                List<Right> adGroupRights = urr.GetADGroupRightsByPersonaId(rpEmployeePersona.PersonaId)?.ToList();
+                if (adGroupRights != null && adGroupRights.Count > 0)
+                {
+                    List<string> adRights = adGroupRights.Select(x => x.RightNickName).ToList();
+                    List<Right> persistRightsList = GetPersistRights();
+                    foreach (var right in persistRightsList)
+                    {
+                        AddRightFromImpersonator(identity, adRights, distinctUserRights, right.RightName.ToUpper());
+                    }
+                }
+                
+            }
+            else if (userClaim.ImpersonatedBy != Guid.Empty)
             {
                 // get the impersonators details
                 ManagePersona mp = new ManagePersona();
@@ -79,25 +100,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
                     foreach (var right in persistRightsList)
                     {
                         AddRightFromImpersonator(identity, impersonateUserRights, distinctUserRights, right.RightName.ToUpper());
-                    }
-                }
-            }
-            else if (userClaim.IsRPEmployee)
-            {
-                // get the impersonators details
-                ManagePersona mp = new ManagePersona();
-                Persona rpEmployeePersona = mp.ListPersona(userClaim.UserRealPageGuid).Where(c => c.Organization.RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId).FirstOrDefault();
-
-                // RP Employee-Get ADGroup Rights for the persona
-                UserRoleRightRepository urr = new UserRoleRightRepository();
-                List<Right> adGroupRights = urr.GetADGroupRightsByPersonaId(rpEmployeePersona.PersonaId)?.ToList();
-                if(adGroupRights != null && adGroupRights.Count > 0)
-                {
-                    List<string> adRights = adGroupRights.Select(x => x.RightNickName).ToList();
-                    List<Right> persistRightsList = GetPersistRights();
-                    foreach (var right in persistRightsList)
-                    {
-                        AddRightFromImpersonator(identity, adRights, distinctUserRights, right.RightName.ToUpper());
                     }
                 }
             }
