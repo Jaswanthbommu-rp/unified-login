@@ -25,7 +25,8 @@ AS
 			PersonaId     BIGINT,    
 			PreferredPhoneNumber varchar(30),    
 			Email VARCHAR(255)    
-        );  
+        )
+        CREATE NONCLUSTERED INDEX [NC_Uerlist_userID] ON #UserList([UserId] ASC)
 		  
         INSERT INTO @ProductIdList(ProductId)    
                SELECT *    
