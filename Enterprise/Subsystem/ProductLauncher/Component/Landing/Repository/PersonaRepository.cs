@@ -17,6 +17,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
     /// </summary>
     public class PersonaRepository : BaseRepository, IPersonaRepository
     {
+        private readonly DefaultUserClaim _userClaim;
         #region Private Variables
         readonly IOrganizationRepository _organizationRepository;
         readonly IUserLoginRepository _userLoginRepository;
@@ -28,6 +29,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// </summary>
         public PersonaRepository() : base(DbConnectionEnum.IdpConfigurationDb)
         {
+            _userClaim = new DefaultUserClaim();
             _organizationRepository = new OrganizationRepository();
             _userLoginRepository = new UserLoginRepository();
         }
@@ -36,14 +38,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// Shared repository constructor
         /// </summary>
         /// <param name="repository"></param>
+       
         public PersonaRepository(IRepository repository) : base(repository)
         {
+           
             _organizationRepository = new OrganizationRepository(repository);
             _userLoginRepository = new UserLoginRepository(repository);
         }
 
-        public PersonaRepository(IOrganizationRepository organizationRepository, IUserLoginRepository userLoginRepository) : base(DbConnectionEnum.IdpConfigurationDb)
+        //public PersonaRepository(DefaultUserClaim userClaim) : base(DbConnectionEnum.IdpConfigurationDb)
+        //{
+        //    if (userClaim == null)
+        //    {
+        //        userClaim = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
+        //    }
+        //    _userClaim = userClaim;
+        //}
+
+        public PersonaRepository(IOrganizationRepository organizationRepository, IUserLoginRepository userLoginRepository,DefaultUserClaim userClaim) : base(DbConnectionEnum.IdpConfigurationDb)
         {
+            _userClaim=userClaim;
             _organizationRepository = organizationRepository;
             _userLoginRepository = userLoginRepository;
         }
