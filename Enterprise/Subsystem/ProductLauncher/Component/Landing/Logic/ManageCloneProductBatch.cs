@@ -149,7 +149,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 						rolesResponse = cp.GetRoles(baseOrgAdminPersonaId, personaId, null);
 						productListToCreate.Add(CreateProductBatchRecord(propertiesResponse, rolesResponse, product.ProductId, usePrimaryProperties));
 					}
-					else if (product.ProductId == (int)ProductEnum.ProspectContactCenter)
+                    else if (product.ProductId == (int)ProductEnum.AdminSupportPortal)
+                    {
+                        ManageProductAdminSupportPortal asp = new ManageProductAdminSupportPortal(_userClaim);
+                        propertiesResponse = asp.GetProperties(baseOrgAdminPersonaId, personaId, null);
+                        if (translateProperties)
+                        {
+                            propertiesResponse = manageBlueBook.TranslateProductPrimaryPropertiesData(upfmProperty, product.ProductId, propertiesResponse);
+                        }
+                        rolesResponse = asp.GetRoles(baseOrgAdminPersonaId, personaId, null);
+                        productListToCreate.Add(CreateProductBatchRecord(propertiesResponse, rolesResponse, product.ProductId, usePrimaryProperties));
+                    }
+                    else if (product.ProductId == (int)ProductEnum.ProspectContactCenter)
 					{
 						ManageProductProspectContact prospContact = new ManageProductProspectContact(_userClaim);
 						propertiesResponse = prospContact.GetProperties(baseOrgAdminPersonaId, personaId, null);

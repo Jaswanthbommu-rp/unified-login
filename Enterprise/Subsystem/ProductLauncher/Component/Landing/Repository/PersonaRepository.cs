@@ -242,6 +242,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 persona.hasManageSmartWasteCommercialProductAccess = editorRights.Contains
                     (ProductRightEnum.ManageSmartWasteCommercialProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
 
+                persona.hasManageAdminSupportPortalProductAccess = editorRights.Contains
+                   (ProductRightEnum.ManageAdminSupportPortalProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
+
             }
 
             if (currentClaimPrincipal.Identity.IsAuthenticated)

@@ -444,6 +444,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     {
                         userProducts.Remove(userProducts.First(a => a.ProductId == (int)ProductEnum.ClientPortal));
                     }
+                    if (userProducts.Any(a => a.ProductId == (int)ProductEnum.AdminSupportPortal))
+                    {
+                        userProducts.Remove(userProducts.First(a => a.ProductId == (int)ProductEnum.AdminSupportPortal));
+                    }
                 }
 
                 userProducts = userProducts.OrderBy(u => u.ProductName).ToList();

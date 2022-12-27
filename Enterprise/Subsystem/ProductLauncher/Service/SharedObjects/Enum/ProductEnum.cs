@@ -271,10 +271,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		[Description("OMS")]
 		ClientPortal = 14,
 
-		/// <summary>
-		/// Insurance
-		/// </summary>
-		[Description("LD")]
+        /// <summary>
+        /// SalesForce ClientPortal
+        /// </summary>
+        [Description("OMS")]
+        AdminSupportPortal = 89,
+        /// <summary>
+        /// Insurance
+        /// </summary>
+        [Description("LD")]
 		Insurance = 15,
 
 		/// <summary>
@@ -650,10 +655,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		[Description("OMS")]
 		ManageClientPortalProductAccess = 14,
 
-		/// <summary>
-		/// Insurance
-		/// </summary>
-		[Description("LD")]
+        /// <summary>
+        /// SalesForce AdminSupportPortal
+        /// </summary>
+        [Description("OMS")]
+        ManageAdminSupportPortalProductAccess = 89,
+
+        /// <summary>
+        /// Insurance
+        /// </summary>
+        [Description("LD")]
 		ManageRentersInsuranceProductAccess = 15,
 
 		/// <summary>

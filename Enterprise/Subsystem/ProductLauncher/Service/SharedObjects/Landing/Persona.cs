@@ -251,6 +251,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         /// </summary>
         public bool hasManageLeaseLabsAccess { get; set; } = true;
 
+        /// <summary>
+        /// Persona Has Admin & Support Portal User Access
+        /// </summary>
+        public bool hasManageAdminSupportPortalProductAccess { get; set; } = true;
+
         #region Examples
         /// <summary>
         /// Example for New Persona method

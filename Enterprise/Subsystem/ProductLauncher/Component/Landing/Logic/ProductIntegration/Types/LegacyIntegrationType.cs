@@ -105,6 +105,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     result = _manageProductClientPortal.GetRoles(editorPersonaId, userPersonaId, dataFilter);
                     break;
 
+                case (int)ProductEnum.AdminSupportPortal:
+                    IManageProductAdminSupportPortal _manageProductAdminSupportPortal = new ManageProductAdminSupportPortal(_userClaims);
+                    result = _manageProductAdminSupportPortal.GetRoles(editorPersonaId, userPersonaId, dataFilter);
+                    break;
+
                 case (int)ProductEnum.Lead2Lease:
                     IManageProductLead2Lease manageProductLead2Lease = new ManageProductLead2Lease(_userClaims);
                     result = manageProductLead2Lease.GetRoles(editorPersonaId, userPersonaId, dataFilter);
@@ -268,6 +273,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.ClientPortal:
                     IManageProductClientPortal _manageProductClientPortal = new ManageProductClientPortal(_userClaims);
                     result = _manageProductClientPortal.GetProperties(editorPersonaId, userPersonaId, dataFilter);
+                    break;
+
+                case (int)ProductEnum.AdminSupportPortal:
+                    IManageProductAdminSupportPortal _manageProductAdminSupportPortal = new ManageProductAdminSupportPortal(_userClaims);
+                    result = _manageProductAdminSupportPortal.GetProperties(editorPersonaId, userPersonaId, dataFilter);
                     break;
 
                 case (int)ProductEnum.ProspectContactCenter:
@@ -478,6 +488,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         productUser.AssignUserPersonaId, productPropertiesRoles);
                     break;
 
+                case (int)ProductEnum.AdminSupportPortal:
+                    product = new AdminSupportPortalProduct(_userClaims);
+                    productPropertiesRoles =
+                        DeserializeJSON<ClientPortalPropertyRole>(productUser.InputJson);
+                    result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
+                        productUser.AssignUserPersonaId, productPropertiesRoles);
+                    break;
+
                 case (int)ProductEnum.SalesForce:
                     product = new SalesForceProduct(_userClaims);
                     productPropertiesRoles =
@@ -678,6 +696,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     break;
                 case (int)ProductEnum.ClientPortal:
                     product = new ClientPortalProduct(_userClaims);
+                    productPropertiesRoles =
+                        DeserializeJSON<ClientPortalPropertyRole>(batchRecord.InputJson);
+                    result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
+                    break;
+                case (int)ProductEnum.AdminSupportPortal:
+                    product = new AdminSupportPortalProduct(_userClaims);
                     productPropertiesRoles =
                         DeserializeJSON<ClientPortalPropertyRole>(batchRecord.InputJson);
                     result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
@@ -973,6 +997,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     product = new ClientPortalProduct(_userClaims);
                     result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
                     break;
+                case (int)ProductEnum.AdminSupportPortal:
+                    product = new AdminSupportPortalProduct(_userClaims);
+                    result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
+                    break;
                 case (int)ProductEnum.SalesForce:
                     product = new SalesForceProduct(_userClaims);
                     result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
@@ -1139,6 +1167,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     break;
                 case (int)ProductEnum.ClientPortal:
                     product = new ClientPortalProduct(_userClaims, _productInternalSettingRepository, _productRepository);
+                    result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
+                    break;
+                case (int)ProductEnum.AdminSupportPortal:
+                    product = new AdminSupportPortalProduct(_userClaims, _productInternalSettingRepository, _productRepository);
                     result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
                 case (int)ProductEnum.SalesForce:

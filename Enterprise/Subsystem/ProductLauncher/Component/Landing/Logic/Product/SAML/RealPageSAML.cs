@@ -128,7 +128,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			assertion.Subject = new Saml2Subject(new Saml2NameIdentifier(_Subject, new Uri(RealPageSAML.NameIDFormatUris.Unspecified)));
 
 			// SalesForce required SAML info
-			if (_ProductId == (int)ProductEnum.ClientPortal)
+			if (_ProductId == (int)ProductEnum.ClientPortal || _ProductId == (int)ProductEnum.AdminSupportPortal)
 			{
 				assertion.Subject = new Saml2Subject(new Saml2NameIdentifier(_Subject, new Uri(RealPageSAML.NameIDFormatUris.Email)));
 				Saml2SubjectConfirmation conf = new Saml2SubjectConfirmation(new Uri("urn:oasis:names:tc:SAML:2.0:cm:bearer"));
@@ -159,7 +159,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			};
 
 			// SalesForce required SAML info
-			if (_ProductId == (int)ProductEnum.ClientPortal)
+			if (_ProductId == (int)ProductEnum.ClientPortal || _ProductId == (int)ProductEnum.AdminSupportPortal)
 			{
 				Saml2AudienceRestriction ar = new Saml2AudienceRestriction(new Uri("https://saml.salesforce.com"));
 				assertion.Conditions.AudienceRestrictions.Add(ar);
@@ -511,7 +511,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					productId = (int)ProductEnum.MarketingCenter;
 					getMarketingCenterURL = true;
 					break;
-				default:
+                case (int)ProductEnum.AdminSupportPortal:
+                    productType = "IsResource";
+                    break;
+                default:
 					break;
 			}
 

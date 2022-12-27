@@ -503,6 +503,7 @@
     <Compile Include="Product\Accounting\RightsAddRemove.cs" />
     <Compile Include="Product\Accounting\RightsAddRemoveList.cs" />
     <Compile Include="Product\Accounting\RolesAddRemove.cs" />
+    <Compile Include="Product\AdminSupportPortal\AdminSupportPortalPropertyRole.cs" />
     <Compile Include="Product\EmployeeAccess\CompanyDetails.cs" />
     <Compile Include="Product\EmployeeAccess\EmployeePersona.cs" />
     <Compile Include="Product\EmployeeAccess\UserDetail.cs" />

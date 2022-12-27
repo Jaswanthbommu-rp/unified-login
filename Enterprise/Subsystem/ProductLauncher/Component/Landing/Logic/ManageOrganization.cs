@@ -455,13 +455,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
             else
             {
-                //Unified Platform, Asset Optimization, RealPage Accounting, Client Portal, Product Updates, EasyLMS
+                //Unified Platform, Asset Optimization, RealPage Accounting, Client Portal, Product Updates, EasyLMS, Admin & Support Portal
                 productIdList.Remove(productIdList.FirstOrDefault(p => p == (int)ProductEnum.UnifiedPlatform));
                 productIdList.Remove(productIdList.FirstOrDefault(p => p == (int)ProductEnum.AssetOptimizer));
                 productIdList.Remove(productIdList.FirstOrDefault(p => p == (int)ProductEnum.FinancialSuite));
                 productIdList.Remove(productIdList.FirstOrDefault(p => p == (int)ProductEnum.ClientPortal));
                 productIdList.Remove(productIdList.FirstOrDefault(p => p == (int)ProductEnum.ProductUpdates));
                 productIdList.Remove(productIdList.FirstOrDefault(p => p == (int)ProductEnum.EasyLMS));
+                productIdList.Remove(productIdList.FirstOrDefault(p => p == (int)ProductEnum.AdminSupportPortal));
             }
 
             return _organizationRepository.CreateInitialOrgSuperUser(organizationId, firstName, middleName, lastName, title, suffix, email, defaultIDP, idpTypeId, productIdList);

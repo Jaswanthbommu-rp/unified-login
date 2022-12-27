@@ -279,7 +279,9 @@
     <Compile Include="Logic\ProductIntegration\Types\LegacyIntegrationType.cs" />
     <Compile Include="Logic\ProductIntegration\Types\StandardV1IntegrationType.cs" />
     <Compile Include="Logic\ProductIntegration\Types\UPFMIntegrationType.cs" />
+    <Compile Include="Logic\Product\Interfaces\IManageProductAdminSupportPortal.cs" />
     <Compile Include="Logic\Product\ManageIntelligentBuilding.cs" />
+    <Compile Include="Logic\Product\ManageProductAdminSupportPortal.cs" />
     <Compile Include="Logic\Product\ManageProductOneSiteAccounting.cs" />
     <Compile Include="Logic\ManageSecuritySettings.cs" />
     <Compile Include="Logic\ManageStatusType.cs" />

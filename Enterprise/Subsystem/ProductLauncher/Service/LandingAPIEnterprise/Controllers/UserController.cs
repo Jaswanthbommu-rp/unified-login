@@ -1126,6 +1126,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                         {
                             productResult.Resources.Remove(productResult.Resources.First(a => a.Id == (int)ProductEnum.ClientPortal));
                         }
+                        if (productResult.Resources.Any(a => a.Id == (int)ProductEnum.AdminSupportPortal))
+                        {
+                            productResult.Resources.Remove(productResult.Resources.First(a => a.Id == (int)ProductEnum.AdminSupportPortal));
+                        }
                     }
                 }
             }

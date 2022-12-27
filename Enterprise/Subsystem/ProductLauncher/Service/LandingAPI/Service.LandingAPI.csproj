@@ -365,6 +365,7 @@
     <Compile Include="Controllers\EmailController.cs" />
     <Compile Include="Controllers\EmployeeAccessController.cs" />
     <Compile Include="Controllers\MultiFactorAuthController.cs" />
+    <Compile Include="Controllers\ProductAdminSupportPortalController.cs" />
     <Compile Include="Controllers\ProductOneSiteAccountingController.cs" />
     <Compile Include="Controllers\Product\ProductAssetOptimizationController.cs" />
     <Compile Include="Controllers\ProductEasyLMSController.cs" />
@@ -446,6 +447,7 @@
     <Folder Include="Views\Person\" />
     <Folder Include="Views\PostalAddress\" />
     <Folder Include="Views\PreferredContactMethod\" />
+    <Folder Include="Views\ProductAdminSupportPortal\" />
     <Folder Include="Views\ProductClientPortal\" />
     <Folder Include="Views\ProductLearningPortal\" />
     <Folder Include="Views\ProductOnSite\" />

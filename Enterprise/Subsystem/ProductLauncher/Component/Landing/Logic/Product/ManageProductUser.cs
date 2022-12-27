@@ -40,6 +40,7 @@ using System.Net.Http;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSite;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterprise.Helpers;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.AdminSupportPortal;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -2282,6 +2283,100 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         }
     }
     #endregion
+
+    #region Admin Support Portal
+    /// <summary>
+    /// A 'Concrete implementation for Admin Support Portal
+    /// </summary>
+    public class AdminSupportPortalProduct : ProductBase, IProduct
+    {
+        /// <summary>
+        /// default constructor
+        /// </summary>
+        /// <param name="userClaim">Use to hold user claim related information</param>
+        public AdminSupportPortalProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.AdminSupportPortal, userClaim, null, null)
+        {
+        }
+
+        /// <summary>
+        /// Test constructor
+        /// </summary>
+        /// <param name="userClaim">User claim related information</param>
+        /// <param name="productInternalSettingRepository">Internal settings for a product</param>
+        public AdminSupportPortalProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.AdminSupportPortal, userClaim, productInternalSettingRepository, productRepository)
+        {
+        }
+
+        /// <summary>
+        /// Create Admin Support Portal
+        /// </summary> 
+        /// <param name="createUserRealPageId">Logged-in user Enterprise UserId</param>
+        /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
+        /// <param name="assignUserPersonaId">new user PersonaId</param>
+        /// <param name="roleProperty">Admin Support Portal Property List</param>
+        /// <returns>String.empty if success else error</returns>
+        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object roleProperty)
+        {
+            var roleProp = roleProperty as AdminSupportPortalPropertyRole;
+            if (roleProp == null)
+            {
+                return "Input JSON parsing issue; Null object.";
+            }
+
+            base.UserClaim.UserRealPageGuid = createUserRealPageId;
+            var productAdminSupportPortal = new ManageProductAdminSupportPortal(base.UserClaim);
+
+            // assign user
+            if (roleProp.IsAssigned)
+            {
+                return productAdminSupportPortal.ManageAdminSupportPortalUser(createUserPersonaId, assignUserPersonaId, roleProp);
+            }
+
+            // Unassign User
+            return productAdminSupportPortal.UnassignUser(createUserPersonaId, assignUserPersonaId);
+        }
+
+        /// <summary>
+        /// Update Product User Profile
+        /// </summary> 
+        /// <param name="createUserRealPageId">Logged-in user Enterprise UserId</param>
+        /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
+        /// <param name="assignUserPersonaId">new user PersonaId</param>
+        /// <param name="rolePropList">Admin Support Portal Role And Property List</param>
+        /// <returns>String.empty if success else error</returns>
+        public string UpdateProductUserProfile(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId)
+        {
+            base.UserClaim.UserRealPageGuid = createUserRealPageId;
+            var productASP = new ManageProductAdminSupportPortal(base.UserClaim);
+
+            return productASP.UpdateAdminSupportPortalUserProfile(createUserPersonaId, assignUserPersonaId);
+        }
+
+        /// <summary>
+        /// Change Product User Type from Admin to Regular or Regular to Admin
+        /// </summary>
+        /// <param name="createUserRealPageId">Logged-in user Enterprise UserId</param>
+        /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
+        /// <param name="assignUserPersonaId">new user PersonaId</param>
+        /// <param name="batchProcessType">Batch Process Type</param>
+        /// <param name="rolePropList">Admin Support Portal Role And Property List</param>
+        /// <returns>String.empty if success else error</returns>
+        public string ChangeProductUserType(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, BatchProcessType batchProcessType, object rolePropList)
+        {
+            var roleProp = rolePropList as AdminSupportPortalPropertyRole;
+            if (roleProp == null)
+            {
+                return "Input JSON parsing issue; Null object.";
+            }
+
+            base.UserClaim.UserRealPageGuid = createUserRealPageId;
+            var productASP = new ManageProductAdminSupportPortal(base.UserClaim);
+
+            return productASP.ManageAdminSupportPortalUser(createUserPersonaId, assignUserPersonaId, roleProp);
+        }
+    }
+    #endregion
+
 
     #region SalesForce
     /// <summary>

@@ -185,12 +185,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Controllers
 			return GetProductDetails((int)ProductEnum.ClientPortal, personaId, null, "https://www.realpage.com/clientportal");
 		}
 
-		/// <summary>
-		/// Used to log into the Insurance system
-		/// </summary>
-		/// <param name="personaId">If passed, it will contain the unique id of the Persona to use to log into the product</param>
-		/// <returns></returns>
-		[Authorize]
+        /// <summary>
+        /// Used to log into the AdminSupportPortal system
+        /// </summary>
+        /// <param name="personaId">If passed, it will contain the unique id of the Persona to use to log into the product</param>
+        /// <returns></returns>
+        [Authorize]
+        public ActionResult AdminSupportPortal(long personaId = 0)
+        {
+            // get the ClientPortal product details
+            return GetProductDetails((int)ProductEnum.AdminSupportPortal, personaId, null, "https://www.realpage.com/clientportal");
+        }
+        /// <summary>
+        /// Used to log into the Insurance system
+        /// </summary>
+        /// <param name="personaId">If passed, it will contain the unique id of the Persona to use to log into the product</param>
+        /// <returns></returns>
+        [Authorize]
 		public ActionResult Insurance(long personaId = 0)
 		{
 			// get the Insurance product details
