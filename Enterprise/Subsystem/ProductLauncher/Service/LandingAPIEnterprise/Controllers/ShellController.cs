@@ -5,6 +5,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Security;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Rum;
 using Swashbuckle.Swagger.Annotations;
@@ -25,7 +26,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
         private IManageSecurity _manangeSecurityLogic;
         private IPersonaRepository _personaRepository;
-       
+        private ProductInternalSettingRepository _productInternalSettingRepository;
+
 
         /// <summary>
         /// Default constructor
@@ -49,8 +51,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             _userRepository = new UserRepository(repository, userClaims, messageHandler);
             _manangeSecurityLogic = new ManageSecurity(userClaims, personaRightRepository);
             _userClaims = userClaims;
-           // _personaRepository = new PersonaRepository(userClaims);
-             //_personaRepository = personaRepository;
+            _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
         }
 
         /// <summary>
@@ -64,6 +65,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             _manangeSecurityLogic = new ManageSecurity(_userClaims);
             IOrganizationRepository organizationRepository = new OrganizationRepository();
             IUserLoginRepository userLoginRepository = new UserLoginRepository();
+            _productInternalSettingRepository = new ProductInternalSettingRepository();
             _personaRepository = new PersonaRepository(organizationRepository, userLoginRepository,_userClaims);
 
         }
@@ -80,9 +82,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             if (_userClaims.ImpersonatedBy != Guid.Empty)
             {
                 // Pass GUID ID and Company Id  will get Persona Id Information.
+                var productSettingsInternal = GetProductSettings(3);
                 var impersonaUserId = _personaRepository.ListPersona(_userClaims.ImpersonatedBy);
                 var imper = impersonaUserId.FirstOrDefault(x => x.Organization.RealPageId.Equals(DefaultUserClaim.EmployeeCompanyRealPageId));
                 var Impersonarights = _manangeSecurityLogic.GetPersonaRightsAndActionsByRoute(imper.PersonaId, "sidemenu")?.obj?.Rights;
+                if (Impersonarights != null)
+                {
+                    var productInternalSettingsByType = _productInternalSettingRepository.GetProductSettingByType("ImpersonationRightsToBeExcluded");
+                    foreach (var productSetting in productInternalSettingsByType)
+                    {
+                        string[] types = productSetting.Value.Split(',');
+                        foreach (string right in Impersonarights.ToList()) 
+                        {
+                            if (types.Contains(right))
+                            {
+                                Impersonarights.Remove(right);
+                            }
+                        } 
+                    }
+                  
+                }
                 foreach (var impersonateRightName in Impersonarights.ToList())
                 {
                     if (!rights.Contains(impersonateRightName))
@@ -125,6 +144,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             }
 
             return ret.Count > 0 ? ret : null;
+        }
+        private IList<ProductInternalSetting> GetProductSettings(int productId)
+        {
+            ProductInternalSettingRepository settings = new ProductInternalSettingRepository();
+           return settings.GetProductInternalSettings(productId);
         }
     }
 }

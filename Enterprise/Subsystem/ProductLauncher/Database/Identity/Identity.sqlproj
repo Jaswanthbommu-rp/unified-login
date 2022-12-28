@@ -1279,6 +1279,7 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\ADGroupWithoutUserCreationSetting.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\AllowChangeCompanyDuringLoginSetting.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\elklogsettings.sql" />
+    <Build Include="Scripts\PostDeployment\PostDeploymentScripts\December2023Release.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
@@ -1404,7 +1405,6 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\web2printUserGroups.sql" />
   </ItemGroup>
   <ItemGroup>
-    <PostDeploy Include="Scripts\PostDeployment\Script.PostDeployment.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\version0.0.0.23.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.25.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.42.sql" />
