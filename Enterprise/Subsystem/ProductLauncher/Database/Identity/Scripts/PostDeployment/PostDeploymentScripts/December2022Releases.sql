@@ -4,7 +4,7 @@ DECLARE @ProductId INT = 3, @Now DATETIME = GETUTCDATE(), @ProductsettingTypeid 
 IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'ImpersonationRightsToBeExcluded')
 BEGIN
 	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
-	VALUES ('ImpersonationRightsToBeExcluded', 'Impersinate rights not carried forwarded  for customer pmc through support Tool', 0);
+	VALUES ('ImpersonationRightsToBeExcluded', 'Rights to be ignored when impersonating a user', 0);
 END
 -- Enabling 
 

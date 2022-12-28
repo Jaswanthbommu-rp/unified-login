@@ -1279,7 +1279,6 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\ADGroupWithoutUserCreationSetting.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\AllowChangeCompanyDuringLoginSetting.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\elklogsettings.sql" />
-    <Build Include="Scripts\PostDeployment\PostDeploymentScripts\December2023Release.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
@@ -1398,6 +1397,7 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\Batchprocessor-settings.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\1213354-add-operators.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\IterateUserNameForUserCreationSetting.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\December2022Releases.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />

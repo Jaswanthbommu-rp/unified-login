@@ -82,25 +82,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             if (_userClaims.ImpersonatedBy != Guid.Empty)
             {
                 // Pass GUID ID and Company Id  will get Persona Id Information.
-                var productSettingsInternal = GetProductSettings(3);
                 var impersonaUserId = _personaRepository.ListPersona(_userClaims.ImpersonatedBy);
-                var imper = impersonaUserId.FirstOrDefault(x => x.Organization.RealPageId.Equals(DefaultUserClaim.EmployeeCompanyRealPageId));
-                var Impersonarights = _manangeSecurityLogic.GetPersonaRightsAndActionsByRoute(imper.PersonaId, "sidemenu")?.obj?.Rights;
+                var impersonatedUser = impersonaUserId.FirstOrDefault(x => x.Organization.RealPageId.Equals(DefaultUserClaim.EmployeeCompanyRealPageId));
+                var Impersonarights = _manangeSecurityLogic.GetPersonaRightsAndActionsByRoute(impersonatedUser.PersonaId, "sidemenu")?.obj?.Rights;
                 if (Impersonarights != null)
                 {
                     var productInternalSettingsByType = _productInternalSettingRepository.GetProductSettingByType("ImpersonationRightsToBeExcluded");
-                    foreach (var productSetting in productInternalSettingsByType)
+                    if (productInternalSettingsByType != null)
                     {
-                        string[] types = productSetting.Value.Split(',');
-                        foreach (string right in Impersonarights.ToList()) 
+                        foreach (var productSetting in productInternalSettingsByType)
                         {
-                            if (types.Contains(right))
+                            string[] types = productSetting.Value.Split(',');
+                            foreach (string right in Impersonarights.ToList())
                             {
-                                Impersonarights.Remove(right);
+                                if (types.Contains(right))
+                                {
+                                    Impersonarights.Remove(right);
+                                }
                             }
-                        } 
-                    }
-                  
+                        }
+                    } 
                 }
                 foreach (var impersonateRightName in Impersonarights.ToList())
                 {
