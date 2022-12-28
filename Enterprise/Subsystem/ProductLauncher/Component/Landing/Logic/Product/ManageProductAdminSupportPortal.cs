@@ -1455,23 +1455,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             IList<ProductRole> productRoles = new List<ProductRole>
             {
-                new ProductRole {ID = "00e1G000000JItR", Name = "Client Portal Light"},
-                new ProductRole {ID = "00e37000000MkG1", Name = "Client Portal with Cancellations"},
-                new ProductRole {ID = "00e37000000MkFm", Name = "Client Portal with Billing"},
+                new ProductRole {ID = "00e1G000000JItR", Name = "Client Portal Light", Roletype = "Admin Portal"},
+                new ProductRole {ID = "00e37000000MkG1", Name = "Client Portal with Cancellations", Roletype = "Admin Portal"},
+                new ProductRole {ID = "00e37000000MkFm", Name = "Client Portal with Billing", Roletype = "Admin Portal"},
                 new ProductRole
                 {
                     ID = "00e00000006qqxo",
-                    Name = "Client Portal with Transaction Limit and BAC Requestor"
+                    Name = "Client Portal with Transaction Limit and BAC Requestor",
+                    Roletype = "Admin Portal"
                 },
-                new ProductRole {ID = "00e00000006qqxn", Name = "Client Portal with Transaction Limit and BAC Approver"},
+                new ProductRole {ID = "00e00000006qqxn", Name = "Client Portal with Transaction Limit and BAC Approver", Roletype = "Admin Portal"},
                 new ProductRole
                 {
                     ID = "00e00000006qqxm",
-                    Name = "Client Portal with Billing, Cancellations, and Payments Admin"
+                    Name = "Client Portal with Billing, Cancellations, and Payments Admin", 
+                    Roletype = "Admin Portal"
                 },
-                new ProductRole {ID = "00e00000006qqxh", Name = "Client Portal Standard User"},
-                new ProductRole {ID = "00e00000006qqxf", Name = "Client Portal Administrator"},
-                new ProductRole {ID = "00e00000006qqxc", Name = "Client Portal with Billing and Cancellations"},
+                new ProductRole {ID = "00e00000006qqxh", Name = "Client Portal Standard User", Roletype = "Support Portal"},
+                new ProductRole {ID = "00e00000006qqxf", Name = "Client Portal Administrator", Roletype = "Admin Portal"},
+                new ProductRole {ID = "00e00000006qqxc", Name = "Client Portal with Billing and Cancellations", Roletype = "Admin Portal"},
                 //"00e00000006ojYqAAI", "System Administrator"
             };
 
