@@ -359,7 +359,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                           LastName = person.LastName,
                           Unified_Platform_User__c = true,
                           Portal_User_Migrated__c = true,
-                          IsCreatedFromNewPortal__c = true
+                          isCreatedFromNewPortal__c = true
                       });
 
                     WriteToDiagnosticLog(
@@ -1609,7 +1609,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         public bool Portal_User_Migrated__c { get; set; }
 
-        public bool IsCreatedFromNewPortal__c { get; set; }
+        public bool isCreatedFromNewPortal__c { get; set; }
         
     }
 

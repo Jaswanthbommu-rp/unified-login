@@ -12,6 +12,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Accounting;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ClientPortal;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.AdminSupportPortal;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.MarketingCenter;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Migration;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ops;
@@ -491,7 +492,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.AdminSupportPortal:
                     product = new AdminSupportPortalProduct(_userClaims);
                     productPropertiesRoles =
-                        DeserializeJSON<ClientPortalPropertyRole>(productUser.InputJson);
+                        DeserializeJSON<AdminSupportPortalPropertyRole>(productUser.InputJson);
                     result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
                         productUser.AssignUserPersonaId, productPropertiesRoles);
                     break;
