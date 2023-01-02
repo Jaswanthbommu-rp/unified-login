@@ -160,7 +160,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			TotalRows[] results2 = new TotalRows[1];
 			LocationID[] location;
-			IList<ProductProperty> list;
+			IList<ProductProperty> list = new List<ProductProperty>();
 
 			try
 			{   
@@ -171,19 +171,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				WriteToDiagnosticLog($"GetUserProperties - result from api", logData);
 				list = location.ToGBProperties();
 
-				if (list == null)
+				if (list == null || list.Count() == 0)
 				{
-					if (list == null)
+                    var propertyList = GetAllCompanyProperties(editorPersonaId, userPersonaId, datafilter);
+					var gbProp = propertyList.ToGBProperties();
+					if(gbProp != null)
 					{
-						if (results2.Length > 0)
+						list = gbProp;
+                    }
+					else if (results2.Length > 0)
+					{
+						string message = results2[0].TotalRows1;
+						if (message.ToUpper().Contains("NOT A VALID USERID"))
 						{
-							string message = results2[0].TotalRows1;
-							if (message.ToUpper().Contains("NOT A VALID USERID"))
-							{
-								throw new Exception("Invalid user");
-							}
+							throw new Exception("Invalid user");
 						}
-						list = new List<ProductProperty>();
 					}
 				}
 
@@ -282,7 +284,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				}
 				
-				
+
 				if (list == null)
 				{
 					if (results2.Length > 0)
@@ -295,8 +297,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					}
 					list = new List<ProductPropertyGroup>();
 				}
-
 				
+
 				response = new ListResponse()
 				{
 					Records = list.Cast<object>().ToList(),
@@ -561,21 +563,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 List<ACCompany> cmpList = GetUserCompaniesDetails(editorPersonaId, userPersonaId, datafilter);
 
-                //foreach (var comp in cmpList)
-                //{
-                //    if(comp.isAssigned == true)
-                //    {
-                //        companyPropertiesList.ForEach(m =>
-                //        {
-                //            if (m.CompanyId == comp.Id)
-                //            {
-                //                m.DisableSelection = true;
-                //                m.IsAssigned = true;
-                //            }
-                //        });
-                //    }
-                //}
-
 				if (companyPropertiesList.Count(p => !string.IsNullOrEmpty(p.MConsoleId.Trim())) != 0)
 				{
 					//We have MConsole company here
@@ -606,7 +593,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         }
 
 
-        //
+		//
         /// <summary>
         /// Get the user details for the given user persona
         /// </summary>
@@ -616,9 +603,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns></returns>
         public NameValuePair[] GetUser(long editorPersonaId, long userPersonaId, RequestParameter datafilter)
         {
-           
+
             Dictionary<string, object> logData = new Dictionary<string, object>();
-           
+
             FilterSortParameters wsParams = ManageProductOneSiteAccountingHelpers.GenerateSearchAndPaging(datafilter, "Name", 0, 9999);
             
             SharedObjects.Product.OneSiteAccounting.User[] user = new SharedObjects.Product.OneSiteAccounting.User[1] { new SharedObjects.Product.OneSiteAccounting.User() };
@@ -637,7 +624,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             WriteToDiagnosticLog($"GetUser - _productUserId = {_productUserId}", logData);
             user[0].NameValuePair = loginInfo.ToArray();
 
-            
+
             NameValuePair[] userResp = null;
             IList<ProductProperty> list;
 
@@ -649,19 +636,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 logData = new Dictionary<string, object>();
                 logData.Add("user details", userResp);
                 WriteToDiagnosticLog($"GetUser - result from api", logData);
-                
+
             }
             catch (Exception ex)
             {
                 WriteToErrorLog($"GetUserProperties - Error", exception: ex);
-               
+
             }
             return userResp;
         }
 
-      
 
-        //
+
+		//
         /// <summary>
         /// Get the properties for the given user persona
         /// </summary>
@@ -679,37 +666,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             FilterSortParameters wsParams = ManageProductOneSiteAccountingHelpers.GenerateSearchAndPaging(datafilter, "Name", 0, 9999);
 
-            
+
             List<ACCompany> cmpList;
             AccountingUser aUser = new AccountingUser();
 
             try
-            {                
-
+            {       
+				
                 cmpList = GetUserCompaniesDetails(editorPersonaId, userPersonaId, datafilter);
-
-                if (userPersonaId != 0)
-                {
-                    //List<ACProperty> companyPropertiesList = GetAllCompanyProperties(editorPersonaId, userPersonaId, datafilter);
-                    //cmpList.ForEach(cmp =>
-                    //{
-
-                    //    List<ACProperty> props = companyPropertiesList.FindAll(p => p.CompanyId.ToUpperInvariant() == cmp.Id.ToUpperInvariant());
-                    //    if (props.Count > 0)
-                    //    {
-                    //        if (props.Any(f => f.IsAssigned == false))
-                    //        {
-                    //            cmp.isAssigned = false;
-                    //        }
-                    //        else
-                    //        {
-                    //            cmp.isAssigned = true;
-                    //        }
-                    //    }
-
-                    //});
-                }
-
                 NameValuePair[] userResp = null;
 
                 List<int> prdIds = GetProductIdsByOrg();
@@ -720,7 +684,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         aUser.IsSiteSpendManagementAssignedToCompany = true;
                     }
                 }
-                
+
 
                 //Get User details
                 if (userPersonaId != 0)
@@ -3482,12 +3446,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			return (from property in results orderby property.ID, property.Name select property).ToList();
 		}
 
-		/// <summary>
-		/// Used to convert a OneSite Accounting property group into a GreenBook property group to be used by the UI
-		/// </summary>
-		/// <param name="propertyGroups">The list of propertyGroups to convert</param>
-		/// <returns></returns>
-		public static IList<ProductPropertyGroup> ToGBPropertyGroup(this LocationGroupID[] propertyGroups)
+        /// <summary>
+        /// Used to convert a OneSite Accounting property into a GreenBook property to be used by the UI
+        /// </summary>
+        /// <param name="properties">The list of properties to convert</param>
+        /// <returns></returns>
+        public static IList<ProductProperty> ToGBProperties(this List<ACProperty> properties)
+        {
+            if (properties == null) return null;
+            IList<ProductProperty> results = new List<ProductProperty>();
+            foreach (ACProperty prop in properties)
+            {
+                results.Add(new ProductProperty
+                {
+                    Name = prop.PropertyName,
+                    ID = prop.Id,
+                    IsAssigned = prop.IsAssigned
+                });
+            }
+            return results.OrderBy(x => x.ID).ThenBy(x => x.Name).ToList();
+        }
+
+        /// <summary>
+        /// Used to convert a OneSite Accounting property group into a GreenBook property group to be used by the UI
+        /// </summary>
+        /// <param name="propertyGroups">The list of propertyGroups to convert</param>
+        /// <returns></returns>
+        public static IList<ProductPropertyGroup> ToGBPropertyGroup(this LocationGroupID[] propertyGroups)
 		{
 			if (propertyGroups == null) return null;
 			IList<ProductPropertyGroup> results = new List<ProductPropertyGroup>();
