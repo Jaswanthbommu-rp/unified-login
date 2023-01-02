@@ -358,8 +358,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                           FirstName = person.FirstName,
                           LastName = person.LastName,
                           Unified_Platform_User__c = true,
-                          Portal_User_Migrated__c = true,
-                          isCreatedFromNewPortal__c = true
+                          Portal_User_Migrated__c = true
                       });
 
                     WriteToDiagnosticLog(
@@ -412,7 +411,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     CommunityNickname = uniqueProductLoginName.Substring(0, uniqueProductLoginName.Length >= 40 ? 40 : uniqueProductLoginName.Length),
                     Alias = GetAliasFromLogin(uniqueProductLoginName),
                     ProfileId = adminSupportPortalPropertyRole.RoleList[0],
-                    IsActive = true
+                    IsActive = true,
+                    IsCreatedFromNewPortal__c = true
                 };
 
 
@@ -1596,6 +1596,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public string ContactId { get; set; } //":"0033C0000055jYbQAI"
 
         public bool IsActive { get; set; } //true/false     
+
+        public bool IsCreatedFromNewPortal__c { get; set; }
     }
 
     public class AdminSupportPortalContact
@@ -1609,7 +1611,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         public bool Portal_User_Migrated__c { get; set; }
 
-        public bool isCreatedFromNewPortal__c { get; set; }
+        
         
     }
 
