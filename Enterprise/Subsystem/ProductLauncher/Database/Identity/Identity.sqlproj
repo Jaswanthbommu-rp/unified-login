@@ -1402,6 +1402,7 @@
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />
     <None Include="Scripts\PreDeployment\PreDeploymentScripts\Activity-PreDeployment.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\web2printUserGroups.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\AddSamlSettingForAdminPortal.sql" />
   </ItemGroup>
   <ItemGroup>
     <PostDeploy Include="Scripts\PostDeployment\Script.PostDeployment.sql" />

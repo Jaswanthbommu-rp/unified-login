@@ -395,7 +395,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 var clientPortaluserDetails = CheckClientPortalUserExists(userLogin.LoginName);
-
+                var productRoles = GetProductRoles();
+                var roleType = productRoles.Where(a => a.ID == adminSupportPortalPropertyRole.RoleList[0]).Select(a => a.Roletype).FirstOrDefault();
 
                 var adminSupportPortalUser = new AdminSupportPortalUser
                 {
@@ -425,7 +426,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     // set fields to null which we can't update
                     adminSupportPortalUser.ContactId = null;
 
-                    var updateResult = UpdateAdminSupportPortalUser(adminSupportPortalUser, _productUserId, userPersonaId);
+                    var updateResult = UpdateAdminSupportPortalUser(adminSupportPortalUser, _productUserId, userPersonaId, roleType);
 
                     return updateResult;
                 }
@@ -434,7 +435,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     // Create New User & return result
                     WriteToDiagnosticLog(
                         $"ManageProductAdminSupportPortal.ManageAdminSupportPortalUser - trying to CREATE user with editorPersona id - {editorPersonaId}.");
-                    string insertResult = CreateAdminSupportPortalUser(userPersonaId, adminSupportPortalUser);
+                    string insertResult = CreateAdminSupportPortalUser(userPersonaId, adminSupportPortalUser,roleType);
 
                     return insertResult;
 
@@ -1365,7 +1366,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             throw new Exception("Error while creating contact.");
         }
 
-        private string CreateAdminSupportPortalUser(long userPersonaId, AdminSupportPortalUser adminSupportPortalUser)
+        private string CreateAdminSupportPortalUser(long userPersonaId, AdminSupportPortalUser adminSupportPortalUser, string roleType)
         {
 
             var logData = new Dictionary<string, object> { { "adminSupportPortalUser", adminSupportPortalUser } };
@@ -1387,14 +1388,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (userResult != null)
             {
                 var newId = userResult.id.ToString();
-                CreateProductUserInGreenBook(userPersonaId, newId, adminSupportPortalUser.Username);
+                CreateProductUserInGreenBook(userPersonaId, newId, adminSupportPortalUser.Username, roleType);
                 return "";
             }
 
             throw new Exception($"Error while creating user with userPersonaId {userPersonaId}");
         }
 
-        private string UpdateAdminSupportPortalUser(AdminSupportPortalUser adminSupportPortalUser, string productUserId, long userPersonaId)
+        private string UpdateAdminSupportPortalUser(AdminSupportPortalUser adminSupportPortalUser, string productUserId, long userPersonaId, string roleType)
         {
             var logData = new Dictionary<string, object> { { "adminSupportPortalUser", adminSupportPortalUser } };
 
@@ -1405,6 +1406,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (!string.IsNullOrEmpty(result))
             {
                 throw new Exception($"Error while updating user - {result}");
+            }
+            else
+            {
+                IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(userPersonaId, _productId);
+
+                foreach (var attribute in productAttributes)
+                {
+                    if (attribute.Name.ToUpper() == "ROLETYPE")
+                    {
+                        attribute.Value = roleType;
+                        _samlRepository.UpdateSamlUserAttribute(attribute);
+                    }
+                }
             }
 
             WriteToDiagnosticLog($"ManageProductAdminSupportPortal.UpdateAdminSupportPortalUser - Setting product status to Success. productUserId-{productUserId}, userPersonaId-{userPersonaId}");
@@ -1455,35 +1469,39 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             IList<ProductRole> productRoles = new List<ProductRole>
             {
-                new ProductRole {ID = "00e1G000000JItR", Name = "Client Portal Light"},
-                new ProductRole {ID = "00e37000000MkG1", Name = "Client Portal with Cancellations"},
-                new ProductRole {ID = "00e37000000MkFm", Name = "Client Portal with Billing"},
+                new ProductRole {ID = "00e1G000000JItR", Name = "Client Portal Light", Roletype = "Admin Portal"},
+                new ProductRole {ID = "00e37000000MkG1", Name = "Client Portal with Cancellations", Roletype = "Admin Portal"},
+                new ProductRole {ID = "00e37000000MkFm", Name = "Client Portal with Billing", Roletype = "Admin Portal"},
                 new ProductRole
                 {
                     ID = "00e00000006qqxo",
-                    Name = "Client Portal with Transaction Limit and BAC Requestor"
+                    Name = "Client Portal with Transaction Limit and BAC Requestor",
+                    Roletype = "Admin Portal"
                 },
-                new ProductRole {ID = "00e00000006qqxn", Name = "Client Portal with Transaction Limit and BAC Approver"},
+                new ProductRole {ID = "00e00000006qqxn", Name = "Client Portal with Transaction Limit and BAC Approver", Roletype = "Admin Portal"},
                 new ProductRole
                 {
                     ID = "00e00000006qqxm",
-                    Name = "Client Portal with Billing, Cancellations, and Payments Admin"
+                    Name = "Client Portal with Billing, Cancellations, and Payments Admin", 
+                    Roletype = "Admin Portal"
                 },
-                new ProductRole {ID = "00e00000006qqxh", Name = "Client Portal Standard User"},
-                new ProductRole {ID = "00e00000006qqxf", Name = "Client Portal Administrator"},
-                new ProductRole {ID = "00e00000006qqxc", Name = "Client Portal with Billing and Cancellations"},
+                new ProductRole {ID = "00e00000006qqxh", Name = "Client Portal Standard User", Roletype = "Support Portal"},
+                new ProductRole {ID = "00e00000006qqxf", Name = "Client Portal Administrator", Roletype = "Admin Portal"},
+                new ProductRole {ID = "00e00000006qqxc", Name = "Client Portal with Billing and Cancellations", Roletype = "Admin Portal"},
                 //"00e00000006ojYqAAI", "System Administrator"
             };
 
             return productRoles;
         }
 
-        private void CreateProductUserInGreenBook(long userPersonaId, string newid, string productLoginName)
+        private void CreateProductUserInGreenBook(long userPersonaId, string newid, string productLoginName, string roleType)
         {
             WriteToDiagnosticLog(
                 $"ManageProductAdminSupportPortal.CreateProductUserInGreenBook - Inserting in GB -productUsername -{productLoginName} and userId {newid}.");
             _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.productUsername,
                 productLoginName);
+            _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.RoleType,
+                roleType);
             _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.UserId, newid);
 
             _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.portal_id, _portalId);
@@ -1594,6 +1612,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string ContactId { get; set; } //":"0033C0000055jYbQAI"
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string RoleType { get; set; } //":"Admin Portal"
 
         public bool IsActive { get; set; } //true/false     
 
