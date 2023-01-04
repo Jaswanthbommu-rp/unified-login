@@ -377,8 +377,6 @@
 	INSERT INTO Ident.IdentityProviderSetting(IdentityProviderSettingId, IdentityProviderSettingTypeId, Value)
 	VALUES(30, 37, 'Sign-in with Google')
 	INSERT INTO Ident.IdentityProviderSetting(IdentityProviderSettingId, IdentityProviderSettingTypeId, Value)
-	VALUES(31, 38, '179102204650-0d0rl3u61b9bsd9vn5j2mmtve8it7ong.apps.googleusercontent.com')
-	INSERT INTO Ident.IdentityProviderSetting(IdentityProviderSettingId, IdentityProviderSettingTypeId, Value)
 	VALUES(32, 39, '0')
 	INSERT INTO Ident.IdentityProviderSetting(IdentityProviderSettingId, IdentityProviderSettingTypeId, Value)
 	VALUES(33, 40, '1')

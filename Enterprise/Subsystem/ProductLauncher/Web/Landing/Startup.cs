@@ -10,8 +10,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing
 	{
 		public void Configuration(IAppBuilder app)
 		{
-			System.Net.ServicePointManager.SecurityProtocol =
-				SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
+			System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
 			HttpConfiguration config = new HttpConfiguration();
 			// Add our custom no-cache handler to the response

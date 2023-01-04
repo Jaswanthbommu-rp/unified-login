@@ -19,6 +19,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.D
 		/// <summary>
 		/// Password
 		/// </summary>
+		[DataType(DataType.Password)]
 		public string Password { get; set; }
 
 		/// <summary>

@@ -24,7 +24,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader
         {
             SerilogHelpers.ConfigureSerilog("Unified Login");
 
-            System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
+            System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
 			HttpConfiguration config = new HttpConfiguration();
 

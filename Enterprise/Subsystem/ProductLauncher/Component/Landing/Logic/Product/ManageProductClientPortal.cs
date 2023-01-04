@@ -60,7 +60,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             WriteToDiagnosticLog("ManageProductClientPortal.Ctor - Getting Product settings.");
 
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11;
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
             _productId = (int)ProductEnum.ClientPortal;
             _productInternalSettingRepository = new ProductInternalSettingRepository();

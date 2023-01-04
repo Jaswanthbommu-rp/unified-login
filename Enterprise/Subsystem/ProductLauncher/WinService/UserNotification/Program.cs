@@ -18,7 +18,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification
         {
             SerilogHelpers.ConfigureSerilog("Unified Login");
 
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
             var userNotificationService = new UserNotificationService();
 
