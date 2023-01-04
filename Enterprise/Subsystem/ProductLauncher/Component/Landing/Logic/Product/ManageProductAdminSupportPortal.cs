@@ -1413,7 +1413,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 foreach (var attribute in productAttributes)
                 {
-                    if (attribute.Name.ToUpper() == "ROLETYPE")
+                    if (attribute.Name.ToUpper() == "ROLECODE")
                     {
                         attribute.Value = roleType;
                         _samlRepository.UpdateSamlUserAttribute(attribute);
@@ -1500,7 +1500,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 $"ManageProductAdminSupportPortal.CreateProductUserInGreenBook - Inserting in GB -productUsername -{productLoginName} and userId {newid}.");
             _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.productUsername,
                 productLoginName);
-            _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.RoleType,
+            _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.RoleCode,
                 roleType);
             _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.UserId, newid);
 

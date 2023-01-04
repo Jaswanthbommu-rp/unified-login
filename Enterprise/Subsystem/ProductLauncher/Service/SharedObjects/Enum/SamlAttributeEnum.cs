@@ -72,11 +72,6 @@
 		/// <summary>
 		/// Integration marketPlace role code
 		/// </summary>
-		RoleCode = 15,
-
-		/// <summary>
-		/// Admin Support Portal RoleType
-		/// </summary>
-		RoleType = 16
+		RoleCode = 15
 	}
 }

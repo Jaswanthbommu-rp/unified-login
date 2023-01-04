@@ -29,4 +29,3 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\AddingSetting_MenuRights.sql
 :r .\PostDeploymentScripts\web2printUserGroups.sql
 :r .\PostDeploymentScripts\AddingRightforSettings.sql
-:r .\PostDeploymentScripts\AddSamlSettingForAdminPortal.sql
