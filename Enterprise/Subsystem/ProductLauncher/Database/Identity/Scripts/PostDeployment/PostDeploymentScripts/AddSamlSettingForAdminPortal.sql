@@ -21,3 +21,23 @@ BEGIN
     exec [Enterprise].[SetProductSetting] 0,@Productid,@ProductsettingTypeid,'InternalAdminaccessToUnifiedSettings,EmployeeAccesstoManageSettingsTemplates,AccessSettingsAdmin,EmployeeAccessUnifiedReportingAdminConsole'
 END
 GO
+
+Declare @Right1 BigInt,@Right2 BigInt,@Right3 BigInt, @Right4 BigInt, @SidemenuId BigInt, @Now DATETIME = GETUTCDATE();
+Declare @UserId bigint;
+SELECT @UserId = UserId
+FROM   Ident.UserLogin
+WHERE  LoginName LIKE 'realpagead@%';
+
+Select @SidemenuId = RouteId from [Security].[Route] where RouteValue = 'SideMenu';
+
+Select @Right1 = RightId from Security.[Right] where value = 'Manage company-level settings';
+Select @Right2 = RightId from Security.[Right] where value = 'View all company-level settings';
+Select @Right3 = RightId from Security.[Right] where value = 'Manage property-level settings';
+Select @Right4 = RightId from Security.[Right] where value = 'View all property-level settings';
+
+
+If Not Exists (Select Top 1 1 from Security.[RightRoute] where RightId in (@Right1,@Right2,@Right3,@Right4) and RouteId = @SidemenuId)
+Begin
+     Insert into Security.[RightRoute] values (@Right1,@SidemenuId,@UserId,@Now),(@Right2,@SidemenuId,@UserId,@Now),(@Right3,@SidemenuId,@UserId,@Now),(@Right4,@SidemenuId,@UserId,@Now);
+End
+GO
