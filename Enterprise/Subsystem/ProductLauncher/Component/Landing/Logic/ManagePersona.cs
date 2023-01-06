@@ -29,7 +29,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
     {
         #region Private Variables
         IPersonaRepository _personaRepository;
-        //IManageOrganization _manageOrganization;
         readonly ITokenHelper _tokenHelper;
         readonly IProductInternalSettingRepository _productRepository;
         private DefaultUserClaim _userClaim;
@@ -40,25 +39,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// ManagePersona Constructor
         /// </summary>
         /// <param name="personaRepository"></param>
-        /// <param name="manageOrganization"></param>
-        public ManagePersona(IPersonaRepository personaRepository, IManageOrganization manageOrganization)
+        public ManagePersona(IPersonaRepository personaRepository)
         {
             _personaRepository = personaRepository;
-           // _manageOrganization = manageOrganization;
         }
-
-        ///// <summary>
-        ///// ManagePersona Constructor
-        ///// </summary>
-        ///// <param name="userClaim"></param>
-        ///// <param name="personaRepository"></param>
-        ///// <param name="manageOrganization"></param>
-        //public ManagePersona(DefaultUserClaim userClaim, IPersonaRepository personaRepository, IManageOrganization manageOrganization)
-        //{
-        //    _personaRepository = personaRepository;
-        //    _manageOrganization = manageOrganization;
-        //    _userClaim = userClaim;
-        //}
 
         /// <summary>
         /// Create a basic instance of the ManagePerson Controller class
@@ -66,7 +50,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         public ManagePersona()
         {
             _personaRepository = new PersonaRepository();
-            //_manageOrganization = new ManageOrganization();
             _tokenHelper = new TokenHelper();
             _productRepository = new ProductInternalSettingRepository();
         }
@@ -74,10 +57,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <summary>
         /// Create a basic instance of the ManagePerson Controller class
         /// </summary>
+        /// <param name="repository"></param>
+        /// <param name="userClaim"></param>
+        /// <param name="messageHandler"></param>
         public ManagePersona(IRepository repository, DefaultUserClaim userClaim, HttpMessageHandler messageHandler)
         {
-            _personaRepository = new PersonaRepository(repository);
-            //_manageOrganization = new ManageOrganization(repository, userClaim, messageHandler);
+            _personaRepository = new PersonaRepository(repository,userClaim);
             _productRepository = new ProductInternalSettingRepository(repository);
             _tokenHelper = new TokenHelper(repository);
         }
@@ -87,8 +72,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// </summary>
         public ManagePersona(DefaultUserClaim userClaim)
         {
-            _personaRepository = new PersonaRepository();
-            //_manageOrganization = new ManageOrganization(userClaim);
+            _personaRepository = new PersonaRepository(userClaim);
             _productRepository = new ProductInternalSettingRepository();
             _tokenHelper = new TokenHelper();
             _userClaim = userClaim;

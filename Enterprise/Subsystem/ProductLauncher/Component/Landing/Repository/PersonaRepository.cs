@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using RP.Enterprise.Foundation.DataAccess.Component;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Rum;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 {
@@ -35,33 +36,42 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
 
         /// <summary>
-        /// Shared repository constructor
+        /// Transaction Shared repository constructor
         /// </summary>
         /// <param name="repository"></param>
-       
+
         public PersonaRepository(IRepository repository) : base(repository)
         {
-           
             _organizationRepository = new OrganizationRepository(repository);
             _userLoginRepository = new UserLoginRepository(repository);
         }
 
-        //public PersonaRepository(DefaultUserClaim userClaim) : base(DbConnectionEnum.IdpConfigurationDb)
-        //{
-        //    if (userClaim == null)
-        //    {
-        //        userClaim = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
-        //    }
-        //    _userClaim = userClaim;
-        //}
-
-        public PersonaRepository(IOrganizationRepository organizationRepository, IUserLoginRepository userLoginRepository,DefaultUserClaim userClaim) : base(DbConnectionEnum.IdpConfigurationDb)
+        /// <summary>
+        /// Unit Test Constructor
+        /// </summary>
+        /// <param name="repository"></param>
+        /// <param name="userClaim"></param>
+        public PersonaRepository(IRepository repository, DefaultUserClaim userClaim) : base(repository)
         {
-            _userClaim=userClaim;
-            _organizationRepository = organizationRepository;
-            _userLoginRepository = userLoginRepository;
-        }
+            _organizationRepository = new OrganizationRepository(repository);
+            _userLoginRepository = new UserLoginRepository(repository);
+            _userClaim = userClaim;
+        } 
 
+        /// <summary>
+        ///Default Constructor
+        /// </summary>
+        /// <param name="userClaim"></param>
+        public PersonaRepository(DefaultUserClaim userClaim) : base(DbConnectionEnum.IdpConfigurationDb)
+        {
+            if (userClaim == null)
+            {
+                userClaim = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
+            }
+            _userClaim = userClaim;
+            _organizationRepository = new OrganizationRepository();
+            _userLoginRepository = new UserLoginRepository();
+        }
         #endregion
 
         #region public Persona methods

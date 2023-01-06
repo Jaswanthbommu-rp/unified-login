@@ -36,6 +36,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         private readonly IProductRepository _productRepository;
 
+        private readonly IPersonaRepository _personaRepository;
         #endregion
 
         #region Constructors
@@ -52,6 +53,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _manageBlueBook = new ManageBlueBook(_userClaims);
 
             _productRepository = new ProductRepository(_userClaims);
+            _personaRepository = new PersonaRepository(_userClaims);
 
             var productInternalSettingRepository = new ProductInternalSettingRepository();
             _integrationTypeFactory = new IntegrationTypeFactory(manageProduct, _manageUnifiedLogin, _manageProductOneSite, _productRepository, productInternalSettingRepository, _userClaims);
@@ -77,6 +79,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _propertyRepository = new PropertyRepository(repository);
             _manageBlueBook = new ManageBlueBook(_userClaims, repository, productInternalSettingRepository, messageHandler);
             _productRepository = new ProductRepository(repository, _userClaims);
+            _personaRepository = new PersonaRepository(repository, _userClaims);
 
             _integrationTypeFactory = new IntegrationTypeFactory(manageProduct, _manageUnifiedLogin, _manageProductOneSite, _productRepository, productInternalSettingRepository, _userClaims);
         }
@@ -98,12 +101,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 else
                 {
-                    IPersonaRepository personaRepository = new PersonaRepository();
+                    //IPersonaRepository personaRepository = new PersonaRepository(_userClaims);
 
                     bool usePrimaryProperty = false;
                     if (userPersonaId > 0)
                     {
-                        var personaProductSettings = personaRepository.GetPersonaProductSettings(userPersonaId);
+                        var personaProductSettings = _personaRepository.GetPersonaProductSettings(userPersonaId);
                         var productSetting = personaProductSettings.FirstOrDefault(item => item.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase) && item.ProductId == productId);
                         if (productSetting != null)
                         {

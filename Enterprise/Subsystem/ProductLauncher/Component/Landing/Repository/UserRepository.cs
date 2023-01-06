@@ -73,7 +73,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             _managePersona = new ManagePersona(repository, userClaim, messageHandler);
             _organizationRepository = new OrganizationRepository(repository);
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
-            _propertyRepository = new PropertyRepository();
+            _propertyRepository = new PropertyRepository(repository);
         }
 
         /// <summary>
@@ -310,7 +310,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             upfmProperty.id = primaryPropertiesBatch.InputJson.PropertyList.ToList();
                         }
 
-                        IPersonaRepository personaRepository = new PersonaRepository();
+                        IPersonaRepository personaRepository = new PersonaRepository(userClaim);
                         var personaProductSettings = personaRepository.GetPersonaProductSettings(cloneUserPersonaId);
 
                         //Then Get Product Batch Data
@@ -2276,7 +2276,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             Organization organization = organizationRepository.GetOrganization(organizationRealPageId);
 
-            IPersonaRepository personaRepository = new PersonaRepository();
+            IPersonaRepository personaRepository = new PersonaRepository(_userClaim);
 
             IList<Persona> personaList = personaRepository.ListPersonaByOrganizationPartyId(organization.PartyId, IsDefault, (int)UserRoleType.SuperUser);
 
@@ -2431,7 +2431,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             IUserRoleRightRepository userRoleRightRepository = new UserRoleRightRepository();
             IUserLoginRepository userLoginRepository = new UserLoginRepository();
-            IPersonaRepository personaRespository = new PersonaRepository();
+            IPersonaRepository personaRespository = new PersonaRepository(_userClaim);
             IOrganizationRepository organizationRepository = new OrganizationRepository();
             IContactMechanismUsageTypeRepository contactMechanismUsageTypeRepository = new ContactMechanismUsageTypeRepository();
 
@@ -6643,7 +6643,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         isExternalUser = personaOrganization.RelationshipType.Equals("User Type", StringComparison.OrdinalIgnoreCase) && personaOrganization.RoleNameFrom.Equals("External User", StringComparison.OrdinalIgnoreCase);
                     }
 
-                    IPersonaRepository personaRepository = new PersonaRepository();
+                    IPersonaRepository personaRepository = new PersonaRepository(userClaim);
                     var personaProductSettings = personaRepository.GetPersonaProductSettings(userPersonaId);
 
                     bool personaProductUsePrimaryProperty = false;

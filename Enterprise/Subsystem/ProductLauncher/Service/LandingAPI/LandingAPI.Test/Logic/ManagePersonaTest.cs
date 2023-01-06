@@ -21,7 +21,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         #region Private Variables
         IManagePersona _managePersona;
         readonly Mock<IPersonaRepository> _mockPersonaRepository = new Mock<IPersonaRepository>();
-        readonly Mock<IManageOrganization> _mockOrganizationLogic = new Mock<IManageOrganization>();
 	    private BooksMaster _booksMaster = new BooksMaster();
 
         private List<Persona> _personaList = new List<Persona>();
@@ -146,7 +145,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.ListPersona(_superUserRealPageId))
                 .Returns(_personaList);
 
-            _managePersona = new ManagePersona(_mockPersonaRepository.Object, _mockOrganizationLogic.Object);
+            _managePersona = new ManagePersona(_mockPersonaRepository.Object);
 
             //Act
 
@@ -168,7 +167,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.ListPersonaByOrganizationPartyId(_superUserPersona.PersonaId, It.IsAny<bool>(), null))
                 .Returns(_personaList);
 
-            _managePersona = new ManagePersona(_mockPersonaRepository.Object, _mockOrganizationLogic.Object);
+            _managePersona = new ManagePersona(_mockPersonaRepository.Object);
 
             //Act
 
@@ -192,7 +191,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.UpdateActivePersona(It.IsAny<Guid>(), It.IsAny<long>()))
                 .Returns(rr);
 
-            _managePersona = new ManagePersona(_mockPersonaRepository.Object, _mockOrganizationLogic.Object);
+            _managePersona = new ManagePersona(_mockPersonaRepository.Object);
 
             //Act
 
@@ -213,7 +212,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Returns(_superUserPersona);
 
             //Act
-            _managePersona = new ManagePersona(_mockPersonaRepository.Object, _mockOrganizationLogic.Object);
+            _managePersona = new ManagePersona(_mockPersonaRepository.Object);
             Persona suPersona = _managePersona.GetActivePersona(_superUserPersona.RealPageId);
 
             //Assert
@@ -231,7 +230,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Returns(_personaEnvironments);
 
             //Act
-            _managePersona = new ManagePersona(_mockPersonaRepository.Object, _mockOrganizationLogic.Object);
+            _managePersona = new ManagePersona(_mockPersonaRepository.Object);
             IList<PersonaEnvironment> environments = _managePersona.GetPersonaEnvironmentType();
             
             //Assert
@@ -250,7 +249,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             //Arrange
             long personaId = 0;
 
-            _managePersona = new ManagePersona(_mockPersonaRepository.Object, _mockOrganizationLogic.Object);
+            _managePersona = new ManagePersona(_mockPersonaRepository.Object);
 
             //Act
             Exception exception = Record.Exception(() => _managePersona.GetPersona(personaId));
@@ -285,7 +284,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetPersona(personaId, true))
                 .Returns(expectedPersona);
 
-            _managePersona = new ManagePersona(_mockPersonaRepository.Object, _mockOrganizationLogic.Object);
+            _managePersona = new ManagePersona(_mockPersonaRepository.Object);
 
             //Act
             Persona persona = _managePersona.GetPersona(personaId);
@@ -304,7 +303,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             //Arrange
             Guid emptyRealPageId = Guid.Empty;
 
-            _managePersona = new ManagePersona(_mockPersonaRepository.Object, _mockOrganizationLogic.Object);
+            _managePersona = new ManagePersona(_mockPersonaRepository.Object);
 
             //Act
             Exception exception = Record.Exception(() => _managePersona.ListPersona(emptyRealPageId));
@@ -339,7 +338,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.ListPersona(realPageId))
                 .Returns(expectedPersonaList);
 
-            _managePersona = new ManagePersona(_mockPersonaRepository.Object, _mockOrganizationLogic.Object);
+            _managePersona = new ManagePersona(_mockPersonaRepository.Object);
 
             //Act
             IList<Persona> personaList = _managePersona.ListPersona(realPageId);

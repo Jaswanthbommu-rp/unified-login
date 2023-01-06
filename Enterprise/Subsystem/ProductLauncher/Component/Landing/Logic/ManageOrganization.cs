@@ -124,7 +124,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _organizationRepository = new OrganizationRepository();
             _credentialRepository = new CredentialRepository();
             _userLoginRepository = new UserLoginRepository();
-            _personaRepository = new PersonaRepository();
+            _personaRepository = new PersonaRepository(userClaim);
             _organizationProductRepository = new OrganizationProductRepository();
             _productInternalSettingRepository = new ProductInternalSettingRepository();
             _productRepository = new ProductRepository();

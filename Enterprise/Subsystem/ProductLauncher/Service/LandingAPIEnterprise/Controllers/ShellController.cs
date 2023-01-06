@@ -25,7 +25,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
         private IManageSecurity _manangeSecurityLogic;
         private IPersonaRepository _personaRepository;
-       
+        private ProductInternalSettingRepository _productInternalSettingRepository;
+
 
         /// <summary>
         /// Default constructor
@@ -41,7 +42,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         /// <param name="repository"></param>
         /// <param name="messageHandler"></param>
         /// <param name="userClaims"></param>
-       // ///  <param name="_personaRepository"></param>
         public ShellController(IRepository repository, HttpMessageHandler messageHandler, DefaultUserClaim userClaims)
         {
             var personaRightRepository = new PersonaRightRepository(repository);
@@ -49,8 +49,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             _userRepository = new UserRepository(repository, userClaims, messageHandler);
             _manangeSecurityLogic = new ManageSecurity(userClaims, personaRightRepository);
             _userClaims = userClaims;
-           // _personaRepository = new PersonaRepository(userClaims);
-             //_personaRepository = personaRepository;
+            _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
+            _personaRepository = new PersonaRepository(repository);
+
         }
 
         /// <summary>
@@ -62,10 +63,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             base.Initialize(controllerContext);
             _userRepository = new UserRepository(_userClaims);
             _manangeSecurityLogic = new ManageSecurity(_userClaims);
-            IOrganizationRepository organizationRepository = new OrganizationRepository();
-            IUserLoginRepository userLoginRepository = new UserLoginRepository();
-            _personaRepository = new PersonaRepository(organizationRepository, userLoginRepository,_userClaims);
-
+            _personaRepository = new PersonaRepository(_userClaims);
         }
 
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
@@ -80,13 +78,31 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             if (_userClaims.ImpersonatedBy != Guid.Empty)
             {
                 // Pass GUID ID and Company Id  will get Persona Id Information.
-                var impersonaUserId = _personaRepository.ListPersona(_userClaims.ImpersonatedBy);
-                var imper = impersonaUserId.FirstOrDefault(x => x.Organization.RealPageId.Equals(DefaultUserClaim.EmployeeCompanyRealPageId));
-                var Impersonarights = _manangeSecurityLogic.GetPersonaRightsAndActionsByRoute(imper.PersonaId, "sidemenu")?.obj?.Rights;
+                var impersonatorPersonaList = _personaRepository.ListPersona(_userClaims.ImpersonatedBy);
+                var impersonatedUser = impersonatorPersonaList.FirstOrDefault(x => x.Organization.RealPageId.Equals(DefaultUserClaim.EmployeeCompanyRealPageId));
+                var Impersonarights = _manangeSecurityLogic.GetPersonaRightsAndActionsByRoute(impersonatedUser.PersonaId, "sidemenu")?.obj?.Rights;
+                if (Impersonarights != null)
+                {
+                    var productInternalSettingsByType = _productInternalSettingRepository.GetProductSettingByType("ImpersonationRightsToBeExcluded");
+                    if (productInternalSettingsByType != null)
+                    {
+                        foreach (var productSetting in productInternalSettingsByType)
+                        {
+                            string[] types = productSetting.Value.Split(',');
+                            foreach (string right in Impersonarights.ToList())
+                            {
+                                if (types.Contains(right))
+                                {
+                                    Impersonarights.Remove(right);
+                                }
+                            }
+                        }
+                    }
+                }
                 foreach (var impersonateRightName in Impersonarights.ToList())
                 {
                     if (!rights.Contains(impersonateRightName))
-                    { 
+                    {
                         rights.Add(impersonateRightName);
                     }
                 }

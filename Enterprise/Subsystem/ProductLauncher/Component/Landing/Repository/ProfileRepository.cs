@@ -28,11 +28,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		IManageUserLogin _manageUserLogin;
 		IPartyRelationshipRepository _partyRelationshipRepository;
 		IProductRepository _productRepository;
+		IPersonaRepository _personaRepository;
 
-		/// <summary>
-		/// Used to filter user list results
-		/// </summary>
-		public enum UserListTypeFilter
+        /// <summary>
+        /// Used to filter user list results
+        /// </summary>
+        public enum UserListTypeFilter
 		{
 			/// <summary>
 			/// View All Users
@@ -60,6 +61,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             _manageUserLogin = new ManageUserLogin(repository, userClaim, null);
             _partyRelationshipRepository = new PartyRelationshipRepository(repository);
             _productRepository = new ProductRepository(repository, userClaim);
+			_personaRepository =  new PersonaRepository(repository, userClaim);
         }
 
 		/// <summary>
@@ -72,7 +74,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 			_manageUserLogin = new ManageUserLogin(_userClaim);
 			_partyRelationshipRepository = new PartyRelationshipRepository();
 			_productRepository = new ProductRepository(_userClaim);
-		}
+            _personaRepository = new PersonaRepository(_userClaim);
+        }
 		#endregion
 
 		#region public Profile methods
@@ -91,13 +94,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 			DateTime utcNow = DateTime.UtcNow;
 			DateTime utcMaxValue = DateTime.MaxValue.ToUniversalTime();
 			RepositoryResponse repositoryResponse = new RepositoryResponse();
-			IPersonaRepository personaRepository = new PersonaRepository();
+			//IPersonaRepository personaRepository = new PersonaRepository();
 			bool customJobTitleChanged = false;
 
 			//get Organization Enterprise guid from Persona
 			Guid organizationRealPageId = Guid.Empty;
-			long personaId = personaRepository.GetActivePersonaId(realPageId);
-			Persona persona = personaRepository.GetPersona(personaId);
+			long personaId = _personaRepository.GetActivePersonaId(realPageId);
+			Persona persona = _personaRepository.GetPersona(personaId);
 			if (persona != null)
 			{
 				organizationRealPageId = persona.Organization.RealPageId;

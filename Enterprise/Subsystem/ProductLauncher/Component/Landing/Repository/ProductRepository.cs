@@ -46,7 +46,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         {
             _userClaim = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
             _productInternalSettingRepository = new ProductInternalSettingRepository();
-            _personaRepository = new PersonaRepository();
+            _personaRepository = new PersonaRepository(_userClaim);
         }
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         {
             _userClaim = userClaim;
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
-            _personaRepository = new PersonaRepository(repository);
+            _personaRepository = new PersonaRepository(repository, userClaim);
         }
 
         /// <summary>
@@ -70,7 +70,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             _userClaim = userClaim;
             _productInternalSettingRepository = new ProductInternalSettingRepository();
-            _personaRepository = new PersonaRepository();
+            _personaRepository = new PersonaRepository(_userClaim);
         }
 
         #endregion

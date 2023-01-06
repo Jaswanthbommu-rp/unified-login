@@ -71,7 +71,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			_userClaim.Rights = manageProductBatch.GetPersonaRoleRights(batch.EditorUserPersonaId, editorPersona.OrganizationPartyId);
 			_userClaim.OrganizationPartyId = editorPersona.OrganizationPartyId;
 
-			IPersonaRepository personaRepository = new PersonaRepository();
+			IPersonaRepository personaRepository = new PersonaRepository(_userClaim);
 			IUserLoginRepository userLoginRepository = new UserLoginRepository();
 			BatchProductBulkUpdateRepository productBulkUpdateRepository = new BatchProductBulkUpdateRepository();
 

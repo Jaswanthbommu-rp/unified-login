@@ -122,7 +122,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         //get user products
                         var userProducts = _hotsCloneUserRepository.GetUserProducts(user.PersonaId);
 						// get product batch data
-						IPersonaRepository personaRepository = new PersonaRepository();
+						IPersonaRepository personaRepository = new PersonaRepository(_defaultUserClaim);
 						var personaProductSettings = personaRepository.GetPersonaProductSettings(user.PersonaId);
 						List<ProductBatch> pbData = manageProductBatch.GetUserProductBatchData(user.PersonaId, userProducts, baseOrgAdminPersonaId, upfmProperty, personaProductSettings, false).ToList();
                         
