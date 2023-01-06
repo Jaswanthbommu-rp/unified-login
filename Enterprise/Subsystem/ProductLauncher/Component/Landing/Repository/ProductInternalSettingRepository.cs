@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Data;
 using Newtonsoft.Json;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 {
@@ -25,6 +26,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// </summary>
         public ProductInternalSettingRepository() : base(DbConnectionEnum.IdpConfigurationDb)
         {
+        }
+        /// <summary>
+        /// SAML base Constructor
+        /// </summary>
+        /// <param name="userClaim"></param>
+        public ProductInternalSettingRepository(DefaultUserClaim userClaim) : base(DbConnectionEnum.IdpConfigurationDb)
+        {
+
         }
 
         /// <summary>
