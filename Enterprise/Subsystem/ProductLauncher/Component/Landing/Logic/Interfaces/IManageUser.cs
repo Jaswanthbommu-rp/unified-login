@@ -48,13 +48,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <returns>SetStarterProfile object</returns>
 		SetStarterProfile SetStarterProfile(StarterProfile starterProfile);
 
-		/// <summary>
-		/// Create user
-		/// </summary> 
-		/// <param name="profile">profiledetails of the new user</param>
-		/// <param name="persona">Persona of the new user</param>
-		/// <returns>CreateUserResponse and Error object</returns>
-		CreateUserResponse<IErrorData> CreateUser(ProfileDetail profile, IList<Persona> persona);
+        /// <summary>
+        /// Create user
+        /// </summary> 
+        /// <param name="profile">profiledetails of the new user</param>
+        /// <param name="persona">Persona of the new user</param>
+        /// <param name="createdByEnterpriseAPI">To change the activity log</param>
+        /// <returns>CreateUserResponse and Error object</returns>
+        CreateUserResponse<IErrorData> CreateUser(ProfileDetail profile, IList<Persona> persona, bool createdByEnterpriseAPI = false);
 
 		/// <summary>
 		/// Update New User Profile

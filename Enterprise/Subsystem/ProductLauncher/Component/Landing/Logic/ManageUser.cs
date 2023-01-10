@@ -288,13 +288,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			return _userRepository.SetStarterProfileOptions(starterProfile);
 		}
 
-		/// <summary>
-		/// Create user
-		/// </summary> 
-		/// <param name="profile">profiledetails of the new user</param>
-		/// <param name="persona">Persona of the new user</param>
-		/// <returns>CreateUserResponse and Error object</returns>
-		public CreateUserResponse<IErrorData> CreateUser(ProfileDetail profile, IList<Persona> persona)
+        /// <summary>
+        /// Create user
+        /// </summary> 
+        /// <param name="profile">profiledetails of the new user</param>
+        /// <param name="persona">Persona of the new user</param>
+        /// <param name="createdByEnterpriseAPI">To change the activity log</param>
+        /// <returns>CreateUserResponse and Error object</returns>
+        public CreateUserResponse<IErrorData> CreateUser(ProfileDetail profile, IList<Persona> persona, bool createdByEnterpriseAPI = false)
 		{
 			long cloneUserPersonaId = 0;
 			Guid cloneUserRealpageId = Guid.Empty;
@@ -332,7 +333,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     {
 						auditMessage = "New User {0} {1} successfully created by RealPage user {2}.";
 					}
-					else
+					else if (createdByEnterpriseAPI)
+					{
+						auditMessage = "New User {0} {1} successfully created by RealPage user {2} using enterprise API.";
+                    }
+                    else
 					{
 						auditMessage = "New User {0} {1} successfully created by user {2}.";
 					}
