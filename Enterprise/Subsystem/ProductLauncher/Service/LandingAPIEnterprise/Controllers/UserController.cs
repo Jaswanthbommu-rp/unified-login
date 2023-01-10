@@ -314,7 +314,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 }
 
                 var manageUser = new ManageUser(_userClaims);
-                var response = manageUser.CreateUser(profile, userPersona);
+                var response = manageUser.CreateUser(profile, userPersona, true);
 
                 //WriteToLog(LogEventLevel.Debug, $"Custom fields json - {userCustomFieldValueJson} for new user with login name {userProductDetails.UserProfileDetails.LoginName}");
 
