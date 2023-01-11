@@ -332,6 +332,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         {
                             clientPortalContactResults.Add(item);
                         }
+                        else if (item.OMS_ID__c != null && item.OMS_ID__c.StartsWith("C") && string.IsNullOrEmpty(item.ParentOMS_ID__c) && item.OMS_ID__c == parentOmsId)
+                        {
+                            clientPortalContactResults.Add(item);
+                        }
                     }
                 }
                
