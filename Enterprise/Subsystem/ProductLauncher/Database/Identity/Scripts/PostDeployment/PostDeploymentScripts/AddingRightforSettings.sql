@@ -32,7 +32,7 @@ END
 
  --Settings Activity Log
 
-select  @rightId7 = RightId from Security.[Right] where Value = 'Employee Access to Settings Admin Console';
+select  @rightId7 = RightId from Security.[Right] where RightName = 'AccessSettingsAdmin';
 select @MenuId3 = Id from Enterprise.NavigationMenu where Title = 'Settings Activity Log' and Origin = 'unified-settings'
 
 IF NOT EXISTS(select top 1 1 from Enterprise.NavigationMenuRights where NavigationMenuId = @MenuId3 and RightId = @rightId7)
