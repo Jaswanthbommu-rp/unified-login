@@ -206,7 +206,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         accessGroup.IsAssigned = true;
                     }
 
-                    adminSupportPortalAllRoles.FirstOrDefault(s => s.Name.ToLower().Trim() == "client portal standard user").IsAssigned = true;
+                    adminSupportPortalAllRoles.FirstOrDefault(s => s.Name.ToLower().Trim() == "client portal light").IsAssigned = true;
 
                     response = new ListResponse()
                     {

@@ -20,8 +20,8 @@ END
 
  -- Manage Template
 
-select @rightId5 = RightId from Security.[Right] where Value = 'Manage Settings Templates & Global Updates';
-select @rightId6 = RightId from Security.[Right] where Value = 'View Settings Templates';
+select @rightId5 = RightId from Security.[Right] where RightName = 'ManageSettingsTemplates'
+select @rightId6 = RightId from Security.[Right] where RightName = 'ViewSettingsTemplates';
 
 select @MenuId2 = Id from Enterprise.NavigationMenu where Title = 'Manage Templates' and Origin = 'unified-settings';
  IF NOT EXISTS(select top 1 1 from Enterprise.NavigationMenuRights where NavigationMenuId = @MenuId2 and RightId in (@rightId5,@rightId6))
