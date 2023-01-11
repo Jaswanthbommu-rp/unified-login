@@ -1279,6 +1279,7 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\ADGroupWithoutUserCreationSetting.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\AllowChangeCompanyDuringLoginSetting.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\elklogsettings.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\AddingRightforSettings.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
