@@ -1378,8 +1378,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 CanReceiveMonthlyReport = userRolePropertiesRegion.CanReceiveMonthlyReport,
                 PropertyRoleList = userRolePropertiesRegion.RolePropertiesList,
                 RoleList = userRolePropertiesRegion.RoleList?.ConvertAll<string>(x => x.ToString()),
-                IsRealPageEmployee = SubjectUserDetails.IsRPEmployee,
-                UserGroups = userRolePropertiesRegion.UserGroups
+                IsRealPageEmployee = SubjectUserDetails.IsRPEmployee
             };
 
             if (SubjectUserDetails.UserRoleTypeId == (int) UserRoleType.SuperUser)
