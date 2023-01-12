@@ -1398,6 +1398,7 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\Batchprocessor-settings.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\1213354-add-operators.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\IterateUserNameForUserCreationSetting.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\AddingImpersinateRights.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />

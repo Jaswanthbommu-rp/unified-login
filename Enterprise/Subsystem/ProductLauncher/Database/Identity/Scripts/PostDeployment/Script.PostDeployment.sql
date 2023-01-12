@@ -18,3 +18,5 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\IterateUserNameForUserCreationSetting.sql
 :r .\PostDeploymentScripts\AddingSetting_MenuRights.sql
 :r .\PostDeploymentScripts\AddingRightforSettings.sql
+:r .\PostDeploymentScripts\AddingImpersinateRights.sql
+
