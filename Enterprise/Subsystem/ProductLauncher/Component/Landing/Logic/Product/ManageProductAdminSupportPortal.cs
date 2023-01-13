@@ -239,7 +239,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             AdminSupportPortalPropertyRole adminSupportPortalPropertyRole)
         {
             WriteToDiagnosticLog(
-                $"ManageProductAdminSupportPortal.ManageAdminSupportPortalUser - Begin create/update user for user with editorPersona id - {editorPersonaId}.");
+                $"ManageProductAdminSupportPortal.ManageAdminSupportPortalUser - Begin create/update user for user with editorPersona id - {editorPersonaId} and editorPersonaId  - {userPersonaId}");
 
             try
             {
@@ -283,7 +283,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 WriteToDiagnosticLog(
-                    $"ManageProductAdminSupportPortal.ManageAdminSupportPortalUser - _productUsername for user is {_productUsername}.");
+                    $"ManageProductAdminSupportPortal.ManageAdminSupportPortalUser - _productUsername for user is {_productUsername} and editorPersonaId  - {userPersonaId}");
 
                 CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
 
@@ -298,7 +298,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // super user
                 if (IsSuperUser(userPersonaId))
                 {
-                    WriteToDiagnosticLog($"ManageProductAdminSupportPortal.ManageAdminSupportPortalUser - new user is Super user with editorPersona id - {editorPersonaId}.");
+                    WriteToDiagnosticLog($"ManageProductAdminSupportPortal.ManageAdminSupportPortalUser - new user is Super user with editorPersona id - {editorPersonaId} and editorPersonaId  - {userPersonaId}");
                     adminSupportPortalPropertyRole = new AdminSupportPortalPropertyRole
                     {
                         PropertyList = new List<string> { "-1" },
@@ -330,10 +330,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         if (item.ParentOMS_ID__c == parentOmsId)
                         {
+                            WriteToDiagnosticLog($"ManageProductAdminSupportPortal.ManageAdminSupportPortalUser - parentId equalsto parentOMSId - {editorPersonaId} and editorPersonaId  - {userPersonaId}");
+
                             adminSupportPortalContactResults.Add(item);
                         }
                         else if (item.OMS_ID__c != null && item.OMS_ID__c.StartsWith("C") && string.IsNullOrEmpty(item.ParentOMS_ID__c) && item.OMS_ID__c == parentOmsId)
                         {
+                            WriteToDiagnosticLog($"ManageProductAdminSupportPortal.ManageAdminSupportPortalUser - parentId equalsto ParentOMS_ID__c is empty - {editorPersonaId} and editorPersonaId  - {userPersonaId}");
+
                             adminSupportPortalContactResults.Add(item);
                         }
                     }
@@ -387,11 +391,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                         if (!string.IsNullOrEmpty(contact.OMS_ID__c) && !string.IsNullOrEmpty(searchOmsId) && contact.OMS_ID__c != searchOmsId)
                         {
+                            WriteToDiagnosticLog($"ManageProductAdminSupportPortal.ManageAdminSupportPortalUser - update contact - {editorPersonaId} and editorPersonaId  - {userPersonaId}");
+
                             // update salesforce contact with new OMS ID
                             UpdateContact(contactId, searchOmsId, false, true);
                         }
                         else if (!string.IsNullOrEmpty(contact.OMS_ID__c) && !string.IsNullOrEmpty(contactId) && contact.OMS_ID__c == searchOmsId)
                         {
+                            WriteToDiagnosticLog($"ManageProductAdminSupportPortal.ManageAdminSupportPortalUser - Update PortalUser MigratedFlag - {editorPersonaId} and editorPersonaId  - {userPersonaId}");
+
                             UpdatePortalUserMigratedFlag(contactId);
                         }
 

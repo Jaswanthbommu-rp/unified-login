@@ -239,7 +239,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             ClientPortalPropertyRole clientPortalPropertyRole)
         {
             WriteToDiagnosticLog(
-                $"ManageProductClientPortal.ManageClientPortalUser - Begin create/update user for user with editorPersona id - {editorPersonaId}.");
+                $"ManageProductClientPortal.ManageClientPortalUser - Begin create/update user for user with editorPersona id - {editorPersonaId} and editorPersonaId  - {userPersonaId}");
 
             try
             {
@@ -283,7 +283,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 WriteToDiagnosticLog(
-                    $"ManageProductClientPortal.ManageClientPortalUser - _productUsername for user is {_productUsername}.");
+                    $"ManageProductClientPortal.ManageClientPortalUser - _productUsername for user is {_productUsername} and editorPersonaId  - {userPersonaId}");
 
                 CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
 
@@ -298,7 +298,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // super user
                 if (IsSuperUser(userPersonaId))
                 {
-                    WriteToDiagnosticLog($"ManageProductClientPortal.ManageClientPortalUser - new user is Super user with editorPersona id - {editorPersonaId}.");
+                    WriteToDiagnosticLog($"ManageProductClientPortal.ManageClientPortalUser - new user is Super user with editorPersona id - {editorPersonaId} and editorPersonaId  - {userPersonaId}");
                     clientPortalPropertyRole = new ClientPortalPropertyRole
                     {
                         PropertyList = new List<string> { "-1" },
@@ -330,10 +330,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         if (item.ParentOMS_ID__c == parentOmsId) 
                         {
+                            WriteToDiagnosticLog($"ManageProductClientPortal.ManageClientPortalUser - parentId equalsto parentOMSId - {editorPersonaId} and editorPersonaId  - {userPersonaId}");
+
                             clientPortalContactResults.Add(item);
                         }
                         else if (item.OMS_ID__c != null && item.OMS_ID__c.StartsWith("C") && string.IsNullOrEmpty(item.ParentOMS_ID__c) && item.OMS_ID__c == parentOmsId)
                         {
+                            WriteToDiagnosticLog($"ManageProductClientPortal.ManageClientPortalUser - parentId equalsto ParentOMS_ID__c is empty - {editorPersonaId} and editorPersonaId  - {userPersonaId}");
+
                             clientPortalContactResults.Add(item);
                         }
                     }
@@ -387,11 +391,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                         if (!string.IsNullOrEmpty(contact.OMS_ID__c) && !string.IsNullOrEmpty(searchOmsId) && contact.OMS_ID__c != searchOmsId)
                         {
+                            WriteToDiagnosticLog($"ManageProductClientPortal.ManageClientPortalUser - update contact - {editorPersonaId} and editorPersonaId  - {userPersonaId}");
+
                             // update salesforce contact with new OMS ID
                             UpdateContact(contactId, searchOmsId, false, true);
                         }
                         else if(!string.IsNullOrEmpty(contact.OMS_ID__c) && !string.IsNullOrEmpty(contactId) && contact.OMS_ID__c == searchOmsId)
                         {
+                            WriteToDiagnosticLog($"ManageProductClientPortal.ManageClientPortalUser - Update PortalUser MigratedFlag - {editorPersonaId} and editorPersonaId  - {userPersonaId}");
+
                             UpdatePortalUserMigratedFlag(contactId);
                         }
 

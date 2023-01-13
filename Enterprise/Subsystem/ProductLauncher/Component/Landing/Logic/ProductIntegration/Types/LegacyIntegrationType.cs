@@ -704,7 +704,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.AdminSupportPortal:
                     product = new AdminSupportPortalProduct(_userClaims);
                     productPropertiesRoles =
-                        DeserializeJSON<ClientPortalPropertyRole>(batchRecord.InputJson);
+                        DeserializeJSON<AdminSupportPortalPropertyRole>(batchRecord.InputJson);
                     result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
                     break;
                 case (int)ProductEnum.SalesForce:
