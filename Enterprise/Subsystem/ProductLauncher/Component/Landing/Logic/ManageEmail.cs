@@ -184,7 +184,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             string encodedToken = Convert.ToBase64String(Encoding.UTF8.GetBytes(newUserToken));
 
-            link += $"/PasswordRecovery/RedirectFromInviteEmail?newUserToken={encodedToken}&loginName={loginName}";
+            link += $"/PasswordRecovery/RedirectFromInviteEmail?newUserToken={encodedToken}&loginName={HttpUtility.UrlEncode(loginName)}";
 
             return link;
         }
