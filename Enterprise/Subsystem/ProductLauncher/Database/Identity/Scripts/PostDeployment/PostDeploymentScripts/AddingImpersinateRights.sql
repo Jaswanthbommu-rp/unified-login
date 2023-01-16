@@ -55,3 +55,31 @@ IF NOT EXISTS (Select Top 1 1 from Enterprise.NavigationMenuRights where  Naviga
 Begin
     Insert into Enterprise.NavigationMenuRights values (@navigationMenuID,@rightId);
 end
+
+GO
+
+
+Declare @rightID BIGINT, @routeID BIGINT, @userId Bigint;
+Declare @rig1 BIGINT;
+Declare @navimenuID BIGINT, @navbar1 BIGINT;
+
+select @rightID = RightId from Security.[Right] where RightName = 'InternalAdminaccessToUnifiedSettings';
+Select @rig1 = RightId from Security.[Right] where RightName = 'ViewSettingsTemplates';
+
+Select @navbar1 = Id from Enterprise.NavigationMenu where Title = 'Manage Templates' and Origin = 'unified-settings';
+Select @routeID  = RouteId from security.route where RouteValue = 'SideMenu';
+
+IF NOT EXISTS (Select TOP 1 1 from security.RightRoute where RightId = @rightID)
+BEGIN
+  INSERT INTO Security.RightRoute values (@rightID,@routeID,@userID,GETUTCDATE())
+END
+IF NOT EXISTS (Select TOP 1 1 from security.RightRoute where RightId = @rig1)
+BEGIN
+  INSERT INTO Security.RightRoute values (@rig1,@routeID,@userID,GETUTCDATE())
+END
+
+IF NOT EXISTS (Select TOP 1 1 from Enterprise.NavigationMenuRights where NavigationMenuId = @navbar1 and RightId = @rig1)
+BEGIN
+  INSERT INTO  Enterprise.NavigationMenuRights values (@navbar1,@rig1)
+END
+
