@@ -11,7 +11,7 @@ IF NOT EXISTS (SELECT TOP 1 (1) FROM ENTERPRISE.ProductSetting PS INNER JOIN ent
     WHERE productid = @ProductId AND pst.Name = 'ImpersonationRightsToBeExcluded' )
 BEGIN
     SELECT @ProductsettingTypeid = ProductSettingTypeId FROM Enterprise.ProductSettingType WHERE [Name] = 'ImpersonationRightsToBeExcluded'
-    exec [Enterprise].[SetProductSetting] 0,@Productid,@ProductsettingTypeid,'InternalAdminaccessToUnifiedSettings,EmployeeAccesstoManageSettingsTemplates,AccessSettingsAdmin,EmployeeAccessUnifiedReportingAdminConsole'
+    exec [Enterprise].[SetProductSetting] 0,@Productid,@ProductsettingTypeid,'InternalAdminaccessToUnifiedSettings,EmployeeAccesstoManageSettingsTemplates,AccessSettingsAdmin,EmployeeAccessUnifiedReportingAdminConsole,ManageNotifications,EmployeeAccessToInternalRolesAndRightsSetup,EmployeeAccessToCompanySetup,AbilityToAddProducts,EmployeeAccessToInternalClientSettings,EmployeeAccessToInternalRolesAndRightsSetup,EmployeeAccessToLoginPageSetup,CreatePlatformAlerts,ApprovePlatformAlerts'
 END
 GO
 
@@ -46,3 +46,12 @@ BEGIN
       Insert into Security.[RightRoute] values (@Right4,@SidemenuId,@UserId,@Now)
 END
 GO
+
+Declare @navigationMenuID varchar(50), @rightId BIGINt;
+Select @rightId = RightId from Security.[Right] where RightName= 'ViewUnifiedSettings'
+Select @navigationMenuID = Id from Enterprise.NavigationMenu where Title = 'Settings Activity Log' and Origin = 'unified-settings';
+
+IF NOT EXISTS (Select Top 1 1 from Enterprise.NavigationMenuRights where  NavigationMenuId = @navigationMenuID and RightId = @rightId)
+Begin
+    Insert into Enterprise.NavigationMenuRights values (@navigationMenuID,@rightId);
+end
