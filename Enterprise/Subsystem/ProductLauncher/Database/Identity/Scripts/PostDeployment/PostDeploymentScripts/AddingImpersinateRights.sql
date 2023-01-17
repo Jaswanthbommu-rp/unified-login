@@ -82,4 +82,23 @@ IF NOT EXISTS (Select TOP 1 1 from Enterprise.NavigationMenuRights where Navigat
 BEGIN
   INSERT INTO  Enterprise.NavigationMenuRights values (@navbar1,@rig1)
 END
+GO
 
+Declare @UserId bigint;
+SELECT @UserId = UserId
+FROM   Ident.UserLogin
+WHERE  LoginName LIKE 'realpagead@%';
+IF NOT EXISTS(SELECT TOP 1 1 FROM [Security].[Right] WHERE RightName ='ManageAdminSupportPortalProductAccess' AND ProductId = 89)
+BEGIN
+        INSERT INTO Security.[Right] (RightName,Description,Value,StatusTypeId,VisibilityStatusId,ProductId,TargetProductId,CreatedBy,CreatedDate,PersistRight)
+        VALUES('ManageAdminSupportPortalProductAccess','For Admin & Support Portal, this right unlocks the ability to edit the Product assignment and Product Access Details for a user, assuming that the user can access the page because of Ability to view users.  Al','Manage AdminSupportPortal Product Access',13,9,3 ,89,@UserId,getUTCDate(),0);
+END
+
+Declare @Right1 bigint;
+
+Select @Right1 = RightId from Security.[Right] where RightName = 'ManageAdminSupportPortalProductAccess'
+IF NOT EXISTS(SELECT TOP 1 1 FROM [Security].[RoleRight] WHERE RightId = @Right1 AND RoleId = 1 )
+BEGIN
+    Insert into Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate) Values(1,@Right1,@UserId,getUTCDate());
+END
+GO
