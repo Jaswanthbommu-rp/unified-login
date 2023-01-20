@@ -63,6 +63,10 @@ Declare @rightID BIGINT, @routeID BIGINT, @userId Bigint;
 Declare @rig1 BIGINT;
 Declare @navimenuID BIGINT, @navbar1 BIGINT;
 
+SELECT @UserId = UserId
+FROM   Ident.UserLogin
+WHERE  LoginName LIKE 'realpagead@%';
+
 select @rightID = RightId from Security.[Right] where RightName = 'InternalAdminaccessToUnifiedSettings';
 Select @rig1 = RightId from Security.[Right] where RightName = 'ViewSettingsTemplates';
 
