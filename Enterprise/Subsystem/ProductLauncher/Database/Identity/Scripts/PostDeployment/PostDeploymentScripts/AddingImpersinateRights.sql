@@ -102,3 +102,25 @@ BEGIN
     Insert into Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate) Values(1,@Right1,@UserId,getUTCDate());
 END
 GO
+
+
+IF EXISTS (Select Top 1 1 from Security.[Right] where RightName = 'ViewSettingsTemplates' and PersistRight =0)
+BEGIN
+   UPDATE  Security.[Right] Set PersistRight = 1  where RightName = 'ViewSettingsTemplates';
+END
+IF EXISTS (Select Top 1 1 from Security.[Right] where RightName = 'Managecompanylevelsettings' and PersistRight =0)
+BEGIN
+   UPDATE  Security.[Right] Set PersistRight = 1  where RightName = 'Managecompanylevelsettings';
+END
+IF EXISTS (Select Top 1 1 from Security.[Right] where RightName = 'Managepropertylevelsettings' and PersistRight =0)
+BEGIN
+   UPDATE  Security.[Right] Set PersistRight = 1  where RightName = 'Managepropertylevelsettings';
+END
+IF EXISTS (Select Top 1 1 from Security.[Right] where RightName = 'Viewallpropertylevelsettings' and PersistRight =0)
+BEGIN
+   UPDATE  Security.[Right] Set PersistRight = 1  where RightName = 'Viewallpropertylevelsettings';
+END
+IF EXISTS (Select Top 1 1 from Security.[Right] where RightName = 'Viewallcompanylevelsettings' and PersistRight =0)
+BEGIN
+   UPDATE  Security.[Right] Set PersistRight = 1  where RightName = 'Viewallcompanylevelsettings';
+END
