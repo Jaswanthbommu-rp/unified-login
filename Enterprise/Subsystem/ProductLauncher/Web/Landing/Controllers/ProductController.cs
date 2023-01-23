@@ -63,10 +63,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Controllers
 		[Authorize]
 		public ActionResult AssetOptimizer(long personaId = 0)
 		{
-			// get the asset optimizer product details
-			return GetProductDetails((int)ProductEnum.AssetOptimizer, personaId);
-		}
+			try
+			{
+				var productUrl = GetProductRedirectUrl((int)ProductEnum.AssetOptimizer);
+				return Redirect(productUrl);
+			}
+			catch (Exception ex)
+			{
+				WriteToErrorLog($"Exception in ProductController.AssetOptimizer() - personaId {personaId}.", exception: ex);
+				return new HttpStatusCodeResult(500);
+			}
 
+		}
+ 
 		/// <summary>
 		/// Used to log into the Propertyware system
 		/// </summary>
