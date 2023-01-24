@@ -1279,6 +1279,8 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\ADGroupWithoutUserCreationSetting.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\AllowChangeCompanyDuringLoginSetting.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\elklogsettings.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetProductsUserAccessSummary.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\UserAccessSummarySettings.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
