@@ -42,5 +42,5 @@ BEGIN
 			AND pc.ThruDate IS NULL AND pc2.ThruDate IS NULL
 		UNION ALL
 		SELECT @PersonaId, 3, 'Unified Platform', 'Not Used'
-
+		ORDER BY p.Name
 END
