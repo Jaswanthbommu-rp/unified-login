@@ -17,14 +17,16 @@ BEGIN
 	BEGIN
 		DELETE FROM @companyproductlist WHERE productid NOT IN (SELECT ProductId FROM @OnlyProductList)
 	END
-
+	
 	IF EXISTS ( SELECT TOP (1) 1 FROM @companyproductlist WHERE productid = 4 )
 		BEGIN
 			INSERT INTO @companyproductlist (productid)
 				SELECT productid FROM Enterprise.Product WHERE UDMSourceCode = 'AO'
 			DELETE FROM @companyproductlist WHERE productid = 4
 		END
-		SELECT pc.personaid [PersonaId], pc.productid [ProductId], p.Name [ProductName], ISNULL(sam.Value, 'Not Used') [ProductUserLogin] 
+		
+		SELECT DISTINCT 
+			pc.personaid [PersonaId], pc.productid [ProductId], p.Name [ProductName], ISNULL(sam.Value, 'Not Used') [ProductUserLogin] 
 			FROM Enterprise.PersonaConfiguration pc
 			INNER JOIN Enterprise.ProductConfiguration pc2 ON pc2.ConfigurationId = pc.ConfigurationId
 			INNER JOIN Enterprise.ProductSetting PS ON PS.ProductSettingId = pc2.ProductSettingId
