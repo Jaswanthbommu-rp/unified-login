@@ -35,7 +35,6 @@ BEGIN
  BEGIN      
   INSERT INTO @CompanyOrganizationProduct ( ProductId )      
    Select ProductId from Enterprise.Product where ProductTypeId IN ( SELECT ProductTypeId FROM Enterprise.ProductType where ParentProductTypeId = 400 )      
-  DELETE FROM @CompanyOrganizationProduct WHERE ProductId = 4      
  END       
   
  -- User should subscribe to AD Group and access to employee company users only.  
