@@ -104,7 +104,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public ListResponse GetPropertyGroups(long editorPersonaId, long userPersonaId, RequestParameter dataFilter, string userLoginName = "")
         {
             var productIntegration = new StandardV1ProductIntegration(_productId, editorPersonaId, userPersonaId, _userClaims);
-            return productIntegration.GetAllRights(dataFilter);
+            switch (_productId)
+            {
+                case (int)ProductEnum.KnockCRM: 
+                return productIntegration.GetProductPropertyGroups(dataFilter, userLoginName);
+                default:
+                    return productIntegration.GetAllRights(dataFilter);
+                   
+            }
         }
 
         public ListResponse GetPropertiesByGroup(long editorPersonaId, long userPersonaId, string propertyGroupId, RequestParameter dataFilter)
