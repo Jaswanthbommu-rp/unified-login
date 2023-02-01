@@ -114,6 +114,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 WriteToDiagnosticLog($"ManageUPFMProductUser -GetRoles  Getting all GB roles from GB DB - ocr.ListRolesByParty with party id - {partyId} and product {_upfmProductId}");
                 IList<int> productIdList = _productRepository.GetProductIdsByCompany(partyId);
                 var gbAllRoles = _productRepository.ListRolesForProductByParty(partyId, productIdList, _upfmProductId) ?? new List<ProductRole>();
+
+                if (gbAllRoles !=null && !_editorPersona.Organization.RealPageId.Equals(DefaultUserClaim.EmployeeCompanyRealPageId) && _upfmProductId == (int)ProductEnum.DataHub)
+                {
+                    gbAllRoles.ToList().ForEach(role =>
+                    {
+                        if (role.Name.Contains("OneSite")) 
+                        {
+                            gbAllRoles.Remove(role);
+                        }
+                    });
+                }
+
                 gbAllRoles = gbAllRoles?.OrderBy(r => r.Name).ToList();
 
                 WriteToDiagnosticLog($"ManageUPFMProductUser-GetRoles.MapProductAccessGroupsToGB() completed for user with editorPersona id - {editorPersonaId}");
