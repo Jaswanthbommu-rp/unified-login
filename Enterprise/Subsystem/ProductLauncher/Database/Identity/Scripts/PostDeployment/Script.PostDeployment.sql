@@ -35,4 +35,4 @@ Post-Deployment Script Template
 -- keep these at the end!
 :r .\PostDeploymentScripts\UpdateStatistics.sql
 :r .\PostDeploymentScripts\RecompileAllProcs.sql
-
+:r .\PostDeploymentScripts\KnockProductPanelScript.sql
