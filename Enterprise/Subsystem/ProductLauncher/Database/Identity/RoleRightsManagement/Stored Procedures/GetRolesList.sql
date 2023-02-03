@@ -88,6 +88,7 @@ IF (ISJSON(@SortBy) = 0)
     WHEN N'Product' THEN 104  
     WHEN N'Rights' THEN 105  
     WHEN N'Excluded' THEN 106  
+	WHEN N'OrgType' THEN 107
     ELSE 100  
    END * CASE SortDirection WHEN N'ASC' THEN 1 ELSE -1 END   
  FROM OPENJSON (JSON_QUERY(@SortBy, '$.sortBy'))  
@@ -115,6 +116,7 @@ DROP TABLE IF EXISTS #RoleDetails
   Visibility varchar(max),
   Rights varchar(max),
   Excluded int,
+  OrgType int,  
   TotalRecords int
  ) 
 
@@ -130,7 +132,8 @@ INSERT INTO #RoleDetails(
   OrgPartyID,
   Visibility,
   Rights,
-  Excluded
+  Excluded,
+  OrgType
 )
 SELECT R.RoleId, 
 	   R.RoleName, 
@@ -145,7 +148,8 @@ SELECT R.RoleId,
 	   ELSE (SELECT [Name] FROM Enterprise.Organization WHERE PartyId = R.OrgPartyID)
 	   END [Visibility],
 	   (SELECT COUNT(1) FROM [Security].RoleRight RR WHERE R.RoleId = RR.RoleId) [Rights],
-	   (SELECT COUNT(1) FROM [Security].OrganizationOverrideRole OOR WHERE R.RoleId = OOR.RoleId) [Excluded]
+    (SELECT COUNT(1) FROM [Security].OrganizationOverrideRole OOR WHERE R.RoleId = OOR.RoleId) [Excluded],  
+	(SELECT COUNT(1) FROM [Security].RoleOrganizationType ROT WHERE R.RoleId = ROT.RoleId) [OrgType]  
 FROM [Security].[Role] R
 INNER JOIN [Security].RoleType RT ON R.RoleTypeID = RT.RoleTypeId
 INNER JOIN Enterprise.Product P ON R.ProductId = P.ProductId
@@ -177,6 +181,7 @@ ORDER BY Visibility
   Visibility,
   Rights,
   Excluded,
+  OrgType,
   TotalRecords
  ) 
  AS
@@ -195,6 +200,7 @@ SELECT R.RoleId,
 	   END [Visibility],
 	   (SELECT COUNT(1) FROM [Security].RoleRight RR WHERE R.RoleId = RR.RoleId) [Rights],
 	   (SELECT COUNT(1) FROM [Security].OrganizationOverrideRole OOR WHERE R.RoleId = OOR.RoleId) [Excluded],
+	(SELECT COUNT(1) FROM [Security].RoleOrganizationType ROT WHERE R.RoleId = ROT.RoleId) [OrgType],  
 	   COUNT(1) OVER () AS TotalRecords
 FROM [Security].[Role] R
 INNER JOIN [Security].RoleType RT ON R.RoleTypeID = RT.RoleTypeId
@@ -225,6 +231,7 @@ SELECT RoleId,
 	   Visibility,
 	   Rights,
 	   Excluded,
+	OrgType,
 	   CASE @sortValue    
 		WHEN 100 THEN ROW_NUMBER() OVER (ORDER BY RoleName ASC)    
 		WHEN 101 THEN ROW_NUMBER() OVER (ORDER BY ISNULL([Description], '') ASC, RoleName ASC)    
@@ -240,6 +247,7 @@ SELECT RoleId,
 		WHEN -104 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(ProductName, '') DESC, RoleName ASC)    
 		WHEN -105 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(Rights, 0) DESC, RoleName ASC)    
 		WHEN -106 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(Excluded, 0) DESC, RoleName ASC)   
+		WHEN -106 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(OrgType, 0) DESC, RoleName ASC)   
      END AS RowNumber,
 	 TotalRecords
 FROM cteRolesFinal
