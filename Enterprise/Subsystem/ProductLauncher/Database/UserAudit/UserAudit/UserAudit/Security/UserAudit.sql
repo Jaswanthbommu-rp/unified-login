@@ -1,0 +1,3 @@
+﻿CREATE SCHEMA [UserAudit]
+    AUTHORIZATION [dbo];
+

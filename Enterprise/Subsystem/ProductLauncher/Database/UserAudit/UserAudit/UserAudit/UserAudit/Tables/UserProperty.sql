@@ -1,0 +1,8 @@
+﻿CREATE TABLE [UserAudit].[UserProperty] (
+    [UserProductId] BIGINT        NOT NULL,
+    [PropertyName]  VARCHAR (250) NULL,
+    [PropertyId]    VARCHAR (50)  NULL,
+    [CreatedDate]   DATETIME2 (7) DEFAULT (getutcdate()) NULL,
+    CONSTRAINT [FK_UserProperty_UserProductId] FOREIGN KEY ([UserProductId]) REFERENCES [UserAudit].[UserProduct] ([UserProductId]) ON DELETE CASCADE
+);
+
