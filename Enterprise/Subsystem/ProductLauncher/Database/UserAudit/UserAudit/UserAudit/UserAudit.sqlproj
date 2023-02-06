@@ -76,12 +76,6 @@
     <Build Include="UserAudit\Tables\UserProductError.sql" />
     <Build Include="UserAudit\Tables\UserProperty.sql" />
     <Build Include="UserAudit\Tables\UserRole.sql" />
-    <Build Include="Security\rri_svc-rag_iisenterpris.sql" />
-    <Build Include="Security\rri_svc-rag_iisenterpris_1.sql" />
-    <Build Include="Security\rri_svc-rag_iistimer.sql" />
-    <Build Include="Security\rri_svc-rag_iistimer_1.sql" />
-    <Build Include="Security\NT SERVICE_HealthService.sql" />
-    <Build Include="Security\NT SERVICE_HealthService_1.sql" />
     <Build Include="UserAudit\Stored Procedures\GetReportParameter.sql" />
     <Build Include="UserAudit\Stored Procedures\SaveReportParameters.sql" />
     <Build Include="dbo\User Defined Types\Name.sql" />
