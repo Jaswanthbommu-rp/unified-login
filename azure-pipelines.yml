@@ -1,0 +1,71 @@
+trigger:
+  branches:
+    include:
+      - master
+      - release/*
+  paths:
+    include:
+      - Enterprise/Subsystem/ProductLauncher/Database/UserAudit
+
+pool:
+  name: UTY-BLD-POOL
+  demands:
+  - msbuild
+  - visualstudio
+
+#Your build pipeline references an undefined variable named ‘SQLBuildConfig’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
+variables:
+  BuildPlatform: 'any cpu'
+  BuildConfiguration: 'release'
+
+steps:
+- task: VSBuild@1
+  displayName: 'Build UserAudit DB'
+  inputs:
+    solution: Enterprise/Subsystem/ProductLauncher/Database/UserAudit/UserAudit/UserAudit/UserAudit.sqlproj
+    msbuildArgs: '/t:Build /p:Configuration=$(SQLBuildConfig) /p:UpdateDatabase=False /p:outdir="$(build.artifactstagingdirectory)\DatabaseDeploy\DB_UserAudit"'
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
+    clean: true
+
+- task: JFrog.jfrog-artifactory-vsts-extension.artifactory-tools-installer-task.ArtifactoryToolsInstaller@1
+  displayName: 'Artifactory Tools Installer'
+  inputs:
+    artifactoryService: Artifactory
+    cliInstallationRepo: 'jfrog-cli'
+
+- task: ArchiveFiles@2
+  displayName: 'Archive $(Build.ArtifactStagingDirectory)\DatabaseDeploy\DB_UserAudit'
+  inputs:
+    rootFolderOrFile: '$(Build.ArtifactStagingDirectory)\DatabaseDeploy\DB_UserAudit'
+
+- task: JFrog.jfrog-artifactory-vsts-extension.artifactory-generic-upload.ArtifactoryGenericUpload@2
+  displayName: 'Artifactory Generic Upload'
+  inputs:
+    artifactoryService: Artifactory
+    fileSpec: |
+     {
+       "files": [
+         {
+           "pattern": "$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip",
+           "target": "rp-deployables-local/uty/UnifiedLogin/ULUserAuditDB/$(Build.BuildId).zip"
+         }
+       ]
+     }
+    collectBuildInfo: true
+    includeEnvVars: true
+
+- task: JFrog.jfrog-artifactory-vsts-extension.artifactory-publish-build-info.ArtifactoryPublishBuildInfo@1
+  displayName: 'Artifactory Publish Build Info'
+  inputs:
+    artifactoryService: Artifactory
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact: drop'
+  enabled: false
+
+- task: JFrog.jfrog-artifactory-vsts-extension.artifactory-xray-scan-task.ArtifactoryXrayScan@1
+  displayName: 'Artifactory Xray Scan'
+  inputs:
+    artifactoryService: Artifactory
+  enabled: false
