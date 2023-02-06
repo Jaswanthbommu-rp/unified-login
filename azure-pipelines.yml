@@ -14,7 +14,7 @@ variables:
 
 steps:
 - task: VSBuild@1
-  displayName: 'Build solution Enterprise/Subsystem/ProductLauncher/Database/Identity/Identity.sqlproj'
+  displayName: 'Build UserAudit DB'
   inputs:
     solution: Enterprise/Subsystem/ProductLauncher/Database/Identity/Identity.sqlproj
     msbuildArgs: '/t:Build /p:Configuration=$(SQLBuildConfig) /p:UpdateDatabase=False /p:outdir="$(build.artifactstagingdirectory)\DatabaseDeploy\DB_Identity"'
