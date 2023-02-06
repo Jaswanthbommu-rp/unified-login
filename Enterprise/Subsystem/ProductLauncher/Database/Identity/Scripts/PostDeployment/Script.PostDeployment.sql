@@ -19,4 +19,6 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\AddingSetting_MenuRights.sql
 :r .\PostDeploymentScripts\AddingRightforSettings.sql
 :r .\PostDeploymentScripts\AddingImpersinateRights.sql
+:r .\PostDeploymentScripts\2023.01.WMU.Release.sql
+
 
