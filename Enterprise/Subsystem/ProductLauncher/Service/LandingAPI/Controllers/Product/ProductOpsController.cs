@@ -308,7 +308,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             base._userClaims.UserRealPageGuid = persona.RealPageId;
             _manageProductOps = new ManageProductOps(base._userClaims);
-            return Request.CreateResponse(HttpStatusCode.OK, _manageProductOps.GetMigrationUsers(editorPersonaId, datafilter));
+
+            var result = _manageProductOps.GetMigrationUsers(editorPersonaId, datafilter);
+            if (!result.IsError)
+                return Request.CreateResponse(HttpStatusCode.OK, result);
+            else
+                return Request.CreateResponse(HttpStatusCode.Forbidden, result);
         }
 
         /// <summary>

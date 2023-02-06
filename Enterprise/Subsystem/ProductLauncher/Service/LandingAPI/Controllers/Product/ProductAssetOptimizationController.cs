@@ -229,7 +229,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not found.");
 			base._userClaims.UserRealPageGuid = persona.RealPageId;
 			var manageProductAoBi = new ManageProductAssetOptimization(base._userClaims);
-			return Request.CreateResponse(HttpStatusCode.OK, manageProductAoBi.GetMigrationUsers(editorPersonaId, datafilter));
+
+            var result = manageProductAoBi.GetMigrationUsers(editorPersonaId, datafilter);
+            if (!result.IsError)
+                return Request.CreateResponse(HttpStatusCode.OK, result);
+            else
+                return Request.CreateResponse(HttpStatusCode.Forbidden, result);
 		}
 
 		/// <summary>

@@ -194,7 +194,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			base._userClaims.UserRealPageGuid = persona.RealPageId;
 			IManageProductRPDocumentManagement manageRPDocument = new ManageProductRPDocumentManagement(_userClaims);
 
-			return Request.CreateResponse(HttpStatusCode.OK, manageRPDocument.GetMigrationUsers(editorPersonaId, datafilter));
+            var result = manageRPDocument.GetMigrationUsers(editorPersonaId, datafilter);
+            if (!result.IsError)
+                return Request.CreateResponse(HttpStatusCode.OK, result);
+            else
+                return Request.CreateResponse(HttpStatusCode.Forbidden, result);
 		}
 
 		/// <summary>
