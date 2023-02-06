@@ -1408,7 +1408,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					return response;
 				}
 
-				var props = GetGroupProperties(propertyGroupId);
+				var props = GetPropertyByGroupId(propertyGroupId);
 				props = props.OrderBy(x => x.Name).ToList();
 
 				if (props != null && props.Count > 0)
@@ -2068,7 +2068,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			return response;
 		}
 
-		private AoVisiblePropertyGroups GetAllPropertyGroups()
+        private List<ProductProperty> GetPropertyByGroupId(int groupId)
+        {
+            WriteToDiagnosticLog($"ManageProductAssetOptimization.GetAllPropertyGroups at beginning of method.");
+            List<VisibleGroupProperty> propertyGroups = new List<VisibleGroupProperty>();
+			var response = new List<ProductProperty>();
+            WriteToDiagnosticLog("ManageProductAssetOptimization.GetAllPropertyGroups- Null cache value. Getting new Groups.");
+            //https://aoqa.realpage.com/ysconfig/ws/user/snarani/groups/assignable/properties?groupId=27673
+            var groupApiUrl = $"{_apiEndPoint}user/{_editorProductUserId.ToLower()}/groups/assignable/properties?groupId={groupId}";
+			propertyGroups = GetResultFromApi<List<VisibleGroupProperty>>(groupApiUrl);
+            foreach (var x in propertyGroups)
+			{
+                response.Add(new ProductProperty { ID = x.PropertyId.ToString(), Name = x.PropertyName, State = "" });
+            }
+            
+            WriteToDiagnosticLog($"ManageProductAssetOptimization.GetAllPropertyGroups-Received {propertyGroups.Count} groups for existing user.");
+            return response;
+        }
+
+        private AoVisiblePropertyGroups GetAllPropertyGroups()
 		{
 			WriteToDiagnosticLog(
 				$"ManageProductAssetOptimization.GetAllPropertyGroups at beginning of method.");
@@ -2082,8 +2100,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			{
 				WriteToDiagnosticLog("ManageProductAssetOptimization.GetAllPropertyGroups- Null cache value. Getting new Groups.");
 
-				var groupApiUrl = $"{_apiEndPoint}user/groups/visible/{_aoSuperUser.ToLower()}/{_editorProductUserId.ToLower()}/";
-				propertyGroups = GetResultFromApi<AoVisiblePropertyGroups>(groupApiUrl);
+                var groupApiUrl = $"{_apiEndPoint}user/groups/visible/{_aoSuperUser.ToLower()}/{_editorProductUserId.ToLower()}/";
+                propertyGroups = GetResultFromApi<AoVisiblePropertyGroups>(groupApiUrl);
 
 				return propertyGroups;
 			});
@@ -2096,18 +2114,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 		private IList<AoAssignableDivisionGroups> GetAssignablePropertyGroups(string productName, IList<int> selectedCompanies)
 		{
-			WriteToDiagnosticLog(
-				$"ManageProductAssetOptimization.GetAssignablePropertyGroups at beginning of method.");
+			WriteToDiagnosticLog($"ManageProductAssetOptimization.GetAssignablePropertyGroups at beginning of method.");
 
-			// existing user
-			var groupApiUrl = $"{_apiEndPoint}user/groups/assignablepropertygroups/{_editorProductUserId.ToLower()}/{GetProductCompanyParam(selectedCompanies, productName)}";
-			IList<AoAssignableDivisionGroups> assignableDivisionGroups = GetResultFromApi<IList<AoAssignableDivisionGroups>>(groupApiUrl);
+            //var groupApiUrl = $"{_apiEndPoint}user/groups/assignablepropertygroups/{_editorProductUserId.ToLower()}/{GetProductCompanyParam(selectedCompanies, productName)}";
+            var groupApiUrl = $"{_apiEndPoint}user/{_editorProductUserId.ToLower()}/groups/assignable?editingUser={_editorProductUserId.ToLower()}";
+            var result = GetResultFromApi<AoVisiblePropertyGroups>(groupApiUrl);
+			WriteToDiagnosticLog($"ManageProductAssetOptimization.GetAssignablePropertyGroups-Received {result.Groups.Count} groups for existing user.");
 
+			AoAssignableDivisionGroups response = new AoAssignableDivisionGroups();
+			response.Groups = new List<AssignableGroup>();
+			var finalResponse = new List<AoAssignableDivisionGroups>();
 
-			WriteToDiagnosticLog(
-				$"ManageProductAssetOptimization.GetAssignablePropertyGroups-Received {assignableDivisionGroups.Count} groups for existing user.");
-
-			return assignableDivisionGroups;
+            foreach (var grp in result.Groups)
+			{
+				response.Groups.Add(new AssignableGroup() { PropertyGroupId = grp.GroupId, GroupName = grp.GroupName, Products = new List<DivisionGroupProduct>() { (new DivisionGroupProduct() { Product = productName }) } });
+            }
+			finalResponse.Add(response);
+            return finalResponse;
 		}
 
 		private IList<AoProperty> GetPropertiesForNewUser(string productPropertyApiUrl)
