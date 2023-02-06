@@ -1,5 +1,6 @@
 trigger:
 - master
+- release/*
 
 pool:
   name: UTY-BLD-POOL
@@ -16,8 +17,8 @@ steps:
 - task: VSBuild@1
   displayName: 'Build UserAudit DB'
   inputs:
-    solution: Enterprise/Subsystem/ProductLauncher/Database/Identity/Identity.sqlproj
-    msbuildArgs: '/t:Build /p:Configuration=$(SQLBuildConfig) /p:UpdateDatabase=False /p:outdir="$(build.artifactstagingdirectory)\DatabaseDeploy\DB_Identity"'
+    solution: Enterprise/Subsystem/ProductLauncher/Database/UserAudit/UserAudit/UserAudit/UserAudit.sqlproj
+    msbuildArgs: '/t:Build /p:Configuration=$(SQLBuildConfig) /p:UpdateDatabase=False /p:outdir="$(build.artifactstagingdirectory)\DatabaseDeploy\DB_UserAudit"'
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
     clean: true
@@ -29,9 +30,9 @@ steps:
     cliInstallationRepo: 'jfrog-cli'
 
 - task: ArchiveFiles@2
-  displayName: 'Archive $(Build.ArtifactStagingDirectory)\DatabaseDeploy\DB_Identity'
+  displayName: 'Archive $(Build.ArtifactStagingDirectory)\DatabaseDeploy\DB_UserAudit'
   inputs:
-    rootFolderOrFile: '$(Build.ArtifactStagingDirectory)\DatabaseDeploy\DB_Identity'
+    rootFolderOrFile: '$(Build.ArtifactStagingDirectory)\DatabaseDeploy\DB_UserAudit'
 
 - task: JFrog.jfrog-artifactory-vsts-extension.artifactory-generic-upload.ArtifactoryGenericUpload@2
   displayName: 'Artifactory Generic Upload'
@@ -42,7 +43,7 @@ steps:
        "files": [
          {
            "pattern": "$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip",
-           "target": "rp-deployables-local/uty/UnifiedLogin/ULDB/$(Build.BuildId).zip"
+           "target": "rp-deployables-local/uty/UnifiedLogin/ULUserAuditDB/$(Build.BuildId).zip"
          }
        ]
      }
