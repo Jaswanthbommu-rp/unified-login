@@ -1,4 +1,5 @@
-﻿declare @UserId bigint
+﻿GO
+declare @UserId bigint
  SELECT @UserId = UserId
        FROM   Ident.UserLogin
        WHERE  LoginName LIKE 'realpagead@%'
