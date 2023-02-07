@@ -600,6 +600,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
         /// </summary>
         [Description("OSCE")]
 		LRConversionPortal = 85,
+
+		/// <summary>
+        /// G5+LL Marketing Solutions
+        /// </summary>
+        [Description("G5")]
+        G5LLMarketing = 86,
+
         /// <summary>
         /// Knock CRM
         /// </summary>
