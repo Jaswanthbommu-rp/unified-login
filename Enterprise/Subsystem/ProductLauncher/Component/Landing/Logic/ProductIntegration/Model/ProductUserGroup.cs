@@ -13,7 +13,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// Get UserGroupId
         /// </summary>
         [JsonProperty(PropertyName = "userGroupId")]
-        public string UserGroupId { get; set; }
+        public string Id { get; set; }
 
         /// <summary>
         /// Get User Group Name.
