@@ -465,10 +465,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				int productId = ProductEnumHelper.GetProductIdByProductCode(productType, productList);
 
 				var integrationType = _integrationTypeFactory.GetIntegration(productId);
-				result = integrationType.GetMigrationUsers(editorPersonaId, dataFilter);
+				result = integrationType.GetMigrationUsers(editorPersonaId, dataFilter); 
 
-				if (result.IsError)
-					Request.CreateResponse(HttpStatusCode.Forbidden, result);
+                if (result.IsError)
+					return Request.CreateResponse(HttpStatusCode.Forbidden, result);
 
 				return Request.CreateResponse(HttpStatusCode.OK, result);
 			}

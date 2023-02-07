@@ -143,7 +143,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
 	        base._userClaims.UserRealPageGuid = persona.RealPageId;
             var manageProductLead2Lease = new ManageProductLead2Lease(base._userClaims);
-            return Request.CreateResponse(HttpStatusCode.OK, manageProductLead2Lease.GetMigrationUsers(editorPersonaId, datafilter));
+
+            var result = manageProductLead2Lease.GetMigrationUsers(editorPersonaId, datafilter);
+            if (!result.IsError)
+                return Request.CreateResponse(HttpStatusCode.OK, result);
+            else
+                return Request.CreateResponse(HttpStatusCode.Forbidden, result);
         }
 
         /// <summary>
