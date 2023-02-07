@@ -761,7 +761,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
 
             var company = _manageBlueBook.GetBooksCompanyDetailsByCompanyMasterId(customerCompany.CustomerCompanyId);
+            var existingInstances = _manageBlueBook.GetCompanyInstancesByCustomerCompanyId(customerCompany.CustomerCompanyId);
             var vendorInstance = _manageBlueBook.GetCompanyInstanceBySourceAndInstanceId(productSourceId, productSource);
+
+            if (existingInstances != null && existingInstances.Any(p => p.attributes.Domain.Equals(vendorInstance.Domain, StringComparison.OrdinalIgnoreCase)
+                                                                        && p.attributes.Source.Equals("UPFM")))
+            {
+                WriteToLog(LogEventLevel.Debug, $"UPFM vendor company {customerCompany.CompanyName} already exists. CustomerCompanyId {customerCompany.CustomerCompanyId}");
+                createCompanyResult.Result = "UPFM instance already exists";
+                return createCompanyResult;
+            }
 
             var organization = new OrganizationCreate()
             {
