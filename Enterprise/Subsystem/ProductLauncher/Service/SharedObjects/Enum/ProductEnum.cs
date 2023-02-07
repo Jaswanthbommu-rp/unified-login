@@ -599,7 +599,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
         /// L&R Conversion Portal
         /// </summary>
         [Description("OSCE")]
-		LRConversionPortal = 85
+		LRConversionPortal = 85,
+        /// <summary>
+        /// G5+LL Marketing Solutions
+        /// </summary>
+        [Description("G5")]
+        G5LLMarketing = 86
+		
 	}
 
 	/// <summary>
