@@ -9,10 +9,8 @@ Post-Deployment Script Template
 					SELECT * FROM [$(TableName)]
 --------------------------------------------------------------------------------------
 */
-:r .\PostDeploymentScripts\_SeedData.sql
 
-:r .\PostDeploymentScripts\UpdateStatistics.sql
-:r .\PostDeploymentScripts\RecompileAllProcs.sql
+
 :r .\PostDeploymentScripts\ADGroupWithoutUserCreationSetting.sql
 :r .\PostDeploymentScripts\ContactCenterMaintenance_Script.sql
 :r .\PostDeploymentScripts\IterateUserNameForUserCreationSetting.sql
@@ -21,6 +19,10 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\AddingImpersinateRights.sql
 :r .\PostDeploymentScripts\2023.01.WMU.Release.sql
 :r .\PostDeploymentScripts\KnockProductPanelScript.sql
+:r .\PostDeploymentScripts\UserAccessSummarySettings.sql
 
+-- keep these at the end!
+:r .\PostDeploymentScripts\UpdateStatistics.sql
+:r .\PostDeploymentScripts\RecompileAllProcs.sql
 
 
