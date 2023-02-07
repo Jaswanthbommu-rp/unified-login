@@ -820,6 +820,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 else
                 {
+                    var logData = new Dictionary<string, object>
+                    {
+                        { "ManageProductRentersInsurance.ManageRentersInsuranceUser response", _userAPIResponse }
+                    };
+                    WriteToDiagnosticLog("ManageProductRentersInsurance.ManageRentersInsuranceUser response.", logData);
                     WriteToDiagnosticLog($"ManageProductRentersInsurance.ManageRentersInsuranceUser - Failed to create/update a renters insurance user for userPersonaId - {userPersonaId}.");
                     errorStatus.Success = false;
                     errorStatus.ErrorMsg = "Failed to create a renters insurance user.";
