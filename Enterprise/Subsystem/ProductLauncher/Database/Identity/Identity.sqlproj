@@ -1400,6 +1400,7 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\IterateUserNameForUserCreationSetting.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\AddingImpersinateRights.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2023.01.WMU.Release.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\KnockProductPanelScript.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />

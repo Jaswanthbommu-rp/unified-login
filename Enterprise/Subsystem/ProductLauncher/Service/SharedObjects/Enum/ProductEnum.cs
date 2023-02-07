@@ -599,8 +599,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
         /// L&R Conversion Portal
         /// </summary>
         [Description("OSCE")]
-		LRConversionPortal = 85
-	}
+		LRConversionPortal = 85,
+        /// <summary>
+        /// Knock CRM
+        /// </summary>
+        [Description("KNCK")]
+        KnockCRM = 91
+    }
 
 	/// <summary>
 	/// Used to identify products by id.

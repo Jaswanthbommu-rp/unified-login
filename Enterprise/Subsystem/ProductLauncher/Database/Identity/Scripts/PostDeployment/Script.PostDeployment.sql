@@ -20,5 +20,7 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\AddingRightforSettings.sql
 :r .\PostDeploymentScripts\AddingImpersinateRights.sql
 :r .\PostDeploymentScripts\2023.01.WMU.Release.sql
+:r .\PostDeploymentScripts\KnockProductPanelScript.sql
+
 
 
