@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.Caching;
 using System.Security.Claims;
 using System.Web.Http;
 using System.Web.Http.Controllers;
@@ -443,6 +444,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             }
 
                             break;
+                        case "books.upfmvendor.create":
+                            var createVendorResult = CreateVendorCompanyFromWebhook(thinEvent.Payload);
+                            
+                            if (string.IsNullOrEmpty(createVendorResult.Result))
+                            {
+                                WriteToLog(LogEventLevel.Debug, "PostBooks : Complete", logData);
+                                return Request.CreateResponse(HttpStatusCode.Accepted);
+                            }
+
+                            logData.Add("error", createVendorResult.Result);
+                            WriteToLog(LogEventLevel.Error, "PostBooks : Error", logData);
+                            return Request.CreateResponse(HttpStatusCode.BadRequest, createVendorResult.Result);
+
+                            break;
                         case "provisioning.upfmorder.cancel":
                             var productListToCancel = thinEvent.Payload?["company"]["productCenters"];
                             string companyInstanceSourceId = thinEvent.Payload?["company"]["companyInstanceSourceId"] == null || thinEvent.Payload?["company"]["companyInstanceSourceId"].Type == JTokenType.Null ? null : thinEvent.Payload?["company"]["companyInstanceSourceId"].ToString();
@@ -727,6 +742,167 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
            return createCompanyResult;
         }
 
+        private CreateCompanyResult CreateVendorCompanyFromWebhook(JToken payLoad)
+        {
+            var createCompanyResult = new CreateCompanyResult();
+
+            var customerCompanyId = Convert.ToInt64(payLoad?["customerCompanyId"] == null || payLoad["customerCompanyId"].Type == JTokenType.Null ? 0 : payLoad?["customerCompanyId"]);
+            var productSource = payLoad?["source"].ToString();
+            var productSourceId = payLoad?["companyInstanceSourceId"].ToString();
+            var adminEmail = payLoad?["user"]["email"] == null || payLoad?["user"]["email"].Type == JTokenType.Null ? "" : payLoad["user"]["email"].ToString();
+            var adminFirstName = payLoad?["user"]["firstName"] == null || payLoad?["user"]["firstName"].Type == JTokenType.Null ? "" : payLoad["user"]["firstName"].ToString();
+            var adminLastName = payLoad?["user"]["lastName"] == null || payLoad?["user"]["lastName"].Type == JTokenType.Null ? "" : payLoad["user"]["lastName"].ToString();
+
+            var customerCompany = _manageBlueBook.GetCompanyCustomerInfo(companyRealPageId: Guid.Empty, domain: null, booksCompanyMasterId: customerCompanyId);
+            if (customerCompany == null)
+            {
+                createCompanyResult.Result = "Company not found in books environment";
+                return createCompanyResult;
+            }
+
+            var company = _manageBlueBook.GetBooksCompanyDetailsByCompanyMasterId(customerCompany.CustomerCompanyId);
+            var vendorInstance = _manageBlueBook.GetCompanyInstanceBySourceAndInstanceId(productSourceId, productSource);
+
+            var organization = new OrganizationCreate()
+            {
+                Name = customerCompany.CompanyName,
+                BooksCompanyId = customerCompany.MasterCompanyId,
+                BooksCustomerMasterId = customerCompany.CustomerCompanyId,
+                AdminUser = new OrganizationAdminUser()
+                {
+                    FirstName = "RealPage",
+                    LastName = "Access",
+                    Suffix = string.Empty,
+                    Title = string.Empty,
+                },
+                //CompanyAddress = new CompanyInstanceAddress() { Address = companyAddress, City = companyCity, State = companyState, PostalCode = companyPostalCode, County = companyCounty, Country = companyCountry },
+                CompanyAdminUser = new OrganizationAdminUser()
+                {
+                    Email = adminEmail,
+                    FirstName = adminFirstName,
+                    LastName = adminLastName
+                },
+                Products = new List<string>() { productSource }
+            };
+
+            WriteToLog(LogEventLevel.Debug, $"Adding vendor company {customerCompany.CompanyName}");
+            var organizationTypeList = _manageOrganization.ListOrganizationType();
+            var organizationDomainList = _manageOrganization.ListOrganizationDomain();
+
+            if (organizationTypeList.FirstOrDefault(p => p.Name.Equals(customerCompany.CompanyType, StringComparison.OrdinalIgnoreCase)) == null)
+            {
+                createCompanyResult.Result = "Unknown organization type";
+                return createCompanyResult;
+            }
+
+            var orgType = organizationTypeList.FirstOrDefault(p => p.Name.Equals(customerCompany.CompanyType, StringComparison.OrdinalIgnoreCase));
+            if (orgType == null)
+            {
+                createCompanyResult.Result = "Unknown organization type";
+                return createCompanyResult;
+            }
+
+            organization.OrganizationTypeId = orgType.OrganizationTypeId;
+
+            if (!organizationDomainList.Any(d => d.Name.Equals(vendorInstance.Domain, StringComparison.OrdinalIgnoreCase)))
+            {
+                var response = _manageOrganization.CreateOrganizationDomain(new OrganizationDomain() { Name = vendorInstance.Domain });
+                if (response.Id > 0)
+                {
+                    organization.OrganizationDomainId = Convert.ToInt32(response.Id);
+                }
+            }
+            else
+            {
+                organization.OrganizationDomainId = organizationDomainList.FirstOrDefault(p => p.Name.Equals(vendorInstance.Domain, StringComparison.OrdinalIgnoreCase)).OrganizationDomainId;
+            }
+
+            var productList = _manageProduct.ListProducts();
+            var addProductList = new List<int>();
+            var productDetails = productList.FirstOrDefault(p => p.BooksProductCode.Equals(productSource, StringComparison.OrdinalIgnoreCase));
+            if (productDetails != null)
+            {
+                addProductList.Add(productDetails.ProductId);
+            }
+
+            var createOrgResult = _manageOrganization.CreateOrganization(organization, addProductList, true);
+
+            if (!createOrgResult.Status.Success || !string.IsNullOrEmpty(createOrgResult.Status.ErrorMsg))
+            {
+                WriteToLog(LogEventLevel.Error, $"Error Message while creating organization {createOrgResult.Status.ErrorMsg}");
+                createCompanyResult.Result = createOrgResult.Status.ErrorMsg;
+                return createCompanyResult;
+            }
+
+            var companyInstance = new CompanyInstanceAdd
+            {
+                Id = organization.BooksCustomerMasterId,
+                CustomerCompanyId = null,
+                CompanyInstanceSourceId = createOrgResult.obj.Org.RealPageId.ToString().ToLower(),
+                CompanyName = createOrgResult.obj.Org.Name,
+                Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
+                IsActive = true,
+                ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
+                CustomerEnvironment = createOrgResult.obj.Org.OrganizationDomain.Name,
+                CompanyType = customerCompany.CompanyType,
+                CompanyInstancePartners = new List<CompanyInstancePartner>() { new CompanyInstancePartner() { TargetSource = productSource, TargetCompanyInstanceSourceId = productSourceId } }
+            };
+
+            // do we ever have an address?
+            //if (organization.CompanyAddress != null)
+            //{
+            //    CompanyInstanceAddress address = new CompanyInstanceAddress()
+            //    {
+            //        Address = organization.CompanyAddress.Address,
+            //        City = organization.CompanyAddress.City,
+            //        State = organization.CompanyAddress.State,
+            //        PostalCode = organization.CompanyAddress.PostalCode,
+            //        County = organization.CompanyAddress.County,
+            //        Country = organization.CompanyAddress.Country
+            //    };
+            //    companyInstance.CompanyInstanceLocation = new List<CompanyInstanceAddress>() { address };
+            //}
+
+            // add the new company data to books
+            var companyCreatedSuccessfully = _manageBlueBook.AddUPFMCompanyFromCompanySetup(companyInstance);
+
+            if (!companyCreatedSuccessfully)
+            {
+                createCompanyResult.Result = "There was a problem adding the UPFM instance to UDM";
+                return createCompanyResult;
+            }
+
+            if (!_manageOrganization.AddUpdateCompanyToUnifiedSettings(companyInstance.CompanyInstanceSourceId, "Create", companyInstance.CustomerEnvironment))
+            {
+                createCompanyResult.Result = "Unified Login and MDM company was updated successfully but Settings data update failed.";
+                return createCompanyResult;
+            }
+
+            // add the products assigned to the new company
+            var cacheKey = $"getListProductsByOrganization_{createOrgResult.obj.Org.RealPageId}";
+            MemoryCache.Default.Remove(cacheKey);
+
+            var productListOrg = _manageProduct.GetProducts(createOrgResult.obj.Org.RealPageId, 0, true);
+            foreach (var product in productList)
+            {
+                var productInternalSettings = _manageProduct.GetProductInternalSettings(product.ProductId);
+                var updateInUDM = productInternalSettings.FirstOrDefault(x => x.Name.Equals("UpdateProductInUDM", StringComparison.OrdinalIgnoreCase));
+
+                if (updateInUDM?.Value != "1") continue;
+
+                var spc = new SystemProductCenter()
+                {
+                    Id = 0,
+                    CompanyInstanceSourceId = companyInstance.CompanyInstanceSourceId,
+                    CreatedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
+                    ProductCenterSourceId = product.ProductId.ToString(),
+                    Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)
+                };
+                _manageBlueBook.ProductCenterEnable(spc);
+            }
+
+            return new CreateCompanyResult() { RealPageId = createCompanyResult.RealPageId };
+        }
 
         private static string ResultErrorMessage(RepositoryResponse result)
         {
