@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Batch;
+using Dapper;
+using System.Data;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 {
@@ -88,6 +92,116 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 return repo.GetMany<SamlAttributes>(StoredProcNameConstants.SP_GetProductSamlDetails, new { PersonaId, ProductId }).ToList();
             }
         }
+
+		//private BatchProcessorGroup CreateBatchProcessGroup(IRepository repo)
+		//{
+		//	{
+		//		DynamicParameters param = new DynamicParameters();
+		//		int groupID = 0;
+		//		param.Add("@BatchProcessorGroupID", groupID, dbType: DbType.Int32, direction: ParameterDirection.Output);
+
+		//		try
+		//		{
+		//			var a = repo.Execute(StoredProcNameConstants.SP_CreateBatchProcessorGroup, param);
+		//			groupID = param.Get<int>("@BatchProcessorGroupID");
+		//		}
+		//		catch (Exception ex)
+		//		{
+		//		}
+
+		//		return new BatchProcessorGroup()
+		//		{
+		//			BatchProcessorGroupId = groupID,
+		//			BatchProcessorGroupActivityLogged = false
+		//		};
+		//	}
+		//}
+
+		///// <summary>
+		///// Create the Batch for Admin Portal
+		///// </summary>
+		///// <param name="editorUserPersonaId">editorUserPersonaId</param>
+		///// <param name="subjectUserPersonaId">subjectUserPersonaId</param>
+		///// <param name="editorUserRealPageId">editorUserRealPageId</param>
+		///// <param name="productId">productId</param>
+		///// <returns>list SamlAttributes object</returns>
+		//public IList<SamlAttributes> CreateBatch(long editorUserPersonaId, long subjectUserPersonaId, Guid editorUserRealPageId, int productId)
+		//{
+		//	int batchProcessorGroupId;
+		//	using (var repository = GetRepository())
+		//	{
+		//		//repository.UnitOfWork.BeginTransaction();
+		//		var batchGroup = CreateBatchProcessGroup(repository);
+		//		batchProcessorGroupId = batchGroup.BatchProcessorGroupId;
+		//		dynamic productBatch = new
+		//		{
+		//			PersonRealPageId = editorUserRealPageId,
+		//			CreateUserPersonaId = editorUserPersonaId,
+		//			AssignUserPersonaId = subjectUserPersonaId,
+		//			ProductId = productId,
+		//			StatusTypeId = 5,
+		//			RetryCount = 0,
+		//			BatchProcessorGroupId = batchProcessorGroupId,
+		//			InputJson = JsonConvert.SerializeObject(new RolePropertyList()
+		//			{
+		//				PropertyList = new List<string> { "-1" },
+		//				RoleList = new List<string> { "00e1G000000JItR" },
+		//				IsAssigned = true
+		//			}),
+		//		};
+
+		//		var repositoryResponse = repository.Execute<dynamic>(StoredProcNameConstants.SP_CreateProductBatch, productBatch);
+
+		//		//In-case of an error creating a product batch record, append the ProductCode to the ErrorReason
+		//		if (repositoryResponse.Id == 0)
+		//		{
+		//			throw new Exception($"Exception while inserting product with code OMS-P in the product batch.");
+		//		}
+		//	}
+		//	//var statusCheckSleepSetting = _productInternalSettings.FirstOrDefault(a => a.Name.Equals("HOTSCheckUserProductStatusSleepTimeout", StringComparison.OrdinalIgnoreCase))?.Value;
+		//	//var retrySetting = _productInternalSettings.FirstOrDefault(a => a.Name.Equals("HOTSCheckUserProductStatusRetryCount", StringComparison.OrdinalIgnoreCase))?.Value;
+		//	//if (retrySetting != null)
+		//	//{
+		//	//	retry = Convert.ToInt16(retrySetting);
+		//	//}
+
+		//	//if (statusCheckSleepSetting != null)
+		//	//{
+		//	//	statusCheckSleep = Convert.ToInt32(statusCheckSleepSetting);
+		//	//}
+		//	int retry = 3;
+		//	while (retry >= 0)
+		//	{
+		//		System.Threading.Thread.Sleep(5000);
+		//		List<UserBatchProductDetail> lst = (List<UserBatchProductDetail>)GetUserBatchDetails(batchProcessorGroupId, editorUserPersonaId, subjectUserPersonaId);
+		//		if (lst.Select(a => a.StatusTypeId != 7 && a.StatusTypeId != 8).Any())
+		//		{
+		//			retry--;
+		//		}
+		//		else {
+		//			break;
+		//		}
+		//	}
+			
+		//	if (true) {; }
+		//	// Transaction Rollbacks during dispose in case any error
+		//	return null;
+		//}
+
+		//public IList<UserBatchProductDetail> GetUserBatchDetails(int batchGroupId, long editorUserPersonId, long subjectUserPersonId)
+		//{
+		//	using (var repo = GetRepository())
+		//	{
+		//		var data = repo.GetMany<UserBatchProductDetail>(StoredProcNameConstants.SP_GetUserBatchRecords, new
+		//		{
+		//			batchProcessorGroupId = batchGroupId,
+		//			editorUserPersonId = editorUserPersonId,
+		//			subjectUserPersonId = subjectUserPersonId
+
+		//		}).ToList();
+		//		return data;
+		//	}
+		//}
 
 		/// <summary>
 		/// Get the SAML product attribute DisplayName, ProductId by ProductId
