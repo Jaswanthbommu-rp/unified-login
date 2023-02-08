@@ -748,7 +748,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     List<string> userGroups = new List<string>();
                     foreach (var groups in userGroupList)
                     {
-                        userGroups.Add(groups.UserGroupId.ToString());
+                        userGroups.Add(groups.Id.ToString());
                     }
                     newProductUser.UserGroups = userGroups;
                 }
@@ -1225,7 +1225,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             foreach (var userGroup in userGroupList)
             {
-                if (userGroups != null && userGroups.Contains(userGroup.UserGroupId))
+                if (userGroups != null && userGroups.Contains(userGroup.Id))
                 {
                     userGroup.IsAssigned = true;
                 }
@@ -1378,7 +1378,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 CanReceiveMonthlyReport = userRolePropertiesRegion.CanReceiveMonthlyReport,
                 PropertyRoleList = userRolePropertiesRegion.RolePropertiesList,
                 RoleList = userRolePropertiesRegion.RoleList?.ConvertAll<string>(x => x.ToString()),
-                IsRealPageEmployee = SubjectUserDetails.IsRPEmployee
+                IsRealPageEmployee = SubjectUserDetails.IsRPEmployee,
+                UserGroups = userRolePropertiesRegion.UserGroups
             };
 
             if (SubjectUserDetails.UserRoleTypeId == (int) UserRoleType.SuperUser)

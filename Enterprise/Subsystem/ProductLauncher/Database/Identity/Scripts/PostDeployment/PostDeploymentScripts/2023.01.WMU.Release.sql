@@ -72,3 +72,21 @@ IF not Exists (Select Top 1 1 from Security.[RoleRight] where RoleId = 1 and Rig
 Begin 
    Insert into Security.[RoleRight] values (1,@rrRightId,@UserId,GETUTCDATE());
 end
+Go
+
+-- For User Story 1338013: LeaseLabs Web2Print Social Integration
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'UserGroupsId')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
+	VALUES ('UserGroupsId', 'it will assigned to web2print user groups for superuser', 0);
+END
+-- Enabling 
+GO
+DECLARE @ProductId INT = 87, @Now DATETIME = GETUTCDATE(), @ProductsettingTypeid int;
+IF NOT EXISTS (SELECT TOP 1 (1) FROM ENTERPRISE.ProductSetting PS INNER JOIN enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = PS.ProductSettingTypeId 
+    WHERE productid = @ProductId AND pst.Name = 'UserGroupsId' )
+BEGIN
+    SELECT @ProductsettingTypeid = ProductSettingTypeId FROM Enterprise.ProductSettingType WHERE [Name] = 'UserGroupsId'
+    exec [Enterprise].[SetProductSetting] 0,@Productid,@ProductsettingTypeid,1
+END
+GO
