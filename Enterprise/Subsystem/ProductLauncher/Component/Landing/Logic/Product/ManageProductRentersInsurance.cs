@@ -48,7 +48,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// The default constructor
         /// </summary>
         /// <param name="userClaims">User Claim</param>
-        public ManageProductRentersInsurance(DefaultUserClaim userClaims) : base((int)ProductEnum.Insurance,userClaims ,null, null)
+        public ManageProductRentersInsurance(DefaultUserClaim userClaims) : base((int)ProductEnum.Insurance,userClaims, productInternalSettingRepository: null, productRepository: null)
         {
             _productId = (int)ProductEnum.Insurance;
             _editorRealPageId = userClaims.UserRealPageGuid;

@@ -58,6 +58,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private IHOTSCloneUserRepository _hotsCloneUserRepository;
         private IIntegrationTypeFactory _integrationTypeFactory;
         private IManageUnifiedLogin _manageUnifiedLogin;
+        private IManageUser _manageUser;
+        private IManagePartyRole _managePartyRole;
         private DefaultUserClaim _defaultUserClaim;
         #endregion
         
@@ -86,6 +88,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _tokenHelper = new TokenHelper(repository);
             _hotsCloneUserRepository = new HOTSCloneUserRepository(repository);
             _manageUnifiedLogin = new ManageUnifiedLogin(repository, userClaim, messageHandler);
+            _manageUser = new ManageUser(repository, userClaim, messageHandler);
+            _managePartyRole = new ManagePartyRole(repository);
             _integrationTypeFactory = new IntegrationTypeFactory(_manageProduct, _manageUnifiedLogin, null, _productRepository,
                 _productInternalSettingRepository, userClaim);
         }
@@ -112,6 +116,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _manageOrganizationProduct = new ManageOrganizationProduct(userClaim, repository, _manageBlueBook, _manageProduct);
             _tokenHelper = new TokenHelper(repository);
             _manageUnifiedLogin = new ManageUnifiedLogin(repository, userClaim, messageHandler);
+            _manageUser = new ManageUser(repository, userClaim, messageHandler);
+            _managePartyRole = new ManagePartyRole(repository);
             _integrationTypeFactory = new IntegrationTypeFactory(_manageProduct, _manageUnifiedLogin, null, _productRepository,
                 _productInternalSettingRepository, userClaim);
         }
@@ -138,6 +144,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _manageProduct = new ManageProduct(userClaim);
             _tokenHelper = new TokenHelper();
             _manageUnifiedLogin = new ManageUnifiedLogin(userClaim);
+            _manageUser = new ManageUser(userClaim);
+            _managePartyRole = new ManagePartyRole();
             _integrationTypeFactory = new IntegrationTypeFactory(_manageProduct, _manageUnifiedLogin, null, _productRepository,
                 _productInternalSettingRepository, userClaim);
         }
@@ -244,7 +252,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 WriteToLog(LogEventLevel.Debug, $"In admin user");
                 UserLoginOnly findExistingUser = _userLoginRepository.GetUserLoginOnly(organization.CompanyAdminUser.Email);
 
-                ManageUser manageUser = new ManageUser(_defaultUserClaim);
+                //ManageUser manageUser = new ManageUser(_defaultUserClaim);
                 IList<Persona> personaList = new List<Persona>();
                 ProfileDetail profileDetail = new ProfileDetail()
                 {
@@ -329,7 +337,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     profileDetail.organization.Add(org);
                 }
                 WriteToLog(LogEventLevel.Error, $"Before creating user {profileDetail.userLogin.LoginName}");
-                CreateUserResponse<IErrorData> errorDataResponse = manageUser.CreateUser(profileDetail, personaList);
+                CreateUserResponse<IErrorData> errorDataResponse = _manageUser.CreateUser(profileDetail, personaList);
                 if (!errorDataResponse.Status.Success)
                 {
                     WriteToLog(LogEventLevel.Error, $"In error while creating user {profileDetail.userLogin.LoginName} error message is { errorDataResponse.Status.ErrorMsg}");
@@ -339,12 +347,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     return outputResult;
                 }
 
-                IManagePartyRole managePartyRole = new ManagePartyRole();
                 IPartyRole partyRole = new PartyRole()
                 {
                     RoleTypeId = profileDetail.UserTypeId
                 };
-                RepositoryResponse repositoryResponse2 = managePartyRole.CreatePartyRoleEnterpriseUserID(profileDetail.userLogin.RealPageId, partyRole);
+                var repositoryResponse2 = _managePartyRole.CreatePartyRoleEnterpriseUserID(profileDetail.userLogin.RealPageId, partyRole);
             }
             
             outputResult.Status.Success = true;

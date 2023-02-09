@@ -36,8 +36,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// Default constructor
 		/// </summary>
 		/// <param name="userClaims">user claim related information</param>
-		public ManageProductRPDocumentManagement(DefaultUserClaim userClaims) : base((int) ProductEnum.RPDocumentManagement, userClaims, null, null)
-		{
+		public ManageProductRPDocumentManagement(DefaultUserClaim userClaims) : base((int) ProductEnum.RPDocumentManagement, userClaims, productInternalSettingRepository: null, productRepository: null)
+        {
 			_userClaims = userClaims;
 			_editorRealPageId = userClaims.UserRealPageGuid;
 			_blueBook = new ManageBlueBook(userClaims);

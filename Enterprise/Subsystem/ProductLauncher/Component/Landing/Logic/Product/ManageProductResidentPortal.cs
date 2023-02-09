@@ -68,7 +68,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// The default constructor
         /// </summary>
         /// <param name="userClaims">User Claim</param>
-        public ManageProductResidentPortal(DefaultUserClaim userClaims) : base((int)ProductEnum.ResidentPortal, userClaims, null, null)
+        public ManageProductResidentPortal(DefaultUserClaim userClaims) : base((int)ProductEnum.ResidentPortal, userClaims, productInternalSettingRepository: null, productRepository: null)
         {
             _productId = (int)ProductEnum.ResidentPortal;
             _editorRealPageId = userClaims.UserRealPageGuid;

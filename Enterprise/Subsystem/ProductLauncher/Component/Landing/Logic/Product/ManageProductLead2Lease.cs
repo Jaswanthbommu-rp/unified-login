@@ -43,7 +43,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Default constructor
         /// </summary>
-        public ManageProductLead2Lease(DefaultUserClaim userClaims) : base((int)ProductEnum.Lead2Lease, userClaims, null, null)
+        public ManageProductLead2Lease(DefaultUserClaim userClaims) : base((int)ProductEnum.Lead2Lease, userClaims, productInternalSettingRepository: null, productRepository: null)
         {
             _userClaims = userClaims;
             _editorRealPageId = userClaims.UserRealPageGuid;

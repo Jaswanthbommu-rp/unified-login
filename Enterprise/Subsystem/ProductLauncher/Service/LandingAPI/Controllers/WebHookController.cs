@@ -12,6 +12,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Rum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.WebHook;
 using Serilog;
 using Serilog.Events;
@@ -89,6 +90,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _manageOrganizationProduct = new ManageOrganizationProduct(_userClaims);
             _manageBlueBook = new ManageBlueBook(_userClaims);
             _manageHotsCloneUsers = new ManageHotsCloneUsers(_userClaims);
+            _manageProduct = new ManageProduct(_userClaims);
         }
 
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
@@ -763,7 +765,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             var company = _manageBlueBook.GetBooksCompanyDetailsByCompanyMasterId(customerCompany.CustomerCompanyId);
             var existingInstances = _manageBlueBook.GetCompanyInstancesByCustomerCompanyId(customerCompany.CustomerCompanyId);
             var vendorInstance = _manageBlueBook.GetCompanyInstanceBySourceAndInstanceId(productSourceId, productSource);
-
+            if (vendorInstance == null)
+            {
+                WriteToLog(LogEventLevel.Error, $"ProductSource {productSource} company not found. productSourceId {productSourceId}");
+                createCompanyResult.Result = "Vendor instance not found in books environment";
+                return createCompanyResult;
+            }
             if (existingInstances != null && existingInstances.Any(p => p.attributes.Domain.Equals(vendorInstance.Domain, StringComparison.OrdinalIgnoreCase)
                                                                         && p.attributes.Source.Equals("UPFM")))
             {
@@ -791,7 +798,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     FirstName = adminFirstName,
                     LastName = adminLastName
                 },
-                Products = new List<string>() { productSource }
+                Products = new List<string>() { productSource },
+                CompanyInstancePartner = productSource,
+                CompanyInstancePartnerSourceId = productSourceId,
             };
 
             WriteToLog(LogEventLevel.Debug, $"Adding vendor company {customerCompany.CompanyName}");

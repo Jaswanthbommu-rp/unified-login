@@ -92,7 +92,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             ManageUserRoleRight manageUserRoleRight = new ManageUserRoleRight(repository, userClaims);
             ManagePartyRelationship managePartyRelationship = new ManagePartyRelationship(repository);
             ManageBlueBook manageBlueBook = new ManageBlueBook(userClaims, repository, productInternalSettingRepository, messageHandler);
-            ManageProfile manageProfile = new ManageProfile(userClaims);
+            ManageProfile manageProfile = new ManageProfile(repository, userClaims, messageHandler);
             PersonaRightRepository personaRightRepository = new PersonaRightRepository(repository);
             ManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(userClaims, productInternalSettingRepository, productRepository, manageBlueBook);
 
@@ -110,8 +110,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             _manangeSecurityLogic = new ManageSecurity(userClaims, personaRightRepository);
             _integrationTypeFactory = new IntegrationTypeFactory(_manageProduct, manageUnifiedLogin, manageProductOneSite, _productRepository, productInternalSettingRepository, _userClaims);
             _userManagement = new UserManagement(userClaims);
-            _manageUser = new ManageUser(userClaims);
-            _userLoginLogic = new ManageUserLogin();
+            _manageUser = new ManageUser(repository, userClaims, messageHandler);
+            _userLoginLogic = new ManageUserLogin(repository, userClaims, messageHandler);
         }
 
         /// <summary>

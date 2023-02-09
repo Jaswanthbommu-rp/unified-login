@@ -32,7 +32,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// Default constructor
         /// </summary>
         /// <param name="userClaims"></param>
-        public ManageUPFMProductsIntegration(int productId, DefaultUserClaim userClaims) : base(productId, userClaims, null, null)
+        public ManageUPFMProductsIntegration(int productId, DefaultUserClaim userClaims) : base(productId, userClaims, productInternalSettingRepository: null, productRepository: null)
         {
             WriteToDiagnosticLog("ManageUPFMProductsIntegration Ctor - Getting Product settings.");
             _userClaims = userClaims;

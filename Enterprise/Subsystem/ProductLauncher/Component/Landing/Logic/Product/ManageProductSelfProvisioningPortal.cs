@@ -31,7 +31,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// The default constructor
         /// </summary>
         /// <param name="editorRealPageId">The RealPageId of the editor</param>
-        public ManageProductSelfProvisioningPortal(DefaultUserClaim userClaims) : base((int)ProductEnum.SelfProvisioningPortal, userClaims, null, null)
+        public ManageProductSelfProvisioningPortal(DefaultUserClaim userClaims) : base((int)ProductEnum.SelfProvisioningPortal, userClaims, productInternalSettingRepository: null, productRepository: null)
         {
             _productId = (int)ProductEnum.SelfProvisioningPortal;
             _editorRealPageId = userClaims.UserRealPageGuid;

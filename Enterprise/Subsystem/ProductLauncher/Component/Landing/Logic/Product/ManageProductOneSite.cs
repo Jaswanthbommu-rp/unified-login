@@ -73,7 +73,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// The default constructor
         /// </summary>
         /// <param name="userClaims"></param>
-        public ManageProductOneSite(DefaultUserClaim userClaims) : base((int)ProductEnum.OneSite, userClaims, null, null)
+        public ManageProductOneSite(DefaultUserClaim userClaims) : base((int)ProductEnum.OneSite, userClaims, productInternalSettingRepository: null, productRepository: null)
         {
             _productId = (int)ProductEnum.OneSite;
             _userClaims = userClaims;
@@ -179,7 +179,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="messageHandler"></param>
         /// <param name="oneSiteProductService"></param>
         public ManageProductOneSite(IRepository repository, DefaultUserClaim userClaims, HttpMessageHandler messageHandler, IOneSiteProductService oneSiteProductService)
-            : base((int)ProductEnum.OneSite, userClaims, repository)
+            : base((int)ProductEnum.OneSite, userClaims, repository, messageHandler)
         {
             _editorRealPageId = userClaims.UserRealPageGuid;
             _service = oneSiteProductService;

@@ -44,7 +44,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// 
 		/// </summary>
 		/// <param name="userClaims"></param>
-        public ManageProductRum(DefaultUserClaim userClaims) : base((int)ProductEnum.UtilityManagement, userClaims, null, null)
+        public ManageProductRum(DefaultUserClaim userClaims) : base((int)ProductEnum.UtilityManagement, userClaims, productInternalSettingRepository: null, productRepository: null)
         {
             WriteToDiagnosticLog("ManageProductRum.Ctor - Getting Product settings.");
             _productId = (int)ProductEnum.UtilityManagement;

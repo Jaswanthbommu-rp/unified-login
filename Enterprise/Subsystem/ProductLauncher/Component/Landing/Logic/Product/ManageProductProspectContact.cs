@@ -39,8 +39,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// Ctor
 		/// </summary>
 		/// <param name="editorRealPageId">Real page Id of user who is creating new user</param>
-		public ManageProductProspectContact(DefaultUserClaim userClaims) : base((int)ProductEnum.ProspectContactCenter, userClaims, null, null)
-		{
+		public ManageProductProspectContact(DefaultUserClaim userClaims) : base((int)ProductEnum.ProspectContactCenter, userClaims, productInternalSettingRepository: null, productRepository: null)
+        {
 			WriteToDiagnosticLog("ManageProductProspectContact.Ctor - Getting Product settings.");
 
 			_productId = (int)ProductEnum.ProspectContactCenter;

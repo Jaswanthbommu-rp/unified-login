@@ -401,7 +401,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 _credentialRepository.UpdateUserActivityAttempts(userLogin.LoginName, ActivityType.UnlockUser, null, _defaultUserClaim.OrganizationPartyId, null);
             }
 
-            _userLoginRepository.UpdateUserStatusByCompany(realPageId, _defaultUserClaim.OrganizationPartyId, statusTypeId, fromUtcDateTime, thruUtcDateTime);
+            _userRepository.UpdateUserStatusByCompany(realPageId, _defaultUserClaim.OrganizationPartyId, statusTypeId, fromUtcDateTime, thruUtcDateTime);
 
             if (uiStatusTypeName == UserUiStatusType.Active || uiStatusTypeName == UserUiStatusType.Disabled || uiStatusTypeName == UserUiStatusType.Locked || uiStatusTypeName == UserUiStatusType.Unlocked)
             {
@@ -475,7 +475,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         (UserLoginOnly)userLogin
                     };
 
-                    _userLoginRepository.UpdateUserStatusByCompany(userLogin.RealPageId, currentOrg.PartyId, (int)UserUiStatusType.Active, currentOrg.FromDate, null);
+                    _userRepository.UpdateUserStatusByCompany(userLogin.RealPageId, currentOrg.PartyId, (int)UserUiStatusType.Active, currentOrg.FromDate, null);
                     if (_defaultUserClaim.PersonaId != 0)
                     {
                         _userRepository.ActivateSalesForceUser(_defaultUserClaim.UserRealPageGuid, _defaultUserClaim.PersonaId, ul, true);
@@ -563,7 +563,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         });
                         //set to pending status
                         //DateTime fromDate = DateTime.UtcNow.Date;
-                        _userLoginRepository.UpdateUserStatusByCompany(userLogin.RealPageId, defaultUserClaim.OrganizationPartyId, statusTypeId, userFromDate, thruUtcDateTime);
+                        _userRepository.UpdateUserStatusByCompany(userLogin.RealPageId, defaultUserClaim.OrganizationPartyId, statusTypeId, userFromDate, thruUtcDateTime);
                     }
 
                 }
@@ -619,7 +619,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     //set to pending status
                     int statusTypeId = (int) MapUiStatusToDb(UserUiStatusType.Pending);
 
-                    _userLoginRepository.UpdateUserStatusByCompany(userLogin.RealPageId, _defaultUserClaim.OrganizationPartyId, statusTypeId, userLogin.FromDate.Value, thruUtcDateTime);
+                    _userRepository.UpdateUserStatusByCompany(userLogin.RealPageId, _defaultUserClaim.OrganizationPartyId, statusTypeId, userLogin.FromDate.Value, thruUtcDateTime);
                 }
             }
 
@@ -686,7 +686,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 primaryOrgStatus.StatusThruDate < DateTime.UtcNow &&
                 !userLogin.Is3rdPartyIDP)
             {
-                _userLoginRepository.UpdateUserStatusByCompany(userLogin.RealPageId, primaryOrgStatus.PartyId, (int)UserUiStatusType.Expired, primaryOrgStatus.FromDate, null);
+                _userRepository.UpdateUserStatusByCompany(userLogin.RealPageId, primaryOrgStatus.PartyId, (int)UserUiStatusType.Expired, primaryOrgStatus.FromDate, null);
                 DefaultUserClaim currentUserClaim = GetCurrentUserClaim(manageProfile, organization);
                 WriteToLog(LogEventLevel.Debug, $"ManageUserLogin.CheckPrimaryOrganizationStatus: calling AddActivityLog - pending users who are not activated before status thru date then update status as expire - status type - {UserUiStatusType.Expired.ToString()}");
                 AddActivityLog(userLogin, UserUiStatusType.Expired.ToString(), ProductEnum.UnifiedPlatform.ToEnumDescription(), currentUserClaim);
@@ -741,7 +741,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     }
                 }
 
-                _userLoginRepository.UpdateUserStatusByCompany(userLogin.RealPageId, primaryOrgStatus.PartyId, statusTypeId, userFromDate, thruUtcDateTime);
+                _userRepository.UpdateUserStatusByCompany(userLogin.RealPageId, primaryOrgStatus.PartyId, statusTypeId, userFromDate, thruUtcDateTime);
                 if (organization.RealPageId != DefaultUserClaim.ExternalCompanyRealPageId)
                 {
                     DefaultUserClaim currentUserClaim = GetCurrentUserClaim(manageProfile, organization);
@@ -845,7 +845,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                                 orgStatus.StatusThruDate < DateTime.UtcNow &&
                                 !userLogin.Is3rdPartyIDP)
                             {
-                                _userLoginRepository.UpdateUserStatusByCompany(userLogin.RealPageId, orgStatus.PartyId, (int)UserUiStatusType.Expired, orgStatus.FromDate, null);
+                                _userRepository.UpdateUserStatusByCompany(userLogin.RealPageId, orgStatus.PartyId, (int)UserUiStatusType.Expired, orgStatus.FromDate, null);
                                 WriteToLog(LogEventLevel.Debug, $"ManageUserLogin.ProcessFutureUserLogins: calling AddActivityLog - pending users who are not activated before status thru date then update status as expire - status type - {UserUiStatusType.Expired.ToString()}");
                                 AddActivityLog(userLogin, UserUiStatusType.Expired.ToString(), ProductEnum.UnifiedPlatform.ToEnumDescription(), currentUserClaim);
                             }
@@ -903,7 +903,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                                         ToUserLoginId = profileDetail.userLogin.UserId
                                     });
                                 }
-                                _userLoginRepository.UpdateUserStatusByCompany(userLogin.RealPageId, org.PartyId, statusTypeId, userFromDate, thruUtcDateTime);
+                                _userRepository.UpdateUserStatusByCompany(userLogin.RealPageId, org.PartyId, statusTypeId, userFromDate, thruUtcDateTime);
                                 string activityMessage = "{0} {1} was activated by the system due to the scheduled User Effective date. | " + userFromDateCST.ToShortDateString() + "/ " + userFromDateCST.ToShortTimeString() + " CST";
                                 WriteToLog(LogEventLevel.Debug, $"ManageUserLogin.ProcessFutureUserLogins: calling AddActivityLog - Future user and user never logged in for status type - {statusType}");
                                 AddActivityLog(userLogin, statusType, ProductEnum.UnifiedPlatform.ToEnumDescription(), currentUserClaim, activityMessage);

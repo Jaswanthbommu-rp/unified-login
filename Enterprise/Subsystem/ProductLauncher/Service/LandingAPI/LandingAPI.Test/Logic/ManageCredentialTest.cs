@@ -27,7 +27,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		Mock<IManagePerson> _mockManagePerson = new Mock<IManagePerson>();
 		UserDeviceDetails _mockUserdDetails = new UserDeviceDetails();
         Mock<IRepository> _mockRepository = new Mock<IRepository>();
-
+        private Mock<IUserRepository> _mockUserRepository = new Mock<IUserRepository>();
         IManageCredential _manageCredential;
         CredentialRepository _credentialRepository;
 
@@ -131,6 +131,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				_mockUserLoginRepository.Object,
 				_mockManageUserLogin.Object,
 				_mockManagePerson.Object,
+				_mockUserRepository.Object,
 				_defaultUserClaim
 			);
 			var response = _manageCredential.GetSecurityQuestion(null, _userDeviceDetails);
@@ -166,7 +167,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				_mockUserLoginRepository.Object,
 				_mockManageUserLogin.Object,
 				_mockManagePerson.Object,
-				_defaultUserClaim
+                _mockUserRepository.Object,
+                _defaultUserClaim
 			);
 
 			var response = _manageCredential.GetSecurityQuestion(_enterpriseUserName, _userDeviceDetails);
@@ -209,7 +211,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				_mockUserLoginRepository.Object,
 				_mockManageUserLogin.Object,
 				_mockManagePerson.Object,
-				_defaultUserClaim
+                _mockUserRepository.Object,
+                _defaultUserClaim
 			);
 
 			var response = _manageCredential.GetSecurityQuestion(_enterpriseUserName, _userDeviceDetails);
@@ -296,7 +299,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				_mockUserLoginRepository.Object,
 				_mockManageUserLogin.Object,
 				_mockManagePerson.Object,
-				_defaultUserClaim
+                _mockUserRepository.Object,
+                _defaultUserClaim
 			);
 
 			var response = _manageCredential.GetSecurityQuestion(_enterpriseUserName, _userDeviceDetails);
@@ -319,7 +323,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				_mockUserLoginRepository.Object,
 				_mockManageUserLogin.Object,
 				_mockManagePerson.Object,
-				_defaultUserClaim
+                _mockUserRepository.Object,
+                _defaultUserClaim
 			);
 
 			var response =
@@ -345,7 +350,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				_mockUserLoginRepository.Object,
 				_mockManageUserLogin.Object,
 				_mockManagePerson.Object,
-				_defaultUserClaim
+                _mockUserRepository.Object,
+                _defaultUserClaim
 			);
 
 			var response =
@@ -371,7 +377,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				_mockUserLoginRepository.Object,
 				_mockManageUserLogin.Object,
 				_mockManagePerson.Object,
-				_defaultUserClaim
+                _mockUserRepository.Object,
+                _defaultUserClaim
 			);
 
 			var response =
@@ -397,7 +404,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				_mockUserLoginRepository.Object,
 				_mockManageUserLogin.Object,
 				_mockManagePerson.Object,
-				_defaultUserClaim
+                _mockUserRepository.Object,
+                _defaultUserClaim
 			);
 
 			var response =
@@ -423,7 +431,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				_mockUserLoginRepository.Object,
 				_mockManageUserLogin.Object,
 				_mockManagePerson.Object,
-				_defaultUserClaim
+                _mockUserRepository.Object,
+                _defaultUserClaim
 			);
 
 			var response =
@@ -474,7 +483,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				_mockUserLoginRepository.Object,
 				_mockManageUserLogin.Object,
 				_mockManagePerson.Object,
-				_defaultUserClaim
+                _mockUserRepository.Object,
+                _defaultUserClaim
 			);
 
 			var response =
@@ -526,7 +536,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				_mockUserLoginRepository.Object,
 				_mockManageUserLogin.Object,
 				_mockManagePerson.Object,
-				_defaultUserClaim
+                _mockUserRepository.Object,
+                _defaultUserClaim
 			);
 
 			var response =
@@ -594,7 +605,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				_mockUserLoginRepository.Object,
 				_mockManageUserLogin.Object,
 				_mockManagePerson.Object,
-				_defaultUserClaim
+                _mockUserRepository.Object,
+                _defaultUserClaim
 			);
 
 			var response =
@@ -663,7 +675,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				_mockUserLoginRepository.Object,
 				_mockManageUserLogin.Object,
 				_mockManagePerson.Object,
-				_defaultUserClaim
+                _mockUserRepository.Object,
+                _defaultUserClaim
 			);
 
 			var response =
@@ -733,7 +746,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				_mockUserLoginRepository.Object,
 				_mockManageUserLogin.Object,
 				_mockManagePerson.Object,
-				_defaultUserClaim
+                _mockUserRepository.Object,
+                _defaultUserClaim
 			);
 
 			var response =
@@ -833,7 +847,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				_mockUserLoginRepository.Object,
 				_mockManageUserLogin.Object,
 				_mockManagePerson.Object,
-				_defaultUserClaim
+                _mockUserRepository.Object,
+                _defaultUserClaim
 			);
 
 			var response =
@@ -904,7 +919,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				_mockUserLoginRepository.Object,
 				_mockManageUserLogin.Object,
 				_mockManagePerson.Object,
-				_defaultUserClaim
+                _mockUserRepository.Object,
+                _defaultUserClaim
 			);
 
 			var response =
@@ -974,7 +990,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				_mockUserLoginRepository.Object,
 				_mockManageUserLogin.Object,
 				_mockManagePerson.Object,
-				_defaultUserClaim
+                _mockUserRepository.Object,
+                _defaultUserClaim
 			);
 
 			var response =
@@ -1046,7 +1063,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				_mockUserLoginRepository.Object,
 				_mockManageUserLogin.Object,
 				_mockManagePerson.Object,
-				_defaultUserClaim
+                _mockUserRepository.Object,
+                _defaultUserClaim
 			);
 
 			var response =
@@ -1103,7 +1121,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				_mockUserLoginRepository.Object,
 				_mockManageUserLogin.Object,
 				_mockManagePerson.Object,
-				_defaultUserClaim
+                _mockUserRepository.Object,
+                _defaultUserClaim
 			);
 
 			var response =
@@ -1156,7 +1175,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				_mockUserLoginRepository.Object,
 				_mockManageUserLogin.Object,
 				_mockManagePerson.Object,
-				_defaultUserClaim
+                _mockUserRepository.Object,
+                _defaultUserClaim
 			);
 
 			var response =
@@ -1209,7 +1229,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				_mockUserLoginRepository.Object,
 				_mockManageUserLogin.Object,
 				_mockManagePerson.Object,
-				_defaultUserClaim
+                _mockUserRepository.Object,
+                _defaultUserClaim
 			);
 
 			var response =
@@ -1271,7 +1292,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				_mockUserLoginRepository.Object,
 				_mockManageUserLogin.Object,
 				_mockManagePerson.Object,
-				_defaultUserClaim
+                _mockUserRepository.Object,
+                _defaultUserClaim
 			);
 
 			var response =
@@ -1332,7 +1354,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				_mockUserLoginRepository.Object,
 				_mockManageUserLogin.Object,
 				_mockManagePerson.Object,
-				_defaultUserClaim
+                _mockUserRepository.Object,
+                _defaultUserClaim
 			);
 
 			var response =
@@ -1405,7 +1428,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				_mockUserLoginRepository.Object,
 				_mockManageUserLogin.Object,
 				_mockManagePerson.Object,
-				_defaultUserClaim
+                _mockUserRepository.Object,
+                _defaultUserClaim
 			);
 
 			var response =
@@ -1517,7 +1541,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				_mockUserLoginRepository.Object,
 				_mockManageUserLogin.Object,
 				_mockManagePerson.Object,
-				_defaultUserClaim
+                _mockUserRepository.Object,
+                _defaultUserClaim
 			);
 
 			var response =
@@ -1613,7 +1638,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				_mockUserLoginRepository.Object,
 				_mockManageUserLogin.Object,
 				_mockManagePerson.Object,
-				_defaultUserClaim
+                _mockUserRepository.Object,
+                _defaultUserClaim
 			);
 
 			var response =
@@ -1647,7 +1673,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				_mockUserLoginRepository.Object,
 				_mockManageUserLogin.Object,
 				_mockManagePerson.Object,
-				_defaultUserClaim
+                _mockUserRepository.Object,
+                _defaultUserClaim
 			);
 
 			Assert.Throws<ArgumentNullException>(() => _manageCredential.ResetPassword(_realPageId, _userResetPassword));
@@ -1664,7 +1691,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				_mockUserLoginRepository.Object,
 				_mockManageUserLogin.Object,
 				_mockManagePerson.Object,
-				_defaultUserClaim
+                _mockUserRepository.Object,
+                _defaultUserClaim
 			);
 
 			ResetPasswordResponse resetPasswordResponse = _manageCredential.ResetPassword(_realPageId, _userResetPassword);
@@ -1699,7 +1727,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				_mockUserLoginRepository.Object,
 				_mockManageUserLogin.Object,
 				_mockManagePerson.Object,
-				_defaultUserClaim
+                _mockUserRepository.Object,
+                _defaultUserClaim
 			);
 
 			ResetPasswordResponse resetPasswordResponse = _manageCredential.ResetPassword(_realPageId, _userResetPassword);
@@ -1793,7 +1822,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				_mockUserLoginRepository.Object,
 				_mockManageUserLogin.Object,
 				_mockManagePerson.Object,
-				_defaultUserClaim
+                _mockUserRepository.Object,
+                _defaultUserClaim
 			);
 
 			ResetPasswordResponse resetPasswordResponse = _manageCredential.ResetPassword(_realPageId, _userResetPassword);
@@ -1895,7 +1925,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				_mockUserLoginRepository.Object,
 				_mockManageUserLogin.Object,
 				_mockManagePerson.Object,
-				_defaultUserClaim
+                _mockUserRepository.Object,
+                _defaultUserClaim
 			);
 
 			ResetPasswordResponse resetPasswordResponse = _manageCredential.ResetPassword(_realPageId, _userResetPassword);
@@ -2000,7 +2031,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				_mockUserLoginRepository.Object,
 				_mockManageUserLogin.Object,
 				_mockManagePerson.Object,
-				_defaultUserClaim
+                _mockUserRepository.Object,
+                _defaultUserClaim
 			);
 
 			ResetPasswordResponse resetPasswordResponse = _manageCredential.ResetPassword(_realPageId, _userResetPassword);
@@ -2098,7 +2130,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				_mockUserLoginRepository.Object,
 				_mockManageUserLogin.Object,
 				_mockManagePerson.Object,
-				_defaultUserClaim
+                _mockUserRepository.Object,
+                _defaultUserClaim
 			);
 
 			ResetPasswordResponse resetPasswordResponse = _manageCredential.ResetPassword(_realPageId, _userResetPassword);
@@ -2182,7 +2215,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				_mockUserLoginRepository.Object,
 				_mockManageUserLogin.Object,
 				_mockManagePerson.Object,
-				_defaultUserClaim
+                _mockUserRepository.Object,
+                _defaultUserClaim
 			);
 
 			ResetPasswordResponse resetPasswordResponse = _manageCredential.ResetPassword(_realPageId, _userResetPassword);
@@ -2281,7 +2315,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				_mockUserLoginRepository.Object,
 				_mockManageUserLogin.Object,
 				_mockManagePerson.Object,
-				_defaultUserClaim
+                _mockUserRepository.Object,
+                _defaultUserClaim
 			);
 
 			ResetPasswordResponse resetPasswordResponse = _manageCredential.ResetPassword(_realPageId, _userResetPassword);
@@ -2307,7 +2342,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				_mockUserLoginRepository.Object,
 				_mockManageUserLogin.Object,
 				_mockManagePerson.Object,
-				_defaultUserClaim
+                _mockUserRepository.Object,
+                _defaultUserClaim
 			);
 
 			var response = _manageCredential.ResetPassword(_realPageId, _userResetPassword);
@@ -2334,7 +2370,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				_mockUserLoginRepository.Object,
 				_mockManageUserLogin.Object,
 				_mockManagePerson.Object,
-				_defaultUserClaim
+                _mockUserRepository.Object,
+                _defaultUserClaim
 			);
 
 			var response = _manageCredential.ResetPassword(_realPageId, _userResetPassword);
@@ -2363,7 +2400,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				_mockUserLoginRepository.Object,
 				_mockManageUserLogin.Object,
 				_mockManagePerson.Object,
-				_defaultUserClaim
+                _mockUserRepository.Object,
+                _defaultUserClaim
 			);
 
 			_mockPasswordPolicyRepository
@@ -2426,6 +2464,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 _mockUserLoginRepository.Object,
                 _mockManageUserLogin.Object,
                 _mockManagePerson.Object,
+                _mockUserRepository.Object,
                 _defaultUserClaim
             );
 
@@ -2489,6 +2528,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 _mockUserLoginRepository.Object,
                 _mockManageUserLogin.Object,
                 _mockManagePerson.Object,
+                _mockUserRepository.Object,
                 _defaultUserClaim
             );
 
@@ -2544,6 +2584,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 _mockUserLoginRepository.Object,
                 _mockManageUserLogin.Object,
                 _mockManagePerson.Object,
+                _mockUserRepository.Object,
                 _defaultUserClaim
             );
 
@@ -2594,7 +2635,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				_mockUserLoginRepository.Object,
 				_mockManageUserLogin.Object,
 				_mockManagePerson.Object,
-				_defaultUserClaim
+                _mockUserRepository.Object,
+                _defaultUserClaim
 			);
 
 			_mockPasswordPolicyRepository
@@ -2659,7 +2701,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				_mockUserLoginRepository.Object,
 				_mockManageUserLogin.Object,
 				_mockManagePerson.Object,
-				_defaultUserClaim
+                _mockUserRepository.Object,
+                _defaultUserClaim
 			);
 
 			_mockPasswordPolicyRepository
@@ -2696,7 +2739,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				_mockUserLoginRepository.Object,
 				_mockManageUserLogin.Object,
 				_mockManagePerson.Object,
-				_defaultUserClaim
+                _mockUserRepository.Object,
+                _defaultUserClaim
 			);
 
 			var response = _manageCredential.UserAllSecurityQuestions(null);
@@ -2714,7 +2758,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				_mockUserLoginRepository.Object,
 				_mockManageUserLogin.Object,
 				_mockManagePerson.Object,
-				_defaultUserClaim
+                _mockUserRepository.Object,
+                _defaultUserClaim
 			);
 
 			var response = _manageCredential.UserAllSecurityQuestions(_enterpriseUserName);
@@ -2734,7 +2779,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				_mockUserLoginRepository.Object,
 				_mockManageUserLogin.Object,
 				_mockManagePerson.Object,
-				_defaultUserClaim
+                _mockUserRepository.Object,
+                _defaultUserClaim
 			);
 
 			ValidatePasswordResponse validatePasswordResponse = _manageCredential.ValidatePasswordForUser(_enterpriseUserName, string.Empty);

@@ -41,7 +41,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Ctor
         /// </summary>
-        public ManageProductOnSite(DefaultUserClaim userClaims) : base((int)ProductEnum.OnSite,userClaims, null, null)
+        public ManageProductOnSite(DefaultUserClaim userClaims) : base((int)ProductEnum.OnSite,userClaims, productInternalSettingRepository: null, productRepository: null)
         {
             WriteToDiagnosticLog("ManageProductOnSite.Ctor - Getting Product settings.");
             _productId = (int)ProductEnum.OnSite;

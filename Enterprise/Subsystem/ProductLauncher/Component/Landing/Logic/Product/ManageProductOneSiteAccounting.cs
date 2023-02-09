@@ -47,8 +47,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         /// <param name="editorRealPageId">The RealPageId of the editor</param>
         /// <param name="userClaims"> User Claims</param>
-        public ManageProductOneSiteAccounting(DefaultUserClaim userClaims) : base((int)ProductEnum.FinancialSuite, userClaims, null, null)
-		{
+        public ManageProductOneSiteAccounting(DefaultUserClaim userClaims) : base((int)ProductEnum.FinancialSuite, userClaims, productInternalSettingRepository: null, productRepository: null)
+        {
 			ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
 			_productId = (int)ProductEnum.FinancialSuite;
