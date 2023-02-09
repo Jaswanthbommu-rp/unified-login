@@ -38,8 +38,5 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         [JsonProperty(PropertyName = "oneSiteUserInfo", NullValueHandling = NullValueHandling.Ignore)]
         public OneSiteUserInfo OneSiteUserInfo { get; set; } //SLM
-
-        [JsonProperty(PropertyName = "userGroups", NullValueHandling = NullValueHandling.Ignore)]
-        public List<string> UserGroups { get; set; }
     }
 }
