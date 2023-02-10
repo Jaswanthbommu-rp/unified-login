@@ -94,7 +94,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             ManageBlueBook manageBlueBook = new ManageBlueBook(userClaims, repository, productInternalSettingRepository, messageHandler);
             ManageProfile manageProfile = new ManageProfile(repository, userClaims, messageHandler);
             PersonaRightRepository personaRightRepository = new PersonaRightRepository(repository);
-            ManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(userClaims, productInternalSettingRepository, productRepository, manageBlueBook);
+            ManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(repository, userClaims, messageHandler);
 
             _repositoryResponse = repositoryResponse;
             _managePersona = new ManagePersona(repository, userClaims, messageHandler);

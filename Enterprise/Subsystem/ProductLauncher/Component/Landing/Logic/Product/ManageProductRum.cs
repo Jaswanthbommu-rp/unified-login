@@ -6,6 +6,7 @@ using System.Net.Http.Headers;
 using System.Runtime.Caching;
 using IdentityModel.Client;
 using Newtonsoft.Json;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
@@ -72,20 +73,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         }
 
         /// <summary>
-		/// 
-		/// </summary>
-		/// <param name="editorRealPageId"></param>
-		/// <param name="userClaims"></param>
-		/// <param name="messageHandler"></param>
-		/// <param name="tokenMessageHandler"></param>
-		/// <param name="productInternalSettingRepository"></param>
-		/// <param name="managePersona"></param>
-		/// <param name="samlRepository"></param>
-		/// <param name="blueBook"></param>
+        /// Unit test constructor
+        /// </summary>
+        /// <param name="editorRealPageId"></param>
+        /// <param name="userClaims"></param>
+        /// <param name="messageHandler"></param>
+        /// <param name="tokenMessageHandler"></param>
+        /// <param name="productInternalSettingRepository"></param>
+        /// <param name="managePersona"></param>
+        /// <param name="samlRepository"></param>
+        /// <param name="blueBook"></param>
+        /// <param name="productRepository"></param>
+        /// <param name="repository"></param>
         public ManageProductRum(Guid editorRealPageId, DefaultUserClaim userClaims, HttpMessageHandler messageHandler, HttpMessageHandler tokenMessageHandler, 
             IProductInternalSettingRepository productInternalSettingRepository, IManagePersona managePersona, 
-            ISamlRepository samlRepository, IManageBlueBook blueBook, IProductRepository productRepository)
-             : base((int)ProductEnum.UtilityManagement, userClaims, productInternalSettingRepository, productRepository)
+            ISamlRepository samlRepository, IManageBlueBook blueBook, IProductRepository productRepository, IRepository repository)
+             : base((int)ProductEnum.UtilityManagement, userClaims, repository, tokenMessageHandler)
         {
             _editorRealPageId = editorRealPageId;
             _productInternalSettingRepository = productInternalSettingRepository;

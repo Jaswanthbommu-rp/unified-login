@@ -69,7 +69,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			_productInternalSettings.Add(new IC.ProductInternalSetting() { Name = "ApiEndPoint", Value = testHostname });
             _gbProductMap = new GbProductMap() { BooksProductCode = "LD", Name = "Renters Insurance", ProductId = 15, UDMSourceCode = "LD" };
             _repositoryResponseProductStatus.ErrorMessage = "";
-		}
+
+            mockRepository
+                .Setup(m => m.GetMany<IC.ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
+                .Returns(_productInternalSettings);
+
+            mockRepository
+                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
+                    It.IsAny<object>()))
+                .Returns(new List<GbProductMap>() { _gbProductMap });
+        }
 		#endregion
 
 		#region XUnit tests
@@ -313,7 +322,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             //Act
             IManageProductRentersInsurance manageProductRentersInsurance = new ManageProductRentersInsurance(
 				editorRealPageId: _editorRealPageId,
-				companyInstanceId: 758241,
+                userClaim: _editorUserClaim,
+                messageHandler: mockHttpMessageHandler.Object,
+                companyInstanceId: 758241,
 				rentersInsuraceService: mockRentersInsuranceService.Object,
 				listPropertyByPMCIDResponse: listPropertyByPMCIDResponse,
 				samlRepository: mockSamlRepository.Object,
@@ -323,7 +334,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				productInternalSettingRepository: mockProductInternalSettingRepository.Object,
 				managePerson: null,
 				manageUserLogin: null,
-				managePartyRelationship: null);
+				managePartyRelationship: null,
+                repository: mockRepository.Object
+                );
 
 			//Assert
 			_listResponse = manageProductRentersInsurance.ListProperties(_editorPersonaId, _userPersonaId, null);
@@ -441,16 +454,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             //Act
             IManageProductRentersInsurance manageProductRentersInsurance = new ManageProductRentersInsurance(
-				editorRealPageId: _editorRealPageId,
-				rentersInsuraceService: mockRentersInsuranceService.Object,
-				samlRepository: mockSamlRepository.Object,
-				managePersona: mockManagePersona.Object,
-				manageBlueBook: mockManageBlueBook.Object,
-				productRepository: mockProductRepository.Object,
-				productInternalSettingRepository: mockProductInternalSettingRepository.Object,
-				managePerson: null,
-				manageUserLogin: null,
-				managePartyRelationship: null);
+                editorRealPageId: _editorRealPageId,
+                userClaim: _editorUserClaim,
+                messageHandler: mockHttpMessageHandler.Object,
+                rentersInsuraceService: mockRentersInsuranceService.Object,
+                samlRepository: mockSamlRepository.Object,
+                managePersona: mockManagePersona.Object,
+                manageBlueBook: mockManageBlueBook.Object,
+                productRepository: mockProductRepository.Object,
+                productInternalSettingRepository: mockProductInternalSettingRepository.Object,
+                managePerson: null,
+                manageUserLogin: null,
+                managePartyRelationship: null,
+                repository: mockRepository.Object);
 
             //Assert
             var expected = manageProductRentersInsurance.GetMigrationUsers(_editorPersonaId, dataFilter);
@@ -571,6 +587,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             //Act
             IManageProductRentersInsurance manageProductRentersInsurance = new ManageProductRentersInsurance(
                 editorRealPageId: _editorRealPageId,
+                userClaim: _editorUserClaim,
+                messageHandler: mockHttpMessageHandler.Object,
                 rentersInsuraceService: mockRentersInsuranceService.Object,
                 samlRepository: mockSamlRepository.Object,
                 managePersona: mockManagePersona.Object,
@@ -579,7 +597,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 productInternalSettingRepository: mockProductInternalSettingRepository.Object,
                 managePerson: null,
                 manageUserLogin: null,
-                managePartyRelationship: null);
+                managePartyRelationship: null,
+                repository: mockRepository.Object);
 
             //Act
             var actual = manageProductRentersInsurance.UpdateUsersMigrationStatus(_editorPersonaId, migrateUsers);
@@ -659,6 +678,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             IManageProductRentersInsurance manageProductRentersInsurance = new ManageProductRentersInsurance(
                 editorRealPageId: _editorRealPageId,
+                userClaim: _editorUserClaim,
+                messageHandler: mockHttpMessageHandler.Object,
                 rentersInsuraceService: mockRentersInsuranceService.Object,
                 samlRepository: mockSamlRepository.Object,
                 managePersona: mockManagePersona.Object,
@@ -667,7 +688,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 productInternalSettingRepository: mockProductInternalSettingRepository.Object,
                 managePerson: null,
                 manageUserLogin: null,
-                managePartyRelationship: null);
+                managePartyRelationship: null,
+                repository: mockRepository.Object);
 
             //Act
             var actual = manageProductRentersInsurance.ChangeUserStatus(_editorPersonaId, userId, isActive);
@@ -745,6 +767,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             IManageProductRentersInsurance manageProductRentersInsurance = new ManageProductRentersInsurance(
                 editorRealPageId: _editorRealPageId,
+                userClaim: _editorUserClaim,
+                messageHandler: mockHttpMessageHandler.Object,
                 rentersInsuraceService: mockRentersInsuranceService.Object,
                 samlRepository: mockSamlRepository.Object,
                 managePersona: mockManagePersona.Object,
@@ -753,7 +777,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 productInternalSettingRepository: mockProductInternalSettingRepository.Object,
                 managePerson: null,
                 manageUserLogin: null,
-                managePartyRelationship: null);
+                managePartyRelationship: null,
+                repository: mockRepository.Object);
 
             //Act
             var actual = manageProductRentersInsurance.ChangeUserStatus(_editorPersonaId, userId, isActive);
@@ -831,6 +856,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             IManageProductRentersInsurance manageProductRentersInsurance = new ManageProductRentersInsurance(
                 editorRealPageId: _editorRealPageId,
+                userClaim: _editorUserClaim,
+                messageHandler: mockHttpMessageHandler.Object,
                 rentersInsuraceService: mockRentersInsuranceService.Object,
                 samlRepository: mockSamlRepository.Object,
                 managePersona: mockManagePersona.Object,
@@ -839,7 +866,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 productInternalSettingRepository: mockProductInternalSettingRepository.Object,
                 managePerson: null,
                 manageUserLogin: null,
-                managePartyRelationship: null);
+                managePartyRelationship: null,
+                repository: mockRepository.Object);
 
             //Act
             var actual = manageProductRentersInsurance.ChangeUserStatus(_editorPersonaId, userId, isActive);

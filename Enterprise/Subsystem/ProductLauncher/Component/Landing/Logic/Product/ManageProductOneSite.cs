@@ -73,7 +73,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// The default constructor
         /// </summary>
         /// <param name="userClaims"></param>
-        public ManageProductOneSite(DefaultUserClaim userClaims) : base((int)ProductEnum.OneSite, userClaims, productInternalSettingRepository: null, productRepository: null)
+        public ManageProductOneSite(DefaultUserClaim userClaims) 
+            : base((int)ProductEnum.OneSite, userClaims, productInternalSettingRepository: null, productRepository: null)
         {
             _productId = (int)ProductEnum.OneSite;
             _userClaims = userClaims;
@@ -102,6 +103,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// Unit test constructor
         /// </summary>
         /// <param name="editorRealPageId"></param>
+        /// <param name="userClaim"></param>
         /// <param name="service"></param>
         /// <param name="samlRepository"></param>
         /// <param name="managePersona"></param>
@@ -109,10 +111,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="productRepository"></param>
         /// <param name="productInternalSettingRepository"></param>
         /// <param name="messageHandler"></param>
-        public ManageProductOneSite(Guid editorRealPageId, IOneSiteProductService service, ISamlRepository samlRepository,
+        /// <param name="repository"></param>
+        public ManageProductOneSite(Guid editorRealPageId, DefaultUserClaim userClaim, IOneSiteProductService service, ISamlRepository samlRepository,
             IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository,
-            IProductInternalSettingRepository productInternalSettingRepository, HttpMessageHandler messageHandler)
-            : base((int)ProductEnum.OneSite, productInternalSettingRepository, productRepository)
+            IProductInternalSettingRepository productInternalSettingRepository, HttpMessageHandler messageHandler, IRepository repository)
+            : base((int)ProductEnum.OneSite, userClaim, repository, messageHandler)
         {
             _editorRealPageId = editorRealPageId;
             _service = service;
@@ -133,6 +136,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// Unit test constructor
         /// </summary>
         /// <param name="editorRealPageId"></param>
+        /// <param name="userClaim"></param>
+        /// <param name="messageHandler"></param>
         /// <param name="service"></param>
         /// <param name="userList"></param>
         /// <param name="roleList"></param>
@@ -149,7 +154,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="productInternalSettingRepository"></param>
         /// <param name="managePartyRelationship"></param>
         /// <param name="manageElectronicAddress"></param>
-        public ManageProductOneSite(Guid editorRealPageId, IOneSiteProductService service, UserList userList, RoleList roleList, RightList rightList, PropertyList propertyList, ISamlRepository samlRepository, IManagePersona managePersona, IPersonaRepository personaRepository, IManagePerson managePerson, IUserLoginRepository userLoginRepository, IManageUserLogin manageUserLogin, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePartyRelationship managePartyRelationship, IManageElectronicAddress manageElectronicAddress, IUserLoginPersonaRepository userLoginPersonaRepository, IUserRepository userRepository) : base((int)ProductEnum.OneSite, productInternalSettingRepository, productRepository)
+        /// <param name="userLoginPersonaRepository"></param>
+        /// <param name="userRepository"></param>
+        /// <param name="repository"></param>
+        public ManageProductOneSite(Guid editorRealPageId, DefaultUserClaim userClaim, HttpMessageHandler messageHandler, IOneSiteProductService service, UserList userList, RoleList roleList, RightList rightList, PropertyList propertyList, ISamlRepository samlRepository, IManagePersona managePersona, IPersonaRepository personaRepository, IManagePerson managePerson, IUserLoginRepository userLoginRepository, IManageUserLogin manageUserLogin, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePartyRelationship managePartyRelationship, IManageElectronicAddress manageElectronicAddress, IUserLoginPersonaRepository userLoginPersonaRepository, IUserRepository userRepository, IRepository repository) 
+            : base((int)ProductEnum.OneSite, userClaim, repository, messageHandler)
         {
             _editorRealPageId = editorRealPageId;
             _service = service;

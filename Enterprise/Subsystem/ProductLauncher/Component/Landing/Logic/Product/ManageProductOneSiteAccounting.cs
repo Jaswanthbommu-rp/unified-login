@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
@@ -19,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
 using blueBook = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
@@ -68,20 +70,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			_userClaims = userClaims;
         }
 
-		/// <summary>
-		/// Unit test constructor
-		/// </summary>
-		/// <param name="editorRealPageId"></param>
-		/// <param name="userClaims"></param>
-		/// <param name="service"></param>
-		/// <param name="samlRepository"></param>
-		/// <param name="managePersona"></param>
-		/// <param name="manageBlueBook"></param>
-		/// <param name="productRepository"></param>
-		/// <param name="productInternalSettingRepository"></param>
-		/// <param name="managePartyRelationship"></param>
-		public ManageProductOneSiteAccounting(Guid editorRealPageId, DefaultUserClaim userClaims, IOneSiteAccountingProductService service, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePartyRelationship managePartyRelationship) : base((int)ProductEnum.FinancialSuite, productInternalSettingRepository, productRepository)
-		{
+        /// <summary>
+        /// Unit test constructor
+        /// </summary>
+        /// <param name="editorRealPageId"></param>
+        /// <param name="userClaim"></param>
+        /// <param name="service"></param>
+        /// <param name="samlRepository"></param>
+        /// <param name="managePersona"></param>
+        /// <param name="manageBlueBook"></param>
+        /// <param name="productRepository"></param>
+        /// <param name="productInternalSettingRepository"></param>
+        /// <param name="managePartyRelationship"></param>
+        /// <param name="httpMessageHandler"></param>
+        /// <param name="repository"></param>
+        public ManageProductOneSiteAccounting(Guid editorRealPageId, DefaultUserClaim userClaim, IOneSiteAccountingProductService service, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePartyRelationship managePartyRelationship, HttpMessageHandler httpMessageHandler, IRepository repository) 
+			: base((int)ProductEnum.FinancialSuite, userClaim, repository, httpMessageHandler)
+        {
 			_editorRealPageId = editorRealPageId;
 			_service = service;
 			_samlRepository = samlRepository;
@@ -90,26 +95,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			_productRepository = productRepository;
 			_productInternalSettingRepository = productInternalSettingRepository;
 			_managePartyRelationship = managePartyRelationship;
-			_userClaims = userClaims;
+			_userClaims = userClaim;
         }
 
-		/// <summary>
-		/// Unit test constructor
-		/// </summary>
-		/// <param name="editorRealPageId"></param>
-		/// <param name="userClaims"></param>
-		/// <param name="service"></param>
-		/// <param name="samlRepository"></param>
-		/// <param name="managePersona"></param>
-		/// <param name="manageBlueBook"></param>
-		/// <param name="productRepository"></param>
-		/// <param name="productInternalSettingRepository"></param>
-		/// <param name="manageElectronicAddress"></param>
-		/// <param name="managePerson"></param>
-		/// <param name="manageUserLogin"></param>
-		/// <param name="managePartyRelationship"></param>
-		public ManageProductOneSiteAccounting(Guid editorRealPageId, DefaultUserClaim userClaims, IOneSiteAccountingProductService service, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManageElectronicAddress manageElectronicAddress, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship) : base((int)ProductEnum.FinancialSuite, productInternalSettingRepository, productRepository)
-		{
+        /// <summary>
+        /// Unit test constructor
+        /// </summary>
+        /// <param name="editorRealPageId"></param>
+        /// <param name="userClaim"></param>
+        /// <param name="service"></param>
+        /// <param name="samlRepository"></param>
+        /// <param name="managePersona"></param>
+        /// <param name="manageBlueBook"></param>
+        /// <param name="productRepository"></param>
+        /// <param name="productInternalSettingRepository"></param>
+        /// <param name="manageElectronicAddress"></param>
+        /// <param name="managePerson"></param>
+        /// <param name="manageUserLogin"></param>
+        /// <param name="managePartyRelationship"></param>
+        /// <param name="httpMessageHandler"></param>
+        /// <param name="repository"></param>
+        public ManageProductOneSiteAccounting(Guid editorRealPageId, DefaultUserClaim userClaim, IOneSiteAccountingProductService service, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManageElectronicAddress manageElectronicAddress, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship, HttpMessageHandler httpMessageHandler, IRepository repository)
+            : base((int)ProductEnum.FinancialSuite, userClaim, repository, httpMessageHandler)
+        {
 			_editorRealPageId = editorRealPageId;
 			_service = service;
 			_samlRepository = samlRepository;
@@ -121,7 +129,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			_managePerson = managePerson;
 			_manageUserLogin = manageUserLogin;
 			_managePartyRelationship = managePartyRelationship;
-            _userClaims = userClaims;
+            _userClaims = userClaim;
         }
 
 		#region Property

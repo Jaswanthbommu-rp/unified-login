@@ -20,6 +20,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
+using RP.Enterprise.Foundation.DataAccess.Component;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -49,10 +50,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			_client.SetBasicAuthentication(_apiUser, _apiPassword);
 		}
 
-		/// <summary>
+        /// <summary>
 		/// Unit test constructor
 		/// </summary>
-		/// <param name="userClaims">user claim related information</param>
+		/// <param name="userClaims"></param>
+		/// <param name="httpMessageHandler"></param>
 		/// <param name="client"></param>
 		/// <param name="productInternalSettingRepository"></param>
 		/// <param name="managePersona"></param>
@@ -64,9 +66,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="managePartyRelationship"></param>
 		/// <param name="productRepository"></param>
 		/// <param name="userLoginRepository"></param>
-		public ManageProductRPDocumentManagement(DefaultUserClaim userClaims, HttpClient client, IProductInternalSettingRepository productInternalSettingRepository,
-			IManagePersona managePersona, ISamlRepository samlRepository, IManageBlueBook blueBook, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManageContactMechanism manageContactMechanism, IManagePartyRelationship managePartyRelationship, IProductRepository productRepository, IUserLoginRepository userLoginRepository)
-			: base((int) ProductEnum.RPDocumentManagement, productInternalSettingRepository, productRepository)
+		/// <param name="repository"></param>
+        public ManageProductRPDocumentManagement(DefaultUserClaim userClaims, HttpMessageHandler httpMessageHandler, HttpClient client, IProductInternalSettingRepository productInternalSettingRepository,
+			IManagePersona managePersona, ISamlRepository samlRepository, IManageBlueBook blueBook, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManageContactMechanism manageContactMechanism, IManagePartyRelationship managePartyRelationship, IProductRepository productRepository, IUserLoginRepository userLoginRepository, IRepository repository)
+			: base((int) ProductEnum.RPDocumentManagement, userClaims, repository, httpMessageHandler)
 		{
 			_userClaims = userClaims;
 			_editorRealPageId = userClaims.UserRealPageGuid;
