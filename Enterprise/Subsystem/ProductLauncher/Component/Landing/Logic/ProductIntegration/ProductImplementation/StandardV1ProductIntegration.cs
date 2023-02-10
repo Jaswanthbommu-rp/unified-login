@@ -748,7 +748,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     List<string> userGroups = new List<string>();
                     foreach (var groups in userGroupList)
                     {
-                        userGroups.Add(groups.Id.ToString());
+                        userGroups.Add(groups.GetGroupId.ToString());
                     }
                     newProductUser.UserGroups = userGroups;
                 }
@@ -1225,7 +1225,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             foreach (var userGroup in userGroupList)
             {
-                if (userGroups != null && userGroups.Contains(userGroup.Id))
+                if (userGroups != null && userGroups.Contains(userGroup.GetGroupId))
                 {
                     userGroup.IsAssigned = true;
                 }
