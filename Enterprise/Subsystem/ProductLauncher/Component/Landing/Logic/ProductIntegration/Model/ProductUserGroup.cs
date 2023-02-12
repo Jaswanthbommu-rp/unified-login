@@ -12,8 +12,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Get UserGroupId
         /// </summary>
-        [JsonProperty(PropertyName = "userGroupId")]
-        public string Id { get; set; }
+        private string _groupId;
+
+        [JsonProperty(PropertyName = "id")]
+        public string GetGroupId => _groupId;
+
+        [JsonProperty(PropertyName = "UserGroupId")]
+        public string SetGroupId
+        {
+            set { _groupId = value; }
+        }
 
         /// <summary>
         /// Get User Group Name.

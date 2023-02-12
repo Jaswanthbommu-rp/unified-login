@@ -2564,7 +2564,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 }
 
 
-                if (currentprimaryProperties?.Count > 0)
+                if (currentprimaryProperties?.Count > 0 && primaryPropertyBatch.InputJson.PropertyList?.Count > 0)
                 {
                     productBatchData = UpdateProductBatchDataWithPrimaryProperties(createUserPersonaId, oldProfile.Persona[0].PersonaId, primaryPropertyBatch, productBatchData.ToList(), currentprimaryProperties);
                 }

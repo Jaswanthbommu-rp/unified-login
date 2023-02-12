@@ -304,6 +304,49 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			string Issuer = "GreenBook";
 
+			BatchProductBulkUpdateRepository productBulkUpdateRepository = new BatchProductBulkUpdateRepository();
+			
+			SamlRepository samlRepository = new SamlRepository();
+			var samlDetails = samlRepository.GetProductSamlDetails(personaId, productId);
+			IList<ProductInternalSetting> productInternalSettingList = GetProductInternalSettings(productId);
+			var userCreationSettingInfo = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("IsUserCreationOnTileClick", StringComparison.OrdinalIgnoreCase))?.Value;
+			bool isUserCreationRequired = false;
+			if (userCreationSettingInfo != null)
+			{
+				isUserCreationRequired = Convert.ToBoolean(userCreationSettingInfo);
+			}
+
+			if (samlDetails.Count() == 0 && isUserCreationRequired)
+			{
+				OrganizationRepository organizationRepository = new OrganizationRepository();
+				UserRepository userRepository = new UserRepository();
+				var retryCheckCount = 5;
+				var statusCheckSleep = 5000;
+				
+                var statusCheckSleepSetting = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("BatchUserProductStatusSleepTimeout", StringComparison.OrdinalIgnoreCase))?.Value;
+                var retrySetting = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("BatchUserProductStatusRetryCount", StringComparison.OrdinalIgnoreCase))?.Value;
+				var defaultUserRoleId = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("DefaultUserRoleId", StringComparison.OrdinalIgnoreCase))?.Value;
+				Guid editorGuid = organizationRepository.GetOrganizationAdminUserRealPageId(_userClaims.OrganizationRealPageGuid);
+
+				var userinfo = userRepository.GetUserDetails(userRealPageId: editorGuid.ToString());
+				if (retrySetting != null)
+                {
+					retryCheckCount = Convert.ToInt16(retrySetting);
+                }
+
+                if (statusCheckSleepSetting != null)
+                {
+                    statusCheckSleep = Convert.ToInt32(statusCheckSleepSetting);
+                }
+
+                bool result = productBulkUpdateRepository.CreateBatch(userinfo.PersonaId, personaId, editorGuid, productId, retryCheckCount, statusCheckSleep, defaultUserRoleId);
+				if (!result)
+				{
+					response.ErrorMessage = "UserCreationFailed";
+					return response;
+				}
+			}
+
 			if (_userClaims.Rights.Any(p => p.Equals("ViewOnlySupportToolAccess", StringComparison.OrdinalIgnoreCase)))
 			{
 				response.ErrorMessage = "AccessDenied";
@@ -392,7 +435,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					break;
 			}
 
-			SamlRepository samlRepository = new SamlRepository();
 			var samlList = samlRepository.GetProductSamlDetails(personaId, productId);
 
 			if (getOneSitePMCURL)
