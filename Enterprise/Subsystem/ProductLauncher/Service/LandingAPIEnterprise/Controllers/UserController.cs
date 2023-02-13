@@ -971,6 +971,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         /// Get the products for the given personaid 
         /// </summary>
         /// <param name="personaId">User unique identifier</param>
+        /// <param name="withStatus">Need user status in the response</param>
         /// <returns>Profile object</returns>
         [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when Profile object have invalid entries)")]
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
@@ -980,7 +981,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [Route("user/products")]
         [AuthorizeScope("userinfoapi", "internalapi")]
         [HttpGet]
-        public HttpResponseMessage GetUserProductsByPersonaId(long? personaId = 0)
+        public HttpResponseMessage GetUserProductsByPersonaId(long? personaId = 0, bool withStatus = false)
         {
             UserProductOutputResultv2 productResult = new UserProductOutputResultv2 { Products = new Dictionary<string, List<UserProducts>>(), Settings = new Dictionary<string, object>(), Resources = new List<UserProducts>() };
 
@@ -1027,7 +1028,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     personaList = _managePersona.ListActivePersona(persona.RealPageId, false);
                     persona.hasMultiPersona = personaList.Count(p => p.OrganizationPartyId == persona.OrganizationPartyId) > 1;
                     persona.hasMultiCompany = personaList.Count(p => p.OrganizationPartyId != persona.OrganizationPartyId && p.Organization.RealPageId != DefaultUserClaim.ExternalCompanyRealPageId) > 0;
-
+                    
                     productResult.User = new User()
                     {
                         FullName = $"{person.FirstName} {person.LastName}",
@@ -1038,6 +1039,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                         HasMultiCompany = persona.hasMultiCompany,
                         HasMultiPersona = false
                     };
+
+                    if (withStatus)
+                    {
+                        var userLogin = _userLoginLogic.GetUserLogin(persona.RealPageId, persona.OrganizationPartyId);
+                        productResult.User.Status = userLogin.Status.ToEnumDescription();
+                    }
+
                     if (_userClaims.IsRPEmployee)
                     {
                         employeePersonaList = _managePersona.ListEmployeePersonas(_userClaims.UserId, _userClaims.OrganizationPartyId);
@@ -2027,6 +2035,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             /// Does the user have multiple personas
             /// </summary>
             public bool HasMultiPersona { get; set; } = false;
+
+            /// <summary>
+            /// User status
+            /// </summary>
+            public string Status { get; set; }
 
         }
 

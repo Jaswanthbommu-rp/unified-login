@@ -112,15 +112,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		/// <param name="statusCheckSleep">statusCheckSleep</param>
 		/// <param name="defaultUserRole">defaultUserRole</param>
 		/// <returns>whether batch proccess is success or not</returns>
-		public bool CreateBatch(long editorUserPersonaId, long subjectUserPersonaId, Guid editorUserRealPageId, int productId, int retryCheckCount, int statusCheckSleep, string defaultUserRole)
+		public IList<SamlAttributes> CreateBatch(long editorUserPersonaId, long subjectUserPersonaId, Guid editorUserRealPageId, int productId, int retryCheckCount, int statusCheckSleep, string defaultUserRole)
 		{
 			int batchProcessorGroupId;
+			SamlRepository samlRepository = new SamlRepository();
+			IList<SamlAttributes> samlAttributesDetails = new List<SamlAttributes>();
+
 			using (var repository = GetRepository())
 			{
+				repository.UnitOfWork.BeginTransaction();
 				List<string> roleList = new List<string>();
 				roleList.Add(defaultUserRole);
 				var batchGroup = CreateBatchProcessGroup(repository);
 				batchProcessorGroupId = batchGroup.BatchProcessorGroupId;
+
 				dynamic productBatch = new
 				{
 					PersonRealPageId = editorUserRealPageId,
@@ -145,26 +150,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 				{
 					throw new Exception($"Exception while inserting product {productId} in the product batch.");
 				}
+				repository.UnitOfWork.Commit();
+
+				while (retryCheckCount >= 0)
+				{
+					System.Threading.Thread.Sleep(statusCheckSleep);
+					List<UserBatchProductDetail> lst = (List<UserBatchProductDetail>)GetUserBatchDetails(batchProcessorGroupId, editorUserPersonaId, subjectUserPersonaId);
+					if (lst.Select(a => a.StatusTypeId == 8).Any())
+					{
+						samlAttributesDetails = samlRepository.GetProductSamlDetails(subjectUserPersonaId, productId);
+						return samlAttributesDetails;
+					}
+					else if (lst.Select(a => a.StatusTypeId == 7).Any())
+					{
+						return samlAttributesDetails;
+					}
+					else
+					{
+						retryCheckCount--;
+					}
+				}
 			}
-			 
-			while (retryCheckCount >= 0)
-			{
-				System.Threading.Thread.Sleep(statusCheckSleep);
-				List<UserBatchProductDetail> lst = (List<UserBatchProductDetail>)GetUserBatchDetails(batchProcessorGroupId, editorUserPersonaId, subjectUserPersonaId);
-				if (lst.Select(a => a.StatusTypeId == 8).Any())
-				{
-					return true;
-				}
-				else if (lst.Select(a => a.StatusTypeId == 7).Any())
-				{
-					return false; 
-				}
-				else
-				{
-					retryCheckCount--;
-				}
-			}
-			return false;
+			
+			return samlAttributesDetails;
 		}
 
 		public IList<UserBatchProductDetail> GetUserBatchDetails(int batchGroupId, long editorUserPersonId, long subjectUserPersonId)

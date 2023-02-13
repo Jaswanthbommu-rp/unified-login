@@ -305,8 +305,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			string Issuer = "GreenBook";
 
 			BatchProductBulkUpdateRepository productBulkUpdateRepository = new BatchProductBulkUpdateRepository();
-			
+
 			SamlRepository samlRepository = new SamlRepository();
+			IList<SamlAttributes> samlAttributeDetails = new List<SamlAttributes>();
+
 			var samlDetails = samlRepository.GetProductSamlDetails(personaId, productId);
 			IList<ProductInternalSetting> productInternalSettingList = GetProductInternalSettings(productId);
 			var userCreationSettingInfo = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("IsUserCreationOnTileClick", StringComparison.OrdinalIgnoreCase))?.Value;
@@ -339,8 +341,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     statusCheckSleep = Convert.ToInt32(statusCheckSleepSetting);
                 }
 
-                bool result = productBulkUpdateRepository.CreateBatch(userinfo.PersonaId, personaId, editorGuid, productId, retryCheckCount, statusCheckSleep, defaultUserRoleId);
-				if (!result)
+                samlAttributeDetails = productBulkUpdateRepository.CreateBatch(userinfo.PersonaId, personaId, editorGuid, productId, retryCheckCount, statusCheckSleep, defaultUserRoleId);
+				if (samlAttributeDetails.Count > 0)
 				{
 					response.ErrorMessage = "UserCreationFailed";
 					return response;
@@ -412,7 +414,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			productList = new List<PersonaProductUserDetails>() { productDetail };
 
-			if (productDetail.ProductStatus != (int)ProductBatchStatusType.Success)
+			if (productDetail.ProductStatus != (int)ProductBatchStatusType.Success && samlAttributeDetails.Count > 0)
 			{
 				response.IsRedirect = true;
 				response.RedirectUrl = unifiedLoginUri + "error/401";
@@ -435,7 +437,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					break;
 			}
 
-			var samlList = samlRepository.GetProductSamlDetails(personaId, productId);
+			var samlList = (samlAttributeDetails.Count == 0) ? samlRepository.GetProductSamlDetails(personaId, productId) : samlAttributeDetails;
 
 			if (getOneSitePMCURL)
 			{
