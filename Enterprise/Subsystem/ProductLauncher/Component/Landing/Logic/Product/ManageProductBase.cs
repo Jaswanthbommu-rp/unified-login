@@ -249,7 +249,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _manageContactMechanism = new ManageContactMechanism();
 
             _productInternalSettingList = GetProductSetting(_productId);
-            _productDetails = GetBooksMasterProductDetail(_productId);
+            _productDetails = GetBooksMasterProductDetail(_productId, false);
             _udmSourceCode = _productDetails.UDMSourceCode?.Length > 0 ? _productDetails.UDMSourceCode : _productDetails.BooksProductCode;
         }
 
@@ -270,7 +270,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (productInternalSettingRepository != null) { _productInternalSettingRepository = productInternalSettingRepository; }
             if (productRepository != null) { _productRepository = productRepository; }
             _productInternalSettingList = GetProductSetting(_productId);
-            _productDetails = GetBooksMasterProductDetail(_productId);
+            _productDetails = GetBooksMasterProductDetail(_productId, false);
             if (_productDetails != null)
             {
                 _udmSourceCode = _productDetails.UDMSourceCode?.Length > 0 ? _productDetails.UDMSourceCode : _productDetails.BooksProductCode;
@@ -307,8 +307,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _correlationId = _userClaim.CorrelationId.ToString();
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
             _productRepository = new ProductRepository(repository, userClaim);
-            _productInternalSettingList = GetProductSetting(_productId);
-            _productDetails = GetBooksMasterProductDetail(_productId);
+            _productInternalSettingList = GetProductSetting(_productId, true);
+            _productDetails = GetBooksMasterProductDetail(_productId, true);
             if (_productDetails != null)
             {
                 _udmSourceCode = _productDetails.UDMSourceCode?.Length > 0 ? _productDetails.UDMSourceCode : _productDetails.BooksProductCode;
@@ -335,20 +335,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// Get Product Setting
         /// </summary>
         /// <param name="productId">Product Id</param>
+        /// <param name="noCache">Do not cache result. for unit tests.</param>
         /// <returns>List of Product Internal Settings</returns>
-        public IList<IC.ProductInternalSetting> GetProductSetting(int productId)
+        public IList<IC.ProductInternalSetting> GetProductSetting(int productId, bool noCache = false)
         {
-            IList<IC.ProductInternalSetting> listProductInternalSettings = new List<IC.ProductInternalSetting>();
-
-            RPObjectCache rpcache = new RPObjectCache();
-            var cacheKey = "productInternalSetting_" + productId.ToString();
-            listProductInternalSettings = rpcache.GetFromCache<IList<IC.ProductInternalSetting>>(cacheKey, 120, () =>
+            var rpcache = new RPObjectCache();
+            var cacheKey = $"productInternalSetting_{productId}";
+            if (!noCache)
             {
-                // load from database
-                return _productInternalSettingRepository.GetProductInternalSettings(productId);
-            });
+                return rpcache.GetFromCache(cacheKey, 120, () =>
+                {
+                    // load from database
+                    return _productInternalSettingRepository.GetProductInternalSettings(productId);
+                });
+            }
 
-            return listProductInternalSettings;
+            return _productInternalSettingRepository.GetProductInternalSettings(productId);
         }
 
         /// <summary>
@@ -1221,18 +1223,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
-        private GbProductMap GetBooksMasterProductDetail(int productID)
+        private GbProductMap GetBooksMasterProductDetail(int productID, bool noCacheResult)
         {
-            GbProductMap productMap = new GbProductMap();
-            RPObjectCache rpcache = new RPObjectCache();
+            var productMap = new GbProductMap();
+            var rpcache = new RPObjectCache();
             var cacheKey = "productDetails_" + productID.ToString();
-            productMap = rpcache.GetFromCache<GbProductMap>(cacheKey, 120, () =>
+            if (!noCacheResult)
             {
-                // load from database
-                return _productRepository.GetBooksMasterProductDetail(productID);
-            });
+                return rpcache.GetFromCache<GbProductMap>(cacheKey, 120, () => _productRepository.GetBooksMasterProductDetail(productID));
+            }
 
-            return productMap;             
+            return _productRepository.GetBooksMasterProductDetail(productID);
         }
         #endregion
 
