@@ -112,7 +112,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _tokenClient = new TokenClient($"{_nwpIssueUri}/connect/token", _clientId, _apiSecret, tokenMessageHandler);
             _client = new HttpClient(messageHandler, false);
 
-            GetToken();
+            //GetToken(); // not needed for unit tests
         }
         #endregion
 

@@ -74,6 +74,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			_userClaims = userClaims;
 			_editorRealPageId = userClaims.UserRealPageGuid;
 			_client = client;
+            _messageHandler = httpMessageHandler;
 			_productInternalSettingRepository = productInternalSettingRepository;
 			_blueBook = blueBook;
 			_managePersona = managePersona;
