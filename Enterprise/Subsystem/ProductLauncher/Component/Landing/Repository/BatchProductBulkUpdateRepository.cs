@@ -155,13 +155,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 				while (retryCheckCount >= 0)
 				{
 					System.Threading.Thread.Sleep(statusCheckSleep);
-					List<UserBatchProductDetail> lst = (List<UserBatchProductDetail>)GetUserBatchDetails(batchProcessorGroupId, editorUserPersonaId, subjectUserPersonaId);
-					if (lst.Select(a => a.StatusTypeId == 8).Any())
+					List<UserBatchProductDetail> listUserBatchProductDetails = (List<UserBatchProductDetail>)GetUserBatchDetails(batchProcessorGroupId, editorUserPersonaId, subjectUserPersonaId);
+					if (listUserBatchProductDetails.Select(a => a.StatusTypeId == 8).Any())
 					{
 						samlAttributesDetails = samlRepository.GetProductSamlDetails(subjectUserPersonaId, productId);
-						return samlAttributesDetails;
+						if (samlAttributesDetails.Count() == 0)
+						{
+							retryCheckCount--;
+						}
+						else
+						{
+							System.Threading.Thread.Sleep(statusCheckSleep);
+							return samlAttributesDetails;
+						}
 					}
-					else if (lst.Select(a => a.StatusTypeId == 7).Any())
+					else if (listUserBatchProductDetails.Select(a => a.StatusTypeId == 7).Any())
 					{
 						return samlAttributesDetails;
 					}

@@ -17,6 +17,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.Security;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
 using Serilog;
 using Serilog.Events;
 using System;
@@ -1483,6 +1484,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     }
                 }
             }
+            SamlRepository samlRepository = new SamlRepository();
             var rpcache = new RPObjectCache();
             var cacheKey = $"ProductSettingsByOrganization_{organizationRealPageId}";
             IList<ProductSettingList> ProductSettingsByOrganizationList = rpcache.GetFromCache<IList<ProductSettingList>>(cacheKey, 120, () =>
@@ -1560,6 +1562,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         if (setIsAssigned == true)
                         {
                             s.IsAssigned = userProducts.Any(item => item.ProductId == s.ProductId);
+                            productInternalSetting = productInternalSettingList.FirstOrDefault(item => item.Name.Equals("IsUserCreationOnTileClick", StringComparison.OrdinalIgnoreCase));
+                            if (productInternalSetting != null)
+                            {
+                                if (productInternalSetting.Value.Trim() == "true")
+                                {
+                                    IList<SamlAttributes> samlAttributesDetails = samlRepository.GetProductSamlDetails(personaId, s.ProductId);
+                                    if (samlAttributesDetails.Count() == 0)
+                                    {
+                                        s.IsAssigned = false;
+                                    }
+                                }
+                            }
                             productSetting = productSettingList.FirstOrDefault(item => item.Name.Equals("ProductStatus", StringComparison.OrdinalIgnoreCase) && item.ProductId == s.ProductId);
                             if (productSetting != null)
                             {
