@@ -90,6 +90,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 UserRealPageGuid = Guid.NewGuid(),
                 Rights = new List<string>()
             };
+
+            mockRepository
+				.Setup(m => m.GetMany<IC.ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
+				.Returns(_productInternalSettings);
+
+            mockRepository
+                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
+                    It.IsAny<object>()))
+                .Returns(new List<GbProductMap>() { _gbProductMap });
         }
 		#endregion
 
@@ -190,8 +199,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				manageUserLogin: null,
 				managePartyRelationship: null,
 				manageElectronicAddress: null,
-                userClaims: _userClaims,
-                messageHandler: mockHttpMessageHandler.Object);
+                userClaim: _userClaims,
+                messageHandler: mockHttpMessageHandler.Object,
+				repository: mockRepository.Object);
 
 			//Assert
 			_notifications = manageProductResidentPortal.GetNotificationSettings(_editorPersonaId, _userPersonaId);
@@ -342,12 +352,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				manageUserLogin: null,
 				managePartyRelationship: null,
 				manageElectronicAddress: null,
-                userClaims: _userClaims,
-                messageHandler: mockHttpMessageHandler.Object);
+                userClaim: _userClaims,
+                messageHandler: mockHttpMessageHandler.Object,
+                repository: mockRepository.Object);
 
 
-			//Assert
-			_RoleList = manageProductResidentPortal.ListLevels(0, 0);
+            //Assert
+            _RoleList = manageProductResidentPortal.ListLevels(0, 0);
 			List<ILevel> compareResult = _RoleList.Where(item => expectedLevelList.Select(eItem => eItem.Id).Contains(item.Id)).ToList();
 			Assert.True(_RoleList.Count == expectedLevelList.Count);
 			Assert.True(compareResult.Count == expectedLevelList.Count);
@@ -481,11 +492,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				manageUserLogin: null,
 				managePartyRelationship: null,
 				manageElectronicAddress: null,
-                userClaims: _userClaims,
-                messageHandler: mockHttpMessageHandler.Object);
+                userClaim: _userClaims,
+                messageHandler: mockHttpMessageHandler.Object,
+                repository: mockRepository.Object);
 
-			//Assert
-			_messageGroupsList = manageProductResidentPortal.ListMessageGroups(_editorPersonaId, _userPersonaId);
+            //Assert
+            _messageGroupsList = manageProductResidentPortal.ListMessageGroups(_editorPersonaId, _userPersonaId);
 			List<IMessagingGroups> compareResult = _messageGroupsList.Where(item => expectedMessageGroupsList.Select(eItem => eItem.Id).Contains(item.Id)).ToList();
 			Assert.True(_messageGroupsList.Count == expectedMessageGroupsList.Count);
 			Assert.True(compareResult.Count == expectedMessageGroupsList.Count);
@@ -710,10 +722,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				managePerson: null,
 				manageUserLogin: null,
 				managePartyRelationship: null,
-                userClaims: _userClaims);
+                userClaim: _userClaims,
+                messageHandler: mockHttpMessageHandler.Object,
+                repository: mockRepository.Object);
 
-			//Assert
-			_listResponse = manageProductResidentPortal.ListProperties(_editorPersonaId, _userPersonaId, null);
+            //Assert
+            _listResponse = manageProductResidentPortal.ListProperties(_editorPersonaId, _userPersonaId, null);
 			IList<ProductProperty> productPropertyList = _listResponse.Records.Cast<ProductProperty>().ToList();
 			List<ProductProperty> compareResult = productPropertyList.Where(item => expectedProductPropertyList.Select(eItem => eItem.ID).Contains(item.ID)).ToList();
 			Assert.True(_listResponse.Records.Count == expectedProductPropertyList.Count);
@@ -813,8 +827,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 manageUserLogin: null,
                 managePartyRelationship: null,
                 manageElectronicAddress: null,
-                userClaims: _userClaims,
-                messageHandler: mockHttpMessageHandler.Object);
+                userClaim: _userClaims,
+                messageHandler: mockHttpMessageHandler.Object,
+                repository: mockRepository.Object);
 
             var filter = "NonMigrated";
             var dataFilter = new RequestParameter()
@@ -948,8 +963,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 manageUserLogin: null,
                 managePartyRelationship: null,
                 manageElectronicAddress: null,
-                userClaims: _userClaims,
-                messageHandler: mockHttpMessageHandler.Object);
+                userClaim: _userClaims,
+                messageHandler: mockHttpMessageHandler.Object,
+                repository: mockRepository.Object);
 
             var migrateUsers = new List<MigrateUser>()
             {

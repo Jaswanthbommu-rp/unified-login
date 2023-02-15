@@ -22,175 +22,189 @@ using IC = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Ident
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 {
-	/// <summary>
-	/// Renters Insurance Product xUnit tests
-	/// </summary>
-	[ExcludeFromCodeCoverage]
-	public class ManageRentersInsuranceProductTests : ManageProductBaseTests
-	{
-		#region Private Variables
-		private int _blueBookId;
+    /// <summary>
+    /// Renters Insurance Product xUnit tests
+    /// </summary>
+    [ExcludeFromCodeCoverage]
+    public class ManageRentersInsuranceProductTests : ManageProductBaseTests
+    {
+        #region Private Variables
 
-		private List<UserProperty> _PropertyList = new List<UserProperty>();
-		private IList<ProductRole> _RoleList = new List<ProductRole>();
+        private int _blueBookId;
 
-		private ListResponse _listResponse = new ListResponse();
+        private List<UserProperty> _PropertyList = new List<UserProperty>();
+        private IList<ProductRole> _RoleList = new List<ProductRole>();
+
+        private ListResponse _listResponse = new ListResponse();
         private GbProductMap _gbProductMap = new GbProductMap();
         private string testHostname = "http://producturl.com";
-		#endregion
 
-		#region Constructor
-		public ManageRentersInsuranceProductTests() : base((int)ProductEnum.ResidentPortal)
+        #endregion
+
+        #region Constructor
+
+        public ManageRentersInsuranceProductTests() : base((int)ProductEnum.ResidentPortal)
         {
-			_blueBookId = 236;
+            _blueBookId = 236;
 
-			_editorSamlAttributes = new List<SamlAttributes>()
-			{
-				new SamlAttributes() { Name = "UserId", Value = "1234567" },
-				new SamlAttributes() { Name = "PRODUCTUSERNAME", Value = "bob12" }
-			};
+            _editorSamlAttributes = new List<SamlAttributes>()
+            {
+                new SamlAttributes() { Name = "UserId", Value = "1234567" },
+                new SamlAttributes() { Name = "PRODUCTUSERNAME", Value = "bob12" }
+            };
 
-			_userSamlAttributes = new List<SamlAttributes>()
-			{
-				new SamlAttributes() { Name = "UserId", Value = "5432" },
-				new SamlAttributes() { Name = "PRODUCTUSERNAME", Value = "larry33" }
-			};
+            _userSamlAttributes = new List<SamlAttributes>()
+            {
+                new SamlAttributes() { Name = "UserId", Value = "5432" },
+                new SamlAttributes() { Name = "PRODUCTUSERNAME", Value = "larry33" }
+            };
 
-			_productSettingType.Add(new ProductSettingType() { ProductSettingTypeId = 1, Name = "ProductStatus" });
+            _productSettingType.Add(new ProductSettingType() { ProductSettingTypeId = 1, Name = "ProductStatus" });
 
-			_userProductSettings.Add(new ProductSettingList() { ProductId = 1, Name = "IsFavorite", Value = "1", ProductSettingId = 1234 });
-			_userProductSettings.Add(new ProductSettingList() { ProductId = 1, Name = "AllProperties", Value = "1", ProductSettingId = 1234 });
+            _userProductSettings.Add(new ProductSettingList() { ProductId = 1, Name = "IsFavorite", Value = "1", ProductSettingId = 1234 });
+            _userProductSettings.Add(new ProductSettingList() { ProductId = 1, Name = "AllProperties", Value = "1", ProductSettingId = 1234 });
 
-			_electronicAddressList = new List<IC.ElectronicAddress>()
-			{
-				new IC.ElectronicAddress() { AddressType = "Email", AddressString = "test" }
-			};
-			
-			_productInternalSettings.Add(new IC.ProductInternalSetting() { Name = "ApiEndPoint", Value = testHostname });
+            _electronicAddressList = new List<IC.ElectronicAddress>()
+            {
+                new IC.ElectronicAddress() { AddressType = "Email", AddressString = "test" }
+            };
+
+            _productInternalSettings.Add(new IC.ProductInternalSetting() { Name = "ApiEndPoint", Value = testHostname });
             _gbProductMap = new GbProductMap() { BooksProductCode = "LD", Name = "Renters Insurance", ProductId = 15, UDMSourceCode = "LD" };
             _repositoryResponseProductStatus.ErrorMessage = "";
-		}
-		#endregion
 
-		#region XUnit tests
-		[Fact]
-		public void ListProperties_MockInputData_ReturnValidRepositoryResponseObject()
-		{
-			//Arrange
-			Mock<IInsuranceService> mockRentersInsuranceService = new Mock<IInsuranceService>();
-			Mock<IManageBlueBook> mockManageBlueBook = new Mock<IManageBlueBook>();
-			Mock<IManagePersona> mockManagePersona = new Mock<IManagePersona>();
-			Mock<IProductRepository> mockProductRepository = new Mock<IProductRepository>();
-			Mock<IProductInternalSettingRepository> mockProductInternalSettingRepository = new Mock<IProductInternalSettingRepository>();
-			Mock<ISamlRepository> mockSamlRepository = new Mock<ISamlRepository>();
+            mockRepository
+                .Setup(m => m.GetMany<IC.ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
+                .Returns(_productInternalSettings);
 
-			CompanyPropertyRootObject companyPropertyRootObject = new CompanyPropertyRootObject();
-			Data data = new Data();
-			Attributes attributes = new Attributes();
-			ListPropertyByPMCIDResponse listPropertyByPMCIDResponse = new ListPropertyByPMCIDResponse();
-			UserInfo userInfo = new UserInfo();
-			IList<UserProperty> userPropertyList = new List<UserProperty>()
-			{
-				new UserProperty ()
-				{
-					PropertyID = 8528,
-					PropertyName = "Crossings at Danada"
-				},
-				new UserProperty ()
-				{
-					PropertyID = 16858,
-					PropertyName = "Desoto Town Center"
-				},
-				new UserProperty ()
-				{
-					PropertyID = 268948,
-					PropertyName = "Lincoln On University"
-				},
-				new UserProperty ()
-				{
-					PropertyID = 269285,
-					PropertyName = "Palencia Apartments"
-				},
-				new UserProperty ()
-				{
-					PropertyID = 418145,
-					PropertyName = "T C The Edge At Flagler Village llc"
-				},
-				new UserProperty ()
-				{
-					PropertyID = 4249,
-					PropertyName = "The Venue at Greenville"
-				},
-				new UserProperty ()
-				{
-					PropertyID = 4611,
-					PropertyName = "Trails of Valley Ranch"
-				}
-			};
-			listPropertyByPMCIDResponse.PropertyList = userPropertyList.ToArray();
+            mockRepository
+                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
+                    It.IsAny<object>()))
+                .Returns(new List<GbProductMap>() { _gbProductMap });
+        }
 
-			List<ProductProperty> expectedProductPropertyList = new List<ProductProperty>()
-			{
-				new ProductProperty()
-				{
-					ID = "8528",
-					Name = "Crossings at Danada",
-					IsAssigned = false
-				},
-				new ProductProperty()
-				{
-					ID = "16858",
-					Name = "Desoto Town Center",
-					IsAssigned = false
-				},
-				new ProductProperty()
-				{
-					ID = "268948",
-					Name = "Lincoln On University",
-					IsAssigned = false
-				},
-				new ProductProperty()
-				{
-					ID = "269285",
-					Name = "Palencia Apartments",
-					IsAssigned = false
-				},
-				new ProductProperty()
-				{
-					ID = "418145",
-					Name = "T C The Edge At Flagler Village llc",
-					IsAssigned = false
-				},
-				new ProductProperty()
-				{
-					ID = "4249",
-					Name = "The Venue at Greenville",
-					IsAssigned = false
-				},
-				new ProductProperty()
-				{
-					ID = "4611",
-					Name = "Trails of Valley Ranch",
-					IsAssigned = false
-				}
-			};
+        #endregion
 
-			IList<CustomerCompanyMap> mapResource = new List<CustomerCompanyMap>()
-			{
-				new CustomerCompanyMap()
-				{
-					CompanyInstanceSourceId = _blueBookId.ToString(),
-					Source = "LD"
-				}
-			};
+        #region XUnit tests
 
-			_editorPersona.Organization.BooksCustomerMasterId = _blueBookId;
+        [Fact]
+        public void ListProperties_MockInputData_ReturnValidRepositoryResponseObject()
+        {
+            //Arrange
+            Mock<IInsuranceService> mockRentersInsuranceService = new Mock<IInsuranceService>();
+            Mock<IManageBlueBook> mockManageBlueBook = new Mock<IManageBlueBook>();
+            Mock<IManagePersona> mockManagePersona = new Mock<IManagePersona>();
+            Mock<IProductRepository> mockProductRepository = new Mock<IProductRepository>();
+            Mock<IProductInternalSettingRepository> mockProductInternalSettingRepository = new Mock<IProductInternalSettingRepository>();
+            Mock<ISamlRepository> mockSamlRepository = new Mock<ISamlRepository>();
 
-			mockRentersInsuranceService
-				 .Setup(m => m.GetListPropertyByPMCID(758241))
-				 .Returns(listPropertyByPMCIDResponse);
+            CompanyPropertyRootObject companyPropertyRootObject = new CompanyPropertyRootObject();
+            Data data = new Data();
+            Attributes attributes = new Attributes();
+            ListPropertyByPMCIDResponse listPropertyByPMCIDResponse = new ListPropertyByPMCIDResponse();
+            UserInfo userInfo = new UserInfo();
+            IList<UserProperty> userPropertyList = new List<UserProperty>()
+            {
+                new UserProperty()
+                {
+                    PropertyID = 8528,
+                    PropertyName = "Crossings at Danada"
+                },
+                new UserProperty()
+                {
+                    PropertyID = 16858,
+                    PropertyName = "Desoto Town Center"
+                },
+                new UserProperty()
+                {
+                    PropertyID = 268948,
+                    PropertyName = "Lincoln On University"
+                },
+                new UserProperty()
+                {
+                    PropertyID = 269285,
+                    PropertyName = "Palencia Apartments"
+                },
+                new UserProperty()
+                {
+                    PropertyID = 418145,
+                    PropertyName = "T C The Edge At Flagler Village llc"
+                },
+                new UserProperty()
+                {
+                    PropertyID = 4249,
+                    PropertyName = "The Venue at Greenville"
+                },
+                new UserProperty()
+                {
+                    PropertyID = 4611,
+                    PropertyName = "Trails of Valley Ranch"
+                }
+            };
+            listPropertyByPMCIDResponse.PropertyList = userPropertyList.ToArray();
 
-			mockManageBlueBook
+            List<ProductProperty> expectedProductPropertyList = new List<ProductProperty>()
+            {
+                new ProductProperty()
+                {
+                    ID = "8528",
+                    Name = "Crossings at Danada",
+                    IsAssigned = false
+                },
+                new ProductProperty()
+                {
+                    ID = "16858",
+                    Name = "Desoto Town Center",
+                    IsAssigned = false
+                },
+                new ProductProperty()
+                {
+                    ID = "268948",
+                    Name = "Lincoln On University",
+                    IsAssigned = false
+                },
+                new ProductProperty()
+                {
+                    ID = "269285",
+                    Name = "Palencia Apartments",
+                    IsAssigned = false
+                },
+                new ProductProperty()
+                {
+                    ID = "418145",
+                    Name = "T C The Edge At Flagler Village llc",
+                    IsAssigned = false
+                },
+                new ProductProperty()
+                {
+                    ID = "4249",
+                    Name = "The Venue at Greenville",
+                    IsAssigned = false
+                },
+                new ProductProperty()
+                {
+                    ID = "4611",
+                    Name = "Trails of Valley Ranch",
+                    IsAssigned = false
+                }
+            };
+
+            IList<CustomerCompanyMap> mapResource = new List<CustomerCompanyMap>()
+            {
+                new CustomerCompanyMap()
+                {
+                    CompanyInstanceSourceId = _blueBookId.ToString(),
+                    Source = "LD"
+                }
+            };
+
+            _editorPersona.Organization.BooksCustomerMasterId = _blueBookId;
+
+            mockRentersInsuranceService
+                .Setup(m => m.GetListPropertyByPMCID(758241))
+                .Returns(listPropertyByPMCIDResponse);
+
+            mockManageBlueBook
                 .Setup(m => m.GetCompanyMap(
                     It.IsAny<Guid>(),
                     It.IsAny<long>(),
@@ -199,179 +213,188 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                     It.IsAny<string>(),
                     It.IsAny<bool>(),
                     It.IsAny<bool>()
-				 ))
-				 .Returns(mapResource);
+                ))
+                .Returns(mapResource);
 
-			List<GetCompanyPropertyInstance> propertyInstanceResourceList = new List<GetCompanyPropertyInstance>()
-			{
-				new GetCompanyPropertyInstance()
-				{
-					propertyInstanceSourceId = "418145",
-					propertyName = "T C The Edge At Flagler Village llc",
-					state = "FL",					
-					isActive = true
-				},
-				new GetCompanyPropertyInstance()
-				{
-					propertyInstanceSourceId = "269285",
-					propertyName = "Palencia Apartments",
-					state = "TX",
-					isActive = true
-				},
-				new GetCompanyPropertyInstance()
-				{
-					propertyInstanceSourceId = "4611",
-					propertyName = "Trails of Valley Ranch",
-					state = "TX",
-					isActive = true
-				},
-				new GetCompanyPropertyInstance()
-				{
-					propertyInstanceSourceId = "4249",
-					propertyName = "TheVenue at Greenville",
-					state = "TX",
-					isActive = true
-				},
-				new GetCompanyPropertyInstance()
-				{
-					propertyInstanceSourceId = "16858",
-					propertyName = "Desoto Town Center",
-					state = "TX",
-					isActive = true
-				},
-				new GetCompanyPropertyInstance()
-				{
-					propertyInstanceSourceId = "8528",
-					propertyName = "Crossings at Danada",
-					state = "TX",
-					isActive = true
-				},
-				new GetCompanyPropertyInstance()
-				{
-					propertyInstanceSourceId = "268948",
-					propertyName = "Lincoln On University",
-					state = "TX",
-					isActive = true
-				}
-			};
+            List<GetCompanyPropertyInstance> propertyInstanceResourceList = new List<GetCompanyPropertyInstance>()
+            {
+                new GetCompanyPropertyInstance()
+                {
+                    propertyInstanceSourceId = "418145",
+                    propertyName = "T C The Edge At Flagler Village llc",
+                    state = "FL",
+                    isActive = true
+                },
+                new GetCompanyPropertyInstance()
+                {
+                    propertyInstanceSourceId = "269285",
+                    propertyName = "Palencia Apartments",
+                    state = "TX",
+                    isActive = true
+                },
+                new GetCompanyPropertyInstance()
+                {
+                    propertyInstanceSourceId = "4611",
+                    propertyName = "Trails of Valley Ranch",
+                    state = "TX",
+                    isActive = true
+                },
+                new GetCompanyPropertyInstance()
+                {
+                    propertyInstanceSourceId = "4249",
+                    propertyName = "TheVenue at Greenville",
+                    state = "TX",
+                    isActive = true
+                },
+                new GetCompanyPropertyInstance()
+                {
+                    propertyInstanceSourceId = "16858",
+                    propertyName = "Desoto Town Center",
+                    state = "TX",
+                    isActive = true
+                },
+                new GetCompanyPropertyInstance()
+                {
+                    propertyInstanceSourceId = "8528",
+                    propertyName = "Crossings at Danada",
+                    state = "TX",
+                    isActive = true
+                },
+                new GetCompanyPropertyInstance()
+                {
+                    propertyInstanceSourceId = "268948",
+                    propertyName = "Lincoln On University",
+                    state = "TX",
+                    isActive = true
+                }
+            };
 
-			attributes.getCompanyPropertyInstances = propertyInstanceResourceList;
-			data.attributes = attributes;
-			data.type = "DashBoard";
-			companyPropertyRootObject.data = data;
+            attributes.getCompanyPropertyInstances = propertyInstanceResourceList;
+            data.attributes = attributes;
+            data.type = "DashBoard";
+            companyPropertyRootObject.data = data;
 
-			mockManageBlueBook
-				.Setup(m => m.GetCompanyPropertyInstance(
-					It.IsAny<long>()
-				 ))
-				 .Returns(companyPropertyRootObject);
+            mockManageBlueBook
+                .Setup(m => m.GetCompanyPropertyInstance(
+                    It.IsAny<long>()
+                ))
+                .Returns(companyPropertyRootObject);
 
-			mockProductInternalSettingRepository
-				.Setup(m => m.GetProductInternalSettings(
-					It.Is<int>(l => l == (int)ProductEnum.Insurance)
-				))
-				.Returns(_productInternalSettings);
+            mockProductInternalSettingRepository
+                .Setup(m => m.GetProductInternalSettings(
+                    It.Is<int>(l => l == (int)ProductEnum.Insurance)
+                ))
+                .Returns(_productInternalSettings);
 
-			mockSamlRepository
-				.Setup(m => m.GetProductSamlDetails(
-					It.Is<long>(l => l == 4)
-					, It.Is<int>(l => l == (int)ProductEnum.Insurance)
-				 ))
-				 .Returns(_editorSamlAttributes);
+            mockSamlRepository
+                .Setup(m => m.GetProductSamlDetails(
+                    It.Is<long>(l => l == 4)
+                    , It.Is<int>(l => l == (int)ProductEnum.Insurance)
+                ))
+                .Returns(_editorSamlAttributes);
 
-			mockSamlRepository
-				.Setup(m => m.GetProductSamlDetails(
-					It.Is<long>(l => l == 5)
-					, It.Is<int>(l => l == (int)ProductEnum.Insurance)
-				 ))
-				 .Returns(_userSamlAttributes);
+            mockSamlRepository
+                .Setup(m => m.GetProductSamlDetails(
+                    It.Is<long>(l => l == 5)
+                    , It.Is<int>(l => l == (int)ProductEnum.Insurance)
+                ))
+                .Returns(_userSamlAttributes);
 
-			mockManagePersona
-				.Setup(m => m.GetPersona(
-					It.Is<long>(l => l == 4)
-				 ))
-				 .Returns(_editorPersona);
+            mockManagePersona
+                .Setup(m => m.GetPersona(
+                    It.Is<long>(l => l == 4)
+                ))
+                .Returns(_editorPersona);
 
-			mockManagePersona
-				.Setup(m => m.GetPersona(
-					It.Is<long>(l => l == 5)
-				 ))
-				 .Returns(_userPersona);
-
-			mockProductRepository
-				.Setup(m => m.GetProductSettingsByPersona(
-					It.IsAny<long>()
-				))
-				.Returns(_userProductSettings);
+            mockManagePersona
+                .Setup(m => m.GetPersona(
+                    It.Is<long>(l => l == 5)
+                ))
+                .Returns(_userPersona);
 
             mockProductRepository
-              .Setup(m => m.GetBooksMasterProductDetail(
-                  It.IsAny<int>()
-              ))
-              .Returns(_gbProductMap);
+                .Setup(m => m.GetProductSettingsByPersona(
+                    It.IsAny<long>()
+                ))
+                .Returns(_userProductSettings);
+
+            mockProductRepository
+                .Setup(m => m.GetBooksMasterProductDetail(
+                    It.IsAny<int>()
+                ))
+                .Returns(_gbProductMap);
 
             //Act
             IManageProductRentersInsurance manageProductRentersInsurance = new ManageProductRentersInsurance(
-				editorRealPageId: _editorRealPageId,
-				companyInstanceId: 758241,
-				rentersInsuraceService: mockRentersInsuranceService.Object,
-				listPropertyByPMCIDResponse: listPropertyByPMCIDResponse,
-				samlRepository: mockSamlRepository.Object,
-				managePersona: mockManagePersona.Object,
-				manageBlueBook: mockManageBlueBook.Object,
-				productRepository: mockProductRepository.Object,
-				productInternalSettingRepository: mockProductInternalSettingRepository.Object,
-				managePerson: null,
-				manageUserLogin: null,
-				managePartyRelationship: null);
+                editorRealPageId: _editorRealPageId,
+                userClaim: _editorUserClaim,
+                messageHandler: mockHttpMessageHandler.Object,
+                companyInstanceId: 758241,
+                rentersInsuraceService: mockRentersInsuranceService.Object,
+                listPropertyByPMCIDResponse: listPropertyByPMCIDResponse,
+                samlRepository: mockSamlRepository.Object,
+                managePersona: mockManagePersona.Object,
+                manageBlueBook: mockManageBlueBook.Object,
+                productRepository: mockProductRepository.Object,
+                productInternalSettingRepository: mockProductInternalSettingRepository.Object,
+                managePerson: null,
+                manageUserLogin: null,
+                managePartyRelationship: null,
+                repository: mockRepository.Object
+            );
 
-			//Assert
-			_listResponse = manageProductRentersInsurance.ListProperties(_editorPersonaId, _userPersonaId, null);
-			IList<ProductProperty> productPropertyList = _listResponse.Records.Cast<ProductProperty>().ToList();
-			List<ProductProperty> compareResult = productPropertyList.Where(item => expectedProductPropertyList.Select(eItem => eItem.ID).Contains(item.ID)).ToList();
-			Assert.True(_listResponse.Records.Count == expectedProductPropertyList.Count);
-			Assert.True(compareResult.Count == expectedProductPropertyList.Count);
-		}
+            //Assert
+            _listResponse = manageProductRentersInsurance.ListProperties(_editorPersonaId, _userPersonaId, null);
+            IList<ProductProperty> productPropertyList = _listResponse.Records.Cast<ProductProperty>().ToList();
+            List<ProductProperty> compareResult = productPropertyList.Where(item => expectedProductPropertyList.Select(eItem => eItem.ID).Contains(item.ID)).ToList();
+            Assert.True(_listResponse.Records.Count == expectedProductPropertyList.Count);
+            Assert.True(compareResult.Count == expectedProductPropertyList.Count);
+        }
 
-		[Fact]
-		public void GetMigrationUsers_GivenEditorIdAndDataFilter_ShouldReturnListOfRenterInsuranceUser()
-		{
-			//Arrange
-			Mock<IInsuranceService> mockRentersInsuranceService = new Mock<IInsuranceService>();
-			Mock<IManageBlueBook> mockManageBlueBook = new Mock<IManageBlueBook>();
-			Mock<IManagePersona> mockManagePersona = new Mock<IManagePersona>();
-			Mock<IProductRepository> mockProductRepository = new Mock<IProductRepository>();
-			Mock<IProductInternalSettingRepository> mockProductInternalSettingRepository = new Mock<IProductInternalSettingRepository>();
-			Mock<ISamlRepository> mockSamlRepository = new Mock<ISamlRepository>();
+        [Fact]
+        public void GetMigrationUsers_GivenEditorIdAndDataFilter_ShouldReturnListOfRenterInsuranceUser()
+        {
+            //Arrange
+            Mock<IInsuranceService> mockRentersInsuranceService = new Mock<IInsuranceService>();
+            Mock<IManageBlueBook> mockManageBlueBook = new Mock<IManageBlueBook>();
+            Mock<IManagePersona> mockManagePersona = new Mock<IManagePersona>();
+            Mock<IProductRepository> mockProductRepository = new Mock<IProductRepository>();
+            Mock<IProductInternalSettingRepository> mockProductInternalSettingRepository = new Mock<IProductInternalSettingRepository>();
+            Mock<ISamlRepository> mockSamlRepository = new Mock<ISamlRepository>();
 
-			IList<CustomerCompanyMap> companyMapList = new List<CustomerCompanyMap>()
-			{
-				new CustomerCompanyMap()
-				{
-					CompanyInstanceSourceId = "1",
-					Source = BlueBookProductConstants.Insurance
-				}
-			};
+            IList<CustomerCompanyMap> companyMapList = new List<CustomerCompanyMap>()
+            {
+                new CustomerCompanyMap()
+                {
+                    CompanyInstanceSourceId = "1",
+                    Source = BlueBookProductConstants.Insurance
+                }
+            };
             var listOfUsers = new ListOfUserResponse()
             {
-                UserList = new UserInfo[] {
-                     new UserInfo() { FirstName = "Person", LastName = "1", Email = "person1@test.com", User = "person1" },
-                     new UserInfo() { FirstName = "Person", LastName = "2", Email = "person2@test.com", User = "person2", PropertyList = new UserProperty[]{
-                         new UserProperty() { PropertyID = 1 }
-                     } },
-                     new UserInfo() { FirstName = "Person", LastName = "3", Email = "person3@test.com", User = "person3" },
-                     new UserInfo() { FirstName = "Person", LastName = "4", Email = "person4@test.com", User = "person4" },
-                     new UserInfo() { FirstName = "Person", LastName = "5", Email = "person5@test.com", User = "person5" }
-                 }
+                UserList = new UserInfo[]
+                {
+                    new UserInfo() { FirstName = "Person", LastName = "1", Email = "person1@test.com", User = "person1" },
+                    new UserInfo()
+                    {
+                        FirstName = "Person", LastName = "2", Email = "person2@test.com", User = "person2", PropertyList = new UserProperty[]
+                        {
+                            new UserProperty() { PropertyID = 1 }
+                        }
+                    },
+                    new UserInfo() { FirstName = "Person", LastName = "3", Email = "person3@test.com", User = "person3" },
+                    new UserInfo() { FirstName = "Person", LastName = "4", Email = "person4@test.com", User = "person4" },
+                    new UserInfo() { FirstName = "Person", LastName = "5", Email = "person5@test.com", User = "person5" }
+                }
             };
 
-			_editorPersona.Organization.BooksCustomerMasterId = _blueBookId;
+            _editorPersona.Organization.BooksCustomerMasterId = _blueBookId;
 
-			mockRentersInsuranceService
-				 .Setup(m => m.GetUsersByPMC(It.IsAny<UserActionByPMCIDRequest>()))
-				 .Returns(listOfUsers);
+            mockRentersInsuranceService
+                .Setup(m => m.GetUsersByPMC(It.IsAny<UserActionByPMCIDRequest>()))
+                .Returns(listOfUsers);
 
-			mockManageBlueBook
+            mockManageBlueBook
                 .Setup(m => m.GetCompanyMap(
                     It.IsAny<Guid>(),
                     It.IsAny<long>(),
@@ -380,52 +403,52 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                     It.IsAny<string>(),
                     It.IsAny<bool>(),
                     It.IsAny<bool>()
-				 ))
-				 .Returns(companyMapList);
+                ))
+                .Returns(companyMapList);
 
-			mockProductInternalSettingRepository
-				.Setup(m => m.GetProductInternalSettings(
-					It.Is<int>(l => l == (int)ProductEnum.Insurance)
-				))
-				.Returns(_productInternalSettings);
+            mockProductInternalSettingRepository
+                .Setup(m => m.GetProductInternalSettings(
+                    It.Is<int>(l => l == (int)ProductEnum.Insurance)
+                ))
+                .Returns(_productInternalSettings);
 
-			mockSamlRepository
-				.Setup(m => m.GetProductSamlDetails(
-					It.Is<long>(l => l == 4)
-					, It.Is<int>(l => l == (int)ProductEnum.Insurance)
-				 ))
-				 .Returns(_editorSamlAttributes);
+            mockSamlRepository
+                .Setup(m => m.GetProductSamlDetails(
+                    It.Is<long>(l => l == 4)
+                    , It.Is<int>(l => l == (int)ProductEnum.Insurance)
+                ))
+                .Returns(_editorSamlAttributes);
 
-			mockSamlRepository
-				.Setup(m => m.GetProductSamlDetails(
-					It.Is<long>(l => l == 5)
-					, It.Is<int>(l => l == (int)ProductEnum.Insurance)
-				 ))
-				 .Returns(_userSamlAttributes);
+            mockSamlRepository
+                .Setup(m => m.GetProductSamlDetails(
+                    It.Is<long>(l => l == 5)
+                    , It.Is<int>(l => l == (int)ProductEnum.Insurance)
+                ))
+                .Returns(_userSamlAttributes);
 
-			mockManagePersona
-				.Setup(m => m.GetPersona(
-					It.Is<long>(l => l == 4)
-				 ))
-				 .Returns(_editorPersona);
+            mockManagePersona
+                .Setup(m => m.GetPersona(
+                    It.Is<long>(l => l == 4)
+                ))
+                .Returns(_editorPersona);
 
-			mockManagePersona
-				.Setup(m => m.GetPersona(
-					It.Is<long>(l => l == 5)
-				 ))
-				 .Returns(_userPersona);
-
-			mockProductRepository
-				.Setup(m => m.GetProductSettingsByPersona(
-					It.IsAny<long>()
-				))
-				.Returns(_userProductSettings);
+            mockManagePersona
+                .Setup(m => m.GetPersona(
+                    It.Is<long>(l => l == 5)
+                ))
+                .Returns(_userPersona);
 
             mockProductRepository
-              .Setup(m => m.GetBooksMasterProductDetail(
-                  It.IsAny<int>()
-              ))
-              .Returns(_gbProductMap);
+                .Setup(m => m.GetProductSettingsByPersona(
+                    It.IsAny<long>()
+                ))
+                .Returns(_userProductSettings);
+
+            mockProductRepository
+                .Setup(m => m.GetBooksMasterProductDetail(
+                    It.IsAny<int>()
+                ))
+                .Returns(_gbProductMap);
 
             var dataFilter = new RequestParameter()
             {
@@ -434,23 +457,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                     StartRow = 1,
                     ResultsPerPage = 1000
                 },
-                FilterBy = new Dictionary<string, string>() {
-                    { "filter" , "NonMigrated" }
+                FilterBy = new Dictionary<string, string>()
+                {
+                    { "filter", "NonMigrated" }
                 }
             };
 
             //Act
             IManageProductRentersInsurance manageProductRentersInsurance = new ManageProductRentersInsurance(
-				editorRealPageId: _editorRealPageId,
-				rentersInsuraceService: mockRentersInsuranceService.Object,
-				samlRepository: mockSamlRepository.Object,
-				managePersona: mockManagePersona.Object,
-				manageBlueBook: mockManageBlueBook.Object,
-				productRepository: mockProductRepository.Object,
-				productInternalSettingRepository: mockProductInternalSettingRepository.Object,
-				managePerson: null,
-				manageUserLogin: null,
-				managePartyRelationship: null);
+                editorRealPageId: _editorRealPageId,
+                userClaim: _editorUserClaim,
+                messageHandler: mockHttpMessageHandler.Object,
+                rentersInsuraceService: mockRentersInsuranceService.Object,
+                samlRepository: mockSamlRepository.Object,
+                managePersona: mockManagePersona.Object,
+                manageBlueBook: mockManageBlueBook.Object,
+                productRepository: mockProductRepository.Object,
+                productInternalSettingRepository: mockProductInternalSettingRepository.Object,
+                managePerson: null,
+                manageUserLogin: null,
+                managePartyRelationship: null,
+                repository: mockRepository.Object);
 
             //Assert
             var expected = manageProductRentersInsurance.GetMigrationUsers(_editorPersonaId, dataFilter);
@@ -481,22 +508,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             };
             var listOfUsers = new ListOfUserResponse()
             {
-                UserList = new UserInfo[] {
-                     new UserInfo() { FirstName = "Person", LastName = "1", Email = "person1@test.com", User = "person1" },
-                     new UserInfo() { FirstName = "Person", LastName = "2", Email = "person2@test.com", User = "person2", PropertyList = new UserProperty[]{
-                         new UserProperty() { PropertyID = 1 }
-                     } },
-                     new UserInfo() { FirstName = "Person", LastName = "3", Email = "person3@test.com", User = "person3" },
-                     new UserInfo() { FirstName = "Person", LastName = "4", Email = "person4@test.com", User = "person4" },
-                     new UserInfo() { FirstName = "Person", LastName = "5", Email = "person5@test.com", User = "person5" }
-                 }
+                UserList = new UserInfo[]
+                {
+                    new UserInfo() { FirstName = "Person", LastName = "1", Email = "person1@test.com", User = "person1" },
+                    new UserInfo()
+                    {
+                        FirstName = "Person", LastName = "2", Email = "person2@test.com", User = "person2", PropertyList = new UserProperty[]
+                        {
+                            new UserProperty() { PropertyID = 1 }
+                        }
+                    },
+                    new UserInfo() { FirstName = "Person", LastName = "3", Email = "person3@test.com", User = "person3" },
+                    new UserInfo() { FirstName = "Person", LastName = "4", Email = "person4@test.com", User = "person4" },
+                    new UserInfo() { FirstName = "Person", LastName = "5", Email = "person5@test.com", User = "person5" }
+                }
             };
 
             _editorPersona.Organization.BooksCustomerMasterId = _blueBookId;
 
             mockRentersInsuranceService
-                 .Setup(m => m.MigrateUser(It.IsAny<MigrateUserrequest[]>()))
-                 .Returns("Success");
+                .Setup(m => m.MigrateUser(It.IsAny<MigrateUserrequest[]>()))
+                .Returns("Success");
 
             mockManageBlueBook
                 .Setup(m => m.GetCompanyMap(
@@ -507,8 +539,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                     It.IsAny<string>(),
                     It.IsAny<bool>(),
                     It.IsAny<bool>()
-				 ))
-                 .Returns(companyMapList);
+                ))
+                .Returns(companyMapList);
 
             mockProductInternalSettingRepository
                 .Setup(m => m.GetProductInternalSettings(
@@ -520,27 +552,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetProductSamlDetails(
                     It.Is<long>(l => l == 4)
                     , It.Is<int>(l => l == (int)ProductEnum.Insurance)
-                 ))
-                 .Returns(_editorSamlAttributes);
+                ))
+                .Returns(_editorSamlAttributes);
 
             mockSamlRepository
                 .Setup(m => m.GetProductSamlDetails(
                     It.Is<long>(l => l == 5)
                     , It.Is<int>(l => l == (int)ProductEnum.Insurance)
-                 ))
-                 .Returns(_userSamlAttributes);
+                ))
+                .Returns(_userSamlAttributes);
 
             mockManagePersona
                 .Setup(m => m.GetPersona(
                     It.Is<long>(l => l == 4)
-                 ))
-                 .Returns(_editorPersona);
+                ))
+                .Returns(_editorPersona);
 
             mockManagePersona
                 .Setup(m => m.GetPersona(
                     It.Is<long>(l => l == 5)
-                 ))
-                 .Returns(_userPersona);
+                ))
+                .Returns(_userPersona);
 
             mockProductRepository
                 .Setup(m => m.GetProductSettingsByPersona(
@@ -550,12 +582,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             var migrateUsers = new List<MigrateUser>()
             {
-                new MigrateUser(){
+                new MigrateUser()
+                {
                     UserId = "123456",
                     UnifiedLoginUserName = "abc@test.com",
                     UsingUnifiedLogin = true
                 },
-                new MigrateUser(){
+                new MigrateUser()
+                {
                     UserId = "123457",
                     UnifiedLoginUserName = "abc@test.com",
                     UsingUnifiedLogin = true
@@ -563,14 +597,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             };
 
             mockProductRepository
-              .Setup(m => m.GetBooksMasterProductDetail(
-                  It.IsAny<int>()
-              ))
-              .Returns(_gbProductMap);
+                .Setup(m => m.GetBooksMasterProductDetail(
+                    It.IsAny<int>()
+                ))
+                .Returns(_gbProductMap);
 
             //Act
             IManageProductRentersInsurance manageProductRentersInsurance = new ManageProductRentersInsurance(
                 editorRealPageId: _editorRealPageId,
+                userClaim: _editorUserClaim,
+                messageHandler: mockHttpMessageHandler.Object,
                 rentersInsuraceService: mockRentersInsuranceService.Object,
                 samlRepository: mockSamlRepository.Object,
                 managePersona: mockManagePersona.Object,
@@ -579,7 +615,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 productInternalSettingRepository: mockProductInternalSettingRepository.Object,
                 managePerson: null,
                 manageUserLogin: null,
-                managePartyRelationship: null);
+                managePartyRelationship: null,
+                repository: mockRepository.Object);
 
             //Act
             var actual = manageProductRentersInsurance.UpdateUsersMigrationStatus(_editorPersonaId, migrateUsers);
@@ -601,7 +638,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             Mock<IProductRepository> mockProductRepository = new Mock<IProductRepository>();
             Mock<IProductInternalSettingRepository> mockProductInternalSettingRepository = new Mock<IProductInternalSettingRepository>();
             Mock<ISamlRepository> mockSamlRepository = new Mock<ISamlRepository>();
-            UserAPIResponse userAPIResponse = new UserAPIResponse() {
+            UserAPIResponse userAPIResponse = new UserAPIResponse()
+            {
                 IsSuccess = true,
                 UserId = 1
             };
@@ -610,8 +648,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             bool isActive = true;
 
             mockRentersInsuranceService
-                 .Setup(m => m.EnableUser(It.IsAny<UserActionRequest>()))
-                 .Returns(userAPIResponse);
+                .Setup(m => m.EnableUser(It.IsAny<UserActionRequest>()))
+                .Returns(userAPIResponse);
 
             mockProductInternalSettingRepository
                 .Setup(m => m.GetProductInternalSettings(
@@ -623,27 +661,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetProductSamlDetails(
                     It.Is<long>(l => l == 4)
                     , It.Is<int>(l => l == (int)ProductEnum.Insurance)
-                 ))
-                 .Returns(_editorSamlAttributes);
+                ))
+                .Returns(_editorSamlAttributes);
 
             mockSamlRepository
                 .Setup(m => m.GetProductSamlDetails(
                     It.Is<long>(l => l == 5)
                     , It.Is<int>(l => l == (int)ProductEnum.Insurance)
-                 ))
-                 .Returns(_userSamlAttributes);
+                ))
+                .Returns(_userSamlAttributes);
 
             mockManagePersona
                 .Setup(m => m.GetPersona(
                     It.Is<long>(l => l == 4)
-                 ))
-                 .Returns(_editorPersona);
+                ))
+                .Returns(_editorPersona);
 
             mockManagePersona
                 .Setup(m => m.GetPersona(
                     It.Is<long>(l => l == 5)
-                 ))
-                 .Returns(_userPersona);
+                ))
+                .Returns(_userPersona);
 
             mockProductRepository
                 .Setup(m => m.GetProductSettingsByPersona(
@@ -652,13 +690,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Returns(_userProductSettings);
 
             mockProductRepository
-              .Setup(m => m.GetBooksMasterProductDetail(
-                  It.IsAny<int>()
-              ))
-              .Returns(_gbProductMap);
+                .Setup(m => m.GetBooksMasterProductDetail(
+                    It.IsAny<int>()
+                ))
+                .Returns(_gbProductMap);
 
             IManageProductRentersInsurance manageProductRentersInsurance = new ManageProductRentersInsurance(
                 editorRealPageId: _editorRealPageId,
+                userClaim: _editorUserClaim,
+                messageHandler: mockHttpMessageHandler.Object,
                 rentersInsuraceService: mockRentersInsuranceService.Object,
                 samlRepository: mockSamlRepository.Object,
                 managePersona: mockManagePersona.Object,
@@ -667,7 +707,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 productInternalSettingRepository: mockProductInternalSettingRepository.Object,
                 managePerson: null,
                 manageUserLogin: null,
-                managePartyRelationship: null);
+                managePartyRelationship: null,
+                repository: mockRepository.Object);
 
             //Act
             var actual = manageProductRentersInsurance.ChangeUserStatus(_editorPersonaId, userId, isActive);
@@ -696,8 +737,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             bool isActive = false;
 
             mockRentersInsuranceService
-                 .Setup(m => m.DisableUser(It.IsAny<UserActionRequest>()))
-                 .Returns(userAPIResponse);
+                .Setup(m => m.DisableUser(It.IsAny<UserActionRequest>()))
+                .Returns(userAPIResponse);
 
             mockProductInternalSettingRepository
                 .Setup(m => m.GetProductInternalSettings(
@@ -709,27 +750,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetProductSamlDetails(
                     It.Is<long>(l => l == 4)
                     , It.Is<int>(l => l == (int)ProductEnum.Insurance)
-                 ))
-                 .Returns(_editorSamlAttributes);
+                ))
+                .Returns(_editorSamlAttributes);
 
             mockSamlRepository
                 .Setup(m => m.GetProductSamlDetails(
                     It.Is<long>(l => l == 5)
                     , It.Is<int>(l => l == (int)ProductEnum.Insurance)
-                 ))
-                 .Returns(_userSamlAttributes);
+                ))
+                .Returns(_userSamlAttributes);
 
             mockManagePersona
                 .Setup(m => m.GetPersona(
                     It.Is<long>(l => l == 4)
-                 ))
-                 .Returns(_editorPersona);
+                ))
+                .Returns(_editorPersona);
 
             mockManagePersona
                 .Setup(m => m.GetPersona(
                     It.Is<long>(l => l == 5)
-                 ))
-                 .Returns(_userPersona);
+                ))
+                .Returns(_userPersona);
 
             mockProductRepository
                 .Setup(m => m.GetProductSettingsByPersona(
@@ -738,13 +779,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Returns(_userProductSettings);
 
             mockProductRepository
-              .Setup(m => m.GetBooksMasterProductDetail(
-                  It.IsAny<int>()
-              ))
-              .Returns(_gbProductMap);
+                .Setup(m => m.GetBooksMasterProductDetail(
+                    It.IsAny<int>()
+                ))
+                .Returns(_gbProductMap);
 
             IManageProductRentersInsurance manageProductRentersInsurance = new ManageProductRentersInsurance(
                 editorRealPageId: _editorRealPageId,
+                userClaim: _editorUserClaim,
+                messageHandler: mockHttpMessageHandler.Object,
                 rentersInsuraceService: mockRentersInsuranceService.Object,
                 samlRepository: mockSamlRepository.Object,
                 managePersona: mockManagePersona.Object,
@@ -753,7 +796,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 productInternalSettingRepository: mockProductInternalSettingRepository.Object,
                 managePerson: null,
                 manageUserLogin: null,
-                managePartyRelationship: null);
+                managePartyRelationship: null,
+                repository: mockRepository.Object);
 
             //Act
             var actual = manageProductRentersInsurance.ChangeUserStatus(_editorPersonaId, userId, isActive);
@@ -782,8 +826,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             bool isActive = true;
 
             mockRentersInsuranceService
-                 .Setup(m => m.EnableUser(It.IsAny<UserActionRequest>()))
-                 .Returns(userAPIResponse);
+                .Setup(m => m.EnableUser(It.IsAny<UserActionRequest>()))
+                .Returns(userAPIResponse);
 
             mockProductInternalSettingRepository
                 .Setup(m => m.GetProductInternalSettings(
@@ -795,27 +839,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetProductSamlDetails(
                     It.Is<long>(l => l == 4)
                     , It.Is<int>(l => l == (int)ProductEnum.Insurance)
-                 ))
-                 .Returns(_editorSamlAttributes);
+                ))
+                .Returns(_editorSamlAttributes);
 
             mockSamlRepository
                 .Setup(m => m.GetProductSamlDetails(
                     It.Is<long>(l => l == 5)
                     , It.Is<int>(l => l == (int)ProductEnum.Insurance)
-                 ))
-                 .Returns(_userSamlAttributes);
+                ))
+                .Returns(_userSamlAttributes);
 
             mockManagePersona
                 .Setup(m => m.GetPersona(
                     It.Is<long>(l => l == 4)
-                 ))
-                 .Returns(_editorPersona);
+                ))
+                .Returns(_editorPersona);
 
             mockManagePersona
                 .Setup(m => m.GetPersona(
                     It.Is<long>(l => l == 5)
-                 ))
-                 .Returns(_userPersona);
+                ))
+                .Returns(_userPersona);
 
             mockProductRepository
                 .Setup(m => m.GetProductSettingsByPersona(
@@ -824,13 +868,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Returns(_userProductSettings);
 
             mockProductRepository
-              .Setup(m => m.GetBooksMasterProductDetail(
-                  It.IsAny<int>()
-              ))
-              .Returns(_gbProductMap);
+                .Setup(m => m.GetBooksMasterProductDetail(
+                    It.IsAny<int>()
+                ))
+                .Returns(_gbProductMap);
 
             IManageProductRentersInsurance manageProductRentersInsurance = new ManageProductRentersInsurance(
                 editorRealPageId: _editorRealPageId,
+                userClaim: _editorUserClaim,
+                messageHandler: mockHttpMessageHandler.Object,
                 rentersInsuraceService: mockRentersInsuranceService.Object,
                 samlRepository: mockSamlRepository.Object,
                 managePersona: mockManagePersona.Object,
@@ -839,7 +885,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 productInternalSettingRepository: mockProductInternalSettingRepository.Object,
                 managePerson: null,
                 manageUserLogin: null,
-                managePartyRelationship: null);
+                managePartyRelationship: null,
+                repository: mockRepository.Object);
 
             //Act
             var actual = manageProductRentersInsurance.ChangeUserStatus(_editorPersonaId, userId, isActive);

@@ -13,6 +13,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using Xunit;
+using System.Net.Http;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 {
@@ -61,8 +62,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Returns(productUIList);
 
 			globals.Add(BaseType.RequestParameter, datafilter);
+            var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 
-            _profileLogic = new ManageProfile(_mockRepository.Object, _userUserClaim);
+            _profileLogic = new ManageProfile(_mockRepository.Object, _userUserClaim, mockHttpMessageHandler.Object);
 
             new RPObjectCache().BustCache();
 
@@ -112,7 +114,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Returns(expectedProfileDetailList);
 
             //_profileLogic = new ManageProfile(_mockProfileRepository.Object, _mockProductRepository.Object, _mockPersonaLogic.Object, _mockPersonLogic.Object, _mockUserLoginLogic.Object, _mockOrganizationLogic.Object, _mockPartyRelationshipLogic.Object, _mockContactMechanismLogic.Object, _mockPartyRoleLogic.Object, _userUserClaim);
-            _profileLogic = new ManageProfile(_mockRepository.Object, _userUserClaim);
+            _profileLogic = new ManageProfile(_mockRepository.Object, _userUserClaim, null);
 
             //Act
             profileDetailList = _profileLogic.ListProfileDetails(globals);

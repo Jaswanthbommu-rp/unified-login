@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.Caching;
 using System.Security.Claims;
 using System.Web.Http;
 using System.Web.Http.Controllers;
@@ -69,7 +70,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _propertyRepository = new PropertyRepository();
             _productInternalSettingRepository = new ProductInternalSettingRepository();
             _manageOrganization = new ManageOrganization(_userClaims);
-            
+
             ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
             if (!currentClaimPrincipal.Identity.IsAuthenticated)
             {
@@ -88,6 +89,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _manageOrganizationProduct = new ManageOrganizationProduct(_userClaims);
             _manageBlueBook = new ManageBlueBook(_userClaims);
             _manageHotsCloneUsers = new ManageHotsCloneUsers(_userClaims);
+            _manageProduct = new ManageProduct(_userClaims);
         }
 
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
@@ -100,7 +102,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         {
             var response = Request.CreateResponse(HttpStatusCode.Accepted);
             string signature = Request.Headers?.FirstOrDefault(h => h.Key == "signature").Value?.FirstOrDefault();
-            Dictionary<string, object> logData = new Dictionary<string, object>() {{"signature", signature ?? "null"}};
+            Dictionary<string, object> logData = new Dictionary<string, object>() { { "signature", signature ?? "null" } };
             WriteToLog(LogEventLevel.Debug, "PostBooks : Begin", logData);
 
             if (thinEvent == null)
@@ -154,7 +156,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                     RepositoryResponse result = _propertyRepository.UpdatePropertyMappingReMap(customerPropertyIdDeleted, newCustomerPropertyId);
                                     if (result.ErrorMessage.Length != 0)
                                     {
-                                        logData = new Dictionary<string, object> {{"error", result}};
+                                        logData = new Dictionary<string, object> { { "error", result } };
 
                                         WriteToLog(LogEventLevel.Error, "Error", logData);
                                         return Request.CreateResponse(HttpStatusCode.BadRequest, ResultErrorMessage(result));
@@ -189,12 +191,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                         var newCustomerCompanyId = Convert.ToInt64(thinEvent.Payload?["payload"]["replacementCustomerCompanyId"] == null || thinEvent.Payload["payload"]["replacementCustomerCompanyId"].Type == JTokenType.Null ? 0 : thinEvent.Payload?["payload"]["replacementCustomerCompanyId"]);
                                         if (newCustomerCompanyId != 0)
                                         {
-                                            Organization oldOrganization = new Organization() {PartyId = p.PartyId, BooksCustomerMasterId = p.BooksCustomerMasterId};
-                                            Organization newOrganization = new Organization() {PartyId = p.PartyId, BooksCustomerMasterId = newCustomerCompanyId};
+                                            Organization oldOrganization = new Organization() { PartyId = p.PartyId, BooksCustomerMasterId = p.BooksCustomerMasterId };
+                                            Organization newOrganization = new Organization() { PartyId = p.PartyId, BooksCustomerMasterId = newCustomerCompanyId };
                                             RepositoryResponse result = _organizationRepository.UpdateOrganizationBooksCompanyMasterId(oldOrganization, newOrganization);
                                             if (result.ErrorMessage.Length != 0 || result.Id == 0)
                                             {
-                                                logData = new Dictionary<string, object> {{"error", result}};
+                                                logData = new Dictionary<string, object> { { "error", result } };
                                                 WriteToLog(LogEventLevel.Error, "Error", logData);
                                                 errorResponseList.Add(result);
                                             }
@@ -249,7 +251,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                     response = Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid cloneCompanyInstanceSourceId, not Guid");
                                     WriteToLog(LogEventLevel.Error, "Invalid cloneCompanyInstanceSourceId, not Guid");
                                     return response;
-                                };
+                                }
+
                                 var cloneBaselineOrg = _manageOrganization.GetOrganization(baselineCompanyGuid);
                                 if (cloneBaselineOrg == null)
                                 {
@@ -264,7 +267,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             List<int> uniqueProductIdList = new List<int>();
 
                             List<UPFMPropertyInstance> propertyInstanceList = new List<UPFMPropertyInstance>();
-                            ProductCenterEnablement centerEnablement = new ProductCenterEnablement() {Details = new List<ProductCenterEnablementSettings>()};
+                            ProductCenterEnablement centerEnablement = new ProductCenterEnablement() { Details = new List<ProductCenterEnablementSettings>() };
                             centerEnablement.EnabledBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation";
 
                             var companyProductCenters = thinEvent.Payload?["company"]["productCenters"];
@@ -281,7 +284,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             }
                             catch (Exception ex)
                             {
-                                logData = new Dictionary<string, object> {{"error", ex.Message}};
+                                logData = new Dictionary<string, object> { { "error", ex.Message } };
                                 WriteToLog(LogEventLevel.Error, "Error parsing company product list", logData);
                             }
 
@@ -343,7 +346,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                         }
                                         catch (Exception ex)
                                         {
-                                            logData = new Dictionary<string, object> {{"error", ex.Message}};
+                                            logData = new Dictionary<string, object> { { "error", ex.Message } };
                                             WriteToLog(LogEventLevel.Error, "Error parsing property address longitude", logData);
                                         }
                                     }
@@ -353,7 +356,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             }
                             catch (Exception ex)
                             {
-                                logData = new Dictionary<string, object> {{"error", ex.Message}};
+                                logData = new Dictionary<string, object> { { "error", ex.Message } };
                                 WriteToLog(LogEventLevel.Error, "Error parsing property list", logData);
                             }
 
@@ -373,7 +376,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                 {
                                     propertyInstanceList = new List<UPFMPropertyInstance>();
                                     centerEnablement.Details = new List<ProductCenterEnablementSettings>();
-                                    logData = new Dictionary<string, object> {{"error", createResult}};
+                                    logData = new Dictionary<string, object> { { "error", createResult } };
 
                                     WriteToLog(LogEventLevel.Error, "Error", logData);
                                     if (createResult.Result.Equals("Company not found in books environment", StringComparison.OrdinalIgnoreCase))
@@ -381,6 +384,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                         // shortcut out, this create may be for another environment
                                         return Request.CreateResponse(HttpStatusCode.Accepted);
                                     }
+
                                     return Request.CreateResponse(HttpStatusCode.BadRequest, createResult);
                                 }
 
@@ -443,6 +447,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             }
 
                             break;
+                        case "books.upfmvendor.create":
+                            var createVendorResult = CreateVendorCompanyFromWebhook(thinEvent.Payload);
+
+                            if (string.IsNullOrEmpty(createVendorResult.Result))
+                            {
+                                WriteToLog(LogEventLevel.Debug, "PostBooks : Complete", logData);
+                                return Request.CreateResponse(HttpStatusCode.Accepted);
+                            }
+
+                            logData.Add("error", createVendorResult.Result);
+                            WriteToLog(LogEventLevel.Error, "PostBooks : Error", logData);
+                            return Request.CreateResponse(HttpStatusCode.BadRequest, createVendorResult.Result);
+
+                            break;
                         case "provisioning.upfmorder.cancel":
                             var productListToCancel = thinEvent.Payload?["company"]["productCenters"];
                             string companyInstanceSourceId = thinEvent.Payload?["company"]["companyInstanceSourceId"] == null || thinEvent.Payload?["company"]["companyInstanceSourceId"].Type == JTokenType.Null ? null : thinEvent.Payload?["company"]["companyInstanceSourceId"].ToString();
@@ -452,7 +470,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                 return Request.CreateResponse(HttpStatusCode.BadRequest, $"Invalid companyInstanceSourceId");
                             }
 
-                            ProductCenterCancellation centerCancel = new ProductCenterCancellation() {Details = new List<ProductCenterCancellationSettings>()};
+                            ProductCenterCancellation centerCancel = new ProductCenterCancellation() { Details = new List<ProductCenterCancellationSettings>() };
                             centerCancel.CancelledBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation";
                             var orgDetails = _manageOrganization.GetOrganization(new Guid(companyInstanceSourceId));
                             if (orgDetails != null)
@@ -461,8 +479,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                 {
                                     if (product["productCenterSourceId"] != null && product["productCenterSourceId"].ToString() != "")
                                     {
-                                        var addresponse = _manageOrganizationProduct.DeleteOrganizationProduct(partyId: orgDetails.PartyId, product: (ProductEnum) Convert.ToInt32(product["productCenterSourceId"]), org: orgDetails);
-                                        _manageOrganizationProduct.DisableUsersForProduct(partyId: orgDetails.PartyId, product: (ProductEnum) Convert.ToInt32(product["productCenterSourceId"]));
+                                        var addresponse = _manageOrganizationProduct.DeleteOrganizationProduct(partyId: orgDetails.PartyId, product: (ProductEnum)Convert.ToInt32(product["productCenterSourceId"]), org: orgDetails);
+                                        _manageOrganizationProduct.DisableUsersForProduct(partyId: orgDetails.PartyId, product: (ProductEnum)Convert.ToInt32(product["productCenterSourceId"]));
                                         centerCancel.Details.Add(new ProductCenterCancellationSettings()
                                         {
                                             CompanyInstanceSourceId = companyInstanceSourceId,
@@ -563,8 +581,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     {
                         var logData = new Dictionary<string, object>
                         {
-                                {"property", property},
-                                {"response.ErrorMessage", response.ErrorMessage}
+                            { "property", property },
+                            { "response.ErrorMessage", response.ErrorMessage }
                         };
                         WriteToLog(LogEventLevel.Error, "AddPropertiesFromBooks Error", logData);
                     }
@@ -600,7 +618,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         private CreateCompanyResult CreateCompanyFromBooks(JToken companyPayload, long booksCustomerMasterId, string domain, List<int> productIdList, string eventTopic)
         {
             bool processBlueBookMessage = false;
-            CreateCompanyResult createCompanyResult = new CreateCompanyResult() {RealPageId = Guid.Empty.ToString()};
+            CreateCompanyResult createCompanyResult = new CreateCompanyResult() { RealPageId = Guid.Empty.ToString() };
 
             // check to see if the company already exists
             var organizationList = _manageOrganization.GetOrganizationList();
@@ -649,7 +667,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     Suffix = "",
                     Title = "",
                 },
-                CompanyAddress = new CompanyInstanceAddress() {Address = companyAddress, City = companyCity, State = companyState, PostalCode = companyPostalCode, County = companyCounty, Country = companyCountry}
+                CompanyAddress = new CompanyInstanceAddress() { Address = companyAddress, City = companyCity, State = companyState, PostalCode = companyPostalCode, County = companyCounty, Country = companyCountry }
             };
 
             WriteToLog(LogEventLevel.Debug, $"Adding company {companyName}");
@@ -666,7 +684,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             if (!organizationDomainList.Any(d => d.Name.Equals(domain, StringComparison.OrdinalIgnoreCase)))
             {
-                RepositoryResponse response = _manageOrganization.CreateOrganizationDomain(new OrganizationDomain() {Name = domain});
+                RepositoryResponse response = _manageOrganization.CreateOrganizationDomain(new OrganizationDomain() { Name = domain });
                 if (response.Id > 0)
                 {
                     organization.OrganizationDomainId = Convert.ToInt32(response.Id);
@@ -699,7 +717,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 {
                     Guid.TryParse(cloneCompanyInstanceSourceId, out var baselineCompanyGuid);
                     Guid.TryParse(createCompanyResult.RealPageId, out var cloneCompanyGuid);
-                    
+
                     var hotsResult = _manageHotsCloneUsers.InsertHotsCompanyRelationship(baselineCompanyGuid, cloneCompanyGuid, 1);
                     if (hotsResult.Id == 0)
                     {
@@ -708,7 +726,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     }
                 }
             }
-            
+
             var companyInstance = new CompanyInstanceAdd()
             {
                 CustomerCompanyId = booksCustomerMasterId,
@@ -720,13 +738,185 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 CustomerEnvironment = domain,
                 CompanyType = customerCompany.CompanyType
             };
-            
+
             // add the new company data back to books
             var booksResult = _manageBlueBook.AddUPFMCompanyFromProvisioningEvent(companyInstance);
 
-           return createCompanyResult;
+            return createCompanyResult;
         }
 
+        private CreateCompanyResult CreateVendorCompanyFromWebhook(JToken payLoad)
+        {
+            var createCompanyResult = new CreateCompanyResult();
+
+            var customerCompanyId = Convert.ToInt64(payLoad?["customerCompanyId"] == null || payLoad["customerCompanyId"].Type == JTokenType.Null ? 0 : payLoad?["customerCompanyId"]);
+            var productSource = payLoad?["source"].ToString();
+            var productSourceId = payLoad?["companyInstanceSourceId"].ToString();
+            var adminEmail = payLoad?["user"]["email"] == null || payLoad?["user"]["email"].Type == JTokenType.Null ? "" : payLoad["user"]["email"].ToString();
+            var adminFirstName = payLoad?["user"]["firstName"] == null || payLoad?["user"]["firstName"].Type == JTokenType.Null ? "" : payLoad["user"]["firstName"].ToString();
+            var adminLastName = payLoad?["user"]["lastName"] == null || payLoad?["user"]["lastName"].Type == JTokenType.Null ? "" : payLoad["user"]["lastName"].ToString();
+
+            var customerCompany = _manageBlueBook.GetCompanyCustomerInfo(companyRealPageId: Guid.Empty, domain: null, booksCompanyMasterId: customerCompanyId);
+            if (customerCompany == null)
+            {
+                createCompanyResult.Result = "Company not found in books environment";
+                return createCompanyResult;
+            }
+
+            var company = _manageBlueBook.GetBooksCompanyDetailsByCompanyMasterId(customerCompany.CustomerCompanyId);
+            var existingInstances = _manageBlueBook.GetCompanyInstancesByCustomerCompanyId(customerCompany.CustomerCompanyId);
+            var vendorInstance = _manageBlueBook.GetCompanyInstanceBySourceAndInstanceId(productSourceId, productSource);
+            if (vendorInstance == null)
+            {
+                WriteToLog(LogEventLevel.Error, $"ProductSource {productSource} company not found. productSourceId {productSourceId}");
+                createCompanyResult.Result = "Vendor instance not found in books environment";
+                return createCompanyResult;
+            }
+
+            if (existingInstances != null && existingInstances.Any(p => p.attributes.Domain.Equals(vendorInstance.Domain, StringComparison.OrdinalIgnoreCase)
+                                                                        && p.attributes.Source.Equals("UPFM")))
+            {
+                WriteToLog(LogEventLevel.Debug, $"UPFM vendor company {customerCompany.CompanyName} already exists. CustomerCompanyId {customerCompany.CustomerCompanyId}");
+                createCompanyResult.Result = "UPFM instance already exists";
+                return createCompanyResult;
+            }
+
+            var organization = new OrganizationCreate()
+            {
+                Name = customerCompany.CompanyName,
+                BooksCompanyId = customerCompany.MasterCompanyId,
+                BooksCustomerMasterId = customerCompany.CustomerCompanyId,
+                AdminUser = new OrganizationAdminUser()
+                {
+                    FirstName = "RealPage",
+                    LastName = "Access",
+                    Suffix = string.Empty,
+                    Title = string.Empty,
+                },
+                //CompanyAddress = new CompanyInstanceAddress() { Address = companyAddress, City = companyCity, State = companyState, PostalCode = companyPostalCode, County = companyCounty, Country = companyCountry },
+                CompanyAdminUser = new OrganizationAdminUser()
+                {
+                    Email = adminEmail,
+                    FirstName = adminFirstName,
+                    LastName = adminLastName
+                },
+                Products = new List<string>() { productSource },
+                CompanyInstancePartner = productSource,
+                CompanyInstancePartnerSourceId = productSourceId,
+            };
+
+            WriteToLog(LogEventLevel.Debug, $"Adding vendor company {customerCompany.CompanyName}");
+            var organizationTypeList = _manageOrganization.ListOrganizationType();
+            var organizationDomainList = _manageOrganization.ListOrganizationDomain();
+
+            var orgType = organizationTypeList.FirstOrDefault(p => p.Name.Equals(customerCompany.CompanyType, StringComparison.OrdinalIgnoreCase));
+            if (orgType == null)
+            {
+                createCompanyResult.Result = "Unknown organization type";
+                return createCompanyResult;
+            }
+
+            organization.OrganizationTypeId = orgType.OrganizationTypeId;
+
+            if (!organizationDomainList.Any(d => d.Name.Equals(vendorInstance.Domain, StringComparison.OrdinalIgnoreCase)))
+            {
+                var response = _manageOrganization.CreateOrganizationDomain(new OrganizationDomain() { Name = vendorInstance.Domain });
+                if (response.Id > 0)
+                {
+                    organization.OrganizationDomainId = Convert.ToInt32(response.Id);
+                }
+            }
+            else
+            {
+                organization.OrganizationDomainId = organizationDomainList.FirstOrDefault(p => p.Name.Equals(vendorInstance.Domain, StringComparison.OrdinalIgnoreCase)).OrganizationDomainId;
+            }
+
+            var productList = _manageProduct.ListProducts();
+            var addProductList = new List<int>();
+            var productDetails = productList.FirstOrDefault(p => p.BooksProductCode.Equals(productSource, StringComparison.OrdinalIgnoreCase));
+            if (productDetails != null)
+            {
+                addProductList.Add(productDetails.ProductId);
+            }
+
+            var createOrgResult = _manageOrganization.CreateOrganization(organization, addProductList, true);
+
+            if (!createOrgResult.Status.Success || !string.IsNullOrEmpty(createOrgResult.Status.ErrorMsg))
+            {
+                WriteToLog(LogEventLevel.Error, $"Error Message while creating organization {createOrgResult.Status.ErrorMsg}");
+                createCompanyResult.Result = createOrgResult.Status.ErrorMsg;
+                return createCompanyResult;
+            }
+
+            var companyInstance = new CompanyInstanceAdd
+            {
+                Id = organization.BooksCustomerMasterId,
+                CustomerCompanyId = null,
+                CompanyInstanceSourceId = createOrgResult.obj.Org.RealPageId.ToString().ToLower(),
+                CompanyName = createOrgResult.obj.Org.Name,
+                Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
+                IsActive = true,
+                ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
+                CustomerEnvironment = createOrgResult.obj.Org.OrganizationDomain.Name,
+                CompanyType = customerCompany.CompanyType,
+                CompanyInstancePartners = new List<CompanyInstancePartner>() { new CompanyInstancePartner() { TargetSource = productSource, TargetCompanyInstanceSourceId = productSourceId } }
+            };
+
+            // do we ever have an address?
+            //if (organization.CompanyAddress != null)
+            //{
+            //    CompanyInstanceAddress address = new CompanyInstanceAddress()
+            //    {
+            //        Address = organization.CompanyAddress.Address,
+            //        City = organization.CompanyAddress.City,
+            //        State = organization.CompanyAddress.State,
+            //        PostalCode = organization.CompanyAddress.PostalCode,
+            //        County = organization.CompanyAddress.County,
+            //        Country = organization.CompanyAddress.Country
+            //    };
+            //    companyInstance.CompanyInstanceLocation = new List<CompanyInstanceAddress>() { address };
+            //}
+
+            // add the new company data to books
+            var companyCreatedSuccessfully = _manageBlueBook.AddUPFMCompanyFromCompanySetup(companyInstance);
+
+            if (!companyCreatedSuccessfully)
+            {
+                createCompanyResult.Result = "There was a problem adding the UPFM instance to UDM";
+                return createCompanyResult;
+            }
+
+            if (!_manageOrganization.AddUpdateCompanyToUnifiedSettings(companyInstance.CompanyInstanceSourceId, "Create", companyInstance.CustomerEnvironment))
+            {
+                createCompanyResult.Result = "Unified Login and MDM company was updated successfully but Settings data update failed.";
+                return createCompanyResult;
+            }
+
+            // add the products assigned to the new company
+            var cacheKey = $"getListProductsByOrganization_{createOrgResult.obj.Org.RealPageId}";
+            MemoryCache.Default.Remove(cacheKey);
+
+            var productListOrg = _manageProduct.GetProducts(createOrgResult.obj.Org.RealPageId, 0, true);
+            foreach (var product in productList)
+            {
+                var productInternalSettings = _manageProduct.GetProductInternalSettings(product.ProductId);
+                var updateInUDM = productInternalSettings.FirstOrDefault(x => x.Name.Equals("UpdateProductInUDM", StringComparison.OrdinalIgnoreCase));
+
+                if (updateInUDM?.Value != "1") continue;
+
+                var spc = new SystemProductCenter()
+                {
+                    Id = 0,
+                    CompanyInstanceSourceId = companyInstance.CompanyInstanceSourceId,
+                    CreatedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
+                    ProductCenterSourceId = product.ProductId.ToString(),
+                    Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)
+                };
+                _manageBlueBook.ProductCenterEnable(spc);
+            }
+
+            return new CreateCompanyResult() { RealPageId = createCompanyResult.RealPageId };
+        }
 
         private static string ResultErrorMessage(RepositoryResponse result)
         {

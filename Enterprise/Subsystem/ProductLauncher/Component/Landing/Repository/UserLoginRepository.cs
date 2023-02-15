@@ -20,6 +20,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
     {
         private OrganizationRepository _organizationRepository;
         private CredentialRepository _credentialRepository;
+        //private UserRepository _userRepository; // DO NOT ADD REFERENCE TO UserRepository!
 
         #region Constructor
         /// <summary>
@@ -182,57 +183,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
 
         /// <summary>
-        /// Insert or update User Status by company
-        /// </summary>
-        /// <param name="realPageId">User enterprise Id</param>
-        /// <param name="organizationPartyId">User enterprise Id</param>
-        /// <param name="statusTypeId">statusType Id</param>
-        /// <param name="fromDate">FromDate</param>
-        /// <param name="thruDate">ThruDate</param>
-        /// <returns>RepositoryResponse object</returns>
-        public RepositoryResponse UpdateUserStatusByCompany(Guid realPageId, long organizationPartyId, int statusTypeId, DateTime fromDate, DateTime? thruDate)
-        {
-			RepositoryResponse repositoryResponse = new RepositoryResponse();
-
-			IUserRepository userRepository = new UserRepository();
-
-			using (var repository = GetRepository())
-            {
-				dynamic param = new
-				{
-					RealPageId = realPageId,
-					OrganizationPartyId = organizationPartyId,
-					StatusTypeId = statusTypeId,
-					FromDate = fromDate,
-					StatusThruDate = thruDate
-				};
-				repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserStatusByCompany, param);
-
-				//remove products
-				//If Primary Organization - List all Persona(s) across all user companies
-				//Else List Persona(s) for a company
-                if (statusTypeId == (int) UserUiStatusType.Disabled)
-                {
-                    param = new
-                    {
-                        OrganizationPartyId = organizationPartyId,
-                        PersonRealPageId = realPageId
-                    };
-                    var result = repository.GetMany<dynamic>(StoredProcNameConstants.SP_ListPersonaToDisableUserProduct, param);
-                    foreach (var item in result)
-                    {
-                        if (!item.PrimaryOrganization)
-                        {
-                            userRepository.ProcessDisableUserProductData(repository, item.PersonaId, item.EditorRealPageId, item.EditorPersonaId, item.UserTypeId);
-                        }
-                    }
-                }
-
-                return repositoryResponse;
-			}
-        }
-
-        /// <summary>
         /// Update User ABulk ctivity Attempts
         /// </summary>
         public int UpdateBulkUserStatus(IList<Guid> userRealPageIdList, int statusTypeId, DateTime fromDate, DateTime? thruDate, long organizationPartyId)
@@ -262,46 +212,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 return result;
             }
         }
-
-        /// <summary>
-        /// Update User Activity Attempts
-        /// </summary>
-        public ActivityAttempt UpdateUserActivityAttempts(string enterpriseUserName,
-            ActivityType activityType,
-            UserDeviceDetails userDeviceDetails,
-            long partyId,
-            string authenticationServiceId = "")
-        {
-            var activityTypeId = (int)activityType;
-
-            if (userDeviceDetails == null)
-            {
-                userDeviceDetails = new UserDeviceDetails();
-            }
-
-            dynamic param = new
-            {
-                enterpriseUserName,
-                activityTypeId,
-                userDeviceDetails.BrowserName,
-                userDeviceDetails.BrowserType,
-                userDeviceDetails.IpAddress,
-                userDeviceDetails.IsMobile,
-                userDeviceDetails.Platform,
-                userDeviceDetails.Version,
-                userDeviceDetails.DeviceType,
-                userDeviceDetails.Timezone,
-                authenticationServiceId,
-                partyId
-            };
-
-            using (var repository = GetRepository())
-            {
-                return repository.GetOne<ActivityAttempt>(StoredProcNameConstants.SP_UpdateActivityAttempt, param);
-            }
-        }
-
-
+        
         /// <summary>
         /// Update User
         /// </summary>
@@ -388,6 +299,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 return repository.GetMany<UserOrganization>(StoredProcNameConstants.SP_ListOrganizationByLoginName, param);
             }
         }
+
         /// <summary>
         /// List all organization for user without thru data condition
         /// </summary>

@@ -1,4 +1,5 @@
-﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+﻿using RP.Enterprise.Foundation.DataAccess.Component;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
@@ -18,15 +19,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		public UserLoginPersonaRepository() : base(DbConnectionEnum.IdpConfigurationDb)
 		{
 		}
-		#endregion
 
-		#region Publuc UserLoginPersona Methods
-		/// <summary>
-		/// Create UserLoginPersona
-		/// </summary>
-		/// <param name="userLoginPersona">userLoginPersona object</param>
-		/// <returns>Repository response object</returns>
-		public RepositoryResponse CreateUserLoginPersona(UserLoginPersona userLoginPersona)
+        public UserLoginPersonaRepository(IRepository repository) : base(repository)
+        {
+        }
+        #endregion
+
+        #region Publuc UserLoginPersona Methods
+        /// <summary>
+        /// Create UserLoginPersona
+        /// </summary>
+        /// <param name="userLoginPersona">userLoginPersona object</param>
+        /// <returns>Repository response object</returns>
+        public RepositoryResponse CreateUserLoginPersona(UserLoginPersona userLoginPersona)
 		{
 			dynamic param = new
 			{

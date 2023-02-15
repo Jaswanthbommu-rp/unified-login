@@ -11,6 +11,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Us
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Net.Http;
 using Xunit;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
@@ -21,7 +22,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
     [ExcludeFromCodeCoverage]
 	public class ManageUserLoginTests
 	{
-        Mock<IRepository> _mockRepository = new Mock<IRepository>();
+        private Mock<IRepository> _mockRepository = new Mock<IRepository>();
+        private Mock<HttpMessageHandler> _mockHttpMessageHandler;
 
         DefaultUserClaim userClaims = new DefaultUserClaim()
 		{
@@ -193,6 +195,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             _mockRepository.Setup(m => m.GetOne<UserLogin>(StoredProcNameConstants.SP_GetUserLogin, It.IsAny<object>()))
                 .Returns(_userLogin);
+
+            _mockHttpMessageHandler = new Mock<HttpMessageHandler>();
         }
 
 		#region Unit Tests
@@ -200,7 +204,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		public void CreateUserLogin_InvalidrealPageId_ExceptionThrown()
 		{
 			//Arrange
-			IManageUserLogin manageUserLogin = new ManageUserLogin();
+			IManageUserLogin manageUserLogin = new ManageUserLogin(_mockRepository.Object, userClaims, _mockHttpMessageHandler.Object);
 			Guid realPageId = new Guid();
 
 			//Act
@@ -232,8 +236,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			Guid realPageId = new Guid("13E71DE5-BAFA-469D-9F7A-E12DB3961BA9");
             _mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateUserLogin, It.IsAny<object>()))
                 .Returns(new RepositoryResponse { Id = 1, ErrorMessage = "", RealPageId = Guid.Empty });
-			//Act
-            IManageUserLogin manageUserLogin = new ManageUserLogin(_mockRepository.Object, userClaims, null);
+            
+            //Act
+            IManageUserLogin manageUserLogin = new ManageUserLogin(_mockRepository.Object, userClaims, _mockHttpMessageHandler.Object);
             IRepositoryResponse repositoryResponse = manageUserLogin.CreateUserLogin(realPageId, userLogin);
 
 			//Assert
@@ -246,7 +251,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		public void GetUserLogin_InvalidrealPageId_ExceptionThrown()
 		{
 			//Arrange
-			IManageUserLogin manageUserLogin = new ManageUserLogin();
+			IManageUserLogin manageUserLogin = new ManageUserLogin(_mockRepository.Object, userClaims, _mockHttpMessageHandler.Object);
 			Guid realPageId = new Guid();
 
 			//Act
@@ -260,10 +265,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		{
 			//Arrange
 			Type type = typeof(UserLoginOnly);
-			
+
             //Act
             int NumberOfProperties = type.GetProperties().Length;
-            IManageUserLogin manageUserLogin = new ManageUserLogin(_mockRepository.Object, userClaims, null);
+            IManageUserLogin manageUserLogin = new ManageUserLogin(_mockRepository.Object, userClaims, _mockHttpMessageHandler.Object);
             var userLogin = manageUserLogin.GetUserLoginOnly(_userRealPageId);
 
 			//Assert
@@ -284,7 +289,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		public void CreateUserLogin_InvalidUserLoginOnject_ExceptionThrown()
 		{
 			//Arrange
-			IManageUserLogin manageUserLogin = new ManageUserLogin();
+			IManageUserLogin manageUserLogin = new ManageUserLogin(_mockRepository.Object, userClaims, _mockHttpMessageHandler.Object);
 			Guid realPageId = new Guid("13E71DE5-BAFA-469D-9F7A-E12DB3961BA9");
 
 			//Act
@@ -300,7 +305,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		public void UpdateUserLogin_InvalidRealPageId_ExceptionThrown()
 		{
 			//Arrange
-			IManageUserLogin manageUserLogin = new ManageUserLogin();
+			IManageUserLogin manageUserLogin = new ManageUserLogin(_mockRepository.Object, userClaims, _mockHttpMessageHandler.Object);
 			Guid realPageId = new Guid();
 
 			//Act
@@ -320,7 +325,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		public void UpdateUserLogin_InvalidUserLoginObject_ExceptionThrown()
 		{
 			//Arrange
-			IManageUserLogin manageUserLogin = new ManageUserLogin();
+			IManageUserLogin manageUserLogin = new ManageUserLogin(_mockRepository.Object, userClaims, _mockHttpMessageHandler.Object);
 			Guid realPageId = new Guid("13E71DE5-BAFA-469D-9F7A-E12DB3961BA9");
 
 			//Act
@@ -403,8 +408,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				.Setup(m => m.GetMany<Organization>(StoredProcNameConstants.SP_GetOrganization, It.IsAny<object>()))
 				.Returns(organizationList);
 
-			//Act
-			IManageUserLogin manageUserLogin = new ManageUserLogin(_mockRepository.Object, userClaims, null);
+            _mockRepository
+                .Setup(m => m.GetMany<OrganizationType>(StoredProcNameConstants.SP_ListOrganizationType, null))
+                .Returns(organizationTypeList);
+
+            //Act
+            IManageUserLogin manageUserLogin = new ManageUserLogin(_mockRepository.Object, userClaims, _mockHttpMessageHandler.Object);
             IRepositoryResponse repositoryResponse = manageUserLogin.UpdateUserLogin(realPageId, userLogin);
 
 			//Assert
@@ -422,7 +431,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		public void IsLoginNameExists_InvalidOrganizationRealPageId_ExceptionThrown()
 		{
 			//Arrange
-			IManageUserLogin userLoginLogic = new ManageUserLogin();
+			IManageUserLogin userLoginLogic = new ManageUserLogin(_mockRepository.Object, userClaims, _mockHttpMessageHandler.Object);
 
 			//Act
 			string loginName = "james@test.com";
@@ -437,7 +446,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		public void IsLoginNameExists_InvalidLoginName_ExceptionThrown()
 		{
 			//Arrange
-			IManageUserLogin userLoginLogic = new ManageUserLogin();
+			IManageUserLogin userLoginLogic = new ManageUserLogin(_mockRepository.Object, userClaims, _mockHttpMessageHandler.Object);
 
 			//Act
 			string loginName = string.Empty;
@@ -496,7 +505,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Returns(organizationList);
 
             //Act
-            IManageUserLogin manageUserLogin = new ManageUserLogin(_mockRepository.Object, userClaims, null);
+            IManageUserLogin manageUserLogin = new ManageUserLogin(_mockRepository.Object, userClaims, _mockHttpMessageHandler.Object);
             UserOrganizationExists userOrganizationExists = manageUserLogin.IsLoginNameExists(_loginName, _organizationRealPageId, _userRealPageId);
 
 			//Assert
@@ -540,7 +549,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         public void LinkIdentityProviderToUserLogin_ValidAndErrors()
         {
             //Act
-            IManageUserLogin manageUserLogin = new ManageUserLogin(_mockRepository.Object, userClaims, null);
+            IManageUserLogin manageUserLogin = new ManageUserLogin(_mockRepository.Object, userClaims, _mockHttpMessageHandler.Object);
             var response = manageUserLogin.LinkIdentityProviderToUserLogin(24, 25, 2);
 
             //Assert

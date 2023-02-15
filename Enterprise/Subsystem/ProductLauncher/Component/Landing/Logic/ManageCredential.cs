@@ -40,7 +40,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <summary>
         /// Ctor with injection - for Unit Test  
         /// </summary>
-        public ManageCredential(ICredentialRepository credentialRepository, IPasswordPolicyRepository passwordPolicyRepository, IUserLoginRepository userLoginRepository, IManageUserLogin manageUserLogin, IManagePerson managePerson, DefaultUserClaim userClaim)
+        public ManageCredential(ICredentialRepository credentialRepository, IPasswordPolicyRepository passwordPolicyRepository, IUserLoginRepository userLoginRepository, IManageUserLogin manageUserLogin, IManagePerson managePerson, IUserRepository userRepository, DefaultUserClaim userClaim)
 		{
             _credentialRepository = credentialRepository;
             _passwordPolicyRepository = passwordPolicyRepository;
@@ -48,7 +48,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _manageUserLogin = manageUserLogin;
             _managePerson = managePerson;
 			_userClaim = userClaim;
-		}
+            _userRepository = userRepository;
+        }
 
         /// <summary>
         /// Default Ctor
@@ -62,6 +63,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _managePerson = new ManagePerson();
 			_manageOrganization = new ManageOrganization(userClaim);
 			_userRepository = new UserRepository(userClaim);
+            _userRepository = new UserRepository(userClaim);
 			_userClaim = userClaim;
 		}
 
@@ -123,10 +125,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 	       	if (primaryOrgStatus.StatusTypeId == (int)UserUiStatusType.Locked && primaryOrgStatus.StatusThruDate != null && primaryOrgStatus.StatusThruDate.Value < DateTime.UtcNow)
 			{
 				primaryOrgStatus.IsLocked = false;
-				// reset attempt count
-				// update user status back to active once lockout time ended
-				_userLoginRepository.UpdateUserStatusByCompany(userLogin.RealPageId, primaryOrgStatus.PartyId, (int)UserDbStatusType.Active, DateTime.UtcNow, null);
-				_userLoginRepository.UpdateUserActivityAttempts(userLogin.LoginName, ActivityType.LoginSuccess, userDeviceDetails, primaryOrgStatus.PartyId, null);
+                // reset attempt count
+                // update user status back to active once lockout time ended
+                _userRepository.UpdateUserStatusByCompany(userLogin.RealPageId, primaryOrgStatus.PartyId, (int)UserDbStatusType.Active, DateTime.UtcNow, null);
+                _userRepository.UpdateUserActivityAttempts(userLogin.LoginName, ActivityType.LoginSuccess, userDeviceDetails, primaryOrgStatus.PartyId, null);
 			}
 			response.IsUserLocked = (bool)primaryOrgStatus.IsLocked;
 			if (response.IsUserLocked == true)
@@ -254,7 +256,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             if (activityAttemptsExceeds.AttemptCount >= activityAttemptsExceeds.MaxActivitycount)
             {
                 // apply lock on user status
-                _userLoginRepository.UpdateUserStatusByCompany(userLogin.RealPageId, primaryOrgStatus.PartyId, (int)UserDbStatusType.Locked,
+                _userRepository.UpdateUserStatusByCompany(userLogin.RealPageId, primaryOrgStatus.PartyId, (int)UserDbStatusType.Locked,
                     DateTime.UtcNow, DateTime.UtcNow.AddMinutes(activityAttemptsExceeds.ActivityTokenExpirationMinutes));
 
                 securityAnswerResponse.IsError = true;
@@ -314,7 +316,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     }
 
                     // apply lock on user status
-                    _userLoginRepository.UpdateUserStatusByCompany(userLogin.RealPageId, orgPartyId, (int) UserDbStatusType.Locked,
+                    _userRepository.UpdateUserStatusByCompany(userLogin.RealPageId, orgPartyId, (int) UserDbStatusType.Locked,
                         DateTime.UtcNow, DateTime.UtcNow.AddMinutes(activityAttemptsExceeds.ActivityTokenExpirationMinutes));
                     securityAnswerResponse.IsError = true;
                     securityAnswerResponse.ErrorReason = "Max attempts to answer security questions exceeded.Your account is locked."; //"One or more of your answers are incorrect. Please try again with a new set of questions.";
