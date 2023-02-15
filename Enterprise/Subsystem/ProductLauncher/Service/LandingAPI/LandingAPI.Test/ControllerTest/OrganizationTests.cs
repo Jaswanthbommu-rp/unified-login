@@ -33,7 +33,6 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Maintenanc
 using Xunit;
 using HttpConfiguration = System.Web.Http.HttpConfiguration;
 using RoleType = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig.RoleType;
-using Xunit.Abstractions;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 {
@@ -41,7 +40,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
     public class OrganizationTests
     {
         #region Private Variables
-        private readonly ITestOutputHelper _output;
+
         public static readonly Guid EmployeeCompanyRealPageId = new Guid("0D018E46-C20E-477D-ADED-4E5A35FB8F99");
 
         Mock<IRepository> _mockRepository = new Mock<IRepository>();
@@ -70,10 +69,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
         #endregion
 
-        public OrganizationTests(ITestOutputHelper output)
+        public OrganizationTests()
         {
-            _output = output;
-
             _gbProductMap = new List<GbProductMap>
             {
                 new GbProductMap() { BooksProductCode = "OS", Name = "OneSite", ProductId = 1, UDMSourceCode = null },
@@ -826,8 +823,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             HttpResponseMessage response = organizationController.InsertOrganization(organizationCreate);
             OrganizationCreateResult orgResult = JsonConvert.DeserializeObject<OrganizationCreateResult>(response.Content.ReadAsStringAsync().Result);
-            _output.WriteLine("httpstatuscode: " + response.StatusCode);
-            _output.WriteLine("orgResult: " + response.Content.ReadAsStringAsync().Result);
+
             //Assert
             Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
             Assert.True(orgResult.Org.RealPageId == _RealPageId && orgResult.adminLogin == organizationCreate.AdminUser.Email);

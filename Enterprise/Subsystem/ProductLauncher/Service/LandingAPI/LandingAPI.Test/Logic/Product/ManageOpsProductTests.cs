@@ -25,7 +25,7 @@ using Xunit;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
 {
-    [ExcludeFromCodeCoverage]
+	[ExcludeFromCodeCoverage]
 	public class ManageOpsProductTests : ManageProductBaseTests
     {
         #region Private Variables
@@ -109,10 +109,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
                 ))
                 .Returns(_productInternalSettings);
 
-            mockRepository
-                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
-                .Returns(_productInternalSettings);
-
             mockSamlRepository
                 .Setup(m => m.GetProductSamlDetails(
                     It.Is<long>(l => l == _editorPersonaId)
@@ -138,17 +134,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
              ))
              .Returns(_gbProductMap);
 
-            mockRepository
-                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
-                    It.IsAny<object>()))
-                .Returns(new List<GbProductMap>() { _gbProductMap });
-
             HttpResponseMessage tokenResponse = new HttpResponseMessage(HttpStatusCode.OK);
             tokenResponse.Content = new StringContent(JsonConvert.SerializeObject(new { session = new { sid = "mocked sid" } }));
             mockHttpMessageHandler.Setup(HttpMethod.Post, $"{_apiEndPoint}/api/v1.0/sessions", tokenResponse);
 
-            manageProductOps = new ManageProductOps(_editorRealPageId, _editorUserClaim, mockHttpMessageHandler.Object, client,
-                mockProductInternalSettingRepository.Object, mockManagePersona.Object, mockSamlRepository.Object, mockManageBlueBook.Object,mockProductRepository.Object, mockRepository.Object);
+            manageProductOps = new ManageProductOps(_editorRealPageId, _editorUserClaim, client,
+                mockProductInternalSettingRepository.Object, mockManagePersona.Object, mockSamlRepository.Object, mockManageBlueBook.Object,mockProductRepository.Object);
 
         }
         #endregion

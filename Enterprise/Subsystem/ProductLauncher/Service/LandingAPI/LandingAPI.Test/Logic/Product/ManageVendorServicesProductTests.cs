@@ -28,7 +28,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
     public class ManageVendorServicesProductTests : ManageProductBaseTests
     {
         #region Private Variables
-
         private int _blueBookId = 123;
         private string _companyInstanceSourceId = "123456";
         private string _apiEndPoint = "http://producturl.com";
@@ -47,7 +46,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
         #endregion
 
         #region Constructor
-
         public ManageVendorServicesProductTests() : base((int)ProductEnum.VendorServices)
         {
             mockManageBlueBook = new Mock<IManageBlueBook>();
@@ -98,7 +96,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
                     It.IsAny<string>(),
                     It.IsAny<bool>(),
                     It.IsAny<bool>()
-                ))
+				))
                 .Returns(mapCompany);
 
             mockProductInternalSettingRepository
@@ -107,22 +105,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
                 ))
                 .Returns(_productInternalSettings);
 
-            mockRepository
-                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
-                .Returns(_productInternalSettings);
-
             mockSamlRepository
                 .Setup(m => m.GetProductSamlDetails(
                     It.Is<long>(l => l == _editorPersonaId)
                     , It.Is<int>(l => l == (int)ProductEnum.VendorServices)
-                ))
-                .Returns(_editorSamlAttributes);
+                 ))
+                 .Returns(_editorSamlAttributes);
 
             mockManagePersona
                 .Setup(m => m.GetPersona(
                     It.Is<long>(l => l == _editorPersonaId)
-                ))
-                .Returns(_editorPersona);
+                 ))
+                 .Returns(_editorPersona);
 
             mockProductRepository
                 .Setup(m => m.GetProductSettingsByPersona(
@@ -130,16 +124,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
                 ))
                 .Returns(_userProductSettings);
 
-            // mockProductRepository
-            //.Setup(m => m.GetBooksMasterProductDetail(
-            //    It.IsAny<int>()
-            //))
-            //.Returns(_gbProductMap);
-
-            mockRepository
-                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
-                    It.IsAny<object>()))
-                .Returns(new List<GbProductMap>() { _gbProductMap });
+            mockProductRepository
+           .Setup(m => m.GetBooksMasterProductDetail(
+               It.IsAny<int>()
+           ))
+           .Returns(_gbProductMap);
 
             HttpResponseMessage tokenResponse = new HttpResponseMessage(HttpStatusCode.OK)
             {
@@ -148,14 +137,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
             mockHttpMessageHandler.Setup(HttpMethod.Post, $"{_tokenUri}", tokenResponse);
 
             manageProductVendorServices = new ManageProductVendorServices(_editorRealPageId, _editorUserClaim, mockHttpMessageHandler.Object, mockProductInternalSettingRepository.Object,
-                mockManagePersona.Object, mockSamlRepository.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockRepository.Object);
+                mockManagePersona.Object, mockSamlRepository.Object, mockManageBlueBook.Object, mockProductRepository.Object);
 
         }
-
         #endregion
 
         #region XUnit tests
-
         [Fact]
         public void GetMigrationUsers_Given_EditorIdAndDataFilter_Should_ReturnListOfVendorServicesUsers()
         {
@@ -167,9 +154,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
                     StartRow = 1,
                     ResultsPerPage = 1000
                 },
-                FilterBy = new Dictionary<string, string>()
-                {
-                    { "filter", "NonMigrated" }
+                FilterBy = new Dictionary<string, string>() {
+                    { "filter" , "NonMigrated" }
                 }
             };
             var totalRecords = 5;
@@ -178,9 +164,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
             var actual = new List<VendorServicesUser>()
             {
                 new VendorServicesUser() { FirstName = "Person", LastName = "1", Email = "person1@test.com", Username = "person1" },
-                new VendorServicesUser()
-                {
-                    FirstName = "Person", LastName = "2", Email = "person2@test.com", Username = "person2", UserLocations = new List<UserLocation>()
+                new VendorServicesUser() { FirstName = "Person", LastName = "2", Email = "person2@test.com", Username = "person2", UserLocations = new List<UserLocation>()
                     {
                         new UserLocation() { PropertyId = "" }
                     }
@@ -211,14 +195,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
             //Arrange
             var migrateUsers = new List<MigrateUser>()
             {
-                new MigrateUser()
-                {
+                new MigrateUser(){
                     UserId = "123456",
                     UnifiedLoginUserName = "abc@test.com",
                     UsingUnifiedLogin = true
                 },
-                new MigrateUser()
-                {
+                new MigrateUser(){
                     UserId = "123457",
                     UnifiedLoginUserName = "abc@test.com",
                     UsingUnifiedLogin = true
@@ -240,7 +222,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
             Assert.Equal(actual.Message, expected);
             Assert.True(actual.Status);
         }
-
         #endregion
     }
 }

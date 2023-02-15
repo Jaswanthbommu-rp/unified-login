@@ -6,7 +6,6 @@ using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
 using Newtonsoft.Json;
-using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
@@ -40,8 +39,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// Ctor
 		/// </summary>
 		/// <param name="editorRealPageId">Real page Id of user who is creating new user</param>
-		public ManageProductProspectContact(DefaultUserClaim userClaims) : base((int)ProductEnum.ProspectContactCenter, userClaims, productInternalSettingRepository: null, productRepository: null)
-        {
+		public ManageProductProspectContact(DefaultUserClaim userClaims) : base((int)ProductEnum.ProspectContactCenter, userClaims, null, null)
+		{
 			WriteToDiagnosticLog("ManageProductProspectContact.Ctor - Getting Product settings.");
 
 			_productId = (int)ProductEnum.ProspectContactCenter;
@@ -56,20 +55,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		}
 
 		/// <summary>
-		/// Unit test constructor
+		/// Ctor
 		/// </summary>
 		/// <param name="editorRealPageId"></param>
-		/// <param name="userClaims"></param>
 		/// <param name="httpMessageHandler"></param>
 		/// <param name="productInternalSettingRepository"></param>
 		/// <param name="managePersona"></param>
 		/// <param name="samlRepository"></param>
 		/// <param name="manageBlueBook"></param>
-		/// <param name="productRepository"></param>
-		/// <param name="repository"></param>
-		public ManageProductProspectContact(Guid editorRealPageId, DefaultUserClaim userClaims, HttpMessageHandler httpMessageHandler, IProductInternalSettingRepository productInternalSettingRepository,
-			IManagePersona managePersona, ISamlRepository samlRepository, IManageBlueBook manageBlueBook, IProductRepository productRepository, IRepository repository)
-			: base((int)ProductEnum.ProspectContactCenter, userClaims, repository, httpMessageHandler)
+		public ManageProductProspectContact(Guid editorRealPageId, HttpMessageHandler httpMessageHandler, IProductInternalSettingRepository productInternalSettingRepository,
+			IManagePersona managePersona, ISamlRepository samlRepository, IManageBlueBook manageBlueBook, IProductRepository productRepository)
+			: base((int)ProductEnum.ProspectContactCenter, productInternalSettingRepository, productRepository)
 		{
 			WriteToDiagnosticLog("ManageProductProspectContact.Ctor - Getting Product settings.");
 

@@ -74,7 +74,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var productRepository = new ProductRepository(repository, userClaims);
             var manageProduct = new ManageProduct(repository, _userClaims, messageHandler);
 
-            _manageUnifiedLogin = new ManageUnifiedLogin(repository, userClaims, messageHandler);
+            _manageUnifiedLogin = new ManageUnifiedLogin(_userClaims, productInternalSettingRepository, productRepository, manageBlueBook);
             _manageProductOneSite = manageProductOneSite;
             _propertyRepository = new PropertyRepository(repository);
             _manageBlueBook = new ManageBlueBook(_userClaims, repository, productInternalSettingRepository, messageHandler);

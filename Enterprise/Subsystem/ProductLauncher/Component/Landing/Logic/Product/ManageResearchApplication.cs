@@ -43,7 +43,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// Default constructor
 		/// </summary>
 		/// <param name="userClaims"></param>
-		public ManageResearchApplication(DefaultUserClaim userClaims) : base((int)ProductEnum.ResearchApplication, userClaims, productInternalSettingRepository: null, productRepository: null)
+		public ManageResearchApplication(DefaultUserClaim userClaims) : base((int)ProductEnum.ResearchApplication, userClaims, null, null)
         {
             WriteToDiagnosticLog("ResearchApplication - ManageResearchApplication.Ctor - Getting Product settings.");
             _editorRealPageId = userClaims.UserRealPageGuid;

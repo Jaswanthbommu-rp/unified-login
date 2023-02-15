@@ -7,7 +7,6 @@ using System.Runtime.Caching;
 using System.Threading.Tasks;
 using System.Web;
 using Newtonsoft.Json;
-using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
@@ -24,7 +23,6 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Migration;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ResidentPortal;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Rum;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -70,7 +68,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// The default constructor
         /// </summary>
         /// <param name="userClaims">User Claim</param>
-        public ManageProductResidentPortal(DefaultUserClaim userClaims) : base((int)ProductEnum.ResidentPortal, userClaims, productInternalSettingRepository: null, productRepository: null)
+        public ManageProductResidentPortal(DefaultUserClaim userClaims) : base((int)ProductEnum.ResidentPortal, userClaims, null, null)
         {
             _productId = (int)ProductEnum.ResidentPortal;
             _editorRealPageId = userClaims.UserRealPageGuid;
@@ -104,14 +102,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="manageUserLogin">UserLogin business logic</param>
         /// <param name="managePartyRelationship">Party Relationship business logic</param>
         /// <param name="manageElectronicAddress">Electronic Address business logic</param>
-        /// <param name="userClaim">Used the hold user claim related info</param>
+        /// <param name="userClaims">Used the hold user claim related info</param>
         /// <param name="messageHandler">A base type for HTTP message handlers</param>
-        /// <param name="repository">Repository used for moq'ing sql data</param>
         public ManageProductResidentPortal(Guid editorRealPageId, ResidentPortalUser residentPortalEditorUser, ResidentPortalUser residentPortalUser,
             ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository,
             IProductInternalSettingRepository productInternalSettingRepository, IManagePerson managePerson, IManageUserLogin manageUserLogin,
-            IManagePartyRelationship managePartyRelationship, IManageElectronicAddress manageElectronicAddress, DefaultUserClaim userClaim, HttpMessageHandler messageHandler, IRepository repository)
-            : base((int)ProductEnum.ResidentPortal, userClaim, repository, messageHandler)
+            IManagePartyRelationship managePartyRelationship, IManageElectronicAddress manageElectronicAddress, DefaultUserClaim userClaims, HttpMessageHandler messageHandler)
+            : base((int)ProductEnum.ResidentPortal, productInternalSettingRepository, productRepository)
         {
             _editorRealPageId = editorRealPageId;
             _residentPortalEditorUser = residentPortalEditorUser;
@@ -125,7 +122,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _productInternalSettingRepository = productInternalSettingRepository;
             _managePartyRelationship = managePartyRelationship;
             _manageElectronicAddress = manageElectronicAddress;
-            _userClaims = userClaim;
+            _userClaims = userClaims;
             _messageHandler = messageHandler;
             _client = new HttpClient(messageHandler, false);
 
@@ -147,11 +144,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="managePerson">Person business logic</param>
         /// <param name="manageUserLogin">UserLogin business logic</param>
         /// <param name="managePartyRelationship">Party Relationship business logic</param>
-        /// <param name="userClaim">Used the hold user claim related info</param>
-        public ManageProductResidentPortal(Guid editorRealPageId, long companyInstanceId, ISamlRepository samlRepository, IManagePersona managePersona,
-                IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, 
-                IManagePerson managePerson, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship, DefaultUserClaim userClaim, HttpMessageHandler messageHandler, IRepository repository)
-            : base((int)ProductEnum.ResidentPortal, userClaim, repository, messageHandler)
+        /// <param name="userClaims">Used the hold user claim related info</param>
+        public ManageProductResidentPortal(Guid editorRealPageId, long companyInstanceId, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship, DefaultUserClaim userClaims) : base((int)ProductEnum.ResidentPortal, productInternalSettingRepository, productRepository)
         {
             _editorRealPageId = editorRealPageId;
             _companyInstanceId = companyInstanceId;
@@ -163,7 +157,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _productRepository = productRepository;
             _productInternalSettingRepository = productInternalSettingRepository;
             _managePartyRelationship = managePartyRelationship;
-            _userClaims = userClaim;
+            _userClaims = userClaims;
             _productRepository = productRepository;
         }
         #endregion

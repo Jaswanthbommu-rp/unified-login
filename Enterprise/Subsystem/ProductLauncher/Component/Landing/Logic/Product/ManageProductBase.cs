@@ -87,7 +87,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Manage Persoan Business logic
         /// </summary>
-        protected IManagePersona _managePersona;// = new ManagePersona();
+        protected IManagePersona _managePersona = new ManagePersona();
 
         /// <summary>
         /// Manage BlueBook Business logic
@@ -97,12 +97,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Manage Person Business logic
         /// </summary>
-        protected IManagePerson _managePerson;// = new ManagePerson();
+        protected IManagePerson _managePerson = new ManagePerson();
 
         /// <summary>
         /// Manage UserLogin Business logic
         /// </summary>
-        protected IManageUserLogin _manageUserLogin;// = new ManageUserLogin();
+        protected IManageUserLogin _manageUserLogin = new ManageUserLogin();
 
         /// <summary>
         /// Manage Organization Business logic
@@ -112,18 +112,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Manage Electronic Address Business logic
         /// </summary>
-        protected IManageElectronicAddress _manageElectronicAddress;// = new ManageElectronicAddress();
+        protected IManageElectronicAddress _manageElectronicAddress = new ManageElectronicAddress();
 
         /// <summary>
         /// Manage Party Relationship Business logic
         /// </summary>
-        protected IManagePartyRelationship _managePartyRelationship;// = new ManagePartyRelationship();
+        protected IManagePartyRelationship _managePartyRelationship = new ManagePartyRelationship();
 
         // Repositories
         /// <summary>
         /// Product InternalSetting Repository
         /// </summary>
-        protected IProductInternalSettingRepository _productInternalSettingRepository;// = new ProductInternalSettingRepository();
+        protected IProductInternalSettingRepository _productInternalSettingRepository = new ProductInternalSettingRepository();
 
         /// <summary>
         /// Saml Repository
@@ -133,32 +133,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Product Repository
         /// </summary>
-        protected IProductRepository _productRepository;// = new ProductRepository();
+        protected IProductRepository _productRepository = new ProductRepository();
 
         /// <summary>
         /// Persona Repository
         /// </summary>
-        protected IPersonaRepository _personaRepository;// = new PersonaRepository();
+        protected IPersonaRepository _personaRepository = new PersonaRepository();
 
         /// <summary>
         /// Product Repository
         /// </summary>
-        protected IPropertyRepository _propertyRepository;// = new PropertyRepository();
+        protected IPropertyRepository _propertyRepository = new PropertyRepository();
 
         /// <summary>
         /// User login repository
         /// </summary>
-        protected IUserLoginRepository _userLoginRepository;// = new UserLoginRepository();
+        protected IUserLoginRepository _userLoginRepository = new UserLoginRepository();
 
         /// <summary>
         /// User login persona repository
         /// </summary>
-        protected IUserLoginPersonaRepository _userLoginPersonaRepository;// = new UserLoginPersonaRepository();
+        protected IUserLoginPersonaRepository _userLoginPersonaRepository = new UserLoginPersonaRepository();
 
         /// <summary>
         /// User repository
         /// </summary>
-        protected IUserRepository _userRepository;// = new UserRepository();
+        protected IUserRepository _userRepository = new UserRepository();
 
         /// <summary>
         /// List of Product InternalSetting
@@ -168,18 +168,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// UserRole Repository
         /// </summary>
-        protected IUserRoleRightRepository _userRoleRightRepository;// = new UserRoleRightRepository();
+        protected IUserRoleRightRepository _userRoleRightRepository = new UserRoleRightRepository();
 
         // Services
         /// <summary>
         /// HttpClient
         /// </summary>
-        protected HttpClient _client;// = new HttpClient();
+        protected HttpClient _client = new HttpClient();
 
         /// <summary>
         /// Http Message Handler
         /// </summary>
-        protected HttpMessageHandler _messageHandler;// = new HttpClientHandler();
+        protected HttpMessageHandler _messageHandler = new HttpClientHandler();
 
         // Constants
         /// <summary>
@@ -205,12 +205,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Unified Login Repository
         /// </summary>
-        protected IUnifiedLoginRepository _unifiedLoginRepository;// = new UnifiedLoginRepository();
+        protected IUnifiedLoginRepository _unifiedLoginRepository = new UnifiedLoginRepository();
 
         /// <summary>
         /// Contact Mechanism Manager
         /// </summary>
-        protected IManageContactMechanism _manageContactMechanism;// = new ManageContactMechanism();
+        protected IManageContactMechanism _manageContactMechanism = new ManageContactMechanism();
 
         protected GbProductMap _productDetails = new GbProductMap();
 
@@ -227,29 +227,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             _productId = productId;            
             _correlationId = Guid.NewGuid().ToString(); // used for logging
-            _productInternalSettingRepository = new ProductInternalSettingRepository();
-            _productRepository = new ProductRepository();
             if (productInternalSettingRepository != null) { _productInternalSettingRepository = productInternalSettingRepository; }
             if (productRepository != null) { _productRepository = productRepository; }
-
-            _managePersona = new ManagePersona();
-            _managePerson = new ManagePerson();
-            _manageUserLogin = new ManageUserLogin();
-            _manageElectronicAddress = new ManageElectronicAddress();
-            _managePartyRelationship = new ManagePartyRelationship();
-            _personaRepository = new PersonaRepository();
-            _propertyRepository = new PropertyRepository();
-            _userLoginRepository = new UserLoginRepository();
-            _userLoginPersonaRepository = new UserLoginPersonaRepository();
-            _userRepository = new UserRepository();
-            _userRoleRightRepository = new UserRoleRightRepository();
-            _client = new HttpClient();
-            _messageHandler = new HttpClientHandler();
-            _unifiedLoginRepository = new UnifiedLoginRepository();
-            _manageContactMechanism = new ManageContactMechanism();
-
             _productInternalSettingList = GetProductSetting(_productId);
-            _productDetails = GetBooksMasterProductDetail(_productId, false);
+            _productDetails = GetBooksMasterProductDetail(_productId);
             _udmSourceCode = _productDetails.UDMSourceCode?.Length > 0 ? _productDetails.UDMSourceCode : _productDetails.BooksProductCode;
         }
 
@@ -265,32 +246,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _productId = productId;
             _userClaim = userClaim;
             _correlationId = _userClaim.CorrelationId.ToString();
-            _productInternalSettingRepository = new ProductInternalSettingRepository();
-            _productRepository = new ProductRepository();
             if (productInternalSettingRepository != null) { _productInternalSettingRepository = productInternalSettingRepository; }
             if (productRepository != null) { _productRepository = productRepository; }
             _productInternalSettingList = GetProductSetting(_productId);
-            _productDetails = GetBooksMasterProductDetail(_productId, false);
+            _productDetails = GetBooksMasterProductDetail(_productId);
             if (_productDetails != null)
             {
                 _udmSourceCode = _productDetails.UDMSourceCode?.Length > 0 ? _productDetails.UDMSourceCode : _productDetails.BooksProductCode;
             }
-
-            _managePersona = new ManagePersona();
-            _managePerson = new ManagePerson();
-            _manageUserLogin = new ManageUserLogin();
-            _manageElectronicAddress = new ManageElectronicAddress();
-            _managePartyRelationship = new ManagePartyRelationship();
-            _personaRepository = new PersonaRepository();
-            _propertyRepository = new PropertyRepository();
-            _userLoginRepository = new UserLoginRepository();
-            _userLoginPersonaRepository = new UserLoginPersonaRepository();
-            _userRepository = new UserRepository();
-            _userRoleRightRepository = new UserRoleRightRepository();
-            _client = new HttpClient();
-            _messageHandler = new HttpClientHandler();
-            _unifiedLoginRepository = new UnifiedLoginRepository();
-            _manageContactMechanism = new ManageContactMechanism();
         }
 
         /// <summary>
@@ -299,58 +262,39 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="productId"></param>
         /// <param name="userClaim"></param>
         /// <param name="repository"></param>
-        /// <param name="messageHandler"></param>
-        public ManageProductBase(int productId, DefaultUserClaim userClaim, IRepository repository, HttpMessageHandler messageHandler)
+        public ManageProductBase(int productId, DefaultUserClaim userClaim, IRepository repository)
         {
             _productId = productId;
             _userClaim = userClaim;
             _correlationId = _userClaim.CorrelationId.ToString();
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
             _productRepository = new ProductRepository(repository, userClaim);
-            _productInternalSettingList = GetProductSetting(_productId, true);
-            _productDetails = GetBooksMasterProductDetail(_productId, true);
+            _productInternalSettingList = GetProductSetting(_productId);
+            _productDetails = GetBooksMasterProductDetail(_productId);
             if (_productDetails != null)
             {
                 _udmSourceCode = _productDetails.UDMSourceCode?.Length > 0 ? _productDetails.UDMSourceCode : _productDetails.BooksProductCode;
             }
-
-            _managePersona = new ManagePersona(repository, userClaim, messageHandler);
-            _managePerson = new ManagePerson(repository);
-            _manageUserLogin = new ManageUserLogin(repository, userClaim, messageHandler);
-            _manageElectronicAddress = new ManageElectronicAddress();
-            _managePartyRelationship = new ManagePartyRelationship(repository);
-            _personaRepository = new PersonaRepository(repository, userClaim);
-            _propertyRepository = new PropertyRepository(repository);
-            _userLoginRepository = new UserLoginRepository(repository);
-            _userLoginPersonaRepository = new UserLoginPersonaRepository(repository);
-            _userRepository = new UserRepository(repository, userClaim, messageHandler);
-            _userRoleRightRepository = new UserRoleRightRepository(repository, userClaim);
-            _client = new HttpClient(messageHandler);
-            _messageHandler = messageHandler;
-            _unifiedLoginRepository = new UnifiedLoginRepository(repository);
-            _manageContactMechanism = new ManageContactMechanism(repository);
         }
 
         /// <summary>
         /// Get Product Setting
         /// </summary>
         /// <param name="productId">Product Id</param>
-        /// <param name="noCache">Do not cache result. for unit tests.</param>
         /// <returns>List of Product Internal Settings</returns>
-        public IList<IC.ProductInternalSetting> GetProductSetting(int productId, bool noCache = false)
+        public IList<IC.ProductInternalSetting> GetProductSetting(int productId)
         {
-            var rpcache = new RPObjectCache();
-            var cacheKey = $"productInternalSetting_{productId}";
-            if (!noCache)
-            {
-                return rpcache.GetFromCache(cacheKey, 120, () =>
-                {
-                    // load from database
-                    return _productInternalSettingRepository.GetProductInternalSettings(productId);
-                });
-            }
+            IList<IC.ProductInternalSetting> listProductInternalSettings = new List<IC.ProductInternalSetting>();
 
-            return _productInternalSettingRepository.GetProductInternalSettings(productId);
+            RPObjectCache rpcache = new RPObjectCache();
+            var cacheKey = "productInternalSetting_" + productId.ToString();
+            listProductInternalSettings = rpcache.GetFromCache<IList<IC.ProductInternalSetting>>(cacheKey, 120, () =>
+            {
+                // load from database
+                return _productInternalSettingRepository.GetProductInternalSettings(productId);
+            });
+
+            return listProductInternalSettings;
         }
 
         /// <summary>
@@ -1223,17 +1167,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
-        private GbProductMap GetBooksMasterProductDetail(int productID, bool noCacheResult)
+        private GbProductMap GetBooksMasterProductDetail(int productID)
         {
-            var productMap = new GbProductMap();
-            var rpcache = new RPObjectCache();
+            GbProductMap productMap = new GbProductMap();
+            RPObjectCache rpcache = new RPObjectCache();
             var cacheKey = "productDetails_" + productID.ToString();
-            if (!noCacheResult)
+            productMap = rpcache.GetFromCache<GbProductMap>(cacheKey, 120, () =>
             {
-                return rpcache.GetFromCache<GbProductMap>(cacheKey, 120, () => _productRepository.GetBooksMasterProductDetail(productID));
-            }
+                // load from database
+                return _productRepository.GetBooksMasterProductDetail(productID);
+            });
 
-            return _productRepository.GetBooksMasterProductDetail(productID);
+            return productMap;             
         }
         #endregion
 

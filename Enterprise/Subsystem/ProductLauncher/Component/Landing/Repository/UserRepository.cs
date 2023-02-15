@@ -49,10 +49,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         private IManagePersona _managePersona;
         private IOrganizationRepository _organizationRepository;
         private PropertyRepository _propertyRepository;
-        private ContactMechanismUsageTypeRepository _contactMechanismUsageTypeRepository;
-        private RoleTypeRepository _roleTypeRepository;
         IProductInternalSettingRepository _productInternalSettingRepository;
-        private ManageBlueBook _manageBlueBook;
 
         #region Ctor
 
@@ -67,9 +64,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             _managePersona = new ManagePersona();
             _userClaim = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
             _productInternalSettingRepository = new ProductInternalSettingRepository();
-            _contactMechanismUsageTypeRepository = new ContactMechanismUsageTypeRepository();
-            _roleTypeRepository = new RoleTypeRepository();
-            _manageBlueBook = new ManageBlueBook();
         }
 
         public UserRepository(IRepository repository, DefaultUserClaim userClaim, HttpMessageHandler messageHandler) : base(repository)
@@ -80,9 +74,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             _organizationRepository = new OrganizationRepository(repository);
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
             _propertyRepository = new PropertyRepository(repository);
-            _contactMechanismUsageTypeRepository = new ContactMechanismUsageTypeRepository(repository);
-            _roleTypeRepository = new RoleTypeRepository(repository);
-            _manageBlueBook = new ManageBlueBook(userClaim, repository, messageHandler);
         }
 
         /// <summary>
@@ -102,9 +93,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             _organizationRepository = new OrganizationRepository();
             _productInternalSettingRepository = new ProductInternalSettingRepository();
             _propertyRepository = new PropertyRepository();
-            _contactMechanismUsageTypeRepository = new ContactMechanismUsageTypeRepository();
-            _roleTypeRepository = new RoleTypeRepository();
-            _manageBlueBook = new ManageBlueBook(userClaim);
         }
 
         #endregion
@@ -239,7 +227,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             int greenBookRole = 0;
             List<int> greenBookRoles = new List<int>();
 
-            IUserLoginOnly userLoginOnly = _userLoginRepository.GetUserLoginOnly(newProfile.userLogin.LoginName);
+            IUserLoginRepository userLoginRepository = new UserLoginRepository();
+            IUserLoginOnly userLoginOnly = userLoginRepository.GetUserLoginOnly(newProfile.userLogin.LoginName);
             if (newProfile.organization[0].RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId)
             {
                 newProfile.IsRPEmployee = newProfile.organization[0].RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId;
@@ -252,7 +241,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 //Check if ONLY user profile changed without any product changes
                 profileChanged = IsUserProfileChanged(newProfile, userDetails);
 
-                userPersonaOrganizationList = _userLoginRepository.ListOrganizationByLoginName(newProfile.userLogin.LoginName);
+                userPersonaOrganizationList = userLoginRepository.ListOrganizationByLoginName(newProfile.userLogin.LoginName);
                 if (userPersonaOrganizationList.ToList().Any(i => i.OrganizationPartyId.Equals(newProfile.organization[0].PartyId)))
                 {
                     errorStatus.Success = false;
@@ -263,22 +252,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     return createUserResponse;
                 }
 
-                currentPrimaryOrgStatus = _userLoginRepository.GetUserOrganizationWithStatus(userLoginOnly.UserId, userLoginOnly.LastLogin, 0, true);
+                currentPrimaryOrgStatus = userLoginRepository.GetUserOrganizationWithStatus(userLoginOnly.UserId, userLoginOnly.LastLogin, 0, true);
             }
 
-            //IOrganizationRepository organizationRepository = new OrganizationRepository();
-            Organization organizationExternalUser = _organizationRepository.GetOrganization(realPageId: DefaultUserClaim.ExternalCompanyRealPageId);
+            IOrganizationRepository organizationRepository = new OrganizationRepository();
+            Organization organizationExternalUser = organizationRepository.GetOrganization(realPageId: DefaultUserClaim.ExternalCompanyRealPageId);
 
-            IList<ContactMechanismUsageType> emailUsageType = _contactMechanismUsageTypeRepository.ListContactMechanismUsageType(ContactMechanismUsageTypeName: "Email Notification");
+            IContactMechanismUsageTypeRepository contactMechanismUsageTypeRepository = new ContactMechanismUsageTypeRepository();
+            IList<ContactMechanismUsageType> emailUsageType = contactMechanismUsageTypeRepository.ListContactMechanismUsageType(ContactMechanismUsageTypeName: "Email Notification");
 
             if (newProfile.organization != null && newProfile.organization.Count > 0)
             {
                 //Get the Organization IDP
                 organizationPartyId = newProfile.organization[0].PartyId;
                 organizationRealPageId = newProfile.organization[0].RealPageId;
-                identityProviderTypeList = _organizationRepository.GetOrganizationIdentityProviderType(newProfile.organization[0].RealPageId);
+                identityProviderTypeList = organizationRepository.GetOrganizationIdentityProviderType(newProfile.organization[0].RealPageId);
             }
 
+            string schemaName = getRoleRightsSchemaName();
             bool usePropertyInstanceUnifiedLogin = getPropertyInstanceUnifiedLogin();
             primaryPropertiesBatch = newProfile.productBatch?.FirstOrDefault<ProductBatch>((Func<ProductBatch, bool>)(p => p.ProductId == (int)ProductEnum.UnifiedPlatform));
 
@@ -403,7 +394,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
 
             UserOrganizationExists userOrganizationExists = new UserOrganizationExists();
-            IList<RoleType> roleTypes = _roleTypeRepository.GetRoleType(roleTypeName: "User Role", partyId: null);
+            IRoleTypeRepository roleTypeRepository = new RoleTypeRepository();
+            IList<RoleType> roleTypes = roleTypeRepository.GetRoleType(roleTypeName: "User Role", partyId: null);
             var SuperUserRole = roleTypes.SingleOrDefault<RoleType>(p => p.Name.Equals("SuperUser", StringComparison.OrdinalIgnoreCase));
             var UserRole = roleTypes.SingleOrDefault<RoleType>(p => p.Name.Equals("User", StringComparison.OrdinalIgnoreCase));
             var UserNoEmailRole = roleTypes.SingleOrDefault<RoleType>(p => p.Name.Equals("User (No Email)", StringComparison.OrdinalIgnoreCase));
@@ -1131,11 +1123,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
 
                         // Linking Persona to a Role based on user type
+                        var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesByRealPageID" : StoredProcNameConstants.SP_ListRolesByRealPageID;
                         param = new
                         {
                             realPageId = currentOrg.OrganizationRealPageId
                         };
-                        IList<EnterpriseRole> enterpriseRoles = repository.GetMany<EnterpriseRole>(StoredProcNameConstants.SP_SecurityListRolesByRealPageID, param);
+                        IList<EnterpriseRole> enterpriseRoles = repository.GetMany<EnterpriseRole>(procName, param);
 
                         gbProductBatch = newProfile.productBatch?.FirstOrDefault<ProductBatch>((Func<ProductBatch, bool>)(p => p.ProductId == (int)ProductEnum.UnifiedPlatform));
 
@@ -1160,27 +1153,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                     if (newProfile.ClonedUser)
                                     {
                                         // get the users existing UnifiedLogin role                                       
+                                        procName = StoredProcNameConstants.SP_ListRolesForProductsByPersonaId;
+
                                         param = new
                                         {
                                             PersonaID = cloneUserPersonaId,
                                             ProductID = (int)ProductEnum.UnifiedPlatform
                                         };
-                                        var userRole = repository.GetOne<dynamic>(StoredProcNameConstants.SP_ListRolesForProductsByPersonaId, param);
+                                        var userRole = repository.GetOne<dynamic>(procName, param);
                                         greenBookRole = userRole != null ? userRole.RoleId : 0;
                                     }
                                     else
                                     {
+                                        procName = schemaName?.Length > 0 ? $"{schemaName}.GetUnifiedLoginDefaultRole" : StoredProcNameConstants.SP_GetUnifiedLoginDefaultRole;
+
                                         param = new
                                         {
                                             RealPageID = currentOrg.OrganizationRealPageId
                                         };
-                                        var defaultRole = repository.GetOne<dynamic>(StoredProcNameConstants.SP_GetUnifiedLoginDefaultRole, param);
+                                        var defaultRole = repository.GetOne<dynamic>(procName, param);
 
                                         greenBookRole = defaultRole != null ? defaultRole.RoleId : enterpriseRoles.FirstOrDefault(r => r.Role.Equals("Basic End User", StringComparison.OrdinalIgnoreCase)).RoleId;
                                     }
                                 }
                             }
                         }
+
+                        procName = schemaName?.Length > 0 ? $"{schemaName}.LinkPersonaToRole" : StoredProcNameConstants.SP_LinkPersonaToRole;
 
                         bool roleisLinked = false;
 
@@ -1194,7 +1193,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 personaPrivilgeID = 0
                             };
 
-                            repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkPersonaToRole, param);
+                            repositoryResponse = repository.GetOne<RepositoryResponse>(procName, param);
                             if (repositoryResponse.Id == 0)
                                 roleisLinked = false;
                             else
@@ -1211,7 +1210,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                     CreatedBy = _userClaim.UserId,
                                     personaPrivilgeID = 0
                                 };
-                                repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkPersonaToRole, param);
+                                repositoryResponse = repository.GetOne<RepositoryResponse>(procName, param);
                                 if (repositoryResponse.Id == 0)
                                 {
                                     roleisLinked = false;
@@ -3537,6 +3536,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 // For System Admin if Products that are not Configured are not processed
                 IList<PersonaProductUserDetails> creatorUserProducts = repository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = CreateUserPersonaId }).ToList();
                 IList<GbProductMap> allProducts = repository.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, null).ToList();
+                IManageBlueBook _blueBook = new ManageBlueBook();
                 foreach (var productmap in productListToCreate)
                 {
                     bool isGreenBookCaresEnabled = false;
@@ -3556,15 +3556,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     {
                         var productDetails = allProducts.FirstOrDefault(x => x.ProductId == productmap.ProductId);
                         string udmSource = productDetails.UDMSourceCode?.Length > 0 ? productDetails.UDMSourceCode : productDetails.BooksProductCode;
-                        IList<CustomerCompanyMap> companyMapping = _manageBlueBook.GetProductCompanyMapping(organizationRealPageId, udmSource);
-                        var booksCompanyInstance = _manageBlueBook.GetCompanyInstanceByUPFMCompanyId(organizationRealPageId.ToString().ToLower());
+                        IList<CustomerCompanyMap> companyMapping = _blueBook.GetProductCompanyMapping(organizationRealPageId, udmSource);
+                        var booksCompanyInstance = _blueBook.GetCompanyInstanceByUPFMCompanyId(organizationRealPageId.ToString().ToLower());
                         int customerCompanyId = booksCompanyInstance?.Attributes?.CustomerCompanyMap.FirstOrDefault()?.CustomerCompanyId ?? 0;
                         string domain = booksCompanyInstance?.Attributes?.Domain;
                         WriteToLog(LogEventLevel.Debug, $"UserRepository.SaveProductDetails:  {AssignUserPersonaId} - BooksProductCode : {productDetails.BooksProductCode} and customerCompanyId - {customerCompanyId}");
 
                         if (!string.IsNullOrEmpty(domain) && customerCompanyId != 0)
                         {
-                            var booksCustomerCompanyMap = _manageBlueBook.GetCustomerCompanyMapByCustomerCompanyId(customerCompanyId, domain);
+                            var booksCustomerCompanyMap = _blueBook.GetCustomerCompanyMapByCustomerCompanyId(customerCompanyId, domain);
                             var findBooksProductCode = booksCustomerCompanyMap?.Where(p => p.Source == (!string.IsNullOrEmpty(productDetails.UDMSourceCode) ? productDetails.UDMSourceCode : productDetails.BooksProductCode));
                             WriteToLog(LogEventLevel.Debug, $"UserRepository.SaveProductDetails:  {AssignUserPersonaId} - BooksProductCode : {productDetails.BooksProductCode} and Count - {findBooksProductCode.Count()}");
 
@@ -5027,7 +5027,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             return currentUserClaim;
         }
 
-        private string ChangeUserTypeExternal(IRepository repository, Organization organizationExternalUser, OrganizationStatus currentPrimaryOrgStatus, IProfileDetail profile, IPersona persona, IList<UserOrganization> userPersonaOrganizationList, IList<ContactMechanismUsageType> emailUsageType, IUserLoginOnly userLoginOnly, IIdentityProviderType identityProviderType, string userTypeChangedToFromExternal)
+        private string ChangeUserTypeExternal(IRepository repository, Organization organizationExternalUser, OrganizationStatus currentPrimaryOrgStatus, IProfileDetail profile, IPersona persona, IList<UserOrganization> userPersonaOrganizationList, IList<ContactMechanismUsageType> emailUsageType, IUserLoginOnly userLoginOnly, IIdentityProviderType identityProviderType, string userTypeChangedToFromExternal, string schemaName)
         {
             dynamic param;
             long? personaId = null;
@@ -5081,11 +5081,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 personaId = repositoryResponse.Id;
 
                 // Linking Persona to a Role based on user type for External Users                
+                var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesByRealPageID" : StoredProcNameConstants.SP_ListRolesByRealPageID;
                 param = new
                 {
                     realPageId = organizationExternalUser.RealPageId
                 };
-                IList<EnterpriseRole> enterpriseRoles = repository.GetMany<EnterpriseRole>(StoredProcNameConstants.SP_SecurityListRolesByRealPageID, param);
+                IList<EnterpriseRole> enterpriseRoles = repository.GetMany<EnterpriseRole>(procName, param);
 
                 greenBookRole = enterpriseRoles.FirstOrDefault(r => r.Role.Equals("Basic End User", StringComparison.OrdinalIgnoreCase)).RoleId;
                 param = new
@@ -5096,7 +5097,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     personaPrivilgeID = 0
                 };
 
-                repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkPersonaToRole, param);
+                procName = schemaName?.Length > 0 ? $"{schemaName}.LinkPersonaToRole" : StoredProcNameConstants.SP_LinkPersonaToRole;
+                repositoryResponse = repository.GetOne<RepositoryResponse>(procName, param);
                 if (repositoryResponse.Id == 0)
                 {
                     return "Update User Error: Linking Persona to a Role based on user type for External Users failed.";
@@ -5484,94 +5486,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
         #endregion
 
-        /// <summary>
-        /// Insert or update User Status by company
-        /// </summary>
-        /// <param name="realPageId">User enterprise Id</param>
-        /// <param name="organizationPartyId">User enterprise Id</param>
-        /// <param name="statusTypeId">statusType Id</param>
-        /// <param name="fromDate">FromDate</param>
-        /// <param name="thruDate">ThruDate</param>
-        /// <returns>RepositoryResponse object</returns>
-        public RepositoryResponse UpdateUserStatusByCompany(Guid realPageId, long organizationPartyId, int statusTypeId, DateTime fromDate, DateTime? thruDate)
-        {
-            var repositoryResponse = new RepositoryResponse();
-
-            //IUserRepository userRepository = new UserRepository();
-
-            using (var repository = GetRepository())
-            {
-                dynamic param = new
-                {
-                    RealPageId = realPageId,
-                    OrganizationPartyId = organizationPartyId,
-                    StatusTypeId = statusTypeId,
-                    FromDate = fromDate,
-                    StatusThruDate = thruDate
-                };
-                repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserStatusByCompany, param);
-
-                //remove products
-                //If Primary Organization - List all Persona(s) across all user companies
-                //Else List Persona(s) for a company
-                if (statusTypeId == (int)UserUiStatusType.Disabled)
-                {
-                    param = new
-                    {
-                        OrganizationPartyId = organizationPartyId,
-                        PersonRealPageId = realPageId
-                    };
-                    var result = repository.GetMany<dynamic>(StoredProcNameConstants.SP_ListPersonaToDisableUserProduct, param);
-                    foreach (var item in result)
-                    {
-                        if (!item.PrimaryOrganization)
-                        {
-                            ProcessDisableUserProductData(repository, item.PersonaId, item.EditorRealPageId, item.EditorPersonaId, item.UserTypeId);
-                        }
-                    }
-                }
-
-                return repositoryResponse;
-            }
-        }
-
-        /// <summary>
-        /// Update User Activity Attempts
-        /// </summary>
-        public ActivityAttempt UpdateUserActivityAttempts(string enterpriseUserName,
-            ActivityType activityType,
-            UserDeviceDetails userDeviceDetails,
-            long partyId,
-            string authenticationServiceId = "")
-        {
-            var activityTypeId = (int)activityType;
-
-            if (userDeviceDetails == null)
-            {
-                userDeviceDetails = new UserDeviceDetails();
-            }
-
-            dynamic param = new
-            {
-                enterpriseUserName,
-                activityTypeId,
-                userDeviceDetails.BrowserName,
-                userDeviceDetails.BrowserType,
-                userDeviceDetails.IpAddress,
-                userDeviceDetails.IsMobile,
-                userDeviceDetails.Platform,
-                userDeviceDetails.Version,
-                userDeviceDetails.DeviceType,
-                userDeviceDetails.Timezone,
-                authenticationServiceId,
-                partyId
-            };
-
-            using (var repository = GetRepository())
-            {
-                return repository.GetOne<ActivityAttempt>(StoredProcNameConstants.SP_UpdateActivityAttempt, param);
-            }
-        }
 
         #region UpdateUser Private Methods
 
@@ -5770,6 +5684,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             bool usePropertyInstances = getPropertyInstanceUnifiedLogin();
 
             //We can get this with the oldProfile
+            string schemaName = getRoleRightsSchemaName();
+
             bool isOperatorSettingsEnabled = IsOperatorSettingsEnabled();
             bool deleteOldPropertyInstanceMapping = false;
             bool externalUserRelationUpdated = IsExternaUserlRelationUpdated(updateUserProfileEntity, out deleteOldPropertyInstanceMapping);
@@ -5799,7 +5715,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 bool isPrimaryPropertiesUpdated = false;
 
-                var enterpriseRoles = repository.GetMany<EnterpriseRole>(StoredProcNameConstants.SP_SecurityListRolesByRealPageID, new { realPageId = updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId });
+                var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesByRealPageID" : StoredProcNameConstants.SP_ListRolesByRealPageID;
+                var enterpriseRoles = repository.GetMany<EnterpriseRole>(procName, new { realPageId = updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId });
 
                 var gbProdBatch = new ProductBatch();
 
@@ -5874,7 +5791,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             }
 
                             //UserType Changed To External OR From External
-                            string changeUserTypeExternal = ChangeUserTypeExternal(repository, updateUserProfileEntity.OrganizationExternalUser, updateUserProfileEntity.CurrentPrimaryOrgStatus, updateUserProfileEntity.NewProfile, updateUserProfileEntity.OldProfile.Persona[0], updateUserProfileEntity.UserPersonaOrganizationList, updateUserProfileEntity.EmailUsageType, updateUserProfileEntity.UserLoginOnly, idpt, userBatchEntity.UserTypeChangedToFromExternal);
+                            string changeUserTypeExternal = ChangeUserTypeExternal(repository, updateUserProfileEntity.OrganizationExternalUser, updateUserProfileEntity.CurrentPrimaryOrgStatus, updateUserProfileEntity.NewProfile, updateUserProfileEntity.OldProfile.Persona[0], updateUserProfileEntity.UserPersonaOrganizationList, updateUserProfileEntity.EmailUsageType, updateUserProfileEntity.UserLoginOnly, idpt, userBatchEntity.UserTypeChangedToFromExternal, schemaName);
                             if (changeUserTypeExternal != string.Empty)
                             {
                                 repositoryResponse.ErrorMessage = changeUserTypeExternal;
@@ -6612,6 +6529,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 return repositoryResponse;
             }
+        }
+
+        private string getRoleRightsSchemaName()
+        {
+            RPObjectCache rpcache = new RPObjectCache();
+
+            var cacheKey = "getRoleRightsSchemaName_" + (int)ProductEnum.UnifiedPlatform;
+            string schemaName = rpcache.GetFromCache<string>(cacheKey, 60, () =>
+            {
+                var productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
+                return productInternalSettingList.FirstOrDefault(s => s.Name.Equals("RolesRightsSchemaName", StringComparison.OrdinalIgnoreCase))?.Value;
+            });
+
+            return schemaName;
         }
 
         private bool CompareList(List<long> first, List<long> second)

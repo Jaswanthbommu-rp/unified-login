@@ -10,9 +10,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web.Http.Cors;
 using RP.Enterprise.Foundation.DataAccess.Component;
-using System.Net.Http;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -32,34 +30,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		int? _parentPartyRoleTypeId = null;
 	    private DefaultUserClaim _userClaim;
 
-        #endregion
+		#endregion
 
-        #region Constructors
-        /// <summary>
+		#region Constructors
+		/// <summary>
         /// Unit test constructor
         /// </summary>
         /// <param name="repository"></param>
         /// <param name="userClaim"></param>
-        /// <param name="messageHandler"></param>
-        public ManageProfile(IRepository repository, DefaultUserClaim userClaim, HttpMessageHandler messageHandler)
+		public ManageProfile(IRepository repository, DefaultUserClaim userClaim)
         {
-            _profileRepository = new ProfileRepository(repository, userClaim, messageHandler);
+            _profileRepository = new ProfileRepository(repository, userClaim);
             _productRepository = new ProductRepository(repository, userClaim);
             _personLogic = new ManagePerson(repository);
-            _userLoginLogic = new ManageUserLogin(repository, userClaim, messageHandler);
+            _userLoginLogic = new ManageUserLogin(repository, userClaim, null);
             _partyRelationshipLogic = new ManagePartyRelationship(repository);
             _contactMechanismLogic = new ManageContactMechanism(repository);
             _partyRoleLogic = new ManagePartyRole(repository);
             //For list Persons, return users of RoleType Parent = User Role (400)
             _parentPartyRoleTypeId = (int)ParentUserRoleType.UserRole;
-            _userClaim = userClaim;
-        }
+			_userClaim = userClaim;
+		}
 
-        /// <summary>
-        /// Create a basic instance of the ManageProfile Controller class
-        /// </summary>
-        /// <param name="userClaim">Information about the user</param>
-        public ManageProfile(DefaultUserClaim userClaim)
+	    /// <summary>
+	    /// Create a basic instance of the ManageProfile Controller class
+	    /// </summary>
+	    /// <param name="userClaim">Information about the user</param>
+	    public ManageProfile(DefaultUserClaim userClaim)
 	    {
 		    _profileRepository = new ProfileRepository(userClaim);
 			_productRepository = new ProductRepository(userClaim);

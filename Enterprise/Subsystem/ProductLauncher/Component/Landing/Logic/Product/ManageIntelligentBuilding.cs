@@ -25,20 +25,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 	{
 		private DefaultUserClaim _userClaims;
 
-        /// <summary>
-        /// Default constructor
-        /// </summary>
-        /// <param name="userClaims"></param>
-        public ManageIntelligentBuilding(DefaultUserClaim userClaims) : base((int)ProductEnum.IntelligentBuildingTrash, userClaims, productInternalSettingRepository: null, productRepository: null)
-        {
-            WriteToDiagnosticLog("Ctor - Getting Product settings.");
-            _userClaims = userClaims;
-            _editorRealPageId = userClaims.UserRealPageGuid;
-            _productRepository = new ProductRepository(_userClaims);
-            _blueBook = new ManageBlueBook(userClaims);
-        }
+		/// <summary>
+		/// Default constructor
+		/// </summary>
+		/// <param name="userClaims"></param>
+		public ManageIntelligentBuilding(DefaultUserClaim userClaims) : base((int)ProductEnum.IntelligentBuildingTrash, userClaims, null, null)
+		{
+			WriteToDiagnosticLog("Ctor - Getting Product settings.");
+			_userClaims = userClaims;
+			_editorRealPageId = userClaims.UserRealPageGuid;
+			_productRepository = new ProductRepository(_userClaims);
+			_blueBook = new ManageBlueBook(userClaims);
+		}
 
-        /// <summary>
+		/// <summary>
 		/// Unit test constructor
 		/// </summary>
 		/// <param name="defaultUserClaim"></param>
