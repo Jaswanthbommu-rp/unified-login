@@ -19,6 +19,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Rum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
 using Serilog;
 using Serilog.Events;
@@ -232,6 +233,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (productInternalSettingRepository != null) { _productInternalSettingRepository = productInternalSettingRepository; }
             if (productRepository != null) { _productRepository = productRepository; }
 
+            _blueBook = new ManageBlueBook();
             _managePersona = new ManagePersona();
             _managePerson = new ManagePerson();
             _manageUserLogin = new ManageUserLogin();
@@ -275,7 +277,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 _udmSourceCode = _productDetails.UDMSourceCode?.Length > 0 ? _productDetails.UDMSourceCode : _productDetails.BooksProductCode;
             }
-
+            _blueBook = new ManageBlueBook(userClaim);
             _managePersona = new ManagePersona();
             _managePerson = new ManagePerson();
             _manageUserLogin = new ManageUserLogin();
@@ -313,7 +315,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 _udmSourceCode = _productDetails.UDMSourceCode?.Length > 0 ? _productDetails.UDMSourceCode : _productDetails.BooksProductCode;
             }
-
+            _blueBook = new ManageBlueBook(userClaim, repository, messageHandler);
             _managePersona = new ManagePersona(repository, userClaim, messageHandler);
             _managePerson = new ManagePerson(repository);
             _manageUserLogin = new ManageUserLogin(repository, userClaim, messageHandler);
@@ -325,7 +327,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _userLoginPersonaRepository = new UserLoginPersonaRepository(repository);
             _userRepository = new UserRepository(repository, userClaim, messageHandler);
             _userRoleRightRepository = new UserRoleRightRepository(repository, userClaim);
-            _client = new HttpClient(messageHandler);
+            _client = new HttpClient(messageHandler, false);
             _messageHandler = messageHandler;
             _unifiedLoginRepository = new UnifiedLoginRepository(repository);
             _manageContactMechanism = new ManageContactMechanism(repository);

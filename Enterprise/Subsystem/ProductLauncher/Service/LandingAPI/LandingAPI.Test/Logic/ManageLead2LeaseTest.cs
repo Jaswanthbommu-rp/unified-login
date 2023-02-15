@@ -63,8 +63,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
         private OneSiteUser _osUser;
 
-        private string testHostname = "http://producturl.com";
-        private string _mtApiEndPoint = "http://producturl.com";
+        private string testHostname = "http://localhost";
+        private string _mtApiEndPoint = "http://localhost";
 
         private int _companyInstanceSourceId;
 

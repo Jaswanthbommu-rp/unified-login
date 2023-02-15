@@ -37,7 +37,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
         private ListResponse _listResponse = new ListResponse();
         private GbProductMap _gbProductMap = new GbProductMap();
-        private string testHostname = "http://producturl.com";
+        private string testHostname = "http://localhost";
 
         #endregion
 

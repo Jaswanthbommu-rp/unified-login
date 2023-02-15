@@ -31,7 +31,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
         #region Private Variables
         private int _blueBookId = 123;
         private string _companyInstanceSourceId = "123456";
-        private string _apiEndPoint = "http://producturl.com";
+        private string _apiEndPoint = "http://localhost";
         private string _apiKey = "some-key";
         private GbProductMap _gbProductMap = new GbProductMap();
         private IManageProductOps manageProductOps;
