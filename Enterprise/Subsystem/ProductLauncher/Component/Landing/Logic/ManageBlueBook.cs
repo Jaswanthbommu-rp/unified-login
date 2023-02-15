@@ -162,7 +162,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         public ManageBlueBook(DefaultUserClaim userClaim, IRepository repository, IProductInternalSettingRepository productInternalSettingRepository, HttpMessageHandler messageHandler)
         {
             _productInternalSettingRepository = productInternalSettingRepository;
-            _httpClient = new HttpClient(messageHandler) {BaseAddress = new Uri("http://localhost")};
+            _httpClient = new HttpClient(messageHandler, false) { BaseAddress = new Uri("http://localhost") };
             _defaultUserClaim = userClaim;
             _productRepository = new ProductRepository(repository, userClaim);
 
@@ -180,7 +180,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         public ManageBlueBook(DefaultUserClaim userClaim, IRepository repository, HttpMessageHandler messageHandler)
         {
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
-            _httpClient = new HttpClient(messageHandler) { BaseAddress = new Uri("http://localhost") };
+            _httpClient = new HttpClient(messageHandler, false) { BaseAddress = new Uri("http://localhost") };
             _defaultUserClaim = userClaim;
             _productRepository = new ProductRepository(repository, userClaim);
 

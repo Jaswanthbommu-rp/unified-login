@@ -116,7 +116,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             mockHttpMessageHandler = new Mock<HttpMessageHandler>();
             mockTokenHttpMessageHandler = new Mock<HttpMessageHandler>();
-            client = new HttpClient(mockHttpMessageHandler.Object);
+            client = new HttpClient(mockHttpMessageHandler.Object, false);
 
             mockRepository = new Mock<IRepository>();
 

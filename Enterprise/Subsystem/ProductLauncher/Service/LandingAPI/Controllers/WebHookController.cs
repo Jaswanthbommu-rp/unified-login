@@ -596,7 +596,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         {
             IList<ProductInternalSetting> productInternalSettingList = new List<ProductInternalSetting>();
             RPObjectCache rpcache = new RPObjectCache();
-            var cacheKey = "productInternalSetting_" + (int)productId;
+            var cacheKey = "getUnifiedPlatformSettings_" + (int)productId;
             productInternalSettingList = rpcache.GetFromCache<IList<ProductInternalSetting>>(cacheKey, 60, () =>
             {
                 // load from database

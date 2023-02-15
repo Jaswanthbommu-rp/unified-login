@@ -314,6 +314,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 _udmSourceCode = _productDetails.UDMSourceCode?.Length > 0 ? _productDetails.UDMSourceCode : _productDetails.BooksProductCode;
             }
 
+            _blueBook = new ManageBlueBook(userClaim, repository, messageHandler);
             _managePersona = new ManagePersona(repository, userClaim, messageHandler);
             _managePerson = new ManagePerson(repository);
             _manageUserLogin = new ManageUserLogin(repository, userClaim, messageHandler);

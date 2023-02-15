@@ -120,7 +120,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _managePersona = managePersona;
             _managePerson = managePerson;
             _manageUserLogin = manageUserLogin;
-            _blueBook = manageBlueBook;
+            _blueBook = new ManageBlueBook(userClaim, repository, messageHandler);
             _productRepository = productRepository;
             _productInternalSettingRepository = productInternalSettingRepository;
             _managePartyRelationship = managePartyRelationship;
@@ -164,6 +164,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _productInternalSettingRepository = productInternalSettingRepository;
             _managePartyRelationship = managePartyRelationship;
             _userClaims = userClaim;
+            _messageHandler = messageHandler;
             _productRepository = productRepository;
         }
         #endregion
@@ -1695,7 +1696,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     IsError = true,
                     ErrorReason = ex.Message
                 };
-
+            
                 WriteToErrorLog($"ManageProductResidentPortal.GetMigrationUsers Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
             }
             return response;
@@ -1756,7 +1757,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             catch (Exception ex)
             {
                 WriteToErrorLog($"ManageProductResidentPortal.UpdateUsersMigrationStatus Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
-
+            
                 return new MigrateResponse
                 { 
                     Status = false,
