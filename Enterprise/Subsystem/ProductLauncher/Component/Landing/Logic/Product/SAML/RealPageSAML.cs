@@ -342,7 +342,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 samlAttributeDetails = productBulkUpdateRepository.CreateBatch(userinfo.PersonaId, personaId, editorGuid, productId, retryCheckCount, statusCheckSleep, defaultUserRoleId);
-				if (samlAttributeDetails.Count > 0)
+				if (samlAttributeDetails.Count == 0)
 				{
 					response.ErrorMessage = "UserCreationFailed";
 					return response;
@@ -414,7 +414,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			productList = new List<PersonaProductUserDetails>() { productDetail };
 
-			if (productDetail.ProductStatus != (int)ProductBatchStatusType.Success && samlAttributeDetails.Count > 0)
+			if (productDetail.ProductStatus != (int)ProductBatchStatusType.Success && samlAttributeDetails.Count == 0)
 			{
 				response.IsRedirect = true;
 				response.RedirectUrl = unifiedLoginUri + "error/401";
