@@ -20,6 +20,7 @@ using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.Dispatcher;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 {
@@ -29,14 +30,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 	[ExcludeFromCodeCoverage]
 	public class ProductTests
 	{
-		private static Guid _realPageId = new Guid("C802694D-5553-4527-8616-3C0F434AE62D");
+        private readonly ITestOutputHelper _output;
+        private static Guid _realPageId = new Guid("C802694D-5553-4527-8616-3C0F434AE62D");
 		private readonly IList<ProductInternalSetting> _product3InternalSettings;
 		private readonly Mock<IRepository> _mockRepository;
 		private readonly Mock<HttpMessageHandler> _mockHttpMessageHandler;
 		private readonly Mock<HttpMessageHandler> _mockHttpMessageHandlerError;
 
-		public ProductTests()
-		{
+		public ProductTests(ITestOutputHelper output)
+        {
+            _output = output;
 			_product3InternalSettings = new List<ProductInternalSetting>()
 			{
 				new ProductInternalSetting() {Name = "BooksUseDomains", Value = "1"},
@@ -226,6 +229,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			string result = baseTest.VerifyRouteToAction(
 					HttpMethod.Get,
 					"http://localhost/api/products/24/organization/-1");
+
+            _output.WriteLine($"result : {result}");
 			//Assert
 			Assert.True("ListProductUsers" == result);
 		}

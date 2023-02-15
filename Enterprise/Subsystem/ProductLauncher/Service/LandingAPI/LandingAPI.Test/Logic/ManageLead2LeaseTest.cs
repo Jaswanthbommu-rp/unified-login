@@ -26,6 +26,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 using IC = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
@@ -36,6 +37,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
     [ExcludeFromCodeCoverage]
     public class ManageLead2LeaseTest : ManageProductBaseTests
     {
+        private readonly ITestOutputHelper _output;
         private int _blueBookId;
         private static ProductProperty _property1 = new ProductProperty() { ID = "1234567", Name = "Test Property", City = "Test City", State = "Test State", Street1 = "Test Street 1", Street2 = "Test Street 2", Zip = "12345", IsAssigned = true };
         private static ProductProperty _property2 = new ProductProperty() { ID = "7654321", Name = "Test Property 2", City = "Test City 2", State = "Test State 2", Street1 = "Test Street 1 2", Street2 = "Test Street 2 2", Zip = "54321", IsAssigned = false };
@@ -68,8 +70,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
         private UserLoginOnly _userloginOnly;
 
-        public ManageLead2LeaseTest() : base((int)ProductEnum.Lead2Lease)
+        public ManageLead2LeaseTest(ITestOutputHelper output) : base((int)ProductEnum.Lead2Lease)
         {
+            _output = output;
             _companyInstanceSourceId = 1000;
             _blueBookId = 236;
 
@@ -534,11 +537,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             new RPObjectCache().BustCache();
 
             ListResponse resp = mpL2L.GetRoles(_editorPersonaId, _userPersonaId, null);
+            _output.WriteLine("resp 1 : " + JsonConvert.SerializeObject(resp));
             Assert.True(resp.TotalRows == _l2lUser.Permissions.Count);
 
             new RPObjectCache().BustCache();
 
             resp = mpL2L.GetProperties(_editorPersonaId, _userPersonaId, null);
+            _output.WriteLine("resp 2 : " + JsonConvert.SerializeObject(resp));
             Assert.True(resp.TotalRows == _l2lUser.Properties.Count);
         }
         #endregion
@@ -958,6 +963,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             // GetCompanyEditorAndUserDetails fail, invalid editor persona
             string result = mpL2L.ManageLead2LeaseUser(_editorPersonaId, _userPersonaId, roleList, propertyList);
+
+            _output.WriteLine("result 1 : " + result);
+
             Assert.True(result.ToUpper() == "INVALID PERSONA");
 
             mockManagePersona
@@ -1004,6 +1012,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             // missing user info
             result = mpL2L.ManageLead2LeaseUser(_editorPersonaId, _userPersonaId, roleList, propertyList);
+            _output.WriteLine("result 2 : " + result);
+
             Assert.True(result.ToUpper() == "USER INFO MISSING");
 
             mockHandler.Protected()
@@ -1049,6 +1059,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             // property list fail
             result = mpL2L.ManageLead2LeaseUser(_editorPersonaId, _userPersonaId, roleList, propertyList);
+            _output.WriteLine("result 3 : " + result);
             Assert.True(result.ToUpper() == "COMPANY SETUP ERROR: PLEASE CONTACT SUPPORT.");
 
             mockHandler.Protected()
@@ -1075,6 +1086,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                     Assert.Equal(HttpMethod.Get, r.Method);
                 });
 
+            _partyRelationShip = new IC.PartyRelationship();
+            _partyRelationShip.RoleTypeFrom = new IC.RoleType() { Name = _ROLETYPE_NAME_SUPERUSER };
+
+            mockManagePartyRelationship
+                .Setup(m => m.GetPartyRelationship(
+                    It.IsAny<Guid>()
+                    , It.IsAny<Guid>()
+                    , null
+                    , null
+                    , It.IsAny<string>()
+               ))
+               .Returns(_partyRelationShip);
+
             mpL2L = new ManageProductLead2Lease(
                 editorRealPageId: _editorRealPageId,
                 userClaim: _editorUserClaim,
@@ -1092,21 +1116,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 userLoginRepository: null,
                 repository: mockRepository.Object);
 
-            _partyRelationShip = new IC.PartyRelationship();
-            _partyRelationShip.RoleTypeFrom = new IC.RoleType() { Name = _ROLETYPE_NAME_SUPERUSER };
-
-            mockManagePartyRelationship
-                .Setup(m => m.GetPartyRelationship(
-                    It.IsAny<Guid>()
-                    , It.IsAny<Guid>()
-                    , null
-                    , null
-                    , It.IsAny<string>()
-               ))
-               .Returns(_partyRelationShip);
-
             // role list failed for superuser
             result = mpL2L.ManageLead2LeaseUser(_editorPersonaId, _userPersonaId, roleList, propertyList);
+            _output.WriteLine("result 4 : " + result);
             Assert.True(result.ToUpper() == "ROLE LIST FAILED" || result == CommonMessageConstants.RoleErrorMessage);
         }
 
@@ -1569,6 +1581,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             //Act
             var expected = mpL2L.GetMigrationUsers(editorPersonaId, dataFilter);
 
+            _output.WriteLine("expected :" + JsonConvert.SerializeObject(expected));
             //Assert
             Assert.IsType<MigrationUser>(expected.Records[0]);
             Assert.True(expected.Records.Count == totalRecords);
@@ -1693,6 +1706,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             //Act
             var actual = mpL2L.UpdateUsersMigrationStatus(_editorPersonaId, migrateUsers);
+
+            _output.WriteLine("expected :" + JsonConvert.SerializeObject(expected));
+            _output.WriteLine("actual :" + JsonConvert.SerializeObject(actual));
 
             //Assert
             Assert.Equal(actual.Message, expected.Message);
