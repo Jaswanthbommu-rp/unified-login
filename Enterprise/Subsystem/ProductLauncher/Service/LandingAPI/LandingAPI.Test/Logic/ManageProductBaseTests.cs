@@ -10,7 +10,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Text;
-using RP.Enterprise.Foundation.DataAccess.Component;
 using IC = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
@@ -80,9 +79,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		protected Mock<HttpMessageHandler> mockHttpMessageHandler;
 		protected Mock<HttpMessageHandler> mockTokenHttpMessageHandler;
 		protected BatchProcessType batchProcessTypeCreUpd = BatchProcessType.CreateUpdateProductUser;
-
-        protected Mock<IRepository> mockRepository;
-
+		
 		protected List<OrganizationStatus> _organizationStatusListEditorPersona = new List<OrganizationStatus>();
 		protected List<OrganizationStatus> _organizationStatusListUserPersona = new List<OrganizationStatus>();
 		protected List<OrganizationStatus> _organizationStatusListNewUserPersona = new List<OrganizationStatus>();
@@ -117,8 +114,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             mockHttpMessageHandler = new Mock<HttpMessageHandler>();
             mockTokenHttpMessageHandler = new Mock<HttpMessageHandler>();
             client = new HttpClient(mockHttpMessageHandler.Object, false);
-
-            mockRepository = new Mock<IRepository>();
 
             _organizationStatusEditorPersona = new OrganizationStatus() {PartyId = _editorPersona.OrganizationPartyId, StatusTypeId = (int) UserUiStatusType.Active, Status = UserUiStatusType.Active};
             _organizationStatusUserPersona = new OrganizationStatus() {PartyId = _userPersona.OrganizationPartyId, StatusTypeId = (int)UserUiStatusType.Active, Status = UserUiStatusType.Active };

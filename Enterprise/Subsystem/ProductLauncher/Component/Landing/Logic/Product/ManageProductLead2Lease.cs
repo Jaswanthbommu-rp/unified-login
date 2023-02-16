@@ -5,7 +5,6 @@ using System.Net;
 using System.Net.Http;
 using System.Runtime.Caching;
 using Newtonsoft.Json;
-using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
@@ -44,7 +43,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Default constructor
         /// </summary>
-        public ManageProductLead2Lease(DefaultUserClaim userClaims) : base((int)ProductEnum.Lead2Lease, userClaims, productInternalSettingRepository: null, productRepository: null)
+        public ManageProductLead2Lease(DefaultUserClaim userClaims) : base((int)ProductEnum.Lead2Lease, userClaims, null, null)
         {
             _userClaims = userClaims;
             _editorRealPageId = userClaims.UserRealPageGuid;
@@ -60,7 +59,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// Unit test constructor
         /// </summary>
         /// <param name="editorRealPageId"></param>
-        /// <param name="userClaim"></param>
         /// <param name="messageHandler"></param>
         /// <param name="samlRepository"></param>
         /// <param name="managePersona"></param>
@@ -69,16 +67,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="productInternalSettingRepository"></param>
         /// <param name="managePerson"></param>
         /// <param name="manageUserLogin"></param>
-        /// <param name="managePartyRelationship"></param>
         /// <param name="manageElectronicAddress"></param>
+        /// <param name="managePartyRelationship"></param>
         /// <param name="manageProductOneSite"></param>
         /// <param name="userLoginRepository"></param>
-        /// <param name="repository"></param>
-        public ManageProductLead2Lease(Guid editorRealPageId, DefaultUserClaim userClaim, HttpMessageHandler messageHandler, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship, IManageElectronicAddress manageElectronicAddress, IManageProductOneSite manageProductOneSite, IUserLoginRepository userLoginRepository, IRepository repository)
-            : base((int)ProductEnum.Lead2Lease, userClaim, repository, messageHandler)
+        public ManageProductLead2Lease(Guid editorRealPageId, HttpMessageHandler messageHandler, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship, IManageElectronicAddress manageElectronicAddress, IManageProductOneSite manageProductOneSite, IUserLoginRepository userLoginRepository) : base((int)ProductEnum.Lead2Lease, productInternalSettingRepository, productRepository)
         {
             _apiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIENDPOINT").Value;
-            _mtApiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "MTAPIENDPOINT").Value;
+            _mtApiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "MTAPIENDPOINT").Value;           
             _editorRealPageId = editorRealPageId;
             _messageHandler = messageHandler;
             _samlRepository = samlRepository;

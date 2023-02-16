@@ -15,7 +15,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Net.Http;
 using System.Text.RegularExpressions;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
@@ -56,10 +55,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		/// <summary>
 		/// Unit test constructor
 		/// </summary>
-        public ProfileRepository(IRepository repository, DefaultUserClaim userClaim, HttpMessageHandler messageHandler) : base(repository)
+        public ProfileRepository(IRepository repository, DefaultUserClaim userClaim) : base(repository)
         {
             _userClaim = userClaim;
-            _manageUserLogin = new ManageUserLogin(repository, userClaim, messageHandler);
+            _manageUserLogin = new ManageUserLogin(repository, userClaim, null);
             _partyRelationshipRepository = new PartyRelationshipRepository(repository);
             _productRepository = new ProductRepository(repository, userClaim);
 			_personaRepository =  new PersonaRepository(repository, userClaim);

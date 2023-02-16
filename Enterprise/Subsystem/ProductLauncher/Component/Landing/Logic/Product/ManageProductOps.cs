@@ -27,7 +27,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Security;
-using RP.Enterprise.Foundation.DataAccess.Component;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -50,7 +49,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Default constructor
         /// </summary>
-        public ManageProductOps(DefaultUserClaim userClaims) : base((int)ProductEnum.OpsBuyer, userClaims, productInternalSettingRepository: null, productRepository: null)
+        public ManageProductOps(DefaultUserClaim userClaims) : base((int)ProductEnum.OpsBuyer, userClaims, null, null)
         {
             _editorRealPageId = userClaims.UserRealPageGuid;
             _userClaims = userClaims;
@@ -64,21 +63,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         }
 
         /// <summary>
-        /// Unit test constructor
+		/// Unit test constructor
         /// </summary>
         /// <param name="editorRealPageId"></param>
-        /// <param name="userClaim"></param>
-        /// <param name="httpMessageHandler"></param>
         /// <param name="client"></param>
         /// <param name="productInternalSettingRepository"></param>
         /// <param name="managePersona"></param>
         /// <param name="samlRepository"></param>
         /// <param name="blueBook"></param>
-        /// <param name="productRepository"></param>
-        /// <param name="repository"></param>
-        public ManageProductOps(Guid editorRealPageId, DefaultUserClaim userClaim, HttpMessageHandler httpMessageHandler, HttpClient client, IProductInternalSettingRepository productInternalSettingRepository,
-                                    IManagePersona managePersona, ISamlRepository samlRepository, IManageBlueBook blueBook, IProductRepository productRepository, IRepository repository)
-             : base((int)ProductEnum.OpsBuyer, userClaim, repository, httpMessageHandler)
+        public ManageProductOps(Guid editorRealPageId, DefaultUserClaim userClaim, HttpClient client, IProductInternalSettingRepository productInternalSettingRepository,
+                                    IManagePersona managePersona, ISamlRepository samlRepository, IManageBlueBook blueBook, IProductRepository productRepository)
+             : base((int)ProductEnum.OpsBuyer, productInternalSettingRepository, productRepository)
         {
             _editorRealPageId = editorRealPageId;
             _userClaims = userClaim;

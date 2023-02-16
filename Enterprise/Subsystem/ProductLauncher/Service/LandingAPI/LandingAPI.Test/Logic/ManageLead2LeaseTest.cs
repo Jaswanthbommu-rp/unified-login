@@ -26,7 +26,6 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
-using Xunit.Abstractions;
 using IC = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
@@ -37,7 +36,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
     [ExcludeFromCodeCoverage]
     public class ManageLead2LeaseTest : ManageProductBaseTests
     {
-        private readonly ITestOutputHelper _output;
         private int _blueBookId;
         private static ProductProperty _property1 = new ProductProperty() { ID = "1234567", Name = "Test Property", City = "Test City", State = "Test State", Street1 = "Test Street 1", Street2 = "Test Street 2", Zip = "12345", IsAssigned = true };
         private static ProductProperty _property2 = new ProductProperty() { ID = "7654321", Name = "Test Property 2", City = "Test City 2", State = "Test State 2", Street1 = "Test Street 1 2", Street2 = "Test Street 2 2", Zip = "54321", IsAssigned = false };
@@ -70,9 +68,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
         private UserLoginOnly _userloginOnly;
 
-        public ManageLead2LeaseTest(ITestOutputHelper output) : base((int)ProductEnum.Lead2Lease)
+        public ManageLead2LeaseTest() : base((int)ProductEnum.Lead2Lease)
         {
-            _output = output;
             _companyInstanceSourceId = 1000;
             _blueBookId = 236;
 
@@ -130,14 +127,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             _userloginOnly = new UserLoginOnly() { UserId = _editorUserId, LoginName = "test", PartyId = 30, RealPageId = new Guid(), LastLogin = DateTime.Now };
             _gbProductMap = new GbProductMap() { BooksProductCode = "L2L", Name = "Lead2Lease", ProductId = 6, UDMSourceCode = "L2L" };
 
-            mockRepository
-                .Setup(m => m.GetMany<IC.ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
-                .Returns(_productInternalSettings);
-
-            mockRepository
-                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
-                    It.IsAny<object>()))
-                .Returns(new List<GbProductMap>() { _gbProductMap });
         }
 
         #region Exceptions - Property
@@ -264,20 +253,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             //Act
             IManageProductLead2Lease mpL2L = new ManageProductLead2Lease(
                 editorRealPageId: _editorRealPageId,
-                userClaim: _editorUserClaim,
                 messageHandler: mockHandler.Object,
-                samlRepository: mockSamlRepository.Object,
-                managePersona: mockManagePersona.Object,
-                manageBlueBook: mockManageBlueBook.Object,
-                productRepository: mockProductRepository.Object,
+                samlRepository: mockSamlRepository.Object, 
+                managePersona: mockManagePersona.Object, 
+                manageBlueBook: mockManageBlueBook.Object, 
+                productRepository: mockProductRepository.Object, 
                 productInternalSettingRepository: mockProductInternalSettingRepository.Object,
                 managePerson: null,
-                manageUserLogin: null,
-                managePartyRelationship: null,
-                manageElectronicAddress: null,
+                manageUserLogin: null, 
+                managePartyRelationship: null, 
+                manageElectronicAddress: null, 
                 manageProductOneSite: null,
-                userLoginRepository: null,
-                repository: mockRepository.Object);
+                userLoginRepository: null);
 
             ListResponse resp = mpL2L.GetRoles(_editorPersonaId, _userPersonaId, null);
             Assert.True(resp.IsError == true && (resp.ErrorReason == "Role info is missing" || 
@@ -348,7 +335,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             mpL2L = new ManageProductLead2Lease(
                 editorRealPageId: _editorRealPageId,
-                userClaim: _editorUserClaim,
                 messageHandler: mockHandler.Object,
                 samlRepository: mockSamlRepository.Object,
                 managePersona: mockManagePersona.Object,
@@ -360,8 +346,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 managePartyRelationship: null,
                 manageElectronicAddress: null,
                 manageProductOneSite: null,
-                userLoginRepository: null,
-                repository: mockRepository.Object);
+                userLoginRepository: null);
 
             resp = mpL2L.GetRoles(_editorPersonaId, _userPersonaId, null);
             Assert.True(resp.IsError == true && (resp.ErrorReason == "User info is missing" ||
@@ -463,10 +448,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 ))
                 .Returns(_productInternalSettings);
 
-            mockRepository
-                .Setup(m => m.GetMany<IC.ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
-                .Returns(_productInternalSettings);
-
             mockSamlRepository
                 .Setup(m => m.GetProductSamlDetails(
                     It.Is<long>(l => l == 4)
@@ -511,15 +492,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 ))
                 .Returns(_userProductSettings);
 
-            mockRepository
-                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
-                    It.IsAny<object>()))
-                .Returns(new List<GbProductMap>() { _gbProductMap });
-
             //Act
             IManageProductLead2Lease mpL2L = new ManageProductLead2Lease(
                 editorRealPageId: _editorRealPageId,
-                userClaim: _editorUserClaim,
                 messageHandler: mockHandler.Object,
                 samlRepository: mockSamlRepository.Object,
                 managePersona: mockManagePersona.Object,
@@ -531,19 +506,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 managePartyRelationship: null,
                 manageElectronicAddress: null,
                 manageProductOneSite: null,
-                userLoginRepository: null,
-                repository: mockRepository.Object);
+                userLoginRepository: null);
 
             new RPObjectCache().BustCache();
 
             ListResponse resp = mpL2L.GetRoles(_editorPersonaId, _userPersonaId, null);
-            _output.WriteLine("resp 1 : " + JsonConvert.SerializeObject(resp));
             Assert.True(resp.TotalRows == _l2lUser.Permissions.Count);
 
             new RPObjectCache().BustCache();
 
             resp = mpL2L.GetProperties(_editorPersonaId, _userPersonaId, null);
-            _output.WriteLine("resp 2 : " + JsonConvert.SerializeObject(resp));
             Assert.True(resp.TotalRows == _l2lUser.Properties.Count);
         }
         #endregion
@@ -672,7 +644,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             //Act
             IManageProductLead2Lease mpL2L = new ManageProductLead2Lease(
                 editorRealPageId: _editorRealPageId,
-                userClaim: _editorUserClaim,
                 messageHandler: mockHandler.Object,
                 samlRepository: mockSamlRepository.Object,
                 managePersona: mockManagePersona.Object,
@@ -684,8 +655,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 managePartyRelationship: null,
                 manageElectronicAddress: null,
                 manageProductOneSite: null,
-                userLoginRepository: mockUserLoginRepository.Object,
-                repository: mockRepository.Object);
+                userLoginRepository: mockUserLoginRepository.Object);
 
             string result = mpL2L.UnassignUser(_editorPersonaId, _userPersonaId);
             Assert.True(string.IsNullOrEmpty(result));
@@ -938,7 +908,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             //Act
             IManageProductLead2Lease mpL2L = new ManageProductLead2Lease(
                 editorRealPageId: _editorRealPageId,
-                userClaim: _editorUserClaim,
                 messageHandler: mockHandler.Object,
                 samlRepository: mockSamlRepository.Object,
                 managePersona: mockManagePersona.Object,
@@ -950,8 +919,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 managePartyRelationship: mockManagePartyRelationship.Object,
                 manageElectronicAddress: mockManageElectronicAddress.Object,
                 manageProductOneSite: mockManageProductOneSite.Object,
-                userLoginRepository: null,
-                repository: mockRepository.Object);
+                userLoginRepository: null);
 
             List<string> roleList = new List<string>();
             List<string> propertyList = new List<string>();
@@ -963,9 +931,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             // GetCompanyEditorAndUserDetails fail, invalid editor persona
             string result = mpL2L.ManageLead2LeaseUser(_editorPersonaId, _userPersonaId, roleList, propertyList);
-
-            _output.WriteLine("result 1 : " + result);
-
             Assert.True(result.ToUpper() == "INVALID PERSONA");
 
             mockManagePersona
@@ -995,7 +960,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             mpL2L = new ManageProductLead2Lease(
                 editorRealPageId: _editorRealPageId,
-                userClaim: _editorUserClaim,
                 messageHandler: mockHandler.Object,
                 samlRepository: mockSamlRepository.Object,
                 managePersona: mockManagePersona.Object,
@@ -1007,13 +971,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 managePartyRelationship: mockManagePartyRelationship.Object,
                 manageElectronicAddress: mockManageElectronicAddress.Object,
                 manageProductOneSite: mockManageProductOneSite.Object,
-                userLoginRepository: null,
-                repository: mockRepository.Object);
+                userLoginRepository: null);
 
             // missing user info
             result = mpL2L.ManageLead2LeaseUser(_editorPersonaId, _userPersonaId, roleList, propertyList);
-            _output.WriteLine("result 2 : " + result);
-
             Assert.True(result.ToUpper() == "USER INFO MISSING");
 
             mockHandler.Protected()
@@ -1042,7 +1003,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             mpL2L = new ManageProductLead2Lease(
                 editorRealPageId: _editorRealPageId,
-                userClaim: _editorUserClaim,
                 messageHandler: mockHandler.Object,
                 samlRepository: mockSamlRepository.Object,
                 managePersona: mockManagePersona.Object,
@@ -1054,12 +1014,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 managePartyRelationship: mockManagePartyRelationship.Object,
                 manageElectronicAddress: mockManageElectronicAddress.Object,
                 manageProductOneSite: mockManageProductOneSite.Object,
-                userLoginRepository: null,
-                repository: mockRepository.Object);
+                userLoginRepository: null);
 
             // property list fail
             result = mpL2L.ManageLead2LeaseUser(_editorPersonaId, _userPersonaId, roleList, propertyList);
-            _output.WriteLine("result 3 : " + result);
             Assert.True(result.ToUpper() == "COMPANY SETUP ERROR: PLEASE CONTACT SUPPORT.");
 
             mockHandler.Protected()
@@ -1086,6 +1044,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                     Assert.Equal(HttpMethod.Get, r.Method);
                 });
 
+            mpL2L = new ManageProductLead2Lease(
+                editorRealPageId: _editorRealPageId,
+                messageHandler: mockHandler.Object,
+                samlRepository: mockSamlRepository.Object,
+                managePersona: mockManagePersona.Object,
+                manageBlueBook: mockManageBlueBook.Object,
+                productRepository: mockProductRepository.Object,
+                productInternalSettingRepository: mockProductInternalSettingRepository.Object,
+                managePerson: mockManagePerson.Object,
+                manageUserLogin: mockManageUserLogin.Object,
+                managePartyRelationship: mockManagePartyRelationship.Object,
+                manageElectronicAddress: mockManageElectronicAddress.Object,
+                manageProductOneSite: mockManageProductOneSite.Object,
+                userLoginRepository: null);
+
             _partyRelationShip = new IC.PartyRelationship();
             _partyRelationShip.RoleTypeFrom = new IC.RoleType() { Name = _ROLETYPE_NAME_SUPERUSER };
 
@@ -1099,26 +1072,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                ))
                .Returns(_partyRelationShip);
 
-            mpL2L = new ManageProductLead2Lease(
-                editorRealPageId: _editorRealPageId,
-                userClaim: _editorUserClaim,
-                messageHandler: mockHandler.Object,
-                samlRepository: mockSamlRepository.Object,
-                managePersona: mockManagePersona.Object,
-                manageBlueBook: mockManageBlueBook.Object,
-                productRepository: mockProductRepository.Object,
-                productInternalSettingRepository: mockProductInternalSettingRepository.Object,
-                managePerson: mockManagePerson.Object,
-                manageUserLogin: mockManageUserLogin.Object,
-                managePartyRelationship: mockManagePartyRelationship.Object,
-                manageElectronicAddress: mockManageElectronicAddress.Object,
-                manageProductOneSite: mockManageProductOneSite.Object,
-                userLoginRepository: null,
-                repository: mockRepository.Object);
-
             // role list failed for superuser
             result = mpL2L.ManageLead2LeaseUser(_editorPersonaId, _userPersonaId, roleList, propertyList);
-            _output.WriteLine("result 4 : " + result);
             Assert.True(result.ToUpper() == "ROLE LIST FAILED" || result == CommonMessageConstants.RoleErrorMessage);
         }
 
@@ -1356,7 +1311,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             //Act
             IManageProductLead2Lease mpL2L = new ManageProductLead2Lease(
                 editorRealPageId: _editorRealPageId,
-                userClaim: _editorUserClaim,
                 messageHandler: mockHandler.Object,
                 samlRepository: mockSamlRepository.Object,
                 managePersona: mockManagePersona.Object,
@@ -1368,8 +1322,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 managePartyRelationship: mockManagePartyRelationship.Object,
                 manageElectronicAddress: mockManageElectronicAddress.Object,
                 manageProductOneSite: mockManageProductOneSite.Object,
-                userLoginRepository: null,
-                repository: mockRepository.Object);
+                userLoginRepository: null);
 
             List<string> roleList = new List<string>();
             List<string> propertyList = new List<string>();
@@ -1426,7 +1379,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             mpL2L = new ManageProductLead2Lease(
                 editorRealPageId: _editorRealPageId,
-                userClaim: _editorUserClaim,
                 messageHandler: mockHandler.Object,
                 samlRepository: mockSamlRepository.Object,
                 managePersona: mockManagePersona.Object,
@@ -1438,8 +1390,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 managePartyRelationship: mockManagePartyRelationship.Object,
                 manageElectronicAddress: mockManageElectronicAddress.Object,
                 manageProductOneSite: mockManageProductOneSite.Object,
-                userLoginRepository: null,
-                repository: mockRepository.Object);
+                userLoginRepository: null);
 
             roleList = new List<string>();
             propertyList = new List<string>();
@@ -1532,7 +1483,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             IManageProductLead2Lease mpL2L = new ManageProductLead2Lease(
               editorRealPageId: _editorRealPageId,
-              userClaim: _editorUserClaim,
               messageHandler: mockHandler.Object,
               samlRepository: mockSamlRepository.Object,
               managePersona: mockManagePersona.Object,
@@ -1544,8 +1494,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
               managePartyRelationship: mockManagePartyRelationship.Object,
               manageElectronicAddress: mockManageElectronicAddress.Object,
               manageProductOneSite: mockManageProductOneSite.Object,
-              userLoginRepository: null,
-              repository: mockRepository.Object);
+              userLoginRepository: null);
 
             var dataFilter = new RequestParameter()
             {
@@ -1581,7 +1530,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             //Act
             var expected = mpL2L.GetMigrationUsers(editorPersonaId, dataFilter);
 
-            _output.WriteLine("expected :" + JsonConvert.SerializeObject(expected));
             //Assert
             Assert.IsType<MigrationUser>(expected.Records[0]);
             Assert.True(expected.Records.Count == totalRecords);
@@ -1663,7 +1611,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             IManageProductLead2Lease mpL2L = new ManageProductLead2Lease(
               editorRealPageId: _editorRealPageId,
-              userClaim: _editorUserClaim,
               messageHandler: mockHandler.Object,
               samlRepository: mockSamlRepository.Object,
               managePersona: mockManagePersona.Object,
@@ -1675,8 +1622,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
               managePartyRelationship: mockManagePartyRelationship.Object,
               manageElectronicAddress: mockManageElectronicAddress.Object,
               manageProductOneSite: mockManageProductOneSite.Object,
-              userLoginRepository: null,
-              repository: mockRepository.Object);
+              userLoginRepository: null);
 
             var migrateUsers = new List<MigrateUser>()
             {
@@ -1706,9 +1652,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             //Act
             var actual = mpL2L.UpdateUsersMigrationStatus(_editorPersonaId, migrateUsers);
-
-            _output.WriteLine("expected :" + JsonConvert.SerializeObject(expected));
-            _output.WriteLine("actual :" + JsonConvert.SerializeObject(actual));
 
             //Assert
             Assert.Equal(actual.Message, expected.Message);
@@ -1796,7 +1739,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             IManageProductLead2Lease mpL2L = new ManageProductLead2Lease(
               editorRealPageId: _editorRealPageId,
-              userClaim: _editorUserClaim,
               messageHandler: mockHandler.Object,
               samlRepository: mockSamlRepository.Object,
               managePersona: mockManagePersona.Object,
@@ -1808,8 +1750,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
               managePartyRelationship: mockManagePartyRelationship.Object,
               manageElectronicAddress: mockManageElectronicAddress.Object,
               manageProductOneSite: mockManageProductOneSite.Object,
-              userLoginRepository: null,
-              repository: mockRepository.Object);
+              userLoginRepository: null);
 
             var username = "testuser";
             var isActive = true;
@@ -1864,10 +1805,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 ))
                 .Returns(_productInternalSettings);
 
-            mockRepository
-                .Setup(m => m.GetMany<IC.ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
-                .Returns(_productInternalSettings);
-
             mockSamlRepository
                 .Setup(m => m.GetProductSamlDetails(
                     It.Is<long>(l => l == 4)
@@ -1901,26 +1838,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
               ))
               .Returns(_gbProductMap);
 
-            mockRepository
-                .Setup(m => m.GetMany<IC.ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
-                .Returns(_productInternalSettings);
-
             IManageProductLead2Lease mpL2L = new ManageProductLead2Lease(
-                editorRealPageId: _editorRealPageId,
-                userClaim: _editorUserClaim,
-                messageHandler: mockHandler.Object,
-                samlRepository: mockSamlRepository.Object,
-                managePersona: mockManagePersona.Object,
-                manageBlueBook: mockManageBlueBook.Object,
-                productRepository: mockProductRepository.Object,
-                productInternalSettingRepository: mockProductInternalSettingRepository.Object,
-                managePerson: mockManagePerson.Object,
-                manageUserLogin: mockManageUserLogin.Object,
-                managePartyRelationship: mockManagePartyRelationship.Object,
-                manageElectronicAddress: mockManageElectronicAddress.Object,
-                manageProductOneSite: mockManageProductOneSite.Object,
-                userLoginRepository: null,
-                repository: mockRepository.Object);
+              editorRealPageId: _editorRealPageId,
+              messageHandler: mockHandler.Object,
+              samlRepository: mockSamlRepository.Object,
+              managePersona: mockManagePersona.Object,
+              manageBlueBook: mockManageBlueBook.Object,
+              productRepository: mockProductRepository.Object,
+              productInternalSettingRepository: mockProductInternalSettingRepository.Object,
+              managePerson: mockManagePerson.Object,
+              manageUserLogin: mockManageUserLogin.Object,
+              managePartyRelationship: mockManagePartyRelationship.Object,
+              manageElectronicAddress: mockManageElectronicAddress.Object,
+              manageProductOneSite: mockManageProductOneSite.Object,
+              userLoginRepository: null);
 
             var username = "testuser";
             var isActive = false;

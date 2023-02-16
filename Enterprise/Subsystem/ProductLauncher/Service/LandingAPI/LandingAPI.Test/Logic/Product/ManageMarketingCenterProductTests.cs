@@ -1,10 +1,7 @@
 ﻿using Moq;
 using Newtonsoft.Json;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
@@ -15,12 +12,16 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Migration;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
 using RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Extensions;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Http;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using Xunit;
+using System;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
 {
@@ -36,12 +37,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
 		private string _marketingCenterApiSourceID = "261";
 
         private GbProductMap _gbProductMap = new GbProductMap();
+        private IManageProductMarketingCenter manageProductMarketingCenter;
         private IList<CustomerCompanyMap> mapCompany;
         private Mock<IManageBlueBook> mockManageBlueBook;
         private Mock<IManagePersona> mockManagePersona;
         private Mock<IProductInternalSettingRepository> mockProductInternalSettingRepository;
         private Mock<ISamlRepository> mockSamlRepository;
         private Mock<IProductRepository> mockProductRepository;
+
         #endregion
 
         #region Constructor
@@ -51,7 +54,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
             mockManagePersona = new Mock<IManagePersona>();
             mockProductInternalSettingRepository = new Mock<IProductInternalSettingRepository>();
             mockSamlRepository = new Mock<ISamlRepository>();           
-            mockProductRepository = new Mock<IProductRepository>();
+           var mockProductRepository = new Mock<IProductRepository>();
 
             _editorSamlAttributes = new List<SamlAttributes>()
             {
@@ -104,10 +107,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
                 ))
                 .Returns(_productInternalSettings);
 
-            mockRepository
-                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
-                .Returns(_productInternalSettings);
-
             mockSamlRepository
                 .Setup(m => m.GetProductSamlDetails(
                     It.Is<long>(l => l == _editorPersonaId)
@@ -133,10 +132,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
               ))
               .Returns(_gbProductMap);
 
-            mockRepository
-                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
-                    It.IsAny<object>()))
-                .Returns(new List<GbProductMap>() { _gbProductMap });
+            manageProductMarketingCenter = new ManageProductMarketingCenter(_editorRealPageId, _editorUserClaim, mockHttpMessageHandler.Object, mockProductInternalSettingRepository.Object,
+                mockManagePersona.Object, mockSamlRepository.Object, mockManageBlueBook.Object,mockProductRepository.Object);
 
         }
         #endregion
@@ -179,9 +176,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
             };
 
             mockHttpMessageHandler.Setup(HttpMethod.Get, url, userResponse);
-
-            var manageProductMarketingCenter = new ManageProductMarketingCenter(_editorRealPageId, _editorUserClaim, mockHttpMessageHandler.Object, mockProductInternalSettingRepository.Object,
-                mockManagePersona.Object, mockSamlRepository.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockRepository.Object);
 
             //Act
             var expected = manageProductMarketingCenter.GetMigrationUsers(editorPersonaId, dataFilter);
@@ -247,9 +241,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
 
             mockHttpMessageHandler.Setup(HttpMethod.Post, url, userResponse);
 
-            var manageProductMarketingCenter = new ManageProductMarketingCenter(_editorRealPageId, _editorUserClaim, mockHttpMessageHandler.Object, mockProductInternalSettingRepository.Object,
-                mockManagePersona.Object, mockSamlRepository.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockRepository.Object);
-
             //Act
             var actual = manageProductMarketingCenter.UpdateUsersMigrationStatus(_editorPersonaId, migrateUsers);
 
@@ -257,7 +248,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
             Assert.Equal(actual.Message, expected.Message);
             Assert.True(actual.Status);
         }
-
         [Fact]
         public void ChangeUserStatus_Given_UserName_Disable_ShouldReturn_False()
         {
@@ -271,16 +261,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
 
             mockHttpMessageHandler.Setup(HttpMethod.Put, url, userResponse);
 
-            var manageProductMarketingCenter = new ManageProductMarketingCenter(_editorRealPageId, _editorUserClaim, mockHttpMessageHandler.Object, mockProductInternalSettingRepository.Object,
-                mockManagePersona.Object, mockSamlRepository.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockRepository.Object);
-
-            //Act
+            ////Act
             var actual = manageProductMarketingCenter.ChangeUserStatus(_editorPersonaId, userName, productUserId, isDeactivate);
 
-            //Assert
+            ////Assert
             Assert.False(actual);
-        }
 
+
+        }
         [Fact]
         public void ChangeUserStatus_Given_UserName_Disable_ShouldReturn_True()
         {
@@ -295,14 +283,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
 
             mockHttpMessageHandler.Setup(HttpMethod.Put, url, userResponse);
 
-            var manageProductMarketingCenter = new ManageProductMarketingCenter(_editorRealPageId, _editorUserClaim, mockHttpMessageHandler.Object, mockProductInternalSettingRepository.Object,
-                mockManagePersona.Object, mockSamlRepository.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockRepository.Object);
-
-            //Act
+            ////Act
             var actual = manageProductMarketingCenter.ChangeUserStatus(_editorPersonaId, userName, productUserId, isDeactivate);
 
-            //Assert
+            ////Assert
                 Assert.True(actual);
+       
+
         }
         #endregion
     }

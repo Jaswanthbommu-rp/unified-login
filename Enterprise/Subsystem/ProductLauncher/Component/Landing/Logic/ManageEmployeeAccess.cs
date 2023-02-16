@@ -47,7 +47,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// Ctor
         /// </summary>
         /// <param name="userClaim"></param>
-        public ManageEmployeeAccess(DefaultUserClaim userClaim) : base((int)ProductEnum.SupportTool, userClaim, productInternalSettingRepository: null, productRepository: null)
+        public ManageEmployeeAccess(DefaultUserClaim userClaim) : base((int)ProductEnum.SupportTool, userClaim, null, null)
         {
             _productId = (int)ProductEnum.SupportTool;
             _userClaim = userClaim;
@@ -74,7 +74,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="repository"></param>
         /// <param name="messageHandler"></param>
         /// <param name="oneSiteProductService"></param>
-        public ManageEmployeeAccess(DefaultUserClaim userClaim, IRepository repository, HttpMessageHandler messageHandler, IOneSiteProductService oneSiteProductService) : base((int)ProductEnum.SupportTool, userClaim, repository, messageHandler)
+        public ManageEmployeeAccess(DefaultUserClaim userClaim, IRepository repository, HttpMessageHandler messageHandler, IOneSiteProductService oneSiteProductService) : base((int)ProductEnum.SupportTool, userClaim, repository)
         {
             _productId = (int)ProductEnum.SupportTool;
             _userClaim = userClaim;

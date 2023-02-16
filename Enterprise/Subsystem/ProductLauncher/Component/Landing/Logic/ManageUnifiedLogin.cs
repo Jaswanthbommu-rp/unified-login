@@ -32,7 +32,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// Default constructor
         /// </summary>
         /// <param name="userClaims"></param>
-        public ManageUnifiedLogin(DefaultUserClaim userClaims) : base((int) ProductEnum.UnifiedPlatform, userClaims, productInternalSettingRepository: null, productRepository: null)
+        public ManageUnifiedLogin(DefaultUserClaim userClaims) : base((int) ProductEnum.UnifiedPlatform, userClaims, null, null)
         {
             _productId = (int) ProductEnum.UnifiedPlatform;
             _editorRealPageId = userClaims.UserRealPageGuid;
@@ -61,7 +61,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="userClaims"></param>
         /// <param name="repository"></param>
         /// <param name="messageHandler"></param>
-        public ManageUnifiedLogin(IRepository repository, DefaultUserClaim userClaims, HttpMessageHandler messageHandler) : base((int)ProductEnum.UnifiedPlatform, userClaims, repository, messageHandler)
+        public ManageUnifiedLogin(IRepository repository, DefaultUserClaim userClaims, HttpMessageHandler messageHandler) : base((int)ProductEnum.UnifiedPlatform, userClaims, repository)
         {
             _productId = (int)ProductEnum.UnifiedPlatform;
             _editorRealPageId = userClaims.UserRealPageGuid;
