@@ -28,7 +28,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
         #region Private Variables
         private int _blueBookId = 123;
         private string _companyInstanceSourceId = "123456";
-        private string _apiEndPoint = "http://producturl.com";
+        private string _apiEndPoint = "http://localhost";
         private string _tokenUrl = "http://producturl.com/token";
         private string _clientId = "OnSiteClient";
         private string _clientSecret = "OnSiteClientSecret";

@@ -44,7 +44,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		private ResidentPortalUser _residentPortalEditorUser = new ResidentPortalUser();
         private DefaultUserClaim _userClaims;
 
-        private string testHostname = "http://producturl.com";
+        private string testHostname = "http://localhost";
         private string _mtApiEndPoint = "http://producturl.com";
 		private string _appId = "d8f43b85";
 		private string _appKey = "50aa7342baf824716f87e6999cf4b472";

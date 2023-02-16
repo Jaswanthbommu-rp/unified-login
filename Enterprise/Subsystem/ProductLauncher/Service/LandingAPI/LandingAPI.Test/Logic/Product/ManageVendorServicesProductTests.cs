@@ -31,7 +31,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
 
         private int _blueBookId = 123;
         private string _companyInstanceSourceId = "123456";
-        private string _apiEndPoint = "http://producturl.com";
+        private string _apiEndPoint = "http://localhost";
         private string _clientId = "VSCleint";
         private string _apiSecret = "VSSecret";
         private string _tokenUri = "https://identity-server.com/connect/token";
