@@ -49,5 +49,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         /// </summary>
         [JsonProperty("IsActive")]
         public bool IsActive { get; set; }
+
+        /// <summary>
+        /// The status of the user
+        /// </summary>
+        [JsonProperty("ProfileId")]
+        public string ProfileId { get; set; }
     }
 }

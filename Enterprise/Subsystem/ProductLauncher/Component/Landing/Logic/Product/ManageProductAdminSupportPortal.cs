@@ -847,7 +847,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
             }
 
-            string query = ($"SELECT Id,FirstName,LastName,Email,Username,LastLoginDate,IsActive FROM User" +
+            string query = ($"SELECT Id,FirstName,LastName,Email,Username,LastLoginDate,IsActive,ProfileId FROM User" +
                                       $" WHERE (User.Contact.Account.OMS_ID__c = '{companyInstanceSourceId}' OR User.Contact.Account.Parent.OMS_ID__c = '{companyInstanceSourceId}')" +
                                       $" AND User.Contact.Portal_User_Migrated__c = {filter}" +
                                       $" LIMIT {resultPerRow} OFFSET {startRow}").Replace(' ', '+');
@@ -875,7 +875,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     Username = user.Username,
                     Email = user.Email,
                     LastActivity = user.LastLoginDate.ToString(),
-                    Extra = $"{_portalId}|{_organizationId}",
+                    Extra = $"{_portalId}|{_organizationId}|{user.ProfileId.Remove(user.ProfileId.Length - 3)}",
                     Status = user.IsActive ? "Active" : "Disabled"
                 };
                 migrationUsers.Add(migrationUser);
