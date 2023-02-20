@@ -1403,6 +1403,7 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\1213354-add-operators.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\IterateUserNameForUserCreationSetting.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\KnockProductPanelScript.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\VMPRolesAndRights.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />

@@ -36,3 +36,4 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\UpdateStatistics.sql
 :r .\PostDeploymentScripts\RecompileAllProcs.sql
 :r .\PostDeploymentScripts\KnockProductPanelScript.sql
+:r .\PostDeploymentScripts\VMPRolesAndRights.sql
