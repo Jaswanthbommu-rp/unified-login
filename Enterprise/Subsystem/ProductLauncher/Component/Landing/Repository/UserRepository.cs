@@ -3696,6 +3696,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     productList.Remove(easyLMSProductBatch);
                 }
 
+                // Do not add client portal product for realpage access users.
+                if (isRealpageAccessUser)
+                {
+                    ProductBatch clientPortalProductBatch = productList.ToList().FirstOrDefault(p => p.ProductId == (int)ProductEnum.ClientPortal);
+                    if (clientPortalProductBatch != null)
+                    {
+                        productList.Remove(clientPortalProductBatch);
+                    }
+                }
+
                 // check salesforce contact for all users
                 //if (!productList.Any(p => p.ProductId == (int) ProductEnum.ClientPortal))
                 {
