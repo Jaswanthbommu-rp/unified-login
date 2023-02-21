@@ -1,4 +1,6 @@
-﻿DECLARE @productid bigint, 
+﻿GO
+
+DECLARE @productid bigint, 
 		@UserId bigint, 
 		@Now datetime = getUTCDate(),
 		@StatusTypeId int, 
@@ -527,9 +529,7 @@ Begin Catch
  
 
  
-
-
-
+GO
 -- SEED DATA FOR Security.[RoleOrganizationType]
 
 DECLARE @UserId bigint, 
@@ -544,3 +544,4 @@ SELECT DD.RoleId,DD.OrganizationTypeId,@UserId,@Now FROM (SELECT SR.RoleId,EO.Or
 	ROT.RoleId = DD. RoleId AND ROT.OrganizationTypeId = DD.OrganizationTypeId 
 WHERE ROT.RoleId IS NULL
 
+GO
