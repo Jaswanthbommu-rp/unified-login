@@ -129,7 +129,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             long assignUserPersonaId = productUserAccountDetails.PersonaId;
 
-            var manageProductBase = new ManageProductBase(productUserAccountDetails.ProductId, _productInternalSettingRepository, _productRepository);
+            var manageProductBase = new ManageProductBase(productUserAccountDetails.ProductId, _defaultUserClaim, _productInternalSettingRepository, _productRepository);
 
             manageProductBase.DeleteSamlUserProductInfoAndStatus(assignUserPersonaId, productUserAccountDetails.ProductId);
 
@@ -151,7 +151,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         private string UpdateProductPrimaryPropertyProductStatus(long userPersonaId, int productId, int settingvalue)
         {
-            var manageProductBase = new ManageProductBase(productId, _productInternalSettingRepository, _productRepository);
+            var manageProductBase = new ManageProductBase(productId, _defaultUserClaim, _productInternalSettingRepository, _productRepository);
             manageProductBase.UpdateProductSettingProductStatus(userPersonaId, "UsePrimaryProperties", productId, settingvalue);
             return string.Empty;
         }

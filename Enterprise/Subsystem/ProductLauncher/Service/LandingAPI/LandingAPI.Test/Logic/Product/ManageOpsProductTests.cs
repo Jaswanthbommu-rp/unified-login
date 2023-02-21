@@ -18,6 +18,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -25,15 +26,14 @@ using Xunit;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
 {
-	[ExcludeFromCodeCoverage]
+    [ExcludeFromCodeCoverage]
 	public class ManageOpsProductTests : ManageProductBaseTests
     {
         #region Private Variables
         private int _blueBookId = 123;
         private string _companyInstanceSourceId = "123456";
-        private string _apiEndPoint = "http://producturl.com";
+        private string _apiEndPoint = "http://localhost";
         private string _apiKey = "some-key";
-        private GbProductMap _gbProductMap = new GbProductMap();
         private IManageProductOps manageProductOps;
         private ListResponse _listResponse = new ListResponse();
         private IList<CustomerCompanyMap> mapCompany;
@@ -78,7 +78,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
 
             _productInternalSettings.Add(new ProductInternalSetting() { Name = "ApiEndPoint", Value = _apiEndPoint });
             _productInternalSettings.Add(new ProductInternalSetting() { Name = "ApiKey", Value = Convert.ToBase64String(Encoding.UTF8.GetBytes(_apiKey)) });
-            _gbProductMap = new GbProductMap() { BooksProductCode = "OPS", Name = "Spend Management", ProductId = 13, UDMSourceCode = "OPS" };
             _repositoryResponseProductStatus.ErrorMessage = "";
 
             mapCompany = new List<CustomerCompanyMap>()
@@ -109,6 +108,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
                 ))
                 .Returns(_productInternalSettings);
 
+            mockRepository
+                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct,
+                    It.Is<object>(d => TestIsProductId(d, (int)ProductEnum.OpsBuyer))))
+                .Returns(_productInternalSettings);
+
             mockSamlRepository
                 .Setup(m => m.GetProductSamlDetails(
                     It.Is<long>(l => l == _editorPersonaId)
@@ -129,17 +133,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
                 .Returns(_userProductSettings);
 
             mockProductRepository
-             .Setup(m => m.GetBooksMasterProductDetail(
-                 It.IsAny<int>()
-             ))
-             .Returns(_gbProductMap);
+                .Setup(m => m.GetBooksMasterProductDetail(
+                    It.Is<int>(l => l == (int)ProductEnum.OpsBuyer)))
+                .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.OpsBuyer));
+
+            mockRepository
+                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
+                    It.IsAny<object>()))
+                .Returns(_gbProductMap);
 
             HttpResponseMessage tokenResponse = new HttpResponseMessage(HttpStatusCode.OK);
             tokenResponse.Content = new StringContent(JsonConvert.SerializeObject(new { session = new { sid = "mocked sid" } }));
             mockHttpMessageHandler.Setup(HttpMethod.Post, $"{_apiEndPoint}/api/v1.0/sessions", tokenResponse);
 
-            manageProductOps = new ManageProductOps(_editorRealPageId, _editorUserClaim, client,
-                mockProductInternalSettingRepository.Object, mockManagePersona.Object, mockSamlRepository.Object, mockManageBlueBook.Object,mockProductRepository.Object);
+            manageProductOps = new ManageProductOps(_editorRealPageId, _editorUserClaim, mockHttpMessageHandler.Object, client,
+                mockProductInternalSettingRepository.Object, mockManagePersona.Object, mockSamlRepository.Object, mockManageBlueBook.Object,mockProductRepository.Object, mockRepository.Object);
 
         }
         #endregion

@@ -8,6 +8,7 @@ using System.Runtime.Caching;
 using System.Web.Security;
 using IdentityModel.Client;
 using Newtonsoft.Json;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
@@ -51,7 +52,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// Ctor
 		/// </summary>
 		/// <param name="userClaims"></param>
-        public ManageProductVendorServices(DefaultUserClaim userClaims) : base((int)ProductEnum.VendorServices, userClaims, null, null)
+        public ManageProductVendorServices(DefaultUserClaim userClaims) : base((int)ProductEnum.VendorServices, userClaims, productInternalSettingRepository: null, productRepository: null)
         {
             WriteToDiagnosticLog("ManageProductVendorServices.Ctor - Getting Product settings.");
             _productId = (int)ProductEnum.VendorServices;
@@ -74,18 +75,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         }
 
         /// <summary>
-		/// Unit test constructor
-		/// </summary>
-		/// <param name="editorRealPageId"></param>
-		/// <param name="userClaims"></param>
-		/// <param name="httpMessageHandler"></param>
-		/// <param name="productInternalSettingRepository"></param>
-		/// <param name="managePersona"></param>
-		/// <param name="samlRepository"></param>
-		/// <param name="manageBlueBook"></param>
+        /// Unit test constructor
+        /// </summary>
+        /// <param name="editorRealPageId"></param>
+        /// <param name="userClaims"></param>
+        /// <param name="httpMessageHandler"></param>
+        /// <param name="productInternalSettingRepository"></param>
+        /// <param name="managePersona"></param>
+        /// <param name="samlRepository"></param>
+        /// <param name="manageBlueBook"></param>
+        /// <param name="productRepository"></param>
+        /// <param name="repository"></param>
         public ManageProductVendorServices(Guid editorRealPageId, DefaultUserClaim userClaims, HttpMessageHandler httpMessageHandler, IProductInternalSettingRepository productInternalSettingRepository,
-            IManagePersona managePersona, ISamlRepository samlRepository, IManageBlueBook manageBlueBook, IProductRepository productRepository)
-            : base((int)ProductEnum.VendorServices, productInternalSettingRepository, productRepository)
+            IManagePersona managePersona, ISamlRepository samlRepository, IManageBlueBook manageBlueBook, IProductRepository productRepository, IRepository repository)
+            : base((int)ProductEnum.VendorServices, userClaims, repository, httpMessageHandler)
         {
             _editorRealPageId = editorRealPageId;
 

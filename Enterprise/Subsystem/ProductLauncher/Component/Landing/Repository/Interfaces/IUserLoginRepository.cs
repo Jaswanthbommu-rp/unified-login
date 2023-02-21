@@ -84,22 +84,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// </summary>
         ActivityAttemptDetails GetActivityAttemptExceeds(long organizationPartyId, string enterpriseUserName, int activityId);
 
-        /// <summary>
-        /// Update User Activity Attempts
-        /// </summary>
-        ActivityAttempt UpdateUserActivityAttempts(string enterpriseUserName, ActivityType activityType, UserDeviceDetails userDeviceDetails, long organizationPartyId, string authenticationServiceId = "");
-        
-        /// <summary>
-        /// Insert or update User Status by company
-        /// </summary>
-        /// <param name="realPageId">User enterprise Id</param>
-        /// <param name="organizationPartyId">User enterprise Id</param>
-        /// <param name="statusTypeId">statusType Id</param>
-        /// <param name="fromDate">FromDate</param>
-        /// <param name="thruDate">ThruDate</param>
-        /// <returns>RepositoryResponse object</returns>
-        RepositoryResponse UpdateUserStatusByCompany(Guid realPageId, long organizationPartyId, int statusTypeId, DateTime fromDate, DateTime? thruDate);
-
         UserLoginOnly GetUserLoginOnly(string enterpriseUserName);
 
         UserLoginOnly GetUserLoginOnly(long userId);

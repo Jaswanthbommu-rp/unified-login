@@ -321,7 +321,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			if (samlDetails.Count() == 0 && isUserCreationRequired)
 			{
 				OrganizationRepository organizationRepository = new OrganizationRepository();
-				UserRepository userRepository = new UserRepository();
+				UserRepository userRepository = new UserRepository(_userClaims);
 				var retryCheckCount = 5;
 				var statusCheckSleep = 5000;
 				

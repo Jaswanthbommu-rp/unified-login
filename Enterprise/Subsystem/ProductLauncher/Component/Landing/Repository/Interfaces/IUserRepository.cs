@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using SO = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
@@ -171,5 +172,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 
 		ExternalUserRelationship GetExternalUserRelationship(long userLoginPersonaId);
 
-	}
+        /// <summary>
+        /// Insert or update User Status by company
+        /// </summary>
+        /// <param name="realPageId">User enterprise Id</param>
+        /// <param name="organizationPartyId">User enterprise Id</param>
+        /// <param name="statusTypeId">statusType Id</param>
+        /// <param name="fromDate">FromDate</param>
+        /// <param name="thruDate">ThruDate</param>
+        /// <returns>RepositoryResponse object</returns>
+        RepositoryResponse UpdateUserStatusByCompany(Guid realPageId, long organizationPartyId, int statusTypeId, DateTime fromDate, DateTime? thruDate);
+
+        /// <summary>
+        /// Update User Activity Attempts
+        /// </summary>
+        ActivityAttempt UpdateUserActivityAttempts(string enterpriseUserName, ActivityType activityType, UserDeviceDetails userDeviceDetails, long organizationPartyId, string authenticationServiceId = "");
+
+    }
 }

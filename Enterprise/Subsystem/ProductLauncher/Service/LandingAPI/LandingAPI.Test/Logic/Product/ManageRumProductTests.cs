@@ -1,5 +1,4 @@
-﻿using System;
-using Moq;
+﻿using Moq;
 using Newtonsoft.Json;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
@@ -14,6 +13,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Migration;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
 using RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Extensions;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
@@ -22,13 +22,13 @@ using Xunit;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
 {
-	[ExcludeFromCodeCoverage]
+    [ExcludeFromCodeCoverage]
 	public class ManageRumProductTests : ManageProductBaseTests
     {
         #region Private Variables
         private int _blueBookId = 123;
         private string _companyInstanceSourceId = "123456";
-        private string _apiEndPoint = "http://producturl.com";
+        private string _apiEndPoint = "http://localhost";
         private string _clientId = "RumClient";
         private string _clientSecret = "RumClientSecret";
 
@@ -110,6 +110,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
                 ))
                 .Returns(_productInternalSettings);
 
+            mockRepository
+                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct,
+                    It.Is<object>(d => TestIsProductId(d, (int)ProductEnum.UtilityManagement))))
+                .Returns(_productInternalSettings);
+
             mockSamlRepository
                 .Setup(m => m.GetProductSamlDetails(
                     It.Is<long>(l => l == _editorPersonaId)
@@ -148,14 +153,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
             ))
             .Returns(_gbProductMap);
 
+            mockRepository
+                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
+                    It.IsAny<object>()))
+                .Returns(new List<GbProductMap>() { _gbProductMap });
+
             var mockTokenHttpMessageHandler = new Mock<HttpMessageHandler>();
 
             HttpResponseMessage tokenResponse = new HttpResponseMessage(HttpStatusCode.OK);
             tokenResponse.Content = new StringContent(JsonConvert.SerializeObject(new { access_token = "mocked access token" }));
             mockTokenHttpMessageHandler.Setup(HttpMethod.Post, $"{_apiEndPoint}/connect/token", tokenResponse);
-
-            manageProductRum = new ManageProductRum(_editorRealPageId, _editorUserClaim, mockHttpMessageHandler.Object, mockTokenHttpMessageHandler.Object,
-                mockProductInternalSettingRepository.Object, mockManagePersona.Object, mockSamlRepository.Object, mockManageBlueBook.Object, mockProductRepository.Object);
 
         }
         #endregion
@@ -192,6 +199,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
 
             mockHttpMessageHandler.Setup(HttpMethod.Get, url, userResponse);
 
+            var httpClient = new HttpClient(mockHttpMessageHandler.Object) { BaseAddress = new Uri(_apiEndPoint) };
+
+            manageProductRum = new ManageProductRum(_editorRealPageId, _editorUserClaim, mockHttpMessageHandler.Object, mockTokenHttpMessageHandler.Object,
+                mockProductInternalSettingRepository.Object, mockManagePersona.Object, mockSamlRepository.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockRepository.Object, httpClient);
+
             //Act
             var expected = manageProductRum.GetMigrationUsers(editorPersonaId, dataFilter);
 
@@ -218,10 +230,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
                 Status = true
             };
             var url = $"{_apiEndPoint}/migration/{_companyInstanceSourceId}/migrate-users";
-            HttpResponseMessage userResponse = new HttpResponseMessage(HttpStatusCode.OK);
+            var userResponse = new HttpResponseMessage(HttpStatusCode.OK);
             userResponse.Content = new StringContent(JsonConvert.SerializeObject(expected));
 
-            mockHttpMessageHandler.Setup(HttpMethod.Post, url, userResponse);
+            var mockHttpMessageHandler2 = new Mock<HttpMessageHandler>();
+
+            mockHttpMessageHandler2.Setup(HttpMethod.Post, url, userResponse);
+            var httpClient = new HttpClient(mockHttpMessageHandler2.Object) { BaseAddress = new Uri(_apiEndPoint) };
+
+            manageProductRum = new ManageProductRum(_editorRealPageId, _editorUserClaim, mockHttpMessageHandler2.Object, mockTokenHttpMessageHandler.Object,
+                mockProductInternalSettingRepository.Object, mockManagePersona.Object, mockSamlRepository.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockRepository.Object, httpClient);
 
             //Act
             var actual = manageProductRum.UpdateUsersMigrationStatus(_editorPersonaId, migratedUser);
@@ -243,6 +261,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
             string url = $"{_apiEndPoint}/user/deleteuser?userId={productUserId}";
 
             mockHttpMessageHandler.Setup(HttpMethod.Delete, url, userResponse);
+            var httpClient = new HttpClient(mockHttpMessageHandler.Object) { BaseAddress = new Uri(_apiEndPoint) };
+
+            manageProductRum = new ManageProductRum(_editorRealPageId, _editorUserClaim, mockHttpMessageHandler.Object, mockTokenHttpMessageHandler.Object,
+                mockProductInternalSettingRepository.Object, mockManagePersona.Object, mockSamlRepository.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockRepository.Object, httpClient);
 
             //Act
             var actual = manageProductRum.ChangeUserStatus(_editorPersonaId, productUserId);
@@ -262,6 +284,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
             string url = $"{_apiEndPoint}/user/deleteuser?userId={productUserId}";
 
             mockHttpMessageHandler.Setup(HttpMethod.Delete, url, userResponse);
+            var httpClient = new HttpClient(mockHttpMessageHandler.Object) { BaseAddress = new Uri(_apiEndPoint) };
+
+            manageProductRum = new ManageProductRum(_editorRealPageId, _editorUserClaim, mockHttpMessageHandler.Object, mockTokenHttpMessageHandler.Object,
+                mockProductInternalSettingRepository.Object, mockManagePersona.Object, mockSamlRepository.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockRepository.Object, httpClient);
 
             //Act
             var actual = manageProductRum.ChangeUserStatus(_editorPersonaId, productUserId);

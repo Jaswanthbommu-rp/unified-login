@@ -6,6 +6,7 @@ using System.Net.Http.Headers;
 using System.Runtime.Caching;
 using IdentityModel.Client;
 using Newtonsoft.Json;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
@@ -44,7 +45,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// 
 		/// </summary>
 		/// <param name="userClaims"></param>
-        public ManageProductRum(DefaultUserClaim userClaims) : base((int)ProductEnum.UtilityManagement, userClaims, null, null)
+        public ManageProductRum(DefaultUserClaim userClaims) : base((int)ProductEnum.UtilityManagement, userClaims, productInternalSettingRepository: null, productRepository: null)
         {
             WriteToDiagnosticLog("ManageProductRum.Ctor - Getting Product settings.");
             _productId = (int)ProductEnum.UtilityManagement;
@@ -72,20 +73,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         }
 
         /// <summary>
-		/// 
-		/// </summary>
-		/// <param name="editorRealPageId"></param>
-		/// <param name="userClaims"></param>
-		/// <param name="messageHandler"></param>
-		/// <param name="tokenMessageHandler"></param>
-		/// <param name="productInternalSettingRepository"></param>
-		/// <param name="managePersona"></param>
-		/// <param name="samlRepository"></param>
-		/// <param name="blueBook"></param>
+        /// Unit test constructor
+        /// </summary>
+        /// <param name="editorRealPageId"></param>
+        /// <param name="userClaims"></param>
+        /// <param name="messageHandler"></param>
+        /// <param name="tokenMessageHandler"></param>
+        /// <param name="productInternalSettingRepository"></param>
+        /// <param name="managePersona"></param>
+        /// <param name="samlRepository"></param>
+        /// <param name="blueBook"></param>
+        /// <param name="productRepository"></param>
+        /// <param name="repository"></param>
         public ManageProductRum(Guid editorRealPageId, DefaultUserClaim userClaims, HttpMessageHandler messageHandler, HttpMessageHandler tokenMessageHandler, 
             IProductInternalSettingRepository productInternalSettingRepository, IManagePersona managePersona, 
-            ISamlRepository samlRepository, IManageBlueBook blueBook, IProductRepository productRepository)
-             : base((int)ProductEnum.UtilityManagement, userClaims, productInternalSettingRepository, productRepository)
+            ISamlRepository samlRepository, IManageBlueBook blueBook, IProductRepository productRepository, IRepository repository, HttpClient httpClient)
+             : base((int)ProductEnum.UtilityManagement, userClaims, repository, tokenMessageHandler, httpClient)
         {
             _editorRealPageId = editorRealPageId;
             _productInternalSettingRepository = productInternalSettingRepository;
@@ -107,9 +110,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             WriteToDiagnosticLog("ManageProductRum.Ctor - Received Product settings; getting token.");
 
             _tokenClient = new TokenClient($"{_nwpIssueUri}/connect/token", _clientId, _apiSecret, tokenMessageHandler);
-            _client = new HttpClient(messageHandler, false);
+            //_client = new HttpClient(messageHandler, false);
 
-            GetToken();
+            //GetToken(); // not needed for unit tests
         }
         #endregion
 
@@ -989,7 +992,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 Message = "Could not migrate users."
             };
             var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
-            if (claimResposnse.IsError) { migrateResponse.Message =  claimResposnse.ErrorReason; return migrateResponse; }
+            if (claimResposnse.IsError)
+            {
+                migrateResponse.Message = claimResposnse.ErrorReason;
+                return migrateResponse;
+            }
 
             try
             {
@@ -999,7 +1006,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     WriteToErrorLog(
                         $"ManageProductRum.UpdateUsersMigrationStatus.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
-                    migrateResponse.Message = "Company Setup Error: Please Contact Support.";
+                    migrateResponse.Message = $"Company Setup Error: Please Contact Support. _udmSourceCode: {_udmSourceCode}";
                     return migrateResponse;
                 }
 
@@ -1008,16 +1015,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 _client.DefaultRequestHeaders.Clear();
                 _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
 
-                var response = _client.PostAsJsonAsync($"{_apiEndPoint}/migration/{companyInstanceSourceId}/migrate-users", migrateUsers).Result;
+                var response = _client.PostAsJsonAsync(url, migrateUsers).Result;
                 var responseContent = response.Content.ReadAsStringAsync().Result;
 
                 var logData = new Dictionary<string, object>
-            {
-                { "Url", url },
-                { "Response", responseContent },
-                { "EditorPersonaId", editorPersonaId },
-                { "MigratedUser", migrateUsers }
-            };
+                {
+                    { "Url", url },
+                    { "Response", responseContent },
+                    { "EditorPersonaId", editorPersonaId },
+                    { "MigratedUser", migrateUsers }
+                };
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -1032,16 +1039,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     migrateResponse.Status = false;
                 }
             }
-            catch (Exception ex )
+            catch (Exception ex)
             {
                 migrateResponse = new MigrateResponse
-                { 
+                {
                     Status = false,
                     Message = ex.Message
                 };
 
                 WriteToErrorLog($"ManageProductRum.UpdateUsersMigrationStatus Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
             }
+
             return migrateResponse;
         }
 

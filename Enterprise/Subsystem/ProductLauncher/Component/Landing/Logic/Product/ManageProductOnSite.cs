@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Runtime.Caching;
 using Newtonsoft.Json;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
@@ -41,14 +42,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Ctor
         /// </summary>
-        public ManageProductOnSite(DefaultUserClaim userClaims) : base((int)ProductEnum.OnSite,userClaims, null, null)
+        public ManageProductOnSite(DefaultUserClaim userClaims) : base((int)ProductEnum.OnSite,userClaims, productInternalSettingRepository: null, productRepository: null)
         {
             WriteToDiagnosticLog("ManageProductOnSite.Ctor - Getting Product settings.");
             _productId = (int)ProductEnum.OnSite;
             _productInternalSettingRepository = new ProductInternalSettingRepository();
             _editorRealPageId = userClaims.UserRealPageGuid;
 
-            _blueBook = new ManageBlueBook();
+            _blueBook = new ManageBlueBook(userClaims);
 
             _apiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIENDPOINT").Value; //"https://staging9.on-site.com/api/greenbook"; //
             _apiSecret = _productInternalSettingList.First(a => a.Name.ToUpper() == "APISECRET").Value; //"f3865f8b7c1a2177b0147f2ab1bb3ccfee25f716f883eb341d700986a61d4048";
@@ -64,17 +65,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         }
 
         /// <summary>
-        /// 
+        /// Unit test constructor
         /// </summary>
         /// <param name="editorRealPageId"></param>
+        /// <param name="userClaims"></param>
         /// <param name="messageHandler"></param>
         /// <param name="productInternalSettingRepository"></param>
         /// <param name="managePersona"></param>
         /// <param name="samlRepository"></param>
         /// <param name="blueBook"></param>
-        public ManageProductOnSite(Guid editorRealPageId, HttpMessageHandler messageHandler, IProductInternalSettingRepository productInternalSettingRepository,
-                                    IManagePersona managePersona, ISamlRepository samlRepository, IManageBlueBook blueBook, IProductRepository productRepository)
-             : base((int)ProductEnum.OnSite, productInternalSettingRepository, productRepository)
+        /// <param name="productRepository"></param>
+        /// <param name="repository"></param>
+        public ManageProductOnSite(Guid editorRealPageId, DefaultUserClaim userClaims, HttpMessageHandler messageHandler, IProductInternalSettingRepository productInternalSettingRepository,
+                                    IManagePersona managePersona, ISamlRepository samlRepository, IManageBlueBook blueBook, IProductRepository productRepository, IRepository repository)
+             : base((int)ProductEnum.OnSite, userClaims, repository, messageHandler)
         {
             _editorRealPageId = editorRealPageId;
             _messageHandler = messageHandler;

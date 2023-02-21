@@ -27,6 +27,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base
             ObjectCache cache = MemoryCache.Default;
             var newValue = new Lazy<T>(valueFactory);
             CacheItemPolicy policy = new CacheItemPolicy { AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(expirationseconds) };
+            //return newValue.Value; // enable to remove caching for testing
             var value = cache.AddOrGetExisting(key, newValue, policy) as Lazy<T>;
             try
             {
@@ -41,6 +42,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base
             catch (Exception ex)
             {
                 // if the function to get the data ever fails, it will cache the exception. We need to remove the bad cached data so the next attempt will cache valid data
+                // throw new Exception(ex.Message);// enable for testing
                 Dictionary<string, object> logData = new Dictionary<string, object>{
                     { "key", key }
                 };

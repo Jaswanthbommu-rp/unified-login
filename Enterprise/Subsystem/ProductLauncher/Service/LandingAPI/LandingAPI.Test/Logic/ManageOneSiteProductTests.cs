@@ -2,11 +2,15 @@
 using Moq.Language.Flow;
 using Newtonsoft.Json;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
@@ -21,20 +25,15 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using RP.Enterprise.Foundation.DataAccess.Component;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using Xunit;
 using IC = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 {
-	/// <summary>
-	/// Product xUnit tests
-	/// </summary>
-	[ExcludeFromCodeCoverage]
+    /// <summary>
+    /// Product xUnit tests
+    /// </summary>
+    [ExcludeFromCodeCoverage]
     public class ManageOneSiteProductTests : ManageProductBaseTests
     {
         private static string _pmcID = "1234566";
@@ -58,7 +57,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 	    private Mock<IManageElectronicAddress> _mockManageElectronicAddress = new Mock<IManageElectronicAddress>();
 
 		private UserLoginOnly _userlogin = new UserLoginOnly();
-	    private GbProductMap _gbProductMap = new GbProductMap();
 
 		// GreenBook Property result
 		private static ProductProperty _property1 = new ProductProperty() { ID = "1234567", Name = "Test Property", City = "Test City", State = "Test State", Street1 = "Test Street 1", Street2 = "Test Street 2", Zip = "12345", IsAssigned = true };
@@ -147,6 +145,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             tokenResponse.Content = new StringContent(JsonConvert.SerializeObject(new { access_token = "mocked access token" }));
             mockHttpMessageHandler.Setup(HttpMethod.Post, $"https://{_pmcUrl}/{_mtTokenUrl}", tokenResponse);
 
+            mockRepository
+                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
+                    It.IsAny<object>()))
+                .Returns(_gbProductMap);
+
+            mockRepository
+                .Setup(m => m.GetMany<IC.ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct,
+                    It.Is<object>(d => TestIsProductId(d, (int)ProductEnum.OneSite))))
+                .Returns(_productInternalSettingsOneSite);
         }
 
 		#region OneSite
@@ -195,10 +202,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             userLoginPersona.Add(new IC.UserLoginPersona() { UserLoginPersonaId = 20, UserLoginId = 15 });
 
             UserEmployee userEmployee = new UserEmployee() { EmployeeId = "Employee123456", UserLoginPersonaId = 20 };
-
-            _gbProductMap = new GbProductMap {ProductId = 1, BooksProductCode = "OS", Name = "OneSite", UDMSourceCode = "OS"};
-
-			IList<GbProductMap> productList = new List<GbProductMap> { _gbProductMap };
 
 			_mockService
 				 .Setup(m => m.CreateUser(
@@ -345,15 +348,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			    .Setup(m => m.ListProducts(
 				    null, null, null, null
 			    ))
-			    .Returns(productList);
+			    .Returns(_gbProductMap);
 
 		    _mockProductRepository
 			    .Setup(m => m.GetBooksMasterProductDetail(
-				    It.IsAny<int>()
+				    It.Is<int>(l => l == 1)
 			    ))
-			    .Returns(_gbProductMap);
+			    .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.OneSite));
 
-			_mockProductRepository
+            _mockProductRepository
 				.Setup(m => m.CreateProductSetting(
 					It.IsAny<long>()
 					, It.IsAny<int>()
@@ -368,13 +371,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				))
 				.Returns(_productInternalSettingsOneSite);
 
-			_mockManageElectronicAddress
+            _mockManageElectronicAddress
 				.Setup(m => m.ListElectronicAddressForPerson(
 					It.IsAny<Guid>()
 					, It.IsAny<string>()
 				))
 				.Returns(_electronicAddressList);
-
 		}
 
 	    #region Persona
@@ -447,12 +449,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             mockProductRepository
                .Setup(m => m.GetBooksMasterProductDetail(
-                   It.IsAny<int>()
+                   It.Is<int>(l => l == 1)
                ))
-               .Returns(_gbProductMap);
+               .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.OneSite));
 
             //Act
-            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object, mockHttpMessageHandler.Object);
+            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, _editorUserClaim, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object, mockHttpMessageHandler.Object, mockRepository.Object);
 
             ListResponse resp = manageProductOneSite.GetOneSitePropertyList(0, 0, true, reqParameter);
             Assert.True(resp.TotalRows == 0);
@@ -479,26 +481,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             var mockManageBlueBook = new Mock<IManageBlueBook>();
             var mockManagePersona = new Mock<IManagePersona>();
             var mockProductRepository = new Mock<IProductRepository>();
-            var mockRepository = new Mock<IRepository>();
 
             SamlRepository samlRepository = new SamlRepository();
 
-            mockRepository
-                .Setup(m => m.GetMany<IC.ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.Is<object>(
-                    d => d.ToString().Contains($"ProductId = 1"))))
-                .Returns(_productInternalSettingsOneSite);
-
             mockProductRepository
               .Setup(m => m.GetBooksMasterProductDetail(
-                  It.IsAny<int>()
+                  It.Is<int>(l => l == 1)
               ))
-              .Returns(_gbProductMap);
+              .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.OneSite));
 
             ProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository(mockRepository.Object);
 
             //Act
-            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, mockService.Object, samlRepository, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, productInternalSettingRepository,
-                mockHttpMessageHandler.Object);
+            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, _editorUserClaim, mockService.Object, samlRepository, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, productInternalSettingRepository, mockHttpMessageHandler.Object, mockRepository.Object);
 
             ListResponse resp = manageProductOneSite.GetOneSitePropertyList(_editorPersonaId, _userPersonaId, true, reqParameter);
             Assert.True(resp.TotalRows == 0);
@@ -524,12 +519,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             mockProductRepository
               .Setup(m => m.GetBooksMasterProductDetail(
-                  It.IsAny<int>()
+                  It.Is<int>(l => l == 1)
               ))
-              .Returns(_gbProductMap);
+              .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.OneSite));
             //Act
-            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, mockService.Object, samlRepository, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
-                mockHttpMessageHandler.Object);
+            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, _editorUserClaim, mockService.Object, samlRepository, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object, mockHttpMessageHandler.Object, mockRepository.Object);
 
             ListResponse resp = manageProductOneSite.GetOneSitePropertyList(_editorPersonaId, _userPersonaId, true, null);
             Assert.True(resp.TotalRows == 0);
@@ -548,21 +542,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             SamlRepository samlRepository = new SamlRepository();
             mockProductInternalSettingRepository
                 .Setup(m => m.GetProductInternalSettings(
-                    It.IsAny<int>()
-                ))
+                    It.IsAny<int>()))
                 .Returns(_productInternalSettingsOneSite);
 
             mockProductRepository
               .Setup(m => m.GetBooksMasterProductDetail(
-                  It.IsAny<int>()
-              ))
-              .Returns(_gbProductMap);
+                  It.Is<int>(l => l == 1)))
+              .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.OneSite));
 
             new RPObjectCache().BustCache();
 
             //Act
-            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, mockService.Object, samlRepository, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
-                mockHttpMessageHandler.Object);
+            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, _editorUserClaim, mockService.Object, samlRepository, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
+                mockHttpMessageHandler.Object, mockRepository.Object);
 
             Persona persona = new Persona() { Organization = new Organization() { BooksMasterId = 1234 } };
             var exception = Record.Exception(() => manageProductOneSite.GetOneSitePropertyListAll(persona, null));
@@ -617,13 +609,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             mockProductRepository
               .Setup(m => m.GetBooksMasterProductDetail(
-                  It.IsAny<int>()
-              ))
-              .Returns(_gbProductMap);
+                  It.Is<int>(l => l ==1)))
+              .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.OneSite));
 
             //Act
-            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
-                mockHttpMessageHandler.Object);
+            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, _editorUserClaim, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
+                mockHttpMessageHandler.Object, mockRepository.Object);
             ListResponse resp = manageProductOneSite.GetOneSiteRoleList(_editorPersonaId, _userPersonaId, false, reqParameter);
             Assert.True(resp.TotalRows == 0);
         }
@@ -631,8 +622,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         [Fact]
         public void Get_UserRoles_WithNoFilterAndNoSort_NoData()
         {
-            var _gbProductMap = new GbProductMap {ProductId = 1, BooksProductCode = "OS", Name = "OneSite", UDMSourceCode = "OS"};
-
             //Arrange
             var mockService = new Mock<IOneSiteProductService>();
             var mockManageBlueBook = new Mock<IManageBlueBook>();
@@ -668,13 +657,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             mockProductRepository
                 .Setup(m => m.GetBooksMasterProductDetail(
-                    (int)ProductEnum.OneSite)
-                )
-                .Returns(_gbProductMap);
+                    (int)ProductEnum.OneSite))
+                .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.OneSite));
 
             //Act
-            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
-                mockHttpMessageHandler.Object);
+            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, _editorUserClaim, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
+                mockHttpMessageHandler.Object, mockRepository.Object);
             ListResponse resp = manageProductOneSite.GetOneSiteRoleList(_editorPersonaId, _userPersonaId, false, null);
             Assert.True(resp.TotalRows == 0);
         }
@@ -698,13 +686,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Returns(_productInternalSettingsOneSite);
 
             mockProductRepository
-             .Setup(m => m.GetBooksMasterProductDetail(
-                 It.IsAny<int>()
-             ))
-             .Returns(_gbProductMap);
+                .Setup(m => m.GetBooksMasterProductDetail(
+                    It.Is<int>(l => l == 1)))
+                .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.OneSite));
             //Act
-            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, mockService.Object, samlRepository, managePersona, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
-                mockHttpMessageHandler.Object);
+            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, _editorUserClaim, mockService.Object, samlRepository, managePersona, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
+                mockHttpMessageHandler.Object, mockRepository.Object);
             Persona persona = new Persona();
             var error =  manageProductOneSite.GetOneSiteRoleListAll(_editorPersonaId, null);
             Assert.NotNull(error);
@@ -780,13 +767,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                .Returns(_partyRelationShip);
 
             mockProductRepository
-              .Setup(m => m.GetBooksMasterProductDetail(
-                  It.IsAny<int>()
-              ))
-              .Returns(_gbProductMap);
+                .Setup(m => m.GetBooksMasterProductDetail(
+                    It.Is<int>(l => l == 1)))
+                .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.OneSite));
 
             IManageProductOneSite manageProductOneSite = new ManageProductOneSite(
 		        editorRealPageId: _editorRealPageId,
+                userClaim: _editorUserClaim, messageHandler: mockHttpMessageHandler.Object,
 		        service: mockService.Object,
 		        userList: null,
 		        roleList: roleResultList,
@@ -804,7 +791,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        managePartyRelationship: mockManagePartyRelationship.Object,
 				manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
-                userRepository: null
+                userRepository: null, 
+                repository: mockRepository.Object
             );
 
 			int roleId = 0; // new role
@@ -885,13 +873,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             mockProductRepository
                    .Setup(m => m.GetBooksMasterProductDetail(
-                       It.IsAny<int>()
-                   ))
-                   .Returns(_gbProductMap);
+                       It.Is<int>(l => l ==1)))
+                   .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.OneSite));
 
             IManageProductOneSite manageProductOneSite = new ManageProductOneSite(
 		        editorRealPageId: _editorRealPageId,
-		        service: mockService.Object,
+                userClaim: _editorUserClaim, messageHandler: mockHttpMessageHandler.Object,
+                service: mockService.Object,
 		        userList: null,
 		        roleList: roleResultList,
 		        rightList: null,
@@ -908,7 +896,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        managePartyRelationship: mockManagePartyRelationship.Object,
 		        manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
-                userRepository: null
+                userRepository: null, 
+                repository: mockRepository.Object
             );
 
 			Persona persona = new Persona();
@@ -997,12 +986,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             mockProductRepository
               .Setup(m => m.GetBooksMasterProductDetail(
-                  It.IsAny<int>()
-              ))
-              .Returns(_gbProductMap);
+                  It.Is<int>(l => l == 1)))
+              .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.OneSite));
 
             IManageProductOneSite manageProductOneSite = new ManageProductOneSite(
 		        editorRealPageId: _editorRealPageId,
+                userClaim: _editorUserClaim, 
+                messageHandler: mockHttpMessageHandler.Object,
 		        service: mockService.Object,
 		        userList: null,
 		        roleList: roleResultList,
@@ -1020,7 +1010,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        managePartyRelationship: mockManagePartyRelationship.Object,
 		        manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
-                userRepository: null
+                userRepository: null, 
+                repository: mockRepository.Object
             );
 
 			Persona persona = new Persona();
@@ -1119,13 +1110,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             mockProductRepository
               .Setup(m => m.GetBooksMasterProductDetail(
-                  It.IsAny<int>()
-              ))
-              .Returns(_gbProductMap);
+                  It.Is<int>(l => l == 1)))
+              .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.OneSite));
 
             IManageProductOneSite manageProductOneSite = new ManageProductOneSite(
 		        editorRealPageId: _editorRealPageId,
-		        service: mockService.Object,
+                userClaim: _editorUserClaim, messageHandler: mockHttpMessageHandler.Object,
+                service: mockService.Object,
 		        userList: null,
 		        roleList: roleResultList,
 		        rightList: null,
@@ -1142,7 +1133,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        managePartyRelationship: mockManagePartyRelationship.Object,
 		        manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
-                userRepository: null
+                userRepository: null,
+                repository: mockRepository.Object
             );
 			Persona persona = new Persona();
             int rightId = 1;
@@ -1216,13 +1208,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             mockProductRepository
               .Setup(m => m.GetBooksMasterProductDetail(
-                  It.IsAny<int>()
-              ))
-              .Returns(_gbProductMap);
+                  It.Is<int>(l => l == 1)))
+              .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.OneSite));
 
             IManageProductOneSite manageProductOneSite = new ManageProductOneSite(
 		        editorRealPageId: _editorRealPageId,
-		        service: mockService.Object,
+                userClaim: _editorUserClaim, messageHandler: mockHttpMessageHandler.Object,
+                service: mockService.Object,
 		        userList: null,
 		        roleList: roleResultList,
 		        rightList: null,
@@ -1239,7 +1231,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        managePartyRelationship: mockManagePartyRelationship.Object,
 		        manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
-                userRepository: null
+                userRepository: null, 
+                repository: mockRepository.Object
             );
 			Persona persona = new Persona();
             int rightId = 0;
@@ -1311,12 +1304,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             mockProductRepository
               .Setup(m => m.GetBooksMasterProductDetail(
-                  It.IsAny<int>()
-              ))
-              .Returns(_gbProductMap);
+                  It.Is<int>(l => l == 1)))
+              .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.OneSite));
 
-            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
-                mockHttpMessageHandler.Object);
+            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, _editorUserClaim, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
+                mockHttpMessageHandler.Object, repository: mockRepository.Object);
             Persona persona = new Persona();
             long deletePersonaId = 10;
             string result = manageProductOneSite.DeleteOneSiteUser(_editorPersonaId, deletePersonaId);
@@ -1389,12 +1381,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             mockProductRepository
                .Setup(m => m.GetBooksMasterProductDetail(
-                   It.IsAny<int>()
-               ))
-               .Returns(_gbProductMap);
+                   It.Is<int>(l => l == 1)))
+               .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.OneSite));
 
-            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
-                mockHttpMessageHandler.Object);
+            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, _editorUserClaim, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
+                mockHttpMessageHandler.Object, repository: mockRepository.Object);
             Persona persona = new Persona();
 
             string result = manageProductOneSite.EnableOneSiteUser(_editorPersonaId, _userPersonaId, true);
@@ -1447,15 +1438,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             mockProductRepository
               .Setup(m => m.GetBooksMasterProductDetail(
-                  It.IsAny<int>()
-              ))
-              .Returns(_gbProductMap);
+                  It.Is<int>(l => l == 1)))
+              .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.OneSite));
 
             new RPObjectCache().BustCache();
 
             //Act
-            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, mockService.Object, samlRepository, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
-                mockHttpMessageHandler.Object);
+            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, _editorUserClaim, mockService.Object, samlRepository, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
+                mockHttpMessageHandler.Object, repository: mockRepository.Object);
             var exception = Record.Exception(() => manageProductOneSite.GetOneSiteRights(_editorPersonaId, null, 0));
             Assert.NotNull(exception);
             Assert.IsType<System.Exception>(exception);
@@ -1469,7 +1459,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             var mockManageBlueBook = new Mock<IManageBlueBook>();
             var mockManagePersona = new Mock<IManagePersona>();
             var mockProductRepository = new Mock<IProductRepository>();
-            var mockRepository = new Mock<IRepository>();
             
             SamlRepository samlRepository = new SamlRepository();
 
@@ -1485,23 +1474,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 ))
                 .Returns(_userProductSettings);
             
-            mockRepository
-                .Setup(m => m.GetMany<IC.ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.Is<object>(
-                    d => d.ToString().Contains($"ProductId = 1"))))
-                .Returns(_productInternalSettingsOneSite);
-
             mockProductRepository
-          .Setup(m => m.GetBooksMasterProductDetail(
-              It.IsAny<int>()
-          ))
-          .Returns(_gbProductMap);
+                .Setup(m => m.GetBooksMasterProductDetail(
+                    It.Is<int>(l => l == 1)))
+                .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.OneSite));
 
             ProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository(mockRepository.Object);
 
 
             //Act
-            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, mockService.Object, samlRepository, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, productInternalSettingRepository,
-                mockHttpMessageHandler.Object);
+            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, _editorUserClaim, mockService.Object, samlRepository, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, productInternalSettingRepository,
+                mockHttpMessageHandler.Object, repository: mockRepository.Object);
             Persona persona = new Persona();
             var exception = Record.Exception(() => manageProductOneSite.GetOneSiteRights(_editorPersonaId, null, 1));
             Assert.NotNull(exception);
@@ -1516,7 +1499,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             var mockManageBlueBook = new Mock<IManageBlueBook>();
             var mockManagePersona = new Mock<IManagePersona>();
             var mockProductRepository = new Mock<IProductRepository>();
-            var mockRepository = new Mock<IRepository>();
 
             SamlRepository samlRepository = new SamlRepository();
 
@@ -1533,21 +1515,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Returns(_userProductSettings);
 
             mockProductRepository
-               .Setup(m => m.GetBooksMasterProductDetail(
-                   It.IsAny<int>()
-               ))
-               .Returns(_gbProductMap);
-
-            mockRepository
-                .Setup(m => m.GetMany<IC.ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.Is<object>(
-                    d => d.ToString().Contains($"ProductId = 1"))))
-                .Returns(_productInternalSettingsOneSite);
+                .Setup(m => m.GetBooksMasterProductDetail(
+                    It.Is<int>(l => l == 1)))
+                .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.OneSite));
 
             ProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository(mockRepository.Object);
 
             //Act
-            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, mockService.Object, samlRepository, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, productInternalSettingRepository,
-                mockHttpMessageHandler.Object);
+            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, _editorUserClaim, mockService.Object, samlRepository, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, productInternalSettingRepository,
+                mockHttpMessageHandler.Object, repository: mockRepository.Object);
             Persona persona = new Persona();
             var exception = Record.Exception(() => manageProductOneSite.GetOneSiteRightsCenters(_editorPersonaId));
             Assert.NotNull(exception);
@@ -1633,14 +1609,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                .Returns(_partyRelationShipSuperUser);
 
             mockProductRepository
-              .Setup(m => m.GetBooksMasterProductDetail(
-                  It.IsAny<int>()
-              ))
-              .Returns(_gbProductMap);
+                .Setup(m => m.GetBooksMasterProductDetail(
+                    It.Is<int>(l => l == 1)))
+                .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.OneSite));
 
             IManageProductOneSite manageProductOneSite = new ManageProductOneSite(
 		        editorRealPageId: _editorRealPageId,
-		        service: mockService.Object,
+                userClaim: _editorUserClaim, messageHandler: mockHttpMessageHandler.Object,
+                service: mockService.Object,
 		        userList: null,
 		        roleList: null,
 		        rightList: null,
@@ -1657,7 +1633,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        managePartyRelationship: mockManagePartyRelationship.Object,
 		        manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
-                userRepository: null
+                userRepository: null, 
+                repository: mockRepository.Object
             );
 
 			ListResponse resp = manageProductOneSite.GetOneSitePropertyList(_editorPersonaId, _userPersonaId, true, null);
@@ -1691,7 +1668,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
 	        manageProductOneSite = new ManageProductOneSite(
 		        editorRealPageId: _editorRealPageId,
-		        service: mockService.Object,
+                userClaim: _editorUserClaim, messageHandler: mockHttpMessageHandler.Object,
+                service: mockService.Object,
 		        userList: null,
 		        roleList: null,
 		        rightList: null,
@@ -1708,7 +1686,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        managePartyRelationship: mockManagePartyRelationship.Object,
 		        manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
-                userRepository: null
+                userRepository: null, 
+                repository: mockRepository.Object
             );
 
 
@@ -1811,14 +1790,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                .Returns(_partyRelationShipSuperUser);
 
             mockProductRepository
-              .Setup(m => m.GetBooksMasterProductDetail(
-                  It.IsAny<int>()
-              ))
-              .Returns(_gbProductMap);
+                .Setup(m => m.GetBooksMasterProductDetail(
+                    It.Is<int>(l => l == 1)))
+                .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.OneSite));
 
             IManageProductOneSite manageProductOneSite = new ManageProductOneSite(
-		        editorRealPageId: _editorRealPageId,
-		        service: mockService.Object,
+		        editorRealPageId: _editorRealPageId, 
+                userClaim: _editorUserClaim, messageHandler: mockHttpMessageHandler.Object,
+                service: mockService.Object,
 		        userList: null,
 		        roleList: null,
 		        rightList: null,
@@ -1835,7 +1814,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        managePartyRelationship: mockManagePartyRelationship.Object,
 		        manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
-                userRepository: null
+                userRepository: null, 
+                repository: mockRepository.Object
             );
 
 			Persona persona = new Persona() { Organization = new Organization() { BooksMasterId = 1234 } };
@@ -1872,7 +1852,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
 	        manageProductOneSite = new ManageProductOneSite(
 		        editorRealPageId: _editorRealPageId,
-		        service: mockService.Object,
+                userClaim: _editorUserClaim, messageHandler: mockHttpMessageHandler.Object,
+                service: mockService.Object,
 		        userList: null,
 		        roleList: null,
 		        rightList: null,
@@ -1889,7 +1870,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        managePartyRelationship: mockManagePartyRelationship.Object,
 		        manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
-                userRepository: null
+                userRepository: null, 
+                repository: mockRepository.Object
             );
 
 			persona = new Persona() { Organization = new Organization() { BooksMasterId = 1234 } };
@@ -2029,13 +2011,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             mockProductRepository
               .Setup(m => m.GetBooksMasterProductDetail(
-                  It.IsAny<int>()
-              ))
-              .Returns(_gbProductMap);
+                  It.Is<int>(l => l == 1)))
+              .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.OneSite));
 
             IManageProductOneSite manageProductOneSite = new ManageProductOneSite(
 				editorRealPageId: _editorRealPageId,
-				service: mockService.Object,
+                userClaim: _editorUserClaim, messageHandler: mockHttpMessageHandler.Object,
+                service: mockService.Object,
 				userList: null,
 				roleList: null,
 				rightList: null,
@@ -2052,7 +2034,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				managePartyRelationship: mockManagePartyRelationship.Object,
 				manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
-                userRepository: null
+                userRepository: null, 
+                repository: mockRepository.Object
             );
 
 			string resp = manageProductOneSite.UpdatePropertiesForUser(_editorPersonaId, _userPersonaId, _propertiesToAdd);
@@ -2159,14 +2142,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                .Returns(_partyRelationShip);
 
             mockProductRepository
-              .Setup(m => m.GetBooksMasterProductDetail(
-                  It.IsAny<int>()
-              ))
-              .Returns(_gbProductMap);
+                .Setup(m => m.GetBooksMasterProductDetail(
+                    It.Is<int>(l => l == 1)))
+                .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.OneSite));
 
             IManageProductOneSite manageProductOneSite = new ManageProductOneSite(
-				editorRealPageId: _editorRealPageId,
-				service: mockService.Object,
+				editorRealPageId: _editorRealPageId, 
+                userClaim: _editorUserClaim, messageHandler: mockHttpMessageHandler.Object,
+                service: mockService.Object,
 				userList: null,
 				roleList: null,
 				rightList: null,
@@ -2183,7 +2166,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				managePartyRelationship: mockManagePartyRelationship.Object,
 				manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
-                userRepository: null
+                userRepository: null, 
+                repository: mockRepository.Object
             );
 			string resp = manageProductOneSite.UpdatePropertiesForUser(_editorPersonaId, _userPersonaId, _propertiesToAdd);
             Assert.True(resp == "All");
@@ -2257,15 +2241,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        .Returns(_productInternalSettingsOneSite);
 
             mockProductRepository
-              .Setup(m => m.GetBooksMasterProductDetail(
-                  It.IsAny<int>()
-              ))
-              .Returns(_gbProductMap);
+                .Setup(m => m.GetBooksMasterProductDetail(
+                    It.Is<int>(l => l == 1)))
+                .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.OneSite));
 
             //Assert
             IManageProductOneSite manageProductOneSite = new ManageProductOneSite(
 		        editorRealPageId: _editorRealPageId,
-		        service: mockService.Object,
+                userClaim: _editorUserClaim, messageHandler: mockHttpMessageHandler.Object,
+                service: mockService.Object,
 		        userList: emptyResultList,
 		        roleList: null,
 		        rightList: null,
@@ -2282,7 +2266,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        managePartyRelationship: null,
 		        manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
-                userRepository: null
+                userRepository: null, 
+                repository: mockRepository.Object
             );
 
             resp = manageProductOneSite.GetUsersForProperty(_editorPersonaId, propertyId, assignedOnly, reqParameter);
@@ -2301,7 +2286,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			//Act
 	        manageProductOneSite = new ManageProductOneSite(
 		        editorRealPageId: _editorRealPageId,
-		        service: mockService.Object,
+                userClaim: _editorUserClaim, messageHandler: mockHttpMessageHandler.Object,
+                service: mockService.Object,
 		        userList: emptyResultList,
 		        roleList: null,
 		        rightList: null,
@@ -2318,7 +2304,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        managePartyRelationship: null,
 		        manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
-                userRepository: null
+                userRepository: null, 
+                repository: mockRepository.Object
             );
 
 			resp = manageProductOneSite.GetUsersForProperty(_editorPersonaId, propertyId, assignedOnly, reqParameter);
@@ -2410,14 +2397,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                .Returns(_partyRelationShip);
 
             mockProductRepository
-              .Setup(m => m.GetBooksMasterProductDetail(
-                  It.IsAny<int>()
-              ))
-              .Returns(_gbProductMap);
+                .Setup(m => m.GetBooksMasterProductDetail(
+                    It.Is<int>(l => l == 1)))
+                .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.OneSite));
 
             IManageProductOneSite manageProductOneSite = new ManageProductOneSite(
 		        editorRealPageId: _editorRealPageId,
-		        service: mockService.Object,
+                userClaim: _editorUserClaim, messageHandler: mockHttpMessageHandler.Object,
+                service: mockService.Object,
 		        userList: null,
 		        roleList: roleResultList,
 		        rightList: null,
@@ -2434,7 +2421,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        managePartyRelationship: mockManagePartyRelationship.Object,
 		        manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
-                userRepository: null
+                userRepository: null, 
+                repository: mockRepository.Object
             );
 			Persona persona = new Persona();
             int roleId = 0; // new role
@@ -2537,14 +2525,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                .Returns(_partyRelationShip);
 
             mockProductRepository
-              .Setup(m => m.GetBooksMasterProductDetail(
-                  It.IsAny<int>()
-              ))
-              .Returns(_gbProductMap);
+                .Setup(m => m.GetBooksMasterProductDetail(
+                    It.Is<int>(l => l == 1)))
+                .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.OneSite));
 
             IManageProductOneSite manageProductOneSite = new ManageProductOneSite(
 		        editorRealPageId: _editorRealPageId,
-		        service: mockService.Object,
+                userClaim: _editorUserClaim, messageHandler: mockHttpMessageHandler.Object,
+                service: mockService.Object,
 		        userList: null,
 		        roleList: roleResultList,
 		        rightList: null,
@@ -2561,7 +2549,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        managePartyRelationship: mockManagePartyRelationship.Object,
 		        manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
-                userRepository: null
+                userRepository: null, 
+                repository: mockRepository.Object
             );
 			Persona persona = new Persona();
             int roleId = 10; // new role
@@ -2647,14 +2636,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				.Returns(_userInfo1.ToArray());
 
             mockProductRepository
-              .Setup(m => m.GetBooksMasterProductDetail(
-                  It.IsAny<int>()
-              ))
-              .Returns(_gbProductMap);
+                .Setup(m => m.GetBooksMasterProductDetail(
+                    It.Is<int>(l => l == 1)))
+                .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.OneSite));
 
             IManageProductOneSite manageProductOneSite = new ManageProductOneSite(
 		        editorRealPageId: _editorRealPageId,
-		        service: mockService.Object,
+                userClaim: _editorUserClaim, messageHandler: mockHttpMessageHandler.Object,
+                service: mockService.Object,
 		        userList: null,
 		        roleList: roleResultList,
 		        rightList: null,
@@ -2671,7 +2660,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        managePartyRelationship: mockManagePartyRelationship.Object,
 		        manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
-                userRepository: null
+                userRepository: null, 
+                repository: mockRepository.Object
             );
 			ListResponse resp = manageProductOneSite.GetOneSiteRoleList(_editorPersonaId, _userPersonaId, false, reqParameter);
 
@@ -2754,14 +2744,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                .Returns(_partyRelationShip);
 
             mockProductRepository
-              .Setup(m => m.GetBooksMasterProductDetail(
-                  It.IsAny<int>()
-              ))
-              .Returns(_gbProductMap);
+                .Setup(m => m.GetBooksMasterProductDetail(
+                    It.Is<int>(l => l == 1)))
+                .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.OneSite));
 
             IManageProductOneSite manageProductOneSite = new ManageProductOneSite(
-		        editorRealPageId: _editorRealPageId,
-		        service: mockService.Object,
+		        editorRealPageId: _editorRealPageId, 
+                userClaim: _editorUserClaim, messageHandler: mockHttpMessageHandler.Object,
+                service: mockService.Object,
 		        userList: null,
 		        roleList: emptyResultList,
 		        rightList: null,
@@ -2778,7 +2768,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        managePartyRelationship: mockManagePartyRelationship.Object,
 		        manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
-                userRepository: null
+                userRepository: null, 
+                repository: mockRepository.Object
             );
 			ListResponse resp = manageProductOneSite.GetOneSiteRoleListAll(_editorPersonaId, reqParameter);
 
@@ -2802,8 +2793,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                  .Returns(_editorSamlAttributes);
 
 	        manageProductOneSite = new ManageProductOneSite(
-		        editorRealPageId: _editorRealPageId,
-		        service: mockService.Object,
+		        editorRealPageId: _editorRealPageId, 
+                userClaim: _editorUserClaim, messageHandler: mockHttpMessageHandler.Object,
+                service: mockService.Object,
 		        userList: null,
 		        roleList: roleResultList,
 		        rightList: null,
@@ -2820,7 +2812,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        managePartyRelationship: mockManagePartyRelationship.Object,
 		        manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
-                userRepository: null
+                userRepository: null, 
+                repository: mockRepository.Object
             );
 			resp = manageProductOneSite.GetOneSiteRoleListAll(_editorPersonaId, reqParameter);
 
@@ -2916,14 +2909,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                .Returns(_partyRelationShip);
 
             mockProductRepository
-              .Setup(m => m.GetBooksMasterProductDetail(
-                  It.IsAny<int>()
-              ))
-              .Returns(_gbProductMap);
+                .Setup(m => m.GetBooksMasterProductDetail(
+                    It.Is<int>(l => l == 1)))
+                .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.OneSite));
 
             IManageProductOneSite manageProductOneSite = new ManageProductOneSite(
-		        editorRealPageId: _editorRealPageId,
-		        service: mockService.Object,
+		        editorRealPageId: _editorRealPageId, 
+                userClaim: _editorUserClaim, messageHandler: mockHttpMessageHandler.Object,
+                service: mockService.Object,
 		        userList: null,
 		        roleList: roleResultList,
 		        rightList: null,
@@ -2940,7 +2933,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        managePartyRelationship: mockManagePartyRelationship.Object,
 		        manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
-                userRepository: null
+                userRepository: null, 
+                repository: mockRepository.Object
             );
 			ListResponse resp = manageProductOneSite.GetOneSiteRoleListAll(_editorPersonaId, reqParameter);
 
@@ -3054,14 +3048,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                .Returns(_partyRelationShip);
 
             mockProductRepository
-              .Setup(m => m.GetBooksMasterProductDetail(
-                  It.IsAny<int>()
-              ))
-              .Returns(_gbProductMap);
+                .Setup(m => m.GetBooksMasterProductDetail(
+                    It.Is<int>(l => l == 1)))
+                .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.OneSite));
 
             IManageProductOneSite manageProductOneSite = new ManageProductOneSite(
-		        editorRealPageId: _editorRealPageId,
-		        service: mockService.Object,
+		        editorRealPageId: _editorRealPageId, 
+                userClaim: _editorUserClaim, messageHandler: mockHttpMessageHandler.Object,
+                service: mockService.Object,
 		        userList: null,
 		        roleList: roleResultList,
 		        rightList: null,
@@ -3078,7 +3072,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        managePartyRelationship: mockManagePartyRelationship.Object,
 		        manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
-                userRepository: null
+                userRepository: null, 
+                repository: mockRepository.Object
             );
 			string resp = manageProductOneSite.UpdateRolesForUser(_editorPersonaId, _userPersonaId, _rolesToAdd);
             // Role 1 should be kept, Role 2 added and Role 3 should be removed, causing an update of 2 records changed
@@ -3159,14 +3154,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                .Returns(_partyRelationShip);
 
             mockProductRepository
-              .Setup(m => m.GetBooksMasterProductDetail(
-                  It.IsAny<int>()
-              ))
-              .Returns(_gbProductMap);
+                .Setup(m => m.GetBooksMasterProductDetail(
+                    It.Is<int>(l => l == 1)))
+                .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.OneSite));
 
             IManageProductOneSite manageProductOneSite = new ManageProductOneSite(
 		        editorRealPageId: _editorRealPageId,
-		        service: mockService.Object,
+                userClaim: _editorUserClaim, messageHandler: mockHttpMessageHandler.Object,
+                service: mockService.Object,
 		        userList: null,
 		        roleList: roleResultList,
 		        rightList: null,
@@ -3183,7 +3178,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        managePartyRelationship: mockManagePartyRelationship.Object,
 		        manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
-                userRepository: null
+                userRepository: null, 
+                repository: mockRepository.Object
             );
 			Persona persona = new Persona();
             int roleId = 1;
@@ -3277,14 +3273,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                .Returns(_partyRelationShip);
 
             mockProductRepository
-              .Setup(m => m.GetBooksMasterProductDetail(
-                  It.IsAny<int>()
-              ))
-              .Returns(_gbProductMap);
+                .Setup(m => m.GetBooksMasterProductDetail(
+                    It.Is<int>(l => l == 1)))
+                .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.OneSite));
 
             IManageProductOneSite manageProductOneSite = new ManageProductOneSite(
-	            editorRealPageId: _editorRealPageId,
-	            service: mockService.Object,
+	            editorRealPageId: _editorRealPageId, 
+                userClaim: _editorUserClaim, messageHandler: mockHttpMessageHandler.Object,
+                service: mockService.Object,
 	            userList: null,
 	            roleList: roleResultList,
 	            rightList: null,
@@ -3301,7 +3297,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 	            managePartyRelationship: mockManagePartyRelationship.Object,
 	            manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
-                userRepository: null
+                userRepository: null, 
+                repository: mockRepository.Object
             );
 			Persona persona = new Persona();
             int rightId = 1;
@@ -3407,31 +3404,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                .Returns(_partyRelationShip);
 
             mockProductRepository
-               .Setup(m => m.GetBooksMasterProductDetail(
-                   It.IsAny<int>()
-               ))
-               .Returns(_gbProductMap);
+                .Setup(m => m.GetBooksMasterProductDetail(
+                    It.Is<int>(l => l == 1)))
+                .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.OneSite));
 
             IManageProductOneSite manageProductOneSite = new ManageProductOneSite(
-	            editorRealPageId: _editorRealPageId,
-	            service: mockService.Object,
-	            userList: null,
-	            roleList: roleResultList,
-	            rightList: null,
-	            propertyList: null,
-				samlRepository: mockSamlRepository.Object,
-	            managePersona: mockManagePersona.Object,
-	            managePerson: null,
-	            manageUserLogin: null,
-	            userLoginRepository: null,
-	            personaRepository: null,
-				manageBlueBook: mockManageBlueBook.Object,
-	            productRepository: mockProductRepository.Object,
-	            productInternalSettingRepository: mockProductInternalSettingRepository.Object,
-	            managePartyRelationship: mockManagePartyRelationship.Object,
-	            manageElectronicAddress: null,
+                editorRealPageId: _editorRealPageId, 
+                userClaim: _editorUserClaim, messageHandler: mockHttpMessageHandler.Object,
+                service: mockService.Object,
+                userList: null,
+                roleList: roleResultList,
+                rightList: null,
+                propertyList: null,
+                samlRepository: mockSamlRepository.Object,
+                managePersona: mockManagePersona.Object,
+                managePerson: null,
+                manageUserLogin: null,
+                userLoginRepository: null,
+                personaRepository: null,
+                manageBlueBook: mockManageBlueBook.Object,
+                productRepository: mockProductRepository.Object,
+                productInternalSettingRepository: mockProductInternalSettingRepository.Object,
+                managePartyRelationship: mockManagePartyRelationship.Object,
+                manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
-                userRepository: null
+                userRepository: null, 
+                repository: mockRepository.Object
             );
 			Persona persona = new Persona();
             int rightId = 0;
@@ -3507,32 +3505,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Returns(_userProductSettings);
 
             mockProductRepository
-              .Setup(m => m.GetBooksMasterProductDetail(
-                  It.IsAny<int>()
-              ))
-              .Returns(_gbProductMap);
+                .Setup(m => m.GetBooksMasterProductDetail(
+                    It.Is<int>(l => l == 1)))
+                .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.OneSite));
 
             //Assert
             IManageProductOneSite manageProductOneSite = new ManageProductOneSite(
-		        editorRealPageId: _editorRealPageId,
-		        service: mockService.Object,
-		        userList: emptyResultList,
-		        roleList: null,
-		        rightList: null,
-		        propertyList: null,
-				samlRepository: mockSamlRepository.Object,
-		        managePersona: mockManagePersona.Object,
-		        managePerson: null,
-		        manageUserLogin: null,
-		        userLoginRepository: null,
-		        personaRepository: null,
-				manageBlueBook: mockManageBlueBook.Object,
-		        productRepository: mockProductRepository.Object,
-		        productInternalSettingRepository: null,
-		        managePartyRelationship: null,
-		        manageElectronicAddress: null,
+                editorRealPageId: _editorRealPageId, 
+                userClaim: _editorUserClaim, messageHandler: mockHttpMessageHandler.Object,
+                service: mockService.Object,
+                userList: emptyResultList,
+                roleList: null,
+                rightList: null,
+                propertyList: null,
+                samlRepository: mockSamlRepository.Object,
+                managePersona: mockManagePersona.Object,
+                managePerson: null,
+                manageUserLogin: null,
+                userLoginRepository: null,
+                personaRepository: null,
+                manageBlueBook: mockManageBlueBook.Object,
+                productRepository: mockProductRepository.Object,
+                productInternalSettingRepository: null,
+                managePartyRelationship: null,
+                manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
-                userRepository: null
+                userRepository: null, 
+                repository: mockRepository.Object
             );
 			resp = manageProductOneSite.GetUsersForRole(_editorPersonaId, roleId, assignedOnly, reqParameter);
 
@@ -3556,7 +3555,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
 			//Act
 			manageProductOneSite = new ManageProductOneSite(
-				editorRealPageId: _editorRealPageId,
+				editorRealPageId: _editorRealPageId, 
+                userClaim: _editorUserClaim, messageHandler: mockHttpMessageHandler.Object,
 				service: mockService.Object,
 				userList: userResultList,
 				roleList: null,
@@ -3574,7 +3574,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				managePartyRelationship: null,
 				manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
-                userRepository: null
+                userRepository: null, 
+                repository: mockRepository.Object
             );
 			resp = manageProductOneSite.GetUsersForRole(_editorPersonaId, roleId, assignedOnly, reqParameter);
             Assert.True(resp.TotalRows == 3);
@@ -3617,7 +3618,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             var mockManageBlueBook = new Mock<IManageBlueBook>();
             var mockManagePersona = new Mock<IManagePersona>();
             var mockProductRepository = new Mock<IProductRepository>();
-            var mockProductInternalSettingRepository = new Mock<IProductInternalSettingRepository>();
+            //var mockProductInternalSettingRepository = new Mock<IProductInternalSettingRepository>();
 
             RightCenter resultList = new RightCenter();
 
@@ -3654,23 +3655,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 ))
                 .Returns(_userProductSettings);
 
-            var mockRepository = new Mock<IRepository>();
-
-            mockRepository
-                .Setup(m => m.GetMany<IC.ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.Is<object>(
-                    d => d.ToString().Contains($"ProductId = 1"))))
-                .Returns(_productInternalSettingsOneSite);
-
             mockProductRepository
-              .Setup(m => m.GetBooksMasterProductDetail(
-                  It.IsAny<int>()
-              ))
-              .Returns(_gbProductMap);
+                .Setup(m => m.GetBooksMasterProductDetail(
+                    It.Is<int>(l => l == 1)))
+                .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.OneSite));
 
             ProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository(mockRepository.Object);
             new RPObjectCache().BustCache();
             
-            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, productInternalSettingRepository, mockHttpMessageHandler.Object);
+            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, _editorUserClaim, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, productInternalSettingRepository, mockHttpMessageHandler.Object, repository: mockRepository.Object);
             Persona persona = new Persona();
             ListResponse resp = manageProductOneSite.GetOneSiteRightsCenters(_editorPersonaId);
 
@@ -3742,12 +3735,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             mockProductRepository
               .Setup(m => m.GetBooksMasterProductDetail(
-                  It.IsAny<int>()
-              ))
-              .Returns(_gbProductMap);
+                  It.Is<int>(l => l == 1)))
+              .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.OneSite));
 
             IManageProductOneSite manageProductOneSite = new ManageProductOneSite(
-		        editorRealPageId: _editorRealPageId,
+		        editorRealPageId: _editorRealPageId, 
+                userClaim: _editorUserClaim, messageHandler: mockHttpMessageHandler.Object,
 		        service: mockService.Object,
 		        userList: null,
 		        roleList: null,
@@ -3765,7 +3758,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        managePartyRelationship: null,
 		        manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
-                userRepository: null
+                userRepository: null, 
+                repository: mockRepository.Object
             );
 
             Persona persona = new Persona();
@@ -3807,7 +3801,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 	        AssertInitial();
 
 			IManageProductOneSite manageProductOneSite = new ManageProductOneSite(
-		        editorRealPageId: _editorRealPageId,
+		        editorRealPageId: _editorRealPageId, 
+                userClaim: _editorUserClaim, messageHandler: mockHttpMessageHandler.Object,
 		        service: _mockService.Object,
 		        userList: null,
 		        roleList: null,
@@ -3825,7 +3820,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        managePartyRelationship: _mockManagePartyRelationship.Object,
 		        manageElectronicAddress: _mockManageElectronicAddress.Object,
                 userLoginPersonaRepository: _mockUserLoginPersonaRepository.Object,
-                userRepository: _mockUserRepository.Object
+                userRepository: _mockUserRepository.Object, repository: mockRepository.Object
             );
 
 			long oneSitePersonaId = 10;
@@ -3847,7 +3842,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			AssertInitial();
 
 			IManageProductOneSite manageProductOneSite = new ManageProductOneSite(
-				editorRealPageId: _editorRealPageId,
+				editorRealPageId: _editorRealPageId, 
+                userClaim: _editorUserClaim, messageHandler: mockHttpMessageHandler.Object,
 				service: _mockService.Object,
 				userList: null,
 				roleList: null,
@@ -3865,7 +3861,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				managePartyRelationship: _mockManagePartyRelationship.Object,
 				manageElectronicAddress: _mockManageElectronicAddress.Object,
                 userLoginPersonaRepository: _mockUserLoginPersonaRepository.Object,
-                userRepository: _mockUserRepository.Object
+                userRepository: _mockUserRepository.Object, repository: mockRepository.Object
             );
 
 			long oneSitePersonaId = 10;
@@ -3887,7 +3883,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             //        .Returns(samlAttributes);
 
             manageProductOneSite = new ManageProductOneSite(
-		        editorRealPageId: _editorRealPageId,
+		        editorRealPageId: _editorRealPageId, 
+                userClaim: _editorUserClaim, messageHandler: mockHttpMessageHandler.Object,
 		        service: _mockService.Object,
 		        userList: null,
 		        roleList: null,
@@ -3905,7 +3902,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        managePartyRelationship: _mockManagePartyRelationship.Object,
 		        manageElectronicAddress: _mockManageElectronicAddress.Object,
                 userLoginPersonaRepository: _mockUserLoginPersonaRepository.Object,
-                userRepository: _mockUserRepository.Object
+                userRepository: _mockUserRepository.Object, repository: mockRepository.Object
             );
 
 			// Update
@@ -3920,7 +3917,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			AssertInitial();
 
 	        IManageProductOneSite manageProductOneSite = new ManageProductOneSite(
-		        editorRealPageId: _editorRealPageId,
+		        editorRealPageId: _editorRealPageId, 
+                userClaim: _editorUserClaim, messageHandler: mockHttpMessageHandler.Object,
 		        service: _mockService.Object,
 		        userList: null,
 		        roleList: null,
@@ -3938,7 +3936,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        managePartyRelationship: _mockManagePartyRelationship.Object,
 		        manageElectronicAddress: _mockManageElectronicAddress.Object,
                 userLoginPersonaRepository: _mockUserLoginPersonaRepository.Object,
-                userRepository: _mockUserRepository.Object
+                userRepository: _mockUserRepository.Object, repository: mockRepository.Object
             );
 
 			long oneSitePersonaId = 10;
@@ -3975,7 +3973,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                  .Returns(_editorSamlAttributes);
 
 	        manageProductOneSite = new ManageProductOneSite(
-		        editorRealPageId: _editorRealPageId,
+		        editorRealPageId: _editorRealPageId, 
+                userClaim: _editorUserClaim, messageHandler: mockHttpMessageHandler.Object,
 		        service: _mockService.Object,
 		        userList: null,
 		        roleList: null,
@@ -3993,7 +3992,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        managePartyRelationship: _mockManagePartyRelationship.Object,
 		        manageElectronicAddress: _mockManageElectronicAddress.Object,
                 userLoginPersonaRepository: _mockUserLoginPersonaRepository.Object,
-                userRepository: _mockUserRepository.Object
+                userRepository: _mockUserRepository.Object, repository: mockRepository.Object
             );
 			result = manageProductOneSite.ManageOneSiteUser(_editorPersonaId, oneSitePersonaId, roleToAddList, propertyToAddList);
             //Assert
@@ -4009,7 +4008,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                  .Returns(noAttributes);
 
             manageProductOneSite = new ManageProductOneSite(
-		        editorRealPageId: _editorRealPageId,
+		        editorRealPageId: _editorRealPageId, 
+                userClaim: _editorUserClaim, messageHandler: mockHttpMessageHandler.Object,
 		        service: _mockService.Object,
 		        userList: null,
 		        roleList: null,
@@ -4027,7 +4027,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        managePartyRelationship: _mockManagePartyRelationship.Object,
 		        manageElectronicAddress: _mockManageElectronicAddress.Object,
                 userLoginPersonaRepository: _mockUserLoginPersonaRepository.Object,
-                userRepository: _mockUserRepository.Object
+                userRepository: _mockUserRepository.Object, repository: mockRepository.Object
             );
 			result = manageProductOneSite.ManageOneSiteUser(_editorPersonaId, oneSitePersonaId, null, null);
             //Assert
@@ -4097,8 +4097,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				))
 				.Returns(_userlogin);
 
-			IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
-                mockHttpMessageHandler.Object);
+            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, _editorUserClaim, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
+                mockHttpMessageHandler.Object, repository: mockRepository.Object);
             Persona persona = new Persona();
             long deletePersonaId = 10;
             string result = manageProductOneSite.DeleteOneSiteUser(_editorPersonaId, deletePersonaId);
@@ -4166,12 +4166,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             mockProductRepository
               .Setup(m => m.GetBooksMasterProductDetail(
-                  It.IsAny<int>()
-              ))
-              .Returns(_gbProductMap);
+                  It.Is<int>(l => l == 1)))
+              .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.OneSite));
 
-            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
-                mockHttpMessageHandler.Object);
+            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, _editorUserClaim, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
+                mockHttpMessageHandler.Object, repository: mockRepository.Object);
 
             string result = manageProductOneSite.EnableOneSiteUser(_editorPersonaId, _userPersonaId, true);
 
@@ -4229,13 +4228,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Returns(_productInternalSettingsOneSite);
 
             mockProductRepository
-               .Setup(m => m.GetBooksMasterProductDetail(
-                   It.IsAny<int>()
-               ))
-               .Returns(_gbProductMap);
+                .Setup(m => m.GetBooksMasterProductDetail(
+                    It.Is<int>(l => l == 1)))
+                .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.OneSite));
 
-            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
-                mockHttpMessageHandler.Object);
+
+            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, _editorUserClaim, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
+                mockHttpMessageHandler.Object, repository: mockRepository.Object);
 
             bool result = manageProductOneSite.UserInLeasingAgentList(_editorPersonaId, _userPersonaId, 1234567);
             Assert.True(result == true);
@@ -4247,8 +4246,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                  ))
                  .Throws(new Exception("Invalid user"));
 
-            manageProductOneSite = new ManageProductOneSite(_editorRealPageId, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
-                mockHttpMessageHandler.Object);
+            manageProductOneSite = new ManageProductOneSite(_editorRealPageId, _editorUserClaim, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
+                mockHttpMessageHandler.Object, repository: mockRepository.Object);
 
             result = manageProductOneSite.UserInLeasingAgentList(_editorPersonaId, _userPersonaId, 1234567);
             Assert.True(result == false);
@@ -4309,12 +4308,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             mockProductRepository
               .Setup(m => m.GetBooksMasterProductDetail(
-                  It.IsAny<int>()
-              ))
-              .Returns(_gbProductMap);
+                  It.Is<int>(l => l == 1)))
+              .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.OneSite));
 
-            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
-                mockHttpMessageHandler.Object);
+            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, _editorUserClaim, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
+                mockHttpMessageHandler.Object, repository: mockRepository.Object);
             
             // get an error initially
 			
@@ -4330,8 +4328,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                  ))
                  .Returns(pmcinfo);
 
-            manageProductOneSite = new ManageProductOneSite(_editorRealPageId, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
-                mockHttpMessageHandler.Object);
+            manageProductOneSite = new ManageProductOneSite(_editorRealPageId, _editorUserClaim, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
+                mockHttpMessageHandler.Object, repository: mockRepository.Object);
 
             var pmcResult = manageProductOneSite.GetPMCURL(_userPersonaId);
 			Assert.True(pmcResult.ID == pmcinfo.ID && pmcResult.PMCURL == pmcinfo.PMCURL);
@@ -4415,10 +4413,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                  .Returns(_editorSamlAttributes);
 
             mockProductRepository
-              .Setup(m => m.GetBooksMasterProductDetail(
-                  It.IsAny<int>()
-              ))
-              .Returns(_gbProductMap);
+                .Setup(m => m.GetBooksMasterProductDetail(
+                    It.Is<int>(l => l == 1)))
+                .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.OneSite));
 
             var url = $"https://{_pmcUrl}/{_mtApiEndPoint}/{pmcID}/users?filter={filter}&startRow={startRow}&resultsPerPage={resultsPerPage}";
             var editorPersonaId = _editorPersonaId;
@@ -4435,9 +4432,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             mockHttpMessageHandler.Setup(HttpMethod.Get, url, userResponse);
 
-            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, mockService.Object, mockSamlRepository.Object, 
+            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, _editorUserClaim, mockService.Object, mockSamlRepository.Object, 
                 mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object, 
-                mockHttpMessageHandler.Object);
+                mockHttpMessageHandler.Object, repository: mockRepository.Object);
             
             //Act
             var actual = manageProductOneSite.GetMigrationUsers(editorPersonaId, dataFilter);
@@ -4524,9 +4521,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             mockProductRepository
               .Setup(m => m.GetBooksMasterProductDetail(
-                  It.IsAny<int>()
-              ))
-              .Returns(_gbProductMap);
+                  It.Is<int>(l => l == 1)))
+              .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.OneSite));
 
             var url = $"https://{_pmcUrl}/{_mtApiEndPoint}/{pmcID}/users?filter={filter}&startRow={startRow}&resultsPerPage={resultsPerPage}";
             var editorPersonaId = _editorPersonaId;
@@ -4535,9 +4531,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             userResponse.Content = null;
             mockHttpMessageHandler.Setup(HttpMethod.Get, url, userResponse);
 
-            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, mockService.Object, mockSamlRepository.Object,
+            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, _editorUserClaim, mockService.Object, mockSamlRepository.Object,
                 mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
-                mockHttpMessageHandler.Object);
+                mockHttpMessageHandler.Object, repository: mockRepository.Object);
 
             //Act
             var actual = manageProductOneSite.GetMigrationUsers(editorPersonaId, dataFilter);
@@ -4610,13 +4606,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             mockProductRepository
                .Setup(m => m.GetBooksMasterProductDetail(
-                   It.IsAny<int>()
-               ))
-               .Returns(_gbProductMap);
+                   It.Is<int>(l => l == 1)))
+               .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.OneSite));
 
-            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, mockService.Object, mockSamlRepository.Object,
+            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, _editorUserClaim, mockService.Object, mockSamlRepository.Object,
                 mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
-                mockHttpMessageHandler.Object);
+                mockHttpMessageHandler.Object, repository: mockRepository.Object);
 
             var username = "testuser";
             var isActive = true;
@@ -4688,13 +4683,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             mockProductRepository
               .Setup(m => m.GetBooksMasterProductDetail(
-                  It.IsAny<int>()
-              ))
-              .Returns(_gbProductMap);
+                  It.Is<int>(l => l == 1)))
+              .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.OneSite));
 
-            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, mockService.Object, mockSamlRepository.Object,
+            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, _editorUserClaim, mockService.Object, mockSamlRepository.Object,
                 mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
-                mockHttpMessageHandler.Object);
+                mockHttpMessageHandler.Object, repository: mockRepository.Object);
 
             var username = "testuser";
             var isActive = false;

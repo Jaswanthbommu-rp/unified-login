@@ -1,8 +1,9 @@
-﻿using System;
-using Moq;
+﻿using Moq;
 using Newtonsoft.Json;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
@@ -10,36 +11,34 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Migration;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
 using RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Extensions;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using Xunit;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
 {
-	[ExcludeFromCodeCoverage]
+    [ExcludeFromCodeCoverage]
     public class ManageProspectContactProductTests : ManageProductBaseTests
     {
         #region Private Variables
         private int _blueBookId = 123;
         private string _companyInstanceSourceId = "123456";
-        private string _apiEndPoint = "http://producturl.com";
-        private GbProductMap _gbProductMap = new GbProductMap();
+        private string _apiEndPoint = "http://localhost";
         private IManageProductProspectContact manageProductProspectContact;
         private IList<CustomerCompanyMap> mapCompany;
         private Mock<IManageBlueBook> mockManageBlueBook;
         private Mock<IManagePersona> mockManagePersona;
         private Mock<IProductInternalSettingRepository> mockProductInternalSettingRepository;
         private Mock<ISamlRepository> mockSamlRepository;
-        private Mock<IProductRepository> mockProductRepository;
+        //private Mock<IProductRepository> mockProductRepository;
 
         #endregion
 
@@ -50,7 +49,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
             mockManagePersona = new Mock<IManagePersona>();
             mockProductInternalSettingRepository = new Mock<IProductInternalSettingRepository>();
             mockSamlRepository = new Mock<ISamlRepository>();
-            mockProductRepository = new Mock<IProductRepository>();
+            //mockProductRepository = new Mock<IProductRepository>();
 
             _editorSamlAttributes = new List<SamlAttributes>()
             {
@@ -69,7 +68,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
             };
 
             _productInternalSettings.Add(new ProductInternalSetting() { Name = "ApiEndPoint", Value = _apiEndPoint });
-            _gbProductMap = new GbProductMap() { BooksProductCode = "LVL1", Name = "Prospect Contact Center", ProductId = 10, UDMSourceCode = "LVL1" };
             _repositoryResponseProductStatus.ErrorMessage = "";
 
             mapCompany = new List<CustomerCompanyMap>()
@@ -100,6 +98,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
                 ))
                 .Returns(_productInternalSettings);
 
+            mockRepository
+                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct,
+                    It.Is<object>(d => TestIsProductId(d, (int)ProductEnum.ProspectContactCenter))))
+                .Returns(_productInternalSettings);
+
             mockSamlRepository
                 .Setup(m => m.GetProductSamlDetails(
                     It.Is<long>(l => l == _editorPersonaId)
@@ -113,20 +116,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
                  ))
                  .Returns(_editorPersona);
 
-            mockProductRepository
-                .Setup(m => m.GetProductSettingsByPersona(
-                    It.IsAny<long>()
-                ))
-                .Returns(_userProductSettings);
+            mockRepository
+                .Setup(m => m.GetMany<OrganizationProductUser>(StoredProcNameConstants.SP_ListProductUsersForOrganization,
+                    It.IsAny<object>()))
+                .Returns(new List<OrganizationProductUser>());
 
-            mockProductRepository
-            .Setup(m => m.GetBooksMasterProductDetail(
-                It.IsAny<int>()
-            ))
-            .Returns(_gbProductMap);
+            mockRepository
+                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
+                    It.IsAny<object>()))
+                .Returns(_gbProductMap);
 
-            manageProductProspectContact = new ManageProductProspectContact(_editorRealPageId, mockHttpMessageHandler.Object, mockProductInternalSettingRepository.Object,
-                mockManagePersona.Object, mockSamlRepository.Object, mockManageBlueBook.Object, mockProductRepository.Object);
+            manageProductProspectContact = new ManageProductProspectContact(_editorRealPageId, _editorUserClaim, mockHttpMessageHandler.Object, mockProductInternalSettingRepository.Object,
+                mockManagePersona.Object, mockSamlRepository.Object, mockManageBlueBook.Object, mockRepository.Object);
 
         }
         #endregion
@@ -152,11 +153,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
             var editorPersonaId = _editorPersonaId;
             var actual = new List<ProspectContactCenterUserProfile>()
             {
-               new ProspectContactCenterUserProfile() { FirstName = "Person", LastName = "1", Email = "person1@test.com", LoginName = "person1" },
-               new ProspectContactCenterUserProfile() { FirstName = "Person", LastName = "2", Email = "person2@test.com", LoginName = "person2" },
-                    new ProspectContactCenterUserProfile() { FirstName = "Person", LastName = "3", Email = "person3@test.com", LoginName = "person3" },
-                    new ProspectContactCenterUserProfile() { FirstName = "Person", LastName = "4", Email = "person4@test.com", LoginName = "person4", Properties = new List<string>(){"1"}},
-                    new ProspectContactCenterUserProfile() { FirstName = "Person", LastName = "5", Email = "person5@test.com", LoginName = "person5" }
+                new ProspectContactCenterUserProfile() { FirstName = "Person", LastName = "1", Email = "person1@test.com", LoginName = "person1" },
+                new ProspectContactCenterUserProfile() { FirstName = "Person", LastName = "2", Email = "person2@test.com", LoginName = "person2" },
+                new ProspectContactCenterUserProfile() { FirstName = "Person", LastName = "3", Email = "person3@test.com", LoginName = "person3" },
+                new ProspectContactCenterUserProfile() { FirstName = "Person", LastName = "4", Email = "person4@test.com", LoginName = "person4", Properties = new List<string>() { "1" } },
+                new ProspectContactCenterUserProfile() { FirstName = "Person", LastName = "5", Email = "person5@test.com", LoginName = "person5" }
             };
             HttpResponseMessage userResponse = new HttpResponseMessage(HttpStatusCode.OK)
             {

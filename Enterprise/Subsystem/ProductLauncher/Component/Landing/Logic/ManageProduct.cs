@@ -53,7 +53,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _manageBlueBook = new ManageBlueBook(userClaim, repository, _productInternalSettingRepository, messageHandler);
             _managePartyRelationship = new ManagePartyRelationship(repository);
             _organizationRepository = new OrganizationRepository(repository);
-            _manageProfile = new ManageProfile(repository, userClaim);
+            _manageProfile = new ManageProfile(repository, userClaim, messageHandler);
             _manageUserRoleRight = new ManageUserRoleRight(repository, userClaim);
             _unifiedSettingsRepository = new UnifiedSettingsRepository(repository);
             _defaultUserClaim = userClaim;

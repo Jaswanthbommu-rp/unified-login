@@ -20,6 +20,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using IC = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using MC = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.MarketingCenter;
 
@@ -34,15 +35,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		private string _password;
 		private string _marketingCenterApiSourceID;		
 		private DefaultUserClaim _userClaims;
-		HttpMessageHandler _httpGetMessageHandler = new HttpClientHandler();
+        private HttpClient _httpClient;
 
 		#region Ctor
 		/// <summary>
 		/// The default constructor
 		/// </summary>
 		/// <param name="userClaims">The RealPageId of the editor</param>
-		public ManageProductMarketingCenter(DefaultUserClaim userClaims) : base((int)ProductEnum.MarketingCenter, userClaims, null, null)
-		{
+		public ManageProductMarketingCenter(DefaultUserClaim userClaims) : base((int)ProductEnum.MarketingCenter, userClaims, productInternalSettingRepository: null, productRepository: null)
+        {
 			_editorRealPageId = userClaims.UserRealPageGuid;
 			_blueBook = new Logic.ManageBlueBook(userClaims);
 			_userClaims = userClaims;
@@ -60,22 +61,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			credCache.Add(new Uri(_productUrl), "Digest", new NetworkCredential(_username, _password));
 			var HttpHandler = new HttpClientHandler();
 			HttpHandler.Credentials = credCache;
-			_client = new HttpClient(HttpHandler);
-		}
+            _httpClient = new HttpClient(HttpHandler);
+            _httpClient.BaseAddress = new Uri(_productUrl);
+            _httpClient.SetBasicAuthentication(_username, _password);
+        }
 
-		/// <summary>
-		/// Unit test constructor
-		/// </summary>
-		/// <param name="editorRealPageId"></param>
-		/// <param name="userClaims"></param>
-		/// <param name="httpMessageHandler"></param>
-		/// <param name="productInternalSettingRepository"></param>
-		/// <param name="managePersona"></param>
-		/// <param name="samlRepository"></param>
-		/// <param name="manageBlueBook"></param>
-		public ManageProductMarketingCenter(Guid editorRealPageId, DefaultUserClaim userClaims, HttpMessageHandler httpMessageHandler, IProductInternalSettingRepository productInternalSettingRepository,
-			IManagePersona managePersona, ISamlRepository samlRepository, IManageBlueBook manageBlueBook, IProductRepository productRepository)
-			: base((int)ProductEnum.MarketingCenter, productInternalSettingRepository, productRepository)
+        /// <summary>
+        /// Unit test constructor
+        /// </summary>
+        /// <param name="editorRealPageId"></param>
+        /// <param name="userClaims"></param>
+        /// <param name="httpMessageHandler"></param>
+        /// <param name="productInternalSettingRepository"></param>
+        /// <param name="managePersona"></param>
+        /// <param name="samlRepository"></param>
+        /// <param name="manageBlueBook"></param>
+        /// <param name="productRepository"></param>
+        /// <param name="repository"></param>
+        public ManageProductMarketingCenter(Guid editorRealPageId, DefaultUserClaim userClaims, HttpMessageHandler httpMessageHandler, IProductInternalSettingRepository productInternalSettingRepository,
+			IManagePersona managePersona, ISamlRepository samlRepository, IManageBlueBook manageBlueBook, IProductRepository productRepository, IRepository repository)
+			: base((int)ProductEnum.MarketingCenter, userClaims, repository, httpMessageHandler)
 		{
 			_editorRealPageId = editorRealPageId;
 			_messageHandler = httpMessageHandler;
@@ -93,7 +98,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			ServicePointManager.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
 			// TODO REMOVE WHEN POSTING TO TRUSTED URL
 
-			_client = new HttpClient(httpMessageHandler);
+			_httpClient = new HttpClient(httpMessageHandler);
 		}
 		#endregion
 
@@ -123,7 +128,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				logData = new Dictionary<string, object>();
 				logData.Add("url", url);
 				WriteToDiagnosticLog("GetRoles - Posting to url", logData);
-				var response = _client.GetAsync(url).Result;
+				var response = _httpClient.GetAsync(url).Result;
 
 				if (response.IsSuccessStatusCode)
 				{
@@ -238,7 +243,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				logData = new Dictionary<string, object>();
 				logData.Add("url", url);
 				WriteToDiagnosticLog("GetProperties - Posting to url", logData);
-				var response = _client.GetAsync(url).Result;
+				var response = _httpClient.GetAsync(url).Result;
 
 				if (response.IsSuccessStatusCode)
 				{
@@ -469,7 +474,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				logData.Add("url", url);
 				logData.Add("mcuser", mcUser);
 				WriteToDiagnosticLog("ManageMarketingCenterUser.UpdateUserProfile - Update user profile.", logData);
-				var response = _client.PutAsJsonAsync(url, mcUser).Result;
+				var response = _httpClient.PutAsJsonAsync(url, mcUser).Result;
 
 				if (response.IsSuccessStatusCode)
 				{
@@ -735,7 +740,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					logData.Add("url", url);
 					WriteToDiagnosticLog("ManageMarketingCenterUser - Create user.", logData);
 					WriteToDiagnosticLog($"ManageMarketingCenterUser - JSON input " + JsonConvert.SerializeObject(mcUser));
-					var response = _client.PostAsJsonAsync(url, mcUser).Result;
+					var response = _httpClient.PostAsJsonAsync(url, mcUser).Result;
 
 					if (response.IsSuccessStatusCode)
 					{
@@ -837,7 +842,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					logData.Add("url", url);
 					WriteToDiagnosticLog("ManageMarketingCenterUser - Update user.", logData);
 					WriteToDiagnosticLog($"ManageMarketingCenterUser - JSON input " + JsonConvert.SerializeObject(mcUser));
-					var response = _client.PutAsJsonAsync(url, mcUser).Result;
+					var response = _httpClient.PutAsJsonAsync(url, mcUser).Result;
 
 					if (response.IsSuccessStatusCode)
 					{
@@ -914,7 +919,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		private bool CheckIfUserExistInProduct(string _productUserId)
 		{
 			var url = _productUrl + $"/v2/contact/details?emailAddress={_productUserId}";
-			var response = _client.GetAsync(url).Result;
+			var response = _httpClient.GetAsync(url).Result;
 			if (response.IsSuccessStatusCode)
 			{
 				WriteToDiagnosticLog($"ManageMarketingCenterUser.CheckIfUserExistInProduct - Email address {_productUserId} already exist in Marketing Center.");
@@ -988,7 +993,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					};
 					WriteToDiagnosticLog($"ManageMarketingCenterUser.SetMarketingCenterUserStatus - Update userId {mcUserId} url and user status request object: {mcUserJson}", logData);
 
-					var response = _client.PutAsJsonAsync(url, mcUser).Result;
+					var response = _httpClient.PutAsJsonAsync(url, mcUser).Result;
 					dynamic userResult = JsonConvert.DeserializeObject<dynamic>(response.Content.ReadAsStringAsync().Result);
 					logData = new Dictionary<string, object>
 					{
@@ -1019,7 +1024,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			T results = null;
 			Dictionary<string, object> logData = new Dictionary<string, object>();
 			logData.Add("uri", baseUrlAndQuery);
-			var response = _client.GetAsync(baseUrlAndQuery).Result;
+			var response = _httpClient.GetAsync(baseUrlAndQuery).Result;
 			if (response.IsSuccessStatusCode)
 			{
 				var jsonContent = response.Content.ReadAsStringAsync().Result;
@@ -1094,7 +1099,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				try
 				{
 					var url = _productUrl + $"/v2/contact/{_productUserId}/details";
-					var response = _client.GetAsync(url).Result;
+					var response = _httpClient.GetAsync(url).Result;
 
 					if (response.IsSuccessStatusCode)
 					{
@@ -1116,7 +1121,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		private bool IsUserIdValid(long userId)
 		{
 			string url = _productUrl + $"/v2/contact/{ userId }/status";
-			var responsex = _client.GetAsync(url).Result;
+			var responsex = _httpClient.GetAsync(url).Result;
 
 			return responsex.IsSuccessStatusCode;
 		}
@@ -1229,7 +1234,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 
 			var url = $"{_productUrl}/v2/api/{companyInstanceSourceId}/migrate-users";
-			var response = _client.PostAsJsonAsync(url, migrateUsers).Result;
+			var response = _httpClient.PostAsJsonAsync(url, migrateUsers).Result;
 			var responseContent = response.Content.ReadAsStringAsync().Result;
 
 			var logData = new Dictionary<string, object>

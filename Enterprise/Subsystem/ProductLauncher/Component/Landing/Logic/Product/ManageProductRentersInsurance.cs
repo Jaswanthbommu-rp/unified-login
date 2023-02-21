@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Web.Security;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
@@ -48,7 +50,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// The default constructor
         /// </summary>
         /// <param name="userClaims">User Claim</param>
-        public ManageProductRentersInsurance(DefaultUserClaim userClaims) : base((int)ProductEnum.Insurance,userClaims ,null, null)
+        public ManageProductRentersInsurance(DefaultUserClaim userClaims) : base((int)ProductEnum.Insurance,userClaims, productInternalSettingRepository: null, productRepository: null)
         {
             _productId = (int)ProductEnum.Insurance;
             _editorRealPageId = userClaims.UserRealPageGuid;
@@ -64,44 +66,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         }
 
         /// <summary>
-		/// Unit test constructor to test list roles
-		/// </summary>
-		/// <param name="editorRealPageId">The RealPageId of the editor</param>
-		/// <param name="rentersInsuraceService">Renters Insurace Service</param>
-		/// <param name="listOfUserRolesResponse">List of user roles</param>
-		/// <param name="samlRepository">SAML Repository</param>
-		/// <param name="managePersona">Persona business logic</param>
-		/// <param name="manageBlueBook">BlueBook business logic</param>
-		/// <param name="productRepository">Product Repository</param>
-		/// <param name="productInternalSettingRepository">Product Internal Setting Repository</param>
-		/// <param name="managePerson">Person business logic</param>
-		/// <param name="manageUserLogin">UserLogin business logic</param>
-		/// <param name="managePartyRelationship">Party Relationship business logic</param>
-		public ManageProductRentersInsurance(Guid editorRealPageId, IInsuranceService rentersInsuraceService, ISamlRepository samlRepository,
-            IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository,
-            IProductInternalSettingRepository productInternalSettingRepository, IManagePerson managePerson, IManageUserLogin manageUserLogin,
-            IManagePartyRelationship managePartyRelationship)
-            : base((int)ProductEnum.Insurance, productInternalSettingRepository,productRepository)
-        {
-            _editorRealPageId = editorRealPageId;
-            _insuranceService = rentersInsuraceService;
-            _samlRepository = samlRepository;
-            _managePersona = managePersona;
-            _managePerson = managePerson;
-            _manageUserLogin = manageUserLogin;
-            _blueBook = manageBlueBook;
-            _productRepository = productRepository;
-            _productInternalSettingRepository = productInternalSettingRepository;
-            _managePartyRelationship = managePartyRelationship;
-            _productRepository = productRepository;
-        }
-
-        /// <summary>
         /// Unit test constructor to test list roles
         /// </summary>
         /// <param name="editorRealPageId">The RealPageId of the editor</param>
+        /// <param name="userClaim">The claim of the user executing the call</param>
+        /// <param name="messageHandler">An http handler used for moq'ing requests</param>
         /// <param name="rentersInsuraceService">Renters Insurace Service</param>
-        /// <param name="listOfUserRolesResponse">List of user roles</param>
         /// <param name="samlRepository">SAML Repository</param>
         /// <param name="managePersona">Persona business logic</param>
         /// <param name="manageBlueBook">BlueBook business logic</param>
@@ -110,11 +80,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="managePerson">Person business logic</param>
         /// <param name="manageUserLogin">UserLogin business logic</param>
         /// <param name="managePartyRelationship">Party Relationship business logic</param>
-        public ManageProductRentersInsurance(Guid editorRealPageId, IInsuranceService rentersInsuraceService, ListOfUserRolesResponse listOfUserRolesResponse, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship) : base((int)ProductEnum.Insurance, productInternalSettingRepository, productRepository)
+        /// <param name="repository">The sql repository used for moq'ing sql calls</param>
+        public ManageProductRentersInsurance(Guid editorRealPageId, DefaultUserClaim userClaim, HttpMessageHandler messageHandler, 
+            IInsuranceService rentersInsuraceService, ISamlRepository samlRepository,
+            IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository,
+            IProductInternalSettingRepository productInternalSettingRepository, IManagePerson managePerson, IManageUserLogin manageUserLogin,
+            IManagePartyRelationship managePartyRelationship, IRepository repository)
+            : base((int)ProductEnum.Insurance, userClaim, repository, messageHandler)
         {
             _editorRealPageId = editorRealPageId;
             _insuranceService = rentersInsuraceService;
-            _listOfUserRolesResponse = listOfUserRolesResponse;
             _samlRepository = samlRepository;
             _managePersona = managePersona;
             _managePerson = managePerson;
@@ -123,12 +98,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _productRepository = productRepository;
             _productInternalSettingRepository = productInternalSettingRepository;
             _managePartyRelationship = managePartyRelationship;
+            _productRepository = productRepository;
+            
+            _insuranceService.Url = "http://localhost";
         }
 
         /// <summary>
-        /// Unit test constructor to test list properties
+        /// 
         /// </summary>
         /// <param name="editorRealPageId">The RealPageId of the editor</param>
+        /// <param name="userClaim">The claim of the user executing the call</param>
+        /// <param name="messageHandler">An http handler used for moq'ing requests</param>
         /// <param name="companyInstanceId">Company Id</param>
         /// <param name="rentersInsuraceService">Renters Insurace Service</param>
         /// <param name="listPropertyByPMCIDResponse">list of Properties By PMCID Response</param>
@@ -140,7 +120,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="managePerson">Person business logic</param>
         /// <param name="manageUserLogin">UserLogin business logic</param>
         /// <param name="managePartyRelationship">Party Relationship business logic</param>
-        public ManageProductRentersInsurance(Guid editorRealPageId, long companyInstanceId, IInsuranceService rentersInsuraceService, ListPropertyByPMCIDResponse listPropertyByPMCIDResponse, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship) : base((int)ProductEnum.Insurance, productInternalSettingRepository, productRepository)
+        /// <param name="repository">The sql repository used for moq'ing sql calls</param>
+        public ManageProductRentersInsurance(Guid editorRealPageId, DefaultUserClaim userClaim, HttpMessageHandler messageHandler, long companyInstanceId, IInsuranceService rentersInsuraceService, ListPropertyByPMCIDResponse listPropertyByPMCIDResponse, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship, IRepository repository)
+            : base((int)ProductEnum.Insurance, userClaim, repository, messageHandler)
         {
             _editorRealPageId = editorRealPageId;
             _companyInstanceId = companyInstanceId;
@@ -1124,10 +1106,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         usingUnifiedLogin = mu.UsingUnifiedLogin.ToString()
                     };
                 });
-
+                var migratedArray = migrateUserRequests.ToArray();
 
                 WriteToDiagnosticLog($"ManageProductRentersInsurance.UpdateUsersMigrationStatus.MigrateUser, {migrateResponse.Message}");
-                migrateResponse.Message = _insuranceService.MigrateUser(migrateUserRequests.ToArray());
+                migrateResponse.Message = _insuranceService.MigrateUser(migratedArray);
                 migrateResponse.Status = true;
             }
             catch (Exception ex)

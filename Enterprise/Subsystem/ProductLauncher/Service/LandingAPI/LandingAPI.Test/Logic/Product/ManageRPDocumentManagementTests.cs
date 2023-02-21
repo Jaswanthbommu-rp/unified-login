@@ -40,7 +40,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
         private Mock<IManageContactMechanism> _mockManageContactMechanism = new Mock<IManageContactMechanism>();
         private Mock<IManagePartyRelationship> _mockManagePartyRelationship = new Mock<IManagePartyRelationship>();
         private Mock<IUserLoginRepository> _mockUserLoginRepository = new Mock<IUserLoginRepository>();
-        private GbProductMap _gbProductMap = new GbProductMap();
+
         private static string _domain = "demoapi";
         private static string _companyName = "TESTCOMPANY";
         private static string _companyInstanceSourceId = "demoapi";
@@ -65,7 +65,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
             _repositoryResponseProductStatus = new RepositoryResponse() { ErrorMessage = "", Id = 1 };
             _repositoryResponsePropertySuccess = new RepositoryResponse() { ErrorMessage = "", Id = 1 };
             _repositoryResponsePropertyFail = new RepositoryResponse() { ErrorMessage = "error", Id = -1 };
-            _gbProductMap = new GbProductMap() { BooksProductCode = "DOC", Name = "Document Director", ProductId = 20, UDMSourceCode = "DOC" };
         }
 
         /// <summary>
@@ -96,8 +95,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
 
             IList<GbProductMap> productList = new List<GbProductMap> { new GbProductMap { ProductId = 20, BooksProductCode = "DOC", Name = "Document Management" } };
             CustomerCompany customerCompany = new CustomerCompany() { CustomerCompanyId = 123456, IsActive = true, CompanyName = "Test Company", MigrationStatus = "migrated" };//Category = "rpup",
-
-            _gbProductMap = new GbProductMap { ProductId = (int)ProductEnum.RPDocumentManagement, BooksProductCode = "DOC", Name = "Document Management" };
 
             RPDMResult<RPDMRole> roleResult = new RPDMResult<RPDMRole>();
 
@@ -194,9 +191,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
 
             _mockProductRepository
                 .Setup(m => m.GetBooksMasterProductDetail(
-                    It.IsAny<int>()
-                ))
-                .Returns(_gbProductMap);
+                    It.Is<int>(l => l == (int)ProductEnum.RPDocumentManagement)))
+                .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.RPDocumentManagement));
 
             _mockProductRepository
                 .Setup(m => m.ListProductSettingType(
@@ -207,6 +203,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
                 .Setup(m => m.GetProductInternalSettings(
                     It.IsAny<int>()
                 ))
+                .Returns(_productInternalSettings);
+
+            mockRepository
+                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct,
+                    It.Is<object>(d => TestIsProductId(d, (int)ProductEnum.RPDocumentManagement))))
                 .Returns(_productInternalSettings);
 
             _mockManagePersona
@@ -327,10 +328,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
                 .Returns(_organizationStatusInvalidPersona);
 
             _mockProductRepository
-            .Setup(m => m.GetBooksMasterProductDetail(
-                It.IsAny<int>()
-            ))
-            .Returns(_gbProductMap);
+                .Setup(m => m.GetBooksMasterProductDetail(
+                    It.Is<int>(l => l == (int)ProductEnum.RPDocumentManagement)))
+                .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.RPDocumentManagement));
+
+            mockRepository
+                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
+                    It.IsAny<object>()))
+                .Returns(_gbProductMap);
 
             HttpResponseMessage roleResponse = new HttpResponseMessage(HttpStatusCode.OK);
             roleResponse.Content = new StringContent(JsonConvert.SerializeObject(roleResult));
@@ -378,6 +383,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
 
             ManageProductRPDocumentManagement manageProduct = new ManageProductRPDocumentManagement(
                 userClaims: _editorUserClaim,
+                httpMessageHandler: mockHttpMessageHandler.Object,
                 client: client,
                 productInternalSettingRepository: _mockProductInternalSettingRepository.Object,
                 managePersona: _mockManagePersona.Object,
@@ -388,7 +394,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
                 manageContactMechanism: _mockManageContactMechanism.Object,
                 managePartyRelationship: _mockManagePartyRelationship.Object,
                 productRepository: _mockProductRepository.Object,
-                userLoginRepository: _mockUserLoginRepository.Object
+                userLoginRepository: _mockUserLoginRepository.Object,
+                repository: mockRepository.Object
             );
 
 
@@ -418,6 +425,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
 
             ManageProductRPDocumentManagement manageProduct = new ManageProductRPDocumentManagement(
                 userClaims: _editorUserClaim,
+                httpMessageHandler: mockHttpMessageHandler.Object,
                 client: client,
                 productInternalSettingRepository: _mockProductInternalSettingRepository.Object,
                 managePersona: _mockManagePersona.Object,
@@ -428,7 +436,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
                 manageContactMechanism: _mockManageContactMechanism.Object,
                 managePartyRelationship: _mockManagePartyRelationship.Object,
                 productRepository: _mockProductRepository.Object,
-                userLoginRepository: _mockUserLoginRepository.Object
+                userLoginRepository: _mockUserLoginRepository.Object,
+                repository: mockRepository.Object
             );
 
             HttpResponseMessage datasetResponse = new HttpResponseMessage(HttpStatusCode.OK);
@@ -483,6 +492,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
 
             ManageProductRPDocumentManagement manageProduct = new ManageProductRPDocumentManagement(
                 userClaims: _editorUserClaim,
+                httpMessageHandler: mockHttpMessageHandler.Object,
                 client: client,
                 productInternalSettingRepository: _mockProductInternalSettingRepository.Object,
                 managePersona: _mockManagePersona.Object,
@@ -493,7 +503,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
                 manageContactMechanism: _mockManageContactMechanism.Object,
                 managePartyRelationship: _mockManagePartyRelationship.Object,
                 productRepository: _mockProductRepository.Object,
-                userLoginRepository: _mockUserLoginRepository.Object
+                userLoginRepository: _mockUserLoginRepository.Object,
+                repository: mockRepository.Object
 
             );
 
@@ -529,6 +540,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
 
             ManageProductRPDocumentManagement manageProduct = new ManageProductRPDocumentManagement(
                 userClaims: _editorUserClaim,
+                httpMessageHandler: mockHttpMessageHandler.Object,
                 client: client,
                 productInternalSettingRepository: _mockProductInternalSettingRepository.Object,
                 managePersona: _mockManagePersona.Object,
@@ -539,7 +551,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
                 manageContactMechanism: _mockManageContactMechanism.Object,
                 managePartyRelationship: _mockManagePartyRelationship.Object,
                 productRepository: _mockProductRepository.Object,
-                userLoginRepository: _mockUserLoginRepository.Object
+                userLoginRepository: _mockUserLoginRepository.Object,
+                repository: mockRepository.Object
             );
 
             HttpResponseMessage datasetResponse = new HttpResponseMessage(HttpStatusCode.OK);

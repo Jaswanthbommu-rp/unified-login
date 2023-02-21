@@ -34,7 +34,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 	{
 		#region Private Variables
 		private int _blueBookId;
-		private GbProductMap _gbProductMap = new GbProductMap();
 		private List<Community> _PropertyList = new List<Community>();
 		private List<ILevel> _RoleList = new List<ILevel>();
 		private List<IMessagingGroups> _messageGroupsList = new List<IMessagingGroups>();
@@ -44,8 +43,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		private ResidentPortalUser _residentPortalEditorUser = new ResidentPortalUser();
         private DefaultUserClaim _userClaims;
 
-        private string testHostname = "http://producturl.com";
-        private string _mtApiEndPoint = "http://producturl.com";
+        private string testHostname = "http://localhost";
+        private string _mtApiEndPoint = "http://localhost";
 		private string _appId = "d8f43b85";
 		private string _appKey = "50aa7342baf824716f87e6999cf4b472";
 		#endregion
@@ -75,7 +74,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             _productInternalSettings.Add(new IC.ProductInternalSetting() { Name = "MTAPIENDPOINT", Value = _mtApiEndPoint });
 			_productInternalSettings.Add(new IC.ProductInternalSetting() { Name = "APPID", Value = _appId });
 			_productInternalSettings.Add(new IC.ProductInternalSetting() { Name = "APPKEY", Value = _appKey });
-			_gbProductMap = new GbProductMap() { BooksProductCode = "AB", Name = "Resident Portals", ProductId = 17, UDMSourceCode = "AB" };
 			_repositoryResponseProductStatus.ErrorMessage = "";
 
             _userClaims = new DefaultUserClaim()
@@ -90,6 +88,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 UserRealPageGuid = Guid.NewGuid(),
                 Rights = new List<string>()
             };
+
+            mockRepository
+				.Setup(m => m.GetMany<IC.ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
+				.Returns(_productInternalSettings);
+
+            mockRepository
+                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
+                    It.IsAny<object>()))
+                .Returns(_gbProductMap);
         }
 		#endregion
 
@@ -122,7 +129,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetCompanyMap(
                     It.IsAny<Guid>(),
                     It.IsAny<long>(),
-                    It.IsAny<string>(),
+                    It.Is<string>(l => l == "AB"),
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<bool>(),
@@ -170,11 +177,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
 			mockProductRepository
 			  .Setup(m => m.GetBooksMasterProductDetail(
-				  It.IsAny<int>()
-			  ))
-			  .Returns(_gbProductMap);
+                  It.Is<int>(l => l == (int)ProductEnum.ResidentPortal)
+              ))
+              .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.ResidentPortal));
 
-			_residentPortalUser.Notifications = expectedNotifications;
+            _residentPortalUser.Notifications = expectedNotifications;
 
 			//Act
 			IManageProductResidentPortal manageProductResidentPortal = new ManageProductResidentPortal(
@@ -190,8 +197,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				manageUserLogin: null,
 				managePartyRelationship: null,
 				manageElectronicAddress: null,
-                userClaims: _userClaims,
-                messageHandler: mockHttpMessageHandler.Object);
+                userClaim: _userClaims,
+                messageHandler: mockHttpMessageHandler.Object,
+				repository: mockRepository.Object);
 
 			//Assert
 			_notifications = manageProductResidentPortal.GetNotificationSettings(_editorPersonaId, _userPersonaId);
@@ -267,7 +275,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetCompanyMap(
                     It.IsAny<Guid>(),
                     It.IsAny<long>(),
-                    It.IsAny<string>(),
+                    It.Is<string>(l => l == "AB"),
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<bool>(),
@@ -315,11 +323,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
 			mockProductRepository
 			  .Setup(m => m.GetBooksMasterProductDetail(
-				  It.IsAny<int>()
-			  ))
-			  .Returns(_gbProductMap);
+                  It.Is<int>(l => l == (int)ProductEnum.ResidentPortal)
+              ))
+              .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.ResidentPortal));
 
-			Dictionary<string, string> rolesDictionary = new Dictionary<string, string>();
+            Dictionary<string, string> rolesDictionary = new Dictionary<string, string>();
 			rolesDictionary.Add("ENTERPRISE_ADMIN", "Enterprise Admin");
 			rolesDictionary.Add("ENTERPRISE_STANDARD", "Enterprise Standard");
 			rolesDictionary.Add("STAFF_ADMIN", "Staff Admin");
@@ -342,12 +350,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				manageUserLogin: null,
 				managePartyRelationship: null,
 				manageElectronicAddress: null,
-                userClaims: _userClaims,
-                messageHandler: mockHttpMessageHandler.Object);
+                userClaim: _userClaims,
+                messageHandler: mockHttpMessageHandler.Object,
+                repository: mockRepository.Object);
 
 
-			//Assert
-			_RoleList = manageProductResidentPortal.ListLevels(0, 0);
+            //Assert
+            _RoleList = manageProductResidentPortal.ListLevels(0, 0);
 			List<ILevel> compareResult = _RoleList.Where(item => expectedLevelList.Select(eItem => eItem.Id).Contains(item.Id)).ToList();
 			Assert.True(_RoleList.Count == expectedLevelList.Count);
 			Assert.True(compareResult.Count == expectedLevelList.Count);
@@ -362,7 +371,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			Mock<IProductRepository> mockProductRepository = new Mock<IProductRepository>();
 			Mock<IProductInternalSettingRepository> mockProductInternalSettingRepository = new Mock<IProductInternalSettingRepository>();
 			Mock<ISamlRepository> mockSamlRepository = new Mock<ISamlRepository>();
-			Mock<IManageProductResidentPortal> mockManageProductResidentPortal = new Mock<IManageProductResidentPortal>();
+			//Mock<IManageProductResidentPortal> mockManageProductResidentPortal = new Mock<IManageProductResidentPortal>();
 
 			List<IMessagingGroups> expectedMessageGroupsList = new List<IMessagingGroups>()
 			{
@@ -413,7 +422,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetCompanyMap(
                     It.IsAny<Guid>(),
                     It.IsAny<long>(),
-                    It.IsAny<string>(),
+                    It.Is<string>(l => l == "AB"),
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<bool>(),
@@ -461,11 +470,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
 			mockProductRepository
 			  .Setup(m => m.GetBooksMasterProductDetail(
-				  It.IsAny<int>()
+				  It.Is<int>(l => l == (int)ProductEnum.ResidentPortal)
 			  ))
-			  .Returns(_gbProductMap);
+              .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.ResidentPortal));
 
-			_residentPortalUser.MessagingGroups = expectedMessageGroupsList;
+            _residentPortalUser.MessagingGroups = expectedMessageGroupsList;
 
 		//Act
 		IManageProductResidentPortal manageProductResidentPortal = new ManageProductResidentPortal(
@@ -481,11 +490,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				manageUserLogin: null,
 				managePartyRelationship: null,
 				manageElectronicAddress: null,
-                userClaims: _userClaims,
-                messageHandler: mockHttpMessageHandler.Object);
+                userClaim: _userClaims,
+                messageHandler: mockHttpMessageHandler.Object,
+                repository: mockRepository.Object);
 
-			//Assert
-			_messageGroupsList = manageProductResidentPortal.ListMessageGroups(_editorPersonaId, _userPersonaId);
+            //Assert
+            _messageGroupsList = manageProductResidentPortal.ListMessageGroups(_editorPersonaId, _userPersonaId);
 			List<IMessagingGroups> compareResult = _messageGroupsList.Where(item => expectedMessageGroupsList.Select(eItem => eItem.Id).Contains(item.Id)).ToList();
 			Assert.True(_messageGroupsList.Count == expectedMessageGroupsList.Count);
 			Assert.True(compareResult.Count == expectedMessageGroupsList.Count);
@@ -576,7 +586,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetCompanyMap(
                     It.IsAny<Guid>(),
                     It.IsAny<long>(),
-                    It.IsAny<string>(),
+                    It.Is<string>(l => l == "AB"),
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<bool>(),
@@ -710,10 +720,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				managePerson: null,
 				manageUserLogin: null,
 				managePartyRelationship: null,
-                userClaims: _userClaims);
+                userClaim: _userClaims,
+                messageHandler: mockHttpMessageHandler.Object,
+                repository: mockRepository.Object);
 
-			//Assert
-			_listResponse = manageProductResidentPortal.ListProperties(_editorPersonaId, _userPersonaId, null);
+            //Assert
+            _listResponse = manageProductResidentPortal.ListProperties(_editorPersonaId, _userPersonaId, null);
 			IList<ProductProperty> productPropertyList = _listResponse.Records.Cast<ProductProperty>().ToList();
 			List<ProductProperty> compareResult = productPropertyList.Where(item => expectedProductPropertyList.Select(eItem => eItem.ID).Contains(item.ID)).ToList();
 			Assert.True(_listResponse.Records.Count == expectedProductPropertyList.Count);
@@ -747,7 +759,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetCompanyMap(
                     It.IsAny<Guid>(),
                     It.IsAny<long>(),
-                    It.IsAny<string>(),
+                    It.Is<string>(l => l == "AB"),
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<bool>(),
@@ -759,6 +771,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetProductInternalSettings(
                     It.Is<int>(l => l == (int)ProductEnum.ResidentPortal)
                 ))
+                .Returns(_productInternalSettings);
+
+            mockRepository
+                .Setup(m => m.GetMany<IC.ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct,
+                    It.Is<object>(d => TestIsProductId(d, 17))))
                 .Returns(_productInternalSettings);
 
             mockSamlRepository
@@ -795,26 +812,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
 			mockProductRepository
 			  .Setup(m => m.GetBooksMasterProductDetail(
-				  It.IsAny<int>()
-			  ))
-			  .Returns(_gbProductMap);
-
-			//Act
-			IManageProductResidentPortal manageProductResidentPortal = new ManageProductResidentPortal(
-                editorRealPageId: _editorRealPageId,
-                residentPortalEditorUser: _residentPortalEditorUser,
-                residentPortalUser: _residentPortalUser,
-                samlRepository: mockSamlRepository.Object,
-                managePersona: mockManagePersona.Object,
-                manageBlueBook: mockManageBlueBook.Object,
-                productRepository: mockProductRepository.Object,
-                productInternalSettingRepository: mockProductInternalSettingRepository.Object,
-                managePerson: null,
-                manageUserLogin: null,
-                managePartyRelationship: null,
-                manageElectronicAddress: null,
-                userClaims: _userClaims,
-                messageHandler: mockHttpMessageHandler.Object);
+                  It.Is<int>(l => l == (int)ProductEnum.ResidentPortal)
+              ))
+              .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.ResidentPortal));
 
             var filter = "NonMigrated";
             var dataFilter = new RequestParameter()
@@ -846,7 +846,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 Content = new StringContent(JsonConvert.SerializeObject(actual))
             };
 
-            mockHttpMessageHandler.Setup(HttpMethod.Get, url, userResponse);
+            mockHttpMessageHandler
+                .Setup(HttpMethod.Get, url, userResponse);
+
+            IManageProductResidentPortal manageProductResidentPortal = new ManageProductResidentPortal(
+                editorRealPageId: _editorRealPageId,
+                residentPortalEditorUser: _residentPortalEditorUser,
+                residentPortalUser: _residentPortalUser,
+                samlRepository: mockSamlRepository.Object,
+                managePersona: mockManagePersona.Object,
+                manageBlueBook: mockManageBlueBook.Object,
+                productRepository: mockProductRepository.Object,
+                productInternalSettingRepository: mockProductInternalSettingRepository.Object,
+                managePerson: null,
+                manageUserLogin: null,
+                managePartyRelationship: null,
+                manageElectronicAddress: null,
+                userClaim: _userClaims,
+                messageHandler: mockHttpMessageHandler.Object,
+                repository: mockRepository.Object);
 
             //Act
             var expected = manageProductResidentPortal.GetMigrationUsers(editorPersonaId, dataFilter);
@@ -882,7 +900,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetCompanyMap(
                     It.IsAny<Guid>(),
                     It.IsAny<long>(),
-                    It.IsAny<string>(),
+                    It.Is<string>(l => l == "AB"),
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<bool>(),
@@ -894,6 +912,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetProductInternalSettings(
                     It.Is<int>(l => l == (int)ProductEnum.ResidentPortal)
                 ))
+                .Returns(_productInternalSettings);
+            
+            mockRepository
+                .Setup(m => m.GetMany<IC.ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct,
+                    It.Is<object>(d => TestIsProductId(d, 17))))
                 .Returns(_productInternalSettings);
 
             mockSamlRepository
@@ -928,28 +951,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 ))
                 .Returns(_userProductSettings);
 
-			mockProductRepository
-			  .Setup(m => m.GetBooksMasterProductDetail(
-				  It.IsAny<int>()
-			  ))
-			  .Returns(_gbProductMap);
+            mockProductRepository
+                .Setup(m => m.GetBooksMasterProductDetail(
+                    It.Is<int>(l => l == (int)ProductEnum.ResidentPortal)))
+                .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.ResidentPortal));
 
-			//Act
-			IManageProductResidentPortal manageProductResidentPortal = new ManageProductResidentPortal(
-                editorRealPageId: _editorRealPageId,
-                residentPortalEditorUser: _residentPortalEditorUser,
-                residentPortalUser: _residentPortalUser,
-                samlRepository: mockSamlRepository.Object,
-                managePersona: mockManagePersona.Object,
-                manageBlueBook: mockManageBlueBook.Object,
-                productRepository: mockProductRepository.Object,
-                productInternalSettingRepository: mockProductInternalSettingRepository.Object,
-                managePerson: null,
-                manageUserLogin: null,
-                managePartyRelationship: null,
-                manageElectronicAddress: null,
-                userClaims: _userClaims,
-                messageHandler: mockHttpMessageHandler.Object);
+
 
             var migrateUsers = new List<MigrateUser>()
             {
@@ -976,6 +983,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             };
 
             mockHttpMessageHandler.Setup(HttpMethod.Put, url, userResponse);
+			
+            IManageProductResidentPortal manageProductResidentPortal = new ManageProductResidentPortal(
+                editorRealPageId: _editorRealPageId,
+                residentPortalEditorUser: _residentPortalEditorUser,
+                residentPortalUser: _residentPortalUser,
+                samlRepository: mockSamlRepository.Object,
+                managePersona: mockManagePersona.Object,
+                manageBlueBook: mockManageBlueBook.Object,
+                productRepository: mockProductRepository.Object,
+                productInternalSettingRepository: mockProductInternalSettingRepository.Object,
+                managePerson: null,
+                manageUserLogin: null,
+                managePartyRelationship: null,
+                manageElectronicAddress: null,
+                userClaim: _userClaims,
+                messageHandler: mockHttpMessageHandler.Object,
+                repository: mockRepository.Object);
 
             //Act
             var actual = manageProductResidentPortal.UpdateUsersMigrationStatus(_editorPersonaId, migrateUsers);

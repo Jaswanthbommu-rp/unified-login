@@ -20,6 +20,7 @@ using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.Dispatcher;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 {
@@ -29,15 +30,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 	[ExcludeFromCodeCoverage]
 	public class ProductTests
 	{
-		private static Guid _realPageId = new Guid("C802694D-5553-4527-8616-3C0F434AE62D");
-		private readonly IList<ProductInternalSetting> _product3InternalSettings;
+        private readonly ITestOutputHelper _output;
+        private static Guid _realPageId = new Guid("C802694D-5553-4527-8616-3C0F434AE62D");
+		private readonly IList<ProductInternalSetting> _product5InternalSettings;
 		private readonly Mock<IRepository> _mockRepository;
 		private readonly Mock<HttpMessageHandler> _mockHttpMessageHandler;
 		private readonly Mock<HttpMessageHandler> _mockHttpMessageHandlerError;
 
-		public ProductTests()
-		{
-			_product3InternalSettings = new List<ProductInternalSetting>()
+		public ProductTests(ITestOutputHelper output)
+        {
+            _output = output;
+			_product5InternalSettings = new List<ProductInternalSetting>()
 			{
 				new ProductInternalSetting() {Name = "BooksUseDomains", Value = "1"},
 				new ProductInternalSetting() {Name = "BooksUseUPFMId", Value = "1"}
@@ -55,9 +58,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			_mockHttpMessageHandlerError = new Mock<HttpMessageHandler>();
 
 			_mockRepository = new Mock<IRepository>();
-			_mockRepository
-				.Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.Is<object>(d => TestProductIdTrue(d, 3))))
-				.Returns(_product3InternalSettings);
+			// use product id not normally used
+            _mockRepository
+				.Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, 
+                    It.Is<object>(d => TestProductIdTrue(d, 5))))
+				.Returns(_product5InternalSettings);
 
 			_mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/source", booksSourceListResponse);
 			_mockHttpMessageHandlerError.Setup(HttpMethod.Get, $"http://localhost/source", booksSourceListErrorResponse);
@@ -68,20 +73,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 		public void GetProductFamilies_VerifyRouteToAction_ReturnAction()
 		{
 			//Arrange
-			HttpConfiguration Config = new HttpConfiguration();
+            var config = new HttpConfiguration();
 
 			//Act
-			WebApiConfig.Register(Config);
-			Config.EnsureInitialized();
-			DefaultHttpControllerSelector ControllerSelector = new DefaultHttpControllerSelector(Config);
-			RouteTestBase baseTest = new RouteTestBase(Config, ControllerSelector);
+			WebApiConfig.Register(config);
+			config.EnsureInitialized();
+			var controllerSelector = new DefaultHttpControllerSelector(config);
+			var baseTest = new RouteTestBase(config, controllerSelector);
 
-			//Assert
-			Assert.True("GetProductFamilies" == baseTest.VerifyRouteToAction(
-				HttpMethod.Get,
-				"http://localhost/api/productfamilies"
-				)
-			);
+            var result = baseTest.VerifyRouteToAction(
+                HttpMethod.Get,
+                "http://localhost/productfamilies");
+
+            _output.WriteLine($"result : {result}");
+            //Assert
+            Assert.True("GetProductFamilies" == result);
 		}
 
 		[Fact]
@@ -220,12 +226,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			//Act
 			WebApiConfig.Register(Config);
 			Config.EnsureInitialized();
-			DefaultHttpControllerSelector ControllerSelector = new DefaultHttpControllerSelector(Config);
-			RouteTestBase baseTest = new RouteTestBase(Config, ControllerSelector);
+			var ControllerSelector = new DefaultHttpControllerSelector(Config);
+			var baseTest = new RouteTestBase(Config, ControllerSelector);
 
-			string result = baseTest.VerifyRouteToAction(
+			var result = baseTest.VerifyRouteToAction(
 					HttpMethod.Get,
-					"http://localhost/api/products/24/organization/-1");
+					"http://localhost/products/24/organization/-1");
+
+            _output.WriteLine($"result : {result}");
 			//Assert
 			Assert.True("ListProductUsers" == result);
 		}
@@ -292,10 +300,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			};
 
 			//Act
-			var result = controller.GetProductNonSensitiveSettings(3);
+			var result = controller.GetProductNonSensitiveSettings(5);
 
 			//Assert
-			Assert.True(result.Count == _product3InternalSettings.Count);
+			Assert.True(result.Count == _product5InternalSettings.Count);
 		}
 
 		[Fact]

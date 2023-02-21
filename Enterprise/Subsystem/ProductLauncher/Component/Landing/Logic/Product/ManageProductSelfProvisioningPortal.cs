@@ -31,67 +31,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// The default constructor
         /// </summary>
         /// <param name="editorRealPageId">The RealPageId of the editor</param>
-        public ManageProductSelfProvisioningPortal(DefaultUserClaim userClaims) : base((int)ProductEnum.SelfProvisioningPortal, userClaims, null, null)
+        public ManageProductSelfProvisioningPortal(DefaultUserClaim userClaims) : base((int)ProductEnum.SelfProvisioningPortal, userClaims, productInternalSettingRepository: null, productRepository: null)
         {
             _productId = (int)ProductEnum.SelfProvisioningPortal;
             _editorRealPageId = userClaims.UserRealPageGuid;
 
             _selfProvisioningPortaleUrl = _productInternalSettingList.First(a => a.Name.ToUpper() == "PRODUCTURL").Value;
         }
-
-        /// <summary>
-        /// Unit test constructor to test list roles
-        /// </summary>
-        /// <param name="editorRealPageId">The RealPageId of the editor</param>
-        /// <param name="selfProvisioningPortal">self-Provisioning Portal User object</param>
-        /// <param name="samlRepository">SAML Repository</param>
-        /// <param name="managePersona">Persona business logic</param>
-        /// <param name="manageBlueBook">BlueBook business logic</param>
-        /// <param name="productRepository">Product Repository</param>
-        /// <param name="productInternalSettingRepository">Product Internal Setting Repository</param>
-        /// <param name="managePerson">Person business logic</param>
-        /// <param name="manageUserLogin">UserLogin business logic</param>
-        /// <param name="managePartyRelationship">Party Relationship business logic</param>
-        public ManageProductSelfProvisioningPortal(Guid editorRealPageId, SelfProvisioningPortal selfProvisioningPortal, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship) : base((int)ProductEnum.SelfProvisioningPortal, productInternalSettingRepository, productRepository)
-        {
-            _editorRealPageId = editorRealPageId;
-            _selfProvisioningPortal = selfProvisioningPortal;
-            _samlRepository = samlRepository;
-            _managePersona = managePersona;
-            _managePerson = managePerson;
-            _manageUserLogin = manageUserLogin;
-            _blueBook = manageBlueBook;
-            _productRepository = productRepository;
-            _productInternalSettingRepository = productInternalSettingRepository;
-            _managePartyRelationship = managePartyRelationship;
-        }
-
-        /// <summary>
-        /// Unit test constructor to test list properties
-        /// </summary>
-        /// <param name="editorRealPageId">The RealPageId of the editor</param>
-        /// <param name="companyInstanceId">Company Id</param>
-        /// <param name="samlRepository">SAML Repository</param>
-        /// <param name="managePersona">Persona business logic</param>
-        /// <param name="manageBlueBook">BlueBook business logic</param>
-        /// <param name="productRepository">Product Repository</param>
-        /// <param name="productInternalSettingRepository">Product Internal Setting Repository</param>
-        /// <param name="managePerson">Person business logic</param>
-        /// <param name="manageUserLogin">UserLogin business logic</param>
-        /// <param name="managePartyRelationship">Party Relationship business logic</param>
-        public ManageProductSelfProvisioningPortal(Guid editorRealPageId, long companyInstanceId, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship) : base((int)ProductEnum.SelfProvisioningPortal, productInternalSettingRepository,productRepository)
-        {
-            _editorRealPageId = editorRealPageId;
-            _companyInstanceId = companyInstanceId;
-            _samlRepository = samlRepository;
-            _managePersona = managePersona;
-            _managePerson = managePerson;
-            _manageUserLogin = manageUserLogin;
-            _blueBook = manageBlueBook;
-            _productRepository = productRepository;
-            _productInternalSettingRepository = productInternalSettingRepository;
-            _managePartyRelationship = managePartyRelationship;
-        }
+        
         #endregion
 
         #region Public Methods

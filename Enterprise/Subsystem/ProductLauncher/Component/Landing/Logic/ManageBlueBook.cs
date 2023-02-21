@@ -52,7 +52,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         readonly IList<ProductInternalSetting> productInternalSettingList;
         readonly IProductInternalSettingRepository _productInternalSettingRepository;
         readonly IProductRepository _productRepository;
-
+        readonly IPropertyRepository _propertyRepository;
         private bool useDomains = false;
         private bool useUPFMId = false;
 
@@ -67,10 +67,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             string bbUri = "";
 
             #region GetSettings
-            if (_productInternalSettingRepository == null)
-            {
-                _productInternalSettingRepository = new ProductInternalSettingRepository();
-            }   
+            _productInternalSettingRepository = new ProductInternalSettingRepository();
             productInternalSettingList = _manageBlueBookCache["productInternalSetting_" + (int)ProductEnum.UnifiedPlatform] as List<ProductInternalSetting>;
             if (productInternalSettingList == null)
             {                
@@ -81,7 +78,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
 
             _productRepository = new ProductRepository();
-
+            _propertyRepository = new PropertyRepository();
             #endregion
 
             useDomains = GetBooleanProductSettings("BooksUseDomains");
@@ -127,9 +124,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 _manageBlueBookCache.Set("productInternalSetting_" + (int)ProductEnum.UnifiedPlatform, productInternalSettingList, policy);
             }
 
-            _productRepository = new ProductRepository(defaultUserClaim);
-
             #endregion
+            _productRepository = new ProductRepository(defaultUserClaim);
+            _propertyRepository = new PropertyRepository();
 
             useDomains = GetBooleanProductSettings("BooksUseDomains");
             useUPFMId = GetBooleanProductSettings("BooksUseUPFMId");
@@ -162,10 +159,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         public ManageBlueBook(DefaultUserClaim userClaim, IRepository repository, IProductInternalSettingRepository productInternalSettingRepository, HttpMessageHandler messageHandler)
         {
             _productInternalSettingRepository = productInternalSettingRepository;
-            _httpClient = new HttpClient(messageHandler) {BaseAddress = new Uri("http://localhost")};
+            _httpClient = new HttpClient(messageHandler, false) {BaseAddress = new Uri("http://localhost")};
             _defaultUserClaim = userClaim;
             _productRepository = new ProductRepository(repository, userClaim);
-
+            _propertyRepository = new PropertyRepository(repository);
+            
             productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
             useDomains = GetBooleanProductSettings("BooksUseDomains");
             useUPFMId = GetBooleanProductSettings("BooksUseUPFMId");
@@ -180,9 +178,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         public ManageBlueBook(DefaultUserClaim userClaim, IRepository repository, HttpMessageHandler messageHandler)
         {
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
-            _httpClient = new HttpClient(messageHandler) { BaseAddress = new Uri("http://localhost") };
+            _httpClient = new HttpClient(messageHandler, false) { BaseAddress = new Uri("http://localhost") };
             _defaultUserClaim = userClaim;
             _productRepository = new ProductRepository(repository, userClaim);
+            _propertyRepository = new PropertyRepository(repository);
 
             productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
             useDomains = GetBooleanProductSettings("BooksUseDomains");
@@ -1842,7 +1841,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var productType = productInternalSettingsByType?.FirstOrDefault(p => p.ProductId == productId)?.Value;
             //IManageBlueBook _manageBlueBook = new ManageBlueBook(_userClaims);
             List<UPFMPropertyInstance> _upfmPropertyInstance = new List<UPFMPropertyInstance>();
-            IPropertyRepository propertyRepository = new PropertyRepository();
             bool isPrimaryProperty = upfmProperty?.id != null;
 
             /*
@@ -1851,9 +1849,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var upfmPropertyAll = new UPFMProperty();
             //nullInstanceResultFlag = upfmProperty?.id[0] == "-1";
             var booksPropertyList = GetUPFMPropertyInstances(_defaultUserClaim.OrganizationRealPageGuid.ToString());
-            if (booksPropertyList != null)
+            if (booksPropertyList != null && booksPropertyList.Count > 0)
             {
-                _upfmPropertyInstance = propertyRepository.ListUPFMPropertyInstanceIdByInstanceIds(booksPropertyList);
+                _upfmPropertyInstance = _propertyRepository.ListUPFMPropertyInstanceIdByInstanceIds(booksPropertyList);
                 upfmPropertyAll.id = _upfmPropertyInstance.Select(p => p.InstanceId.ToString()).ToList<string>();
             }
 

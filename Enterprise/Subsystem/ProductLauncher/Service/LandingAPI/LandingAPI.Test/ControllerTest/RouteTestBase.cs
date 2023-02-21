@@ -5,6 +5,7 @@ using System.Web.Http;
 using System.Web.Http.Controllers;
 using System.Web.Http.Dispatcher;
 using System.Web.Http.Hosting;
+using RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 {
@@ -14,9 +15,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 	[ExcludeFromCodeCoverage]
 	public class RouteTestBase
 	{
-		private HttpConfiguration _config;
-		private ApiControllerActionSelector _actionSelector = new ApiControllerActionSelector();
-		private DefaultHttpControllerSelector _controllerSelector;
+		private readonly HttpConfiguration _config;
+		private readonly ApiControllerActionSelector _actionSelector = new ApiControllerActionSelector();
+		private readonly DefaultHttpControllerSelector _controllerSelector;
 		private HttpControllerContext _controllerContext;
 		private HttpRequestMessage _request;
 		private HttpControllerDescriptor _controllerDescriptor;
@@ -46,7 +47,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			{
 				// remove the leading /api as the services are now running under their own application
 				url = url.Replace("/api", "");
-				_request = new HttpRequestMessage(method, url);
+                var uri = new Uri(url);
+				_request = new HttpRequestMessage(method, uri);
 				var routeData = _config.Routes.GetRouteData(_request);
 				_request.Properties[HttpPropertyKeys.HttpRouteDataKey] = routeData;
 				_controllerContext = new HttpControllerContext(_config, routeData, _request);
@@ -57,7 +59,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			}
 			catch (Exception e)
 			{
-				return "";
+				throw new Exception(e.Message);
 			}
 			return _actionDescriptor.ActionName;
 		}

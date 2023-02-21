@@ -33,6 +33,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Maintenanc
 using Xunit;
 using HttpConfiguration = System.Web.Http.HttpConfiguration;
 using RoleType = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig.RoleType;
+using Xunit.Abstractions;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 {
@@ -40,7 +41,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
     public class OrganizationTests
     {
         #region Private Variables
-
+        private readonly ITestOutputHelper _output;
         public static readonly Guid EmployeeCompanyRealPageId = new Guid("0D018E46-C20E-477D-ADED-4E5A35FB8F99");
 
         Mock<IRepository> _mockRepository = new Mock<IRepository>();
@@ -63,14 +64,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         private static DefaultUserClaim _defaultUserClaim = new DefaultUserClaim();
         public static Guid propertyGuid = new Guid("5C04F18A-FC9B-4A13-AAAF-E26DA83CE516");
 
+        private static List<ProductInternalSetting> _productInternalSettings;
+
         private static List<Organization> _organizationList;
 
         private static List<GbProductMap> _gbProductMap;
 
         #endregion
 
-        public OrganizationTests()
+        public OrganizationTests(ITestOutputHelper output)
         {
+            _output = output;
+
             _gbProductMap = new List<GbProductMap>
             {
                 new GbProductMap() { BooksProductCode = "OS", Name = "OneSite", ProductId = 1, UDMSourceCode = null },
@@ -225,7 +230,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 }
             };
 
-            List<ProductInternalSetting> productInternalSettings = new List<ProductInternalSetting>()
+            _productInternalSettings = new List<ProductInternalSetting>()
             {
                 new ProductInternalSetting() { Name = "BooksUseDomains", Value = "1" },
                 new ProductInternalSetting() { Name = "BooksUseUPFMId", Value = "1" },
@@ -296,6 +301,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Setup(m => m.UnitOfWork)
                 .Returns(_mockUnitofWork.Object);
 
+            _mockRepository
+                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
+                    It.IsAny<object>()))
+                .Returns(_gbProductMap);
+
             // THIS RESULT IS CACHED SO WE CANT REALLY TEST IT HAVING MULTIPLE RESULTS!
             _mockRepository
                 .Setup(m => m.GetMany<OrganizationType>(StoredProcNameConstants.SP_ListOrganizationType, null))
@@ -307,7 +317,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             _mockRepository
                 .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
-                .Returns(productInternalSettings);
+                .Returns(_productInternalSettings);
 
             _mockTokenHelper
                 .Setup(m => m.GetUnifiedLoginServerToken("unifiedsettingsapi"))
@@ -330,8 +340,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompany?filter[customerCompanyId]=in:1&include=customerCompanyLocation", booksCustomerCompanyResponse);
             _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/domain/customercompany/1", booksCompanyMasterDomainListResponse);
             _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/companyinstance?filter[source]=UPFM&filter[customerCompanyMap.customerCompanyId]=1&fields[companyinstance]=companyInstanceId,source,companyInstanceSourceId,companyName,companyType,isActive,domain", booksCompanyInstancesResponse);
-
-
+            
             _mockHttpMessageHandler.Setup(HttpMethod.Put, $"http://localhost/v2/provisioning/property", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
 
         }
@@ -408,10 +417,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void InsertOrganization_InvalidOrganizationType_BadRequest()
         {
-            _mockRepository
-                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
-                    It.IsAny<object>()))
-                .Returns(_gbProductMap);
 
             //Arrange
             OrganizationCreate organizationCreate = new OrganizationCreate()
@@ -823,7 +828,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             HttpResponseMessage response = organizationController.InsertOrganization(organizationCreate);
             OrganizationCreateResult orgResult = JsonConvert.DeserializeObject<OrganizationCreateResult>(response.Content.ReadAsStringAsync().Result);
-
+            _output.WriteLine("httpstatuscode: " + response.StatusCode);
+            _output.WriteLine("orgResult: " + response.Content.ReadAsStringAsync().Result);
             //Assert
             Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
             Assert.True(orgResult.Org.RealPageId == _RealPageId && orgResult.adminLogin == organizationCreate.AdminUser.Email);
@@ -1440,6 +1446,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Setup(m => m.GetMany<OrganizationType>(StoredProcNameConstants.SP_ListOrganizationType, null))
                 .Returns(organizationTypeList);
 
+            mockRepository
+                .Setup(m => m.GetOne<long>(StoredProcNameConstants.SP_DeleteOrganization,
+                    It.IsAny<object>()))
+                .Returns(0);
+
+            mockRepository
+                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
+                    It.IsAny<object>()))
+                .Returns(_gbProductMap);
+
             OrganizationController organizationController = new OrganizationController(
                 mockRepository.Object
                 , _mockRepositoryResponse.Object
@@ -1448,8 +1464,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             ) { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
 
             //Act
-            RPObjectCache rPObjectCache = new RPObjectCache();
-            rPObjectCache.BustCache();
+            new RPObjectCache().BustCache();
 
             HttpResponseMessage response = organizationController.OrganizationType();
             output = response.Content.ReadAsAsync<ObjectListOutput<OrganizationType, IErrorData>>().Result;
@@ -3310,6 +3325,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                     It.IsAny<object>()))
                 .Returns(organizationToDeletes[0].OrganizationRemovalQueueId);
 
+            mockRepository
+                .Setup(m => m.GetOne<long>(StoredProcNameConstants.SP_DeleteOrganization,
+                    It.IsAny<object>()))
+                .Returns(0);
+
+            mockRepository
+                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
+                    It.IsAny<object>()))
+                .Returns(_gbProductMap);
+
             OrganizationController organizationController = new OrganizationController(
                 mockRepository.Object
                 , _mockRepositoryResponse.Object
@@ -3347,6 +3372,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                     It.IsAny<object>()))
                 .Returns(0);
 
+            mockRepository
+                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
+                    It.IsAny<object>()))
+                .Returns(_gbProductMap);
+
+            mockRepository
+                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct,
+                    It.Is<object>(d => TestIsProductId(d, (int)ProductEnum.ProspectContactCenter))))
+                .Returns(_productInternalSettings);
+
             OrganizationController organizationController = new OrganizationController(
                 mockRepository.Object
                 , _mockRepositoryResponse.Object
@@ -3366,6 +3401,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         }
 
         #endregion
+
+        public bool TestIsProductId(object obj, int productId)
+        {
+            return obj.ToString().Contains($"ProductId = {productId}");
+        }
     }
 }
        

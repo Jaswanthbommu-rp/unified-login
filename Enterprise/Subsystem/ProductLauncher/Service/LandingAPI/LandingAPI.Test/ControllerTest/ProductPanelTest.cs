@@ -1,4 +1,5 @@
 ﻿using Moq;
+using Newtonsoft.Json;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
@@ -198,7 +199,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             new RPObjectCache().BustCache();
 
             _mockRepository
-                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<Object>()))
+                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct,
+                It.Is<object>(d => TestIsProductId(d, 1))))
                 .Returns(productInternalSettings);
 
 
@@ -286,11 +288,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             new RPObjectCache().BustCache();
 
             _mockRepository
-                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<Object>()))
+                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct,
+                    It.Is<object>(d => TestIsProductId(d, 1))))
                 .Returns(productInternalSettings);
 
+            List<PropertyInstance> propertyInstances = new List<PropertyInstance>();
+            var propertyInstanceRoot = new UPFMPropertyInstanceRootObject() { data = new List<UPFMPropertyInstanceData>() { new UPFMPropertyInstanceData() { attributes = new UPFMPropertyInstanceAttributes() { propertyInstance = propertyInstances } } } };
 
-            ProductPanelController productPannelController = new ProductPanelController
+            var responsePropertyInstance = new HttpResponseMessage(HttpStatusCode.OK);
+            var jsonToSave = JsonConvert.SerializeObject(propertyInstanceRoot);
+            responsePropertyInstance.Content = new StringContent(jsonToSave);
+            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/companypropertyinstancemap?include=propertyInstance&filter[source]=UPFM&filter[companyinstance.companyInstanceSourceId]={EmployeeCompanyRealPageId}&fields[propertyInstance]=propertyInstanceSourceId,propertyName,domain,isActive&filter[propertyInstance.isActive]=true&page[size]=9999", responsePropertyInstance);
+
+            ProductPanelController productPanelController = new ProductPanelController
                         (defaultUserClaim
                         , _mockRepository.Object
                         , _mockRepositoryResponse.Object
@@ -307,7 +317,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				"a5192995-aaaa-bbbb-8df2-f30f1b8dc752"
 			};
 			_upfmProperty.id = instanceIds;
-            HttpResponseMessage response = productPannelController.GetProperties(4444, 0, (int)ProductEnum.OneSite, null, _upfmProperty);
+            HttpResponseMessage response = productPanelController.GetProperties(4444, 0, (int)ProductEnum.OneSite, null, _upfmProperty);
             var productList = response.Content.ReadAsAsync<ListResponse>().Result.Records.Cast<ProductProperty>();
 
             //Assert 
@@ -355,6 +365,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             //Assert
             Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
+        }
+
+        public bool TestIsProductId(object obj, int productId)
+        {
+            return obj.ToString().Contains($"ProductId = {productId}");
         }
     }
 }

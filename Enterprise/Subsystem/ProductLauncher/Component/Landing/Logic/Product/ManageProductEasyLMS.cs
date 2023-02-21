@@ -18,73 +18,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		#region Private Variables
 		private long _companyInstanceId;
 		private ListResponse _listResponse = new ListResponse();
-		#endregion
+        #endregion
 
-		#region Constructor
-		/// <summary>
-		/// The default constructor
-		/// </summary>
-		/// <param name="editorRealPageId">The RealPageId of the editor</param>
-		public ManageProductEasyLMS(DefaultUserClaim userClaims) : base((int)ProductEnum.EasyLMS, userClaims, null, null)
-		{
+        #region Constructor
+        /// <summary>
+        /// The default constructor
+        /// </summary>
+        /// <param name="userClaims">The claims of the editor</param>
+        public ManageProductEasyLMS(DefaultUserClaim userClaims) : base((int)ProductEnum.EasyLMS, userClaims, productInternalSettingRepository: null, productRepository: null)
+        {
 			_productId = (int)ProductEnum.EasyLMS;
 			_editorRealPageId = userClaims.UserRealPageGuid;
-			_blueBook = new Logic.ManageBlueBook();
+			_blueBook = new Logic.ManageBlueBook(userClaims);
 		}
 
-		/// <summary>
-		/// Unit test constructor to test Levels, Notifications, and MessageGroups
-		/// </summary>
-		/// <param name="editorRealPageId">The RealPageId of the editor</param>
-		/// <param name="samlRepository">SAML Repository</param>
-		/// <param name="managePersona">Persona business logic</param>
-		/// <param name="manageBlueBook">BlueBook business logic</param>
-		/// <param name="productRepository">Product Repository</param>
-		/// <param name="productInternalSettingRepository">Product Internal Setting Repository</param>
-		/// <param name="managePerson">Person business logic</param>
-		/// <param name="manageUserLogin">UserLogin business logic</param>
-		/// <param name="managePartyRelationship">Party Relationship business logic</param>
-		/// <param name="manageElectronicAddress">Electronic Address business logic</param>
-		public ManageProductEasyLMS(Guid editorRealPageId, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship, IManageElectronicAddress manageElectronicAddress) : base((int)ProductEnum.ResidentPortal, productInternalSettingRepository, productRepository)
-		{
-			_editorRealPageId = editorRealPageId;
-			_samlRepository = samlRepository;
-			_managePersona = managePersona;
-			_managePerson = managePerson;
-			_manageUserLogin = manageUserLogin;
-			_blueBook = manageBlueBook;
-			_productRepository = productRepository;
-			_productInternalSettingRepository = productInternalSettingRepository;
-			_managePartyRelationship = managePartyRelationship;
-			_manageElectronicAddress = manageElectronicAddress;
-		}
-
-		/// <summary>
-		/// Unit test constructor to test list properties
-		/// </summary>
-		/// <param name="editorRealPageId">The RealPageId of the editor</param>
-		/// <param name="companyInstanceId">Company Id</param>
-		/// <param name="samlRepository">SAML Repository</param>
-		/// <param name="managePersona">Persona business logic</param>
-		/// <param name="manageBlueBook">BlueBook business logic</param>
-		/// <param name="productRepository">Product Repository</param>
-		/// <param name="productInternalSettingRepository">Product Internal Setting Repository</param>
-		/// <param name="managePerson">Person business logic</param>
-		/// <param name="manageUserLogin">UserLogin business logic</param>
-		/// <param name="managePartyRelationship">Party Relationship business logic</param>
-		public ManageProductEasyLMS(Guid editorRealPageId, long companyInstanceId, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship) : base((int)ProductEnum.ResidentPortal, productInternalSettingRepository, productRepository)
-		{
-			_editorRealPageId = editorRealPageId;
-			_companyInstanceId = companyInstanceId;
-			_samlRepository = samlRepository;
-			_managePersona = managePersona;
-			_managePerson = managePerson;
-			_manageUserLogin = manageUserLogin;
-			_blueBook = manageBlueBook;
-			_productRepository = productRepository;
-			_productInternalSettingRepository = productInternalSettingRepository;
-			_managePartyRelationship = managePartyRelationship;
-		}
 		#endregion
 
 		#region Public Methods

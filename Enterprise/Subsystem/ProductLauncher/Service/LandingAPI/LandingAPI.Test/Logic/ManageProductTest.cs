@@ -6,7 +6,6 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
@@ -20,10 +19,10 @@ using ProductUsers = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObj
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 {
-    /// <summary>
-    /// ManageProduct xUnit tests
-    /// </summary>
-    [ExcludeFromCodeCoverage]
+	/// <summary>
+	/// ManageProduct xUnit tests
+	/// </summary>
+	[ExcludeFromCodeCoverage]
 	public class ManageProductTest
 	{
 		#region Private Variables
@@ -155,6 +154,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 new GbProductMap() { BooksProductCode = "SMS-TC", Name = "Smart Waste Commercial", ProductId = 70, UDMSourceCode = "IB" },
                 new GbProductMap() { BooksProductCode = "OS", Name = "Facilities", ProductId = 75, UDMSourceCode = null }
             };
+
+            _mockRepository
+                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
+                    It.IsAny<object>()))
+                .Returns(_gbProductMap);
         }
 
 		[Fact]
@@ -216,8 +220,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				editorUserClaim,
 				_mockMessageHandler.Object);
 
-			//Act
-			productTypesResponse = _manageProduct.GetProductTypes();
+            new RPObjectCache().BustCache();
+
+            //Act
+            productTypesResponse = _manageProduct.GetProductTypes();
 			numberOfProperties = type.GetProperties().Length;
 
 			//Assert
@@ -241,8 +247,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				editorUserClaim,
 				_mockMessageHandler.Object);
 
-			//Act
-			Exception exception = Record.Exception(() => _manageProduct.GetProducts(realPageId, personaId));
+            new RPObjectCache().BustCache();
+
+            //Act
+            Exception exception = Record.Exception(() => _manageProduct.GetProducts(realPageId, personaId));
 
 			//Assert
 			Assert.IsType<ArgumentNullException>(exception);
@@ -261,8 +269,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				editorUserClaim,
 				_mockMessageHandler.Object);
 
-			//Act
-			Exception exception = Record.Exception(() => _manageProduct.GetProducts(realPageId, personaId));
+            new RPObjectCache().BustCache();
+
+            //Act
+            Exception exception = Record.Exception(() => _manageProduct.GetProducts(realPageId, personaId));
 
 			//Assert
 			Assert.IsType<ArgumentNullException>(exception);
@@ -342,7 +352,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 UDMSourceCode = "IB"
 			});
 
-			Mock<IRepository> mockRepository = new Mock<IRepository>();
+			var mockRepository = new Mock<IRepository>();
 
 			mockRepository.Setup(m => m.GetMany<ProductUI>(StoredProcNameConstants.SP_ListProductsByOrganization,
 					It.Is<object>(
@@ -377,8 +387,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				editorUserClaim,
 				_mockMessageHandler.Object);
 
-            RPObjectCache rPObjectCache = new RPObjectCache();
-            rPObjectCache.BustCache();
+            new RPObjectCache().BustCache();
 
 			//Act
 			response = _manageProduct.GetProducts(realPageId, personaId, allProducts: false, replaceProductCodeWithUDMIfExists: true);
@@ -411,8 +420,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				editorUserClaim,
 				_mockMessageHandler.Object);
 
-			//Act
-			Exception exception = Record.Exception(() => _manageProduct.GetProducts(realPageId, personaId));
+            new RPObjectCache().BustCache();
+
+            //Act
+            Exception exception = Record.Exception(() => _manageProduct.GetProducts(realPageId, personaId));
 
 			//Assert
 			Assert.IsType<ArgumentNullException>(exception);
@@ -437,8 +448,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				editorUserClaim,
 				_mockMessageHandler.Object);
 
-			//Act
-			Exception exception = Record.Exception(() => _manageProduct.GetProducts(realPageId, personaId));
+            new RPObjectCache().BustCache();
+
+            //Act
+            Exception exception = Record.Exception(() => _manageProduct.GetProducts(realPageId, personaId));
 
 			//Assert
 			Assert.IsType<ArgumentNullException>(exception);
@@ -517,8 +530,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				editorUserClaim,
 				_mockMessageHandler.Object);
 
-			//Act
-			Exception exception = Record.Exception(() => _manageProduct.GetProductUsers(productId, blueBookCompanyInstanceId, personaId));
+            new RPObjectCache().BustCache();
+
+            //Act
+            Exception exception = Record.Exception(() => _manageProduct.GetProductUsers(productId, blueBookCompanyInstanceId, personaId));
 
 			//Assert
 			Assert.IsType<Exception>(exception);
@@ -537,8 +552,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				editorUserClaim,
 				_mockMessageHandler.Object);
 
-			//Act
-			Exception exception = Record.Exception(() => _manageProduct.GetProductUsers(productId, blueBookCompanyInstanceId, personaId));
+            new RPObjectCache().BustCache();
+
+            //Act
+            Exception exception = Record.Exception(() => _manageProduct.GetProductUsers(productId, blueBookCompanyInstanceId, personaId));
 
 			//Assert
 			Assert.IsType<Exception>(exception);
@@ -557,8 +574,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				editorUserClaim,
 				_mockMessageHandler.Object);
 
-			//Act
-			Exception exception = Record.Exception(() => _manageProduct.GetProductUsers(productId, blueBookCompanyInstanceId, personaId));
+            new RPObjectCache().BustCache();
+
+            //Act
+            Exception exception = Record.Exception(() => _manageProduct.GetProductUsers(productId, blueBookCompanyInstanceId, personaId));
 
 			//Assert
 			Assert.IsType<Exception>(exception);
@@ -719,8 +738,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				editorUserClaim,
 				_mockMessageHandler.Object);
 
-			//Act
-			IList<ProductUsers> listProductUsers = _manageProduct.GetProductUsers(productId, blueBookCompanyInstanceId, personaId);
+            new RPObjectCache().BustCache();
+
+            //Act
+            IList<ProductUsers> listProductUsers = _manageProduct.GetProductUsers(productId, blueBookCompanyInstanceId, personaId);
 			List<ProductUsers> compareResult = listProductUsers.Where(item => expectedListProductUsers.Select(eItem => eItem.PartyId).Contains(item.PartyId)).ToList();
 
 			//Assert

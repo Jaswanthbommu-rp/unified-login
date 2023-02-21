@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Runtime.Caching;
 using Newtonsoft.Json;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
@@ -43,7 +44,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Default constructor
         /// </summary>
-        public ManageProductLead2Lease(DefaultUserClaim userClaims) : base((int)ProductEnum.Lead2Lease, userClaims, null, null)
+        public ManageProductLead2Lease(DefaultUserClaim userClaims) : base((int)ProductEnum.Lead2Lease, userClaims, productInternalSettingRepository: null, productRepository: null)
         {
             _userClaims = userClaims;
             _editorRealPageId = userClaims.UserRealPageGuid;
@@ -53,12 +54,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // TODO REMOVE WHEN POSTING TO TRUSTED URL
             ServicePointManager.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
             // TODO REMOVE WHEN POSTING TO TRUSTED URL
+            _httpClient = new HttpClient();
         }
 
         /// <summary>
         /// Unit test constructor
         /// </summary>
         /// <param name="editorRealPageId"></param>
+        /// <param name="userClaim"></param>
         /// <param name="messageHandler"></param>
         /// <param name="samlRepository"></param>
         /// <param name="managePersona"></param>
@@ -67,14 +70,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="productInternalSettingRepository"></param>
         /// <param name="managePerson"></param>
         /// <param name="manageUserLogin"></param>
-        /// <param name="manageElectronicAddress"></param>
         /// <param name="managePartyRelationship"></param>
+        /// <param name="manageElectronicAddress"></param>
         /// <param name="manageProductOneSite"></param>
         /// <param name="userLoginRepository"></param>
-        public ManageProductLead2Lease(Guid editorRealPageId, HttpMessageHandler messageHandler, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship, IManageElectronicAddress manageElectronicAddress, IManageProductOneSite manageProductOneSite, IUserLoginRepository userLoginRepository) : base((int)ProductEnum.Lead2Lease, productInternalSettingRepository, productRepository)
+        /// <param name="repository"></param>
+        public ManageProductLead2Lease(Guid editorRealPageId, DefaultUserClaim userClaim, HttpMessageHandler messageHandler, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship, IManageElectronicAddress manageElectronicAddress, IManageProductOneSite manageProductOneSite, IUserLoginRepository userLoginRepository, IRepository repository)
+            : base((int)ProductEnum.Lead2Lease, userClaim, repository, messageHandler)
         {
             _apiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIENDPOINT").Value;
-            _mtApiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "MTAPIENDPOINT").Value;           
+            _mtApiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "MTAPIENDPOINT").Value;
             _editorRealPageId = editorRealPageId;
             _messageHandler = messageHandler;
             _samlRepository = samlRepository;
@@ -88,11 +93,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _manageElectronicAddress = manageElectronicAddress;
             _mpOneSite = manageProductOneSite;
             _userLoginRepository = userLoginRepository;
-
-            if (_messageHandler != null)
-            {
-                _client = new HttpClient(_messageHandler);
-            }
+            _httpClient = new HttpClient(messageHandler);
         }
 
         #region Roles
@@ -585,7 +586,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     };
                     WriteToDiagnosticLog($"ManageLead2LeaseUser - Creating user. userPersonaId = {userPersonaId} baseUrlAndQuery = {baseUrlAndQuery}", logData);
 
-                    var userResponse = _client.PostAsJsonAsync(baseUrlAndQuery, l2LUser).Result;
+                    var userResponse = _httpClient.PostAsJsonAsync(baseUrlAndQuery, l2LUser).Result;
 
                     logData = new Dictionary<string, object>
                     {
@@ -630,7 +631,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     logData.Add("user", RemovePrivateData(l2LUser));
                     WriteToDiagnosticLog($"ManageLead2LeaseUser - Updating user. userPersonaId = {userPersonaId} baseUrlAndQuery = {baseUrlAndQuery}", logData);
 
-                    var userResponse = _client.PutAsJsonAsync(baseUrlAndQuery, l2LUser).Result;
+                    var userResponse = _httpClient.PutAsJsonAsync(baseUrlAndQuery, l2LUser).Result;
                     logData = new Dictionary<string, object>
                     {
                         { "userResult.Result", userResponse.Content.ReadAsStringAsync().Result }
@@ -779,7 +780,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 logData.Add("url", url);
                 logData.Add("Luser", L2LUser);
                 WriteToDiagnosticLog("Lead2LeaseUser.UpdateUserProfile - Update user profile.", logData);
-                var response = _client.PutAsJsonAsync(url, L2LUser).Result;
+                var response = _httpClient.PutAsJsonAsync(url, L2LUser).Result;
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -916,7 +917,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 var url = $"{_mtApiEndPoint}/{companyInstanceSourceId}/migrate-users";
-                var response = _client.PutAsJsonAsync(url, migrateUsers).Result;
+                var response = _httpClient.PutAsJsonAsync(url, migrateUsers).Result;
                 var responseContent = response.Content.ReadAsStringAsync().Result;
 
                 var logData = new Dictionary<string, object>
@@ -1049,7 +1050,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             string baseUrlAndQuery = isActive ? $"{_apiEndPoint}/Users/Enable/{_productUserId}" : $"{_apiEndPoint}/Users/Disable/{_productUserId}";
             logData.Add("baseUrlAndQuery", baseUrlAndQuery);
             WriteToDiagnosticLog("Enable or disable L2L user.", logData);
-            var response = _client.PutAsJsonAsync(baseUrlAndQuery, propIds).Result;
+            var response = _httpClient.PutAsJsonAsync(baseUrlAndQuery, propIds).Result;
             return response;
         }
 
@@ -1164,18 +1165,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="baseUrlAndQuery"></param>
         /// <param name="throwOnError"></param>
         /// <returns></returns>
-        private static T GetResultFromApi<T>(string baseUrlAndQuery, bool throwOnError = true) where T : class
+        private T GetResultFromApi<T>(string baseUrlAndQuery, bool throwOnError = true) where T : class
         {
             T results = null;
 
-            if (_messageHandler != null)
-            {
-                _httpClient = new HttpClient(_messageHandler);
-            }
-            else
-            {
-                _httpClient = new HttpClient();
-            }
+            //if (_messageHandler != null)
+            //{
+            //    _httpClient = new HttpClient(_messageHandler);
+            //}
+            //else
+            //{
+            //    _httpClient = new HttpClient();
+            //}
             var response = _httpClient.GetAsync(baseUrlAndQuery).Result;
 
             if (response.IsSuccessStatusCode)

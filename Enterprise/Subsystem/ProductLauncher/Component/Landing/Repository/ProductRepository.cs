@@ -1949,20 +1949,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         public IList<GbProductMap> GetAllProducts()
         {
             // Get products
-            ObjectCache productCache = MemoryCache.Default;
-            var products = productCache["GB-BB-ProductMap"] as IList<GbProductMap>;
+            RPObjectCache rpcache = new RPObjectCache();
 
-           if (products == null)
-            {
-                products = ListProducts(null, null, null, null);
+            var cacheKey = "GB-BB-ProductMap";
 
-                var cachePolicy = new CacheItemPolicy
-                {
-                    AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(10)// Expire cache every after 60 minutes 
-                };
-
-                productCache.Set("GB-BB-ProductMap", products, cachePolicy);
-            }
+            var products = rpcache.GetFromCache(cacheKey, 300, 
+                () => ListProducts(null, null, null, null));
 
             return products;
         }

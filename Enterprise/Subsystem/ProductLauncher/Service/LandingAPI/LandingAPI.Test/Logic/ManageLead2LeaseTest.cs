@@ -26,6 +26,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 using IC = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
@@ -36,6 +37,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
     [ExcludeFromCodeCoverage]
     public class ManageLead2LeaseTest : ManageProductBaseTests
     {
+        private readonly ITestOutputHelper _output;
         private int _blueBookId;
         private static ProductProperty _property1 = new ProductProperty() { ID = "1234567", Name = "Test Property", City = "Test City", State = "Test State", Street1 = "Test Street 1", Street2 = "Test Street 2", Zip = "12345", IsAssigned = true };
         private static ProductProperty _property2 = new ProductProperty() { ID = "7654321", Name = "Test Property 2", City = "Test City 2", State = "Test State 2", Street1 = "Test Street 1 2", Street2 = "Test Street 2 2", Zip = "54321", IsAssigned = false };
@@ -54,22 +56,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         private RoleInfo _l2lRoleInfo = new RoleInfo();
         private List<Permission> _l2lPermissionList = new List<Permission>();
         private Lead2LeaseUser _l2lUser;
-        private GbProductMap _gbProductMap = new GbProductMap();
         private List<SamlAttributes> _userOneSiteSamlAttributes;
 
         private IList<ProductSettingType> _productSettingTypeList;
 
         private OneSiteUser _osUser;
 
-        private string testHostname = "http://producturl.com";
-        private string _mtApiEndPoint = "http://producturl.com";
+        private string testHostname = "http://localhost";
+        private string _mtApiEndPoint = "http://localhost";
 
         private int _companyInstanceSourceId;
 
         private UserLoginOnly _userloginOnly;
 
-        public ManageLead2LeaseTest() : base((int)ProductEnum.Lead2Lease)
+        public ManageLead2LeaseTest(ITestOutputHelper output) : base((int)ProductEnum.Lead2Lease)
         {
+            _output = output;
             _companyInstanceSourceId = 1000;
             _blueBookId = 236;
 
@@ -125,8 +127,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             _osUser = new OneSiteUser() { AllProperties = false, SystemIdentifier = "1192422|testuser", UserId = 12345 };
 
             _userloginOnly = new UserLoginOnly() { UserId = _editorUserId, LoginName = "test", PartyId = 30, RealPageId = new Guid(), LastLogin = DateTime.Now };
-            _gbProductMap = new GbProductMap() { BooksProductCode = "L2L", Name = "Lead2Lease", ProductId = 6, UDMSourceCode = "L2L" };
 
+            mockRepository
+                .Setup(m => m.GetMany<IC.ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct,
+                    It.Is<object>(d => TestIsProductId(d, 6))))
+                .Returns(_productInternalSettings);
+
+            mockRepository
+                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
+                    It.IsAny<object>()))
+                .Returns(_gbProductMap);
         }
 
         #region Exceptions - Property
@@ -164,47 +174,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             _editorPersona.Organization.BooksCustomerMasterId = _blueBookId;
 
-            mockHandler.Protected()
-                .Setup<Task<HttpResponseMessage>>(
-                    "SendAsync"
-                    , ItExpr.Is<HttpRequestMessage>(message => message.RequestUri.ToString() == propertyListUri.ToString())
-                    , ItExpr.IsAny<CancellationToken>()
-                )
-                .Returns(Task.FromResult<HttpResponseMessage>(responseProperties))
-                .Callback<HttpRequestMessage, CancellationToken>((r, c) =>
-                {
-                    Assert.Equal(HttpMethod.Get, r.Method);
-                });
-
-            mockHandler.Protected()
-                .Setup<Task<HttpResponseMessage>>(
-                    "SendAsync"
-                    , ItExpr.Is<HttpRequestMessage>(message => message.RequestUri.ToString() == rolesUri.ToString())
-                    , ItExpr.IsAny<CancellationToken>()
-                )
-                .Returns(Task.FromResult<HttpResponseMessage>(responseRoles))
-                .Callback<HttpRequestMessage, CancellationToken>((r, c) =>
-                {
-                    Assert.Equal(HttpMethod.Get, r.Method);
-                });
-
-            mockHandler.Protected()
-                .Setup<Task<HttpResponseMessage>>(
-                    "SendAsync"
-                    , ItExpr.Is<HttpRequestMessage>(message => message.RequestUri.ToString() == userUri.ToString())
-                    , ItExpr.IsAny<CancellationToken>()
-                )
-                .Returns(Task.FromResult<HttpResponseMessage>(responseUser))
-                .Callback<HttpRequestMessage, CancellationToken>((r, c) =>
-                {
-                    Assert.Equal(HttpMethod.Get, r.Method);
-                });
+            mockHandler.Setup(HttpMethod.Get, propertyListUri.ToString(), responseProperties);
+            mockHandler.Setup(HttpMethod.Get, rolesUri.ToString(), responseRoles);
+            mockHandler.Setup(HttpMethod.Get, userUri.ToString(), responseRoles);
 
             mockManageBlueBook
                 .Setup(m => m.GetCompanyMap(
                     It.IsAny<Guid>(),
                     It.IsAny<long>(),
-                    It.IsAny<string>(),
+                    It.Is<string>(l => l == "L2L"),
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<bool>(),
@@ -216,6 +194,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetProductInternalSettings(
                     It.Is<int>(l => l == (int)ProductEnum.Lead2Lease)
                 ))
+                .Returns(_productInternalSettings);
+
+            mockRepository
+                .Setup(m => m.GetMany<IC.ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct,
+                    It.Is<object>(d => TestIsProductId(d, (int)ProductEnum.Lead2Lease))))
                 .Returns(_productInternalSettings);
 
             mockSamlRepository
@@ -246,25 +229,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             mockProductRepository
                 .Setup(m => m.GetBooksMasterProductDetail(
-                    It.IsAny<int>()
+                    It.Is<int>(l => l == (int)ProductEnum.Lead2Lease)
                 ))
-                .Returns(_gbProductMap);
+                .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.Lead2Lease));
 
             //Act
             IManageProductLead2Lease mpL2L = new ManageProductLead2Lease(
                 editorRealPageId: _editorRealPageId,
+                userClaim: _editorUserClaim,
                 messageHandler: mockHandler.Object,
-                samlRepository: mockSamlRepository.Object, 
-                managePersona: mockManagePersona.Object, 
-                manageBlueBook: mockManageBlueBook.Object, 
-                productRepository: mockProductRepository.Object, 
+                samlRepository: mockSamlRepository.Object,
+                managePersona: mockManagePersona.Object,
+                manageBlueBook: mockManageBlueBook.Object,
+                productRepository: mockProductRepository.Object,
                 productInternalSettingRepository: mockProductInternalSettingRepository.Object,
                 managePerson: null,
-                manageUserLogin: null, 
-                managePartyRelationship: null, 
-                manageElectronicAddress: null, 
+                manageUserLogin: null,
+                managePartyRelationship: null,
+                manageElectronicAddress: null,
                 manageProductOneSite: null,
-                userLoginRepository: null);
+                userLoginRepository: null,
+                repository: mockRepository.Object);
 
             ListResponse resp = mpL2L.GetRoles(_editorPersonaId, _userPersonaId, null);
             Assert.True(resp.IsError == true && (resp.ErrorReason == "Role info is missing" || 
@@ -297,44 +282,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             responseUser.Content = null;
 
             mockHandler = new Mock<HttpMessageHandler>();
-            mockHandler.Protected()
-                .Setup<Task<HttpResponseMessage>>(
-                    "SendAsync"
-                    , ItExpr.Is<HttpRequestMessage>(message => message.RequestUri.ToString() == propertyListUri.ToString())
-                    , ItExpr.IsAny<CancellationToken>()
-                )
-                .Returns(Task.FromResult<HttpResponseMessage>(responseProperties))
-                .Callback<HttpRequestMessage, CancellationToken>((r, c) =>
-                {
-                    Assert.Equal(HttpMethod.Get, r.Method);
-                });
-
-            mockHandler.Protected()
-                .Setup<Task<HttpResponseMessage>>(
-                    "SendAsync"
-                    , ItExpr.Is<HttpRequestMessage>(message => message.RequestUri.ToString() == rolesUri.ToString())
-                    , ItExpr.IsAny<CancellationToken>()
-                )
-                .Returns(Task.FromResult<HttpResponseMessage>(responseRoles))
-                .Callback<HttpRequestMessage, CancellationToken>((r, c) =>
-                {
-                    Assert.Equal(HttpMethod.Get, r.Method);
-                });
-
-            mockHandler.Protected()
-                .Setup<Task<HttpResponseMessage>>(
-                    "SendAsync"
-                    , ItExpr.Is<HttpRequestMessage>(message => message.RequestUri.ToString() == userUri.ToString())
-                    , ItExpr.IsAny<CancellationToken>()
-                )
-                .Returns(Task.FromResult<HttpResponseMessage>(responseUser))
-                .Callback<HttpRequestMessage, CancellationToken>((r, c) =>
-                {
-                    Assert.Equal(HttpMethod.Get, r.Method);
-                });
+            mockHandler.Setup(HttpMethod.Get, propertyListUri.ToString(), responseProperties);
+            mockHandler.Setup(HttpMethod.Get, rolesUri.ToString(), responseRoles);
+            mockHandler.Setup(HttpMethod.Get, userUri.ToString(), responseUser);
 
             mpL2L = new ManageProductLead2Lease(
                 editorRealPageId: _editorRealPageId,
+                userClaim: _editorUserClaim,
                 messageHandler: mockHandler.Object,
                 samlRepository: mockSamlRepository.Object,
                 managePersona: mockManagePersona.Object,
@@ -346,7 +300,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 managePartyRelationship: null,
                 manageElectronicAddress: null,
                 manageProductOneSite: null,
-                userLoginRepository: null);
+                userLoginRepository: null,
+                repository: mockRepository.Object);
 
             resp = mpL2L.GetRoles(_editorPersonaId, _userPersonaId, null);
             Assert.True(resp.IsError == true && (resp.ErrorReason == "User info is missing" ||
@@ -394,41 +349,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             _editorPersona.Organization.BooksCustomerMasterId = _blueBookId;
 
-            mockHandler.Protected()
-                .Setup<Task<HttpResponseMessage>>(
-                    "SendAsync"
-                    , ItExpr.Is<HttpRequestMessage>(message => message.RequestUri.ToString().ToLower() == propertyListUri.ToString().ToLower())
-                    , ItExpr.IsAny<CancellationToken>()
-                )
-                .Returns(Task.FromResult<HttpResponseMessage>(responseProperties))
-                .Callback<HttpRequestMessage, CancellationToken>((r, c) =>
-                {
-                    Assert.Equal(HttpMethod.Get, r.Method);
-                });
-
-            mockHandler.Protected()
-                .Setup<Task<HttpResponseMessage>>(
-                    "SendAsync"
-                    , ItExpr.Is<HttpRequestMessage>(message => message.RequestUri.ToString().ToLower() == rolesUri.ToString().ToLower())
-                    , ItExpr.IsAny<CancellationToken>()
-                )
-                .Returns(Task.FromResult<HttpResponseMessage>(responseRoles))
-                .Callback<HttpRequestMessage, CancellationToken>((r, c) =>
-                {
-                    Assert.Equal(HttpMethod.Get, r.Method);
-                });
-
-            mockHandler.Protected()
-                .Setup<Task<HttpResponseMessage>>(
-                    "SendAsync"
-                    , ItExpr.Is<HttpRequestMessage>(message => message.RequestUri.ToString().ToLower() == userUri.ToString().ToLower())
-                    , ItExpr.IsAny<CancellationToken>()
-                )
-                .Returns(Task.FromResult<HttpResponseMessage>(responseUser))
-                .Callback<HttpRequestMessage, CancellationToken>((r, c) =>
-                {
-                    Assert.Equal(HttpMethod.Get, r.Method);
-                });
+            mockHandler.Setup(HttpMethod.Get, propertyListUri.ToString(), responseProperties);
+            mockHandler.Setup(HttpMethod.Get, rolesUri.ToString(), responseRoles);
+            mockHandler.Setup(HttpMethod.Get, userUri.ToString(), responseUser);
 
             mockManageBlueBook
                 .Setup(m => m.GetCompanyMap(
@@ -446,6 +369,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetProductInternalSettings(
                     It.Is<int>(l => l == (int)ProductEnum.Lead2Lease)
                 ))
+                .Returns(_productInternalSettings);
+
+            mockRepository
+                .Setup(m => m.GetMany<IC.ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct,
+                    It.Is<object>(d => TestIsProductId(d, (int)ProductEnum.Lead2Lease))))
                 .Returns(_productInternalSettings);
 
             mockSamlRepository
@@ -484,7 +412,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
              .Setup(m => m.GetBooksMasterProductDetail(
                  It.Is<int>(l => l == (int)ProductEnum.Lead2Lease)
              ))
-             .Returns(_gbProductMap);
+             .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.Lead2Lease));
             
             mockProductRepository
                 .Setup(m => m.GetProductSettingsByPersona(
@@ -492,9 +420,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 ))
                 .Returns(_userProductSettings);
 
+            mockRepository
+                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
+                    It.IsAny<object>()))
+                .Returns(_gbProductMap);
+
             //Act
             IManageProductLead2Lease mpL2L = new ManageProductLead2Lease(
                 editorRealPageId: _editorRealPageId,
+                userClaim: _editorUserClaim,
                 messageHandler: mockHandler.Object,
                 samlRepository: mockSamlRepository.Object,
                 managePersona: mockManagePersona.Object,
@@ -506,16 +440,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 managePartyRelationship: null,
                 manageElectronicAddress: null,
                 manageProductOneSite: null,
-                userLoginRepository: null);
+                userLoginRepository: null,
+                repository: mockRepository.Object);
 
             new RPObjectCache().BustCache();
 
             ListResponse resp = mpL2L.GetRoles(_editorPersonaId, _userPersonaId, null);
+            _output.WriteLine("resp 1 : " + JsonConvert.SerializeObject(resp));
             Assert.True(resp.TotalRows == _l2lUser.Permissions.Count);
 
             new RPObjectCache().BustCache();
 
             resp = mpL2L.GetProperties(_editorPersonaId, _userPersonaId, null);
+            _output.WriteLine("resp 2 : " + JsonConvert.SerializeObject(resp));
             Assert.True(resp.TotalRows == _l2lUser.Properties.Count);
         }
         #endregion
@@ -550,6 +487,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetProductInternalSettings(
                     It.Is<int>(l => l == (int)ProductEnum.Lead2Lease)
                 ))
+                .Returns(_productInternalSettings);
+
+            mockRepository
+                .Setup(m => m.GetMany<IC.ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct,
+                    It.Is<object>(d => TestIsProductId(d, 6))))
                 .Returns(_productInternalSettings);
 
             mockSamlRepository
@@ -644,6 +586,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             //Act
             IManageProductLead2Lease mpL2L = new ManageProductLead2Lease(
                 editorRealPageId: _editorRealPageId,
+                userClaim: _editorUserClaim,
                 messageHandler: mockHandler.Object,
                 samlRepository: mockSamlRepository.Object,
                 managePersona: mockManagePersona.Object,
@@ -655,7 +598,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 managePartyRelationship: null,
                 manageElectronicAddress: null,
                 manageProductOneSite: null,
-                userLoginRepository: mockUserLoginRepository.Object);
+                userLoginRepository: mockUserLoginRepository.Object,
+                repository: mockRepository.Object);
 
             string result = mpL2L.UnassignUser(_editorPersonaId, _userPersonaId);
             Assert.True(string.IsNullOrEmpty(result));
@@ -724,66 +668,70 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             _electronicAddressList = new List<IC.ElectronicAddress>();
             _electronicAddressList.Add(new IC.ElectronicAddress() { AddressType = "Email", AddressString = "test", contactMechanismUsageType = new IC.ContactMechanismUsageType() { Name = "PRIMARY" } });
 
-            mockHandler.Protected()
-                .Setup<Task<HttpResponseMessage>>(
-                    "SendAsync"
-                    , ItExpr.Is<HttpRequestMessage>(message => message.RequestUri.ToString().ToLower() == propertyListUri.ToString().ToLower())
-                    , ItExpr.IsAny<CancellationToken>()
-                )
-                .Returns(Task.FromResult<HttpResponseMessage>(responseProperties))
-                .Callback<HttpRequestMessage, CancellationToken>((r, c) =>
-                {
-                    Assert.Equal(HttpMethod.Get, r.Method);
-                });
+            //mockHandler.Protected()
+            //    .Setup<Task<HttpResponseMessage>>(
+            //        "SendAsync"
+            //        , ItExpr.Is<HttpRequestMessage>(message => message.RequestUri.ToString().ToLower() == propertyListUri.ToString().ToLower())
+            //        , ItExpr.IsAny<CancellationToken>()
+            //    )
+            //    .Returns(Task.FromResult<HttpResponseMessage>(responseProperties))
+            //    .Callback<HttpRequestMessage, CancellationToken>((r, c) =>
+            //    {
+            //        Assert.Equal(HttpMethod.Get, r.Method);
+            //    });
+            mockHandler.Setup(HttpMethod.Get, propertyListUri.ToString(), responseProperties);
 
-            mockHandler.Protected()
-                .Setup<Task<HttpResponseMessage>>(
-                    "SendAsync"
-                    , ItExpr.Is<HttpRequestMessage>(message => message.RequestUri.ToString().ToLower() == rolesUri.ToString().ToLower())
-                    , ItExpr.IsAny<CancellationToken>()
-                )
-                .Returns(Task.FromResult<HttpResponseMessage>(responseRoles))
-                .Callback<HttpRequestMessage, CancellationToken>((r, c) =>
-                {
-                    Assert.Equal(HttpMethod.Get, r.Method);
-                });
+            //mockHandler.Protected()
+            //    .Setup<Task<HttpResponseMessage>>(
+            //        "SendAsync"
+            //        , ItExpr.Is<HttpRequestMessage>(message => message.RequestUri.ToString().ToLower() == rolesUri.ToString().ToLower())
+            //        , ItExpr.IsAny<CancellationToken>()
+            //    )
+            //    .Returns(Task.FromResult<HttpResponseMessage>(responseRoles))
+            //    .Callback<HttpRequestMessage, CancellationToken>((r, c) =>
+            //    {
+            //        Assert.Equal(HttpMethod.Get, r.Method);
+            //    });
+            mockHandler.Setup(HttpMethod.Get, rolesUri.ToString(), responseRoles);
 
-            mockHandler.Protected()
-                .Setup<Task<HttpResponseMessage>>(
-                    "SendAsync"
-                    , ItExpr.Is<HttpRequestMessage>(message => message.RequestUri.ToString().ToLower() == userUri.ToString().ToLower())
-                    , ItExpr.IsAny<CancellationToken>()
-                )
-                .Returns(Task.FromResult<HttpResponseMessage>(responseUser))
-                .Callback<HttpRequestMessage, CancellationToken>((r, c) =>
-                {
-                    Assert.Equal(HttpMethod.Get, r.Method);
-                });
+            //mockHandler.Protected()
+            //    .Setup<Task<HttpResponseMessage>>(
+            //        "SendAsync"
+            //        , ItExpr.Is<HttpRequestMessage>(message => message.RequestUri.ToString().ToLower() == userUri.ToString().ToLower())
+            //        , ItExpr.IsAny<CancellationToken>()
+            //    )
+            //    .Returns(Task.FromResult<HttpResponseMessage>(responseUser))
+            //    .Callback<HttpRequestMessage, CancellationToken>((r, c) =>
+            //    {
+            //        Assert.Equal(HttpMethod.Get, r.Method);
+            //    });
+            mockHandler.Setup(HttpMethod.Get, userUri.ToString(), responseUser);
 
-            mockHandler.Protected()
-                .Setup<Task<HttpResponseMessage>>(
-                    "SendAsync"
-                    , ItExpr.Is<HttpRequestMessage>(message => message.RequestUri.ToString().ToLower() == createUserUri.ToString().ToLower())
-                    , ItExpr.IsAny<CancellationToken>()
-                )
-                .Returns(Task.FromResult<HttpResponseMessage>(responseUser))
-                .Callback<HttpRequestMessage, CancellationToken>((r, c) =>
-                {
-                    Assert.Equal(HttpMethod.Post, r.Method);
-                });
+            //mockHandler.Protected()
+            //    .Setup<Task<HttpResponseMessage>>(
+            //        "SendAsync"
+            //        , ItExpr.Is<HttpRequestMessage>(message => message.RequestUri.ToString().ToLower() == createUserUri.ToString().ToLower())
+            //        , ItExpr.IsAny<CancellationToken>()
+            //    )
+            //    .Returns(Task.FromResult<HttpResponseMessage>(responseUser))
+            //    .Callback<HttpRequestMessage, CancellationToken>((r, c) =>
+            //    {
+            //        Assert.Equal(HttpMethod.Post, r.Method);
+            //    });
+            mockHandler.Setup(HttpMethod.Post, createUserUri.ToString(), responseUser);
 
-
-            mockHandler.Protected()
-                .Setup<Task<HttpResponseMessage>>(
-                    "SendAsync"
-                    , ItExpr.Is<HttpRequestMessage>(message => message.RequestUri.ToString().ToLower() == updateUserUri.ToString().ToLower())
-                    , ItExpr.IsAny<CancellationToken>()
-                )
-                .Returns(Task.FromResult<HttpResponseMessage>(responseEmpty))
-                .Callback<HttpRequestMessage, CancellationToken>((r, c) =>
-                {
-                    Assert.Equal(HttpMethod.Put, r.Method);
-                });
+            //mockHandler.Protected()
+            //    .Setup<Task<HttpResponseMessage>>(
+            //        "SendAsync"
+            //        , ItExpr.Is<HttpRequestMessage>(message => message.RequestUri.ToString().ToLower() == updateUserUri.ToString().ToLower())
+            //        , ItExpr.IsAny<CancellationToken>()
+            //    )
+            //    .Returns(Task.FromResult<HttpResponseMessage>(responseEmpty))
+            //    .Callback<HttpRequestMessage, CancellationToken>((r, c) =>
+            //    {
+            //        Assert.Equal(HttpMethod.Put, r.Method);
+            //    });
+            mockHandler.Setup(HttpMethod.Put, updateUserUri.ToString(), responseEmpty);
 
             mockManageBlueBook
                 .Setup(m => m.GetCompanyMap(
@@ -801,6 +749,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetProductInternalSettings(
                     It.Is<int>(l => l == (int)ProductEnum.Lead2Lease)
                 ))
+                .Returns(_productInternalSettings);
+
+            mockRepository
+                .Setup(m => m.GetMany<IC.ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct,
+                    It.Is<object>(d => TestIsProductId(d, 6))))
                 .Returns(_productInternalSettings);
 
             mockSamlRepository
@@ -901,13 +854,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             mockProductRepository
              .Setup(m => m.GetBooksMasterProductDetail(
-                 It.IsAny<int>()
+                 It.Is<int>(l => l == (int)ProductEnum.Lead2Lease)
              ))
-             .Returns(_gbProductMap);
+             .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.Lead2Lease));
 
             //Act
             IManageProductLead2Lease mpL2L = new ManageProductLead2Lease(
                 editorRealPageId: _editorRealPageId,
+                userClaim: _editorUserClaim,
                 messageHandler: mockHandler.Object,
                 samlRepository: mockSamlRepository.Object,
                 managePersona: mockManagePersona.Object,
@@ -919,7 +873,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 managePartyRelationship: mockManagePartyRelationship.Object,
                 manageElectronicAddress: mockManageElectronicAddress.Object,
                 manageProductOneSite: mockManageProductOneSite.Object,
-                userLoginRepository: null);
+                userLoginRepository: null,
+                repository: mockRepository.Object);
 
             List<string> roleList = new List<string>();
             List<string> propertyList = new List<string>();
@@ -931,6 +886,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             // GetCompanyEditorAndUserDetails fail, invalid editor persona
             string result = mpL2L.ManageLead2LeaseUser(_editorPersonaId, _userPersonaId, roleList, propertyList);
+
+            _output.WriteLine("result 1 : " + result);
+
             Assert.True(result.ToUpper() == "INVALID PERSONA");
 
             mockManagePersona
@@ -960,6 +918,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             mpL2L = new ManageProductLead2Lease(
                 editorRealPageId: _editorRealPageId,
+                userClaim: _editorUserClaim,
                 messageHandler: mockHandler.Object,
                 samlRepository: mockSamlRepository.Object,
                 managePersona: mockManagePersona.Object,
@@ -971,10 +930,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 managePartyRelationship: mockManagePartyRelationship.Object,
                 manageElectronicAddress: mockManageElectronicAddress.Object,
                 manageProductOneSite: mockManageProductOneSite.Object,
-                userLoginRepository: null);
+                userLoginRepository: null,
+                repository: mockRepository.Object);
 
             // missing user info
             result = mpL2L.ManageLead2LeaseUser(_editorPersonaId, _userPersonaId, roleList, propertyList);
+            _output.WriteLine("result 2 : " + result);
+
             Assert.True(result.ToUpper() == "USER INFO MISSING");
 
             mockHandler.Protected()
@@ -1003,6 +965,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             mpL2L = new ManageProductLead2Lease(
                 editorRealPageId: _editorRealPageId,
+                userClaim: _editorUserClaim,
                 messageHandler: mockHandler.Object,
                 samlRepository: mockSamlRepository.Object,
                 managePersona: mockManagePersona.Object,
@@ -1014,10 +977,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 managePartyRelationship: mockManagePartyRelationship.Object,
                 manageElectronicAddress: mockManageElectronicAddress.Object,
                 manageProductOneSite: mockManageProductOneSite.Object,
-                userLoginRepository: null);
+                userLoginRepository: null,
+                repository: mockRepository.Object);
 
             // property list fail
             result = mpL2L.ManageLead2LeaseUser(_editorPersonaId, _userPersonaId, roleList, propertyList);
+            _output.WriteLine("result 3 : " + result);
             Assert.True(result.ToUpper() == "COMPANY SETUP ERROR: PLEASE CONTACT SUPPORT.");
 
             mockHandler.Protected()
@@ -1044,21 +1009,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                     Assert.Equal(HttpMethod.Get, r.Method);
                 });
 
-            mpL2L = new ManageProductLead2Lease(
-                editorRealPageId: _editorRealPageId,
-                messageHandler: mockHandler.Object,
-                samlRepository: mockSamlRepository.Object,
-                managePersona: mockManagePersona.Object,
-                manageBlueBook: mockManageBlueBook.Object,
-                productRepository: mockProductRepository.Object,
-                productInternalSettingRepository: mockProductInternalSettingRepository.Object,
-                managePerson: mockManagePerson.Object,
-                manageUserLogin: mockManageUserLogin.Object,
-                managePartyRelationship: mockManagePartyRelationship.Object,
-                manageElectronicAddress: mockManageElectronicAddress.Object,
-                manageProductOneSite: mockManageProductOneSite.Object,
-                userLoginRepository: null);
-
             _partyRelationShip = new IC.PartyRelationship();
             _partyRelationShip.RoleTypeFrom = new IC.RoleType() { Name = _ROLETYPE_NAME_SUPERUSER };
 
@@ -1072,8 +1022,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                ))
                .Returns(_partyRelationShip);
 
+            mpL2L = new ManageProductLead2Lease(
+                editorRealPageId: _editorRealPageId,
+                userClaim: _editorUserClaim,
+                messageHandler: mockHandler.Object,
+                samlRepository: mockSamlRepository.Object,
+                managePersona: mockManagePersona.Object,
+                manageBlueBook: mockManageBlueBook.Object,
+                productRepository: mockProductRepository.Object,
+                productInternalSettingRepository: mockProductInternalSettingRepository.Object,
+                managePerson: mockManagePerson.Object,
+                manageUserLogin: mockManageUserLogin.Object,
+                managePartyRelationship: mockManagePartyRelationship.Object,
+                manageElectronicAddress: mockManageElectronicAddress.Object,
+                manageProductOneSite: mockManageProductOneSite.Object,
+                userLoginRepository: null,
+                repository: mockRepository.Object);
+
             // role list failed for superuser
             result = mpL2L.ManageLead2LeaseUser(_editorPersonaId, _userPersonaId, roleList, propertyList);
+            _output.WriteLine("result 4 : " + result);
             Assert.True(result.ToUpper() == "ROLE LIST FAILED" || result == CommonMessageConstants.RoleErrorMessage);
         }
 
@@ -1212,6 +1180,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 ))
                 .Returns(_productInternalSettings);
 
+            mockRepository
+                .Setup(m => m.GetMany<IC.ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct,
+                    It.Is<object>(d => TestIsProductId(d, 6))))
+                .Returns(_productInternalSettings);
+
             mockSamlRepository
                 .Setup(m => m.GetProductSamlDetails(
                     It.Is<long>(l => l == 4)
@@ -1311,6 +1284,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             //Act
             IManageProductLead2Lease mpL2L = new ManageProductLead2Lease(
                 editorRealPageId: _editorRealPageId,
+                userClaim: _editorUserClaim,
                 messageHandler: mockHandler.Object,
                 samlRepository: mockSamlRepository.Object,
                 managePersona: mockManagePersona.Object,
@@ -1322,7 +1296,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 managePartyRelationship: mockManagePartyRelationship.Object,
                 manageElectronicAddress: mockManageElectronicAddress.Object,
                 manageProductOneSite: mockManageProductOneSite.Object,
-                userLoginRepository: null);
+                userLoginRepository: null,
+                repository: mockRepository.Object);
 
             List<string> roleList = new List<string>();
             List<string> propertyList = new List<string>();
@@ -1379,6 +1354,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             mpL2L = new ManageProductLead2Lease(
                 editorRealPageId: _editorRealPageId,
+                userClaim: _editorUserClaim,
                 messageHandler: mockHandler.Object,
                 samlRepository: mockSamlRepository.Object,
                 managePersona: mockManagePersona.Object,
@@ -1390,7 +1366,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 managePartyRelationship: mockManagePartyRelationship.Object,
                 manageElectronicAddress: mockManageElectronicAddress.Object,
                 manageProductOneSite: mockManageProductOneSite.Object,
-                userLoginRepository: null);
+                userLoginRepository: null,
+                repository: mockRepository.Object);
 
             roleList = new List<string>();
             propertyList = new List<string>();
@@ -1427,14 +1404,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             var mockHandler = new Mock<HttpMessageHandler>();
             var mockManageProductOneSite = new Mock<IManageProductOneSite>();
 
-            IList<CustomerCompanyMap> mapResource = new List<CustomerCompanyMap>();
-            CustomerCompanyMap resource = new CustomerCompanyMap() { CompanyInstanceSourceId = _companyInstanceSourceId.ToString(), Source = "L2L" };
-            mapResource.Add(resource);
+            var mapResource = new List<CustomerCompanyMap>()
+            {
+                new CustomerCompanyMap() { CompanyInstanceSourceId = _companyInstanceSourceId.ToString(), Source = "L2L" }
+            };
+            
             mockManageBlueBook
                 .Setup(m => m.GetCompanyMap(
                     It.IsAny<Guid>(),
                     It.IsAny<long>(),
-                    It.IsAny<string>(),
+                    It.Is<string>(l => l == "L2L"),
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<bool>(),
@@ -1446,6 +1425,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetProductInternalSettings(
                     It.Is<int>(l => l == (int)ProductEnum.Lead2Lease)
                 ))
+                .Returns(_productInternalSettings);
+
+            mockRepository
+                .Setup(m => m.GetMany<IC.ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct,
+                    It.Is<object>(d => TestIsProductId(d, 6))))
                 .Returns(_productInternalSettings);
 
             mockSamlRepository
@@ -1477,24 +1461,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             mockProductRepository
              .Setup(m => m.GetBooksMasterProductDetail(
-                 It.IsAny<int>()
+                 It.Is<int>(l => l == (int)ProductEnum.Lead2Lease)
              ))
-             .Returns(_gbProductMap);
-
-            IManageProductLead2Lease mpL2L = new ManageProductLead2Lease(
-              editorRealPageId: _editorRealPageId,
-              messageHandler: mockHandler.Object,
-              samlRepository: mockSamlRepository.Object,
-              managePersona: mockManagePersona.Object,
-              manageBlueBook: mockManageBlueBook.Object,
-              productRepository: mockProductRepository.Object,
-              productInternalSettingRepository: mockProductInternalSettingRepository.Object,
-              managePerson: mockManagePerson.Object,
-              manageUserLogin: mockManageUserLogin.Object,
-              managePartyRelationship: mockManagePartyRelationship.Object,
-              manageElectronicAddress: mockManageElectronicAddress.Object,
-              manageProductOneSite: mockManageProductOneSite.Object,
-              userLoginRepository: null);
+             .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.Lead2Lease));
 
             var dataFilter = new RequestParameter()
             {
@@ -1526,10 +1495,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             };
 
             mockHandler.Setup(HttpMethod.Get, url, userResponse);
-
+            
+            IManageProductLead2Lease mpL2L = new ManageProductLead2Lease(
+                editorRealPageId: _editorRealPageId,
+                userClaim: _editorUserClaim,
+                messageHandler: mockHandler.Object,
+                samlRepository: mockSamlRepository.Object,
+                managePersona: mockManagePersona.Object,
+                manageBlueBook: mockManageBlueBook.Object,
+                productRepository: mockProductRepository.Object,
+                productInternalSettingRepository: mockProductInternalSettingRepository.Object,
+                managePerson: mockManagePerson.Object,
+                manageUserLogin: mockManageUserLogin.Object,
+                managePartyRelationship: mockManagePartyRelationship.Object,
+                manageElectronicAddress: mockManageElectronicAddress.Object,
+                manageProductOneSite: mockManageProductOneSite.Object,
+                userLoginRepository: null,
+                repository: mockRepository.Object);
             //Act
             var expected = mpL2L.GetMigrationUsers(editorPersonaId, dataFilter);
 
+            _output.WriteLine("expected :" + JsonConvert.SerializeObject(expected));
             //Assert
             Assert.IsType<MigrationUser>(expected.Records[0]);
             Assert.True(expected.Records.Count == totalRecords);
@@ -1562,7 +1548,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetCompanyMap(
                     It.IsAny<Guid>(),
                     It.IsAny<long>(),
-                    It.IsAny<string>(),
+                    It.Is<string>(l => l == "L2L"),
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<bool>(),
@@ -1574,6 +1560,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetProductInternalSettings(
                     It.Is<int>(l => l == (int)ProductEnum.Lead2Lease)
                 ))
+                .Returns(_productInternalSettings);
+
+            mockRepository
+                .Setup(m => m.GetMany<IC.ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct,
+                    It.Is<object>(d => TestIsProductId(d, 6))))
                 .Returns(_productInternalSettings);
 
             mockSamlRepository
@@ -1605,25 +1596,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             mockProductRepository
              .Setup(m => m.GetBooksMasterProductDetail(
-                 It.IsAny<int>()
+                 It.Is<int>(l => l == (int)ProductEnum.Lead2Lease)
              ))
-             .Returns(_gbProductMap);
-
-            IManageProductLead2Lease mpL2L = new ManageProductLead2Lease(
-              editorRealPageId: _editorRealPageId,
-              messageHandler: mockHandler.Object,
-              samlRepository: mockSamlRepository.Object,
-              managePersona: mockManagePersona.Object,
-              manageBlueBook: mockManageBlueBook.Object,
-              productRepository: mockProductRepository.Object,
-              productInternalSettingRepository: mockProductInternalSettingRepository.Object,
-              managePerson: mockManagePerson.Object,
-              manageUserLogin: mockManageUserLogin.Object,
-              managePartyRelationship: mockManagePartyRelationship.Object,
-              manageElectronicAddress: mockManageElectronicAddress.Object,
-              manageProductOneSite: mockManageProductOneSite.Object,
-              userLoginRepository: null);
-
+             .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.Lead2Lease));
+            
             var migrateUsers = new List<MigrateUser>()
             {
                 new MigrateUser(){
@@ -1650,8 +1626,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             mockHandler.Setup(HttpMethod.Put, url, userResponse);
 
+            IManageProductLead2Lease mpL2L = new ManageProductLead2Lease(
+                editorRealPageId: _editorRealPageId,
+                userClaim: _editorUserClaim,
+                messageHandler: mockHandler.Object,
+                samlRepository: mockSamlRepository.Object,
+                managePersona: mockManagePersona.Object,
+                manageBlueBook: mockManageBlueBook.Object,
+                productRepository: mockProductRepository.Object,
+                productInternalSettingRepository: mockProductInternalSettingRepository.Object,
+                managePerson: mockManagePerson.Object,
+                manageUserLogin: mockManageUserLogin.Object,
+                managePartyRelationship: mockManagePartyRelationship.Object,
+                manageElectronicAddress: mockManageElectronicAddress.Object,
+                manageProductOneSite: mockManageProductOneSite.Object,
+                userLoginRepository: null,
+                repository: mockRepository.Object);
+
             //Act
             var actual = mpL2L.UpdateUsersMigrationStatus(_editorPersonaId, migrateUsers);
+
+            _output.WriteLine("expected :" + JsonConvert.SerializeObject(expected));
+            _output.WriteLine("actual :" + JsonConvert.SerializeObject(actual));
 
             //Assert
             Assert.Equal(actual.Message, expected.Message);
@@ -1690,7 +1686,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetCompanyMap(
                     It.IsAny<Guid>(),
                     It.IsAny<long>(),
-                    It.IsAny<string>(),
+                    It.Is<string>(l => l == "L2L"),
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<bool>(),
@@ -1702,6 +1698,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetProductInternalSettings(
                     It.Is<int>(l => l == (int)ProductEnum.Lead2Lease)
                 ))
+                .Returns(_productInternalSettings);
+
+            mockRepository
+                .Setup(m => m.GetMany<IC.ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct,
+                    It.Is<object>(d => TestIsProductId(d, 6))))
                 .Returns(_productInternalSettings);
 
             mockSamlRepository
@@ -1733,12 +1734,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             mockProductRepository
                .Setup(m => m.GetBooksMasterProductDetail(
-                   It.IsAny<int>()
+                   It.Is<int>(l => l == (int)ProductEnum.Lead2Lease)
                ))
-               .Returns(_gbProductMap);
+               .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.Lead2Lease));
 
             IManageProductLead2Lease mpL2L = new ManageProductLead2Lease(
               editorRealPageId: _editorRealPageId,
+              userClaim: _editorUserClaim,
               messageHandler: mockHandler.Object,
               samlRepository: mockSamlRepository.Object,
               managePersona: mockManagePersona.Object,
@@ -1750,7 +1752,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
               managePartyRelationship: mockManagePartyRelationship.Object,
               manageElectronicAddress: mockManageElectronicAddress.Object,
               manageProductOneSite: mockManageProductOneSite.Object,
-              userLoginRepository: null);
+              userLoginRepository: null,
+              repository: mockRepository.Object);
 
             var username = "testuser";
             var isActive = true;
@@ -1791,7 +1794,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetCompanyMap(
                     It.IsAny<Guid>(),
                     It.IsAny<long>(),
-                    It.IsAny<string>(),
+                    It.Is<string>(l => l == "L2L"),
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<bool>(),
@@ -1803,6 +1806,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetProductInternalSettings(
                     It.Is<int>(l => l == (int)ProductEnum.Lead2Lease)
                 ))
+                .Returns(_productInternalSettings);
+
+            mockRepository
+                .Setup(m => m.GetMany<IC.ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct,
+                    It.Is<object>(d => TestIsProductId(d, 6))))
                 .Returns(_productInternalSettings);
 
             mockSamlRepository
@@ -1834,24 +1842,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             mockProductRepository
               .Setup(m => m.GetBooksMasterProductDetail(
-                  It.IsAny<int>()
+                  It.Is<int>(l => l == (int)ProductEnum.Lead2Lease)
               ))
-              .Returns(_gbProductMap);
+              .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.Lead2Lease));
 
             IManageProductLead2Lease mpL2L = new ManageProductLead2Lease(
-              editorRealPageId: _editorRealPageId,
-              messageHandler: mockHandler.Object,
-              samlRepository: mockSamlRepository.Object,
-              managePersona: mockManagePersona.Object,
-              manageBlueBook: mockManageBlueBook.Object,
-              productRepository: mockProductRepository.Object,
-              productInternalSettingRepository: mockProductInternalSettingRepository.Object,
-              managePerson: mockManagePerson.Object,
-              manageUserLogin: mockManageUserLogin.Object,
-              managePartyRelationship: mockManagePartyRelationship.Object,
-              manageElectronicAddress: mockManageElectronicAddress.Object,
-              manageProductOneSite: mockManageProductOneSite.Object,
-              userLoginRepository: null);
+                editorRealPageId: _editorRealPageId,
+                userClaim: _editorUserClaim,
+                messageHandler: mockHandler.Object,
+                samlRepository: mockSamlRepository.Object,
+                managePersona: mockManagePersona.Object,
+                manageBlueBook: mockManageBlueBook.Object,
+                productRepository: mockProductRepository.Object,
+                productInternalSettingRepository: mockProductInternalSettingRepository.Object,
+                managePerson: mockManagePerson.Object,
+                manageUserLogin: mockManageUserLogin.Object,
+                managePartyRelationship: mockManagePartyRelationship.Object,
+                manageElectronicAddress: mockManageElectronicAddress.Object,
+                manageProductOneSite: mockManageProductOneSite.Object,
+                userLoginRepository: null,
+                repository: mockRepository.Object);
 
             var username = "testuser";
             var isActive = false;

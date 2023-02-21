@@ -436,7 +436,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/operators/{organizationList[0].RealPageId}/UPFM", responseMapResource);
 
             _mockRepository
-                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
+                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct,
+                    It.Is<object>(d => TestIsProductId(d, 1))))
                 .Returns(productInternalSettings);
 
             ProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository(_mockRepository.Object);
@@ -532,6 +533,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             //Assert
             Assert.True(!result.Any());
 
+        }
+
+        public bool TestIsProductId(object obj, int productId)
+        {
+            return obj.ToString().Contains($"ProductId = {productId}");
         }
     }
 }
