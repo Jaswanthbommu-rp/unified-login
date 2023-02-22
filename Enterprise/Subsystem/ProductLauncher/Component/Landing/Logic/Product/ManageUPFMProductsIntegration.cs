@@ -649,9 +649,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     WriteToDiagnosticLog($"ManageUPFMProductUser - new user is Super user with userPersonaId id - {userPersonaId}.");
                     var superUserRoleId = "0";
+                    var vmpForVendorOrgTypeName = "";
+                    string orgType = _userClaims.OrganizationType.ToLower();
                     if (productSettingList.Any(a => a.Name.Equals("SuperUserRoleId", StringComparison.OrdinalIgnoreCase)))
                     {
                         superUserRoleId = productSettingList.FirstOrDefault(a => a.Name.Equals("SuperUserRoleId", StringComparison.OrdinalIgnoreCase))?.Value;
+                    }
+                    if (productSettingList.Any(a => a.Name.Equals("VPMForVendorsOrgType", StringComparison.OrdinalIgnoreCase)) && (_upfmProductId == (int)ProductEnum.VendorMarketplace))
+                    {
+                        vmpForVendorOrgTypeName = productSettingList.FirstOrDefault(a => a.Name.Equals("VPMForVendorsOrgType", StringComparison.OrdinalIgnoreCase))?.Value.ToLower();
+                        if (orgType == vmpForVendorOrgTypeName)
+                        {
+                            if (productSettingList.Any(a => a.Name.Equals("VendorSuperUserRoleId", StringComparison.OrdinalIgnoreCase)))
+                            {
+                                superUserRoleId = productSettingList.FirstOrDefault(a => a.Name.Equals("VendorSuperUserRoleId", StringComparison.OrdinalIgnoreCase))?.Value;
+                            }
+                        }
                     }
 
                     List<string> propertiesToRemove = new List<string>();

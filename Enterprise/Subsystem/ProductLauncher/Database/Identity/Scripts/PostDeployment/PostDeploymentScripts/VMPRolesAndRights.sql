@@ -545,3 +545,18 @@ SELECT DD.RoleId,DD.OrganizationTypeId,@UserId,@Now FROM (SELECT SR.RoleId,EO.Or
 WHERE ROT.RoleId IS NULL
 
 GO
+
+GO
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'VPMForVendorsOrgType')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
+	VALUES ('VPMForVendorsOrgType', 'OrganizationType name for Vendors company.', 0);
+END
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'VendorSuperUserRoleId')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
+	VALUES ('VendorSuperUserRoleId', 'The role Id to create admin user in  product', 0);
+END
+
+GO
