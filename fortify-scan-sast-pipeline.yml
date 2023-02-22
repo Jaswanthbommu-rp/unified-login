@@ -1,0 +1,156 @@
+trigger: none
+schedules:
+ - cron: "0 9 * * 2"
+   displayName: Weekly at 9AM UTC / 3AM CST on Tuesdays (day 2 of week)
+   branches:
+     include:
+     - master
+   always: true
+
+pool:
+  name: Fortify-BLD-POOL
+  demands:
+  - msbuild
+  - visualstudio
+
+workspace:
+  clean: all
+
+variables:
+  FortifyReleaseId: 745546
+
+steps:
+- task: BatchScript@1
+  displayName: Set MSBuild to VS2022/17.x
+  inputs:
+    filename: 'C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\Common7\Tools\VsDevCmd.bat'
+    modifyEnvironment: true
+    failOnStandardError: true
+
+#Scan trigger for Master solution
+- task: NuGetCommand@2
+  displayName: 'NuGet restore Master'
+  inputs:
+    restoreSolution: Enterprise/Subsystem/ProductLauncher/MasterProjectSolution.sln
+    feedsToUse: config
+    nugetConfigPath: Enterprise/Subsystem/ProductLauncher/.nuget/NuGet.Config
+
+- task: FortifyOnDemandStatic@8
+  displayName: Fortify Scan UnifiedLogin Master Solution
+  inputs:
+    FortifyProjects: '$(Build.SourcesDirectory)'
+    FodConnection: 'fortify-on-demand'
+    ReleaseOptions: '0'
+    ReleaseId: $(FortifyReleaseId)
+    EntitlementSelection: '1'
+    EntitlementPreference: '1'
+    OverrideScanSettings: '2'
+    InProgressScanActionType: '2'
+    RemediationScanPreference: '0'
+    BuildType: 'msbuild'
+    BuildFile: 'Enterprise/Subsystem/ProductLauncher/MasterProjectSolution.sln'
+    PolicyFailAction: '0'
+
+- task: DeleteFiles@1
+  displayName: 'Delete files from $(Agent.BuildDirectory)'
+  inputs:
+    SourceFolder: '$(Agent.BuildDirectory)'
+    Contents: | 
+     /a/source.zip
+    condition: succeededOrFailed()
+
+#Scan trigger for Batch Processor solution
+- task: NuGetCommand@2
+  displayName: 'NuGet restore BatchProcessor'
+  inputs:
+    restoreSolution: Enterprise/Subsystem/ProductLauncher/UnityBatchProcessor.sln
+    feedsToUse: config
+    nugetConfigPath: Enterprise/Subsystem/ProductLauncher/.nuget/NuGet.Config
+
+- task: FortifyOnDemandStatic@8
+  displayName: Fortify Scan UnifiedLogin BatchProcessor Solution
+  inputs:
+    FortifyProjects: '$(Build.SourcesDirectory)'
+    FodConnection: 'fortify-on-demand'
+    ReleaseOptions: '0'
+    ReleaseId: $(FortifyReleaseId)
+    EntitlementSelection: '1'
+    EntitlementPreference: '1'
+    OverrideScanSettings: '2'
+    InProgressScanActionType: '2'
+    RemediationScanPreference: '0'
+    BuildType: 'msbuild'
+    BuildFile: 'Enterprise/Subsystem/ProductLauncher/UnityBatchProcessor.sln'
+    PolicyFailAction: '0'
+
+- task: DeleteFiles@1
+  displayName: 'Delete files from $(Agent.BuildDirectory)'
+  inputs:
+    SourceFolder: '$(Agent.BuildDirectory)'
+    Contents: | 
+     /a/source.zip
+    condition: succeededOrFailed()
+
+#Scan trigger for User Notification solution
+- task: NuGetCommand@2
+  displayName: 'NuGet restore UserNotification'
+  inputs:
+    restoreSolution: Enterprise/Subsystem/ProductLauncher/UserNotification.sln
+    feedsToUse: config
+    nugetConfigPath: Enterprise/Subsystem/ProductLauncher/.nuget/NuGet.Config
+
+- task: FortifyOnDemandStatic@8
+  displayName: Fortify Scan UnifiedLogin UserNotification Solution
+  inputs:
+    FortifyProjects: '$(Build.SourcesDirectory)'
+    FodConnection: 'fortify-on-demand'
+    ReleaseOptions: '0'
+    ReleaseId: $(FortifyReleaseId)
+    EntitlementSelection: '1'
+    EntitlementPreference: '1'
+    OverrideScanSettings: '2'
+    InProgressScanActionType: '2'
+    RemediationScanPreference: '0'
+    BuildType: 'msbuild'
+    BuildFile: 'Enterprise/Subsystem/ProductLauncher/UserNotification.sln'
+    PolicyFailAction: '0'
+
+- task: DeleteFiles@1
+  displayName: 'Delete files from $(Agent.BuildDirectory)'
+  inputs:
+    SourceFolder: '$(Agent.BuildDirectory)'
+    Contents: | 
+     /a/source.zip
+    condition: succeededOrFailed()
+
+# #Scan trigger for Activity solution
+# - task: NuGetCommand@2
+#   displayName: 'NuGet restore Activity solution'
+#   inputs:
+#     restoreSolution: Activity.sln
+#     feedsToUse: config
+#     nugetConfigPath: Enterprise/Subsystem/ProductLauncher/.nuget/NuGet.Config
+
+# - task: FortifyOnDemandStatic@8
+#   displayName: Fortify Scan Activity Solution
+#   inputs:
+#     FortifyProjects: '$(Build.SourcesDirectory)'
+#     FodConnection: 'fortify-on-demand'
+#     ReleaseOptions: '0'
+#     ReleaseId: $(FortifyReleaseId)
+#     EntitlementSelection: '1'
+#     EntitlementPreference: '1'
+#     OverrideScanSettings: '2'
+#     InProgressScanActionType: '2'
+#     RemediationScanPreference: '0'
+#     BuildType: 'msbuild'
+#     BuildFile: 'Activity.sln'
+#     PolicyFailAction: '0'
+
+# - task: DeleteFiles@1
+  # displayName: 'Delete files from $(Agent.BuildDirectory)'
+  # inputs:
+  #   SourceFolder: '$(Agent.BuildDirectory)'
+  #   Contents: | 
+  #     /a/source.zip
+  #   condition: succeededOrFailed()
