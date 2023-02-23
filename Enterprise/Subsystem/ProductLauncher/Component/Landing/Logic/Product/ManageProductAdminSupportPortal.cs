@@ -864,8 +864,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
 
             var migrationUsers = new List<MigrationUser>();
+            var productRoles = GetProductRoles();
             foreach (var user in migrationResponse.Records)
             {
+                string profileId = user.ProfileId.Remove(user.ProfileId.Length - 3);
+                string roleType = productRoles.FirstOrDefault(c => c.ID == profileId)?.Roletype;
                 var migrationUser = new MigrationUser
                 {
                     CompanyInstanceSourceId = companyInstanceSourceId,
@@ -875,7 +878,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     Username = user.Username,
                     Email = user.Email,
                     LastActivity = user.LastLoginDate.ToString(),
-                    Extra = $"{_portalId}|{_organizationId}|{user.ProfileId.Remove(user.ProfileId.Length - 3)}",
+                    Extra = $"{_portalId}|{_organizationId}|{roleType}",
                     Status = user.IsActive ? "Active" : "Disabled"
                 };
                 migrationUsers.Add(migrationUser);
