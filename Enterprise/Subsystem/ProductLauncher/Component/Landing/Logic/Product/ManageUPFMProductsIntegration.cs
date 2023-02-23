@@ -17,6 +17,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UP
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using UL = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
 
@@ -637,6 +638,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     return listResponse.ErrorReason;
                 }
 
+                string orgType = "";
+                ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
+                if (currentClaimPrincipal.Identity.IsAuthenticated)
+                {
+                    var userClaims = new DefaultUserClaim(currentClaimPrincipal);
+                    orgType = userClaims.OrganizationType.ToLower();
+                }
                 var userPersona = _managePersona.GetPersona(userPersonaId);
                 var realPageId = userPersona.RealPageId;
                 var userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
@@ -650,7 +658,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     WriteToDiagnosticLog($"ManageUPFMProductUser - new user is Super user with userPersonaId id - {userPersonaId}.");
                     var superUserRoleId = "0";
                     var vmpForVendorOrgTypeName = "";
-                    string orgType = _userClaims.OrganizationType.ToLower();
                     if (productSettingList.Any(a => a.Name.Equals("SuperUserRoleId", StringComparison.OrdinalIgnoreCase)))
                     {
                         superUserRoleId = productSettingList.FirstOrDefault(a => a.Name.Equals("SuperUserRoleId", StringComparison.OrdinalIgnoreCase))?.Value;
