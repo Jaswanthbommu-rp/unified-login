@@ -1336,6 +1336,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 $"{nameof(StandardV1ProductIntegration)}.ExternalProductUserProfileChange - Product {ProductId} " +
                 $"editorPersona id - {EditorUserDetails.PersonaId}, productUserProfile.UserId - {productUserProfile.UserId}. At beginning of the method.");
 
+           WriteToDiagnosticLog(
+                 $"{nameof(StandardV1ProductIntegration)}.ExternalProductUserProfileChange - Product {ProductId} " +
+                $"editorPersona id - {EditorUserDetails.PersonaId}, productUserProfile - {productUserProfile}.");
+
             // used from external source (migration tool) so no activity logging required
             var result = ProductUserProfileChange(productUserProfile);
 

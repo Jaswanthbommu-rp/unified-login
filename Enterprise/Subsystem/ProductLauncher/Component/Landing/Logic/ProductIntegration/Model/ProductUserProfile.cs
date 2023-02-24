@@ -5,9 +5,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 {
 	public class ProductUserProfile
 	{
-		[JsonProperty(PropertyName = "userId")]
+		[JsonProperty(PropertyName = "UserId")]
 		public string UserId { get; set; }
-		[JsonProperty(PropertyName = "loginName")]
+		[JsonProperty(PropertyName = "LoginName")]
 		public string LoginName { get; set; }
 
 		[JsonProperty(PropertyName = "title", NullValueHandling = NullValueHandling.Ignore)]
@@ -21,9 +21,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 		[JsonProperty(PropertyName = "lastName")]
 		public string LastName { get; set; }
-		[JsonProperty(PropertyName = "email")]
+		[JsonProperty(PropertyName = "Email")]
 		public string Email { get; set; }
-		[JsonProperty(PropertyName = "isActive")]
+		[JsonProperty(PropertyName = "IsActive")]
 		public bool IsActive { get; set; }
 
 		[JsonProperty(PropertyName = "phoneNumbers", NullValueHandling = NullValueHandling.Ignore)]
