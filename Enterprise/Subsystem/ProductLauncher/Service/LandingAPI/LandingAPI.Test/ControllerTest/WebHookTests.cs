@@ -2198,12 +2198,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         public void Post_Books_Provisioning_UPFMVendor_Unknown_Organization_Type()
         {
             Mock<IRepository> mockRepository = new Mock<IRepository>();
+            Mock<IUnitOfWork> mockUnitOfWork = new Mock<IUnitOfWork>();
             Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
+            UserLoginOnly userLoginOnlyNull = null;
 
             var customercompany = new CustomerCompany() { CustomerCompanyId = 1380567, IsActive = true, CompanyName = "1 AWESOME SERVICE LLC", MigrationStatus = "migrated", CompanyType = "InvalidType" };
             var existingCompanyInstances = new List<CustomerCompanyInstance>();
             var vendorCustomerCompanyMap = new CustomerCompanyMap() { Domain = "Primary", Source = "VMP", CompanyInstanceSourceId = "2230095" };
-            
             var responseCustomerCompany = new HttpResponseMessage(HttpStatusCode.OK);
             var jsonToSave = JsonConvert.SerializeObject(customercompany, new JsonApiSerializerSettings());
             responseCustomerCompany.Content = new StringContent(jsonToSave);
@@ -2219,6 +2220,133 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             var responseVendorCustomerCompanyMap = new HttpResponseMessage(HttpStatusCode.OK);
             jsonToSave = JsonConvert.SerializeObject(vendorCustomerCompanyMap, new JsonApiSerializerSettings());
             responseVendorCustomerCompanyMap.Content = new StringContent(jsonToSave);
+            var personaEnvironments = new List<PersonaEnvironment>() { new PersonaEnvironment() { Name = "Production", PersonaEnvironmentTypeId = 1 } };
+            var personPartyId = 12345;
+            var vendorAdminPerson = new Person()
+            {
+                PartyId = 18,
+                FirstName = "Liza",
+                LastName = "Jones",
+                RealPageId = Guid.NewGuid()
+            };
+            var customerAdminUserLoginOnly = new UserLoginOnly()
+            {
+                UserId = 67,
+                PartyId = vendorAdminPerson.PartyId,
+                LoginName = "ljones@test.com",
+                PasswordHash = "",
+                RealPageId = vendorAdminPerson.RealPageId
+            };
+            var companyAdminUserLoginOnly = new UserLoginOnly()
+            {
+                UserId = 3,
+                PartyId = 1,
+                LoginName = $"{_PartyId}admin@realpage.com",
+                PasswordHash = "",
+                RealPageId = Guid.NewGuid()
+            };
+            var organization = new Organization()
+            {
+                RealPageId = _RealPageId,
+                CreateDate = _CreateDate,
+                Name = "1 AWESOME SERVICE LLC",
+                PartyId = _PartyId,
+                BooksMasterId = _BooksMasterId,
+                BooksCustomerMasterId = _BooksCompanyMasterId,
+                OrganizationTypeId = _otherOrganizationTypeId,
+                organizationType = new OrganizationType()
+                {
+                    OrganizationTypeId = _vendorOrganizationTypeId
+                },
+                OrganizationDomain = new OrganizationDomain()
+                {
+                    OrganizationDomainId = _organizationDomainId
+                }
+            };
+            var vendorAdminUserDetails = new UserDetails()
+            {
+                FirstName = vendorAdminPerson.FirstName,
+                LastName = vendorAdminPerson.LastName,
+                Email = customerAdminUserLoginOnly.LoginName,
+                LoginName = customerAdminUserLoginOnly.LoginName,
+                PersonPartyId = customerAdminUserLoginOnly.PartyId
+            };
+            var externalOrganization = new Organization()
+            {
+                RealPageId = _externalOrganizationRealPageId,
+                CreateDate = _CreateDate,
+                Name = "External Users",
+                PartyId = _ExternalPartyId,
+                BooksMasterId = _BooksMasterId,
+                BooksCustomerMasterId = _BooksCompanyMasterId,
+                OrganizationTypeId = _otherOrganizationTypeId,
+                organizationType = new OrganizationType()
+                {
+                    OrganizationTypeId = _otherOrganizationTypeId
+                },
+                OrganizationDomain = new OrganizationDomain()
+                {
+                    OrganizationDomainId = _organizationDomainId
+                }
+            };
+            var commonAddresses = new List<CommonAddress>()
+            {
+                new CommonAddress() { AddressType = "email", AddressString = "ljones@test.com", ContactMechanismId = 53, ContactMechanismUsageTypeId = 345, PartyContactMechanismId = 321 }
+            };
+            var orgStatusList = new List<OrganizationStatus>()
+            {
+                new OrganizationStatus()
+                {
+                    PartyId = personPartyId,
+                    IsPending = true,
+                    IsActive = true,
+                    IsExpired = false,
+                    StatusTypeId = (int)UserUiStatusType.Active,
+                    Status = UserUiStatusType.Active,
+                    FromDate = new DateTime(2019, 1, 1)
+                }
+            };
+            var identityProviderTypes = new List<IdentityProviderType>() { new IdentityProviderType() { ContactMechanismId = 1000, AuthenticationType = "local" }, new IdentityProviderType() { ContactMechanismId = 1001, AuthenticationType = "aad" } };
+            var userRoleTypeList = new List<RoleType>()
+            {
+                new RoleType() { Name = "User", PartyRoleTypeId = 401, ParentPartyRoleTypeId = 400 },
+                new RoleType() { Name = "SuperUser", PartyRoleTypeId = 402, ParentPartyRoleTypeId = 400 },
+                new RoleType() { Name = "RealPage Employee", PartyRoleTypeId = 403, ParentPartyRoleTypeId = 400 },
+                new RoleType() { Name = "User (No Email)", PartyRoleTypeId = 404, ParentPartyRoleTypeId = 400 },
+                new RoleType() { Name = "External User", PartyRoleTypeId = 405, ParentPartyRoleTypeId = 400 },
+            };
+            var activityList = new List<Activity>() { new Activity() { ActivityCode = "1", Description = "Test Activity", ActivityTypeId = (int)ActivityType.NewUserRegistration, ActivityTokenExpirationMinutes = 60 } };
+            var enterpriseRoleList = new List<EnterpriseRole>()
+            {
+                new EnterpriseRole() { Role = "User Administrator", RoleId = 1 },
+                new EnterpriseRole() { Role = "Basic End User", RoleId = 2 }
+            };
+            var organizationRoleTypeList = new List<RoleType>()
+            {
+                new RoleType() { Name = "Parent Corporation", PartyRoleTypeId = 201, ParentPartyRoleTypeId = 200 },
+                new RoleType() { Name = "Property Management Company", PartyRoleTypeId = 202, ParentPartyRoleTypeId = 200 },
+                new RoleType() { Name = "Employer", PartyRoleTypeId = 203, ParentPartyRoleTypeId = 200 },
+                new RoleType() { Name = "Site", PartyRoleTypeId = 204, ParentPartyRoleTypeId = 200 },
+                new RoleType() { Name = "User Type", PartyRoleTypeId = 205, ParentPartyRoleTypeId = 200 },
+            };
+
+            mockRepository
+                .Setup(m => m.UnitOfWork)
+                .Returns(mockUnitOfWork.Object);
+
+            mockRepository
+                .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization, It.Is<object>(
+                        d => TestIsRealPageId(d, organization.RealPageId))))
+                .Returns(organization);
+
+            mockRepository
+                .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization, It.Is<object>(
+                    d => TestIsRealPageId(d, _externalOrganizationRealPageId))))
+                .Returns(externalOrganization);
+
+            mockRepository
+                .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_SetupOrganization, It.IsAny<object>()))
+                .Returns(new RepositoryResponse { Id = 0, ErrorMessage = "", RealPageId = _RealPageId });
 
             mockRepository
                 .Setup(m => m.GetMany<OrganizationType>(StoredProcNameConstants.SP_ListOrganizationType, null))
@@ -2236,11 +2364,128 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             mockRepository
                 .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, It.IsAny<object>()))
                 .Returns(_gbProductMap);
-            
+
+            mockRepository
+                .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_CreateOrganizationProduct, It.IsAny<object>()))
+                .Returns(new RepositoryResponse { Id = 1, ErrorMessage = "" });
+
+            mockRepository.Setup(m => m.GetMany<IdentityProviderType>(StoredProcNameConstants.SP_GetOrganizationIdentityProviderType, It.IsAny<object>()))
+                            .Returns(identityProviderTypes);
+            mockRepository
+                .Setup(m => m.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, It.Is<object>(
+                 d => TestIsLoginName(d, $"{_PartyId}admin@realpage.com"))))
+                .Returns(companyAdminUserLoginOnly);
+
+            mockRepository
+                .SetupSequence(m => m.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, It.Is<object>(
+                    d => TestIsLoginName(d, "ljones@test.com"))))
+                .Returns(userLoginOnlyNull)
+                .Returns(customerAdminUserLoginOnly)
+                .Returns(customerAdminUserLoginOnly);
+
+            mockRepository
+                .Setup(m => m.GetMany<PersonaEnvironment>(StoredProcNameConstants.SP_GetPersonaEnvironment, It.IsAny<object>()))
+                .Returns(personaEnvironments);
+
+            mockRepository.Setup(m => m.GetOne<UserDetails>(StoredProcNameConstants.SP_GetUserDetails, It.IsAny<object>()))
+                .Returns(vendorAdminUserDetails);
+
+            mockRepository
+                .Setup(m => m.GetMany<RoleType>(StoredProcNameConstants.SP_ListRoleType, It.Is<object>(
+                    d => TestIsRoleTypeName(d, "User Role"))))
+                .Returns(userRoleTypeList);
+
+            mockRepository
+                .Setup(m => m.GetMany<RoleType>(StoredProcNameConstants.SP_ListRoleType, It.Is<object>(
+                    d => TestIsRoleTypeName(d, "Organization Role"))))
+                .Returns(organizationRoleTypeList);
+
+            mockRepository
+                .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreatePerson, It.IsAny<object>()))
+                .Returns(new RepositoryResponse { Id = personPartyId, RealPageId = Guid.NewGuid(), ErrorMessage = "" });
+
+            mockRepository
+                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
+                    It.IsAny<object>()))
+                .Returns(_gbProductMap);
+
+            mockRepository.Setup(m => m.GetMany<ContactMechanismUsageType>(StoredProcNameConstants.SP_ListContactMechanismUsageType, It.IsAny<object>()))
+                .Returns(() => _contactMechanismUsageTypes);
+
+            mockRepository.Setup(m => m.GetMany<IdentityProviderType>(StoredProcNameConstants.SP_GetOrganizationIdentityProviderType, It.IsAny<object>()))
+                .Returns(identityProviderTypes);
+
+            mockRepository.Setup(m => m.GetOne<UserDetails>(StoredProcNameConstants.SP_GetUserDetails, It.IsAny<object>()))
+                .Returns(vendorAdminUserDetails);
+
+            mockRepository.Setup(m => m.GetOne<Person>(StoredProcNameConstants.SP_GetPerson, It.IsAny<object>()))
+                .Returns(vendorAdminPerson);
+
+            Guid realPageId = new Guid("13E71DE5-BAFA-469D-9F7A-E12DB3961BA9");
+            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateUserLogin, It.IsAny<object>()))
+                .Returns(new RepositoryResponse { Id = 1, ErrorMessage = "", RealPageId = realPageId });
+
+            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserLogin, It.IsAny<object>()))
+                .Returns(new RepositoryResponse { Id = 1, ErrorMessage = "", RealPageId = realPageId });
+
+            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateContactMechanism, It.IsAny<object>()))
+                .Returns(new RepositoryResponse { Id = 53, ErrorMessage = "", RealPageId = Guid.Empty });
+
+            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkContactMechanismToParty, It.IsAny<object>()))
+                .Returns(new RepositoryResponse { Id = 5454, ErrorMessage = "", RealPageId = Guid.Empty });
+
+            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkUsageTypeToPartyContactMechanism, It.IsAny<object>()))
+                .Returns(new RepositoryResponse { Id = 243, ErrorMessage = "", RealPageId = Guid.Empty });
+
+            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateElectronicAddress, It.IsAny<object>()))
+                .Returns(new RepositoryResponse { Id = 676, ErrorMessage = "", RealPageId = Guid.Empty });
+
+            mockRepository.Setup(m => m.GetMany<CommonAddress>(StoredProcNameConstants.SP_ListContactMechanismsForPerson, It.IsAny<object>()))
+                .Returns(commonAddresses);
+
+            mockRepository.Setup(m => m.GetMany<OrganizationStatus>(StoredProcNameConstants.SP_ListOrganizationStatusByUserId, It.IsAny<object>()))
+                .Returns(orgStatusList);
+
+            mockRepository.Setup(m => m.GetMany<Activity>(StoredProcNameConstants.SP_ListActivity, It.IsAny<object>()))
+                .Returns(activityList);
+
+            mockRepository.Setup(m => m.GetMany<EnterpriseRole>(StoredProcNameConstants.SP_SecurityListRolesByRealPageID, It.IsAny<object>()))
+                .Returns(enterpriseRoleList);
+
+            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateUserLoginPersona, It.IsAny<object>()))
+                .Returns(new RepositoryResponse { Id = 4323, ErrorMessage = "", RealPageId = Guid.Empty });
+
+            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreatePersona, It.IsAny<object>()))
+                .Returns(new RepositoryResponse { Id = 9872, ErrorMessage = "", RealPageId = Guid.Empty });
+
+            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkPersonaToRole, It.IsAny<object>()))
+                .Returns(new RepositoryResponse { Id = 4455, ErrorMessage = "", RealPageId = Guid.Empty });
+
+            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdatePropertyMapping, It.IsAny<object>()))
+                .Returns(new RepositoryResponse { Id = 55555, ErrorMessage = "", RealPageId = Guid.Empty });
+
+            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateEmployeeId, It.IsAny<object>()))
+                .Returns(new RepositoryResponse { Id = 66666, ErrorMessage = "", RealPageId = Guid.Empty });
+
+            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkPersonToOrganization, It.IsAny<object>()))
+                .Returns(new RepositoryResponse { Id = 6735, ErrorMessage = "", RealPageId = Guid.Empty });
+
+            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkIdentityProviderToUserLogin, It.IsAny<object>()))
+                .Returns(new RepositoryResponse { Id = 3489, ErrorMessage = "", RealPageId = Guid.Empty });
+
+            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateBatchProcessorGroup, It.IsAny<object>()))
+                .Returns(new RepositoryResponse { Id = 3267, ErrorMessage = "", RealPageId = Guid.Empty });
+
+            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreatePartyRoleByRealPageId, It.IsAny<object>()))
+                .Returns(new RepositoryResponse { Id = 3421, ErrorMessage = "", RealPageId = Guid.Empty });
+
+
             mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompany/{customercompany.CustomerCompanyId}", responseCustomerCompany);
             mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/companyinstance/{vendorCustomerCompanyMap.CompanyInstanceSourceId}/VMP", responseVendorCustomerCompanyMap);
             mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompany?filter[customerCompanyId]=in:{customercompany.CustomerCompanyId}&include=customerCompanyLocation", responseCustomerCompanyById);
             mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/companyinstance?filter[source]=UPFM&filter[customerCompanyMap.customerCompanyId]={customercompany.CustomerCompanyId}&fields[companyinstance]=companyInstanceId,source,companyInstanceSourceId,companyName,companyType,isActive,domain", responseExistingCompanyInstances);
+            mockHttpMessageHandler.Setup(HttpMethod.Put, $"http://localhost/companyinstance/{_RealPageId}/UPFM", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
+            mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/v2/provisioning/company", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
 
             //Arrange
             var webHookController = new WebHookController(mockRepository.Object, _userClaim, mockHttpMessageHandler.Object)
@@ -2260,13 +2505,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             //Act
             var response = webHookController.PostBooks(thinEvent);
 
-            Assert.True(!response.IsSuccessStatusCode);
-            Assert.True(response.StatusCode == HttpStatusCode.BadRequest);
-
-            var message = response.Content.ReadAsStringAsync().Result;
-            var expectedValue = "\"Unknown organization type\"";
-
-            Assert.Equal(expectedValue, message, ignoreCase: true);
+            Assert.True(response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.Accepted);
         }
 
 

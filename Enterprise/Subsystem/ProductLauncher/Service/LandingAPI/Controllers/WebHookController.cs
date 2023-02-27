@@ -812,8 +812,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             var orgType = organizationTypeList.FirstOrDefault(p => p.Name.Equals(customerCompany.CompanyType, StringComparison.OrdinalIgnoreCase));
             if (orgType == null)
             {
-                createCompanyResult.Result = "Unknown organization type";
-                return createCompanyResult;
+                orgType = organizationTypeList.FirstOrDefault(p => p.Name.Equals("Other", StringComparison.OrdinalIgnoreCase));
             }
 
             organization.OrganizationTypeId = orgType.OrganizationTypeId;
