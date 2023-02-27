@@ -37,3 +37,4 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\RecompileAllProcs.sql
 :r .\PostDeploymentScripts\KnockProductPanelScript.sql
 :r .\PostDeploymentScripts\VMPRolesAndRights.sql
+:r .\PostDeploymentScripts\AddingSettingsForAdminPortal.sql
