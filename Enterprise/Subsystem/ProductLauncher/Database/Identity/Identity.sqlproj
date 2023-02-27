@@ -1284,6 +1284,7 @@
     <Build Include="RoleRightsManagement\Stored Procedures\AddRoleOrganizationType.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\GetOrganizationTypeForRole.sql" />
     <Build Include="RoleRightsManagement\Tables\RoleOrganizationType.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetUserCountByStatusForCompany.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
