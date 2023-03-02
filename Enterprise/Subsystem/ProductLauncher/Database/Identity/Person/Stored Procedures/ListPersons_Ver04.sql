@@ -299,7 +299,7 @@ BEGIN
    WHERE      
      ULP.OrganizationPartyId = @PartyId      
  AND pec.StatusTypeId = 8    
-   AND  pec.ProductId NOT IN (14, 19, 24, 25, 34, 39) --Client Portal, Product Learning Portal, Black Book, Self-provisioning portal, Benchmarking, Integration Marketplace      
+   AND  pec.ProductId NOT IN (19, 24, 25, 34, 39) --Product Learning Portal, Black Book, Self-provisioning portal, Benchmarking, Integration Marketplace      
    AND  ((@NOW >= p.FromDate AND p.ThruDate IS NULL) OR (@NOW BETWEEN p.FromDate AND p.ThruDate))      
    AND     ((@NOW >= pec.FromDate AND pec.ThruDate IS NULL) OR (@NOW BETWEEN pec.FromDate AND pec.ThruDate))      
     
