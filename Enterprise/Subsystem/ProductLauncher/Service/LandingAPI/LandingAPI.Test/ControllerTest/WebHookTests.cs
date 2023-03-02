@@ -41,6 +41,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         private static int _vendorOrganizationTypeId = 14;
         private static int _otherOrganizationTypeId = 7;
         private static string _organizationTypeName = "Multifamily";
+        private static string _invalidOrganizationTypeName = "InvalidOrgType";
         private static string _externalOrganizationTypeName = "Other";
         private static int _organizationDomainId = 1;
         private static string _organizationDomainName = "Primary";
@@ -811,6 +812,112 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 
             CustomerCompany customercompany = new CustomerCompany() { CustomerCompanyId = 1948, IsActive = true, CompanyName = "Test Company", MigrationStatus = "migrated", CompanyType = _organizationTypeName }; //Category = "rpup"
+            IList<CustomerCompanyMap> mapResource = new List<CustomerCompanyMap>() { new CustomerCompanyMap() { CompanyInstanceSourceId = "1234567", Source = "OS" } };
+
+            UserLoginOnly userLoginOnly = new UserLoginOnly()
+            {
+                UserId = 3,
+                PartyId = 1,
+                LoginName = $"{customercompany.CustomerCompanyId}admin@realpage.com",
+                PasswordHash = ""
+            };
+            UserLoginOnly userLoginOnlyNull = null;
+
+            Guid propertyGuid = new Guid("5C04F18A-FC9B-4A13-AAAF-E26DA83CE516");
+
+            HttpResponseMessage responseCustomerCompany = new HttpResponseMessage(HttpStatusCode.OK);
+            var jsonToSave = JsonConvert.SerializeObject(customercompany, new JsonApiSerializerSettings());
+            responseCustomerCompany.Content = new StringContent(jsonToSave);
+
+            HttpResponseMessage responseMapResource = new HttpResponseMessage(HttpStatusCode.OK);
+            jsonToSave = JsonConvert.SerializeObject(mapResource, new JsonApiSerializerSettings());
+            responseMapResource.Content = new StringContent(jsonToSave);
+
+            HttpResponseMessage responsePropertyDetail = new HttpResponseMessage(HttpStatusCode.OK);
+            jsonToSave = "{\n\t\"data\": {\n\t\t\"type\": \"customerproperty\",\n\t\t\"id\": \"391411\",\n\t\t\"attributes\": {\n\t\t\t\"customerPropertyId\": 391411,\n\t\t\t\"customerCompanyId\": 1234,\n\t\t\t\"masterPropertyId\": 12345,\n\t\t\t\"propertyName\": \"Test Property\",\n\t\t\t\"address\": {\n\t\t\t\t\"address\": \"11623 Pleasant Meadow Dr\",\n\t\t\t\t\"city\": \"North Potomac\",\n\t\t\t\t\"state\": \"MD\",\n\t\t\t\t\"country\": \"USA\",\n\t\t\t\t\"county\": \"Montgomery\",\n\t\t\t\t\"postalCode\": \"20878-4258\",\n\t\t\t\t\"latitude\": 39.089137,\n\t\t\t\t\"longitude\": -77.238857\n\t\t\t},\n\t\t\t\"units\": null,\n\t\t\t\"stories\": null,\n\t\t\t\"bedCount\": null,\n\t\t\t\"squareFeet\": null,\n\t\t\t\"yearBuilt\": null,\n\t\t\t\"renovationStartDate\": null,\n\t\t\t\"renovationEndDate\": null,\n\t\t\t\"createdAt\": \"2020-08-07 12:49:59.000000-0500\",\n\t\t\t\"modifiedAt\": \"2020-08-07 12:49:59.000000-0500\",\n\t\t\t\"deletedAt\": null,\n\t\t\t\"certifiedAt\": null,\n\t\t\t\"createdBy\": null,\n\t\t\t\"modifiedBy\": null,\n\t\t\t\"geocoded\": true,\n\t\t\t\"isUat\": false,\n\t\t\t\"apn\": \"\",\n\t\t\t\"fips\": \"\",\n\t\t\t\"propertyType\": \"Company\",\n\t\t\t\"propertySubType\": null,\n\t\t\t\"googleLatitude\": null,\n\t\t\t\"googleLongitude\": null,\n\t\t\t\"constructionStatus\": \"Completed\",\n\t\t\t\"constructionType\": null,\n\t\t\t\"assetClass\": null,\n\t\t\t\"buildings\": null,\n\t\t\t\"modifiedSource\": null,\n\t\t\t\"migrationStatus\": null,\n\t\t\t\"hasMedia\": \"Deprecated Field\",\n\t\t\t\"mediaTypeId\": null,\n\t\t\t\"assetType\": \"Not an asset\",\n\t\t\t\"isActive\": false,\n\t\t\t\"companyRelationship\": null,\n\t\t\t\"startDate\": null,\n\t\t\t\"endDate\": null\n\t\t},\n\t\t\"links\": {\n\t\t\t\"self\": \"/customerproperty/391411\"\n\t\t}\n\t}\n}";
+            responsePropertyDetail.Content = new StringContent(jsonToSave);
+
+            mockRepository
+                .Setup(m => m.UnitOfWork)
+                .Returns(mockUnitOfWork.Object);
+
+            mockRepository
+                .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization, It.IsAny<object>()))
+                .Returns(_organization);
+
+            mockRepository
+                .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_SetupOrganization, It.IsAny<object>()))
+                .Returns(new RepositoryResponse { Id = 0, ErrorMessage = "", RealPageId = _RealPageId });
+
+            mockRepository
+                .Setup(m => m.GetMany<OrganizationType>(StoredProcNameConstants.SP_ListOrganizationType, null))
+                .Returns(_organizationTypeList);
+
+            mockRepository
+                .Setup(m => m.GetMany<OrganizationDomain>(StoredProcNameConstants.SP_ListOrganizationDomain, null))
+                .Returns(_organizationDomains);
+
+            mockRepository
+                .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_DataImportMappingUpdate, It.IsAny<object>()))
+                .Returns(new RepositoryResponse { Id = 1, ErrorMessage = "" });
+
+            mockRepository
+                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
+                .Returns(_productInternalSettings);
+
+            mockRepository
+                .SetupSequence(m => m.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, It.IsAny<object>()))
+                .Returns(userLoginOnly);
+
+            mockRepository
+                .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_CreateOrganizationProduct, It.IsAny<object>()))
+                .Returns(new RepositoryResponse { Id = 1, ErrorMessage = "" });
+
+            mockRepository
+                .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreatePropertyInstance, It.IsAny<object>()))
+                .Returns(new RepositoryResponse { Id = 12345, RealPageId = propertyGuid, ErrorMessage = "" });
+
+            mockRepository
+                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
+                    It.IsAny<object>()))
+                .Returns(_gbProductMap);
+
+            mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompany/{customercompany.CustomerCompanyId}", responseCustomerCompany);
+            //mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompanymap?filter[companyInstance.greenBookCares]=true&filter[customerCompanyId]={customercompany.CustomerCompanyId}&include=companyInstance&include=companyInstance.attributes", responseMapResource);
+            mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompanymap?filter[customerCompanyId]={customercompany.CustomerCompanyId}&include=companyInstance&include=companyInstance.attributes", responseMapResource);
+            mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customerproperty/391411", responsePropertyDetail);
+            mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/companyinstance", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
+            mockHttpMessageHandler.Setup(HttpMethod.Put, $"http://localhost/propertyinstance/{propertyGuid}/{ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)}", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
+            mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/productcenterenablement/enable", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
+
+            //Arrange
+            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockHttpMessageHandler.Object)
+            {
+                Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"),
+                Configuration = new HttpConfiguration()
+            };
+
+            webHookController.Request.Properties.Add("TibcoPostData", _mockJson_books_provisioning_upfmorder_create);
+            webHookController.Request.Headers.Add("signature", _mockJson_books_provisioning_upfmorder_create_Signature);
+
+            ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_provisioning_upfmorder_create);
+
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
+            //Act
+            HttpResponseMessage response = webHookController.PostBooks(thinEvent);
+            Assert.True(response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.Accepted);
+        }
+
+        [Fact]
+        public void Post_Books_Provisioning_UPFMOrder_Unknown_Organization_Type_Success()
+        {
+            Mock<IRepository> mockRepository = new Mock<IRepository>();
+            Mock<IUnitOfWork> mockUnitOfWork = new Mock<IUnitOfWork>();
+            Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
+
+            CustomerCompany customercompany = new CustomerCompany() { CustomerCompanyId = 1948, IsActive = true, CompanyName = "Test Company", MigrationStatus = "migrated", CompanyType = _invalidOrganizationTypeName }; //Category = "rpup"
             IList<CustomerCompanyMap> mapResource = new List<CustomerCompanyMap>() { new CustomerCompanyMap() { CompanyInstanceSourceId = "1234567", Source = "OS" } };
 
             UserLoginOnly userLoginOnly = new UserLoginOnly()

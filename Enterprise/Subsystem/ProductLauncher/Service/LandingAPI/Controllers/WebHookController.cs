@@ -674,13 +674,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             var organizationTypeList = _manageOrganization.ListOrganizationType();
             var organizationDomainList = _manageOrganization.ListOrganizationDomain();
 
-            if (organizationTypeList.FirstOrDefault(p => p.Name.Equals(customerCompany.CompanyType, StringComparison.OrdinalIgnoreCase)) == null)
+            var orgType = organizationTypeList.FirstOrDefault(p => p.Name.Equals(customerCompany.CompanyType, StringComparison.OrdinalIgnoreCase));
+            if (orgType == null)
             {
-                createCompanyResult.Result = "Unknown organization type";
-                return createCompanyResult;
+                orgType = organizationTypeList.FirstOrDefault(p => p.Name.Equals("Other", StringComparison.OrdinalIgnoreCase));
             }
 
-            organization.OrganizationTypeId = organizationTypeList.FirstOrDefault(p => p.Name.Equals(customerCompany.CompanyType, StringComparison.OrdinalIgnoreCase)).OrganizationTypeId;
+            organization.OrganizationTypeId = orgType.OrganizationTypeId;
 
             if (!organizationDomainList.Any(d => d.Name.Equals(domain, StringComparison.OrdinalIgnoreCase)))
             {
