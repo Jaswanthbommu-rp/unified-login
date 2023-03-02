@@ -536,7 +536,7 @@ Begin Catch
 Declare @R131 varchar(100),@RoleId13 int;
 
 Select @RoleId13 =RoleId from Security.Role where ShortName = 'SuperUser' and ProductId = 3 ;
-Select @R131 = RightId from Security.[Right] where RightName ='ManageVendorMarketPlaceProductAccess' and ProductId = @productid;
+Select @R131 = RightId from Security.[Right] where RightName ='ManageVendorMarketPlaceProductAccess' and ProductId = 3;
 
 
 IF NOT EXISTS(Select Top 1 1 from Security.RoleRight where RoleId = @RoleId13 and RightId in (@R131))
