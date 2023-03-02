@@ -181,6 +181,7 @@ BEGIN
         VALUES('ManageVendorMarketPlaceProductAccess','Manage Vendor MarketPlace Product access','Manage Vendor MarketPlace Product access',13,9,3 ,@TargetProductId,@UserId,@Now);
 END
 
+
 --select * from Security.[Right] where ProductId=38
 ----------------------------  End RoleRights -----------------------------------
 
@@ -532,7 +533,6 @@ Begin Catch
 		 RAISERROR(@ErrorMessage121,@ErrorSeverity121,@ErrorState121,@ErrorLine121); 
  END Catch
  
-
 Declare @R131 varchar(100),@RoleId13 int;
 
 Select @RoleId13 =RoleId from Security.Role where ShortName = 'SuperUser' and ProductId = 3 ;
@@ -557,10 +557,11 @@ Begin Catch
 			 
 		 RAISERROR(@ErrorMessage131,@ErrorSeverity131,@ErrorState131,@ErrorLine131); 
  END Catch 
-
  
 GO
 -- SEED DATA FOR Security.[RoleOrganizationType]
+
+GO
 
 DECLARE @UserId bigint, 
 		@Now datetime
