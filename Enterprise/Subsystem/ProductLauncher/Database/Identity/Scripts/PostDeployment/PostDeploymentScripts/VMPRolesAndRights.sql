@@ -175,6 +175,11 @@ BEGIN
         VALUES('MerchantCustomerAccountSetup','Merchant Customer Account Setup','Merchant Customer Account Setup',13,9,@ProductId ,@TargetProductId,@UserId,@Now);
 END
 
+IF NOT EXISTS(SELECT TOP 1 1 FROM [Security].[Right] WHERE RightName ='ManageVendorMarketPlaceProductAccess' AND ProductId = 3)
+BEGIN
+        INSERT INTO Security.[Right] (RightName,Description,Value,StatusTypeId,VisibilityStatusId,ProductId,TargetProductId,CreatedBy,CreatedDate)
+        VALUES('ManageVendorMarketPlaceProductAccess','Manage Vendor MarketPlace Product access','Manage Vendor MarketPlace Product access',13,9,3 ,@TargetProductId,@UserId,@Now);
+END
 
 --select * from Security.[Right] where ProductId=38
 ----------------------------  End RoleRights -----------------------------------
@@ -527,6 +532,31 @@ Begin Catch
 		 RAISERROR(@ErrorMessage121,@ErrorSeverity121,@ErrorState121,@ErrorLine121); 
  END Catch
  
+
+Declare @R131 varchar(100),@RoleId13 int;
+
+Select @RoleId13 =RoleId from Security.Role where ShortName = 'SuperUser' and ProductId = 3 ;
+Select @R131 = RightId from Security.[Right] where RightName ='ManageVendorMarketPlaceProductAccess' and ProductId = @productid;
+
+
+IF NOT EXISTS(Select Top 1 1 from Security.RoleRight where RoleId = @RoleId13 and RightId in (@R131))
+BEGIN TRY
+Insert into Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate) Values(@RoleId13,@R131,@UserId,getUTCDate());
+
+END TRY
+Begin Catch 
+ 
+      Declare @ErrorMessage131 nvarchar(250);
+      Declare @ErrorSeverity131 int;
+      Declare @ErrorState131 int;
+      Declare @ErrorLine131 int;
+      Select @ErrorMessage131 = ERROR_Message()
+	         ,@ErrorSeverity131 = ERROR_SEVERITY()
+			 ,@ErrorState131 = ERROR_STATE()
+			 ,@ErrorLine131 = ERROR_LINE();
+			 
+		 RAISERROR(@ErrorMessage131,@ErrorSeverity131,@ErrorState131,@ErrorLine131); 
+ END Catch 
 
  
 GO
