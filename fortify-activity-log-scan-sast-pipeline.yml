@@ -33,7 +33,9 @@ steps:
   inputs:
     restoreSolution: Activity.sln
     feedsToUse: config
-    nugetConfigPath: Enterprise/Subsystem/ProductLauncher/.nuget/NuGet.Config- task: FortifyOnDemandStatic@8
+    nugetConfigPath: Enterprise/Subsystem/ProductLauncher/.nuget/NuGet.Config
+
+- task: FortifyOnDemandStatic@8
   displayName: Fortify Scan Activity Solution
   inputs:
     FortifyProjects: '$(Build.SourcesDirectory)'
@@ -49,10 +51,10 @@ steps:
     BuildFile: 'Activity.sln'
     PolicyFailAction: '0'
 
- - task: DeleteFiles@1
-    displayName: 'Delete files from $(Agent.BuildDirectory)'
-    inputs:
-      SourceFolder: '$(Agent.BuildDirectory)'
-      Contents: | 
-        /a/source.zip
-      condition: succeededOrFailed()
+- task: DeleteFiles@1
+  displayName: 'Delete files from $(Agent.BuildDirectory)'
+  inputs:
+    SourceFolder: '$(Agent.BuildDirectory)'
+    Contents: | 
+      /a/source.zip
+    condition: succeededOrFailed()
