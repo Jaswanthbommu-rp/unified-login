@@ -20,6 +20,8 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\2023.01.WMU.Release.sql
 :r .\PostDeploymentScripts\KnockProductPanelScript.sql
 :r .\PostDeploymentScripts\UserAccessSummarySettings.sql
+:r .\PostDeploymentScripts\March2023WMURelease.sql
+
 
 -- keep these at the end!
 :r .\PostDeploymentScripts\UpdateStatistics.sql
