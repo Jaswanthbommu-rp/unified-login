@@ -8,7 +8,8 @@ BEGIN
     
    DECLARE @NOW DATETIME= GETUTCDATE();          
    DECLARE @CompanyOrganizationProduct TABLE ( ProductId INT )         
-   DECLARE @ProductCenterProducts Table (ProductId INT, PersonaId INT)        
+   DECLARE @ProductCenterProducts Table (ProductId INT, PersonaId INT)
+   DECLARE @AdminPortalProductID INT = 89
              
    INSERT INTO @CompanyOrganizationProduct ( ProductId )          
    SELECT ProductId FROM Enterprise.OrganizationProduct OP           
@@ -40,7 +41,21 @@ BEGIN
   and gpc.ThruDate is null        
   and config.ThruDate is null        
   and ps.ThruDate is null         
-          
+
+  IF EXISTS(SELECT TOP 1 1 FROM Ident.UserLoginPersona ULP 
+	INNER JOIN Person.Persona P on ULP.UserLoginPersonaID = P.UserLoginPersonaId
+	INNER JOIN Enterprise.OrganizationProduct Org on Org.PartyId = ULP.OrganizationPartyId
+	WHERE P.PersonaId = @PersonaId 
+	and ProductId = @AdminPortalProductID 
+	and Org.Thrudate is NULL)
+  BEGIN
+     IF NOT EXISTS( SELECT TOP 1 1 FROM Ident.SamlUserAttribute where PersonaId = @PersonaId and ProductId = @AdminPortalProductID)     
+	 BEGIN    
+		INSERT INTO @ProductCenterProducts ( ProductId , PersonaId)                     
+		SELECT @AdminPortalProductID,@PersonaId              
+	 END
+  END
+
   IF EXISTS ( SELECT TOP 1 1 FROM @CompanyOrganizationProduct Where ProductID = 4 )          
   BEGIN          
    INSERT INTO @CompanyOrganizationProduct ( ProductId )          

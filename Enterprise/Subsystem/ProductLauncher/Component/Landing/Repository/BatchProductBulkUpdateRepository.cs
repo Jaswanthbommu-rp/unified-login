@@ -5,6 +5,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Batch;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -76,6 +77,126 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 			return false;
 		}
 
+		private BatchProcessorGroup CreateBatchProcessGroup(IRepository repo)
+		{
+			{
+				DynamicParameters param = new DynamicParameters();
+				int groupID = 0;
+				param.Add("@BatchProcessorGroupID", groupID, dbType: DbType.Int32, direction: ParameterDirection.Output);
+
+				try
+				{
+					var a = repo.Execute(StoredProcNameConstants.SP_CreateBatchProcessorGroup, param);
+					groupID = param.Get<int>("@BatchProcessorGroupID");
+				}
+				catch (Exception ex)
+				{
+				}
+
+				return new BatchProcessorGroup()
+				{
+					BatchProcessorGroupId = groupID,
+					BatchProcessorGroupActivityLogged = false
+				};
+			}
+		}
+
+		/// <summary>
+		/// Create the Batch for Admin Portal
+		/// </summary>
+		/// <param name="editorUserPersonaId">editorUserPersonaId</param>
+		/// <param name="subjectUserPersonaId">subjectUserPersonaId</param>
+		/// <param name="editorUserRealPageId">editorUserRealPageId</param>
+		/// <param name="productId">productId</param>
+		/// <param name="retryCheckCount">retryCheckCount</param>
+		/// <param name="statusCheckSleep">statusCheckSleep</param>
+		/// <param name="defaultUserRole">defaultUserRole</param>
+		/// <returns>whether batch proccess is success or not</returns>
+		public IList<SamlAttributes> CreateBatch(long editorUserPersonaId, long subjectUserPersonaId, Guid editorUserRealPageId, int productId, int retryCheckCount, int statusCheckSleep, string defaultUserRole)
+		{
+			int batchProcessorGroupId;
+			SamlRepository samlRepository = new SamlRepository();
+			IList<SamlAttributes> samlAttributesDetails = new List<SamlAttributes>();
+
+			using (var repository = GetRepository())
+			{
+				repository.UnitOfWork.BeginTransaction();
+				List<string> roleList = new List<string>();
+				roleList.Add(defaultUserRole);
+				var batchGroup = CreateBatchProcessGroup(repository);
+				batchProcessorGroupId = batchGroup.BatchProcessorGroupId;
+
+				dynamic productBatch = new
+				{
+					PersonRealPageId = editorUserRealPageId,
+					CreateUserPersonaId = editorUserPersonaId,
+					AssignUserPersonaId = subjectUserPersonaId,
+					ProductId = productId,
+					StatusTypeId = 5,
+					RetryCount = 0,
+					BatchProcessorGroupId = batchProcessorGroupId,
+					InputJson = JsonConvert.SerializeObject(new RolePropertyList()
+					{
+						PropertyList = new List<string> { "-1" },
+						RoleList = roleList,
+						IsAssigned = true
+					}),
+				};
+
+				var repositoryResponse = repository.Execute<dynamic>(StoredProcNameConstants.SP_CreateProductBatch, productBatch);
+
+				//In-case of an error creating a product batch record, append the ProductCode to the ErrorReason
+				if (repositoryResponse.Id == 0)
+				{
+					throw new Exception($"Exception while inserting product {productId} in the product batch.");
+				}
+				repository.UnitOfWork.Commit();
+
+				while (retryCheckCount >= 0)
+				{
+					System.Threading.Thread.Sleep(statusCheckSleep);
+					List<UserBatchProductDetail> listUserBatchProductDetails = (List<UserBatchProductDetail>)GetUserBatchDetails(batchProcessorGroupId, editorUserPersonaId, subjectUserPersonaId);
+					if (listUserBatchProductDetails.Select(a => a.StatusTypeId == 8).Any())
+					{
+						samlAttributesDetails = samlRepository.GetProductSamlDetails(subjectUserPersonaId, productId);
+						if (samlAttributesDetails.Count() == 0)
+						{
+							retryCheckCount--;
+						}
+						else
+						{
+							System.Threading.Thread.Sleep(statusCheckSleep);
+							return samlAttributesDetails;
+						}
+					}
+					else if (listUserBatchProductDetails.Select(a => a.StatusTypeId == 7).Any())
+					{
+						return samlAttributesDetails;
+					}
+					else
+					{
+						retryCheckCount--;
+					}
+				}
+			}
+			
+			return samlAttributesDetails;
+		}
+
+		public IList<UserBatchProductDetail> GetUserBatchDetails(int batchGroupId, long editorUserPersonId, long subjectUserPersonId)
+		{
+			using (var repo = GetRepository())
+			{
+				var data = repo.GetMany<UserBatchProductDetail>(StoredProcNameConstants.SP_GetUserBatchRecords, new
+				{
+					batchProcessorGroupId = batchGroupId,
+					editorUserPersonId = editorUserPersonId,
+					subjectUserPersonId = subjectUserPersonId
+
+				}).ToList();
+				return data;
+			}
+		}
 		/// <summary>
 		/// Update a Enterprise Role Product Batch
 		/// </summary>

@@ -9,7 +9,8 @@ BEGIN
  DECLARE @CompanyOrganizationProduct TABLE ( ProductId INT )       
  DECLARE @UserProducts TABLE ( ProductId INT, isFavorite TINYINT, StatusTypeId INT )      
  DECLARE @LearningProductID INT = 19     
-   
+ DECLARE @AdminPortalProductID INT = 89  
+
      
     
  INSERT INTO @CompanyOrganizationProduct ( ProductId )      
@@ -64,6 +65,20 @@ BEGIN
   VALUES      
    ( @LearningProductID, 0, 8 )      
  END      
+
+ IF EXISTS(SELECT TOP 1 1 FROM Ident.UserLoginPersona ULP 
+    INNER JOIN Person.Persona P on ULP.UserLoginPersonaID = P.UserLoginPersonaId
+    INNER JOIN Enterprise.OrganizationProduct Org on Org.PartyId = ULP.OrganizationPartyId
+    WHERE P.PersonaId = @PersonaId 
+    and ProductId = @AdminPortalProductID 
+    and Org.Thrudate is NULL)
+ BEGIN
+    IF NOT EXISTS( SELECT TOP 1 1 FROM Ident.SamlUserAttribute where PersonaId = @PersonaId and ProductId = @AdminPortalProductID)     
+    BEGIN    
+      INSERT INTO @UserProducts ( ProductId, isFavorite, StatusTypeId )                
+      VALUES (@AdminPortalProductID,0,8)              
+    END
+END
        
   INSERT INTO @UserProducts ( ProductId , isFavorite, StatusTypeId)     
   SELECT DISTINCT ps.ProductId, 0, 8         
