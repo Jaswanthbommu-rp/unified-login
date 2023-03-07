@@ -1282,6 +1282,9 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\AddingRightforSettings.sql" />
     <Build Include="Enterprise\Stored Procedures\GetProductsUserAccessSummary.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\UserAccessSummarySettings.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\AddRoleOrganizationType.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\GetOrganizationTypeForRole.sql" />
+    <Build Include="RoleRightsManagement\Tables\RoleOrganizationType.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
