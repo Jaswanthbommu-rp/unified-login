@@ -847,7 +847,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
             }
 
-            string query = ($"SELECT Id,FirstName,LastName,Email,Username,LastLoginDate,IsActive FROM User" +
+            string query = ($"SELECT Id,FirstName,LastName,Email,Username,LastLoginDate,IsActive,ProfileId FROM User" +
                                       $" WHERE (User.Contact.Account.OMS_ID__c = '{companyInstanceSourceId}' OR User.Contact.Account.Parent.OMS_ID__c = '{companyInstanceSourceId}')" +
                                       $" AND User.Contact.Portal_User_Migrated__c = {filter}" +
                                       $" LIMIT {resultPerRow} OFFSET {startRow}").Replace(' ', '+');
@@ -864,8 +864,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
 
             var migrationUsers = new List<MigrationUser>();
+            var productRoles = GetProductRoles();
             foreach (var user in migrationResponse.Records)
             {
+                string profileId = user.ProfileId.Remove(user.ProfileId.Length - 3);
+                string roleType = productRoles.FirstOrDefault(c => c.ID == profileId)?.Roletype;
                 var migrationUser = new MigrationUser
                 {
                     CompanyInstanceSourceId = companyInstanceSourceId,
@@ -875,7 +878,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     Username = user.Username,
                     Email = user.Email,
                     LastActivity = user.LastLoginDate.ToString(),
-                    Extra = $"{_portalId}|{_organizationId}",
+                    Extra = $"{_portalId}|{_organizationId}|{roleType}",
                     Status = user.IsActive ? "Active" : "Disabled"
                 };
                 migrationUsers.Add(migrationUser);
@@ -922,12 +925,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var isError = false;
             foreach (var migrateUser in migrateUsers)
             {
+                //Update Contact flags
                 contact.Unified_Platform_User__c = migrateUser.UsingUnifiedLogin;
                 contact.Portal_User_Migrated__c = true;
                 var result = PostApi($"{_apiRoute}sobjects/User/{migrateUser.UserId}/Contact?_HttpMethod=PATCH", contact);
                 if (!string.IsNullOrEmpty(result))
                 {
                     migrateResponse.Message += result;
+                    isError = true;
+                }
+
+                //Update User flags
+                AdminSupportPortalUser adminSupportPortalUser = GetAdminSupportPortalUser(migrateUser.UserId);
+                adminSupportPortalUser.IsCreatedFromNewPortal__c= true;
+                adminSupportPortalUser.ContactId = null;
+                var userResult = PostApi($"{_apiRoute}sobjects/User/{migrateUser.UserId}?_HttpMethod=PATCH", adminSupportPortalUser);
+                if (!string.IsNullOrEmpty(userResult))
+                {
+                    migrateResponse.Message += userResult;
                     isError = true;
                 }
                 WriteToDiagnosticLog($"ManageAdminSupportPortal.UpdateUsersMigrationStatus - updating unified login status. editorPersonaId-{editorPersonaId}");
@@ -979,17 +994,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         #region Private Methods
 
-        private AdminSupportPortalUser GetAdminSupportPortalUser()
+        private AdminSupportPortalUser GetAdminSupportPortalUser(string userId = "")
         {
-            AdminSupportPortalUser adminSupportPortalUser =
-                GetResultFromApi<AdminSupportPortalUser>($"{_apiRoute}sobjects/user/{_productUserId}");
-
+            AdminSupportPortalUser adminSupportPortalUser = GetResultFromApi<AdminSupportPortalUser>($"{_apiRoute}sobjects/user/{(string.IsNullOrEmpty(userId) ? _productUserId : userId)}");
             if (adminSupportPortalUser == null)
             {
                 WriteToErrorLog($"ManageProductAdminSupportPortal.GetAdminSupportPortalUser error for user {_productUserId} - User not found.");
             }
             return adminSupportPortalUser;
-
         }
 
         private ListResponse MergeProductRolesWithGreenBook(IList<ProductRole> allProductRoles)
