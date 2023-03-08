@@ -1474,9 +1474,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             else
             {
-                var persona = _managePersona.GetPersona(personaId);
-                var userLogin = _manageUserLogin.GetUserLoginOnly(persona.RealPageId);
-                var person = _managePerson.GetPerson(persona.RealPageId);
+                List<Persona> personas = new();
+                Persona persona = new();
+                UserLoginOnly userLogin = new UserLoginOnly();
+                Person person = new Person();
+
+                if (userClaim != null && userClaim.ImpersonatedBy != Guid.Empty)
+                {
+                    personas = _managePersona.ListPersona(userClaim.ImpersonatedBy).ToList();
+                    persona = personas.FirstOrDefault(x => x.Organization.RealPageId == userClaim.OrganizationRealPageGuid);
+                    person = _managePerson.GetPerson(persona.RealPageId);
+                }
+                else
+                {
+                    persona = _managePersona.GetPersona(personaId);
+                    userLogin = _manageUserLogin.GetUserLoginOnly(persona.RealPageId);
+                    person = _managePerson.GetPerson(persona.RealPageId);
+                }
                 return new UserActivityLogInfo
                 {
                     FirstName = person.FirstName,

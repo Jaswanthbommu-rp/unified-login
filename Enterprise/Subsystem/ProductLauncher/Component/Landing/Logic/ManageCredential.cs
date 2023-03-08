@@ -15,6 +15,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Inter
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using Serilog;
 using Serilog.Events;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Rum;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {  /// <summary>
@@ -31,7 +32,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         IManageUserLogin _manageUserLogin;
         private DefaultUserClaim _userClaim;
         private IManagePerson _managePerson;
-		private IManageOrganization _manageOrganization;
+        private IManagePersona _managePersona;
+        private IManageOrganization _manageOrganization;
 		private IUserRepository _userRepository;
         #endregion
 
@@ -40,15 +42,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <summary>
         /// Ctor with injection - for Unit Test  
         /// </summary>
-        public ManageCredential(ICredentialRepository credentialRepository, IPasswordPolicyRepository passwordPolicyRepository, IUserLoginRepository userLoginRepository, IManageUserLogin manageUserLogin, IManagePerson managePerson, IUserRepository userRepository, DefaultUserClaim userClaim)
-		{
+        public ManageCredential(ICredentialRepository credentialRepository, IPasswordPolicyRepository passwordPolicyRepository, IUserLoginRepository userLoginRepository, IManageUserLogin manageUserLogin, IManagePerson managePerson, IUserRepository userRepository, DefaultUserClaim userClaim, IManagePersona managePersona)
+        {
             _credentialRepository = credentialRepository;
             _passwordPolicyRepository = passwordPolicyRepository;
             _userLoginRepository = userLoginRepository;
             _manageUserLogin = manageUserLogin;
             _managePerson = managePerson;
-			_userClaim = userClaim;
+            _userClaim = userClaim;
             _userRepository = userRepository;
+            _managePersona = managePersona;
         }
 
         /// <summary>
@@ -61,7 +64,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _userLoginRepository = new UserLoginRepository();
             _manageUserLogin = new ManageUserLogin(userClaim);
             _managePerson = new ManagePerson();
-			_manageOrganization = new ManageOrganization(userClaim);
+            _managePersona = new ManagePersona();
+            _manageOrganization = new ManageOrganization(userClaim);
 			_userRepository = new UserRepository(userClaim);
             _userRepository = new UserRepository(userClaim);
 			_userClaim = userClaim;
@@ -850,9 +854,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			// activity logging
 			try
 			{
-				// for activity logging
-				IPerson person = _managePerson.GetPerson(userLogin.RealPageId);
-				long booksMasterOrgId = GetDefaultBooksMasterOrgIdForUser(userLogin.RealPageId);
+                // for activity logging
+                Person editorPerson = new();
+                if (_userClaim != null && _userClaim.ImpersonatedBy != Guid.Empty)
+                {
+                    List<Persona> personas = _managePersona.ListPersona(_userClaim.ImpersonatedBy).ToList().ToList();
+                    Persona persona = personas.FirstOrDefault(x => x.Organization.RealPageId == _userClaim.OrganizationRealPageGuid);
+                    editorPerson = _managePerson.GetPerson(persona.RealPageId);
+                }
+
+                IPerson person = _managePerson.GetPerson(userLogin.RealPageId);
+                long booksMasterOrgId = GetDefaultBooksMasterOrgIdForUser(userLogin.RealPageId);
 				LogActivity.WriteActivity(new ActivityDetails
 				{
 					LogActivityTypeName = LogActivityTypeConstants.CHANGE_PASSWORD_SUCCESS,
@@ -860,7 +872,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					CorrelationId = Guid.NewGuid().ToString(),
 					BooksMasterOrganizationId = booksMasterOrgId,
                     OrganizationPartyId = _userClaim.OrganizationPartyId,
-					Message = string.Format("User {0} {1} inserted a temporary password for user {2} {3}.", _userClaim.FirstName, _userClaim.LastName, person.FirstName, person.LastName),
+					Message = string.Format("User {0} {1} inserted a temporary password for user {2} {3}.", editorPerson.FirstName, editorPerson.LastName, person.FirstName, person.LastName),
 					FromUserLoginName = _userClaim.LoginName,
 					FromUserLoginId = _userClaim.UserId,
 
