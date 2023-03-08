@@ -22,6 +22,8 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\UserAccessSummarySettings.sql
 :r .\PostDeploymentScripts\March2023WMURelease.sql
 :r .\PostDeploymentScripts\AddingSettingsForAdminPortal.sql
+:r .\PostDeploymentScripts\March2023VMPWMU.sql
+	
 
 
 

@@ -23,6 +23,23 @@ Begin
 End
 
 go
+Declare @UserId Bigint;
+Declare @roleID bigint, @rightId bigint;
+SELECT  @UserId = UserId FROM    Ident.UserLogin WHERE    LoginName LIKE 'realpagead@%'; 
+
+IF NOT EXISTS (select top 1 1 from security.[Right] where RightName = 'SustainabilityAnalyst')
+Begin
+   Insert into security.[Right] values ('SustainabilityAnalyst','Sustainability Analyst','SustainabilityAnalyst',13,9,3,92,@UserId,GETUTCDATE(),0)
+end
+
+Select @roleID = RoleId from Security.Role where rolename = 'Sustainability Analyst' and productId = 92;
+Select  @rightId = RightId from security.[Right] where RightName = 'SustainabilityAnalyst';
+
+If not Exists (select Top 1 1 from security.roleright where RoleId = @roleID and RightId = @rightId)
+Begin
+     Insert into security.roleright values (@roleID,@rightId,@UserId,getutcdate())
+end
+go
 
 -- For User Story 1338013: LeaseLabs Web2Print Social Integration
 IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'UserGroupsId')
