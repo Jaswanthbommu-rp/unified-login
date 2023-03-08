@@ -15,4 +15,11 @@ BEGIN
 	SELECT @ProductsettingTypeid = ProductSettingTypeId FROM Enterprise.ProductSettingType WHERE [Name] = 'BatchUserProductStatusRetryCount'
     exec [Enterprise].[SetProductSetting] 0,89,@ProductsettingTypeid,'5'
 END
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'IsUserCreationOnTileClick')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
+	VALUES ('IsUserCreationOnTileClick', 'User Batch Processor Creation happens on tile click', 0);
+	SELECT @ProductsettingTypeid = ProductSettingTypeId FROM Enterprise.ProductSettingType WHERE [Name] = 'IsUserCreationOnTileClick'
+    exec [Enterprise].[SetProductSetting] 0,89,@ProductsettingTypeid,'true'
+END
 GO
