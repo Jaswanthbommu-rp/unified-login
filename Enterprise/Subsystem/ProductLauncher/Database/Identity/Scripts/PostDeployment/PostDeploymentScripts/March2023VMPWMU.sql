@@ -545,7 +545,7 @@ SELECT DD.RoleId,DD.OrganizationTypeId,@UserId,@Now FROM (SELECT SR.RoleId,EO.Or
 	ROT.RoleId = DD. RoleId AND ROT.OrganizationTypeId = DD.OrganizationTypeId 
 WHERE ROT.RoleId IS NULL
 
-go
+
 
 Declare @R131 varchar(100),@RoleId13 int;
 Select @RoleId13 =RoleId from Security.Role where ShortName = 'SuperUser' and ProductId = 3 ;
