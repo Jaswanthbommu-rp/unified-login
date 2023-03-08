@@ -21,6 +21,8 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\KnockProductPanelScript.sql
 :r .\PostDeploymentScripts\UserAccessSummarySettings.sql
 :r .\PostDeploymentScripts\March2023WMURelease.sql
+:r .\PostDeploymentScripts\AddingSettingsForAdminPortal.sql
+
 
 
 -- keep these at the end!
