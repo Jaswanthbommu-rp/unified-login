@@ -297,7 +297,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 {
                     //TODO: FIX PRODUCTS SO WE DONT CLONE PRODUCTS THIS USER DOESN'T HAVE
                     List<PersonaProductUserDetails> userProducts = pbRepository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = newProfile.Persona[0].PersonaId, ProductStatusValue = ((Int32)ProductBatchStatusType.Success).ToString() }).ToList();
-                    if (userProducts.Count > 0)
+                    if (userProducts != null && userProducts.Any(m => m.ProductId == 89))
+                    {
+                        int adminSupportProductId = (int)ProductEnum.AdminSupportPortal; 
+                        var productAttributes = pbRepository.GetMany<SamlAttributes>(StoredProcNameConstants.SP_GetProductSamlDetails, new { newProfile.Persona[0].PersonaId, adminSupportProductId }).ToList();
+                        if (productAttributes != null && productAttributes.Count == 0)
+                        {
+                            userProducts.RemoveAll(a => a.ProductId == 89);
+                        }
+                    }
+                        if (userProducts.Count > 0)
                     {
                         long createUserPersonaId = 0L;
                         ManageCloneProductBatch manageProductBatch = new ManageCloneProductBatch(userClaim);
