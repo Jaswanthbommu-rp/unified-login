@@ -300,7 +300,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     if (userProducts != null && userProducts.Any(m => m.ProductId == 89))
                     {
                         int adminSupportProductId = (int)ProductEnum.AdminSupportPortal; 
-                        var productAttributes = pbRepository.GetMany<SamlAttributes>(StoredProcNameConstants.SP_GetProductSamlDetails, new { newProfile.Persona[0].PersonaId, adminSupportProductId }).ToList();
+                        var productAttributes = pbRepository.GetMany<SamlAttributes>(StoredProcNameConstants.SP_GetProductSamlDetails, new { newProfile.Persona[0].PersonaId, ProductId = adminSupportProductId }).ToList();
                         if (productAttributes != null && productAttributes.Count == 0)
                         {
                             userProducts.RemoveAll(a => a.ProductId == 89);
