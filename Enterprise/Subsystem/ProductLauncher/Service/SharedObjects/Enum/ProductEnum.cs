@@ -608,6 +608,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
         G5LLMarketing = 86,
 
         /// <summary>
+        /// DataHub
+        /// </summary>
+        [Description("DHB")]
+        DataHub = 90,
+
+        /// <summary>
         /// Knock CRM
         /// </summary>
         [Description("KNCK")]

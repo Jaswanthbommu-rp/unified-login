@@ -1528,7 +1528,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             // list of products to exclude from Bluebook to product integration
             var ignoreProductList = new List<int>()
             {
-                (int)ProductEnum.UnifiedUI, (int)ProductEnum.SelfProvisioningPortal, (int)ProductEnum.SalesForce, (int)ProductEnum.SettingsManagement, (int)ProductEnum.Facilities,(int)ProductEnum.LRConversionPortal,(int)ProductEnum.AdminSupportPortal,(int)ProductEnum.KnockCRM,(int)ProductEnum.G5LLMarketing
+                (int)ProductEnum.UnifiedUI, (int)ProductEnum.SelfProvisioningPortal, (int)ProductEnum.SalesForce, (int)ProductEnum.SettingsManagement, (int)ProductEnum.Facilities,(int)ProductEnum.LRConversionPortal,(int)ProductEnum.AdminSupportPortal,(int)ProductEnum.KnockCRM,(int)ProductEnum.G5LLMarketing,(int)ProductEnum.DataHub
             };
 
             foreach (var pr in typeof(ProductEnum).GetFields())
