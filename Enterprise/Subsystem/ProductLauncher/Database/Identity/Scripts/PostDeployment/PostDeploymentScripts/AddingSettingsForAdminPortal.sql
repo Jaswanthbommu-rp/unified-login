@@ -22,4 +22,11 @@ BEGIN
 	SELECT @ProductsettingTypeid = ProductSettingTypeId FROM Enterprise.ProductSettingType WHERE [Name] = 'IsUserCreationOnTileClick'
     exec [Enterprise].[SetProductSetting] 0,89,@ProductsettingTypeid,'true'
 END
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'DefaultUserRoleId')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
+	VALUES ('DefaultUserRoleId', 'The role Id to create default user in  product', 0);
+	SELECT @ProductsettingTypeid = ProductSettingTypeId FROM Enterprise.ProductSettingType WHERE [Name] = 'DefaultUserRoleId'
+    exec [Enterprise].[SetProductSetting] 0,89,@ProductsettingTypeid,'00e1G000000JItR'
+END
 GO
