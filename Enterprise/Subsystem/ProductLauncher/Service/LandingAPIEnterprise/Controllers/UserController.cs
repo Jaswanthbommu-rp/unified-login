@@ -1059,15 +1059,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     foreach (UserProducts up in userProducts)
                     {
                         string familyName = up.FamilyName ?? "None";
+                        if (up.Id == (int)ProductEnum.VendorMarketplace) 
+                        {
+                            productResult.Products.Add(familyName, userProducts.Where(x => x.ProductCode == "VMP").ToList());
+                        }
                         if (!up.IsResource && !productResult.Products.ContainsKey(familyName))
                         {
                             productResult.Products.Add(familyName, userProducts.Where(p => !p.IsFavorite && !p.IsResource && (p.FamilyName ?? "None").Equals(familyName, StringComparison.OrdinalIgnoreCase)).ToList());
                         }
 
-                        if (up.IsResource)
+                        if (up.IsResource && !(up.Id == (int)ProductEnum.VendorMarketplace))
                         {
                             productResult.Resources.Add(up);
-                        }
+                        } 
                     }
 
                     var rights = _manangeSecurityLogic.GetPersonaRightsAndActionsByRoute(_personaId, "sidemenu")?.obj?.Rights;
