@@ -2039,7 +2039,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             using (var repository = GetRepository())
             {
-                return repository.GetMany<EnterpriseProductUser>(EnterpriseStoredProcNameConstants.SP_ListUsersWithCompanyId, param);
+                return repository.GetMany<EnterpriseProductUser>(EnterpriseStoredProcNameConstants.SP_ListUsersWithCompanyId_Ver3, param);
             }
         }
 
