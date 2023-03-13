@@ -652,7 +652,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                     var superUserRoleId = "0";
                     var vmpForVendorOrgTypeName = "";
-                    string orgType = _userClaims.OrganizationType.ToLower();
                     orgTypeName = userPersona.Organization.organizationType.Name.ToLower();
                     if (productSettingList.Any(a => a.Name.Equals("SuperUserRoleId", StringComparison.OrdinalIgnoreCase)))
                     {
@@ -661,7 +660,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     if (productSettingList.Any(a => a.Name.Equals("VPMForVendorsOrgType", StringComparison.OrdinalIgnoreCase)) && (_upfmProductId == (int)ProductEnum.VendorMarketplace))
                     {
                         vmpForVendorOrgTypeName = productSettingList.FirstOrDefault(a => a.Name.Equals("VPMForVendorsOrgType", StringComparison.OrdinalIgnoreCase))?.Value.ToLower();
-                        if (orgType == vmpForVendorOrgTypeName)
+                        if (orgTypeName == vmpForVendorOrgTypeName)
                         {
                             if (productSettingList.Any(a => a.Name.Equals("VendorSuperUserRoleId", StringComparison.OrdinalIgnoreCase)))
                             {
