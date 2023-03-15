@@ -4878,6 +4878,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
 
         /// <summary>
+        /// isPhoneNumberChanged
+        /// </summary>
+        /// <param name="profile"></param>
+        /// <param name="oldProfile"></param>
+        /// <returns></returns>
+        private bool isPhoneNumberChanged(IProfileDetail profile, IProfileDetail oldProfile)
+        {
+            var oldPhoneNumber = string.IsNullOrEmpty(oldProfile.PhoneNumber) ? "" : oldProfile.PhoneNumber;
+            var newPhoneNumber = string.IsNullOrEmpty(profile.PhoneNumber) ? "" : profile.PhoneNumber;
+            return !newPhoneNumber.Equals(oldPhoneNumber);
+        }
+
+        /// <summary>
         /// isNotificationEmailChanged
         /// </summary>
         /// <param name="priorNotificationEmail"></param>
@@ -5815,6 +5828,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 bool profileChanged = IsUserProfileChanged(updateUserProfileEntity.NewProfile, updateUserProfileEntity.OldProfile);
                 bool loginNamechanged = isUserLoginNameChanged(updateUserProfileEntity.NewProfile, updateUserProfileEntity.OldProfile);
                 bool employeeIdChanged = isEmployeeIdChanged(updateUserProfileEntity.NewProfile, updateUserProfileEntity.OldProfile);
+                bool phoneNumberChanged = isPhoneNumberChanged(updateUserProfileEntity.NewProfile, updateUserProfileEntity.OldProfile);
 
                 bool isPrimaryPropertiesUpdated = false;
 
@@ -6388,7 +6402,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             }
                         }
 
-                        if ((updateUserProfileEntity.NewProfile.userLogin.Status != UserUiStatusType.Disabled) && (profileChanged || loginNamechanged || notificationEmailChanged || employeeIdChanged))
+                        if ((updateUserProfileEntity.NewProfile.userLogin.Status != UserUiStatusType.Disabled) && (profileChanged || loginNamechanged || notificationEmailChanged || employeeIdChanged || phoneNumberChanged))
                         {
                             updateUserProfileEntity.EditorAssignedPersonaList.ToList().ForEach(p => { SaveUserProductBatchData(repository, null, p.EditorPersonaId, p.AssignedPersonaId, p.EditorPersonaRealPageId, p.OrganizationRealPageId, null, (Int32)BatchProcessType.ProfileUpdate, updateUserProfileEntity.ProductBatchData, null, p.AssignedUserTypeId); });
                         }
