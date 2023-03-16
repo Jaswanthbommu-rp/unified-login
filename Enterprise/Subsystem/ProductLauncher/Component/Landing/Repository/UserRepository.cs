@@ -4883,12 +4883,40 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="profile"></param>
         /// <param name="oldProfile"></param>
         /// <returns></returns>
-        private bool isPhoneNumberChanged(IProfileDetail profile, IProfileDetail oldProfile)
+       private bool isPhoneNumberChanged(IProfileDetail profile, IProfileDetail oldProfile)
         {
-            var oldPhoneNumber = string.IsNullOrEmpty(oldProfile.PhoneNumber) ? "" : oldProfile.PhoneNumber;
-            var newPhoneNumber = string.IsNullOrEmpty(profile.PhoneNumber) ? "" : profile.PhoneNumber;
-            return !newPhoneNumber.Equals(oldPhoneNumber);
+            // not equal count
+            var oldPhoneNumber = oldProfile.TelecommunicationNumber?.ToList().Select(a => a.PhoneNumber);
+            var newPhoneNumber = profile.TelecommunicationNumber?.ToList().Select(a => a.PhoneNumber);
+
+            if ((oldPhoneNumber == null && newPhoneNumber != null) ||
+                 (oldPhoneNumber != null && newPhoneNumber == null))
+            {
+                return true;
+            }
+            if (!oldPhoneNumber.Count().Equals(newPhoneNumber.Count()))
+            {
+                return true;
+            }
+            else {
+                
+                var s = oldProfile.TelecommunicationNumber.Join(profile.TelecommunicationNumber, e => e.PhoneNumber, d => d.PhoneNumber,
+                (oldprofile, newprofile) => new
+                {
+                    PhoneNumber = newprofile.PhoneNumber
+                }).ToList();
+
+                if (s.Count() == oldProfile.TelecommunicationNumber.Count())
+                {
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
+            }
         }
+
 
         /// <summary>
         /// isNotificationEmailChanged
