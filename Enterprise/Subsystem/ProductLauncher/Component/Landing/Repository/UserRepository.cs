@@ -4885,28 +4885,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <returns></returns>
        private bool isPhoneNumberChanged(IProfileDetail profile, IProfileDetail oldProfile)
         {
-            // not equal count
             var oldPhoneNumber = oldProfile.TelecommunicationNumber?.ToList().Select(a => a.PhoneNumber);
             var newPhoneNumber = profile.TelecommunicationNumber?.ToList().Select(a => a.PhoneNumber);
 
-            if ((oldPhoneNumber == null && newPhoneNumber != null) ||
-                 (oldPhoneNumber != null && newPhoneNumber == null))
+            if ((oldPhoneNumber == null && newPhoneNumber != null) || (oldPhoneNumber != null && newPhoneNumber == null)  || !oldPhoneNumber.Count().Equals(newPhoneNumber.Count()) )      
             {
                 return true;
             }
-            if (!oldPhoneNumber.Count().Equals(newPhoneNumber.Count()))
+            else 
             {
-                return true;
-            }
-            else {
-                
-                var s = oldProfile.TelecommunicationNumber.Join(profile.TelecommunicationNumber, e => e.PhoneNumber, d => d.PhoneNumber,
+                var checkPhoneNumberUpdated = oldProfile.TelecommunicationNumber.Join(profile.TelecommunicationNumber, e => e.PhoneNumber, d => d.PhoneNumber,
                 (oldprofile, newprofile) => new
                 {
                     PhoneNumber = newprofile.PhoneNumber
                 }).ToList();
 
-                if (s.Count() == oldProfile.TelecommunicationNumber.Count())
+                if (checkPhoneNumberUpdated.Count() == oldProfile.TelecommunicationNumber.Count())
                 {
                     return false;
                 }
