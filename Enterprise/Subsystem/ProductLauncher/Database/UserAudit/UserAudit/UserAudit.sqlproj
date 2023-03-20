@@ -83,5 +83,6 @@
     <Build Include="UserAudit\User Defined Types\ReportParameters.sql" />
     <Build Include="Security\UserAudit.sql" />
     <Build Include="UserAudit\Stored Procedures\GetReportRequest.sql" />
+    <Build Include="UserAudit\Stored Procedures\GetReportRequestData.sql" />
   </ItemGroup>
 </Project>
