@@ -4885,8 +4885,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <returns></returns>
         private bool isPhoneNumberChanged(IProfileDetail profile, IProfileDetail oldProfile)
         {
-
-            // || (oldPhoneNumber != null && newPhoneNumber == null) || !oldPhoneNumber.Count().Equals(newPhoneNumber.Count())
             var oldPhoneNumber = oldProfile.TelecommunicationNumber?.ToList().Select(a => a.PhoneNumber);
             var newPhoneNumber = profile.TelecommunicationNumber?.ToList().Select(a => a.PhoneNumber);
             if ((oldPhoneNumber == null && newPhoneNumber != null) || !oldPhoneNumber.Count().Equals(newPhoneNumber.Count()))
