@@ -129,7 +129,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 				repository.UnitOfWork.BeginTransaction();
 				try
 				{
-					var oldPerson = repository.GetOne<Person>(StoredProcNameConstants.SP_GetPerson, new { realPageId });
+                    UserLoginOnly impersonatorUserLoginOnly = new UserLoginOnly();
+                    if (_userClaim.ImpersonatedBy != Guid.Empty)
+                    {
+                        impersonatorUserLoginOnly = repository.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, new { RealPageId = _userClaim.ImpersonatedBy });
+                    }
+
+                    var oldPerson = repository.GetOne<Person>(StoredProcNameConstants.SP_GetPerson, new { realPageId });
 					customJobTitleChanged = oldPerson.Title != profile.Title ? true : false;
 
 					//Setup the parameter values to update the person's info
@@ -479,7 +485,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 							RetryCount = 0,
 							InputJson = new RolePropertyList() { PropertyList = new List<string>(), RoleList = new List<string>(), IsAssigned = true }
 						};
-						SaveProductBatch(repository, productBatch, null, saveProductBatchError, _userClaim.PersonaId, personaId, _userClaim.UserRealPageGuid, null, JsonConvert.SerializeObject(productBatch.InputJson), (int)BatchProcessType.ProfileUpdate);
+						SaveProductBatch(repository, productBatch, null, saveProductBatchError, _userClaim.PersonaId, personaId, _userClaim.UserRealPageGuid, null, JsonConvert.SerializeObject(productBatch.InputJson), impersonatorUserLoginOnly.UserId, (int)BatchProcessType.ProfileUpdate);
 					}
 				}
 				catch (Exception exception)
@@ -736,7 +742,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		/// <param name="errorStatus">Error Status</param>
 		/// <param name="inputJson">Product Batch Input JSON</param>
 		/// <param name="batchProcessTypeId">Batch Process Type</param>
-		private void SaveProductBatch(IRepository repository, IProductBatch product, CreateUserResponse<IErrorData> createUserResponse, string saveProductBatchError, long CreateUserPersonaId, long AssignUserPersonaId, Guid realPageId, Status<IErrorData> errorStatus, string inputJson, int batchProcessTypeId = 1)
+		/// <param name="impersonatorUserId"></param>
+		private void SaveProductBatch(IRepository repository, IProductBatch product, CreateUserResponse<IErrorData> createUserResponse, string saveProductBatchError, long CreateUserPersonaId, long AssignUserPersonaId, Guid realPageId, Status<IErrorData> errorStatus, string inputJson, long impersonatorUserId, int batchProcessTypeId = 1)
 		{
 			try
 			{
@@ -759,8 +766,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 					InputJson = inputJson,
 					CorrelationId = _userClaim.CorrelationId.ToString(),
 					BatchProcessTypeId = batchProcessTypeId,
-                    BatchProcessorGroupId = batchGroup.BatchProcessorGroupId
-				};
+                    BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
+                    ImpersonatorUserId = impersonatorUserId
+                };
 
 				RepositoryResponse repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateProductBatch, param);
 				//In-case of an error creating a product batch record, append the ProductId to the ErrorReason
@@ -854,6 +862,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 			}
 			return true;
 		}
-		#endregion
-	}
+        #endregion
+    }
 }

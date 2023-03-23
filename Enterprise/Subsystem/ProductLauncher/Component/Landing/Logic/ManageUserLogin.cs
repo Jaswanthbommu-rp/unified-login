@@ -630,14 +630,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private void LogResetPasswordActivity(bool isSuccess, ProfileDetail profileDetail)
         {
             string message;
-            if (isSuccess)
-            {
-                message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} successfully initiated password reset for {profileDetail.FirstName} {profileDetail.LastName}.";
-            }
-            else
-            {
-                message = $"An exception occurred when {_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} was updating the password for {profileDetail.FirstName} {profileDetail.LastName}.";
-            }
+            string editorName = (_defaultUserClaim.ImpersonatedBy == Guid.Empty) ? $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName}" : _defaultUserClaim.ImpersonatedByName;
+
+            message = isSuccess
+                ? $"{editorName} successfully initiated password reset for {profileDetail.FirstName} {profileDetail.LastName}."
+                : $"An exception occurred when {editorName} was updating the password for {profileDetail.FirstName} {profileDetail.LastName}.";
 
             //Log Activity
             LogActivity.WriteActivity(new ActivityDetails
@@ -1320,7 +1317,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             if (string.IsNullOrEmpty(activityMessage))
             {
-                message = $"{defaultUserClaim.FirstName} {defaultUserClaim.LastName} {activity} user {person.FirstName} {person.LastName}.";
+                message = (defaultUserClaim.ImpersonatedBy == Guid.Empty) ? $"{defaultUserClaim.FirstName} {defaultUserClaim.LastName} {activity} user {person.FirstName} {person.LastName}." : $"{defaultUserClaim.ImpersonatedByName} {activity} user {person.FirstName} {person.LastName}.";
             }
             else
             {

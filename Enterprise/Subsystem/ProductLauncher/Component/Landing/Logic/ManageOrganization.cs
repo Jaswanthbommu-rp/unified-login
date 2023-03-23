@@ -86,7 +86,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _manageProduct = new ManageProduct(repository, userClaim, messageHandler);
             _manageOrganizationProduct = new ManageOrganizationProduct(userClaim, repository, _manageBlueBook, _manageProduct);
             _tokenHelper = new TokenHelper(repository);
-            _hotsCloneUserRepository = new HOTSCloneUserRepository(repository);
+            _hotsCloneUserRepository = new HOTSCloneUserRepository(userClaim);
             _manageUnifiedLogin = new ManageUnifiedLogin(repository, userClaim, messageHandler);
             _manageUser = new ManageUser(repository, userClaim, messageHandler);
             _managePartyRole = new ManagePartyRole(repository);

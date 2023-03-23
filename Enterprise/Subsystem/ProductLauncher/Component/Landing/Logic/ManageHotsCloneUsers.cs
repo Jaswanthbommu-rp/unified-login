@@ -48,28 +48,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private IList<ProductInternalSetting> _productInternalSettings;
         #region Ctor
 
-        /// <summary>
-        /// Used for dependency injection
-        /// </summary> 
-        public ManageHotsCloneUsers(IProductInternalSettingRepository productInternalSettingRepository,
-									IHOTSCloneUserRepository hotsCloneUserRepository,
-                                    ISamlRepository samlRepository,
-									DefaultUserClaim userClaim)
-		{
-			_productInternalSettingRepository = productInternalSettingRepository;
-			_hotsCloneUserRepository = hotsCloneUserRepository;
-            _samlRepository = samlRepository;
-			_defaultUserClaim = userClaim;
-			_tokenHelper = new TokenHelper();
-		}
-
 		/// <summary>
 		/// Repository test Constructor
 		/// </summary>
 		public ManageHotsCloneUsers(IRepository repository, DefaultUserClaim userClaim, HttpMessageHandler messageHandler)
 		{
 			_productInternalSettingRepository = new ProductInternalSettingRepository(repository);
-			_hotsCloneUserRepository = new HOTSCloneUserRepository(repository);
+			_hotsCloneUserRepository = new HOTSCloneUserRepository(repository, userClaim);
             _samlRepository = new SamlRepository(repository);
 			_manageProduct = new ManageProduct(repository, userClaim, messageHandler);
             _tokenHelper = new TokenHelper(repository);
@@ -79,7 +64,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		public ManageHotsCloneUsers(DefaultUserClaim userClaim)
 		{
 			_productInternalSettingRepository = new ProductInternalSettingRepository();
-			_hotsCloneUserRepository = new HOTSCloneUserRepository();
+			_hotsCloneUserRepository = new HOTSCloneUserRepository(userClaim);
             _samlRepository = new SamlRepository();
 			_manageProduct = new ManageProduct(userClaim);
             _tokenHelper = new TokenHelper();

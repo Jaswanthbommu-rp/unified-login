@@ -73,15 +73,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 			IPersonaRepository personaRepository = new PersonaRepository(_userClaim);
 			IUserLoginRepository userLoginRepository = new UserLoginRepository();
-			BatchProductBulkUpdateRepository productBulkUpdateRepository = new BatchProductBulkUpdateRepository();
+			BatchProductBulkUpdateRepository productBulkUpdateRepository = new BatchProductBulkUpdateRepository(_userClaim);
 
 			IList<Organization> organizationList = userLoginRepository.ListOrganizationByEnterpriseUserId(userPersona.RealPageId, null);
 			var personaOrganization = organizationList.FirstOrDefault(i => i.PartyId == userPersona.OrganizationPartyId);
 			var personaProductSettings = personaRepository.GetPersonaProductSettings(batch.SubjectUserPersonaId);
 			var personaProducts = _productRepository.ListProductsByPersonaId(userPersona.PersonaId, (Int32)UserUiStatusType.AccountCreationSuccessful).ToList();
 			bool isExternalUser = personaOrganization.RelationshipType.Equals("User Type", StringComparison.OrdinalIgnoreCase) && personaOrganization.RoleNameFrom.Equals("External User", StringComparison.OrdinalIgnoreCase);
+            IUserLoginOnly impersonatorUserLoginOnly = new UserLoginOnly();
+            if (_userClaim.ImpersonatedBy != Guid.Empty)
+            {
+                impersonatorUserLoginOnly = userLoginRepository.GetUserLoginOnly(_userClaim.ImpersonatedBy);
+            }
 
-			string message = $"Primary Properties product update started to user - {batch.SubjectUserPersonaId}";
+            string message = $"Primary Properties product update started to user - {batch.SubjectUserPersonaId}";
 			Log.Write(LogEventLevel.Debug, message);
 			bool personaProductUsePrimaryProperty = false;
 			bool usePrimaryProperties = false;
@@ -230,7 +235,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				if (productListToCreate?.Count > 0)
 				{
 					int statusTypeId = (int)ProductBatchStatusType.Success;
-					bool isBatchCompleted = productBulkUpdateRepository.SaveProductBatch(batch.EditorUserPersonaId, batch.SubjectUserPersonaId, editorPersona.RealPageId, productListToCreate, JsonConvert.SerializeObject(oneSiteAndOtherProducts), isOnesiteMix, (int)BatchProcessType.PrimaryPropertiesUpdateProductUser);
+					bool isBatchCompleted = productBulkUpdateRepository.SaveProductBatch(batch.EditorUserPersonaId, batch.SubjectUserPersonaId, editorPersona.RealPageId, productListToCreate, JsonConvert.SerializeObject(oneSiteAndOtherProducts), isOnesiteMix, (int)BatchProcessType.PrimaryPropertiesUpdateProductUser, impersonatorUserLoginOnly.UserId);
 					if (!isBatchCompleted)
 					{
 						statusTypeId = (int)ProductBatchStatusType.Error;

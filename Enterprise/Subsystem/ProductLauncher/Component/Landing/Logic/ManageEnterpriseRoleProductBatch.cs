@@ -39,7 +39,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		private readonly DefaultUserClaim _userClaim;
 		private IProductRepository _productRepository;
 		private readonly IntegrationTypeFactory _integrationTypeFactory;
-		private IPropertyRepository _propertyRepository;
 		/// <summary>
 		/// Default Constructor
 		/// </summary>
@@ -52,14 +51,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			var manageProductOneSite = new ManageProductOneSite(_userClaim);
 			var productInternalSettingRepository = new ProductInternalSettingRepository();
 			_productRepository = new ProductRepository();
-			_propertyRepository = new PropertyRepository();
 			_integrationTypeFactory = new IntegrationTypeFactory(manageProduct, manageUnifiedLogin,
 				manageProductOneSite, _productRepository, productInternalSettingRepository, _userClaim);
-		}
-		public ManageEnterpriseRoleProductBatch(IProductRepository productRepository, IPropertyRepository propertyRepository)
-		{
-			_productRepository = productRepository;
-			_propertyRepository = propertyRepository;
 		}
 
 		public string GenerateEnterpriseRoleUserProductBatch(EnterpriseRoleBatch batch)
@@ -75,7 +68,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 			IPersonaRepository personaRepository = new PersonaRepository(_userClaim);
 			IUserLoginRepository userLoginRepository = new UserLoginRepository();
-			BatchProductBulkUpdateRepository enterpriseRoleProductRepository = new BatchProductBulkUpdateRepository();
+			BatchProductBulkUpdateRepository enterpriseRoleProductRepository = new BatchProductBulkUpdateRepository(_userClaim);
 
 			IList<Organization> organizationList = userLoginRepository.ListOrganizationByEnterpriseUserId(userPersona.RealPageId, null);
 			var personaOrganization = organizationList.FirstOrDefault(i => i.PartyId == userPersona.OrganizationPartyId);
@@ -85,8 +78,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			var roleTemplateDeletedProducts = _productRepository.GetEnterpriseRoleDeletedProductsByRoleTemplateId(batch.EnterpriseRoleTemplateId);
 			var roleTemplateProductRole = _productRepository.GetRoleTemplateProductRoleMapping(batch.EnterpriseRoleTemplateId, editorPersona.OrganizationPartyId);
 			bool isExternalUser = personaOrganization.RelationshipType.Equals("User Type", StringComparison.OrdinalIgnoreCase) && personaOrganization.RoleNameFrom.Equals("External User", StringComparison.OrdinalIgnoreCase);
+            IUserLoginOnly impersonatorUserLoginOnly = new UserLoginOnly();
+            if (_userClaim.ImpersonatedBy != Guid.Empty)
+            {
+                impersonatorUserLoginOnly = userLoginRepository.GetUserLoginOnly(_userClaim.ImpersonatedBy);
+            }
 
-			string message = $"Enterprise role product update started to user - {batch.SubjectUserPersonaId}";
+            string message = $"Enterprise role product update started to user - {batch.SubjectUserPersonaId}";
 			Log.Write(LogEventLevel.Debug, message);
 			bool personaProductUsePrimaryProperty = false;
 			bool usePrimaryProperties = false;
@@ -277,7 +275,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				if (productListToCreate?.Count > 0)
 				{
 					int statusTypeId = (int)ProductBatchStatusType.Success;
-					bool isBatchCompleted = enterpriseRoleProductRepository.SaveProductBatch(batch.EditorUserPersonaId, batch.SubjectUserPersonaId, editorPersona.RealPageId, productListToCreate, JsonConvert.SerializeObject(oneSiteAndOtherProducts), isOnesiteMix, (int)BatchProcessType.EnterpriseRoleCreateUpdateProductUser);
+					bool isBatchCompleted = enterpriseRoleProductRepository.SaveProductBatch(batch.EditorUserPersonaId, batch.SubjectUserPersonaId, editorPersona.RealPageId, productListToCreate, JsonConvert.SerializeObject(oneSiteAndOtherProducts), isOnesiteMix, (int)BatchProcessType.EnterpriseRoleCreateUpdateProductUser, impersonatorUserLoginOnly.UserId);
 					if (!isBatchCompleted)
 					{
 						statusTypeId = (int)ProductBatchStatusType.Error;

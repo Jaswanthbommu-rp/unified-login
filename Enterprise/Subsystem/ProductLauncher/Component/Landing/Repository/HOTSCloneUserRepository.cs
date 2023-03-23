@@ -10,27 +10,29 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 {
     public class HOTSCloneUserRepository : BaseRepository, IHOTSCloneUserRepository
     {
+        private DefaultUserClaim _userClaims;
         #region Constructor
 
         /// <summary>
         /// Base constructor
         /// </summary>
-        public HOTSCloneUserRepository() : base(DbConnectionEnum.IdpConfigurationDb)
+        public HOTSCloneUserRepository(DefaultUserClaim userClaims) : base(DbConnectionEnum.IdpConfigurationDb)
         {
+            _userClaims = userClaims;
         }
 
         /// <summary>
         /// Unit test constructor
         /// </summary>
         /// <param name="repository"></param>
-        public HOTSCloneUserRepository(IRepository repository) : base(repository)
+        /// <param name="userClaims"></param>
+        public HOTSCloneUserRepository(IRepository repository, DefaultUserClaim userClaims) : base(repository)
         {
+            _userClaims = userClaims;
         }
 
         #endregion
@@ -116,7 +118,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             HotsUser hotsUser = new HotsUser();
             string loginName;
             loginName = getLoginName(partyId, baseUserProfile);
-            
+
             dynamic param = new
             {
                 FirstName = baseUserProfile.FirstName,
@@ -145,6 +147,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 repository.UnitOfWork.BeginTransaction();
                 try
                 {
+                    //Get Impersonator Information
+                    UserLoginOnly impersonatorUserLoginOnly = new UserLoginOnly();
+                    if (_userClaims.ImpersonatedBy != Guid.Empty)
+                    {
+                        impersonatorUserLoginOnly = repository.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, new { RealPageId = _userClaims.ImpersonatedBy });
+                    }
+
                     // user creation
                     var spResult = repository.GetOne<dynamic>(EnterpriseStoredProcNameConstants.SP_CreateUnityUser, param);
 
@@ -158,7 +167,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     superUser = baseUserProfile.UserTypeId == 402;
                     // Add products
                     if (productBatch?.Count > 0) //TODO: remove UL product from list?
-                        SaveProductBatch(repository, cloneCompanyAdminUserClaim.PersonaId, newUserPersonaId, cloneCompanyAdminUserClaim.UserRealPageGuid, productBatch, superUser);
+                        SaveProductBatch(repository, cloneCompanyAdminUserClaim.PersonaId, newUserPersonaId, cloneCompanyAdminUserClaim.UserRealPageGuid, productBatch, superUser, impersonatorUserLoginOnly.UserId);
 
                     //COMMIT THE CHANGE
                     repository.UnitOfWork.Commit();
@@ -231,7 +240,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
 
         private void SaveProductBatch(IRepository repository, long editorUserPersonaId, long subjectUserPersonaId, Guid editorUserRealPageId,
-            IList<ProductBatch> userProductList, bool superUser)
+            IList<ProductBatch> userProductList, bool superUser, long impersonatorUserId)
         {
             //var productRepo = new ProductRepository();
             var batchGroup = CreateBatchProcessGroup(repository);
@@ -252,6 +261,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     RetryCount = 0,
                     InputJson = inputJsonText,
                     CorrelationId = Guid.NewGuid().ToString(),
+                    ImpersonatorUserId = impersonatorUserId,
                     BatchProcessTypeId = BatchProcessType.CreateUpdateProductUser
                 };
 

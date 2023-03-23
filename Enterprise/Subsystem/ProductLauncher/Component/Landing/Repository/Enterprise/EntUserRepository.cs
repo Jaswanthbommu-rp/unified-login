@@ -78,9 +78,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.E
 				var newUserPersonaId = repository.GetOne<long>(StoredProcNameConstants.SP_GetActivePersona, new { RealPageId = newUserRealPageId });
 				var userId = repository.GetOne<long>(StoredProcNameConstants.SP_GetUserLoginOnly, new { RealPageId = newUserRealPageId });
 
-				// Add products
-				if (userProductDetails.ProductList.Any()) //TODO: remove UL product from list?
-					SaveProductBatch(repository, _userClaim.PersonaId, newUserPersonaId, _userClaim.UserRealPageGuid, userProductDetails.ProductList);
+                IUserLoginOnly impersonatorUserLoginOnly = new UserLoginOnly();
+                if (_userClaim.ImpersonatedBy != Guid.Empty)
+                {
+                    impersonatorUserLoginOnly = repository.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, new { RealPageId = _userClaim.ImpersonatedBy });
+                }
+                // Add products
+                if (userProductDetails.ProductList.Any()) //TODO: remove UL product from list?
+					SaveProductBatch(repository, _userClaim.PersonaId, newUserPersonaId, _userClaim.UserRealPageGuid, userProductDetails.ProductList, impersonatorUserLoginOnly.UserId);
 				
 				repository.UnitOfWork.Commit();
 
@@ -178,7 +183,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.E
 		}
 
 		private void SaveProductBatch(IRepository repository, long editorUserPersonaId, long subjectUserPersonaId, Guid editorUserRealPageId,
-			IList<ProductDetail> userProductList)
+			IList<ProductDetail> userProductList, long impersonatorUserId)
 		{
 			var productRepo = new ProductRepository();
             var batchGroup = CreateBatchProcessGroup(repository);
@@ -194,7 +199,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.E
 					StatusTypeId = 5,
 					RetryCount = 0,
                     BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
-					InputJson = JsonConvert.SerializeObject(new RolePropertyList()
+                    ImpersonatorUserId = impersonatorUserId,
+                    InputJson = JsonConvert.SerializeObject(new RolePropertyList()
 					{
 						PropertyList = prod.PropertiesAssigned,
 						RoleList = prod.RolesAssigned,
@@ -237,7 +243,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.E
                 };
             }
         }
-	}
+    }
 
 	public class RepoObject
 	{

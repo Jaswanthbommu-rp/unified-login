@@ -60,6 +60,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private SaveInteralSamlAttrLog _activityLogHelper;
         readonly ITokenHelper _tokenHelper;
         private IOrganizationRepository _organizationRepository;
+        private readonly IUserRepository _userRepository;
+        private readonly IUserLoginRepository _userLoginRepository;
         #endregion
 
         #region Constructors
@@ -68,7 +70,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         public ManageProductUser(IProductRepository productRepository,
             IProductInternalSettingRepository productInternalSettingRepository, ISamlRepository samlRepository, IManageProduct manageProduct,
-            IOrganizationRepository organizationRepository)
+            IOrganizationRepository organizationRepository, IUserRepository userRepository, IUserLoginRepository userLoginRepository)
         {
             _productRepository = productRepository;
             _productInternalSettingRepository = productInternalSettingRepository;
@@ -76,6 +78,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _manageProduct = manageProduct;
             _tokenHelper = new TokenHelper();
             _organizationRepository = organizationRepository;
+            _userRepository = userRepository;
+            _userLoginRepository = userLoginRepository;
         }
 
         /// <summary>
@@ -95,6 +99,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _integrationTypeFactory = new IntegrationTypeFactory(_manageProduct, manageUnifiedLogin, manageProductOneSite, _productRepository, _productInternalSettingRepository, userClaims);
             _tokenHelper = new TokenHelper(repository);
             _organizationRepository = new OrganizationRepository(repository);
+            _userRepository = new UserRepository(repository, userClaims, messageHandler);
+            _userLoginRepository = new UserLoginRepository(repository);
         }
 
         /// <summary>
@@ -115,6 +121,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _activityLogHelper = new SaveInteralSamlAttrLog(_defaultUserClaim);
             _tokenHelper = new TokenHelper();
             _organizationRepository = new OrganizationRepository();
+            _userRepository = new UserRepository();
+            _userLoginRepository = new UserLoginRepository();
         }
         #endregion
 
@@ -337,7 +345,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                         //Activity log
                         result = "An error occurred during the update process";
-                        WriteActivityLogWithMessage(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, result, productId);
+                        WriteActivityLogWithMessage(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, result, productId, productUser.ImpersonatorUserId);
                     }
                 }
             }
@@ -352,7 +360,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
 
                 WriteToLog(LogEventLevel.Debug, $"Batch process for inner isBatchCompleted activity log : {isBatchCompleted} , product: {productUser.ProductId} , CreateUserPersonaId : {productUser.CreateUserPersonaId} ,AssignUserPersonaId: {productUser.AssignUserPersonaId} ,BatchProcessorGroupId{productUser.BatchProcessorGroupId} ");
-                WriteActivityLog(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, productUser.BatchProcessorGroupId);
+                WriteActivityLog(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, productUser.BatchProcessorGroupId, productUser.ImpersonatorUserId);
             }
 
             return result;
@@ -400,7 +408,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (string.IsNullOrEmpty(result))
             {
                 SavePersonaProductPrimaryProperties(usePrimaryProperties, productUser.AssignUserPersonaId, productUser.ProductId, roleProp, productUser.InputJson);
-                WriteActivityLogWithMessage(productUser.RealPageEmployeePersonaId, 0, "Employee {3} {4} added/updated to product {2} in company " + employeeInfo.OrganizationName, productId);
+                WriteActivityLogWithMessage(productUser.RealPageEmployeePersonaId, 0, "Employee {3} {4} added/updated to product {2} in company " + employeeInfo.OrganizationName, productId, productUser.ImpersonatorUserId);
                 return "";
             }
 
@@ -412,7 +420,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 //Activity log
                 var activityMessageResult = "An error occurred during the update process for employee {3} {4} to product {2} in company " + employeeInfo.OrganizationName + ".";
-                WriteActivityLogWithMessage(productUser.RealPageEmployeePersonaId, 0, activityMessageResult, productId);
+                WriteActivityLogWithMessage(productUser.RealPageEmployeePersonaId, 0, activityMessageResult, productId, productUser.ImpersonatorUserId);
                 return result;
             }
 
@@ -502,14 +510,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         //Activity log
                         result = "An error occurred during the enterprise role product update process";
-                        WriteActivityLogWithMessage(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, result, productId);
+                        WriteActivityLogWithMessage(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, result, productId, productUser.ImpersonatorUserId);
                     }
                 }
             }
 
             if (isBatchCompleted)
             {
-                WriteActivityLog(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, productUser.BatchProcessorGroupId);
+                WriteActivityLog(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, productUser.BatchProcessorGroupId, productUser.ImpersonatorUserId);
             }
 
 
@@ -637,14 +645,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                     //Activity log
                     result = "An error occurred during the change user type process";
-                    WriteActivityLogWithMessage(batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, result, batchRecord.ProductId);
+                    WriteActivityLogWithMessage(batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, result, batchRecord.ProductId, batchRecord.ImpersonatorUserId);
 
                 }
             }
 
             if (isBatchCompleted)
             {
-                WriteActivityLog(batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessorGroupId);
+                WriteActivityLog(batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessorGroupId, batchRecord.ImpersonatorUserId);
             }
 
             return result;
@@ -691,16 +699,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return result;
         }
 
-        private void WriteActivityLogWithMessage(long fromPersonaId, long toPersonaId, string message, int productId)
+        private void WriteActivityLogWithMessage(long fromPersonaId, long toPersonaId, string message, int productId, long impersonatorUserId)
         {
-            UserActivityLogInfo toUserLogDetail = null;
+            //UserActivityLogInfo toUserLogDetail = null;
             // log product user updated activity
             var fromUserLogDetail = _activityLogHelper.GetUserActivityLogInfo(fromPersonaId);
-            toUserLogDetail = toPersonaId != 0 ? _activityLogHelper.GetUserActivityLogInfo(toPersonaId) : null;
+            var toUserLogDetail = toPersonaId != 0 ? _activityLogHelper.GetUserActivityLogInfo(toPersonaId) : null;
             var booksProductDetail = _productRepository.GetBooksMasterProductDetail(productId);
+            var impersonatorUserInfo = new UserDetails();
 
-            var logMessage = string.Format(message, toUserLogDetail?.FirstName, toUserLogDetail?.LastName,
-                booksProductDetail.Name, fromUserLogDetail.FirstName, fromUserLogDetail.LastName);
+            if (impersonatorUserId > 0)
+            {
+                var impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(impersonatorUserId);
+                impersonatorUserInfo = _userRepository.GetUserDetails(null, impersonatorUserLoginOnly.RealPageId.ToString());
+            }
+            string logMessage = impersonatorUserInfo != null
+                ? string.Format(message, toUserLogDetail?.FirstName, toUserLogDetail?.LastName, booksProductDetail.Name, impersonatorUserInfo.FirstName, impersonatorUserInfo.LastName)
+                : string.Format(message, toUserLogDetail?.FirstName, toUserLogDetail?.LastName, booksProductDetail.Name, fromUserLogDetail.FirstName, fromUserLogDetail.LastName);
 
             WriteActivityLog(fromUserLogDetail, toUserLogDetail, booksProductDetail.BooksProductCode, logMessage);
         }
@@ -742,11 +757,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
-        private void WriteActivityLog(long fromPersonaId, long toPersonaId, int batchGroupId)
+        private void WriteActivityLog(long fromPersonaId, long toPersonaId, int batchGroupId, long impersonatorUserId)
         {
             var fromUserLogInfo = _activityLogHelper.GetUserActivityLogInfo(fromPersonaId);
             var toUserLogInfo = _activityLogHelper.GetUserActivityLogInfo(toPersonaId);
-
+            var impersonatorUserInfo = new UserDetails();
+            if (impersonatorUserId > 0)
+            {
+                var impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(impersonatorUserId);
+                impersonatorUserInfo = _userRepository.GetUserDetails(null, impersonatorUserLoginOnly.RealPageId.ToString());
+            }
             var data = _productRepository.GetUserBatchDetails(batchGroupId, fromPersonaId, toPersonaId);
             WriteToLog(LogEventLevel.Debug, $"Batch process for results count : { (data != null && data.Count > 0 ? data.Count : 0) } ");
             if (data != null && data.Count > 0)
@@ -765,7 +785,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     if (successRecords != null && successRecords.Count > 0)
                     {
                         WriteToLog(LogEventLevel.Debug, $"Batch process for succes count : {successRecords.Count} ");
-                        var message = GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, successRecords, true);
+                        var message = GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, successRecords, true, impersonatorUserInfo);
                         WriteToLog(LogEventLevel.Debug, $"Batch process for succes message : {message} ");
                         _activityLogHelper.PushToQueue(fromUserLogInfo, toUserLogInfo, message, "PRODUCT_ACCESS");
                     }
@@ -774,7 +794,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     if (failedRecords != null && failedRecords.Count > 0)
                     {
                         WriteToLog(LogEventLevel.Debug, $"Batch process for failed count : {failedRecords.Count} ");
-                        var message = GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, failedRecords, false);
+                        var message = GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, failedRecords, false, impersonatorUserInfo);
                         WriteToLog(LogEventLevel.Debug, $"Batch process for failed message : {message} ");
                         _activityLogHelper.PushToQueue(fromUserLogInfo, toUserLogInfo, message, "PRODUCT_ACCESS");
                         SendNotification(message + " Please contact RealPage Support for assistance.", fromPersonaId);
@@ -786,7 +806,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
-        private string GenerateQueueMessage(UserActivityLogInfo fromUserLogInfo, UserActivityLogInfo toUserLogInfo, List<UserBatchProductDetail> userBatchProductDetails, bool IsSuccess)
+        private string GenerateQueueMessage(UserActivityLogInfo fromUserLogInfo, UserActivityLogInfo toUserLogInfo, List<UserBatchProductDetail> userBatchProductDetails, bool IsSuccess, UserDetails impersonatorUserInfo)
         {
             string message = "";
 
@@ -798,7 +818,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             WriteToLog(LogEventLevel.Debug, $"Batch process for GenerateQueueMessage : {IsSuccess} userBatchProductDetails {userBatchProductDetails.Count} ");
             if (IsSuccess)
             {
-                message = $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} updated access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName}:";
+                message = impersonatorUserInfo != null
+                    ? $"{impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName} updated access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName}:"
+                    : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} updated access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName}:";
+
                 foreach (var item in userBatchProductDetails)
                 {
                     if (item.IsAssigned)
@@ -821,7 +844,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             else
             {
-                message = $"An exception occurred when {fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} attempted to update product access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName} in ";
+                message = impersonatorUserInfo != null
+                    ? $"An exception occurred when {impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName} attempted to update product access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName} in "
+                    : $"An exception occurred when {fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} attempted to update product access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName} in ";
+
                 string[] products = new string[userBatchProductDetails.Count];
 
                 for (int i = 0; i < userBatchProductDetails.Count; i++)

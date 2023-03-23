@@ -64,7 +64,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
             _productRepository = new ProductRepository(repository, userClaims);
             _messageHandler = messageHandler;
-            _hotsCloneUserRepository = new HOTSCloneUserRepository(repository);
+            _hotsCloneUserRepository = new HOTSCloneUserRepository(repository, userClaims);
             //  _manageHotsCloneUsers = new ManageHotsCloneUsers(_productRepository, productInternalSettingRepository, _managePersona, _hotsCloneUserRepository, _manageOrganization, manageProfile, userClaims);
             _userClaims = userClaims;
         }

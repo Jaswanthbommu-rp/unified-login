@@ -1,11 +1,11 @@
-﻿using System;
-using System.Configuration;
-using RP.Enterprise.Foundation.DataAccess.Component;
+﻿using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using System;
+using System.Configuration;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 {
-	public abstract class BaseRepository
+    public abstract class BaseRepository
 	{
 		#region Private Variables
 
@@ -56,11 +56,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 			catch (Exception ex)
 			{
 				throw new Exception("Exception while getting Database connection." + ex.Message);
-			}
+            }
+            return connectionString;
+        }
 
-			return connectionString;
-		}
-
-		#endregion
-	}
+        #endregion
+    }
 }

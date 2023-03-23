@@ -853,14 +853,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				// for activity logging
 				IPerson person = _managePerson.GetPerson(userLogin.RealPageId);
 				long booksMasterOrgId = GetDefaultBooksMasterOrgIdForUser(userLogin.RealPageId);
-				LogActivity.WriteActivity(new ActivityDetails
+                
+                string message = _userClaim.ImpersonatedBy == Guid.Empty
+                    ? string.Format("User {0} {1} inserted a temporary password for user {2} {3}.", _userClaim.FirstName, _userClaim.LastName, person.FirstName, person.LastName)
+                    : string.Format("User {0} inserted a temporary password for user {1} {2}.", _userClaim.ImpersonatedByName, person.FirstName, person.LastName);
+
+
+                LogActivity.WriteActivity(new ActivityDetails
 				{
 					LogActivityTypeName = LogActivityTypeConstants.CHANGE_PASSWORD_SUCCESS,
 					LogCategoryName = LogActivityCategoryType.Security.ToString(),
 					CorrelationId = Guid.NewGuid().ToString(),
 					BooksMasterOrganizationId = booksMasterOrgId,
                     OrganizationPartyId = _userClaim.OrganizationPartyId,
-					Message = string.Format("User {0} {1} inserted a temporary password for user {2} {3}.", _userClaim.FirstName, _userClaim.LastName, person.FirstName, person.LastName),
+					Message = message,
 					FromUserLoginName = _userClaim.LoginName,
 					FromUserLoginId = _userClaim.UserId,
 

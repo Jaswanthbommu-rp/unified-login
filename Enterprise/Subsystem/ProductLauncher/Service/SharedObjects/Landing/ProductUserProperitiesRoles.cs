@@ -57,5 +57,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         /// </summary>
         public bool CreateRealPageEmployee { get; set; }
         public long RealPageEmployeePersonaId { get; set; }
+
+        public long ImpersonatorUserId { get; set; }
     }
 }

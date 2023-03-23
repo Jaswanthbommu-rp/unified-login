@@ -304,7 +304,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			string Issuer = "GreenBook";
 
-			BatchProductBulkUpdateRepository productBulkUpdateRepository = new BatchProductBulkUpdateRepository();
+			BatchProductBulkUpdateRepository productBulkUpdateRepository = new BatchProductBulkUpdateRepository(_userClaims);
 
 			SamlRepository samlRepository = new SamlRepository();
 			IList<SamlAttributes> samlAttributeDetails = new List<SamlAttributes>();
@@ -331,7 +331,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				Guid editorGuid = organizationRepository.GetOrganizationAdminUserRealPageId(_userClaims.OrganizationRealPageGuid);
 
 				var userinfo = userRepository.GetUserDetails(userRealPageId: editorGuid.ToString());
-				if (retrySetting != null)
+                IUserLoginOnly impersonatorUserLoginOnly = new UserLoginOnly();
+                if (_userClaims.ImpersonatedBy != Guid.Empty)
+                {
+                    UserLoginRepository userLoginRepository = new UserLoginRepository();
+                    impersonatorUserLoginOnly = userLoginRepository.GetUserLoginOnly(_userClaims.ImpersonatedBy);
+                }
+
+                if (retrySetting != null)
                 {
 					retryCheckCount = Convert.ToInt16(retrySetting);
                 }
@@ -341,7 +348,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     statusCheckSleep = Convert.ToInt32(statusCheckSleepSetting);
                 }
 
-                samlAttributeDetails = productBulkUpdateRepository.CreateBatch(userinfo.PersonaId, personaId, editorGuid, productId, retryCheckCount, statusCheckSleep, defaultUserRoleId);
+                samlAttributeDetails = productBulkUpdateRepository.CreateBatch(userinfo.PersonaId, personaId, editorGuid, productId, retryCheckCount, statusCheckSleep, defaultUserRoleId, impersonatorUserLoginOnly.UserId);
 				if (samlAttributeDetails.Count == 0)
 				{
 					response.ErrorMessage = "UserCreationFailed";

@@ -12,6 +12,7 @@
 	[InputJSON] [nvarchar](max) NOT NULL,
 	[CreatedDateTime] [datetime] NOT NULL,
 	[LastRunDateTime] [datetime] NOT NULL,
+	[ImpersonatorUserId] [BIGINT] DEFAULT 0,
     CONSTRAINT [PK_BatchProcessor] PRIMARY KEY CLUSTERED 
 (
 	[BatchProcessorId] ASC

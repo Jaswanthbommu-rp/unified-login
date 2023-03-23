@@ -238,6 +238,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             long booksCustomerMasterId = 0;
             int greenBookRole = 0;
             List<int> greenBookRoles = new List<int>();
+            IUserLoginOnly impersonatorUserLoginOnly = new UserLoginOnly();
+            if (_userClaim.ImpersonatedBy != Guid.Empty)
+            {
+                impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(_userClaim.ImpersonatedBy);
+            }
 
             IUserLoginOnly userLoginOnly = _userLoginRepository.GetUserLoginOnly(newProfile.userLogin.LoginName);
             if (newProfile.organization[0].RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId)
@@ -1548,7 +1553,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     }
 
                     processTracker = "SaveProductDetails";
-                    int productCount = SaveProductDetails(repository, newProfile.productBatch, createUserResponse, CreateUserPersonaId, AssignUserPersonaId, userClaim.UserRealPageGuid, organizationRealPageId, errorStatus, newProfile.UserTypeId, true, aoProductsAvailableForUser, newProfile.MigratedUser, true, greenBookRole, "add");
+                    int productCount = SaveProductDetails(repository, newProfile.productBatch, createUserResponse, CreateUserPersonaId, AssignUserPersonaId, userClaim.UserRealPageGuid, organizationRealPageId, errorStatus, newProfile.UserTypeId, true, impersonatorUserLoginOnly.UserId, aoProductsAvailableForUser, newProfile.MigratedUser, true, greenBookRole, "add");
 
                     #endregion
 
@@ -2196,6 +2201,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             var userLoginOnly = userLoginRepository.GetUserLoginOnly(user.RealPageId);
             var userPersonaOrganizationList = userLoginRepository.ListOrganizationByLoginName(userLoginOnly.LoginName);
             var currentPrimaryOrgStatus = userLoginRepository.GetUserOrganizationWithStatus(userLoginOnly.UserId, userLoginOnly.LastLogin, 0, true);
+            IUserLoginOnly impersonatorUserLoginOnly = new UserLoginOnly();
+            if (_userClaim.ImpersonatedBy != Guid.Empty)
+            {
+                impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(_userClaim.ImpersonatedBy);
+            }
 
             Persona persona = null;
             Persona adminPersona = null;
@@ -2217,7 +2227,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         using (var repository = GetRepository())
                         {
-                            ProcessDisableUserProductData(repository, persona.PersonaId, realPageEmployeeAccessID, adminPersona.PersonaId, persona.UserTypeId);
+                            ProcessDisableUserProductData(repository, persona.PersonaId, realPageEmployeeAccessID, adminPersona.PersonaId, persona.UserTypeId, impersonatorUserLoginOnly.UserId);
                         }
                     }
                 }
@@ -2230,7 +2240,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     persona = managePersona.GetFirstAvailablePersonaByCompany(userLoginOnly.RealPageId, _userClaim.OrganizationPartyId);
                     using (var repository = GetRepository())
                     {
-                        ProcessDisableUserProductData(repository, persona.PersonaId, createUserRealPageId, createUserPersonaId, persona.UserTypeId);
+                        ProcessDisableUserProductData(repository, persona.PersonaId, createUserRealPageId, createUserPersonaId, persona.UserTypeId, impersonatorUserLoginOnly.UserId);
                     }
                 }
             }
@@ -2281,15 +2291,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             // if company has AO product assigned then get products available to assign based on editor User
             aoProductsAvailableForUser = GetEditorUserAoProduct(_userClaim.UserRealPageGuid, _userClaim.PersonaId, organizationRealPageId);
-
             IOrganizationRepository organizationRepository = new OrganizationRepository();
-
             Organization organization = organizationRepository.GetOrganization(organizationRealPageId);
-
             IPersonaRepository personaRepository = new PersonaRepository(_userClaim);
-
             IList<Persona> personaList = personaRepository.ListPersonaByOrganizationPartyId(organization.PartyId, IsDefault, (int)UserRoleType.SuperUser);
-
+            IUserLoginOnly impersonatorUserLoginOnly = new UserLoginOnly();
+            if (_userClaim.ImpersonatedBy != Guid.Empty)
+            {
+                impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(_userClaim.ImpersonatedBy);
+            }
             if (assignUserPersonaId > 0)
             {
                 personaList = personaList.Where(p => p.PersonaId == assignUserPersonaId).ToList();
@@ -2319,7 +2329,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             if (!(userLoginPersonaList[0].StatusTypeId == 23 || userLoginPersonaList[0].StatusTypeId == 24))
                             {
                                 // don't update disabled or expired admins
-                                var productCount = SaveProductDetails(repository, productList, null, createUserPersonaId, o.PersonaId, RealPageEmployeeAccessID, organizationRealPageId, null, (int)UserRoleType.SuperUser, true, aoProductsAvailableForUser, false, false);
+                                var productCount = SaveProductDetails(repository, productList, null, createUserPersonaId, o.PersonaId, RealPageEmployeeAccessID, organizationRealPageId, null, (int)UserRoleType.SuperUser, true, impersonatorUserLoginOnly.UserId, aoProductsAvailableForUser, false, false);
                                 adminsUpdated++;
                                 totalProductCount = productCount > totalProductCount ? productCount : totalProductCount;
                             }
@@ -2367,6 +2377,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             using (var repository = GetRepository())
             {
+                UserLoginOnly impersonatorUserLoginOnly = new UserLoginOnly();
+                if (_userClaim.ImpersonatedBy != Guid.Empty)
+                {
+                    impersonatorUserLoginOnly = repository.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, new { RealPageId = _userClaim.ImpersonatedBy });
+                }
+                
                 foreach (UserLoginOnly ul in userLogins)
                 {
                     var userLogin = _userLoginRepository.GetUserLoginOnly(ul.RealPageId);
@@ -2407,7 +2423,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             {
                                 SaveProductBatch(repository, product, createUserResponse, saveProductBatchError,
                                     createUserPersonaId, persona.PersonaId, createUserRealPageId, errorStatus,
-                                    JsonConvert.SerializeObject(product.InputJson));
+                                    JsonConvert.SerializeObject(product.InputJson), impersonatorUserLoginOnly.UserId);
                             }
                         }
                     }
@@ -2635,6 +2651,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             logData = new Dictionary<string, object> { { "userLogins", userLogins } };
             var profileLogic = new ManageProfile(_userClaim);
             DateTime? thruDateCST = null;
+            IUserLoginOnly impersonatorUserLoginOnly = new UserLoginOnly();
+            if (_userClaim.ImpersonatedBy != Guid.Empty)
+            {
+                impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(_userClaim.ImpersonatedBy);
+            }
 
             WriteToLog(LogEventLevel.Debug, $"UserRepository.ProcessDisabledUsers at beginning of method for user with json", logData);
             using (var repository = GetRepository())
@@ -2730,7 +2751,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         if (editorPersona != null && (ul.OrganizationRealPageId == primaryCompanyGuid || ul.OrganizationRealPageId == org.OrganizationRealPageId))
                         {
                             WriteToLog(LogEventLevel.Debug, $"UserRepository.ProcessDisabledUsers: calling ProcessDisableUserProductData");
-                            ProcessDisableUserProductData(repository, persona.PersonaId, editorPersona.RealPageId, editorPersona.PersonaId, persona.UserTypeId);
+                            ProcessDisableUserProductData(repository, persona.PersonaId, editorPersona.RealPageId, editorPersona.PersonaId, persona.UserTypeId, impersonatorUserLoginOnly.UserId);
                         }
                     }
                 }
@@ -3463,9 +3484,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="errorStatus">Error Status</param>
         /// <param name="userTypeId">User TypeId</param>
         /// <param name="userIsActive">Is the user active</param>
+        /// <param name="impersonatorUserId"></param>
+        /// <param name="isCreateUser"></param>
+        /// <param name="isRealpageAccessUser"></param>
+        /// <param name="migratedUser"></param>
+        /// <param name="operationType"></param>
+        /// <param name="unifiedPlatformRole"></param>
         /// <param name="aoProducts">Applicable if PMC has AO products</param>
         /// <returns>Number of Products</returns>
-        private int SaveProductDetails(IRepository repository, IList<ProductBatch> productList, CreateUserResponse<IErrorData> createUserResponse, long CreateUserPersonaId, long AssignUserPersonaId, Guid realPageId, Guid organizationRealPageId, Status<IErrorData> errorStatus, int userTypeId, bool userIsActive, IList<string> aoProducts = null, bool migratedUser = false, bool isCreateUser = false, int unifiedPlatformRole = 0, string operationType = "update", bool isRealpageAccessUser = false)
+        private int SaveProductDetails(IRepository repository, IList<ProductBatch> productList, CreateUserResponse<IErrorData> createUserResponse, long CreateUserPersonaId, long AssignUserPersonaId, Guid realPageId, Guid organizationRealPageId, Status<IErrorData> errorStatus, int userTypeId, bool userIsActive, long impersonatorUserId, IList<string> aoProducts = null, bool migratedUser = false, bool isCreateUser = false, int unifiedPlatformRole = 0, string operationType = "update", bool isRealpageAccessUser = false)
         {
             int productCount = 0;
             int enterpriseRoleId = 0;
@@ -3800,7 +3827,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
 
                         pbOneSite.BatchProcessorGroupId = batchGroup.BatchProcessorGroupId;
-                        SaveProductBatch(repository, pbOneSite, createUserResponse, saveProductBatchError, CreateUserPersonaId, AssignUserPersonaId, realPageId, errorStatus, JsonConvert.SerializeObject(oneSiteAndOtherProducts), batchProcessTypeId);
+                        SaveProductBatch(repository, pbOneSite, createUserResponse, saveProductBatchError, CreateUserPersonaId, AssignUserPersonaId, realPageId, errorStatus, JsonConvert.SerializeObject(oneSiteAndOtherProducts), impersonatorUserId, batchProcessTypeId);
 
                         if (errorStatus.Success == false)
                         {
@@ -3849,14 +3876,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         if (product.ProductId == (int)ProductEnum.AssetOptimizer)
                         {
                             // special treatment for bundled AO products
-                            SaveProductBatch(repository, product, createUserResponse, saveProductBatchError, CreateUserPersonaId, AssignUserPersonaId, realPageId, errorStatus, aoInputJsonString, batchProcessTypeId);
+                            SaveProductBatch(repository, product, createUserResponse, saveProductBatchError, CreateUserPersonaId, AssignUserPersonaId, realPageId, errorStatus, aoInputJsonString, impersonatorUserId, batchProcessTypeId);
                         }
                         else
                         {
                             product.BatchProcessorGroupId = batchGroup.BatchProcessorGroupId;
                             WriteToLog(LogEventLevel.Debug, $"UserRepository.SaveProductDetails SaveProductBatch:  {AssignUserPersonaId} - productId : {product.ProductId}");
 
-                            SaveProductBatch(repository, product, createUserResponse, saveProductBatchError, CreateUserPersonaId, AssignUserPersonaId, realPageId, errorStatus, JsonConvert.SerializeObject(product.InputJson), batchProcessTypeId);
+                            SaveProductBatch(repository, product, createUserResponse, saveProductBatchError, CreateUserPersonaId, AssignUserPersonaId, realPageId, errorStatus, JsonConvert.SerializeObject(product.InputJson), impersonatorUserId, batchProcessTypeId);
                         }
                     }
 
@@ -3906,6 +3933,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
 
             var batchGroup = CreateBatchProcessGroup(repository);
+            IUserLoginOnly impersonatorUserLoginOnly = new UserLoginOnly();
+            if (_userClaim.ImpersonatedBy != Guid.Empty)
+            {
+                impersonatorUserLoginOnly = repository.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, new { RealPageId = _userClaim.ImpersonatedBy });
+            }
 
             IList<PersonaProductUserDetails> userProducts = repository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = assignUserPersonaId, ProductStatusValue = ((Int32)UserUiStatusType.AccountCreationSuccessful).ToString() }).ToList();
             IList<ProductBatch> productListToCreate = new List<ProductBatch>();
@@ -4077,7 +4109,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             // save AO specific records in batch
                             SaveProductBatch(repository, aoProductsBatch, createUserResponse,
                                 saveProductBatchError, createUserPersonaId, assignUserPersonaId, realPageId, errorStatus,
-                                sb.ToString(), (int)BatchProcessType.CreateUpdateProductUser);
+                                sb.ToString(), impersonatorUserLoginOnly.UserId, (int)BatchProcessType.CreateUpdateProductUser);
                         }
                     }
 
@@ -4115,7 +4147,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         SaveProductBatch(repository, product, createUserResponse, saveProductBatchError,
                             createUserPersonaId, assignUserPersonaId, realPageId, errorStatus,
-                            JsonConvert.SerializeObject(product.InputJson), finalBatchProcessorTypeId);
+                            JsonConvert.SerializeObject(product.InputJson), impersonatorUserLoginOnly.UserId, finalBatchProcessorTypeId);
                     }
 
                     if (errorStatus.Success == false)
@@ -4259,11 +4291,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         pbOneSite.BatchProcessorGroupId = batchGroup.BatchProcessorGroupId;
                         if (userProducts.Any(pr => pr.ProductId == (int)ProductEnum.OneSite))
                         {
-                            SaveProductBatch(repository, pbOneSite, createUserResponse, saveProductBatchError, createUserPersonaId, assignUserPersonaId, realPageId, errorStatus, JsonConvert.SerializeObject(oneSiteAndOtherProducts), batchProcessTypeId);
+                            SaveProductBatch(repository, pbOneSite, createUserResponse, saveProductBatchError, createUserPersonaId, assignUserPersonaId, realPageId, errorStatus, JsonConvert.SerializeObject(oneSiteAndOtherProducts), impersonatorUserLoginOnly.UserId, batchProcessTypeId);
                         }
                         else
                         {
-                            SaveProductBatch(repository, pbOneSite, createUserResponse, saveProductBatchError, createUserPersonaId, assignUserPersonaId, realPageId, errorStatus, JsonConvert.SerializeObject(oneSiteAndOtherProducts));
+                            SaveProductBatch(repository, pbOneSite, createUserResponse, saveProductBatchError, createUserPersonaId, assignUserPersonaId, realPageId, errorStatus, JsonConvert.SerializeObject(oneSiteAndOtherProducts), impersonatorUserLoginOnly.UserId);
                         }
 
                         if (errorStatus.Success == false)
@@ -4300,17 +4332,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             // special treatment for bundled AO products
                             SaveProductBatch(repository, product, createUserResponse,
                                 saveProductBatchError, createUserPersonaId, assignUserPersonaId,
-                                realPageId, errorStatus, aoInputJsonString, batchProcessTypeId);
+                                realPageId, errorStatus, aoInputJsonString, impersonatorUserLoginOnly.UserId, batchProcessTypeId);
                         }
                         else
                         {
                             if (userProducts.Any(pr => pr.ProductId == product.ProductId))
                             {
-                                SaveProductBatch(repository, product, createUserResponse, saveProductBatchError, createUserPersonaId, assignUserPersonaId, realPageId, errorStatus, JsonConvert.SerializeObject(product.InputJson), batchProcessTypeId);
+                                SaveProductBatch(repository, product, createUserResponse, saveProductBatchError, createUserPersonaId, assignUserPersonaId, realPageId, errorStatus, JsonConvert.SerializeObject(product.InputJson), impersonatorUserLoginOnly.UserId, batchProcessTypeId);
                             }
                             else
                             {
-                                SaveProductBatch(repository, product, createUserResponse, saveProductBatchError, createUserPersonaId, assignUserPersonaId, realPageId, errorStatus, JsonConvert.SerializeObject(product.InputJson));
+                                SaveProductBatch(repository, product, createUserResponse, saveProductBatchError, createUserPersonaId, assignUserPersonaId, realPageId, errorStatus, JsonConvert.SerializeObject(product.InputJson), impersonatorUserLoginOnly.UserId);
                             }
                         }
                     }
@@ -4391,8 +4423,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="realPageId">The enterprise User Id of the person editing the product user</param>
         /// <param name="errorStatus">Error Status</param>
         /// <param name="inputJson">Product Batch Input JSON</param>
+        /// <param name="impersonatorUserId">Impersonator UserID</param>
         /// <param name="batchProcessTypeId">Batch Process Type</param>
-        private void SaveProductBatch(IRepository repository, IProductBatch product, CreateUserResponse<IErrorData> createUserResponse, string saveProductBatchError, long CreateUserPersonaId, long AssignUserPersonaId, Guid realPageId, Status<IErrorData> errorStatus, string inputJson, int batchProcessTypeId = 1)
+        private void SaveProductBatch(IRepository repository, IProductBatch product, CreateUserResponse<IErrorData> createUserResponse, string saveProductBatchError, long CreateUserPersonaId, long AssignUserPersonaId, Guid realPageId, Status<IErrorData> errorStatus, string inputJson, long impersonatorUserId, int batchProcessTypeId = 1)
         {
             try
             {
@@ -4413,7 +4446,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     RetryCount = product.RetryCount,
                     InputJson = inputJson,
                     CorrelationId = _userClaim.CorrelationId.ToString(),
-                    BatchProcessTypeId = batchProcessTypeId
+                    BatchProcessTypeId = batchProcessTypeId,
+                    ImpersonatorUserId = impersonatorUserId
                 };
 
                 RepositoryResponse repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateProductBatch, param);
@@ -4635,7 +4669,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="assignUserPersonaId"></param>
         /// <param name="createUserRealPageId"></param>
         /// <param name="createUserPersonaId"></param>
-        public void ProcessDisableUserProductData(IRepository repository, long assignUserPersonaId, Guid createUserRealPageId, long createUserPersonaId, int? userTypeId)
+        /// <param name="impersonatorUserId"></param>
+        /// <param name="userTypeId"></param>
+        public void ProcessDisableUserProductData(IRepository repository, long assignUserPersonaId, Guid createUserRealPageId, long createUserPersonaId, int? userTypeId, long impersonatorUserId)
         {
             WriteToLog(LogEventLevel.Debug, $"UserRepository.ProcessDisableUserProductData:  at beginning of method with assignUserPersonaId - {assignUserPersonaId} and createUserPersonaId - {createUserPersonaId}");
             CreateUserResponse<IErrorData> createUserResponse = new CreateUserResponse<IErrorData>();
@@ -4702,12 +4738,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         if (product.ProductId == (int)ProductEnum.AssetOptimizer)
                         {
                             // special treatment for bundled AO products by passing json string
-                            SaveProductBatch(repository, product, createUserResponse, saveProductBatchError, createUserPersonaId, assignUserPersonaId, createUserRealPageId, errorStatus, aoInputJsonString);
+                            SaveProductBatch(repository, product, createUserResponse, saveProductBatchError, createUserPersonaId, assignUserPersonaId, createUserRealPageId, errorStatus, aoInputJsonString, impersonatorUserId);
                         }
                         else
                         {
                             product.BatchProcessorGroupId = batchGroup.BatchProcessorGroupId;
-                            SaveProductBatch(repository, product, createUserResponse, saveProductBatchError, createUserPersonaId, assignUserPersonaId, createUserRealPageId, errorStatus, JsonConvert.SerializeObject(product.InputJson));
+                            SaveProductBatch(repository, product, createUserResponse, saveProductBatchError, createUserPersonaId, assignUserPersonaId, createUserRealPageId, errorStatus, JsonConvert.SerializeObject(product.InputJson), impersonatorUserId);
                         }
                     }
                 }
@@ -5286,6 +5322,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         {
             long editorPersonaId = 0;
             var editorRealPageId = Guid.Empty;
+            UserLoginOnly impersonatorUserLoginOnly = new UserLoginOnly();
+            if (_userClaim.ImpersonatedBy != Guid.Empty)
+            {
+                impersonatorUserLoginOnly = repository.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, new { RealPageId = _userClaim.ImpersonatedBy });
+            }
 
             foreach (var companyPersona in personaList)
             {
@@ -5314,7 +5355,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     editorRealPageId = loggedInUserRealPageId;
                 }
 
-                ProcessDisableUserProductData(repository, companyPersona.PersonaId, editorRealPageId, editorPersonaId, profile.UserTypeId);
+                ProcessDisableUserProductData(repository, companyPersona.PersonaId, editorRealPageId, editorPersonaId, profile.UserTypeId, impersonatorUserLoginOnly.UserId);
             }
         }
 
@@ -5405,6 +5446,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             IList<ProductBatch> productBatch = new List<ProductBatch>();
             DefaultUserClaim userClaim = new DefaultUserClaim(ClaimsPrincipal.Current);
             string saveProductBatchError = "Save Product(s) Error: ";
+            IUserLoginOnly impersonatorUserLoginOnly = new UserLoginOnly();
+            if (_userClaim.ImpersonatedBy != Guid.Empty)
+            {
+                impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(_userClaim.ImpersonatedBy);
+            }
 
             //Any new products are added down the line,we need to update the logic in "getProductBatchForUserClone" to get new products to clone.
             using (var pbRepository = GetRepository())
@@ -5438,14 +5484,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             // special treatment for bundled AO products by passing json string
                             SaveProductBatch(pbRepository, product, createUserResponse, saveProductBatchError,
                                 createUserPersonaId, personaId, createUserRealPageId, errorStatus,
-                                aoInputJsonString);
+                                aoInputJsonString, impersonatorUserLoginOnly.UserId);
                         }
                         else
                         {
                             product.BatchProcessorGroupId = batchGroup.BatchProcessorGroupId;
                             SaveProductBatch(pbRepository, product, createUserResponse, saveProductBatchError,
                                 createUserPersonaId, personaId, createUserRealPageId, errorStatus,
-                                JsonConvert.SerializeObject(product.InputJson));
+                                JsonConvert.SerializeObject(product.InputJson), impersonatorUserLoginOnly.UserId);
                         }
                     }
                 }
@@ -5516,7 +5562,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         {
             var repositoryResponse = new RepositoryResponse();
 
-            //IUserRepository userRepository = new UserRepository();
+            IUserLoginOnly impersonatorUserLoginOnly = new UserLoginOnly();
+            if (_userClaim.ImpersonatedBy != Guid.Empty)
+            {
+                impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(_userClaim.ImpersonatedBy);
+            }
 
             using (var repository = GetRepository())
             {
@@ -5545,7 +5595,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     {
                         if (!item.PrimaryOrganization)
                         {
-                            ProcessDisableUserProductData(repository, item.PersonaId, item.EditorRealPageId, item.EditorPersonaId, item.UserTypeId);
+                            ProcessDisableUserProductData(repository, item.PersonaId, item.EditorRealPageId, item.EditorPersonaId, item.UserTypeId, impersonatorUserLoginOnly.UserId);
                         }
                     }
                 }
@@ -5795,6 +5845,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             RequestParameter dataFilter = new RequestParameter();
             List<CompanySetup> companyList = _organizationRepository.GetCompanyList(null, 0, null, (int)_userClaim.OrganizationPartyId, dataFilter);
             bool isRealpageAccessUser = companyList.Where(a => a.RealPageAccessUser == _userClaim.LoginName).Distinct().Count() > 0;
+            IUserLoginOnly impersonatorUserLoginOnly = new UserLoginOnly();
+            if (_userClaim.ImpersonatedBy != Guid.Empty)
+            {
+                impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(_userClaim.ImpersonatedBy);
+            }
 
             using (var repository = GetRepository())
             {
@@ -6395,7 +6450,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         if (updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue() && !userBatchEntity.UserTypeChanged)
                         {
-                            int productCount = SaveProductDetails(repository, updateUserProfileEntity.ProductBatchData, null, updateUserProfileEntity.CreateUserPersonaId, updateUserProfileEntity.OldProfile.Persona[0].PersonaId, updateUserProfileEntity.LoggedInUserRealPageId, updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId, null, updateUserProfileEntity.NewProfile.UserTypeId, updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue(), updateUserProfileEntity.AoProductsAvailableForUser, false, false,0,"update",isRealpageAccessUser);
+                            int productCount = SaveProductDetails(repository, updateUserProfileEntity.ProductBatchData, null, updateUserProfileEntity.CreateUserPersonaId, updateUserProfileEntity.OldProfile.Persona[0].PersonaId, updateUserProfileEntity.LoggedInUserRealPageId, updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId, null, updateUserProfileEntity.NewProfile.UserTypeId, updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue(), impersonatorUserLoginOnly.UserId, updateUserProfileEntity.AoProductsAvailableForUser, false, false,0,"update",isRealpageAccessUser);
                         }
 
                         if (!updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue())

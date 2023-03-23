@@ -141,7 +141,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		/// <param name="assignUserPersonaId"></param>
 		/// <param name="createUserRealPageId"></param>
 		/// <param name="createUserPersonaId"></param>
-		void ProcessDisableUserProductData(IRepository repository, long assignUserPersonaId, Guid createUserRealPageId, long createUserPersonaId, int? userTypeId);
+		/// <param name="impersonatorUserId"></param>
+		/// <param name="userTypeId"></param>
+		void ProcessDisableUserProductData(IRepository repository, long assignUserPersonaId, Guid createUserRealPageId, long createUserPersonaId, int? userTypeId, long impersonatorUserId);
 
 		/// <summary>
 		/// Get the an UserEmployee by UserLoginPersonaId and OrganizationPartyId

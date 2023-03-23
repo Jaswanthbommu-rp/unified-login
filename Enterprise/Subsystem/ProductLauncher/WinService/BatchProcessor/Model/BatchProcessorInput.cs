@@ -55,5 +55,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
         /// Batch Process Group
         /// </summary>
         public int BatchProcessorGroupId { get; set; }
+
+        /// <summary>
+        /// LoggedInUser for RP Employee
+        /// </summary>
+        public long ImpersonatorUserId { get; set; }
     }
 }

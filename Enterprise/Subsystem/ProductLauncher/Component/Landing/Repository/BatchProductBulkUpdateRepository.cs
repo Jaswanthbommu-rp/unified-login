@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using Newtonsoft.Json;
 using RP.Enterprise.Foundation.DataAccess.Component;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Batch;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
@@ -17,24 +18,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 {
 	public class BatchProductBulkUpdateRepository : BaseRepository
 	{
-		#region Constructor
-		/// <summary>
+        private DefaultUserClaim _userClaim;
+
+        #region Constructor
+        /// <summary>
 		/// Base constructor
 		/// </summary>
-		public BatchProductBulkUpdateRepository() : base(DbConnectionEnum.IdpConfigurationDb)
-		{
-		}
+		/// <param name="userClaim"></param>
+		public BatchProductBulkUpdateRepository(DefaultUserClaim userClaim) : base(DbConnectionEnum.IdpConfigurationDb)
+        {
+            _userClaim = userClaim;
+        }
 
-		/// <summary>
-		/// Unit test constructor
-		/// </summary>
-		/// <param name="repository"></param>
-		public BatchProductBulkUpdateRepository(IRepository repository) : base(repository)
-		{
-		}
-		#endregion
-		public bool SaveProductBatch(long editorUserPersonaId, long subjectUserPersonaId, Guid editorUserRealPageId,
-			IList<ProductBatch> userProductList, string onesiteWithOherProductsJson, bool isOnesiteMix, int batchProcessType)
+        /// <summary>
+        /// Unit test constructor
+        /// </summary>
+        /// <param name="repository"></param>
+		/// <param name="userClaim"></param>
+        public BatchProductBulkUpdateRepository(IRepository repository, DefaultUserClaim userClaim) : base(repository)
+        {
+        }
+
+        #endregion
+        public bool SaveProductBatch(long editorUserPersonaId, long subjectUserPersonaId, Guid editorUserRealPageId,
+			IList<ProductBatch> userProductList, string onesiteWithOherProductsJson, bool isOnesiteMix, int batchProcessType, long impersonatorUserId)
 		{
 			var batchGroup = CreateBatchProcessGroup();
 
@@ -61,8 +68,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 						InputJson = inputJson,
 						CorrelationId = Guid.NewGuid().ToString(),
 						BatchProcessTypeId = statusType,
-						BatchProcessorGroupId = batchGroup.BatchProcessorGroupId
-					};
+						BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
+                        ImpersonatorUserId = impersonatorUserId
+                    };
 
 					var repositoryResponse = repository.Execute<dynamic>(StoredProcNameConstants.SP_CreateProductBatch, productBatch);
 
@@ -111,8 +119,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		/// <param name="retryCheckCount">retryCheckCount</param>
 		/// <param name="statusCheckSleep">statusCheckSleep</param>
 		/// <param name="defaultUserRole">defaultUserRole</param>
+		/// <param name="impersonatorUserId"></param>
 		/// <returns>whether batch proccess is success or not</returns>
-		public IList<SamlAttributes> CreateBatch(long editorUserPersonaId, long subjectUserPersonaId, Guid editorUserRealPageId, int productId, int retryCheckCount, int statusCheckSleep, string defaultUserRole)
+		public IList<SamlAttributes> CreateBatch(long editorUserPersonaId, long subjectUserPersonaId, Guid editorUserRealPageId, int productId, int retryCheckCount, int statusCheckSleep, string defaultUserRole, long impersonatorUserId)
 		{
 			int batchProcessorGroupId;
 			SamlRepository samlRepository = new SamlRepository();
@@ -135,7 +144,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 					StatusTypeId = 5,
 					RetryCount = 0,
 					BatchProcessorGroupId = batchProcessorGroupId,
-					InputJson = JsonConvert.SerializeObject(new RolePropertyList()
+                    ImpersonatorUserId = impersonatorUserId,
+                    InputJson = JsonConvert.SerializeObject(new RolePropertyList()
 					{
 						PropertyList = new List<string> { "-1" },
 						RoleList = roleList,
@@ -271,5 +281,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 				};
 			}
 		}
-	}
+
+    }
 }
