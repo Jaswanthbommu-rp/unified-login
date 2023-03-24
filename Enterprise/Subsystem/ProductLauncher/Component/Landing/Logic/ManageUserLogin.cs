@@ -522,7 +522,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         IManageUserRegistrationEmail manageUserRegistrationEmail = new ManageUserRegistrationEmail(_defaultUserClaim);
                         bool isNotified = manageUserRegistrationEmail.SendNewUserRegistrationEmail(profileDetail);
 
-                        var userName = _defaultUserClaim.LoginName?.Length == 0 ? " notification service" : defaultUserClaim.LoginName;
+                        var userName = _defaultUserClaim.LoginName?.Length == 0 ? " notification service" : (!string.IsNullOrEmpty(_defaultUserClaim.ImpersonatedByName) ? _defaultUserClaim.ImpersonatedByName : _defaultUserClaim.FirstName + " " + _defaultUserClaim.LastName);
 
                         if (isNotified)
                         {
