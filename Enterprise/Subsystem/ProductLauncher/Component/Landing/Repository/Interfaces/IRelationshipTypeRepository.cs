@@ -14,5 +14,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		/// <param name="relationshipTypeName">Relationship Type Name</param>
 		/// <returns>List RelationshipType object</returns>
 		IList<RelationshipType> GetRelationshipType(string relationshipTypeName);
-	}
+
+		IList<UserRelationShipType> GetUserRelationShipTypes(long partyId);
+
+    }
 }

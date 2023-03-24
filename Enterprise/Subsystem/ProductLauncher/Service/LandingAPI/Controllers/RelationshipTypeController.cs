@@ -14,6 +14,7 @@ using System.Web.Http;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using System.Web.Http.Controllers;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -25,6 +26,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		#region Private variables
 		private readonly IRelationshipTypeRepository _relationshipTypeRepository;
 		IRepositoryResponse repositoryResponse = new RepositoryResponse();
+		private IManageRelationshipType _manageRelationshipType;
 		#endregion
 
 		#region Constructor
@@ -33,22 +35,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		/// </summary>
 		public RelationshipTypeController() : base() { }
 
-		/// <summary>
-		/// Testing Constructor
-		/// </summary>
-		/// <param name="relationshipTypeRepository">RelationshipType Repository</param>
-		public RelationshipTypeController(IRelationshipTypeRepository relationshipTypeRepository)
-		{
-			_relationshipTypeRepository = relationshipTypeRepository;
-		}
-		#endregion
+        /// <summary>
+        /// Used to initialize DI classes with userclaim
+        /// </summary>
+        /// <param name="controllerContext"></param>
+        protected override void Initialize(HttpControllerContext controllerContext)
+        {
+            base.Initialize(controllerContext);
+            _manageRelationshipType = new ManageRelationshipType(_userClaims);
 
-		#region Public Methods
-		/// <summary>
-		/// List Role type details
-		/// </summary>
-		/// <returns>A list of Role type details</returns>
-		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        }
+        #endregion
+
+        #region Public Methods
+        /// <summary>
+        /// List Role type details
+        /// </summary>
+        /// <returns>A list of Role type details</returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
 		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
 		[SwaggerResponse(HttpStatusCode.OK, Description = "Get information about the password policy", Type = typeof(IRelationshipType))]
 		[SwaggerResponseExamples(typeof(IRelationshipType), typeof(RelationshipTypeExample))]
@@ -56,9 +60,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		[HttpGet]
 		public HttpResponseMessage ListRelationshipType(string relationshipTypeName)
 		{
-			IList<RelationshipType> relationshipTypeList = new List<RelationshipType>();
+            IList<RelationshipType> relationshipTypeList = new List<RelationshipType>();
 
-			IManageRelationshipType relationshipTypeLogic = new ManageRelationshipType();
+			IManageRelationshipType relationshipTypeLogic = new ManageRelationshipType(_userClaims);
 
 			if (_relationshipTypeRepository == null)
 			{
@@ -78,13 +82,35 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			//When trying to get a list of relationshipTypes that doesn't exists
 			return Request.CreateResponse(HttpStatusCode.NoContent, "No Data");
 		}
-		#endregion
 
-		#region Get Examples
-		/// <summary>
-		/// Used to document examples of the RelationshipType Model webapi result
-		/// </summary>
-		[ExcludeFromCodeCoverage]
+        /// <summary>
+        /// List UserRelationShiptypes details
+        /// </summary>
+        /// <returns>A list of Role type details</returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about the password policy", Type = typeof(UserRelationShipType))]
+        [SwaggerResponseExamples(typeof(UserRelationShipType), typeof(UserRelationShipExample))]
+        [Route("userrelationshiptypes")]
+        [HttpGet]
+        public HttpResponseMessage ListUserRelationTypes() 
+		{
+			var userRelationships =_manageRelationshipType.GetUserRelationShipTypes();
+
+            if (userRelationships != null)
+            {
+                ObjectListOutput<UserRelationShipType, IErrorData> output = new ObjectListOutput<UserRelationShipType, IErrorData>() { list = userRelationships };
+                return Request.CreateResponse(HttpStatusCode.OK, output);
+            }
+            return Request.CreateResponse(HttpStatusCode.NoContent, "No Data");
+        }
+        #endregion
+
+        #region Get Examples
+        /// <summary>
+        /// Used to document examples of the RelationshipType Model webapi result
+        /// </summary>
+        [ExcludeFromCodeCoverage]
 		public class RelationshipTypeExample : IProvideExamples
 		{
 			/// <summary>
@@ -107,6 +133,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				return output;
 			}
 		}
-		#endregion
-	}
+
+        /// <summary>
+        /// Used to document examples of the RelationshipType Model webapi result
+        /// </summary>
+        public class UserRelationShipExample : IProvideExamples
+        {
+            /// <summary>
+            /// Example object data used by Swagger to document the output of the webapi method
+            /// </summary>
+            /// <returns>UserRelationShip example</returns>
+            public object GetExamples()
+            {
+                UserRelationShipType example = new UserRelationShipType()
+                {
+                    UserRelationshipName = "Employee",
+                    ThirdPartyRelationshipId = 4,
+                    SortIndex = 1,
+                    PartyRoleTypeId = 401,
+                    Description = "Employee user with email format username"
+                };
+
+                ObjectOutput<UserRelationShipType, IErrorData> output = new ObjectOutput<UserRelationShipType, IErrorData>() { obj = example };
+
+                return output;
+            }
+        }
+        #endregion
+    }
 }
