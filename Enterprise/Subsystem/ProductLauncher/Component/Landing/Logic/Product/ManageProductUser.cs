@@ -1249,6 +1249,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // Handle AO user products separately 
             if (productUserAccountDetails.ProductId == (int)ProductEnum.AssetOptimizer)
             {
+                if(productUserAccountDetails.Origin.Equals("UL"))
+                {
+                    var productlist = ProductEnumHelper.GetAoProductList();
+                    var subProuctsSelected = productUserAccountDetails.SubProducts.ToList();
+                    foreach(var personaproduct in productsWithStatus) 
+                    {
+                        //Deleting AO User SAML Attribute details not in subProducts list
+                        if (productlist.Contains((ProductEnum)personaproduct.ProductId))
+                        {
+                            string productCode = ProductEnumHelper.GetAoProductId((ProductEnum)personaproduct.ProductId);
+                            if (!subProuctsSelected.Contains(productCode))
+                            {
+                                manageProductBase.DeleteSamlUserProductInfoAndStatus(assignUserPersonaId, (int)ProductEnumHelper.GetAoProductEnum(productCode));
+                                var logMessage = $"{fromuserInfo.FirstName} {fromuserInfo.LastName} " +
+                                    $"deleted user information of {touserInfo.FirstName} {touserInfo.LastName} " +
+                                    $"for {personaproduct.ProductName}.";
+                                _activityLogHelper.PushToQueue(fromuserInfo, touserInfo, logMessage, "USER_UPDATE_INTERNAL");
+                            }
+                        }
+                    }
+                }
+                
                 updates = UpdateAoUserDetails(productUserAccountDetails);
                 if (internalChange)
                 {
