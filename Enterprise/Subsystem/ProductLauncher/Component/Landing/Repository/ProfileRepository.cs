@@ -20,115 +20,118 @@ using System.Text.RegularExpressions;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 {
-	/// <summary>
-	/// Profile Repository
-	/// </summary>
-	public class ProfileRepository : BaseRepository, IProfileRepository
-	{
-		private DefaultUserClaim _userClaim;
-		IManageUserLogin _manageUserLogin;
-		IPartyRelationshipRepository _partyRelationshipRepository;
-		IProductRepository _productRepository;
-		IPersonaRepository _personaRepository;
+    /// <summary>
+    /// Profile Repository
+    /// </summary>
+    public class ProfileRepository : BaseRepository, IProfileRepository
+    {
+        private DefaultUserClaim _userClaim;
+        IManageUserLogin _manageUserLogin;
+        IPartyRelationshipRepository _partyRelationshipRepository;
+        IProductRepository _productRepository;
+        IPersonaRepository _personaRepository;
 
         /// <summary>
         /// Used to filter user list results
         /// </summary>
         public enum UserListTypeFilter
-		{
-			/// <summary>
-			/// View All Users
-			/// </summary>
-			ViewAllUsers = 0,
+        {
+            /// <summary>
+            /// View All Users
+            /// </summary>
+            ViewAllUsers = 0,
 
-			/// <summary>
-			/// Exclude Support Users
-			/// </summary>
-			ExcludeSupportUsers = 1,
+            /// <summary>
+            /// Exclude Support Users
+            /// </summary>
+            ExcludeSupportUsers = 1,
 
-			/// <summary>
-			/// Exclude Support And SuperUsers
-			/// </summary>
-			ExcludeSupportAndSuperUsers = 2
-		}
+            /// <summary>
+            /// Exclude Support And SuperUsers
+            /// </summary>
+            ExcludeSupportAndSuperUsers = 2
+        }
 
-		#region Constructor
-		/// <summary>
-		/// Unit test constructor
-		/// </summary>
+        #region Constructor
+        /// <summary>
+        /// Unit test constructor
+        /// </summary>
         public ProfileRepository(IRepository repository, DefaultUserClaim userClaim, HttpMessageHandler messageHandler) : base(repository)
         {
             _userClaim = userClaim;
             _manageUserLogin = new ManageUserLogin(repository, userClaim, messageHandler);
             _partyRelationshipRepository = new PartyRelationshipRepository(repository);
             _productRepository = new ProductRepository(repository, userClaim);
-			_personaRepository =  new PersonaRepository(repository, userClaim);
+            _personaRepository = new PersonaRepository(repository, userClaim);
         }
 
-		/// <summary>
-		/// Profile base Constructor
-		/// </summary>
-		/// <param name="userClaim"></param>
-		public ProfileRepository(DefaultUserClaim userClaim) : base(DbConnectionEnum.IdpConfigurationDb)
-		{
-			_userClaim = userClaim;
-			_manageUserLogin = new ManageUserLogin(_userClaim);
-			_partyRelationshipRepository = new PartyRelationshipRepository();
-			_productRepository = new ProductRepository(_userClaim);
+        /// <summary>
+        /// Profile base Constructor
+        /// </summary>
+        /// <param name="userClaim"></param>
+        public ProfileRepository(DefaultUserClaim userClaim) : base(DbConnectionEnum.IdpConfigurationDb)
+        {
+            _userClaim = userClaim;
+            _manageUserLogin = new ManageUserLogin(_userClaim);
+            _partyRelationshipRepository = new PartyRelationshipRepository();
+            _productRepository = new ProductRepository(_userClaim);
             _personaRepository = new PersonaRepository(_userClaim);
         }
-		#endregion
+        #endregion
 
-		#region public Profile methods
-		/// <summary>
-		/// Update Profile
-		/// </summary>
-		/// <param name="realPageId">User unique identifier</param>
-		/// <param name="profile">profile object of the parameter values</param>
-		/// <returns>Repository response object</returns>
-		public RepositoryResponse UpdateProfile(Guid realPageId, IProfile profile)
-		{
-			int roleTypeIdFrom = 0;
-			bool industryStandardJobChanged = false;
-			bool residentPortalAssignedToUser = false;
-			bool IsSuperUser = false;
-			DateTime utcNow = DateTime.UtcNow;
-			DateTime utcMaxValue = DateTime.MaxValue.ToUniversalTime();
-			RepositoryResponse repositoryResponse = new RepositoryResponse();
-			//IPersonaRepository personaRepository = new PersonaRepository();
-			bool customJobTitleChanged = false;
+        #region public Profile methods
+        /// <summary>
+        /// Update Profile
+        /// </summary>
+        /// <param name="realPageId">User unique identifier</param>
+        /// <param name="profile">profile object of the parameter values</param>
+        /// <returns>Repository response object</returns>
+        public RepositoryResponse UpdateProfile(Guid realPageId, IProfile profile)
+        {
+            int roleTypeIdFrom = 0;
+            bool industryStandardJobChanged = false;
+            bool residentPortalAssignedToUser = false;
+            bool IsSuperUser = false;
+            DateTime utcNow = DateTime.UtcNow;
+            DateTime utcMaxValue = DateTime.MaxValue.ToUniversalTime();
+            RepositoryResponse repositoryResponse = new RepositoryResponse();
+            //IPersonaRepository personaRepository = new PersonaRepository();
+            bool customJobTitleChanged = false;
+            bool isKnockProductAssignedToUser = false;
+            bool isPhoneNumberChange = false;
 
-			//get Organization Enterprise guid from Persona
-			Guid organizationRealPageId = Guid.Empty;
-			long personaId = _personaRepository.GetActivePersonaId(realPageId);
-			Persona persona = _personaRepository.GetPersona(personaId);
-			if (persona != null)
-			{
-				organizationRealPageId = persona.Organization.RealPageId;
-			}
+            //get Organization Enterprise guid from Persona
+            Guid organizationRealPageId = Guid.Empty;
+            long personaId = _personaRepository.GetActivePersonaId(realPageId);
+            Persona persona = _personaRepository.GetPersona(personaId);
+            if (persona != null)
+            {
+                organizationRealPageId = persona.Organization.RealPageId;
+            }
 
-			//Find the User Type
-			PartyRelationship partyRelationship = _partyRelationshipRepository.GetPartyRelationship(realPageId, organizationRealPageId, null, null, "User Type");
-			if (partyRelationship != null)
-			{
-				IsSuperUser = (partyRelationship.RoleTypeIdFrom == (int)UserRoleType.SuperUser) ? true : false;
-				if (!IsSuperUser)
-				{
-					//Regular user has access to Resident Portal?
-					IList<PersonaProductUserDetails> personaProductUserDetailsList = _productRepository.GetAssignedProductsByPersona(persona, null, null);
-					if (personaProductUserDetailsList != null)
-					{
-						residentPortalAssignedToUser = personaProductUserDetailsList.Any(p => p.ProductId == (int)ProductEnum.ResidentPortal);
-					}
-				}
-			}
+            //Find the User Type
+            PartyRelationship partyRelationship = _partyRelationshipRepository.GetPartyRelationship(realPageId, organizationRealPageId, null, null, "User Type");
+            if (partyRelationship != null)
+            {
+                IsSuperUser = (partyRelationship.RoleTypeIdFrom == (int)UserRoleType.SuperUser) ? true : false;
+                if (!IsSuperUser)
+                {
+                    //Regular user has access to Resident Portal?
+                    IList<PersonaProductUserDetails> personaProductUserDetailsList = _productRepository.GetAssignedProductsByPersona(persona, null, null);
+                    if (personaProductUserDetailsList != null)
+                    {
+                        residentPortalAssignedToUser = personaProductUserDetailsList.Any(p => p.ProductId == (int)ProductEnum.ResidentPortal);
+                        isKnockProductAssignedToUser = personaProductUserDetailsList.Any(p => p.ProductId == (int)ProductEnum.KnockCRM);
+                    }
+                }
+            }
 
-			using (var repository = GetRepository())
-			{
-				//Begin the transaction
-				repository.UnitOfWork.BeginTransaction();
-				try
-				{
+            using (var repository = GetRepository())
+            {
+                //Begin the transaction
+                repository.UnitOfWork.BeginTransaction();
+                try
+                {
                     UserLoginOnly impersonatorUserLoginOnly = new UserLoginOnly();
                     if (_userClaim.ImpersonatedBy != Guid.Empty)
                     {
@@ -136,665 +139,696 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     }
 
                     var oldPerson = repository.GetOne<Person>(StoredProcNameConstants.SP_GetPerson, new { realPageId });
-					customJobTitleChanged = oldPerson.Title != profile.Title ? true : false;
+                    customJobTitleChanged = oldPerson.Title != profile.Title ? true : false;
 
-					//Setup the parameter values to update the person's info
-					dynamic param = new
-					{
-						RealPageId = realPageId,
-						Title = profile.Title,
-						FirstName = profile.FirstName,
-						MiddleName = profile.MiddleName,
-						LastName = profile.LastName,
-						Suffix = profile.Suffix,
-						PreferredContactMethodId = profile.PreferredContactMethodId
-					};
-					//Update the person's info
-					repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdatePerson, param);
-					if (repositoryResponse.Id == 0)
-					{
-						repositoryResponse.ErrorMessage = "Update profile Error: Update person failed.";
-					}
-					else
-					{
-						//Job Title
-						IPartyRoleRepository partyRoleRepository = new PartyRoleRepository();
-						if ((profile.PartyRole != null) && (profile.PartyRole.PartyRoleId > 0))
-						{
-							//get the Organization Employer RoleTypeId
-							dynamic paramOrgRole = new
-							{
-								RoleTypeName = "Organization Role"
-							};
-							IList<RoleType> roleTypes = repository.GetMany<RoleType>(StoredProcNameConstants.SP_ListRoleType, paramOrgRole);
-							var Employer = roleTypes.SingleOrDefault<RoleType>(p => p.Name == "Employer");
-							int roleTypeIdTo = (int)Employer.PartyRoleTypeId; //Employer
+                    //Setup the parameter values to update the person's info
+                    dynamic param = new
+                    {
+                        RealPageId = realPageId,
+                        Title = profile.Title,
+                        FirstName = profile.FirstName,
+                        MiddleName = profile.MiddleName,
+                        LastName = profile.LastName,
+                        Suffix = profile.Suffix,
+                        PreferredContactMethodId = profile.PreferredContactMethodId
+                    };
+                    //Update the person's info
+                    repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdatePerson, param);
+                    if (repositoryResponse.Id == 0)
+                    {
+                        repositoryResponse.ErrorMessage = "Update profile Error: Update person failed.";
+                    }
+                    else
+                    {
+                        //Job Title
+                        IPartyRoleRepository partyRoleRepository = new PartyRoleRepository();
+                        if ((profile.PartyRole != null) && (profile.PartyRole.PartyRoleId > 0))
+                        {
+                            //get the Organization Employer RoleTypeId
+                            dynamic paramOrgRole = new
+                            {
+                                RoleTypeName = "Organization Role"
+                            };
+                            IList<RoleType> roleTypes = repository.GetMany<RoleType>(StoredProcNameConstants.SP_ListRoleType, paramOrgRole);
+                            var Employer = roleTypes.SingleOrDefault<RoleType>(p => p.Name == "Employer");
+                            int roleTypeIdTo = (int)Employer.PartyRoleTypeId; //Employer
 
-							//get the Person Employment RoleTypeId
-							string roleTypeName = null;
-							string relationshipTypeName = "Employment";
-							dynamic paramRelType = new
-							{
-								RealPageIdFrom = realPageId,
-								RealPageIdTo = organizationRealPageId,
-								RoleTypeName = roleTypeName,
-								RelationshipTypeName = relationshipTypeName
-							};
-							PartyRelationship relationshipType = repository.GetOne<PartyRelationship>(StoredProcNameConstants.SP_GetPartyRelationshipByRealPageId, paramRelType);
-							//get the person to organization Job title relationship roletype if exists
-							roleTypeIdFrom = ((relationshipType != null) && (relationshipType.RoleTypeIdFrom > 0)) ? relationshipType.RoleTypeIdFrom : 0;
+                            //get the Person Employment RoleTypeId
+                            string roleTypeName = null;
+                            string relationshipTypeName = "Employment";
+                            dynamic paramRelType = new
+                            {
+                                RealPageIdFrom = realPageId,
+                                RealPageIdTo = organizationRealPageId,
+                                RoleTypeName = roleTypeName,
+                                RelationshipTypeName = relationshipTypeName
+                            };
+                            PartyRelationship relationshipType = repository.GetOne<PartyRelationship>(StoredProcNameConstants.SP_GetPartyRelationshipByRealPageId, paramRelType);
+                            //get the person to organization Job title relationship roletype if exists
+                            roleTypeIdFrom = ((relationshipType != null) && (relationshipType.RoleTypeIdFrom > 0)) ? relationshipType.RoleTypeIdFrom : 0;
 
-							//Unlink the person to organization Job title relationship if exists
-							//Link the person to organization Job title relationship
-							dynamic paramRole = new
-							{
-								PersonRealPageId = realPageId,
-								OrganizationRealPageId = organizationRealPageId,
-								UnlinkRoleTypeIdFrom = roleTypeIdFrom,
-								LinkRoleTypeIdFrom = profile.PartyRole.RoleTypeId,
-								RoleTypeIdTo = roleTypeIdTo
-							};
-							RepositoryResponse RoleId = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdatePersonToOrganization, paramRole);
+                            //Unlink the person to organization Job title relationship if exists
+                            //Link the person to organization Job title relationship
+                            dynamic paramRole = new
+                            {
+                                PersonRealPageId = realPageId,
+                                OrganizationRealPageId = organizationRealPageId,
+                                UnlinkRoleTypeIdFrom = roleTypeIdFrom,
+                                LinkRoleTypeIdFrom = profile.PartyRole.RoleTypeId,
+                                RoleTypeIdTo = roleTypeIdTo
+                            };
+                            RepositoryResponse RoleId = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdatePersonToOrganization, paramRole);
 
-							//Update Job title parameter values
-							param = new
-							{
-								PartyRoleId = profile.PartyRole.PartyRoleId,
-								RoleTypeID = profile.PartyRole.RoleTypeId
-							};
-							//Update the person's Job title
-							repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdatePartyRoleByRealPageId, param);
-						}
-						else
-						{
-							//Add Job title parameter values
-							param = new
-							{
-								RealPageId = realPageId,
-								RoleTypeId = profile.PartyRole.RoleTypeId
-							};
-							//Assign Job tile to person
-							repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreatePartyRoleByRealPageId, param);
-						}
-						if (repositoryResponse.Id == 0)
-						{
-							repositoryResponse.ErrorMessage = "Update profile Error: Job Title failed.";
-						}
-						else
-						{
-							industryStandardJobChanged = profile.PartyRole.RoleTypeId != roleTypeIdFrom ? true : false;
-							ITelecommunicationNumberRepository telecommunicationNumberRepository = new TelecommunicationNumberRepository();
-							ITelecommunicationNumber telecommunicationNumber = new TelecommunicationNumber();
-							IContactMechanismRepository contactMechanismRepository = new ContactMechanismRepository();
-							IPartyContactMechanism partyContactMechanism = new PartyContactMechanism();
-							//Loop through all the Telecommunication numbers
-							foreach (ITelecommunicationNumber phone in profile.TelecommunicationNumber.ToList())
-							{
-								telecommunicationNumber.ContactMechanismId = phone.ContactMechanismId;
-								telecommunicationNumber.AreaCode = phone.AreaCode;
-								telecommunicationNumber.CountryCode = phone.CountryCode;
-								telecommunicationNumber.PhoneNumber = phone.PhoneNumber;
-								telecommunicationNumber.ISOCode = phone.ISOCode;
-								//New Telecommunication number
-								if (phone.ContactMechanismId == 0)
-								{
-									if (phone.IsDeleted == true)
-									{
-										profile.TelecommunicationNumber.Remove((TelecommunicationNumber)phone);
-									}
-									else
-									{
-										//Is the Phone and Type valid
-										if ((phone.PhoneNumber.Trim().Length > 0) && (phone.contactMechanismUsageType.ContactMechanismUsageTypeId > 0))
-										{
-											//Add a new phone
-											//Create the Contact Mechanism
-											param = new
-											{
-												ContactMechanismId = 0
-											};
-											repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateContactMechanism, param);
+                            //Update Job title parameter values
+                            param = new
+                            {
+                                PartyRoleId = profile.PartyRole.PartyRoleId,
+                                RoleTypeID = profile.PartyRole.RoleTypeId
+                            };
+                            //Update the person's Job title
+                            repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdatePartyRoleByRealPageId, param);
+                        }
+                        else
+                        {
+                            //Add Job title parameter values
+                            param = new
+                            {
+                                RealPageId = realPageId,
+                                RoleTypeId = profile.PartyRole.RoleTypeId
+                            };
+                            //Assign Job tile to person
+                            repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreatePartyRoleByRealPageId, param);
+                        }
+                        if (repositoryResponse.Id == 0)
+                        {
+                            repositoryResponse.ErrorMessage = "Update profile Error: Job Title failed.";
+                        }
+                        else
+                        {
+                            IList<TelecommunicationNumber> telecommunicationslists = repository.GetMany<TelecommunicationNumber>(StoredProcNameConstants.SP_ListTelecommunicationNumbersForPerson, new { realPageId }).ToList();
+                            //isPhoneNumberChange = isPhoneNumberUpdated(profile.TelecommunicationNumber.ToList(), telecommunicationslists.ToList());
 
-											if (repositoryResponse.Id == 0)
-											{
-												repositoryResponse.ErrorMessage = "Update profile Error: Create Contact Mechanism failed.";
-											}
-											else
-											{
-												phone.ContactMechanismId = Convert.ToInt32(repositoryResponse.Id);
-												telecommunicationNumber.ContactMechanismId = Convert.ToInt32(repositoryResponse.Id);
-												//Associate the Contact Mechanism to a Party
-												param = new
-												{
-													RealPageId = realPageId,
-													PartyContactMechanismId = 0,
-													ContactMechanismId = telecommunicationNumber.ContactMechanismId,
-													FromDate = utcNow,
-													ThruDate = utcMaxValue
-												};
-												repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkContactMechanismToParty, param);
-												if (repositoryResponse.Id == 0)
-												{
-													repositoryResponse.ErrorMessage = "Update profile Error: Create Contact Mechanism failed.";
-												}
-												else
-												{
-													phone.PartyContactMechanismId = repositoryResponse.Id;
-													//Assign a usage type to the Contact Mechanism
-													partyContactMechanism.PartyContactMechanismId = repositoryResponse.Id;
-													param = new
-													{
-														PartyContactMechanismId = partyContactMechanism.PartyContactMechanismId,
-														ContactMechanismUsageTypeId = phone.contactMechanismUsageType.ContactMechanismUsageTypeId
-													};
-													repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkUsageTypeToPartyContactMechanism, param);
-													if (repositoryResponse.Id == 0)
-													{
-														repositoryResponse.ErrorMessage = "Update profile Error: Link UsageType to Party Contact Mechanism failed.";
-													}
-												}
-											}
-										}
-									}
-								}
-								else
-								{
-									if (phone.IsDeleted == true)
-									{
-										param = new
-										{
-											PartyContactMechanismID = phone.PartyContactMechanismId,
-											RealPageId = profile.RealPageId
+                            industryStandardJobChanged = profile.PartyRole.RoleTypeId != roleTypeIdFrom ? true : false;
+                            ITelecommunicationNumberRepository telecommunicationNumberRepository = new TelecommunicationNumberRepository();
+                            ITelecommunicationNumber telecommunicationNumber = new TelecommunicationNumber();
+                            IContactMechanismRepository contactMechanismRepository = new ContactMechanismRepository();
+                            IPartyContactMechanism partyContactMechanism = new PartyContactMechanism();
+                            //Loop through all the Telecommunication numbers
+                            foreach (ITelecommunicationNumber phone in profile.TelecommunicationNumber.ToList())
+                            {
+                                telecommunicationNumber.ContactMechanismId = phone.ContactMechanismId;
+                                telecommunicationNumber.AreaCode = phone.AreaCode;
+                                telecommunicationNumber.CountryCode = phone.CountryCode;
+                                telecommunicationNumber.PhoneNumber = phone.PhoneNumber;
+                                telecommunicationNumber.ISOCode = phone.ISOCode;
+                                //New Telecommunication number
+                                if (phone.ContactMechanismId == 0)
+                                {
+                                    if (phone.IsDeleted == true)
+                                    {
+                                        profile.TelecommunicationNumber.Remove((TelecommunicationNumber)phone);
+                                    }
+                                    else
+                                    {
+                                        //Is the Phone and Type valid
+                                        if ((phone.PhoneNumber.Trim().Length > 0) && (phone.contactMechanismUsageType.ContactMechanismUsageTypeId > 0))
+                                        {
+                                            //Add a new phone
+                                            //Create the Contact Mechanism
+                                            param = new
+                                            {
+                                                ContactMechanismId = 0
+                                            };
+                                            repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateContactMechanism, param);
 
-										};
-										repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_ExpirePartyContactMechanism, param);
-										if (repositoryResponse.Id == 0)
-										{
-											repositoryResponse.ErrorMessage = "Update profile Error: Link Contact Mechanism Expire for a Party failed.";
-										}
-										else
-										{
-											profile.TelecommunicationNumber.Remove((TelecommunicationNumber)phone);
-										}
-									}
-									else
-									{
-										if ((phone.contactMechanismUsageType.ContactMechanismUsageTypeId > 0) && (phone.PhoneNumber.Trim().Length > 0))
-										{
-											//Set the PhoneType for the added/updated Telecommunication number
-											param = new
-											{
-												PartyContactMechanismID = phone.PartyContactMechanismId,
-												ContactMechanismUsageTypeId = phone.contactMechanismUsageType.ContactMechanismUsageTypeId
-											};
+                                            if (repositoryResponse.Id == 0)
+                                            {
+                                                repositoryResponse.ErrorMessage = "Update profile Error: Create Contact Mechanism failed.";
+                                            }
+                                            else
+                                            {
+                                                phone.ContactMechanismId = Convert.ToInt32(repositoryResponse.Id);
+                                                telecommunicationNumber.ContactMechanismId = Convert.ToInt32(repositoryResponse.Id);
+                                                //Associate the Contact Mechanism to a Party
+                                                param = new
+                                                {
+                                                    RealPageId = realPageId,
+                                                    PartyContactMechanismId = 0,
+                                                    ContactMechanismId = telecommunicationNumber.ContactMechanismId,
+                                                    FromDate = utcNow,
+                                                    ThruDate = utcMaxValue
+                                                };
+                                                repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkContactMechanismToParty, param);
+                                                if (repositoryResponse.Id == 0)
+                                                {
+                                                    repositoryResponse.ErrorMessage = "Update profile Error: Create Contact Mechanism failed.";
+                                                }
+                                                else
+                                                {
+                                                    phone.PartyContactMechanismId = repositoryResponse.Id;
+                                                    //Assign a usage type to the Contact Mechanism
+                                                    partyContactMechanism.PartyContactMechanismId = repositoryResponse.Id;
+                                                    param = new
+                                                    {
+                                                        PartyContactMechanismId = partyContactMechanism.PartyContactMechanismId,
+                                                        ContactMechanismUsageTypeId = phone.contactMechanismUsageType.ContactMechanismUsageTypeId
+                                                    };
+                                                    repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkUsageTypeToPartyContactMechanism, param);
+                                                    if (repositoryResponse.Id == 0)
+                                                    {
+                                                        repositoryResponse.ErrorMessage = "Update profile Error: Link UsageType to Party Contact Mechanism failed.";
+                                                    }
+                                                    isPhoneNumberChange = true;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    if (phone.IsDeleted == true)
+                                    {
+                                        param = new
+                                        {
+                                            PartyContactMechanismID = phone.PartyContactMechanismId,
+                                            RealPageId = profile.RealPageId
 
-											repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateContactMechanismUsageForParty, param);
-											if (repositoryResponse.Id == 0)
-											{
-												repositoryResponse.ErrorMessage = "Update profile Error: Update Contact Mechanism Usage For Party failed.";
-											}
-										}
-										else
-										{
-											//Expire the Telecommunication number is the phone number or type is cleared
-											param = new
-											{
-												RealPageId = realPageId,
-												PartyContactMechanismId = phone.PartyContactMechanismId,
-												ContactMechanismId = phone.ContactMechanismId,
-												FromDate = utcNow,
-												ThruDate = utcNow
-											};
-											repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkContactMechanismToParty, param);
-										}
-										if (repositoryResponse.Id == 0)
-										{
-											repositoryResponse.ErrorMessage = "Update profile Error: Link Contact Mechanism To a Party failed.";
-										}
-									}
-								}
+                                        };
+                                        repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_ExpirePartyContactMechanism, param);
+                                        if (repositoryResponse.Id == 0)
+                                        {
+                                            repositoryResponse.ErrorMessage = "Update profile Error: Link Contact Mechanism Expire for a Party failed.";
+                                        }
+                                        else
+                                        {
+                                            profile.TelecommunicationNumber.Remove((TelecommunicationNumber)phone);
+                                            isPhoneNumberChange = true;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if ((phone.contactMechanismUsageType.ContactMechanismUsageTypeId > 0) && (phone.PhoneNumber.Trim().Length > 0))
+                                        {
+                                            //Set the PhoneType for the added/updated Telecommunication number
+                                            param = new
+                                            {
+                                                PartyContactMechanismID = phone.PartyContactMechanismId,
+                                                ContactMechanismUsageTypeId = phone.contactMechanismUsageType.ContactMechanismUsageTypeId
+                                            };
 
-								if ((phone.IsDeleted == false) && (telecommunicationNumber.ContactMechanismId > 0) && (phone.PhoneNumber.Trim().Length > 0))
-								{
-									param = new
-									{
-										ContactMechanismId = telecommunicationNumber.ContactMechanismId,
-										AreaCode = telecommunicationNumber.AreaCode,
-										CountryCode = telecommunicationNumber.CountryCode,
-										PhoneNumber = telecommunicationNumber.PhoneNumber,
-										ISOCode = telecommunicationNumber.ISOCode
-								};
-									repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateTelecommunicationNumber, param);
-									if (repositoryResponse.Id == 0)
-									{
-										repositoryResponse.ErrorMessage = "Update profile Error: Link a telecommunication number details for a person failed.";
-									}
-								}
-							}
-							if (profile.TelecommunicationNumber.Count > 0)
-							{
-								bool response = UpdateContactPreference(repository, profile.RealPageId, profile.TelecommunicationNumber.ToList());
-								if (!response)
-								{
-									repositoryResponse.ErrorMessage = "Update profile Error: Create Contact Mechanism Preference failed.";
-								}
-							}
+                                            repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateContactMechanismUsageForParty, param);
+                                            if (repositoryResponse.Id == 0)
+                                            {
+                                                repositoryResponse.ErrorMessage = "Update profile Error: Update Contact Mechanism Usage For Party failed.";
+                                            }
+                                        }
+                                        else
+                                        {
+                                            //Expire the Telecommunication number is the phone number or type is cleared
+                                            param = new
+                                            {
+                                                RealPageId = realPageId,
+                                                PartyContactMechanismId = phone.PartyContactMechanismId,
+                                                ContactMechanismId = phone.ContactMechanismId,
+                                                FromDate = utcNow,
+                                                ThruDate = utcNow
+                                            };
+                                            repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkContactMechanismToParty, param);
+                                        }
+                                        if (repositoryResponse.Id == 0)
+                                        {
+                                            repositoryResponse.ErrorMessage = "Update profile Error: Link Contact Mechanism To a Party failed.";
+                                        }
+                                        isPhoneNumberChange = true;
+                                    }
+                                }
 
-							IManageElectronicAddress electronicAddressLogic = new ManageElectronicAddress();
-							IElectronicAddress electronicAddress = new ElectronicAddress();
-							electronicAddress = profile.EmailContacts[0];
+                                if (phone.IsDeleted == false && telecommunicationNumber.ContactMechanismId > 0 && phone.PhoneNumber.Trim().Length > 0)
+                                {
+                                    param = new
+                                    {
+                                        ContactMechanismId = telecommunicationNumber.ContactMechanismId,
+                                        AreaCode = telecommunicationNumber.AreaCode,
+                                        CountryCode = telecommunicationNumber.CountryCode,
+                                        PhoneNumber = telecommunicationNumber.PhoneNumber,
+                                        ISOCode = telecommunicationNumber.ISOCode
+                                    };
+                                    repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateTelecommunicationNumber, param);
+                                    if (repositoryResponse.Id == 0)
+                                    {
+                                        repositoryResponse.ErrorMessage = "Update profile Error: Link a telecommunication number details for a person failed.";
+                                    }
+                                    foreach (var existingPhone in telecommunicationslists.ToList())
+                                    {
+                                        if (existingPhone.ContactMechanismId == telecommunicationNumber.ContactMechanismId)
+                                        {
+                                            if (existingPhone.PhoneNumber != telecommunicationNumber.PhoneNumber)
+                                            {
+                                                isPhoneNumberChange = true;
+                                            }
+                                        }
+                                    }
+                                }
 
-							if (electronicAddress.ContactMechanismId == 0 && profile.EmailContacts[0].AddressString.Trim().Length > 0)
-							{
-								param = new
-								{
-									ContactMechanismId = 0
-								};
-								repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateContactMechanism, param);
+                            }
+                            if (profile.TelecommunicationNumber.Count > 0)
+                            {
+                                bool response = UpdateContactPreference(repository, profile.RealPageId, profile.TelecommunicationNumber.ToList());
+                                if (!response)
+                                {
+                                    repositoryResponse.ErrorMessage = "Update profile Error: Create Contact Mechanism Preference failed.";
+                                }
+                            }
 
-								if (repositoryResponse.Id == 0)
-								{
-									repositoryResponse.ErrorMessage = "Update profile Error: Create Contact Mechanism failed for Electronic Email Address.";
-								}
-								else
-								{
-									electronicAddress.ContactMechanismId = (int)repositoryResponse.Id;
-									//Associate the Contact Mechanism to a Party
-									param = new
-									{
-										RealPageId = realPageId,
-										PartyContactMechanismId = 0,
-										ContactMechanismId = repositoryResponse.Id,
-										FromDate = utcNow,
-										ThruDate = utcMaxValue
-									};
-									repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkContactMechanismToParty, param);
-									if (repositoryResponse.Id == 0)
-									{
-										repositoryResponse.ErrorMessage = "Update profile Error: Create Contact Mechanism failed for Electronic Email Address.";
-									}
-									else
-									{
-										electronicAddress.PartyContactMechanismId = (int)repositoryResponse.Id;
-										param = new
-										{
-											PartyContactMechanismId = repositoryResponse.Id,
-											ContactMechanismUsageTypeId = profile.EmailContacts[0].contactMechanismUsageType.ContactMechanismUsageTypeId
-										};
-										repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkUsageTypeToPartyContactMechanism, param);
-										if (repositoryResponse.Id == 0)
-										{
-											repositoryResponse.ErrorMessage = "Update profile Error: Link UsageType to Party Contact Mechanism failed for Electronic Email Address.";
-										}
-										else
-										{
-											electronicAddress.ContactMechanismUsageTypeId = (int)repositoryResponse.Id;
-										}
-									}
-								}
-							}
+                            IManageElectronicAddress electronicAddressLogic = new ManageElectronicAddress();
+                            IElectronicAddress electronicAddress = new ElectronicAddress();
+                            electronicAddress = profile.EmailContacts[0];
 
-							if (profile.EmailContacts[0].AddressString.Trim().Length > 0)
-							{
-								param = new
-								{
-									ContactMechanismId = profile.EmailContacts[0].ContactMechanismId,
-									ElectronicAddressString = profile.EmailContacts[0].AddressString,
-									ElectronicAddressType = profile.EmailContacts[0].AddressType
-								};
-								repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateElectronicAddress, param);
-								if (repositoryResponse.Id == 0)
-								{
-									repositoryResponse.ErrorMessage = "Update profile Error: Link a Electronic Email Address details for a person failed.";
-								}
-							}
-							else
-							{
-								if (electronicAddress.PartyContactMechanismId != 0)
-								{
-									param = new
-									{
-										PartyContactMechanismID = electronicAddress.PartyContactMechanismId,
-										RealPageId = profile.RealPageId
+                            if (electronicAddress.ContactMechanismId == 0 && profile.EmailContacts[0].AddressString.Trim().Length > 0)
+                            {
+                                param = new
+                                {
+                                    ContactMechanismId = 0
+                                };
+                                repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateContactMechanism, param);
 
-									};
-									repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_ExpirePartyContactMechanism, param);
-									if (repositoryResponse.Id == 0)
-									{
-										repositoryResponse.ErrorMessage = "Update profile Error: Link Contact Mechanism Expire for a Party failed for Electronic Email Address.";
-									}
-									else
-									{
-										electronicAddress.ContactMechanismId = 0;
-										electronicAddress.ContactMechanismUsageTypeId = 0;
-										electronicAddress.PartyContactMechanismId = 0;
-									}
-								}
-							}
-						}
-					}
+                                if (repositoryResponse.Id == 0)
+                                {
+                                    repositoryResponse.ErrorMessage = "Update profile Error: Create Contact Mechanism failed for Electronic Email Address.";
+                                }
+                                else
+                                {
+                                    electronicAddress.ContactMechanismId = (int)repositoryResponse.Id;
+                                    //Associate the Contact Mechanism to a Party
+                                    param = new
+                                    {
+                                        RealPageId = realPageId,
+                                        PartyContactMechanismId = 0,
+                                        ContactMechanismId = repositoryResponse.Id,
+                                        FromDate = utcNow,
+                                        ThruDate = utcMaxValue
+                                    };
+                                    repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkContactMechanismToParty, param);
+                                    if (repositoryResponse.Id == 0)
+                                    {
+                                        repositoryResponse.ErrorMessage = "Update profile Error: Create Contact Mechanism failed for Electronic Email Address.";
+                                    }
+                                    else
+                                    {
+                                        electronicAddress.PartyContactMechanismId = (int)repositoryResponse.Id;
+                                        param = new
+                                        {
+                                            PartyContactMechanismId = repositoryResponse.Id,
+                                            ContactMechanismUsageTypeId = profile.EmailContacts[0].contactMechanismUsageType.ContactMechanismUsageTypeId
+                                        };
+                                        repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkUsageTypeToPartyContactMechanism, param);
+                                        if (repositoryResponse.Id == 0)
+                                        {
+                                            repositoryResponse.ErrorMessage = "Update profile Error: Link UsageType to Party Contact Mechanism failed for Electronic Email Address.";
+                                        }
+                                        else
+                                        {
+                                            electronicAddress.ContactMechanismUsageTypeId = (int)repositoryResponse.Id;
+                                        }
+                                    }
+                                }
+                            }
 
-					if ((!IsSuperUser) && (industryStandardJobChanged || customJobTitleChanged) && (residentPortalAssignedToUser))
-					{
-						string saveProductBatchError = "Save Product User Profile/Type Error: ";
-						//Industry Standard Job title got Set/Updated and the Regular user (Staff Role) has access to Resident Portal
-						ProductBatch productBatch = new ProductBatch()
-						{
-							ProductId = (int)ProductEnum.ResidentPortal,
-							StatusTypeId = 5,
-							RetryCount = 0,
-							InputJson = new RolePropertyList() { PropertyList = new List<string>(), RoleList = new List<string>(), IsAssigned = true }
-						};
-						SaveProductBatch(repository, productBatch, null, saveProductBatchError, _userClaim.PersonaId, personaId, _userClaim.UserRealPageGuid, null, JsonConvert.SerializeObject(productBatch.InputJson), impersonatorUserLoginOnly.UserId, (int)BatchProcessType.ProfileUpdate);
-					}
-				}
-				catch (Exception exception)
-				{
-					repositoryResponse.Id = 0;
-					repositoryResponse.ErrorMessage = "Update profile Error: " + exception.Message;
-				}
-				finally
-				{
-					if (repositoryResponse.ErrorMessage.Length == 0)
-					{
-						//Commit and end transaction.
-						repository.UnitOfWork.Commit();
-					}
-					else
-					{
-						//Rollback transaction and dispose it.
-						repository.UnitOfWork.Rollback();
-					}
-				}
-				return repositoryResponse;
-			}
-		}
+                            if (profile.EmailContacts[0].AddressString.Trim().Length > 0)
+                            {
+                                param = new
+                                {
+                                    ContactMechanismId = profile.EmailContacts[0].ContactMechanismId,
+                                    ElectronicAddressString = profile.EmailContacts[0].AddressString,
+                                    ElectronicAddressType = profile.EmailContacts[0].AddressType
+                                };
+                                repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateElectronicAddress, param);
+                                if (repositoryResponse.Id == 0)
+                                {
+                                    repositoryResponse.ErrorMessage = "Update profile Error: Link a Electronic Email Address details for a person failed.";
+                                }
+                            }
+                            else
+                            {
+                                if (electronicAddress.PartyContactMechanismId != 0)
+                                {
+                                    param = new
+                                    {
+                                        PartyContactMechanismID = electronicAddress.PartyContactMechanismId,
+                                        RealPageId = profile.RealPageId
 
-		/// <summary>
-		/// Returns a list of persons 
-		/// </summary>
-		/// <param name="organizationActiveProductIdList">List of product ids</param>
-		/// <param name="realPageId">Organization realpage uniqueidentifier</param>
-		/// <param name="parentPartyRoleTypeId">PartyRole parentId</param>
-		/// <param name="dataFilterSort">Data Filtering and Sorting</param>
-		/// <param name="isExport">flag to check user list export</param>
+                                    };
+                                    repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_ExpirePartyContactMechanism, param);
+                                    if (repositoryResponse.Id == 0)
+                                    {
+                                        repositoryResponse.ErrorMessage = "Update profile Error: Link Contact Mechanism Expire for a Party failed for Electronic Email Address.";
+                                    }
+                                    else
+                                    {
+                                        electronicAddress.ContactMechanismId = 0;
+                                        electronicAddress.ContactMechanismUsageTypeId = 0;
+                                        electronicAddress.PartyContactMechanismId = 0;
+                                    }
+                                }
+                            }
+                        }
+                    }
 
-		/// <returns>List of Person</returns>
-		public IList<ProfileDetail> ListPersons(IList<int> organizationActiveProductIdList, Guid? realPageId = null, int? parentPartyRoleTypeId = null, RequestParameter dataFilterSort = null, bool isExport = false)
-		{
-			UserListTypeFilter filterUserList = UserListTypeFilter.ExcludeSupportAndSuperUsers;
-			if (_userClaim.UserRealPageGuid != Guid.Empty)
-			{
+                    if (!IsSuperUser && (industryStandardJobChanged || customJobTitleChanged) && residentPortalAssignedToUser)
+                    {
+                        string saveProductBatchError = "Save Product User Profile/Type Error: ";
+                        //Industry Standard Job title got Set/Updated and the Regular user (Staff Role) has access to Resident Portal
+                        ProductBatch productBatch = new ProductBatch()
+                        {
+                            ProductId = (int)ProductEnum.ResidentPortal,
+                            StatusTypeId = 5,
+                            RetryCount = 0,
+                            InputJson = new RolePropertyList() { PropertyList = new List<string>(), RoleList = new List<string>(), IsAssigned = true }
+                        };
+                        SaveProductBatch(repository, productBatch, null, saveProductBatchError, _userClaim.PersonaId, personaId, _userClaim.UserRealPageGuid, null, JsonConvert.SerializeObject(productBatch.InputJson), impersonatorUserLoginOnly.UserId, (int)BatchProcessType.ProfileUpdate);
+                    }
+                    if (isPhoneNumberChange && isKnockProductAssignedToUser)
+                    {
+                        string saveProductBatchError = "Save Product User Profile/Type Error: ";
+
+                        ProductBatch productBatch = new ProductBatch()
+                        {
+                            ProductId = (int)ProductEnum.KnockCRM,
+                            StatusTypeId = 5,
+                            RetryCount = 0,
+                            InputJson = new RolePropertyList() { PropertyList = new List<string>(), RoleList = new List<string>(), IsAssigned = true }
+                        };
+                        SaveProductBatch(repository, productBatch, null, saveProductBatchError, _userClaim.PersonaId, personaId, _userClaim.UserRealPageGuid, null, JsonConvert.SerializeObject(productBatch.InputJson), impersonatorUserLoginOnly.UserId, (int)BatchProcessType.ProfileUpdate);
+                    }
+                }
+                catch (Exception exception)
+                {
+                    repositoryResponse.Id = 0;
+                    repositoryResponse.ErrorMessage = "Update profile Error: " + exception.Message;
+                }
+                finally
+                {
+                    if (repositoryResponse.ErrorMessage.Length == 0)
+                    {
+                        //Commit and end transaction.
+                        repository.UnitOfWork.Commit();
+                    }
+                    else
+                    {
+                        //Rollback transaction and dispose it.
+                        repository.UnitOfWork.Rollback();
+                    }
+                }
+                return repositoryResponse;
+            }
+        }
+
+        /// <summary>
+        /// Returns a list of persons 
+        /// </summary>
+        /// <param name="organizationActiveProductIdList">List of product ids</param>
+        /// <param name="realPageId">Organization realpage uniqueidentifier</param>
+        /// <param name="parentPartyRoleTypeId">PartyRole parentId</param>
+        /// <param name="dataFilterSort">Data Filtering and Sorting</param>
+        /// <param name="isExport">flag to check user list export</param>
+
+        /// <returns>List of Person</returns>
+        public IList<ProfileDetail> ListPersons(IList<int> organizationActiveProductIdList, Guid? realPageId = null, int? parentPartyRoleTypeId = null, RequestParameter dataFilterSort = null, bool isExport = false)
+        {
+            UserListTypeFilter filterUserList = UserListTypeFilter.ExcludeSupportAndSuperUsers;
+            if (_userClaim.UserRealPageGuid != Guid.Empty)
+            {
                 PartyRelationship partyRelationship = _partyRelationshipRepository.GetPartyRelationship(_userClaim.UserRealPageGuid, _userClaim.OrganizationRealPageGuid, null, null, "User Type");
                 bool isSuperUser = false;
                 if (partyRelationship != null)
                 {
-                    isSuperUser = (partyRelationship.RoleTypeIdFrom == (int) UserRoleType.SuperUser) ? true : false;
+                    isSuperUser = (partyRelationship.RoleTypeIdFrom == (int)UserRoleType.SuperUser) ? true : false;
                 }
 
                 //UserLogin ul = _manageUserLogin.GetUserLogin(_userClaim.UserRealPageGuid);
                 if (isSuperUser)
-				{
-					filterUserList = UserListTypeFilter.ExcludeSupportUsers;
-				}
-				if (_userClaim.RealPageEmployee || (_userClaim.IsRPEmployee  && _userClaim.OrganizationRealPageGuid != DefaultUserClaim.EmployeeCompanyRealPageId) || _userClaim.ImpersonatedBy != Guid.Empty)
-				{
-					filterUserList = UserListTypeFilter.ViewAllUsers;
-				}
-			}
+                {
+                    filterUserList = UserListTypeFilter.ExcludeSupportUsers;
+                }
+                if (_userClaim.RealPageEmployee || (_userClaim.IsRPEmployee && _userClaim.OrganizationRealPageGuid != DefaultUserClaim.EmployeeCompanyRealPageId) || _userClaim.ImpersonatedBy != Guid.Empty)
+                {
+                    filterUserList = UserListTypeFilter.ViewAllUsers;
+                }
+            }
 
-			string organizationActiveProducts = string.Join(",", organizationActiveProductIdList);
-			IList<FilterTableType> assignedProducts = new List<FilterTableType>()
-			{
-				new FilterTableType()
-				{
-					ColumnName = "ProductId",
-					SearchValue = organizationActiveProducts
-				}
-			};
-			string assignedProductsJson = string.Empty;
-			if (assignedProducts.Count > 0)
-			{
-				assignedProductsJson = JsonConvert.SerializeObject(
-					new
-					{
-						assignedProducts
-					}
-				);
-			}
+            string organizationActiveProducts = string.Join(",", organizationActiveProductIdList);
+            IList<FilterTableType> assignedProducts = new List<FilterTableType>()
+            {
+                new FilterTableType()
+                {
+                    ColumnName = "ProductId",
+                    SearchValue = organizationActiveProducts
+                }
+            };
+            string assignedProductsJson = string.Empty;
+            if (assignedProducts.Count > 0)
+            {
+                assignedProductsJson = JsonConvert.SerializeObject(
+                    new
+                    {
+                        assignedProducts
+                    }
+                );
+            }
 
-			IList<FilterTableType> filterBy = new List<FilterTableType>();
-			dataFilterSort.FilterBy.ToList().ForEach(f =>
-			{
-				if (
-					(f.Key.Equals("Name", StringComparison.OrdinalIgnoreCase)) ||
-					(f.Key.Equals("ProductId", StringComparison.OrdinalIgnoreCase)) ||
-					(f.Key.Equals("Status", StringComparison.OrdinalIgnoreCase)) ||
-					(f.Key.Equals("UserType", StringComparison.OrdinalIgnoreCase)) ||
-					(f.Key.Equals("OffsetMinutes", StringComparison.OrdinalIgnoreCase)) ||
-					(f.Key.Equals("RoleTemplateId", StringComparison.OrdinalIgnoreCase)) ||
-					(f.Key.Equals("PersonaHasProductError", StringComparison.OrdinalIgnoreCase)) ||
-					(f.Key.Equals("Operator", StringComparison.OrdinalIgnoreCase))
-					)
-				{
-					filterBy.Add(
-						new FilterTableType()
-						{
-							ColumnName = f.Key,
-							SearchValue = f.Value
-						}
-					);
-				}
-			});
-			string filterByJson = string.Empty;
-			if (filterBy.Count > 0)
-			{
-				filterByJson = JsonConvert.SerializeObject(
-					new
-					{
-						filterBy
-					}
-				);
-			}
+            IList<FilterTableType> filterBy = new List<FilterTableType>();
+            dataFilterSort.FilterBy.ToList().ForEach(f =>
+            {
+                if (
+                    (f.Key.Equals("Name", StringComparison.OrdinalIgnoreCase)) ||
+                    (f.Key.Equals("ProductId", StringComparison.OrdinalIgnoreCase)) ||
+                    (f.Key.Equals("Status", StringComparison.OrdinalIgnoreCase)) ||
+                    (f.Key.Equals("UserType", StringComparison.OrdinalIgnoreCase)) ||
+                    (f.Key.Equals("OffsetMinutes", StringComparison.OrdinalIgnoreCase)) ||
+                    (f.Key.Equals("RoleTemplateId", StringComparison.OrdinalIgnoreCase)) ||
+                    (f.Key.Equals("PersonaHasProductError", StringComparison.OrdinalIgnoreCase)) ||
+                    (f.Key.Equals("Operator", StringComparison.OrdinalIgnoreCase))
+                    )
+                {
+                    filterBy.Add(
+                        new FilterTableType()
+                        {
+                            ColumnName = f.Key,
+                            SearchValue = f.Value
+                        }
+                    );
+                }
+            });
+            string filterByJson = string.Empty;
+            if (filterBy.Count > 0)
+            {
+                filterByJson = JsonConvert.SerializeObject(
+                    new
+                    {
+                        filterBy
+                    }
+                );
+            }
 
-			IList<SortTableType> sortBy = new List<SortTableType>();
-			dataFilterSort.SortBy.ToList().ForEach(s =>
-			{
-				sortBy.Add(
-					new SortTableType()
-					{
-						ColumnName = s.Key,
-						SortDirection = s.Value.Substring(0, Math.Min(128, s.Value.Length))
-					}
-				);
-			});
-			string sortByJson = string.Empty;
-			if (sortBy.Count > 0)
-			{
-				sortByJson = JsonConvert.SerializeObject(
-					new
-					{
-						sortBy
-					}
-				);
-			}
+            IList<SortTableType> sortBy = new List<SortTableType>();
+            dataFilterSort.SortBy.ToList().ForEach(s =>
+            {
+                sortBy.Add(
+                    new SortTableType()
+                    {
+                        ColumnName = s.Key,
+                        SortDirection = s.Value.Substring(0, Math.Min(128, s.Value.Length))
+                    }
+                );
+            });
+            string sortByJson = string.Empty;
+            if (sortBy.Count > 0)
+            {
+                sortByJson = JsonConvert.SerializeObject(
+                    new
+                    {
+                        sortBy
+                    }
+                );
+            }
 
-			using (var repository = GetRepository())
-			{
-				var items = repository.GetManyWithSpliOn<ProfileDetail, UserLogin, int, string, ProfileDetail>(
-					isExport ? StoredProcNameConstants.SP_ListPersonsExport : StoredProcNameConstants.SP_ListPersons,
-					(profiledetail, userlogin, userproductcount, userType) =>
-					{
-						profiledetail.userLogin = userlogin;
-						profiledetail.userLogin.PartyId = profiledetail.PartyId;
-						profiledetail.userLogin.RealPageId = profiledetail.RealPageId;
-						profiledetail.userLogin.LoginNameType = EmailFormatValidation.IsValidEmail(profiledetail.userLogin.LoginName) ? "email" : "";
-						profiledetail.SummaryCount.TotalAssignedProducts = userproductcount;
-						profiledetail.AssignedProducts = null;
-						profiledetail.contactMechanism = null;
-						profiledetail.organization = null;
-						profiledetail.PartyRole = null;
-						profiledetail.TelecommunicationNumber = null;
-						profiledetail.InactivePersona = null;
-						profiledetail.Persona = null;
-						profiledetail.Operator = profiledetail.Operator;
+            using (var repository = GetRepository())
+            {
+                var items = repository.GetManyWithSpliOn<ProfileDetail, UserLogin, int, string, ProfileDetail>(
+                    isExport ? StoredProcNameConstants.SP_ListPersonsExport : StoredProcNameConstants.SP_ListPersons,
+                    (profiledetail, userlogin, userproductcount, userType) =>
+                    {
+                        profiledetail.userLogin = userlogin;
+                        profiledetail.userLogin.PartyId = profiledetail.PartyId;
+                        profiledetail.userLogin.RealPageId = profiledetail.RealPageId;
+                        profiledetail.userLogin.LoginNameType = EmailFormatValidation.IsValidEmail(profiledetail.userLogin.LoginName) ? "email" : "";
+                        profiledetail.SummaryCount.TotalAssignedProducts = userproductcount;
+                        profiledetail.AssignedProducts = null;
+                        profiledetail.contactMechanism = null;
+                        profiledetail.organization = null;
+                        profiledetail.PartyRole = null;
+                        profiledetail.TelecommunicationNumber = null;
+                        profiledetail.InactivePersona = null;
+                        profiledetail.Persona = null;
+                        profiledetail.Operator = profiledetail.Operator;
                         profiledetail.OperatorRealPageId = profiledetail.OperatorRealPageId;
-						profiledetail.UserRelationshipType = profiledetail.UserRelationshipType;
-						profiledetail.CompanyName = profiledetail.CompanyName;
+                        profiledetail.UserRelationshipType = profiledetail.UserRelationshipType;
+                        profiledetail.CompanyName = profiledetail.CompanyName;
 
-						if (userType != null)
-						{
-							string userTypeEnum = Regex.Replace(userType, @"[^A-Za-z0-9]+", "");
-							UserRoleType userRoleType;
+                        if (userType != null)
+                        {
+                            string userTypeEnum = Regex.Replace(userType, @"[^A-Za-z0-9]+", "");
+                            UserRoleType userRoleType;
 
-							if (Enum.TryParse(userTypeEnum, true, out userRoleType))
-							{
-								profiledetail.userLogin.UserRoleType = userRoleType;
-							}
-						}
+                            if (Enum.TryParse(userTypeEnum, true, out userRoleType))
+                            {
+                                profiledetail.userLogin.UserRoleType = userRoleType;
+                            }
+                        }
 
-						profiledetail.userLogin.IsPending = false;
-						profiledetail.userLogin.IsExpired = false;
-						profiledetail.userLogin.IsActive = true;
-						profiledetail.userLogin.IsLocked = false;
-						profiledetail.userLogin.Status = UserUiStatusType.Active;
-						
-						profiledetail.userLogin = _manageUserLogin.GetUserLogin((UserLogin)profiledetail.userLogin, _userClaim.OrganizationPartyId);
-						return profiledetail;
-					},
-					new {
-						RealPageId = realPageId,
-						ParentPartyRoleTypeId = parentPartyRoleTypeId,
-						UserListFilterType = (int)filterUserList,
-						AssignedProducts = assignedProductsJson,
-						FilterBy = filterByJson,
-						SortBy = sortByJson,
-						RowsPerPage = dataFilterSort.Pages.ResultsPerPage == 100 ? 0 : dataFilterSort.Pages.ResultsPerPage, //ResultsPerPage == 100 ? Current Shell : New Shell
-						PageNumber = ((dataFilterSort.Pages.ResultsPerPage == 100) || (dataFilterSort.Pages.StartRow <= 0)) ? 1 : dataFilterSort.Pages.StartRow
-					},
-					splitOn: "UserId, Products, UserType");
+                        profiledetail.userLogin.IsPending = false;
+                        profiledetail.userLogin.IsExpired = false;
+                        profiledetail.userLogin.IsActive = true;
+                        profiledetail.userLogin.IsLocked = false;
+                        profiledetail.userLogin.Status = UserUiStatusType.Active;
 
-				//Set the product count to 0 when the user status is disabled.
-				items.ToList().FindAll(i => i.userLogin.Status == UserUiStatusType.Disabled).ForEach(d =>
-				{
-					d.SummaryCount.TotalAssignedProducts = 0;
+                        profiledetail.userLogin = _manageUserLogin.GetUserLogin((UserLogin)profiledetail.userLogin, _userClaim.OrganizationPartyId);
+                        return profiledetail;
+                    },
+                    new
+                    {
+                        RealPageId = realPageId,
+                        ParentPartyRoleTypeId = parentPartyRoleTypeId,
+                        UserListFilterType = (int)filterUserList,
+                        AssignedProducts = assignedProductsJson,
+                        FilterBy = filterByJson,
+                        SortBy = sortByJson,
+                        RowsPerPage = dataFilterSort.Pages.ResultsPerPage == 100 ? 0 : dataFilterSort.Pages.ResultsPerPage, //ResultsPerPage == 100 ? Current Shell : New Shell
+                        PageNumber = ((dataFilterSort.Pages.ResultsPerPage == 100) || (dataFilterSort.Pages.StartRow <= 0)) ? 1 : dataFilterSort.Pages.StartRow
+                    },
+                    splitOn: "UserId, Products, UserType");
+
+                //Set the product count to 0 when the user status is disabled.
+                items.ToList().FindAll(i => i.userLogin.Status == UserUiStatusType.Disabled).ForEach(d =>
+                {
+                    d.SummaryCount.TotalAssignedProducts = 0;
                     d.userLogin.Status = UserUiStatusType.Deactivated;
-				});
+                });
 
-				return items.ToList();
-			}
-		}
+                return items.ToList();
+            }
+        }
 
-		public bool GetOrganizationHasAnyProductAssignmentError(long orgPartyId)
-		{
-			using (var repository = GetRepository())
-			{
-				return repository.GetOne<bool>(StoredProcNameConstants.SP_GetOrganizationHasPersonaProductError, new { PartyId = orgPartyId });
-			}
-				
-		}
+        public bool GetOrganizationHasAnyProductAssignmentError(long orgPartyId)
+        {
+            using (var repository = GetRepository())
+            {
+                return repository.GetOne<bool>(StoredProcNameConstants.SP_GetOrganizationHasPersonaProductError, new { PartyId = orgPartyId });
+            }
 
-		/// <summary>
-		/// Returns a list of persons by ProductId
-		/// </summary>
-		/// <param name="productId">Single product to search by product id</param>
-		/// <param name="realPageId">Optional Organization realpage uniqueidentifier</param>
-		/// <param name="personaId">Optional personaId</param>
-		/// <returns>List of Person</returns>
-		public IList<ProductUsers> ListPersonsByProductId(int productId, Guid? realPageId = null, long? personaId = null)
-		{
-			dynamic param = new
-			{
-				ProductId = productId,
-				RealPageId = realPageId,
-				PersonaId = personaId
-			};
+        }
 
-			using (var repository = GetRepository())
-			{
-				var items = repository.GetManyWithSpliOn<ProductUsers, UserLoginCommon, ProductUsers>(
-					StoredProcNameConstants.SP_ListPersonsByProductId,
-					(productUsers, userlogin) =>
-					{
-						productUsers.userLogin = userlogin;
+        /// <summary>
+        /// Returns a list of persons by ProductId
+        /// </summary>
+        /// <param name="productId">Single product to search by product id</param>
+        /// <param name="realPageId">Optional Organization realpage uniqueidentifier</param>
+        /// <param name="personaId">Optional personaId</param>
+        /// <returns>List of Person</returns>
+        public IList<ProductUsers> ListPersonsByProductId(int productId, Guid? realPageId = null, long? personaId = null)
+        {
+            dynamic param = new
+            {
+                ProductId = productId,
+                RealPageId = realPageId,
+                PersonaId = personaId
+            };
 
-						return productUsers;
-					},
-					param: (object)param,
-					splitOn: "UserId");
+            using (var repository = GetRepository())
+            {
+                var items = repository.GetManyWithSpliOn<ProductUsers, UserLoginCommon, ProductUsers>(
+                    StoredProcNameConstants.SP_ListPersonsByProductId,
+                    (productUsers, userlogin) =>
+                    {
+                        productUsers.userLogin = userlogin;
 
-				return items.ToList();
-			}
-		}
-		#endregion
+                        return productUsers;
+                    },
+                    param: (object)param,
+                    splitOn: "UserId");
 
-		#region Private Profile methods
-		/// <summary>
-		/// Save Product Batch
-		/// </summary>
-		/// <param name="repository">Dapper Repository</param>
-		/// <param name="product">Product Batch object</param>
-		/// <param name="createUserResponse">Response when creating a new user</param>
-		/// <param name="saveProductBatchError"></param>
-		/// <param name="CreateUserPersonaId">Logged-in user PersonaId</param>
-		/// <param name="AssignUserPersonaId">Assigned to user PersonaId</param>
-		/// <param name="realPageId">The enterprise User Id of the person editing the product user</param>
-		/// <param name="errorStatus">Error Status</param>
-		/// <param name="inputJson">Product Batch Input JSON</param>
-		/// <param name="batchProcessTypeId">Batch Process Type</param>
-		/// <param name="impersonatorUserId"></param>
-		private void SaveProductBatch(IRepository repository, IProductBatch product, CreateUserResponse<IErrorData> createUserResponse, string saveProductBatchError, long CreateUserPersonaId, long AssignUserPersonaId, Guid realPageId, Status<IErrorData> errorStatus, string inputJson, long impersonatorUserId, int batchProcessTypeId = 1)
-		{
-			try
-			{
+                return items.ToList();
+            }
+        }
+        #endregion
+
+        #region Private Profile methods
+        /// <summary>
+        /// Save Product Batch
+        /// </summary>
+        /// <param name="repository">Dapper Repository</param>
+        /// <param name="product">Product Batch object</param>
+        /// <param name="createUserResponse">Response when creating a new user</param>
+        /// <param name="saveProductBatchError"></param>
+        /// <param name="CreateUserPersonaId">Logged-in user PersonaId</param>
+        /// <param name="AssignUserPersonaId">Assigned to user PersonaId</param>
+        /// <param name="realPageId">The enterprise User Id of the person editing the product user</param>
+        /// <param name="errorStatus">Error Status</param>
+        /// <param name="inputJson">Product Batch Input JSON</param>
+        /// <param name="batchProcessTypeId">Batch Process Type</param>
+        /// <param name="impersonatorUserId"></param>
+        private void SaveProductBatch(IRepository repository, IProductBatch product, CreateUserResponse<IErrorData> createUserResponse, string saveProductBatchError, long CreateUserPersonaId, long AssignUserPersonaId, Guid realPageId, Status<IErrorData> errorStatus, string inputJson, long impersonatorUserId, int batchProcessTypeId = 1)
+        {
+            try
+            {
                 var batchGroup = CreateBatchProcessGroup(repository);
 
-				//Set the Logged-in and New User PeronaIds
-				product.CreateUserPersonaId = CreateUserPersonaId;
-				product.AssignUserPersonaId = AssignUserPersonaId;
-				//Assign the 
-				//product.InputJson.IsAssigned = true;
-				//Create the Product Batch data to be processed by the Queuing
-				dynamic param = new
-				{
-					PersonRealPageId = realPageId,
-					CreateUserPersonaId = product.CreateUserPersonaId,
-					AssignUserPersonaId = product.AssignUserPersonaId,
-					ProductId = product.ProductId,
-					StatusTypeId = product.StatusTypeId,
-					RetryCount = product.RetryCount,
-					InputJson = inputJson,
-					CorrelationId = _userClaim.CorrelationId.ToString(),
-					BatchProcessTypeId = batchProcessTypeId,
+                //Set the Logged-in and New User PeronaIds
+                product.CreateUserPersonaId = CreateUserPersonaId;
+                product.AssignUserPersonaId = AssignUserPersonaId;
+                //Assign the 
+                //product.InputJson.IsAssigned = true;
+                //Create the Product Batch data to be processed by the Queuing
+                dynamic param = new
+                {
+                    PersonRealPageId = realPageId,
+                    CreateUserPersonaId = product.CreateUserPersonaId,
+                    AssignUserPersonaId = product.AssignUserPersonaId,
+                    ProductId = product.ProductId,
+                    StatusTypeId = product.StatusTypeId,
+                    RetryCount = product.RetryCount,
+                    InputJson = inputJson,
+                    CorrelationId = _userClaim.CorrelationId.ToString(),
+                    BatchProcessTypeId = batchProcessTypeId,
                     BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
                     ImpersonatorUserId = impersonatorUserId
                 };
 
-				RepositoryResponse repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateProductBatch, param);
-				//In-case of an error creating a product batch record, append the ProductId to the ErrorReason
-				if (repositoryResponse.Id == 0)
-				{
-					if (errorStatus != null)
-					{
-						errorStatus.Success = false;
-						errorStatus.ErrorCode = "User.CreateUser.21";
-					}
-					if (createUserResponse != null)
-					{
-						createUserResponse.Status = errorStatus;
-					}
-					if (saveProductBatchError != "Save Product(s) Error: ")
-					{
-						saveProductBatchError += ", ";
-					}
-					saveProductBatchError += product.ProductId.ToString();
-				}
-			}
-			catch (Exception ex)
-			{
-				string errorMessage = ex.Message;
-			}
-		}
+                RepositoryResponse repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateProductBatch, param);
+                //In-case of an error creating a product batch record, append the ProductId to the ErrorReason
+                if (repositoryResponse.Id == 0)
+                {
+                    if (errorStatus != null)
+                    {
+                        errorStatus.Success = false;
+                        errorStatus.ErrorCode = "User.CreateUser.21";
+                    }
+                    if (createUserResponse != null)
+                    {
+                        createUserResponse.Status = errorStatus;
+                    }
+                    if (saveProductBatchError != "Save Product(s) Error: ")
+                    {
+                        saveProductBatchError += ", ";
+                    }
+                    saveProductBatchError += product.ProductId.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message;
+            }
+        }
 
         private BatchProcessorGroup CreateBatchProcessGroup(IRepository repo)
         {
@@ -820,48 +854,48 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
-		/// <summary>
-		/// Update Contact Preference
-		/// </summary>
-		/// <param name="repository">Dapper Repository</param>
-		/// <param name="realPageId">The enterprise User Id</param>
-		/// <param name="telecommunicationNumbers">telecommunicationNumbers list</param>
-		/// <returns>Success/Fail</returns>
-		private bool UpdateContactPreference(IRepository repository, Guid realPageId, List<TelecommunicationNumber> telecommunicationNumbers)
-		{
-			var preferredContact = telecommunicationNumbers
-						.Where(tc => tc.IsDeleted == false && tc.IsPreferred == true).FirstOrDefault();
-			IList<TelecommunicationNumber> telecommunications = repository.GetMany<TelecommunicationNumber>(StoredProcNameConstants.SP_ListTelecommunicationNumbersForPerson, new { realPageId }).ToList();
-			var currentContactMechanismId = telecommunications?.Where(tc => tc.IsPreferred == true).FirstOrDefault()?.ContactMechanismId;
-			if ((currentContactMechanismId == null && preferredContact != null) || 
-				(preferredContact != null && currentContactMechanismId != null
-					&& (currentContactMechanismId != preferredContact.ContactMechanismId)))
-			{
-				dynamic param = new
-				{
-					CurrentContactMechanismId = preferredContact.ContactMechanismId,
-					PreviousPreferenceId = currentContactMechanismId ?? 0
-				};
-				RepositoryResponse repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdateContactMechanismPreference, param);
-				if (repositoryResponse.Id == 0)
-				{
-					return false;
-				}
-			}
-			else if (preferredContact == null && currentContactMechanismId != null)
-			{
-				dynamic param = new
-				{
-					ContactMechanismId = currentContactMechanismId
-				};
-				RepositoryResponse repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_DeleteContactMechanismPreference, param);
-				if (repositoryResponse.Id == 0)
-				{
-					return false;
-				}
-			}
-			return true;
-		}
+        /// <summary>
+        /// Update Contact Preference
+        /// </summary>
+        /// <param name="repository">Dapper Repository</param>
+        /// <param name="realPageId">The enterprise User Id</param>
+        /// <param name="telecommunicationNumbers">telecommunicationNumbers list</param>
+        /// <returns>Success/Fail</returns>
+        private bool UpdateContactPreference(IRepository repository, Guid realPageId, List<TelecommunicationNumber> telecommunicationNumbers)
+        {
+            var preferredContact = telecommunicationNumbers
+                        .Where(tc => tc.IsDeleted == false && tc.IsPreferred == true).FirstOrDefault();
+            IList<TelecommunicationNumber> telecommunications = repository.GetMany<TelecommunicationNumber>(StoredProcNameConstants.SP_ListTelecommunicationNumbersForPerson, new { realPageId }).ToList();
+            var currentContactMechanismId = telecommunications?.Where(tc => tc.IsPreferred == true).FirstOrDefault()?.ContactMechanismId;
+            if ((currentContactMechanismId == null && preferredContact != null) ||
+                (preferredContact != null && currentContactMechanismId != null
+                    && (currentContactMechanismId != preferredContact.ContactMechanismId)))
+            {
+                dynamic param = new
+                {
+                    CurrentContactMechanismId = preferredContact.ContactMechanismId,
+                    PreviousPreferenceId = currentContactMechanismId ?? 0
+                };
+                RepositoryResponse repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdateContactMechanismPreference, param);
+                if (repositoryResponse.Id == 0)
+                {
+                    return false;
+                }
+            }
+            else if (preferredContact == null && currentContactMechanismId != null)
+            {
+                dynamic param = new
+                {
+                    ContactMechanismId = currentContactMechanismId
+                };
+                RepositoryResponse repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_DeleteContactMechanismPreference, param);
+                if (repositoryResponse.Id == 0)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
         #endregion
     }
 }
