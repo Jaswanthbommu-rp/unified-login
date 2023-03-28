@@ -1,5 +1,4 @@
-﻿
-create PROCEDURE [UserAudit].[SaveReportParameters]
+﻿CREATE PROCEDURE [UserAudit].[SaveReportParameters]  
 (
 @ReportKey VARCHAR(100)
 ,@OrgPartyId BIGINT
@@ -7,8 +6,8 @@ create PROCEDURE [UserAudit].[SaveReportParameters]
 )
 AS
 BEGIN
-	INSERT INTO UserAudit.Request(CreatedDate, ReportKey, ReportInstanceRequestJson, OrgpartyId)
-	VALUES(GETUTCDATE(),@ReportKey,NULL,@OrgPartyId)
+ INSERT INTO UserAudit.Request(CreatedDate, ReportKey, OrgpartyId)  
+ VALUES(GETUTCDATE(),@ReportKey,@OrgPartyId)  
 
 	DECLARE @ReportId INT
 

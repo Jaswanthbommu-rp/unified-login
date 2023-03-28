@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <Name>UserAudit</Name>
+    <Name>UPReporting</Name>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectVersion>4.1</ProjectVersion>
     <ProjectGuid>{e7cb513d-0e45-4de2-b082-ad30bfb11f77}</ProjectGuid>
@@ -78,10 +78,48 @@
     <Build Include="UserAudit\Tables\UserRole.sql" />
     <Build Include="UserAudit\Stored Procedures\GetReportParameter.sql" />
     <Build Include="UserAudit\Stored Procedures\SaveReportParameters.sql" />
-    <Build Include="dbo\User Defined Types\Name.sql" />
-    <Build Include="dbo\User Defined Types\Phone.sql" />
     <Build Include="UserAudit\User Defined Types\ReportParameters.sql" />
-    <Build Include="Security\UserAudit.sql" />
     <Build Include="UserAudit\Stored Procedures\GetReportRequest.sql" />
+    <Build Include="UserAudit\Stored Procedures\GetReportRequestData.sql" />
+    <Build Include="Security\UserAudit.sql" />
+    <Build Include="dbo\User Defined Types\Name.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="UPReporting.DEMO.publish.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="UPReporting.DEV.publish.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="UPReporting.EUPROD.publish.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="UPReporting.EUSAT.publish.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="UPReporting.LOAD.publish.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="UPReporting.Local.publish.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="UPReporting.PREPROD.publish.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="UPReporting.QA.publish.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="UPReporting.SAT.publish.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="UPReporting.Training.publish.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="UPReporting.UAT.publish.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="UPReporting.PROD.publish.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

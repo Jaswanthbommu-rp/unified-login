@@ -39,3 +39,4 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\VMPRolesAndRights.sql
 :r .\PostDeploymentScripts\AddingSettingsForAdminPortal.sql
 :r .\PostDeploymentScripts\March2023Release.sql
+:r .\PostDeploymentScripts\UserAuditDB.sql
