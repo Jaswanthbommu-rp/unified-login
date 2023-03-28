@@ -37,5 +37,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         /// Employee id
         /// </summary>
         public string EmployeeId { get; set; }
+        
+        /// <summary>
+        /// Origin
+        /// </summary>
+        public string Origin { get; set; } = string.Empty;
     }
 }
