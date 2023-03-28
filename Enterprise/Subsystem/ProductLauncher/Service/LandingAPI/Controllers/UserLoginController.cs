@@ -418,7 +418,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// <summary>
         /// Resend Email Invitations For Extermal
         /// </summary>
-        /// <param name="userLogins"></param>
+        /// <param name="realpageId"></param>
         /// <returns></returns>
         [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
@@ -454,6 +454,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 identity.AddClaim(new Claim("FIRSTNAME", userClaim.FirstName));
                 identity.AddClaim(new Claim("LASTNAME", userClaim.LastName));
                 identity.AddClaim(new Claim("PERSONAID", userClaim.PersonaId.ToString()));
+                identity.AddClaim(new Claim("ImpersonatedBy", userClaim.ImpersonatedBy.ToString()));
+                identity.AddClaim(new Claim("ImpersonatedByName", userClaim.ImpersonatedByName));
 
                 _manageUserLogin = new ManageUserLogin(userClaim);
             }

@@ -421,12 +421,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     profile.userLogin.RealPageId = userDetailsInfo.UserRealPageId;
                     if (isNotified == true)
                     {
-                        message = "Welcome Email sent to user {0} {1} by user {2} {3}.";
+                        message = "Welcome Email sent to user {0} {1} by user {2}.";
                         LogAuditActivity(LogActivityTypeConstants.EMAIL_SENT, LogActivityCategoryType.Email, message, "UpdateUser", profile);
                     }
                     else if (isNotified == false)
                     {
-                        message = "Unable to Resend Welcome Email to user {0} {1} by user {2} {3}.";
+                        message = "Unable to Resend Welcome Email to user {0} {1} by user {2}.";
                         LogAuditActivity(LogActivityTypeConstants.EMAIL_RESENT, LogActivityCategoryType.Email, message, "UpdateUser", profile);
                     }
                 }
@@ -1143,12 +1143,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             DateTime fromUtcDateTime = DateTime.UtcNow;
             DateTime? thruUtcDateTime = null; // default for AccountCreationSuccessful; Unlocked; Active
             OrganizationStatus orgStatus = new OrganizationStatus();
-            UserLoginOnly userLoginOnly = null;
             bool newUserWithFeatureDate = false;
             bool isUserExpired = false;
             bool newUserwithActiveStatus = false;
-            bool? isNotified = null;
-            string message = string.Empty;
             int statusTypeId = 0;
             if (userLogins.Count > 0)
             {
@@ -1200,7 +1197,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         _userRepository.ActivateSalesForceUser(_defaultUserClaim.UserRealPageGuid, _defaultUserClaim.PersonaId, ul, isAssigned);
                         foreach (UserLoginOnly userLogin in userLogins)
                         {
-                            userLoginOnly = _userLoginRepository.GetUserLoginOnly(userLogin.RealPageId);
+                            UserLoginOnly userLoginOnly = _userLoginRepository.GetUserLoginOnly(userLogin.RealPageId);
                             var userLoginInfo = GetUserLogin(userLogin.RealPageId, _defaultUserClaim.OrganizationPartyId); // keep for now
                             orgStatus = _userLoginRepository.GetUserOrganizationWithStatus(userLoginOnly.UserId, userLoginOnly.LastLogin, _defaultUserClaim.OrganizationPartyId, false);
                             if (orgStatus.ThruDate != null)
@@ -1221,7 +1218,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             if (userLoginOnly.LastLogin == null && userLoginOnly.PasswordModifiedDate != null && !isUserExpired)
                                 newUserwithActiveStatus = true;
 
-
                             fromUtcDateTime = orgStatus.FromDate;
                             orgStatus.ThruDate = new DateTime(9999, 12, 31);
                             if (orgStatus.FromDate > DateTime.UtcNow)
@@ -1232,8 +1228,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             }
                             if (orgStatus.PrimaryOrganization && (newUserWithFeatureDate || (userLoginOnly.LastLogin == null && !userLoginOnly.Is3rdPartyIDP && orgStatus.Status != UserUiStatusType.Locked)) && !newUserwithActiveStatus)
                             {
-                                message = string.Empty;
-                                isNotified = null;
+                                string message = string.Empty;
+                                bool? isNotified = null;
                                 IManageUserRegistrationEmail manageUserRegistrationEmail = new ManageUserRegistrationEmail(_defaultUserClaim);
                                 isNotified = manageUserRegistrationEmail.SendNewUserRegistrationEmail(userLoginOnly, orgStatus.Name, (int)userLoginInfo.UserRoleType, orgStatus.PartyId);
                                 statusTypeId = (int)UserUiStatusType.Pending;
@@ -1246,21 +1242,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                                 profile.userLogin.RealPageId = userDetailsInfo.UserRealPageId;
                                 if (isNotified == true)
                                 {
-                                    message = "Welcome Email sent to user {0} {1} by user {2} {3}.";
+                                    message = "Welcome Email sent to user {0} {1} by user {2}.";
                                     LogAuditActivity(LogActivityTypeConstants.EMAIL_SENT, LogActivityCategoryType.Email, message, "UpdateUser", profile);
                                 }
                                 else if (isNotified == false)
                                 {
-                                    message = "Unable to Resend Welcome Email to user {0} {1} by user {2} {3}.";
+                                    message = "Unable to Resend Welcome Email to user {0} {1} by user {2}.";
                                     LogAuditActivity(LogActivityTypeConstants.EMAIL_RESENT, LogActivityCategoryType.Email, message, "UpdateUser", profile);
                                 }
-
                             }
                         }
-
                     }
-
-
                     foreach (UserLoginOnly userLogin in userLogins)
                     {
                         AddActivityLog(userLogin, userLoginStatusType.ToString(), ProductEnum.UnifiedPlatform.ToEnumDescription(), _defaultUserClaim);
@@ -1647,6 +1639,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private void LogAuditActivity(string logActivityType, LogActivityCategoryType logActivityCategoryType,
             string message, string stepName, IProfileDetail profile)
         {
+            string userName = string.IsNullOrEmpty(_defaultUserClaim.ImpersonatedByName) ? _defaultUserClaim.FirstName + " " + _defaultUserClaim.LastName : _defaultUserClaim.ImpersonatedByName;
             LogActivity.WriteActivity(new ActivityDetails
             {
                 LogActivityTypeName = logActivityType,
@@ -1654,7 +1647,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 CorrelationId = _defaultUserClaim.CorrelationId.ToString(),
                 BooksMasterOrganizationId = _defaultUserClaim.OrganizationMasterId,
                 OrganizationPartyId = _defaultUserClaim.OrganizationPartyId,
-                Message = string.Format(message, profile.FirstName, profile.LastName, _defaultUserClaim.FirstName, _defaultUserClaim.LastName, profile.CreateUserSourceType.ToString()),
+                Message = string.Format(message, profile.FirstName, profile.LastName, userName, profile.CreateUserSourceType.ToString()),
 
                 FromUserLoginName = _defaultUserClaim.LoginName,
                 FromUserLoginId = _defaultUserClaim.UserId,
