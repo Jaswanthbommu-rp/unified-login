@@ -62,7 +62,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             _partyRelationshipRepository = new PartyRelationshipRepository(repository);
             _productRepository = new ProductRepository(repository, userClaim);
 			_personaRepository =  new PersonaRepository(repository, userClaim);
-        }
+		}
 
 		/// <summary>
 		/// Profile base Constructor
@@ -96,6 +96,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 			RepositoryResponse repositoryResponse = new RepositoryResponse();
 			//IPersonaRepository personaRepository = new PersonaRepository();
 			bool customJobTitleChanged = false;
+			bool isKnockProductAssignedToUser = false;
+			bool isPhoneNumberChange = false;
 
 			//get Organization Enterprise guid from Persona
 			Guid organizationRealPageId = Guid.Empty;
@@ -118,6 +120,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 					if (personaProductUserDetailsList != null)
 					{
 						residentPortalAssignedToUser = personaProductUserDetailsList.Any(p => p.ProductId == (int)ProductEnum.ResidentPortal);
+						isKnockProductAssignedToUser = personaProductUserDetailsList.Any(p => p.ProductId == (int)ProductEnum.KnockCRM);
 					}
 				}
 			}
@@ -215,6 +218,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 						}
 						else
 						{
+							IList<TelecommunicationNumber> telecommunicationslists = repository.GetMany<TelecommunicationNumber>(StoredProcNameConstants.SP_ListTelecommunicationNumbersForPerson, new { realPageId }).ToList();
 							industryStandardJobChanged = profile.PartyRole.RoleTypeId != roleTypeIdFrom ? true : false;
 							ITelecommunicationNumberRepository telecommunicationNumberRepository = new TelecommunicationNumberRepository();
 							ITelecommunicationNumber telecommunicationNumber = new TelecommunicationNumber();
@@ -285,6 +289,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 													{
 														repositoryResponse.ErrorMessage = "Update profile Error: Link UsageType to Party Contact Mechanism failed.";
 													}
+													isPhoneNumberChange = true;
 												}
 											}
 										}
@@ -308,6 +313,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 										else
 										{
 											profile.TelecommunicationNumber.Remove((TelecommunicationNumber)phone);
+											isPhoneNumberChange = true;
 										}
 									}
 									else
@@ -344,10 +350,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 										{
 											repositoryResponse.ErrorMessage = "Update profile Error: Link Contact Mechanism To a Party failed.";
 										}
+										isPhoneNumberChange = true;
 									}
 								}
 
-								if ((phone.IsDeleted == false) && (telecommunicationNumber.ContactMechanismId > 0) && (phone.PhoneNumber.Trim().Length > 0))
+								if (phone.IsDeleted == false && telecommunicationNumber.ContactMechanismId > 0 && phone.PhoneNumber.Trim().Length > 0)
 								{
 									param = new
 									{
@@ -361,6 +368,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 									if (repositoryResponse.Id == 0)
 									{
 										repositoryResponse.ErrorMessage = "Update profile Error: Link a telecommunication number details for a person failed.";
+									}
+									foreach (var existingPhone in telecommunicationslists.ToList())
+									{
+										if (existingPhone.ContactMechanismId == telecommunicationNumber.ContactMechanismId)
+										{
+											if (existingPhone.PhoneNumber != telecommunicationNumber.PhoneNumber)
+											{
+												isPhoneNumberChange = true;
+											}
+										}
 									}
 								}
 							}
@@ -467,13 +484,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 						}
 					}
 
-					if ((!IsSuperUser) && (industryStandardJobChanged || customJobTitleChanged) && (residentPortalAssignedToUser))
+					if (!IsSuperUser && (industryStandardJobChanged || customJobTitleChanged) && residentPortalAssignedToUser)
 					{
 						string saveProductBatchError = "Save Product User Profile/Type Error: ";
 						//Industry Standard Job title got Set/Updated and the Regular user (Staff Role) has access to Resident Portal
 						ProductBatch productBatch = new ProductBatch()
 						{
 							ProductId = (int)ProductEnum.ResidentPortal,
+							StatusTypeId = 5,
+							RetryCount = 0,
+							InputJson = new RolePropertyList() { PropertyList = new List<string>(), RoleList = new List<string>(), IsAssigned = true }
+						};
+						SaveProductBatch(repository, productBatch, null, saveProductBatchError, _userClaim.PersonaId, personaId, _userClaim.UserRealPageGuid, null, JsonConvert.SerializeObject(productBatch.InputJson), (int)BatchProcessType.ProfileUpdate);
+					}
+					if (isPhoneNumberChange && isKnockProductAssignedToUser)
+					{
+						string saveProductBatchError = "Save Product User Profile/Type Error: ";
+
+						ProductBatch productBatch = new ProductBatch()
+						{
+							ProductId = (int)ProductEnum.KnockCRM,
 							StatusTypeId = 5,
 							RetryCount = 0,
 							InputJson = new RolePropertyList() { PropertyList = new List<string>(), RoleList = new List<string>(), IsAssigned = true }
