@@ -73,7 +73,19 @@ BEGIN
 			AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate)
                     OR (@NOW >= pc.FromDate
                         AND pc.ThruDate IS NULL))  
-    
+       
+	   UNION
+			SELECT saml.ProductId
+			,prod.[Name]
+			,prod.[Description]
+			,'Success'
+			,pt.ParentProductTypeId
+			,CASE WHEN op.productid IS NOT NULL THEN 1 ELSE 0 END [ProductEnabled]  
+			from Ident.SamlUserAttribute saml
+			inner join Enterprise.Product prod on saml.ProductId = prod.ProductId
+			inner join Enterprise.ProductType pt on prod.ProductTypeId= pt.ProductTypeId
+			LEFT JOIN @CompanyOrganizationProduct OP ON OP.ProductId = prod.ProductId
+			where saml.PersonaId = @PersonaId and prod.ProductId = 36
 
 	   Update @productData SET UserID = sua.Value
 	   From Ident.SamlUserAttribute sua
