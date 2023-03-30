@@ -147,7 +147,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 UserRelationShipType example = new UserRelationShipType()
                 {
-                    UserRelationShipId = 1,
                     UserRelationshipName = "Employee",
                     ThirdPartyRelationshipId = 4,
                     SortIndex = 1,

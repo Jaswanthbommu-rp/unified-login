@@ -698,7 +698,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 string iterateUserNameRequiredForUserCreation = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("IterateUserNameRequiredForUserCreation", StringComparison.OrdinalIgnoreCase))?.Value;
                 if (iterateUserNameRequiredForUserCreation == "1" && string.IsNullOrEmpty(SubjectUserDetails.ProductUserName))
                 {
-                     isProductUser = false;
+                    isProductUser = false;
                     WriteToErrorLog(
                     $" {nameof(StandardV1ProductIntegration)}.CreateUpdateProductUser - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Product User {newProductUser.LoginName} ,before iteration username {newProductUser.LoginName}.");
                     newProductUser.LoginName = IterateUserNameIfExists(newProductUser.LoginName);

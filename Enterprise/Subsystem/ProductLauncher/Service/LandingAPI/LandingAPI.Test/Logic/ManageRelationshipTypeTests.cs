@@ -115,7 +115,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             {
                 new UserRelationShipType()
                 {
-                    UserRelationShipId = 2,
                     UserRelationshipName = "Employee",
                     Description = "Employee user with email format username",
                     PartyRoleTypeId = 401,
@@ -124,7 +123,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 },
                 new UserRelationShipType()
                 {
-                    UserRelationShipId = 4,
                     UserRelationshipName = "System Administrator",
                     Description = "Company Super User",
                     PartyRoleTypeId = 402,
@@ -133,7 +131,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                  },
                  new UserRelationShipType()
                  {
-                      UserRelationShipId = 8,
                     UserRelationshipName = "RealPage Employee",
                     Description = "Employee user with email format username",
                     PartyRoleTypeId = 403,

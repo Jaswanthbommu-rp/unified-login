@@ -1,6 +1,6 @@
 ﻿
 CREATE TABLE [Enterprise].[UserRelationShip](
-	[UserRelationShipId] [int] NOT NULL,
+	[Id] [int] NOT NULL,
 	[SortIndex] [int] NOT NULL,
 	[UserRelationshipName] [nvarchar](100) NULL,
 	[Description] [nvarchar](255) NULL,
@@ -8,7 +8,7 @@ CREATE TABLE [Enterprise].[UserRelationShip](
 	[ThirdPartyRelationshipId] [tinyint] NOT NULL
  CONSTRAINT [PK_EnterpriseUserRelationShip] PRIMARY KEY CLUSTERED 
 (
-	[UserRelationShipId] ASC
+	[Id] ASC
 )WITH (PAD_INDEX = ON, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, FILLFACTOR = 95) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
