@@ -65,9 +65,11 @@
     <Folder Include="dbo\" />
     <Folder Include="dbo\User Defined Types\" />
     <Folder Include="UserAudit\User Defined Types\" />
+    <Folder Include="Scripts" />
+    <Folder Include="Scripts\PostDeployment" />
+    <Folder Include="Scripts\PostDeployment\PostDeploymentScripts" />
   </ItemGroup>
   <ItemGroup>
-    <Build Include="UserAudit\Tables\ReportConfiguration.sql" />
     <Build Include="UserAudit\Tables\ReportParameter.sql" />
     <Build Include="UserAudit\Tables\Request.sql" />
     <Build Include="UserAudit\Tables\RequestReportParameter.sql" />
@@ -79,7 +81,6 @@
     <Build Include="UserAudit\Stored Procedures\GetReportParameter.sql" />
     <Build Include="UserAudit\Stored Procedures\SaveReportParameters.sql" />
     <Build Include="UserAudit\User Defined Types\ReportParameters.sql" />
-    <Build Include="UserAudit\Stored Procedures\GetReportRequest.sql" />
     <Build Include="UserAudit\Stored Procedures\GetReportRequestData.sql" />
     <Build Include="Security\UserAudit.sql" />
     <Build Include="dbo\User Defined Types\Name.sql" />
@@ -121,5 +122,11 @@
     <None Include="UPReporting.PROD.publish.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\UserAuditMasterData.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\RecompileProcs.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\UpdateStatistics.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <PostDeploy Include="Scripts\PostDeployment\Script.PostDeployment.sql" />
   </ItemGroup>
 </Project>
