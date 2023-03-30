@@ -40,3 +40,4 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\AddingSettingsForAdminPortal.sql
 :r .\PostDeploymentScripts\March2023Release.sql
 :r .\PostDeploymentScripts\UserAuditDB.sql
+:r .\PostDeploymentScripts\April2023release.sql

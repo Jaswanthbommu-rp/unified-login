@@ -1410,6 +1410,7 @@
     <Build Include="RoleRightsManagement\Tables\UserRelationShip.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\March2023Release.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\UserAuditDB.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\April2023release.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />
