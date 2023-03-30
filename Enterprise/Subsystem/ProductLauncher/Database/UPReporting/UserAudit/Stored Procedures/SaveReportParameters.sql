@@ -2,19 +2,19 @@
 (
 @ReportKey VARCHAR(100)
 ,@OrgPartyId BIGINT
+,@Status INT
 ,@ReportParams [UserAudit].[ReportParameters] READONLY
 )
 AS
 BEGIN
- INSERT INTO UserAudit.Request(CreatedDate, ReportKey, OrgpartyId)  
- VALUES(GETUTCDATE(),@ReportKey,@OrgPartyId)  
+ INSERT INTO UserAudit.Request(CreatedDate, ReportKey, OrgpartyId, [Status])  
+ VALUES(GETUTCDATE(),@ReportKey,@OrgPartyId, @Status)  
 
 	DECLARE @ReportId INT
 
 	SELECT @ReportId = IDENT_CURRENT('[UserAudit].[Request]');
 
 	INSERT INTO [UserAudit].[RequestReportParameter](RequestId, ReportParameterId, SelectedValue)
-	--VALUES(@ReportId,)
 	SELECT @ReportId, [ReportParameterId], [SelectedValue] FROM @ReportParams
 
 	SELECT @ReportId;
