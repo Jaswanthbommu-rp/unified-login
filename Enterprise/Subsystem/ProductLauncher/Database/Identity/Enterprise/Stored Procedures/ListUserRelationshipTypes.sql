@@ -3,7 +3,8 @@ CREATE PROCEDURE [Enterprise].[ListUserRelationshipTypes]
   @partyId bigint
 AS  
 BEGIN  
-select    UserRelationshipName
+select    UserRelationShipId
+          ,UserRelationshipName
          ,Description
          ,PartyRoleTypeId
           ,PartyId

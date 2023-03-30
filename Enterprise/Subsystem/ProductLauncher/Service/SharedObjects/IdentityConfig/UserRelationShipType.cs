@@ -8,7 +8,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 {
     public class UserRelationShipType 
     {
-       public string UserRelationshipName { get; set; }
+        public int UserRelationShipId { get; set; }
+        public string UserRelationshipName { get; set; }
        public string Description { get; set; }
        public int PartyRoleTypeId { get; set; }
        public int ThirdPartyRelationshipId { get; set; }
