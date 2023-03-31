@@ -117,3 +117,61 @@ BEGIN
     exec [Enterprise].[SetProductSetting] 0,@Productid,@ProductsettingTypeid, @topicName1
 END
 GO
+
+Declare @ServerName SYSNAME = @@SERVERNAME
+Declare @ReportingUrl varchar(256) = '';
+IF @ServerName IN ('RCDUSODBSQL001')  --DEV
+BEGIN
+	SET @ReportingUrl = 'https://intl-reportingapi-dev.realpage.com/';
+END
+IF @ServerName IN ('rctusodbsql001') --QA
+BEGIN
+	SET @ReportingUrl = 'https://intl-reportingapi-qa.realpage.com/';
+END
+IF @ServerName IN ('rcausodbsql001') --SAT
+BEGIN
+	SET @ReportingUrl = 'https://intl-reportingapi-sat.realpage.com/';
+END
+IF @ServerName IN ('RCTUSODBSQL001A','RCTUSODBSQL001B') --UAT
+BEGIN
+	SET @ReportingUrl = 'https://intl-reportingapi-uat.realpage.com/';
+END
+IF @ServerName IN ('RCIUSODBSQL002') --PREPROD
+BEGIN
+	SET @ReportingUrl = 'https://intl-reportingapi-preprod.realpage.com/';
+END
+IF @ServerName IN ('RCVGBKDBSQL001') --DEMO
+BEGIN
+	SET @ReportingUrl = 'https://intl-reportingapi-demo.realpage.com/';
+END
+IF @ServerName IN ('RCTUSODBTUL001') --TRAINING
+BEGIN
+	SET @ReportingUrl = 'https://intl-reportingapi-training.realpage.com/';
+END
+IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B') --PROD
+BEGIN
+	SET @ReportingUrl = 'https://intl-reportingapi.realpage.com/';
+END
+IF @ServerName IN ('reagbkdbsql001') --EUSAT
+BEGIN
+	SET @ReportingUrl = 'https://intl-reportingapi-sat.realpage.co.uk/';
+END
+IF @ServerName IN ('repgbkdbsql001a','repgbkdbsql001b') --EUPROD
+BEGIN
+	SET @ReportingUrl = 'https://intl-reportingapi.realpage.co.uk/';
+END
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'UnifiedReportingEndPoint')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
+	VALUES ('UnifiedReportingEndPoint', 'The api uri for Unified Reporting', 0);
+END
+
+DECLARE @ProductId INT = 3, @ProductsettingTypeid int;
+IF NOT EXISTS (SELECT TOP (1) (1) FROM ENTERPRISE.ProductSetting PS INNER JOIN enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = PS.ProductSettingTypeId 
+    WHERE PS.ProductId = @ProductId AND pst.Name = 'UnifiedReportingEndPoint' )
+BEGIN
+    SELECT @ProductsettingTypeid = ProductSettingTypeId FROM Enterprise.ProductSettingType WHERE [Name] = 'UnifiedReportingEndPoint'
+    exec [Enterprise].[SetProductSetting] 0,@Productid,@ProductsettingTypeid, @ReportingUrl
+END
+
+GO
