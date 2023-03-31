@@ -4982,7 +4982,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="additionalInformation"></param>
         private void LogAuditActivity(string logActivityType, LogActivityCategoryType logActivityCategoryType, string message, string stepName, IProfileDetail profile, List<AdditionalParameters> additionalInformation = null)
         {
-            string userName = string.IsNullOrEmpty(_userClaim.ImpersonatedByName) ? _userClaim.FirstName + " " + _userClaim.LastName : _userClaim.ImpersonatedByName;
+            string userName = string.IsNullOrEmpty(_userClaim.ImpersonatedByName) ? _userClaim.FirstName + " " + _userClaim.LastName : _userClaim.ImpersonatedByName + " (RealPage Access) ";
 
             var activityDetails = new ActivityDetails
             {

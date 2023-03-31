@@ -522,7 +522,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         IManageUserRegistrationEmail manageUserRegistrationEmail = new ManageUserRegistrationEmail(_defaultUserClaim);
                         bool isNotified = manageUserRegistrationEmail.SendNewUserRegistrationEmail(profileDetail);
 
-                        var userName = _defaultUserClaim.LoginName?.Length == 0 ? " notification service" : (!string.IsNullOrEmpty(_defaultUserClaim.ImpersonatedByName) ? _defaultUserClaim.ImpersonatedByName : _defaultUserClaim.FirstName + " " + _defaultUserClaim.LastName);
+                        var userName = _defaultUserClaim.LoginName?.Length == 0 ? " notification service" : (!string.IsNullOrEmpty(_defaultUserClaim.ImpersonatedByName) ? _defaultUserClaim.ImpersonatedByName + " (RealPage Access) " : _defaultUserClaim.FirstName + " " + _defaultUserClaim.LastName);
 
                         if (isNotified)
                         {
@@ -630,7 +630,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private void LogResetPasswordActivity(bool isSuccess, ProfileDetail profileDetail)
         {
             string message;
-            string editorName = (_defaultUserClaim.ImpersonatedBy == Guid.Empty) ? $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName}" : _defaultUserClaim.ImpersonatedByName;
+            string editorName = (_defaultUserClaim.ImpersonatedBy == Guid.Empty) ? $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName}" : _defaultUserClaim.ImpersonatedByName + " (RealPage Access) ";
 
             message = isSuccess
                 ? $"{editorName} successfully initiated password reset for {profileDetail.FirstName} {profileDetail.LastName}."
@@ -1309,7 +1309,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             if (string.IsNullOrEmpty(activityMessage))
             {
-                message = (defaultUserClaim.ImpersonatedBy == Guid.Empty) ? $"{defaultUserClaim.FirstName} {defaultUserClaim.LastName} {activity} user {person.FirstName} {person.LastName}." : $"{defaultUserClaim.ImpersonatedByName} {activity} user {person.FirstName} {person.LastName}.";
+                message = (defaultUserClaim.ImpersonatedBy == Guid.Empty) ? $"{defaultUserClaim.FirstName} {defaultUserClaim.LastName} {activity} user {person.FirstName} {person.LastName}." : $"{defaultUserClaim.ImpersonatedByName} (RealPage Access) {activity} user {person.FirstName} {person.LastName}.";
             }
             else
             {
@@ -1639,7 +1639,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private void LogAuditActivity(string logActivityType, LogActivityCategoryType logActivityCategoryType,
             string message, string stepName, IProfileDetail profile)
         {
-            string userName = string.IsNullOrEmpty(_defaultUserClaim.ImpersonatedByName) ? _defaultUserClaim.FirstName + " " + _defaultUserClaim.LastName : _defaultUserClaim.ImpersonatedByName;
+            string userName = string.IsNullOrEmpty(_defaultUserClaim.ImpersonatedByName) ? _defaultUserClaim.FirstName + " " + _defaultUserClaim.LastName : _defaultUserClaim.ImpersonatedByName + " (RealPage Access) ";
             LogActivity.WriteActivity(new ActivityDetails
             {
                 LogActivityTypeName = logActivityType,

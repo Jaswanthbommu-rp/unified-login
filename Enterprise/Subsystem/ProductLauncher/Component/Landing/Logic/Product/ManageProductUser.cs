@@ -714,7 +714,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 impersonatorUserInfo = _userRepository.GetUserDetails(null, impersonatorUserLoginOnly.RealPageId.ToString());
             }
             string logMessage = impersonatorUserInfo != null
-                ? string.Format(message, toUserLogDetail?.FirstName, toUserLogDetail?.LastName, booksProductDetail.Name, impersonatorUserInfo.FirstName, impersonatorUserInfo.LastName)
+                ? string.Format(message, toUserLogDetail?.FirstName, toUserLogDetail?.LastName, booksProductDetail.Name, impersonatorUserInfo.FirstName, impersonatorUserInfo.LastName + " (RealPage Access) ")
                 : string.Format(message, toUserLogDetail?.FirstName, toUserLogDetail?.LastName, booksProductDetail.Name, fromUserLogDetail.FirstName, fromUserLogDetail.LastName);
 
             WriteActivityLog(fromUserLogDetail, toUserLogDetail, booksProductDetail.BooksProductCode, logMessage);
@@ -819,7 +819,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (IsSuccess)
             {
                 message = impersonatorUserInfo != null
-                    ? $"{impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName} updated access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName}:"
+                    ? $"{impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName} (RealPage Access) updated access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName}:"
                     : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} updated access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName}:";
 
                 foreach (var item in userBatchProductDetails)
@@ -845,7 +845,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             else
             {
                 message = impersonatorUserInfo != null
-                    ? $"An exception occurred when {impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName} attempted to update product access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName} in "
+                    ? $"An exception occurred when {impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName} (RealPage Access) attempted to update product access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName} in "
                     : $"An exception occurred when {fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} attempted to update product access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName} in ";
 
                 string[] products = new string[userBatchProductDetails.Count];

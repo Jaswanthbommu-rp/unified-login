@@ -650,7 +650,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 		private void LogAuditActivity(string logActivityType, LogActivityCategoryType logActivityCategoryType,
 			string message, string stepName, UserDetails userDetails)
 		{
-			string userName = string.IsNullOrEmpty(_userClaims.ImpersonatedByName) ? _userClaims.FirstName + " " + _userClaims.LastName : _userClaims.ImpersonatedByName;
+			string userName = string.IsNullOrEmpty(_userClaims.ImpersonatedByName) ? _userClaims.FirstName + " " + _userClaims.LastName : _userClaims.ImpersonatedByName + " (RealPage Access) ";
 			try
 			{
 				LogActivity.WriteActivity(new ActivityDetails
