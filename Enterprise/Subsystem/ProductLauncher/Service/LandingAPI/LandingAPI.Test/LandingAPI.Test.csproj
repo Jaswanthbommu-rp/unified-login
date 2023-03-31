@@ -212,7 +212,6 @@
     <Compile Include="Logic\ManageOneSiteAccountingProductTests.cs" />
     <Compile Include="Logic\ManageOneSiteProductTests.cs" />
     <Compile Include="Logic\ManageOrganizationTest.cs" />
-    <Compile Include="Logic\ManageRelationshipTypeTests.cs" />
     <Compile Include="Logic\ManageRentersInsuranceProductTests.cs" />
     <Compile Include="Logic\ManageUnifiedSettingsTests.cs" />
     <Compile Include="Logic\ManageUserLoginPersonaTests.cs" />

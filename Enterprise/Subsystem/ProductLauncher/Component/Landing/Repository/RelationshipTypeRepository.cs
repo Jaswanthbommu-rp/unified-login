@@ -49,28 +49,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 				return repository.GetMany<RelationshipType>(StoredProcNameConstants.SP_ListRelationshipType, param);
 			}
 		}
-
-        /// <summary>
-        /// Get UserRelationshipType
-        /// </summary>
-        /// <param name="partyId">PartyId of user</param>
-        /// <returns>List UserRelationshipTypes object</returns>
-        public IList<UserRelationShipType> GetUserRelationShipTypes(long partyId) 
-		{
-            using (var repository = GetRepository())
-            {
-                dynamic param = null;
-                if (partyId != 0)
-                {
-                    param = new
-                    {
-                        PartyId = partyId
-                    };
-                }
-
-                return repository.GetMany<UserRelationShipType>(StoredProcNameConstants.SP_ListUserRelationshipTypes, param);
-            }
-        }
         #endregion
     }
 }
