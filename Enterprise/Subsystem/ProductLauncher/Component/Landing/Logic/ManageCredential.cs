@@ -856,7 +856,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 
                 string message = _userClaim.ImpersonatedBy == Guid.Empty
                     ? string.Format("User {0} {1} inserted a temporary password for user {2} {3}.", _userClaim.FirstName, _userClaim.LastName, person.FirstName, person.LastName)
-                    : string.Format("User {0} (RealPage Access) inserted a temporary password for user {1} {2}.", _userClaim.ImpersonatedByName, person.FirstName, person.LastName);
+                    : string.Format("User RealPage Access ({0}) inserted a temporary password for user {1} {2}.", _userClaim.ImpersonatedByName, person.FirstName, person.LastName);
 
 
                 LogActivity.WriteActivity(new ActivityDetails
