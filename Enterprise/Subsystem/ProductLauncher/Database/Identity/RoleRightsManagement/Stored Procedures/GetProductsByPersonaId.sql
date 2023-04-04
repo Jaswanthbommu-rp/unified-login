@@ -10,6 +10,7 @@ BEGIN
  DECLARE @UserProducts TABLE ( ProductId INT, isFavorite TINYINT, StatusTypeId INT )      
  DECLARE @LearningProductID INT = 19     
  DECLARE @AdminPortalProductID INT = 89  
+ DECLARE @SimonHelpProductID INT = 49
      
     
  INSERT INTO @CompanyOrganizationProduct ( ProductId )      
@@ -64,6 +65,10 @@ BEGIN
   VALUES      
    ( @LearningProductID, 0, 8 )      
  END      
+
+-- ADD SimonHelpCenter OR FIX ITS STATUS        
+ INSERT INTO @UserProducts ( ProductId, isFavorite, StatusTypeId )        
+ VALUES ( @SimonHelpProductID, 0, 8 )       
 
  IF EXISTS(SELECT TOP 1 1 FROM Ident.UserLoginPersona ULP 
     INNER JOIN Person.Persona P on ULP.UserLoginPersonaID = P.UserLoginPersonaId
