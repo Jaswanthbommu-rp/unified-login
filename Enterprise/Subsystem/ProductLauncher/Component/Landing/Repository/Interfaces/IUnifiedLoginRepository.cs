@@ -20,7 +20,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="partyId">isDeleted</param> 
         /// <param name="userId"></param>
         /// <returns>Add new Role</returns>
-        RepositoryResponse AddCustomRole(string roleName, string desc, long roleTypeId, long roleCategoryId, long partyId, int userId);
+        RepositoryResponse AddCustomRole(string roleName, string desc, long roleTypeId, long roleCategoryId, long partyId, int userId, string OrganizationType);
 
         /// <summary>
         /// Delete role

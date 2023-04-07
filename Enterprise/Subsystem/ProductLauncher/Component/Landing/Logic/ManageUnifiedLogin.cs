@@ -381,7 +381,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     int roleCategoryId = catList.FirstOrDefault(c => c.CategoryName.ToUpper() == "ROLE TYPE" && c.Status.ToUpper() == "CUSTOM").StatusTypeid;
 
 
-                    var resp = ocr.AddCustomRole(roleName, "", roleTypeId, roleCategoryId, partyId, _userClaims.UserId);
+                    var resp = ocr.AddCustomRole(roleName, "", roleTypeId, roleCategoryId, partyId, _userClaims.UserId,_userClaims.OrganizationType);
                     if (resp.ErrorMessage.Trim() != string.Empty)
                     {
                         response.IsError = true;
