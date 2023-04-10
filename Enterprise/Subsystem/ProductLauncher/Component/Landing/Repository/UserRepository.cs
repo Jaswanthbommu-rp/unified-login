@@ -4526,6 +4526,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             if (aop != null)
                 userProducts.Remove(aop);
 
+            if (userProducts != null && userProducts.Any(m => m.ProductId == 89))
+            {
+                //Remove Admin and Support Portal from list if user doesnt have it
+                int adminSupportProductId = (int)ProductEnum.AdminSupportPortal;
+                var productAttributes = repository.GetMany<SamlAttributes>(StoredProcNameConstants.SP_GetProductSamlDetails, new { PersonaId = assignUserPersonaId, ProductId = adminSupportProductId }).ToList();
+                if (productAttributes != null && productAttributes.Count == 0)
+                {
+                    var adminSupportProduct = userProducts.FirstOrDefault(c => c.ProductId == adminSupportProductId);
+                    userProducts.Remove(adminSupportProduct);
+                }
+            }
             foreach (PersonaProductUserDetails prod in userProducts)
             {
                 if (prod.ProductStatus == (int)ProductBatchStatusType.Success)
