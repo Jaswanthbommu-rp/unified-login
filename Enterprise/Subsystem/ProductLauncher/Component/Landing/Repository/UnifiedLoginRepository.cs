@@ -624,7 +624,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="roleCategoryId">isDeleted</param>   
         /// <param name="partyId">isDeleted</param>   
         /// <returns>Add new Role</returns>
-        public RepositoryResponse AddCustomRole(string roleName, string  desc, long roleTypeId, long roleCategoryId , long partyId, int userId)
+        public RepositoryResponse AddCustomRole(string roleName, string  desc, long roleTypeId, long roleCategoryId , long partyId, int userId,string OrganizationType)
         {
             using (var repository = GetRepository())
             {
@@ -639,7 +639,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     RoleCategoryId = roleCategoryId,
                     PartyID = partyId,
                     CreatedBy = userId,
+                    OrganizationType = OrganizationType,
                     RoleID = 0
+                
                 };
 
                 var result = repository.GetOne<dynamic>(procName, param);
