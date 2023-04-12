@@ -706,7 +706,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var fromUserLogDetail = _activityLogHelper.GetUserActivityLogInfo(fromPersonaId);
             var toUserLogDetail = toPersonaId != 0 ? _activityLogHelper.GetUserActivityLogInfo(toPersonaId) : null;
             var booksProductDetail = _productRepository.GetBooksMasterProductDetail(productId);
-            var impersonatorUserInfo = new UserDetails();
+            UserDetails impersonatorUserInfo = null;
 
             if (impersonatorUserId > 0)
             {
@@ -761,7 +761,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             var fromUserLogInfo = _activityLogHelper.GetUserActivityLogInfo(fromPersonaId);
             var toUserLogInfo = _activityLogHelper.GetUserActivityLogInfo(toPersonaId);
-            var impersonatorUserInfo = new UserDetails();
+            UserDetails impersonatorUserInfo = null;
             if (impersonatorUserId > 0)
             {
                 var impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(impersonatorUserId);
