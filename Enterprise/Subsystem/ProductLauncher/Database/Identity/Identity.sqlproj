@@ -1407,7 +1407,6 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\KnockProductPanelScript.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\VMPRolesAndRights.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\UserAuditDB.sql" />
-    <None Include="Scripts\PostDeployment\PostDeploymentScripts\April2023release.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />
