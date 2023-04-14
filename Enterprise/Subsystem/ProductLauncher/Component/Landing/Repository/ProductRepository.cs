@@ -432,7 +432,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 }
 
                 // Support Tool User should not have access to Client Portal
-                if (_userClaim.ImpersonatedBy != Guid.Empty)
+                if (_userClaim.ImpersonatedBy != Guid.Empty || _userClaim.IsRPEmployee)
                 {
                     if (userProducts.Any(a => a.ProductId == (int)ProductEnum.ClientPortal))
                     {
