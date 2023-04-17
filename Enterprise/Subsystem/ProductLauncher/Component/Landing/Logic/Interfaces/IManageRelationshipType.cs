@@ -14,6 +14,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="relationshipTypeName">Relationship Type Name</param>
 		/// <returns>List of RelationshipType object</returns>
 		IList<RelationshipType> GetRelationshipType(string relationshipTypeName);
+		/// <summary>
+		/// Get UserRelationShip Types
+		/// </summary>
+		/// <returns></returns>
+		IList<UserRelationShipType> GetUserRelationShipTypes();
 
     }
 }

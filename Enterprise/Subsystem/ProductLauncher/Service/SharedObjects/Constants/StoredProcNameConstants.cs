@@ -185,6 +185,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
 
         //RelationshipType
         public const string SP_ListRelationshipType = "Enterprise.ListRelationshipType";
+        public const string SP_ListUserRelationshipTypes = "[Enterprise].[ListUserRelationshipTypes]";
 
         //RoleType
         public const string SP_ListRoleType = "Enterprise.ListRoleType";
