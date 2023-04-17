@@ -288,7 +288,7 @@ BEGIN
 				INNER JOIN Enterprise.ProductSetting ps ON prc.ProductSettingId = ps.ProductSettingId AND ps.Value = '8' AND ps.ProductSettingTypeId = @ProductSettingTypeId
 			WHERE
 					ULP.OrganizationPartyId = @PartyId
-			AND		pec.ProductId NOT IN (14, 19, 24, 25, 34, 39) --Client Portal, Product Learning Portal, Black Book, Self-provisioning portal, Benchmarking, Integration Marketplace
+			AND		pec.ProductId NOT IN ( 19, 24, 25, 34, 39) -- Product Learning Portal, Black Book, Self-provisioning portal, Benchmarking, Integration Marketplace
 			AND		((@NOW >= p.FromDate AND p.ThruDate IS NULL) OR (@NOW BETWEEN p.FromDate AND p.ThruDate))
 			AND     ((@NOW >= pec.FromDate AND pec.ThruDate IS NULL) OR (@NOW BETWEEN pec.FromDate AND pec.ThruDate))
 			AND     ((@NOW >= prc.FromDate AND prc.ThruDate IS NULL) OR (@NOW BETWEEN prc.FromDate AND prc.ThruDate))
