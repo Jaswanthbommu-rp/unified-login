@@ -3,7 +3,6 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Attribute;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
-
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using Swashbuckle.Swagger.Annotations;
 using System.Collections.Generic;
@@ -14,6 +13,7 @@ using System.Web.Http;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using System.Web.Http.Controllers;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -25,6 +25,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         #region Private variables
         private readonly IRelationshipTypeRepository _relationshipTypeRepository;
         IRepositoryResponse repositoryResponse = new RepositoryResponse();
+        private IManageRelationshipType _manageRelationshipType;
         #endregion
 
         #region Constructor
@@ -34,12 +35,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         public RelationshipTypeController() : base() { }
 
         /// <summary>
-        /// Testing Constructor
+        /// Used to initialize DI classes with userclaim
         /// </summary>
-        /// <param name="relationshipTypeRepository">RelationshipType Repository</param>
-        public RelationshipTypeController(IRelationshipTypeRepository relationshipTypeRepository)
+        /// <param name="controllerContext"></param>
+        protected override void Initialize(HttpControllerContext controllerContext)
         {
-            _relationshipTypeRepository = relationshipTypeRepository;
+            base.Initialize(controllerContext);
+            _manageRelationshipType = new ManageRelationshipType(_userClaims);
+
         }
         #endregion
 
@@ -58,7 +61,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         {
             IList<RelationshipType> relationshipTypeList = new List<RelationshipType>();
 
-            IManageRelationshipType relationshipTypeLogic = new ManageRelationshipType();
+            IManageRelationshipType relationshipTypeLogic = new ManageRelationshipType(_userClaims);
 
             if (_relationshipTypeRepository == null)
             {
@@ -76,6 +79,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
 
             //When trying to get a list of relationshipTypes that doesn't exists
+            return Request.CreateResponse(HttpStatusCode.NoContent, "No Data");
+        }
+
+        /// <summary>
+        /// List UserRelationShiptypes details
+        /// </summary>
+        /// <returns>A list of Role type details</returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about the password policy", Type = typeof(UserRelationShipType))]
+        [SwaggerResponseExamples(typeof(UserRelationShipType), typeof(UserRelationShipExample))]
+        [Route("userrelationshiptypes")]
+        [HttpGet]
+        public HttpResponseMessage ListUserRelationTypes()
+        {
+            var userRelationships = _manageRelationshipType.GetUserRelationShipTypes();
+
+            if (userRelationships != null)
+            {
+                ObjectListOutput<UserRelationShipType, IErrorData> output = new ObjectListOutput<UserRelationShipType, IErrorData>() { list = userRelationships };
+                return Request.CreateResponse(HttpStatusCode.OK, output);
+            }
             return Request.CreateResponse(HttpStatusCode.NoContent, "No Data");
         }
         #endregion
@@ -103,6 +128,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 };
 
                 ObjectOutput<IRelationshipType, IErrorData> output = new ObjectOutput<IRelationshipType, IErrorData>() { obj = example };
+
+                return output;
+            }
+        }
+
+        /// <summary>
+        /// Used to document examples of the RelationshipType Model webapi result
+        /// </summary>
+        public class UserRelationShipExample : IProvideExamples
+        {
+            /// <summary>
+            /// Example object data used by Swagger to document the output of the webapi method
+            /// </summary>
+            /// <returns>UserRelationShip example</returns>
+            public object GetExamples()
+            {
+                UserRelationShipType example = new UserRelationShipType()
+                {
+                    Id =1,
+                    UserRelationshipName = "Employee",
+                    ThirdPartyRelationshipId = 4,
+                    SortIndex = 1,
+                    PartyRoleTypeId = 401,
+                    Description = "Employee user with email format username"
+                };
+
+                ObjectOutput<UserRelationShipType, IErrorData> output = new ObjectOutput<UserRelationShipType, IErrorData>() { obj = example };
 
                 return output;
             }

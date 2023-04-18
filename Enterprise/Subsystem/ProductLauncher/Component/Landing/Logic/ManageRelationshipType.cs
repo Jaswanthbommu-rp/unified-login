@@ -1,8 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.Net.Http;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -13,24 +17,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
     {
         #region Private Variables
         IRelationshipTypeRepository _relationshipTypeRepository;
+        private DefaultUserClaim _userClaims;
+        private IManagePersona _managePersona;
         #endregion
 
         #region Constructors
         /// <summary>
-        /// Relationship Type Repository Constructor
+        /// Unit Test Constructor
         /// </summary>
-        /// <param name="relationshipTypeRepository">Relationship Type Repository</param>
-        public ManageRelationshipType(IRelationshipTypeRepository relationshipTypeRepository)
+        /// <param name="repository"></param>
+        /// <param name="userClaim"></param>
+        /// <param name="messageHandler"></param>
+        public ManageRelationshipType(IRepository repository, DefaultUserClaim userClaim, HttpMessageHandler messageHandler)
         {
-            _relationshipTypeRepository = relationshipTypeRepository;
+            _managePersona = new ManagePersona(repository, userClaim, messageHandler);
+            _relationshipTypeRepository = new RelationshipTypeRepository(repository);
+            _userClaims = userClaim;
         }
 
         /// <summary>
         /// Create a basic instance of the ManageOrganization Controller class
         /// </summary>
-        public ManageRelationshipType()
+        public ManageRelationshipType(DefaultUserClaim userClaim)
         {
+            _managePersona = new ManagePersona(userClaim);
             _relationshipTypeRepository = new RelationshipTypeRepository();
+            _userClaims = userClaim;
         }
         #endregion
 
@@ -42,6 +54,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         public IList<RelationshipType> GetRelationshipType(string relationshipTypeName)
         {
             return _relationshipTypeRepository.GetRelationshipType(relationshipTypeName);
+        }
+        public IList<UserRelationShipType> GetUserRelationShipTypes()
+        {
+            var persona = _managePersona.GetPersona(_userClaims.PersonaId);
+            if (persona == null)
+            {
+                return null;
+            }
+
+            List<UserRelationShipType> userRelationShipTypes = (List<UserRelationShipType>)_relationshipTypeRepository.GetUserRelationShipTypes(partyId: _userClaims.OrganizationPartyId);
+            if (!_userClaims.IsRPEmployee && persona.UserTypeId == (int)UserRoleType.ExternalUser)
+            {
+                userRelationShipTypes.RemoveAll(x => x.PartyRoleTypeId == 402);
+            }
+            return userRelationShipTypes;
         }
     }
 }

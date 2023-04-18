@@ -1408,6 +1408,10 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\VMPRolesAndRights.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\UserAuditDB.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\April2023release.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListUserRelationshipTypes.sql" />
+    <Build Include="RoleRightsManagement\Tables\UserRelationShip.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\UserRelationShipScript.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\class.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />
