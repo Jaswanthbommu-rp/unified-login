@@ -61,17 +61,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 		[JsonProperty(PropertyName = "ISOCode")]
 		public string ISOCode { get; set; } = "";
 
-		/// <summary>
-		/// Contact Mechanism usage type detail
-		/// </summary>
-		[JsonProperty("contactMechanismUsageType", NullValueHandling = NullValueHandling.Ignore)]
-		public ContactMechanismUsageType contactMechanismUsageType { get; set; }
-
         /// <summary>
         /// default
         /// </summary>
         [JsonProperty(PropertyName = "IsDefault")]
         public bool IsDefault { get; set; } = false;
+
+        /// <summary>
+        /// Contact Mechanism usage type detail
+        /// </summary>
+        [JsonProperty("contactMechanismUsageType", NullValueHandling = NullValueHandling.Ignore)]
+		public ContactMechanismUsageType contactMechanismUsageType { get; set; }
 
         #region Examples
         /// <summary>
