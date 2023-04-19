@@ -5,6 +5,7 @@ CREATE PROCEDURE [Enterprise].[ListUserRelationshipTypes]
 AS  
 BEGIN  
 select    Id
+         ,UserRelationshipName  
          ,Description
          ,PartyRoleTypeId
           ,PartyId
