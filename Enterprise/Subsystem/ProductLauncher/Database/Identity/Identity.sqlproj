@@ -1412,6 +1412,7 @@
     <Build Include="RoleRightsManagement\Tables\UserRelationShip.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\UserRelationShipScript.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\class.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\1486360-useraccess-summary-properties.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />
