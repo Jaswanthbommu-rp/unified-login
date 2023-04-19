@@ -11,12 +11,14 @@ BEGIN
 			'Telecommunications Number' AS AddressType,
 			cmu.ContactMechanismUsageTypeID AS ContactMechanismUsageTypeID,
 			Ispreferred = case when cmp.ContactMechanismID is not null then 1 else 0 end,
+			IsDefault = case when cmd.ContactMechanismID is not null then 1 else 0 end,
 			tm.ISOCode
 	FROM    Enterprise.ContactMechanismUsage cmu
 			JOIN Enterprise.PartyContactMechanism pcm ON pcm.PartyContactMechanismId = cmu.PartyContactMechanismID
 			JOIN Enterprise.ContactMechanism cm ON cm.ContactMechanismID = pcm.ContactMechanismId
 			JOIN Enterprise.TelecommunicationsNumber tm ON tm.ContactMechanismID = cm.ContactMechanismID
 			left outer join Enterprise.ContactMechanismPreference cmp on cmp.ContactMechanismID = tm.ContactMechanismID
+			left outer join Enterprise.ContactMechanismDefault cmd on cmd.ContactMechanismID = tm.ContactMechanismID
 			JOIN Enterprise.Party p ON p.PartyId = pcm.PartyId
 	WHERE   p.RealPageId = @RealPageId
 	AND		(pcm.ThruDate IS NULL OR pcm.ThruDate > GETUTCDATE());

@@ -245,6 +245,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         public const string SP_AddUpdateContactMechanismPreference = "Enterprise.AddUpdateContactMechanismPreference";
         public const string SP_DeleteContactMechanismPreference = "Enterprise.DeleteContactMechanismPreference";
 
+        //Contact Default
+        public const string SP_AddUpdateContactMechanismDefault = "Enterprise.AddUpdateContactMechanismDefault";
+        public const string SP_DeleteContactMechanismDefault = "Enterprise.DeleteContactMechanismDefault";
+
+
         //Electronic Address Contact Mechanism
         public const string SP_CreateElectronicAddress = "Person.CreateElectronicAddress";
         public const string SP_ListEmailsForPerson = "Person.ListEmailsForPerson";

@@ -30,10 +30,10 @@
 		/// </summary>
 		string PhoneNumber { get; set; }
 
-        /// <summary>
-        /// IsDeleted
-        /// </summary>        
-        bool IsDeleted { get; set; }
+		/// <summary>
+		/// IsDeleted
+		/// </summary>        
+		bool IsDeleted { get; set; }
 
 		/// <summary>
 		/// IsPreferred
@@ -54,5 +54,10 @@
 		/// Contact Mechanism usage type detail
 		/// </summary>
 		ContactMechanismUsageType contactMechanismUsageType { get; set; }
+
+		/// <summary>
+		/// IsPreferred
+		/// </summary>
+		bool IsDefault { get; set; }
 	}
 }

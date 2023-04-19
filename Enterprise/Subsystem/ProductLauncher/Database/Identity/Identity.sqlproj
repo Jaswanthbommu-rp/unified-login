@@ -1412,6 +1412,9 @@
     <Build Include="RoleRightsManagement\Tables\UserRelationShip.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\UserRelationShipScript.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\class.sql" />
+    <None Include="Enterprise\Tables\ContactMechanismDefault.sql" />
+    <None Include="Enterprise\Stored Procedures\AddUpdateContactMechanismDefault.sql" />
+    <None Include="Enterprise\Stored Procedures\DeleteContactMechanismDefault.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />

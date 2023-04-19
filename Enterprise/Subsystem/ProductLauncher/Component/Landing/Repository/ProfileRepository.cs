@@ -398,6 +398,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 {
                                     repositoryResponse.ErrorMessage = "Update profile Error: Create Contact Mechanism Preference failed.";
                                 }
+
+                                bool defaultresponce = UpdateContactDefault(repository, profile.RealPageId, profile.TelecommunicationNumber.ToList());
+                                if (!defaultresponce)
+                                {
+                                    repositoryResponse.ErrorMessage = "Update profile Error: Create Contact Mechanism Default failed.";
+                                }
+
+
                             }
 
                             IManageElectronicAddress electronicAddressLogic = new ManageElectronicAddress();
@@ -889,6 +897,49 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     ContactMechanismId = currentContactMechanismId
                 };
                 RepositoryResponse repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_DeleteContactMechanismPreference, param);
+                if (repositoryResponse.Id == 0)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        /// <summary>
+        ///  Update Contact Default
+        /// </summary>
+        /// <param name="repository"></param>
+        /// <param name="realPageId"></param>
+        /// <param name="telecommunicationNumbers"></param>
+        /// <returns></returns>
+        private bool UpdateContactDefault(IRepository repository, Guid realPageId, List<TelecommunicationNumber> telecommunicationNumbers)
+        {
+            var preferredContact = telecommunicationNumbers
+                        .Where(tc => tc.IsDeleted == false && tc.IsDefault == true).FirstOrDefault();
+            IList<TelecommunicationNumber> telecommunications = repository.GetMany<TelecommunicationNumber>(StoredProcNameConstants.SP_ListTelecommunicationNumbersForPerson, new { realPageId }).ToList();
+            var currentContactMechanismId = telecommunications?.Where(tc => tc.IsDefault == true).FirstOrDefault()?.ContactMechanismId;
+            if ((currentContactMechanismId == null && preferredContact != null) ||
+                (preferredContact != null && currentContactMechanismId != null
+                    && (currentContactMechanismId != preferredContact.ContactMechanismId)))
+            {
+                dynamic param = new
+                {
+                    CurrentContactMechanismId = preferredContact.ContactMechanismId,
+                    PreviousPreferenceId = currentContactMechanismId ?? 0
+                };
+                RepositoryResponse repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdateContactMechanismDefault, param);
+                if (repositoryResponse.Id == 0)
+                {
+                    return false;
+                }
+            }
+            else if (preferredContact == null && currentContactMechanismId != null)
+            {
+                dynamic param = new
+                {
+                    ContactMechanismId = currentContactMechanismId
+                };
+                RepositoryResponse repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_DeleteContactMechanismDefault, param);
                 if (repositoryResponse.Id == 0)
                 {
                     return false;
