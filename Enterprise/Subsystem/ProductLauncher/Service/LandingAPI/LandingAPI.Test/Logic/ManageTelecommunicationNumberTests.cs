@@ -110,7 +110,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 						w.PartyContactMechanismId == o.PartyContactMechanismId
 					)
 				) == true
-				&& NumberOfProperties == 11
+				&& NumberOfProperties == 10
 			);
 		}
 	}
