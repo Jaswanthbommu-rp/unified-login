@@ -572,6 +572,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     CountryCode = "01",
                     AreaCode = "972",
                     PhoneNumber = "8204000",
+                    IsDefault = true,
                     contactMechanismUsageType = contactMechanismUsageType
                 };
 
