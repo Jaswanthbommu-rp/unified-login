@@ -34,7 +34,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		[JsonProperty(PropertyName = "phoneNumbers")]
 		public List<string> PhoneNumbers { get; set; } //SLM
 
-		[JsonProperty(PropertyName = "additionalFields")]
+        [JsonProperty(PropertyName = "countryCode")]
+        public string CountryCode { get; set; }
+
+        [JsonProperty(PropertyName = "ISOCode")]
+        public string ISOCode { get; set; }
+
+        [JsonProperty(PropertyName = "additionalFields")]
 		//public Dictionary<string, string> AdditionalFields { get; set; } //SLM
 		public List<KeyValuePair<string, string>> AdditionalFields { get; set; } //SLM
 

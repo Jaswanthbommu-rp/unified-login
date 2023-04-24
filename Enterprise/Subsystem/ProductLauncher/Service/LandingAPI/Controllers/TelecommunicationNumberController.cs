@@ -85,7 +85,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			IPartyContactMechanism partyContactMechanism = new PartyContactMechanism();
 			partyContactMechanism = linkTelecommunicationNumber.PartyContactMechanism;
 			partyContactMechanism.ContactMechanismId = _contactMechanismId;
-			repositoryResponse = contactMechanismLogic.LinkContactMechanismToParty(realPageId, partyContactMechanism);
+            repositoryResponse = contactMechanismLogic.LinkContactMechanismToParty(realPageId, partyContactMechanism);
 			if (repositoryResponse.Id == 0)
 			{
 				return Request.CreateResponse(HttpStatusCode.BadRequest, repositoryResponse.ErrorMessage);
