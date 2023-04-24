@@ -1588,6 +1588,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     }
                 }
             }
+            UserRelationShipType obj = new UserRelationShipType
+            {
+                Id = 1,
+                ThirdPartyRelationshipId = 1,
+                UserRelationshipName = "Operator"
+            };
+            userOrganizationExists.UserRelationShipType = obj;
 
             return userOrganizationExists;
         }

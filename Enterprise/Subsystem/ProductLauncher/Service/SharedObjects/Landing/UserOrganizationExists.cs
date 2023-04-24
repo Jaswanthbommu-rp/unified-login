@@ -77,6 +77,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         /// </summary>
         public string PrimaryCompanyName { get; set; } = "";
 
+        public UserRelationShipType UserRelationShipType { get; set; }
+
         #region Examples
         /// <summary>
         /// Example for UserOrganizationExists
