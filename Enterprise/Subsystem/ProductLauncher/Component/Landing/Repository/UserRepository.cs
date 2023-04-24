@@ -6405,16 +6405,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 }
                             }
                         }
-
-                        if (userBatchEntity.UserTypeChangedToFromExternal.Equals("FromExternal", StringComparison.OrdinalIgnoreCase))
-                        {
-                            dynamic parameter = new
-                            {
-                                UserLoginPersonaId = updateUserProfileEntity.OldProfile.ExternalUserRelationship.UserLoginPersonaId
-                            };
-                            repository.ExecuteNonQuery(StoredProcNameConstants.SP_DeleteExternalUserRelationship, parameter);
-                        }
-
                         #endregion
 
                         var enterpriseRole = updateUserProfileEntity.NewProfile.productBatch.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedUI);
