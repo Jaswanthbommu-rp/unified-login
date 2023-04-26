@@ -44,7 +44,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			{
 				CountryCode = "44",
 				AreaCode = "7911",
-				PhoneNumber = "123456"
+				PhoneNumber = "123456",
+				IsDefault = true
 			};
 
 			LinkTelecommunicationNumber linkTelecommunicationNumber = new LinkTelecommunicationNumber()
@@ -153,6 +154,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				ContactMechanismId = 1,
 				CountryCode = "1",
 				AreaCode = "972",
+				IsDefault = true,
 				PhoneNumber = "8203000",
 				contactMechanismUsageType = contactMechanismUsageType
 			};

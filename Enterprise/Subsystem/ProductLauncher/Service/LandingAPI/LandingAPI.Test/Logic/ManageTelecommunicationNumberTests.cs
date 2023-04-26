@@ -41,7 +41,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				ContactMechanismId = 1,
 				CountryCode = "1",
 				AreaCode = "972",
-				PhoneNumber = "820-3000"
+				PhoneNumber = "820-3000",
+				IsDefault = true
 			};
 			var mockObject = new Mock<ITelecommunicationNumberRepository>();
 			mockObject.Setup(m => m.CreateTelecommunicationNumber(telecommunicationNumber)).Returns(new RepositoryResponse { Id = 1, ErrorMessage = "", RealPageId = realPageId });
@@ -105,12 +106,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 						&&
 						w.ContactMechanismId == o.ContactMechanismId
 						&&
-						w.contactMechanismUsageType == o.contactMechanismUsageType
+                        w.IsDefault == o.IsDefault
+						&&
+                        w.contactMechanismUsageType == o.contactMechanismUsageType
 						&&
 						w.PartyContactMechanismId == o.PartyContactMechanismId
 					)
 				) == true
-				&& NumberOfProperties == 10
+				&& NumberOfProperties == 11
 			);
 		}
 	}

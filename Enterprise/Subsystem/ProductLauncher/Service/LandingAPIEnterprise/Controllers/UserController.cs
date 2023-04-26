@@ -1468,6 +1468,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 number.PhoneNumber = userProductDetailsDto.UserProfileDetails.Phone;
                 number.IsDeleted = false;
                 number.IsPreferred = false;
+                number.IsDefault = false;
                 number.AreaCode = String.Empty;
                 number.contactMechanismUsageType = new ContactMechanismUsageType() { ContactMechanismUsageTypeId = 203, Name = String.Empty };
                 number.PartyContactMechanismId = 0;

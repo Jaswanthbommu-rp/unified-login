@@ -36,7 +36,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 				telecommunicationNumber.AreaCode,
 				telecommunicationNumber.CountryCode,
 				telecommunicationNumber.PhoneNumber,
-				telecommunicationNumber.ISOCode
+				telecommunicationNumber.ISOCode,
+				telecommunicationNumber.IsDefault
 			};
 
 			using (var repository = GetRepository())
