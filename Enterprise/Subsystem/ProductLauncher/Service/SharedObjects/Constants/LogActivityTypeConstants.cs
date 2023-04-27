@@ -36,6 +36,7 @@
         public const string USER_UPDATE_INTERNAL = "User Update - Internal";
         public const string CLIENT_SETTINGS_UPDATE = "Client Settings Update";
         public const string PRIMARY_PROPERTIES = "Primary Properties";
+        public const string ENTERPRISE_ROLE = "Enterprise_Role";
     }
 
     //public static class SecurityActivityMessageConstants

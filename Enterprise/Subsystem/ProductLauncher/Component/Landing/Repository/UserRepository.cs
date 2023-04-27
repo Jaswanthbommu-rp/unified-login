@@ -1127,20 +1127,40 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
 
                         //Link persona to enterprise Role ID
+                        List<RoleTemplateProductRole> roleTemplateProductRole = new List<RoleTemplateProductRole>();
+                        int roleTemplateId = 0;
+                        string enterpriseUserRole = string.Empty;
                         var enterpriseRole = newProfile.productBatch?.FirstOrDefault<ProductBatch>((Func<ProductBatch, bool>)(p => p.ProductId == (int)ProductEnum.UnifiedUI));
                         if (enterpriseRole?.InputJson?.RoleList != null && enterpriseRole?.InputJson?.RoleList.Count > 0)
                         {
-                            int roleTemplateId = Convert.ToInt32(enterpriseRole.InputJson.RoleList.FirstOrDefault());
-                            repositoryResponse = InsertUpdateEnterpriseRoleToUser(repository, roleTemplateId, personaId);
-                            if (repositoryResponse.Id == 0)
+                            roleTemplateId = Convert.ToInt32(enterpriseRole.InputJson.RoleList.FirstOrDefault());
+                            if (roleTemplateId != 0)
                             {
-                                repository.UnitOfWork.Rollback();
-                                errorStatus.Success = false;
-                                errorStatus.ErrorCode = "User.CreateUser.9";
-                                errorStatus.ErrorMsg = "User not assigned to Enterprise Role.";
-                                createUserResponse.Status = errorStatus;
-                                createUserResponse.UserStatus = errorStatus.ErrorMsg;
-                                return createUserResponse;
+                                object paramObject = new
+                                {
+                                    RoleTemplateId = roleTemplateId,
+                                    OrganizationRealPageId = _userClaim.OrganizationRealPageGuid
+                                };
+                                roleTemplateProductRole = repository.GetMany<RoleTemplateProductRole>(StoredProcNameConstants.SP_GetRoleTemplateProductRoleMappings, paramObject).ToList();
+                                enterpriseUserRole = roleTemplateProductRole.Select(x => x.RoleTemplateName).FirstOrDefault();
+                                repositoryResponse = InsertUpdateEnterpriseRoleToUser(repository, roleTemplateId, personaId);
+                                if (repositoryResponse.Id == 0)
+                                {
+                                    repository.UnitOfWork.Rollback();
+                                    errorStatus.Success = false;
+                                    errorStatus.ErrorCode = "User.CreateUser.9";
+                                    errorStatus.ErrorMsg = "User not assigned to Enterprise Role.";
+                                    createUserResponse.Status = errorStatus;
+                                    createUserResponse.UserStatus = errorStatus.ErrorMsg;
+                                    return createUserResponse;
+                                }
+                            }
+
+                            if (enterpriseUserRole != null) 
+                            {
+                                //  string message = $"User right has not verified. Roles - {claimDetails.Roles} Right - {ConvertStringArrayToStringJoin(_rightToCheck)}";
+                                string message = $"{2} updated access for {0} {1} :Enterprise Role: {3}  was granted.";
+                                LogAuditActivityForEnterpriserole(LogActivityTypeConstants.ENTERPRISE_ROLE, LogActivityCategoryType.User, message, "Enterprise Role", newProfile, enterpriseUserRole);
                             }
                         }
 
@@ -5029,6 +5049,44 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             LogActivity.WriteActivity(activityDetails);
         }
 
+        /// <summary>
+        /// LogAuditActivity
+        /// </summary>
+        /// <param name="logActivityType"></param>
+        /// <param name="logActivityCategoryType"></param>
+        /// <param name="message"></param>
+        /// <param name="stepName"></param>
+        /// <param name="profile"></param>
+        /// <param name="enterpriseRoleName"></param>
+        private void LogAuditActivityForEnterpriserole(string logActivityType, LogActivityCategoryType logActivityCategoryType, string message, string stepName, IProfileDetail profile, string enterpriseRoleName)
+        {
+            string userName = string.IsNullOrEmpty(_userClaim.ImpersonatedByName) ? _userClaim.FirstName + " " + _userClaim.LastName : " RealPage Access (" + _userClaim.ImpersonatedByName + ") ";
+
+            var activityDetails = new ActivityDetails
+            {
+                LogActivityTypeName = logActivityType,
+                LogCategoryName = logActivityCategoryType.ToString(),
+                CorrelationId = _userClaim.CorrelationId.ToString(),
+                BooksMasterOrganizationId = _userClaim.OrganizationMasterId,
+                OrganizationPartyId = _userClaim.OrganizationPartyId,
+                Message = string.Format(message, profile.FirstName, profile.LastName, userName, enterpriseRoleName, profile.CreateUserSourceType.ToString()),
+
+                FromUserLoginName = _userClaim.LoginName,
+                FromUserLoginId = _userClaim.UserId,
+                FromUserRealpageId = _userClaim.UserRealPageGuid.ToString(),
+                FromUserFirstName = _userClaim.FirstName,
+                FromUserLastName = _userClaim.LastName,
+
+                ToUserLoginName = profile.userLogin.LoginName,
+                ToUserLoginId = profile.userLogin.UserId,
+                ToUserFirstName = profile.FirstName,
+                ToUserLastName = profile.LastName,
+                ToUserRealpageId = profile.userLogin.RealPageId.ToString(),
+            };
+
+            LogActivity.WriteActivity(activityDetails);
+        }
+
         private void AddActivityLog(string logActivityType, LogActivityCategoryType logActivityCategoryType, string message, IPerson person, IUserLoginOnly userLogin = null, IUserOrganization userOrg = null, DefaultUserClaim defaultUserClaim = null)
         {
             WriteToLog(LogEventLevel.Debug, $"UserRepository.AddActivityLog at beginning of method for for activity - {message} and correlationId is {_userClaim.CorrelationId.ToString()} ");
@@ -6412,17 +6470,31 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         #endregion
 
                         var enterpriseRole = updateUserProfileEntity.NewProfile.productBatch.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedUI);
+                        List<RoleTemplateProductRole> roleTemplateProductRoles = new List<RoleTemplateProductRole>();
                         //Update Enterprise role template to persona                        
                         if (enterpriseRole?.InputJson?.RoleList != null && enterpriseRole?.InputJson?.RoleList.Count > 0)
                         {
                             int roleTemplateId = Convert.ToInt32(enterpriseRole.InputJson.RoleList.FirstOrDefault());
                             if (roleTemplateId != 0)
                             {
+                                object paramObject = new
+                                {
+                                    RoleTemplateId = roleTemplateId,
+                                    OrganizationRealPageId = _userClaim.OrganizationRealPageGuid
+                                };
+                                roleTemplateProductRoles = repository.GetMany<RoleTemplateProductRole>(StoredProcNameConstants.SP_GetRoleTemplateProductRoleMappings, paramObject).ToList();
+                                string enterpriseUserRole = roleTemplateProductRoles.Select(x => x.RoleTemplateName).FirstOrDefault();
                                 repositoryResponse = InsertUpdateEnterpriseRoleToUser(repository, roleTemplateId, updateUserProfileEntity.OldProfile.Persona[0].PersonaId);
                                 if (repositoryResponse.Id == 0)
                                 {
                                     repositoryResponse.ErrorMessage = "Unable to update enterprise role to the Persona.";
                                     throw new Exception(repositoryResponse.ErrorMessage);
+                                }
+                                if (enterpriseUserRole != null)
+                                {
+                                    //  string message = $"User right has not verified. Roles - {claimDetails.Roles} Right - {ConvertStringArrayToStringJoin(_rightToCheck)}";
+                                    string message = $"{2} updated access for {0} {1} :Enterprise Role: {3}  was granted.";
+                                    LogAuditActivityForEnterpriserole(LogActivityTypeConstants.ENTERPRISE_ROLE, LogActivityCategoryType.User, message, "Enterprise Role", updateUserProfileEntity.NewProfile, enterpriseUserRole);
                                 }
                             }
                             else if (roleTemplateId == 0)
