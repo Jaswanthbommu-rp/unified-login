@@ -949,12 +949,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					foundUserName = true;
 				}
 
-				if (incrementor == 10)
-				{
-					// after 10 tries something might be wrong, so bail out.
-					WriteToErrorLog($"ManageMarketingCenterUser - Error checking for username in use {userEmailAddress}");
-					return "";
-				}
 			}
 			return userEmailAddress;
 		}

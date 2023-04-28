@@ -650,12 +650,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         WriteToDiagnosticLog($"{nameof(StandardV1ProductIntegration)} - generated accountingLoginName = {newLoginName}");
                     }
 
-                    if (incrementor == 10)
-                    {
-                        // after 10 tries something might be wrong, so bail out.
-                        WriteToErrorLog($"{nameof(StandardV1ProductIntegration)} - Error checking for username in use {newLoginName}");
-                        return "An error occurred. Unable to get username.";
-                    }
                 }
                 return newLoginName;  
         }

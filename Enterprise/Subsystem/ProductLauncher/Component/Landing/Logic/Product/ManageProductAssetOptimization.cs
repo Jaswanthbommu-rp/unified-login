@@ -1067,12 +1067,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						foundUserName = true;
 					}
 
-					if (incrementor == 10)
-					{
-						// after 10 tries something might be wrong, so bail out.
-						WriteToErrorLog($"ManageProductAssetOptimization - Error checking for username in use {newproductUsername}");
-						return "An error occurred. Unable to get username.";
-					}
 				}
 
 				biAOUser.Login = biLoginName.ToLower();

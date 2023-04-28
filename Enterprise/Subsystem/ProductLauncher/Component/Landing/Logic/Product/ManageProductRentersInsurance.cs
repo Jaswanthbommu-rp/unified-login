@@ -613,14 +613,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         {
                             foundUserName = true;
                         }
-                        if (incrementor == 10)
-                        {
-                            // after 10 tries something might be wrong, so bail out.
-                            WriteToErrorLog($"ManageProductRentersInsurance.ManageRentersInsuranceUser - Error checking for username in use {newproductUsername}");
-                            errorStatus.Success = false;
-                            errorStatus.ErrorMsg = "An error occurred. Unable to get username.";
-                            output.Status = errorStatus;
-                        }
                     }
                     WriteToDiagnosticLog($"ManageProductRentersInsurance.ManageRentersInsuranceUser - generated RentersInsuranceLoginName = {newproductUsername}");
                     productUserName = newproductUsername;

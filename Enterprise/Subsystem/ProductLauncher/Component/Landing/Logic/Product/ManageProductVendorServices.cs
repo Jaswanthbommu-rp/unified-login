@@ -674,9 +674,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             else
                             {
                                 foundNewUserName = true;
-                            }
-                            if (incrementor == 10)
-                                throw new Exception($"Could not find a unique username for user persona id {productUserPersonaId} after {incrementor} try.");
+                            }                           
                         }
                         // Product username cannot be more than 50 characters
                         if (productLoginName.Length > 50)
