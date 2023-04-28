@@ -8,3 +8,15 @@ IF NOT EXISTS (Select Top 1 1 from  Enterprise.ThirdPartyRelationship where Thir
 BEGIN
      INSERT INTO Enterprise.ThirdPartyRelationship values (8,'System Administrator')
 END
+IF NOT EXISTS (Select Top 1 1 from  Enterprise.ThirdPartyRelationship where ThirdPartyRelationship ='RealPage Employee')
+BEGIN
+     INSERT INTO Enterprise.ThirdPartyRelationship values (9,'RealPage Employee')
+END
+IF NOT EXISTS (Select Top 1 1 from  Enterprise.ThirdPartyRelationship where ThirdPartyRelationship ='Employee (Additional Company)')
+BEGIN
+     INSERT INTO Enterprise.ThirdPartyRelationship values (7,'Employee (Additional Company)')
+END
+IF NOT EXISTS (Select Top 1 1 from  Enterprise.ThirdPartyRelationship where ThirdPartyRelationship ='Employee (no email)')
+BEGIN
+     INSERT INTO Enterprise.ThirdPartyRelationship values (6,'Employee (no email)')
+END
