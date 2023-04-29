@@ -68,7 +68,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 userRelationShipTypes.RemoveAll(x => x.PartyRoleTypeId == 402);
             }
-            if (_userClaims.IsRPEmployee && persona.UserTypeId == (int)UserRoleType.ExternalUser) 
+            if (_userClaims.IsRPEmployee && (persona.UserTypeId == (int)UserRoleType.SuperUser || persona.UserTypeId == (int)UserRoleType.User)) 
             {
                 userRelationShipTypes.RemoveAll(x => x.PartyRoleTypeId == 403);
             }
