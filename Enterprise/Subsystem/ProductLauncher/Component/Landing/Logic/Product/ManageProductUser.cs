@@ -757,21 +757,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
-        public static string GetAoProductDescription(string productCode)
+        public static string GetAoProductDescription(int productId)
         {
-            switch (productCode)
+            switch (productId)
             {
-                case "BI": return "Business Intelligence";
-                case "MA": return "Investment Analytics";
-                case "AX": return "Axiometrics";
-                case "PA": return "Performance Analytics";
-                case "PO": return "YieldStar";
-                case "BM": return "Benchmarking";
-                case "LRO": return "LRO";
-                case "AA": return "Amenity Optimization";
-                case "AIRM": return "AI Revenue Management";
-                case "RC": return "Rent Control";
-                case "RMA": return "Market Analytics";
+                case 29: return "Business Intelligence";
+                case 31: return "Investment Analytics";
+                case 33: return "Axiometrics";               
+                case 32: return "YieldStar";
+                case 30: return "Benchmarking";
+                case 51: return "LRO";
+                case 52: return "Amenity Optimization";
+                case 53: return "AI Revenue Management";
+                case 54: return "Rent Control";
+                case 66: return "Market Analytics";
                 default : return "Asset Optimization";
 
             }
@@ -816,12 +815,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             var aoAssignUsers = aoProductList.AoUserCompanyPropertyRoleDetailList.Where(m => m.IsAssigned == true);
                             foreach (var aoAssignUser in aoAssignUsers)
                             {
-                                aosuccessAssinedProducts.Add(GetAoProductDescription(aoAssignUser.ProductName));
+                                aosuccessAssinedProducts.Add(GetAoProductDescription(aoAssignUser.ProductId));
                             }
                             var aoUnAssignUsers = aoProductList.AoUserCompanyPropertyRoleDetailList.Where(m => m.IsAssigned == false);
                             foreach (var aoUnassignUser in aoUnAssignUsers)
                             {
-                                aosuccessUnassignedProducts.Add(GetAoProductDescription(aoUnassignUser.ProductName));
+                                aosuccessUnassignedProducts.Add(GetAoProductDescription(aoUnassignUser.ProductId));
                             }
                         }
                         if (item.Name == "Asset Optimization" && item.StatusTypeId == 7)
@@ -830,7 +829,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             var aoAssignUsers = aoProductList.AoUserCompanyPropertyRoleDetailList;
                             foreach (var aoAssignUser in aoAssignUsers)
                             {
-                                aofailAssinedProducts.Add(GetAoProductDescription(aoAssignUser.ProductName));
+                                aofailAssinedProducts.Add(GetAoProductDescription(aoAssignUser.ProductId));
                             }
                         }
                     }
