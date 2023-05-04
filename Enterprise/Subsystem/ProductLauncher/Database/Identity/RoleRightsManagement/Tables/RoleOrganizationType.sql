@@ -25,7 +25,7 @@ ALTER TABLE [Security].[RoleOrganizationType] CHECK CONSTRAINT [FK_OrganizationT
 GO
 
 ALTER TABLE [Security].[RoleOrganizationType]  WITH CHECK ADD  CONSTRAINT [FK_SecurityRoleOrganizationType_SecurityRole] FOREIGN KEY([RoleId])
-REFERENCES [Security].[Role] ([RoleId])
+REFERENCES [Security].[Role] ([RoleId]) ON DELETE CASCADE
 GO
 
 ALTER TABLE [Security].[RoleOrganizationType] CHECK CONSTRAINT [FK_SecurityRoleOrganizationType_SecurityRole]

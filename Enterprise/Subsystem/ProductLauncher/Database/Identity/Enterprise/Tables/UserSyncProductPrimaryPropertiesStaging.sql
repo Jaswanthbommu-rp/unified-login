@@ -17,7 +17,7 @@
 GO
 
 ALTER TABLE [Enterprise].[UserSyncProductPrimaryPropertiesStaging]  WITH CHECK ADD  CONSTRAINT [FK_User_Sync_Modified_By] FOREIGN KEY([ModifiedBy])
-REFERENCES [Ident].[UserLogin] ([UserId])
+REFERENCES [Ident].[UserLogin] ([UserId]) ON DELETE CASCADE
 GO
 
 ALTER TABLE [Enterprise].[UserSyncProductPrimaryPropertiesStaging] CHECK CONSTRAINT [FK_User_Sync_Modified_By]
