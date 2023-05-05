@@ -807,7 +807,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         if (item.ProductId == (int)ProductEnum.AssetOptimizer && item.StatusTypeId == 7)
                         {
                             var aoProductList = JsonConvert.DeserializeObject<AoUserCompanyPropertyRoleDetails>(item.InputJSON.Trim());
-                            aoProductList.AoUserCompanyPropertyRoleDetailList = aoProductList.AoUserCompanyPropertyRoleDetailList.Where(m => m.ProductId != (int)ProductEnumAoBenchmarking).ToList();
+                            aoProductList.AoUserCompanyPropertyRoleDetailList = aoProductList.AoUserCompanyPropertyRoleDetailList.Where(m => m.ProductId != (int)ProductEnum.AoBenchmarking).ToList();
                             var aoAssignUsers = aoProductList.AoUserCompanyPropertyRoleDetailList;
                             foreach (var aoAssignUser in aoAssignUsers)
                             {
