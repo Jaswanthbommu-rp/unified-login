@@ -812,6 +812,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         if (item.Name == "Asset Optimization" && item.StatusTypeId == 8)
                         {
                             var aoProductList = JsonConvert.DeserializeObject<AoUserCompanyPropertyRoleDetails>(item.InputJSON.Trim());
+                            aoProductList.AoUserCompanyPropertyRoleDetailList = aoProductList.AoUserCompanyPropertyRoleDetailList.Where(m => m.ProductId != 34).ToList();
                             var aoAssignUsers = aoProductList.AoUserCompanyPropertyRoleDetailList.Where(m => m.IsAssigned == true);
                             foreach (var aoAssignUser in aoAssignUsers)
                             {
@@ -826,6 +827,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         if (item.Name == "Asset Optimization" && item.StatusTypeId == 7)
                         {
                             var aoProductList = JsonConvert.DeserializeObject<AoUserCompanyPropertyRoleDetails>(item.InputJSON.Trim());
+                            aoProductList.AoUserCompanyPropertyRoleDetailList = aoProductList.AoUserCompanyPropertyRoleDetailList.Where(m => m.ProductId != 34).ToList();
                             var aoAssignUsers = aoProductList.AoUserCompanyPropertyRoleDetailList;
                             foreach (var aoAssignUser in aoAssignUsers)
                             {
