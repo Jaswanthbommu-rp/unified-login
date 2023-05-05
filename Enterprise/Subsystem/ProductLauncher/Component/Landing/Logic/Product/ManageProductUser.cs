@@ -756,26 +756,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
             }
         }
-
-        public static string GetAoProductDescription(ProductEnum productCode)
-        {
-            switch (productCode)
-            {
-                case ProductEnum.AoBusinessIntelligence: return "Business Intelligence";
-                case ProductEnum.AoInvestmentAnalytics: return "Investment Analytics";
-                case ProductEnum.AoAxiometrics: return "Axiometrics";               
-                case ProductEnum.AoRevenueManagement: return "YieldStar";
-                case ProductEnum.AoPerformanceAnalytics: return "Benchmarking";
-                case ProductEnum.AoLeaseRentOption: return "LRO";
-                case ProductEnum.AoAmenityOptimization: return "Amenity Optimization";
-                case ProductEnum.AoAIRevenueManagement: return "AI Revenue Management";
-                case ProductEnum.AoRentControl: return "Rent Control";
-                case ProductEnum.AoMarketAnalytics: return "Market Analytics";
-                default : return "Asset Optimization";
-
-            }
-           
-        }
+        
 
         private void WriteActivityLog(long fromPersonaId, long toPersonaId, int batchGroupId, long impersonatorUserId)
         {
@@ -815,22 +796,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             var aoAssignUsers = aoProductList.AoUserCompanyPropertyRoleDetailList.Where(m => m.IsAssigned == true);
                             foreach (var aoAssignUser in aoAssignUsers)
                             {
-                                aoSuccessAssinedProducts.Add(GetAoProductDescription((ProductEnum)aoAssignUser.ProductId));
+                                aoSuccessAssinedProducts.Add(ProductEnumHelper.GetAoProductDescription((ProductEnum)aoAssignUser.ProductId));
                             }
                             var aoUnAssignUsers = aoProductList.AoUserCompanyPropertyRoleDetailList.Where(m => m.IsAssigned == false);
                             foreach (var aoUnassignUser in aoUnAssignUsers)
                             {
-                                aoSuccessUnassignedProducts.Add(GetAoProductDescription((ProductEnum)aoUnassignUser.ProductId));
+                                aoSuccessUnassignedProducts.Add(ProductEnumHelper.GetAoProductDescription((ProductEnum)aoUnassignUser.ProductId));
                             }
                         }
                         if (item.ProductId == (int)ProductEnum.AssetOptimizer && item.StatusTypeId == 7)
                         {
                             var aoProductList = JsonConvert.DeserializeObject<AoUserCompanyPropertyRoleDetails>(item.InputJSON.Trim());
-                            aoProductList.AoUserCompanyPropertyRoleDetailList = aoProductList.AoUserCompanyPropertyRoleDetailList.Where(m => m.ProductId != (int)ProductEnum.AoBenchmarking).ToList();
+                            aoProductList.AoUserCompanyPropertyRoleDetailList = aoProductList.AoUserCompanyPropertyRoleDetailList.Where(m => m.ProductId != (int)ProductEnumAoBenchmarking).ToList();
                             var aoAssignUsers = aoProductList.AoUserCompanyPropertyRoleDetailList;
                             foreach (var aoAssignUser in aoAssignUsers)
                             {
-                                aoFailProducts.Add(GetAoProductDescription((ProductEnum)aoAssignUser.ProductId));
+                                aoFailProducts.Add(ProductEnumHelper.GetAoProductDescription((ProductEnum)aoAssignUser.ProductId));
                             }
                         }
                     }

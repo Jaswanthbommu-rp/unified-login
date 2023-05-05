@@ -69,6 +69,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
             }
         }
 
+        public static string GetAoProductDescription(ProductEnum productCode)
+        {
+            switch (productCode)
+            {
+                case ProductEnum.AoBusinessIntelligence: return "Business Intelligence";
+                case ProductEnum.AoInvestmentAnalytics: return "Investment Analytics";
+                case ProductEnum.AoAxiometrics: return "Axiometrics";               
+                case ProductEnum.AoRevenueManagement: return "YieldStar";
+                case ProductEnum.AoPerformanceAnalytics: return "Benchmarking";
+                case ProductEnum.AoLeaseRentOption: return "LRO";
+                case ProductEnum.AoAmenityOptimization: return "Amenity Optimization";
+                case ProductEnum.AoAIRevenueManagement: return "AI Revenue Management";
+                case ProductEnum.AoRentControl: return "Rent Control";
+                case ProductEnum.AoMarketAnalytics: return "Market Analytics";
+                default : return "Asset Optimization";
+
+            }
+           
+        }
+
         /// <summary>
         /// Get Ao Product Division Name by Ao product Enum
         /// </summary>
