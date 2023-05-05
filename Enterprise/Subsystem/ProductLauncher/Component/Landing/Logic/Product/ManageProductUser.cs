@@ -757,20 +757,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
-        public static string GetAoProductDescription(int productId)
+        public static string GetAoProductDescription(ProductEnum productCode)
         {
-            switch (productId)
+            switch (productCode)
             {
-                case 29: return "Business Intelligence";
-                case 31: return "Investment Analytics";
-                case 33: return "Axiometrics";               
-                case 32: return "YieldStar";
-                case 30: return "Benchmarking";
-                case 51: return "LRO";
-                case 52: return "Amenity Optimization";
-                case 53: return "AI Revenue Management";
-                case 54: return "Rent Control";
-                case 66: return "Market Analytics";
+                case ProductEnum.AoBusinessIntelligence: return "Business Intelligence";
+                case ProductEnum.AoInvestmentAnalytics: return "Investment Analytics";
+                case ProductEnum.AoAxiometrics: return "Axiometrics";               
+                case ProductEnum.AoRevenueManagement: return "YieldStar";
+                case ProductEnum.AoPerformanceAnalytics: return "Benchmarking";
+                case ProductEnum.AoLeaseRentOption: return "LRO";
+                case ProductEnum.AoAmenityOptimization: return "Amenity Optimization";
+                case ProductEnum.AoAIRevenueManagement: return "AI Revenue Management";
+                case ProductEnum.AoRentControl: return "Rent Control";
+                case ProductEnum.AoMarketAnalytics: return "Market Analytics";
                 default : return "Asset Optimization";
 
             }
@@ -808,33 +808,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     foreach (var item in data)
                     {
-                        if (item.Name == "Asset Optimization" && item.StatusTypeId == 8)
+                        if (item.ProductId == (int)ProductEnum.AssetOptimizer && item.StatusTypeId == 8)
                         {
                             var aoProductList = JsonConvert.DeserializeObject<AoUserCompanyPropertyRoleDetails>(item.InputJSON.Trim());
-                            aoProductList.AoUserCompanyPropertyRoleDetailList = aoProductList.AoUserCompanyPropertyRoleDetailList.Where(m => m.ProductId != 34).ToList();
+                            aoProductList.AoUserCompanyPropertyRoleDetailList = aoProductList.AoUserCompanyPropertyRoleDetailList.Where(m => m.ProductId != (int)ProductEnum.AoBenchmarking).ToList();
                             var aoAssignUsers = aoProductList.AoUserCompanyPropertyRoleDetailList.Where(m => m.IsAssigned == true);
                             foreach (var aoAssignUser in aoAssignUsers)
                             {
-                                aoSuccessAssinedProducts.Add(GetAoProductDescription(aoAssignUser.ProductId));
+                                aoSuccessAssinedProducts.Add(GetAoProductDescription((ProductEnum)aoAssignUser.ProductId));
                             }
                             var aoUnAssignUsers = aoProductList.AoUserCompanyPropertyRoleDetailList.Where(m => m.IsAssigned == false);
                             foreach (var aoUnassignUser in aoUnAssignUsers)
                             {
-                                aoSuccessUnassignedProducts.Add(GetAoProductDescription(aoUnassignUser.ProductId));
+                                aoSuccessUnassignedProducts.Add(GetAoProductDescription((ProductEnum)aoUnassignUser.ProductId));
                             }
                         }
-                        if (item.Name == "Asset Optimization" && item.StatusTypeId == 7)
+                        if (item.ProductId == (int)ProductEnum.AssetOptimizer && item.StatusTypeId == 7)
                         {
                             var aoProductList = JsonConvert.DeserializeObject<AoUserCompanyPropertyRoleDetails>(item.InputJSON.Trim());
-                            aoProductList.AoUserCompanyPropertyRoleDetailList = aoProductList.AoUserCompanyPropertyRoleDetailList.Where(m => m.ProductId != 34).ToList();
+                            aoProductList.AoUserCompanyPropertyRoleDetailList = aoProductList.AoUserCompanyPropertyRoleDetailList.Where(m => m.ProductId != (int)ProductEnum.AoBenchmarking).ToList();
                             var aoAssignUsers = aoProductList.AoUserCompanyPropertyRoleDetailList;
                             foreach (var aoAssignUser in aoAssignUsers)
                             {
-                                aoFailProducts.Add(GetAoProductDescription(aoAssignUser.ProductId));
+                                aoFailProducts.Add(GetAoProductDescription((ProductEnum)aoAssignUser.ProductId));
                             }
                         }
                     }
-                    data = data.Where(m => m.Name != "Asset Optimization").ToList();
+                    data = data.Where(m => m.ProductId != (int)ProductEnum.AssetOptimizer).ToList();
                     var successRecords = data.Where(x => x.StatusTypeId == 8).ToList();
                     if ((successRecords != null && successRecords.Count > 0) || aoSuccessAssinedProducts.Count > 0 || aoSuccessUnassignedProducts.Count > 0)
                     {
