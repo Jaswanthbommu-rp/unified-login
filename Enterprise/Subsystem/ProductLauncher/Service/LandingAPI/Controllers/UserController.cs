@@ -6,6 +6,9 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Security;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.ThirdParty;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Attribute;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
@@ -13,6 +16,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.Security;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Rum;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
@@ -298,11 +302,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 						PersonaTypeId = persona.PersonaTypeId,
 						Name = persona.Name,
 						RealPageId = persona.RealPageId
-					};
-					profileDetail.Persona.Add(clonePersona);
-				}
+                    };
+                    profileDetail.Persona.Add(clonePersona);
+                }
 
-				if (profileDetail != null)
+                if (FeatureFlag.GetUserCompanyAssociationFeatureFlag())
+                {
+                    IUserRepository _userRepository = new UserRepository(_userClaims);
+                    IManageUserLoginPersona manageUserLoginPersona = new ManageUserLoginPersona(_userClaims);
+                    IList<UserLoginPersona> userLoginPersonaList = manageUserLoginPersona.ListUserLoginPersona(userLoginPersonaId: null, userLoginId: userLogin.UserId, organizationPartyId: _userClaims.OrganizationPartyId);
+                    var data = _userRepository.GetExternalUserRelationship(userLoginPersonaList[0].UserLoginPersonaId);
+                    profileDetail.ExternalUserRelationship = data == null ? new ExternalUserRelationship()
+                    {
+                        UserLoginPersonaId = userLoginPersonaList[0].UserLoginPersonaId
+                    } : data;
+                }
+                if (profileDetail != null)
 				{
 					output.obj = profileDetail;
 					output.Status = errorStatus;
