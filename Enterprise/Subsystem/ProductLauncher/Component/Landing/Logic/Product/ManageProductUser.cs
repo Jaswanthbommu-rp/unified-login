@@ -797,11 +797,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     item.IsAssigned = role.IsAssigned;
 
                 }
-                List<string> aosuccessAssinedProducts = new List<string>();
-                List<string> aosuccessUnassignedProducts = new List<string>();
-                List<string> aofailAssinedProducts = new List<string>();
-                List<string> aofailUnassignedProducts = new List<string>();
-
+                List<string> aoSuccessAssinedProducts = new List<string>();
+                List<string> aoSuccessUnassignedProducts = new List<string>();
+                List<string> aoFailProducts = new List<string>();
+             
 
                 bool activityLogged = data[0].BatchProcessorGroupActivityLogged;
                 WriteToLog(LogEventLevel.Debug, $"Batch process for activityLogged : {activityLogged} ");
@@ -816,12 +815,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             var aoAssignUsers = aoProductList.AoUserCompanyPropertyRoleDetailList.Where(m => m.IsAssigned == true);
                             foreach (var aoAssignUser in aoAssignUsers)
                             {
-                                aosuccessAssinedProducts.Add(GetAoProductDescription(aoAssignUser.ProductId));
+                                aoSuccessAssinedProducts.Add(GetAoProductDescription(aoAssignUser.ProductId));
                             }
                             var aoUnAssignUsers = aoProductList.AoUserCompanyPropertyRoleDetailList.Where(m => m.IsAssigned == false);
                             foreach (var aoUnassignUser in aoUnAssignUsers)
                             {
-                                aosuccessUnassignedProducts.Add(GetAoProductDescription(aoUnassignUser.ProductId));
+                                aoSuccessUnassignedProducts.Add(GetAoProductDescription(aoUnassignUser.ProductId));
                             }
                         }
                         if (item.Name == "Asset Optimization" && item.StatusTypeId == 7)
@@ -831,25 +830,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             var aoAssignUsers = aoProductList.AoUserCompanyPropertyRoleDetailList;
                             foreach (var aoAssignUser in aoAssignUsers)
                             {
-                                aofailAssinedProducts.Add(GetAoProductDescription(aoAssignUser.ProductId));
+                                aoFailProducts.Add(GetAoProductDescription(aoAssignUser.ProductId));
                             }
                         }
                     }
                     data = data.Where(m => m.Name != "Asset Optimization").ToList();
                     var successRecords = data.Where(x => x.StatusTypeId == 8).ToList();
-                    if ((successRecords != null && successRecords.Count > 0) || aosuccessAssinedProducts.Count > 0 || aosuccessUnassignedProducts.Count > 0)
+                    if ((successRecords != null && successRecords.Count > 0) || aoSuccessAssinedProducts.Count > 0 || aoSuccessUnassignedProducts.Count > 0)
                     {
                         WriteToLog(LogEventLevel.Debug, $"Batch process for succes count : {successRecords.Count} ");
-                        var message = GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, successRecords, true, impersonatorUserInfo, aosuccessAssinedProducts, aosuccessUnassignedProducts);
+                        var message = GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, successRecords, true, impersonatorUserInfo, aoSuccessAssinedProducts, aoSuccessUnassignedProducts);
                         WriteToLog(LogEventLevel.Debug, $"Batch process for succes message : {message} ");
                         _activityLogHelper.PushToQueue(fromUserLogInfo, toUserLogInfo, message, "PRODUCT_ACCESS");
                     }
 
                     var failedRecords = data.Where(x => x.StatusTypeId == 7).ToList();
-                    if ((failedRecords != null && failedRecords.Count > 0) || aofailAssinedProducts.Count > 0 )
+                    if ((failedRecords != null && failedRecords.Count > 0) || aoFailProducts.Count > 0 )
                     {
                         WriteToLog(LogEventLevel.Debug, $"Batch process for failed count : {failedRecords.Count} ");
-                        var message = GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, failedRecords, false, impersonatorUserInfo, aofailAssinedProducts, new List<string>());
+                        var message = GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, failedRecords, false, impersonatorUserInfo, aoFailProducts, new List<string>());
                         WriteToLog(LogEventLevel.Debug, $"Batch process for failed message : {message} ");
                         _activityLogHelper.PushToQueue(fromUserLogInfo, toUserLogInfo, message, "PRODUCT_ACCESS");
                         SendNotification(message + " Please contact RealPage Support for assistance.", fromPersonaId);
