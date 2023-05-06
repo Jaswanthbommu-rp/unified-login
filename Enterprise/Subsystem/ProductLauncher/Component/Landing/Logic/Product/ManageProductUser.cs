@@ -285,74 +285,74 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             try
             {
 
-            // If result OK then update Success status else Error
-            if (string.IsNullOrEmpty(result))
-            {
-                WriteToLog(LogEventLevel.Debug, $"ManageProductUser.CreateProductUser: User Sync Request process for product: {productUser.ProductId} settings and persona: {productUser.AssignUserPersonaId}");
-                foreach (var rolePropertyList in rolePrimaryPropDictionary)
+                // If result OK then update Success status else Error
+                if (string.IsNullOrEmpty(result))
                 {
-                    var thisProductUserPrimaryProperty = usePrimaryPropertyFlags.FirstOrDefault(p => p.Key == rolePropertyList.Key).Value;
-                    SavePersonaProductPrimaryProperties(thisProductUserPrimaryProperty, productUser.AssignUserPersonaId, rolePropertyList.Key, rolePropertyList.Value, productUser.InputJson);
-                }
-                isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Success);
-                WriteToLog(LogEventLevel.Debug, $"ManageProductUser.CreateProductUser:  product: {productUser.ProductId} , persona: {productUser.AssignUserPersonaId} , isBatchCompleted: {isBatchCompleted} ,User Sync Request process for Success , DateTime { DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:ffff") }");
+                    WriteToLog(LogEventLevel.Debug, $"ManageProductUser.CreateProductUser: User Sync Request process for product: {productUser.ProductId} settings and persona: {productUser.AssignUserPersonaId}");
+                    foreach (var rolePropertyList in rolePrimaryPropDictionary)
+                    {
+                        var thisProductUserPrimaryProperty = usePrimaryPropertyFlags.FirstOrDefault(p => p.Key == rolePropertyList.Key).Value;
+                        SavePersonaProductPrimaryProperties(thisProductUserPrimaryProperty, productUser.AssignUserPersonaId, rolePropertyList.Key, rolePropertyList.Value, productUser.InputJson);
+                    }
+                    isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Success);
+                    WriteToLog(LogEventLevel.Debug, $"ManageProductUser.CreateProductUser:  product: {productUser.ProductId} , persona: {productUser.AssignUserPersonaId} , isBatchCompleted: {isBatchCompleted} ,User Sync Request process for Success , DateTime { DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:ffff") }");
                     //call apicore kafka publish to sync translated properties
                     var roleProp = JsonConvert.DeserializeObject<RolePropertyList>(productUser.InputJson);
-                var productInternalSettingList = GetProductInternalSettings(productUser.ProductId);
-                var doesNotUseProperties = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("DoesNotUseProperties", StringComparison.OrdinalIgnoreCase))?.Value;
-                if ((doesNotUseProperties == null || doesNotUseProperties != "1") && roleProp.IsAssigned)
-                {
-                    //product combination check
-                    if (rolePropDictionary?.Count > 1)
+                    var productInternalSettingList = GetProductInternalSettings(productUser.ProductId);
+                    var doesNotUseProperties = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("DoesNotUseProperties", StringComparison.OrdinalIgnoreCase))?.Value;
+                    if ((doesNotUseProperties == null || doesNotUseProperties != "1") && roleProp.IsAssigned)
                     {
-                        foreach (var product in rolePropDictionary)
+                        //product combination check
+                        if (rolePropDictionary?.Count > 1)
                         {
-                            SyncUserProductProperties(product.Key, productUser.AssignUserPersonaId, productUser.CreateUserPersonaId);
+                            foreach (var product in rolePropDictionary)
+                            {
+                                SyncUserProductProperties(product.Key, productUser.AssignUserPersonaId, productUser.CreateUserPersonaId);
+                            }
                         }
-                    }
-                    else
-                    {
-                        SyncUserProductProperties(productUser.ProductId, productUser.AssignUserPersonaId, productUser.CreateUserPersonaId);
+                        else
+                        {
+                            SyncUserProductProperties(productUser.ProductId, productUser.AssignUserPersonaId, productUser.CreateUserPersonaId);
+                        }
+
                     }
 
                 }
-
-            }
-            else
-            {
-                if (result.ToUpper() == ProductBatchStatusType.Stop.ToString().ToUpper())
+                else
                 {
-                    WriteToLog(LogEventLevel.Debug, $"ManageProductUser.CreateProductUser: User Sync Request process for Stop, product: {productUser.ProductId} settings and persona: {productUser.AssignUserPersonaId}");
-                    isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Stop, null, "Batch Process stopped due to internal error for this product.");
+                    if (result.ToUpper() == ProductBatchStatusType.Stop.ToString().ToUpper())
+                    {
+                        WriteToLog(LogEventLevel.Debug, $"ManageProductUser.CreateProductUser: User Sync Request process for Stop, product: {productUser.ProductId} settings and persona: {productUser.AssignUserPersonaId}");
+                        isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Stop, null, "Batch Process stopped due to internal error for this product.");
                         WriteToLog(LogEventLevel.Debug, $"ManageProductUser.CreateProductUser: product: {productUser.ProductId} , persona: {productUser.AssignUserPersonaId} , isBatchCompleted: {isBatchCompleted} ,User Sync Request process for Stop, DateTime { DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:ffff") }");
 
                     }
                     else
-                {
-                    WriteToLog(LogEventLevel.Debug, $"ManageProductUser.CreateProductUser: User Sync Request process for Error, product: {productUser.ProductId} settings and persona: {productUser.AssignUserPersonaId}");
-
-                    isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Error, null, result);
-                    WriteToLog(LogEventLevel.Debug, $"ManageProductUser.CreateProductUser: product: {productUser.ProductId} , persona: {productUser.AssignUserPersonaId} , isBatchCompleted: {isBatchCompleted} ,User Sync Request process for Error, DateTime { DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:ffff") }");
-
-                        if (!isUpdateUser)
                     {
                         WriteToLog(LogEventLevel.Debug, $"ManageProductUser.CreateProductUser: User Sync Request process for Error, product: {productUser.ProductId} settings and persona: {productUser.AssignUserPersonaId}");
-                        _productRepository.UpdateProductSettingProductStatus(productUser.AssignUserPersonaId, productId, "ProductStatus", (int)ProductBatchStatusType.Error);
-                    }
-                    else
-                    {
-                        WriteToLog(LogEventLevel.Debug, $"ManageProductUser.CreateProductUser: User Sync Request process during the update process, product: {productUser.ProductId} settings and persona: {productUser.AssignUserPersonaId}");
 
-                        //Activity log
-                        result = "An error occurred during the update process";
-                        WriteActivityLogWithMessage(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, result, productId, productUser.ImpersonatorUserId);
+                        isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Error, null, result);
+                        WriteToLog(LogEventLevel.Debug, $"ManageProductUser.CreateProductUser: product: {productUser.ProductId} , persona: {productUser.AssignUserPersonaId} , isBatchCompleted: {isBatchCompleted} ,User Sync Request process for Error, DateTime { DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:ffff") }");
+
+                        if (!isUpdateUser)
+                        {
+                            WriteToLog(LogEventLevel.Debug, $"ManageProductUser.CreateProductUser: User Sync Request process for Error, product: {productUser.ProductId} settings and persona: {productUser.AssignUserPersonaId}");
+                            _productRepository.UpdateProductSettingProductStatus(productUser.AssignUserPersonaId, productId, "ProductStatus", (int)ProductBatchStatusType.Error);
+                        }
+                        else
+                        {
+                            WriteToLog(LogEventLevel.Debug, $"ManageProductUser.CreateProductUser: User Sync Request process during the update process, product: {productUser.ProductId} settings and persona: {productUser.AssignUserPersonaId}");
+
+                            //Activity log
+                            result = "An error occurred during the update process";
+                            WriteActivityLogWithMessage(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, result, productId, productUser.ImpersonatorUserId);
+                        }
                     }
                 }
             }
-            }
             catch (Exception ex)
             {
-                WriteToLog(LogEventLevel.Debug, $"Batch process for activity log exception: {ex.Message} and isBatchCompleted {isBatchCompleted} ");          
+                WriteToLog(LogEventLevel.Debug, $"Batch process for activity log exception: {ex.Message} and isBatchCompleted {isBatchCompleted} ");
             }
             WriteToLog(LogEventLevel.Debug, $"Batch process for activity log : {isBatchCompleted} , product: {productUser.ProductId} , CreateUserPersonaId : {productUser.CreateUserPersonaId} ,AssignUserPersonaId: {productUser.AssignUserPersonaId} ,BatchProcessorGroupId{productUser.BatchProcessorGroupId} ");
 
@@ -756,7 +756,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
             }
         }
-        
+
 
         private void WriteActivityLog(long fromPersonaId, long toPersonaId, int batchGroupId, long impersonatorUserId)
         {
@@ -778,58 +778,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     item.IsAssigned = role.IsAssigned;
 
                 }
-                List<string> aoSuccessAssinedProducts = new List<string>();
-                List<string> aoSuccessUnassignedProducts = new List<string>();
-                List<string> aoFailProducts = new List<string>();
-             
 
                 bool activityLogged = data[0].BatchProcessorGroupActivityLogged;
                 WriteToLog(LogEventLevel.Debug, $"Batch process for activityLogged : {activityLogged} ");
                 if (!activityLogged)
                 {
-                    foreach (var item in data)
-                    {
-                        if (item.ProductId == (int)ProductEnum.AssetOptimizer && item.StatusTypeId == 8)
-                        {
-                            var aoProductList = JsonConvert.DeserializeObject<AoUserCompanyPropertyRoleDetails>(item.InputJSON.Trim());
-                            aoProductList.AoUserCompanyPropertyRoleDetailList = aoProductList.AoUserCompanyPropertyRoleDetailList.Where(m => m.ProductId != (int)ProductEnum.AoBenchmarking).ToList();
-                            var aoAssignUsers = aoProductList.AoUserCompanyPropertyRoleDetailList.Where(m => m.IsAssigned == true);
-                            foreach (var aoAssignUser in aoAssignUsers)
-                            {
-                                aoSuccessAssinedProducts.Add(ProductEnumHelper.GetAoProductDescription((ProductEnum)aoAssignUser.ProductId));
-                            }
-                            var aoUnAssignUsers = aoProductList.AoUserCompanyPropertyRoleDetailList.Where(m => m.IsAssigned == false);
-                            foreach (var aoUnassignUser in aoUnAssignUsers)
-                            {
-                                aoSuccessUnassignedProducts.Add(ProductEnumHelper.GetAoProductDescription((ProductEnum)aoUnassignUser.ProductId));
-                            }
-                        }
-                        if (item.ProductId == (int)ProductEnum.AssetOptimizer && item.StatusTypeId == 7)
-                        {
-                            var aoProductList = JsonConvert.DeserializeObject<AoUserCompanyPropertyRoleDetails>(item.InputJSON.Trim());
-                            aoProductList.AoUserCompanyPropertyRoleDetailList = aoProductList.AoUserCompanyPropertyRoleDetailList.Where(m => m.ProductId != (int)ProductEnum.AoBenchmarking).ToList();
-                            var aoAssignUsers = aoProductList.AoUserCompanyPropertyRoleDetailList;
-                            foreach (var aoAssignUser in aoAssignUsers)
-                            {
-                                aoFailProducts.Add(ProductEnumHelper.GetAoProductDescription((ProductEnum)aoAssignUser.ProductId));
-                            }
-                        }
-                    }
-                    data = data.Where(m => m.ProductId != (int)ProductEnum.AssetOptimizer).ToList();
                     var successRecords = data.Where(x => x.StatusTypeId == 8).ToList();
-                    if ((successRecords != null && successRecords.Count > 0) || aoSuccessAssinedProducts.Count > 0 || aoSuccessUnassignedProducts.Count > 0)
+                    if ((successRecords != null && successRecords.Count > 0))
                     {
                         WriteToLog(LogEventLevel.Debug, $"Batch process for succes count : {successRecords.Count} ");
-                        var message = GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, successRecords, true, impersonatorUserInfo, aoSuccessAssinedProducts, aoSuccessUnassignedProducts);
+                        var message = GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, successRecords, true, impersonatorUserInfo);
                         WriteToLog(LogEventLevel.Debug, $"Batch process for succes message : {message} ");
                         _activityLogHelper.PushToQueue(fromUserLogInfo, toUserLogInfo, message, "PRODUCT_ACCESS");
                     }
 
                     var failedRecords = data.Where(x => x.StatusTypeId == 7).ToList();
-                    if ((failedRecords != null && failedRecords.Count > 0) || aoFailProducts.Count > 0 )
+                    if ((failedRecords != null && failedRecords.Count > 0))
                     {
                         WriteToLog(LogEventLevel.Debug, $"Batch process for failed count : {failedRecords.Count} ");
-                        var message = GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, failedRecords, false, impersonatorUserInfo, aoFailProducts, new List<string>());
+                        var message = GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, failedRecords, false, impersonatorUserInfo);
                         WriteToLog(LogEventLevel.Debug, $"Batch process for failed message : {message} ");
                         _activityLogHelper.PushToQueue(fromUserLogInfo, toUserLogInfo, message, "PRODUCT_ACCESS");
                         SendNotification(message + " Please contact RealPage Support for assistance.", fromPersonaId);
@@ -841,7 +808,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
-        private string GenerateQueueMessage(UserActivityLogInfo fromUserLogInfo, UserActivityLogInfo toUserLogInfo, List<UserBatchProductDetail> userBatchProductDetails, bool IsSuccess, UserDetails impersonatorUserInfo,List<string> assignAOProducts, List<string> unAssignAOProducts)
+        private string GenerateQueueMessage(UserActivityLogInfo fromUserLogInfo, UserActivityLogInfo toUserLogInfo, List<UserBatchProductDetail> userBatchProductDetails, bool IsSuccess, UserDetails impersonatorUserInfo)
         {
             string message = "";
 
@@ -858,15 +825,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} updated access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName}:";
 
                 foreach (var item in userBatchProductDetails)
-                { 
+                {
                     if (item.IsAssigned)
-                        assinedProducts.Add(item.Name);
-
+                    {
+                        if (item.ProductId == 4)
+                        {
+                            assinedProducts.AddRange(GetAOProductsForActivity(item, true, 8));
+                        }
+                        else
+                        {
+                            assinedProducts.Add(item.Name);
+                        }
+                    }
                     if (!item.IsAssigned)
-                        unassignedProducts.Add(item.Name);
+                    {
+                        if (item.ProductId == 4)
+                        {
+                            unassignedProducts.AddRange(GetAOProductsForActivity(item, false, 8));
+                        }
+                        else
+                        {
+                            unassignedProducts.Add(item.Name);
+                        }
+                    }
                 }
-                assinedProducts.AddRange(assignAOProducts);
-                unassignedProducts.AddRange(unAssignAOProducts);
                 if (assinedProducts.Count > 0)
                     assignedMessage = " Access was granted to " + string.Join(", ", assinedProducts) + ".";
 
@@ -884,19 +866,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     ? $"An exception occurred when RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) attempted to update product access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName} in "
                     : $"An exception occurred when {fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} attempted to update product access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName} in ";
 
-                string[] products = new string[userBatchProductDetails.Count + assignAOProducts.Count];
-
-                for (int i = 0; i < userBatchProductDetails.Count; i++)
+                List<string> failedProducts = new();
+                foreach (var item in userBatchProductDetails)
                 {
-                    products[i] = userBatchProductDetails[i].Name;
+                    if (item.ProductId == 4)
+                    {
+                        failedProducts.AddRange(GetAOProductsForActivity(item, true, 7));
+                    }
+                    else
+                    {
+                        failedProducts.Add(item.Name);
+                    }
                 }
-
-                for (int i = 0; i < assignAOProducts.Count; i++)
-                {
-                    products[i] = assignAOProducts[i];
-                }
-
-                var commaString = string.Join(", ", products);
+                var commaString = string.Join(", ", failedProducts);
                 var lastComma = commaString.LastIndexOf(',');
 
                 if (lastComma != -1)
@@ -908,6 +890,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return message;
         }
 
+        private List<string> GetAOProductsForActivity(UserBatchProductDetail inputAOItem, bool isAssigned, int statusTypeId)
+        {
+            List<string> aoProducts = new();
+            var aoProductList = JsonConvert.DeserializeObject<AoUserCompanyPropertyRoleDetails>(inputAOItem.InputJSON.Trim());
+            aoProductList.AoUserCompanyPropertyRoleDetailList = aoProductList.AoUserCompanyPropertyRoleDetailList.Where(m => m.ProductId != (int)ProductEnum.AoBenchmarking).ToList();
+            var aoAssignProducts = statusTypeId == 8 ? aoProductList.AoUserCompanyPropertyRoleDetailList.Where(m => m.IsAssigned == isAssigned) : aoProductList.AoUserCompanyPropertyRoleDetailList;
+            foreach (var aoAssignProduct in aoAssignProducts)
+            {
+                aoProducts.Add(ProductEnumHelper.GetAoProductDescription((ProductEnum)aoAssignProduct.ProductId));
+            }
+            return aoProducts;
+        }
         private void SendNotification(string message, long notificationTo)
         {
             string title = "User Update Exception";
@@ -1199,7 +1193,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             logger = logger.ForContext("CorrelationId", correlationId);
             logger.Write(logType, exception, message);
         }
-        
+
     }
 
 
@@ -1320,7 +1314,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     var productlist = ProductEnumHelper.GetAoProductList();
                     var subProuctsSelected = productUserAccountDetails.SubProducts.ToList();
-                    foreach(var personaproduct in productsWithStatus) 
+                    foreach(var personaproduct in productsWithStatus)
                     {
                         //Deleting AO User SAML Attribute details not in subProducts list
                         if (productlist.Contains((ProductEnum)personaproduct.ProductId))
@@ -1337,7 +1331,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         }
                     }
                 }
-                
+
                 updates = UpdateAoUserDetails(productUserAccountDetails);
                 if (internalChange)
                 {
