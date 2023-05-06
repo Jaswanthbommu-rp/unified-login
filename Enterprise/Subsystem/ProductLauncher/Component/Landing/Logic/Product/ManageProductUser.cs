@@ -866,7 +866,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     ? $"An exception occurred when RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) attempted to update product access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName} in "
                     : $"An exception occurred when {fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} attempted to update product access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName} in ";
 
-                List<string> failedProducts = new();
+                List<string> failedProducts = new List<string>();
                 foreach (var item in userBatchProductDetails)
                 {
                     if (item.ProductId == 4)
@@ -892,7 +892,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         private List<string> GetAOProductsForActivity(UserBatchProductDetail inputAOItem, bool isAssigned, int statusTypeId)
         {
-            List<string> aoProducts = new();
+            List<string> aoProducts = new List<string>();
             var aoProductList = JsonConvert.DeserializeObject<AoUserCompanyPropertyRoleDetails>(inputAOItem.InputJSON.Trim());
             aoProductList.AoUserCompanyPropertyRoleDetailList = aoProductList.AoUserCompanyPropertyRoleDetailList.Where(m => m.ProductId != (int)ProductEnum.AoBenchmarking).ToList();
             var aoAssignProducts = statusTypeId == 8 ? aoProductList.AoUserCompanyPropertyRoleDetailList.Where(m => m.IsAssigned == isAssigned) : aoProductList.AoUserCompanyPropertyRoleDetailList;
