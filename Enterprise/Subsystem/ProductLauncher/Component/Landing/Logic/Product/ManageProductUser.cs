@@ -894,7 +894,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             List<string> aoProducts = new List<string>();
             var aoProductList = JsonConvert.DeserializeObject<AoUserCompanyPropertyRoleDetails>(inputAOItem.InputJSON.Trim());
-            aoProductList.AoUserCompanyPropertyRoleDetailList = aoProductList.AoUserCompanyPropertyRoleDetailList.Where(m => m.ProductId != (int)ProductEnum.AoBenchmarking).ToList();
+            AoUserCompanyPropertyRoleDetail aoBenchmarkingProduct = aoProductList.AoUserCompanyPropertyRoleDetailList.FirstOrDefault(m => m.ProductId == (int)ProductEnum.AoBenchmarking);
+            if (aoBenchmarkingProduct != null) 
+            {
+                aoProductList.AoUserCompanyPropertyRoleDetailList.Remove(aoBenchmarkingProduct);
+            }
             var aoAssignProducts = statusTypeId == 8 ? aoProductList.AoUserCompanyPropertyRoleDetailList.Where(m => m.IsAssigned == isAssigned) : aoProductList.AoUserCompanyPropertyRoleDetailList;
             foreach (var aoAssignProduct in aoAssignProducts)
             {
