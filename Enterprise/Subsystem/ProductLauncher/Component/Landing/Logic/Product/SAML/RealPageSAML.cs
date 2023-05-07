@@ -459,7 +459,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			if (getMarketingCenterUrl)
 			{
-				var marketingCenterSettings = GetProductSamlSettings((int)ProductEnum.MarketingCenter);
+				var marketingCenterSettings = GetProductSamlSettings((int)ProductEnum.PropertyPhotos);
 				samlList.Add(new SamlAttributes() { Name = "RedirectUrl", SamlAttributeId = 0, Type = SAML.RealPageSAML.AttributeURIs.Basic, Value = samlEndpointURL });
 				samlEndpointURL = marketingCenterSettings.LoginUri;
 			}
@@ -816,7 +816,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			if (certCollection.Count > 0)
 			{
 				X509Certificate2 cert = certCollection[0];
-				certStore.Close();
+                certStore.Close();
 				// Use certificate
 				return cert;
 			}
