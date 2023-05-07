@@ -757,7 +757,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
-
         private void WriteActivityLog(long fromPersonaId, long toPersonaId, int batchGroupId, long impersonatorUserId)
         {
             var fromUserLogInfo = _activityLogHelper.GetUserActivityLogInfo(fromPersonaId);
@@ -776,7 +775,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     var role = JsonConvert.DeserializeObject<UPFMProductPropertyRole>(item.InputJSON.Trim());
                     item.IsAssigned = role.IsAssigned;
-
                 }
 
                 bool activityLogged = data[0].BatchProcessorGroupActivityLogged;
@@ -784,16 +782,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (!activityLogged)
                 {
                     var successRecords = data.Where(x => x.StatusTypeId == 8).ToList();
-                    if ((successRecords != null && successRecords.Count > 0))
+                    if (successRecords != null && successRecords.Count > 0)
                     {
-                        WriteToLog(LogEventLevel.Debug, $"Batch process for succes count : {successRecords.Count} ");
+                        WriteToLog(LogEventLevel.Debug, $"Batch process for success count : {successRecords.Count} ");
                         var message = GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, successRecords, true, impersonatorUserInfo);
-                        WriteToLog(LogEventLevel.Debug, $"Batch process for succes message : {message} ");
+                        WriteToLog(LogEventLevel.Debug, $"Batch process for success message : {message} ");
                         _activityLogHelper.PushToQueue(fromUserLogInfo, toUserLogInfo, message, "PRODUCT_ACCESS");
                     }
 
                     var failedRecords = data.Where(x => x.StatusTypeId == 7).ToList();
-                    if ((failedRecords != null && failedRecords.Count > 0))
+                    if (failedRecords != null && failedRecords.Count > 0)
                     {
                         WriteToLog(LogEventLevel.Debug, $"Batch process for failed count : {failedRecords.Count} ");
                         var message = GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, failedRecords, false, impersonatorUserInfo);
@@ -828,7 +826,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     if (item.IsAssigned)
                     {
-                        if (item.ProductId == 4)
+                        if (item.ProductId == (int)ProductEnum.AssetOptimizer)
                         {
                             assinedProducts.AddRange(GetAOProductsForActivity(item, true, 8));
                         }
@@ -839,7 +837,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                     if (!item.IsAssigned)
                     {
-                        if (item.ProductId == 4)
+                        if (item.ProductId == (int)ProductEnum.AssetOptimizer)
                         {
                             unassignedProducts.AddRange(GetAOProductsForActivity(item, false, 8));
                         }
@@ -852,24 +850,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (assinedProducts.Count > 0)
                     assignedMessage = " Access was granted to " + string.Join(", ", assinedProducts) + ".";
 
-
                 if (unassignedProducts.Count > 0)
                     unassignedMessage = " Access was unassigned from " + string.Join(", ", unassignedProducts) + ".";
 
                 message += assignedMessage;
                 message += unassignedMessage;
             }
-
             else
             {
-                message = impersonatorUserInfo != null
-                    ? $"An exception occurred when RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) attempted to update product access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName} in "
-                    : $"An exception occurred when {fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} attempted to update product access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName} in ";
-
                 List<string> failedProducts = new List<string>();
                 foreach (var item in userBatchProductDetails)
                 {
-                    if (item.ProductId == 4)
+                    if (item.ProductId == (int)ProductEnum.AssetOptimizer)
                     {
                         failedProducts.AddRange(GetAOProductsForActivity(item, true, 7));
                     }
@@ -878,13 +870,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         failedProducts.Add(item.Name);
                     }
                 }
+
                 var commaString = string.Join(", ", failedProducts);
-                var lastComma = commaString.LastIndexOf(',');
-
-                if (lastComma != -1)
-                    commaString = commaString.Remove(lastComma, 1).Insert(lastComma, " and");
-
-                message += commaString + ".";
+                message = impersonatorUserInfo != null
+                    ? $"An exception occurred when RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) attempted to update product access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName} in {commaString}."
+                    : $"An exception occurred when {fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} attempted to update product access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName} in {commaString}.";
             }
 
             return message;
@@ -894,12 +884,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             List<string> aoProducts = new List<string>();
             var aoProductList = JsonConvert.DeserializeObject<AoUserCompanyPropertyRoleDetails>(inputAOItem.InputJSON.Trim());
-            AoUserCompanyPropertyRoleDetail aoBenchmarkingProduct = aoProductList.AoUserCompanyPropertyRoleDetailList.FirstOrDefault(m => m.ProductId == (int)ProductEnum.AoBenchmarking);
-            if (aoBenchmarkingProduct != null) 
+            if (aoProductList.AoUserCompanyPropertyRoleDetailList.Any(m => m.ProductId == (int)ProductEnum.AoBenchmarking)) 
             {
-                aoProductList.AoUserCompanyPropertyRoleDetailList.Remove(aoBenchmarkingProduct);
+                var aoBenchMarkingProduct = aoProductList.AoUserCompanyPropertyRoleDetailList.FirstOrDefault(m => m.ProductId == (int)ProductEnum.AoBenchmarking);
+                aoProductList.AoUserCompanyPropertyRoleDetailList.Remove(aoBenchMarkingProduct);
             }
-            var aoAssignProducts = statusTypeId == 8 ? aoProductList.AoUserCompanyPropertyRoleDetailList.Where(m => m.IsAssigned == isAssigned) : aoProductList.AoUserCompanyPropertyRoleDetailList;
+            var aoAssignProducts = statusTypeId == 8 ? aoProductList.AoUserCompanyPropertyRoleDetailList.Where(m => m.IsAssigned == isAssigned).ToList() : aoProductList.AoUserCompanyPropertyRoleDetailList;
             foreach (var aoAssignProduct in aoAssignProducts)
             {
                 aoProducts.Add(ProductEnumHelper.GetAoProductDescription((ProductEnum)aoAssignProduct.ProductId));

@@ -84,9 +84,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
                 case ProductEnum.AoRentControl: return "Rent Control";
                 case ProductEnum.AoMarketAnalytics: return "Market Analytics";
                 default : return "Asset Optimization";
-
-            }
-           
+            }           
         }
 
         /// <summary>
