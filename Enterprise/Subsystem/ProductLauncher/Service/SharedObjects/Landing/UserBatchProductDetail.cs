@@ -17,5 +17,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         public string InputJSON { get; set; }
 
         public bool IsAssigned { get; set; }
+
+        public int ProductId { get; set; }
+        
     }
 }

@@ -4,7 +4,7 @@
  @subjectUserPersonId bigint      
 As            
 Begin            
- select bp.StatusTypeId, p.Name, bg.BatchProcessorGroupActivityLogged, bp.InputJSON          
+ select bp.StatusTypeId, p.Name, bg.BatchProcessorGroupActivityLogged, bp.InputJSON,p.ProductId       
  from Batch.BatchProcessor bp            
  join Enterprise.Product p on p.ProductId = bp.ProductId     
  join Batch.BatchProcessorGroup bg on bg.BatchProcessorGroupId = bp.BatchProcessorGroupId                   
