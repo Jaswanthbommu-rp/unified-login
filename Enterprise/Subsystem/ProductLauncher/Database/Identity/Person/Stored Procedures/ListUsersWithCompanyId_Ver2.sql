@@ -5,7 +5,7 @@ CREATE PROCEDURE [Person].[ListUsersWithCompanyId_VER2]
  @ProductId   NVARCHAR(200) = NULL,     
  @RowsPerPage INT           = 0,     
  @PageNumber  INT           = 1,  
- @companyDomain nvarchar(20) = 'primary'
+ @companyDomain NVARCHAR(20) = 'primary'
 )    
 AS    
     BEGIN  
@@ -23,7 +23,7 @@ AS
 			LastName      NVARCHAR(50),     
 			AddressString NVARCHAR(255),    
 			PersonaId     BIGINT,    
-			PreferredPhoneNumber varchar(30),    
+			PreferredPhoneNumber VARCHAR(30),    
 			Email VARCHAR(255)    
         )
         CREATE NONCLUSTERED INDEX [NC_Uerlist_userID] ON #UserList([UserId] ASC)
@@ -52,9 +52,9 @@ AS
          INNER JOIN Enterprise.PartyContactMechanism pcm ON tm.ContactMechanismID = pcm.ContactMechanismID    
          INNER JOIN Enterprise.[ContactMechanismPreference] CMP
 		 ON CMP.ContactMechanismID = PCM.ContactMechanismId AND (PCM.ThruDate IS NULL OR PCM.ThruDate > GETUTCDATE())
-		 JOIN Ident.UserLogin ul on ul.PersonPartyId = pcm.PartyId
-		 JOIN Ident.UserLoginPersona ulp on ulp.UserLoginId = ul.UserId
-		 Where ulp.OrganizationPartyId = @OrgPartyIdId
+		 JOIN Ident.UserLogin ul ON ul.PersonPartyId = pcm.PartyId
+		 JOIN Ident.UserLoginPersona ulp ON ulp.UserLoginId = ul.UserId
+		 WHERE ulp.OrganizationPartyId = @OrgPartyIdId
 
   --Notification Email    
   DECLARE @NotificationEmail TABLE (PartyId BIGINT, Email VARCHAR(255))    
@@ -67,38 +67,26 @@ AS
    INNER JOIN Enterprise.ContactMechanism cm ON cm.ContactMechanismID = pcm.ContactMechanismId    
    INNER JOIN Enterprise.ElectronicAddress ea ON ea.ContactMechanismID = cm.ContactMechanismID    
    INNER JOIN Enterprise.Party p ON p.PartyId = pcm.PartyId 
-   INNER JOIN Ident.UserLogin ul on ul.PersonPartyId = p.PartyId
-   INNER JOIN Ident.UserLoginPersona ulp on ulp.UserLoginId = ul.UserId
+   INNER JOIN Ident.UserLogin ul ON ul.PersonPartyId = p.PartyId
+   INNER JOIN Ident.UserLoginPersona ulp ON ulp.UserLoginId = ul.UserId
   WHERE    
    (pcm.ThruDate IS NULL OR pcm.ThruDate > GETUTCDATE())    
    AND cmu.ContactMechanismUsageTypeID = 301
    AND ulp.OrganizationPartyId = @OrgPartyIdId;
     
-        WITH Products    
+        ;WITH Products    
              AS (SELECT     
                         p.PersonaID,     
-                        pp.ProductId    
+                        pec.ProductId    
                  FROM Person.Persona AS p    
-                      INNER JOIN Ident.UserLoginPersona AS ULP ON ULP.UserLoginPersonaId = p.UserLoginPersonaId     
-                      INNER JOIN Enterprise.PersonaConfiguration AS pec ON p.PersonaId = pec.PersonaId     
-                      INNER JOIN Enterprise.ProductConfiguration AS prc ON pec.ConfigurationId = prc.ConfigurationId    
-					  INNER JOIN Enterprise.Product AS pp ON pp.ProductId = pec.ProductId    
-                      INNER JOIN Enterprise.ProductSetting AS ps ON prc.ProductSettingId = ps.ProductSettingId    
-                                                                    AND ps.Value = '8'    
-                      INNER JOIN Enterprise.ProductSettingType AS pst ON ps.ProductSettingTypeId = pst.ProductSettingTypeId    
-                                                                         AND pst.Name = 'ProductStatus'    
+                      INNER JOIN Ident.UserLoginPersona AS ULP ON ULP.UserLoginPersonaId = p.UserLoginPersonaId AND ulp.OrganizationPartyId  = @OrgPartyIdId
+                      INNER JOIN Enterprise.PersonaConfiguration AS pec ON p.PersonaId = pec.PersonaId AND pec.StatusTypeId = 8     
                  WHERE((@NOW BETWEEN pec.FromDate AND pec.ThruDate)    
                        OR (@NOW >= pec.FromDate    
                            AND pec.ThruDate IS NULL))    
-                      AND ((@NOW BETWEEN prc.FromDate AND prc.ThruDate)    
-                           OR (@NOW >= prc.FromDate    
-                               AND prc.ThruDate IS NULL))    
-                      AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate)    
-                           OR (@NOW >= ps.FromDate    
-                               AND ps.ThruDate IS NULL))    
                       AND pec.ProductId NOT IN(14, 19, 25, 34) --Client Portal, Product Learning Portal, Self-provisioning portal, Benchmarking   
        AND ((@ProductCount IS NULL)    
-                           OR pp.ProductId IN    
+                           OR pec.ProductId IN    
                  (    
                      SELECT *    
                      FROM @ProductIdList    
@@ -119,8 +107,8 @@ AS
                       INNER JOIN Enterprise.Party AS pa ON pa.partyid = p.PartyId    
                       INNER JOIN Products AS cp ON cp.PersonaId = p2.PersonaId    
                       LEFT JOIN Ident.SamlUserAttribute AS sua ON sua.PersonaId = p2.PersonaId    
-                                                                  AND sua.ProductId = cp.ProductId    
-                                                                  AND sua.SamlAttributeId = 1    
+						AND sua.ProductId = cp.ProductId    
+                        AND sua.SamlAttributeId = 1    
                       LEFT OUTER JOIN  @ContactPreference AS CTPREF ON CTPREF.PartyId = PA.PartyId      
 					  LEFT OUTER JOIN @NotificationEmail ne ON ne.PartyId = p.PartyId    
                           

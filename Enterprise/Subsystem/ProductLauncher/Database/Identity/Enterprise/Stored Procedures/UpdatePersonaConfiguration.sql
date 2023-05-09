@@ -20,7 +20,6 @@ BEGIN
 		IF EXISTS ( SELECT TOP 1 1 FROM Enterprise.ProductSetting PS INNER JOIN Enterprise.ProductSettingType PST on PS.ProductSettingTypeId = PST.ProductSettingTypeId
 			WHERE PS.ProductSettingId = @ProductSettingID AND PST.Name = 'ProductStatus' )
 		BEGIN
-			BEGIN TRANSACTION;
 			UPDATE 
 				Enterprise.PersonaConfiguration
 				SET StatusTypeId = @SettingValue
@@ -31,7 +30,6 @@ BEGIN
 				AND
 				ThruDate IS NULL
 			
-			COMMIT;
 			SELECT	@PersonaId AS Id ,
                 '' AS ErrorMessage
 		END	
@@ -39,7 +37,6 @@ BEGIN
 		IF EXISTS ( SELECT TOP 1 1 FROM Enterprise.ProductSetting PS INNER JOIN Enterprise.ProductSettingType PST on PS.ProductSettingTypeId = PST.ProductSettingTypeId
 			WHERE PS.ProductSettingId = @ProductSettingID AND PST.Name = 'IsFavorite' )
 		BEGIN
-			BEGIN TRANSACTION;
 			UPDATE 
 				Enterprise.PersonaConfiguration
 				SET IsFavorite = @SettingValue
@@ -50,7 +47,6 @@ BEGIN
 				AND
 				ThruDate IS NULL
 			
-			COMMIT;
 			SELECT	@PersonaId AS Id ,
                 '' AS ErrorMessage
 		END
@@ -58,7 +54,6 @@ BEGIN
 		IF EXISTS ( SELECT TOP 1 1 FROM Enterprise.ProductSetting PS INNER JOIN Enterprise.ProductSettingType PST on PS.ProductSettingTypeId = PST.ProductSettingTypeId
 			WHERE PS.ProductSettingId = @ProductSettingID AND PST.Name = 'UsePrimaryProperties' )
 		BEGIN
-			BEGIN TRANSACTION;
 			UPDATE 
 				Enterprise.PersonaConfiguration
 				SET UsePrimaryProperties = @SettingValue
@@ -69,14 +64,12 @@ BEGIN
 				AND
 				ThruDate IS NULL
 			
-			COMMIT;
 			SELECT	@PersonaId AS Id ,
                 '' AS ErrorMessage
 		END
 
 	END TRY
 	BEGIN CATCH
-		ROLLBACK;
 
         DECLARE @ErrorLogID INT;
         EXEC dbo.LogError @ErrorLogID = @ErrorLogID OUTPUT;
