@@ -13,6 +13,7 @@ using Serilog;
 using Serilog.Events;
 using Swashbuckle.Swagger.Annotations;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -137,10 +138,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             }
 
             IProductRepository productRepository = new ProductRepository();
-            mappedUnifiedLoginUserDetails.ULMappedPersonaId = productRepository.GetULMappingPersonaIDsByCompanyAndProducts(productUserIDMappingRequest.CompanyId,
+            var userProductDetails = productRepository.GetULMappingPersonaIDsByCompanyAndProducts(productUserIDMappingRequest.CompanyId,
                                                                                  productUserIDMappingRequest.upfmId,
                                                                                  productId,
                                                                                  productUserIDMappingRequest.ProductUserId);
+            var userDistinctProductDetails = userProductDetails.Where(p => p.ProductUserId != null).GroupBy(p => p.ProductUserId)
+                            .Select(grp => grp.FirstOrDefault()).FirstOrDefault();
+            if (userDistinctProductDetails != null)
+            {
+                ULMappedPersonaIds uLMappedPersona = new ULMappedPersonaIds();
+                uLMappedPersona.ProductUserId = userDistinctProductDetails.ProductUserId;
+                uLMappedPersona.UnifiedLoginPersonaId = userDistinctProductDetails.UnifiedLoginPersonaId;
+                uLMappedPersona.PreferredPhoneNumber = userDistinctProductDetails.PreferredPhoneNumber;
+                uLMappedPersona.Email = userDistinctProductDetails.Email;
+
+                mappedUnifiedLoginUserDetails.ULMappedPersonaId.Add(uLMappedPersona);
+            }
             var logData = new Dictionary<string, object>();
             logData.Add("result", mappedUnifiedLoginUserDetails);
             WriteToLog(LogEventLevel.Information, "Enterprise - ProductController - GetULUserIdMappedToProductUserIdByCompanyAndProducts - Data returned", logData);
