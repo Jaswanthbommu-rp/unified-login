@@ -32,10 +32,14 @@ Post-Deployment Script Template
 --:r .\PostDeploymentScripts\AddingRightforSettings.sql
 -- remove these if no longer needed
 
+
+--:r .\PostDeploymentScripts\KnockProductPanelScript.sql
+--:r .\PostDeploymentScripts\VMPRolesAndRights.sql
+--:r .\PostDeploymentScripts\AddingSettingsForAdminPortal.sql
+--:r .\PostDeploymentScripts\UserAuditDB.sql
+
+:r .\PostDeploymentScripts\1486360-useraccess-summary-properties.sql
+
 -- keep these at the end!
 :r .\PostDeploymentScripts\UpdateStatistics.sql
 :r .\PostDeploymentScripts\RecompileAllProcs.sql
-:r .\PostDeploymentScripts\KnockProductPanelScript.sql
-:r .\PostDeploymentScripts\VMPRolesAndRights.sql
-:r .\PostDeploymentScripts\AddingSettingsForAdminPortal.sql
-:r .\PostDeploymentScripts\UserAuditDB.sql
