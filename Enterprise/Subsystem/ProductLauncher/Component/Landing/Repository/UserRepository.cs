@@ -5028,7 +5028,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             LogActivity.WriteActivity(activityDetails);
         }
-
         private void AddActivityLog(string logActivityType, LogActivityCategoryType logActivityCategoryType, string message, IPerson person, IUserLoginOnly userLogin = null, IUserOrganization userOrg = null, DefaultUserClaim defaultUserClaim = null)
         {
             WriteToLog(LogEventLevel.Debug, $"UserRepository.AddActivityLog at beginning of method for for activity - {message} and correlationId is {_userClaim.CorrelationId.ToString()} ");
@@ -5865,7 +5864,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(_userClaim.ImpersonatedBy);
             }
-
+           
             using (var repository = GetRepository())
             {
                 //Begin the transaction
@@ -5887,7 +5886,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 bool employeeIdChanged = isEmployeeIdChanged(updateUserProfileEntity.NewProfile, updateUserProfileEntity.OldProfile);
 
                 bool isPrimaryPropertiesUpdated = false;
-
+                bool isEnterpriseRolesUpdated = false;
+                string enterpriseUserRoleUpdated = string.Empty;
                 var enterpriseRoles = repository.GetMany<EnterpriseRole>(StoredProcNameConstants.SP_SecurityListRolesByRealPageID, new { realPageId = updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId });
 
                 var gbProdBatch = new ProductBatch();
@@ -6418,6 +6418,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             int roleTemplateId = Convert.ToInt32(enterpriseRole.InputJson.RoleList.FirstOrDefault());
                             if (roleTemplateId != 0)
                             {
+                                isEnterpriseRolesUpdated = true;
+                                object paramObject = new
+                                {
+                                    RoleTemplateId = roleTemplateId,
+                                    OrganizationRealPageId = _userClaim.OrganizationRealPageGuid
+                                };
+                                var roleTemplateProductRole = repository.GetMany<RoleTemplateProductRole>(StoredProcNameConstants.SP_GetRoleTemplateProductRoleMappings, paramObject).ToList();
+                                enterpriseUserRoleUpdated = roleTemplateProductRole.Select(x => x.RoleTemplateName).FirstOrDefault();
+                                
                                 repositoryResponse = InsertUpdateEnterpriseRoleToUser(repository, roleTemplateId, updateUserProfileEntity.OldProfile.Persona[0].PersonaId);
                                 if (repositoryResponse.Id == 0)
                                 {
@@ -6640,6 +6649,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                             LogAuditActivity(LogActivityTypeConstants.PRIMARY_PROPERTIES, LogActivityCategoryType.User, message, "Update primary property", updateUserProfileEntity.NewProfile, additionalParameters);
 
+                        }
+                        //add activity log for Enterprise Roles
+                        if (isEnterpriseRolesUpdated) 
+                        {
+                            string userName = string.IsNullOrEmpty(_userClaim.ImpersonatedByName) ? _userClaim.FirstName + " " + _userClaim.LastName : " RealPage Access (" + _userClaim.ImpersonatedByName + ") ";
+                            string enterpriseRolesMessage = $"{userName} updated access for {updateUserProfileEntity.NewProfile.FirstName} {updateUserProfileEntity.NewProfile.LastName} : Enterprise Role: {enterpriseUserRoleUpdated}";
+
+                            AddActivityLog(LogActivityTypeConstants.ENTERPRISE_ROLES, LogActivityCategoryType.User, enterpriseRolesMessage, updateUserProfileEntity.NewProfile, updateUserProfileEntity.UserLoginOnly, null, _userClaim);
                         }
                     }
                     else
