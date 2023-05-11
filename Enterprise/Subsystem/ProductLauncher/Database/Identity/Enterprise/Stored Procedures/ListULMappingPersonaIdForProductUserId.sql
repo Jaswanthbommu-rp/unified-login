@@ -60,7 +60,7 @@ END
    INNER JOIN Enterprise.[ContactMechanismPreference] CMP ON CMP.ContactMechanismID = PCM.ContactMechanismId AND (PCM.ThruDate IS NULL OR PCM.ThruDate > GETUTCDATE())  
 
 
-  SELECT   
+  SELECT   distinct
    sua.Value as ProductUserId,   
    sua.PersonaId as UnifiedLoginPersonaId ,  
    cp.PreferredPhoneNumber,  
