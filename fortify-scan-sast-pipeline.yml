@@ -18,7 +18,7 @@ pool:
   name: Fortify-BLD-POOL
 
 variables:
-  ReleaseId: 426470
+  ReleaseId: 745546
   ArchiveFileName: '$(build.buildId).zip'
   ArchiveLocation: '$(build.artifactStagingDirectory)/zipped/'
   pipeline.releaseId: '$(ReleaseId)'
