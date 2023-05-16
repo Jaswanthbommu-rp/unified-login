@@ -191,4 +191,24 @@ BEGIN
 End
 
 GO
---1092902
+--1447403
+
+IF NOT EXISTS(SELECT TOP 1 1 FROM Logging.LogType WHERE NAME = 'Enterprise Roles')
+BEGIN
+	DECLARE @catId INT;
+	DECLARE @logId INT;
+	
+	SELECT @catId = LogCategoryTypeId
+	FROM logging.LogCategoryType 
+	WHERE NAME = 'User'
+	
+	SELECT @logId = MAX(LogTypeId) + 1
+	FROM Logging.LogType
+	
+	SELECT @catId, @logId
+	
+	INSERT INTO Logging.LogType (LogTypeId, LogcategoryTypeId, Name, Description)
+	VALUES (@logId, @catId, 'Enterprise Roles', 'Enterprise Roles')
+	
+End
+GO
