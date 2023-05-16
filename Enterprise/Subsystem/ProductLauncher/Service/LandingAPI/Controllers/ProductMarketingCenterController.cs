@@ -13,6 +13,7 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -42,6 +43,51 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             ManageProductMarketingCenter mg = new ManageProductMarketingCenter(base._userClaims);
             ListResponse response = mg.GetRoles(editorPersonaId, userPersonaId, datafilter);
             return response;
+        }
+
+
+        /// <summary>
+        /// Used to get a list of roles 
+        /// </summary>
+        /// <remarks>A datafilter can be used to filter the roles using name</remarks>
+        /// <param name="editorPersonaId"></param>                
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when Information is out of sync with the server)")]
+        [Route("products/marketingcenter/rolescount")]
+        [Authorize]
+        [HttpGet]
+        public HttpResponseMessage GetRolesCount(long editorPersonaId)
+        {
+            if (editorPersonaId == 0)
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
+            ManageProductMarketingCenter manageProductMarketingCenter = new ManageProductMarketingCenter(base._userClaims);
+            ListResponse response = manageProductMarketingCenter.GetRolesCount(editorPersonaId);
+
+            return Request.CreateResponse(HttpStatusCode.OK, response);
+        }
+
+        /// <summary>
+        /// Used to get a list of rights 
+        /// </summary>
+        /// <remarks></remarks>
+        /// <param name="editorPersonaId"></param>       
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "A list of rights for the given company", Type = typeof(object))]
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when Information is out of sync with the server)")]
+        [Route("products/marketingcenter/rights")]
+        [Authorize]
+        [HttpGet]
+        public HttpResponseMessage GetRights(long editorPersonaId)
+        {
+            if (editorPersonaId == 0)
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
+            ManageProductMarketingCenter manageProductMarketingCenter = new ManageProductMarketingCenter(base._userClaims);
+            ListResponse response = manageProductMarketingCenter.GetRights(editorPersonaId);
+            return Request.CreateResponse(HttpStatusCode.OK, response);
         }
 
         /// <summary>
