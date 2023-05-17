@@ -6484,7 +6484,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         {
                             greenBookRoles = GetGreenBookRoles(gbProdBatch);
 
-                            if (greenBookRoles.Count == 0)
+                            if (greenBookRoles.Count == 0 || userBatchEntity.UserTypeChanged)
                             {
                                 greenBookRoles.Add(GetUnifiedPlatformDefaultRole(repository, updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId, enterpriseRoles));
                             }
