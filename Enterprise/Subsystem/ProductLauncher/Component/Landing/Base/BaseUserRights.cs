@@ -38,7 +38,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
             {
                 int roleId;
                 bool converted = int.TryParse(item.Value, out roleId);
-                if (converted) 
+                if (converted)
                 {
                     foreach (var companyRole in companyRoleList)
                     {
@@ -52,7 +52,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
             }
 
             var distinctUserRights = userRights.Distinct().OrderBy(x => x).ToList();
-
             identity.AddClaims(distinctUserRights.Select(a => new Claim("right", a)).ToList());
 
             if (userClaim.ImpersonatedBy != Guid.Empty)
@@ -65,20 +64,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
                 IList<UserRoleRights> impersonateCompanyRoleList = GetCompanyRoles(userClaim, impersonateUserPersona.OrganizationPartyId, impersonateUserPersona.Organization.RealPageId);
 
                 // get impersonator user roles
-                List<Component.SharedObjects.Product.UserManagement.Role> impersonateUserRoleList = GetUserRoles(impersonateUserPersona.PersonaId, impersonateUserPersona.OrganizationPartyId);
-                //List<long> impersonateUserRoles = new List<long>();
-                foreach (Component.SharedObjects.Product.UserManagement.Role role in impersonateUserRoleList)
+                List<SharedObjects.Product.UserManagement.Role> impersonateUserRoleList = GetUserRoles(impersonateUserPersona.PersonaId, impersonateUserPersona.OrganizationPartyId);
+                foreach (SharedObjects.Product.UserManagement.Role role in impersonateUserRoleList)
                 {
                     List<string> impersonateUserRights = GetRights(impersonateCompanyRoleList, role.RoleID, impersonateUserPersona.PersonaId, impersonateUserPersona.OrganizationPartyId);
                     List<Right> persistRightsList = GetPersistRights();
-
-                    // check for view only access
-                    AddRemoveRightForCIMPL(identity, impersonateUserRights, distinctUserRights, "CIMPLManagePII");
-                    AddRemoveRightForCIMPL(identity, impersonateUserRights, distinctUserRights, "CIMPLManageSensitiveFinancialData");
-
+                    //New Implementation: Rights will be carry forwarded only if employee user has it
                     foreach (var right in persistRightsList)
                     {
-                        AddRightFromImpersonator(identity, impersonateUserRights, distinctUserRights, right.RightName.ToUpper());
+                        AddRemoveRightForUser(identity, impersonateUserRights, distinctUserRights, right.RightName.ToUpper());
                     }
                 }
             }
@@ -91,13 +85,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
                 // RP Employee-Get ADGroup Rights for the persona
                 UserRoleRightRepository urr = new UserRoleRightRepository();
                 List<Right> adGroupRights = urr.GetADGroupRightsByPersonaId(rpEmployeePersona.PersonaId)?.ToList();
-                if(adGroupRights != null && adGroupRights.Count > 0)
+                if (adGroupRights != null && adGroupRights.Count > 0)
                 {
                     List<string> adRights = adGroupRights.Select(x => x.RightNickName).ToList();
                     List<Right> persistRightsList = GetPersistRights();
+                    //New Implementation: Rights will be carry forwarded only if employee user has it
                     foreach (var right in persistRightsList)
                     {
-                        AddRightFromImpersonator(identity, adRights, distinctUserRights, right.RightName.ToUpper());
+                        AddRemoveRightForUser(identity, adRights, distinctUserRights, right.RightName.ToUpper());
                     }
                 }
             }
@@ -118,9 +113,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
             IList<UserRoleRights> impersonateCompanyRoleList = BaseUserRights.GetCompanyRoles(userClaims, impersonateUserPersona.OrganizationPartyId, impersonateUserPersona.Organization.RealPageId);
 
             // get impersonator user roles
-            List<Component.SharedObjects.Product.UserManagement.Role> impersonateUserRoleList = BaseUserRights.GetUserRoles(impersonateUserPersona.PersonaId, impersonateUserPersona.OrganizationPartyId);
+            List<SharedObjects.Product.UserManagement.Role> impersonateUserRoleList = BaseUserRights.GetUserRoles(impersonateUserPersona.PersonaId, impersonateUserPersona.OrganizationPartyId);
 
-            foreach (Component.SharedObjects.Product.UserManagement.Role role in impersonateUserRoleList)
+            foreach (SharedObjects.Product.UserManagement.Role role in impersonateUserRoleList)
             {
                 impersonateUserRoles.Add(role.RoleID);
             }
@@ -169,7 +164,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
         /// <param name="impersonateUserRights">The list of rights of the impersonator</param>
         /// <param name="userRights">The list of rights assigned to this user</param>
         /// <param name="rightName">The right to check</param>
-        private static void AddRemoveRightForCIMPL(ClaimsIdentity identity, List<string> impersonateUserRights, List<string> userRights, string rightName)
+        private static void AddRemoveRightForUser(ClaimsIdentity identity, List<string> impersonateUserRights, List<string> userRights, string rightName)
         {
             if (impersonateUserRights.Contains(rightName) && !userRights.Contains(rightName))
             {
@@ -223,11 +218,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
         /// <param name="personaId"></param>
         /// <param name="orgPartyId"></param>
         /// <returns></returns>
-        private static List<Component.SharedObjects.Product.UserManagement.Role> GetUserRoles(long personaId, long orgPartyId)
+        private static List<SharedObjects.Product.UserManagement.Role> GetUserRoles(long personaId, long orgPartyId)
         {
             RPObjectCache rpCache = new RPObjectCache();
             string cacheKey = $"getRoleByPersona_{orgPartyId}_{personaId}";
-            List<Component.SharedObjects.Product.UserManagement.Role> userRoles = rpCache.GetFromCache(cacheKey, 30, () =>
+            List<SharedObjects.Product.UserManagement.Role> userRoles = rpCache.GetFromCache(cacheKey, 30, () =>
             {
                 UserRoleRightRepository urr = new UserRoleRightRepository();
                 return urr.ListRoleByPersona((int)ProductEnum.UnifiedPlatform, personaId, orgPartyId);
@@ -238,7 +233,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
         /// <summary>
         /// The roles assigned to the user
         /// </summary>
-        /// <param name="rpCache"></param>
         /// <param name="companyRoles"></param>
         /// <param name="roleId">The role to get rights for</param>
         /// <param name="personaId"></param>

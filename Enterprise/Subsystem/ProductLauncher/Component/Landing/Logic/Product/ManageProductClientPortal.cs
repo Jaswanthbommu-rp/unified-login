@@ -251,7 +251,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     return listResponse.ErrorReason;
                 }
 
-
+                ClientPortalContactResult  clientPortalContactResult = new ClientPortalContactResult();
                 var persona = _managePersona.GetPersona(userPersonaId);
                 var realPageId = persona.RealPageId;
                 var person = _managePerson.GetPerson(realPageId);
@@ -426,8 +426,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     IsActive = true
                 };
 
-             
-                if (clientPortaluserDetails != null && clientPortaluserDetails.Count > 0  && (clientPortaluserDetails.Any(m=> m.Id == _productUserId)))
+                if (isUserUpdate)
+                {
+                    clientPortalContactResult = clientPortaluserDetails.FirstOrDefault(m => m.Id == _productUserId);
+                }
+                if (clientPortaluserDetails != null && clientPortaluserDetails.Count > 0  && (clientPortaluserDetails.Any(m=> m.Id == _productUserId)) && clientPortalContactResult != null && clientPortalContactResult.IsPortalEnabled)
                 {
                     // Update User & return result
                     WriteToDiagnosticLog(
@@ -445,7 +448,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     // Create New User & return result
                     WriteToDiagnosticLog(
                         $"ManageProductClientPortal.ManageClientPortalUser - trying to CREATE user with editorPersona id - {editorPersonaId}.");
-                    string insertResult = CreateClientPortalUser(userPersonaId, clientPortalUser);
+                    string insertResult = CreateClientPortalUser(userPersonaId, clientPortalUser, clientPortalContactResult.IsPortalEnabled);
 
                     return insertResult;
 
@@ -1240,7 +1243,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             List<ClientPortalContactResult> clientPortalContacts = new List<ClientPortalContactResult>();
 
             var jsonQueryString =
-                JObject.Parse("{ \"q\":\"" + loginName + "\",\"sobjects\":[{\"name\": \"User\", \"fields\":[\"Id\", \"Email\", \"Account.OMS_ID__c\"]}]}");
+                JObject.Parse("{ \"q\":\"" + loginName + "\",\"sobjects\":[{\"name\": \"User\", \"fields\":[\"Id\", \"Email\",\"IsPortalEnabled\", \"Account.OMS_ID__c\"]}]}");
 
             WriteToDiagnosticLog(
                       $"ManageProductClientPortal.CheckClientPortalUserExists - calling API with - URL '{_apiRoute}parameterizedSearch' and quert string - {jsonQueryString} for user with _productUsername {_productUsername}.");
@@ -1260,7 +1263,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         Id = cpContact.Id,
                         Email = cpContact.Email,
-                        OMS_ID__c = cpContact.Account == null ? "" : cpContact.Account.OMS_ID__c
+                        OMS_ID__c = cpContact.Account == null ? "" : cpContact.Account.OMS_ID__c,
+                        IsPortalEnabled = cpContact.IsPortalEnabled
                     };
                     clientPortalContacts.Add(clientPortalContactResult);
                 }
@@ -1376,7 +1380,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             throw new Exception("Error while creating contact.");
         }
 
-        private string CreateClientPortalUser(long userPersonaId, ClientPortalUser clientPortalUser)
+        private string CreateClientPortalUser(long userPersonaId, ClientPortalUser clientPortalUser, bool isPortalEnabled)
         {
 
             var logData = new Dictionary<string, object> { { "clientPortalUser", clientPortalUser } };
@@ -1399,6 +1403,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 var newId = userResult.id.ToString();
                 CreateProductUserInGreenBook(userPersonaId, newId, clientPortalUser.Username);
+                if (!isPortalEnabled)
+                {
+                    WriteToDiagnosticLog(
+                      $"ManageProductClientPortal.CreateDeactivatedClientPortalUser - Beginning", logData);
+                    SamlAttributes samlAttributes = new SamlAttributes();
+                    IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(userPersonaId, _productId);
+                    if (productAttributes != null && productAttributes.Count > 0)
+                    {
+                        SamlAttributes samlAttributeToUpdate = productAttributes.FirstOrDefault(m => m.SamlAttributeId == (int)SamlAttributeEnum.UserId);
+                        if (samlAttributeToUpdate != null)
+                        {
+                            samlAttributes.SamlUserAttributeId = samlAttributeToUpdate.SamlUserAttributeId;
+                            samlAttributes.Value = newId;
+                            _samlRepository.UpdateSamlUserAttribute(samlAttributes);
+                        }
+                    }
+                }
                 return "";
             }
 
@@ -1636,6 +1657,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         public string ParentOMS_ID__c { get; set; }
 
+        public bool IsPortalEnabled { get; set; } = true;
     }
 
     #endregion
