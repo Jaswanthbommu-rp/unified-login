@@ -6486,6 +6486,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                             if (greenBookRoles.Count == 0 || userBatchEntity.UserTypeChanged)
                             {
+                                greenBookRoles.Clear();
                                 greenBookRoles.Add(GetUnifiedPlatformDefaultRole(repository, updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId, enterpriseRoles));
                             }
                         }
