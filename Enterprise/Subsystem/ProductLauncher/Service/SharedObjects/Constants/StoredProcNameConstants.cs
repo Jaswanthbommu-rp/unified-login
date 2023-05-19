@@ -449,6 +449,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         public const string SP_ListHotsBaseOrganizationUsers = "Hots.ListHotsBaseOrganizationUsers";
         public const string SP_InsertHotsCompanyRelationship = "Hots.InsertHotsCompanyRelationship";
         public const string SP_InsertHotsPropertyRelationship = "Hots.InsertHotsPropertyRelationship";
+        public const string SP_UpdateHotsCloneUserPassword = "Hots.UpdateHotsCloneUserPassword";
 
         // Navigation Menu
         public const string SP_GetNavigationMenu = "Enterprise.GetNavigationMenu";
