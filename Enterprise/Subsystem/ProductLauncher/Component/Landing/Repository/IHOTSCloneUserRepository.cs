@@ -17,7 +17,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
         IList<Persona> ListPersona(Guid realPageId);
 
-        HotsUser CreateUser(DefaultUserClaim cloneCompanyAdminUserClaim, long partyId, BaseLineCustomerCompanyUser user, IProfileDetail baseUserProfile, List<ProductBatch> productBatch);
+        HotsUser CreateUser(DefaultUserClaim cloneCompanyAdminUserClaim, long partyId, BaseLineCustomerCompanyUser user, IProfileDetail baseUserProfile, List<ProductBatch> productBatch, UserLogin userLogin);
 
         /// <summary>
         /// Used to link a cloned company to a baseline company when using HOTS

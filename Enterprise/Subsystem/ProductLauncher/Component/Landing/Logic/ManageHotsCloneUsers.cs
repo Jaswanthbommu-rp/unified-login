@@ -26,6 +26,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Web.Security;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using ProductRole = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ProductRole;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
@@ -147,7 +149,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 							}
                         }
 
-						var hotsuser = _hotsCloneUserRepository.CreateUser(_defaultUserClaim, clonePartyId, user, profileDetail, pbData);
+                        var userLogin = new UserLogin() { Password = Membership.GeneratePassword(10, 1) };
+                        var passwordDetail = userLogin.Password.PasswordHash();
+                        userLogin.PasswordHash = passwordDetail.PasswordHash;
+                        userLogin.PasswordSalt = passwordDetail.PasswordSalt;
+
+                        var hotsuser = _hotsCloneUserRepository.CreateUser(_defaultUserClaim, clonePartyId, user, profileDetail, pbData, userLogin);
                         if (hotsuser != null)
                         {
                             pbData?.ForEach( pb =>
@@ -347,218 +354,206 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private List<string> CompareBaseAndCloneProductRoles(ListResponse baseCompanyRoles, ListResponse cloneCompanyRoles)
         {
             var matchedProductRoleIdList = new List<string>();
-            if (baseCompanyRoles.Records.Count > 0 && cloneCompanyRoles.Records.Count > 0)
-            {
-                var baseProductRoleType = baseCompanyRoles.Records[0].GetType();
-                var cloneProductRoleType = cloneCompanyRoles.Records[0].GetType();
+            if (!(baseCompanyRoles.Records?.Count > 0) || !(cloneCompanyRoles.Records?.Count > 0)) return matchedProductRoleIdList;
 
-                if (baseProductRoleType == typeof(ProductRole) && cloneProductRoleType == typeof(ProductRole))
+            var baseProductRoleType = baseCompanyRoles.Records[0].GetType();
+            var cloneProductRoleType = cloneCompanyRoles.Records[0].GetType();
+
+            if (baseProductRoleType == typeof(ProductRole) && cloneProductRoleType == typeof(ProductRole))
+            {
+                var baseList = baseCompanyRoles.Records.Cast<ProductRole>();
+                var cloneList = cloneCompanyRoles.Records.Cast<ProductRole>();
+                foreach (var role in baseList)
                 {
-                    var baseList = baseCompanyRoles.Records.Cast<ProductRole>();
-                    var cloneList = cloneCompanyRoles.Records.Cast<ProductRole>();
-                    foreach (var role in baseList)
+                    if (!role.IsAssigned) continue;
+
+                    var foundRole = cloneList.FirstOrDefault(b => b.Name.Equals(role.Name, StringComparison.OrdinalIgnoreCase) && b.Roletype.Equals(role.Roletype, StringComparison.OrdinalIgnoreCase));
+                    if (foundRole != null)
                     {
-                        if (role.IsAssigned)
-                        {
-                            var foundRole = cloneList.FirstOrDefault(b => b.Name.Equals(role.Name, StringComparison.OrdinalIgnoreCase) && b.Roletype.Equals(role.Roletype, StringComparison.OrdinalIgnoreCase));
-                            if (foundRole != null)
-                            {
-                                matchedProductRoleIdList.Add(foundRole.ID);
-                            }
-                        }
+                        matchedProductRoleIdList.Add(foundRole.ID);
                     }
                 }
-                else if(baseProductRoleType == typeof(ClickPayRole) && cloneProductRoleType == typeof(ClickPayRole))
+            }
+            else if(baseProductRoleType == typeof(ClickPayRole) && cloneProductRoleType == typeof(ClickPayRole))
+            {
+                var baseList = baseCompanyRoles.Records.Cast<ClickPayRole>();
+                var cloneList = cloneCompanyRoles.Records.Cast<ClickPayRole>();
+                foreach (var role in baseList)
                 {
-                    var baseList = baseCompanyRoles.Records.Cast<ClickPayRole>();
-                    var cloneList = cloneCompanyRoles.Records.Cast<ClickPayRole>();
-                    foreach (var role in baseList)
+                    if (!role.IsAssigned) continue;
+
+                    var foundRole = cloneList.FirstOrDefault(b => b.Name.Equals(role.Name, StringComparison.OrdinalIgnoreCase));
+                    if (foundRole != null)
                     {
-                        if (role.IsAssigned)
-                        {
-                            var foundRole = cloneList.FirstOrDefault(b => b.Name.Equals(role.Name, StringComparison.OrdinalIgnoreCase));
-                            if (foundRole != null)
-                            {
-                                matchedProductRoleIdList.Add(foundRole.Id);
-                            }
-                        }
-                    }
-				}
-                else if (baseProductRoleType == typeof(ProductIntegration.Model.ProductRole) && cloneProductRoleType == typeof(ProductIntegration.Model.ProductRole))
-                {
-                    var baseList = baseCompanyRoles.Records.Cast<ProductIntegration.Model.ProductRole>();
-                    var cloneList = cloneCompanyRoles.Records.Cast<ProductIntegration.Model.ProductRole>();
-                    foreach (var role in baseList)
-                    {
-                        if (role.IsAssigned)
-                        {
-                            var foundRole = cloneList.FirstOrDefault(b => b.GetName.Equals(role.GetName, StringComparison.OrdinalIgnoreCase));
-                            if (foundRole != null)
-                            {
-                                matchedProductRoleIdList.Add(foundRole.GetRoleId);
-                            }
-                        }
+                        matchedProductRoleIdList.Add(foundRole.Id);
                     }
                 }
-                else if (baseProductRoleType == typeof(Level) && cloneProductRoleType == typeof(Level))
+            }
+            else if (baseProductRoleType == typeof(ProductIntegration.Model.ProductRole) && cloneProductRoleType == typeof(ProductIntegration.Model.ProductRole))
+            {
+                var baseList = baseCompanyRoles.Records.Cast<ProductIntegration.Model.ProductRole>();
+                var cloneList = cloneCompanyRoles.Records.Cast<ProductIntegration.Model.ProductRole>();
+                foreach (var role in baseList)
                 {
-                    var baseList = baseCompanyRoles.Records.Cast<ILevel>();
-                    var cloneList = cloneCompanyRoles.Records.Cast<ILevel>();
-                    foreach (var role in baseList)
+                    if (!role.IsAssigned) continue;
+
+                    var foundRole = cloneList.FirstOrDefault(b => b.GetName.Equals(role.GetName, StringComparison.OrdinalIgnoreCase));
+                    if (foundRole != null)
                     {
-                        if (role.IsAssigned)
-                        {
-                            var foundRole = cloneList.FirstOrDefault(b => b.Name.Equals(role.Name, StringComparison.OrdinalIgnoreCase));
-                            if (foundRole != null)
-                            {
-                                matchedProductRoleIdList.Add(foundRole.Id);
-                            }
-                        }
+                        matchedProductRoleIdList.Add(foundRole.GetRoleId);
                     }
                 }
-                else if (baseProductRoleType == typeof(SharedObjects.Product.Rum.Role) && cloneProductRoleType == typeof(SharedObjects.Product.Rum.Role))
+            }
+            else if (baseProductRoleType == typeof(Level) && cloneProductRoleType == typeof(Level))
+            {
+                var baseList = baseCompanyRoles.Records.Cast<ILevel>();
+                var cloneList = cloneCompanyRoles.Records.Cast<ILevel>();
+                foreach (var role in baseList)
                 {
-                    var baseList = baseCompanyRoles.Records.Cast<SharedObjects.Product.Rum.Role>();
-                    var cloneList = cloneCompanyRoles.Records.Cast<SharedObjects.Product.Rum.Role>();
-                    foreach (var role in baseList)
+                    if (!role.IsAssigned) continue;
+
+                    var foundRole = cloneList.FirstOrDefault(b => b.Name.Equals(role.Name, StringComparison.OrdinalIgnoreCase));
+                    if (foundRole != null)
                     {
-                        if (role.IsAssigned)
-                        {
-                            var foundRole = cloneList.FirstOrDefault(b => b.Name.Equals(role.Name, StringComparison.OrdinalIgnoreCase));
-                            if (foundRole != null)
-                            {
-                                matchedProductRoleIdList.Add(foundRole.Id.ToString());
-                            }
-                        }
+                        matchedProductRoleIdList.Add(foundRole.Id);
                     }
                 }
-			}
+            }
+            else if (baseProductRoleType == typeof(SharedObjects.Product.Rum.Role) && cloneProductRoleType == typeof(SharedObjects.Product.Rum.Role))
+            {
+                var baseList = baseCompanyRoles.Records.Cast<SharedObjects.Product.Rum.Role>();
+                var cloneList = cloneCompanyRoles.Records.Cast<SharedObjects.Product.Rum.Role>();
+                foreach (var role in baseList)
+                {
+                    if (!role.IsAssigned) continue;
+
+                    var foundRole = cloneList.FirstOrDefault(b => b.Name.Equals(role.Name, StringComparison.OrdinalIgnoreCase));
+                    if (foundRole != null)
+                    {
+                        matchedProductRoleIdList.Add(foundRole.Id.ToString());
+                    }
+                }
+            }
 
             return matchedProductRoleIdList;
         }
 		private List<string> CompareBaseAndCloneProductProperties(ListResponse baseProductProperties, ListResponse cloneProductProperties)
 		{
 			var matchedProductPropertyIdList = new List<string>();
-			if (baseProductProperties.Records.Count > 0 && cloneProductProperties.Records.Count > 0)
-			{
-				var baseProductPropertyType = baseProductProperties.Records[0].GetType();
-				var cloneProductPropertyType = cloneProductProperties.Records[0].GetType();
+            if (!(baseProductProperties.Records?.Count > 0) || !(cloneProductProperties.Records?.Count > 0)) return matchedProductPropertyIdList;
 
-				if (baseProductPropertyType == typeof(ProductProperty) && cloneProductPropertyType == typeof(ProductProperty))
-				{
-					var basePropertiesList = baseProductProperties.Records.Cast<ProductProperty>();
-					var clonePropertiesList = cloneProductProperties.Records.Cast<ProductProperty>();
-                    foreach (var property in basePropertiesList)
+            var baseProductPropertyType = baseProductProperties.Records[0].GetType();
+            var cloneProductPropertyType = cloneProductProperties.Records[0].GetType();
+
+            if (baseProductPropertyType == typeof(ProductProperty) && cloneProductPropertyType == typeof(ProductProperty))
+            {
+                var basePropertiesList = baseProductProperties.Records.Cast<ProductProperty>();
+                var clonePropertiesList = cloneProductProperties.Records.Cast<ProductProperty>();
+                foreach (var property in basePropertiesList)
+                {
+                    if (property.IsAssigned == true)
                     {
-                        if (property.IsAssigned == true)
+                        var foundProperty = clonePropertiesList.FirstOrDefault(b => b.Name.IndexOf(property.Name, StringComparison.OrdinalIgnoreCase) >= 0);
+                        if (foundProperty != null)
                         {
-                            var foundProperty = clonePropertiesList.FirstOrDefault(b => b.Name.IndexOf(property.Name, StringComparison.OrdinalIgnoreCase) >= 0);
-                            if (foundProperty != null)
-                            {
-                                matchedProductPropertyIdList.Add(foundProperty.ID);
-                            }
+                            matchedProductPropertyIdList.Add(foundProperty.ID);
                         }
                     }
                 }
-				else if (baseProductPropertyType == typeof(ACProperty) && cloneProductPropertyType == typeof(ACProperty))
-				{
-					var basePropertiesList = baseProductProperties.Records.Cast<ACProperty>();
-					var clonePropertiesList = cloneProductProperties.Records.Cast<ACProperty>();
-                    foreach (var property in basePropertiesList)
-					{
-                        if (property.IsAssigned)
+            }
+            else if (baseProductPropertyType == typeof(ACProperty) && cloneProductPropertyType == typeof(ACProperty))
+            {
+                var basePropertiesList = baseProductProperties.Records.Cast<ACProperty>();
+                var clonePropertiesList = cloneProductProperties.Records.Cast<ACProperty>();
+                foreach (var property in basePropertiesList)
+                {
+                    if (property.IsAssigned)
+                    {
+                        var foundProperty = clonePropertiesList.FirstOrDefault(b => b.PropertyName.IndexOf(property.PropertyName, StringComparison.OrdinalIgnoreCase) >= 0);
+                        if (foundProperty != null)
                         {
-                            var foundProperty = clonePropertiesList.FirstOrDefault(b => b.PropertyName.IndexOf(property.PropertyName, StringComparison.OrdinalIgnoreCase) >= 0);
-                            if (foundProperty != null)
-                            {
-                                matchedProductPropertyIdList.Add(foundProperty.PropertyId);
-                            }
+                            matchedProductPropertyIdList.Add(foundProperty.PropertyId);
                         }
-					}
-				}
-				else if (baseProductPropertyType == typeof(AssetGroup) && cloneProductPropertyType == typeof(AssetGroup))
-				{
-					var basePropertiesList = baseProductProperties.Records.Cast<AssetGroup>();
-					var clonePropertiesList = cloneProductProperties.Records.Cast<AssetGroup>();
-                    foreach (var property in basePropertiesList)
-					{
-                        if (property.IsAssigned)
-                        {
-                            var foundProperty = clonePropertiesList.FirstOrDefault(b => b.Name.IndexOf(property.Name, StringComparison.OrdinalIgnoreCase) >= 0);
-                            if (foundProperty != null)
-                            {
-                                matchedProductPropertyIdList.Add(foundProperty.ID);
-                            }
-                        }
-					}
-				}
-				else if (baseProductPropertyType == typeof(OnSiteProperty) && cloneProductPropertyType == typeof(OnSiteProperty))
-				{
-					var basePropertiesList = baseProductProperties.Records.Cast<AssetGroup>();
-					var clonePropertiesList = cloneProductProperties.Records.Cast<AssetGroup>();
-                    foreach (var property in basePropertiesList)
-					{
-                        if (property.IsAssigned)
-                        {
-                            var foundProperty = clonePropertiesList.FirstOrDefault(b => b.Name.IndexOf(property.Name, StringComparison.OrdinalIgnoreCase) >= 0);
-                            if (foundProperty != null)
-                            {
-                                matchedProductPropertyIdList.Add(foundProperty.ID);
-                            }
-                        }
-					}
-				}
-				else if (baseProductPropertyType == typeof(RumPropertyGroup) && cloneProductPropertyType == typeof(RumPropertyGroup))
-				{
-					var basePropertiesList = baseProductProperties.Records.Cast<RumPropertyGroup>();
-					var clonePropertiesList = cloneProductProperties.Records.Cast<RumPropertyGroup>();
-                    foreach (var property in basePropertiesList)
-					{
-                        if (property.IsAssigned)
-                        {
-                            var foundProperty = clonePropertiesList.FirstOrDefault(b => b.Name.IndexOf(property.Name, StringComparison.OrdinalIgnoreCase) >= 0);
-                            if (foundProperty != null)
-                            {
-                                matchedProductPropertyIdList.Add(foundProperty.Id.ToString());
-                            }
-                        }
-					}
-				}
-				else if (baseProductPropertyType == typeof(ProductProperties) && baseProductPropertyType == typeof(ProductProperties))
-				{
-					var basePropertiesList = baseProductProperties.Records.Cast<ProductProperties>();
-					var clonePropertiesList = cloneProductProperties.Records.Cast<ProductProperties>();
-                    foreach (var property in basePropertiesList)
-					{
-                        if (property.IsAssigned)
-                        {
-                            var foundProperty = clonePropertiesList.FirstOrDefault(b => b.GetName.IndexOf(property.GetName, StringComparison.OrdinalIgnoreCase) >= 0);
-                            if (foundProperty != null)
-                            {
-                                matchedProductPropertyIdList.Add(foundProperty.GetPropertyId);
-                            }
-                        }
-					}
-				}
-				else if (baseProductPropertyType == typeof(Portfolio) && cloneProductPropertyType == typeof(Portfolio))
-				{
-					var basePropertiesList = baseProductProperties.Records.Cast<Portfolio>();
-					var clonePropertiesList = cloneProductProperties.Records.Cast<Portfolio>();
-                    foreach (var property in basePropertiesList)
-					{
-                        if (property.IsAssigned)
-                        {
-                            var foundProperty = clonePropertiesList.FirstOrDefault(b => b.Name.IndexOf(property.Name, StringComparison.OrdinalIgnoreCase) >= 0);
-                            if (foundProperty != null)
-                            {
-                                matchedProductPropertyIdList.Add(foundProperty.ID);
-                            }
-                        }
-					}
-				}
-			}
+                    }
+                }
+            }
+            else if (baseProductPropertyType == typeof(AssetGroup) && cloneProductPropertyType == typeof(AssetGroup))
+            {
+                var basePropertiesList = baseProductProperties.Records.Cast<AssetGroup>();
+                var clonePropertiesList = cloneProductProperties.Records.Cast<AssetGroup>();
+                foreach (var property in basePropertiesList)
+                {
+                    if (!property.IsAssigned) continue;
 
-			return matchedProductPropertyIdList;
+                    var foundProperty = clonePropertiesList.FirstOrDefault(b => b.Name.IndexOf(property.Name, StringComparison.OrdinalIgnoreCase) >= 0);
+                    if (foundProperty != null)
+                    {
+                        matchedProductPropertyIdList.Add(foundProperty.ID);
+                    }
+                }
+            }
+            else if (baseProductPropertyType == typeof(OnSiteProperty) && cloneProductPropertyType == typeof(OnSiteProperty))
+            {
+                var basePropertiesList = baseProductProperties.Records.Cast<AssetGroup>();
+                var clonePropertiesList = cloneProductProperties.Records.Cast<AssetGroup>();
+                foreach (var property in basePropertiesList)
+                {
+                    if (!property.IsAssigned) continue;
+
+                    var foundProperty = clonePropertiesList.FirstOrDefault(b => b.Name.IndexOf(property.Name, StringComparison.OrdinalIgnoreCase) >= 0);
+                    if (foundProperty != null)
+                    {
+                        matchedProductPropertyIdList.Add(foundProperty.ID);
+                    }
+                }
+            }
+            else if (baseProductPropertyType == typeof(RumPropertyGroup) && cloneProductPropertyType == typeof(RumPropertyGroup))
+            {
+                var basePropertiesList = baseProductProperties.Records.Cast<RumPropertyGroup>();
+                var clonePropertiesList = cloneProductProperties.Records.Cast<RumPropertyGroup>();
+                foreach (var property in basePropertiesList)
+                {
+                    if (!property.IsAssigned) continue;
+
+                    var foundProperty = clonePropertiesList.FirstOrDefault(b => b.Name.IndexOf(property.Name, StringComparison.OrdinalIgnoreCase) >= 0);
+                    if (foundProperty != null)
+                    {
+                        matchedProductPropertyIdList.Add(foundProperty.Id.ToString());
+                    }
+                }
+            }
+            else if (baseProductPropertyType == typeof(ProductProperties) && baseProductPropertyType == typeof(ProductProperties))
+            {
+                var basePropertiesList = baseProductProperties.Records.Cast<ProductProperties>();
+                var clonePropertiesList = cloneProductProperties.Records.Cast<ProductProperties>();
+                foreach (var property in basePropertiesList)
+                {
+                    if (!property.IsAssigned) continue;
+
+                    var foundProperty = clonePropertiesList.FirstOrDefault(b => b.GetName.IndexOf(property.GetName, StringComparison.OrdinalIgnoreCase) >= 0);
+                    if (foundProperty != null)
+                    {
+                        matchedProductPropertyIdList.Add(foundProperty.GetPropertyId);
+                    }
+                }
+            }
+            else if (baseProductPropertyType == typeof(Portfolio) && cloneProductPropertyType == typeof(Portfolio))
+            {
+                var basePropertiesList = baseProductProperties.Records.Cast<Portfolio>();
+                var clonePropertiesList = cloneProductProperties.Records.Cast<Portfolio>();
+                foreach (var property in basePropertiesList)
+                {
+                    if (!property.IsAssigned) continue;
+
+                    var foundProperty = clonePropertiesList.FirstOrDefault(b => b.Name.IndexOf(property.Name, StringComparison.OrdinalIgnoreCase) >= 0);
+                    if (foundProperty != null)
+                    {
+                        matchedProductPropertyIdList.Add(foundProperty.ID);
+                    }
+                }
+            }
+
+            return matchedProductPropertyIdList;
 		}
 
  
@@ -596,7 +591,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             RequestUri = new Uri(httpClient.BaseAddress.ToString()),
                         };
 
-                        Dictionary<string, object> logData = new Dictionary<string, object>() { { "clonedUsers", clonedUsers } };
+                        var logData = new Dictionary<string, object>() { { "clonedUsers", clonedUsers } };
                         WriteToLog(LogEventLevel.Information, "Users to be posted to HOTS", logData);
 
                         var response = httpClient.SendAsync(request).Result;
@@ -614,7 +609,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
             catch (Exception ex)
             {
-				Dictionary<string, object> logData = new Dictionary<string, object>() { { "Exception", ex.ToString() } };
+				var logData = new Dictionary<string, object>() { { "Exception", ex.ToString() } };
 				WriteToLog(LogEventLevel.Error, "PostToHOTS", logData);
             }
         }
