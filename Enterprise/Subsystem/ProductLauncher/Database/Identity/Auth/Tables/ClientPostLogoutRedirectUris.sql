@@ -1,8 +1,13 @@
 ﻿CREATE TABLE [Auth].[ClientPostLogoutRedirectUris] (
-    [ClientPostLogoutRedirectUriId]        INT             IDENTITY (1, 1) NOT NULL,
-    [ClientId] INT             NOT NULL,
-    [Uri]       NVARCHAR (2000) NOT NULL,   
-    CONSTRAINT [PK_dbo.ClientPostLogoutRedirectUris] PRIMARY KEY CLUSTERED ([ClientPostLogoutRedirectUriId] ASC),
-    CONSTRAINT [FK_dbo.ClientPostLogoutRedirectUris_dbo.Clients_Client_Id] FOREIGN KEY ([ClientId]) REFERENCES [Auth].[Clients] ([ClientId]) ON DELETE CASCADE
+    [Id]                    INT            IDENTITY (1, 1) NOT NULL,
+    [PostLogoutRedirectUri] NVARCHAR (400) NOT NULL,
+    [ClientId]              INT            NOT NULL,   
+    CONSTRAINT [PK_ClientPostLogoutRedirectUris] PRIMARY KEY CLUSTERED ([Id] ASC),
+
+    CONSTRAINT [FK_dbo.ClientPostLogoutRedirectUris_dbo.Clients_Id] FOREIGN KEY ([ClientId]) REFERENCES [Auth].[Clients] ([Id]) ON DELETE CASCADE
 );
 
+GO
+
+CREATE UNIQUE NONCLUSTERED INDEX [IX_ClientClaims_ClientId_Type_Value] ON [Auth].[ClientClaims] ([ClientId], [Type], [Value]) ON [PRIMARY]
+GO

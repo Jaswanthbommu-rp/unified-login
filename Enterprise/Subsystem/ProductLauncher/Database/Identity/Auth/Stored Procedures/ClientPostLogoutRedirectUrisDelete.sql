@@ -9,7 +9,7 @@ BEGIN
 	SET NOCOUNT OFF;
 	DELETE FROM [Auth].[ClientPostLogoutRedirectUris] 
 	WHERE 
-		(([ClientPostLogoutRedirectUriId] = @Original_ClientPostLogoutRedirectUriId) 
+		(([Id] = @Original_ClientPostLogoutRedirectUriId) 
 		AND ([ClientId] = @Original_ClientId) 
-		AND ([Uri] = @Original_Uri))
+		AND ([PostLogoutRedirectUri] = @Original_Uri))
 END

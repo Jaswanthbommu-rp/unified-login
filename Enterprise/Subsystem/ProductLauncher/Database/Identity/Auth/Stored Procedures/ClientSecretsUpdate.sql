@@ -27,7 +27,7 @@ BEGIN
 		, [Description] = @Description
 		, [Expiration] = @Expiration 
 	WHERE 
-		(([ClientSecretId] = @Original_ClientSecretId) 
+		(([Id] = @Original_ClientSecretId) 
 		AND ([ClientId] = @Original_ClientId) 
 		AND ([Value] = @Original_Value) 
 		AND ((@IsNull_Type = 1 AND [Type] IS NULL) OR ([Type] = @Original_Type)) 
@@ -35,7 +35,7 @@ BEGIN
 		AND ((@IsNull_Expiration = 1 AND [Expiration] IS NULL) OR ([Expiration] = @Original_Expiration)));
 	
 	SELECT
-		ClientSecretId
+		Id
 		, ClientId
 		, Value
 		, Type
@@ -43,5 +43,5 @@ BEGIN
 		, Expiration 
 	FROM Auth.ClientSecrets 
 	WHERE 
-		(ClientSecretId = @ClientSecretId)
+		(Id = @ClientSecretId)
 END

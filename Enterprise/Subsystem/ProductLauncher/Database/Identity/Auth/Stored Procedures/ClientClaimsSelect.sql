@@ -2,7 +2,7 @@
 AS
 BEGIN
 	SET NOCOUNT ON;
-	SELECT      ClientClaimsId as Id
+	SELECT       Id
 				,ClientId
 				,Type
 				,Value 

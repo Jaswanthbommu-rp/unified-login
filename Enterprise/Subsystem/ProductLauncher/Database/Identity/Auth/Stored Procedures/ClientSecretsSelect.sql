@@ -3,7 +3,7 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 	SELECT        
-		ClientSecretId as Id
+		  Id
 		, ClientId
 		, Value
 		, Type

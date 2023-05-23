@@ -14,10 +14,10 @@ BEGIN
 		, @Scope);
 	
 	SELECT 
-		ClientScopeId as Id
+		  Id
 		, ClientId
 		, Scope 
 	FROM Auth.ClientScopes 
 	WHERE 
-		(ClientScopeId = SCOPE_IDENTITY())
+		(Id = SCOPE_IDENTITY())
 END

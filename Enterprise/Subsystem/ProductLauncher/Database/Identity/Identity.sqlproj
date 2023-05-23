@@ -1108,7 +1108,7 @@
     <Build Include="Hots\Tables\PropertyRelationship.sql" />
     <Build Include="Hots\Stored Procedures\GetBaseCompanyRealpageId.sql" />
     <Build Include="Hots\Stored Procedures\ListHotsBaseOrganizationUsers.sql" />
-	<Build Include="Hots\Stored Procedures\UpdateHotsCloneUserPassword.sql" />
+    <Build Include="Hots\Stored Procedures\UpdateHotsCloneUserPassword.sql" />
     <Build Include="Enterprise\Tables\NavigationMenu.sql" />
     <Build Include="Enterprise\Tables\NavigationMenuRights.sql" />
     <Build Include="Enterprise\Stored Procedures\GetNavigationMenu.sql" />
@@ -1287,6 +1287,8 @@
     <Build Include="RoleRightsManagement\Tables\RoleOrganizationType.sql" />
     <Build Include="Enterprise\Stored Procedures\GetUserCountByStatusForCompany.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\AddingSettingsForAdminPortal.sql" />
+    <Build Include="Auth\Stored Procedures\SearchClientGrantType.sql" />
+    <Build Include="Auth\Tables\ClientGrantTypes.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

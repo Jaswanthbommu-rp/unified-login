@@ -8,16 +8,16 @@ BEGIN
 	SET NOCOUNT OFF;
 	INSERT INTO [Auth].[ClientPostLogoutRedirectUris] 
 		([ClientId]
-		, [Uri]) 
+		, [PostLogoutRedirectUri]) 
 	VALUES 
 		(@ClientId
 		, @Uri);
 	
 	SELECT 
-		ClientPostLogoutRedirectUriId as Id
+		  Id
 		, ClientId
-		, Uri 
+		, PostLogoutRedirectUri 
 	FROM 
 		Auth.ClientPostLogoutRedirectUris 
-	WHERE (ClientPostLogoutRedirectUriId = SCOPE_IDENTITY())
+	WHERE (Id = SCOPE_IDENTITY())
 END

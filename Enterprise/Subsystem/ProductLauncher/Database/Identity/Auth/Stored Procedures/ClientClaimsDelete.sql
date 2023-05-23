@@ -10,7 +10,7 @@ BEGIN
 	SET NOCOUNT OFF;
 	DELETE FROM [Auth].[ClientClaims] 
 	WHERE 
-		(([ClientClaimsId] = @Original_ClientClaimsId) 
+		(([Id] = @Original_ClientClaimsId) 
 		AND 
 		([ClientId] = @Original_ClientId) 
 		AND ([Type] = @Original_Type) 

@@ -17,12 +17,12 @@ BEGIN
 		, @Value);
 	
 	SELECT 
-		ClientClaimsId as Id
+		  Id
 		, ClientId
 		, Type
 		, Value 
 	FROM 
 		Auth.ClientClaims 
 	WHERE 
-		(ClientClaimsId = SCOPE_IDENTITY())
+		(Id = SCOPE_IDENTITY())
 END

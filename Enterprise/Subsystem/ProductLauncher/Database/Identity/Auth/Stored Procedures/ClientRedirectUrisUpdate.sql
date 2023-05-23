@@ -13,16 +13,16 @@ BEGIN
 	UPDATE [Auth].[ClientRedirectUris]
 		SET
 			[ClientId] = @ClientId
-			,[Uri] = @Uri
+			,[RedirectUri] = @Uri
 	WHERE
-		(([ClientRedirectUriId] = @Original_ClientRedirectUriId) AND ([ClientId] = @Original_ClientId) AND ([Uri] = @Original_Uri));
+		(([Id] = @Original_ClientRedirectUriId) AND ([ClientId] = @Original_ClientId) AND ([RedirectUri] = @Original_Uri));
 
 	SELECT 
-		ClientRedirectUriId as Id
+		  Id
 		, ClientId
-		, Uri 
+		, RedirectUri
 	FROM [Auth].[ClientRedirectUris] 
 	WHERE 
-		(ClientRedirectUriId = @ClientRedirectUriId)
+		(Id = @ClientRedirectUriId)
 
 END

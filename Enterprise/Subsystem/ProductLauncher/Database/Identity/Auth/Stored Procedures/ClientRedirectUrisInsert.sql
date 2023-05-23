@@ -8,16 +8,16 @@ BEGIN
 	SET NOCOUNT OFF;
 	INSERT INTO [Auth].[ClientRedirectUris]
            ([ClientId]
-           ,[Uri])
+           ,[RedirectUri])
      VALUES
            (@ClientId
            ,@Uri)
 
 	SELECT
-		ClientRedirectUriId as Id
+		  Id
 		, ClientId
-		, Uri 
-	FROM [Auth].[ClientRedirectUris] WHERE (ClientRedirectUriId = SCOPE_IDENTITY())
+		, RedirectUri
+	FROM [Auth].[ClientRedirectUris] WHERE (Id = SCOPE_IDENTITY())
 
 END
 

@@ -1278,4 +1278,11 @@
     <Property Name="ParentElementType" Value="SqlTable" />
     <Property Name="NewName" Value="BatchProcessorGroupActivityLogged" />
   </Operation>
+  <Operation Name="Rename Refactor" Key="160db688-3738-4e14-a5c9-57abe8c647e2" ChangeDateTime="05/23/2023 16:13:23">
+    <Property Name="ElementName" Value="[Auth].[ClientPostLogoutRedirectUris].[IX_ClientPostLogoutRedirectUris_Column]" />
+    <Property Name="ElementType" Value="SqlIndex" />
+    <Property Name="ParentElementName" Value="[Auth].[ClientPostLogoutRedirectUris]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="[IX_ClientClaims_ClientId_Type_Value]" />
+  </Operation>
 </Operations>

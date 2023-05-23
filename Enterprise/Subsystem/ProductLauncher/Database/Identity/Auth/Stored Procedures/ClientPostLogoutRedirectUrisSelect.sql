@@ -3,9 +3,9 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 	SELECT        
-		ClientPostLogoutRedirectUriId as Id
+		  Id
 		, ClientId
-		, Uri
+		, PostLogoutRedirectUri
 	FROM
 	Auth.ClientPostLogoutRedirectUris
 END

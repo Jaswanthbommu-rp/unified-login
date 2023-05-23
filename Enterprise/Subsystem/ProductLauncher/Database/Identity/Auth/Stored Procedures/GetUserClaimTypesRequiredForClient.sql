@@ -10,7 +10,7 @@ BEGIN
 		  ,CL.SAMLAttributeName
 		  ,CL.ProductId 
 	FROM Auth.Clients C
-	INNER JOIN Auth.ClientUserClaim AS cc ON C.ClientId = CC.ClientId
+	INNER JOIN Auth.ClientUserClaim AS cc ON C.Id = CC.ClientId
 	INNER JOIN Auth.Claim CL ON CL.ClaimId = CC.ClaimId
-	WHERE C.ClientCode= @ClientName
+	WHERE C.ClientName= @ClientName
 END

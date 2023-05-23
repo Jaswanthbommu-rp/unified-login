@@ -18,19 +18,19 @@ BEGIN
 			, [Type] = @Type
 			, [Value] = @Value 
 		WHERE 
-			(([ClientClaimsId] = @Original_ClientClaimsId) 
+			(([Id] = @Original_ClientClaimsId) 
 			AND 
 			([ClientId] = @Original_ClientId) 
 			AND ([Type] = @Original_Type) 
 			AND ([Value] = @Original_Value))
 	
 	SELECT 
-		ClientClaimsId as Id
+		  Id
 		, ClientId
 		, Type
 		, Value 
 	FROM 
 		Auth.ClientClaims 
 	WHERE 
-		(ClientClaimsId = @ClientClaimsId)
+		(Id = @ClientClaimsId)
 END

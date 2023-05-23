@@ -3,8 +3,9 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 	SELECT        
-		ClientScopeId as Id
+		  Id
 		, ClientId
 		, Scope
-	FROM            Auth.ClientScopes
+	FROM            
+		Auth.ClientScopes
 END

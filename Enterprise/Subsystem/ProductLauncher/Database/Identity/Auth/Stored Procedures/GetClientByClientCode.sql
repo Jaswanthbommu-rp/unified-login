@@ -3,6 +3,6 @@
 AS
 BEGIN
 	SET NOCOUNT ON;
-	SELECT * FROM Auth.Clients WHERE ClientCode = @ClientCode
+	SELECT * FROM Auth.Clients WHERE ClientId = @ClientCode
 END
 GO

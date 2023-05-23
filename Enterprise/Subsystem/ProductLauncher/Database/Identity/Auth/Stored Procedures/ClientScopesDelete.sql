@@ -9,7 +9,7 @@ BEGIN
 	SET NOCOUNT OFF;
 	DELETE FROM [Auth].[ClientScopes] 
 	WHERE 
-		(([ClientScopeId] = @Original_ClientScopeId) 
+		(([Id] = @Original_ClientScopeId) 
 		AND 
 		([ClientId] = @Original_ClientId) 
 		AND 

@@ -10,7 +10,7 @@ BEGIN
 	SET NOCOUNT OFF;
 	DELETE FROM [Auth].[ClientRedirectUris]
 	WHERE
-		(([ClientRedirectUriId] = @Original_ClientRedirectUriId) 
+		(([Id] = @Original_ClientRedirectUriId) 
 		AND ([ClientId] = @Original_ClientId) 
-		AND ((@IsNull_Uri = 1 AND [Uri] IS NULL) OR ([Uri] = @Original_Uri)))
+		AND ((@IsNull_Uri = 1 AND [RedirectUri] IS NULL) OR ([RedirectUri] = @Original_Uri)))
 END

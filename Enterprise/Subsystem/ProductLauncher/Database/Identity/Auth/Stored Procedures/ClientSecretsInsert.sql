@@ -23,7 +23,7 @@ BEGIN
 		, @Expiration);
 	
 	SELECT 
-		ClientSecretId as Id
+		 Id
 		, ClientId
 		, Value
 		, Type
@@ -31,5 +31,5 @@ BEGIN
 		, Expiration 
 	FROM Auth.ClientSecrets 
 	WHERE 
-		(ClientSecretId = SCOPE_IDENTITY())
+		(Id = SCOPE_IDENTITY())
 END

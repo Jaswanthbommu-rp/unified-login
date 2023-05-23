@@ -15,17 +15,17 @@ BEGIN
 		[ClientId] = @ClientId
 		, [Scope] = @Scope 
 	WHERE 
-		(([ClientScopeId] = @Original_ClientScopeId) 
+		(([Id] = @Original_ClientScopeId) 
 		AND 
 		([ClientId] = @Original_ClientId) 
 		AND
 		([Scope] = @Original_Scope));
 	
 	SELECT 
-		ClientScopeId as Id
+		   Id
 		, ClientId
 		, Scope 
 	FROM Auth.ClientScopes 
 	WHERE 
-		(ClientScopeId = @ClientScopeId)
+		(Id = @ClientScopeId)
 END

@@ -13,16 +13,17 @@ BEGIN
 	UPDATE [Auth].[ClientPostLogoutRedirectUris] 
 	SET 
 		[ClientId] = @ClientId
-		, [Uri] = @Uri 
+		, [PostLogoutRedirectUri] = @Uri 
 	WHERE 
-		(([ClientPostLogoutRedirectUriId] = @Original_ClientPostLogoutRedirectUriId) 
+		(([Id] = @Original_ClientPostLogoutRedirectUriId) 
 		AND ([ClientId] = @Original_ClientId) 
-		AND ([Uri] = @Original_Uri));
+		AND ([PostLogoutRedirectUri] = @Original_Uri));
 	
-	SELECT ClientPostLogoutRedirectUriId as Id
+	SELECT 
+	      Id
 		, ClientId
-		, Uri 
+		, PostLogoutRedirectUri
 	FROM Auth.ClientPostLogoutRedirectUris 
 	WHERE 
-		(ClientPostLogoutRedirectUriId = @ClientPostLogoutRedirectUriId)
+		(Id = @ClientPostLogoutRedirectUriId)
 END

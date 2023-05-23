@@ -15,7 +15,7 @@ BEGIN
 	SET NOCOUNT OFF;
 	DELETE FROM [Auth].[ClientSecrets] 
 	WHERE 
-		(([ClientSecretId] = @Original_ClientSecretId) 
+		(([Id] = @Original_ClientSecretId) 
 		AND ([ClientId] = @Original_ClientId) 
 		AND ([Value] = @Original_Value) 
 		AND ((@IsNull_Type = 1 AND [Type] IS NULL) OR ([Type] = @Original_Type)) 

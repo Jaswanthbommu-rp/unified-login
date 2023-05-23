@@ -1,4 +1,5 @@
-﻿CREATE PROCEDURE [Auth].[ClientsSelect]
+﻿---DEAD
+CREATE PROCEDURE [Auth].[ClientsSelect]
 (
 	@ClientId INT = NULL
 )

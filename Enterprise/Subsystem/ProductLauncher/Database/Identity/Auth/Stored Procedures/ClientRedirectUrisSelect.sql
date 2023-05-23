@@ -3,9 +3,9 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 	SELECT 
-		ClientRedirectUriId as Id
+		  Id
 		, ClientId
-		, Uri 
+		, RedirectUri
 	FROM 
 		[Auth].[ClientRedirectUris]
 
