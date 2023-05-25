@@ -1469,20 +1469,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             foundProperty = true;
                         }
                     });
-                    if (!foundProperty && upfmPropertyDetails != null)
-                    {
-                        var missingProductProperty = upfmPropertyDetails.FirstOrDefault(o => o.InstanceId.ToString().Equals(udmProperty.PropertyInstanceSourceId, StringComparison.OrdinalIgnoreCase));
-                        if (missingProductProperty != null)
-                        {
-                            propertyAuditResult.Add(new PropertyAudit()
-                            {
-                                ProductInstanceId = udmProperty.TranslatedPropertyInstances[0].PropertyInstanceSourceId,
-                                UPFMName = missingProductProperty.Name,
-                                UPFMInstanceId = udmProperty.PropertyInstanceSourceId,
-                                Status = "No Product"
-                            });
-                        }
-                    }
                 });
                 propertyAuditResult = propertyAuditResult.OrderBy(p => p.Name).ThenBy(p => p.ContractedName).ToList();
             }

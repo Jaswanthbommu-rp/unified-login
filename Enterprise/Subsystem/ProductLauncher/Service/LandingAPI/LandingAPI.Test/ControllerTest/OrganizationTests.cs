@@ -2493,18 +2493,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             var responseResult = response.Content.ReadAsAsync<ObjectListOutput<PropertyAudit, IErrorData>>().Result;
 
-            var missingProductResponse = responseResult.list.FirstOrDefault(p => p.UPFMInstanceId == "a5192995-aaaa-bbbb-8df2-f30f1b8dc752");
             var validProductResponse = responseResult.list.FirstOrDefault(p => p.ProductInstanceId == "1234567");
 
             //Assert
-            Assert.True(missingProductResponse != null
-                        && missingProductResponse.Status.Equals("No Product", StringComparison.OrdinalIgnoreCase)
-                        && string.IsNullOrEmpty(missingProductResponse.Name)
-                        && string.IsNullOrEmpty(missingProductResponse.Domain)
-                        && missingProductResponse.UPFMInstanceId.Equals("a5192995-aaaa-bbbb-8df2-f30f1b8dc752", StringComparison.OrdinalIgnoreCase)
-                        && missingProductResponse.UPFMName.Equals("test property 1", StringComparison.OrdinalIgnoreCase)
-                        && response.StatusCode.Equals(HttpStatusCode.OK));
-
             Assert.True(validProductResponse != null
                         && validProductResponse.Status.Equals("OK", StringComparison.OrdinalIgnoreCase)
                         && validProductResponse.Name.Equals("OneSite property 1", StringComparison.OrdinalIgnoreCase)
