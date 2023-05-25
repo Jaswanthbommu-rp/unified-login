@@ -861,7 +861,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             WriteToDiagnosticLog(
                 $"{nameof(StandardV1ProductIntegration)}.CreateUser - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method.");
-
+            //if(contactcentermaintenance)
+            //var baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.PutUserEndpoint);
             var baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.PostUserEndpoint);
 
             WriteToDiagnosticLog(

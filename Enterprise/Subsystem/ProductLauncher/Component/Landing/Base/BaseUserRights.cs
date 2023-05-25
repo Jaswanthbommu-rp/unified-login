@@ -23,7 +23,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
         /// <returns></returns>
         public static List<string> GetUserRightsBy(ClaimsPrincipal userPrincipal, DefaultUserClaim userClaim)
         {
-            List<string> userRights = new List<string>();
+            List<string> userRights = new List<string>();// List<Right>
 
             // get the users rights and add them to the claims
             var identity = (ClaimsIdentity)userPrincipal.Identity;
@@ -38,7 +38,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
             {
                 int roleId;
                 bool converted = int.TryParse(item.Value, out roleId);
-                if (converted) 
+                if (converted)
                 {
                     foreach (var companyRole in companyRoleList)
                     {
@@ -53,10 +53,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
 
             var distinctUserRights = userRights.Distinct().OrderBy(x => x).ToList();
 
-            identity.AddClaims(distinctUserRights.Select(a => new Claim("right", a)).ToList());
+            identity.AddClaims(distinctUserRights.Select(a => new Claim("right", a)).ToList());//removed
 
             if (userClaim.ImpersonatedBy != Guid.Empty)
             {
+                //delete rights from userclaim that has persist flag as false.
+
                 // get the impersonators details
                 ManagePersona mp = new ManagePersona();
                 Persona impersonateUserPersona = mp.GetActivePersonaWithoutRights(userClaim.ImpersonatedBy); // safe to use because we just came from it
@@ -91,7 +93,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
                 // RP Employee-Get ADGroup Rights for the persona
                 UserRoleRightRepository urr = new UserRoleRightRepository();
                 List<Right> adGroupRights = urr.GetADGroupRightsByPersonaId(rpEmployeePersona.PersonaId)?.ToList();
-                if(adGroupRights != null && adGroupRights.Count > 0)
+                if (adGroupRights != null && adGroupRights.Count > 0)
                 {
                     List<string> adRights = adGroupRights.Select(x => x.RightNickName).ToList();
                     List<Right> persistRightsList = GetPersistRights();
