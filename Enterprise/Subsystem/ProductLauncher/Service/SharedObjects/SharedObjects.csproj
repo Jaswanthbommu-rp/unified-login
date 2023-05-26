@@ -514,6 +514,7 @@
     <Compile Include="Product\MarketingCenter\IMarketingCenterUserStatus.cs" />
     <Compile Include="Product\MarketingCenter\MarketingCenterRoleAndPropertyList.cs" />
     <Compile Include="Product\MarketingCenter\MarketingCenterUserStatus.cs" />
+    <Compile Include="Product\MarketingCenter\Right.cs" />
     <Compile Include="Product\MarketingCenter\RolesRightsAccessRight.cs" />
     <Compile Include="Product\Migration\AOMigrateResponse.cs" />
     <Compile Include="Product\Migration\AssetOptimizationMigrationUser.cs" />

@@ -24,6 +24,7 @@ using RP.Enterprise.Foundation.DataAccess.Component;
 using IC = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using MC = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.MarketingCenter;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ops;
+using Right = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.MarketingCenter.Right;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -597,7 +598,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             ListResponse response = new ListResponse();
             Dictionary<string, object> logData = new Dictionary<string, object>();
 
-            RightGroup rightGroup = new RightGroup();
+            IList<Right> rightGroup = new List<Right>();
 
             try
             {
@@ -606,6 +607,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 WriteToDiagnosticLog($"GetRights - Found blue book company source id {marketingCompanyId}");
                 var url = _productUrl + $"/v2/company/{marketingCompanyId}/rights" ;
+				url = "http://api.pv3.myleasestar.com/v2/company/30032/rights";
                 logData = new Dictionary<string, object>();
                 logData.Add("url", url);
                 WriteToDiagnosticLog("GetRightsDetails - Getting rights.", logData);
@@ -615,25 +617,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (apiResponse.IsSuccessStatusCode)
                 {
                     var jsonContent = apiResponse.Content.ReadAsStringAsync().Result;
-                    rightGroup = JsonConvert.DeserializeObject<RightGroup>(jsonContent);
+                    rightGroup = JsonConvert.DeserializeObject<List<Right>>(jsonContent);
 
                     logData = new Dictionary<string, object>();
                     logData.Add("rightGroup", rightGroup);
                     WriteToDiagnosticLog("GetRightsDetails - Got rights. ", logData);
 
-                    if (rightGroup == null) { rightGroup = new RightGroup(); }
-                    List<MainGroup> list = new List<MainGroup>();
-                    //list = rightGroup.ToRightsFormatForClient();
-                    //list = EnableComplianceRights(list);
-
-                    logData = new Dictionary<string, object>();
-                    logData.Add("list", list);
+                    if (rightGroup == null) { rightGroup = new List<Right>(); }
                     WriteToDiagnosticLog("GetRightsDetails - Returning rights. ", logData);
                     response = new ListResponse()
                     {
-                        Records = list.Cast<object>().ToList(),
-                        TotalRows = list.Count,
-                        RowsPerPage = list.Count,
+                        Records = rightGroup.Cast<object>().ToList(),
+                        TotalRows = rightGroup.Count,
+                        RowsPerPage = rightGroup.Count,
                         TotalPages = 1,
                         ErrorReason = ""
                     };
