@@ -695,6 +695,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         profiledetail.userLogin.Status = UserUiStatusType.Active;
 
                         profiledetail.userLogin = _manageUserLogin.GetUserLogin((UserLogin)profiledetail.userLogin, _userClaim.OrganizationPartyId);
+
+                        
+                        IManageTelecommunicationNumber telecommunicationNumberLogic = new ManageTelecommunicationNumber();
+                        var phoneLists  = telecommunicationNumberLogic.ListTelecommunicationNumberForPerson(profiledetail.RealPageId, null);
+                        foreach (var item in phoneLists.ToList().Where(x=>x.IsDefault == true))
+                        {
+                            profiledetail.PhoneNumber = item.PhoneNumber;
+                            profiledetail.PhoneNumberType = item.contactMechanismUsageType.Name;
+                        }
+
                         return profiledetail;
                     },
                     new
