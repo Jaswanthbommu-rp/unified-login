@@ -113,7 +113,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
-        public HotsUser CreateUser(DefaultUserClaim cloneCompanyAdminUserClaim, long partyId, BaseLineCustomerCompanyUser user, IProfileDetail baseUserProfile, List<ProductBatch> productBatch, UserLogin userLogin)
+        public HotsUser CreateUser(DefaultUserClaim cloneCompanyAdminUserClaim, long partyId, BaseLineCustomerCompanyUser user, IProfileDetail baseUserProfile, List<ProductBatch> productBatch)
         {
             HotsUser hotsUser = new HotsUser();
             string loginName;
@@ -142,8 +142,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 EmployeeId = baseUserProfile.EmployeeId
             };
 
-
-
             using (var repository = GetRepository())
             {
                 repository.UnitOfWork.BeginTransaction();
@@ -165,17 +163,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     // get persona id & user id
                     var newUserPersonaId = repository.GetOne<long>(StoredProcNameConstants.SP_GetActivePersona, new { RealPageId = newUserRealPageId });
                     var userId = repository.GetOne<long>(StoredProcNameConstants.SP_GetUserLoginOnly, new { RealPageId = newUserRealPageId });
-
-                    if (!string.IsNullOrEmpty(userLogin.Password) && !string.IsNullOrEmpty(userLogin.PasswordSalt) && !string.IsNullOrEmpty(userLogin.PasswordHash))
-                    {
-                        //
-                        var updatePassword = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateHotsCloneUserPassword, new { UserId = userId, PasswordHash = userLogin.PasswordHash, PasswordSalt = userLogin.PasswordSalt });
-                        if (updatePassword.Id == userId)
-                        {
-                            hotsUser.ClonePassword = userLogin.Password;
-                        }
-                    }
-
                     bool superUser = false;
                     superUser = baseUserProfile.UserTypeId == 402;
                     // Add products
