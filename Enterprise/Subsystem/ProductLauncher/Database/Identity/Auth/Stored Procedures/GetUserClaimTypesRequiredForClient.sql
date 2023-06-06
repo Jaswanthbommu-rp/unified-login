@@ -12,5 +12,5 @@ BEGIN
 	FROM Auth.Clients C
 	INNER JOIN Auth.ClientUserClaim AS cc ON C.Id = CC.ClientId
 	INNER JOIN Auth.Claim CL ON CL.ClaimId = CC.ClaimId
-	WHERE C.ClientName= @ClientName
+	WHERE C.ClientId= @ClientName
 END

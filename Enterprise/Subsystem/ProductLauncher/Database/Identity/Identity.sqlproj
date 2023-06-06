@@ -680,9 +680,7 @@
     <Build Include="Enterprise\Stored Procedures\GetUserDetails_Ver01.sql" />
     <Build Include="Enterprise\Stored Procedures\ListOrganizationByRealPageId_Ver01.sql" />
     <Build Include="Enterprise\Views\VW_DataImportMapping.sql" />
-    <Build Include="Auth\Stored Procedures\ClientsSelect.sql" />
     <Build Include="Auth\Stored Procedures\ClientsInsert.sql" />
-    <Build Include="Auth\Stored Procedures\ClientsUpdate.sql" />
     <Build Include="Auth\Stored Procedures\ClientRedirectUrisInsert.sql" />
     <Build Include="Auth\Stored Procedures\ClientRedirectUrisUpdate.sql" />
     <Build Include="Auth\Stored Procedures\ClientRedirectUrisDelete.sql" />
@@ -715,7 +713,6 @@
     <Build Include="Auth\Stored Procedures\ScopeClaimsSelect.sql" />
     <Build Include="Auth\Stored Procedures\ScopeClaimsUpdate.sql" />
     <Build Include="Auth\Stored Procedures\ScopeClaimsDelete.sql" />
-    <Build Include="Auth\Stored Procedures\ClientsDelete.sql" />
     <Build Include="Ident\Stored Procedures\CreateUser_Ver01.sql" />
     <Build Include="Enterprise\Tables\RoleAttribute.sql" />
     <Build Include="Enterprise\Tables\RoleAttributeType.sql" />
@@ -995,7 +992,7 @@
     <Build Include="Auth\Stored Procedures\SearchClientSecret.sql" />
     <Build Include="Auth\Stored Procedures\SearchScope.sql" />
     <Build Include="Auth\Stored Procedures\SearchScopeClaim.sql" />
-    <Build Include="Auth\Stored Procedures\SearchScopeSecret.sql" />
+    <Build Include="Auth\Stored Procedures\SearchApiResourceSecret.sql" />
     <Build Include="Enterprise\Stored Procedures\SearchCompanyType.sql" />
     <Build Include="Ident\Stored Procedures\GetActivityAttemptExceeds_ver2.sql" />
     <Build Include="Ident\Stored Procedures\GetUserLoginByUserId.sql" />
@@ -1289,6 +1286,26 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\AddingSettingsForAdminPortal.sql" />
     <Build Include="Auth\Stored Procedures\SearchClientGrantType.sql" />
     <Build Include="Auth\Tables\ClientGrantTypes.sql" />
+    <Build Include="Auth\Tables\ApiResourceClaims.sql" />
+    <Build Include="Auth\Tables\ApiResources.sql" />
+    <Build Include="Auth\Tables\ApiResourceProperties.sql" />
+    <Build Include="Auth\Tables\ApiResourceScopes.sql" />
+    <Build Include="Auth\Tables\ApiResourceSecrets.sql" />
+    <Build Include="Auth\Tables\ApiScopeClaims.sql" />
+    <Build Include="Auth\Tables\ApiScopeProperties.sql" />
+    <Build Include="Auth\Tables\ApiScopes.sql" />
+    <Build Include="Auth\Tables\ClientIdPRestrictions.sql" />
+    <Build Include="Auth\Tables\IdentityResources.sql" />
+    <Build Include="Auth\Tables\IdentityResourceClaims.sql" />
+    <Build Include="Auth\Tables\IdentityResourceProperties.sql" />
+    <Build Include="Auth\Tables\ClientProperties.sql" />
+    <Build Include="Auth\Stored Procedures\SearchApiResources.sql" />
+    <Build Include="Auth\Stored Procedures\SearchApiScopes.sql" />
+    <Build Include="Auth\Stored Procedures\SearchIdentityResources.sql" />
+    <Build Include="Auth\Stored Procedures\SearchApiResourceScopes.sql" />
+    <Build Include="Auth\Stored Procedures\SearchApiScopeClaims.sql" />
+    <Build Include="Auth\Stored Procedures\SearchIdentityResourceClaims.sql" />
+    <Build Include="Auth\Stored Procedures\SearchApiResourceClaims.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
