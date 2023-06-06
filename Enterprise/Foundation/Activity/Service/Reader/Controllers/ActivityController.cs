@@ -1,10 +1,13 @@
 ﻿using Aspose.Cells;
+using Newtonsoft.Json.Linq;
 using RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Helper;
 using RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Models;
 using RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Repository;
+using RP.Enterprise.Foundation.Activity.Service.Logging.Shared.Models;
 using Serilog;
 using Swashbuckle.Swagger.Annotations;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -144,7 +147,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
                 ReaderRepository readerRepository = new ReaderRepository();
                 var results = readerRepository.ListActivityLogDetails(filterCriteria, isArchived);
                 IList<ActivityDetailMessage> listActivityDetailMessage = results.Records;
-                
+
                 if (listActivityDetailMessage != null)
                 {
                     errorStatus = SetAsposeLicense();
@@ -170,6 +173,48 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
                     errorStatus.Success = false;
                     errorStatus.ErrorCode = "Activity.ExportActivityLog.1";
                     errorStatus.ErrorMsg = "List Activities Export: No data";
+                    output.Status = errorStatus;
+                    return Request.CreateResponse(HttpStatusCode.OK, output);
+                }
+            }
+            catch (Exception ex)
+            {
+                WriteToErrorLog(exception: ex);
+                throw new HttpResponseException(HttpStatusCode.InternalServerError);
+            }
+        }
+
+        /// <summary>
+        /// Export activity log based on search criteria
+        /// </summary>
+        /// <param name="filterCriteria">Activity Log Filter Criteria</param>
+        /// <returns>Response message including the status code and data</returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Export activity log details.", Type = typeof(ActivityDetailMessage))]
+        [Route("api/export-activitylog-details")]
+        [HttpPost]
+        public HttpResponseMessage ExportActivityLogDetails(ActivityLogDetailExportRequest activityLogDetailExportRequest)
+        {
+            try
+            {
+                Status<IErrorData> errorStatus = new Status<IErrorData>();
+                ObjectOutput<string, IErrorData> output = new ObjectOutput<string, IErrorData>();
+
+                errorStatus = SetAsposeLicense();
+
+                if (errorStatus.Success)
+                {
+                    var plainBytes = ExportActivityDetailData(activityLogDetailExportRequest);
+                    output = new ObjectOutput<string, IErrorData>()
+                    {
+                        obj = Convert.ToBase64String(plainBytes),
+                        Status = errorStatus
+                    };
+                    return Request.CreateResponse(HttpStatusCode.OK, output);
+                }
+                else
+                {
                     output.Status = errorStatus;
                     return Request.CreateResponse(HttpStatusCode.OK, output);
                 }
@@ -234,7 +279,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
         [SwaggerResponse(HttpStatusCode.OK, Description = "Returns additional details (key-value) data for particular activity.", Type = typeof(List<Shared.Models.AdditionalParameters>))]
         [Route("api/additionalparams")]
         [HttpGet]
-        public HttpResponseMessage ListActivityAdditionalParams(long activityId,bool isArchived = false)
+        public HttpResponseMessage ListActivityAdditionalParams(long activityId, bool isArchived = false)
         {
             try
             {
@@ -300,7 +345,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
         [SwaggerResponse(HttpStatusCode.OK, Description = "List activity by criteria to send data related to Pagination", Type = typeof(ListResponse<ActivityDetailMessage>))]
         [Route("api/v1/listactivitylog")]
         [HttpPost]
-        public HttpResponseMessage ListActivityLogDetails(ActivityLogFilterCriteria filterCriteria,bool isArchived = false)
+        public HttpResponseMessage ListActivityLogDetails(ActivityLogFilterCriteria filterCriteria, bool isArchived = false)
         {
             var result = new ListResponse<ActivityDetailMessage>();
             try
@@ -426,7 +471,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
             pageSetup.TopMarginInch = 0.5;
 
             worksheet.Cells.ImportCustomObjects(
-                (System.Collections.ICollection) listActivityDetailMessage,
+                (System.Collections.ICollection)listActivityDetailMessage,
                 propertyNames,
                 false, //Don't show the field names
                 1, //Start at second row
@@ -499,6 +544,105 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
             //FileStream file = new FileStream(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"Export." + dataFormat.ToString()), FileMode.Create, FileAccess.Write);
             //memorystream.WriteTo(file);
             //file.Close();
+
+            //Get bytes
+            byte[] bytes = memorystream.ToArray();
+
+            memorystream.Dispose();
+            memorystream.Close();
+
+            return bytes;
+        }
+
+        private byte[] ExportActivityDetailData(ActivityLogDetailExportRequest activityLogDetailExportRequest)
+        {
+            Workbook workbook;
+            Worksheet worksheet;
+            MemoryStream memorystream = new MemoryStream();
+
+            string[] propertyNames = activityLogDetailExportRequest.HeaderColumns
+                .Select(h => h.Key).ToArray();
+
+            CreateExcelWorkSheet(out workbook, out worksheet);
+
+            for (var i = 0; i < activityLogDetailExportRequest.HeaderColumns.Count(); i++)
+            {
+                var headerColumn = activityLogDetailExportRequest.HeaderColumns.ElementAt(i);
+                worksheet.Cells[0, i].PutValue(headerColumn.Header);
+                worksheet.Cells.SetColumnWidth(i, headerColumn.Width);
+            }
+
+            int totalColumns = activityLogDetailExportRequest.HeaderColumns.Count();
+
+            // Get the pagesetup object
+            PageSetup pageSetup = worksheet.PageSetup;
+
+            // Set bottom,left,right and top page margins
+            pageSetup.BottomMarginInch = 0.5;
+            pageSetup.LeftMarginInch = 0.25;
+            pageSetup.RightMarginInch = 0.25;
+            pageSetup.TopMarginInch = 0.5;
+
+            worksheet.Cells.ImportCustomObjects(
+                (System.Collections.ICollection)activityLogDetailExportRequest.RowData,
+                propertyNames,
+                false, //Don't show the field names
+                1, //Start at second row
+                0,
+                activityLogDetailExportRequest.RowData.Count,
+                true,
+                "",
+                false
+            );
+            switch (activityLogDetailExportRequest.DataFormat)
+            {
+                case SaveFormat.CSV:
+                    //Autofits the columns width
+                    workbook.Worksheets[0].AutoFitColumns();
+                    break;
+                case SaveFormat.Pdf:
+                    
+                    //Create a StyleFlag object.
+                    StyleFlag styleFlag = new StyleFlag
+                    {
+                        //Make the corresponding attributes ON.
+                        Font = true,
+                        VerticalAlignment = true
+                    };
+
+                    Style style = workbook.CreateStyle();
+                    Aspose.Cells.Range range = worksheet.Cells.CreateRange(0, 0, 1, totalColumns);
+                    style.Font.IsBold = true;
+                    style.VerticalAlignment = TextAlignmentType.Top;
+                    range.ApplyStyle(style, styleFlag);
+
+                    styleFlag = new StyleFlag
+                    {
+                        WrapText = true,
+                        VerticalAlignment = true
+
+                    };
+                    range = worksheet.Cells.CreateRange(1, 0, 1048575, totalColumns);
+                    style.VerticalAlignment = TextAlignmentType.Top;
+                    style.IsTextWrapped = true;
+                    range.ApplyStyle(style, styleFlag);
+
+                    foreach (Worksheet sheet in workbook.Worksheets)
+                    {
+                        sheet.PageSetup.Orientation = PageOrientationType.Landscape;
+                        sheet.PageSetup.FitToPagesWide = 1;
+                        sheet.PageSetup.FitToPagesTall = 0;
+                    }
+                    break;
+                default:
+                    break;
+            }
+
+            //Autofits all rows in this worksheet
+            workbook.Worksheets[0].AutoFitRows(true);
+
+            //Convert to bytes array           
+            workbook.Save(memorystream, activityLogDetailExportRequest.DataFormat);
 
             //Get bytes
             byte[] bytes = memorystream.ToArray();
