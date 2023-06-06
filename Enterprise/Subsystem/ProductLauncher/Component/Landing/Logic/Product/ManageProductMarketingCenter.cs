@@ -26,6 +26,7 @@ using MC = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produ
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ops;
 using Right = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.MarketingCenter.Right;
 
+
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
 	/// <summary>
@@ -39,12 +40,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		private DefaultUserClaim _userClaims;
         private HttpClient _httpClient;
 
-		#region Ctor
-		/// <summary>
-		/// The default constructor
-		/// </summary>
-		/// <param name="userClaims">The RealPageId of the editor</param>
-		public ManageProductMarketingCenter(DefaultUserClaim userClaims) : base((int)ProductEnum.MarketingCenter, userClaims, productInternalSettingRepository: null, productRepository: null)
+        #region Ctor
+        /// <summary>
+        /// The default constructor
+        /// </summary>
+        /// <param name="userClaims">The RealPageId of the editor</param>
+        public ManageProductMarketingCenter(DefaultUserClaim userClaims) : base((int)ProductEnum.MarketingCenter, userClaims, productInternalSettingRepository: null, productRepository: null)
         {
 			_editorRealPageId = userClaims.UserRealPageGuid;
 			_blueBook = new Logic.ManageBlueBook(userClaims);
@@ -63,10 +64,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			credCache.Add(new Uri(_productUrl), "Digest", new NetworkCredential(_username, _password));
 			var HttpHandler = new HttpClientHandler();
 			HttpHandler.Credentials = credCache;
-            _httpClient = new HttpClient(HttpHandler);
-            _httpClient.BaseAddress = new Uri(_productUrl);
-            _httpClient.SetBasicAuthentication(_username, _password);
-        }
+			_httpClient = new HttpClient(HttpHandler);
+			_httpClient.BaseAddress = new Uri(_productUrl);
+			_httpClient.SetBasicAuthentication(_username, _password);
+		}
 
         /// <summary>
         /// Unit test constructor
@@ -101,7 +102,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			// TODO REMOVE WHEN POSTING TO TRUSTED URL
 
 			_httpClient = new HttpClient(httpMessageHandler);
-		}
+        }
 		#endregion
 
 		#region Public methods
@@ -1052,10 +1053,71 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				return false;
 			}
 		}
-		#endregion
+        #endregion
 
-		#region Private methods
-		private bool CheckIfUserExistInProduct(string _productUserId)
+        /// <summary>
+        /// Used to Delete a role in MarketingCenter
+        /// </summary>
+        /// <param name="editorPersonaId">The persona of the user making the change. Used to log the GreenBook user making the change.</param>       
+        /// <param name="roleId"></param>
+        /// <returns></returns>
+        public ListResponse DeleteRole(long editorPersonaId, int roleId)
+        {
+            ListResponse response = new ListResponse();
+            Dictionary<string, object> logData = new Dictionary<string, object>();
+            response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
+            if (response.IsError) { return response; }
+            try
+			{
+                var url = $"https://api.pv3.myleasestar.com/external/company/30032/roles/{roleId}";
+                var response1 = _httpClient.DeleteAsync(url).Result;
+            }
+
+			catch (Exception ex)
+			{
+				WriteToErrorLog($"DeleteRole - Error", exception: ex);
+				response = new ListResponse()
+				{
+					IsError = true,
+					ErrorReason = ex.Message
+				};
+			}
+            return response;
+        }
+
+        /// <summary>
+        /// Used to update a role status in MarketingCenter
+        /// </summary>
+        /// <param name="editorPersonaId">The persona of the user making the change. Used to log the GreenBook user making the change.</param>       
+        /// <param name="roleId"></param>
+        /// <param name="IsActive"></param>
+        /// <returns></returns>
+        public ListResponse UpdateRoleStatus(long editorPersonaId, int roleId, bool IsActive)
+        {
+            ListResponse response = new ListResponse();
+            Dictionary<string, object> logData = new Dictionary<string, object>();
+            response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
+            if (response.IsError) { return response; }
+            try
+            {
+                var url = $"https://api.pv3.myleasestar.com/external/company/30032/roles/{roleId}?active={IsActive}";
+                var request = new HttpRequestMessage(new HttpMethod("PATCH"), url);
+                var response1 = _httpClient.SendAsync(request).Result;
+            }
+
+            catch (Exception ex)
+            {
+                WriteToErrorLog($"Update Role Status - Error", exception: ex);
+                response = new ListResponse()
+                {
+                    IsError = true,
+                    ErrorReason = ex.Message
+                };
+            }
+            return response;
+        }
+        #region Private methods
+        private bool CheckIfUserExistInProduct(string _productUserId)
 		{
 			var url = _productUrl + $"/v2/contact/details?emailAddress={_productUserId}";
 			var response = _httpClient.GetAsync(url).Result;

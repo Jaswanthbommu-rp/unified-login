@@ -39,5 +39,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="isActive"></param>
         /// <returns></returns>
         bool ChangeUserStatus(long editorPersonaId, string username, string productUserId, bool isActive);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="editorPersonaId"></param>
+
+        /// <param name="roleId"></param>
+        /// <returns></returns>
+        ListResponse DeleteRole(long editorPersonaId, int roleId);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="editorPersonaId"></param>
+        /// <param name="roleId"></param>
+        /// <param name="Isactive"></param>
+        /// <returns></returns>
+        ListResponse UpdateRoleStatus(long editorPersonaId, int roleId, bool Isactive);
     }
 }

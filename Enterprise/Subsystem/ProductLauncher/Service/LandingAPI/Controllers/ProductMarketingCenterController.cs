@@ -205,6 +205,51 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             return Request.CreateResponse(HttpStatusCode.OK, "Successfully disabled product user.");
         }
 
+        /// <summary>
+        /// Disable the resident portal user.
+        /// </summary>
+        /// <param name="editorPersonaId">The editorPersonaId.</param>
+        /// <param name="roleId">The roleId.</param>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Role Deleted Successfully", Type = typeof(HttpResponseMessage))]
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad Request")]
+        [SwaggerResponseExamples(typeof(HttpResponseMessage), typeof(ResponseExample))]
+        [Route("products/marketingcenter/role")]
+        [Authorize]
+        [HttpDelete]
+        public ListResponse DeleteMarketingCenterRole(long editorPersonaId, int roleId)
+        {
+            if (editorPersonaId == 0 || editorPersonaId == 0) { throw new HttpResponseException(HttpStatusCode.BadRequest); }
+            var manageProductMarketingCenter = new ManageProductMarketingCenter(base._userClaims);
+            ListResponse response = manageProductMarketingCenter.DeleteRole(editorPersonaId, roleId);
+            return response;
+        }
+
+        /// <summary>
+        /// Disable the resident portal user.
+        /// </summary>
+        /// <param name="roleId">The roleId.</param>
+        /// <param name="isActive">The isActive.</param>
+        /// <param name="editorPersonaId">The editorPersonaId.</param>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Role Deleted Successfully", Type = typeof(HttpResponseMessage))]
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad Request")]
+        [SwaggerResponseExamples(typeof(HttpResponseMessage), typeof(ResponseExample))]
+        [Route("products/marketingcenter/role/status")]
+        [Authorize]
+        [HttpPost]
+        public ListResponse UpdateMarketingCenterRoleStatus(long editorPersonaId, int roleId, bool isActive)
+        {
+            if (editorPersonaId == 0 || editorPersonaId == 0) { throw new HttpResponseException(HttpStatusCode.BadRequest); }
+            var manageProductMarketingCenter = new ManageProductMarketingCenter(base._userClaims);
+            ListResponse response = manageProductMarketingCenter.UpdateRoleStatus(editorPersonaId, roleId, isActive);
+            return response;
+        }
+
         #endregion
 
         #region Migration API
