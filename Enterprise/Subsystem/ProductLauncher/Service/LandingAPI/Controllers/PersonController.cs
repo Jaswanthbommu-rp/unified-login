@@ -352,8 +352,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         new ExportDataFileConfiguration { Header = "Username", MappedField = "LoginName", PDFColumnWidth = "2.25", Preference = 5 },
                         new ExportDataFileConfiguration { Header = "Products", MappedField = "Products", PDFColumnWidth = "0.60", Preference = 6 },
                         new ExportDataFileConfiguration { Header = "Last Login", MappedField = "LastLogin", PDFColumnWidth = "1.00", Preference = 7 },
-                        new ExportDataFileConfiguration { Header = "Phone Number", MappedField = "PhoneNumber", PDFColumnWidth = "0.60", Preference = 8 },
-                        new ExportDataFileConfiguration { Header = "Phone Number Type", MappedField = "PhoneNumberType", PDFColumnWidth = "0.60", Preference = 9 },
+                        new ExportDataFileConfiguration { Header = "Phone Number", MappedField = "PhoneNumber", PDFColumnWidth = "1.00", Preference = 8 },
+                        new ExportDataFileConfiguration { Header = "Phone Number Type", MappedField = "PhoneNumberType", PDFColumnWidth = "1.30", Preference = 9 },
                         new ExportDataFileConfiguration { Header = "Status", MappedField = "Status", PDFColumnWidth = "0.60", Preference = 10 },
                         new ExportDataFileConfiguration { Header = "IDP Flag", MappedField = "IDP", PDFColumnWidth = "0.55", Preference = 11 },
                         new ExportDataFileConfiguration { Header = "User Effective", MappedField = "EffectiveDate", PDFColumnWidth = "0.95", Preference = 12 },
@@ -383,7 +383,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     {
                         List<ExportDataFileConfiguration> exportConfigurationsAdditionalFields = new List<ExportDataFileConfiguration>
                         {
-                            new ExportDataFileConfiguration { Header = "User Relationship Type", MappedField = "UserRelationshipType", PDFColumnWidth = "1.90", Preference = 15 },
+                            new ExportDataFileConfiguration { Header = "User Relationship Type", MappedField = "UserRelationshipType", PDFColumnWidth = "2.20", Preference = 15 },
                             new ExportDataFileConfiguration { Header = "Company Name", MappedField = "CompanyName", PDFColumnWidth = "1.30", Preference = 16 }
                         };
                         exportConfigurations.AddRange(exportConfigurationsAdditionalFields);
