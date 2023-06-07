@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace RP.Enterprise.Foundation.Activity.Service.Logging.Shared.Models
+namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Models
 {
     public class ActivityLogDetailExportRequest
     {
