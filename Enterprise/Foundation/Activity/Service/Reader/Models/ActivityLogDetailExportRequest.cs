@@ -10,7 +10,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Models
 
         public IEnumerable<ActivityLogHeader> HeaderColumns { get; set; }
 
-        public ICollection<object> RowData { get; set; }
+        public IEnumerable<IDictionary<string, string>> RowData { get; set; }
     }
 
     public class ActivityLogHeader

@@ -192,7 +192,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [SwaggerResponse(HttpStatusCode.OK, Description = "Export activity log details.", Type = typeof(ActivityDetailMessage))]
-        [Route("api/export-activitylog-details")]
+        [Route("api/activitylogs/{activityId}/export-details")]
         [HttpPost]
         public HttpResponseMessage ExportActivityLogDetails(ActivityLogDetailExportRequest activityLogDetailExportRequest)
         {
@@ -562,17 +562,15 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
 
             string[] propertyNames = activityLogDetailExportRequest.HeaderColumns
                 .Select(h => h.Key).ToArray();
+            int totalColumns = activityLogDetailExportRequest.HeaderColumns.Count();
 
             CreateExcelWorkSheet(out workbook, out worksheet);
 
-            for (var i = 0; i < activityLogDetailExportRequest.HeaderColumns.Count(); i++)
+            for (var i = 0; i < totalColumns; i++)
             {
                 var headerColumn = activityLogDetailExportRequest.HeaderColumns.ElementAt(i);
                 worksheet.Cells[0, i].PutValue(headerColumn.Header);
-                worksheet.Cells.SetColumnWidth(i, headerColumn.Width);
-            }
-
-            int totalColumns = activityLogDetailExportRequest.HeaderColumns.Count();
+            }           
 
             // Get the pagesetup object
             PageSetup pageSetup = worksheet.PageSetup;
@@ -583,17 +581,18 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
             pageSetup.RightMarginInch = 0.25;
             pageSetup.TopMarginInch = 0.5;
 
-            worksheet.Cells.ImportCustomObjects(
-                (System.Collections.ICollection)activityLogDetailExportRequest.RowData,
-                propertyNames,
-                false, //Don't show the field names
-                1, //Start at second row
-                0,
-                activityLogDetailExportRequest.RowData.Count,
-                true,
-                "",
-                false
-            );
+            var rowIndex = 1;
+            foreach(var row in activityLogDetailExportRequest.RowData)
+            {
+                for (var i = 0; i < totalColumns; i++)
+                {
+                    var headerColumn = activityLogDetailExportRequest.HeaderColumns.ElementAt(i);
+                    var rowColumnValue = row.ContainsKey(headerColumn.Key) ? row[headerColumn.Key] : "";
+                    worksheet.Cells[rowIndex, i].PutValue(rowColumnValue);
+                }
+                rowIndex++;
+            }
+
             switch (activityLogDetailExportRequest.DataFormat)
             {
                 case SaveFormat.CSV:
@@ -601,7 +600,12 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
                     workbook.Worksheets[0].AutoFitColumns();
                     break;
                 case SaveFormat.Pdf:
-                    
+                    for (var i = 0; i < totalColumns; i++)
+                    {
+                        var headerColumn = activityLogDetailExportRequest.HeaderColumns.ElementAt(i);
+                        worksheet.Cells.SetColumnWidth(i, headerColumn.Width);
+                    }
+
                     //Create a StyleFlag object.
                     StyleFlag styleFlag = new StyleFlag
                     {
