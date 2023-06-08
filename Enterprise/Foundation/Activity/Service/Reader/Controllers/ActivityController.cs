@@ -603,7 +603,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
                     for (var i = 0; i < totalColumns; i++)
                     {
                         var headerColumn = activityLogDetailExportRequest.HeaderColumns.ElementAt(i);
-                        worksheet.Cells.SetColumnWidth(i, headerColumn.Width);
+                        worksheet.Cells.SetColumnWidthInch(i, headerColumn.Width);
                     }
 
                     //Create a StyleFlag object.
