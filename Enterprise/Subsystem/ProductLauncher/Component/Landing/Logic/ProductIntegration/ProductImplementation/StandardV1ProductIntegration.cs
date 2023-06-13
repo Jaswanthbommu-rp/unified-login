@@ -677,7 +677,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
          
             bool isProductUser = false;
-            var productUser = GetBaseUserDataFromProduct(newProductUser.LoginName);
+            string loginName = !string.IsNullOrEmpty(SubjectUserDetails.ProductUserName) ? SubjectUserDetails.ProductUserName : newProductUser.LoginName;
+            var productUser = GetBaseUserDataFromProduct(loginName);
             isProductUser = productUser != null && !string.IsNullOrEmpty(productUser.LoginName);
 
             //Removing Special Characters for First Name and Last Name

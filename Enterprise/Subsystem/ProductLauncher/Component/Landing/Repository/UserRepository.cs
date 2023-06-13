@@ -5503,9 +5503,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         else
                         {
                             product.BatchProcessorGroupId = batchGroup.BatchProcessorGroupId;
+                            int batchType = product.ProductId == (int)ProductEnum.KnockCRM ? (int)BatchProcessType.ProfileUpdate : (int)BatchProcessType.CreateUpdateProductUser;
                             SaveProductBatch(pbRepository, product, createUserResponse, saveProductBatchError,
                                 createUserPersonaId, personaId, createUserRealPageId, errorStatus,
-                                JsonConvert.SerializeObject(product.InputJson), impersonatorUserLoginOnly.UserId);
+                                JsonConvert.SerializeObject(product.InputJson), impersonatorUserLoginOnly.UserId, batchType);
                         }
                     }
                 }
@@ -5888,6 +5889,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 bool isPrimaryPropertiesUpdated = false;
                 bool isEnterpriseRolesUpdated = false;
                 string enterpriseUserRoleUpdated = string.Empty;
+                bool isEnterpriseRoleUnassigned = false;
+                string enterpriseRoleUnassigned = string.Empty;
                 var enterpriseRoles = repository.GetMany<EnterpriseRole>(StoredProcNameConstants.SP_SecurityListRolesByRealPageID, new { realPageId = updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId });
 
                 var gbProdBatch = new ProductBatch();
@@ -6442,6 +6445,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
                         else if (updateUserProfileEntity.OldProfile.RoleTemplateId > 0 && updateUserProfileEntity.NewProfile.RoleTemplateId == 0)
                         {
+                            isEnterpriseRoleUnassigned = true;
+                            object paramObject = new
+                            {
+                                RoleTemplateId = updateUserProfileEntity.OldProfile.RoleTemplateId,
+                                OrganizationRealPageId = _userClaim.OrganizationRealPageGuid
+                            };
+                            var roleTemplateProductRole = repository.GetMany<RoleTemplateProductRole>(StoredProcNameConstants.SP_GetRoleTemplateProductRoleMappings, paramObject).ToList();
+                            enterpriseRoleUnassigned = roleTemplateProductRole.Select(x => x.RoleTemplateName).FirstOrDefault();
+
                             //unassign enterprise role from user
                             UnassignEnterpriseRoleFromUser(repository, updateUserProfileEntity.OldProfile.Persona[0].PersonaId);
                         }
@@ -6652,10 +6664,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         }
                         //add activity log for Enterprise Roles
-                        if (isEnterpriseRolesUpdated) 
+                        if (isEnterpriseRolesUpdated  || isEnterpriseRoleUnassigned) 
                         {
                             string userName = string.IsNullOrEmpty(_userClaim.ImpersonatedByName) ? _userClaim.FirstName + " " + _userClaim.LastName : " RealPage Access (" + _userClaim.ImpersonatedByName + ") ";
-                            string enterpriseRolesMessage = $"{userName} updated access for {updateUserProfileEntity.NewProfile.FirstName} {updateUserProfileEntity.NewProfile.LastName} : Enterprise Role: {enterpriseUserRoleUpdated} was granted.";
+                            string enterpriseRolesMessage = $"{userName} updated access for {updateUserProfileEntity.NewProfile.FirstName} {updateUserProfileEntity.NewProfile.LastName} : Enterprise Role: {(isEnterpriseRolesUpdated ? enterpriseUserRoleUpdated+ " was granted." : enterpriseRoleUnassigned+ " was unassigned.")} ";
 
                             AddActivityLog(LogActivityTypeConstants.ENTERPRISE_ROLES, LogActivityCategoryType.User, enterpriseRolesMessage, updateUserProfileEntity.NewProfile, updateUserProfileEntity.UserLoginOnly, null, _userClaim);
                         }

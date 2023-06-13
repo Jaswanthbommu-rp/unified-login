@@ -394,7 +394,10 @@ BEGIN
 		OR @filterProductId IS NULL  
 	)  
 	AND  ((@filterStatusTypeId = 0) OR (NOT fs.StatusTypeId IS NULL))  
-
+	 AND 1 = (case 
+     when ((select count(1) from @filterStatus where StatusTypeId = 2) = 0) then (case when ((iulp.StatusTypeId = 12) AND (ul.LastLoginDate IS NULL)) then 0 else 1 end)
+     else 1 end)
+        
 	DROP TABLE IF EXISTS #UserEnterpriseRole
 
 	CREATE TABLE #UserEnterpriseRole

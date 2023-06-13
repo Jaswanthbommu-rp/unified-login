@@ -216,5 +216,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 		/// </summary>
 		[JsonProperty("CompanyName")]
 		public string CompanyName { get; set; }
-	}
+
+        /// <summary>
+        /// PhoneNumber
+        /// </summary>
+        [JsonProperty("PhoneNumber")]
+        public string PhoneNumber { get; set; }
+
+        /// <summary>
+        /// PhoneNumberType
+        /// </summary>
+        [JsonProperty("PhoneNumberType")]
+        public string PhoneNumberType { get; set; }
+    }
 }

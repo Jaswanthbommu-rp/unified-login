@@ -99,5 +99,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		/// CompanyName
 		/// </summary>		
 		public string CompanyName { get; set; }
-	}
+
+        /// <summary>
+        /// PhoneNumber
+        /// </summary>		
+        public string PhoneNumber { get; set; }
+
+        /// <summary>
+        /// PhoneNumberType
+        /// </summary>		
+        public string PhoneNumberType { get; set; }
+    }
 }
