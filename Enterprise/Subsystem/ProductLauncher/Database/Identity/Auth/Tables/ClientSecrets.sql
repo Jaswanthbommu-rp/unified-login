@@ -7,6 +7,14 @@
     [Type]        NVARCHAR (250)  NOT NULL,
     [Created]     DATETIME2 (7)   NOT NULL,
     CONSTRAINT [PK_ClientSecrets] PRIMARY KEY CLUSTERED ([Id] ASC),
-    CONSTRAINT [FK_dbo.ClientSecrets_dbo.Clients_Id] FOREIGN KEY ([ClientId]) REFERENCES [Auth].[Clients] ([Id]) ON DELETE CASCADE
+    CONSTRAINT [FK_ClientSecrets_Clients_ClientId] FOREIGN KEY ([ClientId]) REFERENCES [Auth].[Clients] ([Id]) ON DELETE CASCADE
 );
 
+GO
+
+CREATE NONCLUSTERED INDEX [IX_ClientSecrets_ClientId] ON [Auth].[ClientSecrets]([ClientId] ASC);
+  
+GO
+
+
+    

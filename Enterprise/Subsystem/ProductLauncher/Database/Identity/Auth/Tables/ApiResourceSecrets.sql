@@ -17,3 +17,6 @@ ALTER TABLE [Auth].[ApiResourceSecrets]  WITH CHECK ADD  CONSTRAINT [FK_ApiResou
 REFERENCES [Auth].[ApiResources] ([Id])
 ON DELETE CASCADE
 GO
+
+CREATE NONCLUSTERED INDEX [IX_ApiResourceSecrets_ApiResourceId] ON [Auth].[ApiResourceSecrets]([ApiResourceId] ASC);
+GO

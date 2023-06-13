@@ -3,6 +3,8 @@
     [Origin]   NVARCHAR (150) NOT NULL,
     [ClientId] INT            NOT NULL, 
     CONSTRAINT [PK_ClientCorsOrigins] PRIMARY KEY CLUSTERED ([Id] ASC),
-    CONSTRAINT [FK_dbo.ClientCorsOrigins_dbo.Clients_Id] FOREIGN KEY ([ClientId]) REFERENCES [Auth].[Clients] ([Id]) ON DELETE CASCADE
+    CONSTRAINT [FK_ClientCorsOrigins_Clients_ClientId] FOREIGN KEY ([ClientId]) REFERENCES [Auth].[Clients] ([Id]) ON DELETE CASCADE
 );
+GO
 
+CREATE UNIQUE NONCLUSTERED INDEX [IX_ClientCorsOrigins_ClientId_Origin] ON [Auth].[ClientCorsOrigins] ([ClientId], [Origin]) ON [PRIMARY]

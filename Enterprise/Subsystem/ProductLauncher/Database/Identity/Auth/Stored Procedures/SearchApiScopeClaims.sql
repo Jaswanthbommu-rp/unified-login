@@ -1,5 +1,5 @@
 ﻿CREATE PROCEDURE [Auth].[SearchApiScopeClaims]
-	@ScopeId int = 0
+	@ScopeId int = NULL
 AS
 BEGIN
 	SELECT [Id]

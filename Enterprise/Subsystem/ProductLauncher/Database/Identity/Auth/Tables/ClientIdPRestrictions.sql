@@ -11,5 +11,5 @@ CREATE UNIQUE NONCLUSTERED INDEX [IX_ClientIdPRestrictions_ClientId_Provider]
     ON [Auth].[ClientIdPRestrictions]([ClientId] ASC, [Provider] ASC);
 GO
 
-ALTER TABLE [Auth].[ClientIdentityProviderRestrictions] ADD CONSTRAINT [FK_dbo.ClientIdPRestrictions_dbo.Clients_Id] FOREIGN KEY ([ClientId]) REFERENCES [Auth].[Clients] ([Id]) ON DELETE CASCADE
+ALTER TABLE [Auth].[ClientIdPRestrictions] ADD CONSTRAINT [FK_ClientIdPRestrictions_Clients_ClientId] FOREIGN KEY ([ClientId]) REFERENCES [Auth].[Clients] ([Id]) ON DELETE CASCADE
 GO

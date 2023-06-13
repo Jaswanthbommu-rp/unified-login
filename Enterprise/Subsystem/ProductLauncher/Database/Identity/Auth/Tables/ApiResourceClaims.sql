@@ -14,3 +14,7 @@ REFERENCES [Auth].[ApiResources] ([Id])
 ON DELETE CASCADE
 
 GO
+
+CREATE UNIQUE NONCLUSTERED INDEX [IX_ApiResourceClaims_ApiResourceId_Type]
+    ON [Auth].[ApiResourceClaims]([ApiResourceId] ASC, [Type] ASC);
+GO

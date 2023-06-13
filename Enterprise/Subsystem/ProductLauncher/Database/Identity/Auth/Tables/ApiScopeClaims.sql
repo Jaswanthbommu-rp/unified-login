@@ -13,3 +13,6 @@ ALTER TABLE [Auth].[ApiScopeClaims]  WITH CHECK ADD  CONSTRAINT [FK_ApiScopeClai
 REFERENCES [Auth].[ApiScopes] ([Id])
 ON DELETE CASCADE
 GO
+
+CREATE UNIQUE NONCLUSTERED INDEX [IX_ApiScopeClaims_ScopeId_Type] ON [Auth].[ApiScopeClaims]([ScopeId] ASC, [Type] ASC);
+GO

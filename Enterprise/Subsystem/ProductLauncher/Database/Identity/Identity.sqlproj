@@ -138,8 +138,6 @@
   <ItemGroup>
     <Build Include="Auth\Tables\ClientClaims.sql" />
     <Build Include="Auth\Tables\ClientCorsOrigins.sql" />
-    <Build Include="Auth\Tables\ClientCustomGrantTypes.sql" />
-    <Build Include="Auth\Tables\ClientIdentityProviderRestrictions.sql" />
     <Build Include="Auth\Tables\ClientPostLogoutRedirectUris.sql" />
     <Build Include="Auth\Tables\ClientRedirectUris.sql" />
     <Build Include="Auth\Tables\Clients.sql" />
@@ -990,7 +988,6 @@
     <Build Include="Auth\Stored Procedures\SearchClientRedirectUri.sql" />
     <Build Include="Auth\Stored Procedures\SearchClientScope.sql" />
     <Build Include="Auth\Stored Procedures\SearchClientSecret.sql" />
-    <Build Include="Auth\Stored Procedures\SearchScope.sql" />
     <Build Include="Auth\Stored Procedures\SearchScopeClaim.sql" />
     <Build Include="Auth\Stored Procedures\SearchApiResourceSecret.sql" />
     <Build Include="Enterprise\Stored Procedures\SearchCompanyType.sql" />
@@ -1306,6 +1303,8 @@
     <Build Include="Auth\Stored Procedures\SearchApiScopeClaims.sql" />
     <Build Include="Auth\Stored Procedures\SearchIdentityResourceClaims.sql" />
     <Build Include="Auth\Stored Procedures\SearchApiResourceClaims.sql" />
+    <Build Include="Auth\Tables\Keys.sql" />
+    <Build Include="Auth\Tables\ServerSideSessions.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

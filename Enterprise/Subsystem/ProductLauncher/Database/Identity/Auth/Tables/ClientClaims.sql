@@ -4,6 +4,6 @@
     [Value]    NVARCHAR (250) NOT NULL,
     [ClientId] INT            NOT NULL, 
     CONSTRAINT [PK_ClientClaims] PRIMARY KEY CLUSTERED ([Id] ASC),
-    CONSTRAINT [FK_ClientClaims_Clients_Id] FOREIGN KEY ([ClientId]) REFERENCES [Auth].[Clients] ([Id]) ON DELETE CASCADE
+    CONSTRAINT [FK_ClientClaims_Clients_ClientId] FOREIGN KEY ([ClientId]) REFERENCES [Auth].[Clients] ([Id]) ON DELETE CASCADE
 );
 

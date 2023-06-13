@@ -3,7 +3,7 @@
     [GrantType] NVARCHAR (250) NOT NULL,
     [ClientId]  INT            NOT NULL,
     CONSTRAINT [PK_ClientGrantTypes] PRIMARY KEY CLUSTERED ([Id] ASC),
-	CONSTRAINT [FK_dbo.ClientGrantTypes_dbo.Clients_Id] FOREIGN KEY ([ClientId]) REFERENCES [Auth].[Clients] ([Id]) ON DELETE CASCADE
+	CONSTRAINT [FK_ClientGrantTypes_Clients_ClientId] FOREIGN KEY ([ClientId]) REFERENCES [Auth].[Clients] ([Id]) ON DELETE CASCADE
 )
 GO
 

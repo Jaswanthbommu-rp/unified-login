@@ -49,3 +49,7 @@
     CONSTRAINT [PK_Clients] PRIMARY KEY CLUSTERED ([Id] ASC)
 );
 
+GO
+
+CREATE UNIQUE NONCLUSTERED INDEX [IX_Clients_ClientId] ON [Auth].[Clients]([ClientId] ASC);
+GO
