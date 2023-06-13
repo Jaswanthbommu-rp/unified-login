@@ -1,9 +1,9 @@
 ﻿CREATE PROCEDURE [Auth].ClientClaimsDelete
 (
-	@Original_ClientClaimsId int,
-	@Original_ClientId int,
-	@Original_Type nvarchar(100),
-	@Original_Value nvarchar(100)
+	@Original_ClientClaimsId INT,
+	@Original_ClientId INT,
+	@Original_Type NVARCHAR(100),
+	@Original_Value NVARCHAR(100)
 )
 AS
 BEGIN
