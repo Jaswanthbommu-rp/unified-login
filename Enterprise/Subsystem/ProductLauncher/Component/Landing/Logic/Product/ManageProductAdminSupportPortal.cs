@@ -251,7 +251,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     return listResponse.ErrorReason;
                 }
 
-
+                AdminSupportPortalContactResult adminSupportPortalContactResult = new AdminSupportPortalContactResult() ;
                 var persona = _managePersona.GetPersona(userPersonaId);
                 var realPageId = persona.RealPageId;
                 var person = _managePerson.GetPerson(realPageId);
@@ -429,7 +429,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 };
 
 
-                if (clientPortaluserDetails != null && clientPortaluserDetails.Count > 0 && (clientPortaluserDetails.Any(m => m.Id == _productUserId)))
+                if (isUserUpdate)
+                {
+                    adminSupportPortalContactResult = clientPortaluserDetails.FirstOrDefault(m => m.Id == _productUserId);
+                }
+
+                if (clientPortaluserDetails != null && clientPortaluserDetails.Count > 0 && clientPortaluserDetails.Any(m => m.Id == _productUserId) && adminSupportPortalContactResult != null && adminSupportPortalContactResult.IsPortalEnabled)
                 {
                     // Update User & return result
                     WriteToDiagnosticLog(
@@ -447,7 +452,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     // Create New User & return result
                     WriteToDiagnosticLog(
                         $"ManageProductAdminSupportPortal.ManageAdminSupportPortalUser - trying to CREATE user with editorPersona id - {editorPersonaId}.");
-                    string insertResult = CreateAdminSupportPortalUser(userPersonaId, adminSupportPortalUser,roleType);
+                    string insertResult = CreateAdminSupportPortalUser(userPersonaId, adminSupportPortalUser, roleType, adminSupportPortalContactResult.IsPortalEnabled);
 
                     return insertResult;
 
@@ -937,7 +942,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 //Update User flags
                 AdminSupportPortalUser adminSupportPortalUser = GetAdminSupportPortalUser(migrateUser.UserId);
-                adminSupportPortalUser.IsCreatedFromNewPortal__c= true;
+                adminSupportPortalUser.IsCreatedFromNewPortal__c = true;
                 adminSupportPortalUser.ContactId = null;
                 var userResult = PostApi($"{_apiRoute}sobjects/User/{migrateUser.UserId}?_HttpMethod=PATCH", adminSupportPortalUser);
                 if (!string.IsNullOrEmpty(userResult))
@@ -1254,7 +1259,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             List<AdminSupportPortalContactResult> adminSupportPortalContacts = new List<AdminSupportPortalContactResult>();
 
             var jsonQueryString =
-                JObject.Parse("{ \"q\":\"" + loginName + "\",\"sobjects\":[{\"name\": \"User\", \"fields\":[\"Id\", \"Email\", \"Account.OMS_ID__c\"]}]}");
+                JObject.Parse("{ \"q\":\"" + loginName + "\",\"sobjects\":[{\"name\": \"User\", \"fields\":[\"Id\", \"Email\",\"IsPortalEnabled\", \"Account.OMS_ID__c\"]}]}");
 
             WriteToDiagnosticLog(
                       $"ManageProductAdminSupportPortal.CheckClientPortalUserExists - calling API with - URL '{_apiRoute}parameterizedSearch' and quert string - {jsonQueryString} for user with _productUsername {_productUsername}.");
@@ -1274,7 +1279,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         Id = cpContact.Id,
                         Email = cpContact.Email,
-                        OMS_ID__c = cpContact.Account == null ? "" : cpContact.Account.OMS_ID__c
+                        OMS_ID__c = cpContact.Account == null ? "" : cpContact.Account.OMS_ID__c,
+                        IsPortalEnabled = cpContact.IsPortalEnabled
                     };
                     adminSupportPortalContacts.Add(adminSupportPortalContactResult);
                 }
@@ -1390,7 +1396,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             throw new Exception("Error while creating contact.");
         }
 
-        private string CreateAdminSupportPortalUser(long userPersonaId, AdminSupportPortalUser adminSupportPortalUser, string roleType)
+        private string CreateAdminSupportPortalUser(long userPersonaId, AdminSupportPortalUser adminSupportPortalUser, string roleType, bool isPortalEnabled)
         {
 
             var logData = new Dictionary<string, object> { { "adminSupportPortalUser", adminSupportPortalUser } };
@@ -1413,6 +1419,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 var newId = userResult.id.ToString();
                 CreateProductUserInGreenBook(userPersonaId, newId, adminSupportPortalUser.Username, roleType);
+                if (!isPortalEnabled)
+                {
+                    WriteToDiagnosticLog(
+                      $"ManageProductAdminSupportPortal.CreateDeactivatedAdminSupportPortalUser - Beginning", logData);
+                    SamlAttributes samlAttributes = new SamlAttributes();
+                    IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(userPersonaId, _productId);
+                    if (productAttributes != null && productAttributes.Count > 0)
+                    {
+                        SamlAttributes samlAttributeToUpdate = productAttributes.FirstOrDefault(m => m.SamlAttributeId == (int)SamlAttributeEnum.UserId);
+                        if (samlAttributeToUpdate != null)
+                        {
+                            samlAttributes.SamlUserAttributeId = samlAttributeToUpdate.SamlUserAttributeId;
+                            samlAttributes.Value = newId;
+                            _samlRepository.UpdateSamlUserAttribute(samlAttributes);
+                        }
+                    }
+                }
                 return "";
             }
 
@@ -1506,7 +1529,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 new ProductRole
                 {
                     ID = "00e00000006qqxm",
-                    Name = "Client Portal with Billing, Cancellations, and Payments Admin", 
+                    Name = "Client Portal with Billing, Cancellations, and Payments Admin",
                     Roletype = "Admin Portal"
                 },
                 new ProductRole {ID = "00e00000006qqxh", Name = "Client Portal Standard User", Roletype = "Support Portal"},
@@ -1656,8 +1679,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         public bool Portal_User_Migrated__c { get; set; }
 
-        
-        
+
+
     }
 
     internal class AdminSupportPortalAccount
@@ -1675,6 +1698,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         public string ParentOMS_ID__c { get; set; }
 
+        public bool IsPortalEnabled { get; set; } = true;
     }
 
     #endregion
