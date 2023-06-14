@@ -50,9 +50,14 @@
 		/// </summary>		
 		string ISOCode { get; set; }
 
-		/// <summary>
-		/// Contact Mechanism usage type detail
-		/// </summary>
-		ContactMechanismUsageType contactMechanismUsageType { get; set; }
+        /// <summary>
+        /// IsDefault
+        /// </summary>
+        bool IsDefault { get; set; }
+
+        /// <summary>
+        /// Contact Mechanism usage type detail
+        /// </summary>
+        ContactMechanismUsageType contactMechanismUsageType { get; set; }
 	}
 }

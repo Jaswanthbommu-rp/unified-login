@@ -241,6 +241,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 telecommunicationNumber.CountryCode = phone.CountryCode;
                                 telecommunicationNumber.PhoneNumber = phone.PhoneNumber;
                                 telecommunicationNumber.ISOCode = phone.ISOCode;
+                                telecommunicationNumber.IsDefault = phone.IsDefault;
                                 //New Telecommunication number
                                 if (phone.ContactMechanismId == 0)
                                 {
@@ -371,7 +372,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                         AreaCode = telecommunicationNumber.AreaCode,
                                         CountryCode = telecommunicationNumber.CountryCode,
                                         PhoneNumber = telecommunicationNumber.PhoneNumber,
-                                        ISOCode = telecommunicationNumber.ISOCode
+                                        ISOCode = telecommunicationNumber.ISOCode,
+                                        Default = telecommunicationNumber.IsDefault
                                     };
                                     repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateTelecommunicationNumber, param);
                                     if (repositoryResponse.Id == 0)

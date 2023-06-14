@@ -67,12 +67,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 		[JsonProperty("contactMechanismUsageType", NullValueHandling = NullValueHandling.Ignore)]
 		public ContactMechanismUsageType contactMechanismUsageType { get; set; }
 
-		#region Examples
-		/// <summary>
-		/// Example for linking a Telecommunication Number to a Person method
-		/// </summary>
-		/// <returns>Newly Created Contact Mechanism Id</returns>
-		public static TelecommunicationNumberOutputResult LinkTelecommunicationNumberOutputResultExample()
+        /// <summary>
+        /// IsDefault
+        /// </summary>
+        [JsonProperty(PropertyName = "IsDefault")]
+        public bool IsDefault { get; set; } = false;
+
+        #region Examples
+        /// <summary>
+        /// Example for linking a Telecommunication Number to a Person method
+        /// </summary>
+        /// <returns>Newly Created Contact Mechanism Id</returns>
+        public static TelecommunicationNumberOutputResult LinkTelecommunicationNumberOutputResultExample()
 		{
 			TelecommunicationNumberOutputResult result = new TelecommunicationNumberOutputResult();
 			result.ContactMechanismId = 1;

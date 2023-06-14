@@ -1469,6 +1469,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 number.IsDeleted = false;
                 number.IsPreferred = false;
                 number.AreaCode = String.Empty;
+                number.IsDefault = false;
                 number.contactMechanismUsageType = new ContactMechanismUsageType() { ContactMechanismUsageTypeId = 203, Name = String.Empty };
                 number.PartyContactMechanismId = 0;
                 number.ContactMechanismId = 0;

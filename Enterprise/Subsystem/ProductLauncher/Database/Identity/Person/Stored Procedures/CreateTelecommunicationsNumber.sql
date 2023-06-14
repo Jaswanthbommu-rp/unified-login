@@ -3,7 +3,8 @@
 	@CountryCode VARCHAR(10) = 1,
 	@AreaCode VARCHAR(10),
 	@Phonenumber VARCHAR(15),
-	@ISOCode Varchar(5)
+	@ISOCode Varchar(5),
+    @Default BIT
 )
 AS
 BEGIN
@@ -15,7 +16,8 @@ BEGIN
         SET     t.CountryCode = @CountryCode,
                 t.AreaCode = @AreaCode,
                 t.PhoneNumber = @Phonenumber,
-				t.ISOCode = @ISOCode
+				t.ISOCode = @ISOCode,
+                t.[Default] = @Default
         FROM    Enterprise.TelecommunicationsNumber t
         WHERE   ContactMechanismID = @ContactMechanismId;
 
@@ -26,14 +28,16 @@ BEGIN
 				CountryCode ,
 				AreaCode ,
 				PhoneNumber,
-				ISOCode
+				ISOCode,
+                [Default]
 			)
 			VALUES (
 				@ContactMechanismId , -- ContactMechanismID - int
 				@CountryCode , -- CountryCode - varchar(10)
 				@AreaCode , -- AreaCode - varchar(10)
 				@Phonenumber,  -- PhoneNumber - varchar(10)
-				@ISOCode
+				@ISOCode,
+                @Default
 			);		    
         END;
 
