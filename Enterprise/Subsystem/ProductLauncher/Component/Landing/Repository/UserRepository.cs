@@ -5503,10 +5503,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         else
                         {
                             product.BatchProcessorGroupId = batchGroup.BatchProcessorGroupId;
-                            int batchType = product.ProductId == (int)ProductEnum.KnockCRM ? (int)BatchProcessType.ProfileUpdate : (int)BatchProcessType.CreateUpdateProductUser;
                             SaveProductBatch(pbRepository, product, createUserResponse, saveProductBatchError,
                                 createUserPersonaId, personaId, createUserRealPageId, errorStatus,
-                                JsonConvert.SerializeObject(product.InputJson), impersonatorUserLoginOnly.UserId, batchType);
+                                JsonConvert.SerializeObject(product.InputJson), impersonatorUserLoginOnly.UserId);
                         }
                     }
                 }
