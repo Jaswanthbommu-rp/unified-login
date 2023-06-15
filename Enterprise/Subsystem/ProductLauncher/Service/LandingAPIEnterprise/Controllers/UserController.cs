@@ -1028,7 +1028,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     personaList = _managePersona.ListActivePersona(persona.RealPageId, false);
                     persona.hasMultiPersona = personaList.Count(p => p.OrganizationPartyId == persona.OrganizationPartyId) > 1;
                     persona.hasMultiCompany = personaList.Count(p => p.OrganizationPartyId != persona.OrganizationPartyId && p.Organization.RealPageId != DefaultUserClaim.ExternalCompanyRealPageId) > 0;
-                    
+
                     productResult.User = new User()
                     {
                         FullName = $"{person.FirstName} {person.LastName}",
@@ -1446,10 +1446,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             profileDetail.CustomFields = new List<CustomFieldValue>();
             profileDetail.productBatch = new List<ProductBatch>();
             profileDetail.userLogin = new UserLogin();
+            profileDetail.ExternalUserRelationship = new ExternalUserRelationship();
 
             profileDetail.Suffix = userProductDetailsDto.UserProfileDetails.Suffix;
             profileDetail.Title = userProductDetailsDto.UserProfileDetails.Title;
             profileDetail.UserTypeId = GetGbUserType(userProductDetailsDto.UserProfileDetails.UserType);
+            profileDetail.ExternalUserRelationship = GetUserRelationship(userProductDetailsDto.UserProfileDetails.UserType);
             profileDetail.FirstName = userProductDetailsDto.UserProfileDetails.FirstName;
             profileDetail.LastName = userProductDetailsDto.UserProfileDetails.LastName;
             profileDetail.MiddleName = userProductDetailsDto.UserProfileDetails.MiddleName;
@@ -1503,7 +1505,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             }
 
             profileDetail.userLogin.LoginName = userProductDetailsDto.UserProfileDetails.LoginName;
-            if(userProductDetailsDto.ProductList != null) 
+            if(userProductDetailsDto.ProductList != null)
             {
                 foreach (var pl in userProductDetailsDto.ProductList)
                 {
@@ -1801,6 +1803,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             return userType;
         }
 
+        private ExternalUserRelationship GetUserRelationship(UserTypeDto userTypeDto)
+        {
+            ExternalUserRelationship obj = new ExternalUserRelationship();
+
+            switch (userTypeDto)
+            {
+                case UserTypeDto.Regular:
+                    obj.ThirdPartyRelationShipId = 4;
+                    obj.ThirdPartyRelationShip = "4";
+                    break;
+                case UserTypeDto.NoEmail:
+                    obj.ThirdPartyRelationShipId = 6;
+                    obj.ThirdPartyRelationShip = "6";
+                    break;
+                case UserTypeDto.SuperUser:
+                    obj.ThirdPartyRelationShipId = 8;
+                    obj.ThirdPartyRelationShip = "8";
+                    break;
+                case UserTypeDto.External:
+                    obj.ThirdPartyRelationShipId = 5;
+                    obj.ThirdPartyRelationShip = "5";
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(userTypeDto), userTypeDto, null);
+            }
+            return obj;
+        }
         /// <summary>
         /// Used to write to the log
         /// </summary>
