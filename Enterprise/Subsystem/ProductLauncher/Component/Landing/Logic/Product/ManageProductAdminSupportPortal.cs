@@ -340,13 +340,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                             adminSupportPortalContactResults.Add(item);
                         }
-                        else if ((item.OMS_ID__c != null && item.OMS_ID__c.StartsWith("C") && !string.IsNullOrEmpty(item.ParentOMS_ID__c) && item.ParentOMS_ID__c.StartsWith("C")))
-                        {
-                            WriteToDiagnosticLog($"ManageProductAdminSupportPortal.ManageAdminSupportPortalUser - Company is having a Parent company - {editorPersonaId} and editorPersonaId  - {userPersonaId}");
-
-                            adminSupportPortalContactResults.Add(item);
-
-                        }
                     }
                 }
 
