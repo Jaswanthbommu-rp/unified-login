@@ -787,7 +787,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 newProductUser.UserId = SubjectUserDetails.ProductUserId;
                 newProductUser.LoginName = SubjectUserDetails.ProductUserName;
-
+                newProductUser.IsActive = productUser.IsActive;
                 result = UpdateUser(newProductUser, batchProcessType);
             }
 
@@ -1015,13 +1015,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 $"{nameof(StandardV1ProductIntegration)}.UpdateUser - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method.");
 
             var baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.PutUserEndpoint);
-
+            
             WriteToDiagnosticLog(
                 $"{nameof(StandardV1ProductIntegration)}.UpdateUser - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling API - {baseUrlAndQuery}.");
 
             // dump API call info
             DumpApiCallInfoToDiagnosticLog(baseUrlAndQuery, productUser);
 
+            var isActivateUserBeforeUpdate = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("IsActivateUserBeforeUpdate", StringComparison.OrdinalIgnoreCase))?.Value;
+            if (isActivateUserBeforeUpdate == "1" && !productUser.IsActive)
+            {
+                //If knock product is unassigned and trying to assigned back knock to user we need to make Patch call to reactivate a user first and then make update call
+                //IsActivateUserBeforeUpdate flag is enabled for the knock product only
+                UpdateProductUserProfile();
+            }
+            
             var integration = new ApiIntegration(_httpClient, baseUrlAndQuery);
             var result = integration.PutEntity<IntegrationProductUser>(productUser);
 

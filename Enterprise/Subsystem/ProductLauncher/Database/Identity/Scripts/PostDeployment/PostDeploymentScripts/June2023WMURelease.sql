@@ -7,4 +7,13 @@ IF NOT EXISTS (Select Top 1 1 from enterprise.navigationMenuRights where Navigat
 BEGIN
   Insert into enterprise.navigationMenuRights (NavigationMenuId,RightId) values (@Id,@rightId);
 END
-Go
+GO
+
+
+--Bug 1542068: PME-335178 - Re-assigning Knock CRM product to Unity user does not reactivate the user in Knock
+IF NOT EXISTS (SELECT TOP (1) 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'IsActivateUserBeforeUpdate')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData) 
+	VALUES('IsActivateUserBeforeUpdate', 'Deactivated user should be activated before updating user (patch call)', 0)
+END
+GO
