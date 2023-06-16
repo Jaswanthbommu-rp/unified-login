@@ -265,7 +265,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 string productLoginName;
                 bool isUserUpdate = false;
-                bool isParentCompany = false;
                 if (string.IsNullOrEmpty(_productUsername))
                 {
                     if (!IsUserWithEmail(userPersonaId) || !RegexUtilities.IsValidEmail(userLogin.LoginName))
@@ -345,7 +344,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         {
                             WriteToDiagnosticLog($"ManageProductAdminSupportPortal.ManageAdminSupportPortalUser - Company is having a Parent company - {editorPersonaId} and editorPersonaId  - {userPersonaId}");
                             adminSupportPortalContactResults.Add(item);
-                            isParentCompany = true;
                         }
                     }
                 }
@@ -387,7 +385,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         contactId = contact.Id;
 
                         // PMC to PMC OMS change is not allowed for same user login
-                        if (!string.IsNullOrEmpty(contact.OMS_ID__c) && !string.IsNullOrEmpty(searchOmsId) && contact.OMS_ID__c != searchOmsId && !isParentCompany)
+                        if (!string.IsNullOrEmpty(contact.OMS_ID__c) && !string.IsNullOrEmpty(searchOmsId) && contact.OMS_ID__c != searchOmsId)
                         {
                             if (searchOmsId[0] == 'C' && contact.OMS_ID__c[0] == 'C')
                             {
