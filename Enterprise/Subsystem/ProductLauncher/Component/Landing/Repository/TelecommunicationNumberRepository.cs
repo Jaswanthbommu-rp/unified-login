@@ -30,17 +30,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		/// <returns>Repository response object</returns>
 		public RepositoryResponse CreateTelecommunicationNumber(ITelecommunicationNumber telecommunicationNumber)
 		{
-			dynamic param = new
-			{
-				telecommunicationNumber.ContactMechanismId,
-				telecommunicationNumber.AreaCode,
-				telecommunicationNumber.CountryCode,
-				telecommunicationNumber.PhoneNumber,
-				telecommunicationNumber.ISOCode,
-                telecommunicationNumber.IsDefault
+            dynamic param = new
+            {
+                ContactMechanismId = telecommunicationNumber.ContactMechanismId,
+                AreaCode = telecommunicationNumber.AreaCode,
+                CountryCode = telecommunicationNumber.CountryCode,
+                PhoneNumber = telecommunicationNumber.PhoneNumber,
+                ISOCode = telecommunicationNumber.ISOCode,
+                Default = telecommunicationNumber.IsDefault
             };
 
-			using (var repository = GetRepository())
+            using (var repository = GetRepository())
 			{
 				var result = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateTelecommunicationNumber, param);
 				return result;
