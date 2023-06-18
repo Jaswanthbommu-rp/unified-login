@@ -12,7 +12,7 @@ BEGIN
 			cmu.ContactMechanismUsageTypeID AS ContactMechanismUsageTypeID,
 			Ispreferred = case when cmp.ContactMechanismID is not null then 1 else 0 end,
 			tm.ISOCode,
-			tm.[Default]
+			tm.[Default] as IsDefault
 	FROM    Enterprise.ContactMechanismUsage cmu
 			JOIN Enterprise.PartyContactMechanism pcm ON pcm.PartyContactMechanismId = cmu.PartyContactMechanismID
 			JOIN Enterprise.ContactMechanism cm ON cm.ContactMechanismID = pcm.ContactMechanismId
