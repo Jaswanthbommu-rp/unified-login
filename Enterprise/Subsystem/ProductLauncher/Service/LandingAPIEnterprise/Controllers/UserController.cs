@@ -1825,6 +1825,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     obj.ThirdPartyRelationShipId = 5;
                     obj.ThirdPartyRelationShip = "5";
                     break;
+                case UserTypeDto.Employee:
+                    obj.ThirdPartyRelationShipId = 9;
+                    obj.ThirdPartyRelationShip = "9";
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(userTypeDto), userTypeDto, null);
             }
