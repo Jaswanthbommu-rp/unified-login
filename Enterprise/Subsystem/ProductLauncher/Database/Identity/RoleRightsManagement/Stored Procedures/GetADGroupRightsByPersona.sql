@@ -7,7 +7,6 @@ BEGIN
 		,r.Value [Right]
 		,r.RightName [RightNickName]
 		,Convert(int,r.RightId) [RightValueTypeId]
-		,r.PersistRight
 	FROM Security.ADGroupUser  ADU
 	INNER JOIN Security.ADGroup ADG ON ADG.ADGroupId = ADU.ADGroupId
 	INNER JOIN security.ADGroupRight adr ON adr.ADGroupId = adg.ADGroupId
