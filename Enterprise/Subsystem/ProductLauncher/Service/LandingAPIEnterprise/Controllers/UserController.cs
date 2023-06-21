@@ -1518,7 +1518,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     pBatch.RetryCount = 0;
                     pBatch.InputJson.RoleList = pl.RolesAssigned;
                     pBatch.InputJson.PropertyList = pl.PropertiesAssigned;
-
+                    pBatch.InputJson.IsAssigned = pl.IsAssigned;
                     if (pBatch.ProductId == (int)ProductEnum.OpsBuyer && userProductDetailsDto.UserProfileDetails.UnityRealPageUserId != Guid.Empty)
                     {
                         var response = _manageProductPanel.GetProductProperties(_userClaims.PersonaId, profileDetail.Persona[0].PersonaId, pBatch.ProductId, null);
