@@ -2257,7 +2257,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
                     }
                 }
-                else if (!string.IsNullOrWhiteSpace(productAccessRight))
+                else if (!string.IsNullOrWhiteSpace(productAccessRight) && _userClaim.ImpersonatedBy == Guid.Empty)
                 {
                     s.LockOnProductAccess = !editorRights.Contains(productAccessRight, StringComparer.OrdinalIgnoreCase);
                 }                
