@@ -383,7 +383,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     {
                         List<ExportDataFileConfiguration> exportConfigurationsAdditionalFields = new List<ExportDataFileConfiguration>
                         {
-                            new ExportDataFileConfiguration { Header = "User Relationship Type", MappedField = "UserRelationshipType", PDFColumnWidth = "2.20", Preference = 1 },
+                            new ExportDataFileConfiguration { Header = "User Relationship", MappedField = "UserRelationshipType", PDFColumnWidth = "2.20", Preference = 1 },
                             new ExportDataFileConfiguration { Header = "Company Name", MappedField = "CompanyName", PDFColumnWidth = "1.30", Preference = 16 }
                         };
                         exportConfigurations.AddRange(exportConfigurationsAdditionalFields);
