@@ -23,9 +23,7 @@ using System.Text;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using IC = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using MC = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.MarketingCenter;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ops;
 using Right = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.MarketingCenter.Right;
-using System.Web.Http.Results;
 
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
