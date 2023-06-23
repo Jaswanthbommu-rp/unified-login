@@ -1090,6 +1090,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 string marketingCompanyId = company.CompanyInstanceSourceId;
                 var url = _productUrl + $"/external/company/{marketingCompanyId}/roles/{roleId}";
                 var result = _httpClient.DeleteAsync(url).Result;
+                if (result.IsSuccessStatusCode)
+                {
+                    dynamic jsonResult = JsonConvert.DeserializeObject<dynamic>(result.Content.ReadAsStringAsync().Result);
+                    logData = new Dictionary<string, object>
+                    {
+                        { "userResult", jsonResult }
+                    };
+                    WriteToDiagnosticLog($"ManageMarketingCenterUser.DeleteRole - delete role {roleId}. Got result from marketing center.", logData);
+                }
+                else
+                {
+                    WriteToDiagnosticLog($"ManageMarketingCenterUser.DeleteRole - delete role {roleId} status errored.", logData);
+                    response = new ListResponse()
+                    {
+                        IsError = true,
+                        ErrorReason = "ManageMarketingCenterUser.DeleteRole - Unable to delete role"
+                    };
+                    return response;
+                }
             }
 
 			catch (Exception ex)
@@ -1117,24 +1136,42 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             Dictionary<string, object> logData = new Dictionary<string, object>();
             response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
             if (response.IsError) { return response; }
-            try
-            {
-                CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
-                string marketingCompanyId = company.CompanyInstanceSourceId;
-                var url = _productUrl + $"/external/company/{marketingCompanyId}/roles/{roleId}?active={IsActive}";
-                var request = new HttpRequestMessage(new HttpMethod("PATCH"), url);
-                var result = _httpClient.SendAsync(request).Result;
-            }
-
-            catch (Exception ex)
-            {
-                WriteToErrorLog($"Update Role Status - Error", exception: ex);
-                response = new ListResponse()
-                {
-                    IsError = true,
-                    ErrorReason = ex.Message
-                };
-            }
+			try
+			{
+				CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
+				string marketingCompanyId = company.CompanyInstanceSourceId;
+				var url = _productUrl + $"/external/company/{marketingCompanyId}/roles/{roleId}?active={IsActive}";
+				var request = new HttpRequestMessage(new HttpMethod("PATCH"), url);
+				var result = _httpClient.SendAsync(request).Result;
+				if (result.IsSuccessStatusCode)
+				{
+                    dynamic jsonResult = JsonConvert.DeserializeObject<dynamic>(result.Content.ReadAsStringAsync().Result);
+                    logData = new Dictionary<string, object>
+                    {
+                        { "userResult", jsonResult }
+                    };
+                    WriteToDiagnosticLog($"ManageMarketingCenterUser.UpdateRoleStatus - Update roleId {roleId} status. Got result from marketing center.", logData);
+				}
+				else
+				{
+					WriteToDiagnosticLog($"ManageMarketingCenterUser.UpdateRoleStatus - Update userId {roleId} status errored.");
+					response = new ListResponse()
+					{
+						IsError = true,
+						ErrorReason = "ManageMarketingCenterUser.UpdateRoleStatus - Unable to update role status"
+					};
+					return response;
+				}
+			}
+			catch (Exception ex)
+			{
+				WriteToErrorLog($"Update Role Status - Error", exception: ex);
+				response = new ListResponse()
+				{
+					IsError = true,
+					ErrorReason = ex.Message
+				};
+			}
             return response;
         }
         #region Private methods

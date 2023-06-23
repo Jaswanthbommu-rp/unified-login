@@ -13,7 +13,6 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
