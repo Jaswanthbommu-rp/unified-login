@@ -1095,7 +1095,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     dynamic jsonResult = JsonConvert.DeserializeObject<dynamic>(result.Content.ReadAsStringAsync().Result);
                     logData = new Dictionary<string, object>
                     {
-                        { "userResult", jsonResult }
+                        { "roleResult", jsonResult }
                     };
                     WriteToDiagnosticLog($"ManageMarketingCenterUser.DeleteRole - delete role {roleId}. Got result from marketing center.", logData);
                 }
@@ -1148,7 +1148,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     dynamic jsonResult = JsonConvert.DeserializeObject<dynamic>(result.Content.ReadAsStringAsync().Result);
                     logData = new Dictionary<string, object>
                     {
-                        { "userResult", jsonResult }
+                        { "roleResult", jsonResult }
                     };
                     WriteToDiagnosticLog($"ManageMarketingCenterUser.UpdateRoleStatus - Update roleId {roleId} status. Got result from marketing center.", logData);
 				}
