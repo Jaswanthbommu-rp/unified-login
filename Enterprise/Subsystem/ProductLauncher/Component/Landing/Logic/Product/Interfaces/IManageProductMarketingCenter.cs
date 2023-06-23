@@ -11,6 +11,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         ListResponse GetRoles(long editorPersonaId, long userPersonaId, RequestParameter datafilter);
         string ManageMarketingCenterUser(long editorPersonaId, long userPersonaId, List<int> RoleList, List<string> PropertyList, bool IsAssignedNewPropertyByDefault);
         string UnassignUser(long createUserPersonaId, long assignUserPersonaId);
+        ListResponse GetRolesCount(long editorPersonaId);
+        ListResponse GetRights(long editorPersonaId);
 
         /// <summary>
         /// List all users
@@ -37,5 +39,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="isActive"></param>
         /// <returns></returns>
         bool ChangeUserStatus(long editorPersonaId, string username, string productUserId, bool isActive);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="editorPersonaId"></param>
+
+        /// <param name="roleId"></param>
+        /// <returns></returns>
+        ListResponse DeleteRole(long editorPersonaId, int roleId);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="editorPersonaId"></param>
+        /// <param name="roleId"></param>
+        /// <param name="Isactive"></param>
+        /// <returns></returns>
+        ListResponse UpdateRoleStatus(long editorPersonaId, int roleId, bool Isactive);
     }
 }

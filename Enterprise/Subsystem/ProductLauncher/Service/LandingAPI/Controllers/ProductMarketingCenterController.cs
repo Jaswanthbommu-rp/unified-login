@@ -44,6 +44,51 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             return response;
         }
 
+
+        /// <summary>
+        /// Used to get a list of roles 
+        /// </summary>
+        /// <remarks>A datafilter can be used to filter the roles using name</remarks>
+        /// <param name="editorPersonaId"></param>                
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when Information is out of sync with the server)")]
+        [Route("products/marketingcenter/rolescount")]
+        [Authorize]
+        [HttpGet]
+        public HttpResponseMessage GetRolesCount(long editorPersonaId)
+        {
+            if (editorPersonaId == 0)
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
+            ManageProductMarketingCenter manageProductMarketingCenter = new ManageProductMarketingCenter(base._userClaims);
+            ListResponse response = manageProductMarketingCenter.GetRolesCount(editorPersonaId);
+
+            return Request.CreateResponse(HttpStatusCode.OK, response);
+        }
+
+        /// <summary>
+        /// Used to get a list of rights 
+        /// </summary>
+        /// <remarks></remarks>
+        /// <param name="editorPersonaId"></param>       
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "A list of rights for the given company", Type = typeof(object))]
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when Information is out of sync with the server)")]
+        [Route("products/marketingcenter/rights")]
+        [Authorize]
+        [HttpGet]
+        public HttpResponseMessage GetRights(long editorPersonaId)
+        {
+            if (editorPersonaId == 0)
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
+            ManageProductMarketingCenter manageProductMarketingCenter = new ManageProductMarketingCenter(base._userClaims);
+            ListResponse response = manageProductMarketingCenter.GetRights(editorPersonaId);
+            return Request.CreateResponse(HttpStatusCode.OK, response);
+        }
+
         /// <summary>
         /// Used to get a list of properties
         /// </summary>
@@ -157,6 +202,51 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Deactivate MarketingCenter user failed.");
             }
             return Request.CreateResponse(HttpStatusCode.OK, "Successfully disabled product user.");
+        }
+
+        /// <summary>
+        /// Disable the resident portal user.
+        /// </summary>
+        /// <param name="editorPersonaId">The editorPersonaId.</param>
+        /// <param name="roleId">The roleId.</param>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Role Deleted Successfully", Type = typeof(HttpResponseMessage))]
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad Request")]
+        [SwaggerResponseExamples(typeof(HttpResponseMessage), typeof(ResponseExample))]
+        [Route("products/marketingcenter/role")]
+        [Authorize]
+        [HttpDelete]
+        public ListResponse DeleteMarketingCenterRole(long editorPersonaId, int roleId)
+        {
+            if (editorPersonaId == 0 || editorPersonaId == 0) { throw new HttpResponseException(HttpStatusCode.BadRequest); }
+            var manageProductMarketingCenter = new ManageProductMarketingCenter(base._userClaims);
+            ListResponse response = manageProductMarketingCenter.DeleteRole(editorPersonaId, roleId);
+            return response;
+        }
+
+        /// <summary>
+        /// Disable the resident portal user.
+        /// </summary>
+        /// <param name="roleId">The roleId.</param>
+        /// <param name="isActive">The isActive.</param>
+        /// <param name="editorPersonaId">The editorPersonaId.</param>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Role Deleted Successfully", Type = typeof(HttpResponseMessage))]
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad Request")]
+        [SwaggerResponseExamples(typeof(HttpResponseMessage), typeof(ResponseExample))]
+        [Route("products/marketingcenter/role/status")]
+        [Authorize]
+        [HttpPost]
+        public ListResponse UpdateMarketingCenterRoleStatus(long editorPersonaId, int roleId, bool isActive)
+        {
+            if (editorPersonaId == 0 || editorPersonaId == 0) { throw new HttpResponseException(HttpStatusCode.BadRequest); }
+            var manageProductMarketingCenter = new ManageProductMarketingCenter(base._userClaims);
+            ListResponse response = manageProductMarketingCenter.UpdateRoleStatus(editorPersonaId, roleId, isActive);
+            return response;
         }
 
         #endregion
