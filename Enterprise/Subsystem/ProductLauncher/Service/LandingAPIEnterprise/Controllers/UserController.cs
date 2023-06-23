@@ -1715,6 +1715,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
 
                 productResult.Resources = ConvertDashboardProductsToRAUL(resources);
+                if (productResult.Resources.Any(m => m.Id == 89))
+                {
+                    var internalSettings = _manageSettings.GetUnifiedSettings("security", _orgPartyId);
+                    if (internalSettings == null || internalSettings.Any(a => a.Name == "hidesupportportaltile" && a.Value == "1"))
+                    {
+                        var adminSupportPortalResource = productResult.Resources.FirstOrDefault(m => m.Id == 89);
+                        productResult.Resources.Remove(adminSupportPortalResource);
+                    }
+                }
                 return Request.CreateResponse(HttpStatusCode.OK, productResult);
             }
 
