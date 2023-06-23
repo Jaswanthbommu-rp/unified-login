@@ -25,6 +25,7 @@ using IC = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Ident
 using MC = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.MarketingCenter;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ops;
 using Right = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.MarketingCenter.Right;
+using System.Web.Http.Results;
 
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
@@ -516,12 +517,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public ListResponse GetRolesCount(long editorPersonaId)
         {
             ListResponse response = new ListResponse();
+			try
+			{
+				response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
+				if (response.IsError) { return response; }
 
-            response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
-            if (response.IsError) { return response; }
-
-            response = GetRolesCountDetails(editorPersonaId);
-
+				response = GetRolesCountDetails(editorPersonaId);
+			}
+            catch (Exception ex)
+			{
+                response.IsError = true;
+				response.ErrorReason = ex.Message;
+                WriteToErrorLog($"ManageMarketingCenterUser.GetRolesCount - Error. {ex.Message}", exception: ex);
+            }
             return response;
         }
 
@@ -533,12 +541,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public ListResponse GetRights(long editorPersonaId)
         {
             ListResponse response = new ListResponse();
+			try
+			{
+				response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
+				if (response.IsError) { return response; }
 
-            response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
-            if (response.IsError) { return response; }
-
-            response = GetRightsDetails(editorPersonaId);
-
+				response = GetRightsDetails(editorPersonaId);
+			}
+            catch (Exception ex)
+            {
+                response.IsError = true;
+                response.ErrorReason = ex.Message;
+                WriteToErrorLog($"ManageMarketingCenterUser.GetRights - Error. {ex.Message}", exception: ex);
+            }
             return response;
         }
 
@@ -562,7 +577,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 logData = new Dictionary<string, object>();
                 logData.Add("url", url);
                 WriteToDiagnosticLog("Marketing Center GetRolesCountDetails - Getting roles.", logData);
-                url= "http://api.pv3.myleasestar.com/v2/company/30032/roles";
+                
 		        var apiResponse = _httpClient.GetAsync(url).Result;
                 if (apiResponse.IsSuccessStatusCode)
                 {
@@ -594,6 +609,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return response;
         }
 
+        /// <summary>
+        /// Used to get rights for Marketing Center in Roles and Rights Access page.
+        /// </summary>
+        /// <param name="editorPersonaId">Logged-in user PersonaId</param>
+        /// <returns></returns>
         private ListResponse GetRightsDetails(long editorPersonaId)
         {
             ListResponse response = new ListResponse();
@@ -608,12 +628,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 WriteToDiagnosticLog($"GetRights - Found blue book company source id {marketingCompanyId}");
                 var url = _productUrl + $"/v2/company/{marketingCompanyId}/rights" ;
-				url = "http://api.pv3.myleasestar.com/v2/company/30032/rights";
+				
                 logData = new Dictionary<string, object>();
                 logData.Add("url", url);
                 WriteToDiagnosticLog("GetRightsDetails - Getting rights.", logData);
 
-                //var apiResponse = _client.GetAsync(url).Result;
                 var apiResponse = _httpClient.GetAsync(url).Result;
                 if (apiResponse.IsSuccessStatusCode)
                 {
@@ -1069,8 +1088,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (response.IsError) { return response; }
             try
 			{
-                var url = $"https://api.pv3.myleasestar.com/external/company/30032/roles/{roleId}";
-                var response1 = _httpClient.DeleteAsync(url).Result;
+                CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
+                string marketingCompanyId = company.CompanyInstanceSourceId;
+                var url = _productUrl + $"/external/company/{marketingCompanyId}/roles/{roleId}";
+                var result = _httpClient.DeleteAsync(url).Result;
             }
 
 			catch (Exception ex)
@@ -1100,9 +1121,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (response.IsError) { return response; }
             try
             {
-                var url = $"https://api.pv3.myleasestar.com/external/company/30032/roles/{roleId}?active={IsActive}";
+                CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
+                string marketingCompanyId = company.CompanyInstanceSourceId;
+                var url = _productUrl + $"/external/company/{marketingCompanyId}/roles/{roleId}?active={IsActive}";
                 var request = new HttpRequestMessage(new HttpMethod("PATCH"), url);
-                var response1 = _httpClient.SendAsync(request).Result;
+                var result = _httpClient.SendAsync(request).Result;
             }
 
             catch (Exception ex)
