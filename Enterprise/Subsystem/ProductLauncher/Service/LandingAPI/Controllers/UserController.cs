@@ -35,7 +35,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
     /// Controller to hold all user management related APIs
     /// </summary>
     public class UserController : BaseApiController
-	{
+	{	
         #region Public Methods
         /// <summary>
         /// Give administrators access to missing products based on a customer company
@@ -183,8 +183,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				IList<PersonaProductUserDetails> resources = manageProduct.GetUserAssignedProductsByPersona(persona: persona, productSelectType: ProductSelectType.ResourcesOnly, security: security);
 				productResult.Products = ConvertDashboardProductsToRAUL(products);
 				productResult.Resources = ConvertDashboardProductsToRAUL(resources);
+                if (productResult.Resources.Any(m => m.Id == 89))
+                {
+                    IManageUnifiedSettings manageSettings = new ManageUnifiedSettings(_userClaims);
+                    var internalSettings = manageSettings.GetUnifiedSettings("security", _orgPartyId);
+                    if (internalSettings == null || internalSettings.Any(a => a.Name == "hidesupportportaltile" && a.Value == "1"))
+                    {
+                        var adminSupportPortalResource = productResult.Resources.FirstOrDefault(m => m.Id == 89);
+                        productResult.Resources.Remove(adminSupportPortalResource);
+                    }
+                }
 
-				return Request.CreateResponse(HttpStatusCode.OK, productResult);
+                return Request.CreateResponse(HttpStatusCode.OK, productResult);
 			}
 
 			errorStatus.Success = false;
