@@ -10,34 +10,52 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
     public class Right
     {
         /// <summary>
-        /// Used to store the right id
+        /// Right id
         /// </summary>
         [JsonProperty("privilegeId")]
         public int RightId { get; set; }
 
         /// <summary>
-        /// Used to store the Right name
+        /// description
         /// </summary>
-        [JsonProperty("right")]
-        public string Rightname { get; set; }
+        [JsonProperty("description")]
+        public string Description { get; set; }
 
         /// <summary>
-        /// Used to store of the Group is active
+        /// GroupName
         /// </summary>
         [JsonProperty("privilegeGroupName")]
-        public string Groupname { get; set; }
+        public string GroupName { get; set; }
+
+        /// <summary>
+        /// GroupId
+        /// </summary>
+        [JsonProperty("privilegeGroupId")]
+        public int GroupId { get; set; }
 
         /// <summary>
         /// Used to store of the Sub Group name
         /// </summary>
         [JsonProperty("privilegeSubGroupName")]
-        public string SubGroupname { get; set; }
+        public string SubGroupName { get; set; }
 
         /// <summary>
-        /// Used to store of the Role count
+        /// Sub Group Id
         /// </summary>
-        [JsonProperty("roles")] 
-        public int RoleCount { get; set; }
+        [JsonProperty("privilegeSubGroupId")]
+        public string SubGroupId { get; set; }
+
+        /// <summary>
+        /// Display Sequence
+        /// </summary>
+        [JsonProperty("displaySequence")]
+        public int DisplaySequence { get; set; }
+
+        /// <summary>
+        /// Right name
+        /// </summary>
+        [JsonProperty("right")]
+        public string RightName { get; set; }
 
         /// <summary>
         /// Used to store of the Action
@@ -45,5 +63,63 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         [JsonProperty("actionLabel")]
         public string Action { get; set; }
 
+        /// <summary>
+        /// Used to store of the Role count
+        /// </summary>
+        [JsonProperty("roles")] 
+        public int RoleCount { get; set; }
+    }
+
+    public class MCRight
+    {
+        /// <summary>
+        /// Right id
+        /// </summary>
+        public int RightId { get; set; }
+
+        /// <summary>
+        /// description
+        /// </summary>
+        public string Description { get; set; }
+
+        /// <summary>
+        /// GroupName
+        /// </summary>
+        public string GroupName { get; set; }
+
+        /// <summary>
+        /// GroupId
+        /// </summary>
+        public int GroupId { get; set; }
+
+        /// <summary>
+        /// Used to store of the Sub Group name
+        /// </summary>
+        public string SubGroupName { get; set; }
+
+        /// <summary>
+        /// Sub Group Id
+        /// </summary>
+        public string SubGroupId { get; set; }
+
+        /// <summary>
+        /// Display Sequence
+        /// </summary>
+        public int DisplaySequence { get; set; }
+
+        /// <summary>
+        /// Right name
+        /// </summary>
+        public string RightName { get; set; }
+
+        /// <summary>
+        /// Used to store of the Action
+        /// </summary>
+        public string Action { get; set; }
+
+        /// <summary>
+        /// Used to store of the Role count
+        /// </summary>
+        public int RoleCount { get; set; }
     }
 }

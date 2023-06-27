@@ -10,19 +10,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
     public class RolesRightsAccessRight
     {
         [JsonProperty("id")]
-        public int RoleId { get; set; }
+        public int Id { get; set; }
 
         /// <summary>
         /// Used to store the role name
         /// </summary>
         [JsonProperty("name")]
-        public string RoleName { get; set; }
-
-        /// <summary>
-        /// Used to store the rightsAssigned
-        /// </summary>
-        [JsonProperty("rightsAssigned")]
-        public int RightsAssigned { get; set; }
+        public string Name { get; set; }
 
         /// <summary>
         /// Used to store the role id
@@ -34,24 +28,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         /// Used to store of the role is active
         /// </summary>
         [JsonProperty("active")]
-        public bool IsActive { get; set; }
+        public bool Active { get; set; }
 
         /// <summary>
         /// Used to store of the users
         /// </summary>
         [JsonProperty("users")]
-        public int UserCount { get; set; }
+        public int Users { get; set; }
 
         /// <summary>
         /// Used to store the RoleType
         /// </summary>
         [JsonProperty("type")]
-        public string RoleType { get; set; }
+        public string Type { get; set; }
 
         /// <summary>
         /// Used to store the mutable
         /// </summary>
         [JsonProperty("mutable")]
-        public bool IsMutable { get; set; }
+        public bool Mutable { get; set; }
+
+        /// <summary>
+        /// Used to store the rightsAssigned
+        /// </summary>
+        [JsonProperty("rights")]
+        public int Rights { get; set; }
     }
 }
