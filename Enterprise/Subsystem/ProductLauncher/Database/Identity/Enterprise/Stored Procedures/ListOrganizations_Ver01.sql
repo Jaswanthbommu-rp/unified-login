@@ -21,9 +21,11 @@ BEGIN
 			ISNULL(D.MasterId, 0)  AS 'BooksMasterId',  
 			ISNULL(D.CompanyMasterId, 0)  AS 'BooksCustomerMasterId',  
 			'RealPageEmployeeAccessID' AS 'SettingName',  
-			P2.RealPageId AS 'PersonRealPageId'
+			P2.RealPageId AS 'PersonRealPageId',
+			OD.[Name] AS Domain
 		FROM 
-			Enterprise.Organization O WITH (NOLOCK) 
+		Enterprise.Organization O WITH (NOLOCK) 
+		INNER JOIN Enterprise.OrganizationDomain OD WITH (NOLOCK) ON O.OrganizationDomainId = OD.OrganizationDomainId	
 		INNER JOIN Enterprise.Party P WITH (NOLOCK) ON O.PartyId = P.PartyId  
 		INNER JOIN Enterprise.VW_DataImportMapping D WITH (NOLOCK) ON O.PartyId = D.PartyId  
 		INNER JOIN Enterprise.OrganizationAdminUser OAU WITH (NOLOCK) ON OAU.OrganizationPartyId = O.PartyId  
@@ -48,9 +50,11 @@ BEGIN
 			ISNULL(D.MasterId, 0)  AS 'BooksMasterId',  
 			ISNULL(D.CompanyMasterId, 0)  AS 'BooksCustomerMasterId',  
 			'RealPageEmployeeAccessID' AS 'SettingName',  
-			P2.RealPageId AS 'PersonRealPageId'
+			P2.RealPageId AS 'PersonRealPageId',
+			OD.[Name] AS Domain
 		FROM 
-			Enterprise.Organization O WITH (NOLOCK) 
+		Enterprise.Organization O WITH (NOLOCK) 
+		INNER JOIN Enterprise.OrganizationDomain OD WITH (NOLOCK) ON O.OrganizationDomainId = OD.OrganizationDomainId
 		INNER JOIN Enterprise.Party P WITH (NOLOCK) ON O.PartyId = P.PartyId  
 		INNER JOIN Enterprise.VW_DataImportMapping D WITH (NOLOCK) ON O.PartyId = D.PartyId  
 		INNER JOIN Enterprise.OrganizationAdminUser OAU WITH (NOLOCK) ON OAU.OrganizationPartyId = O.PartyId  
@@ -75,9 +79,11 @@ BEGIN
 			ISNULL(D.MasterId, 0)  AS 'BooksMasterId',  
 			ISNULL(D.CompanyMasterId, 0)  AS 'BooksCustomerMasterId',  
 			'RealPageEmployeeAccessID' AS 'SettingName',  
-			P2.RealPageId AS 'PersonRealPageId'
+			P2.RealPageId AS 'PersonRealPageId',
+			OD.[Name] AS Domain
 		FROM 
-			Enterprise.Organization O WITH (NOLOCK) 
+		Enterprise.Organization O WITH (NOLOCK) 
+		INNER JOIN Enterprise.OrganizationDomain OD WITH (NOLOCK) ON O.OrganizationDomainId = OD.OrganizationDomainId
 		INNER JOIN Enterprise.Party P WITH (NOLOCK) ON O.PartyId = P.PartyId  
 		INNER JOIN Enterprise.VW_DataImportMapping D WITH (NOLOCK) ON O.PartyId = D.PartyId  
 		INNER JOIN Enterprise.OrganizationAdminUser OAU WITH (NOLOCK) ON OAU.OrganizationPartyId = O.PartyId  
