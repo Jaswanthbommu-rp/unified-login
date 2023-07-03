@@ -187,7 +187,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 {
                     IManageUnifiedSettings manageSettings = new ManageUnifiedSettings(_userClaims);
                     var internalSettings = manageSettings.GetUnifiedSettings("security", _orgPartyId);
-                    if (internalSettings == null || internalSettings.Any(a => a.Name == "hidesupportportaltile" && a.Value == "1"))
+					var supportPortalTileAccess = internalSettings.FirstOrDefault(a => a.Name == "hidesupportportaltile");
+                    if (supportPortalTileAccess == null || supportPortalTileAccess.Value == "1")
                     {
                         var adminSupportPortalResource = productResult.Resources.FirstOrDefault(m => m.Id == 89);
                         productResult.Resources.Remove(adminSupportPortalResource);
