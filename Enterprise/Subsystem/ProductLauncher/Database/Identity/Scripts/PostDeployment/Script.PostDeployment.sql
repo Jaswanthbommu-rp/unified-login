@@ -40,8 +40,6 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\April2023release.sql
 :r .\PostDeploymentScripts\1486360-useraccess-summary-properties.sql
 
-:r .\PostDeploymentScripts\1438413-propagate-access-rights.sql
-
 -- keep these at the end!
 :r .\PostDeploymentScripts\UpdateStatistics.sql
 :r .\PostDeploymentScripts\RecompileAllProcs.sql

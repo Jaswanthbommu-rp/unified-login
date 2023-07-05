@@ -64,15 +64,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
                 IList<UserRoleRights> impersonateCompanyRoleList = GetCompanyRoles(userClaim, impersonateUserPersona.OrganizationPartyId, impersonateUserPersona.Organization.RealPageId);
 
                 // get impersonator user roles
-                List<SharedObjects.Product.UserManagement.Role> impersonateUserRoleList = GetUserRoles(impersonateUserPersona.PersonaId, impersonateUserPersona.OrganizationPartyId);
-                foreach (SharedObjects.Product.UserManagement.Role role in impersonateUserRoleList)
+                List<Component.SharedObjects.Product.UserManagement.Role> impersonateUserRoleList = GetUserRoles(impersonateUserPersona.PersonaId, impersonateUserPersona.OrganizationPartyId);
+                //List<long> impersonateUserRoles = new List<long>();
+                foreach (Component.SharedObjects.Product.UserManagement.Role role in impersonateUserRoleList)
                 {
                     List<string> impersonateUserRights = GetRights(impersonateCompanyRoleList, role.RoleID, impersonateUserPersona.PersonaId, impersonateUserPersona.OrganizationPartyId);
                     List<Right> persistRightsList = GetPersistRights();
-                    //New Implementation: Rights will be carry forwarded only if employee user has it
+
+                    // check for view only access
+                    AddRemoveRightForCIMPL(identity, impersonateUserRights, distinctUserRights, "CIMPLManagePII");
+                    AddRemoveRightForCIMPL(identity, impersonateUserRights, distinctUserRights, "CIMPLManageSensitiveFinancialData");
+
                     foreach (var right in persistRightsList)
                     {
-                        AddRemoveRightForUser(identity, impersonateUserRights, distinctUserRights, right.RightName.ToUpper());
+                        AddRightFromImpersonator(identity, impersonateUserRights, distinctUserRights, right.RightName.ToUpper());
                     }
                 }
             }
@@ -85,14 +90,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
                 // RP Employee-Get ADGroup Rights for the persona
                 UserRoleRightRepository urr = new UserRoleRightRepository();
                 List<Right> adGroupRights = urr.GetADGroupRightsByPersonaId(rpEmployeePersona.PersonaId)?.ToList();
-                if (adGroupRights != null && adGroupRights.Count > 0)
+                if(adGroupRights != null && adGroupRights.Count > 0)
                 {
                     List<string> adRights = adGroupRights.Select(x => x.RightNickName).ToList();
                     List<Right> persistRightsList = GetPersistRights();
-                    //New Implementation: Rights will be carry forwarded only if employee user has it
                     foreach (var right in persistRightsList)
                     {
-                        AddRemoveRightForUser(identity, adRights, distinctUserRights, right.RightName.ToUpper());
+                        AddRightFromImpersonator(identity, adRights, distinctUserRights, right.RightName.ToUpper());
                     }
                 }
             }
@@ -164,7 +168,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
         /// <param name="impersonateUserRights">The list of rights of the impersonator</param>
         /// <param name="userRights">The list of rights assigned to this user</param>
         /// <param name="rightName">The right to check</param>
-        private static void AddRemoveRightForUser(ClaimsIdentity identity, List<string> impersonateUserRights, List<string> userRights, string rightName)
+        private static void AddRemoveRightForCIMPL(ClaimsIdentity identity, List<string> impersonateUserRights, List<string> userRights, string rightName)
         {
             if (impersonateUserRights.Contains(rightName) && !userRights.Contains(rightName))
             {
