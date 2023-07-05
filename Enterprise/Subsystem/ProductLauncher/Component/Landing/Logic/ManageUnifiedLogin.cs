@@ -427,6 +427,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <returns></returns>
         public ListResponse DeleteRole(long editorPersonaId, long roleId)
         {
+            WriteToDiagnosticLog(
+                $"UserManagement - ManageUnifiedLogin.DeleteRole at beginning of method for user with editorPersona id - {editorPersonaId}, roleId - {roleId} ");
             ListResponse response = new ListResponse();
             response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
             if (response.IsError)
@@ -463,8 +465,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 var resp = ocr.DeleteRole(roleId);
                 if (resp.ErrorMessage.Trim() != string.Empty)
                 {
+                     WriteToDiagnosticLog(
+                    $"UserManagement - ManageUnifiedLogin.DeleteRole , Unable to delete role id - {roleId} , editorPersonaId - {editorPersonaId}. Error Message : {resp.ErrorMessage}");
                     response.IsError = true;
-                    response.ErrorReason = resp.ErrorMessage;
+                    response.ErrorReason = "Something went wrong. Please return to home and try again. If this problem continues, please contact your administrator.";
                 }
 
                 List<object> role = new List<object>();
