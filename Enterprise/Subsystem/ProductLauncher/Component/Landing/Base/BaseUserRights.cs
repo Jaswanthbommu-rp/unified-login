@@ -30,7 +30,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
 
             //User did not Impersonate
             //User is Customer User or RP employee user logged in as Myself
-            if (userClaim.ImpersonatedBy == Guid.Empty)
+            if(userClaim.ImpersonatedBy == Guid.Empty)
             {
                 // get company roles
                 IList<UserRoleRights> companyRoleList = GetCompanyRoles(userClaim, userClaim.OrganizationPartyId, userClaim.OrganizationRealPageGuid);
@@ -38,19 +38,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
                 // get user roles
                 List<Claim> userRoles = identity.Claims.Where(p => p.Type.Equals("roleid", StringComparison.OrdinalIgnoreCase) || p.Type.Equals("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", StringComparison.OrdinalIgnoreCase)).ToList();
                 List<long> roleIds = new List<long>();
-                foreach (var item in userRoles)
+                foreach(var item in userRoles)
                 {
                     int roleId;
                     bool converted = int.TryParse(item.Value, out roleId);
                     if (converted)
                     {
                         roleIds.Add(roleId);
-                    }
+                    }                    
                 }
 
                 List<UserRoleRights> companyRoleRights = companyRoleList.Where(x => roleIds.Contains(x.RoleId)).ToList();
 
-                foreach (var r in companyRoleRights)
+                foreach(var r in companyRoleRights)
                 {
                     userRights.AddRange(r.UserRights.Select(x => x.RightNickName));
                 }
@@ -93,31 +93,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
                     List<string> adRights = adGroupRights.Select(x => x.RightNickName).ToList();
                     userRights.AddRange(adRights);
                 }
-
-                #region remove
-                //Remove this code after all users requested for ADGroups(temporary only)
-                // get user roles
-                List<Claim> userRoles = identity.Claims.Where(p => p.Type.Equals("roleid", StringComparison.OrdinalIgnoreCase) || p.Type.Equals("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", StringComparison.OrdinalIgnoreCase)).ToList();
-                List<long> roleIds = new List<long>();
-                foreach (var item in userRoles)
-                {
-                    int roleId;
-                    bool converted = int.TryParse(item.Value, out roleId);
-                    if (converted)
-                    {
-                        roleIds.Add(roleId);
-                    }
-                }
-
-                // get company roles
-                IList<UserRoleRights> companyRoleList = GetCompanyRoles(userClaim, userClaim.OrganizationPartyId, userClaim.OrganizationRealPageGuid);
-                List<UserRoleRights> companyRoleRights = companyRoleList.Where(x => roleIds.Contains(x.RoleId)).ToList();
-
-                foreach (var r in companyRoleRights)
-                {
-                    userRights.AddRange(r.UserRights.Select(x => x.RightNickName));
-                }
-                #endregion
 
                 var distinctUserRights = userRights.Distinct().OrderBy(x => x).ToList();
                 identity.AddClaims(distinctUserRights.Select(a => new Claim("right", a)).ToList());
