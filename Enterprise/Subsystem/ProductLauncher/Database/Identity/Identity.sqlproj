@@ -1108,7 +1108,7 @@
     <Build Include="Hots\Tables\PropertyRelationship.sql" />
     <Build Include="Hots\Stored Procedures\GetBaseCompanyRealpageId.sql" />
     <Build Include="Hots\Stored Procedures\ListHotsBaseOrganizationUsers.sql" />
-    <Build Include="Hots\Stored Procedures\UpdateHotsCloneUserPassword.sql" />
+	<Build Include="Hots\Stored Procedures\UpdateHotsCloneUserPassword.sql" />
     <Build Include="Enterprise\Tables\NavigationMenu.sql" />
     <Build Include="Enterprise\Tables\NavigationMenuRights.sql" />
     <Build Include="Enterprise\Stored Procedures\GetNavigationMenu.sql" />
@@ -1241,6 +1241,7 @@
     <Build Include="Enterprise\Stored Procedures\UpdateExternalUserRelationship.sql" />
     <Build Include="Enterprise\IntListType.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\InsertBatchPersonaIdToEnterpriseRoleBatchProcess.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\GetPersistRights.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\GetADGroupRightsByPersona.sql" />
     <Build Include="Batch\Table\PrimaryPropertiesBatchProcess.sql" />
     <Build Include="Batch\Procedure\InsertBatchPersonaIdToPrimaryPropertiesBatchProcess.sql" />
