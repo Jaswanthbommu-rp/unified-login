@@ -1320,7 +1320,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             if (producIntegrationType.Equals("UPFM"))
             {
                 var integration = _integrationTypeFactory.GetIntegration(productId);
-                productResult = integration.GetEnterpriseProperties(_defaultUserClaim.PersonaId);
+                productResult = integration.GetEnterpriseProperties(_defaultUserClaim.PersonaId, new RequestParameter());
             }
             else
             {

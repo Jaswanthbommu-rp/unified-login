@@ -12,7 +12,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
     {
         ListResponse GetProperties(long editorPersonaId, long userPersonaId, RequestParameter dataFilter);
 
-        ListResponse GetEnterpriseProperties(long userPersonaId);
+        ListResponse GetEnterpriseProperties(long userPersonaId, RequestParameter dataFilter);
 
         ListResponse GetPropertyGroups(long editorPersonaId, long userPersonaId, RequestParameter datafilter, string userLoginName = "");
 
