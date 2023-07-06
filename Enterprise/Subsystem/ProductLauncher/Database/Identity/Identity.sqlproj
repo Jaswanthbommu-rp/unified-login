@@ -1108,7 +1108,7 @@
     <Build Include="Hots\Tables\PropertyRelationship.sql" />
     <Build Include="Hots\Stored Procedures\GetBaseCompanyRealpageId.sql" />
     <Build Include="Hots\Stored Procedures\ListHotsBaseOrganizationUsers.sql" />
-	<Build Include="Hots\Stored Procedures\UpdateHotsCloneUserPassword.sql" />
+    <Build Include="Hots\Stored Procedures\UpdateHotsCloneUserPassword.sql" />
     <Build Include="Enterprise\Tables\NavigationMenu.sql" />
     <Build Include="Enterprise\Tables\NavigationMenuRights.sql" />
     <Build Include="Enterprise\Stored Procedures\GetNavigationMenu.sql" />
@@ -1414,6 +1414,7 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\UserRelationShipScript.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\class.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\1486360-useraccess-summary-properties.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\July2023Release.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />
