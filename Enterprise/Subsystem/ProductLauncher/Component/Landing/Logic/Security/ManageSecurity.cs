@@ -74,6 +74,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Securi
                         .Where(ar => ar.ObjectType.Equals("Right", StringComparison.OrdinalIgnoreCase))
                         .Select(ar => ar.Action)
                         .ToList();
+                        
+                    routeSecurity.ProductRights = actionRights
+                    .Where(ar => ar.ObjectType.Equals("Right", StringComparison.OrdinalIgnoreCase))
+                    .Select(ar => new ProductRights { RightName = ar.Action, ProductId = ar.ProductId })
+                    .ToList();
 
                     if (_userClaim.OrganizationRealPageGuid == DefaultUserClaim.ExternalCompanyRealPageId)
                     {
