@@ -17,3 +17,4 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\Activity_Archiving_Job_Script.sql
 :r .\PostDeploymentScripts\AddNewLogType.sql
 :r .\PostDeploymentScripts\2022-logtype-cleanup.sql
+:r .\PostDeploymentScripts\Add_UnifiedReporting_Categories.sql
