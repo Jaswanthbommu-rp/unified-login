@@ -465,10 +465,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 var resp = ocr.DeleteRole(roleId);
                 if (resp.ErrorMessage.Trim() != string.Empty)
                 {
-                     WriteToDiagnosticLog(
-                    $"UserManagement - ManageUnifiedLogin.DeleteRole , Unable to delete role id - {roleId} , editorPersonaId - {editorPersonaId}. Error Message : {resp.ErrorMessage}");
                     response.IsError = true;
-                    response.ErrorReason = "Something went wrong. Please return to home and try again. If this problem continues, please contact your administrator.";
+                    response.ErrorReason = resp.ErrorMessage;
                 }
 
                 List<object> role = new List<object>();
