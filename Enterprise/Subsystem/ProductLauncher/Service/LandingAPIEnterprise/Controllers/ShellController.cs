@@ -66,6 +66,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             _manangeSecurityLogic = new ManageSecurity(_userClaims);
             _personaRepository = new PersonaRepository(_userClaims);
             _productInternalSettingRepository = new ProductInternalSettingRepository(_userClaims);
+            _organizationRepository = new OrganizationRepository(_userClaims);
         }
 
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
