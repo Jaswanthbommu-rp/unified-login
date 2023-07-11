@@ -26,7 +26,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         private IManageSecurity _manangeSecurityLogic;
         private IPersonaRepository _personaRepository;
         private ProductInternalSettingRepository _productInternalSettingRepository;
-
+        private IOrganizationRepository _organizationRepository;
 
         /// <summary>
         /// Default constructor
@@ -51,6 +51,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             _userClaims = userClaims;
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
             _personaRepository = new PersonaRepository(repository);
+            _organizationRepository = new OrganizationRepository(repository);
 
         }
 
@@ -75,8 +76,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [AuthorizeScope("enterpriseapi")]
         public List<NavigationMenuTree> GetSideMenuNavigation()
         {
-            OrganizationRepository organizationRepository = new OrganizationRepository();
-            var existingProducts = organizationRepository.GetProductsByCompany(_userClaims.OrganizationRealPageGuid);
+            var existingProducts = _organizationRepository.GetProductsByCompany(_userClaims.OrganizationRealPageGuid);
             var rights = _manangeSecurityLogic.GetPersonaRightsAndActionsByRoute(_personaId, "sidemenu")?.obj?.ProductRights;
             var filterRights = rights.Join(existingProducts, r => r.ProductId, ext => ext.ProductId, (r, ext) => r.RightName).ToList();
 
