@@ -248,7 +248,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             {
                 _personaId = 1234
             };
-
+            _userClaim.OrganizationRealPageGuid = _OrganizationRealPageId;
             var response = shellController.GetSideMenuNavigation();
 
             Assert.Equal(2, response.Count);
