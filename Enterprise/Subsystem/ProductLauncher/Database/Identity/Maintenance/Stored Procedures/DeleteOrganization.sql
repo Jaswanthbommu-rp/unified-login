@@ -2,7 +2,8 @@
     @OrganizationPartyId BIGINT,
 	@OrganizationRealPageId UNIQUEIDENTIFIER,
 	@OrganizationRemovalQueueId INT = 0,
-	@LogExecutionTime INT = 0
+	@LogExecutionTime INT = 0,
+	@IPB_ReturnResultSet BIT = 1
 AS
     BEGIN
 		BEGIN TRY
@@ -44,7 +45,10 @@ AS
 						OrganizationRemovalQueueStatusId = (SELECT TOP (1) OrganizationRemovalQueueStatusId FROM Maintenance.OrganizationRemovalQueueStatus WHERE Name = 'Complete' ORDER BY OrganizationRemovalQueueStatusId ) 
 					WHERE 
 						OrganizationRemovalQueueId = @OrganizationRemovalQueueId
-					RETURN @IsOrganizationRemovalEnabled
+					IF @IPB_ReturnResultSet = 1
+					BEGIN
+						RETURN @IsOrganizationRemovalEnabled
+					END
 				END
 				
 				INSERT INTO Maintenance.OrganizationRemovalQueueHistory
@@ -225,7 +229,12 @@ AS
 					FROM Security.OrganizationDefaultRole ODR
 					INNER JOIN @Organization o ON (o.PartyId = ODR.OrgPartyId)
 					INNER JOIN Security.[Role] R ON R.RoleId = ODR.RoleId
-
+			
+			DELETE ROT
+					FROM security.RoleOrganizationType ROT
+					INNER JOIN Security.[Role] R ON R.RoleId = ROT.RoleId
+					INNER JOIN @Organization o ON (o.PartyId = R.OrgPartyId)
+					
 			DELETE OOR
 					FROM Security.OrganizationOverRideRole OOR
 					INNER JOIN @Organization o ON (o.PartyId = OOR.OrgPartyId)
@@ -275,7 +284,7 @@ AS
 						INNER JOIN Person.Person pp ON (pp.PartyId = epr.PartyIdFrom)
 						INNER JOIN Ident.UserLogin iul ON (iul.PersonPartyId = pp.PartyId)
 						INNER JOIN Ident.UserLoginPersona iulp ON (iulp.UserLoginId = iul.UserId)
-						INNER JOIN @Organization o ON (o.PartyId = iulp.OrganizationPartyId) AND epr.PartyIdTo = o.PartyID	
+						INNER JOIN @Organization o ON (o.PartyId = iulp.OrganizationPartyId and epr.PartyIdTo = o.PartyID)	
 						
 			DELETE	epr
 			FROM	Enterprise.PartyRole epr
@@ -474,17 +483,25 @@ AS
 						INNER JOIN Ident.UserLoginPersona iulp ON (iulp.UserLoginId = SMS.UserId)
 						INNER JOIN @Organization o ON (o.PartyId = iulp.OrganizationPartyId)
 
+			--if @LogExecutionTime = 1 begin print convert(varchar(max),dateadd(hh,-5,getutcdate()),121) + ': Ident.UserLoginPersona' end
+
 			DELETE	iulp
 			FROM		Ident.UserLoginPersona iulp
 							INNER JOIN Ident.UserLogin iul ON (iul.UserId = iulp.UserLoginId)
 							INNER JOIN @Person p ON (p.PartyID = iul.PersonPartyId)
-
+						where
+							iulp.PrimaryOrganization = 1
 			DELETE	iul
 			FROM		Ident.UserLogin iul
 							INNER JOIN @Person p ON (p.PartyID = iul.PersonPartyId)
-
+							left outer join ident.UserLoginPersona ULP on iul.UserId = ulp.UserLoginId
+						where
+							ulp.UserLoginId is null
+							and ulp.PrimaryOrganization = 1
 			DELETE	ep
 			FROM		Enterprise.Party ep
+							INNER JOIN Ident.UserLogin iul ON iul.PersonPartyId = ep.PartyId
+							INNER JOIN ident.UserLoginPersona ULP on iul.UserId = ulp.UserLoginId and ulp.PrimaryOrganization = 1
 							INNER JOIN @Person p ON (p.PartyID = ep.PartyId)
 
 			if @LogExecutionTime = 1 begin print convert(varchar(max),dateadd(hh,-5,getutcdate()),121) + ': Enterprise.Party Person' end
@@ -503,7 +520,9 @@ AS
 						iulp.OrganizationPartyId
 			FROM	Ident.UserLoginPersona iulp
 						INNER JOIN @Organization o ON (o.PartyId = iulp.OrganizationPartyId) AND iulp.PrimaryOrganization = 1
-
+			
+			IF @LogExecutionTime = 1 begin print convert(varchar(max),dateadd(hh,-5,getutcdate()),121) + ': Before UserLoginPersona' END
+			
 			DELETE	iulp
 			FROM	Ident.UserLoginPersona iulp
 						INNER JOIN @Organization o ON (o.PartyId = iulp.OrganizationPartyId)
@@ -555,6 +574,10 @@ AS
 
 			if @LogExecutionTime = 1 begin print convert(varchar(max),dateadd(hh,-5,getutcdate()),121) + ': Enterprise.Role' end
 
+			DELETE CR
+			FROM Hots.CompanyRelationship CR
+						INNER JOIN @Organization O ON CR.BaseLineCompanyPartyId = O.PartyID OR CR.CloneCompanyPartyId = O.PartyID
+						
 			DELETE	ep
 			FROM	Enterprise.Party ep
 						INNER JOIN @Organization o ON (o.PartyId = ep.PartyId)
@@ -572,7 +595,10 @@ AS
 				)
 				SELECT @OrganizationRemovalQueueId, OrganizationRemovalQueueStatusId FROM Maintenance.OrganizationRemovalQueueStatus WHERE Name = 'Database Removed'
 			END
-			SELECT @OrganizationPartyId AS ID
+			IF @IPB_ReturnResultSet = 1
+			BEGIN
+				SELECT @OrganizationPartyId AS ID
+			END
 		END TRY
 		BEGIN CATCH
 			DECLARE @error int, @message varchar(4000), @xstate int;
@@ -605,9 +631,10 @@ AS
 			)
 			VALUES ( @OrganizationRemovalQueueId, @message )
 			RAISERROR ('Maintenance.DeleteOrganization: %d: %s', 16, 1, @error, @message) ;
-
-			SELECT  0 AS Id
-					
+			IF @IPB_ReturnResultSet = 1
+			BEGIN
+				SELECT  0 AS Id
+			END
 		END CATCH
     END;
 GO
