@@ -2130,6 +2130,288 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return productResult;
 		}
 
+
+        public ListResponse TranslateUserPrimaryPropertiesData(UPFMProperty upfmProperty, int productId, ListResponse productResult)
+        {
+            ListResponse translatedPrimaryPropertiesUserResult = new ListResponse();
+            if (productId == 3)
+            {
+                return productResult;
+            }
+            bool dirtyProductPropertyData = false;
+            TranslatePropertyInstance translatedData = new TranslatePropertyInstance();
+            var productInternalSettingsByType = _productInternalSettingRepository.GetProductSettingByType("ProductIntegrationType");
+            var productType = productInternalSettingsByType?.FirstOrDefault(p => p.ProductId == productId)?.Value;
+            //IManageBlueBook _manageBlueBook = new ManageBlueBook(_userClaims);
+            List<UPFMPropertyInstance> _upfmPropertyInstance = new List<UPFMPropertyInstance>();
+            bool isPrimaryProperty = upfmProperty?.id != null;
+
+            /*
+             * If All property selection is true, then upfmProperty == -1
+             */
+            var upfmPropertyAll = new UPFMProperty();
+            //nullInstanceResultFlag = upfmProperty?.id[0] == "-1";
+            var booksPropertyList = GetUPFMPropertyInstances(_defaultUserClaim.OrganizationRealPageGuid.ToString());
+            if (booksPropertyList != null && booksPropertyList.Count > 0)
+            {
+                _upfmPropertyInstance = _propertyRepository.ListUPFMPropertyInstanceIdByInstanceIds(booksPropertyList);
+                upfmPropertyAll.id = _upfmPropertyInstance.Select(p => p.InstanceId.ToString()).ToList<string>();
+            }
+
+            UPFMProperty primaryPropertyIds = new UPFMProperty();
+            if (upfmPropertyAll.id != null)
+            {
+                primaryPropertyIds.id = upfmPropertyAll.id.ConvertAll(d => d.ToLower());
+            }
+
+            if (productId == (int)ProductEnum.UnifiedPlatform)
+            {
+                var upfmPropertiesType = productResult.Records[0].GetType();
+                if (upfmPropertiesType == typeof(ProductProperty))
+                {
+                    var upfmPropertyList = productResult.Records.Cast<ProductProperty>();
+                    upfmPropertyList.Where(p => primaryPropertyIds.id.Contains(p.ID)).ToList().ForEach(c => c.IsAssigned = true);
+                    upfmPropertyList.Where(p => !primaryPropertyIds.id.Contains(p.ID)).ToList().ForEach(c => c.IsAssigned = false);
+                }
+            }
+            else if (productType == "UPFM")
+            {
+                var upfmPropertiesType = productResult.Records[0].GetType();
+                if (upfmPropertiesType == typeof(ProductProperty))
+                {
+                    var products = _productRepository.GetAllProducts();
+                    var udmSourceCode = ProductEnumHelper.GetUDMSourceCodeByProductId(productId, products);
+                    var productcode = ProductEnumHelper.GetProductCodeByProductId(productId, products);
+                    if (!string.IsNullOrEmpty(udmSourceCode))
+                    {
+                        productcode = udmSourceCode;
+                    }
+
+                    translatedData = GetTranslatePropertiesFromUPFMToProductv3(primaryPropertyIds, productcode);
+                    var productPropertyType = productResult.Records[0].GetType();
+
+                    if (productPropertyType == typeof(ProductProperty))
+                    {
+                        List<ProductProperty> propResponse = new List<ProductProperty>();
+                        var productList = productResult.Records.Cast<ProductProperty>();
+                        foreach (var property in productList)
+                        {
+                            var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.PropertyInstanceSourceId == property.InstanceId);
+                            if (instanceExists != null)
+                            {
+                                if (upfmProperty != null && (upfmProperty.id.Contains("-1") || upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
+                                {
+                                    property.InstanceId = instanceExists.PropertyInstanceSourceId;
+                                    property.IsAssigned = true;
+                                    propResponse.Add(property);
+                                }
+                            }
+                        }
+
+                        translatedPrimaryPropertiesUserResult = new ListResponse()
+                        {
+                            Records = propResponse.Cast<object>().ToList(),
+                            TotalRows = propResponse.Count,
+                            RowsPerPage = propResponse.Count,
+                            TotalPages = 1,
+                            ErrorReason = ""
+                        };
+                    }
+                }
+            }
+            else
+            {
+                var products = _productRepository.GetAllProducts();
+                var udmSourceCode = ProductEnumHelper.GetUDMSourceCodeByProductId(productId, products);
+                var productcode = ProductEnumHelper.GetProductCodeByProductId(productId, products);
+                if (!string.IsNullOrEmpty(udmSourceCode))
+                {
+                    productcode = udmSourceCode;
+                }
+
+                translatedData = GetTranslatePropertiesFromUPFMToProductv3(primaryPropertyIds, productcode);
+                var productPropertyType = productResult.Records[0].GetType();
+
+                if (productPropertyType == typeof(ProductProperty))
+                {
+                    List<ProductProperty> propResponse = new List<ProductProperty>();
+                    var productList = productResult.Records.Cast<ProductProperty>();
+                    foreach (var property in productList)
+                    {
+                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.ID));
+                        if (instanceExists != null)
+                        {
+                            if (upfmProperty != null && (upfmProperty.id.Contains("-1") || upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
+                            {
+                                property.InstanceId = instanceExists.PropertyInstanceSourceId;
+                                property.IsAssigned = true;
+                                propResponse.Add(property);
+                            }
+                        }
+                    }
+                    translatedPrimaryPropertiesUserResult = new ListResponse()
+                    {
+                        Records = propResponse.Cast<object>().ToList(),
+                        TotalRows = propResponse.Count,
+                        RowsPerPage = propResponse.Count,
+                        TotalPages = 1,
+                        ErrorReason = ""
+                    };
+                }
+                else if (productPropertyType == typeof(ACProperty))
+                {
+                    List<ACProperty> propResponse = new List<ACProperty>();
+                    foreach (var property in productResult.Records.Cast<ACProperty>())
+                    {
+                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.BookID));
+                        if (instanceExists != null)
+                        {
+                            if (upfmProperty != null && (upfmProperty.id.Contains("-1") || upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
+                            {
+                                property.IsAssigned = true;
+                                property.InstanceId = instanceExists.PropertyInstanceSourceId;
+
+                            }
+                        }
+                    }
+                    translatedPrimaryPropertiesUserResult = new ListResponse()
+                    {
+                        Records = propResponse.Cast<object>().ToList(),
+                        TotalRows = propResponse.Count,
+                        RowsPerPage = propResponse.Count,
+                        TotalPages = 1,
+                        ErrorReason = ""
+                    };
+                }
+                else if (productPropertyType == typeof(AssetGroup))
+                {
+                    List<AssetGroup> propResponse = new List<AssetGroup>();
+                    foreach (var property in productResult.Records.Cast<AssetGroup>())
+                    {
+                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.AssetID));
+                        if (instanceExists != null)
+                        {
+                            if (upfmProperty != null && (upfmProperty.id.Contains("-1") || upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
+                            {
+                                property.InstanceId = instanceExists.PropertyInstanceSourceId;
+                                property.IsAssigned = true;
+                            }
+                        }
+                    }
+                    translatedPrimaryPropertiesUserResult = new ListResponse()
+                    {
+                        Records = propResponse.Cast<object>().ToList(),
+                        TotalRows = propResponse.Count,
+                        RowsPerPage = propResponse.Count,
+                        TotalPages = 1,
+                        ErrorReason = ""
+                    };
+                }
+                else if (productPropertyType == typeof(OnSiteProperty))
+                {
+                    List<OnSiteProperty> propResponse = new List<OnSiteProperty>();
+                    foreach (var property in productResult.Records.Cast<OnSiteProperty>())
+                    {
+                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.GetPropertyId.ToString()));
+                        if (instanceExists != null)
+                        {
+                            if (upfmProperty != null && (upfmProperty.id.Contains("-1") || upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
+                            {
+                                property.InstanceId = instanceExists.PropertyInstanceSourceId.ToLower();
+                                property.IsAssigned = true;
+                            }
+                        }
+                    }
+                    translatedPrimaryPropertiesUserResult = new ListResponse()
+                    {
+                        Records = propResponse.Cast<object>().ToList(),
+                        TotalRows = propResponse.Count,
+                        RowsPerPage = propResponse.Count,
+                        TotalPages = 1,
+                        ErrorReason = ""
+                    };
+                }
+                else if (productPropertyType == typeof(RumPropertyGroup))
+                {
+                    List<RumPropertyGroup> propResponse = new List<RumPropertyGroup>();
+                    foreach (var property in productResult.Records.Cast<RumPropertyGroup>())
+                    {
+                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.Id.ToString()));
+                        if (instanceExists != null)
+                        {
+                            if (upfmProperty != null && (upfmProperty.id.Contains("-1") || upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
+                            {
+                                property.InstanceId = instanceExists.PropertyInstanceSourceId.ToLower();
+                                property.IsAssigned = true;
+                            }
+                        }
+                    }
+                    translatedPrimaryPropertiesUserResult = new ListResponse()
+                    {
+                        Records = propResponse.Cast<object>().ToList(),
+                        TotalRows = propResponse.Count,
+                        RowsPerPage = propResponse.Count,
+                        TotalPages = 1,
+                        ErrorReason = ""
+                    };
+                }
+                else if (productPropertyType == typeof(ProductProperties))
+                {
+                    List<ProductProperties> propResponse = new List<ProductProperties>();
+                    foreach (var property in productResult.Records.Cast<ProductProperties>())
+                    {
+                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.GetPropertyId));
+                        if (instanceExists != null)
+                        {
+                            if (upfmProperty != null && (upfmProperty.id.Contains("-1") || upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
+                            {
+                                property.InstanceId = instanceExists.PropertyInstanceSourceId.ToLower();
+                                property.IsAssigned = true;
+                            }
+                        }
+                    }
+                    translatedPrimaryPropertiesUserResult = new ListResponse()
+                    {
+                        Records = propResponse.Cast<object>().ToList(),
+                        TotalRows = propResponse.Count,
+                        RowsPerPage = propResponse.Count,
+                        TotalPages = 1,
+                        ErrorReason = ""
+                    };
+                }
+                else if (productPropertyType == typeof(Portfolio))
+                {
+                    List<Portfolio> propResponse = new List<Portfolio>();
+                    foreach (var property in productResult.Records.Cast<Portfolio>())
+                    {
+                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.ID));
+                        if (instanceExists != null)
+                        {
+                            if (upfmProperty != null && (upfmProperty.id.Contains("-1") || upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
+                            {
+                                property.InstanceId = instanceExists.PropertyInstanceSourceId.ToLower();
+                                property.IsAssigned = true;
+                            }
+                        }
+                    }
+                    translatedPrimaryPropertiesUserResult = new ListResponse()
+                    {
+                        Records = propResponse.Cast<object>().ToList(),
+                        TotalRows = propResponse.Count,
+                        RowsPerPage = propResponse.Count,
+                        TotalPages = 1,
+                        ErrorReason = ""
+                    };
+                }
+            }
+            if (productResult.Additional != null)
+            {
+                Dictionary<string, bool> additionalDataCollection = productResult.Additional as Dictionary<string, bool>;
+                additionalDataCollection.Add("dirtyProductPropertyData", dirtyProductPropertyData);
+            }
+
+            return translatedPrimaryPropertiesUserResult;
+        }
         /// <summary>
         /// Used to get a list of UDM Sources
         /// </summary>

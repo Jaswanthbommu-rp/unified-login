@@ -615,6 +615,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         }
 
         /// <summary>
+        /// Compare Product and Primary properties
+        /// </summary>
+        /// <param name="upfmProperty"></param>
+        /// <param name="productId"></param>
+        /// <param name="productResult"></param>
+        /// <returns></returns>
+        public ListResponse CompareUserProductAndPrimaryProperties(UPFMProperty upfmProperty, int productId, ListResponse productResult)
+        {
+            if (productResult == null || productResult.Records == null || productResult?.Records?.Count == 0)
+            {
+                return productResult;
+            }
+
+            productResult = _manageBlueBook.TranslateUserPrimaryPropertiesData(upfmProperty, productId, productResult);
+            return productResult;
+        }
+
+        /// <summary>
         /// TranslateProductProperties
         /// </summary>
         /// <param name="upfmProperty"></param>

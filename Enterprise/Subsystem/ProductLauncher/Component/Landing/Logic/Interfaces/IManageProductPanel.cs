@@ -123,13 +123,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <returns></returns>
 		ListResponse CompareProductAndPrimaryProperties(UPFMProperty upfmProperty, int productId, ListResponse listResponse);
 
-		/// <summary>
-		/// Get translated product properties
-		/// </summary>
-		/// <param name="upfmProperty"></param>
-		/// <param name="productId"></param>
-		/// <returns></returns>
-		UPFMProperty TranslateProductProperties(UPFMProperty upfmProperty, int productId);
+        /// <summary>
+        /// Compare Product and Primary properties
+        /// </summary>
+        /// <param name="upfmProperty"></param>
+        /// <param name="productId"></param>
+        /// <param name="listResponse"></param>
+        /// <returns></returns>
+        ListResponse CompareUserProductAndPrimaryProperties(UPFMProperty upfmProperty, int productId, ListResponse listResponse);
+        
+        /// <summary>
+        /// Get translated product properties
+        /// </summary>
+        /// <param name="upfmProperty"></param>
+        /// <param name="productId"></param>
+        /// <returns></returns>
+        UPFMProperty TranslateProductProperties(UPFMProperty upfmProperty, int productId);
 
 		/// <summary>
 		/// GetUserProductRoles
