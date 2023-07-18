@@ -68,6 +68,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         /// </summary>
         [JsonProperty("roles")] 
         public int RoleCount { get; set; }
+
+        /// <summary>
+        /// Is right assigned to the role
+        /// </summary>
+        [JsonProperty("assigned")]
+        public bool IsAssigned { get; set; }
     }
 
     public class MCRight
@@ -120,6 +126,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         /// <summary>
         /// Used to store of the Role count
         /// </summary>
-        public int RoleCount { get; set; }
+        public int RolesAssigned { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool IsAssigned { get; set; }
+    }
+
+    public class MCRole
+    {
+        [JsonProperty(PropertyName = "id")]
+        public int Id { get; set; }
+        [JsonProperty(PropertyName = "name")]
+        public string Name { get; set; }
+        [JsonProperty(PropertyName = "description")]
+        public string Description { get; set; }
+        [JsonProperty(PropertyName = "type")]
+        public string Type { get; set; }
+        [JsonProperty(PropertyName = "rights")]
+        public List<int> Rights { get; set;}
+        [JsonProperty(PropertyName = "active")]
+        public bool Active { get; set; }
     }
 }
