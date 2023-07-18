@@ -1,12 +1,26 @@
 CREATE PROCEDURE [Security].[GetRoleTemplateProductRolesMappings]
 (
 	@RoleTemplateId int, 
+	@UserPersonaId int = NULL,
 	@OrganizationRealPageId UNIQUEIDENTIFIER = NULL,
     @PartyId BIGINT = NULL
+
 )
 AS
 BEGIN
-WITH
+
+ select distinct rtp.productId  into #RoleTemplateProductIds from [Security].RoleTemplate RT      
+  JOIN  [Security].RoleTemplateProduct rtp on rtp.RoleTemplateId = RT.roleTemplateId
+  JOIN [Security].RoleTemplateUserMapping RTUP on RTUP.RoleTemplateId = RT.roleTemplateId  
+  JOIN Person.Persona P ON P.PersonaId = RTUP.PersonaId  
+  JOIN Enterprise.PersonaConfiguration PC on PC.PersonaId  = RTUP.PersonaId and rtp.productId = PC.productId
+  where RT.RoleTemplateId =  @RoleTemplateId and P.PersonaId = @UserPersonaId
+
+  insert into #RoleTemplateProductIds
+  select 3 
+
+
+;WITH
 RoleTemplateUser   
  AS    
  (    
@@ -43,5 +57,6 @@ FROM Security.RoleTemplate rt
 WHERE rt.RoleTemplateId = @RoleTemplateId 
 	AND (P.RealPageId = @OrganizationRealPageId OR @OrganizationRealPageId IS NULL)
 	AND (P.PartyId = @PartyId OR @PartyId IS NULL)
+	AND rtp.ProductId in (select ProductId from #RoleTemplateProductIds)
 ORDER BY rtp.ProductId
 END
