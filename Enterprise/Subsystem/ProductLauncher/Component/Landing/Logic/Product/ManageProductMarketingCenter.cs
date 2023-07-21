@@ -977,12 +977,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             ListResponse response = new ListResponse();
             Dictionary<string, object> logData = new Dictionary<string, object>();
             response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
-            if (response.IsError) { return response; }
+            if (response.IsError) { return response; }           
             try
 			{
                 CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
                 string marketingCompanyId = company.CompanyInstanceSourceId;
-                var url = _productUrl + $"/external/company/{marketingCompanyId}/roles/{roleId}?username={_userClaims.LoginName}";
+                var url = _productUrl + $"/external/company/{marketingCompanyId}/roles/{roleId}?username={GetLoginName()}";
                 var result = _httpClient.DeleteAsync(url).Result;
                 if (result.IsSuccessStatusCode)
                 {
@@ -1030,11 +1030,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             Dictionary<string, object> logData = new Dictionary<string, object>();
             response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
             if (response.IsError) { return response; }
-			try
+            try
 			{
-				CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
+                CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
 				string marketingCompanyId = company.CompanyInstanceSourceId;
-				var url = _productUrl + $"/external/company/{marketingCompanyId}/roles/{roleId}?active={IsActive}&username={_userClaims.LoginName}";
+				var url = _productUrl + $"/external/company/{marketingCompanyId}/roles/{roleId}?active={IsActive}&username={GetLoginName()}";
 				var request = new HttpRequestMessage(new HttpMethod("PATCH"), url);
 				var result = _httpClient.SendAsync(request).Result;
 				if (result.IsSuccessStatusCode)
@@ -1086,7 +1086,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
                 string marketingCompanyId = company.CompanyInstanceSourceId;
-				var url = _productUrl + $"/external/company/{marketingCompanyId}/rights/{rightId}/roles?username={_userClaims.LoginName}";
+				var url = _productUrl + $"/external/company/{marketingCompanyId}/rights/{rightId}/roles?username={GetLoginName()}";
                 var result = _httpClient.PutAsJsonAsync(url, roleList.Select(int.Parse).ToList()).Result;
                 if (result.IsSuccessStatusCode)
                 {
@@ -1137,7 +1137,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
                 string marketingCompanyId = company.CompanyInstanceSourceId;
-                var url = _productUrl + $"/external/company/{marketingCompanyId}/roles?active={mcRole.Active}&username={_userClaims.LoginName}";
+                var url = _productUrl + $"/external/company/{marketingCompanyId}/roles?active={mcRole.Active}&username={GetLoginName()}";
                 var result = _httpClient.PostAsJsonAsync(url, mcRole).Result;
                 if (result.IsSuccessStatusCode)
                 {
@@ -1188,7 +1188,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
                 string marketingCompanyId = company.CompanyInstanceSourceId;
-                var url = _productUrl + $"/external/company/{marketingCompanyId}/roles/{mcRole.Id}?username={_userClaims.LoginName}";
+                var url = _productUrl + $"/external/company/{marketingCompanyId}/roles/{mcRole.Id}?username={GetLoginName()}";
                 var result = _httpClient.PutAsJsonAsync(url, mcRole).Result;
                 if (result.IsSuccessStatusCode)
                 {
@@ -1668,6 +1668,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			return responsex.IsSuccessStatusCode;
 		}
+
+		/// <summary>
+		/// Returns UserName for marketing center, we will send this for their auditing purpose. 
+		/// </summary>
+		/// <returns></returns>
+		private string GetLoginName()
+		{
+            string loginName = string.Empty;    
+            if (string.IsNullOrEmpty(_userClaims.ImpersonatedByName))
+            {
+                loginName = _userClaims.LoginName;
+            }
+            else
+            {
+                UserDetails currentUser = _userRepository.GetUserDetails(null, _userClaims.ImpersonatedBy.ToString());
+                loginName = currentUser.LoginName;
+            }
+            return loginName;
+		}
+
 		#endregion
 
 		#region Migration
