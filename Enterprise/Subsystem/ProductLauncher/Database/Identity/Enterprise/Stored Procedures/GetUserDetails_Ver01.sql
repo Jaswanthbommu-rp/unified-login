@@ -1,4 +1,4 @@
-﻿CREATE PROCEDURE [Enterprise].[GetUserDetails_Ver01a](
+﻿CREATE PROCEDURE [Enterprise].[GetUserDetails_Ver01](
 	@PersonaId BIGINT = NULL,
 	@UserRealPageId UNIQUEIDENTIFIER = NULL
 	)
