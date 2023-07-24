@@ -1637,7 +1637,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 repository: mockRepository.Object
             );
 
-			ListResponse resp = manageProductOneSite.GetOneSitePropertyList(_editorPersonaId, _userPersonaId, true, null);
+			ListResponse resp = manageProductOneSite.GetOneSitePropertyList(_editorPersonaId, _userPersonaId, true, reqParameter);
 
             ProductProperty _responseProperty1 = resp.Records[0] as ProductProperty;
             ProductProperty _responseProperty2 = resp.Records[1] as ProductProperty;
@@ -1691,7 +1691,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             );
 
 
-			resp = manageProductOneSite.GetOneSitePropertyList(_editorPersonaId, _userPersonaId, true, null);
+			resp = manageProductOneSite.GetOneSitePropertyList(_editorPersonaId, _userPersonaId, true, reqParameter);
 
 			//Assert
 			Assert.True(resp.IsError && (resp.ErrorReason.ToUpper() == "THERE WAS A PROBLEM GETTING THE LIST OF PROPERTIES" ||
