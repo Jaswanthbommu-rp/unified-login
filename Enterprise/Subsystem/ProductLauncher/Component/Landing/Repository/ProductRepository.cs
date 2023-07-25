@@ -1669,7 +1669,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 });
             }
-
+            // locking the access based on the new right
+            if (_userClaim.RealPageEmployee && _userClaim.OrganizationRealPageGuid.Equals(EmployeeCompanyRealPageId) ) {
+                foreach (ProductFamily p in productFamilyList) {
+                    foreach (Solution s in p.Solutions) {
+                        if (!s.LockOnProductAccess && !_userClaim.Rights.Contains("RealPageEmployeeUserManagement")) {
+                            s.LockOnProductAccess = true;
+                        }
+                    }
+                }
+            }
             // now remove any products which are not matching product access filter
             if (accessFilter != null)
             {

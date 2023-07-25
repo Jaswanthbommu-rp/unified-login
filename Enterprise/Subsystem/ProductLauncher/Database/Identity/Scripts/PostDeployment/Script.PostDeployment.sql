@@ -42,6 +42,8 @@ Post-Deployment Script Template
 
 :r .\PostDeploymentScripts\1438413-propagate-access-rights.sql
 
+:r .\PostDeploymentScripts\AddingNewRightforUserManagement.sql
+
 -- keep these at the end!
 :r .\PostDeploymentScripts\UpdateStatistics.sql
 :r .\PostDeploymentScripts\RecompileAllProcs.sql
