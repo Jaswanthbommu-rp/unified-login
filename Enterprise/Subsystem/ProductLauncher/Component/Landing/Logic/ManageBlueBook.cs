@@ -2160,8 +2160,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         {
             var booksOperators = new UDMOperatorsRootObject();
 
-            string uri = $"operators/{companyRealPageId}/{source}";
-
+            //string uri = $"operators/{companyRealPageId}/{source}";
+            string uri = $"ysconfig/ws/company/{companyRealPageId}/delegated/properties";
+            //https://aoqa.realpage.com/ysconfig/ws/company/<CompanyID>/delegated/properties
+            _httpClient.BaseAddress = new Uri("https://aoqa.realpage.com/");
             Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
             WriteToLog(LogEventLevel.Debug, "GetOperatorListForUPFMCompany - Getting info.", logData);
             var response = GetAsync(uri).Result;

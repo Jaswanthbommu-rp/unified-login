@@ -392,11 +392,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         // PMC to PMC OMS change is not allowed for same user login
                         if (!string.IsNullOrEmpty(contact.OMS_ID__c) && !string.IsNullOrEmpty(searchOmsId) && contact.OMS_ID__c != searchOmsId)
                         {
-                            if (searchOmsId[0] == 'C' && contact.OMS_ID__c[0] == 'C')
+                            //Need to call an API : result account
+                            if (searchOmsId[0] == 'C' && contact.OMS_ID__c[0] == 'C' && contact.OMS_ID__c.Equals(parentOmsId))//one more condition account.Parent_OMS_ID__C.Equals(contact.OMS_ID__c)
+                            {
+                                UpdateContact(contactId, searchOmsId, false, true);
+                            }
+                            else if (searchOmsId[0] == 'C' && contact.OMS_ID__c[0] == 'C')//parentOmsId.Equals(item.ParentOMS_ID__c)
                             {
                                 WriteToErrorLog($"ManageProductClientPortal.ManageClientPortalUser - Error for user with editorPersona id - {editorPersonaId} - PMC to PMC OMS change is not allowed.");
                                 return "Error - PMC to PMC OMS change is not allowed.";
                             }
+                            
                         }
 
                         if (!string.IsNullOrEmpty(contact.OMS_ID__c) && !string.IsNullOrEmpty(searchOmsId) && contact.OMS_ID__c != searchOmsId)
@@ -1171,8 +1177,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             List<ClientPortalContactResult> clientPortalContacts = new List<ClientPortalContactResult>();
 
             var jsonQueryString =
-                JObject.Parse("{ \"q\":\"" + loginName + "\",\"sobjects\":[{\"name\": \"Contact\", \"fields\":[\"Id\", \"Email\", \"Account.OMS_ID__c\",\"Account.Parent.OMS_ID__c\"]}]}");
-
+                JObject.Parse("{ \"q\":\"" + loginName + "\",\"sobjects\":[{\"name\": \"Contact\", \"fields\":[\"Id\", \"Email\", \"Account.OMS_ID__c\",\"Account.Parent.OMS_ID__c\"]}]}");//portaluserflag
+            //JObject.Parse("{ \"q\":\"" + OMS_ID + "\",\"sobjects\":[{\"name\": \"Account\", \"fields\":[\"Id\", \"OMS_ID__c\",\"Parent.OMS_ID__c\"]}]}");//portaluserflag
             WriteToDiagnosticLog(
                       $"ManageProductClientPortal.CheckClientPortalContactExists - calling API with - URL '{_apiRoute}parameterizedSearch' and quert string - {jsonQueryString} for user with _productUsername {_productUsername}.");
 

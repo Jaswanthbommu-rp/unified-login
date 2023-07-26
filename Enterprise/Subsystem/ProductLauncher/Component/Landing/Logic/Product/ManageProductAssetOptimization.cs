@@ -360,10 +360,74 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			return response;
 		}
 
-		/// <summary>
-		/// Get product Properties
-		/// </summary>
-		public ListResponse GetProductProperties(long editorPersonaId, long userPersonaId, string productName, RequestParameter datafilter, string userLoginName = "")
+        /// <summary>
+        /// Get Operators With Properties
+        /// </summary>
+        public ListResponse GetOperatorsWithProperties(long editorPersonaId, long userPersonaId, string productName, RequestParameter datafilter, string userLoginName = "")
+        {
+            WriteToDiagnosticLog(
+                $"ManageProductAssetOptimization.GetCompaniesWithProperties at beginning of method for user with editorPersona id - {editorPersonaId} " +
+                $"and userPersonaId {userPersonaId} for product {productName}.");
+
+            var response = new ListResponse();
+            try
+            {
+                var allCompanies =
+                    GetCompanies(editorPersonaId, userPersonaId, productName, datafilter, userLoginName).Records.Cast<AoCompany>();
+
+                IList<AoCompanyProperties> companyProperties = new List<AoCompanyProperties>();
+                // for each compnay get properties
+                foreach (var company in allCompanies)
+                {
+                    AoPropertyList objAoPropertyList = GetProperties(company.CompanyId, productName, userLoginName, userPersonaId);
+                    objAoPropertyList.Properties = objAoPropertyList.Properties.OrderBy(x => x.PropertyName).ToList();
+
+
+                    if (objAoPropertyList.Properties != null)
+                    {
+                        string assignedCount = $"{objAoPropertyList.Properties.Count(p => p.IsAssigned)} of {objAoPropertyList.Properties.Count}";
+
+                        companyProperties.Add(new AoCompanyProperties
+                        {
+                            CompanyId = company.CompanyId,
+                            CompanyName = company.CompanyName,
+                            IsAssigned = company.IsAssigned,
+                            Status = company.Status,
+                            AssignedProperties = assignedCount,
+                            Properties = objAoPropertyList.Properties
+                        });
+                    }
+                }
+
+                response = new ListResponse()
+                {
+                    Records = companyProperties.Cast<object>().ToList(),
+                    TotalRows = companyProperties.Count(),
+                    RowsPerPage = 9999,
+                    ErrorReason = string.Empty,
+                    TotalPages = 1
+                };
+
+                WriteToDiagnosticLog(
+                    $"Exiting ManageProductAssetOptimization.GetCompaniesWithProperties method with total rows - {response.TotalRows} for user" +
+                    $" with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId} for product {productName}.");
+            }
+            catch (Exception ex)
+            {
+                response.IsError = true;
+                response.ErrorReason = "There was a problem getting the GetCompaniesWithProperties.";
+                WriteToErrorLog(
+                    $"ManageProductAssetOptimization.GetCompaniesWithProperties Error for user with editorPersona id - {editorPersonaId} " +
+                    $"and userPersonaId {userPersonaId} for product {productName}.", exception: ex);
+            }
+
+            return response;
+        }
+
+        /// <summary>
+        /// Get product Properties
+        /// </summary>
+        public ListResponse GetProductProperties(long editorPersonaId, long userPersonaId, string productName, RequestParameter datafilter, string userLoginName = "")
 		{
 			WriteToDiagnosticLog(
 				$"ManageProductAssetOptimization.GetProductProperties at beginning of method for user with editorPersona id - {editorPersonaId} " +
