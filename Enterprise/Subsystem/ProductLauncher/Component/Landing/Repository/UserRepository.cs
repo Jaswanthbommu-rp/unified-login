@@ -224,7 +224,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             OrganizationStatus currentPrimaryOrgStatus = null;
             ProductBatch gbProductBatch = new ProductBatch();
             ProductBatch primaryPropertiesBatch = new ProductBatch();
-
+           
             long organizationPartyId = 0;
             long userId = 0;
             long? personaId = null;
@@ -2465,7 +2465,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             IList<IdentityProviderType> identityProviderTypeList = new List<IdentityProviderType>();
             IList<ProductBatch> productBatchData = new List<ProductBatch>();
             IList<ContactMechanismUsageType> emailUsageType = new List<ContactMechanismUsageType>();
-
+ 
             //Notification Email
             IContactMechanismRepository contactMechanismRepository = new ContactMechanismRepository();
 
@@ -6868,6 +6868,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
 
             return productBatch;
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        private bool IsDelegateAdminSettingsEnabled()
+        {
+            ManageUnifiedSettings manageUnifiedSettings = new ManageUnifiedSettings(_userClaim);
+            var data = manageUnifiedSettings.GetCompanyInternalSettings(_userClaim.OrganizationRealPageGuid, "UPFM", "company");
+            bool value = data?.Keys?.Where(p => p.Name == "delegateadministrators")?.FirstOrDefault()?.Value == "1";
+
+            return value;
         }
 
         private bool IsProductEnabledForUsePrimaryProperty(int productId)
