@@ -277,13 +277,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         ///// <returns></returns>
         ListResponse TranslateProductPrimaryPropertiesData(UPFMProperty upfmProperty, int productId, ListResponse productResult);
 
-        ///// <summary>
-        ///// Get translated product primary properties data
-        ///// </summary>
-        ///// <param name="upfmProperty"></param>
-        ///// <returns></returns>
-        ListResponse TranslateUserPrimaryPropertiesData(UPFMProperty upfmProperty, int productId, ListResponse productResult);
-
         
         /// <summary>
         /// Used to enable product for an organization

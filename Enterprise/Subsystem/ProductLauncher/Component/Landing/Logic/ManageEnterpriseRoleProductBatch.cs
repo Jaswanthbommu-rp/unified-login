@@ -117,8 +117,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 						ErrorReason = ""
 					};
 
-					propertiesResponse = manageProductBatch.GetEnterpriseRoleProductUserPrimaryPropertiesData(batch.EditorUserPersonaId, batch.SubjectUserPersonaId, product);
-					                  
+					propertiesResponse = manageProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(batch.EditorUserPersonaId, batch.SubjectUserPersonaId, product);
+					propertiesResponse = BatchHelper.CreateUserAssignedPropertiesData(propertiesResponse);
                   if (propertiesResponse.Records?.Count > 0)
 					{
 						if (ProductEnumHelper.GetAoProductList().Contains((ProductEnum)product))

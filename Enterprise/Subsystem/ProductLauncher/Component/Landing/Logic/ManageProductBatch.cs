@@ -204,23 +204,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			return result;
 		}
 
-        public ListResponse GetEnterpriseRoleProductUserPrimaryPropertiesData(long editorPersonaId, long userPersonaId, int productId)
-        {
-            var productPropertyIdList = new List<string>();
-            IManageProductPanel manageProductPanel = new ManageProductPanel(_userClaims);
-            ListResponse result = new ListResponse();
-
-            var userProperties = _propertyRepository.ListUPFMPropertyInstanceByPersona(userPersonaId, ProductEnum.UnifiedPlatform);
-            result = manageProductPanel.GetProductProperties(editorPersonaId, userPersonaId, productId, null);
-            if (!result.IsError)
-            {
-                UPFMProperty upfmProperty = new UPFMProperty();
-                upfmProperty.id = userProperties?.Select(p => p.InstanceId.ToString()).ToList();
-
-                result = manageProductPanel.CompareUserProductAndPrimaryProperties(upfmProperty, productId, result);
-            }
-            return result;
-        }
 
         public List<int> GetExistingUserPrimaryPropertiesData(long userPersonaId, int productId)
 		{
