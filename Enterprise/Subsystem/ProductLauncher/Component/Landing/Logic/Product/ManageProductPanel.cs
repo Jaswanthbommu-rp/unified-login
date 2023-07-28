@@ -92,10 +92,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             ListResponse result;
             try
             {
-                if (datafilter == null)
-                {
-                    datafilter = new RequestParameter();
-                }
                 var integration = _integrationTypeFactory.GetIntegration(productId);
                 result = integration.GetProperties(editorPersonaId, userPersonaId, datafilter);
                 if (result.IsError)
