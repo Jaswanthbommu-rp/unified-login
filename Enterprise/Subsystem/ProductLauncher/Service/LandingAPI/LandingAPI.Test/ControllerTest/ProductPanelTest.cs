@@ -254,7 +254,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 CustomerMasterId = _BooksCompanyMasterId,
                 OrganizationRealPageGuid = EmployeeCompanyRealPageId
             };
-
+            RequestParameter datafilter = new RequestParameter();
             List<ProductInternalSetting> productInternalSettings = new List<ProductInternalSetting>()
             {
                 new ProductInternalSetting() {Name = "BooksUseDomains", Value = "1"},
@@ -274,7 +274,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                     It.Is<long>(l => l == 4444)
                     , It.Is<long>(l => l == 0)
                     , It.Is<bool>(l => l == false)
-                    , null
+                    , datafilter
                 ))
                 .Returns(oneSitePropertyResponse);
 
@@ -282,7 +282,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                     It.Is<long>(l => l == 5555)
                     , It.Is<long>(l => l == 0)
                     , It.Is<bool>(l => l == false)
-                    , null
+                    , datafilter
                 ))
                 .Returns(oneSitePropertyResponse);
             new RPObjectCache().BustCache();
@@ -309,15 +309,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()
-            };
-            RequestParameter datafilter = new RequestParameter();
+            };    
             UPFMProperty _upfmProperty = new UPFMProperty();
 			List<string> instanceIds = new List<string>
 			{
 				"a5192995-aaaa-bbbb-8df2-f30f1b8dc752"
 			};
 			_upfmProperty.id = instanceIds;
-            HttpResponseMessage response = productPanelController.GetProperties(4444, 0, (int)ProductEnum.OneSite, null, _upfmProperty);
+            HttpResponseMessage response = productPanelController.GetProperties(4444, 0, (int)ProductEnum.OneSite, datafilter, _upfmProperty);
             var productList = response.Content.ReadAsAsync<ListResponse>().Result.Records.Cast<ProductProperty>();
 
             //Assert 
