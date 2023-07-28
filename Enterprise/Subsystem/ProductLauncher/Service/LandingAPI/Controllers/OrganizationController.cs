@@ -109,7 +109,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// <param name="userClaims"></param>
         public OrganizationController(IRepository repository, IRepositoryResponse repositoryResponse, HttpMessageHandler messageHandler, IManageProductOneSite manageProductOneSite, DefaultUserClaim userClaims)
         {
-            _repository = repository;
+            _repository = repository; 
             _repositoryResponse = repositoryResponse;
             _organizationProductRepository = new OrganizationProductRepository(repository);
             _manageCustomFields = new ManageCustomFields(new CustomFieldsRepository(repository), userClaims);
@@ -1262,7 +1262,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [Route("CompanySetup/{companyInstanceId}/product/{productId}/audit")]
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         [HttpGet]
-        public HttpResponseMessage AuditCompanyProductPropertiesToUPFM(Guid companyInstanceId, int productId)
+        public HttpResponseMessage AuditCompanyProductPropertiesToUPFM(Guid companyInstanceId, int productId, RequestParameter datafilter = null)
         {
             if (companyInstanceId == Guid.Empty)
             {
@@ -1298,7 +1298,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
 
             _userClaims.UserRealPageGuid = adminUserGuid;
-            var auditResult = GetAuditProductProperties(companyInstanceId, productId, adminUserGuid, orgDetails.PartyId);
+            var auditResult = GetAuditProductProperties(companyInstanceId, productId, adminUserGuid, orgDetails.PartyId, datafilter);
             ObjectListOutput<PropertyAudit, IErrorData> output = new ObjectListOutput<PropertyAudit, IErrorData> {list = auditResult, Status = errorStatus, pagingSummary = new PagingSummary() {TotalRecords = auditResult.Count, TotalPages = 1}};
             return Request.CreateResponse(HttpStatusCode.OK, output);
         }
@@ -1761,7 +1761,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             return response;
         }
 
-        private List<PropertyAudit> GetAuditProductProperties(Guid companyInstanceId, int productId, Guid adminUserGuid, long partyId)
+        private List<PropertyAudit> GetAuditProductProperties(Guid companyInstanceId, int productId, Guid adminUserGuid, long partyId, RequestParameter datafilter = null)
         {
             var userLogin = _manageUserLogin.GetUserLogin(adminUserGuid, partyId);
 
@@ -1791,7 +1791,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 _manageOrganization = new ManageOrganization(_repository, _userClaims, _messageHandler, _manageProductOneSite);
             }
 
-            return _manageOrganization.AuditCompanyProductPropertiesToUPFM(companyInstanceId, productId);
+            return _manageOrganization.AuditCompanyProductPropertiesToUPFM(companyInstanceId, productId, datafilter);
         }
 
         private IEnumerable<ValidationResult> ValidateObject(object source)

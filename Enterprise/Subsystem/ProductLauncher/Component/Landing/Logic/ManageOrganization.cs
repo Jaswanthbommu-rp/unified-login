@@ -1307,7 +1307,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 
         #region Audit Property data
-        public List<PropertyAudit> AuditCompanyProductPropertiesToUPFM(Guid companyInstanceId, int productId)
+        public List<PropertyAudit> AuditCompanyProductPropertiesToUPFM(Guid companyInstanceId, int productId, RequestParameter datafilter = null)
         {
             var propertyAuditResult = new List<PropertyAudit>();
             var upfmPropertyDetails = new List<PropertySetup>();
@@ -1323,8 +1323,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 productResult = integration.GetEnterpriseProperties(_defaultUserClaim.PersonaId, new RequestParameter());
             }
             else
-            {
-                productResult = _manageProductPanel.GetProductProperties(_defaultUserClaim.PersonaId, 0, productId, null);
+            {                
+                productResult = _manageProductPanel.GetProductProperties(_defaultUserClaim.PersonaId, 0, productId, datafilter);
             }
 
             if (productResult.Records != null)
