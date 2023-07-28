@@ -159,6 +159,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void GetPropeties_ValidResponse()
 		{
+            RequestParameter datafilter = new RequestParameter();
             DefaultUserClaim defaultUserClaim = new DefaultUserClaim()
             {
                 CorrelationId = new Guid(),
@@ -185,7 +186,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                     It.Is<long>(l => l == 4444)
                     , It.Is<long>(l => l == 0)
                     , It.Is<bool>(l => l == false)
-                    , null
+                    , datafilter
                 ))
                 .Returns(oneSitePropertyResponse);
 
@@ -193,7 +194,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                     It.Is<long>(l => l == 5555)
                     , It.Is<long>(l => l == 0)
                     , It.Is<bool>(l => l == false)
-                    , null
+                    , datafilter
                 ))
                 .Returns(oneSitePropertyResponse);
             new RPObjectCache().BustCache();
@@ -213,9 +214,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()
-            };
-            RequestParameter datafilter = new RequestParameter();
-            HttpResponseMessage response = productPannelController.GetProperties(4444, 0, (int)ProductEnum.OneSite, null);
+            }; 
+            HttpResponseMessage response = productPannelController.GetProperties(4444, 0, (int)ProductEnum.OneSite, datafilter);
            
             //Assert
             Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
