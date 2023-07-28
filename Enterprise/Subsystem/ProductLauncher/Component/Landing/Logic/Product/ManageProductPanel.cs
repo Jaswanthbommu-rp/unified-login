@@ -96,10 +96,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     datafilter = new RequestParameter();
                 }
-
                 var integration = _integrationTypeFactory.GetIntegration(productId);
                 result = integration.GetProperties(editorPersonaId, userPersonaId, datafilter);
-
                 if (result.IsError)
                 {
                     throw new Exception(result.ErrorReason);
@@ -107,7 +105,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 else
                 {
                     //IPersonaRepository personaRepository = new PersonaRepository(_userClaims);
-
                     bool usePrimaryProperty = false;
                     if (userPersonaId > 0)
                     {
@@ -118,12 +115,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             usePrimaryProperty = productSetting.Value.Trim() == "1" ? true : false;
                         }
                     }
-
                     Dictionary<string, bool> additionalInfo = new Dictionary<string, bool>();
                     Dictionary<string, bool> additionalDataCollection = result.Additional as Dictionary<string, bool>;
-
                     additionalInfo.Add("usePrimaryProperties", usePrimaryProperty);
-
                     if (additionalDataCollection != null)
                     {
                         foreach (KeyValuePair<string, bool> pair in additionalDataCollection)
@@ -134,17 +128,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             }
                         }
                     }
-
-
                     result.Additional = additionalInfo;
                 }
             }
             catch (Exception ex)
             {
-
                 result = new ListResponse();
                 result.IsError = true;
-
                 if (ex is BlueBookException)
                 {
                     result.ErrorReason = CommonMessageConstants.CompanyErrorMessage;
@@ -157,14 +147,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         result.ErrorReason = ex.Message;
                         return result;
                     }
-
                     //UI calls GetProperty but sometimes it diplays the data in Entities tab for some products, that's why this validation was added
                     if (ex.Message == CommonMessageConstants.EntityErrorMessage)
                     {
                         result.ErrorReason = ex.Message;
                         return result;
                     }
-
                     if (ex.Message == CommonMessageConstants.CompanyErrorMessage)
                     {
                         result.ErrorReason = CommonMessageConstants.CompanyErrorMessage;
@@ -188,8 +176,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         }
                     }
                 }
-            }
-           
+            }           
             return result;
         }
 

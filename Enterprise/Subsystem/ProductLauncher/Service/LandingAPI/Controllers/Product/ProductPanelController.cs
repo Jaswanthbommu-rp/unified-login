@@ -258,18 +258,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         public HttpResponseMessage GetProperties(long editorPersonaId, long userPersonaId, int productId, [FromUri] RequestParameter datafilter)
         {
             if (editorPersonaId == 0)
+            {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
-
+            }
             if (!_excludeTest && _realpageUserId == Guid.Empty)
+            {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
-
-
+            }
             ListResponse result = new ListResponse();
             result = _manageProductPanel.GetProductProperties(editorPersonaId, userPersonaId, productId, datafilter);
-
             if (result.IsError)
+            {
                 Request.CreateResponse(HttpStatusCode.Forbidden, result);
-
+            }
             return Request.CreateResponse(HttpStatusCode.OK, result);
         }
 
@@ -296,7 +297,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 {
                     return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
                 }
-
                 if (datafilter.FilterBy.ContainsKey("upfmid") && currentClaimPrincipal.HasClaim("scope", "internalapi"))
                 {
                     editorPersonaId = GetSupportUserDetailsAndChangeContext(datafilter);
@@ -306,21 +306,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     }
                 }
             }
-
-
             if (!_excludeTest && _realpageUserId == Guid.Empty)
+            {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
-
+            }
             var result = _manageProductPanel.GetProductProperties(editorPersonaId, userPersonaId, productId, datafilter);
-
             if (!result.IsError) // && result.Records.Count > 0 && upfmProperty?.id != null
             {
                 result = _manageProductPanel.CompareProductAndPrimaryProperties(upfmProperty, productId, result);
             }
-
             if (result.IsError)
+            {
                 Request.CreateResponse(HttpStatusCode.Forbidden, result);
-
+            }
             return Request.CreateResponse(HttpStatusCode.OK, result);
         }
 
