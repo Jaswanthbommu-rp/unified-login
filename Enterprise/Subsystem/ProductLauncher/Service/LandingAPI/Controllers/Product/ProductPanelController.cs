@@ -263,10 +263,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             if (!_excludeTest && _realpageUserId == Guid.Empty)
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
 
-            if (datafilter == null) 
-            {
-                datafilter = new RequestParameter();
-            }
 
             ListResponse result = new ListResponse();
             result = _manageProductPanel.GetProductProperties(editorPersonaId, userPersonaId, productId, datafilter);
@@ -296,10 +292,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
             if (editorPersonaId == 0)
             {
-                if (datafilter == null)
-                {
-                    datafilter = new RequestParameter();
-                }
                 if (datafilter == null || !datafilter.FilterBy.ContainsKey("upfmid"))
                 {
                     return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
@@ -314,6 +306,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     }
                 }
             }
+
 
             if (!_excludeTest && _realpageUserId == Guid.Empty)
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
