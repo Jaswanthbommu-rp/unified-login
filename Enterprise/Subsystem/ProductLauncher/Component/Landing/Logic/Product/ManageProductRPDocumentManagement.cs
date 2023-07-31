@@ -1,7 +1,6 @@
 ﻿using Newtonsoft.Json;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
@@ -13,7 +12,6 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Migration;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.RPDocumentManagement;
-using Swashbuckle.Swagger;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,6 +19,7 @@ using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
 using RP.Enterprise.Foundation.DataAccess.Component;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Helpers;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -29,7 +28,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
     /// </summary>
     public class ManageProductRPDocumentManagement : ManageProductBase, IManageProductRPDocumentManagement
 	{
-		private DefaultUserClaim _userClaims;
+        private DefaultUserClaim _userClaims;
         private IList<ProductInternalSetting> _unifiedLoginSettings;
 		#region Ctor
 
@@ -1296,9 +1295,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				Status = false
 			};
 
-			var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
+            var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
 			if (claimResposnse.IsError) { migrateResponse.Message = claimResposnse.ErrorReason; return migrateResponse; }
-			try
+
+            string domain = GetDomain();
+            if (domain.Contains("There was a problem creating the user") || string.IsNullOrEmpty(domain))
+            {
+                WriteToErrorLog($"Error - No CompanyInstanceSourceId found.");
+                return null;
+            }
+            try
 			{
 
 				string companyInstanceSourceId = GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId;
@@ -1309,21 +1315,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					migrateResponse.Message = "Company Setup Error: Please Contact Support.";
 					return migrateResponse;
 				}
-				var url = $"{_productUrl}/users/{companyInstanceSourceId}/migrate";
-				var response = _client.PutAsJsonAsync(url, migrateUsers).Result;
-				var responseContent = response.Content.ReadAsStringAsync().Result;
+                var logDatapayload = new Dictionary<string, object>
+                {
+                    { "MigratedUser", migrateUsers }
+                };
+                WriteToErrorLog("ManageRPDMUser.UpdateUsersMigrationStatus.PatchAsJsonAsync", logDatapayload);        
+                var url = _productUrl.Replace("{{domain}}", domain) + $"/api/users/{companyInstanceSourceId}/migrate";
+                var integration = new ApiIntegration(_client, url);
+                var response = integration.PatchEntity<MigrateResponse>(migrateUsers);
 
-				var logData = new Dictionary<string, object>
-			{
-				{ "Url", url },
-				{ "Response", responseContent },
-				{ "EditorPersonaId", editorPersonaId },
-				{ "MigratedUser", migrateUsers }
-			};
-				if (response.IsSuccessStatusCode)
+                var logData = new Dictionary<string, object> { { "result", response } };
+                if (response.IsSuccessStatusCode)
 				{
-					var migrationResponse = JsonConvert.DeserializeObject<MigrateResponse>(responseContent);
-					WriteToDiagnosticLog("ManageRPDMUser.UpdateUsersMigrationStatus.PostAsJsonAsync", logData);
+                    var migrationResponse = JsonConvert.DeserializeObject<MigrateResponse>(JsonConvert.SerializeObject(response.Content));
+                    WriteToDiagnosticLog("ManageRPDMUser.UpdateUsersMigrationStatus.PatchAsJsonAsync", logData);
 					migrateResponse.Message = migrationResponse.Message;
 					migrateResponse.Status = migrationResponse.Status;
 					return migrateResponse;

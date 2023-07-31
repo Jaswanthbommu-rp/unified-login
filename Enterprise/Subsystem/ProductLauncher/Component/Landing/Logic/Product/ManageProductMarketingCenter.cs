@@ -23,6 +23,8 @@ using System.Text;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using IC = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using MC = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.MarketingCenter;
+using Right = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.MarketingCenter.Right;
+
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -37,12 +39,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		private DefaultUserClaim _userClaims;
         private HttpClient _httpClient;
 
-		#region Ctor
-		/// <summary>
-		/// The default constructor
-		/// </summary>
-		/// <param name="userClaims">The RealPageId of the editor</param>
-		public ManageProductMarketingCenter(DefaultUserClaim userClaims) : base((int)ProductEnum.MarketingCenter, userClaims, productInternalSettingRepository: null, productRepository: null)
+        #region Ctor
+        /// <summary>
+        /// The default constructor
+        /// </summary>
+        /// <param name="userClaims">The RealPageId of the editor</param>
+        public ManageProductMarketingCenter(DefaultUserClaim userClaims) : base((int)ProductEnum.MarketingCenter, userClaims, productInternalSettingRepository: null, productRepository: null)
         {
 			_editorRealPageId = userClaims.UserRealPageGuid;
 			_blueBook = new Logic.ManageBlueBook(userClaims);
@@ -61,10 +63,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			credCache.Add(new Uri(_productUrl), "Digest", new NetworkCredential(_username, _password));
 			var HttpHandler = new HttpClientHandler();
 			HttpHandler.Credentials = credCache;
-            _httpClient = new HttpClient(HttpHandler);
-            _httpClient.BaseAddress = new Uri(_productUrl);
-            _httpClient.SetBasicAuthentication(_username, _password);
-        }
+			_httpClient = new HttpClient(HttpHandler);
+			_httpClient.BaseAddress = new Uri(_productUrl);
+			_httpClient.SetBasicAuthentication(_username, _password);
+		}
 
         /// <summary>
         /// Unit test constructor
@@ -99,7 +101,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			// TODO REMOVE WHEN POSTING TO TRUSTED URL
 
 			_httpClient = new HttpClient(httpMessageHandler);
-		}
+        }
 		#endregion
 
 		#region Public methods
@@ -124,7 +126,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				string marketingCompanyId = company.CompanyInstanceSourceId;
 				
 				WriteToDiagnosticLog($"GetRoles - Found blue book company source id {marketingCompanyId}");
-				var url = _productUrl + $"/v2/company/{marketingCompanyId}/contact/roles";
+				var url = _productUrl + $"/external/company/{marketingCompanyId}/contact/roles";
 				logData = new Dictionary<string, object>();
 				logData.Add("url", url);
 				WriteToDiagnosticLog("GetRoles - Posting to url", logData);
@@ -239,7 +241,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				//companyInstanceId = 779893; // LeaseStar id 438
 				IList<ProductPropertyMap> propertyList = new List<ProductPropertyMap>();
-				var url = _productUrl + $"/v2/properties?companyId= { marketingCenterCompanyId} ";
+				var url = _productUrl + $"/external/properties?companyId= { marketingCenterCompanyId} ";
 				logData = new Dictionary<string, object>();
 				logData.Add("url", url);
 				WriteToDiagnosticLog("GetProperties - Posting to url", logData);
@@ -469,7 +471,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     AssignNewProperty = mUser.AssignNewProperty
 				};
 
-				var url = _productUrl + $"/v2/contact/{_productUserId}?sourceid={_editorProductUserId}";
+				var url = _productUrl + $"/external/contact/{_productUserId}?sourceid={_editorProductUserId}";
 				logData = new Dictionary<string, object>();
 				logData.Add("url", url);
 				logData.Add("mcuser", mcUser);
@@ -734,7 +736,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 					UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Running);
 
-					var url = _productUrl + $"/v2/contact?sourceid={(string.IsNullOrEmpty(_editorProductUserId) ? _marketingCenterApiSourceID : _editorProductUserId)}";
+					var url = _productUrl + $"/external/contact?sourceid={(string.IsNullOrEmpty(_editorProductUserId) ? _marketingCenterApiSourceID : _editorProductUserId)}";
 
 					logData = new Dictionary<string, object>();
 					logData.Add("url", url);
@@ -832,11 +834,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					var url = "";
 					if (allPropertiesSelected)
 					{
-						url = _productUrl + $"/v2/contact/{_productUserId}?sourceid={(string.IsNullOrEmpty(_editorProductUserId) ? _marketingCenterApiSourceID : _editorProductUserId)}&assignAllProperties=true";
+						url = _productUrl + $"/external/contact/{_productUserId}?sourceid={(string.IsNullOrEmpty(_editorProductUserId) ? _marketingCenterApiSourceID : _editorProductUserId)}&assignAllProperties=true";
 					}
 					else
 					{
-						url = _productUrl + $"/v2/contact/{_productUserId}?sourceid={(string.IsNullOrEmpty(_editorProductUserId) ? _marketingCenterApiSourceID : _editorProductUserId)}&unassignAllProperties=false";
+						url = _productUrl + $"/external/contact/{_productUserId}?sourceid={(string.IsNullOrEmpty(_editorProductUserId) ? _marketingCenterApiSourceID : _editorProductUserId)}&unassignAllProperties=false";
 					}
 					logData = new Dictionary<string, object>();
 					logData.Add("url", url);
@@ -913,12 +915,559 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				return false;
 			}
 		}
-		#endregion
+        #endregion
 
-		#region Private methods
-		private bool CheckIfUserExistInProduct(string _productUserId)
+        #region Role Right Setup
+        /// <summary>
+        /// Used to get roles for Marketing Center
+        /// </summary>
+        /// <param name="editorPersonaId"></param>        
+        /// <returns></returns>
+        public ListResponse GetRolesCount(long editorPersonaId)
+        {
+            ListResponse response = new ListResponse();
+            try
+            {
+                response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
+                if (response.IsError) { return response; }
+
+                response = GetRolesCountDetails(editorPersonaId);
+            }
+            catch (Exception ex)
+            {
+                response.IsError = true;
+                response.ErrorReason = ex.Message;
+                WriteToErrorLog($"ManageMarketingCenterUser.GetRolesCount - Error. {ex.Message}", exception: ex);
+            }
+            return response;
+        }
+
+        /// <summary>
+        /// Used to get rights for Marketing Center
+        /// </summary>
+        /// <param name="editorPersonaId"></param>        
+        /// <returns></returns>
+        public ListResponse GetRights(long editorPersonaId)
+        {
+            ListResponse response = new ListResponse();
+            try
+            {
+                response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
+                if (response.IsError) { return response; }
+
+                response = GetRightsDetails(editorPersonaId);
+            }
+            catch (Exception ex)
+            {
+                response.IsError = true;
+                response.ErrorReason = ex.Message;
+                WriteToErrorLog($"ManageMarketingCenterUser.GetRights - Error. {ex.Message}", exception: ex);
+            }
+            return response;
+        }
+
+        /// <summary>
+        /// Used to Delete a role in MarketingCenter
+        /// </summary>
+        /// <param name="editorPersonaId">The persona of the user making the change. Used to log the GreenBook user making the change.</param>       
+        /// <param name="roleId"></param>
+        /// <returns></returns>
+        public ListResponse DeleteRole(long editorPersonaId, int roleId)
+        {
+            ListResponse response = new ListResponse();
+            Dictionary<string, object> logData = new Dictionary<string, object>();
+            response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
+            if (response.IsError) { return response; }           
+            try
+			{
+                CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
+                string marketingCompanyId = company.CompanyInstanceSourceId;
+                var url = _productUrl + $"/external/company/{marketingCompanyId}/roles/{roleId}?username={GetLoginName()}";
+                var result = _httpClient.DeleteAsync(url).Result;
+                if (result.IsSuccessStatusCode)
+                {
+                    dynamic jsonResult = JsonConvert.DeserializeObject<dynamic>(result.Content.ReadAsStringAsync().Result);
+                    logData = new Dictionary<string, object>
+                    {
+                        { "roleResult", jsonResult }
+                    };
+                    WriteToDiagnosticLog($"ManageMarketingCenterUser.DeleteRole - delete role {roleId}. Got result from marketing center.", logData);
+                }
+                else
+                {
+                    WriteToDiagnosticLog($"ManageMarketingCenterUser.DeleteRole - delete role {roleId} status errored.", logData);
+                    response = new ListResponse()
+                    {
+                        IsError = true,
+                        ErrorReason = "ManageMarketingCenterUser.DeleteRole - Unable to delete role"
+                    };
+                    return response;
+                }
+            }
+
+			catch (Exception ex)
+			{
+				WriteToErrorLog($"DeleteRole - Error", exception: ex);
+				response = new ListResponse()
+				{
+					IsError = true,
+					ErrorReason = ex.Message
+				};
+			}
+            return response;
+        }
+
+        /// <summary>
+        /// Used to update a role status in MarketingCenter
+        /// </summary>
+        /// <param name="editorPersonaId">The persona of the user making the change. Used to log the GreenBook user making the change.</param>       
+        /// <param name="roleId"></param>
+        /// <param name="IsActive"></param>
+        /// <returns></returns>
+        public ListResponse UpdateRoleStatus(long editorPersonaId, int roleId, bool IsActive)
+        {
+            ListResponse response = new ListResponse();
+            Dictionary<string, object> logData = new Dictionary<string, object>();
+            response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
+            if (response.IsError) { return response; }
+            try
+			{
+                CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
+				string marketingCompanyId = company.CompanyInstanceSourceId;
+				var url = _productUrl + $"/external/company/{marketingCompanyId}/roles/{roleId}?active={IsActive}&username={GetLoginName()}";
+				var request = new HttpRequestMessage(new HttpMethod("PATCH"), url);
+				var result = _httpClient.SendAsync(request).Result;
+				if (result.IsSuccessStatusCode)
+				{
+                    dynamic jsonResult = JsonConvert.DeserializeObject<dynamic>(result.Content.ReadAsStringAsync().Result);
+                    logData = new Dictionary<string, object>
+                    {
+                        { "roleResult", jsonResult }
+                    };
+                    WriteToDiagnosticLog($"ManageMarketingCenterUser.UpdateRoleStatus - Update roleId {roleId} status. Got result from marketing center.", logData);
+				}
+				else
+				{
+					WriteToDiagnosticLog($"ManageMarketingCenterUser.UpdateRoleStatus - Update userId {roleId} status errored.");
+					response = new ListResponse()
+					{
+						IsError = true,
+						ErrorReason = "ManageMarketingCenterUser.UpdateRoleStatus - Unable to update role status"
+					};
+					return response;
+				}
+			}
+			catch (Exception ex)
+			{
+				WriteToErrorLog($"Update Role Status - Error", exception: ex);
+				response = new ListResponse()
+				{
+					IsError = true,
+					ErrorReason = ex.Message
+				};
+			}
+            return response;
+        }
+
+        /// <summary>
+        /// Used to update a role status in MarketingCenter
+        /// </summary>
+        /// <param name="editorPersonaId">The persona of the user making the change. Used to log the GreenBook user making the change.</param>       
+        /// <param name="rightId"></param>
+        /// <param name="roleList"></param>
+        /// <returns></returns>
+        public ListResponse UpdateRolesForRight(long editorPersonaId, int rightId, List<string> roleList)
+        {
+            ListResponse response = new ListResponse();
+            Dictionary<string, object> logData = new Dictionary<string, object>();
+            response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
+            if (response.IsError) { return response; }
+            try
+            {
+                CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
+                string marketingCompanyId = company.CompanyInstanceSourceId;
+				var url = _productUrl + $"/external/company/{marketingCompanyId}/rights/{rightId}/roles?username={GetLoginName()}";
+                var result = _httpClient.PutAsJsonAsync(url, roleList.Select(int.Parse).ToList()).Result;
+                if (result.IsSuccessStatusCode)
+                {
+                    dynamic jsonResult = JsonConvert.DeserializeObject<dynamic>(result.Content.ReadAsStringAsync().Result);
+					response.Records = null;
+                    logData = new Dictionary<string, object>
+                    {
+                        { "roleResult", jsonResult }
+                    };
+                    WriteToDiagnosticLog($"ManageMarketingCenterUser.UpdateRolesForRight - Update rightId {rightId} status. Got result from marketing center.", logData);
+                }
+                else
+                {
+                    WriteToDiagnosticLog($"ManageMarketingCenterUser.UpdateRolesForRight - Update rightId {rightId} status errored.");
+                    response = new ListResponse()
+                    {
+                        IsError = true,
+                        ErrorReason = "ManageMarketingCenterUser.UpdateRolesForRight - Unable to update role status"
+                    };
+                    return response;
+                }
+            }
+            catch (Exception ex)
+            {
+                WriteToErrorLog($"Update Role Status - Error", exception: ex);
+                response = new ListResponse()
+                {
+                    IsError = true,
+                    ErrorReason = ex.Message
+                };
+            }
+            return response;
+        }
+
+        /// <summary>
+        /// Create new role
+        /// </summary>
+        /// <param name="editorPersonaId">The persona of the user making the change. Used to log the GreenBook user making the change.</param>       
+        /// <param name="mcRole"></param>
+        /// <returns></returns>
+        public ListResponse CreateNewMCRoleWithRights(long editorPersonaId, MCRole mcRole)
+        {
+            ListResponse response = new ListResponse();
+            Dictionary<string, object> logData = new Dictionary<string, object>();
+            response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
+            if (response.IsError) { return response; }
+            try
+            {
+                CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
+                string marketingCompanyId = company.CompanyInstanceSourceId;
+                var url = _productUrl + $"/external/company/{marketingCompanyId}/roles?active={mcRole.Active}&username={GetLoginName()}";
+                var result = _httpClient.PostAsJsonAsync(url, mcRole).Result;
+                if (result.IsSuccessStatusCode)
+                {
+                    dynamic jsonResult = JsonConvert.DeserializeObject<dynamic>(result.Content.ReadAsStringAsync().Result);
+                    response.Records = null;
+                    logData = new Dictionary<string, object>
+                    {
+                        { "roleResult", jsonResult }
+                    };
+                    WriteToDiagnosticLog($"ManageMarketingCenterUser.CreateNewMCRoleWithRights - Got result from marketing center.", logData);
+                }
+                else
+                {
+                    WriteToDiagnosticLog($"ManageMarketingCenterUser.CreateNewMCRoleWithRights - Got error result from marketing center.");
+                    response = new ListResponse()
+                    {
+                        IsError = true,
+                        ErrorReason = "ManageMarketingCenterUser.CreateNewMCRoleWithRights - Unable to create role"
+                    };
+                    return response;
+                }
+            }
+            catch (Exception ex)
+            {
+                WriteToErrorLog($"Update Role Status - Error", exception: ex);
+                response = new ListResponse()
+                {
+                    IsError = true,
+                    ErrorReason = ex.Message
+                };
+            }
+            return response;
+        }
+
+        /// <summary>
+        /// Update role
+        /// </summary>
+        /// <param name="editorPersonaId">The persona of the user making the change. Used to log the GreenBook user making the change.</param>       
+        /// <param name="mcRole"></param>
+        /// <returns></returns>
+        public ListResponse UpdateNewMCRoleWithRights(long editorPersonaId, MCRole mcRole)
+        {
+            ListResponse response = new ListResponse();
+            Dictionary<string, object> logData = new Dictionary<string, object>();
+            response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
+            if (response.IsError) { return response; }
+            try
+            {
+                CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
+                string marketingCompanyId = company.CompanyInstanceSourceId;
+                var url = _productUrl + $"/external/company/{marketingCompanyId}/roles/{mcRole.Id}?username={GetLoginName()}";
+                var result = _httpClient.PutAsJsonAsync(url, mcRole).Result;
+                if (result.IsSuccessStatusCode)
+                {
+                    dynamic jsonResult = JsonConvert.DeserializeObject<dynamic>(result.Content.ReadAsStringAsync().Result);
+                    response.Records = null;
+                    logData = new Dictionary<string, object>
+                    {
+                        { "roleResult", jsonResult }
+                    };
+                    WriteToDiagnosticLog($"ManageMarketingCenterUser.CreateNewMCRoleWithRights - Got result from marketing center.", logData);
+                }
+                else
+                {
+                    WriteToDiagnosticLog($"ManageMarketingCenterUser.CreateNewMCRoleWithRights - Got error result from marketing center.");
+                    response = new ListResponse()
+                    {
+                        IsError = true,
+                        ErrorReason = "ManageMarketingCenterUser.CreateNewMCRoleWithRights - Unable to update role"
+                    };
+                    return response;
+                }
+            }
+            catch (Exception ex)
+            {
+                WriteToErrorLog($"Update Role Status - Error", exception: ex);
+                response = new ListResponse()
+                {
+                    IsError = true,
+                    ErrorReason = ex.Message
+                };
+            }
+            return response;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="editorPersonaId"></param>
+        /// <param name="roleId"></param>
+        /// <returns></returns>
+        public ListResponse GetRightsForRoleId(long editorPersonaId, int roleId)
 		{
-			var url = _productUrl + $"/v2/contact/details?emailAddress={_productUserId}";
+            ListResponse response = new ListResponse();
+            try
+            {
+                response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
+                if (response.IsError) { return response; }
+
+                Dictionary<string, object> logData = new Dictionary<string, object>();
+                IList<MCRight> rightList = new List<MCRight>();
+                CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
+                string marketingCompanyId = company.CompanyInstanceSourceId;
+
+                WriteToDiagnosticLog($"GetRoles - Found blue book company source id {marketingCompanyId}");
+				var url = roleId == 0 ? _productUrl + $"/external/company/{marketingCompanyId}/rights" : _productUrl + $"/external/company/{marketingCompanyId}/roles/{roleId}/rights";
+                logData = new Dictionary<string, object>
+                {
+                    { "url", url }
+                };
+                WriteToDiagnosticLog("Marketing Center GetRightsForRoleId - Getting rights.", logData);
+
+                var apiResponse = _httpClient.GetAsync(url).Result;
+                if (apiResponse.IsSuccessStatusCode)
+                {
+                    var jsonContent = apiResponse.Content.ReadAsStringAsync().Result;
+                    var res = JsonConvert.DeserializeObject<IList<Right>>(jsonContent);
+                    logData = new Dictionary<string, object>
+                    {
+                        { "rightList", rightList }
+                    };
+                    WriteToDiagnosticLog("Marketing Center GetRightsForRoleId - Got roles. ", logData);
+
+					if (rightList == null) { rightList = new List<MCRight>(); }
+					else { rightList = res.ToGBRights(); }
+
+                    response = new ListResponse()
+                    {
+                        Records = rightList.Cast<object>().ToList(),
+                        TotalRows = rightList.Count,
+                        RowsPerPage = rightList.Count,
+                        TotalPages = 1,
+                        ErrorReason = ""
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                WriteToErrorLog("Marketing Center GetRightsForRoleId - Error. " + ex.Message, exception: ex);
+                response.IsError = true;
+                response.ErrorReason = "There was a problem getting the roles";
+
+            }
+            return response;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="editorPersonaId"></param>
+        /// <param name="rightId"></param>
+        /// <returns></returns>
+        public ListResponse GetRolesForRightId(long editorPersonaId, int rightId)
+        {
+            ListResponse response = new ListResponse();
+            try
+            {
+                response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
+                if (response.IsError) { return response; }
+
+                Dictionary<string, object> logData = new Dictionary<string, object>();
+                IList<RolesRightsAccessRight> roleList = new List<RolesRightsAccessRight>();
+                CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
+                string marketingCompanyId = company.CompanyInstanceSourceId;
+
+                WriteToDiagnosticLog($"GetRoles - Found blue book company source id {marketingCompanyId}");
+                var url = _productUrl + $"/external/company/{marketingCompanyId}/rights/{rightId}/roles";
+                //var url = "https://api.pv3.myleasestar.com/external/company/30032/roles";
+                logData = new Dictionary<string, object>
+                {
+                    { "url", url }
+                };
+                WriteToDiagnosticLog("Marketing Center GetRolesForRightId - Getting roles.", logData);
+
+                var apiResponse = _httpClient.GetAsync(url).Result;
+                if (apiResponse.IsSuccessStatusCode)
+                {
+                    var jsonContent = apiResponse.Content.ReadAsStringAsync().Result;
+                    roleList = JsonConvert.DeserializeObject<IList<RolesRightsAccessRight>>(jsonContent);
+                    logData = new Dictionary<string, object>
+                    {
+                        { "rightList", roleList }
+                    };
+                    WriteToDiagnosticLog("Marketing Center GetRolesForRightId - Got roles. ", logData);
+
+                    if (roleList == null) { roleList = new List<RolesRightsAccessRight>(); }
+
+                    response = new ListResponse()
+                    {
+                        Records = roleList.Cast<object>().ToList(),
+                        TotalRows = roleList.Count,
+                        RowsPerPage = roleList.Count,
+                        TotalPages = 1,
+                        ErrorReason = ""
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                WriteToErrorLog("Marketing Center GetRolesForRightId - Error. " + ex.Message, exception: ex);
+                response.IsError = true;
+                response.ErrorReason = "There was a problem getting the roles";
+
+            }
+            return response;
+        }
+
+        /// <summary>
+        /// Used to get roles for Marketing Center in Roles and Rights Access page.
+        /// </summary>
+        /// <param name="editorPersonaId">Logged-in user PersonaId</param>
+        /// <returns></returns>
+        private ListResponse GetRolesCountDetails(long editorPersonaId)
+        {
+            ListResponse response = new ListResponse();
+            try
+            {
+                Dictionary<string, object> logData = new Dictionary<string, object>();
+                IList<RolesRightsAccessRight> rolesList = new List<RolesRightsAccessRight>();
+                CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
+                string marketingCompanyId = company.CompanyInstanceSourceId;
+
+                WriteToDiagnosticLog($"GetRoles - Found blue book company source id {marketingCompanyId}");
+				var url = _productUrl + $"/external/company/{marketingCompanyId}/roles" ;
+				//var url = "https://api.pv3.myleasestar.com/external/company/30032/roles";
+                logData = new Dictionary<string, object>
+                {
+                    { "url", url }
+                };
+                WriteToDiagnosticLog("Marketing Center GetRolesCountDetails - Getting roles.", logData);
+
+                var apiResponse = _httpClient.GetAsync(url).Result;
+                if (apiResponse.IsSuccessStatusCode)
+                {
+                    var jsonContent = apiResponse.Content.ReadAsStringAsync().Result;
+                    rolesList = JsonConvert.DeserializeObject<IList<RolesRightsAccessRight>>(jsonContent);
+                    logData = new Dictionary<string, object>
+                    {
+                        { "rolesList", rolesList }
+                    };
+                    WriteToDiagnosticLog("Marketing Center GetRolesCountDetails - Got roles. ", logData);
+
+                    if (rolesList == null) { rolesList = new List<RolesRightsAccessRight>(); }
+
+                    response = new ListResponse()
+                    {
+                        Records = rolesList.Cast<object>().ToList(),
+                        TotalRows = rolesList.Count,
+                        RowsPerPage = rolesList.Count,
+                        TotalPages = 1,
+                        ErrorReason = ""
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                WriteToErrorLog("Marketing Center GetRolesCountDetails - Error. " + ex.Message, exception: ex);
+                response.IsError = true;
+                response.ErrorReason = "There was a problem getting the roles";
+
+            }
+            return response;
+        }
+
+        /// <summary>
+        /// Used to get rights for Marketing Center in Roles and Rights Access page.
+        /// </summary>
+        /// <param name="editorPersonaId">Logged-in user PersonaId</param>
+        /// <returns></returns>
+        private ListResponse GetRightsDetails(long editorPersonaId)
+        {
+            ListResponse response = new ListResponse();
+            Dictionary<string, object> logData = new Dictionary<string, object>();
+
+            IList<Right> rights = new List<Right>();
+            IList<MCRight> mcRights = new List<MCRight>();
+            try
+            {
+                CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
+                string marketingCompanyId = company.CompanyInstanceSourceId;
+
+                WriteToDiagnosticLog($"GetRights - Found blue book company source id {marketingCompanyId}");
+                var url = _productUrl + $"/external/company/{marketingCompanyId}/rights";
+                //var url = "https://api.pv3.myleasestar.com/external/company/30032/rights";
+                logData = new Dictionary<string, object>
+                {
+                    { "url", url }
+                };
+                WriteToDiagnosticLog("GetRightsDetails - Getting rights.", logData);
+
+                var apiResponse = _httpClient.GetAsync(url).Result;
+                if (apiResponse.IsSuccessStatusCode)
+                {
+                    var jsonContent = apiResponse.Content.ReadAsStringAsync().Result;
+                    rights = JsonConvert.DeserializeObject<List<Right>>(jsonContent);
+                    logData = new Dictionary<string, object>
+                    {
+                        { "rightGroup", rights }
+                    };
+                    WriteToDiagnosticLog("GetRightsDetails - Got rights. ", logData);
+
+					if (rights == null) { rights = new List<Right>(); }
+					else { mcRights = rights.ToGBRights(); }
+
+                    WriteToDiagnosticLog("GetRightsDetails - Returning rights. ", logData);
+                    response = new ListResponse()
+                    {
+                        Records = mcRights.Cast<object>().ToList(),
+                        TotalRows = mcRights.Count,
+                        RowsPerPage = mcRights.Count,
+                        TotalPages = 1,
+                        ErrorReason = ""
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                WriteToErrorLog("GetRightsDetails - Error. " + ex.Message, exception: ex);
+                response.IsError = true;
+                response.ErrorReason = "There was a problem getting the rights";
+            }
+            return response;
+        }
+
+        #endregion
+
+        #region Private methods
+        private bool CheckIfUserExistInProduct(string _productUserId)
+		{
+			var url = _productUrl + $"/external/contact/details?emailAddress={_productUserId}";
 			var response = _httpClient.GetAsync(url).Result;
 			if (response.IsSuccessStatusCode)
 			{
@@ -971,7 +1520,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 				if (mcUserId?.Length > 0 && mcUserId != "0")
 				{
-					string url = _productUrl + $"/v2/contact/{ mcUserId }/status";
+					string url = _productUrl + $"/external/contact/{ mcUserId }/status";
 					MC.MarketingCenterUserStatus mcUser = new MC.MarketingCenterUserStatus()
 					{
 						isActive = isActive,
@@ -1092,7 +1641,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			{
 				try
 				{
-					var url = _productUrl + $"/v2/contact/{_productUserId}/details";
+					var url = _productUrl + $"/external/contact/{_productUserId}/details";
 					var response = _httpClient.GetAsync(url).Result;
 
 					if (response.IsSuccessStatusCode)
@@ -1114,11 +1663,31 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <returns>boolean</returns>
 		private bool IsUserIdValid(long userId)
 		{
-			string url = _productUrl + $"/v2/contact/{ userId }/status";
+			string url = _productUrl + $"/external/contact/{ userId }/status";
 			var responsex = _httpClient.GetAsync(url).Result;
 
 			return responsex.IsSuccessStatusCode;
 		}
+
+		/// <summary>
+		/// Returns UserName for marketing center, we will send this for their auditing purpose. 
+		/// </summary>
+		/// <returns></returns>
+		private string GetLoginName()
+		{
+            string loginName = string.Empty;    
+            if (string.IsNullOrEmpty(_userClaims.ImpersonatedByName))
+            {
+                loginName = _userClaims.LoginName;
+            }
+            else
+            {
+                UserDetails currentUser = _userRepository.GetUserDetails(null, _userClaims.ImpersonatedBy.ToString());
+                loginName = currentUser.LoginName;
+            }
+            return loginName;
+		}
+
 		#endregion
 
 		#region Migration
@@ -1162,7 +1731,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 			}
 
-			var url = $"{_productUrl}/v2/api/{companyInstanceSourceId}/users?filter-type={filter}&startRow={startRow}&resultsperpage={resultPerRow}";
+			var url = $"{_productUrl}/external/api/{companyInstanceSourceId}/users?filter-type={filter}&startRow={startRow}&resultsperpage={resultPerRow}";
 			WriteToDiagnosticLog("ManageProductMarketingCenter.GetMigrationUsers", new Dictionary<string, object> { { "Url", url } });
 
 			var migrationResponse = GetResultFromApi<MigrationResponse<IList<MigrationUser>>>(url);
@@ -1227,7 +1796,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 			}
 
-			var url = $"{_productUrl}/v2/api/{companyInstanceSourceId}/migrate-users";
+			var url = $"{_productUrl}/external/api/{companyInstanceSourceId}/migrate-users";
 			var response = _httpClient.PostAsJsonAsync(url, migrateUsers).Result;
 			var responseContent = response.Content.ReadAsStringAsync().Result;
 
@@ -1303,6 +1872,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				});
 			}
 			return results;
+		}
+
+		public static IList<MCRight> ToGBRights(this IList<Right> rights)
+		{
+			if (rights == null) return null;
+			IList<MCRight> res = new List<MCRight>();
+			foreach (Right right in rights)
+			{
+				res.Add(new MCRight
+                {
+					RightId = right.RightId,
+					Description = right.Description,
+					GroupName = right.GroupName,
+					GroupId = right.GroupId,
+					SubGroupId = right.SubGroupId,
+					SubGroupName = right.SubGroupName,
+					DisplaySequence	= right.DisplaySequence,
+					RightName = right.RightName,
+					Action = right.Action,
+                    RolesAssigned = right.RoleCount,
+					IsAssigned = right.IsAssigned
+				});
+			}
+			return res;
 		}
 	}
 }

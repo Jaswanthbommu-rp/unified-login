@@ -32,13 +32,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		{
 			dynamic param = new
 			{
-				telecommunicationNumber.ContactMechanismId,
-				telecommunicationNumber.AreaCode,
-				telecommunicationNumber.CountryCode,
-				telecommunicationNumber.PhoneNumber,
-				telecommunicationNumber.ISOCode,
-				telecommunicationNumber.IsDefault
-			};
+                ContactMechanismId = telecommunicationNumber.ContactMechanismId,
+                AreaCode = telecommunicationNumber.AreaCode,
+                CountryCode = telecommunicationNumber.CountryCode,
+                PhoneNumber = telecommunicationNumber.PhoneNumber,
+                ISOCode = telecommunicationNumber.ISOCode,
+                Default = telecommunicationNumber.IsDefault
+            };
 
 			using (var repository = GetRepository())
 			{

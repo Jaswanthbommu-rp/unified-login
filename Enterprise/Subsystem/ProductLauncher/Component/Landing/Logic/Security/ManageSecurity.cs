@@ -1,15 +1,17 @@
-﻿using System;
-using System.Linq;
+﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Security;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.Security;
+using System;
+using System.Linq;
+using System.Security.Claims;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Security
 {
-	/// <summary>
-	/// 
-	/// </summary>
-	public class ManageSecurity : IManageSecurity
+    /// <summary>
+    /// 
+    /// </summary>
+    public class ManageSecurity : IManageSecurity
 	{
 		private readonly IPersonaRightRepository _personaRightRepository;
         private readonly DefaultUserClaim _userClaim;
@@ -46,34 +48,46 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Securi
 			var status = output.Status = new Status<IErrorData>();
 			var routeSecurity = output.obj = new RouteSecurity();
 			if (personaId == 0 || string.IsNullOrWhiteSpace(routeId))
-			{
+            {
 				status.ErrorCode = "100.1";
 				status.ErrorMsg = "Invalid persona Id or route id.";
 				status.Success = false;
 				return output;
 			}
-			var actionRights = _personaRightRepository.ListRightsAndActionsByPersonaId(personaId, routeId);
 
-            if (actionRights.Any())
+            if (routeId.ToLower() == "adgroups" && _userClaim.ImpersonatedBy != Guid.Empty)
             {
-                routeSecurity.RouteId = actionRights
-                    .SingleOrDefault(ar => ar.ObjectType.Equals("Route", StringComparison.OrdinalIgnoreCase))
-                    .Action;
-
-                routeSecurity.Rights = actionRights
-                    .Where(ar => ar.ObjectType.Equals("Right", StringComparison.OrdinalIgnoreCase))
-                    .Select(ar => ar.Action)
-                    .ToList();
-
-                if (_userClaim.OrganizationRealPageGuid == DefaultUserClaim.ExternalCompanyRealPageId)
+                ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
+                output.obj.RouteId = routeId;
+                output.obj.Rights = BaseUserRights.GetUserRightsBy(currentClaimPrincipal, _userClaim);
+            }
+            else
+            {
+                var actionRights = _personaRightRepository.ListRightsAndActionsByPersonaId(personaId, routeId);
+                if (actionRights.Any())
                 {
-                    routeSecurity.Rights.Remove("Clone User");
-                    routeSecurity.Rights.Remove("Create User");
+                    routeSecurity.RouteId = actionRights
+                        .SingleOrDefault(ar => ar.ObjectType.Equals("Route", StringComparison.OrdinalIgnoreCase))
+                        .Action;
+
+                    routeSecurity.Rights = actionRights
+                        .Where(ar => ar.ObjectType.Equals("Right", StringComparison.OrdinalIgnoreCase))
+                        .Select(ar => ar.Action)
+                        .ToList();
+
+                    routeSecurity.ProductRights = actionRights
+                    .Where(ar => ar.ObjectType.Equals("Right", StringComparison.OrdinalIgnoreCase))
+                    .Select(ar => new ProductRights { RightName = ar.Action, ProductId = ar.ProductId })
+                    .ToList();
+                    
+                    if (_userClaim.OrganizationRealPageGuid == DefaultUserClaim.ExternalCompanyRealPageId)
+                    {
+                        routeSecurity.Rights.Remove("Clone User");
+                        routeSecurity.Rights.Remove("Create User");
+                    }
                 }
             }
-
             return output;
 		}
 	}
-
 }

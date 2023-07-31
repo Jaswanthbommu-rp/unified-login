@@ -252,6 +252,7 @@
     <Compile Include="Helper\AssignOAuth2Settings.cs" />
     <Compile Include="Helper\ConfigReader.cs" />
     <Compile Include="Helper\NoCacheHandler.cs" />
+    <Compile Include="Models\ActivityLogDetailExportRequest.cs" />
     <Compile Include="Models\ActivityLogFilterCriteria.cs" />
     <Compile Include="Models\DefaultUserClaim.cs" />
     <Compile Include="Models\ErrorData.cs" />

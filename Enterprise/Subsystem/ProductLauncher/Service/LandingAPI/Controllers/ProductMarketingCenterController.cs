@@ -21,6 +21,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 	/// </summary>
 	public class ProductMarketingCenterController : BaseApiController
     {
+        #region User management
         /// <summary>
         /// Used to get a list of roles
         /// </summary>
@@ -130,6 +131,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
             return Request.CreateResponse(HttpStatusCode.BadRequest, result);
         }
+
+        #endregion
+
         #region User-Status
 
         /// <summary>
@@ -159,6 +163,209 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             return Request.CreateResponse(HttpStatusCode.OK, "Successfully disabled product user.");
         }
 
+        #endregion
+
+        #region Roles Rights Setup
+        /// <summary>
+        /// Used to get a list of roles 
+        /// </summary>
+        /// <remarks>A datafilter can be used to filter the roles using name</remarks>
+        /// <param name="editorPersonaId"></param>                
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when Information is out of sync with the server)")]
+        [Route("products/marketingcenter/rolescount")]
+        [Authorize]
+        [HttpGet]
+        public HttpResponseMessage GetRolesCount(long editorPersonaId)
+        {
+            if (editorPersonaId == 0)
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
+            ManageProductMarketingCenter mc = new ManageProductMarketingCenter(base._userClaims);
+            ListResponse response = mc.GetRolesCount(editorPersonaId);
+            return Request.CreateResponse(!response.IsError ? HttpStatusCode.OK : HttpStatusCode.BadRequest, response);
+        }
+
+        /// <summary>
+        /// Used to get a list of rights 
+        /// </summary>
+        /// <remarks></remarks>
+        /// <param name="editorPersonaId"></param>       
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "A list of rights for the given company", Type = typeof(object))]
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when Information is out of sync with the server)")]
+        [Route("products/marketingcenter/rights")]
+        [Authorize]
+        [HttpGet]
+        public HttpResponseMessage GetRights(long editorPersonaId)
+        {
+            if (editorPersonaId == 0 || editorPersonaId == 0) { throw new HttpResponseException(HttpStatusCode.BadRequest); }
+            ManageProductMarketingCenter mc = new ManageProductMarketingCenter(base._userClaims);
+            ListResponse response = mc.GetRights(editorPersonaId);
+            return Request.CreateResponse(!response.IsError ? HttpStatusCode.OK : HttpStatusCode.BadRequest, response);
+        }
+
+        /// <summary>
+        /// Disable the resident portal user.
+        /// </summary>
+        /// <param name="editorPersonaId">The editorPersonaId.</param>
+        /// <param name="roleId">The roleId.</param>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Role Deleted Successfully", Type = typeof(HttpResponseMessage))]
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad Request")]
+        [SwaggerResponseExamples(typeof(HttpResponseMessage), typeof(ResponseExample))]
+        [Route("products/marketingcenter/role")]
+        [Authorize]
+        [HttpDelete]
+        public HttpResponseMessage DeleteMarketingCenterRole(long editorPersonaId, int roleId)
+        {
+            if (editorPersonaId == 0 || editorPersonaId == 0) { throw new HttpResponseException(HttpStatusCode.BadRequest); }
+            ManageProductMarketingCenter mc = new ManageProductMarketingCenter(base._userClaims);
+            return Request.CreateResponse(HttpStatusCode.OK, mc.DeleteRole(editorPersonaId, roleId));
+        }
+
+        /// <summary>
+        /// Disable the MC portal user.
+        /// </summary>
+        /// <param name="roleId">The roleId.</param>
+        /// <param name="isActive">The isActive.</param>
+        /// <param name="editorPersonaId">The editorPersonaId.</param>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Role Deleted Successfully", Type = typeof(HttpResponseMessage))]
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad Request")]
+        [SwaggerResponseExamples(typeof(HttpResponseMessage), typeof(ResponseExample))]
+        [Route("products/marketingcenter/role/status")]
+        [Authorize]
+        [HttpPost]
+        public HttpResponseMessage UpdateMarketingCenterRoleStatus(long editorPersonaId, int roleId, bool isActive)
+        {
+            if (editorPersonaId == 0 || editorPersonaId == 0) { throw new HttpResponseException(HttpStatusCode.BadRequest); }
+            ManageProductMarketingCenter mc = new ManageProductMarketingCenter(base._userClaims);
+            return Request.CreateResponse(HttpStatusCode.OK, mc.UpdateRoleStatus(editorPersonaId, roleId, isActive));
+        }
+
+        /// <summary>
+        /// Get roles for the right id
+        /// </summary>
+        /// <param name="rightId">The rightId.</param>
+        /// <param name="editorPersonaId">The editorPersonaId.</param>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Role Deleted Successfully", Type = typeof(HttpResponseMessage))]
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad Request")]
+        [SwaggerResponseExamples(typeof(HttpResponseMessage), typeof(ResponseExample))]
+        [Route("products/marketingcenter/right/roles")]
+        [Authorize]
+        [HttpGet]
+        public HttpResponseMessage GetRolesForRightId(long editorPersonaId, int rightId)
+        {
+            if (editorPersonaId == 0 || editorPersonaId == 0) { throw new HttpResponseException(HttpStatusCode.BadRequest); }
+            ManageProductMarketingCenter mc = new ManageProductMarketingCenter(base._userClaims);
+            ListResponse response = mc.GetRolesForRightId(editorPersonaId, rightId);
+            return Request.CreateResponse(!response.IsError ? HttpStatusCode.OK : HttpStatusCode.BadRequest, response);
+        }
+
+        /// <summary>
+        /// Update roles for right
+        /// </summary>
+        /// <param name="rightId">The rightId.</param>
+        /// <param name="roleList">The roleList.</param>
+        /// <param name="editorPersonaId">The editorPersonaId.</param>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Role Deleted Successfully", Type = typeof(HttpResponseMessage))]
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad Request")]
+        [SwaggerResponseExamples(typeof(HttpResponseMessage), typeof(ResponseExample))]
+        [Route("products/marketingcenter/right/roles")]
+        [Authorize]
+        [HttpPut]
+        public HttpResponseMessage UpdateRolesForRight(long editorPersonaId, int rightId, List<string> roleList)
+        {
+            if (editorPersonaId == 0 || editorPersonaId == 0) { throw new HttpResponseException(HttpStatusCode.BadRequest); }
+            ManageProductMarketingCenter mc = new ManageProductMarketingCenter(base._userClaims);
+            ListResponse response = mc.UpdateRolesForRight(editorPersonaId, rightId, roleList);
+            if (!response.IsError)
+                return Request.CreateResponse(HttpStatusCode.OK, "Roles Updated");
+            else
+                return Request.CreateResponse(HttpStatusCode.BadRequest, response);
+        }
+
+        /// <summary>
+        /// Get Rights for roleId
+        /// </summary>
+        /// <param name="roleId">The roleId.</param>
+        /// <param name="editorPersonaId">The editorPersonaId.</param>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Role Deleted Successfully", Type = typeof(HttpResponseMessage))]
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad Request")]
+        [SwaggerResponseExamples(typeof(HttpResponseMessage), typeof(ResponseExample))]
+        [Route("products/marketingcenter/role/allrights")]
+        [Authorize]
+        [HttpGet]
+        public HttpResponseMessage GetRightsForRoleId(long editorPersonaId, int roleId = 0)
+        {
+            if (editorPersonaId == 0 || editorPersonaId == 0) { throw new HttpResponseException(HttpStatusCode.BadRequest); }
+            ManageProductMarketingCenter mc = new ManageProductMarketingCenter(base._userClaims);
+            ListResponse response = mc.GetRightsForRoleId(editorPersonaId, roleId);
+            return Request.CreateResponse(!response.IsError ? HttpStatusCode.OK : HttpStatusCode.BadRequest, response);
+        }
+
+        /// <summary>
+        /// Create New Role with rights, 
+        /// Don't pass Id for new role
+        /// </summary>
+        /// <param name="mcRole">Role Object to save</param>
+        /// <param name="editorPersonaId">The editorPersonaId.</param>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Role Created Successfully", Type = typeof(HttpResponseMessage))]
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad Request")]
+        [SwaggerResponseExamples(typeof(HttpResponseMessage), typeof(ResponseExample))]
+        [Route("products/marketingcenter/role")]
+        [Authorize]
+        [HttpPost]
+        public HttpResponseMessage CreateNewMCRoleWithRights(long editorPersonaId, MCRole mcRole)
+        {
+            if (editorPersonaId == 0 || editorPersonaId == 0) { throw new HttpResponseException(HttpStatusCode.BadRequest); }
+            ManageProductMarketingCenter mc = new ManageProductMarketingCenter(base._userClaims);
+            ListResponse response = mc.CreateNewMCRoleWithRights(editorPersonaId, mcRole);
+            return Request.CreateResponse(!response.IsError ? HttpStatusCode.OK : HttpStatusCode.BadRequest, response);
+        }
+
+        /// <summary>
+        /// Update Role and rights
+        /// </summary>
+        /// <param name="mcRole">Role Object to save</param>
+        /// <param name="roleId">role id to update</param>
+        /// <param name="editorPersonaId">The editorPersonaId.</param>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Role Updated Successfully", Type = typeof(HttpResponseMessage))]
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad Request")]
+        [SwaggerResponseExamples(typeof(HttpResponseMessage), typeof(ResponseExample))]
+        [Route("products/marketingcenter/role")]
+        [Authorize]
+        [HttpPut]
+        public HttpResponseMessage UpdateMCRoleWithRights(long editorPersonaId, MCRole mcRole)
+        {
+            if (editorPersonaId == 0 || editorPersonaId == 0) { throw new HttpResponseException(HttpStatusCode.BadRequest); }
+            ManageProductMarketingCenter mc = new ManageProductMarketingCenter(base._userClaims);
+            ListResponse response = mc.UpdateNewMCRoleWithRights(editorPersonaId, mcRole);
+            return Request.CreateResponse(!response.IsError ? HttpStatusCode.OK : HttpStatusCode.BadRequest, response);
+        }
         #endregion
 
         #region Migration API

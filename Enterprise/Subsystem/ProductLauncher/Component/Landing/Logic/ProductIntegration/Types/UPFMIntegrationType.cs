@@ -41,7 +41,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public ListResponse GetProperties(long editorPersonaId, long userPersonaId, RequestParameter dataFilter) =>
             _manageUPFMProductIntegration.GetUPFMProperties(editorPersonaId, userPersonaId, false, dataFilter);
 
-        public ListResponse GetEnterpriseProperties(long userPersonaId)
+        public ListResponse GetEnterpriseProperties(long userPersonaId, RequestParameter dataFilter)
         {
             var products = _productRepository.GetAllProducts();
             var productCode = products.FirstOrDefault(a => a.ProductId == _productId)?.BooksProductCode;

@@ -427,6 +427,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <returns></returns>
         public ListResponse DeleteRole(long editorPersonaId, long roleId)
         {
+            WriteToDiagnosticLog(
+                $"UserManagement - ManageUnifiedLogin.DeleteRole at beginning of method for user with editorPersona id - {editorPersonaId}, roleId - {roleId} ");
             ListResponse response = new ListResponse();
             response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
             if (response.IsError)

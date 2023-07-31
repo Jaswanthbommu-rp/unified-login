@@ -933,7 +933,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 int productId = ProductEnumHelper.GetProductIdByProductCode(productCode, productList);
 
                 var integration = _integrationTypeFactory.GetIntegration(productId);
-                result = integration.GetEnterpriseProperties(_userClaims.PersonaId);
+                result = integration.GetEnterpriseProperties(_userClaims.PersonaId, dataFilter);
 
                 if (result.IsError)
                 {
@@ -1446,10 +1446,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             profileDetail.CustomFields = new List<CustomFieldValue>();
             profileDetail.productBatch = new List<ProductBatch>();
             profileDetail.userLogin = new UserLogin();
+            profileDetail.ExternalUserRelationship = new ExternalUserRelationship();
 
             profileDetail.Suffix = userProductDetailsDto.UserProfileDetails.Suffix;
             profileDetail.Title = userProductDetailsDto.UserProfileDetails.Title;
             profileDetail.UserTypeId = GetGbUserType(userProductDetailsDto.UserProfileDetails.UserType);
+            profileDetail.ExternalUserRelationship = GetUserRelationship(userProductDetailsDto.UserProfileDetails.UserType);
             profileDetail.FirstName = userProductDetailsDto.UserProfileDetails.FirstName;
             profileDetail.LastName = userProductDetailsDto.UserProfileDetails.LastName;
             profileDetail.MiddleName = userProductDetailsDto.UserProfileDetails.MiddleName;
@@ -1516,7 +1518,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     pBatch.RetryCount = 0;
                     pBatch.InputJson.RoleList = pl.RolesAssigned;
                     pBatch.InputJson.PropertyList = pl.PropertiesAssigned;
-
+                    pBatch.InputJson.IsAssigned = pl.IsAssigned;
                     if (pBatch.ProductId == (int)ProductEnum.OpsBuyer && userProductDetailsDto.UserProfileDetails.UnityRealPageUserId != Guid.Empty)
                     {
                         var response = _manageProductPanel.GetProductProperties(_userClaims.PersonaId, profileDetail.Persona[0].PersonaId, pBatch.ProductId, null);
@@ -1799,6 +1801,37 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             }
 
             return userType;
+        }
+
+        private ExternalUserRelationship GetUserRelationship(UserTypeDto userTypeDto)
+        {
+            ExternalUserRelationship obj = new ExternalUserRelationship();
+            switch (userTypeDto)
+            {
+                case UserTypeDto.Regular:
+                    obj.ThirdPartyRelationShipId = 4;
+                    obj.ThirdPartyRelationShip = "4";
+                    break;
+                case UserTypeDto.NoEmail:
+                    obj.ThirdPartyRelationShipId = 6;
+                    obj.ThirdPartyRelationShip = "6";
+                    break;
+                case UserTypeDto.SuperUser:
+                    obj.ThirdPartyRelationShipId = 8;
+                    obj.ThirdPartyRelationShip = "8";
+                    break;
+                case UserTypeDto.External:
+                    obj.ThirdPartyRelationShipId = 5;
+                    obj.ThirdPartyRelationShip = "5";
+                    break;
+                case UserTypeDto.Employee:
+                    obj.ThirdPartyRelationShipId = 9;
+                    obj.ThirdPartyRelationShip = "9";
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(userTypeDto), userTypeDto, null);
+            }
+            return obj;
         }
 
         /// <summary>

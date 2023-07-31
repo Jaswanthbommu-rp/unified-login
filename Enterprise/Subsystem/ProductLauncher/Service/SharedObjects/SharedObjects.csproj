@@ -352,6 +352,7 @@
     <Compile Include="Landing\ProductAdGroupsCount.cs" />
     <Compile Include="Landing\ProductPrimaryProperties.cs" />
     <Compile Include="Landing\ProductSuggestedProperties.cs" />
+    <Compile Include="Landing\Security\ProductRights.cs" />
     <Compile Include="Landing\SettingPickList.cs" />
     <Compile Include="Landing\EmailModel.cs" />
     <Compile Include="Landing\ProductSamlDetails.cs" />
@@ -514,6 +515,8 @@
     <Compile Include="Product\MarketingCenter\IMarketingCenterUserStatus.cs" />
     <Compile Include="Product\MarketingCenter\MarketingCenterRoleAndPropertyList.cs" />
     <Compile Include="Product\MarketingCenter\MarketingCenterUserStatus.cs" />
+    <Compile Include="Product\MarketingCenter\Right.cs" />
+    <Compile Include="Product\MarketingCenter\RolesRightsAccessRight.cs" />
     <Compile Include="Product\Migration\AOMigrateResponse.cs" />
     <Compile Include="Product\Migration\AssetOptimizationMigrationUser.cs" />
     <Compile Include="Product\Migration\ClientPortalMigrationResponse.cs" />

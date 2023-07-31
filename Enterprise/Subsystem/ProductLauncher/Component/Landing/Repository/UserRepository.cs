@@ -4879,7 +4879,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             bool isChanged = (
                 (!profile.FirstName.Equals(oldProfile.FirstName))
                 ||
-                (!string.IsNullOrEmpty(profile.MiddleName) && !profile.MiddleName.Equals(oldProfile.MiddleName))
+                (!profile.MiddleName.Equals(oldProfile.MiddleName))
                 ||
                 (!profile.LastName.Equals(oldProfile.LastName))
             );
@@ -4897,7 +4897,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             bool isChanged = (
                 (!profile.FirstName.Equals(userDetail.FirstName))
                 ||
-                (!string.IsNullOrEmpty(profile.MiddleName) && !profile.MiddleName.Equals(userDetail.MiddleName))
+                (!profile.MiddleName.Equals(userDetail.MiddleName))
                 ||
                 (!profile.LastName.Equals(userDetail.LastName))
             );
@@ -5503,10 +5503,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         else
                         {
                             product.BatchProcessorGroupId = batchGroup.BatchProcessorGroupId;
-                            int batchType = product.ProductId == (int)ProductEnum.KnockCRM ? (int)BatchProcessType.ProfileUpdate : (int)BatchProcessType.CreateUpdateProductUser;
                             SaveProductBatch(pbRepository, product, createUserResponse, saveProductBatchError,
                                 createUserPersonaId, personaId, createUserRealPageId, errorStatus,
-                                JsonConvert.SerializeObject(product.InputJson), impersonatorUserLoginOnly.UserId, batchType);
+                                JsonConvert.SerializeObject(product.InputJson), impersonatorUserLoginOnly.UserId);
                         }
                     }
                 }
