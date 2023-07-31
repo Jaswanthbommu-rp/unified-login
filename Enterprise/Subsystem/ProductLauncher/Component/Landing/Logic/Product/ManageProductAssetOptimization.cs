@@ -375,7 +375,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
                 string aoCompanyId = company.CompanyInstanceSourceId;
 
-                string productPropertyApiUrl = $"{_apiEndPoint}company/{aoCompanyId}/delegated/properties"; //https://aoqa.realpage.com/ysconfig/ws/company/2772/delegated/properties
+                string productPropertyApiUrl = $"{_apiEndPoint}company/2772/delegated/properties"; //https://aoqa.realpage.com/ysconfig/ws/company/2772/delegated/properties
                 AoOperatorProperties objAoOperatorPropertiesList = new AoOperatorProperties();
 				objAoOperatorPropertiesList = GetResultFromApi<AoOperatorProperties>(productPropertyApiUrl);
                 response = new ListResponse()
