@@ -24,7 +24,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="userPersonaId"></param>
 		/// <param name="datafilter"></param>
 		/// <returns>String.empty if success else error</returns>
-		ListResponse GetProductProperties(long editorPersonaId, long userPersonaId, int productId, RequestParameter datafilter);
+		ListResponse GetProductProperties(long editorPersonaId, long userPersonaId, int productId, RequestParameter datafilter = null);
 		/// <summary>
 		/// Get Product Roles
 		/// </summary> 

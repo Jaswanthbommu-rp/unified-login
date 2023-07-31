@@ -87,15 +87,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         #endregion
 
         #region public methods
-        public ListResponse GetProductProperties(long editorPersonaId, long userPersonaId, int productId, RequestParameter datafilter)
+        public ListResponse GetProductProperties(long editorPersonaId, long userPersonaId, int productId, RequestParameter datafilter = null)
         {
             ListResponse result;
             try
             {
-                if(datafilter == null)
-                {  
-                    datafilter = new RequestParameter(); 
-                }
                 var integration = _integrationTypeFactory.GetIntegration(productId);
                 result = integration.GetProperties(editorPersonaId, userPersonaId, datafilter);
 

@@ -1262,7 +1262,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [Route("CompanySetup/{companyInstanceId}/product/{productId}/audit")]
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         [HttpGet]
-        public HttpResponseMessage AuditCompanyProductPropertiesToUPFM(Guid companyInstanceId, int productId, RequestParameter datafilter = null)
+        public HttpResponseMessage AuditCompanyProductPropertiesToUPFM(Guid companyInstanceId, int productId)
         {
             if (companyInstanceId == Guid.Empty)
             {
@@ -1298,7 +1298,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
 
             _userClaims.UserRealPageGuid = adminUserGuid;
-            var auditResult = GetAuditProductProperties(companyInstanceId, productId, adminUserGuid, orgDetails.PartyId, datafilter);
+            var auditResult = GetAuditProductProperties(companyInstanceId, productId, adminUserGuid, orgDetails.PartyId);
             ObjectListOutput<PropertyAudit, IErrorData> output = new ObjectListOutput<PropertyAudit, IErrorData> {list = auditResult, Status = errorStatus, pagingSummary = new PagingSummary() {TotalRecords = auditResult.Count, TotalPages = 1}};
             return Request.CreateResponse(HttpStatusCode.OK, output);
         }
@@ -1761,7 +1761,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             return response;
         }
 
-        private List<PropertyAudit> GetAuditProductProperties(Guid companyInstanceId, int productId, Guid adminUserGuid, long partyId, RequestParameter datafilter = null)
+        private List<PropertyAudit> GetAuditProductProperties(Guid companyInstanceId, int productId, Guid adminUserGuid, long partyId)
         {
             var userLogin = _manageUserLogin.GetUserLogin(adminUserGuid, partyId);
 
@@ -1791,7 +1791,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 _manageOrganization = new ManageOrganization(_repository, _userClaims, _messageHandler, _manageProductOneSite);
             }
 
-            return _manageOrganization.AuditCompanyProductPropertiesToUPFM(companyInstanceId, productId, datafilter);
+            return _manageOrganization.AuditCompanyProductPropertiesToUPFM(companyInstanceId, productId);
         }
 
         private IEnumerable<ValidationResult> ValidateObject(object source)

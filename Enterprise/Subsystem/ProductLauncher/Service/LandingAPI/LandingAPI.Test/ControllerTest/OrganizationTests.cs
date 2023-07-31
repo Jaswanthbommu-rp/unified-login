@@ -2251,7 +2251,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void AuditCompanyProductPropertiesToUPFM_AuditOneSite()
         {
-            RequestParameter datafilter = new RequestParameter();       
             DefaultUserClaim defaultUserClaim = new DefaultUserClaim()
             {
                 CorrelationId = new Guid(), CustomerMasterId = _BooksCompanyMasterId, OrganizationRealPageGuid = EmployeeCompanyRealPageId
@@ -2461,7 +2460,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                     It.Is<long>(l => l == 4444)
                     , It.Is<long>(l => l == 0)
                     , It.Is<bool>(l => l == false)
-                    , datafilter
+                    , null
                 ))
                 .Returns(oneSitePropertyResponse);
 
@@ -2469,7 +2468,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                     It.Is<long>(l => l == 5555)
                     , It.Is<long>(l => l == 0)
                     , It.Is<bool>(l => l == false)
-                    , datafilter
+                    , null
                 ))
                 .Returns(oneSitePropertyResponse);
 
@@ -2490,7 +2489,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             //Act
             new RPObjectCache().BustCache();
 
-            HttpResponseMessage response = organizationController.AuditCompanyProductPropertiesToUPFM(new Guid("11111111-1111-1111-1111-111111111111"), (int)ProductEnum.OneSite, datafilter);
+            HttpResponseMessage response = organizationController.AuditCompanyProductPropertiesToUPFM(new Guid("11111111-1111-1111-1111-111111111111"), (int)ProductEnum.OneSite);
 
             var responseResult = response.Content.ReadAsAsync<ObjectListOutput<PropertyAudit, IErrorData>>().Result;
 
@@ -2526,7 +2525,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             new RPObjectCache().BustCache();
 
             // OneSite data exists but no UPFM property instances can be found
-            response = organizationController.AuditCompanyProductPropertiesToUPFM(new Guid("22222222-2222-2222-2222-222222222222"), (int)ProductEnum.OneSite, datafilter);
+            response = organizationController.AuditCompanyProductPropertiesToUPFM(new Guid("22222222-2222-2222-2222-222222222222"), (int)ProductEnum.OneSite);
 
             responseResult = response.Content.ReadAsAsync<ObjectListOutput<PropertyAudit, IErrorData>>().Result;
             Assert.True(responseResult.list[0].Status.Equals("No ID", StringComparison.OrdinalIgnoreCase)

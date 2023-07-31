@@ -188,7 +188,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="companyInstanceId">companyInstanceId</param>
 		/// <param name="product">product</param>
 		/// <returns></returns>
-		List<PropertyAudit> AuditCompanyProductPropertiesToUPFM(Guid companyInstanceId, int product, RequestParameter datafilter = null);
+		List<PropertyAudit> AuditCompanyProductPropertiesToUPFM(Guid companyInstanceId, int product);
 
 		/// <summary>
 		/// GetSourceProductDetails
