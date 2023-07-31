@@ -268,11 +268,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (propertyList == null) { propertyList = new PropertyList(); }
                 IList<ProductProperty> list = propertyList.ToGBProperties();
                 if (list == null) { list = new List<ProductProperty>(); }
+                
                 response = new ListResponse()
                 {
                     Records = list.Cast<object>().ToList(),
                     TotalRows = propertyList.TotalProperties,
-                    RowsPerPage = datafilter.Pages.ResultsPerPage,
+                    RowsPerPage = datafilter == null ? list.Count() : datafilter.Pages.ResultsPerPage,
                     TotalPages = 1,
                     ErrorReason = "",
                     Additional = allProperties
