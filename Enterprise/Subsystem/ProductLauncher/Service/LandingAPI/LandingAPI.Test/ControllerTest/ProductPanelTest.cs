@@ -47,11 +47,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
         private static List<GbProductMap> _gbProductMap;
 
-		#endregion
+        #endregion
 
-		#region Constructor
+        #region Constructor
         public ProductPanelTest()
-		{
+        {
             _gbProductMap = new List<GbProductMap>
             {
                 new GbProductMap() {BooksProductCode = "OS", Name = "OneSite", ProductId = 1},
@@ -124,10 +124,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             _defaultUserClaim.CorrelationId = new Guid();
             _defaultUserClaim.CustomerMasterId = _BooksCompanyMasterId;
 
-			var booksTranslateOneSiteJson = "{\n\t\"data\": {\n\t\t\"type\": \"propertyinstancetranslations\",\n\t\t\"attributes\": [\n\t\t\t{\n\t\t\t\t\"propertyInstanceSourceId\": \"a5192995-aaaa-bbbb-8df2-f30f1b8dc752\",\n\t\t\t\t\"source\": \"UPFM\",\n\t\t\t\t\"translatedPropertyInstances\": [\n\t\t\t\t\t{\n\t\t\t\t\t\t\"source\": \"OS\",\n\t\t\t\t\t\t\"propertyInstanceSourceId\": \"1234567\"\n\t\t\t\t\t}\n\t\t\t\t]\n\t\t\t},\n\t\t\t{\n\t\t\t\t\"propertyInstanceSourceId\": \"a5192995-aaaa-bbbb-8df2-f30f1b8dc752\",\n\t\t\t\t\"source\": \"UPFM\",\n\t\t\t\t\"translatedPropertyInstances\": [\n\t\t\t\t\t{\n\t\t\t\t\t\t\"source\": \"AB\",\n\t\t\t\t\t\t\"propertyInstanceSourceId\": \"7654321\"\n\t\t\t\t\t}\n\t\t\t\t]\n\t\t\t}\n\t\t]\n\t}\n}";
-			HttpResponseMessage booksTranslateOneSiteResponse = new HttpResponseMessage(HttpStatusCode.OK);
-			booksTranslateOneSiteResponse.Content = new StringContent(booksTranslateOneSiteJson);
-			_mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/translate/v3/propertyinstance/UPFM/OS", booksTranslateOneSiteResponse);
+            var booksTranslateOneSiteJson = "{\n\t\"data\": {\n\t\t\"type\": \"propertyinstancetranslations\",\n\t\t\"attributes\": [\n\t\t\t{\n\t\t\t\t\"propertyInstanceSourceId\": \"a5192995-aaaa-bbbb-8df2-f30f1b8dc752\",\n\t\t\t\t\"source\": \"UPFM\",\n\t\t\t\t\"translatedPropertyInstances\": [\n\t\t\t\t\t{\n\t\t\t\t\t\t\"source\": \"OS\",\n\t\t\t\t\t\t\"propertyInstanceSourceId\": \"1234567\"\n\t\t\t\t\t}\n\t\t\t\t]\n\t\t\t},\n\t\t\t{\n\t\t\t\t\"propertyInstanceSourceId\": \"a5192995-aaaa-bbbb-8df2-f30f1b8dc752\",\n\t\t\t\t\"source\": \"UPFM\",\n\t\t\t\t\"translatedPropertyInstances\": [\n\t\t\t\t\t{\n\t\t\t\t\t\t\"source\": \"AB\",\n\t\t\t\t\t\t\"propertyInstanceSourceId\": \"7654321\"\n\t\t\t\t\t}\n\t\t\t\t]\n\t\t\t}\n\t\t]\n\t}\n}";
+            HttpResponseMessage booksTranslateOneSiteResponse = new HttpResponseMessage(HttpStatusCode.OK);
+            booksTranslateOneSiteResponse.Content = new StringContent(booksTranslateOneSiteJson);
+            _mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/translate/v3/propertyinstance/UPFM/OS", booksTranslateOneSiteResponse);
 
 
         }
@@ -139,7 +139,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             {
                 CorrelationId = new Guid(),
                 CustomerMasterId = _BooksCompanyMasterId,
-                OrganizationRealPageGuid = EmployeeCompanyRealPageId              
+                OrganizationRealPageGuid = EmployeeCompanyRealPageId
             };
             ProductPanelController productPannelController = new ProductPanelController
                        (_defaultUserClaim
@@ -151,22 +151,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()
             };
-            RequestParameter datafilter = new RequestParameter();           
+            RequestParameter datafilter = new RequestParameter();
             HttpResponseMessage response = productPannelController.GetProperties(0, 0, (int)ProductEnum.OneSite, datafilter);
             Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
         }
 
         [Fact]
         public void GetPropeties_ValidResponse()
-		{
-            RequestParameter datafilter = new RequestParameter();
+        {
             DefaultUserClaim defaultUserClaim = new DefaultUserClaim()
             {
                 CorrelationId = new Guid(),
                 CustomerMasterId = _BooksCompanyMasterId,
                 OrganizationRealPageGuid = EmployeeCompanyRealPageId
             };
-            
+
             List<ProductInternalSetting> productInternalSettings = new List<ProductInternalSetting>()
             {
                 new ProductInternalSetting() {Name = "BooksUseDomains", Value = "1"},
@@ -186,7 +185,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                     It.Is<long>(l => l == 4444)
                     , It.Is<long>(l => l == 0)
                     , It.Is<bool>(l => l == false)
-                    , datafilter
+                    , null
                 ))
                 .Returns(oneSitePropertyResponse);
 
@@ -194,7 +193,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                     It.Is<long>(l => l == 5555)
                     , It.Is<long>(l => l == 0)
                     , It.Is<bool>(l => l == false)
-                    , datafilter
+                    , null
                 ))
                 .Returns(oneSitePropertyResponse);
             new RPObjectCache().BustCache();
@@ -214,9 +213,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()
-            }; 
-            HttpResponseMessage response = productPannelController.GetProperties(4444, 0, (int)ProductEnum.OneSite, datafilter);
-           
+            };
+            RequestParameter datafilter = new RequestParameter();
+            HttpResponseMessage response = productPannelController.GetProperties(4444, 0, (int)ProductEnum.OneSite, null);
+
             //Assert
             Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
         }
@@ -254,7 +254,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 CustomerMasterId = _BooksCompanyMasterId,
                 OrganizationRealPageGuid = EmployeeCompanyRealPageId
             };
-            RequestParameter datafilter = new RequestParameter();
+
             List<ProductInternalSetting> productInternalSettings = new List<ProductInternalSetting>()
             {
                 new ProductInternalSetting() {Name = "BooksUseDomains", Value = "1"},
@@ -274,7 +274,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                     It.Is<long>(l => l == 4444)
                     , It.Is<long>(l => l == 0)
                     , It.Is<bool>(l => l == false)
-                    , datafilter
+                    , null
                 ))
                 .Returns(oneSitePropertyResponse);
 
@@ -282,7 +282,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                     It.Is<long>(l => l == 5555)
                     , It.Is<long>(l => l == 0)
                     , It.Is<bool>(l => l == false)
-                    , datafilter
+                    , null
                 ))
                 .Returns(oneSitePropertyResponse);
             new RPObjectCache().BustCache();
@@ -309,14 +309,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()
-            };    
+            };
+            RequestParameter datafilter = new RequestParameter();
             UPFMProperty _upfmProperty = new UPFMProperty();
-			List<string> instanceIds = new List<string>
-			{
-				"a5192995-aaaa-bbbb-8df2-f30f1b8dc752"
-			};
-			_upfmProperty.id = instanceIds;
-            HttpResponseMessage response = productPanelController.GetProperties(4444, 0, (int)ProductEnum.OneSite, datafilter, _upfmProperty);
+            List<string> instanceIds = new List<string>
+            {
+                "a5192995-aaaa-bbbb-8df2-f30f1b8dc752"
+            };
+            _upfmProperty.id = instanceIds;
+            HttpResponseMessage response = productPanelController.GetProperties(4444, 0, (int)ProductEnum.OneSite, null, _upfmProperty);
             var productList = response.Content.ReadAsAsync<ListResponse>().Result.Records.Cast<ProductProperty>();
 
             //Assert 
