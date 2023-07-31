@@ -126,7 +126,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				string marketingCompanyId = company.CompanyInstanceSourceId;
 				
 				WriteToDiagnosticLog($"GetRoles - Found blue book company source id {marketingCompanyId}");
-				var url = _productUrl + $"/v2/company/{marketingCompanyId}/contact/roles";
+				var url = _productUrl + $"/external/company/{marketingCompanyId}/contact/roles";
 				logData = new Dictionary<string, object>();
 				logData.Add("url", url);
 				WriteToDiagnosticLog("GetRoles - Posting to url", logData);
@@ -241,7 +241,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				//companyInstanceId = 779893; // LeaseStar id 438
 				IList<ProductPropertyMap> propertyList = new List<ProductPropertyMap>();
-				var url = _productUrl + $"/v2/properties?companyId= { marketingCenterCompanyId} ";
+				var url = _productUrl + $"/external/properties?companyId= { marketingCenterCompanyId} ";
 				logData = new Dictionary<string, object>();
 				logData.Add("url", url);
 				WriteToDiagnosticLog("GetProperties - Posting to url", logData);
@@ -471,7 +471,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     AssignNewProperty = mUser.AssignNewProperty
 				};
 
-				var url = _productUrl + $"/v2/contact/{_productUserId}?sourceid={_editorProductUserId}";
+				var url = _productUrl + $"/external/contact/{_productUserId}?sourceid={_editorProductUserId}";
 				logData = new Dictionary<string, object>();
 				logData.Add("url", url);
 				logData.Add("mcuser", mcUser);
@@ -736,7 +736,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 					UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Running);
 
-					var url = _productUrl + $"/v2/contact?sourceid={(string.IsNullOrEmpty(_editorProductUserId) ? _marketingCenterApiSourceID : _editorProductUserId)}";
+					var url = _productUrl + $"/external/contact?sourceid={(string.IsNullOrEmpty(_editorProductUserId) ? _marketingCenterApiSourceID : _editorProductUserId)}";
 
 					logData = new Dictionary<string, object>();
 					logData.Add("url", url);
@@ -834,11 +834,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					var url = "";
 					if (allPropertiesSelected)
 					{
-						url = _productUrl + $"/v2/contact/{_productUserId}?sourceid={(string.IsNullOrEmpty(_editorProductUserId) ? _marketingCenterApiSourceID : _editorProductUserId)}&assignAllProperties=true";
+						url = _productUrl + $"/external/contact/{_productUserId}?sourceid={(string.IsNullOrEmpty(_editorProductUserId) ? _marketingCenterApiSourceID : _editorProductUserId)}&assignAllProperties=true";
 					}
 					else
 					{
-						url = _productUrl + $"/v2/contact/{_productUserId}?sourceid={(string.IsNullOrEmpty(_editorProductUserId) ? _marketingCenterApiSourceID : _editorProductUserId)}&unassignAllProperties=false";
+						url = _productUrl + $"/external/contact/{_productUserId}?sourceid={(string.IsNullOrEmpty(_editorProductUserId) ? _marketingCenterApiSourceID : _editorProductUserId)}&unassignAllProperties=false";
 					}
 					logData = new Dictionary<string, object>();
 					logData.Add("url", url);
@@ -1467,7 +1467,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         #region Private methods
         private bool CheckIfUserExistInProduct(string _productUserId)
 		{
-			var url = _productUrl + $"/v2/contact/details?emailAddress={_productUserId}";
+			var url = _productUrl + $"/external/contact/details?emailAddress={_productUserId}";
 			var response = _httpClient.GetAsync(url).Result;
 			if (response.IsSuccessStatusCode)
 			{
@@ -1520,7 +1520,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 				if (mcUserId?.Length > 0 && mcUserId != "0")
 				{
-					string url = _productUrl + $"/v2/contact/{ mcUserId }/status";
+					string url = _productUrl + $"/external/contact/{ mcUserId }/status";
 					MC.MarketingCenterUserStatus mcUser = new MC.MarketingCenterUserStatus()
 					{
 						isActive = isActive,
@@ -1641,7 +1641,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			{
 				try
 				{
-					var url = _productUrl + $"/v2/contact/{_productUserId}/details";
+					var url = _productUrl + $"/external/contact/{_productUserId}/details";
 					var response = _httpClient.GetAsync(url).Result;
 
 					if (response.IsSuccessStatusCode)
@@ -1663,7 +1663,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <returns>boolean</returns>
 		private bool IsUserIdValid(long userId)
 		{
-			string url = _productUrl + $"/v2/contact/{ userId }/status";
+			string url = _productUrl + $"/external/contact/{ userId }/status";
 			var responsex = _httpClient.GetAsync(url).Result;
 
 			return responsex.IsSuccessStatusCode;
@@ -1731,7 +1731,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 			}
 
-			var url = $"{_productUrl}/v2/api/{companyInstanceSourceId}/users?filter-type={filter}&startRow={startRow}&resultsperpage={resultPerRow}";
+			var url = $"{_productUrl}/external/api/{companyInstanceSourceId}/users?filter-type={filter}&startRow={startRow}&resultsperpage={resultPerRow}";
 			WriteToDiagnosticLog("ManageProductMarketingCenter.GetMigrationUsers", new Dictionary<string, object> { { "Url", url } });
 
 			var migrationResponse = GetResultFromApi<MigrationResponse<IList<MigrationUser>>>(url);
@@ -1796,7 +1796,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 			}
 
-			var url = $"{_productUrl}/v2/api/{companyInstanceSourceId}/migrate-users";
+			var url = $"{_productUrl}/external/api/{companyInstanceSourceId}/migrate-users";
 			var response = _httpClient.PostAsJsonAsync(url, migrateUsers).Result;
 			var responseContent = response.Content.ReadAsStringAsync().Result;
 
