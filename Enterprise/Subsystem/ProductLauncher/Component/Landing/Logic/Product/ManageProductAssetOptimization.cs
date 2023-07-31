@@ -361,6 +361,50 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		}
 
 		/// <summary>
+        /// Get Operators With Properties
+        /// </summary>
+        public ListResponse GetOperatorsWithProperties(long editorPersonaId, long userPersonaId)
+        {
+            WriteToDiagnosticLog(
+                $"ManageProductAssetOptimization.GetOperatorsWithProperties at beginning of method for user with editorPersona id - {editorPersonaId} " +
+                $"and userPersonaId {userPersonaId}.");
+
+            var response = new ListResponse();
+            try
+            {
+                CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
+                string aoCompanyId = company.CompanyInstanceSourceId;
+
+                string productPropertyApiUrl = $"{_apiEndPoint}company/2772/delegated/properties"; //https://aoqa.realpage.com/ysconfig/ws/company/2772/delegated/properties
+                AoOperatorProperties objAoOperatorPropertiesList = new AoOperatorProperties();
+				objAoOperatorPropertiesList = GetResultFromApi<AoOperatorProperties>(productPropertyApiUrl);
+                response = new ListResponse()
+                {
+                    Records = objAoOperatorPropertiesList.tags.Cast<object>().ToList(),
+                    TotalRows = objAoOperatorPropertiesList.tags.Count(),
+                    RowsPerPage = 9999,
+                    ErrorReason = string.Empty,
+                    TotalPages = 1
+                };
+
+                WriteToDiagnosticLog(
+                    $"Exiting ManageProductAssetOptimization.GetOperatorsWithProperties method with total rows - {response.TotalRows} for user" +
+                    $" with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId}.");
+            }
+            catch (Exception ex)
+            {
+                response.IsError = true;
+                response.ErrorReason = "There was a problem getting the GetOperatorsWithProperties.";
+                WriteToErrorLog(
+                    $"ManageProductAssetOptimization.GetOperatorsWithProperties Error for user with editorPersona id - {editorPersonaId} " +
+                    $"and userPersonaId {userPersonaId}.", exception: ex);
+            }
+
+            return response;
+        }
+
+
+		/// <summary>
 		/// Get product Properties
 		/// </summary>
 		public ListResponse GetProductProperties(long editorPersonaId, long userPersonaId, string productName, RequestParameter datafilter, string userLoginName = "")
