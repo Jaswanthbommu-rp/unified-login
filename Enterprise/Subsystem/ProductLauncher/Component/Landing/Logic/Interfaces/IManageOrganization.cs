@@ -1,4 +1,5 @@
 ﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
@@ -181,21 +182,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <returns></returns>
 		RepositoryResponse AddPropertyForOrganization(UPFMPropertyInstance property, Guid companyInstanceID);
 
-		/// <summary>
-		/// AuditCompanyProductPropertiesToUPFM
-		/// </summary>
-		/// <param name="companyInstanceId">companyInstanceId</param>
-		/// <param name="product">product</param>
-		/// <returns></returns>
-		List<PropertyAudit> AuditCompanyProductPropertiesToUPFM(Guid companyInstanceId, int product);
+        /// <summary>
+        /// AuditCompanyProductPropertiesToUPFM
+        /// </summary>
+        /// <param name="companyInstanceId">companyInstanceId</param>
+        /// <param name="product">product</param>
+        /// <returns></returns>
+        List<PropertyAudit> AuditCompanyProductPropertiesToUPFM(Guid companyInstanceId, int product, RequestParameter datafilter = null);
 
-		/// <summary>
-		/// GetSourceProductDetails
-		/// </summary>
-		/// <param name="propertyInstanceSourceId">propertyInstanceSourceId</param>
-		/// <param name="source">source</param>
-		/// <returns></returns>
-		ProductPropertyDetails GetSourceProductDetails(string propertyInstanceSourceId, string source);
+        /// <summary>
+        /// GetSourceProductDetails
+        /// </summary>
+        /// <param name="propertyInstanceSourceId">propertyInstanceSourceId</param>
+        /// <param name="source">source</param>
+        /// <returns></returns>
+        ProductPropertyDetails GetSourceProductDetails(string propertyInstanceSourceId, string source);
 		/// <summary>
 		/// Search Property Details By CustomerPropertyId(BlueId)
 		/// </summary>
