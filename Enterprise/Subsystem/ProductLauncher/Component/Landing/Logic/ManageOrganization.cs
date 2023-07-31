@@ -1323,8 +1323,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 productResult = integration.GetEnterpriseProperties(_defaultUserClaim.PersonaId, new RequestParameter());
             }
             else
-            {                
-                productResult = _manageProductPanel.GetProductProperties(_defaultUserClaim.PersonaId, 0, productId);
+            {
+                productResult = _manageProductPanel.GetProductProperties(_defaultUserClaim.PersonaId, 0, productId, null);
             }
 
             if (productResult.Records != null)
