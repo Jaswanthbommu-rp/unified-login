@@ -192,10 +192,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
              Description =
                  "Bad request(when data filter have invalid entries / when information is out of sync with the server)")
         ]
-        [Route("products/ao/operators")]
+        [Route("products/ao/operatorproperties")]
         [HttpGet]
-        public HttpResponseMessage GetOperatorsWithProperties(long editorPersonaId, long userPersonaId,
-            string productName, RequestParameter datafilter, string userLoginName = "")
+        public HttpResponseMessage GetOperatorsWithProperties(long editorPersonaId, long userPersonaId)
         {
             if (editorPersonaId == 0)
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
@@ -203,8 +202,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             if (_realpageUserId == Guid.Empty)
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
 
-            var manageProductAoBi = new ManageProductAssetOptimization(base._userClaims);
-            var result = manageProductAoBi.GetCompaniesWithProperties(editorPersonaId, userPersonaId, productName, datafilter, userLoginName);
+            var manageProductAo = new ManageProductAssetOptimization(base._userClaims);
+            var result = manageProductAo.GetOperatorsWithProperties(editorPersonaId, userPersonaId);
 
             if (result.IsError)
                 Request.CreateResponse(HttpStatusCode.Forbidden, result);

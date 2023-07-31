@@ -23,6 +23,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityCo
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSiteAccounting;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -363,62 +364,41 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Get Operators With Properties
         /// </summary>
-        public ListResponse GetOperatorsWithProperties(long editorPersonaId, long userPersonaId, string productName, RequestParameter datafilter, string userLoginName = "")
+        public ListResponse GetOperatorsWithProperties(long editorPersonaId, long userPersonaId)
         {
             WriteToDiagnosticLog(
-                $"ManageProductAssetOptimization.GetCompaniesWithProperties at beginning of method for user with editorPersona id - {editorPersonaId} " +
-                $"and userPersonaId {userPersonaId} for product {productName}.");
+                $"ManageProductAssetOptimization.GetOperatorsWithProperties at beginning of method for user with editorPersona id - {editorPersonaId} " +
+                $"and userPersonaId {userPersonaId}.");
 
             var response = new ListResponse();
             try
             {
-                var allCompanies =
-                    GetCompanies(editorPersonaId, userPersonaId, productName, datafilter, userLoginName).Records.Cast<AoCompany>();
+                CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
+                string aoCompanyId = company.CompanyInstanceSourceId;
 
-                IList<AoCompanyProperties> companyProperties = new List<AoCompanyProperties>();
-                // for each compnay get properties
-                foreach (var company in allCompanies)
-                {
-                    AoPropertyList objAoPropertyList = GetProperties(company.CompanyId, productName, userLoginName, userPersonaId);
-                    objAoPropertyList.Properties = objAoPropertyList.Properties.OrderBy(x => x.PropertyName).ToList();
-
-
-                    if (objAoPropertyList.Properties != null)
-                    {
-                        string assignedCount = $"{objAoPropertyList.Properties.Count(p => p.IsAssigned)} of {objAoPropertyList.Properties.Count}";
-
-                        companyProperties.Add(new AoCompanyProperties
-                        {
-                            CompanyId = company.CompanyId,
-                            CompanyName = company.CompanyName,
-                            IsAssigned = company.IsAssigned,
-                            Status = company.Status,
-                            AssignedProperties = assignedCount,
-                            Properties = objAoPropertyList.Properties
-                        });
-                    }
-                }
-
+                string productPropertyApiUrl = $"{_apiEndPoint}company/2772/delegated/properties"; //https://aoqa.realpage.com/ysconfig/ws/company/2772/delegated/properties
+                AoOperatorProperties objAoOperatorPropertiesList = new AoOperatorProperties();
+				objAoOperatorPropertiesList = GetResultFromApi<AoOperatorProperties>(productPropertyApiUrl);
                 response = new ListResponse()
                 {
-                    Records = companyProperties.Cast<object>().ToList(),
-                    TotalRows = companyProperties.Count(),
+                    Records = objAoOperatorPropertiesList.tags.Cast<object>().ToList(),
+                    TotalRows = objAoOperatorPropertiesList.tags.Count(),
                     RowsPerPage = 9999,
                     ErrorReason = string.Empty,
                     TotalPages = 1
                 };
 
                 WriteToDiagnosticLog(
-                    $"Exiting ManageProductAssetOptimization.GetCompaniesWithProperties method with total rows - {response.TotalRows} for user" +
-                    $" with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId} for product {productName}.");
+                    $"Exiting ManageProductAssetOptimization.GetOperatorsWithProperties method with total rows - {response.TotalRows} for user" +
+                    $" with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId}.");
             }
             catch (Exception ex)
             {
                 response.IsError = true;
-                response.ErrorReason = "There was a problem getting the GetCompaniesWithProperties.";
+                response.ErrorReason = "There was a problem getting the GetOperatorsWithProperties.";
                 WriteToErrorLog(
-                    $"ManageProductAssetOptimization.GetCompaniesWithProperties Error for user with editorPersona id - {editorPersonaId} " +
-                    $"and userPersonaId {userPersonaId} for product {productName}.", exception: ex);
+                    $"ManageProductAssetOptimization.GetOperatorsWithProperties Error for user with editorPersona id - {editorPersonaId} " +
+                    $"and userPersonaId {userPersonaId}.", exception: ex);
             }
 
             return response;
@@ -3101,7 +3081,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		public string AssignedProperties { get; set; }
 	}
 
-	public class AOUser
+    public class AoOperatorProperties
+    {
+        [JsonProperty("companyId")] public int CompanyId { get; set; }
+
+        [JsonProperty("companyName")] public string CompanyName { get; set; }
+
+        [JsonProperty("UDMCompanyId")] public string UDMCompanyId { get; set; }
+
+        [JsonProperty("tags")] public IList<tags> tags { get; set; }
+
+    }
+
+	public class tags
+    {
+        [JsonProperty("propertyAttributeCode")] public string PropertyAttributeCode { get; set; }
+        [JsonProperty("propertyAttributeValue")] public string PropertyAttributeValue { get; set; }
+        [JsonProperty("properties")] public IList<AoProperty> Properties { get; set; }
+
+    }
+
+        public class AOUser
 	{
 		[JsonProperty("login")] public string Login { get; set; }
 
