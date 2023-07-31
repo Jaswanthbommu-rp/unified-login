@@ -3081,6 +3081,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		public string AssignedProperties { get; set; }
 	}
 
+	public class AoOperatorProperties
+    {
+        [JsonProperty("companyId")] public int CompanyId { get; set; }
+
+        [JsonProperty("companyName")] public string CompanyName { get; set; }
+
+        [JsonProperty("UDMCompanyId")] public string UDMCompanyId { get; set; }
+
+        [JsonProperty("tags")] public IList<tags> tags { get; set; }
+
+    }
+
+	public class tags
+    {
+        [JsonProperty("propertyAttributeCode")] public string PropertyAttributeCode { get; set; }
+        [JsonProperty("propertyAttributeValue")] public string PropertyAttributeValue { get; set; }
+        [JsonProperty("properties")] public IList<AoProperty> Properties { get; set; }
+
+    }
+
 	public class AOUser
 	{
 		[JsonProperty("login")] public string Login { get; set; }
