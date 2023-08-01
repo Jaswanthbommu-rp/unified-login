@@ -24,6 +24,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSiteAccounting;
+using System.Web.Http.Results;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -371,8 +372,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 $"and userPersonaId {userPersonaId}.");
 
             var response = new ListResponse();
+			ListResponse result = new ListResponse();
             try
             {
+                result = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+                if (result.IsError)
+                {
+                    WriteToErrorLog(
+                        $"ManageProductAssetOptimization.GetProductRoles.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
+                    return result;
+                }
                 CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
                 string aoCompanyId = company.CompanyInstanceSourceId;
 
@@ -403,6 +412,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             return response;
         }
+
 
         /// <summary>
         /// Get product Properties
