@@ -372,6 +372,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var response = new ListResponse();
             try
             {
+                ListResponse result = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+                // to get _editorProductUserId
+
+                if (result.IsError)
+                {
+                    WriteToErrorLog(
+                        "ManageProductAssetOptimization.GetCompanies.GetCompanyEditorAndUserDetails error for user " +
+                        $"with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId} - {result.ErrorReason}");
+                    return result;
+                }
                 CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
                 string aoCompanyId = company.CompanyInstanceSourceId;
 
