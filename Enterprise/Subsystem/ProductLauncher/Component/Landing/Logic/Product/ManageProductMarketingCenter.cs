@@ -1841,7 +1841,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			IList<ProductRole> results = new List<ProductRole>();
 			foreach (MC.Role role in roles)
 			{
-				if (role.IsActive)
+				if (role.active)
 				{
 					results.Add(new ProductRole
 					{
