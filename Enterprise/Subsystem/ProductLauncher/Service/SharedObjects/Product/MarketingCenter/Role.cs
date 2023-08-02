@@ -18,6 +18,6 @@
         /// <summary>
         /// Used to store of the role is active
         /// </summary>
-        public bool IsActive { get; set; }
+        public bool active { get; set; }
     }
 }
