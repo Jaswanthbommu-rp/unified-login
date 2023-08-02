@@ -126,7 +126,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				string marketingCompanyId = company.CompanyInstanceSourceId;
 				
 				WriteToDiagnosticLog($"GetRoles - Found blue book company source id {marketingCompanyId}");
-				var url = _productUrl + $"/external/company/{marketingCompanyId}/contact/roles";
+                var url = _productUrl + $"/external/company/{marketingCompanyId}/roles";
 				logData = new Dictionary<string, object>();
 				logData.Add("url", url);
 				WriteToDiagnosticLog("GetRoles - Posting to url", logData);
