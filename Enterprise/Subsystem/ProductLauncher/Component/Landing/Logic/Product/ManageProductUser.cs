@@ -250,32 +250,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     usePrimaryPropertyFlags.Add(rolePropertyList.Key, rolePropertyList.Value.UsePrimaryProperties);
                     var foundPrimaryProperties = AssignPrimaryPropertiesToProductBatchOnUserCreate(productUser, rolePropertyList.Value);
-                    if (foundPrimaryProperties != null && foundPrimaryProperties.PropertyList.Count > 0)
+                    if (foundPrimaryProperties != null)
                     {
                         rolePrimaryPropDictionary.Add(rolePropertyList.Key, foundPrimaryProperties);
-                    }
-                    else
-                    {
-                        //Primary properties translation did not result any properties. Un-assign product
-                        foundPrimaryProperties.IsAssigned = false;
-                        rolePrimaryPropDictionary.Add(rolePropertyList.Key, foundPrimaryProperties);
-
-                        if (ValidateDictionaryMapping(productUser.InputJson))
-                        {
-                            prodUserInputJson = productUser.InputJson;
-                            var roleProp = JsonConvert.DeserializeObject<Dictionary<string, RolePropertyList>>(productUser.InputJson.Trim());
-                            foreach (var rpl in roleProp)
-                            {
-                                rpl.Value.IsAssigned = false;
-                            }
-                            productUser.InputJson = JsonConvert.SerializeObject(roleProp);
-                        }
-                        else
-                        {
-                            var roleProp = JsonConvert.DeserializeObject<RolePropertyList>(productUser.InputJson);
-                            roleProp.IsAssigned = false;
-                            productUser.InputJson = JsonConvert.SerializeObject(roleProp);
-                        }
                     }
                 }
 
