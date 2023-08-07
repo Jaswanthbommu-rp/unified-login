@@ -61,6 +61,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private IOrganizationRepository _organizationRepository;
         private readonly IUserRepository _userRepository;
         private readonly IUserLoginRepository _userLoginRepository;
+        private readonly IPersonaRepository _personaRepository;
         #endregion
 
         #region Constructors
@@ -69,7 +70,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         public ManageProductUser(IProductRepository productRepository,
             IProductInternalSettingRepository productInternalSettingRepository, ISamlRepository samlRepository, IManageProduct manageProduct,
-            IOrganizationRepository organizationRepository, IUserRepository userRepository, IUserLoginRepository userLoginRepository)
+            IOrganizationRepository organizationRepository, IUserRepository userRepository, IUserLoginRepository userLoginRepository, IPersonaRepository personaRepository)
         {
             _productRepository = productRepository;
             _productInternalSettingRepository = productInternalSettingRepository;
@@ -79,6 +80,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _organizationRepository = organizationRepository;
             _userRepository = userRepository;
             _userLoginRepository = userLoginRepository;
+            _personaRepository = personaRepository;
         }
 
         /// <summary>
@@ -122,6 +124,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _organizationRepository = new OrganizationRepository();
             _userRepository = new UserRepository();
             _userLoginRepository = new UserLoginRepository();
+            _personaRepository = new PersonaRepository();
         }
         #endregion
 
@@ -216,6 +219,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             bool isUpdateUser = false;
             bool usePrimaryProperties = false;
+            bool isCreateorUpdateUser = true;
 
             Dictionary<int, RolePropertyList> rolePropDictionary = new Dictionary<int, RolePropertyList>();
             Dictionary<int, RolePropertyList> rolePrimaryPropDictionary = new Dictionary<int, RolePropertyList>();
@@ -246,6 +250,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     isUpdateUser = true;
                 }
 
+                if (productUser.AssignUserPersonaId > 0)
+                {
+                    var personaProductSettings = _personaRepository.GetPersonaProductSettings(productUser.AssignUserPersonaId);
+                    var productSetting = personaProductSettings.FirstOrDefault(item => item.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase) && item.ProductId == productId);
+                    if (productSetting != null)
+                    {
+                        usePrimaryProperties = productSetting.Value.Trim() == "1" ? true : false;
+                    }
+                }
+
                 foreach (var rolePropertyList in rolePropDictionary)
                 {
                     usePrimaryPropertyFlags.Add(rolePropertyList.Key, rolePropertyList.Value.UsePrimaryProperties);
@@ -254,16 +268,49 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         rolePrimaryPropDictionary.Add(rolePropertyList.Key, foundPrimaryProperties);
                     }
+                    
+                    if((usePrimaryProperties || rolePropertyList.Value?.IsAssigned == true) && rolePropertyList.Value.PropertyList?.Count == 0)
+                    {
+                        //Create user (not update) but translation has no properties
+                        if (!isUpdateUser)
+                        {
+                            isCreateorUpdateUser = false;
+                        }                        
+                        
+                        //Primary properties translation did not result any properties. Un-assign product
+                        if (ValidateDictionaryMapping(productUser.InputJson))
+                        {
+                            prodUserInputJson = productUser.InputJson;
+                            var roleProp = JsonConvert.DeserializeObject<Dictionary<string, RolePropertyList>>(productUser.InputJson.Trim());
+                            foreach (var rpl in roleProp)
+                            {
+                                rpl.Value.IsAssigned = false;
+                            }
+                            productUser.InputJson = JsonConvert.SerializeObject(roleProp);
+                        }
+                        else
+                        {
+                            var roleProp = JsonConvert.DeserializeObject<RolePropertyList>(productUser.InputJson);
+                            roleProp.IsAssigned = false;
+                            productUser.InputJson = JsonConvert.SerializeObject(roleProp);
+                        }
+                    }
                 }
 
                 if (!string.IsNullOrEmpty(prodUserInputJson))
                 {
                     productUser.InputJson = prodUserInputJson;
                 }
-
-                var integration = _integrationTypeFactory.GetIntegration(productUser.ProductId);
-                _productRepository.UpdateBatchProcessorLog(productUser.ProductBatchId, DateTime.UtcNow, null);
-                result = integration.CreateUser(productUser);
+                if (isCreateorUpdateUser)
+                {
+                    var integration = _integrationTypeFactory.GetIntegration(productUser.ProductId);
+                    _productRepository.UpdateBatchProcessorLog(productUser.ProductBatchId, DateTime.UtcNow, null);
+                    result = integration.CreateUser(productUser);
+                }
+                else
+                {
+                    throw new Exception("No properties to assign - User not created");
+                }
             }
             catch (Exception ex)
             {
