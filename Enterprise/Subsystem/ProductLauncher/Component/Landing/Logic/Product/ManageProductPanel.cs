@@ -614,7 +614,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return productResult;
         }
 
-
         /// <summary>
         /// TranslateProductProperties
         /// </summary>

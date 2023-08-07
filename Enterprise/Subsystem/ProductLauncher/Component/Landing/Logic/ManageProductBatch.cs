@@ -204,7 +204,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			return result;
 		}
 
-
         public List<int> GetExistingUserPrimaryPropertiesData(long userPersonaId, int productId)
 		{
 			var userProperties = _propertyRepository.ListUPFMPropertyInstanceIdByPersona(userPersonaId, productId);
