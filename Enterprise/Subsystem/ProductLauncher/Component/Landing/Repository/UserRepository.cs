@@ -1558,31 +1558,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     int productCount = SaveProductDetails(repository, newProfile.productBatch, createUserResponse, CreateUserPersonaId, AssignUserPersonaId, userClaim.UserRealPageGuid, organizationRealPageId, errorStatus, newProfile.UserTypeId, true, impersonatorUserLoginOnly.UserId, aoProductsAvailableForUser, newProfile.MigratedUser, true, greenBookRole, "add");
 
                     #endregion
-
-                    #region enterprise roles Delagate User
-                    if (IsDelegateAdminSettingsEnabled())
-                    {
-                        if (newProfile.IsDelegate)
-                        {
-                            foreach (var roleID in newProfile.DelegateRoleTemplate.RoleTemplateId.ToList())
-                            {
-                                param = new
-                                {
-                                    UserLoginPersonaId = userLoginPersonaId,
-                                    RoleTemplateId = roleID
-                                };
-
-                                repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_InsertDelegateRoleTemplate, param);
-
-                                if (repositoryResponse.Id == 0)
-                                {
-                                    repositoryResponse.ErrorMessage = "Create Delegate Admin Role  failed.";
-                                    throw new Exception(repositoryResponse.ErrorMessage);
-                                }
-                            }
-                        }
-                    }
-                    #endregion
                     #region create user company association
 
                     if (FeatureFlag.GetUserCompanyAssociationFeatureFlag())
@@ -1607,6 +1582,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
                     }
 
+                    #endregion
+
+                    #region enterprise roles Delagate User
+                    if (IsDelegateAdminSettingsEnabled())
+                    {
+                        if (newProfile.IsDelegate)
+                        {
+                            foreach (var roleID in newProfile.DelegateRoleTemplate.RoleTemplateId.ToList())
+                            {
+                                param = new
+                                {
+                                    UserLoginPersonaId = userLoginPersonaId,
+                                    RoleTemplateId = roleID
+                                };
+                                repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_InsertDelegateRoleTemplate, param);
+
+                                if (repositoryResponse.Id == 0)
+                                {
+                                    repositoryResponse.ErrorMessage = "Create Delegate Admin Role  failed.";
+                                    throw new Exception(repositoryResponse.ErrorMessage);
+                                }
+                            }
+                        }
+                    }
                     #endregion
 
                     // used to pass back user id for logging
@@ -4644,7 +4643,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             return roleIds;
         }
 
-
         /// <summary>
         /// Used to Update GB(Unified Login) product Role information for a user
         /// </summary>
@@ -6660,7 +6658,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
                     }
                 }
-
                 catch (Exception exception)
                 {
                     repositoryResponse.Id = 0;
@@ -6755,7 +6752,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         }
                         //add activity log for Enterprise Roles
-                        if (isEnterpriseRolesUpdated || isEnterpriseRoleUnassigned)
+                        if (isEnterpriseRolesUpdated|| isEnterpriseRoleUnassigned)
                         {
                             string userName = string.IsNullOrEmpty(_userClaim.ImpersonatedByName) ? _userClaim.FirstName + " " + _userClaim.LastName : " RealPage Access (" + _userClaim.ImpersonatedByName + ") ";
                             string enterpriseRolesMessage = $"{userName} updated access for {updateUserProfileEntity.NewProfile.FirstName} {updateUserProfileEntity.NewProfile.LastName} : Enterprise Role: {(isEnterpriseRolesUpdated ? enterpriseUserRoleUpdated + " was granted." : enterpriseRoleUnassigned + " was unassigned.")} ";
