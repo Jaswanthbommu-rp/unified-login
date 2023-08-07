@@ -49,9 +49,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         public bool Mutable { get; set; }
 
         /// <summary>
+        /// Used to store the IsAssigned
+        /// </summary>
+        [JsonProperty("assigned")]
+        public bool IsAssigned { get; set; }
+
+        /// <summary>
         /// Used to store the rightsAssigned
         /// </summary>
         [JsonProperty("rights")]
-        public int Rights { get; set; }
+        public int RightsAssigned { get; set; }
     }
 }

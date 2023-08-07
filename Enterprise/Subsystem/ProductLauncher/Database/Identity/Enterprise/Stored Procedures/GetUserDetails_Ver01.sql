@@ -4,10 +4,18 @@
 	)
 AS
 BEGIN
-	DECLARE @NOW datetime= GETUTCDATE();
+	DECLARE @NOW DATETIME= GETUTCDATE();
+	DECLARE @PartyId BIGINT
 
-	if @PersonaId is not null
+	IF @PersonaId IS NOT NULL
 	BEGIN
+		SELECT @PartyId = ul.PersonPartyId
+			FROM Ident.UserLoginPersona ulp 
+			INNER JOIN Person.Persona P ON P.UserLoginPersonaId = ulp.UserLoginPersonaId
+			INNER JOIN Ident.UserLogin ul ON ul.UserId = ulp.UserLoginId
+		WHERE
+			P.PersonaId = @PersonaId
+
 		;WITH Email
 		(
 			PartyId,
@@ -15,32 +23,34 @@ BEGIN
 		)
 		AS
 		(
-			SELECT	PartyId,
-							ElectronicAddressString
+			SELECT	pcm.PartyId,
+							ea.ElectronicAddressString
 			FROM		Enterprise.ContactMechanismUsage CMU
 							INNER JOIN Enterprise.PartyContactMechanism PCM ON PCM.PartyContactMechanismId = CMU.PartyContactMechanismID
-							INNER JOIN Enterprise.ContactMechanism CM ON CM.ContactMechanismID = PCM.ContactMechanismId
-							INNER JOIN Enterprise.ElectronicAddress EA ON EA.ContactMechanismID = CM.ContactMechanismID
+							INNER JOIN Enterprise.ElectronicAddress EA ON EA.ContactMechanismID = PCM.ContactMechanismID
 			WHERE	((pcm.ThruDate IS NULL) OR (pcm.ThruDate > @NOW))
+				AND pcm.PartyId = @PartyId
 		),
 		TeleComm
 		(
 			PartyId,
 			CountryCode,
 			AreaCOde,
-			PhoneNumber
+			PhoneNumber,
+			RowNumber
 		)
 		AS
 		(
-			SELECT	PartyId,
-							CountryCode,
-							AreaCOde,
-							PhoneNumber
+			SELECT	pcm.PartyId,
+							tm.CountryCode,
+							tm.AreaCOde,
+							tm.PhoneNumber,
+							ROW_NUMBER() OVER(PARTITION BY pcm.partyid ORDER BY tm.[Default] DESC, tm.ContactMechanismID ASC ) AS rn
 			FROM	Enterprise.ContactMechanismUsage cmu
 						INNER JOIN Enterprise.PartyContactMechanism pcm ON pcm.PartyContactMechanismId = cmu.PartyContactMechanismID
-						INNER JOIN Enterprise.ContactMechanism cm ON cm.ContactMechanismID = pcm.ContactMechanismId
-						INNER JOIN Enterprise.TelecommunicationsNumber tm ON tm.ContactMechanismID = cm.ContactMechanismID
-			WHERE	((pcm.ThruDate IS NULL) OR (pcm.ThruDate > @NOW))
+						INNER JOIN Enterprise.TelecommunicationsNumber tm ON tm.ContactMechanismID = pcm.ContactMechanismID
+			WHERE ((pcm.ThruDate IS NULL) OR (pcm.ThruDate > @NOW))
+				AND pcm.PartyId = @PartyId
 		)
 
 		SELECT	PER.PartyId AS PersonPartyId,
@@ -61,7 +71,7 @@ BEGIN
 						OD.Name AS OrganizationDomain,
 						RT.PartyRoleTypeId AS UserRoleTypeId,
 						RT.Name UserRoleType,
-						CASE WHEN ULP.StatusTypeId not in ( 1,2 ) THEN 'false' ELSE 'true' END AS IsActive,
+						CASE WHEN ULP.StatusTypeId NOT IN ( 1,2 ) THEN 'false' ELSE 'true' END AS IsActive,
 						ULP.IsRPEmployee
 		FROM	Enterprise.Party P
 					INNER JOIN Person.Person PER ON PER.PartyId = P.PartyId
@@ -74,12 +84,17 @@ BEGIN
 					INNER JOIN Enterprise.OrganizationDomain OD on O.OrganizationDomainId = OD.OrganizationDomainId
 					INNER JOIN [Enterprise].[VW_DataImportMapping] DIM ON DIM.PartyId = ULP.OrganizationPartyId
 					LEFT OUTER JOIN Email EM ON EM.PartyId = P.PartyId
-					LEFT OUTER JOIN TeleComm TC ON TC.PartyId = P.PartyId
+					LEFT OUTER JOIN TeleComm TC ON TC.PartyId = P.PartyId AND TC.RowNumber = 1
 		WHERE	PR.ThruDate IS NULL
 		AND		PEA.PersonaId = @PersonaId
 	END
 	ELSE
 	BEGIN
+		SELECT @PartyId = PartyId
+			FROM Enterprise.Party
+		WHERE
+			RealPageId = @UserRealPageId
+
 		;WITH Email
 		(
 			PartyId,
@@ -87,32 +102,34 @@ BEGIN
 		)
 		AS
 		(
-			SELECT	PartyId,
-							ElectronicAddressString
+			SELECT	PCM.PartyId,
+							EA.ElectronicAddressString
 			FROM		Enterprise.ContactMechanismUsage CMU
 							INNER JOIN Enterprise.PartyContactMechanism PCM ON PCM.PartyContactMechanismId = CMU.PartyContactMechanismID
-							INNER JOIN Enterprise.ContactMechanism CM ON CM.ContactMechanismID = PCM.ContactMechanismId
-							INNER JOIN Enterprise.ElectronicAddress EA ON EA.ContactMechanismID = CM.ContactMechanismID
+							INNER JOIN Enterprise.ElectronicAddress EA ON EA.ContactMechanismID = PCM.ContactMechanismID
 			WHERE	((pcm.ThruDate IS NULL) OR (pcm.ThruDate > @NOW))
+				AND pcm.PartyId = @PartyId
 		),
 		TeleComm
 		(
 			PartyId,
 			CountryCode,
 			AreaCOde,
-			PhoneNumber
+			PhoneNumber,
+			RowNumber
 		)
 		AS
 		(
-			SELECT	PartyId,
-							CountryCode,
-							AreaCOde,
-							PhoneNumber
+			SELECT	pcm.PartyId,
+							tm.CountryCode,
+							tm.AreaCOde,
+							tm.PhoneNumber,
+							ROW_NUMBER() OVER(PARTITION BY pcm.partyid ORDER BY tm.[Default] DESC, tm.ContactMechanismID ASC ) AS rn
 			FROM	Enterprise.ContactMechanismUsage cmu
 						INNER JOIN Enterprise.PartyContactMechanism pcm ON pcm.PartyContactMechanismId = cmu.PartyContactMechanismID
-						INNER JOIN Enterprise.ContactMechanism cm ON cm.ContactMechanismID = pcm.ContactMechanismId
-						INNER JOIN Enterprise.TelecommunicationsNumber tm ON tm.ContactMechanismID = cm.ContactMechanismID
+						INNER JOIN Enterprise.TelecommunicationsNumber tm ON tm.ContactMechanismID = pcm.ContactMechanismID
 			WHERE	((pcm.ThruDate IS NULL) OR (pcm.ThruDate > @NOW))
+				AND pcm.PartyId = @PartyId
 		)
 
 		SELECT	PER.PartyId AS PersonPartyId,
@@ -146,7 +163,7 @@ BEGIN
 					INNER JOIN Enterprise.OrganizationDomain OD on O.OrganizationDomainId = OD.OrganizationDomainId
 					INNER JOIN [Enterprise].[VW_DataImportMapping] DIM ON DIM.PartyId = ULP.OrganizationPartyId
 					LEFT OUTER JOIN Email EM ON EM.PartyId = P.PartyId
-					LEFT OUTER JOIN TeleComm TC ON TC.PartyId = P.PartyId
+					LEFT OUTER JOIN TeleComm TC ON TC.PartyId = P.PartyId AND TC.RowNumber = 1
 		WHERE	PR.ThruDate IS NULL
 		AND		P.RealPageId = @UserRealPageId
 	END

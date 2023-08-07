@@ -177,6 +177,40 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			return Request.CreateResponse(HttpStatusCode.OK, result);
 		}
 
+		/// <summary>
+        /// Returns companies and associated properties for a product
+        /// </summary>
+        /// <param name="editorPersonaId">Assign user Id</param>
+        /// <param name="userPersonaId">To user</param> 
+        /// <param name="productName">AO product name</param>
+        /// <param name="datafilter">A datafilter used to filter.</param> 
+        /// <param name="userLoginName">User Login Name</param>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Update successful", Type = typeof(HttpResponseMessage))]
+        [SwaggerResponse(HttpStatusCode.BadRequest,
+             Description =
+                 "Bad request(when data filter have invalid entries / when information is out of sync with the server)")
+        ]
+        [Route("products/ao/operatorproperties")]
+        [HttpGet]
+        public HttpResponseMessage GetOperatorsWithProperties(long editorPersonaId, long userPersonaId)
+        {
+            if (editorPersonaId == 0)
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
+
+            if (_realpageUserId == Guid.Empty)
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
+
+            var manageProductAo = new ManageProductAssetOptimization(base._userClaims);
+            var result = manageProductAo.GetOperatorsWithProperties(editorPersonaId, userPersonaId);
+
+            if (result.IsError)
+                Request.CreateResponse(HttpStatusCode.Forbidden, result);
+
+            return Request.CreateResponse(HttpStatusCode.OK, result);
+        }
+
 		#region User-Status
 
 		/// <summary>

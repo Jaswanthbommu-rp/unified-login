@@ -1669,7 +1669,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 });
             }
-
+            
             // now remove any products which are not matching product access filter
             if (accessFilter != null)
             {

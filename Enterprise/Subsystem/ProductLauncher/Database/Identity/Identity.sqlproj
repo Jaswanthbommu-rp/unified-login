@@ -1414,6 +1414,10 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\class.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\1486360-useraccess-summary-properties.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\1438413-propagate-access-rights.sql" />
+    <None Include="RoleRightsManagement\Tables\DelegatedRoleTemplate.sql" />
+    <None Include="RoleRightsManagement\Tables\AddingNewSettingForPropagateRights.sql" />
+    <None Include="RoleRightsManagement\Tables\AddingNewRightforUserManagement.sql" />
+
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />

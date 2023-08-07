@@ -1295,9 +1295,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				Status = false
 			};
 
-			var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
+            var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
 			if (claimResposnse.IsError) { migrateResponse.Message = claimResposnse.ErrorReason; return migrateResponse; }
-			try
+
+            string domain = GetDomain();
+            if (domain.Contains("There was a problem creating the user") || string.IsNullOrEmpty(domain))
+            {
+                WriteToErrorLog($"Error - No CompanyInstanceSourceId found.");
+                return null;
+            }
+            try
 			{
 
 				string companyInstanceSourceId = GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId;
@@ -1312,8 +1319,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     { "MigratedUser", migrateUsers }
                 };
-                WriteToErrorLog("ManageRPDMUser.UpdateUsersMigrationStatus.PatchAsJsonAsync", logDatapayload);
-                var url = $"{_productUrl}/api/users/{companyInstanceSourceId}/migrate";
+                WriteToErrorLog("ManageRPDMUser.UpdateUsersMigrationStatus.PatchAsJsonAsync", logDatapayload);        
+                var url = _productUrl.Replace("{{domain}}", domain) + $"/api/users/{companyInstanceSourceId}/migrate";
                 var integration = new ApiIntegration(_client, url);
                 var response = integration.PatchEntity<MigrateResponse>(migrateUsers);
 
