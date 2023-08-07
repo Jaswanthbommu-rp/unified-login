@@ -228,5 +228,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
         /// </summary>
         [JsonProperty("PhoneNumberType")]
         public string PhoneNumberType { get; set; }
+
+        /// <summary>
+        /// Enterprise Roles for Delegate user
+        /// </summary>
+        [JsonProperty("DelegateRoleTemplate")]
+        public DelegateRoleTemplate DelegateRoleTemplate { get; set; }
+
+        /// <summary>
+        /// IsDelegate flag coming from UI
+        /// </summary>
+        [JsonProperty("IsDelegate")]
+		public bool IsDelegate { get; set; } = false;
     }
 }

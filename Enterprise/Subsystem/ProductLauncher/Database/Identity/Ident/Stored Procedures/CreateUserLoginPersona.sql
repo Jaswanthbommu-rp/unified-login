@@ -7,6 +7,7 @@
 	,@ThruDate datetime = null
 	,@StatusThruDate datetime = null
 	,@IsRPEmployee bit = 0
+	,@IsDelegateAdmin bit =0
  )
 AS
 BEGIN
@@ -27,6 +28,7 @@ BEGIN
 			,[ThruDate]
 			,[StatusThruDate]
 			,[IsRPEmployee]
+			,[IsDelegateAdmin]
 		)
 		VALUES (
 			@UserLoginId
@@ -37,6 +39,7 @@ BEGIN
 			,@ThruDate
 			,@StatusThruDate
 			,@IsRPEmployee
+			,@IsDelegateAdmin
 		)
 		SELECT SCOPE_IDENTITY() AS Id,
 					'' AS ErrorMessage;

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using System;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig
 {
@@ -61,5 +62,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 		/// Is LastName Null or WhiteSpace
 		/// </summary>
 		bool IsLastNameNullOrWhiteSpace { get; }
+
+		//DelegateRoleTemplate DelegateRoleTemplate { get; }
 	}
 }

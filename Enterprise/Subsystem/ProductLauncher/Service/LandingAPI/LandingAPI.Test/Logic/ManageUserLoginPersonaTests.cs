@@ -71,9 +71,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 						w.StatusThruDate == o.StatusThruDate
 						&&
 						w.StatusTypeId == o.StatusTypeId
+						&& 
+						w.IsDelegateAdmin == o.IsDelegateAdmin
 					)
 				) == true
-				&& NumberOfProperties == 7
+				&& NumberOfProperties == 8
 			);
 		}
 	}

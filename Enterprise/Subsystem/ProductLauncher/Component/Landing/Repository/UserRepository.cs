@@ -23,6 +23,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.UserUpdate;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Mappers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Rum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
 using Serilog;
 using Serilog.Events;
@@ -304,14 +305,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     List<PersonaProductUserDetails> userProducts = pbRepository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = newProfile.Persona[0].PersonaId, ProductStatusValue = ((Int32)ProductBatchStatusType.Success).ToString() }).ToList();
                     if (userProducts != null && userProducts.Any(m => m.ProductId == 89))
                     {
-                        int adminSupportProductId = (int)ProductEnum.AdminSupportPortal; 
+                        int adminSupportProductId = (int)ProductEnum.AdminSupportPortal;
                         var productAttributes = pbRepository.GetMany<SamlAttributes>(StoredProcNameConstants.SP_GetProductSamlDetails, new { newProfile.Persona[0].PersonaId, ProductId = adminSupportProductId }).ToList();
                         if (productAttributes != null && productAttributes.Count == 0)
                         {
                             userProducts.RemoveAll(a => a.ProductId == 89);
                         }
                     }
-                        if (userProducts.Count > 0)
+                    if (userProducts.Count > 0)
                     {
                         long createUserPersonaId = 0L;
                         ManageCloneProductBatch manageProductBatch = new ManageCloneProductBatch(userClaim);
@@ -1054,7 +1055,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             FromDate = currentOrg.OrganizationFromDate,
                             ThruDate = currentOrg.OrganizationThruDate,
                             StatusThruDate = currentStatusThruDate,
-                            IsRPEmployee = newProfile.IsRPEmployee
+                            IsRPEmployee = newProfile.IsRPEmployee,
+                            IsDelegateAdmin = newProfile.IsDelegate
                         };
 
                         repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateUserLoginPersona, param);
@@ -1557,6 +1559,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                     #endregion
 
+                    #region enterprise roles Delagate User
+                    if (IsDelegateAdminSettingsEnabled())
+                    {
+                        if (newProfile.IsDelegate)
+                        {
+                            foreach (var roleID in newProfile.DelegateRoleTemplate.RoleTemplateId.ToList())
+                            {
+                                param = new
+                                {
+                                    UserLoginPersonaId = userLoginPersonaId,
+                                    RoleTemplateId = roleID
+                                };
+
+                                repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_InsertDelegateRoleTemplate, param);
+
+                                if (repositoryResponse.Id == 0)
+                                {
+                                    repositoryResponse.ErrorMessage = "Create Delegate Admin Role  failed.";
+                                    throw new Exception(repositoryResponse.ErrorMessage);
+                                }
+                            }
+                        }
+                    }
+                    #endregion
                     #region create user company association
 
                     if (FeatureFlag.GetUserCompanyAssociationFeatureFlag())
@@ -2382,7 +2408,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 {
                     impersonatorUserLoginOnly = repository.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, new { RealPageId = _userClaim.ImpersonatedBy });
                 }
-                
+
                 foreach (UserLoginOnly ul in userLogins)
                 {
                     var userLogin = _userLoginRepository.GetUserLoginOnly(ul.RealPageId);
@@ -2801,6 +2827,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 };
 
                 return repository.GetOne<UserEmployee>(StoredProcNameConstants.SP_GetEmployeeId, param);
+            }
+        }
+
+        public List<int> GetDelateRoleTemplate(long UserLoginPersonaId)
+        {
+
+            using (var repository = GetRepository())
+            {
+                dynamic param = new
+                {
+                    UserLoginPersonaId
+                };
+                var roleList = new List<DelegateRoleTemplate>();
+                var roleslists = new List<int>();
+                var procName = StoredProcNameConstants.SP_GetEnterpriseDelagateRole;
+                var result = repository.GetMany<dynamic>(procName, param);
+                if (result != null)
+                {
+                    foreach (var item in result)
+                    {
+                        roleslists.Add(item.RoleTemplateId);
+                    }
+                }
+                return roleslists;
             }
         }
 
@@ -4594,6 +4644,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             return roleIds;
         }
 
+
         /// <summary>
         /// Used to Update GB(Unified Login) product Role information for a user
         /// </summary>
@@ -5864,7 +5915,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(_userClaim.ImpersonatedBy);
             }
-           
+
             using (var repository = GetRepository())
             {
                 //Begin the transaction
@@ -6385,6 +6436,46 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         #endregion
 
+                        #region update delegate roles
+                        if (IsDelegateAdminSettingsEnabled())
+                        {
+                            if (updateUserProfileEntity.NewProfile.IsDelegate != updateUserProfileEntity.OldProfile.IsDelegate)
+                            {
+                                UpdateDelegateAdminStatus(repository, userLoginPersonaList[0].UserLoginPersonaId, updateUserProfileEntity.NewProfile.IsDelegate);
+
+                            }
+                            if (updateUserProfileEntity.NewProfile.IsDelegate)
+                            {
+                                if (updateUserProfileEntity.OldProfile.DelegateRoleTemplate.RoleTemplateId.Count() > 0)
+                                {
+                                    foreach (var item in updateUserProfileEntity.OldProfile.DelegateRoleTemplate.RoleTemplateId.ToList())
+                                    {
+                                        // Remove the Delegate Template existing role
+                                        repositoryResponse = InsertUpdateDelegateAdminRole(repository, userLoginPersonaList[0].UserLoginPersonaId, item, true);
+                                        if (repositoryResponse.Id < 0)
+                                        {
+                                            repositoryResponse.ErrorMessage = "Unable to update Delegate Template role to the Persona.";
+                                            throw new Exception(repositoryResponse.ErrorMessage);
+                                        }
+                                    }
+                                }
+                                if (updateUserProfileEntity.NewProfile.DelegateRoleTemplate.RoleTemplateId.Count() > 0)
+                                {
+                                    foreach (var role in updateUserProfileEntity.NewProfile.DelegateRoleTemplate.RoleTemplateId.ToList())
+                                    {
+                                        // Add the Delegate Template role
+                                        repositoryResponse = InsertUpdateDelegateAdminRole(repository, userLoginPersonaList[0].UserLoginPersonaId, role, false);
+                                        if (repositoryResponse.Id < 0)
+                                        {
+                                            repositoryResponse.ErrorMessage = "Unable to update Delegate Template role to the Persona.";
+                                            throw new Exception(repositoryResponse.ErrorMessage);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        #endregion
+
                         #region update external user company association
 
                         if (FeatureFlag.GetUserCompanyAssociationFeatureFlag())
@@ -6428,7 +6519,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 };
                                 var roleTemplateProductRole = repository.GetMany<RoleTemplateProductRole>(StoredProcNameConstants.SP_GetRoleTemplateProductRoleMappings, paramObject).ToList();
                                 enterpriseUserRoleUpdated = roleTemplateProductRole.Select(x => x.RoleTemplateName).FirstOrDefault();
-                                
+
                                 repositoryResponse = InsertUpdateEnterpriseRoleToUser(repository, roleTemplateId, updateUserProfileEntity.OldProfile.Persona[0].PersonaId);
                                 if (repositoryResponse.Id == 0)
                                 {
@@ -6475,7 +6566,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         if (updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue() && !userBatchEntity.UserTypeChanged)
                         {
-                            int productCount = SaveProductDetails(repository, updateUserProfileEntity.ProductBatchData, null, updateUserProfileEntity.CreateUserPersonaId, updateUserProfileEntity.OldProfile.Persona[0].PersonaId, updateUserProfileEntity.LoggedInUserRealPageId, updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId, null, updateUserProfileEntity.NewProfile.UserTypeId, updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue(), impersonatorUserLoginOnly.UserId, updateUserProfileEntity.AoProductsAvailableForUser, false, false,0,"update",isRealpageAccessUser);
+                            int productCount = SaveProductDetails(repository, updateUserProfileEntity.ProductBatchData, null, updateUserProfileEntity.CreateUserPersonaId, updateUserProfileEntity.OldProfile.Persona[0].PersonaId, updateUserProfileEntity.LoggedInUserRealPageId, updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId, null, updateUserProfileEntity.NewProfile.UserTypeId, updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue(), impersonatorUserLoginOnly.UserId, updateUserProfileEntity.AoProductsAvailableForUser, false, false, 0, "update", isRealpageAccessUser);
                         }
 
                         if (!updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue())
@@ -6569,6 +6660,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
                     }
                 }
+
                 catch (Exception exception)
                 {
                     repositoryResponse.Id = 0;
@@ -6663,10 +6755,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         }
                         //add activity log for Enterprise Roles
-                        if (isEnterpriseRolesUpdated  || isEnterpriseRoleUnassigned) 
+                        if (isEnterpriseRolesUpdated || isEnterpriseRoleUnassigned)
                         {
                             string userName = string.IsNullOrEmpty(_userClaim.ImpersonatedByName) ? _userClaim.FirstName + " " + _userClaim.LastName : " RealPage Access (" + _userClaim.ImpersonatedByName + ") ";
-                            string enterpriseRolesMessage = $"{userName} updated access for {updateUserProfileEntity.NewProfile.FirstName} {updateUserProfileEntity.NewProfile.LastName} : Enterprise Role: {(isEnterpriseRolesUpdated ? enterpriseUserRoleUpdated+ " was granted." : enterpriseRoleUnassigned+ " was unassigned.")} ";
+                            string enterpriseRolesMessage = $"{userName} updated access for {updateUserProfileEntity.NewProfile.FirstName} {updateUserProfileEntity.NewProfile.LastName} : Enterprise Role: {(isEnterpriseRolesUpdated ? enterpriseUserRoleUpdated + " was granted." : enterpriseRoleUnassigned + " was unassigned.")} ";
 
                             AddActivityLog(LogActivityTypeConstants.ENTERPRISE_ROLES, LogActivityCategoryType.User, enterpriseRolesMessage, updateUserProfileEntity.NewProfile, updateUserProfileEntity.UserLoginOnly, null, _userClaim);
                         }
@@ -6722,6 +6814,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        private bool IsDelegateAdminSettingsEnabled()
+        {
+            ManageUnifiedSettings manageUnifiedSettings = new ManageUnifiedSettings(_userClaim);
+            var data = manageUnifiedSettings.GetCompanyInternalSettings(_userClaim.OrganizationRealPageGuid, "UPFM", "company");
+            bool value = data?.Keys?.Where(p => p.Name == "delegateadministrators")?.FirstOrDefault()?.Value == "1";
+            return value;
+        }
         private bool CompareList(List<long> first, List<long> second)
         {
             bool isequal = false;
@@ -6789,7 +6892,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 var userPersona = _managePersona.GetPersona(userPersonaId);
                 List<string> filteredList = null;
                 List<string> updatedPrimaryProperties = primaryPropertiesBatch.InputJson.PropertyList.ToList();
-                List<string> removedPrimaryProperties = (primaryPropertiesBatch.InputJson.RemovedPropertyList == null) ? new List<string>(): primaryPropertiesBatch.InputJson.RemovedPropertyList.ToList();
+                List<string> removedPrimaryProperties = (primaryPropertiesBatch.InputJson.RemovedPropertyList == null) ? new List<string>() : primaryPropertiesBatch.InputJson.RemovedPropertyList.ToList();
 
                 if (removedPrimaryProperties?.Count > 0)
                 {
@@ -6901,6 +7004,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             return repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_InsertUpdateRoleTemplateUserMapping, param);
         }
 
+        private RepositoryResponse InsertUpdateDelegateAdminRole(IRepository repository, long userLoginPersonaId, long delegateRole, bool delete = false)
+        {
+            var param = new
+            {
+                RoleTemplateId = delegateRole,
+                UserLoginPersonaId = userLoginPersonaId,
+                IsDeleted = delete
+            };
+            return repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_InsertUpdateDelegateAdminTemplate, param);
+        }
+        private RepositoryResponse UpdateDelegateAdminStatus(IRepository repository, long userLoginPersonaId, bool isDelateAdmin)
+        {
+            var param = new
+            {
+                IsDelateAdmin = isDelateAdmin,
+                UserLoginPersonaId = userLoginPersonaId,
+
+            };
+            var result = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateDelegateAdminStatus, param);
+            return result;
+        }
         /// <summary>
         /// Unassign EnterpriseRole From User
         /// </summary>

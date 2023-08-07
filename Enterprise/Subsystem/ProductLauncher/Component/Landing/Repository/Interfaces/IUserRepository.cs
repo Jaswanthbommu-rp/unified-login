@@ -190,5 +190,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// </summary>
         ActivityAttempt UpdateUserActivityAttempts(string enterpriseUserName, ActivityType activityType, UserDeviceDetails userDeviceDetails, long organizationPartyId, string authenticationServiceId = "");
 
-    }
+		/// <summary>
+		/// Delate Admin Role Template
+		/// </summary>
+		/// <param name="UserLoginPersonaId"></param>
+		/// <returns></returns>
+		List<int> GetDelateRoleTemplate(long UserLoginPersonaId);
+
+	}
 }

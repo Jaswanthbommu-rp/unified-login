@@ -462,6 +462,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         public const string SP_GetEnterpriseRoleDeletedProductsByRoleTemplateId = "Security.GetEnterpriseRoleDeletedProductsByRoleTemplateId";
         public const string SP_GetUserRoleTemplate = "Security.GetUserRoleTemplate";
         public const string SP_GetEnterpriseRoleNewProductsByRoleTemplateId = "Security.GetEnterpriseRoleNewProductsByRoleTemplateId";
+        public const string SP_InsertDelegateRoleTemplate = "Security.InsertDelegateAdminRoleTemplate";
+        public const string SP_GetEnterpriseDelagateRole = "Security.GetDelateAdminRoleTemaplte";
+        public const string SP_InsertUpdateDelegateAdminTemplate = "Security.UpdateDeleteDelegateAdminRoleTemplate";
+        public const string SP_UpdateDelegateAdminStatus = "Security.UpdateDelegateAdminStatus";
+        
 
         //AD groups
         public const string SP_GetADGroupsForUser = "Security.GetADGroupsByPersona";

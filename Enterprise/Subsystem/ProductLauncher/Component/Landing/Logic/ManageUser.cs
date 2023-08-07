@@ -454,7 +454,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			oldProfile.EmployeeId = (employeeId != null && !string.IsNullOrEmpty(employeeId.EmployeeId)) ? employeeId.EmployeeId : "";
 			oldProfile.UserEmployeeId = (employeeId != null  && employeeId.UserEmployeeId > 0) ? employeeId.UserEmployeeId : 0;
 
-			repositoryResponse = _userRepository.UpdateUser(loggedInUserRealPageId, profile, oldProfile);
+            repositoryResponse = _userRepository.UpdateUser(loggedInUserRealPageId, profile, oldProfile);
 			if (repositoryResponse.Id > 0)
 			{
 				if (sendNotification)
@@ -776,6 +776,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					profileDetail.ExternalUserRelationship = data == null ? new ExternalUserRelationship() { 
 						UserLoginPersonaId = userLoginPersonaList[0].UserLoginPersonaId } : data;
 				}
+				if (IsDelegateAdminSettingsEnabled()) 
+				{
+					if (userLoginPersonaList[0].IsDelegateAdmin)
+					{
+						profileDetail.IsDelegate = userLoginPersonaList[0].IsDelegateAdmin;
+                        var data = _userRepository.GetDelateRoleTemplate(userLoginPersonaList[0].UserLoginPersonaId);
+                        var finalResult = new DelegateRoleTemplate()
+                        {
+                            RoleTemplateId = data,
+                            UserLoginPersonaId = userLoginPersonaList[0].UserLoginPersonaId
+                        };
+                        profileDetail.DelegateRoleTemplate = finalResult;
+                    }
+                }
 
 				output.obj = profileDetail;
 				output.Status = errorStatus;
@@ -798,12 +812,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		public IUserEmployeeId GetUserEmployeeId(long UserLoginPersonaId, long OrganizationPartyId)
 		{
 			return _userRepository.GetUserEmployeeId(UserLoginPersonaId, OrganizationPartyId);
-		}		
+		}
 
-		#endregion
+        public List<int> GetDelateRoleTemplate(long UserLoginPersonaId)
+        {
+			return _userRepository.GetDelateRoleTemplate(UserLoginPersonaId);
+        }
 
-		#region Private Methods
-		private void LogAuditActivity(string logActivityType, LogActivityCategoryType logActivityCategoryType,
+
+        #endregion
+
+        #region Private Methods
+        private void LogAuditActivity(string logActivityType, LogActivityCategoryType logActivityCategoryType,
 			string message, string stepName, IProfileDetail profile)
 		{
 			string userName = string.IsNullOrEmpty(_userClaim.ImpersonatedByName) ? _userClaim.FirstName + " " + _userClaim.LastName : " RealPage Access (" + _userClaim.ImpersonatedByName + ") ";
@@ -854,7 +874,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             logger = logger.ForContext("CorrelationId", correlationId);
             logger.Write(logType, exception, message );
 		}
-		#endregion
-	}
+
+        private bool IsDelegateAdminSettingsEnabled()
+        {
+            ManageUnifiedSettings manageUnifiedSettings = new ManageUnifiedSettings(_userClaim);
+            var data = manageUnifiedSettings.GetCompanyInternalSettings(_userClaim.OrganizationRealPageGuid, "UPFM", "company");
+            bool value = data?.Keys?.Where(p => p.Name == "delegateadministrators")?.FirstOrDefault()?.Value == "1";
+            return value;
+        }
+        #endregion
+    }
 }
 
