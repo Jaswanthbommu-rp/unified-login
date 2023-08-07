@@ -195,7 +195,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		/// </summary>
 		/// <param name="UserLoginPersonaId"></param>
 		/// <returns></returns>
-		List<int> GetDelateRoleTemplate(long UserLoginPersonaId);
+		List<int> GetDelegateAdminRoleTemplate(long UserLoginPersonaId);
 
 	}
 }

@@ -781,7 +781,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					if (userLoginPersonaList[0].IsDelegateAdmin)
 					{
 						profileDetail.IsDelegate = userLoginPersonaList[0].IsDelegateAdmin;
-                        var data = _userRepository.GetDelateRoleTemplate(userLoginPersonaList[0].UserLoginPersonaId);
+                        var data = _userRepository.GetDelegateAdminRoleTemplate(userLoginPersonaList[0].UserLoginPersonaId);
                         var finalResult = new DelegateRoleTemplate()
                         {
                             RoleTemplateId = data,
@@ -816,7 +816,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         public List<int> GetDelateRoleTemplate(long UserLoginPersonaId)
         {
-			return _userRepository.GetDelateRoleTemplate(UserLoginPersonaId);
+			return _userRepository.GetDelegateAdminRoleTemplate(UserLoginPersonaId);
         }
 
 
