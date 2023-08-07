@@ -2829,7 +2829,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
-        public List<int> GetDelateRoleTemplate(long UserLoginPersonaId)
+        public List<int> GetDelegateAdminRoleTemplate(long UserLoginPersonaId)
         {
 
             using (var repository = GetRepository())
