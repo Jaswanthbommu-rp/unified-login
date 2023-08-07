@@ -814,11 +814,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			return _userRepository.GetUserEmployeeId(UserLoginPersonaId, OrganizationPartyId);
 		}
 
-        public List<int> GetDelateRoleTemplate(long UserLoginPersonaId)
-        {
-			return _userRepository.GetDelegateAdminRoleTemplate(UserLoginPersonaId);
-        }
-
 
         #endregion
 
