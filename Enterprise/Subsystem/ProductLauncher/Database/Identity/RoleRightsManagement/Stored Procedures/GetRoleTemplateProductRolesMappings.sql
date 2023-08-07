@@ -3,7 +3,7 @@ CREATE PROCEDURE [Security].[GetRoleTemplateProductRolesMappings]
 	@RoleTemplateId int, 
 	@OrganizationRealPageId UNIQUEIDENTIFIER = NULL,
     @PartyId BIGINT = NULL,
-    @UserPersonaId int = NULL
+    @UserPersonaId BIGINT = 0
 
 )
 AS
@@ -11,7 +11,7 @@ BEGIN
 
 CREATE TABLE #RoleTemplateProductIds(ProductId int)
 
-IF(@UserPersonaId IS NOT NULL)
+IF(@UserPersonaId > 0)
 BEGIN
 
 INSERT INTO #RoleTemplateProductIds(ProductId)
@@ -64,7 +64,7 @@ FROM Security.RoleTemplate rt
 WHERE rt.RoleTemplateId = @RoleTemplateId 
 	AND (P.RealPageId = @OrganizationRealPageId OR @OrganizationRealPageId IS NULL)
 	AND (P.PartyId = @PartyId OR @PartyId IS NULL)
-	AND (rtp.ProductId in (select ProductId from #RoleTemplateProductIds) OR @UserPersonaId IS NULL)
+	AND (rtp.ProductId in (select ProductId from #RoleTemplateProductIds) OR @UserPersonaId = 0)
 ORDER BY rtp.ProductId
 
 IF OBJECT_ID(N'tempdb..#RoleTemplateProductIds') IS NOT NULL
