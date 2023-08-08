@@ -219,12 +219,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             bool isUpdateUser = false;
             bool usePrimaryProperties = false;
-            bool isCreateorUpdateUser = true;
+            bool isCreateUserWithNoProperties = true;
 
             Dictionary<int, RolePropertyList> rolePropDictionary = new Dictionary<int, RolePropertyList>();
             Dictionary<int, RolePropertyList> rolePrimaryPropDictionary = new Dictionary<int, RolePropertyList>();
             Dictionary<int, bool> usePrimaryPropertyFlags = new Dictionary<int, bool>();
+            var _productsWithNoProperties = new List<int>();
             string prodUserInputJson = string.Empty;
+
+            var upSettingList = GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
+            var productsWithNoProperties = upSettingList?.FirstOrDefault(ps => ps.Name.Equals($"UserAccessDetails_ProductsWithNoProperties", StringComparison.InvariantCultureIgnoreCase))?.Value;
+            if (!string.IsNullOrEmpty(productsWithNoProperties))
+            {
+                foreach (var pId in productsWithNoProperties.Split(','))
+                {
+                    if (!_productsWithNoProperties.Contains(Convert.ToInt32(pId)))
+                    {
+                        _productsWithNoProperties.Add(Convert.ToInt32(pId));
+                    }
+                }
+            }
 
             if (ValidateDictionaryMapping(productUser.InputJson))
             {
@@ -240,7 +254,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 var roleProp = JsonConvert.DeserializeObject<RolePropertyList>(productUser.InputJson);
                 rolePropDictionary.Add(productUser.ProductId, roleProp);
-
             }
             try
             {
@@ -269,12 +282,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         rolePrimaryPropDictionary.Add(rolePropertyList.Key, foundPrimaryProperties);
                     }
                     
-                    if((usePrimaryProperties || rolePropertyList.Value?.IsAssigned == true) && rolePropertyList.Value.PropertyList?.Count == 0)
+                    if(usePrimaryProperties && !_productsWithNoProperties.Contains(productId) && (rolePropertyList.Value?.IsAssigned == true && rolePropertyList.Value.PropertyList?.Count == 0))
                     {
                         //Create user (not update) but translation has no properties
                         if (!isUpdateUser)
                         {
-                            isCreateorUpdateUser = false;
+                            isCreateUserWithNoProperties = false;
                         }                        
                         
                         //Primary properties translation did not result any properties. Un-assign product
@@ -301,7 +314,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     productUser.InputJson = prodUserInputJson;
                 }
-                if (isCreateorUpdateUser)
+                if (isCreateUserWithNoProperties)
                 {
                     var integration = _integrationTypeFactory.GetIntegration(productUser.ProductId);
                     _productRepository.UpdateBatchProcessorLog(productUser.ProductBatchId, DateTime.UtcNow, null);
@@ -330,7 +343,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var isBatchCompleted = false;
             try
             {
-
                 // If result OK then update Success status else Error
                 if (string.IsNullOrEmpty(result))
                 {
@@ -360,9 +372,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         {
                             SyncUserProductProperties(productUser.ProductId, productUser.AssignUserPersonaId, productUser.CreateUserPersonaId);
                         }
-
                     }
-
                 }
                 else
                 {
@@ -371,7 +381,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         WriteToLog(LogEventLevel.Debug, $"ManageProductUser.CreateProductUser: User Sync Request process for Stop, product: {productUser.ProductId} settings and persona: {productUser.AssignUserPersonaId}");
                         isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Stop, null, "Batch Process stopped due to internal error for this product.");
                         WriteToLog(LogEventLevel.Debug, $"ManageProductUser.CreateProductUser: product: {productUser.ProductId} , persona: {productUser.AssignUserPersonaId} , isBatchCompleted: {isBatchCompleted} ,User Sync Request process for Stop, DateTime { DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:ffff") }");
-
                     }
                     else
                     {
@@ -380,7 +389,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Error, null, result);
                         WriteToLog(LogEventLevel.Debug, $"ManageProductUser.CreateProductUser: product: {productUser.ProductId} , persona: {productUser.AssignUserPersonaId} , isBatchCompleted: {isBatchCompleted} ,User Sync Request process for Error, DateTime { DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:ffff") }");
 
-                        if (!isUpdateUser)
+                        if (!isUpdateUser && isCreateUserWithNoProperties)
                         {
                             WriteToLog(LogEventLevel.Debug, $"ManageProductUser.CreateProductUser: User Sync Request process for Error, product: {productUser.ProductId} settings and persona: {productUser.AssignUserPersonaId}");
                             _productRepository.UpdateProductSettingProductStatus(productUser.AssignUserPersonaId, productId, "ProductStatus", (int)ProductBatchStatusType.Error);
@@ -915,16 +924,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             List<string> aoProducts = new List<string>();
             var aoProductList = JsonConvert.DeserializeObject<AoUserCompanyPropertyRoleDetails>(inputAOItem.InputJSON.Trim());
-            if (aoProductList.AoUserCompanyPropertyRoleDetailList.Any(m => m.ProductId == (int)ProductEnum.AoBenchmarking)) 
+            if (aoProductList != null && aoProductList.AoUserCompanyPropertyRoleDetailList != null && aoProductList.AoUserCompanyPropertyRoleDetailList.Any(m => m.ProductId == (int)ProductEnum.AoBenchmarking)) 
             {
                 var aoBenchMarkingProduct = aoProductList.AoUserCompanyPropertyRoleDetailList.FirstOrDefault(m => m.ProductId == (int)ProductEnum.AoBenchmarking);
                 aoProductList.AoUserCompanyPropertyRoleDetailList.Remove(aoBenchMarkingProduct);
-            }
-            var aoAssignProducts = statusTypeId == 8 ? aoProductList.AoUserCompanyPropertyRoleDetailList.Where(m => m.IsAssigned == isAssigned).ToList() : aoProductList.AoUserCompanyPropertyRoleDetailList;
-            foreach (var aoAssignProduct in aoAssignProducts)
-            {
-                aoProducts.Add(ProductEnumHelper.GetAoProductDescription((ProductEnum)aoAssignProduct.ProductId));
-            }
+                var aoAssignProducts = statusTypeId == 8 ? aoProductList.AoUserCompanyPropertyRoleDetailList.Where(m => m.IsAssigned == isAssigned).ToList() : aoProductList.AoUserCompanyPropertyRoleDetailList;
+                foreach (var aoAssignProduct in aoAssignProducts)
+                {
+                    aoProducts.Add(ProductEnumHelper.GetAoProductDescription((ProductEnum)aoAssignProduct.ProductId));
+                }
+            }            
             return aoProducts;
         }
         private void SendNotification(string message, long notificationTo)
