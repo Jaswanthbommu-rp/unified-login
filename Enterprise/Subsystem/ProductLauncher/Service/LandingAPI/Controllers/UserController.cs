@@ -328,7 +328,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         UserLoginPersonaId = userLoginPersonaList[0].UserLoginPersonaId
                     } : data;
                 }
-				
                 if (profileDetail != null)
 				{
 					output.obj = profileDetail;

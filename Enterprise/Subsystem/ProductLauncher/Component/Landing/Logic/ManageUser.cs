@@ -814,7 +814,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			return _userRepository.GetUserEmployeeId(UserLoginPersonaId, OrganizationPartyId);
 		}
 
-
         #endregion
 
         #region Private Methods
