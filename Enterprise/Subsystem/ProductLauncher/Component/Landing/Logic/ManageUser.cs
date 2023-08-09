@@ -686,9 +686,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 			IManagePerson personLogic = new ManagePerson();
 			IPerson person = personLogic.GetPerson(realPageId);
-
-
-			if (person != null)
+			bool isdelegateSettingEnabled = _userRepository.IsOperatorSettingsEnabled(true);
+            if (person != null)
 			{
 				//Include the UserLogin details.  IsActive and Is3rdPartyIDP are used by the Edit User
 				IManageUserLogin userLoginLogic = new ManageUserLogin(_userClaim);
@@ -776,10 +775,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					profileDetail.ExternalUserRelationship = data == null ? new ExternalUserRelationship() { 
 						UserLoginPersonaId = userLoginPersonaList[0].UserLoginPersonaId } : data;
 				}
-				if (IsDelegateAdminSettingsEnabled()) 
+				if (isdelegateSettingEnabled && userLoginPersonaList[0].IsDelegateAdmin) 
 				{
-					if (userLoginPersonaList[0].IsDelegateAdmin)
-					{
 						profileDetail.IsDelegate = userLoginPersonaList[0].IsDelegateAdmin;
                         var data = _userRepository.GetDelegateAdminRoleTemplate(userLoginPersonaList[0].UserLoginPersonaId);
                         var finalResult = new DelegateRoleTemplate()
@@ -788,7 +785,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             UserLoginPersonaId = userLoginPersonaList[0].UserLoginPersonaId
                         };
                         profileDetail.DelegateRoleTemplate = finalResult;
-                    }
                 }
 
 				output.obj = profileDetail;
@@ -868,15 +864,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             logger = logger.ForContext("CorrelationId", correlationId);
             logger.Write(logType, exception, message );
 		}
-
-        private bool IsDelegateAdminSettingsEnabled()
-        {
-            ManageUnifiedSettings manageUnifiedSettings = new ManageUnifiedSettings(_userClaim);
-            var data = manageUnifiedSettings.GetCompanyInternalSettings(_userClaim.OrganizationRealPageGuid, "UPFM", "company");
-            bool value = data?.Keys?.Where(p => p.Name == "delegateadministrators")?.FirstOrDefault()?.Value == "1";
-            return value;
-        }
         #endregion
     }
 }
-

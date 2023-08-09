@@ -1288,9 +1288,9 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\AddingSettingsForAdminPortal.sql" />
     <Build Include="RoleRightsManagement\Tables\DelegatedAdminRoleTemplate.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\InsertDelegateAdminRoleTemplate.sql" />
-    <Build Include="RoleRightsManagement\Stored Procedures\GetDelateAdminRoleTemaplte.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\GetDelegateAdminRoleTemaplte.sql" />
     <Build Include="Ident\Stored Procedures\UpdateDelegateAdminStatus.sql" />
-    <Build Include="Ident\Stored Procedures\UpdateDeleteDelegateAdminRoleTemplate.sql" />
+    <Build Include="Ident\Stored Procedures\InsertUpdateDelegateAdminRoleTemplate.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

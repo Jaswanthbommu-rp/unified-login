@@ -1,5 +1,5 @@
 ﻿
-CREATE   PROCEDURE [Security].[GetDelateAdminRoleTemaplte]  
+CREATE   PROCEDURE [Security].[GetDelegateAdminRoleTemaplte]  
 (    
  @UserLoginPersonaId BIGINT    
 )    

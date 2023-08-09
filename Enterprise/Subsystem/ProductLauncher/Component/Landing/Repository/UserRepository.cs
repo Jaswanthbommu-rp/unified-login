@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using Newtonsoft.Json;
 using RP.Enterprise.Foundation.DataAccess.Component;
+using RP.Enterprise.Foundation.DataAccess.Component.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
@@ -23,7 +24,6 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.UserUpdate;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Mappers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Rum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
 using Serilog;
 using Serilog.Events;
@@ -1584,28 +1584,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                     #endregion
 
-                    #region enterprise roles Delagate User
-                    if (IsDelegateAdminSettingsEnabled())
+                    #region enterprise roles Delegate User
+                    if (IsOperatorSettingsEnabled(true) && newProfile.IsDelegate)
                     {
-                        if (newProfile.IsDelegate)
+                        List<int> templateRoleLists = newProfile.DelegateRoleTemplate?.RoleTemplateId?.ToList();
+                        repositoryResponse = InsertUpdateDelegateAdminRole(repository, userLoginPersonaId, templateRoleLists,false);
+                        if (repositoryResponse.Id == 0) 
                         {
-                            foreach (var roleID in newProfile.DelegateRoleTemplate.RoleTemplateId.ToList())
-                            {
-                                param = new
-                                {
-                                    UserLoginPersonaId = userLoginPersonaId,
-                                    RoleTemplateId = roleID
-                                };
-                                repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_InsertDelegateRoleTemplate, param);
-
-                                if (repositoryResponse.Id == 0)
-                                {
-                                    repositoryResponse.ErrorMessage = "Create Delegate Admin Role  failed.";
-                                    throw new Exception(repositoryResponse.ErrorMessage);
-                                }
-                            }
+                            repositoryResponse.ErrorMessage = "Create Delegate Admin Role  failed.";
+                            throw new Exception(repositoryResponse.ErrorMessage);
                         }
-                    }
+                }
                     #endregion
 
                     // used to pass back user id for logging
@@ -2838,9 +2827,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 {
                     UserLoginPersonaId
                 };
-                var roleList = new List<DelegateRoleTemplate>();
                 var roleslists = new List<int>();
-                var procName = StoredProcNameConstants.SP_GetEnterpriseDelagateRole;
+                var procName = StoredProcNameConstants.SP_GetEnterpriseDelegateRole;
                 var result = repository.GetMany<dynamic>(procName, param);
                 if (result != null)
                 {
@@ -6435,7 +6423,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         #endregion
 
                         #region update delegate roles
-                        if (IsDelegateAdminSettingsEnabled())
+                        bool isUpdateDelegateFlag = false;
+                        bool oldProfileDelegate = updateUserProfileEntity.OldProfile.IsDelegate;
+                        bool newProfileDelegate = updateUserProfileEntity.NewProfile.IsDelegate;
+                        if (oldProfileDelegate || newProfileDelegate) 
+                        {
+                            if (!updateUserProfileEntity.NewProfile.IsDelegate) 
+                            {
+                                isUpdateDelegateFlag = true;
+                            }
+                        }
+                        if (IsOperatorSettingsEnabled(true) && (oldProfileDelegate || newProfileDelegate))
                         {
                             if (updateUserProfileEntity.NewProfile.IsDelegate != updateUserProfileEntity.OldProfile.IsDelegate)
                             {
@@ -6444,32 +6442,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             }
                             if (updateUserProfileEntity.NewProfile.IsDelegate)
                             {
-                                if (updateUserProfileEntity.OldProfile.DelegateRoleTemplate.RoleTemplateId.Count() > 0)
-                                {
-                                    foreach (var item in updateUserProfileEntity.OldProfile.DelegateRoleTemplate.RoleTemplateId.ToList())
+                                // make db call here...
+                                repositoryResponse = InsertUpdateDelegateAdminRole(repository, userLoginPersonaList[0].UserLoginPersonaId, 
+                                                            updateUserProfileEntity.NewProfile.DelegateRoleTemplate.RoleTemplateId.ToList(), isUpdateDelegateFlag);
+                                 
+                                if (repositoryResponse.Id < 0) 
                                     {
-                                        // Remove the Delegate Template existing role
-                                        repositoryResponse = InsertUpdateDelegateAdminRole(repository, userLoginPersonaList[0].UserLoginPersonaId, item, true);
-                                        if (repositoryResponse.Id < 0)
-                                        {
-                                            repositoryResponse.ErrorMessage = "Unable to update Delegate Template role to the Persona.";
-                                            throw new Exception(repositoryResponse.ErrorMessage);
-                                        }
+                                        repositoryResponse.ErrorMessage = "Unable to Create  Delegate Template role to the User.";
+                                        throw new Exception(repositoryResponse.ErrorMessage);
                                     }
-                                }
-                                if (updateUserProfileEntity.NewProfile.DelegateRoleTemplate.RoleTemplateId.Count() > 0)
-                                {
-                                    foreach (var role in updateUserProfileEntity.NewProfile.DelegateRoleTemplate.RoleTemplateId.ToList())
-                                    {
-                                        // Add the Delegate Template role
-                                        repositoryResponse = InsertUpdateDelegateAdminRole(repository, userLoginPersonaList[0].UserLoginPersonaId, role, false);
-                                        if (repositoryResponse.Id < 0)
-                                        {
-                                            repositoryResponse.ErrorMessage = "Unable to update Delegate Template role to the Persona.";
-                                            throw new Exception(repositoryResponse.ErrorMessage);
-                                        }
-                                    }
-                                }
                             }
                         }
                         #endregion
@@ -6811,25 +6792,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        private bool IsDelegateAdminSettingsEnabled()
+      
+        private bool IsDelegateRoleTemplateRolesChanged(List<int> oldRoleTemplateIds, List<int> newRoleTemplateIds)
         {
-            try
+            if (oldRoleTemplateIds.Count() != newRoleTemplateIds.Count()) 
             {
-                ManageUnifiedSettings manageUnifiedSettings = new ManageUnifiedSettings(_userClaim);
-                var data = manageUnifiedSettings.GetCompanyInternalSettings(_userClaim.OrganizationRealPageGuid, "UPFM", "company");
-                bool value = data?.Keys?.Where(p => p.Name == "delegateadministrators")?.FirstOrDefault()?.Value == "1";
-                return value;
-            }
-            catch (Exception exp) 
-            {
-                // bypass in unit tests
+                return true;
             }
             return false;
         }
+
         private bool CompareList(List<long> first, List<long> second)
         {
             bool isequal = false;
@@ -7009,21 +6981,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             return repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_InsertUpdateRoleTemplateUserMapping, param);
         }
 
-        private RepositoryResponse InsertUpdateDelegateAdminRole(IRepository repository, long userLoginPersonaId, long delegateRole, bool delete = false)
+        private RepositoryResponse InsertUpdateDelegateAdminRole(IRepository repository, long userLoginPersonaId,List<int> templateRoleLists, bool? isDelegateFlag)
         {
-            var param = new
+            dynamic param = new
             {
-                RoleTemplateId = delegateRole,
-                UserLoginPersonaId = userLoginPersonaId,
-                IsDeleted = delete
+               UserLoginPersonaId = userLoginPersonaId,
+               IsDelegateFlag =  isDelegateFlag,
+               TargetRoleTemplateLists = TableValueParamHelper.ConvertToTableValuedParameter(templateRoleLists, "enterprise.intlisttype")
             };
             return repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_InsertUpdateDelegateAdminTemplate, param);
         }
-        private RepositoryResponse UpdateDelegateAdminStatus(IRepository repository, long userLoginPersonaId, bool isDelateAdmin)
+        private RepositoryResponse UpdateDelegateAdminStatus(IRepository repository, long userLoginPersonaId, bool isDelegateAdmin)
         {
             var param = new
             {
-                IsDelateAdmin = isDelateAdmin,
+                IsDelegateAdmin = isDelegateAdmin,
                 UserLoginPersonaId = userLoginPersonaId,
 
             };
@@ -7185,12 +7157,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             return additionalParams;
         }
 
-        private bool IsOperatorSettingsEnabled()
+        public bool IsOperatorSettingsEnabled(bool isDelegateAdmin = false)
         {
-            ManageUnifiedSettings manageUnifiedSettings = new ManageUnifiedSettings(_userClaim);
-            var data = manageUnifiedSettings.GetCompanyInternalSettings(_userClaim.OrganizationRealPageGuid, "UPFM", "company");
-            bool value = data?.Keys?.Where(p => p.Name == "owneroperatorrelationship")?.FirstOrDefault()?.Value == "1";
-
+            bool value = false;
+            try
+            {
+                ManageUnifiedSettings manageUnifiedSettings = new ManageUnifiedSettings(_userClaim);
+                var data = manageUnifiedSettings.GetCompanyInternalSettings(_userClaim.OrganizationRealPageGuid, "UPFM", "company");
+                value = data?.Keys?.Where(p => p.Name == "owneroperatorrelationship")?.FirstOrDefault()?.Value == "1";
+                if (isDelegateAdmin)
+                {
+                    value = data?.Keys?.Where(p => p.Name == "delegateadministrators")?.FirstOrDefault()?.Value == "1";
+                }
+                return value;
+            }
+            catch (Exception exp) 
+            {
+                // by pass 
+            }
             return value;
         }
 

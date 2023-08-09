@@ -1,12 +1,11 @@
-﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
-using System;
+﻿using System;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig
 {
-	/// <summary>
-	/// Interface for IPerson
-	/// </summary>
-	public interface IPerson
+    /// <summary>
+    /// Interface for IPerson
+    /// </summary>
+    public interface IPerson
 	{
 		/// <summary>
 		/// Firstname

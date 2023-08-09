@@ -191,11 +191,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         ActivityAttempt UpdateUserActivityAttempts(string enterpriseUserName, ActivityType activityType, UserDeviceDetails userDeviceDetails, long organizationPartyId, string authenticationServiceId = "");
 
 		/// <summary>
-		/// Delate Admin Role Template
+		/// DelegateAdmin Role Template
 		/// </summary>
 		/// <param name="UserLoginPersonaId"></param>
 		/// <returns></returns>
 		List<int> GetDelegateAdminRoleTemplate(long UserLoginPersonaId);
-
-	}
+        bool IsOperatorSettingsEnabled(bool isDelegateAdmin = false);
+    }
 }

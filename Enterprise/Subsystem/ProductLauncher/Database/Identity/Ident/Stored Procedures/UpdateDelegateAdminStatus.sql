@@ -1,11 +1,11 @@
 ﻿CREATE PROCEDURE [Security].[UpdateDelegateAdminStatus] 
 (
   @UserLoginPersonaId BIGINT,
-  @isDelateAdmin bit = 0
+  @IsDelegateAdmin bit = 0
 )AS
 BEGIN
     UPDATE Ident.UserLoginPersona 
-	SET IsDelegateAdmin = @isDelateAdmin 
+	SET IsDelegateAdmin = @IsDelegateAdmin 
 	WHERE UserLoginPersonaId = @UserLoginPersonaId;
 END
 
