@@ -328,7 +328,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     foreach (var item in clientPortalContactAcrossCompanies)
                     {
-                        if (item.ParentOMS_ID__c == parentOmsId)
+                        if (item.ParentOMS_ID__c == parentOmsId && !((item.ParentOMS_ID__c == parentOmsId && item.ParentOMS_ID__c == searchOmsId)))
                         {
                             WriteToDiagnosticLog($"ManageProductAdminSupportPortal.ManageAdminSupportPortalUser - parentId equalsto parentOMSId - {editorPersonaId} and editorPersonaId  - {userPersonaId}");
 
@@ -339,14 +339,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             WriteToDiagnosticLog($"ManageProductAdminSupportPortal.ManageAdminSupportPortalUser - parentId equalsto ParentOMS_ID__c is empty - {editorPersonaId} and editorPersonaId  - {userPersonaId}");
 
                             adminSupportPortalContactResults.Add(item);
-                        }
+                        }   
                         else if (item.OMS_ID__c != null && item.OMS_ID__c.StartsWith("C") && !string.IsNullOrEmpty(item.ParentOMS_ID__c) && item.OMS_ID__c == parentOmsId && item.ParentOMS_ID__c.StartsWith("C"))
                         {
                             WriteToDiagnosticLog($"ManageProductAdminSupportPortal.ManageAdminSupportPortalUser - ParentOMS_ID__c is not empty - {editorPersonaId} and editorPersonaId  - {userPersonaId}");
 
                             adminSupportPortalContactResults.Add(item);
                         }
-                        else if ((item.OMS_ID__c != null && item.OMS_ID__c.StartsWith("C") && !string.IsNullOrEmpty(item.ParentOMS_ID__c) && parentOmsId.Equals(item.ParentOMS_ID__c) && item.ParentOMS_ID__c.StartsWith("C")))
+                        else if ((item.OMS_ID__c != null && item.OMS_ID__c.StartsWith("C") && !string.IsNullOrEmpty(item.ParentOMS_ID__c) && parentOmsId.Equals(item.ParentOMS_ID__c) && item.ParentOMS_ID__c.StartsWith("C")) && !((item.ParentOMS_ID__c == parentOmsId && item.ParentOMS_ID__c == searchOmsId)))
                         {
                             WriteToDiagnosticLog($"ManageProductAdminSupportPortal.ManageAdminSupportPortalUser - Company is having a Parent company - {editorPersonaId} and editorPersonaId  - {userPersonaId}");
 
