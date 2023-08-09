@@ -277,7 +277,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         FromDate = DateTime.UtcNow,
                         Is3rdPartyIDP = false
                     },
-                    productBatch = new List<ProductBatch>()
+                    productBatch = new List<ProductBatch>(),
+                    ExternalUserRelationship = new ExternalUserRelationship() { ThirdPartyRelationShipId = 8, ThirdPartyRelationShip = "8" }
                 };
                 if (findExistingUser != null)
                 {

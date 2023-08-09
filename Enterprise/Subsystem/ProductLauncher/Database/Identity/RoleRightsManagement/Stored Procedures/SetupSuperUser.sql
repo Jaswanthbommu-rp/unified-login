@@ -375,4 +375,12 @@ AS
 			END
 		END;
 		-- ADD USER TO SUPPORT TOOL LIST IF NO OTHER USERS EXIST FOR THE COMPANY
+
+        --Insert External UserRelationship type for userloginpersonaid if not exists
+		IF NOT EXISTS (SELECT TOP (1) 1 FROM Enterprise.ExternalUserRelationship WHERE UserLoginPersonaId = @UserLoginPersonaId)
+         BEGIN
+			INSERT INTO Enterprise.ExternalUserRelationship(UserLoginPersonaId,ThirdPartyRelationshipId,CompanyName,ThirdPartyCompanyPartyId)
+			VALUES(@UserLoginPersonaId, 8, NULL, NULL);
+		END
+        --Insert External UserRelationship type for userloginpersonaid if not exists
     END;
