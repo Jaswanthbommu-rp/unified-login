@@ -118,8 +118,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					};
 
 					propertiesResponse = manageProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(batch.EditorUserPersonaId, batch.SubjectUserPersonaId, product);
-
-					if (propertiesResponse.Records?.Count > 0)
+                    propertiesResponse = BatchHelper.GetUserAssignedPropertiesData(propertiesResponse);          
+  
+                    if (propertiesResponse.Records?.Count > 0)
 					{
 						if (ProductEnumHelper.GetAoProductList().Contains((ProductEnum)product))
 						{

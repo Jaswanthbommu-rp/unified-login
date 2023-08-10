@@ -166,7 +166,115 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Helper
 
 			return pb;
 		}
-		public static ProductBatch CreateOnSiteBatchRecord(ListResponse propertiesResponse, ListResponse rolesResponse, ListResponse regionResponse, int productId, bool usePrimaryProperties)
+
+        public static ListResponse GetUserAssignedPropertiesData(ListResponse propertiesResponse)
+        {
+            ListResponse translatedPrimaryPropertiesUserResult = new ListResponse();
+            IEnumerable<object> propertiesCollection = new List<object>(); ;
+            if (propertiesResponse.Records != null)
+            {
+                propertiesCollection = (IEnumerable<object>)propertiesResponse.Records;
+
+                object property = (object)propertiesCollection.First();
+                var productPropertyType = property.GetType();
+
+                if (productPropertyType == typeof(ProductProperty))
+                {
+                    IEnumerable<ProductProperty> propResponse = new List<ProductProperty>();
+                    propResponse = propertiesCollection.Cast<ProductProperty>().Where(m => m.IsAssigned == true);
+                    translatedPrimaryPropertiesUserResult = new ListResponse()
+                    {
+                        Records = propResponse.Cast<object>().ToList(),
+                        TotalRows = propResponse.Count(),
+                        RowsPerPage = propResponse.Count(),
+                        TotalPages = 1,
+                        ErrorReason = ""
+                    };
+                }
+                else if (productPropertyType == typeof(ACProperty))
+                {
+                    IEnumerable<ACProperty> propResponse = new List<ACProperty>();
+                    propResponse = propertiesCollection.Cast<ACProperty>().Where(m => m.IsAssigned == true);
+                    translatedPrimaryPropertiesUserResult = new ListResponse()
+                    {
+                        Records = propResponse.Cast<object>().ToList(),
+                        TotalRows = propResponse.Count(),
+                        RowsPerPage = propResponse.Count(),
+                        TotalPages = 1,
+                        ErrorReason = ""
+                    };
+                }
+                else if (productPropertyType == typeof(AssetGroup))
+                {
+                    IEnumerable<AssetGroup> propResponse = new List<AssetGroup>();
+                    propResponse = propertiesCollection.Cast<AssetGroup>().Where(m => m.IsAssigned == true);
+                    translatedPrimaryPropertiesUserResult = new ListResponse()
+                    {
+                        Records = propResponse.Cast<object>().ToList(),
+                        TotalRows = propResponse.Count(),
+                        RowsPerPage = propResponse.Count(),
+                        TotalPages = 1,
+                        ErrorReason = ""
+                    };
+                }
+                else if (productPropertyType == typeof(OnSiteProperty))
+                {
+                    IEnumerable<OnSiteProperty> propResponse = new List<OnSiteProperty>();
+                    propResponse = propertiesCollection.Cast<OnSiteProperty>().Where(m => m.IsAssigned == true);
+                    translatedPrimaryPropertiesUserResult = new ListResponse()
+                    {
+                        Records = propResponse.Cast<object>().ToList(),
+                        TotalRows = propResponse.Count(),
+                        RowsPerPage = propResponse.Count(),
+                        TotalPages = 1,
+                        ErrorReason = ""
+                    };
+                }
+                else if (productPropertyType == typeof(RumPropertyGroup))
+                {
+                    IEnumerable<RumPropertyGroup> propResponse = new List<RumPropertyGroup>();
+                    propResponse = propertiesCollection.Cast<RumPropertyGroup>().Where(m => m.IsAssigned == true);
+                    translatedPrimaryPropertiesUserResult = new ListResponse()
+                    {
+                        Records = propResponse.Cast<object>().ToList(),
+                        TotalRows = propResponse.Count(),
+                        RowsPerPage = propResponse.Count(),
+                        TotalPages = 1,
+                        ErrorReason = ""
+                    };
+                }
+                else if (productPropertyType == typeof(ProductProperties))
+                {
+                    IEnumerable<ProductProperties> propResponse = new List<ProductProperties>();
+                    propResponse = propertiesCollection.Cast<ProductProperties>().Where(m => m.IsAssigned == true);
+                    translatedPrimaryPropertiesUserResult = new ListResponse()
+                    {
+                        Records = propResponse.Cast<object>().ToList(),
+                        TotalRows = propResponse.Count(),
+                        RowsPerPage = propResponse.Count(),
+                        TotalPages = 1,
+                        ErrorReason = ""
+                    };
+                }
+                else if (productPropertyType == typeof(Portfolio))
+                {
+                    IEnumerable<Portfolio> propResponse = new List<Portfolio>();
+                    propResponse = propertiesCollection.Cast<Portfolio>().Where(m => m.IsAssigned == true);
+                    translatedPrimaryPropertiesUserResult = new ListResponse()
+                    {
+                        Records = propResponse.Cast<object>().ToList(),
+                        TotalRows = propResponse.Count(),
+                        RowsPerPage = propResponse.Count(),
+                        TotalPages = 1,
+                        ErrorReason = ""
+                    };
+                }
+            }
+            return translatedPrimaryPropertiesUserResult;
+        }
+
+
+        public static ProductBatch CreateOnSiteBatchRecord(ListResponse propertiesResponse, ListResponse rolesResponse, ListResponse regionResponse, int productId, bool usePrimaryProperties)
 		{
 			List<string> propertyList = new List<string>();
 			List<string> roleList = new List<string>();
