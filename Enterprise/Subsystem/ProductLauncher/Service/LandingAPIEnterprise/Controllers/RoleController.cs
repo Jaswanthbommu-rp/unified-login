@@ -21,6 +21,8 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.In
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using System.Web.Http.Controllers;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterprise.User;
+using System.Security.Claims;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Controllers
 {
@@ -32,11 +34,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 		private IProductRepository _productRepository;
 
 		private IManageUnifiedLogin _manageUnifiedLogin;
+		private IManageOrganization _manageOrganization;
+		private IManagePersona _managePersona;
+		private IManageProduct _manageProduct;
+		private UserManagement _userManagement;
+		private ManageUser _manageUser;
+        private IManageUserLogin _userLoginLogic;
 
-		/// <summary>
-		/// Default constructor
-		/// </summary>
-		public RoleController()
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        public RoleController()
 		{
 			// DONT USE USERCLAIM IN BASE, IT IS NULL AT THIS POINT. MOVE TO Initialize FUNCTION
 		}
@@ -45,17 +53,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 		{
 			base.Initialize(controllerContext);
 
+            _manageOrganization = new ManageOrganization(_userClaims);
             _productRepository = new ProductRepository(_userClaims);
 			_manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
+			_managePersona = new ManagePersona(_userClaims);
+			_manageProduct = new ManageProduct(_userClaims);
+            _userManagement = new UserManagement(_userClaims);
         }
 
-        /// <summary>
-        /// Get a list of roles for the given user and product
-        /// </summary>
-        /// <param name="realPageId">The guid for the user being requested</param>
-        /// <param name="productCode">The code for the product being requested.All Products are supported</param>
-        /// <returns>A list of product roles</returns>
-        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		/// <summary>
+		/// Get a list of roles for the given user and product
+		/// </summary>
+		/// <param name="realPageId">The guid for the user being requested</param>
+		/// <param name="productCode">The code for the product being requested.All Products are supported</param>
+		/// <returns>A list of product roles</returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
 		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
 		[SwaggerResponse(HttpStatusCode.NotFound, Description = "Not Found")]
 		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
@@ -140,14 +152,39 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 		[Route("product/{productCode}/roles")]
 		[AuthorizeScope("enterpriseapi")]
 		[HttpGet]
-		public HttpResponseMessage GetProductRoles(string productCode)
+		public HttpResponseMessage GetProductRoles(string productCode, Guid? upfmId = null)
 		{
-			ErrorResponse error = new ErrorResponse()
-			{
-				Errors = new List<Error>()
-			};
+            ErrorResponse error = new ErrorResponse()
+            {
+                Errors = new List<Error>()
+            };
 
-			ListResponse productResponse;
+            ListResponse productResponse;
+
+            ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
+            if (currentClaimPrincipal.HasClaim("scope", "internalapi") && _userClaims.PersonaId == 0)
+            {
+                if (!string.IsNullOrEmpty(upfmId.ToString()))
+                {
+                    Guid AdminCreatorRealPageId = _manageOrganization.GetOrganizationAdminUserRealPageId(upfmId ?? default(Guid));
+                    //recreate clams
+                    if (AdminCreatorRealPageId == Guid.Empty)
+                    {
+                        error.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = "Invalid UPFMId.", StatusCode = "" });
+                    }
+                    RecreateClaimsForClient(AdminCreatorRealPageId);
+                    _managePersona = new ManagePersona(_userClaims);
+                    _manageProduct = new ManageProduct(_userClaims);
+                    _userManagement = new UserManagement(_userClaims);
+                    _manageUser = new ManageUser(_userClaims);
+                    _userLoginLogic = new ManageUserLogin(_userClaims);
+                }
+                else
+                {
+                    error.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = "Invalid UPFMId.", StatusCode = "" });
+                }
+            }
+           
 
 			if (productCode == "UPFM")
 			{
