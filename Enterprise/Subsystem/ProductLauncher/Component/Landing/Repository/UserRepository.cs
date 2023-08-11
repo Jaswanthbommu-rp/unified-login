@@ -1585,7 +1585,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     #endregion
 
                     #region enterprise roles Delegate User
-                    if (IsOperatorSettingsEnabled("delegateadministrators") && newProfile.IsDelegate)
+                    if (GetUnifiedSettingData("delegateadministrators") && newProfile.IsDelegate)
                     {
                         List<int> templateRoleLists = newProfile.DelegateRoleTemplate?.RoleTemplateId?.ToList();
                         repositoryResponse = InsertUpdateDelegateAdminRole(repository, userLoginPersonaId, templateRoleLists, false);
@@ -6432,7 +6432,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 isUpdateDelegateFlag = true;
                             }
                         }
-                        if (IsOperatorSettingsEnabled("delegateadministrators") && (oldProfileDelegate || newProfileDelegate))
+                        if (GetUnifiedSettingData("delegateadministrators") && (oldProfileDelegate || newProfileDelegate))
                         {
                             if (updateUserProfileEntity.NewProfile.IsDelegate != updateUserProfileEntity.OldProfile.IsDelegate)
                             {
@@ -7017,7 +7017,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 if (newData.ThirdPartyRelationShipId == 1)
                 {
-                    if (IsOperatorSettingsEnabled("owneroperatorrelationship"))
+                    if (GetUnifiedSettingData("owneroperatorrelationship"))
                     {
 
                         var org = _organizationRepository.GetOrganization(newData.ThirdPartyCompanyRealPageId);
@@ -7056,7 +7056,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             var oldData = updateUserProfileEntity.OldProfile.ExternalUserRelationship;
             var newData = updateUserProfileEntity.NewProfile.ExternalUserRelationship;
 
-            if (!IsOperatorSettingsEnabled("owneroperatorrelationship")) //Operator Setting is NOT ENABLED for the company
+            if (!GetUnifiedSettingData("owneroperatorrelationship")) //Operator Setting is NOT ENABLED for the company
             {
                 if (oldData.ThirdPartyRelationShipId != newData.ThirdPartyRelationShipId)
                 {
@@ -7144,7 +7144,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             return additionalParams;
         }
 
-        public bool IsOperatorSettingsEnabled(string settingName)
+        public bool GetUnifiedSettingData(string settingName)
         {
             try
             {

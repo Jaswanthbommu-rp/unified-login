@@ -686,7 +686,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             IManagePerson personLogic = new ManagePerson();
             IPerson person = personLogic.GetPerson(realPageId);
-            bool isdelegateSettingEnabled = _userRepository.IsOperatorSettingsEnabled("owneroperatorrelationship");
+            bool isdelegateSettingEnabled = _userRepository.GetUnifiedSettingData("owneroperatorrelationship");
             if (person != null)
             {
                 //Include the UserLogin details.  IsActive and Is3rdPartyIDP are used by the Edit User

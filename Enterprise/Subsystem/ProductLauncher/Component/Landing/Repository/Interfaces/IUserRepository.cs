@@ -196,6 +196,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		/// <param name="UserLoginPersonaId"></param>
 		/// <returns></returns>
 		List<int> GetDelegateAdminRoleTemplate(long UserLoginPersonaId);
-        bool IsOperatorSettingsEnabled(string settingName);
+        bool GetUnifiedSettingData(string settingName);
     }
 }
