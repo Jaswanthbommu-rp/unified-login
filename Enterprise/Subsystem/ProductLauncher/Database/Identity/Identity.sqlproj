@@ -1287,7 +1287,6 @@
     <Build Include="Enterprise\Stored Procedures\GetUserCountByStatusForCompany.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\AddingSettingsForAdminPortal.sql" />
     <Build Include="RoleRightsManagement\Tables\DelegatedAdminRoleTemplate.sql" />
-    <Build Include="RoleRightsManagement\Stored Procedures\InsertDelegateAdminRoleTemplate.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\GetDelegateAdminRoleTemaplte.sql" />
     <Build Include="Ident\Stored Procedures\UpdateDelegateAdminStatus.sql" />
     <Build Include="Ident\Stored Procedures\InsertUpdateDelegateAdminRoleTemplate.sql" />

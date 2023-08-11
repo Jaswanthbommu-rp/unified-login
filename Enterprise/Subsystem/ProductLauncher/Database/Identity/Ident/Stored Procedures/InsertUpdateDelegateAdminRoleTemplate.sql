@@ -17,24 +17,26 @@ BEGIN
         DELETE FROM [Security].[DelegatedAdminRoleTemplate] where UserLoginPersonaId = @UserLoginPersonaId;
 
      IF @IsDelegateFlag =0
-     IF NOT  EXISTS( SELECT 1  FROM [Security].[DelegatedAdminRoleTemplate] WHERE UserLoginPersonaId = @UserLoginPersonaId  AND RoleTemplateId in (Select Id from @TargetRoleTemplateLists) )     
      BEGIN
-         INSERT INTO [Security].[DelegatedAdminRoleTemplate] (UserLoginPersonaId,RoleTemplateId)
-         SELECT @UserLoginPersonaId, RT.ID
-         FROM  @TargetRoleTemplateLists RT
+         IF NOT  EXISTS( SELECT 1  FROM [Security].[DelegatedAdminRoleTemplate] WHERE UserLoginPersonaId = @UserLoginPersonaId )     
+         BEGIN
+             INSERT INTO [Security].[DelegatedAdminRoleTemplate] (UserLoginPersonaId,RoleTemplateId)
+             SELECT @UserLoginPersonaId, RT.ID
+             FROM  @TargetRoleTemplateLists RT
 
-         SELECT	@UserLoginPersonaId AS Id, '' AS ErrorMessage
-     END
-     ELSE
-     BEGIN
-      -- SELECT * FROM [Security].[DelegatedAdminRoleTemplate] where UserLoginPersonaId = @UserLoginPersonaId;
-         DELETE FROM [Security].[DelegatedAdminRoleTemplate] where UserLoginPersonaId = @UserLoginPersonaId;
+             SELECT	@UserLoginPersonaId AS Id, '' AS ErrorMessage
+         END
+         ELSE
+         BEGIN
+          -- SELECT * FROM [Security].[DelegatedAdminRoleTemplate] where UserLoginPersonaId = @UserLoginPersonaId;
+             DELETE FROM [Security].[DelegatedAdminRoleTemplate] where UserLoginPersonaId = @UserLoginPersonaId;
 
-         INSERT INTO [Security].[DelegatedAdminRoleTemplate] (UserLoginPersonaId,RoleTemplateId)
-         SELECT @UserLoginPersonaId, RT.ID
-         FROM  @TargetRoleTemplateLists RT
+             INSERT INTO [Security].[DelegatedAdminRoleTemplate] (UserLoginPersonaId,RoleTemplateId)
+             SELECT @UserLoginPersonaId, RT.ID
+             FROM  @TargetRoleTemplateLists RT
 
-          SELECT	@UserLoginPersonaId AS Id, '' AS ErrorMessage
+              SELECT	@UserLoginPersonaId AS Id, '' AS ErrorMessage
+         END
      END
   END TRY
   BEGIN CATCH
@@ -47,4 +49,3 @@ BEGIN
 		WHERE	ErrorLogID = @ErrorLogID;
 	END CATCH;
 END
-
