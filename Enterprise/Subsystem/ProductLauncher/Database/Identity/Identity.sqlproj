@@ -8,7 +8,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectVersion>4.1</ProjectVersion>
     <ProjectGuid>{4a6bb2c4-5b62-4500-bdd0-e7c79d18abf0}</ProjectGuid>
-    <DSP>Microsoft.Data.Tools.Schema.Sql.Sql130DatabaseSchemaProvider</DSP>
+    <DSP>Microsoft.Data.Tools.Schema.Sql.Sql150DatabaseSchemaProvider</DSP>
     <OutputType>Database</OutputType>
     <RootPath />
     <RootNamespace>Identity</RootNamespace>
@@ -1435,7 +1435,6 @@
     <None Include="RoleRightsManagement\Tables\DelegatedRoleTemplate.sql" />
     <None Include="RoleRightsManagement\Tables\AddingNewSettingForPropagateRights.sql" />
     <None Include="RoleRightsManagement\Tables\AddingNewRightforUserManagement.sql" />
-
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />
