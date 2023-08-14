@@ -1056,7 +1056,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             ThruDate = currentOrg.OrganizationThruDate,
                             StatusThruDate = currentStatusThruDate,
                             IsRPEmployee = newProfile.IsRPEmployee,
-                            IsDelegateAdmin = newProfile.IsDelegate
+                            IsDelegateAdmin = newProfile.IsDelegateAdmin
                         };
 
                         repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateUserLoginPersona, param);
@@ -1585,7 +1585,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     #endregion
 
                     #region enterprise roles Delegate User
-                    if (GetUnifiedSettingData("delegateadministrators") && newProfile.IsDelegate)
+                    if (GetUnifiedSettingData("delegateadministrators") && newProfile.IsDelegateAdmin)
                     {
                         List<int> templateRoleLists = newProfile.DelegateRoleTemplate?.RoleTemplateId?.ToList();
                         repositoryResponse = InsertUpdateDelegateAdminRole(repository, userLoginPersonaId, templateRoleLists, false);
@@ -2820,7 +2820,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
         public List<int> GetDelegateAdminRoleTemplate(long UserLoginPersonaId)
         {
-
             using (var repository = GetRepository())
             {
                 dynamic param = new
@@ -6423,22 +6422,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         #region update delegate roles
                         bool isUpdateDelegateFlag = false;
-                        bool oldProfileDelegate = updateUserProfileEntity.OldProfile.IsDelegate;
-                        bool newProfileDelegate = updateUserProfileEntity.NewProfile.IsDelegate;
+                        bool oldProfileDelegate = updateUserProfileEntity.OldProfile.IsDelegateAdmin;
+                        bool newProfileDelegate = updateUserProfileEntity.NewProfile.IsDelegateAdmin;
                         if (oldProfileDelegate || newProfileDelegate)
                         {
-                            if (!updateUserProfileEntity.NewProfile.IsDelegate)
+                            if (!updateUserProfileEntity.NewProfile.IsDelegateAdmin)
                             {
                                 isUpdateDelegateFlag = true;
                             }
                         }
                         if (GetUnifiedSettingData("delegateadministrators") && (oldProfileDelegate || newProfileDelegate))
                         {
-                            if (updateUserProfileEntity.NewProfile.IsDelegate != updateUserProfileEntity.OldProfile.IsDelegate)
+                            if (updateUserProfileEntity.NewProfile.IsDelegateAdmin != updateUserProfileEntity.OldProfile.IsDelegateAdmin)
                             {
-                                UpdateDelegateAdminStatus(repository, userLoginPersonaList[0].UserLoginPersonaId, updateUserProfileEntity.NewProfile.IsDelegate);
+                                UpdateDelegateAdminStatus(repository, userLoginPersonaList[0].UserLoginPersonaId, updateUserProfileEntity.NewProfile.IsDelegateAdmin);
                             }
-                            if (updateUserProfileEntity.NewProfile.IsDelegate)
+                            if (updateUserProfileEntity.NewProfile.IsDelegateAdmin)
                             {
                                 // make db call here...
                                 repositoryResponse = InsertUpdateDelegateAdminRole(repository, userLoginPersonaList[0].UserLoginPersonaId,

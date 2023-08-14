@@ -238,7 +238,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
         /// <summary>
         /// IsDelegate flag coming from UI
         /// </summary>
-        [JsonProperty("IsDelegate")]
-		public bool IsDelegate { get; set; } = false;
+        [JsonProperty("IsDelegateAdmin")]
+		public bool IsDelegateAdmin { get; set; } = false;
     }
 }

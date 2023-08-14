@@ -196,6 +196,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		/// <param name="UserLoginPersonaId"></param>
 		/// <returns></returns>
 		List<int> GetDelegateAdminRoleTemplate(long UserLoginPersonaId);
+		/// <summary>
+		/// Get Settings Data
+		/// </summary>
+		/// <param name="settingName"></param>
+		/// <returns></returns>
         bool GetUnifiedSettingData(string settingName);
     }
 }

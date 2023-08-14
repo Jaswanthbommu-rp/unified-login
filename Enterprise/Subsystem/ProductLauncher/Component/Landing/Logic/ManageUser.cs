@@ -686,7 +686,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             IManagePerson personLogic = new ManagePerson();
             IPerson person = personLogic.GetPerson(realPageId);
-            bool isdelegateSettingEnabled = _userRepository.GetUnifiedSettingData("owneroperatorrelationship");
+            bool isdelegateSettingEnabled = _userRepository.GetUnifiedSettingData("delegateadministrators");
             if (person != null)
             {
                 //Include the UserLogin details.  IsActive and Is3rdPartyIDP are used by the Edit User
@@ -779,7 +779,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
                 if (isdelegateSettingEnabled && userLoginPersonaList[0].IsDelegateAdmin)
                 {
-                    profileDetail.IsDelegate = userLoginPersonaList[0].IsDelegateAdmin;
+                    profileDetail.IsDelegateAdmin = userLoginPersonaList[0].IsDelegateAdmin;
                     var data = _userRepository.GetDelegateAdminRoleTemplate(userLoginPersonaList[0].UserLoginPersonaId);
                     profileDetail.DelegateRoleTemplate = new DelegateRoleTemplate()
                     {

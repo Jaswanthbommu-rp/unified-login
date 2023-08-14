@@ -154,7 +154,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 		/// </summary>		
 		string CompanyName { get; set; }
 
-		bool IsDelegate { get; set; }
+		bool IsDelegateAdmin { get; set; }
 
         /// <summary>
 		/// DelegateRoleTemplate
