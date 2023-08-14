@@ -118,6 +118,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
 
             var navigationMenu = _userRepository.GetNavigationMenu();
+            navigationMenu = _userRepository.GetNavigationMenu();
+            if (!filterRights.Contains("RealPageEmployeeUserManagement") && _userClaims.OrganizationRealPageGuid.Equals(DefaultUserClaim.EmployeeCompanyRealPageId))
+            {
+                navigationMenu = navigationMenu.Where(a => a.PageId != "users").ToList();
+            }
             var navigationMenuRights = _userRepository.GetNavigationMenuRights();
             var navigationMenuSettingAccess = _userRepository.GetNavigationMenuSettingsUnaccessable(_orgPartyId);
 
