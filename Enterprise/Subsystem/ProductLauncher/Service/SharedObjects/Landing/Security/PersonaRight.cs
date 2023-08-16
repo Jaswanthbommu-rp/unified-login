@@ -29,5 +29,10 @@
         /// Action value Type Id
         /// </summary>
         public int ActionvalueTypeId { get; set; }
+        
+        /// <summary>
+        /// ProductId
+        /// </summary>
+        public int ProductId { get; set; }
     }
 }
