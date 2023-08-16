@@ -31,6 +31,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         private static int _organizationTypeId = 6;
         private Persona EmployeePersona;
         private Guid _employeeUserRealPageId = new Guid("9E9410AE-1111-2222-3333-109C08CD151C");
+        private static Guid _OrganizationRealPageId = new Guid("C802694D-5553-4527-8616-3C0F434AE62D");
 
         public ShellTests()
         {
@@ -147,6 +148,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         {
             Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<HttpMessageHandler> mockMessageHandler = new Mock<HttpMessageHandler>();
+            mockRepository
+                .Setup(m => m.GetMany<ProductUI>(StoredProcNameConstants.SP_ListProductsByOrganization,
+                    It.Is<object>(
+                        d => TestOrganizationGuid(d, _OrganizationRealPageId))))
+                .Returns(new List<ProductUI>() { new PersonaProductUserDetails() { ProductId = 1 }, new PersonaProductUserDetails() { ProductId = 56 }, new PersonaProductUserDetails() { ProductId = 8 } });
 
             mockRepository
                 .Setup(m => m.GetMany<PersonaActionRight>(StoredProcNameConstants.SP_ListPersonaRightsAndActionsByRoute, It.IsAny<object>()))
@@ -155,12 +161,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                     new PersonaActionRight()
                     {
                         ObjectType = "Route",
-                        Action = "Side Menu"
+                        Action = "Side Menu",
+                        ProductId = 1
                     },
                     new PersonaActionRight()
                     {
                         ObjectType = "Right",
-                        Action = "Dashboard"
+                        Action = "Dashboard",
+                        ProductId = 8
                     }
                 });
 
@@ -240,7 +248,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             {
                 _personaId = 1234
             };
-
+            _userClaim.OrganizationRealPageGuid = _OrganizationRealPageId;
             var response = shellController.GetSideMenuNavigation();
 
             Assert.Equal(2, response.Count);
@@ -260,18 +268,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             Mock<PersonaRepository> _personaRepository = new Mock<PersonaRepository>();
 
             mockRepository
+                .Setup(m => m.GetMany<ProductUI>(StoredProcNameConstants.SP_ListProductsByOrganization,
+                    It.Is<object>(
+                        d => TestOrganizationGuid(d, _OrganizationRealPageId))))
+                .Returns(new List<ProductUI>() { new PersonaProductUserDetails() { ProductId = 1 }, new PersonaProductUserDetails() { ProductId = 56 }, new PersonaProductUserDetails() { ProductId = 8 } });
+
+            mockRepository
                 .Setup(m => m.GetMany<PersonaActionRight>(StoredProcNameConstants.SP_ListPersonaRightsAndActionsByRoute, It.Is<object>(d => TestPersonaIdAndRoute(d, 1234, "sidemenu"))))
                 .Returns(new List<PersonaActionRight>()
                 {
                     new PersonaActionRight()
                     {
                         ObjectType = "Route",
-                        Action = "Side Menu"
+                        Action = "Side Menu",
+                        ProductId = 1
                     },
                     new PersonaActionRight()
                     {
                         ObjectType = "Right",
-                        Action = "Dashboard"
+                        Action = "Dashboard",
+                        ProductId = 8
                     }
                 });
 
@@ -418,7 +434,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Returns(_settings.Where(p => p.Name == "ImpersonationRightsToBeExcluded").ToList());
 
             _userClaim.ImpersonatedBy = _employeeUserRealPageId;
-            ShellController shellController = new ShellController(mockRepository.Object, mockMessageHandler.Object, _userClaim)
+            _userClaim.OrganizationRealPageGuid = _OrganizationRealPageId;
+            ShellController shellController = new ShellController(mockRepository.Object, mockMessageHandler.Object,_userClaim )
             {
                 _personaId = 1234
 
@@ -428,13 +445,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             var response = shellController.GetSideMenuNavigation();
 
             // Assest
-            Assert.Equal(3, response.Count);
-            Assert.Contains(response, x => x.Title == "title 5");
+            Assert.Equal(2, response.Count);
+            Assert.Contains(response, x => x.Title == "title 2");
         }
 
         private bool TestProductSettingType(object obj, string value)
         {
             return obj.ToString().Equals($"{{ ProductSettingType = {value} }}");
+        }
+        private bool TestOrganizationGuid(object obj, Guid OrganizationRealPageId)
+        {
+            return obj.ToString().Equals($"{{ OrganizationRealPageId = {OrganizationRealPageId} }}");
         }
         private bool TestPersonaIdAndRoute(object obj, long personaId, string routeId)
         {
@@ -444,3 +465,4 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
     }
 }
+
