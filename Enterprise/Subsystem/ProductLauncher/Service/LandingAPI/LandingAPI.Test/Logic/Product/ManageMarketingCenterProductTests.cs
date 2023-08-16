@@ -156,7 +156,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
                 }
             };
             var totalRecords = 5;
-            var url = $"{_apiEndPoint}/external/api/{_companyInstanceSourceId}/users?filter-type=NonMigrated&startRow={dataFilter.Pages.StartRow}&resultsperpage={dataFilter.Pages.ResultsPerPage}";
+            var url = $"{_apiEndPoint}/v2/api/{_companyInstanceSourceId}/users?filter-type=NonMigrated&startRow={dataFilter.Pages.StartRow}&resultsperpage={dataFilter.Pages.ResultsPerPage}";
             var editorPersonaId = _editorPersonaId;
             var actual = new MigrationResponse<List<MigrationUser>>()
             {
@@ -237,7 +237,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
                 Message = "Success",
                 Status = true
             };
-            var url = $"{_apiEndPoint}/external/api/{_companyInstanceSourceId}/migrate-users";
+            var url = $"{_apiEndPoint}/v2/api/{_companyInstanceSourceId}/migrate-users";
             HttpResponseMessage userResponse = new HttpResponseMessage(HttpStatusCode.OK)
             {
                 Content = new StringContent(JsonConvert.SerializeObject(new MigrationResponse<MigrateResponse>() { Data = expected }))
@@ -265,7 +265,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
             var isDeactivate = true;
 
             HttpResponseMessage userResponse = new HttpResponseMessage(HttpStatusCode.BadRequest);
-            string url = $"{_apiEndPoint}/external/contact/{productUserId}/status";
+            string url = $"{_apiEndPoint}/v2/contact/{productUserId}/status";
 
             mockHttpMessageHandler.Setup(HttpMethod.Put, url, userResponse);
 
@@ -289,7 +289,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
 
             HttpResponseMessage userResponse = new HttpResponseMessage(HttpStatusCode.OK);
             userResponse.Content = new StringContent("{}");
-            string url = $"{_apiEndPoint}/external/contact/{productUserId}/status";
+            string url = $"{_apiEndPoint}/v2/contact/{productUserId}/status";
 
             mockHttpMessageHandler.Setup(HttpMethod.Put, url, userResponse);
 
