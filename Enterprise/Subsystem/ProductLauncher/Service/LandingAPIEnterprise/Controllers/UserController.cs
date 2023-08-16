@@ -933,7 +933,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 int productId = ProductEnumHelper.GetProductIdByProductCode(productCode, productList);
 
                 var integration = _integrationTypeFactory.GetIntegration(productId);
-                result = integration.GetEnterpriseProperties(_userClaims.PersonaId);
+                result = integration.GetEnterpriseProperties(_userClaims.PersonaId, dataFilter);
 
                 if (result.IsError)
                 {
