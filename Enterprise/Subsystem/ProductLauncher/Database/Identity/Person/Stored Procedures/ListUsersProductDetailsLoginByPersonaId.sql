@@ -8,7 +8,7 @@ BEGIN
 	)
 	AS
 	(
-		SELECT
+		SELECT DISTINCT 
 			sua.ProductId,
 			Name,
 			Value
