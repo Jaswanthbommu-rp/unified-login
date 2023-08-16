@@ -170,7 +170,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     //recreate clams
                     if (AdminCreatorRealPageId == Guid.Empty)
                     {
-                        error.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = "Invalid UPFMId.", StatusCode = "" });
+                        error.Errors.Add(new Error { Title = "Error", Source = "/roles", Detail = "Invalid UPFMId.", StatusCode = "" });
                     }
                     RecreateClaimsForClient(AdminCreatorRealPageId);
                     _managePersona = new ManagePersona(_userClaims);
@@ -181,7 +181,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 }
                 else
                 {
-                    error.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = "Invalid UPFMId.", StatusCode = "" });
+                    error.Errors.Add(new Error { Title = "Error", Source = "/roles", Detail = "Invalid UPFMId.", StatusCode = "" });
                 }
             }
            
