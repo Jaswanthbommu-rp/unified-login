@@ -819,6 +819,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         if (item.ProductId == (int)ProductEnum.AssetOptimizer)
                         {
                             assinedProducts.AddRange(GetAOProductsForActivity(item, true, 8));
+                            unassignedProducts.AddRange(GetAOProductsForActivity(item, false, 8));
                         }
                         else
                         {
@@ -827,14 +828,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                     if (!item.IsAssigned)
                     {
-                        if (item.ProductId == (int)ProductEnum.AssetOptimizer)
-                        {
-                            unassignedProducts.AddRange(GetAOProductsForActivity(item, false, 8));
-                        }
-                        else
-                        {
                             unassignedProducts.Add(item.Name);
-                        }
                     }
                 }
                 if (assinedProducts.Count > 0)
