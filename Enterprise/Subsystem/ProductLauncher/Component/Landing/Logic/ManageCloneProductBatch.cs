@@ -227,9 +227,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         }
                         propertyGroupResponse = manageProductrum.GetPropertyGroups(baseOrgAdminPersonaId, personaId, null);
                         var regionResponse = manageProductrum.GetRegions(baseOrgAdminPersonaId, personaId, null);
-                        var accesstypeResponse = manageProductrum.GetUMGlobalRoles(baseOrgAdminPersonaId, personaId, null);
+                        var accesstypeResponse = manageProductrum.GetUMGlobalRoles(baseOrgAdminPersonaId, personaId, null);                   
                         rolesResponse = manageProductrum.GetRoles(baseOrgAdminPersonaId, personaId, null);
-                        productListToCreate.Add(CreateRumProductBatchRecord(propertiesResponse, propertyGroupResponse, regionResponse, rolesResponse, accesstypeResponse, usePrimaryProperties));
+                        productListToCreate.Add(CreateRumProductBatchRecord(propertiesResponse, propertyGroupResponse, regionResponse, rolesResponse, new ListResponse(), usePrimaryProperties));
                     }
                     else if (product.ProductId == (int)ProductEnum.SelfProvisioningPortal)
                     {
