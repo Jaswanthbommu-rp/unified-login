@@ -6431,22 +6431,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 isUpdateDelegateFlag = true;
                             }
                         }
-                        if (GetUnifiedSettingData("delegateadministrators") && (oldProfileDelegate || newProfileDelegate))
+                        if (GetUnifiedSettingData("delegateadministrators") && (newProfileDelegate || oldProfileDelegate))
                         {
-                            if (updateUserProfileEntity.NewProfile.IsDelegateAdmin != updateUserProfileEntity.OldProfile.IsDelegateAdmin)
+                            if ((updateUserProfileEntity.NewProfile.IsDelegateAdmin != updateUserProfileEntity.OldProfile.IsDelegateAdmin) || oldProfileDelegate)
                             {
                                 UpdateDelegateAdminStatus(repository, userLoginPersonaList[0].UserLoginPersonaId, updateUserProfileEntity.NewProfile.IsDelegateAdmin);
                             }
-                            if (updateUserProfileEntity.NewProfile.IsDelegateAdmin)
-                            {
                                 // make db call here...
-                                repositoryResponse = InsertUpdateDelegateAdminRole(repository, userLoginPersonaList[0].UserLoginPersonaId,
-                                                            updateUserProfileEntity.NewProfile.DelegateRoleTemplate.RoleTemplateId.ToList(), isUpdateDelegateFlag);
-                                if (repositoryResponse.Id < 0)
-                                {
-                                    repositoryResponse.ErrorMessage = "Unable to Create  Delegate Template role to the User.";
-                                    throw new Exception(repositoryResponse.ErrorMessage);
-                                }
+                            repositoryResponse = InsertUpdateDelegateAdminRole(repository, userLoginPersonaList[0].UserLoginPersonaId,
+                                                        updateUserProfileEntity.NewProfile.DelegateRoleTemplate.RoleTemplateId.ToList(), isUpdateDelegateFlag);
+                            if (repositoryResponse.Id == 0)
+                            {
+                                repositoryResponse.ErrorMessage = "Unable to Create  Delegate Template role to the User.";
+                                throw new Exception(repositoryResponse.ErrorMessage);
                             }
                         }
                         #endregion
