@@ -272,7 +272,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     Records = list.Cast<object>().ToList(),
                     TotalRows = propertyList.TotalProperties,
-                    RowsPerPage = 9999,
+                    RowsPerPage = datafilter == null ? list.Count() : datafilter.Pages.ResultsPerPage,
                     TotalPages = 1,
                     ErrorReason = "",
                     Additional = allProperties
