@@ -352,6 +352,7 @@
     <Compile Include="Landing\ProductAdGroupsCount.cs" />
     <Compile Include="Landing\ProductPrimaryProperties.cs" />
     <Compile Include="Landing\ProductSuggestedProperties.cs" />
+    <Compile Include="Landing\Security\ProductRights.cs" />
     <Compile Include="Landing\SettingPickList.cs" />
     <Compile Include="Landing\EmailModel.cs" />
     <Compile Include="Landing\ProductSamlDetails.cs" />
