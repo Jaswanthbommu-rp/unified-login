@@ -22,7 +22,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 
 		public bool PrimaryOrganization { get; set; }
 
-		public DateTime? FromDate
+        public bool IsDelegateAdmin { get; set; }
+
+        public DateTime? FromDate
 		{
 			get
 			{

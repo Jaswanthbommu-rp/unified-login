@@ -2,10 +2,10 @@
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig
 {
-	/// <summary>
-	/// Interface for IPerson
-	/// </summary>
-	public interface IPerson
+    /// <summary>
+    /// Interface for IPerson
+    /// </summary>
+    public interface IPerson
 	{
 		/// <summary>
 		/// Firstname

@@ -14,7 +14,8 @@ BEGIN
 						PrimaryOrganization,
 						FromDate,
 						ThruDate,
-						StatusThruDate
+						StatusThruDate,
+						IsDelegateAdmin
 		FROM		Ident.UserLoginPersona
 		WHERE	UserLoginPersonaId = @UserLoginPersonaId
 	END
@@ -27,7 +28,8 @@ BEGIN
 						PrimaryOrganization,
 						FromDate,
 						ThruDate,
-						StatusThruDate
+						StatusThruDate,
+						IsDelegateAdmin
 		FROM		Ident.UserLoginPersona
 		WHERE
 			UserLoginId = @UserLoginId

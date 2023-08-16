@@ -1286,6 +1286,10 @@
     <Build Include="RoleRightsManagement\Tables\RoleOrganizationType.sql" />
     <Build Include="Enterprise\Stored Procedures\GetUserCountByStatusForCompany.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\AddingSettingsForAdminPortal.sql" />
+    <Build Include="RoleRightsManagement\Tables\DelegatedAdminRoleTemplate.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\GetDelegateAdminRoleTemaplte.sql" />
+    <Build Include="Ident\Stored Procedures\UpdateDelegateAdminStatus.sql" />
+    <Build Include="Ident\Stored Procedures\InsertUpdateDelegateAdminRoleTemplate.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
@@ -1417,7 +1421,6 @@
     <None Include="RoleRightsManagement\Tables\DelegatedRoleTemplate.sql" />
     <None Include="RoleRightsManagement\Tables\AddingNewSettingForPropagateRights.sql" />
     <None Include="RoleRightsManagement\Tables\AddingNewRightforUserManagement.sql" />
-
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />

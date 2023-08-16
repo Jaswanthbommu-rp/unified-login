@@ -190,5 +190,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// </summary>
         ActivityAttempt UpdateUserActivityAttempts(string enterpriseUserName, ActivityType activityType, UserDeviceDetails userDeviceDetails, long organizationPartyId, string authenticationServiceId = "");
 
+		/// <summary>
+		/// DelegateAdmin Role Template
+		/// </summary>
+		/// <param name="UserLoginPersonaId"></param>
+		/// <returns></returns>
+		List<int> GetDelegateAdminRoleTemplate(long UserLoginPersonaId);
+		/// <summary>
+		/// Get Settings Data
+		/// </summary>
+		/// <param name="settingName"></param>
+		/// <returns></returns>
+        bool GetUnifiedSettingData(string settingName);
     }
 }
