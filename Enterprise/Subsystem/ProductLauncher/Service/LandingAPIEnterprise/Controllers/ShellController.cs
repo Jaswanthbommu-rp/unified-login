@@ -26,7 +26,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         private IManageSecurity _manangeSecurityLogic;
         private IPersonaRepository _personaRepository;
         private ProductInternalSettingRepository _productInternalSettingRepository;
-
+        private IOrganizationRepository _organizationRepository;
 
         /// <summary>
         /// Default constructor
@@ -51,7 +51,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             _userClaims = userClaims;
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
             _personaRepository = new PersonaRepository(repository);
-
+            _organizationRepository = new OrganizationRepository(repository);
         }
 
         /// <summary>
@@ -65,6 +65,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             _manangeSecurityLogic = new ManageSecurity(_userClaims);
             _personaRepository = new PersonaRepository(_userClaims);
             _productInternalSettingRepository = new ProductInternalSettingRepository(_userClaims);
+            _organizationRepository = new OrganizationRepository(_userClaims);
         }
 
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
@@ -75,14 +76,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [AuthorizeScope("enterpriseapi")]
         public List<NavigationMenuTree> GetSideMenuNavigation()
         {
-            var rights = _manangeSecurityLogic.GetPersonaRightsAndActionsByRoute(_personaId, "sidemenu")?.obj?.Rights;
+            var existingProducts = _organizationRepository.GetProductsByCompany(_userClaims.OrganizationRealPageGuid);
+            var rights = _manangeSecurityLogic.GetPersonaRightsAndActionsByRoute(_personaId, "sidemenu")?.obj?.ProductRights;
+            var filterRights = rights.Join(existingProducts, r => r.ProductId, ext => ext.ProductId, (r, ext) => r.RightName).ToList();
+
             if (_userClaims.ImpersonatedBy != Guid.Empty)
             {
                 // Pass GUID ID and Company Id  will get Persona Id Information.
                 var impersonatorPersonaList = _personaRepository.ListPersona(_userClaims.ImpersonatedBy);
                 var impersonatedUser = impersonatorPersonaList.FirstOrDefault(x => x.Organization.RealPageId.Equals(DefaultUserClaim.EmployeeCompanyRealPageId));
-                var Impersonarights = _manangeSecurityLogic.GetPersonaRightsAndActionsByRoute(impersonatedUser.PersonaId, "sidemenu")?.obj?.Rights;
-                if (Impersonarights != null)
+                var impersonatorRights = _manangeSecurityLogic.GetPersonaRightsAndActionsByRoute(impersonatedUser.PersonaId, "sidemenu")?.obj?.ProductRights;
+                var filteredImpersonatorRights = impersonatorRights.Join(existingProducts, r => r.ProductId, ext => ext.ProductId, (r, ext) => r.RightName).ToList();
+                if (filteredImpersonatorRights != null)
                 {
                     var productInternalSettingsByType = _productInternalSettingRepository.GetProductSettingByType("ImpersonationRightsToBeExcluded");
                     if (productInternalSettingsByType != null)
@@ -90,32 +95,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                         foreach (var productSetting in productInternalSettingsByType)
                         {
                             string[] types = productSetting.Value.Split(',');
-                            foreach (string right in Impersonarights.ToList())
+                            foreach (string right in filteredImpersonatorRights.ToList())
                             {
                                 if (types.Contains(right))
                                 {
-                                    Impersonarights.Remove(right);
+                                    filteredImpersonatorRights.Remove(right);
                                 }
                             }
                         }
                     }
                 }
-                foreach (var impersonateRightName in Impersonarights.ToList())
+                foreach (var impersonateRightName in filteredImpersonatorRights.ToList())
                 {
-                    if (!rights.Contains(impersonateRightName))
+                    if (!filterRights.Contains(impersonateRightName))
                     {
-                        rights.Add(impersonateRightName);
+                        filterRights.Add(impersonateRightName);
                     }
                 }
-                rights = rights.Distinct().OrderBy(x => x).ToList();
+                filterRights = filterRights.Distinct().OrderBy(x => x).ToList();
             }
+
+
             var navigationMenu = _userRepository.GetNavigationMenu();
             var navigationMenuRights = _userRepository.GetNavigationMenuRights();
             var navigationMenuSettingAccess = _userRepository.GetNavigationMenuSettingsUnaccessable(_orgPartyId);
 
             var filteredMenuEntries = navigationMenu.Where(
                 nmw => !navigationMenuRights.Any(w => w.NavigationMenuId == nmw.Id)
-                    || navigationMenuRights.Where(w => w.NavigationMenuId == nmw.Id).Any(a => rights.Contains(a.RightName))
+                    || navigationMenuRights.Where(w => w.NavigationMenuId == nmw.Id).Any(a => filterRights.Contains(a.RightName))
                 );
 
             var accessibleMenuEntries = filteredMenuEntries.Where(
