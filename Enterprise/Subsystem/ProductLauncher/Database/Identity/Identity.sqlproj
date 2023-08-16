@@ -1415,6 +1415,7 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\class.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\1486360-useraccess-summary-properties.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\July2023Release.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\AddingNewRightforUserManagement.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />

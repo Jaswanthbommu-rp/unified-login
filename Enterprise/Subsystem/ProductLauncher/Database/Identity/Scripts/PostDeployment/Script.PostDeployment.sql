@@ -40,7 +40,7 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\April2023release.sql
 :r .\PostDeploymentScripts\1486360-useraccess-summary-properties.sql
 :r .\PostDeploymentScripts\July2023Release.sql
-
+:r .\PostDeploymentScripts\AddingNewRightforUserManagement.sql
 
 -- keep these at the end!
 :r .\PostDeploymentScripts\UpdateStatistics.sql
