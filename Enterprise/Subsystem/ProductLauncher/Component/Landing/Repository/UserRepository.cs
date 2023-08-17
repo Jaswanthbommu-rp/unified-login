@@ -225,6 +225,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             OrganizationStatus currentPrimaryOrgStatus = null;
             ProductBatch gbProductBatch = new ProductBatch();
             ProductBatch primaryPropertiesBatch = new ProductBatch();
+            bool isDelegateAdminEnabled = GetUnifiedSettingData("delegateadministrators");
 
             long organizationPartyId = 0;
             long userId = 0;
@@ -1585,7 +1586,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     #endregion
 
                     #region enterprise roles Delegate User
-                    if (GetUnifiedSettingData("delegateadministrators") && newProfile.IsDelegateAdmin)
+                    if (isDelegateAdminEnabled && newProfile.IsDelegateAdmin)
                     {
                         List<int> templateRoleLists = newProfile.DelegateRoleTemplate?.RoleTemplateId?.ToList();
                         repositoryResponse = InsertUpdateDelegateAdminRole(repository, userLoginPersonaId, templateRoleLists, false);
@@ -5887,6 +5888,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             UserBatchEntity userBatchEntity;
             bool isFeatureUser = false;
             bool usePropertyInstances = getPropertyInstanceUnifiedLogin();
+            bool isDelegateAdmin = GetUnifiedSettingData("delegateadministrators");
 
             //We can get this with the oldProfile
             bool deleteOldPropertyInstanceMapping = false;
@@ -6431,7 +6433,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 isUpdateDelegateFlag = true;
                             }
                         }
-                        if (GetUnifiedSettingData("delegateadministrators") && (newProfileDelegate || oldProfileDelegate))
+                        if (isDelegateAdmin && (newProfileDelegate || oldProfileDelegate))
                         {
                             if ((updateUserProfileEntity.NewProfile.IsDelegateAdmin != updateUserProfileEntity.OldProfile.IsDelegateAdmin) || oldProfileDelegate)
                             {
