@@ -1585,14 +1585,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     #endregion
 
                     #region enterprise roles Delegate User
-                    if (GetUnifiedSettingData("delegateadministrators") && newProfile.IsDelegateAdmin)
+                    if (GetUnifiedSettingData("delegateadministrators"))
                     {
-                        List<int> templateRoleLists = newProfile.DelegateRoleTemplate?.RoleTemplateId?.ToList();
-                        repositoryResponse = InsertUpdateDelegateAdminRole(repository, userLoginPersonaId, templateRoleLists, false);
-                        if (repositoryResponse.Id == 0)
+                        if (newProfile.IsDelegateAdmin) 
                         {
-                            repositoryResponse.ErrorMessage = "Create Delegate Admin Role  failed.";
-                            throw new Exception(repositoryResponse.ErrorMessage);
+                            List<int> templateRoleLists = newProfile.DelegateRoleTemplate?.RoleTemplateId?.ToList();
+                            repositoryResponse = InsertUpdateDelegateAdminRole(repository, userLoginPersonaId, templateRoleLists, false);
+                            if (repositoryResponse.Id == 0)
+                            {
+                                repositoryResponse.ErrorMessage = "Create Delegate Admin Role  failed.";
+                                throw new Exception(repositoryResponse.ErrorMessage);
+                            }
                         }
                     }
                     #endregion
