@@ -186,7 +186,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				productResult.Products = ConvertDashboardProductsToRAUL(products);
 				productResult.Resources = ConvertDashboardProductsToRAUL(resources);
                 string userName = string.IsNullOrEmpty(_userClaims.ImpersonatedByName) ? _userClaims.FirstName + " " + _userClaims.LastName : " RealPage Access (" + _userClaims.ImpersonatedByName + ") ";
-                WriteToLog(LogEventLevel.Debug, $"Menu Item Admin & Support - Beginning for username {userName}");
+                WriteToLog(LogEventLevel.Debug, $"Menu Item Admin & Support - Beginning for username {userName} and time is {DateTime.UtcNow}");
                 if (productResult.Resources.Any(m => m.Id == 89))
                 {                 
                     IManageUnifiedSettings manageSettings = new ManageUnifiedSettings(_userClaims);
@@ -197,10 +197,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 					{
 						var adminSupportPortalResource = productResult.Resources.FirstOrDefault(m => m.Id == 89);
 						productResult.Resources.Remove(adminSupportPortalResource);
-					}
-					else
+                        WriteToLog(LogEventLevel.Debug, $"Admin&SupportPortal removed for user name : {userName} and setting value is: {settingValue} existence is {productResult.Resources.Any(m => m.Id == 89)} and time is {DateTime.UtcNow}");
+                    }
+                    else
                     { 
-                        WriteToLog(LogEventLevel.Debug, $"In Menu Item Admin & Support - included. {userName} and setting value is: {settingValue}");
+                        WriteToLog(LogEventLevel.Debug, $"In Menu Item Admin & Support - included. {userName} and setting value is: {settingValue} and time is {DateTime.UtcNow}");
                     }
                 }
 
