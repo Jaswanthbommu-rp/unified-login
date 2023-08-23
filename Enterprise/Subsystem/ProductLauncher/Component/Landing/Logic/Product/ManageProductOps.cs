@@ -58,9 +58,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             _opsBuyerUrl = _productInternalSettingList.First(a => a.Name.Equals("APIENDPOINT", StringComparison.OrdinalIgnoreCase)).Value;
             _client.BaseAddress = new Uri(_opsBuyerUrl);
-            // TODO REMOVE WHEN POSTING TO TRUSTED URL
-            //ServicePointManager.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
-            // TODO REMOVE WHEN POSTING TO TRUSTED URL
         }
 
         /// <summary>
@@ -90,10 +87,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _productRepository = productRepository;
             _opsBuyerUrl = _productInternalSettingList.First(a => a.Name.Equals("APIENDPOINT", StringComparison.OrdinalIgnoreCase)).Value; //"https://staging9.on-site.com/api/greenbook"; //
             _client.BaseAddress = new Uri(_opsBuyerUrl);
-
-            // TODO REMOVE WHEN POSTING TO TRUSTED URL
-            ServicePointManager.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
-            // TODO REMOVE WHEN POSTING TO TRUSTED URL
         }
         #endregion
 
