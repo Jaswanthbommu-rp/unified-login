@@ -117,8 +117,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					rolesResponse = manageProductBatch.GetProductRoles(editorPersona.PersonaId, userPersona.PersonaId, product.ProductId, userPersona.OrganizationPartyId, _userClaim);				
 					
 					propertiesResponse = manageProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(batch.EditorUserPersonaId, batch.SubjectUserPersonaId, product.ProductId);
-
-					if (propertiesResponse.Records?.Count > 0 && rolesResponse.Records?.Count > 0)
+                    
+                    if (propertiesResponse.Records?.Count > 0 && rolesResponse.Records?.Count > 0)
 					{
                         if (ProductEnumHelper.GetAoProductList().Contains((ProductEnum)product.ProductId))
                         {
@@ -181,9 +181,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 								if (propertiesToRemove?.Count > 0)
                                 {
 									productBatchRecord.InputJson.RemovedPropertyList = propertiesToRemove.Select(i => i.ToString()).ToList();
-								}
-							}							
-							productListToCreate.Add(productBatchRecord);
+								}                            
+                            }
+                            ListResponse userAssignedProperties = BatchHelper.GetUserAssignedPropertiesData(propertiesResponse);
+                            if (userAssignedProperties != null && userAssignedProperties.Records?.Count == 0)
+                            { 
+								productBatchRecord.InputJson.IsAssigned = false;                          
+                            }
+                            productListToCreate.Add(productBatchRecord);
                         }
                     }
 				}				
