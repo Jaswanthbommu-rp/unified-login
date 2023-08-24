@@ -364,10 +364,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <summary>
         /// Get Operators With Properties
         /// </summary>
-        public ListResponse GetOperatorsWithProperties(long editorPersonaId, long userPersonaId)
+        public ListResponse GetOperators(long editorPersonaId, long userPersonaId)
         {
             WriteToDiagnosticLog(
-                $"ManageProductAssetOptimization.GetOperatorsWithProperties at beginning of method for user with editorPersona id - {editorPersonaId} " +
+                $"ManageProductAssetOptimization.GetOperators at beginning of method for user with editorPersona id - {editorPersonaId} " +
                 $"and userPersonaId {userPersonaId}.");
             Dictionary<string, bool> allProperties = new Dictionary<string, bool>();
             var response = new ListResponse();
@@ -398,15 +398,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 };
 
                 WriteToDiagnosticLog(
-                    $"Exiting ManageProductAssetOptimization.GetOperatorsWithProperties method with total rows - {response.TotalRows} for user" +
+                    $"Exiting ManageProductAssetOptimization.GetOperators method with total rows - {response.TotalRows} for user" +
                     $" with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId}.");
             }
             catch (Exception ex)
             {
                 response.IsError = true;
-                response.ErrorReason = "There was a problem getting the GetOperatorsWithProperties.";
+                response.ErrorReason = "There was a problem getting the GetOperators.";
                 WriteToErrorLog(
-                    $"ManageProductAssetOptimization.GetOperatorsWithProperties Error for user with editorPersona id - {editorPersonaId} " +
+                    $"ManageProductAssetOptimization.GetOperators Error for user with editorPersona id - {editorPersonaId} " +
                     $"and userPersonaId {userPersonaId}.", exception: ex);
             }
 
@@ -427,7 +427,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             try
             {
                 ListResponse result = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
-                // to get _editorProductUserId
 
                 if (result.IsError)
                 {
@@ -447,7 +446,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 };
                 IList<ProductProperty> companyProperties = new List<ProductProperty>();
                 List<AoProperty> apiResponse = GetResultFromApi<IList<AoProperty>>(productPropertyApiUrl).ToList();
-				//var apiResponse = PostApiNew(productPropertyApiUrl,tag);
 				if (apiResponse != null)
 				{
 					foreach (var property in apiResponse)
@@ -459,10 +457,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						});
 					}
 				}
-
-
-
-
 				response = new ListResponse()
                 {
                     Records = companyProperties.Cast<object>().ToList(),

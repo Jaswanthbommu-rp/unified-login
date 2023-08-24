@@ -200,7 +200,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
 
             var manageProductAo = new ManageProductAssetOptimization(base._userClaims);
-            var result = manageProductAo.GetOperatorsWithProperties(editorPersonaId, userPersonaId);
+            var result = manageProductAo.GetOperators(editorPersonaId, userPersonaId);
 
             if (result.IsError)
                 Request.CreateResponse(HttpStatusCode.Forbidden, result);
