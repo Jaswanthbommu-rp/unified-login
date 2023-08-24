@@ -2339,7 +2339,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					{
 						result = userResult.ToString();
 					}
-
                 }
 				else
 				{
