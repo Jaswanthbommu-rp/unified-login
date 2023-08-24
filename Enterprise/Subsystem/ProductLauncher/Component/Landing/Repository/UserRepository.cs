@@ -1585,11 +1585,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                     #endregion
 
-                    #region enterprise roles Delegate User
+                    #region Enterprise roles Delegate User
                     if (isDelegateAdminEnabled && newProfile.IsDelegateAdmin)
                     {
                         List<int> templateRoleLists = newProfile.DelegateRoleTemplate?.RoleTemplateId?.ToList();
-                        repositoryResponse = InsertUpdateDelegateAdminRole(repository, userLoginPersonaId, templateRoleLists, false);
+                        repositoryResponse = InsertUpdateDelegateAdminRole(repository, userLoginPersonaId, templateRoleLists);
                         if (repositoryResponse.Id == 0)
                         {
                             repositoryResponse.ErrorMessage = "Create Delegate Admin Role  failed.";
@@ -6423,25 +6423,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         #endregion
 
                         #region update delegate roles
-                        bool isUpdateDelegateFlag = false;
                         bool oldProfileDelegate = updateUserProfileEntity.OldProfile.IsDelegateAdmin;
                         bool newProfileDelegate = updateUserProfileEntity.NewProfile.IsDelegateAdmin;
-                        if (oldProfileDelegate || newProfileDelegate)
-                        {
-                            if (!updateUserProfileEntity.NewProfile.IsDelegateAdmin)
-                            {
-                                isUpdateDelegateFlag = true;
-                            }
-                        }
                         if (isDelegateAdmin && (newProfileDelegate || oldProfileDelegate))
                         {
-                            if ((updateUserProfileEntity.NewProfile.IsDelegateAdmin != updateUserProfileEntity.OldProfile.IsDelegateAdmin) || oldProfileDelegate)
+                            if ((updateUserProfileEntity.NewProfile.IsDelegateAdmin != updateUserProfileEntity.OldProfile.IsDelegateAdmin))
                             {
                                 UpdateDelegateAdminStatus(repository, userLoginPersonaList[0].UserLoginPersonaId, updateUserProfileEntity.NewProfile.IsDelegateAdmin);
                             }
                                 // make db call here...
                             repositoryResponse = InsertUpdateDelegateAdminRole(repository, userLoginPersonaList[0].UserLoginPersonaId,
-                                                        updateUserProfileEntity.NewProfile.DelegateRoleTemplate.RoleTemplateId.ToList(), isUpdateDelegateFlag);
+                                                        updateUserProfileEntity.NewProfile.DelegateRoleTemplate.RoleTemplateId.ToList());
                             if (repositoryResponse.Id == 0)
                             {
                                 repositoryResponse.ErrorMessage = "Unable to Create  Delegate Template role to the User.";
@@ -6966,12 +6958,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             return repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_InsertUpdateRoleTemplateUserMapping, param);
         }
 
-        private RepositoryResponse InsertUpdateDelegateAdminRole(IRepository repository, long userLoginPersonaId, List<int> templateRoleLists, bool? isDelegateFlag)
+        private RepositoryResponse InsertUpdateDelegateAdminRole(IRepository repository, long userLoginPersonaId, List<int> templateRoleLists)
         {
             dynamic param = new
             {
                 UserLoginPersonaId = userLoginPersonaId,
-                IsDelegateFlag = isDelegateFlag,
                 TargetRoleTemplateLists = TableValueParamHelper.ConvertToTableValuedParameter(templateRoleLists, "enterprise.intlisttype")
             };
             return repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_InsertUpdateDelegateAdminTemplate, param);

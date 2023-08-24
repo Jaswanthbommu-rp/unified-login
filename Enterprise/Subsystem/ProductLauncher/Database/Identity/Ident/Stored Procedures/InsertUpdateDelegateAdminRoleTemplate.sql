@@ -1,7 +1,6 @@
 ﻿CREATE  PROCEDURE [Security].[InsertUpdateDelegateAdminRoleTemplate]            
 (            
  @UserLoginPersonaId BIGINT,
- @IsDelegateFlag BIT =0,
  @TargetRoleTemplateLists [Enterprise].[IntListType] READONLY         
 )          
 AS            
@@ -13,11 +12,6 @@ BEGIN
            RETURN;  
      END; 
     
-     IF @IsDelegateFlag =1
-        DELETE FROM [Security].[DelegatedAdminRoleTemplate] where UserLoginPersonaId = @UserLoginPersonaId;
-
-     IF @IsDelegateFlag =0
-     BEGIN
          IF NOT  EXISTS( SELECT 1  FROM [Security].[DelegatedAdminRoleTemplate] WHERE UserLoginPersonaId = @UserLoginPersonaId )     
          BEGIN
              INSERT INTO [Security].[DelegatedAdminRoleTemplate] (UserLoginPersonaId,RoleTemplateId)
@@ -37,7 +31,7 @@ BEGIN
 
               SELECT	@UserLoginPersonaId AS Id, '' AS ErrorMessage
          END
-     END
+     
   END TRY
   BEGIN CATCH
 		DECLARE @ErrorLogID int;
