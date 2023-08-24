@@ -359,21 +359,73 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			return response;
 		}
-        
+
 		/// <summary>
-        /// Get Operators With Properties
+        /// Get Operators
         /// </summary>
-        public ListResponse GetOperatorsWithProperties(long editorPersonaId, long userPersonaId)
+        public ListResponse GetOperators(long editorPersonaId, long userPersonaId)
         {
             WriteToDiagnosticLog(
-                $"ManageProductAssetOptimization.GetOperatorsWithProperties at beginning of method for user with editorPersona id - {editorPersonaId} " +
+                $"ManageProductAssetOptimization.GetOperators at beginning of method for user with editorPersona id - {editorPersonaId} " +
                 $"and userPersonaId {userPersonaId}.");
-
+            Dictionary<string, bool> allProperties = new Dictionary<string, bool>();
             var response = new ListResponse();
             try
             {
                 ListResponse result = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
-                // to get _editorProductUserId
+                IList<tag> objAoOperatorList = new List<tag>();
+                if (result.IsError)
+                {
+                    WriteToErrorLog(
+                        "ManageProductAssetOptimization.GetCompanies.GetCompanyEditorAndUserDetails error for user " +
+                        $"with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId} - {result.ErrorReason}");
+                    return result;
+                }
+                CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
+                string aoCompanyId = company.CompanyInstanceSourceId;
+                string productPropertyApiUrl = $"{_apiEndPoint}company/{aoCompanyId}/delegated/operators"; //https://aoqa.realpage.com/ysconfig/ws/company/2772/delegated/operators
+                objAoOperatorList = GetResultFromApi<IList<tag>>(productPropertyApiUrl).ToList();
+                
+                response = new ListResponse()
+                {
+                    Records = objAoOperatorList.Cast<object>().ToList(),
+                    TotalRows = objAoOperatorList.Count,
+                    RowsPerPage = objAoOperatorList.Count,
+                    ErrorReason = string.Empty,
+                    TotalPages = 1,
+                    Additional = allProperties
+                };
+
+                WriteToDiagnosticLog(
+                    $"Exiting ManageProductAssetOptimization.GetOperators method with total rows - {response.TotalRows} for user" +
+                    $" with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId}.");
+            }
+            catch (Exception ex)
+            {
+                response.IsError = true;
+                response.ErrorReason = "There was a problem getting the GetOperators.";
+                WriteToErrorLog(
+                    $"ManageProductAssetOptimization.GetOperators Error for user with editorPersona id - {editorPersonaId} " +
+                    $"and userPersonaId {userPersonaId}.", exception: ex);
+            }
+
+            return response;
+        }
+
+
+        /// <summary>
+        /// Get Properties With Operators
+        /// </summary>
+        public ListResponse GetPropertiesWithOperators(long editorPersonaId, long userPersonaId, string operatorCode, string operatorValue)
+        {
+            WriteToDiagnosticLog(
+                $"ManageProductAssetOptimization.GetPropertiesWithOperators at beginning of method for user with editorPersona id - {editorPersonaId} " +
+                $"and userPersonaId {userPersonaId}.");
+            Dictionary<string, bool> allProperties = new Dictionary<string, bool>();
+            var response = new ListResponse();
+            try
+            {
+                ListResponse result = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
 
                 if (result.IsError)
                 {
@@ -385,38 +437,55 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
                 string aoCompanyId = company.CompanyInstanceSourceId;
 
-                string productPropertyApiUrl = $"{_apiEndPoint}company/{aoCompanyId}/delegated/properties"; //https://aoqa.realpage.com/ysconfig/ws/company/2772/delegated/properties
-                AoOperatorProperties objAoOperatorPropertiesList = new AoOperatorProperties();
-				objAoOperatorPropertiesList = GetResultFromApi<AoOperatorProperties>(productPropertyApiUrl);
-                response = new ListResponse()
+                string productPropertyApiUrl = $"{_apiEndPoint}company/{aoCompanyId}/delegated/properties?operatorCode={operatorCode}&operatorValue={operatorValue}"; //https://aoqa.realpage.com/ysconfig/ws/company/7434/delegated/properties?operatorCode=Kai_Tag&operatorValue=Kai2
+                var tag = new tag
                 {
-                    Records = objAoOperatorPropertiesList.tags.Cast<object>().ToList(),
-                    TotalRows = objAoOperatorPropertiesList.tags.Count(),
-                    RowsPerPage = 9999,
+                    operatorCode = operatorCode,
+					operatorValue = operatorValue
+                };
+                IList<ProductProperty> companyProperties = new List<ProductProperty>();
+                List<AoProperty> apiResponse = GetResultFromApi<IList<AoProperty>>(productPropertyApiUrl).ToList();
+				if (apiResponse != null)
+				{
+					foreach (var property in apiResponse)
+					{
+						companyProperties.Add(new ProductProperty
+						{
+							ID = property.PropertyId.ToString(),
+							Name = property.PropertyName
+						});
+					}
+				}
+				response = new ListResponse()
+                {
+                    Records = companyProperties.Cast<object>().ToList(),
+                    TotalRows = companyProperties.Count,
+                    RowsPerPage = companyProperties.Count,
                     ErrorReason = string.Empty,
-                    TotalPages = 1
+                    TotalPages = 1,
+                    Additional = allProperties
                 };
 
                 WriteToDiagnosticLog(
-                    $"Exiting ManageProductAssetOptimization.GetOperatorsWithProperties method with total rows - {response.TotalRows} for user" +
+                    $"Exiting ManageProductAssetOptimization.GetPropertiesWithOperators method with total rows - {response.TotalRows} for user" +
                     $" with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId}.");
             }
             catch (Exception ex)
             {
                 response.IsError = true;
-                response.ErrorReason = "There was a problem getting the GetOperatorsWithProperties.";
+                response.ErrorReason = "There was a problem getting the GetPropertiesWithOperators.";
                 WriteToErrorLog(
-                    $"ManageProductAssetOptimization.GetOperatorsWithProperties Error for user with editorPersona id - {editorPersonaId} " +
+                    $"ManageProductAssetOptimization.GetPropertiesWithOperators Error for user with editorPersona id - {editorPersonaId} " +
                     $"and userPersonaId {userPersonaId}.", exception: ex);
             }
 
             return response;
         }
 
-		/// <summary>
-		/// Get product Properties
-		/// </summary>
-		public ListResponse GetProductProperties(long editorPersonaId, long userPersonaId, string productName, RequestParameter datafilter, string userLoginName = "")
+        /// <summary>
+        /// Get product Properties
+        /// </summary>
+        public ListResponse GetProductProperties(long editorPersonaId, long userPersonaId, string productName, RequestParameter datafilter, string userLoginName = "")
 		{
 			WriteToDiagnosticLog(
 				$"ManageProductAssetOptimization.GetProductProperties at beginning of method for user with editorPersona id - {editorPersonaId} " +
@@ -2247,7 +2316,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			return results;
 		}
 
-		private string PostApi(string baseUrlAndQuery, object inputObject)
+        private string PostApi(string baseUrlAndQuery, object inputObject)
 		{
 			string result = string.Empty;
 
@@ -2270,7 +2339,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					{
 						result = userResult.ToString();
 					}
-				}
+                }
 				else
 				{
 					var jsonContent = response.Content.ReadAsStringAsync().Result;
@@ -3107,11 +3176,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         [JsonProperty("propertyAttributeCode")] public string PropertyAttributeCode { get; set; }
         [JsonProperty("propertyAttributeValue")] public string PropertyAttributeValue { get; set; }
         [JsonProperty("properties")] public IList<AoProperty> Properties { get; set; }
+        [JsonProperty("tags")] public IList<tags> tag { get; set; }
 
     }
 
+    public class tag
+    {
+        [JsonProperty("operatorCode")] public string operatorCode { get; set; }
+        [JsonProperty("operatorValue")] public string operatorValue { get; set; }
 
-	public class AOUser
+    }
+
+    public class AOUser
 	{
 		[JsonProperty("login")] public string Login { get; set; }
 
