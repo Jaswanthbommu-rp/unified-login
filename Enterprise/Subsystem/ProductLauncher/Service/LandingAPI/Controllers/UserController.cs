@@ -17,6 +17,8 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityCo
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.Security;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Rum;
+using Serilog;
+using Serilog.Events;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
@@ -183,15 +185,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				IList<PersonaProductUserDetails> resources = manageProduct.GetUserAssignedProductsByPersona(persona: persona, productSelectType: ProductSelectType.ResourcesOnly, security: security);
 				productResult.Products = ConvertDashboardProductsToRAUL(products);
 				productResult.Resources = ConvertDashboardProductsToRAUL(resources);
+                string userName = string.IsNullOrEmpty(_userClaims.ImpersonatedByName) ? _userClaims.FirstName + " " + _userClaims.LastName : " RealPage Access (" + _userClaims.ImpersonatedByName + ") ";
+                WriteToLog(LogEventLevel.Debug, $"Menu Item Admin & Support - Beginning for username {userName}");
                 if (productResult.Resources.Any(m => m.Id == 89))
-                {
+                {                 
                     IManageUnifiedSettings manageSettings = new ManageUnifiedSettings(_userClaims);
                     var internalSettings = manageSettings.GetUnifiedSettings("security", _orgPartyId);
 					var supportPortalTileAccess = internalSettings.FirstOrDefault(a => a.Name == "hidesupportportaltile");
+					string settingValue = supportPortalTileAccess == null ? "null" : supportPortalTileAccess.Value;
                     if (supportPortalTileAccess == null || supportPortalTileAccess.Value == "1")
-                    {
-                        var adminSupportPortalResource = productResult.Resources.FirstOrDefault(m => m.Id == 89);
-                        productResult.Resources.Remove(adminSupportPortalResource);
+					{
+						var adminSupportPortalResource = productResult.Resources.FirstOrDefault(m => m.Id == 89);
+						productResult.Resources.Remove(adminSupportPortalResource);
+					}
+					else
+                    { 
+                        WriteToLog(LogEventLevel.Debug, $"In Menu Item Admin & Support - included. {userName} and setting value is: {settingValue}");
                     }
                 }
 
@@ -205,12 +214,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			return Request.CreateResponse(HttpStatusCode.OK, output);
 		}
 
-		/// <summary>
-		/// Used to return the product list of the user to the RAUL UI component
-		/// </summary>
-		/// <param name="products"></param>
-		/// <returns></returns>
-		private List<UserProducts> ConvertDashboardProductsToRAUL(IList<PersonaProductUserDetails> products)
+        /// <summary>
+        /// Used to return the product list of the user to the RAUL UI component
+        /// </summary>
+        /// <param name="products"></param>
+        /// <returns></returns>
+        private List<UserProducts> ConvertDashboardProductsToRAUL(IList<PersonaProductUserDetails> products)
 		{
 			ManageProduct manageProduct = new ManageProduct(_userClaims);
 			var productIconSettings = manageProduct.GetProductSettingByType("ProductIcon");
@@ -242,12 +251,40 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			return productList.OrderBy(p => p.FamilyName).ThenBy(p => p.Name).ToList();
 		}
 
-		/// <summary>
-		/// Get a user Profile detail for clone
-		/// </summary>
-		/// <param name="realPageId">User unique identifier</param>
-		/// <returns>Profile object</returns>
-		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when Profile object have invalid entries)")]
+        /// <summary>
+        /// Used to write to the log
+        /// </summary>
+        private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
+        {
+            try
+            {
+                string correlationId = "";
+                if (_userClaims != null)
+                {
+                    correlationId = (_userClaims.CorrelationId != Guid.Empty) ? _userClaims.CorrelationId.ToString() : "";
+
+                }
+                var logger = Log.Logger;
+                if (logData?.Keys != null)
+                {
+                    logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
+                }
+                logger = logger.ForContext("ProductModule", this.GetType());
+                logger = logger.ForContext("CorrelationId", correlationId);
+                logger.Write(logType, exception, message);
+            }
+            catch
+            {
+                /*ignored*/
+            }
+        }
+
+        /// <summary>
+        /// Get a user Profile detail for clone
+        /// </summary>
+        /// <param name="realPageId">User unique identifier</param>
+        /// <returns>Profile object</returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when Profile object have invalid entries)")]
 		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
 		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
 		[SwaggerResponse(HttpStatusCode.OK, Description = "Get a profile for a Person (User)", Type = typeof(IProfileDetail))]

@@ -455,13 +455,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         public const string SP_GetNavigationMenu = "Enterprise.GetNavigationMenu";
         public const string SP_GetNavigationMenuRights = "Enterprise.GetNavigationMenuRights";
 
-        //Enterpriserole
+        //Enterprise role
         public const string SP_GetRoleTemplateProductRoleMappings = "Security.GetRoleTemplateProductRolesMappings";
         public const string SP_GetEnterpriseRoleProductsByOrganization = "Security.GetEnterpriseRoleProductsByOrganization";
         public const string SP_GetEnterpriseRoleUpdatedProductsByRoleTemplateId = "Security.GetEnterpriseRoleUpdatedProductsByRoleTemplateId";
         public const string SP_GetEnterpriseRoleDeletedProductsByRoleTemplateId = "Security.GetEnterpriseRoleDeletedProductsByRoleTemplateId";
         public const string SP_GetUserRoleTemplate = "Security.GetUserRoleTemplate";
         public const string SP_GetEnterpriseRoleNewProductsByRoleTemplateId = "Security.GetEnterpriseRoleNewProductsByRoleTemplateId";
+        public const string SP_GetEnterpriseDelegateRole = "Security.GetDelegateAdminRoleTemaplte";
+        public const string SP_InsertUpdateDelegateAdminTemplate = "Security.InsertUpdateDelegateAdminRoleTemplate";
+        public const string SP_UpdateDelegateAdminStatus = "Security.UpdateDelegateAdminStatus";
+        
 
         //AD groups
         public const string SP_GetADGroupsForUser = "Security.GetADGroupsByPersona";

@@ -54,9 +54,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			_marketingCenterApiSourceID = _productInternalSettingList.First(a => a.Name.Equals("MarketingCenterApiSourceID", StringComparison.OrdinalIgnoreCase)).Value;
 			_username = Encoding.UTF8.GetString(Convert.FromBase64String(_productInternalSettingList.First(a => a.Name.Equals("APIUSERNAME", StringComparison.OrdinalIgnoreCase)).Value));
 			_password = Encoding.UTF8.GetString(Convert.FromBase64String(_productInternalSettingList.First(a => a.Name.Equals("APIPASSWORD", StringComparison.OrdinalIgnoreCase)).Value));
-			// TODO REMOVE WHEN POSTING TO TRUSTED URL
-			ServicePointManager.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
-			// TODO REMOVE WHEN POSTING TO TRUSTED URL
 			_client.BaseAddress = new Uri(_productUrl);
 			_client.SetBasicAuthentication(_username, _password);
 			var credCache = new CredentialCache();
@@ -96,9 +93,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			_marketingCenterApiSourceID = _productInternalSettingList.First(a => a.Name.Equals("MARKETINGCENTERAPISOURCEID", StringComparison.OrdinalIgnoreCase)).Value;
 			_username = Encoding.UTF8.GetString(Convert.FromBase64String(_productInternalSettingList.First(a => a.Name.Equals("APIUSERNAME", StringComparison.OrdinalIgnoreCase)).Value));
 			_password = Encoding.UTF8.GetString(Convert.FromBase64String(_productInternalSettingList.First(a => a.Name.Equals("APIPASSWORD", StringComparison.OrdinalIgnoreCase)).Value));
-			// TODO REMOVE WHEN POSTING TO TRUSTED URL
-			ServicePointManager.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
-			// TODO REMOVE WHEN POSTING TO TRUSTED URL
 
 			_httpClient = new HttpClient(httpMessageHandler);
         }

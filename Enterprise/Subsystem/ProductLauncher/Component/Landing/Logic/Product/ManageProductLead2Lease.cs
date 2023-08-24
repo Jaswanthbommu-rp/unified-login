@@ -51,9 +51,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _blueBook = new Logic.ManageBlueBook(userClaims);
             _apiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIENDPOINT").Value;
             _mtApiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "MTAPIENDPOINT").Value;           
-            // TODO REMOVE WHEN POSTING TO TRUSTED URL
-            ServicePointManager.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
-            // TODO REMOVE WHEN POSTING TO TRUSTED URL
             _httpClient = new HttpClient();
         }
 
