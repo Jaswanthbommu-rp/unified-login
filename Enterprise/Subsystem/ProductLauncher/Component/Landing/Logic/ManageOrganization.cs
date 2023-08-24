@@ -1011,19 +1011,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
             else
             {
-                //booksPropertyInstance = GetPropertyInstanceForCompanyByOperatorId(companyInstanceId, operatorInstanceId.Value);
-                //Getting UPFM Properties
-                booksPropertyInstance = GetPropertyInstanceFromBooks(companyInstanceId);
-                //var enterpriseProperties = _manageUnifiedLogin.GetEnterpriseProperties(editorPersonaId, null);
-                UPFMProperty uPFMProperty = new UPFMProperty();
-                uPFMProperty.id = booksPropertyInstance.Select(a => a.attributes.propertyInstanceSourceId).ToList();
-                //Get Properties based on the operator selection
-                var aoLogic = new ManageProductAssetOptimization(_defaultUserClaim);
-                var aoProperties = aoLogic.GetOperators(_defaultUserClaim.PersonaId, userPersonaId);
-                IList<ProductProperty> companyProperties = new List<ProductProperty>();
-
-                var productResult = _manageBlueBook.TranslateProductPrimaryPropertiesData(uPFMProperty, 4, aoProperties);
-                booksPropertyInstance = GetPropertyInstanceFromBooks(companyInstanceId);
+                booksPropertyInstance = GetPropertyInstanceForCompanyByOperatorId(companyInstanceId, operatorInstanceId.Value);
             }
 
             if (domain != null)

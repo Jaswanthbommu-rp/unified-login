@@ -2337,10 +2337,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				{
 					var jsonContent = response.Content.ReadAsStringAsync().Result;
 					dynamic userResult = JsonConvert.DeserializeObject<dynamic>(jsonContent);
-					//if (userResult != null)
-					//{
-					//	result = userResult.ToString();
-					//}
+					if (userResult != null)
+					{
+						result = userResult.ToString();
+					}
 					result = userResult;
 
                 }
