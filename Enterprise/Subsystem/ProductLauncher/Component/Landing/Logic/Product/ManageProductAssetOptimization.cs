@@ -2316,8 +2316,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			return results;
 		}
 
-        
-
         private string PostApi(string baseUrlAndQuery, object inputObject)
 		{
 			string result = string.Empty;
@@ -2341,7 +2339,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					{
 						result = userResult.ToString();
 					}
-					result = userResult;
 
                 }
 				else
