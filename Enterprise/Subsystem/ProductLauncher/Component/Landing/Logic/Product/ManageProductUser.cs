@@ -831,19 +831,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     if (successRecords != null && successRecords.Count > 0)
                     {
                         WriteToLog(LogEventLevel.Debug, $"Batch process for success count : {successRecords.Count} ");
-                        var message = GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, successRecords, true, impersonatorUserInfo);
-                        WriteToLog(LogEventLevel.Debug, $"Batch process for success message : {message} ");
-                        _activityLogHelper.PushToQueue(fromUserLogInfo, toUserLogInfo, message, "PRODUCT_ACCESS");
+                        GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, successRecords, true, impersonatorUserInfo, fromPersonaId);
                     }
 
                     var failedRecords = data.Where(x => x.StatusTypeId == 7).ToList();
                     if (failedRecords != null && failedRecords.Count > 0)
                     {
                         WriteToLog(LogEventLevel.Debug, $"Batch process for failed count : {failedRecords.Count} ");
-                        var message = GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, failedRecords, false, impersonatorUserInfo);
-                        WriteToLog(LogEventLevel.Debug, $"Batch process for failed message : {message} ");
-                        _activityLogHelper.PushToQueue(fromUserLogInfo, toUserLogInfo, message, "PRODUCT_ACCESS");
-                        SendNotification(message + " Please contact RealPage Support for assistance.", fromPersonaId);
+                        GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, failedRecords, false, impersonatorUserInfo, fromPersonaId);
                     }
 
                     //update status
@@ -852,22 +847,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
-        private string GenerateQueueMessage(UserActivityLogInfo fromUserLogInfo, UserActivityLogInfo toUserLogInfo, List<UserBatchProductDetail> userBatchProductDetails, bool IsSuccess, UserDetails impersonatorUserInfo)
+        private void GenerateQueueMessage(UserActivityLogInfo fromUserLogInfo, UserActivityLogInfo toUserLogInfo, List<UserBatchProductDetail> userBatchProductDetails, bool IsSuccess, UserDetails impersonatorUserInfo, long fromPersonaId = 0)
         {
-            string message = "";
-
+           
             List<string> assinedProducts = new List<string>();
             List<string> unassignedProducts = new List<string>();
 
-            string assignedMessage = "";
-            string unassignedMessage = "";
             WriteToLog(LogEventLevel.Debug, $"Batch process for GenerateQueueMessage : {IsSuccess} userBatchProductDetails {userBatchProductDetails.Count} ");
             if (IsSuccess)
             {
-                message = impersonatorUserInfo != null
-                    ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) updated access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName}:"
-                    : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} updated access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName}:";
-
                 foreach (var item in userBatchProductDetails)
                 {
                     if (item.IsAssigned)
@@ -888,13 +876,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                 }
                 if (assinedProducts.Count > 0)
-                    assignedMessage = " Access was granted to " + string.Join(", ", assinedProducts) + ".";
+                {
+                    var assign = impersonatorUserInfo != null
+                   ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) updated access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName}:"
+                   : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} updated access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName}:";
 
+                    assign  += " Access was granted to " + string.Join(", ", assinedProducts) + ".";
+                    WriteToLog(LogEventLevel.Debug, $"Batch process for success message : {assign} ");
+                    _activityLogHelper.PushToQueue(fromUserLogInfo, toUserLogInfo, assign, "PRODUCT_ACCESS");
+                }
                 if (unassignedProducts.Count > 0)
-                    unassignedMessage = " Access was unassigned from " + string.Join(", ", unassignedProducts) + ".";
+                {
+                  var  unassign = impersonatorUserInfo != null
+                   ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) updated access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName}:"
+                   : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} updated access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName}:";
 
-                message += assignedMessage;
-                message += unassignedMessage;
+                    unassign += " Access was unassigned from " + string.Join(", ", unassignedProducts) + ".";
+                    WriteToLog(LogEventLevel.Debug, $"Batch process for success message : {unassign} ");
+                    _activityLogHelper.PushToQueue(fromUserLogInfo, toUserLogInfo, unassign, "PRODUCT_ACCESS");
+                }
             }
             else
             {
@@ -912,12 +912,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 var commaString = string.Join(", ", failedProducts);
-                message = impersonatorUserInfo != null
+                var  message = impersonatorUserInfo != null
                     ? $"An exception occurred when RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) attempted to update product access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName} in {commaString}."
                     : $"An exception occurred when {fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} attempted to update product access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName} in {commaString}.";
-            }
 
-            return message;
+                WriteToLog(LogEventLevel.Debug, $"Batch process for failed message : {message} ");
+                _activityLogHelper.PushToQueue(fromUserLogInfo, toUserLogInfo, message, "PRODUCT_ACCESS");
+                SendNotification(message + " Please contact RealPage Support for assistance.", fromPersonaId);
+            }
         }
 
         private List<string> GetAOProductsForActivity(UserBatchProductDetail inputAOItem, bool isAssigned, int statusTypeId)
