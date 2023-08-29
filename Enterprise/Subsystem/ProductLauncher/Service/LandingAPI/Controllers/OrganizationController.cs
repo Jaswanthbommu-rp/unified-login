@@ -1192,7 +1192,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [Route("CompanySetup/CompanyPropertyList")]
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         [HttpPost]
-        public HttpResponseMessage GetPropertiesForCompany(Guid companyInstanceId, [FromBody] List<Guid> selectedProperties, string domain = null, string propertyName = null, int? blueId = null, int? status = null, [FromUri] RequestParameter datafilter = null, long userPersonaId = 0, long editorPersonaId = 0, bool? isSelectedProperties = null, [FromUri] Guid? operatorInstanceId = null)
+        public HttpResponseMessage GetPropertiesForCompany(Guid companyInstanceId, [FromBody] List<Guid> selectedProperties, string domain = null, string propertyName = null, int? blueId = null, int? status = null, [FromUri] RequestParameter datafilter = null, long userPersonaId = 0, long editorPersonaId = 0, bool? isSelectedProperties = null, [FromUri] string operatorCode = null, [FromUri] string operatorValue = null)
         {
             if (companyInstanceId == Guid.Empty)
             {
@@ -1213,18 +1213,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             if (!FeatureFlag.GetUserCompanyAssociationFeatureFlag())
             {
-                operatorInstanceId = null;
+                operatorCode = null;
             }
             else
             {
-                if (operatorInstanceId.HasValue)
+                if (string.IsNullOrEmpty(operatorCode) && string.IsNullOrEmpty(operatorValue))
                 {
-                    cacheKey = $"getPropertyInstanceForCompanyByOperatorId_{companyInstanceId}_{operatorInstanceId}";
+                    cacheKey = $"getPropertyInstanceForCompanyByOperatorId_{companyInstanceId}_{operatorCode}_{operatorValue}";
                 }
             }
 
             RPObjectCache.RemoveFromCache(cacheKey);
-            List<CompanyPropertySetup> companyPropertySetup = _manageOrganization.GetPropertiesForCompany(companyInstanceId, propertyName, domain, blueId, status, globals, editorPersonaId, userPersonaId, isSelectedProperties, selectedProperties, operatorInstanceId);
+            List<CompanyPropertySetup> companyPropertySetup = _manageOrganization.GetPropertiesForCompany(companyInstanceId, propertyName, domain, blueId, status, globals, editorPersonaId, userPersonaId, isSelectedProperties, selectedProperties, operatorCode,operatorValue);
 
             int totalRecords = 0;
             if (companyPropertySetup.Count > 0)
