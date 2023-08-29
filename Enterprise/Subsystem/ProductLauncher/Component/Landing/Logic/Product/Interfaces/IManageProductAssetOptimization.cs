@@ -1,4 +1,6 @@
-﻿namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces
+﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+
+namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces
 {
     /// <summary>
     /// 
