@@ -482,6 +482,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return response;
         }
 
+
         /// <summary>
         /// Get product Properties
         /// </summary>
