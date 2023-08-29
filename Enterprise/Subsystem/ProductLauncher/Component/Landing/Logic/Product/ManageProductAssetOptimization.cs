@@ -23,6 +23,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityCo
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using RP.Enterprise.Foundation.DataAccess.Component;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -69,7 +70,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			_manageOrganization = new ManageOrganization(userClaims);
 
 			WriteToDiagnosticLog("ManageProductAssetOptimization.Ctor - Received Product settings.");
-		}		
+		}
+		public ManageProductAssetOptimization(DefaultUserClaim userClaims, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.AssetOptimizer, userClaims, productInternalSettingRepository: null, productRepository: null)
+		{
+			WriteToDiagnosticLog("ManageProductAssetOptimization.Ctor - Getting Product settings.");
+			_productId = (int)ProductEnum.AssetOptimizer;
+			_productInternalSettingRepository = new ProductInternalSettingRepository();
+			_editorRealPageId = userClaims.UserRealPageGuid;
+			_userClaims = userClaims;
+			_blueBook = new ManageBlueBook(userClaims);
+
+			_apiEndPoint = _productInternalSettingList.First(a => a.Name.Equals("APIEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
+			_apiUser = _productInternalSettingList.First(a => a.Name.Equals("APIUserName", StringComparison.OrdinalIgnoreCase)).Value;
+			_apiPassword =
+				Encoding.UTF8.GetString(
+					Convert.FromBase64String(
+						_productInternalSettingList.First(a => a.Name.Equals("APIPassword", StringComparison.OrdinalIgnoreCase)).Value));
+			_aoSuperUser = _productInternalSettingList.First(a => a.Name.Equals("ProductSuperUserLoginName", StringComparison.OrdinalIgnoreCase)).Value;
+            _manageOrganization = new ManageOrganization(userClaims);
+            WriteToDiagnosticLog("ManageProductAssetOptimization.Ctor - Received Product settings.");
+
+		}
+
 
 		#endregion
 

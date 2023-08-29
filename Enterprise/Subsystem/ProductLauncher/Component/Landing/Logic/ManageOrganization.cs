@@ -61,8 +61,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private IManageUser _manageUser;
         private IManagePartyRole _managePartyRole;
         private DefaultUserClaim _defaultUserClaim;
+        private IManageProductAssetOptimization _manageProductAssetOptimization;
         #endregion
-        
+
         #region Constructors
 
         /// <summary>
@@ -92,6 +93,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _managePartyRole = new ManagePartyRole(repository);
             _integrationTypeFactory = new IntegrationTypeFactory(_manageProduct, _manageUnifiedLogin, null, _productRepository,
                 _productInternalSettingRepository, userClaim);
+            _manageProductAssetOptimization = new ManageProductAssetOptimization(userClaim, _productInternalSettingRepository,_productRepository);
         }
 
         /// <summary>
@@ -120,6 +122,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _managePartyRole = new ManagePartyRole(repository);
             _integrationTypeFactory = new IntegrationTypeFactory(_manageProduct, _manageUnifiedLogin, null, _productRepository,
                 _productInternalSettingRepository, userClaim);
+            _manageProductAssetOptimization = new ManageProductAssetOptimization(userClaim, _productInternalSettingRepository, _productRepository);
         }
 
         /// <summary>
@@ -1015,8 +1018,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 booksPropertyInstance = GetPropertyInstanceFromBooks(companyInstanceId);
                 UPFMProperty uPFMProperty = new UPFMProperty();
                 uPFMProperty.id = booksPropertyInstance.Select(a => a.attributes.propertyInstanceSourceId).ToList();
-                var aoLogic = new ManageProductAssetOptimization(_defaultUserClaim);
-                var aoProperties = aoLogic.GetPropertiesWithOperators(_defaultUserClaim.PersonaId, userPersonaId,operatorCode,operatorValue);
+                //var aoLogic = new ManageProductAssetOptimization(_defaultUserClaim);
+                //ManageProductAssetOptimization aoLogic = new ManageProductAssetOptimization(_defaultUserClaim);
+                var aoProperties = _manageProductAssetOptimization.GetPropertiesWithOperators(_defaultUserClaim.PersonaId, userPersonaId,operatorCode,operatorValue);
                 var productResult = _manageBlueBook.TranslateProductPrimaryPropertiesData(uPFMProperty, 4, aoProperties);
                 var propertyList  = productResult.Records.Cast<ProductProperty>().ToList().Where(c => c.InstanceId != null).Select(a => a.InstanceId);
                 booksPropertyInstance = booksPropertyInstance?.Where(a => propertyList.Contains(a.attributes.propertyInstanceSourceId)).ToList();
