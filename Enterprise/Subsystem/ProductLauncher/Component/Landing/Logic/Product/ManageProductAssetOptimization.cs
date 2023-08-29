@@ -69,8 +69,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			_manageOrganization = new ManageOrganization(userClaims);
 
 			WriteToDiagnosticLog("ManageProductAssetOptimization.Ctor - Received Product settings.");
-		}		
-
+		}
+		
 		#endregion
 
 		#region Public Methods

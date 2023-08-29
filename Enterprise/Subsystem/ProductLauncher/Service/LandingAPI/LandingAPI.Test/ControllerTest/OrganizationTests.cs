@@ -2072,6 +2072,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             //string _companyRealPageId = companyRealPageId.ToString();
 
             Guid operatorRealPageId = new Guid("22222222-2222-2222-2222-222222222222");
+            string operatorCode = "operatorcode";
+            string operatorValue = "operatorvalue";
             //string _operatorRealPageId = operatorRealPageId.ToString();
 
             var propertySetupList = new List<PropertySetup>()
@@ -2173,7 +2175,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/propertyinstance?scope[operatedBy]={companyRealPageId},UPFM,{operatorRealPageId}&page[size]=9999&include=customerPropertyMap.customerProperty&fields[propertyinstance]=propertyInstanceId,propertyInstanceSourceId,propertyName,source,domain,address&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName", responseMapResource);
             _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/propertyinstance?scope[operatedBy]={operatorRealPageId},UPFM,{companyRealPageId}&page[size]=9999&include=customerPropertyMap.customerProperty&fields[propertyinstance]=propertyInstanceId,propertyInstanceSourceId,propertyName,source,domain,address&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName", responseEmptyMapResource);
 
-            HttpResponseMessage response = organizationController.GetPropertiesForCompany(companyRealPageId, null, null, null, operatorInstanceId: operatorRealPageId);
+            HttpResponseMessage response = organizationController.GetPropertiesForCompany(companyRealPageId, null, null, null, operatorCode: operatorCode, operatorValue: operatorValue);
             ObjectListOutput<CompanyPropertySetup, IErrorData> propertyOutput = new ObjectListOutput<CompanyPropertySetup, IErrorData>();
             propertyOutput = response.Content.ReadAsAsync<ObjectListOutput<CompanyPropertySetup, IErrorData>>().Result;
 
@@ -2182,7 +2184,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             Assert.True(propertyOutput.list[0].Property[0].InstanceId == setup[0].Property[0].InstanceId);
             Assert.True(propertyOutput.list[0].Domain[0] == setup[0].Domain[0]);
 
-            response = organizationController.GetPropertiesForCompany(operatorRealPageId, null, null, null, operatorInstanceId: companyRealPageId);
+            response = organizationController.GetPropertiesForCompany(operatorRealPageId, null, null, null, operatorCode: operatorCode, operatorValue: operatorValue);
             propertyOutput = response.Content.ReadAsAsync<ObjectListOutput<CompanyPropertySetup, IErrorData>>().Result;
             Assert.Equal(0, propertyOutput.list[0].Property.Count);
         }

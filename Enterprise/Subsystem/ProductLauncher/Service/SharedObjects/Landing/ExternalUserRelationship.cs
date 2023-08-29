@@ -13,5 +13,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         public string ThirdPartyCompanyName { get; set; }
 
         public Guid? ThirdPartyCompanyRealPageId { get; set; }
+
+        public string OperatorCode { get; set; }
+        public string OperatorValue { get; set; }
     }
 }

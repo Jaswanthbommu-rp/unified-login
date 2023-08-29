@@ -139,24 +139,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <returns>Company list</returns>
 		List<CompanySetup> GetCompanyList(string organizationName, int domain, int? blueId, int organizationId, IDictionary<object, object> globals);
 
-		/// <summary>
-		/// Get Properties for a Organization
-		/// </summary>
-		/// <param name="companyInstanceId">companyInstanceId</param>
-		/// <param name="propertyName">PropertyName</param>
-		/// <param name="domain">Domain</param>
-		/// <param name="blueId">blueId</param>
-		/// <param name="status">Status</param>
-		/// <param name="globals">datafilter</param>
-		/// <param name="editorPersonaId">editorPersonaId</param>
-		/// <param name="userPersonaId">userPersonaId</param>
-		/// <param name="isSelectedProperties">isSelectedProperties</param>
-		/// <param name="selectedProperties">selected/Unselected Properties</param>
-		/// <param name="operatorInstanceId">The guid of the operator to filter the property list to</param>
-		/// <returns>List of Properties for a company </returns>
-		List<CompanyPropertySetup> GetPropertiesForCompany(Guid companyInstanceId, string propertyName = null, string domain = null, int? blueId = null, 
+        /// <summary>
+        /// Get Properties for a Organization
+        /// </summary>
+        /// <param name="companyInstanceId">companyInstanceId</param>
+        /// <param name="propertyName">PropertyName</param>
+        /// <param name="domain">Domain</param>
+        /// <param name="blueId">blueId</param>
+        /// <param name="status">Status</param>
+        /// <param name="globals">datafilter</param>
+        /// <param name="editorPersonaId">editorPersonaId</param>
+        /// <param name="userPersonaId">userPersonaId</param>
+        /// <param name="isSelectedProperties">isSelectedProperties</param>
+        /// <param name="selectedProperties">selected/Unselected Properties</param>
+        /// <param name="operatorCode">The Code of the operator to filter the property list to</param>
+        /// <param name="operatorValue">The Value of the operator to filter the property list to</param>
+        /// <returns>List of Properties for a company </returns>
+        List<CompanyPropertySetup> GetPropertiesForCompany(Guid companyInstanceId, string propertyName = null, string domain = null, int? blueId = null, 
 							int? status = null, IDictionary<object, object> globals = null, long editorPersonaId = 0, long userPersonaId = 0, 
-							bool? isSelectedProperties = null, List<Guid> selectedProperties = null, Guid? operatorInstanceId = null);
+							bool? isSelectedProperties = null, List<Guid> selectedProperties = null, string operatorCode = null, string operatorValue = null);
 
 		/// <summary>
 		/// Get Property By PropertyId

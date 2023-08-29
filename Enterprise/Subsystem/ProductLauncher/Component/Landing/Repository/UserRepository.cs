@@ -1568,7 +1568,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 UserLoginPersonaId = userLoginPersonaId,
                                 ThirdPartyRelationshipId = newProfile.ExternalUserRelationship.ThirdPartyRelationShipId,
                                 CompanyName = newProfile.ExternalUserRelationship.ThirdPartyCompanyName,
-                                ThirdPartyCompanyRealPageId = newProfile.ExternalUserRelationship.ThirdPartyCompanyRealPageId
+                                ThirdPartyCompanyRealPageId = newProfile.ExternalUserRelationship.ThirdPartyCompanyRealPageId,
+                                OperatorCode = newProfile.ExternalUserRelationship.OperatorCode,
+                                OperatorValue = newProfile.ExternalUserRelationship.OperatorValue
                             };
 
                             repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateExternalUserRelationship, param);
@@ -6399,7 +6401,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                     UserLoginPersonaId = updateUserProfileEntity.NewProfile.ExternalUserRelationship.UserLoginPersonaId,
                                     ThirdPartyRelationshipId = updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyRelationShipId,
                                     CompanyName = updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyCompanyName,
-                                    ThirdPartyCompanyRealPageId = updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyCompanyRealPageId
+                                    ThirdPartyCompanyRealPageId = updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyCompanyRealPageId,
+                                    OperatorCode = updateUserProfileEntity.NewProfile.ExternalUserRelationship.OperatorCode,
+                                    OperatorValue = updateUserProfileEntity.NewProfile.ExternalUserRelationship.OperatorValue
                                 };
 
                                 repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateExternalUserRelationship, param);
@@ -6997,15 +7001,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 {
                     if (oldData.ThirdPartyRelationShipId == 1)
                     {
-                        if (oldData.ThirdPartyCompanyRealPageId != newData.ThirdPartyCompanyRealPageId)
+                        if (oldData.OperatorValue != newData.OperatorValue)
                         {
-                            var organization = _organizationRepository.GetOrganization(newData.ThirdPartyCompanyRealPageId);
+                            //var organization = _organizationRepository.GetOrganization(newData.ThirdPartyCompanyRealPageId);
 
                             additionalParams.Add(new AdditionalParameters()
                             {
                                 Key = "Operator",
-                                Value = "{\"old\" : \"" + oldData.ThirdPartyCompanyName + "\", \"new\" : \""
-                                        + organization.Name + "\"}"
+                                Value = "{\"old\" : \"" + oldData.OperatorValue + "\", \"new\" : \""
+                                        + newData.OperatorValue + "\"}"
                             });
                         }
                     }
@@ -7034,11 +7038,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     //if changed to 1
                     if (newData.ThirdPartyRelationShipId == 1)
                     {
-                        var organization = _organizationRepository.GetOrganization(newData.ThirdPartyCompanyRealPageId);
+                        //var organization = _organizationRepository.GetOrganization(newData.ThirdPartyCompanyRealPageId);
                         additionalParams.Add(new AdditionalParameters()
                         {
                             Key = "Operator",
-                            Value = "{\"old\" : \"\", \"new\" : \"" + organization.Name + "\"}"
+                            Value = "{\"old\" : \"\", \"new\" : \"" + newData.OperatorValue + "\"}"
                         });
                     }
                     //if changed away from 1

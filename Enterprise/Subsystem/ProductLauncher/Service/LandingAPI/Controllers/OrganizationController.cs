@@ -1164,35 +1164,36 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
         }
 
-		#endregion
+        #endregion
 
-		#region Property
+        #region Property
 
-		#region Get Properties for a Organization
+        #region Get Properties for a Organization
 
-		/// <summary>
-		/// Get Properties for a Organization
-		/// </summary>
-		/// <param name="companyInstanceId">companyInstanceId</param>
-		/// <param name="propertyName">PropertyName</param>
-		/// <param name="domain">Domain</param>
-		/// <param name="blueId">blueId</param>
-		/// <param name="status"></param>
-		/// <param name="datafilter">datafilter</param>
-		/// <param name="userPersonaId">userPersonaId</param>
-		/// <param name="editorPersonaId">editorPersonaId</param>
-		/// <param name="isSelectedProperties">isSelectedProperties</param>
-		/// <param name="selectedProperties"></param>
-		/// <param name="operatorInstanceId">The guid of the operator to filter the property list to</param>
-		/// <returns>List of Properties for a company </returns>
-		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        /// <summary>
+        /// Get Properties for a Organization
+        /// </summary>
+        /// <param name="companyInstanceId">companyInstanceId</param>
+        /// <param name="propertyName">PropertyName</param>
+        /// <param name="domain">Domain</param>
+        /// <param name="blueId">blueId</param>
+        /// <param name="status"></param>
+        /// <param name="datafilter">datafilter</param>
+        /// <param name="userPersonaId">userPersonaId</param>
+        /// <param name="editorPersonaId">editorPersonaId</param>
+        /// <param name="isSelectedProperties">isSelectedProperties</param>
+        /// <param name="selectedProperties"></param>
+        /// <param name="operatorCode">The code of the operator to filter the property list to</param>
+        /// <param name="operatorValue">The value of the operator to filter the property list to</param>
+        /// <returns>List of Properties for a company </returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about a list of Properties for an Organization", Type = typeof(CompanyPropertySetup))]
         [SwaggerResponseExamples(typeof(CompanyPropertySetup), typeof(PropertyListExample))]
         [Route("CompanySetup/CompanyPropertyList")]
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         [HttpPost]
-        public HttpResponseMessage GetPropertiesForCompany(Guid companyInstanceId, [FromBody] List<Guid> selectedProperties, string domain = null, string propertyName = null, int? blueId = null, int? status = null, [FromUri] RequestParameter datafilter = null, long userPersonaId = 0, long editorPersonaId = 0, bool? isSelectedProperties = null, [FromUri] Guid? operatorInstanceId = null)
+        public HttpResponseMessage GetPropertiesForCompany(Guid companyInstanceId, [FromBody] List<Guid> selectedProperties, string domain = null, string propertyName = null, int? blueId = null, int? status = null, [FromUri] RequestParameter datafilter = null, long userPersonaId = 0, long editorPersonaId = 0, bool? isSelectedProperties = null, [FromUri] string operatorCode = null, [FromUri] string operatorValue = null)
         {
             if (companyInstanceId == Guid.Empty)
             {
@@ -1213,18 +1214,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             if (!FeatureFlag.GetUserCompanyAssociationFeatureFlag())
             {
-                operatorInstanceId = null;
+                operatorCode = null;
             }
             else
             {
-                if (operatorInstanceId.HasValue)
+                if (string.IsNullOrEmpty(operatorCode) && string.IsNullOrEmpty(operatorValue))
                 {
-                    cacheKey = $"getPropertyInstanceForCompanyByOperatorId_{companyInstanceId}_{operatorInstanceId}";
+                    cacheKey = $"getPropertyInstanceForCompanyByOperatorId_{companyInstanceId}_{operatorCode}_{operatorValue}";
                 }
             }
 
             RPObjectCache.RemoveFromCache(cacheKey);
-            List<CompanyPropertySetup> companyPropertySetup = _manageOrganization.GetPropertiesForCompany(companyInstanceId, propertyName, domain, blueId, status, globals, editorPersonaId, userPersonaId, isSelectedProperties, selectedProperties, operatorInstanceId);
+            List<CompanyPropertySetup> companyPropertySetup = _manageOrganization.GetPropertiesForCompany(companyInstanceId, propertyName, domain, blueId, status, globals, editorPersonaId, userPersonaId, isSelectedProperties, selectedProperties, operatorCode,operatorValue);
 
             int totalRecords = 0;
             if (companyPropertySetup.Count > 0)

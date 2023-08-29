@@ -1,4 +1,6 @@
-﻿namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces
+﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+
+namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces
 {
     /// <summary>
     /// 
@@ -22,5 +24,16 @@
 		/// <returns></returns>
 		string UpdateUserProfile(long editorPersonaId, long userPersonaId);
 
-	}
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="editorPersonaId"></param>
+        /// <param name="userPersonaId"></param>
+        /// <param name="operatorCode"></param>
+        /// <param name="operatorValue"></param>
+
+        /// <returns></returns>
+        ListResponse GetPropertiesWithOperators(long editorPersonaId, long userPersonaId, string operatorCode, string operatorValue);
+
+    }
 }

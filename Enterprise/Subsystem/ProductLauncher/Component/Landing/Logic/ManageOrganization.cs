@@ -989,9 +989,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         #endregion
 
         #region GetPropertiesForCompany
-        public List<CompanyPropertySetup> GetPropertiesForCompany(Guid companyInstanceId, string propertyName = null, string domain = null, 
-                        int? blueId = null, int? status = null, IDictionary<object, object> globals = null, long editorPersonaId = 0, 
-                        long userPersonaId = 0, bool? isSelectedProperties = null, List<Guid> selectedProperties = null, Guid? operatorInstanceId = null)
+        public List<CompanyPropertySetup> GetPropertiesForCompany(Guid companyInstanceId, string propertyName = null, string domain = null,
+                        int? blueId = null, int? status = null, IDictionary<object, object> globals = null, long editorPersonaId = 0,
+                        long userPersonaId = 0, bool? isSelectedProperties = null, List<Guid> selectedProperties = null, string operatorCode = null, string operatorValue = null)
         {
             RequestParameter dataFilter = new RequestParameter();
 
@@ -1005,13 +1005,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             List<int> userProperties = null;
             List<BooksPropertyInstance> booksPropertyInstance = null;
 
-            if (!operatorInstanceId.HasValue)
+            if (string.IsNullOrEmpty(operatorCode) || string.IsNullOrEmpty(operatorValue))
             {
                 booksPropertyInstance = GetPropertyInstanceFromBooks(companyInstanceId);
             }
             else
             {
-                booksPropertyInstance = GetPropertyInstanceForCompanyByOperatorId(companyInstanceId, operatorInstanceId.Value);
+                booksPropertyInstance = GetPropertyInstanceFromBooks(companyInstanceId);
+                UPFMProperty uPFMProperty = new UPFMProperty();
+                uPFMProperty.id = booksPropertyInstance.Select(a => a.attributes.propertyInstanceSourceId).ToList();
+                var aoLogic = new ManageProductAssetOptimization(_defaultUserClaim);
+                var aoProperties = aoLogic.GetPropertiesWithOperators(_defaultUserClaim.PersonaId, userPersonaId,operatorCode,operatorValue);
+                var productResult = _manageBlueBook.TranslateProductPrimaryPropertiesData(uPFMProperty, 4, aoProperties);
+                var propertyList  = productResult.Records.Cast<ProductProperty>().ToList().Where(c => c.InstanceId != null).Select(a => a.InstanceId);
+                booksPropertyInstance = booksPropertyInstance?.Where(a => propertyList.Contains(a.attributes.propertyInstanceSourceId)).ToList();
             }
 
             if (domain != null)
