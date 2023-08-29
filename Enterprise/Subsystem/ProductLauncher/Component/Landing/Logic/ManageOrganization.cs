@@ -69,7 +69,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <summary>
         /// Unit Test Constructor
         /// </summary>
-        public ManageOrganization(IRepository repository, DefaultUserClaim userClaim, HttpMessageHandler messageHandler)
+        public ManageOrganization(IRepository repository, DefaultUserClaim userClaim, HttpMessageHandler messageHandler,IManageProductAssetOptimization manageProductAssetOptimization = null)
         {
             _defaultUserClaim = userClaim;
             _organizationRepository = new OrganizationRepository(repository);
@@ -93,7 +93,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _managePartyRole = new ManagePartyRole(repository);
             _integrationTypeFactory = new IntegrationTypeFactory(_manageProduct, _manageUnifiedLogin, null, _productRepository,
                 _productInternalSettingRepository, userClaim);
-            _manageProductAssetOptimization = new ManageProductAssetOptimization(userClaim, _productInternalSettingRepository,_productRepository);
+            _manageProductAssetOptimization = manageProductAssetOptimization;
         }
 
         /// <summary>
@@ -122,7 +122,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _managePartyRole = new ManagePartyRole(repository);
             _integrationTypeFactory = new IntegrationTypeFactory(_manageProduct, _manageUnifiedLogin, null, _productRepository,
                 _productInternalSettingRepository, userClaim);
-            _manageProductAssetOptimization = new ManageProductAssetOptimization(userClaim, _productInternalSettingRepository, _productRepository);
+            //_manageProductAssetOptimization = new ManageProductAssetOptimization(userClaim, _productInternalSettingRepository, _productRepository);
         }
 
         /// <summary>
@@ -151,6 +151,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _managePartyRole = new ManagePartyRole();
             _integrationTypeFactory = new IntegrationTypeFactory(_manageProduct, _manageUnifiedLogin, null, _productRepository,
                 _productInternalSettingRepository, userClaim);
+            _manageProductAssetOptimization = new ManageProductAssetOptimization(userClaim);
         }
 
         #endregion

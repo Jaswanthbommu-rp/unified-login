@@ -41,6 +41,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		private readonly string _aoSuperUser;
 		private DefaultUserClaim _userClaims;
 		private IManageOrganization _manageOrganization;
+		private IOrganizationRepository _organizationRepository;
 
 		const int CacheTimeSeconds = 300;
 		#endregion
@@ -53,7 +54,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="userClaims">DefaultUserClaim of user</param>
 		public ManageProductAssetOptimization(DefaultUserClaim userClaims) : base((int)ProductEnum.AssetOptimizer, userClaims, productInternalSettingRepository: null, productRepository: null)
         {
-			WriteToDiagnosticLog("ManageProductAssetOptimization.Ctor - Getting Product settings.");
+			
 			_productId = (int)ProductEnum.AssetOptimizer;
 			_productInternalSettingRepository = new ProductInternalSettingRepository();
 			_editorRealPageId = userClaims.UserRealPageGuid;
@@ -67,30 +68,31 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					Convert.FromBase64String(
 						_productInternalSettingList.First(a => a.Name.Equals("APIPassword", StringComparison.OrdinalIgnoreCase)).Value));
 			_aoSuperUser = _productInternalSettingList.First(a => a.Name.Equals("ProductSuperUserLoginName", StringComparison.OrdinalIgnoreCase)).Value;
-			_manageOrganization = new ManageOrganization(userClaims);
+			//_manageOrganization = new ManageOrganization(userClaims);
+			_organizationRepository = new OrganizationRepository(userClaims);
 
-			WriteToDiagnosticLog("ManageProductAssetOptimization.Ctor - Received Product settings.");
-		}
-		public ManageProductAssetOptimization(DefaultUserClaim userClaims, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.AssetOptimizer, userClaims, productInternalSettingRepository: null, productRepository: null)
-		{
-			WriteToDiagnosticLog("ManageProductAssetOptimization.Ctor - Getting Product settings.");
-			_productId = (int)ProductEnum.AssetOptimizer;
-			_productInternalSettingRepository = new ProductInternalSettingRepository();
-			_editorRealPageId = userClaims.UserRealPageGuid;
-			_userClaims = userClaims;
-			_blueBook = new ManageBlueBook(userClaims);
 
-			_apiEndPoint = _productInternalSettingList.First(a => a.Name.Equals("APIEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
-			_apiUser = _productInternalSettingList.First(a => a.Name.Equals("APIUserName", StringComparison.OrdinalIgnoreCase)).Value;
-			_apiPassword =
-				Encoding.UTF8.GetString(
-					Convert.FromBase64String(
-						_productInternalSettingList.First(a => a.Name.Equals("APIPassword", StringComparison.OrdinalIgnoreCase)).Value));
-			_aoSuperUser = _productInternalSettingList.First(a => a.Name.Equals("ProductSuperUserLoginName", StringComparison.OrdinalIgnoreCase)).Value;
-            _manageOrganization = new ManageOrganization(userClaims);
-            WriteToDiagnosticLog("ManageProductAssetOptimization.Ctor - Received Product settings.");
+        }
+		//public ManageProductAssetOptimization(DefaultUserClaim userClaims, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.AssetOptimizer, userClaims, productInternalSettingRepository: null, productRepository: null)
+		//{
+		//	WriteToDiagnosticLog("ManageProductAssetOptimization.Ctor - Getting Product settings.");
+		//	_productId = (int)ProductEnum.AssetOptimizer;
+		//	_productInternalSettingRepository = new ProductInternalSettingRepository();
+		//	_editorRealPageId = userClaims.UserRealPageGuid;
+		//	_userClaims = userClaims;
+		//	_blueBook = new ManageBlueBook(userClaims);
 
-		}
+		//	_apiEndPoint = _productInternalSettingList.First(a => a.Name.Equals("APIEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
+		//	_apiUser = _productInternalSettingList.First(a => a.Name.Equals("APIUserName", StringComparison.OrdinalIgnoreCase)).Value;
+		//	_apiPassword =
+		//		Encoding.UTF8.GetString(
+		//			Convert.FromBase64String(
+		//				_productInternalSettingList.First(a => a.Name.Equals("APIPassword", StringComparison.OrdinalIgnoreCase)).Value));
+		//	_aoSuperUser = _productInternalSettingList.First(a => a.Name.Equals("ProductSuperUserLoginName", StringComparison.OrdinalIgnoreCase)).Value;
+  //          _manageOrganization = new ManageOrganization(userClaims);
+  //          WriteToDiagnosticLog("ManageProductAssetOptimization.Ctor - Received Product settings.");
+
+		//}
 
 
 		#endregion
@@ -860,11 +862,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					FirstName = person.FirstName,
 					LastName = person.LastName,
 				};
-				
-				List<CompanySetup> companyList = _manageOrganization.GetCompanyList(persona.Organization.Name, 0, null, 0, new Dictionary<object, object>());
-				isRealpageAccessUser = companyList.Where(a => a.RealPageAccessUser == productUserGbLogin.LoginName).Distinct().Count() > 0;
 
-				if (isRealpageAccessUser)
+				//List<CompanySetup> companyList = _manageOrganization.GetCompanyList(persona.Organization.Name, 0, null, 0, new Dictionary<object, object>());
+				var companyAdmin = _organizationRepository.GetOrganizationAdminUserRealPageId(persona.Organization.RealPageId);
+
+				if (companyAdmin == realPageId)
 				{
 					WriteToDiagnosticLog(
 						$"ManageProductAssetOptimization.ManageAssetOptimizationUser Begining realpage access user creation process with editorPersona id - {editorPersonaId} and userPersonaId {productUserPersonaId}.");

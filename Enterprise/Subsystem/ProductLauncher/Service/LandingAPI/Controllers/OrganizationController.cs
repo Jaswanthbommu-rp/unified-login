@@ -38,6 +38,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
     /// </summary>
     public class OrganizationController : BaseApiController
     {
+        #region Private variables
+
+        private IRepositoryResponse _repositoryResponse;
+        private IOrganizationProductRepository _organizationProductRepository;
+        private IManageOrganizationProduct _manageOrganizationProduct;
+        private IManageCustomFields _manageCustomFields;
+        private IManageUserLogin _manageUserLogin;
+        private IManagePartyRelationship _managePartyRelationship;
+        private IManageOrganization _manageOrganization;
+        private IManageBlueBook _manageBlueBook;
+        private IProductInternalSettingRepository _productInternalSettingRepository;
+        private HttpMessageHandler _messageHandler;
+        private IPropertyRepository _propertyRepository;
+        private IRepository _repository;
+        private IManageProductOneSite _manageProductOneSite;
+        private IManageProduct _manageProduct;
+        private IManageCredential _manageCredential;
+
+        #endregion
         #region Constructor
 
         /// <summary>
@@ -80,7 +99,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// <param name="repositoryResponse"></param>
         /// <param name="messageHandler"></param>
         /// <param name="userClaims"></param>
-        public OrganizationController(IRepository repository, IRepositoryResponse repositoryResponse, HttpMessageHandler messageHandler, ILdClient ldClient, DefaultUserClaim userClaims)
+        public OrganizationController(IRepository repository, IRepositoryResponse repositoryResponse, HttpMessageHandler messageHandler, ILdClient ldClient, IManageProductAssetOptimization manageProductAssetOptimization,DefaultUserClaim userClaims)
         {
             _repository = repository;
             _repositoryResponse = repositoryResponse;
@@ -90,13 +109,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _managePartyRelationship = new ManagePartyRelationship(new PartyRelationshipRepository(repository));
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
             _manageBlueBook = new ManageBlueBook(userClaims, repository, _productInternalSettingRepository, messageHandler);
-            _manageOrganization = new ManageOrganization(repository, userClaims, messageHandler);
+            _manageOrganization = new ManageOrganization(repository, userClaims, messageHandler,manageProductAssetOptimization);
             _messageHandler = messageHandler;
             _userClaims = userClaims;
             _propertyRepository = new PropertyRepository(repository);
             _manageProduct = new ManageProduct(repository, userClaims, messageHandler);
             _manageOrganizationProduct = new ManageOrganizationProduct(userClaims, repository, _manageBlueBook, _manageProduct);
             FeatureFlag.LdClient = ldClient;
+            
         }
 
         /// <summary>
@@ -145,25 +165,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
         #endregion
 
-        #region Private variables
-
-        private IRepositoryResponse _repositoryResponse;
-        private IOrganizationProductRepository _organizationProductRepository;
-        private IManageOrganizationProduct _manageOrganizationProduct;
-        private IManageCustomFields _manageCustomFields;
-        private IManageUserLogin _manageUserLogin;
-        private IManagePartyRelationship _managePartyRelationship;
-        private IManageOrganization _manageOrganization;
-        private IManageBlueBook _manageBlueBook;
-        private IProductInternalSettingRepository _productInternalSettingRepository;
-        private HttpMessageHandler _messageHandler;
-        private IPropertyRepository _propertyRepository;
-        private IRepository _repository;
-        private IManageProductOneSite _manageProductOneSite;
-        private IManageProduct _manageProduct;
-        private IManageCredential _manageCredential;
-
-        #endregion
+       
 
         #region Public Organization Methods
 
