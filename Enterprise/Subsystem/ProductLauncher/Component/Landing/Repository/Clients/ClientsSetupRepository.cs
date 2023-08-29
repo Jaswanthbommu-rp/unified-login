@@ -4,25 +4,32 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityCo
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Foundation.DataAccess.Component;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Clients
 {
-	public class ClientsSetupRepository : BaseRepository
-	{
+	public class ClientsSetupRepository : BaseRepository, IClientsSetupRepository
+    {
 		#region Constructor
 
 		/// <summary>
 		/// Profile base Constructor
 		/// </summary>
 		public ClientsSetupRepository() : base(DbConnectionEnum.IdpConfigurationDb) { }
-		#endregion
 
-		#region Client
-		/// <summary>
-		/// Get a list of clients and their details
-		/// </summary>
-		/// <returns></returns>
-		public IEnumerable<Client> GetClientsWithDetails()
+        public ClientsSetupRepository(IRepository repository) : base(repository)
+        {
+        }
+
+        #endregion
+
+        #region Client
+        /// <summary>
+        /// Get a list of clients and their details
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<Client> GetClientsWithDetails()
 		{
 			IEnumerable<Client> clientList = null;
 			IEnumerable<ClientRedirectUri> clientRedirectUris = GetClientRedirectUri();

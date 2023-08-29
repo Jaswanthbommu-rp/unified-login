@@ -9,9 +9,11 @@ BEGIN
 	SET NOCOUNT OFF;
 	DELETE FROM [Auth].[ClientScopes] 
 	WHERE 
-		(([Id] = @Original_ClientScopeId) 
+		[Id] = @Original_ClientScopeId
 		AND 
-		([ClientId] = @Original_ClientId) 
+		[ClientId] = @Original_ClientId
 		AND 
-		([Scope] = @Original_Scope))
+		[Scope] = @Original_Scope
+
+	SELECT @@RowCount [RowsAffected]
 END

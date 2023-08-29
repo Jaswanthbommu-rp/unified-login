@@ -698,10 +698,6 @@
     <Build Include="Auth\Stored Procedures\ClientSecretsInsert.sql" />
     <Build Include="Auth\Stored Procedures\ClientSecretsUpdate.sql" />
     <Build Include="Auth\Stored Procedures\ClientSecretsDelete.sql" />
-    <Build Include="Auth\Stored Procedures\ScopesSelect.sql" />
-    <Build Include="Auth\Stored Procedures\ScopesInsert.sql" />
-    <Build Include="Auth\Stored Procedures\ScopesUpdate.sql" />
-    <Build Include="Auth\Stored Procedures\ScopesDelete.sql" />
     <Build Include="Auth\Stored Procedures\ScopeSecretsSelect.sql" />
     <Build Include="Auth\Stored Procedures\ScopeSecretsInsert.sql" />
     <Build Include="Auth\Stored Procedures\ScopeSecretsUpdate.sql" />
@@ -1308,6 +1304,9 @@
     <Build Include="RoleRightsManagement\Stored Procedures\GetDelegateAdminRoleTemaplte.sql" />
     <Build Include="Ident\Stored Procedures\UpdateDelegateAdminStatus.sql" />
     <Build Include="Ident\Stored Procedures\InsertUpdateDelegateAdminRoleTemplate.sql" />
+    <Build Include="Auth\Stored Procedures\ApiScopesDelete.sql" />
+    <Build Include="Auth\Stored Procedures\ApiScopesInsert.sql" />
+    <Build Include="Auth\Stored Procedures\ApiScopesUpdate.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

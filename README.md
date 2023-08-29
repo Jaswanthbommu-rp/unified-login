@@ -4,8 +4,8 @@
 Repo | Framework
 --- | ---
 [unified-login-main](https://tfs.realpage.com/tfs/Realpage/Unity/_git/unified-login-main) | `.net 4.8`
-[unified-login-core](https://tfs.realpage.com/tfs/Realpage/Unity/_git/unified-login-core) | `asp.net core 3.1`
-[unified-login-coreapi](https://tfs.realpage.com/tfs/Realpage/Unity/_git/unified-login-coreapi) | `asp.net core 6.0`
+[unified-login-core](https://tfs.realpage.com/tfs/Realpage/Unity/_git/unified-login-core) | `asp.net core 6`
+[unified-login-coreapi](https://tfs.realpage.com/tfs/Realpage/Unity/_git/unified-login-coreapi) | `asp.net core 6`
 [unified-login-landing](https://tfs.realpage.com/tfs/Realpage/Unity/_git/unified-login-landing) | `Angular 8`
 
 **Note** Database projects are part of `uniifed-login-main` Repository
@@ -14,9 +14,9 @@ Repo | Framework
  | | | 
 --- | ---
 UI| Angular
-API| .Net Framework 4.8, Core 3.1, Core 6.0
+API| .Net Framework 4.8, Core 6.0
 DB| MSSQL server
-Auth| Identity Server 4
+Auth| Duende Identity Server
 Logs| Realpage Serilog
 Messaging| Kafka queues
 Feature Toggle| Launch Darkly

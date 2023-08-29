@@ -14,13 +14,17 @@ BEGIN
 		, [Value]
 		, [Type]
 		, [Description]
-		, [Expiration]) 
+		, [Expiration]
+		, [Created]
+		) 
 	VALUES 
 		(@ClientId
 		, @Value
 		, @Type
 		, @Description
-		, @Expiration);
+		, @Expiration
+		, GETUTCDATE()	
+	);
 	
 	SELECT 
 		 Id

@@ -13,4 +13,6 @@ BEGIN
 		(([Id] = @Original_ClientRedirectUriId) 
 		AND ([ClientId] = @Original_ClientId) 
 		AND ((@IsNull_Uri = 1 AND [RedirectUri] IS NULL) OR ([RedirectUri] = @Original_Uri)))
+	
+	SELECT @@RowCount [RowsAffected]
 END

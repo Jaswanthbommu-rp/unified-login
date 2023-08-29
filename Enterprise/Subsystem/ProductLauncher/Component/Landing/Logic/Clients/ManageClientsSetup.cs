@@ -1,4 +1,8 @@
-﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Clients;
+﻿using System.Collections.Generic;
+using System.Linq;
+using RP.Enterprise.Foundation.DataAccess.Component;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Clients;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
@@ -6,13 +10,11 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Clients
 {
-    public class ManageClientsSetup
-	{
+    public class ManageClientsSetup : IManageClientsSetup
+    {
 		#region Private Variables
 		private DefaultUserClaim _userClaims;
 		private readonly ClientsSetupRepository _clientsSetupRepository;
@@ -30,8 +32,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Client
 			_clientsSetupRepository = clientsSetupRepository;
 		}
 
-		#region Client
-		public IEnumerable<Client> GetClientsWithDetails()
+        /// <summary>
+		/// Default constructor
+		/// </summary>
+		/// <param name="userClaim"></param>
+        public ManageClientsSetup(DefaultUserClaim userClaim)
+        {
+            _userClaims = userClaim;
+            _clientsSetupRepository = new ClientsSetupRepository();
+        }
+
+        /// <summary>
+		/// Unit test constructor
+		/// </summary>
+		/// <param name="userClaim"></param>
+		/// <param name="repository"></param>
+        public ManageClientsSetup(DefaultUserClaim userClaim, IRepository repository)
+        {
+            _userClaims = userClaim;
+            _clientsSetupRepository = new ClientsSetupRepository(repository);
+        }
+
+        #region Client
+        public IEnumerable<Client> GetClientsWithDetails()
 		{
 			return _clientsSetupRepository.GetClientsWithDetails();
 		}
