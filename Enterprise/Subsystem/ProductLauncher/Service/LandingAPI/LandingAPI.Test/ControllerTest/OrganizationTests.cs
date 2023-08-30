@@ -2072,8 +2072,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         {
             //Arrange		
             Guid companyRealPageId = new Guid("11111111-1111-1111-1111-111111111111");
-            //string _companyRealPageId = companyRealPageId.ToString();
-
+            
             string operatorCode = "operatorcode";
             string operatorValue = "operatorvalue";
             var propertySetupList = new List<PropertySetup>()
@@ -2210,15 +2209,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                     It.IsAny<Guid>()
                 ))
                 .Returns(mapResource);
-
-            //HttpResponseMessage responseMapResource = new HttpResponseMessage(HttpStatusCode.OK);
-            //var jsonToSave = JsonConvert.SerializeObject(mapResource, new JsonApiSerializerSettings());
-            //responseMapResource.Content = new StringContent("{\"data\":[{\"type\":\"bookspropertyinstance\",\"attributes\":{\"propertyInstanceId\":\"1005251854\",\"propertyInstanceSourceId\":\"003b0509-1189-49dc-bbe6-01c5b6277a83\",\"propertyName\":\"COBBLESTONE COVE\",\"source\":\"UPFM\",\"domain\":\"Primary\",\"deletedReason\":\"Deprecated Field\"}}]}");
-
-            //HttpResponseMessage responseEmptyMapResource = new HttpResponseMessage(HttpStatusCode.NotFound);
-
-            //_mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/propertyinstance?scope[operatedBy]={companyRealPageId},UPFM,{operatorRealPageId}&page[size]=9999&include=customerPropertyMap.customerProperty&fields[propertyinstance]=propertyInstanceId,propertyInstanceSourceId,propertyName,source,domain,address&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName", responseMapResource);
-            //_mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/propertyinstance?scope[operatedBy]={operatorRealPageId},UPFM,{companyRealPageId}&page[size]=9999&include=customerPropertyMap.customerProperty&fields[propertyinstance]=propertyInstanceId,propertyInstanceSourceId,propertyName,source,domain,address&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName", responseEmptyMapResource);
 
             var booksTranslateOneSiteJson = "{\n\t\"data\": {\n\t\t\"type\": \"propertyinstancetranslations\",\n\t\t\"attributes\": [\n\t\t\t{\n\t\t\t\t\"propertyInstanceSourceId\": \"a5192995-aaaa-bbbb-8df2-f30f1b8dc752\",\n\t\t\t\t\"source\": \"UPFM\",\n\t\t\t\t\"translatedPropertyInstances\": [\n\t\t\t\t\t{\n\t\t\t\t\t\t\"source\": \"AO\",\n\t\t\t\t\t\t\"propertyInstanceSourceId\": \"e89233ef-6fae-4da6-8953-8a2b6814c960\"\n\t\t\t\t\t}\n\t\t\t\t]\n\t\t\t},\n\t\t\t{\n\t\t\t\t\"propertyInstanceSourceId\": \"a5192995-aaaa-bbbb-8df2-f30f1b8dc752\",\n\t\t\t\t\"source\": \"UPFM\",\n\t\t\t\t\"translatedPropertyInstances\": [\n\t\t\t\t\t{\n\t\t\t\t\t\t\"source\": \"AB\",\n\t\t\t\t\t\t\"propertyInstanceSourceId\": \"7654321\"\n\t\t\t\t\t}\n\t\t\t\t]\n\t\t\t}\n\t\t]\n\t}\n}";
             HttpResponseMessage booksTranslateOneSiteResponse = new HttpResponseMessage(HttpStatusCode.OK);

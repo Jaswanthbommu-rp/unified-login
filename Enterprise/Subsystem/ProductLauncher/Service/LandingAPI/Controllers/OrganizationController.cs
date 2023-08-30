@@ -1216,6 +1216,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             if (!FeatureFlag.GetUserCompanyAssociationFeatureFlag())
             {
                 operatorCode = null;
+                operatorValue = null;
             }
             else
             {

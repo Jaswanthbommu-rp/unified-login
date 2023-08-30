@@ -68,32 +68,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					Convert.FromBase64String(
 						_productInternalSettingList.First(a => a.Name.Equals("APIPassword", StringComparison.OrdinalIgnoreCase)).Value));
 			_aoSuperUser = _productInternalSettingList.First(a => a.Name.Equals("ProductSuperUserLoginName", StringComparison.OrdinalIgnoreCase)).Value;
-			//_manageOrganization = new ManageOrganization(userClaims);
 			_organizationRepository = new OrganizationRepository(userClaims);
 
 
         }
-		//public ManageProductAssetOptimization(DefaultUserClaim userClaims, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.AssetOptimizer, userClaims, productInternalSettingRepository: null, productRepository: null)
-		//{
-		//	WriteToDiagnosticLog("ManageProductAssetOptimization.Ctor - Getting Product settings.");
-		//	_productId = (int)ProductEnum.AssetOptimizer;
-		//	_productInternalSettingRepository = new ProductInternalSettingRepository();
-		//	_editorRealPageId = userClaims.UserRealPageGuid;
-		//	_userClaims = userClaims;
-		//	_blueBook = new ManageBlueBook(userClaims);
-
-		//	_apiEndPoint = _productInternalSettingList.First(a => a.Name.Equals("APIEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
-		//	_apiUser = _productInternalSettingList.First(a => a.Name.Equals("APIUserName", StringComparison.OrdinalIgnoreCase)).Value;
-		//	_apiPassword =
-		//		Encoding.UTF8.GetString(
-		//			Convert.FromBase64String(
-		//				_productInternalSettingList.First(a => a.Name.Equals("APIPassword", StringComparison.OrdinalIgnoreCase)).Value));
-		//	_aoSuperUser = _productInternalSettingList.First(a => a.Name.Equals("ProductSuperUserLoginName", StringComparison.OrdinalIgnoreCase)).Value;
-  //          _manageOrganization = new ManageOrganization(userClaims);
-  //          WriteToDiagnosticLog("ManageProductAssetOptimization.Ctor - Received Product settings.");
-
-		//}
-
 
 		#endregion
 
@@ -506,7 +484,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return response;
         }
 
-
         /// <summary>
         /// Get product Properties
         /// </summary>
@@ -863,7 +840,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					LastName = person.LastName,
 				};
 
-				//List<CompanySetup> companyList = _manageOrganization.GetCompanyList(persona.Organization.Name, 0, null, 0, new Dictionary<object, object>());
 				var companyAdmin = _organizationRepository.GetOrganizationAdminUserRealPageId(persona.Organization.RealPageId);
 
 				if (companyAdmin == realPageId)

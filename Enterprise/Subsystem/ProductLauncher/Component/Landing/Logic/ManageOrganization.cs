@@ -122,7 +122,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _managePartyRole = new ManagePartyRole(repository);
             _integrationTypeFactory = new IntegrationTypeFactory(_manageProduct, _manageUnifiedLogin, null, _productRepository,
                 _productInternalSettingRepository, userClaim);
-            //_manageProductAssetOptimization = new ManageProductAssetOptimization(userClaim, _productInternalSettingRepository, _productRepository);
         }
 
         /// <summary>

@@ -217,7 +217,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public static readonly Guid _contractCompanyRealPageId = new Guid("10F5A427-4636-4F47-840E-6212BD842BC0");
         public static readonly Guid _employeeCompanyRealPageId = new Guid("0D018E46-C20E-477D-ADED-4E5A35FB8F99");
 
-
         /// <summary>
         /// Default constructor with correlationId
         /// </summary>
