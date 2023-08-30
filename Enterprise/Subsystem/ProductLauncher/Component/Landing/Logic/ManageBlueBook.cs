@@ -1928,6 +1928,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
 
                 translatedData = GetTranslatePropertiesFromUPFMToProductv3(primaryPropertyIds, productcode);
+                if (productResult.Records.Count == 0)
+                {
+                    return productResult;
+                }
                 var productPropertyType = productResult.Records[0].GetType();
 
                 if (productPropertyType == typeof(ProductProperty))

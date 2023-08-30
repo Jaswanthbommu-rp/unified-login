@@ -1060,7 +1060,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 propertyInstanceIds = new List<Guid>();
             }
-            if (propertyInstanceIds != null)
+            if (propertyInstanceIds != null && propertyInstanceIds.Count > 0)
             {
                 propertyDetails = _propertyRepository.GetPropertiesForCompany(propertyInstanceIds, propertyName, blueId, status, dataFilter);
                 propertyDetails = AddContractedNameToPropertyList(booksPropertyInstance, propertyDetails, userProperties);
