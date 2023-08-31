@@ -1018,8 +1018,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 booksPropertyInstance = GetPropertyInstanceFromBooks(companyInstanceId);
                 UPFMProperty uPFMProperty = new UPFMProperty();
                 uPFMProperty.id = booksPropertyInstance.Select(a => a.attributes.propertyInstanceSourceId).ToList();
-                //var aoLogic = new ManageProductAssetOptimization(_defaultUserClaim);
-                //ManageProductAssetOptimization aoLogic = new ManageProductAssetOptimization(_defaultUserClaim);
                 var aoProperties = _manageProductAssetOptimization.GetPropertiesWithOperators(_defaultUserClaim.PersonaId, userPersonaId,operatorCode,operatorValue);
                 var productResult = _manageBlueBook.TranslateProductPrimaryPropertiesData(uPFMProperty, 4, aoProperties);
                 var propertyList  = productResult.Records.Cast<ProductProperty>().ToList().Where(c => c.InstanceId != null).Select(a => a.InstanceId);
