@@ -17,7 +17,7 @@
 	@Original_Description nvarchar(1000),
 	@Original_Required bit,
 	@Original_Emphasize bit,
-	@Original_ShowInDiscoveryDocument bit,
+	@Original_ShowInDiscoveryDocument bit
 )
 AS
 BEGIN
