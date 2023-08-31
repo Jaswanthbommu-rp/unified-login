@@ -38,6 +38,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
     /// </summary>
     public class OrganizationController : BaseApiController
     {
+        #region Private variables
+
+        private IRepositoryResponse _repositoryResponse;
+        private IOrganizationProductRepository _organizationProductRepository;
+        private IManageOrganizationProduct _manageOrganizationProduct;
+        private IManageCustomFields _manageCustomFields;
+        private IManageUserLogin _manageUserLogin;
+        private IManagePartyRelationship _managePartyRelationship;
+        private IManageOrganization _manageOrganization;
+        private IManageBlueBook _manageBlueBook;
+        private IProductInternalSettingRepository _productInternalSettingRepository;
+        private HttpMessageHandler _messageHandler;
+        private IPropertyRepository _propertyRepository;
+        private IRepository _repository;
+        private IManageProductOneSite _manageProductOneSite;
+        private IManageProduct _manageProduct;
+        private IManageCredential _manageCredential;
+
+        #endregion
         #region Constructor
 
         /// <summary>
@@ -80,7 +99,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// <param name="repositoryResponse"></param>
         /// <param name="messageHandler"></param>
         /// <param name="userClaims"></param>
-        public OrganizationController(IRepository repository, IRepositoryResponse repositoryResponse, HttpMessageHandler messageHandler, ILdClient ldClient, DefaultUserClaim userClaims)
+        public OrganizationController(IRepository repository, IRepositoryResponse repositoryResponse, HttpMessageHandler messageHandler, ILdClient ldClient, IManageProductAssetOptimization manageProductAssetOptimization,DefaultUserClaim userClaims)
         {
             _repository = repository;
             _repositoryResponse = repositoryResponse;
@@ -90,13 +109,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _managePartyRelationship = new ManagePartyRelationship(new PartyRelationshipRepository(repository));
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
             _manageBlueBook = new ManageBlueBook(userClaims, repository, _productInternalSettingRepository, messageHandler);
-            _manageOrganization = new ManageOrganization(repository, userClaims, messageHandler);
+            _manageOrganization = new ManageOrganization(repository, userClaims, messageHandler,manageProductAssetOptimization);
             _messageHandler = messageHandler;
             _userClaims = userClaims;
             _propertyRepository = new PropertyRepository(repository);
             _manageProduct = new ManageProduct(repository, userClaims, messageHandler);
             _manageOrganizationProduct = new ManageOrganizationProduct(userClaims, repository, _manageBlueBook, _manageProduct);
             FeatureFlag.LdClient = ldClient;
+            
         }
 
         /// <summary>
@@ -145,25 +165,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
         #endregion
 
-        #region Private variables
-
-        private IRepositoryResponse _repositoryResponse;
-        private IOrganizationProductRepository _organizationProductRepository;
-        private IManageOrganizationProduct _manageOrganizationProduct;
-        private IManageCustomFields _manageCustomFields;
-        private IManageUserLogin _manageUserLogin;
-        private IManagePartyRelationship _managePartyRelationship;
-        private IManageOrganization _manageOrganization;
-        private IManageBlueBook _manageBlueBook;
-        private IProductInternalSettingRepository _productInternalSettingRepository;
-        private HttpMessageHandler _messageHandler;
-        private IPropertyRepository _propertyRepository;
-        private IRepository _repository;
-        private IManageProductOneSite _manageProductOneSite;
-        private IManageProduct _manageProduct;
-        private IManageCredential _manageCredential;
-
-        #endregion
+       
 
         #region Public Organization Methods
 
@@ -1192,7 +1194,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [Route("CompanySetup/CompanyPropertyList")]
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         [HttpPost]
-        public HttpResponseMessage GetPropertiesForCompany(Guid companyInstanceId, [FromBody] List<Guid> selectedProperties, string domain = null, string propertyName = null, int? blueId = null, int? status = null, [FromUri] RequestParameter datafilter = null, long userPersonaId = 0, long editorPersonaId = 0, bool? isSelectedProperties = null, [FromUri] Guid? operatorInstanceId = null)
+        public HttpResponseMessage GetPropertiesForCompany(Guid companyInstanceId, [FromBody] List<Guid> selectedProperties, string domain = null, string propertyName = null, int? blueId = null, int? status = null, [FromUri] RequestParameter datafilter = null, long userPersonaId = 0, long editorPersonaId = 0, bool? isSelectedProperties = null, [FromUri] string operatorCode = null, [FromUri] string operatorValue = null)
         {
             if (companyInstanceId == Guid.Empty)
             {
@@ -1213,18 +1215,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             if (!FeatureFlag.GetUserCompanyAssociationFeatureFlag())
             {
-                operatorInstanceId = null;
+                operatorCode = null;
+                operatorValue = null;
             }
             else
             {
-                if (operatorInstanceId.HasValue)
+                if (string.IsNullOrEmpty(operatorCode) && string.IsNullOrEmpty(operatorValue))
                 {
-                    cacheKey = $"getPropertyInstanceForCompanyByOperatorId_{companyInstanceId}_{operatorInstanceId}";
+                    cacheKey = $"getPropertyInstanceForCompanyByOperatorId_{companyInstanceId}_{operatorCode}_{operatorValue}";
                 }
             }
 
             RPObjectCache.RemoveFromCache(cacheKey);
-            List<CompanyPropertySetup> companyPropertySetup = _manageOrganization.GetPropertiesForCompany(companyInstanceId, propertyName, domain, blueId, status, globals, editorPersonaId, userPersonaId, isSelectedProperties, selectedProperties, operatorInstanceId);
+            List<CompanyPropertySetup> companyPropertySetup = _manageOrganization.GetPropertiesForCompany(companyInstanceId, propertyName, domain, blueId, status, globals, editorPersonaId, userPersonaId, isSelectedProperties, selectedProperties, operatorCode,operatorValue);
 
             int totalRecords = 0;
             if (companyPropertySetup.Count > 0)
