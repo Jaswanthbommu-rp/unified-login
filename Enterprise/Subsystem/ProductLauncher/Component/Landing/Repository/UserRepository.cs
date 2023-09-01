@@ -6777,6 +6777,39 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, mainMessage, "Update User External Relationship", updateUserProfileEntity.NewProfile, additionalParam);
                     }
+
+                    bool oldProfileDelegate = updateUserProfileEntity.OldProfile.IsDelegateAdmin;
+                    bool newProfileDelegate = updateUserProfileEntity.NewProfile.IsDelegateAdmin;
+                    if (isDelegateAdmin)
+                    {
+                        //Get all enterprise role Names by orgpartyid
+                        ProductRepository productRepository = new ProductRepository(_userClaim);
+                        List<RoleTemplate> roleTemplates = productRepository.GetRoleTemplateList(_userClaim.OrganizationPartyId);
+
+                        if (newProfileDelegate != oldProfileDelegate)
+                        {
+                            string delegateMessage = "User admin{2}has " + (updateUserProfileEntity.NewProfile.IsDelegateAdmin ? "added" : "removed") + " user{0} {1} as Delegate admin";
+                            LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, delegateMessage, "UpdateUser", updateUserProfileEntity.NewProfile);
+                        }
+
+                        var oldDelegateRoles = updateUserProfileEntity.OldProfile.DelegateRoleTemplate?.RoleTemplateId != null ? updateUserProfileEntity.OldProfile.DelegateRoleTemplate.RoleTemplateId : new List<int>();
+                        var newDelegateRoles = updateUserProfileEntity.NewProfile.DelegateRoleTemplate.RoleTemplateId != null ? updateUserProfileEntity.NewProfile.DelegateRoleTemplate.RoleTemplateId : new List<int>();
+                        var rolesAdded = newDelegateRoles.Except(oldDelegateRoles).ToList();
+                        var rolesRemoved = oldDelegateRoles.Except(newDelegateRoles).ToList();
+
+                        if (rolesRemoved.Count > 0 || !newProfileDelegate)
+                        {
+                            var userEnterpriseRoles = roleTemplates.Where(r => oldDelegateRoles.Contains(r.RoleTemplateId));
+                            string delegateRolesMessage = "User admin{2}has removed " + string.Join(",", userEnterpriseRoles.Select(s => s.RoleTemplateName)) + " enterprise roles for Delegate admin{0} {1}";
+                            LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, delegateRolesMessage, "UpdateUser", updateUserProfileEntity.NewProfile);
+                        }
+                        if (rolesAdded.Count > 0)
+                        {
+                            var userEnterpriseRoles = roleTemplates.Where(r => newDelegateRoles.Contains(r.RoleTemplateId));
+                            string delegateRolesMessage = "User admin{2}has added " + string.Join(",", userEnterpriseRoles.Select(s => s.RoleTemplateName)) + " enterprise roles for Delegate admin{0} {1}";
+                            LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, delegateRolesMessage, "UpdateUser", updateUserProfileEntity.NewProfile);
+                        }                        
+                    }
                 }
 
                 return repositoryResponse;
