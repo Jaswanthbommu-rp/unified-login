@@ -184,8 +184,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
 		[Route("products/unifiedlogin/role/allrights")]
 		[HttpGet]
-		public HttpResponseMessage GetAllRightsByRole(long editorPersonaId, long partyId, long roleId, [FromUri] RequestParameter datafilter, Guid? upfmId = null)
-		{
+        public HttpResponseMessage GetAllRightsByRole(long editorPersonaId, long partyId, long roleId, [FromUri] RequestParameter datafilter)
+        {
+            if (editorPersonaId == 0)
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
+            if (partyId == 0)
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "partyId not supplied.");
+            return Request.CreateResponse(HttpStatusCode.OK, _manageUnifiedLogin.GetAllRightsByRole(editorPersonaId, partyId, roleId));
+        }
+
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "List of rights by roleid", Type = typeof(HttpResponseMessage))]
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
+		[Route("products/unifiedlogin/role/rights")]
+		[HttpGet]
+        public HttpResponseMessage GetRightsByRole(long editorPersonaId, long partyId, long roleId, [FromUri] RequestParameter datafilter, Guid? upfmId = null)
+        {
             ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
             if (editorPersonaId == 0)
             {
@@ -210,26 +225,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 }
             }
             if (partyId == 0)
-				return Request.CreateResponse(HttpStatusCode.BadRequest, "partyId not supplied.");
-			return Request.CreateResponse(HttpStatusCode.OK, _manageUnifiedLogin.GetAllRightsByRole(editorPersonaId, partyId, roleId));
-		}
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "partyId not supplied.");
+            return Request.CreateResponse(HttpStatusCode.OK, _manageUnifiedLogin.GetRightsByRole(editorPersonaId, partyId, roleId));
+        }
 
-		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
-		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
-		[SwaggerResponse(HttpStatusCode.OK, Description = "List of rights by roleid", Type = typeof(HttpResponseMessage))]
-		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
-		[Route("products/unifiedlogin/role/rights")]
-		[HttpGet]
-		public HttpResponseMessage GetRightsByRole(long editorPersonaId, long partyId, long roleId, [FromUri] RequestParameter datafilter)
-		{
-			if (editorPersonaId == 0)
-				return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
-			if (partyId == 0)
-				return Request.CreateResponse(HttpStatusCode.BadRequest, "partyId not supplied.");
-			return Request.CreateResponse(HttpStatusCode.OK, _manageUnifiedLogin.GetRightsByRole(editorPersonaId, partyId, roleId));
-		}
-
-		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
 		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
 		[SwaggerResponse(HttpStatusCode.OK, Description = "List of Roles by rightid", Type = typeof(HttpResponseMessage))]
 		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
