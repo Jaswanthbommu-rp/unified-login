@@ -6436,7 +6436,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 // make db call here...
                             repositoryResponse = InsertUpdateDelegateAdminRole(repository, userLoginPersonaList[0].UserLoginPersonaId,
                                                         updateUserProfileEntity.NewProfile.DelegateRoleTemplate.RoleTemplateId.ToList());
-                            if (repositoryResponse.Id == 0)
+                            if (repositoryResponse.ErrorMessage.Length != 0)
                             {
                                 repositoryResponse.ErrorMessage = "Unable to Create  Delegate Template role to the User.";
                                 throw new Exception(repositoryResponse.ErrorMessage);
