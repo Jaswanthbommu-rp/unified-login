@@ -103,23 +103,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
 		[Route("products/unifiedlogin/roles")]
 		[HttpGet]
-		public HttpResponseMessage GetRoles(long editorPersonaId, long partyId, [FromUri] RequestParameter datafilter)
-		{
-			if (editorPersonaId == 0)
-				return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
-			if (partyId == 0)
-				return Request.CreateResponse(HttpStatusCode.BadRequest, "partyId not supplied.");
-			return Request.CreateResponse(HttpStatusCode.OK, _manageUnifiedLogin.GetRoles(editorPersonaId, partyId));
-		}
-
-		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
-		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
-		[SwaggerResponse(HttpStatusCode.OK, Description = "List of roles by partyid", Type = typeof(HttpResponseMessage))]
-		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
-		[Route("products/unifiedlogin/rolesCount")]
-		[HttpGet]
-		public HttpResponseMessage GetRolesWithCount(long editorPersonaId, long partyId, [FromUri] RequestParameter datafilter, Guid? upfmId = null)
-		{
+        public HttpResponseMessage GetRoles(long editorPersonaId, long partyId, [FromUri] RequestParameter datafilter, Guid? upfmId = null)
+        {
             ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
             if (editorPersonaId == 0)
             {
@@ -144,11 +129,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 }
             }
             if (partyId == 0)
-				return Request.CreateResponse(HttpStatusCode.BadRequest, "partyId not supplied.");
-			return Request.CreateResponse(HttpStatusCode.OK, _manageUnifiedLogin.GetRolesWithCount(editorPersonaId, partyId));
-		}
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "partyId not supplied.");
+            return Request.CreateResponse(HttpStatusCode.OK, _manageUnifiedLogin.GetRoles(editorPersonaId, partyId));
+        }
 
-		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "List of roles by partyid", Type = typeof(HttpResponseMessage))]
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
+		[Route("products/unifiedlogin/rolesCount")]
+		[HttpGet]
+        public HttpResponseMessage GetRolesWithCount(long editorPersonaId, long partyId, [FromUri] RequestParameter datafilter)
+        {
+            if (editorPersonaId == 0)
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
+            if (partyId == 0)
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "partyId not supplied.");
+            return Request.CreateResponse(HttpStatusCode.OK, _manageUnifiedLogin.GetRolesWithCount(editorPersonaId, partyId));
+        }
+
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
 		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
 		[SwaggerResponse(HttpStatusCode.OK, Description = "List of roles by partyid", Type = typeof(HttpResponseMessage))]
 		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]

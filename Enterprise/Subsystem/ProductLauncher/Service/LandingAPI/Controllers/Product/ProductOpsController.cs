@@ -70,6 +70,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// <param name="userPersonaId"></param>
         /// <param name="assetGroup"></param>
         /// <param name="datafilter">A datafilter used to filter the roles.</param>
+        /// <param name="upfmId"></param>
         /// <returns></returns>
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
@@ -79,8 +80,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [Route("products/ops/roles")]
         [Authorize]
         [HttpGet]
-        public ListResponse GetOpsRoles(long editorPersonaId, long userPersonaId, [FromUri]RequestParameter datafilter, string assetGroup = "")
+        public ListResponse GetOpsRoles(long editorPersonaId, long userPersonaId, [FromUri] RequestParameter datafilter, string assetGroup = "", Guid? upfmId = null)
         {
+            ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
+            if (editorPersonaId == 0)
+            {
+                if (currentClaimPrincipal.HasClaim("scope", "internalapi") && _userClaims.PersonaId == 0)
+                {
+                    if (!string.IsNullOrEmpty(upfmId.ToString()))
+                    {
+                        Guid AdminCreatorRealPageId = _manageOrganization.GetOrganizationAdminUserRealPageId(upfmId ?? default(Guid));
+                        if (AdminCreatorRealPageId == Guid.Empty)
+                        {
+                            var errorResponse = new ErrorResponse { Errors = new List<Error>() };
+                            errorResponse.Errors.Add(new Error { Title = "Error", Source = "/product", Detail = "Invalid UPFMId.", StatusCode = "" });
+                        }
+                        RecreateClaimsForClient(AdminCreatorRealPageId);
+                        editorPersonaId = _userClaims.PersonaId;
+                        _manageProductOps = new ManageProductOps(_userClaims);
+                    }
+                }
+            }
             ListResponse response = _manageProductOps.GetRoles(editorPersonaId, userPersonaId, assetGroup, datafilter);
             return response;
         }
@@ -120,31 +140,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [Route("products/ops/rolescount")]
         [Authorize]
         [HttpGet]
-        public HttpResponseMessage GetRolesCount(long editorPersonaId, Guid? upfmId=null)
+        public HttpResponseMessage GetRolesCount(long editorPersonaId)
         {
-            ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
             if (editorPersonaId == 0)
-            {
-                if (currentClaimPrincipal.HasClaim("scope", "internalapi") && _userClaims.PersonaId == 0)
-                {
-                    if (!string.IsNullOrEmpty(upfmId.ToString()))
-                    {
-                        Guid AdminCreatorRealPageId = _manageOrganization.GetOrganizationAdminUserRealPageId(upfmId ?? default(Guid));
-                        if (AdminCreatorRealPageId == Guid.Empty)
-                        {
-                            var errorResponse = new ErrorResponse { Errors = new List<Error>() };
-                            errorResponse.Errors.Add(new Error { Title = "Error", Source = "/product", Detail = "Invalid UPFMId.", StatusCode = "" });
-                        }
-                        RecreateClaimsForClient(AdminCreatorRealPageId);
-                        editorPersonaId = _userClaims.PersonaId;
-                        if (editorPersonaId == 0)
-                        {
-                            return Request.CreateResponse(HttpStatusCode.BadRequest, "invalid request.");
-                        }
-                        _manageProductOps = new ManageProductOps(_userClaims);
-                    }
-                }
-            }
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
             ListResponse response = _manageProductOps.GetRolesCount(editorPersonaId, string.Empty);
             return Request.CreateResponse(HttpStatusCode.OK, response);
         }
