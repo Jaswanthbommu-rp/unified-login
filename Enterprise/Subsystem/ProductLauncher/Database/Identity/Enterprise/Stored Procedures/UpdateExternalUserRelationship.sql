@@ -10,23 +10,29 @@
 AS
 BEGIN
 	DECLARE @CompanyPartyId BIGINT = NULL
-	
-	BEGIN TRY
-    
-	   UPDATE Enterprise.ExternalUserRelationship      
-       SET       
-        ThirdPartyRelationshipId = @ThirdPartyRelationshipId,      
-        CompanyName = @CompanyName,      
-        ThirdPartyCompanyPartyId = NULL,    
-        OperatorValue = @OperatorCode +'|'+ @OperatorValue    
-       WHERE      
-       UserLoginPersonaId = @UserLoginPersonaId      
+	DECLARE @Operator VARCHAR(1000) = NULL
+
+ IF @OperatorCode IS NOT NULL AND @OperatorValue IS NOT NULL
+ BEGIN
+	SET @Operator = @OperatorCode + '|' + @OperatorValue
+ END
+  
+ BEGIN TRY      
+          
+  UPDATE Enterprise.ExternalUserRelationship      
+   SET       
+    ThirdPartyRelationshipId = @ThirdPartyRelationshipId,      
+    CompanyName = @CompanyName,      
+    ThirdPartyCompanyPartyId = NULL,    
+    OperatorValue = @Operator  
+  WHERE      
+   UserLoginPersonaId = @UserLoginPersonaId      
       
   IF @@ERROR = 0 AND @@ROWCOUNT = 0      
   BEGIN      
    INSERT INTO Enterprise.ExternalUserRelationship ( UserLoginPersonaId, ThirdPartyRelationshipId, CompanyName, ThirdPartyCompanyPartyId, OperatorValue )      
    VALUES      
-    ( @UserLoginPersonaId, @ThirdPartyRelationshipId, @CompanyName, @CompanyPartyId,@OperatorCode +'|'+ @OperatorValue )      
+    ( @UserLoginPersonaId, @ThirdPartyRelationshipId, @CompanyName, @CompanyPartyId, @Operator)      
   END      
       
   SELECT  @UserLoginPersonaId AS Id,      
