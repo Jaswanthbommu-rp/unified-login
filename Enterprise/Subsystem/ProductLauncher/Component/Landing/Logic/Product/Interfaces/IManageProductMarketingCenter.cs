@@ -13,6 +13,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         string UnassignUser(long createUserPersonaId, long assignUserPersonaId);
         ListResponse GetRolesCount(long editorPersonaId);
         ListResponse GetRights(long editorPersonaId);
+        ListResponse GetRightsForRoleId(long editorPersonaId, int roleId);
 
         /// <summary>
         /// List all users

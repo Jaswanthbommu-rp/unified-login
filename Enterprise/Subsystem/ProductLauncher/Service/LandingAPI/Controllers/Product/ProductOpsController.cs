@@ -1,19 +1,27 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Web.Http;
 using System.Web.Http.Controllers;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Attribute;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Migration;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ops;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.ResponseObject;
 using Swashbuckle.Swagger.Annotations;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers.Product
@@ -23,6 +31,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
     /// </summary>
     public class ProductOpsController : BaseApiController
     {
+        private IManageOrganization _manageOrganization;
         IManageProductOps _manageProductOps;
 
         /// <summary>
@@ -48,6 +57,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         protected override void Initialize(HttpControllerContext controllerContext)
         {
             base.Initialize(controllerContext);
+            _manageOrganization = new ManageOrganization(_userClaims);
             //When API is NOT called from test class
             _manageProductOps = new ManageProductOps(base._userClaims);
         }
@@ -60,6 +70,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// <param name="userPersonaId"></param>
         /// <param name="assetGroup"></param>
         /// <param name="datafilter">A datafilter used to filter the roles.</param>
+        /// <param name="upfmId"></param>
         /// <returns></returns>
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
@@ -69,8 +80,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [Route("products/ops/roles")]
         [Authorize]
         [HttpGet]
-        public ListResponse GetOpsRoles(long editorPersonaId, long userPersonaId, [FromUri]RequestParameter datafilter, string assetGroup = "")
+        public ListResponse GetOpsRoles(long editorPersonaId, long userPersonaId, [FromUri] RequestParameter datafilter, string assetGroup = "", Guid? upfmId = null)
         {
+            ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
+            if (editorPersonaId == 0)
+            {
+                if (currentClaimPrincipal.HasClaim("scope", "internalapi") && _userClaims.PersonaId == 0)
+                {
+                    if (!string.IsNullOrEmpty(upfmId.ToString()))
+                    {
+                        Guid AdminCreatorRealPageId = _manageOrganization.GetOrganizationAdminUserRealPageId(upfmId ?? default(Guid));
+                        if (AdminCreatorRealPageId == Guid.Empty)
+                        {
+                            var errorResponse = new ErrorResponse { Errors = new List<Error>() };
+                            errorResponse.Errors.Add(new Error { Title = "Error", Source = "/product", Detail = "Invalid UPFMId.", StatusCode = "" });
+                        }
+                        RecreateClaimsForClient(AdminCreatorRealPageId);
+                        editorPersonaId = _userClaims.PersonaId;
+                        _manageProductOps = new ManageProductOps(_userClaims);
+                    }
+                }
+            }
             ListResponse response = _manageProductOps.GetRoles(editorPersonaId, userPersonaId, assetGroup, datafilter);
             return response;
         }
@@ -122,7 +152,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// Used to get a list of rights 
         /// </summary>
         /// <remarks></remarks>
-        /// <param name="editorPersonaId"></param>       
+        /// <param name="editorPersonaId"></param>
         /// <returns></returns>
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
@@ -361,7 +391,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// Used to get a list of rights  for a role
         /// </summary>
         /// <remarks></remarks>
-        /// <param name="editorPersonaId"></param>       
+        /// <param name="editorPersonaId"></param> 
+        /// <param name="roleId"></param>
+        /// <param name="upfmId"></param> 
         /// <returns></returns>
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
@@ -370,10 +402,31 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [Route("products/ops/role/rights")]
         [Authorize]
         [HttpGet]
-        public HttpResponseMessage GetRights(long editorPersonaId, int roleId)
+        public HttpResponseMessage GetRights(long editorPersonaId, int roleId, Guid? upfmId = null)
         {
+            ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
             if (editorPersonaId == 0)
-                return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
+            {
+                if (currentClaimPrincipal.HasClaim("scope", "internalapi") && _userClaims.PersonaId == 0)
+                {
+                    if (!string.IsNullOrEmpty(upfmId.ToString()))
+                    {
+                        Guid AdminCreatorRealPageId = _manageOrganization.GetOrganizationAdminUserRealPageId(upfmId ?? default(Guid));
+                        if (AdminCreatorRealPageId == Guid.Empty)
+                        {
+                            var errorResponse = new ErrorResponse { Errors = new List<Error>() };
+                            errorResponse.Errors.Add(new Error { Title = "Error", Source = "/product", Detail = "Invalid UPFMId.", StatusCode = "" });
+                        }
+                        RecreateClaimsForClient(AdminCreatorRealPageId);
+                        editorPersonaId = _userClaims.PersonaId;
+                        if (editorPersonaId == 0)
+                        {
+                            return Request.CreateResponse(HttpStatusCode.BadRequest, "invalid request.");
+                        }
+                        _manageProductOps = new ManageProductOps(_userClaims);
+                    }
+                }
+            }
             if (roleId == 0)
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "roleId not supplied.");
             ListResponse response = _manageProductOps.GetRightsByRole(editorPersonaId, roleId);
@@ -452,6 +505,61 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
         }
 
+        /// <summary>
+        /// Used to recreate claims for client
+        /// </summary>
+        /// <param name="realpageUserId">RealPage UserId</param>
+        private void RecreateClaimsForClient(Guid realpageUserId)
+        {
+            if (string.IsNullOrEmpty(realpageUserId.ToString())) return;
+
+            var rpCache = new RPObjectCache();
+            _realpageUserId = realpageUserId;
+
+            var cacheKey = $"recreateClaimsForClient_{realpageUserId}";
+            _userClaims = rpCache.GetFromCache<DefaultUserClaim>(cacheKey, 180, () =>
+            {
+                IManagePerson personLogic = new ManagePerson();
+                Person person = personLogic.GetPerson(realpageUserId);
+                if (person == null)
+                {
+                    throw new Exception($"Missing persona information for client_info user while Recreation of Claims For Client.  realPageId: {realpageUserId}");
+                }
+
+                IManageUserLogin userLoginLogic = new ManageUserLogin();
+                IManageUserRoleRight userRoleRight = new ManageUserRoleRight();
+                var userLogin = userLoginLogic.GetUserLoginOnly(realpageUserId);
+
+                IManagePersona managePersona = new ManagePersona();
+                //Active Persona is linked to one organization
+                Persona persona = managePersona.GetActivePersonaWithoutRights(realpageUserId); // this user can only be under 1 company to work correctly
+                var roles = userRoleRight.GetAssignedRoleForPersona(ProductEnum.UnifiedPlatform, persona.PersonaId);
+                var claim = new DefaultUserClaim
+                {
+                    UserId = (int)userLogin.UserId,
+                    OrganizationPartyId = persona.Organization.PartyId,
+                    LoginName = userLogin.LoginName,
+                    OrganizationMasterId = (long)persona.Organization.BooksMasterId,
+                    CustomerMasterId = (long)persona.Organization.BooksMasterId,
+                    OrganizationName = persona.Organization.Name,
+                    FirstName = person.FirstName,
+                    LastName = person.LastName,
+                    PersonaId = persona.PersonaId,
+                    OrganizationRealPageGuid = persona.Organization.RealPageId,
+                    UserRealPageGuid = _realpageUserId,
+                    CorrelationId = Guid.NewGuid(),
+                    RealPageEmployee = persona.Organization.RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId,
+                };
+                ClaimsPrincipal userPrincipal = ClaimsPrincipal.Current;
+                var identity = (ClaimsIdentity)userPrincipal.Identity;
+                identity.AddClaims(roles.Select(r => new Claim("roleid", r.RoleID.ToString())).ToList());
+
+                claim.Rights = BaseUserRights.GetUserRightsBy(userPrincipal, claim);
+                return claim;
+
+            });
+
+        }
 
 
         #region Get Examples
