@@ -1,33 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Newtonsoft.Json;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Helper;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Factory;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Batch;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ResidentPortal;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Rum;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
-using ProductRole = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ProductRole;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Accounting;
 using Serilog;
 using Serilog.Events;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Batch;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.EnterpriseRole;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Helper;
-using Newtonsoft.Json;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ops;
-using Role = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ops.Role;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using ProductRole = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ProductRole;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -37,10 +25,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		private IProductRepository _productRepository;
 		private readonly IntegrationTypeFactory _integrationTypeFactory;
 		private IPropertyRepository _propertyRepository;
-		/// <summary>
-		/// Default Constructor
-		/// </summary>
-		public ManagePrimaryPropertiesBatch(DefaultUserClaim userClaim)
+		private IProductInternalSettingRepository _productInternalSettingRepository;
+		private IUnifiedSettingsRepository _unifiedSettingsRepository;
+        /// <summary>
+        /// Default Constructor
+        /// </summary>
+        public ManagePrimaryPropertiesBatch(DefaultUserClaim userClaim)
 		{
 			_userClaim = userClaim;
 			//var manageProductBatch = new ManageProductBatch(_userClaim);
@@ -50,9 +40,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			var productInternalSettingRepository = new ProductInternalSettingRepository();
 			_productRepository = new ProductRepository();
 			_propertyRepository = new PropertyRepository();
-			_integrationTypeFactory = new IntegrationTypeFactory(manageProduct, manageUnifiedLogin,
-				manageProductOneSite, _productRepository, productInternalSettingRepository, _userClaim);
-		}
+			_integrationTypeFactory = new IntegrationTypeFactory(manageProduct, manageUnifiedLogin, manageProductOneSite, _productRepository, productInternalSettingRepository, _userClaim);
+			_productInternalSettingRepository = new ProductInternalSettingRepository();
+            _unifiedSettingsRepository = new UnifiedSettingsRepository();
+
+        }
 		public ManagePrimaryPropertiesBatch(IProductRepository productRepository, IPropertyRepository propertyRepository)
 		{
 			_productRepository = productRepository;
@@ -104,13 +96,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				var integrationType = _integrationTypeFactory.GetIntegrationTypeForProductId(product.ProductId);
 				bool productEnabledForPrimaryProperty = manageProductBatch.IsProductEnabledForUsePrimaryProperty(product.ProductId);
 				var productSetting = personaProductSettings.FirstOrDefault(item => item.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase) && item.ProductId == product.ProductId);
+				var ppEnabledForCompanyAndProduct = GetPrimaryPropertySettingsForCompanyAndProduct(product.ProductId);
 
-				if (productSetting != null)
+                if (productSetting != null)
 				{
 					personaProductUsePrimaryProperty = productSetting.Value.Trim() == "1" ? true : false;
 				}
 
-				usePrimaryProperties = productEnabledForPrimaryProperty && personaProductUsePrimaryProperty;
+				usePrimaryProperties = productEnabledForPrimaryProperty && personaProductUsePrimaryProperty && ppEnabledForCompanyAndProduct;
 
 				if (usePrimaryProperties)
 				{
@@ -262,5 +255,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			return "";
 		}
 
-	}
+        private bool GetPrimaryPropertySettingsForCompanyAndProduct(int productId)
+        {
+            var productGlobalSettingType = _productInternalSettingRepository.GetProductSettingByType("UsePrimaryProperties");
+            var companyProductSettings = _productRepository.GetProductSettings(_userClaim.OrganizationRealPageGuid);
+
+            int organizationUsePrimaryProperties = -1;
+            var settings = _unifiedSettingsRepository.GetUnifiedSettings(_userClaim.OrganizationPartyId, "Company");
+            if (settings.Any(a => a.Name.Equals("PrimaryPropertyEnterpriseRole", StringComparison.OrdinalIgnoreCase)))
+            {
+                var settingValue = settings.FirstOrDefault(a => a.Name.Equals("PrimaryPropertyEnterpriseRole", StringComparison.OrdinalIgnoreCase)).Value;
+                int.TryParse(settingValue, out organizationUsePrimaryProperties);
+            }
+
+            if (organizationUsePrimaryProperties >= 0)
+            {
+                //Assign PrimaryProperty flag for Product
+                string productUsePrimaryPropertiesGlobalStr = productGlobalSettingType?.Where(p => p.Name.ToLower() == "useprimaryproperties" && p.ProductId == productId)?.FirstOrDefault()?.Value?.Trim();
+                int.TryParse(companyProductSettings?.Where(p => p.Name.ToLower() == "useprimaryproperties" && p.ProductId == productId)?.FirstOrDefault()?.Value?.Trim(), out int companyProductUsePrimaryPropertySetting);
+                if (productUsePrimaryPropertiesGlobalStr != null && (int.TryParse(productUsePrimaryPropertiesGlobalStr, out int productUsePrimaryPropertiesGlobal) && productUsePrimaryPropertiesGlobal >= 0))
+                {
+                    return productUsePrimaryPropertiesGlobal == 1 && organizationUsePrimaryProperties == 1 && companyProductUsePrimaryPropertySetting == 1;
+                }
+            }
+            return false;
+        }
+    }
 }

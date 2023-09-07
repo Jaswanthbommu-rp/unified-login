@@ -175,7 +175,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             if (productId != 4)
             {
-                if (usePrimaryProperties == true && roleProp.ProductPrimaryProperties != null)
+                if (usePrimaryProperties == true && roleProp.ProductPrimaryProperties != null && roleProp.ProductPrimaryProperties.Count > 0)
                 {
                     string jsonSecuritySettings = JsonConvert.SerializeObject(roleProp.ProductPrimaryProperties);
                     _productRepository.SavePersonaProductProperties(assignUserPersonaId, productId, jsonSecuritySettings);
@@ -282,10 +282,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         rolePrimaryPropDictionary.Add(rolePropertyList.Key, foundPrimaryProperties);
                     }
                     
-                    if(usePrimaryProperties && !_productsWithNoProperties.Contains(productId) && (rolePropertyList.Value?.IsAssigned == true && rolePropertyList.Value.PropertyList?.Count == 0))
+                    if(rolePropertyList.Value.UsePrimaryProperties && !_productsWithNoProperties.Contains(productId) && (rolePropertyList.Value?.IsAssigned == true && rolePropertyList.Value.PropertyList?.Count == 0))
                     {
                         //Create user (not update) but translation has no properties
-                        if (!isUpdateUser)
+                        var userProducts = _samlRepository.ListActiveProductsByPersonaId(productUser.AssignUserPersonaId, 0, "");
+                        bool userHasProduct = userProducts.Any(a => a.ProductId == productId);
+                        if (!userHasProduct)
                         {
                             isCreateUserWithNoProperties = false;
                         }                        
@@ -320,10 +322,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     _productRepository.UpdateBatchProcessorLog(productUser.ProductBatchId, DateTime.UtcNow, null);
                     result = integration.CreateUser(productUser);
                 }
-                else
-                {
-                    throw new Exception("No properties to assign - User not created");
-                }
             }
             catch (Exception ex)
             {
@@ -352,7 +350,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         var thisProductUserPrimaryProperty = usePrimaryPropertyFlags.FirstOrDefault(p => p.Key == rolePropertyList.Key).Value;
                         SavePersonaProductPrimaryProperties(thisProductUserPrimaryProperty, productUser.AssignUserPersonaId, rolePropertyList.Key, rolePropertyList.Value, productUser.InputJson);
                     }
-                    isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Success);
+                    //Updating inputjson, It may change if no properties are translated - unassign product.
+                    isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Success, productUser.InputJson);
                     WriteToLog(LogEventLevel.Debug, $"ManageProductUser.CreateProductUser:  product: {productUser.ProductId} , persona: {productUser.AssignUserPersonaId} , isBatchCompleted: {isBatchCompleted} ,User Sync Request process for Success , DateTime { DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:ffff") }");
                     //call apicore kafka publish to sync translated properties
                     var roleProp = JsonConvert.DeserializeObject<RolePropertyList>(productUser.InputJson);
@@ -986,7 +985,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (productUser.ProductId != 4 && roleProp.UsePrimaryProperties)
             {
                 ListResponse propertyList = manageProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, productUser.ProductId);
-                if (propertyList.Records.Count > 0)
+                if (propertyList.Records?.Count > 0)
                 {
                     roleProp.PropertyList = new List<string>();
                     roleProp.ProductPrimaryProperties = GetSelectedProperties(propertyList, productType);
