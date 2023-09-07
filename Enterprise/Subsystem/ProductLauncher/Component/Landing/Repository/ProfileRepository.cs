@@ -18,6 +18,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 
+
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 {
     /// <summary>
@@ -26,10 +27,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
     public class ProfileRepository : BaseRepository, IProfileRepository
     {
         private DefaultUserClaim _userClaim;
-        IManageUserLogin _manageUserLogin;
-        IPartyRelationshipRepository _partyRelationshipRepository;
-        IProductRepository _productRepository;
-        IPersonaRepository _personaRepository;
+        private readonly IManageUserLogin _manageUserLogin;
+        private readonly IPartyRelationshipRepository _partyRelationshipRepository;
+        private readonly IProductRepository _productRepository;
+        private readonly IPersonaRepository _personaRepository;
+        private readonly IOrganizationRepository _organizationRepository;
 
         /// <summary>
         /// Used to filter user list results
@@ -49,7 +51,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             /// <summary>
             /// Exclude Support And SuperUsers
             /// </summary>
-            ExcludeSupportAndSuperUsers = 2
+            ExcludeSupportAndSuperUsers = 2,
+
+            /// <summary>
+            /// Only return users with the same operator
+            /// </summary>
+            OperatorUsers = 3
         }
 
         #region Constructor
@@ -63,6 +70,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             _partyRelationshipRepository = new PartyRelationshipRepository(repository);
             _productRepository = new ProductRepository(repository, userClaim);
             _personaRepository = new PersonaRepository(repository, userClaim);
+            _organizationRepository = new OrganizationRepository(repository);
         }
 
         /// <summary>
@@ -76,6 +84,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             _partyRelationshipRepository = new PartyRelationshipRepository();
             _productRepository = new ProductRepository(_userClaim);
             _personaRepository = new PersonaRepository(_userClaim);
+            _organizationRepository = new OrganizationRepository();
         }
         #endregion
 
@@ -557,14 +566,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <returns>List of Person</returns>
         public IList<ProfileDetail> ListPersons(IList<int> organizationActiveProductIdList, Guid? realPageId = null, int? parentPartyRoleTypeId = null, RequestParameter dataFilterSort = null, bool isExport = false)
         {
-            UserListTypeFilter filterUserList = UserListTypeFilter.ExcludeSupportAndSuperUsers;
+            var filterUserList = UserListTypeFilter.ExcludeSupportAndSuperUsers;
             if (_userClaim.UserRealPageGuid != Guid.Empty)
             {
-                PartyRelationship partyRelationship = _partyRelationshipRepository.GetPartyRelationship(_userClaim.UserRealPageGuid, _userClaim.OrganizationRealPageGuid, null, null, "User Type");
+                var partyRelationship = _partyRelationshipRepository.GetPartyRelationship(_userClaim.UserRealPageGuid, _userClaim.OrganizationRealPageGuid, null, null, "User Type");
                 bool isSuperUser = false;
                 if (partyRelationship != null)
                 {
-                    isSuperUser = (partyRelationship.RoleTypeIdFrom == (int)UserRoleType.SuperUser) ? true : false;
+                    isSuperUser = partyRelationship.RoleTypeIdFrom == (int)UserRoleType.SuperUser;
                 }
 
                 //UserLogin ul = _manageUserLogin.GetUserLogin(_userClaim.UserRealPageGuid);
@@ -575,6 +584,55 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 if (_userClaim.RealPageEmployee || (_userClaim.IsRPEmployee && _userClaim.OrganizationRealPageGuid != DefaultUserClaim.EmployeeCompanyRealPageId) || _userClaim.ImpersonatedBy != Guid.Empty)
                 {
                     filterUserList = UserListTypeFilter.ViewAllUsers;
+                }
+
+                // should we use this or always filter?
+                //var organizationDetails = _organizationRepository.GetOrganization(null, _userClaim.OrganizationPartyId);
+                //if (organizationDetails.EnablePrimaryPropertiesAndEnterpriseRoles == 1)
+                {
+                    var externalUserRelationship = GetExternalUserRelationship(_userClaim.OrganizationPartyId, _userClaim.UserId);
+                    if (externalUserRelationship != null && !string.IsNullOrEmpty(externalUserRelationship.OperatorCode) && !string.IsNullOrEmpty(externalUserRelationship.OperatorValue))
+                    {
+                        filterUserList = UserListTypeFilter.OperatorUsers;
+                        // filter to just this operator and external users only
+                        if (dataFilterSort != null)
+                        {
+                            if (dataFilterSort.FilterBy != null)
+                            {
+                                if (dataFilterSort.FilterBy.Keys.Any(p => p.Equals("Operator", StringComparison.OrdinalIgnoreCase)))
+                                {
+                                    var keyName = dataFilterSort.FilterBy.Keys.First(p => p.Equals("Operator", StringComparison.OrdinalIgnoreCase));
+                                    dataFilterSort.FilterBy.Remove(keyName);
+                                    dataFilterSort.FilterBy.Add("Operator", $"{externalUserRelationship.OperatorCode}|{externalUserRelationship.OperatorValue}");
+                                }
+                                else
+                                {
+                                    dataFilterSort.FilterBy.Add("Operator", $"{externalUserRelationship.OperatorCode}|{externalUserRelationship.OperatorValue}");
+                                }
+                                if (dataFilterSort.FilterBy.Keys.Any(p => p.Equals("UserType", StringComparison.OrdinalIgnoreCase)))
+                                {
+                                    var keyName = dataFilterSort.FilterBy.Keys.First(p => p.Equals("UserType", StringComparison.OrdinalIgnoreCase));
+                                    dataFilterSort.FilterBy.Remove(keyName);
+                                    dataFilterSort.FilterBy.Add("userType", "405");
+                                }
+                                else
+                                {
+                                    dataFilterSort.FilterBy.Add("userType", "405");
+                                }
+                            }
+                            else
+                            {
+                                dataFilterSort.FilterBy = new Dictionary<string, string> { { "Operator", $"{externalUserRelationship.OperatorCode}|{externalUserRelationship.OperatorValue}" }, { "userType", "405" } };
+                            }
+                        }
+                        else
+                        {
+                            dataFilterSort = new RequestParameter
+                            {
+                                FilterBy = new Dictionary<string, string> { { "Operator", $"{externalUserRelationship.OperatorCode}|{externalUserRelationship.OperatorValue}" }, {"userType", "405"} }
+                            };
+                        }
+                    }
                 }
             }
 
@@ -673,16 +731,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         profiledetail.InactivePersona = null;
                         profiledetail.Persona = null;
                         profiledetail.Operator = profiledetail.Operator;
-                        profiledetail.OperatorRealPageId = profiledetail.OperatorRealPageId;
+                        //profiledetail.OperatorRealPageId = profiledetail.OperatorRealPageId;
                         profiledetail.UserRelationshipType = profiledetail.UserRelationshipType;
                         profiledetail.CompanyName = profiledetail.CompanyName;
 
                         if (userType != null)
                         {
-                            string userTypeEnum = Regex.Replace(userType, @"[^A-Za-z0-9]+", "");
-                            UserRoleType userRoleType;
+                            var userTypeEnum = Regex.Replace(userType, @"[^A-Za-z0-9]+", "");
 
-                            if (Enum.TryParse(userTypeEnum, true, out userRoleType))
+                            if (Enum.TryParse(userTypeEnum, true, out UserRoleType userRoleType))
                             {
                                 profiledetail.userLogin.UserRoleType = userRoleType;
                             }
@@ -772,6 +829,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 return items.ToList();
             }
         }
+
+
+        public ExternalUserRelationship GetExternalUserRelationship(long organizationPartyId, long userId)
+        {
+            using (var repository = GetRepository())
+            {
+                dynamic param = new
+                {
+                    UserLoginId = userId,
+                    OrganizationPartyId = organizationPartyId
+                };
+                List<UserLoginPersona> userLoginPersonaList = repository.GetMany<UserLoginPersona>(StoredProcNameConstants.SP_GetUserLoginPersona, param);
+                return repository.GetOne<ExternalUserRelationship>(StoredProcNameConstants.SP_GetExternalUserRelationship, new { UserLoginPersonaId = userLoginPersonaList.First().UserLoginPersonaId });
+            }
+        }
+
         #endregion
 
         #region Private Profile methods

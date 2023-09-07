@@ -1,9 +1,9 @@
-﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
+﻿using RP.Enterprise.Foundation.DataAccess.Component;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Attribute;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using Swashbuckle.Swagger.Annotations;
@@ -14,8 +14,9 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
-using RP.Enterprise.Foundation.DataAccess.Component;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using System.Web.Http.Controllers;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -23,115 +24,142 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
     /// RoleType Controller to hold all RoleType management related APIs
     /// </summary>
     public class RoleTypeController : BaseApiController
-	{
-		#region Private variables
-		private readonly IRoleTypeRepository _roleTypeRepository;
-		IRepositoryResponse repositoryResponse = new RepositoryResponse();
-		#endregion
+    {
+        #region Private variables
 
-		#region Constructor
-		/// <summary>
-		/// Default constructor
-		/// </summary>
-		public RoleTypeController() : base()
-		{
-			_roleTypeRepository = new RoleTypeRepository();
-		}
+        private IManagePersona _managePersona;
+        private IManageRoleType _manageRoleType;
+        private IProfileRepository _profileRepository;
 
-		/// <summary>
-		/// Testing Constructor
-		/// </summary>
-		/// <param name="roleTypeRepository">RoleType Repository</param>
-		public RoleTypeController(IRoleTypeRepository roleTypeRepository)
-		{
-			_roleTypeRepository = roleTypeRepository;
-		}
-		#endregion
+        #endregion
 
-		#region Public Methods
-		/// <summary>
-		/// List Role type details
-		/// </summary>
-		/// <param name="roleTypeName">RoleType Name</param>
-		/// <param name="loginName">Optional User LoginName</param>
-		/// <returns>A list of Role type details</returns>
-		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
-		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
-		[SwaggerResponse(HttpStatusCode.OK, Description = "Get information about the password policy", Type = typeof(IRoleType))]
-		[SwaggerResponseExamples(typeof(IRoleType), typeof(RoleTypeExample))]
-		[Route("roletypes")]
-		[HttpGet]
+        #region Constructor
 
-		public HttpResponseMessage ListRoleType(string roleTypeName = null, string loginName = null)
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        public RoleTypeController()
         {
-			List<RoleType> roleTypeList = new List<RoleType>();
+            // DONT USE USERCLAIM IN BASE, IT IS NULL AT THIS POINT. MOVE TO Initialize FUNCTION
+        }
 
-			IManageRoleType roleTypeLogic = new ManageRoleType(_roleTypeRepository);
+        /// <summary>
+        /// Unit test constructor
+        /// </summary>
+        /// <param name="repository"></param>
+        /// <param name="messageHandler"></param>
+        /// <param name="userClaims"></param>
+        public RoleTypeController(IRepository repository, HttpMessageHandler messageHandler, DefaultUserClaim userClaims)
+        {
+            _manageRoleType = new ManageRoleType(repository);
+            _managePersona = new ManagePersona(repository, userClaims, messageHandler);
+            _profileRepository = new ProfileRepository(repository, userClaims, messageHandler);
+            _userClaims = userClaims;
+        }
 
-			// see if the caller is authenticated and if so use the organization of the user to get the type list
+        /// <summary>
+        /// Used to initialize DI classes with userclaim
+        /// </summary>
+        /// <param name="controllerContext"></param>
+        protected override void Initialize(HttpControllerContext controllerContext)
+        {
+            base.Initialize(controllerContext);
+            _manageRoleType = new ManageRoleType();
+            _managePersona = new ManagePersona(_userClaims);
+            _profileRepository = new ProfileRepository(_userClaims);
+        }
 
-			if (base._orgPartyId != 0 && roleTypeName.Equals("User Role", StringComparison.OrdinalIgnoreCase))
-			{
-				IManagePersona managePersona = new ManagePersona();
-                var persona = managePersona.GetPersona(_personaId);
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// List Role type details
+        /// </summary>
+        /// <param name="roleTypeName">RoleType Name</param>
+        /// <param name="loginName">Optional User LoginName</param>
+        /// <returns>A list of Role type details</returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about the password policy", Type = typeof(IRoleType))]
+        [SwaggerResponseExamples(typeof(IRoleType), typeof(RoleTypeExample))]
+        [Route("roletypes")]
+        [HttpGet]
+
+        public HttpResponseMessage ListRoleType(string roleTypeName = null, string loginName = null)
+        {
+            var roleTypeList = new List<RoleType>();
+
+            // see if the caller is authenticated and if so use the organization of the user to get the type list
+
+            if (_userClaims.OrganizationPartyId != 0 && roleTypeName != null && roleTypeName.Equals("User Role", StringComparison.OrdinalIgnoreCase))
+            {
+                var persona = _managePersona.GetPersona(_userClaims.PersonaId);
                 if (persona == null)
                 {
                     return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not found.");
                 }
 
-                roleTypeList = (List<RoleType>)roleTypeLogic.GetRoleTypeDependency(roleTypeId: persona.UserTypeId, partyId: base._orgPartyId, orgMasterId: persona.Organization.BooksCustomerMasterId, loginName: loginName);
-				if (!base._userClaims.IsRPEmployee && persona.UserTypeId == (int)UserRoleType.ExternalUser)
-				{
-					roleTypeList.RemoveAll(x => x.Name.Equals("SuperUser", StringComparison.OrdinalIgnoreCase));
-				}
-			}
+                roleTypeList = (List<RoleType>)_manageRoleType.GetRoleTypeDependency(roleTypeId: persona.UserTypeId, partyId: _userClaims.OrganizationPartyId, orgMasterId: persona.Organization.BooksCustomerMasterId, loginName: loginName);
+                if (!_userClaims.IsRPEmployee && persona.UserTypeId == (int)UserRoleType.ExternalUser)
+                {
+                    roleTypeList.RemoveAll(x => x.Name.Equals("SuperUser", StringComparison.OrdinalIgnoreCase));
+                    var externalUserRelationship = _profileRepository.GetExternalUserRelationship(_userClaims.OrganizationPartyId, _userClaims.UserId);
+                    if (!string.IsNullOrEmpty(externalUserRelationship.OperatorCode) && !string.IsNullOrEmpty(externalUserRelationship.OperatorValue))
+                    {
+                        roleTypeList.RemoveAll(x => x.PartyRoleTypeId != 405);
+                    }
+                }
+            }
             else
             {
-                roleTypeList = (List<RoleType>)roleTypeLogic.GetRoleType(roleTypeName: roleTypeName, partyId: null, orgMasterId: null, loginName: loginName);
+                roleTypeList = (List<RoleType>)_manageRoleType.GetRoleType(roleTypeName: roleTypeName, partyId: null, orgMasterId: null, loginName: loginName);
             }
 
-			// remove the RealPage employee role from showing for unauthenticated requests
-			if (base._orgPartyId == 0)
-			{
-				roleTypeList.RemoveAll(x => x.Name.Equals("RealPage Employee", StringComparison.OrdinalIgnoreCase));
-			}
-			if (roleTypeList != null)
-			{
-				roleTypeList = roleTypeList.OrderBy(r => r.Name).ToList();
-				ObjectListOutput<RoleType, IErrorData> output = new ObjectListOutput<RoleType, IErrorData>() { list = roleTypeList };
-				return Request.CreateResponse(HttpStatusCode.OK, output);
-			}
+            // remove the RealPage employee role from showing for unauthenticated requests
+            if (_userClaims.OrganizationPartyId == 0)
+            {
+                roleTypeList.RemoveAll(x => x.Name.Equals("RealPage Employee", StringComparison.OrdinalIgnoreCase));
+            }
 
-			//When trying to get a list of roleTypes that doesn't exists
-			return Request.CreateResponse(HttpStatusCode.NoContent, "No Data");
-		}
-		#endregion
+            if (roleTypeList == null) return Request.CreateResponse(HttpStatusCode.NoContent, "No Data");
 
-		#region Get Examples
-		/// <summary>
-		/// Used to document examples of the RoleType Model webapi result
-		/// </summary>
-		[ExcludeFromCodeCoverage]
-		public class RoleTypeExample : IProvideExamples
-		{
-			/// <summary>
-			/// Example object data used by Swagger to document the output of the webapi method
-			/// </summary>
-			/// <returns>RoleType example</returns>
-			public object GetExamples()
-			{
-				IRoleType example = new RoleType()
-				{
-					PartyRoleTypeId = 401,
-					ParentPartyRoleTypeId = 400,
-					Name = "User"
-				};
+            roleTypeList = roleTypeList.OrderBy(r => r.Name).ToList();
+            var output = new ObjectListOutput<RoleType, IErrorData>() { list = roleTypeList };
+            return Request.CreateResponse(HttpStatusCode.OK, output);
 
-				ObjectOutput<IRoleType, IErrorData> output = new ObjectOutput<IRoleType, IErrorData>() { obj = example };
+            //When trying to get a list of roleTypes that doesn't exists
+        }
 
-				return output;
-			}
-		}
-		#endregion
-	}
+        #endregion
+
+        #region Get Examples
+
+        /// <summary>
+        /// Used to document examples of the RoleType Model webapi result
+        /// </summary>
+        [ExcludeFromCodeCoverage]
+        public class RoleTypeExample : IProvideExamples
+        {
+            /// <summary>
+            /// Example object data used by Swagger to document the output of the webapi method
+            /// </summary>
+            /// <returns>RoleType example</returns>
+            public object GetExamples()
+            {
+                IRoleType example = new RoleType()
+                {
+                    PartyRoleTypeId = 401,
+                    ParentPartyRoleTypeId = 400,
+                    Name = "User"
+                };
+
+                ObjectOutput<IRoleType, IErrorData> output = new ObjectOutput<IRoleType, IErrorData>() { obj = example };
+
+                return output;
+            }
+        }
+
+        #endregion
+    }
 }

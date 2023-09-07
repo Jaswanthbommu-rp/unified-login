@@ -57,6 +57,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         private IManageCredential _manageCredential;
 
         #endregion
+
         #region Constructor
 
         /// <summary>
@@ -99,7 +100,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// <param name="repositoryResponse"></param>
         /// <param name="messageHandler"></param>
         /// <param name="userClaims"></param>
-        public OrganizationController(IRepository repository, IRepositoryResponse repositoryResponse, HttpMessageHandler messageHandler, ILdClient ldClient, IManageProductAssetOptimization manageProductAssetOptimization,DefaultUserClaim userClaims)
+        public OrganizationController(IRepository repository, IRepositoryResponse repositoryResponse, HttpMessageHandler messageHandler, ILdClient ldClient, IManageProductAssetOptimization manageProductAssetOptimization, DefaultUserClaim userClaims)
         {
             _repository = repository;
             _repositoryResponse = repositoryResponse;
@@ -109,14 +110,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _managePartyRelationship = new ManagePartyRelationship(new PartyRelationshipRepository(repository));
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
             _manageBlueBook = new ManageBlueBook(userClaims, repository, _productInternalSettingRepository, messageHandler);
-            _manageOrganization = new ManageOrganization(repository, userClaims, messageHandler,manageProductAssetOptimization);
+            _manageOrganization = new ManageOrganization(repository, userClaims, messageHandler, manageProductAssetOptimization);
             _messageHandler = messageHandler;
             _userClaims = userClaims;
             _propertyRepository = new PropertyRepository(repository);
             _manageProduct = new ManageProduct(repository, userClaims, messageHandler);
             _manageOrganizationProduct = new ManageOrganizationProduct(userClaims, repository, _manageBlueBook, _manageProduct);
             FeatureFlag.LdClient = ldClient;
-            
+
         }
 
         /// <summary>
@@ -165,7 +166,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
         #endregion
 
-       
+
 
         #region Public Organization Methods
 
@@ -245,7 +246,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             if (!organizationDomainList.Any(d => d.Name.Equals(organization.OrganizationDomain, StringComparison.OrdinalIgnoreCase)))
             {
-                RepositoryResponse response = _manageOrganization.CreateOrganizationDomain(new OrganizationDomain() {Name = organization.OrganizationDomain});
+                RepositoryResponse response = _manageOrganization.CreateOrganizationDomain(new OrganizationDomain() { Name = organization.OrganizationDomain });
                 if (response.Id > 0)
                 {
                     organization.OrganizationDomainId = Convert.ToInt32(response.Id);
@@ -308,12 +309,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     County = organization.CompanyAddress.County,
                     Country = organization.CompanyAddress.Country
                 };
-                companyInstance.CompanyInstanceLocation = new List<CompanyInstanceAddress>() {address};
+                companyInstance.CompanyInstanceLocation = new List<CompanyInstanceAddress>() { address };
             }
 
             if (!string.IsNullOrEmpty(organization.CompanyInstancePartner) && !string.IsNullOrEmpty(organization.CompanyInstancePartnerSourceId))
             {
-                companyInstance.CompanyInstancePartners = new List<CompanyInstancePartner>() {new CompanyInstancePartner() {TargetSource = organization.CompanyInstancePartner, TargetCompanyInstanceSourceId = organization.CompanyInstancePartnerSourceId}};
+                companyInstance.CompanyInstancePartners = new List<CompanyInstancePartner>() { new CompanyInstancePartner() { TargetSource = organization.CompanyInstancePartner, TargetCompanyInstanceSourceId = organization.CompanyInstancePartnerSourceId } };
             }
 
             bool addInstance = true;
@@ -344,9 +345,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 var companyCreatedSuccessfully = _manageBlueBook.AddUPFMCompanyFromCompanySetup(companyInstance);
 
                 if (!companyCreatedSuccessfully)
-				{
+                {
                     return Request.CreateResponse(HttpStatusCode.BadRequest, "There was a problem adding the UPFM instance to UDM");
                 }
+
                 if (!_manageOrganization.AddUpdateCompanyToUnifiedSettings(companyInstance.CompanyInstanceSourceId, "Create", companyInstance.CustomerEnvironment))
                 {
                     return Request.CreateResponse(HttpStatusCode.BadRequest, $"Unified Login and MDM company was updated successfully but Settings data update failed.");
@@ -424,16 +426,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             bool orgStatusChanged = org.IsActive != organization.IsActive ? true : false;
             bool orgTypeChanged = org.OrganizationTypeId != organization.OrganizationTypeId ? true : false;
             bool orgAddressChanged = false;
-            
+
             //Did the address change
-            if (organization.CompanyAddress != null && 
+            if (organization.CompanyAddress != null &&
                 (oldAddress == null ||
-                organization.CompanyAddress.Address.Equals(oldAddress.Address, StringComparison.OrdinalIgnoreCase) ||
-                organization.CompanyAddress.City.Equals(oldAddress.City, StringComparison.OrdinalIgnoreCase) ||
-                organization.CompanyAddress.County.Equals(oldAddress.County, StringComparison.OrdinalIgnoreCase) ||
-                organization.CompanyAddress.Country.Equals(oldAddress.Country, StringComparison.OrdinalIgnoreCase) ||
-                organization.CompanyAddress.State.Equals(oldAddress.State, StringComparison.OrdinalIgnoreCase) ||
-                organization.CompanyAddress.PostalCode.Equals(oldAddress.PostalCode, StringComparison.OrdinalIgnoreCase)))
+                 organization.CompanyAddress.Address.Equals(oldAddress.Address, StringComparison.OrdinalIgnoreCase) ||
+                 organization.CompanyAddress.City.Equals(oldAddress.City, StringComparison.OrdinalIgnoreCase) ||
+                 organization.CompanyAddress.County.Equals(oldAddress.County, StringComparison.OrdinalIgnoreCase) ||
+                 organization.CompanyAddress.Country.Equals(oldAddress.Country, StringComparison.OrdinalIgnoreCase) ||
+                 organization.CompanyAddress.State.Equals(oldAddress.State, StringComparison.OrdinalIgnoreCase) ||
+                 organization.CompanyAddress.PostalCode.Equals(oldAddress.PostalCode, StringComparison.OrdinalIgnoreCase)))
             {
                 orgAddressChanged = true;
             }
@@ -555,8 +557,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     {
                         return Request.CreateResponse(HttpStatusCode.BadRequest, $"Unified Login company was updated successfully but MDM data update failed. Error: " + booksResult);
                     }
-					else
-					{
+                    else
+                    {
                         if (!_manageOrganization.AddUpdateCompanyToUnifiedSettings(org.RealPageId.ToString(), "Update", null))
                         {
                             return Request.CreateResponse(HttpStatusCode.BadRequest, $"Unified Login and MDM company was updated successfully but Settings data update failed.");
@@ -610,7 +612,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.OK, orgList);
             }
         }
-        
+
         /// <summary>
         /// list of Organization By Enterprise User Id
         /// </summary>
@@ -651,7 +653,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     }
                 }
 
-                ObjectListOutput<Organization, IErrorData> output = new ObjectListOutput<Organization, IErrorData>() {list = organizationList};
+                ObjectListOutput<Organization, IErrorData> output = new ObjectListOutput<Organization, IErrorData>() { list = organizationList };
                 return Request.CreateResponse(HttpStatusCode.OK, output);
             }
 
@@ -1060,9 +1062,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             PagingSummary pagingSummary = new PagingSummary()
             {
                 TotalRecords = totalRecords,
-                TotalPages = (resultsPerPage == 0) ? 0 : (int) Math.Ceiling(totalRecords / resultsPerPage)
+                TotalPages = (resultsPerPage == 0) ? 0 : (int)Math.Ceiling(totalRecords / resultsPerPage)
             };
-            output = new ObjectListOutput<CompanySetup, IErrorData>() {list = companyList, Status = errorStatus};
+            output = new ObjectListOutput<CompanySetup, IErrorData>() { list = companyList, Status = errorStatus };
             output.pagingSummary = pagingSummary;
             return Request.CreateResponse(HttpStatusCode.OK, output);
         }
@@ -1131,15 +1133,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 {
                     List<ExportDataFileConfiguration> exportConfigurations = new List<ExportDataFileConfiguration>
                     {
-                        new ExportDataFileConfiguration {Header = "UPFM Company Name", MappedField = "OrganizationName", PDFColumnWidth = "2.85", Preference = 1},
-                        new ExportDataFileConfiguration {Header = "Contracted Name", MappedField = "ContractedName", PDFColumnWidth = "2.85", Preference = 2},
-                        new ExportDataFileConfiguration {Header = "Domain", MappedField = "Domain", PDFColumnWidth = "0.85", Preference = 3},
-                        new ExportDataFileConfiguration {Header = "Address", MappedField = "Address", PDFColumnWidth = "3.25", Preference = 4},
-                        new ExportDataFileConfiguration {Header = "RPUP ID", MappedField = "BooksCustomerMasterId", PDFColumnWidth = "0.70", Preference = 5},
-                        new ExportDataFileConfiguration {Header = "Type", MappedField = "OrganizationType", PDFColumnWidth = "1.00", Preference = 6},
-                        new ExportDataFileConfiguration {Header = "Products", MappedField = "Products", PDFColumnWidth = "0.50", Preference = 7},
-                        new ExportDataFileConfiguration {Header = "UPFM Company ID", MappedField = "RealPageId", PDFColumnWidth = "3.25", Preference = 8},
-                        new ExportDataFileConfiguration {Header = "Status", MappedField = "Status", PDFColumnWidth = "2.25", Preference = 9}
+                        new ExportDataFileConfiguration { Header = "UPFM Company Name", MappedField = "OrganizationName", PDFColumnWidth = "2.85", Preference = 1 },
+                        new ExportDataFileConfiguration { Header = "Contracted Name", MappedField = "ContractedName", PDFColumnWidth = "2.85", Preference = 2 },
+                        new ExportDataFileConfiguration { Header = "Domain", MappedField = "Domain", PDFColumnWidth = "0.85", Preference = 3 },
+                        new ExportDataFileConfiguration { Header = "Address", MappedField = "Address", PDFColumnWidth = "3.25", Preference = 4 },
+                        new ExportDataFileConfiguration { Header = "RPUP ID", MappedField = "BooksCustomerMasterId", PDFColumnWidth = "0.70", Preference = 5 },
+                        new ExportDataFileConfiguration { Header = "Type", MappedField = "OrganizationType", PDFColumnWidth = "1.00", Preference = 6 },
+                        new ExportDataFileConfiguration { Header = "Products", MappedField = "Products", PDFColumnWidth = "0.50", Preference = 7 },
+                        new ExportDataFileConfiguration { Header = "UPFM Company ID", MappedField = "RealPageId", PDFColumnWidth = "3.25", Preference = 8 },
+                        new ExportDataFileConfiguration { Header = "Status", MappedField = "Status", PDFColumnWidth = "2.25", Preference = 9 }
                     };
 
                     plainBytes = DataExport.ExportDataToFile<CompanySetup>(exportConfigurations.OrderBy(p => p.Preference).ToList(), companyList, dataFormat);
@@ -1166,28 +1168,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
         }
 
-		#endregion
+        #endregion
 
-		#region Property
+        #region Property
 
-		#region Get Properties for a Organization
+        #region Get Properties for a Organization
 
-		/// <summary>
-		/// Get Properties for a Organization
-		/// </summary>
-		/// <param name="companyInstanceId">companyInstanceId</param>
-		/// <param name="propertyName">PropertyName</param>
-		/// <param name="domain">Domain</param>
-		/// <param name="blueId">blueId</param>
-		/// <param name="status"></param>
-		/// <param name="datafilter">datafilter</param>
-		/// <param name="userPersonaId">userPersonaId</param>
-		/// <param name="editorPersonaId">editorPersonaId</param>
-		/// <param name="isSelectedProperties">isSelectedProperties</param>
-		/// <param name="selectedProperties"></param>
-		/// <param name="operatorInstanceId">The guid of the operator to filter the property list to</param>
-		/// <returns>List of Properties for a company </returns>
-		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        /// <summary>
+        /// Get Properties for a Organization
+        /// </summary>
+        /// <param name="companyInstanceId">companyInstanceId</param>
+        /// <param name="propertyName">PropertyName</param>
+        /// <param name="domain">Domain</param>
+        /// <param name="blueId">blueId</param>
+        /// <param name="status"></param>
+        /// <param name="datafilter">datafilter</param>
+        /// <param name="userPersonaId">userPersonaId</param>
+        /// <param name="editorPersonaId">editorPersonaId</param>
+        /// <param name="isSelectedProperties">isSelectedProperties</param>
+        /// <param name="selectedProperties"></param>
+        /// <param name="operatorInstanceId">The guid of the operator to filter the property list to</param>
+        /// <returns>List of Properties for a company </returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about a list of Properties for an Organization", Type = typeof(CompanyPropertySetup))]
         [SwaggerResponseExamples(typeof(CompanyPropertySetup), typeof(PropertyListExample))]
@@ -1227,7 +1229,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
 
             RPObjectCache.RemoveFromCache(cacheKey);
-            List<CompanyPropertySetup> companyPropertySetup = _manageOrganization.GetPropertiesForCompany(companyInstanceId, propertyName, domain, blueId, status, globals, editorPersonaId, userPersonaId, isSelectedProperties, selectedProperties, operatorCode,operatorValue);
+            List<CompanyPropertySetup> companyPropertySetup = _manageOrganization.GetPropertiesForCompany(companyInstanceId, propertyName, domain, blueId, status, globals, editorPersonaId, userPersonaId, isSelectedProperties, selectedProperties, operatorCode, operatorValue);
 
             int totalRecords = 0;
             if (companyPropertySetup.Count > 0)
@@ -1241,9 +1243,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             PagingSummary pagingSummary = new PagingSummary()
             {
                 TotalRecords = totalRecords,
-                TotalPages = (resultsPerPage == 0) ? 0 : (int) Math.Ceiling(totalRecords / resultsPerPage)
+                TotalPages = (resultsPerPage == 0) ? 0 : (int)Math.Ceiling(totalRecords / resultsPerPage)
             };
-            output = new ObjectListOutput<CompanyPropertySetup, IErrorData>() {list = companyPropertySetup, Status = errorStatus};
+            output = new ObjectListOutput<CompanyPropertySetup, IErrorData>() { list = companyPropertySetup, Status = errorStatus };
             output.pagingSummary = pagingSummary;
             return Request.CreateResponse(HttpStatusCode.OK, output);
         }
@@ -1302,7 +1304,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             _userClaims.UserRealPageGuid = adminUserGuid;
             var auditResult = GetAuditProductProperties(companyInstanceId, productId, adminUserGuid, orgDetails.PartyId);
-            ObjectListOutput<PropertyAudit, IErrorData> output = new ObjectListOutput<PropertyAudit, IErrorData> {list = auditResult, Status = errorStatus, pagingSummary = new PagingSummary() {TotalRecords = auditResult.Count, TotalPages = 1}};
+            ObjectListOutput<PropertyAudit, IErrorData> output = new ObjectListOutput<PropertyAudit, IErrorData> { list = auditResult, Status = errorStatus, pagingSummary = new PagingSummary() { TotalRecords = auditResult.Count, TotalPages = 1 } };
             return Request.CreateResponse(HttpStatusCode.OK, output);
         }
 
@@ -1366,10 +1368,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 {
                     List<ExportDataFileConfiguration> exportConfigurations = new List<ExportDataFileConfiguration>
                     {
-                        new ExportDataFileConfiguration {Header = "Property", MappedField = "Name", PDFColumnWidth = "3.85", Preference = 1},
-                        new ExportDataFileConfiguration {Header = "Instance ID", MappedField = "ProductInstanceId", PDFColumnWidth = "2.85", Preference = 2},
-                        new ExportDataFileConfiguration {Header = "Platform Property name", MappedField = "UPFMName", PDFColumnWidth = "3.25", Preference = 3},
-                        new ExportDataFileConfiguration {Header = "Status", MappedField = "Status", PDFColumnWidth = "1.25", Preference = 4}
+                        new ExportDataFileConfiguration { Header = "Property", MappedField = "Name", PDFColumnWidth = "3.85", Preference = 1 },
+                        new ExportDataFileConfiguration { Header = "Instance ID", MappedField = "ProductInstanceId", PDFColumnWidth = "2.85", Preference = 2 },
+                        new ExportDataFileConfiguration { Header = "Platform Property name", MappedField = "UPFMName", PDFColumnWidth = "3.25", Preference = 3 },
+                        new ExportDataFileConfiguration { Header = "Status", MappedField = "Status", PDFColumnWidth = "1.25", Preference = 4 }
                     };
                     plainBytes = DataExport.ExportDataToFile<PropertyAudit>(exportConfigurations.OrderBy(p => p.Preference).ToList(), propertyAudit, dataFormat);
                     output = new ObjectOutput<string, IErrorData>()
@@ -1487,13 +1489,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 {
                     List<ExportDataFileConfiguration> exportConfigurations = new List<ExportDataFileConfiguration>
                     {
-                        new ExportDataFileConfiguration {Header = "UPFM Property Name", MappedField = "Name", PDFColumnWidth = "2.85", Preference = 1},
-                        new ExportDataFileConfiguration {Header = "Contracted Name", MappedField = "ContractedName", PDFColumnWidth = "2.85", Preference = 2},
-                        new ExportDataFileConfiguration {Header = "RPUP ID", MappedField = "CustomerPropertyId", PDFColumnWidth = "0.70", Preference = 3},
-                        new ExportDataFileConfiguration {Header = "Domain", MappedField = "Domain", PDFColumnWidth = "0.85", Preference = 4},
-                        new ExportDataFileConfiguration {Header = "Address", MappedField = "PropertyAddress", PDFColumnWidth = "3.25", Preference = 5},
-                        new ExportDataFileConfiguration {Header = "UPFM Property ID", MappedField = "InstanceId", PDFColumnWidth = "3.25", Preference = 6},
-                        new ExportDataFileConfiguration {Header = "Status", MappedField = "IsActive", PDFColumnWidth = "2.25", Preference = 7}
+                        new ExportDataFileConfiguration { Header = "UPFM Property Name", MappedField = "Name", PDFColumnWidth = "2.85", Preference = 1 },
+                        new ExportDataFileConfiguration { Header = "Contracted Name", MappedField = "ContractedName", PDFColumnWidth = "2.85", Preference = 2 },
+                        new ExportDataFileConfiguration { Header = "RPUP ID", MappedField = "CustomerPropertyId", PDFColumnWidth = "0.70", Preference = 3 },
+                        new ExportDataFileConfiguration { Header = "Domain", MappedField = "Domain", PDFColumnWidth = "0.85", Preference = 4 },
+                        new ExportDataFileConfiguration { Header = "Address", MappedField = "PropertyAddress", PDFColumnWidth = "3.25", Preference = 5 },
+                        new ExportDataFileConfiguration { Header = "UPFM Property ID", MappedField = "InstanceId", PDFColumnWidth = "3.25", Preference = 6 },
+                        new ExportDataFileConfiguration { Header = "Status", MappedField = "IsActive", PDFColumnWidth = "2.25", Preference = 7 }
                     };
 
                     plainBytes = DataExport.ExportDataToFile<PropertySetup>(exportConfigurations.OrderBy(p => p.Preference).ToList(), propertyList[0]?.Property, dataFormat);
@@ -1588,6 +1590,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: propertyInstanceID");
             }
+
             _repositoryResponse = _manageOrganization.DeletePropertyForOrganization(propertyInstanceID, companyInstanceID);
             return Request.CreateResponse(HttpStatusCode.OK, _repositoryResponse);
         }
@@ -1834,7 +1837,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     AuthenticationType = "ID3"
                 };
 
-                IdentityProviderTypeOutput output = new IdentityProviderTypeOutput() {identityProviderType = example};
+                IdentityProviderTypeOutput output = new IdentityProviderTypeOutput() { identityProviderType = example };
 
                 return output;
             }
@@ -1898,7 +1901,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 productList.Add(product);
 
                 Status<IErrorData> errorStatus = new Status<IErrorData>();
-                ObjectListOutput<ProductUI, IErrorData> output = new ObjectListOutput<ProductUI, IErrorData>() {list = productList, Status = errorStatus};
+                ObjectListOutput<ProductUI, IErrorData> output = new ObjectListOutput<ProductUI, IErrorData>() { list = productList, Status = errorStatus };
 
                 return output;
             }

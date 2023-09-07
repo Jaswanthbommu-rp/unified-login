@@ -6,6 +6,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityCo
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using System.Collections.Generic;
 using System.Linq;
+using RP.Enterprise.Foundation.DataAccess.Component;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -40,6 +41,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _roleTypeRepository = new RoleTypeRepository();
         }
 
+        /// <summary>
+        /// Unit test constructor
+        /// </summary>
+        /// <param name="repository"></param>
+        public ManageRoleType(IRepository repository)
+        {
+            _roleTypeRepository = new RoleTypeRepository(repository);
+        }
+
         #endregion
 
         #region Public Methods
@@ -54,7 +64,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <returns>List of RoleType object</returns>
         public IList<RoleType> GetRoleType(string roleTypeName, long? partyId, long? orgMasterId, string loginName = null)
         {
-            _roleTypeList = _roleTypeRepository.GetRoleType(roleTypeName, partyId);
+            _roleTypeList = _roleTypeRepository.GetRoleType(roleTypeName, partyId).ToList();
             _roleTypeList = FilterRoleType(_roleTypeList, loginName, partyId, orgMasterId);
             return _roleTypeList;
         }

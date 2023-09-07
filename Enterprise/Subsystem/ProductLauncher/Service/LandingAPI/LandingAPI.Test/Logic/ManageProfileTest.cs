@@ -14,6 +14,7 @@ using System.Linq;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using Xunit;
 using System.Net.Http;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 {
@@ -48,6 +49,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 new PersonaProductUserDetails() { ProductId = (int)ProductEnum.ProspectContactCenter}
             };
 
+            var userLoginPersonaList = new List<UserLoginPersona>() { new UserLoginPersona()
+            {
+                PrimaryOrganization = true,
+                IsDelegateAdmin = false,
+                UserLoginId = _userUserId,
+                UserLoginPersonaId = 12345
+            }};
+
+            var externalUserRelationship = new ExternalUserRelationship()
+            {
+                UserLoginPersonaId = 12345,
+                OperatorCode = null,
+                OperatorValue = null,
+                ThirdPartyRelationShipId = 1
+            };
+
             _mockRepository
                 .Setup(m => m.GetOne<long>(StoredProcNameConstants.SP_GetActivePersona,
                     It.Is<Guid>(l => l == _userRealPageId)
@@ -61,7 +78,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 ))
                 .Returns(productUIList);
 
-			globals.Add(BaseType.RequestParameter, datafilter);
+            _mockRepository
+                .Setup(m => m.GetMany<UserLoginPersona>(StoredProcNameConstants.SP_GetUserLoginPersona,
+                It.Is<object>(
+                        d => TestSqlParameter(d, "{ UserLoginId = " + _userUserId + ", OrganizationPartyId = 0 }"))
+                ))
+                .Returns(userLoginPersonaList);
+
+            _mockRepository
+                .Setup(m => m.GetOne<ExternalUserRelationship>(StoredProcNameConstants.SP_GetExternalUserRelationship,
+                    It.Is<object>(
+                        d => TestSqlParameter(d, "{ UserLoginPersonaId = " + userLoginPersonaList[0].UserLoginPersonaId + " }"))
+                ))
+                .Returns(externalUserRelationship);
+
+            globals.Add(BaseType.RequestParameter, datafilter);
             var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 
             _profileLogic = new ManageProfile(_mockRepository.Object, _userUserClaim, mockHttpMessageHandler.Object);
@@ -75,46 +106,93 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			Assert.True(profileDetailList.Count == 0);
 		}
 
-        //[Fact]
-        public void ListProfileDetails_MockInputData_ReturnValidRepositoryResponseObject()
+        [Fact]
+        public void ListProfileDetails_MockInputData_ReturnValidUserListOneUser()
         {
             //Arrange
             RequestParameter datafilter = new RequestParameter();
             IList<ProfileDetail> profileDetailList = new List<ProfileDetail>();
             IList<ProfileDetail> expectedProfileDetailList = new List<ProfileDetail>();
 
-			_mockPersonaLogic
-				.Setup(m => m.GetActivePersona(
-					It.Is<Guid>(l => l == _userRealPageId)
-				))
-				.Returns(_userPersona);
+            var productUIList = new List<ProductUI>()
+            {
+                new PersonaProductUserDetails() { ProductId = (int)ProductEnum.OneSite},
+                new PersonaProductUserDetails() { ProductId = (int)ProductEnum.FinancialSuite},
+                new PersonaProductUserDetails() { ProductId = (int)ProductEnum.ProspectContactCenter}
+            };
 
-			UserLogin userLogin = new UserLogin()
+            var userLoginPersonaList = new List<UserLoginPersona>() { new UserLoginPersona()
+            {
+                PrimaryOrganization = true,
+                IsDelegateAdmin = false,
+                UserLoginId = _userUserId,
+                UserLoginPersonaId = 12345
+            }};
+
+            var externalUserRelationship = new ExternalUserRelationship()
+            {
+                UserLoginPersonaId = 12345,
+                OperatorCode = null,
+                OperatorValue = null,
+                ThirdPartyRelationShipId = 1
+            };
+
+            _mockRepository
+                .Setup(m => m.GetOne<long>(StoredProcNameConstants.SP_GetActivePersona,
+                    It.Is<Guid>(l => l == _userRealPageId)
+                ))
+                .Returns(_userPersona.PersonaId);
+
+            _mockRepository
+                .Setup(m => m.GetMany<ProductUI>(StoredProcNameConstants.SP_ListProductsByOrganization,
+                    It.Is<object>(
+                        d => TestIs("OrganizationRealPageId".ToLower(), d, _userOrganizationRealPageId))
+                ))
+                .Returns(productUIList);
+
+            _mockRepository
+                .Setup(m => m.GetMany<UserLoginPersona>(StoredProcNameConstants.SP_GetUserLoginPersona,
+                    It.Is<object>(
+                        d => TestSqlParameter(d, "{ UserLoginId = " + _userUserId + ", OrganizationPartyId = 0 }"))
+                ))
+                .Returns(userLoginPersonaList);
+
+            _mockRepository
+                .Setup(m => m.GetOne<ExternalUserRelationship>(StoredProcNameConstants.SP_GetExternalUserRelationship,
+                    It.Is<object>(
+                        d => TestSqlParameter(d, "{ UserLoginPersonaId = " + userLoginPersonaList[0].UserLoginPersonaId + " }"))
+                ))
+                .Returns(externalUserRelationship);
+
+            _mockRepository
+                .Setup(m => m.GetOne<ExternalUserRelationship>(StoredProcNameConstants.SP_GetExternalUserRelationship,
+                    It.Is<object>(
+                        d => TestSqlParameter(d, "{ UserLoginPersonaId = " + userLoginPersonaList[0].UserLoginPersonaId + " }"))
+                ))
+                .Returns(externalUserRelationship);
+
+            _mockRepository
+                .Setup(m => m.GetManyWithSpliOn(
+                    StoredProcNameConstants.SP_ListPersons,
+                    It.IsAny<Func<ProfileDetail, UserLogin, int, string, ProfileDetail>>(),
+                    It.Is<object>(d => TestSqlParameter(d, "{ RealPageId = " + _userOrganizationRealPageId + ", ParentPartyRoleTypeId = 400, UserListFilterType = 2, AssignedProducts = {\"assignedProducts\":[{\"ColumnName\":\"ProductId\",\"SearchValue\":\"1,8,10\"}]}, FilterBy = , SortBy = , RowsPerPage = 0, PageNumber = 1 }")),
+                    It.IsAny<string>()
+                ))
+                .Returns(new List<ProfileDetail>() { new ProfileDetail() { FirstName = "John", LastName = "Doe",  } });
+
+            var userLogin = new UserLogin()
             {
                 LoginName = "john.doe@realpage.com",
                 PartyId = 1,
                 RealPageId = new Guid("1aafde71-cf3a-46d8-9d73-08c6deccc92b"),
                 UserId = 1
             };
-            IDictionary<object, object> globals = new Dictionary<object, object>();
-            globals.Add(BaseType.RequestParameter, datafilter);
+            var globals = new Dictionary<object, object> { { BaseType.RequestParameter, datafilter } };
 
-            expectedProfileDetailList.Add(new ProfileDetail()
-            {
-                FirstName = "John",
-                LastName = "Doe",
-                PartyId = 1,
-                RealPageId = new Guid("1aafde71-cf3a-46d8-9d73-08c6deccc92b"),
-				CreateUserSourceType = Component.SharedObjects.Enum.CreateUserSourceType.UnifiedPlatform,
-                userLogin = userLogin
-            });
+            var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 
-            _mockProfileRepository
-                .Setup(m => m.ListPersons(null, null, null, null,false))
-                .Returns(expectedProfileDetailList);
 
-            //_profileLogic = new ManageProfile(_mockProfileRepository.Object, _mockProductRepository.Object, _mockPersonaLogic.Object, _mockPersonLogic.Object, _mockUserLoginLogic.Object, _mockOrganizationLogic.Object, _mockPartyRelationshipLogic.Object, _mockContactMechanismLogic.Object, _mockPartyRoleLogic.Object, _userUserClaim);
-            _profileLogic = new ManageProfile(_mockRepository.Object, _userUserClaim, null);
+            _profileLogic = new ManageProfile(_mockRepository.Object, _userUserClaim, mockHttpMessageHandler.Object);
 
             //Act
             profileDetailList = _profileLogic.ListProfileDetails(globals);
@@ -124,6 +202,307 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 profileDetailList != null
                 && profileDetailList.Count() == 1
            );
+        }
+
+        [Fact]
+        public void ListProfileDetails_ReturnDelegatedUserList_NoFilter_TwoUsers()
+        {
+            //Arrange
+            var productUIList = new List<ProductUI>()
+            {
+                new PersonaProductUserDetails() { ProductId = (int)ProductEnum.OneSite },
+                new PersonaProductUserDetails() { ProductId = (int)ProductEnum.FinancialSuite },
+                new PersonaProductUserDetails() { ProductId = (int)ProductEnum.ProspectContactCenter }
+            };
+
+            var userLoginPersonaList = new List<UserLoginPersona>()
+            {
+                new UserLoginPersona()
+                {
+                    PrimaryOrganization = true,
+                    IsDelegateAdmin = false,
+                    UserLoginId = _userUserId,
+                    UserLoginPersonaId = 12345
+                }
+            };
+
+            var externalUserRelationship = new ExternalUserRelationship()
+            {
+                UserLoginPersonaId = 12345,
+                OperatorCode = "OperatorCode",
+                OperatorValue = "OperatorName",
+                ThirdPartyRelationShipId = 123
+            };
+
+            _mockRepository
+                .Setup(m => m.GetOne<long>(StoredProcNameConstants.SP_GetActivePersona,
+                    It.Is<Guid>(l => l == _userRealPageId)
+                ))
+                .Returns(_userPersona.PersonaId);
+
+            _mockRepository
+                .Setup(m => m.GetMany<ProductUI>(StoredProcNameConstants.SP_ListProductsByOrganization,
+                    It.Is<object>(
+                        d => TestIs("OrganizationRealPageId".ToLower(), d, _userOrganizationRealPageId))
+                ))
+                .Returns(productUIList);
+
+            _mockRepository
+                .Setup(m => m.GetMany<UserLoginPersona>(StoredProcNameConstants.SP_GetUserLoginPersona,
+                    It.Is<object>(
+                        d => TestSqlParameter(d, "{ UserLoginId = " + _userUserId + ", OrganizationPartyId = 0 }"))
+                ))
+                .Returns(userLoginPersonaList);
+
+            _mockRepository
+                .Setup(m => m.GetOne<ExternalUserRelationship>(StoredProcNameConstants.SP_GetExternalUserRelationship,
+                    It.Is<object>(
+                        d => TestSqlParameter(d, "{ UserLoginPersonaId = " + userLoginPersonaList[0].UserLoginPersonaId + " }"))
+                ))
+                .Returns(externalUserRelationship);
+
+            _mockRepository
+                .Setup(m => m.GetOne<ExternalUserRelationship>(StoredProcNameConstants.SP_GetExternalUserRelationship,
+                    It.Is<object>(
+                        d => TestSqlParameter(d, "{ UserLoginPersonaId = " + userLoginPersonaList[0].UserLoginPersonaId + " }"))
+                ))
+                .Returns(externalUserRelationship);
+
+            _mockRepository
+                .Setup(m => m.GetManyWithSpliOn(
+                    StoredProcNameConstants.SP_ListPersons,
+                    It.IsAny<Func<ProfileDetail, UserLogin, int, string, ProfileDetail>>(),
+                    It.Is<object>(d => TestSqlParameter(d, "{ RealPageId = " + _userOrganizationRealPageId + ", ParentPartyRoleTypeId = 400, UserListFilterType = 3, AssignedProducts = {\"assignedProducts\":[{\"ColumnName\":\"ProductId\",\"SearchValue\":\"1,8,10\"}]}, FilterBy = {\"filterBy\":[{\"ColumnName\":\"Operator\",\"SearchValue\":\"OperatorCode|OperatorName\"},{\"ColumnName\":\"userType\",\"SearchValue\":\"405\"}]}, SortBy = , RowsPerPage = 0, PageNumber = 1 }")),
+                    It.IsAny<string>()
+                ))
+                .Returns(new List<ProfileDetail>() { new ProfileDetail() { FirstName = "John", LastName = "Doe", Operator = "OperatorValue" }, new ProfileDetail() { FirstName = "Jane", LastName = "Doe", Operator = "OperatorValue" } });
+
+            var globals = new Dictionary<object, object> { { BaseType.RequestParameter, null } };
+
+            var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
+
+            _profileLogic = new ManageProfile(_mockRepository.Object, _userUserClaim, mockHttpMessageHandler.Object);
+
+            //Act
+            var profileDetailList = _profileLogic.ListProfileDetails(globals);
+
+            //Assert
+            Assert.True(
+                profileDetailList != null
+                && profileDetailList.Count() == 2
+                && profileDetailList[0].Operator == "OperatorValue"
+            );
+        }
+
+        [Fact]
+        public void ListProfileDetails_ReturnDelegatedUserList_OverrideExistingFilter()
+        {
+            //Arrange
+            var datafilter = new RequestParameter
+            {
+                SortBy = new Dictionary<string, string> { { "Name", "ASC" } },
+                FilterBy = new Dictionary<string, string> { { "UserType", "401" }, { "Operator", "Wrong Operator" } }
+            };
+
+            IList<ProfileDetail> profileDetailList = new List<ProfileDetail>();
+            IList<ProfileDetail> expectedProfileDetailList = new List<ProfileDetail>();
+
+            var productUIList = new List<ProductUI>()
+            {
+                new PersonaProductUserDetails() { ProductId = (int)ProductEnum.OneSite },
+                new PersonaProductUserDetails() { ProductId = (int)ProductEnum.FinancialSuite },
+                new PersonaProductUserDetails() { ProductId = (int)ProductEnum.ProspectContactCenter }
+            };
+
+            var userLoginPersonaList = new List<UserLoginPersona>()
+            {
+                new UserLoginPersona()
+                {
+                    PrimaryOrganization = true,
+                    IsDelegateAdmin = false,
+                    UserLoginId = _userUserId,
+                    UserLoginPersonaId = 12345
+                }
+            };
+
+            var externalUserRelationship = new ExternalUserRelationship()
+            {
+                UserLoginPersonaId = 12345,
+                OperatorCode = "OperatorCode",
+                OperatorValue = "OperatorName",
+                ThirdPartyRelationShipId = 123
+            };
+
+            _mockRepository
+                .Setup(m => m.GetOne<long>(StoredProcNameConstants.SP_GetActivePersona,
+                    It.Is<Guid>(l => l == _userRealPageId)
+                ))
+                .Returns(_userPersona.PersonaId);
+
+            _mockRepository
+                .Setup(m => m.GetMany<ProductUI>(StoredProcNameConstants.SP_ListProductsByOrganization,
+                    It.Is<object>(
+                        d => TestIs("OrganizationRealPageId".ToLower(), d, _userOrganizationRealPageId))
+                ))
+                .Returns(productUIList);
+
+            _mockRepository
+                .Setup(m => m.GetMany<UserLoginPersona>(StoredProcNameConstants.SP_GetUserLoginPersona,
+                    It.Is<object>(
+                        d => TestSqlParameter(d, "{ UserLoginId = " + _userUserId + ", OrganizationPartyId = 0 }"))
+                ))
+                .Returns(userLoginPersonaList);
+
+            _mockRepository
+                .Setup(m => m.GetOne<ExternalUserRelationship>(StoredProcNameConstants.SP_GetExternalUserRelationship,
+                    It.Is<object>(
+                        d => TestSqlParameter(d, "{ UserLoginPersonaId = " + userLoginPersonaList[0].UserLoginPersonaId + " }"))
+                ))
+                .Returns(externalUserRelationship);
+
+            _mockRepository
+                .Setup(m => m.GetOne<ExternalUserRelationship>(StoredProcNameConstants.SP_GetExternalUserRelationship,
+                    It.Is<object>(
+                        d => TestSqlParameter(d, "{ UserLoginPersonaId = " + userLoginPersonaList[0].UserLoginPersonaId + " }"))
+                ))
+                .Returns(externalUserRelationship);
+
+            _mockRepository
+                .Setup(m => m.GetManyWithSpliOn(
+                    StoredProcNameConstants.SP_ListPersons,
+                    It.IsAny<Func<ProfileDetail, UserLogin, int, string, ProfileDetail>>(),
+                    It.Is<object>(d => TestSqlParameter(d, "{ RealPageId = " + _userOrganizationRealPageId + ", ParentPartyRoleTypeId = 400, UserListFilterType = 3, AssignedProducts = {\"assignedProducts\":[{\"ColumnName\":\"ProductId\",\"SearchValue\":\"1,8,10\"}]}, FilterBy = {\"filterBy\":[{\"ColumnName\":\"userType\",\"SearchValue\":\"405\"},{\"ColumnName\":\"Operator\",\"SearchValue\":\"OperatorCode|OperatorName\"}]}, SortBy = {\"sortBy\":[{\"ColumnName\":\"Name\",\"SortDirection\":\"ASC\"}]}, RowsPerPage = 0, PageNumber = 1 }")),
+                    It.IsAny<string>()
+                ))
+                .Returns(new List<ProfileDetail>() { new ProfileDetail() { FirstName = "John", LastName = "Doe", Operator = "OperatorValue" }, new ProfileDetail() { FirstName = "Jane", LastName = "Doe", Operator = "OperatorValue" } });
+
+            var userLogin = new UserLogin()
+            {
+                LoginName = "john.doe@realpage.com",
+                PartyId = 1,
+                RealPageId = new Guid("1aafde71-cf3a-46d8-9d73-08c6deccc92b"),
+                UserId = 1
+            };
+            var globals = new Dictionary<object, object> { { BaseType.RequestParameter, datafilter } };
+
+            var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
+
+
+            _profileLogic = new ManageProfile(_mockRepository.Object, _userUserClaim, mockHttpMessageHandler.Object);
+
+            //Act
+            profileDetailList = _profileLogic.ListProfileDetails(globals);
+
+            //Assert
+            Assert.True(
+                profileDetailList != null
+                && profileDetailList.Count() == 2
+                && profileDetailList[0].Operator == "OperatorValue"
+            );
+        }
+
+        [Fact]
+        public void ListProfileDetails_ReturnDelegatedUserList_AppendToExistingFilter()
+        {
+            //Arrange
+            var datafilter = new RequestParameter
+            {
+                SortBy = new Dictionary<string, string> { { "Name", "ASC" } },
+            };
+
+            IList<ProfileDetail> profileDetailList = new List<ProfileDetail>();
+
+            var productUIList = new List<ProductUI>()
+            {
+                new PersonaProductUserDetails() { ProductId = (int)ProductEnum.OneSite },
+                new PersonaProductUserDetails() { ProductId = (int)ProductEnum.FinancialSuite },
+                new PersonaProductUserDetails() { ProductId = (int)ProductEnum.ProspectContactCenter }
+            };
+
+            var userLoginPersonaList = new List<UserLoginPersona>()
+            {
+                new UserLoginPersona()
+                {
+                    PrimaryOrganization = true,
+                    IsDelegateAdmin = false,
+                    UserLoginId = _userUserId,
+                    UserLoginPersonaId = 12345
+                }
+            };
+
+            var externalUserRelationship = new ExternalUserRelationship()
+            {
+                UserLoginPersonaId = 12345,
+                OperatorCode = "OperatorCode",
+                OperatorValue = "OperatorName",
+                ThirdPartyRelationShipId = 123
+            };
+
+            _mockRepository
+                .Setup(m => m.GetOne<long>(StoredProcNameConstants.SP_GetActivePersona,
+                    It.Is<Guid>(l => l == _userRealPageId)
+                ))
+                .Returns(_userPersona.PersonaId);
+
+            _mockRepository
+                .Setup(m => m.GetMany<ProductUI>(StoredProcNameConstants.SP_ListProductsByOrganization,
+                    It.Is<object>(
+                        d => TestIs("OrganizationRealPageId".ToLower(), d, _userOrganizationRealPageId))
+                ))
+                .Returns(productUIList);
+
+            _mockRepository
+                .Setup(m => m.GetMany<UserLoginPersona>(StoredProcNameConstants.SP_GetUserLoginPersona,
+                    It.Is<object>(
+                        d => TestSqlParameter(d, "{ UserLoginId = " + _userUserId + ", OrganizationPartyId = 0 }"))
+                ))
+                .Returns(userLoginPersonaList);
+
+            _mockRepository
+                .Setup(m => m.GetOne<ExternalUserRelationship>(StoredProcNameConstants.SP_GetExternalUserRelationship,
+                    It.Is<object>(
+                        d => TestSqlParameter(d, "{ UserLoginPersonaId = " + userLoginPersonaList[0].UserLoginPersonaId + " }"))
+                ))
+                .Returns(externalUserRelationship);
+
+            _mockRepository
+                .Setup(m => m.GetOne<ExternalUserRelationship>(StoredProcNameConstants.SP_GetExternalUserRelationship,
+                    It.Is<object>(
+                        d => TestSqlParameter(d, "{ UserLoginPersonaId = " + userLoginPersonaList[0].UserLoginPersonaId + " }"))
+                ))
+                .Returns(externalUserRelationship);
+
+            _mockRepository
+                .Setup(m => m.GetManyWithSpliOn(
+                    StoredProcNameConstants.SP_ListPersons,
+                    It.IsAny<Func<ProfileDetail, UserLogin, int, string, ProfileDetail>>(),
+                    It.Is<object>(d => TestSqlParameter(d, "{ RealPageId = " + _userOrganizationRealPageId + ", ParentPartyRoleTypeId = 400, UserListFilterType = 3, AssignedProducts = {\"assignedProducts\":[{\"ColumnName\":\"ProductId\",\"SearchValue\":\"1,8,10\"}]}, FilterBy = {\"filterBy\":[{\"ColumnName\":\"Operator\",\"SearchValue\":\"OperatorCode|OperatorName\"},{\"ColumnName\":\"userType\",\"SearchValue\":\"405\"}]}, SortBy = {\"sortBy\":[{\"ColumnName\":\"Name\",\"SortDirection\":\"ASC\"}]}, RowsPerPage = 0, PageNumber = 1 }")),
+                    It.IsAny<string>()
+                ))
+                .Returns(new List<ProfileDetail>() { new ProfileDetail() { FirstName = "John", LastName = "Doe", Operator = "OperatorValue" } });
+
+            var userLogin = new UserLogin()
+            {
+                LoginName = "john.doe@realpage.com",
+                PartyId = 1,
+                RealPageId = new Guid("1aafde71-cf3a-46d8-9d73-08c6deccc92b"),
+                UserId = 1
+            };
+            var globals = new Dictionary<object, object> { { BaseType.RequestParameter, datafilter } };
+
+            var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
+
+            _profileLogic = new ManageProfile(_mockRepository.Object, _userUserClaim, mockHttpMessageHandler.Object);
+
+            //Act
+            profileDetailList = _profileLogic.ListProfileDetails(globals);
+
+            //Assert
+            Assert.True(
+                profileDetailList != null
+                && profileDetailList.Count() == 1
+                && profileDetailList[0].Operator == "OperatorValue"
+            );
         }
     }
 }

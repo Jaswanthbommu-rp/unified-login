@@ -195,6 +195,7 @@
     <Compile Include="ControllerTest\OrganizationTests.cs" />
     <Compile Include="ControllerTest\ProductPanelTest.cs" />
     <Compile Include="ControllerTest\Product\ProductAdminSupportPortalTests.cs" />
+    <Compile Include="ControllerTest\RoleTypeTest.cs" />
     <Compile Include="ControllerTest\ShellTests.cs" />
     <Compile Include="ControllerTest\UnifiedSettingsControllerTest.cs" />
     <Compile Include="ControllerTest\UserTests.cs" />

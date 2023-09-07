@@ -199,12 +199,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 		[JsonProperty("Operator")]
 		public string Operator { get; set; }
 
-        /// <summary>
-        /// Operator
-        /// </summary>
-        [JsonProperty("OperatorRealPageId", NullValueHandling = NullValueHandling.Include)]
-        public Guid? OperatorRealPageId { get; set; }
-
 		/// <summary>
 		/// UserRelationshipType
 		/// </summary>

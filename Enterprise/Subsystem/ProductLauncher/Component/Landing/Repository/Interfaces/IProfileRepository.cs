@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces
 {
@@ -40,5 +41,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		/// <returns>List of Person</returns>
 		IList<ProductUsers> ListPersonsByProductId(int productId, Guid? realPageId = null, long? personaId = null);
 		bool GetOrganizationHasAnyProductAssignmentError(long orgPartyId);
-	}
+
+        ExternalUserRelationship GetExternalUserRelationship(long organizationPartyId, long userId);
+
+    }
 }

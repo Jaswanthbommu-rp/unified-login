@@ -49,7 +49,7 @@ BEGIN
 	)
 
 	DECLARE @filterOperator TABLE (  
-		OperatorPartyId bigint PRIMARY KEY  
+		OperatorId VARCHAR(1000) NOT NULL
 	 )
 
 	DECLARE @tblFilterBy TABLE (
@@ -61,9 +61,6 @@ BEGIN
 		PersonaId bigint,
 		ProductId bigint
 	)
-
-	SELECT @EmployeeCompanyPartyId = PartyId FROM Enterprise.Party P
-	WHERE P.RealPageId = '0D018E46-C20E-477D-ADED-4E5A35FB8F99'
 
 	SELECT	@RowsPerPage = CASE
 		WHEN @RowsPerPage <= 0 THEN 2147483647
@@ -83,6 +80,9 @@ BEGIN
 	SELECT	@ProductSettingTypeId = ProductSettingTypeId
 	FROM		Enterprise.ProductSettingType
 	WHERE	Name = 'ProductStatus'
+
+	SELECT @EmployeeCompanyPartyId = PartyId FROM Enterprise.Party P
+	WHERE P.RealPageId = '0D018E46-C20E-477D-ADED-4E5A35FB8F99'
 
 	SELECT	@csvAssignedProducts = ColumnValue
 	FROM	OPENJSON (JSON_QUERY(@AssignedProducts, '$.assignedProducts'))
@@ -188,16 +188,15 @@ BEGIN
 	 WHERE ColumnName = 'Operator'
 	 AND   SearchValue NOT IN ( '%', '') 
 
-	 IF (LEN(@csvOperator) > 0)  
-	 BEGIN  
-	  INSERT INTO @filterOperator (  
-	   OperatorPartyId  
-	  )
-	  SELECT PartyId FROM Enterprise.Party WHERE RealPageId in (
-	  SELECT CONVERT(uniqueidentifier, value)  
-	  FROM STRING_SPLIT(@csvOperator, ','));  
-	 END
-	SELECT @filterOperatorCount = COUNT(OperatorPartyId) FROM  @filterOperator
+	IF (LEN(@csvOperator) > 0)      
+	BEGIN      
+		INSERT INTO @filterOperator (      
+			OperatorId
+		)    
+		SELECT value
+		FROM STRING_SPLIT(@csvOperator, ';');     
+	END    
+	SELECT @filterOperatorCount = COUNT(OperatorId) FROM  @filterOperator    
 
 	SELECT	@filterStatusTypeId = COUNT(StatusTypeId)
 	FROM		@filterStatus
@@ -249,9 +248,11 @@ BEGIN
 
 		SET @filterProductId = 9  -- Marketing Center product Id
 	
-		INSERT INTO #PersonaProduct (
+		INSERT INTO #PersonaProduct
+		(
 		PersonaId,
-		ProductId)
+		ProductId
+		)
 	
 	   SELECT	p.PersonaID,
 			pec.ProductId
@@ -259,18 +260,15 @@ BEGIN
 			Person.Persona p
 			INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginPersonaId = p.UserLoginPersonaId
 			INNER JOIN Enterprise.PersonaConfiguration pec ON p.PersonaId = pec.PersonaId
-			INNER JOIN Enterprise.ProductConfiguration prc ON pec.ConfigurationId = prc.ConfigurationId
-			INNER JOIN Enterprise.ProductSetting ps ON prc.ProductSettingId = ps.ProductSettingId AND ps.Value = '8' AND ps.ProductSettingTypeId = @ProductSettingTypeId
 			INNER JOIN [security].PersonaRole sp on sp.PersonaId = p.PersonaId 
 			INNER JOIN [Security].RoleRight srr on srr.RoleId = sp.RoleId 
 			INNER JOIN [Security].[Right] sr on sr.RightId = srr.RightId AND sr.RightName = 'AccessPropertyPhotos' --- Access to Property Photos (requires Marketing Center access)
 		WHERE
 				ULP.OrganizationPartyId = @PartyId
 		AND		pec.ProductId = 9
+		AND		pec.StatusTypeId = 8
 		AND		((@NOW >= p.FromDate AND p.ThruDate IS NULL) OR (@NOW BETWEEN p.FromDate AND p.ThruDate))
         AND     ((@NOW >= pec.FromDate AND pec.ThruDate IS NULL) OR (@NOW BETWEEN pec.FromDate AND pec.ThruDate))
-        AND     ((@NOW >= prc.FromDate AND prc.ThruDate IS NULL) OR (@NOW BETWEEN prc.FromDate AND prc.ThruDate))
-        AND     ((@NOW >= ps.FromDate AND ps.ThruDate IS NULL) OR (@NOW BETWEEN ps.FromDate AND ps.ThruDate))	
 	END
 	ELSE
 	BEGIN
@@ -284,15 +282,12 @@ BEGIN
 				Person.Persona p
 				INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginPersonaId = p.UserLoginPersonaId
 				INNER JOIN Enterprise.PersonaConfiguration pec ON p.PersonaId = pec.PersonaId
-				INNER JOIN Enterprise.ProductConfiguration prc ON pec.ConfigurationId = prc.ConfigurationId
-				INNER JOIN Enterprise.ProductSetting ps ON prc.ProductSettingId = ps.ProductSettingId AND ps.Value = '8' AND ps.ProductSettingTypeId = @ProductSettingTypeId
 			WHERE
 					ULP.OrganizationPartyId = @PartyId
+					AND pec.StatusTypeId = 8
 			AND		pec.ProductId NOT IN ( 19, 24, 25, 34, 39) -- Product Learning Portal, Black Book, Self-provisioning portal, Benchmarking, Integration Marketplace
 			AND		((@NOW >= p.FromDate AND p.ThruDate IS NULL) OR (@NOW BETWEEN p.FromDate AND p.ThruDate))
 			AND     ((@NOW >= pec.FromDate AND pec.ThruDate IS NULL) OR (@NOW BETWEEN pec.FromDate AND pec.ThruDate))
-			AND     ((@NOW >= prc.FromDate AND prc.ThruDate IS NULL) OR (@NOW BETWEEN prc.FromDate AND prc.ThruDate))
-			AND     ((@NOW >= ps.FromDate AND ps.ThruDate IS NULL) OR (@NOW BETWEEN ps.FromDate AND ps.ThruDate))
 
 	END
 
@@ -382,7 +377,8 @@ BEGIN
 		INNER JOIN Ident.UserLogin ul ON iulp.UserLoginId = ul.UserId  
 		INNER JOIN Enterprise.StatusType est ON iulp.StatusTypeId = est.StatusTypeId  
 		LEFT OUTER JOIN @filterStatus fs ON (est.StatusTypeId = fs.StatusTypeId)  
-	WHERE iulp.OrganizationPartyId = @PartyId  AND ( iulp.IsRPEmployee = 0 OR @EmployeeCompanyPartyId =  iulp.OrganizationPartyId)
+	WHERE iulp.OrganizationPartyId = @PartyId  
+	AND ( iulp.IsRPEmployee = 0 OR @EmployeeCompanyPartyId =  iulp.OrganizationPartyId)
 	AND  pe.personaId  NOT IN ( SELECT ISNULL(PersonaId, 0) FROM @HoldPersona)  
 	AND  (  
 		pe.PersonaId IN  
@@ -507,7 +503,7 @@ BEGIN
 			 p.FirstName,  
 			 p.MiddleName,  
 			 p.LastName,  
-			 UE.Employee as EmployeeId,  
+			 UE.Employee AS EmployeeId,  
 			 p.Title,  
 			 p.Suffix,  
 			 CASE  
@@ -533,12 +529,12 @@ BEGIN
 			 ulp.PasswordModifiedDate, 
 			 UER.EnterpriseRoleName,
 			 UER.RoleTemplateId,
-			 CASE 
-				WHEN TPR.ThirdPartyRelationshipId = 1 THEN 
-				O.Name		
-				ELSE NULL END AS Operator,		
-			TPR.ThirdPartyRelationship as UserRelationshipType,
-			EUR.CompanyName AS CompanyName,
+			 CASE WHEN ISNULL(EUR.OperatorValue, '') <> '' THEN RIGHT(EUR.OperatorValue, (LEN(EUR.OperatorValue)-CHARINDEX('|', EUR.OperatorValue))) ELSE NULL END [Operator],
+			 TPR.ThirdPartyRelationship as UserRelationshipType,
+			 CASE     
+				WHEN TPR.ThirdPartyRelationshipId = 1 THEN NULL      
+				WHEN TPR.ThirdPartyRelationshipId IN (2,3) THEN EUR.CompanyName    
+				END AS CompanyName,
 			 @OffsetMinutes,  
 			 COUNT(1) OVER () AS TotalRecords,
 			 CASE @sortValue  
@@ -549,7 +545,7 @@ BEGIN
 				  WHEN 104 THEN ROW_NUMBER() OVER (ORDER BY ulp.StatusName ASC, p.FirstName + ' ' + p.LastName ASC)  
 				  WHEN 105 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(UE.Employee,'') ASC, p.FirstName + ' ' + p.LastName ASC)
 				  WHEN 106 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(UER.EnterpriseRoleName,'') ASC, p.FirstName + ' ' + p.LastName ASC) 
-				  WHEN 107 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(O.Name,'') ASC, p.FirstName + ' ' + p.LastName ASC)
+				  WHEN 107 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(EUR.OperatorValue,'') ASC, p.FirstName + ' ' + p.LastName ASC)
 				  WHEN -100 THEN ROW_NUMBER() OVER (ORDER BY p.FirstName + ' ' + p.LastName DESC)  
 				  WHEN -101 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(pct.ProductCount,0)  DESC, p.FirstName + ' ' + p.LastName DESC)  
 				  WHEN -102 THEN ROW_NUMBER() OVER (ORDER BY ulp.LastLogin DESC, p.FirstName + ' ' + p.LastName DESC)  
@@ -557,7 +553,7 @@ BEGIN
 				  WHEN -104 THEN ROW_NUMBER() OVER (ORDER BY ulp.StatusName DESC, p.FirstName + ' ' + p.LastName DESC)  
 				  WHEN -105 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(UE.Employee,'') DESC, p.FirstName + ' ' + p.LastName DESC)  
 				  WHEN -106 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(UER.EnterpriseRoleName,'') DESC, p.FirstName + ' ' + p.LastName DESC) 
-				  WHEN -107 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(O.Name,'') DESC, p.FirstName + ' ' + p.LastName DESC) 
+				  WHEN -107 THEN ROW_NUMBER() OVER (ORDER BY ISNULL(EUR.OperatorValue,'') DESC, p.FirstName + ' ' + p.LastName DESC) 
 				 END AS RowNumber
 		  FROM #UserLogin ulp  
 			 INNER JOIN Person.Person p ON p.PartyId = ulp.PersonPartyId  
@@ -574,7 +570,6 @@ BEGIN
 			 LEFT OUTER JOIN #UserEnterpriseRole UER  ON ulp.PersonaId  = UER.PersonaId
 			 LEFT OUTER JOIN Enterprise.ExternalUserRelationship EUR ON EUR.UserLoginPersonaId = ulp.UserLoginPersonaId
 			 LEFT OUTER JOIN Enterprise.ThirdPartyRelationship TPR ON TPR.ThirdPartyRelationshipId = EUR.ThirdPartyRelationshipId
-			 LEFT OUTER JOIN Enterprise.Organization O ON O.PartyId = EUR.ThirdPartyCompanyPartyId 
 		  WHERE  (  
 				(@filterName IS NULL)  
 				OR (CHARINDEX(@filterName, FirstName + ' ' + LastName, 1) > 0)  
@@ -586,7 +581,7 @@ BEGIN
 		  AND  ((@NOW BETWEEN prs.FromDate AND prs.ThruDate) OR (@NOW >= prs.FromDate AND prs.ThruDate IS NULL))  
 		  AND  ((@ParentPartyRoleTypeId IS NULL) OR (rt.ParentPartyRoleTypeId = @ParentPartyRoleTypeId))  
 		  AND  ((@filterPartyRoleTypeId IS NULL) OR (prs.RoleTypeIdFrom = @filterPartyRoleTypeId))
-		  AND ((@filterOperatorCount = 0 ) OR (EUR.ThirdPartyCompanyPartyId in (select OperatorPartyId from @filterOperator)))
+		  AND  ((@filterOperatorCount = 0 ) OR (EUR.OperatorValue in (select OperatorId from @filterOperator)))    
 	)
 	SELECT	TotalRecords,
 				RealPageID,

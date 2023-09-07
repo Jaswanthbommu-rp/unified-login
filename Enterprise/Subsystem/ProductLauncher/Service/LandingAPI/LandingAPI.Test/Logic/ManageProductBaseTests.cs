@@ -28,7 +28,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         protected static string _uniqueIdentifier = "1234567|userlogin";
 
 		protected long _editorPersonaId = 4;
-        protected long _editorUserId = 14;
+        protected int _editorUserId = 14;
         protected Guid _editorRealPageId = new Guid("523C6677-C20D-4E6A-A4CC-0DE5781F0D5C");
         protected int _editorOrganizationPartyId = 1234;
         private Guid _editorOrganizationRealPageId = new Guid("12345678-C20D-4E6A-A4CC-0DE5781F0D5C");
@@ -36,18 +36,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		protected DefaultUserClaim _editorUserClaim;
 
 		protected long _userPersonaId = 5;
-        protected long _userUserId = 15;
+        protected int _userUserId = 15;
         protected Guid _userRealPageId = new Guid("623C6677-D20D-5E6A-B4CC-1DE5781F0D5C");
         protected Guid _userOrganizationRealPageId = new Guid("12345678-C20D-4E6A-A4CC-0DE5781F0D5C");
-        private int _userOrganizationPartyId = 1234;
+        protected int _userOrganizationPartyId = 1234;
 		private Guid _userCorrelationId = new Guid("078724B2-D381-4E45-9EE9-6DD6D9B9B74B");
 		protected DefaultUserClaim _userUserClaim;
 
 		protected long _newUserPersonaId = 7;
-        protected long _newUserUserId = 17;
+        protected int _newUserUserId = 17;
         private Guid _newUserRealPageId = new Guid("523C6677-D20D-DDDD-B4CC-1DE5781F0D5C");
 	    protected Guid _newuserOrganizationRealPageId = new Guid("12345678-C20D-4E6A-A4CC-0DE5781F0D5C");
-		private int _newUserOrganizationPartyId = 1234;
+        protected int _newUserOrganizationPartyId = 1234;
 
         private int _userInvalidOrganizationPartyId = 5544;
 
@@ -114,7 +114,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			_userInvalidPersona.Organization = new Organization() { PartyId = _userInvalidOrganizationPartyId, Name = "RealPage", BooksMasterId = 1234, BooksCustomerMasterId = 4321, OrganizationDomain = new OrganizationDomain(){ OrganizationDomainId = 1, Name = "Primary"} };
                     
             _editorUserClaim = new DefaultUserClaim() { CorrelationId = _editorCorrelationId, OrganizationRealPageGuid = _editorOrganizationRealPageId, UserRealPageGuid = _editorRealPageId };
-			_userUserClaim = new DefaultUserClaim() { CorrelationId = _userCorrelationId, OrganizationRealPageGuid = _userOrganizationRealPageId, UserRealPageGuid = _userRealPageId };
+			_userUserClaim = new DefaultUserClaim() { CorrelationId = _userCorrelationId, UserId = _userUserId, OrganizationRealPageGuid = _userOrganizationRealPageId, UserRealPageGuid = _userRealPageId };
 
             mockHttpMessageHandler = new Mock<HttpMessageHandler>();
             mockTokenHttpMessageHandler = new Mock<HttpMessageHandler>();
@@ -211,7 +211,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         {
             return Convert.ToBase64String(Encoding.UTF8.GetBytes(value));
         }
-		public bool TestIs(string propertyName, object obj, Guid? realPageId)
+        public bool TestSqlParameter(object p, string value)
+        {
+            return value.Equals(p.ToString(), StringComparison.OrdinalIgnoreCase);
+        }
+
+        public bool TestIs(string propertyName, object obj, Guid? realPageId)
         {
             if (obj == null && realPageId == null)
             {
