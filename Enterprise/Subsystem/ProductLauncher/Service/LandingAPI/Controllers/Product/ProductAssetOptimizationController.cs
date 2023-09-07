@@ -240,7 +240,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             return Request.CreateResponse(HttpStatusCode.OK, result);
         }
-
+		
         #region User-Status
 
         /// <summary>

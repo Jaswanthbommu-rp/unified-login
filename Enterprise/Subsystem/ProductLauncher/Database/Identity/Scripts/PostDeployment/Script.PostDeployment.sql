@@ -15,7 +15,7 @@ Post-Deployment Script Template
 
 :r .\PostDeploymentScripts\AddingNewRightforUserManagement.sql
 :r .\PostDeploymentScripts\AddingNewSettingForPropagateRights.sql
-
+:r .\PostDeploymentScripts\SustainabilityAdmin.sql
 
 
 -- keep these at the end!

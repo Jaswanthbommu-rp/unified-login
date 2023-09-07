@@ -152,11 +152,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="userPersonaId">userPersonaId</param>
 		/// <param name="isSelectedProperties">isSelectedProperties</param>
 		/// <param name="selectedProperties">selected/Unselected Properties</param>
-		/// <param name="operatorInstanceId">The guid of the operator to filter the property list to</param>
-		/// <returns>List of Properties for a company </returns>
-		List<CompanyPropertySetup> GetPropertiesForCompany(Guid companyInstanceId, string propertyName = null, string domain = null, int? blueId = null, 
+		/// <param name="operatorCode">The Code of the operator to filter the property list to</param>
+        /// <param name="operatorValue">The Value of the operator to filter the property list to</param>
+        /// <returns>List of Properties for a company </returns>
+        List<CompanyPropertySetup> GetPropertiesForCompany(Guid companyInstanceId, string propertyName = null, string domain = null, int? blueId = null, 
 							int? status = null, IDictionary<object, object> globals = null, long editorPersonaId = 0, long userPersonaId = 0, 
-							bool? isSelectedProperties = null, List<Guid> selectedProperties = null, Guid? operatorInstanceId = null);
+							bool? isSelectedProperties = null, List<Guid> selectedProperties = null, string operatorCode = null, string operatorValue = null);
 
 		/// <summary>
 		/// Get Property By PropertyId

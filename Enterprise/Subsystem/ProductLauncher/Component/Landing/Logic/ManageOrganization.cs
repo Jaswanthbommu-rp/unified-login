@@ -61,14 +61,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private IManageUser _manageUser;
         private IManagePartyRole _managePartyRole;
         private DefaultUserClaim _defaultUserClaim;
+        private IManageProductAssetOptimization _manageProductAssetOptimization;
         #endregion
-        
+
         #region Constructors
 
         /// <summary>
         /// Unit Test Constructor
         /// </summary>
-        public ManageOrganization(IRepository repository, DefaultUserClaim userClaim, HttpMessageHandler messageHandler)
+        public ManageOrganization(IRepository repository, DefaultUserClaim userClaim, HttpMessageHandler messageHandler,IManageProductAssetOptimization manageProductAssetOptimization = null)
         {
             _defaultUserClaim = userClaim;
             _organizationRepository = new OrganizationRepository(repository);
@@ -92,6 +93,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _managePartyRole = new ManagePartyRole(repository);
             _integrationTypeFactory = new IntegrationTypeFactory(_manageProduct, _manageUnifiedLogin, null, _productRepository,
                 _productInternalSettingRepository, userClaim);
+            _manageProductAssetOptimization = manageProductAssetOptimization;
         }
 
         /// <summary>
@@ -148,6 +150,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _managePartyRole = new ManagePartyRole();
             _integrationTypeFactory = new IntegrationTypeFactory(_manageProduct, _manageUnifiedLogin, null, _productRepository,
                 _productInternalSettingRepository, userClaim);
+            _manageProductAssetOptimization = new ManageProductAssetOptimization(userClaim);
         }
 
         #endregion
@@ -990,9 +993,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         #endregion
 
         #region GetPropertiesForCompany
-        public List<CompanyPropertySetup> GetPropertiesForCompany(Guid companyInstanceId, string propertyName = null, string domain = null, 
-                        int? blueId = null, int? status = null, IDictionary<object, object> globals = null, long editorPersonaId = 0, 
-                        long userPersonaId = 0, bool? isSelectedProperties = null, List<Guid> selectedProperties = null, Guid? operatorInstanceId = null)
+        public List<CompanyPropertySetup> GetPropertiesForCompany(Guid companyInstanceId, string propertyName = null, string domain = null,
+                        int? blueId = null, int? status = null, IDictionary<object, object> globals = null, long editorPersonaId = 0,
+                        long userPersonaId = 0, bool? isSelectedProperties = null, List<Guid> selectedProperties = null, string operatorCode = null, string operatorValue = null)
         {
             RequestParameter dataFilter = new RequestParameter();
 
@@ -1006,13 +1009,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             List<int> userProperties = null;
             List<BooksPropertyInstance> booksPropertyInstance = null;
 
-            if (!operatorInstanceId.HasValue)
+            if (string.IsNullOrEmpty(operatorCode) || string.IsNullOrEmpty(operatorValue))
             {
                 booksPropertyInstance = GetPropertyInstanceFromBooks(companyInstanceId);
             }
             else
             {
-                booksPropertyInstance = GetPropertyInstanceForCompanyByOperatorId(companyInstanceId, operatorInstanceId.Value);
+                booksPropertyInstance = GetPropertyInstanceFromBooks(companyInstanceId);
+                UPFMProperty uPFMProperty = new UPFMProperty();
+                uPFMProperty.id = booksPropertyInstance.Select(a => a.attributes.propertyInstanceSourceId).ToList();
+                var aoProperties = _manageProductAssetOptimization.GetPropertiesWithOperators(_defaultUserClaim.PersonaId, userPersonaId,operatorCode,operatorValue);
+                var productResult = _manageBlueBook.TranslateProductPrimaryPropertiesData(uPFMProperty, 4, aoProperties);
+                var propertyList  = productResult.Records.Cast<ProductProperty>().ToList().Where(c => c.InstanceId != null).Select(a => a.InstanceId);
+                booksPropertyInstance = booksPropertyInstance?.Where(a => propertyList.Contains(a.attributes.propertyInstanceSourceId)).ToList();
             }
 
             if (domain != null)
@@ -1048,7 +1057,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 propertyInstanceIds = new List<Guid>();
             }
-            if (propertyInstanceIds != null)
+            if (propertyInstanceIds != null && propertyInstanceIds.Count > 0)
             {
                 propertyDetails = _propertyRepository.GetPropertiesForCompany(propertyInstanceIds, propertyName, blueId, status, dataFilter);
                 propertyDetails = AddContractedNameToPropertyList(booksPropertyInstance, propertyDetails, userProperties);

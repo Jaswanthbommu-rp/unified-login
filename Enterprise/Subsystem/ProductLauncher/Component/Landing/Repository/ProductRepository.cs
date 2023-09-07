@@ -2050,6 +2050,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="partyId"></param>
+        /// <returns></returns>
+        public List<RoleTemplate> GetRoleTemplateList(long partyId)
+        {
+            List<RoleTemplate> roleTemplate = new List<RoleTemplate>();
+            using (var repository = GetRepository())
+            {
+                object param = new
+                {
+                    PartyId = partyId
+                };
+                roleTemplate = repository.GetMany<RoleTemplate>(StoredProcNameConstants.SP_GetRoleTemplate, param).ToList();
+            }
+            return roleTemplate;
+        }
+
+        /// <summary>
         /// Returns  persona has any product error.		
         /// </summary> 
         public bool GetPersonaHasProductError(long personaId)

@@ -13,6 +13,21 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
+using System.Security.Claims;
+using System;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.ResponseObject;
+using RP.Enterprise.Foundation.DataAccess.Component;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+using System.Linq;
+using LaunchDarkly.Sdk.Server.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.ThirdParty;
+using System.Web.Http.Controllers;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -21,6 +36,45 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 	/// </summary>
 	public class ProductMarketingCenterController : BaseApiController
     {
+        private IRepository _repository;
+        private IManageOrganization _manageOrganization;
+        private IManageProductMarketingCenter _manageProductMarketingCenter;
+        public ProductMarketingCenterController()
+        {
+            // DONT USE USERCLAIM IN BASE, IT IS NULL AT THIS POINT. MOVE TO Initialize FUNCTION
+        }
+
+        /// <summary>
+        /// Unit test constructor
+        /// </summary>
+        /// <param name="repository"></param>
+        /// <param name="messageHandler"></param>
+        /// <param name="userClaims"></param>
+        public ProductMarketingCenterController(IRepository repository, DefaultUserClaim userClaims, HttpMessageHandler messageHandler, Guid editorRealPageId)
+        {
+            _repository = repository;
+            _userClaims = userClaims;
+            _manageOrganization = new ManageOrganization(repository, userClaims, messageHandler);
+            var productInternalSettingRepository = new ProductInternalSettingRepository(repository);
+            var manageBlueBook = new ManageBlueBook(userClaims, repository, productInternalSettingRepository, messageHandler);
+            var managePersona = new ManagePersona(repository, userClaims, messageHandler);
+            var samlRepository = new SamlRepository(repository);
+            var productRepository = new ProductRepository(repository, userClaims);
+            _manageProductMarketingCenter = new ManageProductMarketingCenter(editorRealPageId, userClaims, messageHandler, productInternalSettingRepository, managePersona, samlRepository, manageBlueBook, productRepository
+                                                                             , repository);
+        }
+
+        /// <summary>
+        /// Used to initialize DI classes with userclaim
+        /// </summary>
+        /// <param name="controllerContext"></param>
+        protected override void Initialize(HttpControllerContext controllerContext)
+        {
+            base.Initialize(controllerContext);
+            _manageOrganization = new ManageOrganization(base._userClaims);
+            _manageProductMarketingCenter = new ManageProductMarketingCenter(base._userClaims);
+        }
+
         #region User management
         /// <summary>
         /// Used to get a list of roles
@@ -170,7 +224,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// Used to get a list of roles 
         /// </summary>
         /// <remarks>A datafilter can be used to filter the roles using name</remarks>
-        /// <param name="editorPersonaId"></param>                
+        /// <param name="editorPersonaId"></param>  
+        /// <param name="upfmId"></param>
         /// <returns></returns>
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
@@ -178,12 +233,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [Route("products/marketingcenter/rolescount")]
         [Authorize]
         [HttpGet]
-        public HttpResponseMessage GetRolesCount(long editorPersonaId)
+        public HttpResponseMessage GetRolesCount(long editorPersonaId, Guid? upfmId = null)
         {
+            ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
             if (editorPersonaId == 0)
-                return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
-            ManageProductMarketingCenter mc = new ManageProductMarketingCenter(base._userClaims);
-            ListResponse response = mc.GetRolesCount(editorPersonaId);
+            {
+                if (currentClaimPrincipal.HasClaim("scope", "internalapi") && _userClaims.PersonaId == 0)
+                {
+                    if (!string.IsNullOrEmpty(upfmId.ToString()))
+                    {
+                        Guid AdminCreatorRealPageId = _manageOrganization.GetOrganizationAdminUserRealPageId(upfmId ?? default(Guid));
+                        if (AdminCreatorRealPageId == Guid.Empty)
+                        {
+                            var errorResponse = new ErrorResponse { Errors = new List<Error>() };
+                            errorResponse.Errors.Add(new Error { Title = "Error", Source = "/product", Detail = "Invalid UPFMId.", StatusCode = "" });
+                        }
+                        RecreateClaimsForClient(AdminCreatorRealPageId);
+                        editorPersonaId = _userClaims.PersonaId;
+                        if (editorPersonaId == 0)
+                        {
+                            return Request.CreateResponse(HttpStatusCode.BadRequest, "invalid request.");
+                        }
+                        _manageProductMarketingCenter = new ManageProductMarketingCenter(_userClaims);
+                    }
+                }
+            }
+            ListResponse response = _manageProductMarketingCenter.GetRolesCount(editorPersonaId);
             return Request.CreateResponse(!response.IsError ? HttpStatusCode.OK : HttpStatusCode.BadRequest, response);
         }
 
@@ -304,6 +379,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// </summary>
         /// <param name="roleId">The roleId.</param>
         /// <param name="editorPersonaId">The editorPersonaId.</param>
+        /// <param name="upfmId"></param>
         /// <returns></returns>
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
@@ -313,11 +389,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [Route("products/marketingcenter/role/allrights")]
         [Authorize]
         [HttpGet]
-        public HttpResponseMessage GetRightsForRoleId(long editorPersonaId, int roleId = 0)
+        public HttpResponseMessage GetRightsForRoleId(long editorPersonaId, int roleId = 0, Guid? upfmId = null)
         {
-            if (editorPersonaId == 0 || editorPersonaId == 0) { throw new HttpResponseException(HttpStatusCode.BadRequest); }
-            ManageProductMarketingCenter mc = new ManageProductMarketingCenter(base._userClaims);
-            ListResponse response = mc.GetRightsForRoleId(editorPersonaId, roleId);
+            ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
+            if (editorPersonaId == 0)
+            {
+                if (currentClaimPrincipal.HasClaim("scope", "internalapi") && _userClaims.PersonaId == 0)
+                {
+                    if (!string.IsNullOrEmpty(upfmId.ToString()))
+                    {
+                        Guid AdminCreatorRealPageId = _manageOrganization.GetOrganizationAdminUserRealPageId(upfmId ?? default(Guid));
+                        if (AdminCreatorRealPageId == Guid.Empty)
+                        {
+                            var errorResponse = new ErrorResponse { Errors = new List<Error>() };
+                            errorResponse.Errors.Add(new Error { Title = "Error", Source = "/product", Detail = "Invalid UPFMId.", StatusCode = "" });
+                        }
+                        RecreateClaimsForClient(AdminCreatorRealPageId);
+                        editorPersonaId = _userClaims.PersonaId;
+                        if (editorPersonaId == 0)
+                        {
+                            return Request.CreateResponse(HttpStatusCode.BadRequest, "invalid request.");
+                        }
+                        _manageProductMarketingCenter = new ManageProductMarketingCenter(_userClaims);
+                    }
+                }
+            }
+            ListResponse response = _manageProductMarketingCenter.GetRightsForRoleId(editorPersonaId, roleId);
             return Request.CreateResponse(!response.IsError ? HttpStatusCode.OK : HttpStatusCode.BadRequest, response);
         }
 
@@ -367,6 +464,62 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             return Request.CreateResponse(!response.IsError ? HttpStatusCode.OK : HttpStatusCode.BadRequest, response);
         }
         #endregion
+
+        /// <summary>
+        /// Used to recreate claims for client
+        /// </summary>
+        /// <param name="realpageUserId">RealPage UserId</param>
+        private void RecreateClaimsForClient(Guid realpageUserId)
+        {
+            if (string.IsNullOrEmpty(realpageUserId.ToString())) return;
+
+            var rpCache = new RPObjectCache();
+            _realpageUserId = realpageUserId;
+
+            var cacheKey = $"recreateClaimsForClient_{realpageUserId}";
+            _userClaims = rpCache.GetFromCache<DefaultUserClaim>(cacheKey, 180, () =>
+            {
+                IManagePerson personLogic = new ManagePerson();
+                Person person = personLogic.GetPerson(realpageUserId);
+                if (person == null)
+                {
+                    throw new Exception($"Missing persona information for client_info user while Recreation of Claims For Client.  realPageId: {realpageUserId}");
+                }
+
+                IManageUserLogin userLoginLogic = new ManageUserLogin();
+                IManageUserRoleRight userRoleRight = new ManageUserRoleRight();
+                var userLogin = userLoginLogic.GetUserLoginOnly(realpageUserId);
+
+                IManagePersona managePersona = new ManagePersona();
+                //Active Persona is linked to one organization
+                Persona persona = managePersona.GetActivePersonaWithoutRights(realpageUserId); // this user can only be under 1 company to work correctly
+                var roles = userRoleRight.GetAssignedRoleForPersona(ProductEnum.UnifiedPlatform, persona.PersonaId);
+                var claim = new DefaultUserClaim
+                {
+                    UserId = (int)userLogin.UserId,
+                    OrganizationPartyId = persona.Organization.PartyId,
+                    LoginName = userLogin.LoginName,
+                    OrganizationMasterId = (long)persona.Organization.BooksMasterId,
+                    CustomerMasterId = (long)persona.Organization.BooksMasterId,
+                    OrganizationName = persona.Organization.Name,
+                    FirstName = person.FirstName,
+                    LastName = person.LastName,
+                    PersonaId = persona.PersonaId,
+                    OrganizationRealPageGuid = persona.Organization.RealPageId,
+                    UserRealPageGuid = _realpageUserId,
+                    CorrelationId = Guid.NewGuid(),
+                    RealPageEmployee = persona.Organization.RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId,
+                };
+                ClaimsPrincipal userPrincipal = ClaimsPrincipal.Current;
+                var identity = (ClaimsIdentity)userPrincipal.Identity;
+                identity.AddClaims(roles.Select(r => new Claim("roleid", r.RoleID.ToString())).ToList());
+
+                claim.Rights = BaseUserRights.GetUserRightsBy(userPrincipal, claim);
+                return claim;
+
+            });
+
+        }
 
         #region Migration API
         /// <summary>

@@ -213,6 +213,7 @@ AS
       FROM totalusers         
             
         ORDER BY UserId    
-        OFFSET((@PageNumber - 1) * @RowsPerPage) ROWS FETCH NEXT(@RowsPerPage) ROWS ONLY;    
+        OFFSET((@PageNumber - 1) * @RowsPerPage) ROWS FETCH NEXT(@RowsPerPage) ROWS ONLY
+        OPTION (RECOMPILE)
     
     END;

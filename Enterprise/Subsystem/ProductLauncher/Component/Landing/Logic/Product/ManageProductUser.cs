@@ -175,7 +175,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             if (productId != 4)
             {
-                if (usePrimaryProperties == true && roleProp.ProductPrimaryProperties != null)
+                if (usePrimaryProperties == true && roleProp.ProductPrimaryProperties != null && roleProp.ProductPrimaryProperties.Count > 0)
                 {
                     string jsonSecuritySettings = JsonConvert.SerializeObject(roleProp.ProductPrimaryProperties);
                     _productRepository.SavePersonaProductProperties(assignUserPersonaId, productId, jsonSecuritySettings);
@@ -282,10 +282,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         rolePrimaryPropDictionary.Add(rolePropertyList.Key, foundPrimaryProperties);
                     }
                     
-                    if(usePrimaryProperties && !_productsWithNoProperties.Contains(productId) && (rolePropertyList.Value?.IsAssigned == true && rolePropertyList.Value.PropertyList?.Count == 0))
+                    if(rolePropertyList.Value.UsePrimaryProperties && !_productsWithNoProperties.Contains(productId) && (rolePropertyList.Value?.IsAssigned == true && rolePropertyList.Value.PropertyList?.Count == 0))
                     {
                         //Create user (not update) but translation has no properties
-                        if (!isUpdateUser)
+                        var userProducts = _samlRepository.ListActiveProductsByPersonaId(productUser.AssignUserPersonaId, 0, "");
+                        bool userHasProduct = userProducts.Any(a => a.ProductId == productId);
+                        if (!userHasProduct)
                         {
                             isCreateUserWithNoProperties = false;
                         }                        
@@ -320,10 +322,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     _productRepository.UpdateBatchProcessorLog(productUser.ProductBatchId, DateTime.UtcNow, null);
                     result = integration.CreateUser(productUser);
                 }
-                else
-                {
-                    throw new Exception("No properties to assign - User not created");
-                }
             }
             catch (Exception ex)
             {
@@ -352,7 +350,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         var thisProductUserPrimaryProperty = usePrimaryPropertyFlags.FirstOrDefault(p => p.Key == rolePropertyList.Key).Value;
                         SavePersonaProductPrimaryProperties(thisProductUserPrimaryProperty, productUser.AssignUserPersonaId, rolePropertyList.Key, rolePropertyList.Value, productUser.InputJson);
                     }
-                    isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Success);
+                    //Updating inputjson, It may change if no properties are translated - unassign product.
+                    isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Success, productUser.InputJson);
                     WriteToLog(LogEventLevel.Debug, $"ManageProductUser.CreateProductUser:  product: {productUser.ProductId} , persona: {productUser.AssignUserPersonaId} , isBatchCompleted: {isBatchCompleted} ,User Sync Request process for Success , DateTime { DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:ffff") }");
                     //call apicore kafka publish to sync translated properties
                     var roleProp = JsonConvert.DeserializeObject<RolePropertyList>(productUser.InputJson);
@@ -831,19 +830,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     if (successRecords != null && successRecords.Count > 0)
                     {
                         WriteToLog(LogEventLevel.Debug, $"Batch process for success count : {successRecords.Count} ");
-                        var message = GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, successRecords, true, impersonatorUserInfo);
-                        WriteToLog(LogEventLevel.Debug, $"Batch process for success message : {message} ");
-                        _activityLogHelper.PushToQueue(fromUserLogInfo, toUserLogInfo, message, "PRODUCT_ACCESS");
+                        GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, successRecords, true, impersonatorUserInfo, fromPersonaId);
                     }
 
                     var failedRecords = data.Where(x => x.StatusTypeId == 7).ToList();
                     if (failedRecords != null && failedRecords.Count > 0)
                     {
                         WriteToLog(LogEventLevel.Debug, $"Batch process for failed count : {failedRecords.Count} ");
-                        var message = GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, failedRecords, false, impersonatorUserInfo);
-                        WriteToLog(LogEventLevel.Debug, $"Batch process for failed message : {message} ");
-                        _activityLogHelper.PushToQueue(fromUserLogInfo, toUserLogInfo, message, "PRODUCT_ACCESS");
-                        SendNotification(message + " Please contact RealPage Support for assistance.", fromPersonaId);
+                        GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, failedRecords, false, impersonatorUserInfo, fromPersonaId);
                     }
 
                     //update status
@@ -852,22 +846,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
-        private string GenerateQueueMessage(UserActivityLogInfo fromUserLogInfo, UserActivityLogInfo toUserLogInfo, List<UserBatchProductDetail> userBatchProductDetails, bool IsSuccess, UserDetails impersonatorUserInfo)
+        private void GenerateQueueMessage(UserActivityLogInfo fromUserLogInfo, UserActivityLogInfo toUserLogInfo, List<UserBatchProductDetail> userBatchProductDetails, bool IsSuccess, UserDetails impersonatorUserInfo, long fromPersonaId = 0)
         {
-            string message = "";
-
+           
             List<string> assinedProducts = new List<string>();
             List<string> unassignedProducts = new List<string>();
 
-            string assignedMessage = "";
-            string unassignedMessage = "";
             WriteToLog(LogEventLevel.Debug, $"Batch process for GenerateQueueMessage : {IsSuccess} userBatchProductDetails {userBatchProductDetails.Count} ");
             if (IsSuccess)
             {
-                message = impersonatorUserInfo != null
-                    ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) updated access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName}:"
-                    : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} updated access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName}:";
-
                 foreach (var item in userBatchProductDetails)
                 {
                     if (item.IsAssigned)
@@ -888,13 +875,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                 }
                 if (assinedProducts.Count > 0)
-                    assignedMessage = " Access was granted to " + string.Join(", ", assinedProducts) + ".";
+                {
+                    var assign = impersonatorUserInfo != null
+                   ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) updated access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName}:"
+                   : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} updated access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName}:";
 
+                    assign  += " Access was granted to " + string.Join(", ", assinedProducts) + ".";
+                    WriteToLog(LogEventLevel.Debug, $"Batch process for success message : {assign} ");
+                    _activityLogHelper.PushToQueue(fromUserLogInfo, toUserLogInfo, assign, "PRODUCT_ACCESS");
+                }
                 if (unassignedProducts.Count > 0)
-                    unassignedMessage = " Access was unassigned from " + string.Join(", ", unassignedProducts) + ".";
+                {
+                  var  unassign = impersonatorUserInfo != null
+                   ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) updated access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName}:"
+                   : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} updated access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName}:";
 
-                message += assignedMessage;
-                message += unassignedMessage;
+                    unassign += " Access was unassigned from " + string.Join(", ", unassignedProducts) + ".";
+                    WriteToLog(LogEventLevel.Debug, $"Batch process for success message : {unassign} ");
+                    _activityLogHelper.PushToQueue(fromUserLogInfo, toUserLogInfo, unassign, "PRODUCT_ACCESS");
+                }
             }
             else
             {
@@ -912,12 +911,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 var commaString = string.Join(", ", failedProducts);
-                message = impersonatorUserInfo != null
+                var  message = impersonatorUserInfo != null
                     ? $"An exception occurred when RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) attempted to update product access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName} in {commaString}."
                     : $"An exception occurred when {fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} attempted to update product access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName} in {commaString}.";
-            }
 
-            return message;
+                WriteToLog(LogEventLevel.Debug, $"Batch process for failed message : {message} ");
+                _activityLogHelper.PushToQueue(fromUserLogInfo, toUserLogInfo, message, "PRODUCT_ACCESS");
+                SendNotification(message + " Please contact RealPage Support for assistance.", fromPersonaId);
+            }
         }
 
         private List<string> GetAOProductsForActivity(UserBatchProductDetail inputAOItem, bool isAssigned, int statusTypeId)
@@ -984,7 +985,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (productUser.ProductId != 4 && roleProp.UsePrimaryProperties)
             {
                 ListResponse propertyList = manageProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, productUser.ProductId);
-                if (propertyList.Records.Count > 0)
+                if (propertyList.Records?.Count > 0)
                 {
                     roleProp.PropertyList = new List<string>();
                     roleProp.ProductPrimaryProperties = GetSelectedProperties(propertyList, productType);

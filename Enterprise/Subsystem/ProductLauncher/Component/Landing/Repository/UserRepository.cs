@@ -1570,7 +1570,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 UserLoginPersonaId = userLoginPersonaId,
                                 ThirdPartyRelationshipId = newProfile.ExternalUserRelationship.ThirdPartyRelationShipId,
                                 CompanyName = newProfile.ExternalUserRelationship.ThirdPartyCompanyName,
-                                ThirdPartyCompanyRealPageId = newProfile.ExternalUserRelationship.ThirdPartyCompanyRealPageId
+                                ThirdPartyCompanyRealPageId = newProfile.ExternalUserRelationship.ThirdPartyCompanyRealPageId,
+                                OperatorCode = newProfile.ExternalUserRelationship.OperatorCode,
+                                OperatorValue = newProfile.ExternalUserRelationship.OperatorValue
                             };
 
                             repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateExternalUserRelationship, param);
@@ -6434,7 +6436,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 // make db call here...
                             repositoryResponse = InsertUpdateDelegateAdminRole(repository, userLoginPersonaList[0].UserLoginPersonaId,
                                                         updateUserProfileEntity.NewProfile.DelegateRoleTemplate.RoleTemplateId.ToList());
-                            if (repositoryResponse.Id == 0)
+                            if (repositoryResponse.ErrorMessage.Length != 0)
                             {
                                 repositoryResponse.ErrorMessage = "Unable to Create  Delegate Template role to the User.";
                                 throw new Exception(repositoryResponse.ErrorMessage);
@@ -6456,7 +6458,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                     UserLoginPersonaId = updateUserProfileEntity.NewProfile.ExternalUserRelationship.UserLoginPersonaId,
                                     ThirdPartyRelationshipId = updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyRelationShipId,
                                     CompanyName = updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyCompanyName,
-                                    ThirdPartyCompanyRealPageId = updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyCompanyRealPageId
+                                    ThirdPartyCompanyRealPageId = updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyCompanyRealPageId,
+                                    OperatorCode = updateUserProfileEntity.NewProfile.ExternalUserRelationship.OperatorCode,
+                                    OperatorValue = updateUserProfileEntity.NewProfile.ExternalUserRelationship.OperatorValue
                                 };
 
                                 repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateExternalUserRelationship, param);
@@ -6773,6 +6777,39 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, mainMessage, "Update User External Relationship", updateUserProfileEntity.NewProfile, additionalParam);
                     }
+
+                    bool oldProfileDelegate = updateUserProfileEntity.OldProfile.IsDelegateAdmin;
+                    bool newProfileDelegate = updateUserProfileEntity.NewProfile.IsDelegateAdmin;
+                    if (isDelegateAdmin)
+                    {
+                        //Get all enterprise role Names by orgpartyid
+                        ProductRepository productRepository = new ProductRepository(_userClaim);
+                        List<RoleTemplate> roleTemplates = productRepository.GetRoleTemplateList(_userClaim.OrganizationPartyId);
+
+                        if (newProfileDelegate != oldProfileDelegate)
+                        {
+                            string delegateMessage = "User admin{2}has " + (updateUserProfileEntity.NewProfile.IsDelegateAdmin ? "added" : "removed") + " user{0} {1} as Delegate admin";
+                            LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, delegateMessage, "UpdateUser", updateUserProfileEntity.NewProfile);
+                        }
+
+                        var oldDelegateRoles = updateUserProfileEntity.OldProfile.DelegateRoleTemplate?.RoleTemplateId != null ? updateUserProfileEntity.OldProfile.DelegateRoleTemplate.RoleTemplateId : new List<int>();
+                        var newDelegateRoles = updateUserProfileEntity.NewProfile.DelegateRoleTemplate.RoleTemplateId != null ? updateUserProfileEntity.NewProfile.DelegateRoleTemplate.RoleTemplateId : new List<int>();
+                        var rolesAdded = newDelegateRoles.Except(oldDelegateRoles).ToList();
+                        var rolesRemoved = oldDelegateRoles.Except(newDelegateRoles).ToList();
+
+                        if (rolesRemoved.Count > 0 || !newProfileDelegate)
+                        {
+                            var userEnterpriseRoles = roleTemplates.Where(r => oldDelegateRoles.Contains(r.RoleTemplateId));
+                            string delegateRolesMessage = "User admin{2}has removed " + string.Join(",", userEnterpriseRoles.Select(s => s.RoleTemplateName)) + " enterprise roles for Delegate admin{0} {1}";
+                            LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, delegateRolesMessage, "UpdateUser", updateUserProfileEntity.NewProfile);
+                        }
+                        if (rolesAdded.Count > 0)
+                        {
+                            var userEnterpriseRoles = roleTemplates.Where(r => newDelegateRoles.Contains(r.RoleTemplateId));
+                            string delegateRolesMessage = "User admin{2}has added " + string.Join(",", userEnterpriseRoles.Select(s => s.RoleTemplateName)) + " enterprise roles for Delegate admin{0} {1}";
+                            LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, delegateRolesMessage, "UpdateUser", updateUserProfileEntity.NewProfile);
+                        }                        
+                    }
                 }
 
                 return repositoryResponse;
@@ -7076,13 +7113,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     {
                         if (oldData.ThirdPartyCompanyRealPageId != newData.ThirdPartyCompanyRealPageId)
                         {
-                            var organization = _organizationRepository.GetOrganization(newData.ThirdPartyCompanyRealPageId);
-
+                            
                             additionalParams.Add(new AdditionalParameters()
                             {
                                 Key = "Operator",
-                                Value = "{\"old\" : \"" + oldData.ThirdPartyCompanyName + "\", \"new\" : \""
-                                        + organization.Name + "\"}"
+                                Value = "{\"old\" : \"" + oldData.OperatorValue + "\", \"new\" : \""
+                                        + newData.OperatorValue + "\"}"
                             });
                         }
                     }
@@ -7111,11 +7147,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     //if changed to 1
                     if (newData.ThirdPartyRelationShipId == 1)
                     {
-                        var organization = _organizationRepository.GetOrganization(newData.ThirdPartyCompanyRealPageId);
                         additionalParams.Add(new AdditionalParameters()
                         {
                             Key = "Operator",
-                            Value = "{\"old\" : \"\", \"new\" : \"" + organization.Name + "\"}"
+                            Value = "{\"old\" : \"\", \"new\" : \"" + newData.OperatorValue + "\"}"
                         });
                     }
                     //if changed away from 1

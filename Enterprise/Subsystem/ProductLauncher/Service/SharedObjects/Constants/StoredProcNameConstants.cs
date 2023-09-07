@@ -465,7 +465,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         public const string SP_GetEnterpriseDelegateRole = "Security.GetDelegateAdminRoleTemaplte";
         public const string SP_InsertUpdateDelegateAdminTemplate = "Security.InsertUpdateDelegateAdminRoleTemplate";
         public const string SP_UpdateDelegateAdminStatus = "Security.UpdateDelegateAdminStatus";
-        
+        public const string SP_GetRoleTemplate = "Security.GetRoleTemplate";
 
         //AD groups
         public const string SP_GetADGroupsForUser = "Security.GetADGroupsByPersona";

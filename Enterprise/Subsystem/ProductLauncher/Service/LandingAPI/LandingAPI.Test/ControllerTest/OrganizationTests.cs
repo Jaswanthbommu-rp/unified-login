@@ -34,6 +34,7 @@ using Xunit;
 using HttpConfiguration = System.Web.Http.HttpConfiguration;
 using RoleType = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig.RoleType;
 using Xunit.Abstractions;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 {
@@ -155,6 +156,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             _defaultUserClaim.CorrelationId = new Guid();
             _defaultUserClaim.CustomerMasterId = _BooksCompanyMasterId;
             _defaultUserClaim.OrganizationPartyId = _PartyId;
+            _defaultUserClaim.OrganizationRealPageGuid = _RealPageId;
 
             var organizationTypeList = new List<OrganizationType>()
             {
@@ -2018,6 +2020,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                     , _mockRepositoryResponse.Object
                     , _mockHttpMessageHandler.Object
                     , mockLdClient.Object
+                    ,null
                     , _defaultUserClaim)
                 { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
 
@@ -2069,11 +2072,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         {
             //Arrange		
             Guid companyRealPageId = new Guid("11111111-1111-1111-1111-111111111111");
-            //string _companyRealPageId = companyRealPageId.ToString();
-
-            Guid operatorRealPageId = new Guid("22222222-2222-2222-2222-222222222222");
-            //string _operatorRealPageId = operatorRealPageId.ToString();
-
+            
+            string operatorCode = "operatorcode";
+            string operatorValue = "operatorvalue";
             var propertySetupList = new List<PropertySetup>()
             {
                 new PropertySetup()
@@ -2105,6 +2106,38 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                     Property = propertySetupList
                 }
             };
+            Dictionary<string, bool> allProperties = new Dictionary<string, bool>();
+            IList<ProductProperty> companyProperties = new List<ProductProperty>
+            {
+                new ProductProperty
+                {
+                    ID = "e89233ef-6fae-4da6-8953-8a2b6814c960",
+                    Name = "Ao Property One"
+                }
+            };
+
+            IList<ProductProperty> noCompanyProperties = new List<ProductProperty>();
+
+            ListResponse aoListResponse = new ListResponse()
+            {
+                Records = companyProperties.Cast<object>().ToList(),
+                TotalRows = companyProperties.Count,
+                RowsPerPage = companyProperties.Count,
+                ErrorReason = string.Empty,
+                TotalPages = 1,
+                Additional = allProperties
+            };
+
+            ListResponse aoEmptyResponse = new ListResponse()
+            {
+                Records = noCompanyProperties.Cast<object>().ToList(),
+                TotalRows = 0,
+                RowsPerPage = 0,
+                ErrorReason = string.Empty,
+                TotalPages = 1,
+                Additional = allProperties
+            };
+
             List<ProductInternalSetting> productInternalSettings = new List<ProductInternalSetting>()
             {
                 new ProductInternalSetting() { Name = "BooksUseDomains", Value = "1" },
@@ -2126,11 +2159,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             mockLdClient.Setup(m => m.BoolVariation(It.IsAny<string>(), It.IsAny<LaunchDarkly.Sdk.User>(), false))
                 .Returns(true);
 
+            Mock<IManageProductAssetOptimization> mockProductAssetOptimization = new Mock<IManageProductAssetOptimization>();
+            mockProductAssetOptimization.Setup(m => m.GetPropertiesWithOperators(It.IsAny<long>(), It.IsAny<long>(), operatorCode, operatorValue))
+                .Returns(aoListResponse);
+
+            mockProductAssetOptimization.Setup(m => m.GetPropertiesWithOperators(It.IsAny<long>(), It.IsAny<long>(), operatorCode, "Invalid"))
+                .Returns(aoEmptyResponse);
+
             OrganizationController organizationController = new OrganizationController(
                     _mockRepository.Object
                     , _mockRepositoryResponse.Object
                     , _mockHttpMessageHandler.Object
                     , mockLdClient.Object
+                    , mockProductAssetOptimization.Object
                     , _defaultUserClaim
                 )
                 { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
@@ -2157,6 +2198,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 }
             };
 
+            List<UPFMPropertyInstance> upfmPropertyInstances = new List<UPFMPropertyInstance>()
+            {
+                new UPFMPropertyInstance() { InstanceId = new Guid("cb1f5a51-56cc-415c-9d8e-3d5e3f0f8b68"), Name = "test property 1" }
+            };
+
             var mockManageBlueBook = new Mock<IManageBlueBook>();
             mockManageBlueBook
                 .Setup(m => m.GetPropertyInstanceForCompany(
@@ -2164,16 +2210,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 ))
                 .Returns(mapResource);
 
-            HttpResponseMessage responseMapResource = new HttpResponseMessage(HttpStatusCode.OK);
-            var jsonToSave = JsonConvert.SerializeObject(mapResource, new JsonApiSerializerSettings());
-            responseMapResource.Content = new StringContent("{\"data\":[{\"type\":\"bookspropertyinstance\",\"attributes\":{\"propertyInstanceId\":\"1005251854\",\"propertyInstanceSourceId\":\"003b0509-1189-49dc-bbe6-01c5b6277a83\",\"propertyName\":\"COBBLESTONE COVE\",\"source\":\"UPFM\",\"domain\":\"Primary\",\"deletedReason\":\"Deprecated Field\"}}]}");
+            var booksTranslateOneSiteJson = "{\n\t\"data\": {\n\t\t\"type\": \"propertyinstancetranslations\",\n\t\t\"attributes\": [\n\t\t\t{\n\t\t\t\t\"propertyInstanceSourceId\": \"a5192995-aaaa-bbbb-8df2-f30f1b8dc752\",\n\t\t\t\t\"source\": \"UPFM\",\n\t\t\t\t\"translatedPropertyInstances\": [\n\t\t\t\t\t{\n\t\t\t\t\t\t\"source\": \"AO\",\n\t\t\t\t\t\t\"propertyInstanceSourceId\": \"e89233ef-6fae-4da6-8953-8a2b6814c960\"\n\t\t\t\t\t}\n\t\t\t\t]\n\t\t\t},\n\t\t\t{\n\t\t\t\t\"propertyInstanceSourceId\": \"a5192995-aaaa-bbbb-8df2-f30f1b8dc752\",\n\t\t\t\t\"source\": \"UPFM\",\n\t\t\t\t\"translatedPropertyInstances\": [\n\t\t\t\t\t{\n\t\t\t\t\t\t\"source\": \"AB\",\n\t\t\t\t\t\t\"propertyInstanceSourceId\": \"7654321\"\n\t\t\t\t\t}\n\t\t\t\t]\n\t\t\t}\n\t\t]\n\t}\n}";
+            HttpResponseMessage booksTranslateOneSiteResponse = new HttpResponseMessage(HttpStatusCode.OK);
 
-            HttpResponseMessage responseEmptyMapResource = new HttpResponseMessage(HttpStatusCode.NotFound);
+            booksTranslateOneSiteResponse.Content = new StringContent(booksTranslateOneSiteJson);
+            _mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/translate/v3/propertyinstance/UPFM/AO", booksTranslateOneSiteResponse);
 
-            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/propertyinstance?scope[operatedBy]={companyRealPageId},UPFM,{operatorRealPageId}&page[size]=9999&include=customerPropertyMap.customerProperty&fields[propertyinstance]=propertyInstanceId,propertyInstanceSourceId,propertyName,source,domain,address&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName", responseMapResource);
-            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/propertyinstance?scope[operatedBy]={operatorRealPageId},UPFM,{companyRealPageId}&page[size]=9999&include=customerPropertyMap.customerProperty&fields[propertyinstance]=propertyInstanceId,propertyInstanceSourceId,propertyName,source,domain,address&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName", responseEmptyMapResource);
+            List<PropertyInstance> propertyInstances = new List<PropertyInstance>()
+            {
+                new PropertyInstance() {PropertyInstanceSourceId = "cb1f5a51-56cc-415c-9d8e-3d5e3f0f8b68"},
+                new PropertyInstance() {PropertyInstanceSourceId = "b6f475fc-7408-424b-a749-129035dcf57b"},
+                new PropertyInstance() {PropertyInstanceSourceId = "a61481fc-5779-4546-8d5a-b29ecf139095"},
+                new PropertyInstance() {PropertyInstanceSourceId = "d0ab0e33-4c04-4028-97f8-cda5a8423a30"},
+            };
 
-            HttpResponseMessage response = organizationController.GetPropertiesForCompany(companyRealPageId, null, null, null, operatorInstanceId: operatorRealPageId);
+            UPFMPropertyInstanceRootObject propertyInstanceRoot = new UPFMPropertyInstanceRootObject() { data = new List<UPFMPropertyInstanceData>() { new UPFMPropertyInstanceData() { attributes = new UPFMPropertyInstanceAttributes() { propertyInstance = propertyInstances } } } };
+
+            var jsonToSave = JsonConvert.SerializeObject(propertyInstanceRoot);
+            HttpResponseMessage responsePropertyInstance = new HttpResponseMessage(HttpStatusCode.OK);
+            responsePropertyInstance.Content = new StringContent(jsonToSave);
+            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/companypropertyinstancemap?include=propertyInstance&filter[source]=UPFM&filter[companyinstance.companyInstanceSourceId]={_defaultUserClaim.OrganizationRealPageGuid}&fields[propertyInstance]=propertyInstanceSourceId,propertyName,domain,isActive&filter[propertyInstance.isActive]=true&page[size]=9999", responsePropertyInstance);
+
+            _mockRepository.Setup(m => m.GetMany<UPFMPropertyInstance>(StoredProcNameConstants.SP_GetPropertyInstanceListById,
+                                It.Is<object>(data => TestSqlParameter(data, "{ InstanceList = Dapper.TableValuedParameter }"))))
+                            .Returns(upfmPropertyInstances);
+
+            HttpResponseMessage response = organizationController.GetPropertiesForCompany(companyRealPageId, null, null, null, operatorCode: operatorCode, operatorValue: operatorValue);
             ObjectListOutput<CompanyPropertySetup, IErrorData> propertyOutput = new ObjectListOutput<CompanyPropertySetup, IErrorData>();
             propertyOutput = response.Content.ReadAsAsync<ObjectListOutput<CompanyPropertySetup, IErrorData>>().Result;
 
@@ -2182,7 +2244,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             Assert.True(propertyOutput.list[0].Property[0].InstanceId == setup[0].Property[0].InstanceId);
             Assert.True(propertyOutput.list[0].Domain[0] == setup[0].Domain[0]);
 
-            response = organizationController.GetPropertiesForCompany(operatorRealPageId, null, null, null, operatorInstanceId: companyRealPageId);
+            response = organizationController.GetPropertiesForCompany(companyRealPageId, null, null, null, operatorCode: operatorCode, operatorValue: "Invalid");
             propertyOutput = response.Content.ReadAsAsync<ObjectListOutput<CompanyPropertySetup, IErrorData>>().Result;
             Assert.Equal(0, propertyOutput.list[0].Property.Count);
         }
