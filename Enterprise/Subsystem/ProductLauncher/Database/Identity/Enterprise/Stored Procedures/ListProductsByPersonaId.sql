@@ -1,6 +1,7 @@
 ﻿CREATE PROCEDURE [Enterprise].[ListProductsByPersonaId]          
 (@PersonaId          BIGINT,          
- @ProductStatusValue NVARCHAR(2000) = NULL          
+ @ProductStatusValue NVARCHAR(2000) = NULL ,            
+ @FetchAllEnterpriseRoleProducts bit =  NULL      
 )          
 AS          
 BEGIN                
@@ -62,7 +63,36 @@ BEGIN
   BEGIN                
    INSERT INTO @CompanyOrganizationProduct ( ProductId )                
     SELECT ProductId FROM Enterprise.Product where ProductTypeId IN ( SELECT ProductTypeId FROM Enterprise.ProductType where ParentProductTypeId = 400 )                
-  END                  
+  END            
+  
+  IF (@FetchAllEnterpriseRoleProducts IS NOT NULL)
+  BEGIN   
+   SELECT DISTINCT                  
+                prod.ProductGUID,                  
+                p.ProductId,                  
+                prod.[Name] AS ProductName,                  
+                prod.ProductTypeId,                  
+                prod.Description AS ProductDescription,                  
+                per.PersonaId,                  
+         ul.PersonPartyId,                  
+                par.RealPageId,                  
+                o.PartyId AS OrganizationPartyId,                  
+                o.[Name] AS OrganizationName,                  
+                p.StatusTypeId AS ProductStatus                  
+   FROM Enterprise.PersonaConfiguration p                  
+   JOIN Enterprise.Product prod ON prod.ProductId = p.ProductId                  
+   INNER JOIN Person.Persona per ON(p.PersonaId = per.PersonaId)                  
+   INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginPersonaId = per.UserLoginPersonaId                  
+   INNER JOIN Ident.UserLogin UL ON UL.UserId = ULP.UserLoginId                  
+   INNER JOIN Enterprise.Party par ON(UL.PersonPartyId = par.PartyId)                  
+   INNER JOIN Enterprise.Organization o ON(ULP.OrganizationPartyId = o.PartyId)                  
+   INNER JOIN @CompanyOrganizationProduct OP ON OP.ProductId = prod.ProductId  
+   INNER JOIN [Security].[RoleTemplateProduct]  RTP ON RTP.ProductId = OP.ProductId
+   INNER JOIN [Security].[RoleTemplateUserMapping] RTU on RTU.RoleTemplateId = RTP.RoleTemplateId
+   WHERE p.PersonaId = @PersonaId and RTU.PersonaId =   @PersonaId  
+  END
+  ELSE
+  BEGIN
    select distinct p.ProductGUID,              
    p.ProductId,              
    p.Name AS ProductName,              
@@ -110,5 +140,9 @@ BEGIN
    INNER JOIN @CompanyOrganizationProduct OP ON OP.ProductId = prod.ProductId                
          WHERE p.PersonaId = @PersonaId                
                AND (@NOW >= p.FromDate AND p.ThruDate IS NULL)
-               AND (p.StatusTypeId = @ProductStatusId OR @ProductStatusId = 0)                
+               AND (p.StatusTypeId = @ProductStatusId OR @ProductStatusId = 0)       
+               
+
+END
+
 END;

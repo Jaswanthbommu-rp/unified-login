@@ -249,7 +249,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="productId"></param>
         /// <returns></returns>
         bool isProductAssigned(long PersonaId, int ProductStatus, int productId);
-        IList<PersonaProductUserDetails> ListProductsByPersonaId(long personaId, int statusType);
+        IList<PersonaProductUserDetails> ListProductsByPersonaId(long personaId, int statusType, bool fetchAllEnterpriseRoleProduts = false);
 
         IList<UserBatchProductDetail> GetUserBatchDetails(int batchGroupId, long editorUserPersonId, long subjectUserPersonId);
 

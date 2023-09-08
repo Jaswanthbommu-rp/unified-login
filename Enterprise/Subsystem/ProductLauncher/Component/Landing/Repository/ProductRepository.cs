@@ -104,14 +104,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="personaId"></param>
         /// <param name="statusType"></param>
         /// <returns></returns>
-        public IList<PersonaProductUserDetails> ListProductsByPersonaId(long personaId, int statusType)
+        public IList<PersonaProductUserDetails> ListProductsByPersonaId(long personaId, int statusType, bool fetchAllEnterpriseRoleProduts = false)
         {            
             var procName = StoredProcNameConstants.SP_ListProductsByPersonaId;
             
             dynamic param = new
             {
                 PersonaId = personaId,
-                ProductStatusValue = statusType
+                ProductStatusValue = statusType,
+                FetchAllEnterpriseRoleProducts = fetchAllEnterpriseRoleProduts
             };
 
             using (var repository = GetRepository())

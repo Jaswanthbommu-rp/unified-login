@@ -7,6 +7,8 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Batch;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
+using Serilog.Events;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -16,8 +18,8 @@ using System.Threading.Tasks;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 {
-	public class BatchProductBulkUpdateRepository : BaseRepository
-	{
+    public class BatchProductBulkUpdateRepository : BaseRepository
+    {
         private DefaultUserClaim _userClaim;
 
         #region Constructor
@@ -41,246 +43,319 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
         #endregion
         public bool SaveProductBatch(long editorUserPersonaId, long subjectUserPersonaId, Guid editorUserRealPageId,
-			IList<ProductBatch> userProductList, string onesiteWithOherProductsJson, bool isOnesiteMix, int batchProcessType, long impersonatorUserId)
-		{
-			var batchGroup = CreateBatchProcessGroup();
+            IList<ProductBatch> userProductList, string onesiteWithOherProductsJson, bool isOnesiteMix, int batchProcessType, long impersonatorUserId, int batchProcessorGroupId)
+        {
+           using (var repository = GetRepository())
+            {
+                foreach (var prod in userProductList)
+                {
+                    int statusType = 0;
+                    if (prod.ProductId != (int)ProductEnum.AssetOptimizer)
+                    {
+                        statusType = prod.InputJson.IsAssigned ? batchProcessType : (int)BatchProcessType.CreateUpdateProductUser;
+                    }
+                    else
+                    {
+                        statusType = batchProcessType;
 
-			using (var repository = GetRepository())
-			{
-				foreach (var prod in userProductList)
-				{
-					int statusType = prod.InputJson.IsAssigned ? batchProcessType : (int)BatchProcessType.CreateUpdateProductUser;
+                    }
+                    string inputJson = JsonConvert.SerializeObject(prod.InputJson);
 
-					string inputJson = JsonConvert.SerializeObject(prod.InputJson);
-					
-					if (prod.ProductId == (int)ProductEnum.OneSite && isOnesiteMix)
-					{
-						inputJson = onesiteWithOherProductsJson;
-					}
-					dynamic productBatch = new
-					{
-						PersonRealPageId = editorUserRealPageId,
-						CreateUserPersonaId = editorUserPersonaId,
-						AssignUserPersonaId = subjectUserPersonaId,
-						ProductId = prod.ProductId,
-						StatusTypeId = 5,
-						RetryCount = 0,
-						InputJson = inputJson,
-						CorrelationId = Guid.NewGuid().ToString(),
-						BatchProcessTypeId = statusType,
-						BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
+                    if ((prod.ProductId == (int)ProductEnum.OneSite && isOnesiteMix) || prod.ProductId == (int)ProductEnum.AssetOptimizer)
+                    {
+                        inputJson = onesiteWithOherProductsJson;
+                    }
+                    dynamic productBatch = new
+                    {
+                        PersonRealPageId = editorUserRealPageId,
+                        CreateUserPersonaId = editorUserPersonaId,
+                        AssignUserPersonaId = subjectUserPersonaId,
+                        ProductId = prod.ProductId,
+                        StatusTypeId = 5,
+                        RetryCount = 0,
+                        InputJson = inputJson,
+                        CorrelationId = Guid.NewGuid().ToString(),
+                        BatchProcessTypeId = statusType,
+                        BatchProcessorGroupId = batchProcessorGroupId,
                         ImpersonatorUserId = impersonatorUserId
                     };
 
-					var repositoryResponse = repository.Execute<dynamic>(StoredProcNameConstants.SP_CreateProductBatch, productBatch);
+                    var repositoryResponse = repository.Execute<dynamic>(StoredProcNameConstants.SP_CreateProductBatch, productBatch);
 
-					//In-case of an error creating a product batch record, append the ProductCode to the ErrorReason
-					if (repositoryResponse.Id == 0)
-					{
-						throw new Exception($"Exception while inserting product with code {prod.ProductId} in the product batch.");
-					}					
-				}
-				return true;
-			}
-			return false;
-		}
-        
-		private BatchProcessorGroup CreateBatchProcessGroup(IRepository repo)
-		{
-			{
-				DynamicParameters param = new DynamicParameters();
-				int groupID = 0;
-				param.Add("@BatchProcessorGroupID", groupID, dbType: DbType.Int32, direction: ParameterDirection.Output);
+                    //In-case of an error creating a product batch record, append the ProductCode to the ErrorReason
+                    if (repositoryResponse.Id == 0)
+                    {
+                        throw new Exception($"Exception while inserting product with code {prod.ProductId} in the product batch.");
+                    }
+                }
+                return true;
+            }
+            return false;
+        }
 
-				try
-				{
-					var a = repo.Execute(StoredProcNameConstants.SP_CreateBatchProcessorGroup, param);
-					groupID = param.Get<int>("@BatchProcessorGroupID");
-				}
-				catch (Exception ex)
-				{
-				}
+        /// <summary>
+        /// Saving Asset Optmization batch records for Enterprise Roles.
+        /// </summary>
+        /// <param name="batch"></param>
+        /// <param name="aOproductListToCreate"></param>
+        /// <param name="editorPersona"></param>
+        /// <param name="enterpriseRoleProductRepository"></param>
+        /// <param name="impersonatorUserLoginOnly"></param>
+        /// <param name="propertiesResponse"></param>
+        /// <param name="batchRecords"></param>
+        public void SaveAOProductBatch(EnterpriseRoleBatch batch, IList<ProductBatch> aOproductListToCreate, Persona editorPersona, BatchProductBulkUpdateRepository enterpriseRoleProductRepository, IUserLoginOnly impersonatorUserLoginOnly, int batchProcessorGroupId, string inputAOJson)
+        {
+            try
+            {
+                int statusTypeId = (int)ProductBatchStatusType.Success;
+                bool isBatchCompleted = enterpriseRoleProductRepository.SaveProductBatch(batch.EditorUserPersonaId, batch.SubjectUserPersonaId,
+                    editorPersona.RealPageId, aOproductListToCreate, inputAOJson, false,
+                    (int)BatchProcessType.CreateUpdateProductUser, impersonatorUserLoginOnly.UserId, batchProcessorGroupId);
+                if (!isBatchCompleted)
+                {
+                    statusTypeId = (int)ProductBatchStatusType.Error;
+                }
+                bool status = enterpriseRoleProductRepository.UpdateEnterpriseRoleProductBatch(batch.EnterpriseRoleBatchProcessId, statusTypeId);
 
-				return new BatchProcessorGroup()
-				{
-					BatchProcessorGroupId = groupID,
-					BatchProcessorGroupActivityLogged = false
-				};
-			}
-		}
+            }
+            catch (Exception ex)
+            {
+                string exmessage = $"Exception during enterprise role product batch data for ao products insert to user - {batch.SubjectUserPersonaId}";
+                Log.Write(LogEventLevel.Error, ex, exmessage);
+                enterpriseRoleProductRepository.UpdateEnterpriseRoleProductBatch(batch.EnterpriseRoleBatchProcessId, (int)ProductBatchStatusType.Error);
+            }
+        }
 
-		/// <summary>
-		/// Create the Batch for Admin Portal
-		/// </summary>
-		/// <param name="editorUserPersonaId">editorUserPersonaId</param>
-		/// <param name="subjectUserPersonaId">subjectUserPersonaId</param>
-		/// <param name="editorUserRealPageId">editorUserRealPageId</param>
-		/// <param name="productId">productId</param>
-		/// <param name="retryCheckCount">retryCheckCount</param>
-		/// <param name="statusCheckSleep">statusCheckSleep</param>
-		/// <param name="defaultUserRole">defaultUserRole</param>
-		/// <param name="impersonatorUserId"></param>
-		/// <returns>whether batch proccess is success or not</returns>
-		public IList<SamlAttributes> CreateBatch(long editorUserPersonaId, long subjectUserPersonaId, Guid editorUserRealPageId, int productId, int retryCheckCount, int statusCheckSleep, string defaultUserRole, long impersonatorUserId)
-		{
-			int batchProcessorGroupId;
-			SamlRepository samlRepository = new SamlRepository();
-			IList<SamlAttributes> samlAttributesDetails = new List<SamlAttributes>();
 
-			using (var repository = GetRepository())
-			{
-				repository.UnitOfWork.BeginTransaction();
-				List<string> roleList = new List<string>();
-				roleList.Add(defaultUserRole);
-				var batchGroup = CreateBatchProcessGroup(repository);
-				batchProcessorGroupId = batchGroup.BatchProcessorGroupId;
+        /// <summary>
+        /// Saving Asset Optmization batch records for Primary Properties.
+        /// </summary>
+        /// <param name="batch"></param>
+        /// <param name="aOproductListToCreate"></param>
+        /// <param name="editorPersona"></param>
+        /// <param name="enterpriseRoleProductRepository"></param>
+        /// <param name="impersonatorUserLoginOnly"></param>
+        /// <param name="propertiesResponse"></param>
+        /// <param name="batchRecords"></param>
+        public void SaveAOProductBatch(PrimaryPropertyBatch batch, IList<ProductBatch> aOproductListToCreate, Persona editorPersona, BatchProductBulkUpdateRepository enterpriseRoleProductRepository, IUserLoginOnly impersonatorUserLoginOnly, int batchProcessorGroupId, string inputAOJson)
+        {
+            try
+            {
+                int statusTypeId = (int)ProductBatchStatusType.Success;
+                bool isBatchCompleted = enterpriseRoleProductRepository.SaveProductBatch(batch.EditorUserPersonaId, batch.SubjectUserPersonaId,
+                    editorPersona.RealPageId, aOproductListToCreate, inputAOJson, false,
+                    (int)BatchProcessType.CreateUpdateProductUser, impersonatorUserLoginOnly.UserId, batchProcessorGroupId);
+                if (!isBatchCompleted)
+                {
+                    statusTypeId = (int)ProductBatchStatusType.Error;
+                }
+                bool status = enterpriseRoleProductRepository.UpdateEnterpriseRoleProductBatch(batch.PrimaryPropertyBatchProcessId, statusTypeId);
 
-				dynamic productBatch = new
-				{
-					PersonRealPageId = editorUserRealPageId,
-					CreateUserPersonaId = editorUserPersonaId,
-					AssignUserPersonaId = subjectUserPersonaId,
-					ProductId = productId,
-					StatusTypeId = 5,
-					RetryCount = 0,
-					BatchProcessorGroupId = batchProcessorGroupId,
+            }
+            catch (Exception ex)
+            {
+                string exmessage = $"Exception during primary property productbatch data for ao products insert to user - {batch.SubjectUserPersonaId}";
+                Log.Write(LogEventLevel.Error, ex, exmessage);
+                enterpriseRoleProductRepository.UpdateEnterpriseRoleProductBatch(batch.PrimaryPropertyBatchProcessId, (int)ProductBatchStatusType.Error);
+            }
+        }
+
+        private BatchProcessorGroup CreateBatchProcessGroup(IRepository repo)
+        {
+            {
+                DynamicParameters param = new DynamicParameters();
+                int groupID = 0;
+                param.Add("@BatchProcessorGroupID", groupID, dbType: DbType.Int32, direction: ParameterDirection.Output);
+
+                try
+                {
+                    var a = repo.Execute(StoredProcNameConstants.SP_CreateBatchProcessorGroup, param);
+                    groupID = param.Get<int>("@BatchProcessorGroupID");
+                }
+                catch (Exception ex)
+                {
+                }
+
+                return new BatchProcessorGroup()
+                {
+                    BatchProcessorGroupId = groupID,
+                    BatchProcessorGroupActivityLogged = false
+                };
+            }
+        }
+
+        /// <summary>
+        /// Create the Batch for Admin Portal
+        /// </summary>
+        /// <param name="editorUserPersonaId">editorUserPersonaId</param>
+        /// <param name="subjectUserPersonaId">subjectUserPersonaId</param>
+        /// <param name="editorUserRealPageId">editorUserRealPageId</param>
+        /// <param name="productId">productId</param>
+        /// <param name="retryCheckCount">retryCheckCount</param>
+        /// <param name="statusCheckSleep">statusCheckSleep</param>
+        /// <param name="defaultUserRole">defaultUserRole</param>
+        /// <param name="impersonatorUserId"></param>
+        /// <returns>whether batch proccess is success or not</returns>
+        public IList<SamlAttributes> CreateBatch(long editorUserPersonaId, long subjectUserPersonaId, Guid editorUserRealPageId, int productId, int retryCheckCount, int statusCheckSleep, string defaultUserRole, long impersonatorUserId)
+        {
+            int batchProcessorGroupId;
+            SamlRepository samlRepository = new SamlRepository();
+            IList<SamlAttributes> samlAttributesDetails = new List<SamlAttributes>();
+
+            using (var repository = GetRepository())
+            {
+                repository.UnitOfWork.BeginTransaction();
+                List<string> roleList = new List<string>();
+                roleList.Add(defaultUserRole);
+                var batchGroup = CreateBatchProcessGroup(repository);
+                batchProcessorGroupId = batchGroup.BatchProcessorGroupId;
+
+                dynamic productBatch = new
+                {
+                    PersonRealPageId = editorUserRealPageId,
+                    CreateUserPersonaId = editorUserPersonaId,
+                    AssignUserPersonaId = subjectUserPersonaId,
+                    ProductId = productId,
+                    StatusTypeId = 5,
+                    RetryCount = 0,
+                    BatchProcessorGroupId = batchProcessorGroupId,
                     ImpersonatorUserId = impersonatorUserId,
                     InputJson = JsonConvert.SerializeObject(new RolePropertyList()
-					{
-						PropertyList = new List<string> { "-1" },
-						RoleList = roleList,
-						IsAssigned = true
-					}),
-				};
+                    {
+                        PropertyList = new List<string> { "-1" },
+                        RoleList = roleList,
+                        IsAssigned = true
+                    }),
+                };
 
-				var repositoryResponse = repository.Execute<dynamic>(StoredProcNameConstants.SP_CreateProductBatch, productBatch);
+                var repositoryResponse = repository.Execute<dynamic>(StoredProcNameConstants.SP_CreateProductBatch, productBatch);
 
-				//In-case of an error creating a product batch record, append the ProductCode to the ErrorReason
-				if (repositoryResponse.Id == 0)
-				{
-					throw new Exception($"Exception while inserting product {productId} in the product batch.");
-				}
-				repository.UnitOfWork.Commit();
+                //In-case of an error creating a product batch record, append the ProductCode to the ErrorReason
+                if (repositoryResponse.Id == 0)
+                {
+                    throw new Exception($"Exception while inserting product {productId} in the product batch.");
+                }
+                repository.UnitOfWork.Commit();
 
-				while (retryCheckCount >= 0)
-				{
-					System.Threading.Thread.Sleep(statusCheckSleep);
-					List<UserBatchProductDetail> listUserBatchProductDetails = (List<UserBatchProductDetail>)GetUserBatchDetails(batchProcessorGroupId, editorUserPersonaId, subjectUserPersonaId);
-					if (listUserBatchProductDetails.Select(a => a.StatusTypeId == 8).Any())
-					{
-						samlAttributesDetails = samlRepository.GetProductSamlDetails(subjectUserPersonaId, productId);
-						if (samlAttributesDetails.Count() == 0)
-						{
-							retryCheckCount--;
-						}
-						else
-						{
-							System.Threading.Thread.Sleep(statusCheckSleep);
-							return samlAttributesDetails;
-						}
-					}
-					else if (listUserBatchProductDetails.Select(a => a.StatusTypeId == 7).Any())
-					{
-						return samlAttributesDetails;
-					}
-					else
-					{
-						retryCheckCount--;
-					}
-				}
-			}
-			
-			return samlAttributesDetails;
-		}
+                while (retryCheckCount >= 0)
+                {
+                    System.Threading.Thread.Sleep(statusCheckSleep);
+                    List<UserBatchProductDetail> listUserBatchProductDetails = (List<UserBatchProductDetail>)GetUserBatchDetails(batchProcessorGroupId, editorUserPersonaId, subjectUserPersonaId);
+                    if (listUserBatchProductDetails.Select(a => a.StatusTypeId == 8).Any())
+                    {
+                        samlAttributesDetails = samlRepository.GetProductSamlDetails(subjectUserPersonaId, productId);
+                        if (samlAttributesDetails.Count() == 0)
+                        {
+                            retryCheckCount--;
+                        }
+                        else
+                        {
+                            System.Threading.Thread.Sleep(statusCheckSleep);
+                            return samlAttributesDetails;
+                        }
+                    }
+                    else if (listUserBatchProductDetails.Select(a => a.StatusTypeId == 7).Any())
+                    {
+                        return samlAttributesDetails;
+                    }
+                    else
+                    {
+                        retryCheckCount--;
+                    }
+                }
+            }
 
-		public IList<UserBatchProductDetail> GetUserBatchDetails(int batchGroupId, long editorUserPersonId, long subjectUserPersonId)
-		{
-			using (var repo = GetRepository())
-			{
-				var data = repo.GetMany<UserBatchProductDetail>(StoredProcNameConstants.SP_GetUserBatchRecords, new
-				{
-					batchProcessorGroupId = batchGroupId,
-					editorUserPersonId = editorUserPersonId,
-					subjectUserPersonId = subjectUserPersonId
+            return samlAttributesDetails;
+        }
 
-				}).ToList();
-				return data;
-			}
-		}
-		
-		/// <summary>
-		/// Update a Enterprise Role Product Batch
-		/// </summary>
-		/// <returns>Repository response object</returns>
-		public bool UpdateEnterpriseRoleProductBatch(long productBatchId, int statusTypeId)
-		{
-			using (var repository = GetRepository())
-			{
-				var result = repository.Execute<bool>(StoredProcNameConstants.SP_UpdateEnterpriseRoleProductBatch,
-				   new { productBatchId, statusTypeId });
+        public IList<UserBatchProductDetail> GetUserBatchDetails(int batchGroupId, long editorUserPersonId, long subjectUserPersonId)
+        {
+            using (var repo = GetRepository())
+            {
+                var data = repo.GetMany<UserBatchProductDetail>(StoredProcNameConstants.SP_GetUserBatchRecords, new
+                {
+                    batchProcessorGroupId = batchGroupId,
+                    editorUserPersonId = editorUserPersonId,
+                    subjectUserPersonId = subjectUserPersonId
 
-				return result;
-			}
-		}
+                }).ToList();
+                return data;
+            }
+        }
 
-		/// <summary>
-		/// Update a Primary Property Product Batch
-		/// </summary>
-		/// <returns>Repository response object</returns>
-		public bool UpdatePrimaryPropertyProductBatch(long productBatchId, int statusTypeId)
-		{
-			using (var repository = GetRepository())
-			{
-				var result = repository.Execute<bool>(StoredProcNameConstants.SP_UpdatePrimaryPropertyProductBatch,
-				   new { productBatchId, statusTypeId });
+        /// <summary>
+        /// Update a Enterprise Role Product Batch
+        /// </summary>
+        /// <returns>Repository response object</returns>
+        public bool UpdateEnterpriseRoleProductBatch(long productBatchId, int statusTypeId)
+        {
+            using (var repository = GetRepository())
+            {
+                var result = repository.Execute<bool>(StoredProcNameConstants.SP_UpdateEnterpriseRoleProductBatch,
+                   new { productBatchId, statusTypeId });
 
-				return result;
-			}
-		}
+                return result;
+            }
+        }
 
-		public void UpdateUnifiedPlatFormRole(int roleId, long editorUserId, long userPersonaId)
-		{
-			using (var repository = GetRepository())
-			{
-				dynamic param = new
-				{
-					personaID = userPersonaId,
-					roleID = roleId,
-					CreatedBy = editorUserId,
-					personaPrivilgeID = 0
-				};
-				
-				var repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkPersonaToRole, param);
-			}
-		}
+        /// <summary>
+        /// Update a Primary Property Product Batch
+        /// </summary>
+        /// <returns>Repository response object</returns>
+        public bool UpdatePrimaryPropertyProductBatch(long productBatchId, int statusTypeId)
+        {
+            using (var repository = GetRepository())
+            {
+                var result = repository.Execute<bool>(StoredProcNameConstants.SP_UpdatePrimaryPropertyProductBatch,
+                   new { productBatchId, statusTypeId });
 
-		private BatchProcessorGroup CreateBatchProcessGroup()
-		{
-			{
-				DynamicParameters param = new DynamicParameters();
-				int groupID = 0;
-				param.Add("@BatchProcessorGroupID", groupID, dbType: DbType.Int32, direction: ParameterDirection.Output);
+                return result;
+            }
+        }
 
-				try
-				{
-					using (var repo = GetRepository())
-					{
-						var a = repo.Execute(StoredProcNameConstants.SP_CreateBatchProcessorGroup, param);
-						groupID = param.Get<int>("@BatchProcessorGroupID");
-					}
+        public void UpdateUnifiedPlatFormRole(int roleId, long editorUserId, long userPersonaId)
+        {
+            using (var repository = GetRepository())
+            {
+                dynamic param = new
+                {
+                    personaID = userPersonaId,
+                    roleID = roleId,
+                    CreatedBy = editorUserId,
+                    personaPrivilgeID = 0
+                };
 
-				}
-				catch (Exception ex)
-				{
-				}
+                var repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkPersonaToRole, param);
+            }
+        }
 
-				return new BatchProcessorGroup()
-				{
-					BatchProcessorGroupId = groupID,
-					BatchProcessorGroupActivityLogged = false
-				};
-			}
-		}
+        public BatchProcessorGroup CreateBatchProcessGroup()
+        {
+            {
+                DynamicParameters param = new DynamicParameters();
+                int groupID = 0;
+                param.Add("@BatchProcessorGroupID", groupID, dbType: DbType.Int32, direction: ParameterDirection.Output);
+
+                try
+                {
+                    using (var repo = GetRepository())
+                    {
+                        var a = repo.Execute(StoredProcNameConstants.SP_CreateBatchProcessorGroup, param);
+                        groupID = param.Get<int>("@BatchProcessorGroupID");
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                }
+
+                return new BatchProcessorGroup()
+                {
+                    BatchProcessorGroupId = groupID,
+                    BatchProcessorGroupActivityLogged = false
+                };
+            }
+        }
 
     }
 }
