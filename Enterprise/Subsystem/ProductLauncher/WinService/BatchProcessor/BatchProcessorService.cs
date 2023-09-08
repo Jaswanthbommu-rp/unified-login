@@ -70,20 +70,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
                 Task assignPendingProductTask = new Task(RunPendingProcess, _cts.Token, TaskCreationOptions.LongRunning);
                 assignPendingProductTask.Start();
 
-                Log.Information("Launched retry polling task...");
+                //Log.Information("Launched retry polling task...");
 
-                Task assignRetryProductsTask = new Task(RunRetryProcess, _cts.Token, TaskCreationOptions.LongRunning);
-                assignRetryProductsTask.Start();
+                //Task assignRetryProductsTask = new Task(RunRetryProcess, _cts.Token, TaskCreationOptions.LongRunning);
+                //assignRetryProductsTask.Start();
 
-                Log.Information("Launched Enterprise Role Update task...");
+                //Log.Information("Launched Enterprise Role Update task...");
 
-                Task enterpriseRoleProductUpdateTask = new Task(RunEnterpriseRoleUpdateProcess, _cts.Token, TaskCreationOptions.LongRunning);
-                enterpriseRoleProductUpdateTask.Start();
+                //Task enterpriseRoleProductUpdateTask = new Task(RunEnterpriseRoleUpdateProcess, _cts.Token, TaskCreationOptions.LongRunning);
+                //enterpriseRoleProductUpdateTask.Start();
 
-                Log.Information("Launched Primary Properties Update task...");
+                //Log.Information("Launched Primary Properties Update task...");
 
-                Task primaryPropertyProductUpdateTask = new Task(RunPrimaryPropertiesUpdateProcess, _cts.Token, TaskCreationOptions.LongRunning);
-                primaryPropertyProductUpdateTask.Start();
+                //Task primaryPropertyProductUpdateTask = new Task(RunPrimaryPropertiesUpdateProcess, _cts.Token, TaskCreationOptions.LongRunning);
+                //primaryPropertyProductUpdateTask.Start();
 
                 Log.Information("Launched enterprise role product update polling task...");
 #if (DEBUG)

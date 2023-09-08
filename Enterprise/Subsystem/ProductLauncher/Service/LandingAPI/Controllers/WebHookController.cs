@@ -755,7 +755,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             var adminEmail = payLoad?["user"]["email"] == null || payLoad?["user"]["email"].Type == JTokenType.Null ? "" : payLoad["user"]["email"].ToString();
             var adminFirstName = payLoad?["user"]["firstName"] == null || payLoad?["user"]["firstName"].Type == JTokenType.Null ? "" : payLoad["user"]["firstName"].ToString();
             var adminLastName = payLoad?["user"]["lastName"] == null || payLoad?["user"]["lastName"].Type == JTokenType.Null ? "" : payLoad["user"]["lastName"].ToString();
-
+            //Has rolelist
             var customerCompany = _manageBlueBook.GetCompanyCustomerInfo(companyRealPageId: Guid.Empty, domain: null, booksCompanyMasterId: customerCompanyId);
             if (customerCompany == null)
             {
@@ -803,6 +803,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 Products = new List<string>() { productSource },
                 CompanyInstancePartner = productSource,
                 CompanyInstancePartnerSourceId = productSourceId,
+                //set role
             };
 
             WriteToLog(LogEventLevel.Debug, $"Adding vendor company {customerCompany.CompanyName}");

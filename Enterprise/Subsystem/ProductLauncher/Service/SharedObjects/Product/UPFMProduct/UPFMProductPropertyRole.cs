@@ -21,6 +21,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
 			/// Role assigned to the user
 			/// </summary>
 			public List<string> RoleList { get; set; }
+
+			public bool UseOverrideRole { get; set; } = false;
+
 			[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
 			public List<string> RemovedPropertyList { get; set; }
 		}

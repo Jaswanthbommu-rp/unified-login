@@ -625,7 +625,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="userAssignProductPropertyRole"></param>
         /// <param name="isEmpAccess"></param>
         /// <returns></returns>
-        public string ManageUPFMProductUser(long editorPersonaId, long userPersonaId, UPFMProductPropertyRole userAssignProductPropertyRole, bool isEmpAccess = false)
+        public string ManageUPFMProductUser(long editorPersonaId, long userPersonaId, UPFMProductPropertyRole userAssignProductPropertyRole1, bool isEmpAccess = false)
         {
             WriteToDiagnosticLog($"ManageUPFMProductUser - Begin create/update user for user with userPersonaId id - {userPersonaId}.");
             try
@@ -637,13 +637,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     return listResponse.ErrorReason;
                 }
 
-                var orgTypeName = "";
+                var orgTypeName123 = "";
                 var userPersona = _managePersona.GetPersona(userPersonaId);
                 var realPageId = userPersona.RealPageId;
                 var userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
                 var productInternalSettingList = GetProductSetting((int)ProductEnum.UnifiedPlatform);
                 var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, _upfmProductId);
                 var productSettingList = GetProductSetting(_productId);
+
+                /*
+                 New attribute Internal override flag
+                set true fom webhook
+                 
+                 */
+
                 // super user
                 // TODO what to do here?
                 if (IsSuperUser(userPersonaId))

@@ -257,7 +257,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                 //ManageUser manageUser = new ManageUser(_defaultUserClaim);
                 IList<Persona> personaList = new List<Persona>();
-                ProfileDetail profileDetail = new ProfileDetail()
+                ProfileDetail profileDetail1 = new ProfileDetail()
                 {
                     FirstName = organization.CompanyAdminUser.FirstName,
                     LastName = organization.CompanyAdminUser.LastName,
@@ -280,7 +280,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         FromDate = DateTime.UtcNow,
                         Is3rdPartyIDP = false
                     },
-                    productBatch = new List<ProductBatch>(),
+                    productBatch = new List<ProductBatch>(),//get VMP role from webhook
                     ExternalUserRelationship = new ExternalUserRelationship() { ThirdPartyRelationShipId = 8, ThirdPartyRelationShip = "8" }
                 };
                 if (findExistingUser != null)
@@ -308,7 +308,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                                         RoleList = new List<string>() {roleId}
                                     }
                                 };
-                                profileDetail.productBatch = new List<ProductBatch>() {pb};
+                                profileDetail.productBatch = new List<ProductBatch>() {pb}; // dont assign add to existing
                             }
                         }
                     }
