@@ -67,5 +67,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterp
 		/// AttributeValue
 		/// </summary>
 		public string AttributeValue { get; set; }
-	}
+
+		/// <summary>
+		/// Product Name
+		/// </summary>
+        public string ProductName { get; set; }
+    }
 }
