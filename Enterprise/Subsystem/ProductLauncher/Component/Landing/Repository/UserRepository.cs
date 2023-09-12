@@ -7048,11 +7048,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         var org = _organizationRepository.GetOrganization(newData.ThirdPartyCompanyRealPageId);
 
-                        if (newData.ThirdPartyRelationShipId != oldData.ThirdPartyRelationShipId ||
-                            org.Name != oldData.ThirdPartyCompanyName)
+                        if (newData.OperatorCode != oldData.OperatorCode
+                            || newData.OperatorValue != oldData.OperatorValue)
                         {
                             isUpdated = true;
-                            delOldProperyInstanceMapping = true;
                         }
                     }
                     else
