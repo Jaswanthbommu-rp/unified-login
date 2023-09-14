@@ -245,7 +245,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(_userClaim.ImpersonatedBy);
             }
-
+            
             IUserLoginOnly userLoginOnly = _userLoginRepository.GetUserLoginOnly(newProfile.userLogin.LoginName);
             if (newProfile.organization[0].RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId)
             {
