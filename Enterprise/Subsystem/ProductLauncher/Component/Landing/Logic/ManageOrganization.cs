@@ -248,7 +248,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 BooksCompanyId = org.BooksMasterId,
                 BooksCustomerMasterId = org.BooksCustomerMasterId
             };
-            if (organization.CompanyAdminUser.RoleIds != null && organization.CompanyAdminUser.RoleIds.Count > 0)
+            if (organization.CompanyAdminUser?.RoleIds != null && organization.CompanyAdminUser?.RoleIds?.Count > 0)
             {
                 string lstRoleIds = string.Empty;
                 foreach (string roleid in organization.CompanyAdminUser.RoleIds)
