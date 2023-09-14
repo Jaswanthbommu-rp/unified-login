@@ -679,12 +679,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             }
                         }
                     }
-
+                    List<string> userRoleIdList = new List<string>();
+                    if (userAssignProductPropertyRole.IsVendorRoleIdOverride)
+                    {
+                        userRoleIdList = userAssignProductPropertyRole.RoleList;
+                    }
+                    else 
+                    {
+                        userRoleIdList.Add(superUserRoleId);
+                    }
                     userAssignProductPropertyRole = new UPFMProductPropertyRole
                     {
                         PropertyList = new List<string> { "-1" },
                         RemovedPropertyList = propertiesToRemove,
-                        RoleList = new List<string>() { superUserRoleId }
+                        RoleList = userRoleIdList
                     };
                 }
 

@@ -261,6 +261,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     FirstName = organization.CompanyAdminUser.FirstName,
                     LastName = organization.CompanyAdminUser.LastName,
+                    RoleIdList = organization.CompanyAdminUser.RoleIds,
                     MiddleName = string.Empty,
                     NotificationEmail = string.Empty,
                     Password = string.Empty,

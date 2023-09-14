@@ -116,7 +116,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 WriteToLog(LogEventLevel.Error, "Missing Signature.");
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Missing Signature.");
             }
-
+            //Request.Properties["TibcoPostData"] = "{\r\n\t\"id\": \"5d85fb43-8fa7-2c7a-b00c-a5761b7f3686\",\r\n\t\"topic\": \"books.upfmvendor.create\",\r\n    \"payload\": {\r\n        \"user\": {\r\n            \"firstName\": \"Liza\",\r\n            \"lastName\": \"Jones\",\r\n            \"email\": \"ljones@test.com\"\r\n,\r\n            \"roles\": \r\n [\"2607\", \"2605\", \"2613\"]\r\n        },\r\n        \"customerCompanyId\": 1380567,\r\n        \"companyInstanceSourceId\" : \"2230095\",\r\n        \"source\": \"VMP\"\r\n    },\r\n\t\"createdAt\": \"2021-05-28T11:06:02-05:00\"\r\n}";
             if (Request.Properties?["TibcoPostData"] is string requestBody)
             {
                 string signingSecret = GetTibcoWebHookSigningSecret();
@@ -755,6 +755,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             var adminEmail = payLoad?["user"]["email"] == null || payLoad?["user"]["email"].Type == JTokenType.Null ? "" : payLoad["user"]["email"].ToString();
             var adminFirstName = payLoad?["user"]["firstName"] == null || payLoad?["user"]["firstName"].Type == JTokenType.Null ? "" : payLoad["user"]["firstName"].ToString();
             var adminLastName = payLoad?["user"]["lastName"] == null || payLoad?["user"]["lastName"].Type == JTokenType.Null ? "" : payLoad["user"]["lastName"].ToString();
+            var roles = payLoad?["user"]["roles"] == null || payLoad?["user"]["roles"].Type == JTokenType.Null ? "" : payLoad["user"]["roles"];
+            List<string> rolesList = roles == null || roles.Type == JTokenType.Null ? new List<string>() : roles.Select(r => Convert.ToString(r)).ToList();
+
 
             var customerCompany = _manageBlueBook.GetCompanyCustomerInfo(companyRealPageId: Guid.Empty, domain: null, booksCompanyMasterId: customerCompanyId);
             if (customerCompany == null)
@@ -798,7 +801,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 {
                     Email = adminEmail,
                     FirstName = adminFirstName,
-                    LastName = adminLastName
+                    LastName = adminLastName,
+                    RoleIds = rolesList
                 },
                 Products = new List<string>() { productSource },
                 CompanyInstancePartner = productSource,
