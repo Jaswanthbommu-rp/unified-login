@@ -758,6 +758,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             var roles = payLoad?["user"]["roles"] == null || payLoad?["user"]["roles"].Type == JTokenType.Null ? "" : payLoad["user"]["roles"];
             List<string> rolesList = roles == null || roles.Type == JTokenType.Null ? new List<string>() : roles.Select(r => Convert.ToString(r)).ToList();
 
+            if (rolesList?.Count > 0)
+            {
+                string lstRoleIds = string.Empty;
+                foreach (string roleid in rolesList)
+                {
+                    lstRoleIds += "(" + roleid + ")";
+                }
+                WriteToLog(LogEventLevel.Debug, $"Webhook Call: Vendor User RoleIds: {lstRoleIds}");
+            }
+            
 
             var customerCompany = _manageBlueBook.GetCompanyCustomerInfo(companyRealPageId: Guid.Empty, domain: null, booksCompanyMasterId: customerCompanyId);
             if (customerCompany == null)
@@ -878,7 +888,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             //        Country = organization.CompanyAddress.Country
             //    };
             //    companyInstance.CompanyInstanceLocation = new List<CompanyInstanceAddress>() { address };
-            //}
+            //}Before creating use
 
             // add the new company data to books
             var companyCreatedSuccessfully = _manageBlueBook.AddUPFMCompanyFromCompanySetup(companyInstance);

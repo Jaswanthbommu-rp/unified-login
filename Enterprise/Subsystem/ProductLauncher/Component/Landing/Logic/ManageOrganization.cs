@@ -248,6 +248,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 BooksCompanyId = org.BooksMasterId,
                 BooksCustomerMasterId = org.BooksCustomerMasterId
             };
+            if (organization.CompanyAdminUser.RoleIds != null && organization.CompanyAdminUser.RoleIds.Count > 0)
+            {
+                string lstRoleIds = string.Empty;
+                foreach (string roleid in organization.CompanyAdminUser.RoleIds)
+                {
+                    lstRoleIds += "(" + roleid + ")";
+                }
+                WriteToLog(LogEventLevel.Debug, $"RoleIds of Vendor User : {lstRoleIds}");
+            }
             WriteToLog(LogEventLevel.Debug, $"Before in admin user");
             //Create an additional admin user for the Company
             if (processBlueBookMessage && organization.CompanyAdminUser != null && !string.IsNullOrWhiteSpace(organization.CompanyAdminUser.Email))
@@ -262,6 +271,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     FirstName = organization.CompanyAdminUser.FirstName,
                     LastName = organization.CompanyAdminUser.LastName,
                     RoleIdList = organization.CompanyAdminUser.RoleIds,
+
                     MiddleName = string.Empty,
                     NotificationEmail = string.Empty,
                     Password = string.Empty,
