@@ -3591,10 +3591,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                        )
                     {
                         
-                        if (prod.ProductId == (int)ProductEnum.VendorMarketplace && roleIdList?.Count > 0)
-                        {
-                            
-                        }
                         // don't add the product if it is already in the list
                         if (productListToCreate.All(a => a.ProductId != prod.ProductId))
                         {
