@@ -3575,6 +3575,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 IList<PersonaProductUserDetails> userProducts = repository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = AssignUserPersonaId }).ToList();
                 List<ProductUI> productsAssignedToCompany = GetOrganizationProductListForAdminUser(repository, realPageId, organizationRealPageId, aoProducts);
                 List<string> vendorRoleIdList = new List<string>();
+                vendorRoleIdList = (List<string>)roleIdList;
                 foreach (ProductUI prod in productsAssignedToCompany)
                 {
                     // see if the user already has the product, or if they do if it is Deleted or Deactivated, and if so add it or turn it back on
@@ -3585,10 +3586,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         || isRealpageAccessUser
                        )
                     {
-                        vendorRoleIdList.Clear();
+                        
                         if (prod.ProductId == (int)ProductEnum.VendorMarketplace && roleIdList?.Count > 0)
                         {
-                            vendorRoleIdList = (List<string>)roleIdList;
+                            
                         }
                         // don't add the product if it is already in the list
                         if (productListToCreate.All(a => a.ProductId != prod.ProductId))
@@ -3599,7 +3600,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 StatusTypeId = 5,
                                 RetryCount = 0,
                                 BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
-                                InputJson = new RolePropertyList() { PropertyRoleList = new List<PropertyRoleList>(), PropertyList = new List<string>(), RoleList = vendorRoleIdList, IsVendorRoleIdOverride = vendorRoleIdList?.Count > 0, IsAssigned = true }
+                                InputJson = new RolePropertyList() { PropertyRoleList = new List<PropertyRoleList>(), PropertyList = new List<string>(), RoleList = prod.ProductId == (int)ProductEnum.VendorMarketplace ? vendorRoleIdList : new List<string>(), IsVendorRoleIdOverride = vendorRoleIdList?.Count > 0, IsAssigned = true }
                             };
                             productListToCreate.Add(pb);
                         }
