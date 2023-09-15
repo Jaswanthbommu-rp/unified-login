@@ -3625,9 +3625,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 foreach (var productmap in productListToCreate)
                 {
                     bool isGreenBookCaresEnabled = false;
-                    dynamic param = new { ProductId = productmap.ProductId };
+                    dynamic param = new { ProductId = productmap.ProductId, InputJson = (productmap.ProductId == 38 && vendorRoleIdList?.Count > 0) ? productmap.InputJson : new RolePropertyList() { } };
                     IList<ProductInternalSetting> productInternalSettingList;
-
+                    
                     var rpcache = new RPObjectCache();
                     var cacheKey = $"listGlobalSettingsForProduct_{productmap.ProductId}";
                     productInternalSettingList = rpcache.GetFromCache(cacheKey, 30, () => { return repository.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, param); });
