@@ -117,7 +117,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Missing Signature.");
             }
 
-            string thineventstr = JsonConvert.SerializeObject(thinEvent.Payload);
+            string thineventstr = JsonConvert.SerializeObject(thinEvent);
             WriteToLog(LogEventLevel.Debug, $"PostBooks : Begin 2 : {thineventstr}", logData);
 
             if (Request.Properties?["TibcoPostData"] is string requestBody)
