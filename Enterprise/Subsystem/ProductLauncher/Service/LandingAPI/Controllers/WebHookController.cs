@@ -448,6 +448,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
                             break;
                         case "books.upfmvendor.create":
+                            string thineventstring = JsonConvert.SerializeObject(thinEvent.Payload);
+                            logData.Add("EventPayload", thineventstring);
+                            WriteToLog(LogEventLevel.Debug, "ThinEvent PayLoad : ", logData);
+                            
                             var createVendorResult = CreateVendorCompanyFromWebhook(thinEvent.Payload);
 
                             if (string.IsNullOrEmpty(createVendorResult.Result))
