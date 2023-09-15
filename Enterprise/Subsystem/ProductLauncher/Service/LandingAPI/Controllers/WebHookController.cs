@@ -104,6 +104,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             string signature = Request.Headers?.FirstOrDefault(h => h.Key == "signature").Value?.FirstOrDefault();
             Dictionary<string, object> logData = new Dictionary<string, object>() { { "signature", signature ?? "null" } };
             WriteToLog(LogEventLevel.Debug, "PostBooks : Begin", logData);
+            string thineventstr = JsonConvert.SerializeObject(thinEvent.Payload);
+            logData.Add("EventPayload value", thineventstr);
+            WriteToLog(LogEventLevel.Debug, "ThinEvent PayLoad : ", logData);
 
             if (thinEvent == null)
             {
