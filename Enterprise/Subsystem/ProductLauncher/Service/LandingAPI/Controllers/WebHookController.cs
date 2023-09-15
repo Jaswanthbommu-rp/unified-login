@@ -103,9 +103,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             var response = Request.CreateResponse(HttpStatusCode.Accepted);
             string signature = Request.Headers?.FirstOrDefault(h => h.Key == "signature").Value?.FirstOrDefault();
             Dictionary<string, object> logData = new Dictionary<string, object>() { { "signature", signature ?? "null" } };
-            WriteToLog(LogEventLevel.Debug, "PostBooks : Begin", logData);
-            string thineventstr = JsonConvert.SerializeObject(thinEvent.Payload);
-            logData.Add("EventPayload value", thineventstr);
+            
             WriteToLog(LogEventLevel.Debug, "ThinEvent PayLoad : ", logData);
 
             if (thinEvent == null)
@@ -113,6 +111,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 WriteToLog(LogEventLevel.Error, "Missing Content.");
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Missing Content.");
             }
+
+            WriteToLog(LogEventLevel.Debug, "PostBooks : Begin", logData);
+            string thineventstr = JsonConvert.SerializeObject(thinEvent.Payload);
+            logData.Add("EventPayload value", thineventstr);
 
             if (signature == null)
             {
