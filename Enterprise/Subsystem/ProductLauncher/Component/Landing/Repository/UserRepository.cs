@@ -3542,7 +3542,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             int batchProcessTypeId = (int)BatchProcessType.CreateUpdateProductUser;
             string saveProductBatchError = "Save Product(s) Error: ";
             List<RoleTemplateProductRole> roleTemplateProductRole = new List<RoleTemplateProductRole>();
-
+            WriteToLog(LogEventLevel.Debug, $"UserRepository.SaveProductDetails_Batch:  one");
             if (errorStatus == null)
             {
                 errorStatus = new Status<IErrorData>();
@@ -3579,7 +3579,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 {
                     vendorRoleIdList = (List<string>)roleIdList;
                 }
-                
+                if (productsAssignedToCompany.Count > 0)
+                {
+                    WriteToLog(LogEventLevel.Debug, $"UserRepository.SaveProductDetails_Batch:  productsAssignedToCompany : " + productsAssignedToCompany.Count);
+                }
                 foreach (ProductUI prod in productsAssignedToCompany)
                 {
                     // see if the user already has the product, or if they do if it is Deleted or Deactivated, and if so add it or turn it back on
@@ -3602,6 +3605,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
                                 InputJson = new RolePropertyList() { PropertyRoleList = new List<PropertyRoleList>(), PropertyList = new List<string>(), RoleList = prod.ProductId == (int)ProductEnum.VendorMarketplace ? vendorRoleIdList : new List<string>(), IsVendorRoleIdOverride = vendorRoleIdList?.Count > 0, IsAssigned = true }
                             };
+                            if (prod.ProductId == 38)
+                            {
+                                WriteToLog(LogEventLevel.Debug, $"UserRepository.SaveProductDetails_Batch:  InputJson : " + JsonConvert.SerializeObject(pb.InputJson));
+                            }
                             productListToCreate.Add(pb);
                         }
                     }
@@ -3625,7 +3632,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 foreach (var productmap in productListToCreate)
                 {
                     bool isGreenBookCaresEnabled = false;
-                    dynamic param = new { ProductId = productmap.ProductId, InputJson = (productmap.ProductId == 38 && vendorRoleIdList?.Count > 0) ? productmap.InputJson : new RolePropertyList() { } };
+                    dynamic param = new { ProductId = productmap.ProductId };
                     IList<ProductInternalSetting> productInternalSettingList;
                     
                     var rpcache = new RPObjectCache();
@@ -3636,7 +3643,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                     bool isEditUserRequiresProduct = editUserRequiresProduct != null && editUserRequiresProduct != "0";
                     bool isGreenbookCaresCheckRequired = greenbookCaresCheckRequired != null && greenbookCaresCheckRequired != "0";
-
+                    if (productmap.ProductId == 38)
+                    {
+                        WriteToLog(LogEventLevel.Debug, $"UserRepository.SaveProductDetails_Batch:  productmap InputJson : " + JsonConvert.SerializeObject(productmap.InputJson));
+                    }
                     if (isGreenbookCaresCheckRequired)
                     {
                         var productDetails = allProducts.FirstOrDefault(x => x.ProductId == productmap.ProductId);
@@ -3915,13 +3925,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     //Loop through the rest of the products list and create the Batch records
 
                     //Loop through the rest of the products list and create the Batch records
+                    if (productList.Count > 0)
+                    {
+                        WriteToLog(LogEventLevel.Debug, $"UserRepository.SaveProductDetails_Batch:  productList Count : " + productList.Count);
+                    }
+                    
                     foreach (IProductBatch product in productList)
                     {
+                        if (product.ProductId == (int)ProductEnum.VendorMarketplace)
+                        {
+                            WriteToLog(LogEventLevel.Debug, $"UserRepository.SaveProductDetails_Batch:  product InputJson: " + JsonConvert.SerializeObject(product.InputJson));
+                        }
                         if (product.ProductId == (int)ProductEnum.UnifiedPlatform || product.ProductId == (int)ProductEnum.UnifiedUI)
                         {
                             continue;
                         }
-
                         if (product.ProductId == (int)ProductEnum.AssetOptimizer)
                         {
                             // special treatment for bundled AO products
@@ -4478,6 +4496,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         {
             try
             {
+                if (product.ProductId == (int)ProductEnum.VendorMarketplace)
+                {
+                    WriteToLog(LogEventLevel.Debug, $"UserRepository.SaveProductBatch:  product InputJson: " + inputJson);
+                }
                 //Set the Logged-in and New User PeronaIds
                 product.CreateUserPersonaId = CreateUserPersonaId;
                 product.AssignUserPersonaId = AssignUserPersonaId;
@@ -4500,6 +4522,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 };
 
                 RepositoryResponse repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateProductBatch, param);
+                if (product.ProductId == (int)ProductEnum.VendorMarketplace)
+                {
+                    WriteToLog(LogEventLevel.Debug, $"UserRepository.SaveProductBatch After SP call:  product InputJson: " + inputJson);
+                }
                 //In-case of an error creating a product batch record, append the ProductId to the ErrorReason
                 if (repositoryResponse == null || repositoryResponse.Id == 0)
                 {
