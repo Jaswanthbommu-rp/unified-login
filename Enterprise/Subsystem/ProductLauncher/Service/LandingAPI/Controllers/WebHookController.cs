@@ -103,7 +103,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             var response = Request.CreateResponse(HttpStatusCode.Accepted);
             string signature = Request.Headers?.FirstOrDefault(h => h.Key == "signature").Value?.FirstOrDefault();
             Dictionary<string, object> logData = new Dictionary<string, object>() { { "signature", signature ?? "null" } };
-            WriteToLog(LogEventLevel.Debug, "PostBooks : Begin", logData);
+            WriteToLog(LogEventLevel.Debug, "PostBooks : Begin 1", logData);
 
             if (thinEvent == null)
             {
@@ -116,6 +116,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 WriteToLog(LogEventLevel.Error, "Missing Signature.");
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Missing Signature.");
             }
+
+            string thineventstr = JsonConvert.SerializeObject(thinEvent.Payload);
+            WriteToLog(LogEventLevel.Debug, $"PostBooks : Begin 2 : {thineventstr}", logData);
 
             if (Request.Properties?["TibcoPostData"] is string requestBody)
             {
