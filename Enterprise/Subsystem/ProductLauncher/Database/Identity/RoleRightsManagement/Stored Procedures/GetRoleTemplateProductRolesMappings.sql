@@ -32,14 +32,15 @@ SELECT
 	,ISNULL(rtprm.RoleTemplateAdditionalProductRoleMappingId,0) AS RoleTemplateAdditionalProductRoleMappingId
 	,rtprm.AttributeName
 	,rtprm.AttributeValue
-	,RTUM.UserCount as Users 
+	,RTUM.UserCount as Users
+	,EP.Name AS ProductName
 FROM Security.RoleTemplate rt
-	INNER JOIN Enterprise.Party P ON
-		P.PartyId = rt.PartyID
+	INNER JOIN Enterprise.Party P ON P.PartyId = rt.PartyID
 	LEFT OUTER  JOIN Security.RoleTemplateProduct rtp ON rt.RoleTemplateId = rtp.RoleTemplateId
 	LEFT OUTER JOIN Security.RoleTemplateProductRoleMapping rprm ON rprm.RoleTemplateProductId = rtp.RoleTemplateProductId
 	LEFT OUTER JOIN Security.RoleTemplateAdditionalProductRoleMapping rtprm ON rtprm.RoleTemplateProductId = rtp.RoleTemplateProductId
 	LEFT OUTER JOIN RoleTemplateUser RTUM ON RTUM.RoleTemplateId = RT.RoleTemplateId
+	INNER JOIN Enterprise.Product EP ON EP.ProductId = rtp.ProductId
 WHERE rt.RoleTemplateId = @RoleTemplateId 
 	AND (P.RealPageId = @OrganizationRealPageId OR @OrganizationRealPageId IS NULL)
 	AND (P.PartyId = @PartyId OR @PartyId IS NULL)

@@ -70,8 +70,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			IList<Organization> organizationList = userLoginRepository.ListOrganizationByEnterpriseUserId(userPersona.RealPageId, null);
 			var personaOrganization = organizationList.FirstOrDefault(i => i.PartyId == userPersona.OrganizationPartyId);
 			var personaProductSettings = personaRepository.GetPersonaProductSettings(batch.SubjectUserPersonaId);
-			var personaProducts = _productRepository.ListProductsByPersonaId(userPersona.PersonaId, (Int32)UserUiStatusType.AccountCreationSuccessful).ToList();
-			bool isExternalUser = personaOrganization.RelationshipType.Equals("User Type", StringComparison.OrdinalIgnoreCase) && personaOrganization.RoleNameFrom.Equals("External User", StringComparison.OrdinalIgnoreCase);
+            var personaProducts = _productRepository.ListProductsByPersonaId(userPersona.PersonaId, (Int32)UserUiStatusType.AccountCreationSuccessful).ToList();
+
+            //Get User enterprise role for the user, Get list of products for the user
+            //Make distinct of products and assign to personaProducts object
+            var userEnterpriseRole = _productRepository.GetEnterpriseRoleForPersona(batch.SubjectUserPersonaId);
+            if (userEnterpriseRole != null)
+			{
+				var userProductsByEnterpriseRole = _productRepository.GetRoleTemplateProductRoleMapping(userEnterpriseRole.RoleTemplateId, userPersona.OrganizationPartyId);
+				foreach (var product in userProductsByEnterpriseRole)
+				{
+					if (!personaProducts.Any(p => p.ProductId == product.ProductId))
+					{
+						personaProducts.Add(new PersonaProductUserDetails()
+						{
+							ProductId = product.ProductId,
+							ProductName = product.ProductName
+						});
+					}
+				}
+			}
+
+            bool isExternalUser = personaOrganization.RelationshipType.Equals("User Type", StringComparison.OrdinalIgnoreCase) && personaOrganization.RoleNameFrom.Equals("External User", StringComparison.OrdinalIgnoreCase);
             IUserLoginOnly impersonatorUserLoginOnly = new UserLoginOnly();
             if (_userClaim.ImpersonatedBy != Guid.Empty)
             {
