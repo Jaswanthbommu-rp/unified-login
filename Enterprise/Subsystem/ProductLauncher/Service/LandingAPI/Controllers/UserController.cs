@@ -403,7 +403,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			IManageUserLogin manageUserLogin = new ManageUserLogin(_userClaims);
 			IUserLoginOnly userLoginOnly = manageUserLogin.GetUserLoginOnly(profile.RealPageId);
 
-			IManageRoleType manageRoleType = new ManageRoleType();
+            IUserRepository _userRepository = new UserRepository(_userClaims);
+            var delegateFlagForPMC = _userRepository.GetUnifiedSettingData("delegateadministrators");
+
+            IManageRoleType manageRoleType = new ManageRoleType();
 			long bookCustomerMasterId = profile.organization.Select(o => o.BooksCustomerMasterId).FirstOrDefault();
 			IList<RoleType> userRoles = manageRoleType.GetRoleTypeDependency(roleTypeId: profile.UserTypeId, partyId: _userClaims.OrganizationPartyId, orgMasterId: bookCustomerMasterId, loginName: userLoginOnly.LoginName);
             if (userRoles == null)
@@ -481,7 +484,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				return Request.CreateResponse(HttpStatusCode.OK, output);
 			}
 
-			ProductBatch resPortal = profile.productBatch.FirstOrDefault<ProductBatch>((Func<ProductBatch, bool>)(p => p.ProductId == (int)ProductEnum.ResidentPortal));
+            if (delegateFlagForPMC && profile.IsDelegateAdmin && profile.DelegateRoleTemplate.RoleTemplateId.Count() == 0)
+            {
+                errorStatus.Success = false;
+                errorStatus.ErrorCode = "User.UpdateUser.16";
+                errorStatus.ErrorMsg = "Additional information fields are invalid or required.";
+                output.Status = errorStatus;
+                return Request.CreateResponse(HttpStatusCode.OK, output);
+            }
+
+            ProductBatch resPortal = profile.productBatch.FirstOrDefault<ProductBatch>((Func<ProductBatch, bool>)(p => p.ProductId == (int)ProductEnum.ResidentPortal));
             if (resPortal != null)
             {
 				//verify resident portal user has same or higher access level
@@ -695,7 +707,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			DateTime utcNow = DateTime.UtcNow;
 			DateTime utcMaxValue = DateTime.MaxValue.ToUniversalTime();
 
-			ManageRoleType roleTypes = new ManageRoleType();
+            IUserRepository _userRepository = new UserRepository(_userClaims);
+            var delegateFlagForPMC = _userRepository.GetUnifiedSettingData("delegateadministrators");
+
+            ManageRoleType roleTypes = new ManageRoleType();
 			// use the organization id of the person creating the user
             IList<RoleType> userRoles = roleTypes.GetRoleType("User Role", _userClaims.OrganizationPartyId, _userClaims.OrganizationMasterId, loginName: null);
             if (userRoles == null)
@@ -804,6 +819,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 errorStatus.Success = false;
                 errorStatus.ErrorCode = "User.CreateUser.36";
                 errorStatus.ErrorMsg = "Cannot create new user in External User company.";
+                response.UserStatus = errorStatus.ErrorMsg;
+                response.Status = errorStatus;
+            }
+
+            if (delegateFlagForPMC &&  newProfile.IsDelegateAdmin && newProfile.DelegateRoleTemplate.RoleTemplateId.Count() == 0)
+            {
+                errorStatus.Success = false;
+                errorStatus.ErrorCode = "User.CreateUser.42";
+                errorStatus.ErrorMsg = "Additional information fields are invalid or required.";
                 response.UserStatus = errorStatus.ErrorMsg;
                 response.Status = errorStatus;
             }
