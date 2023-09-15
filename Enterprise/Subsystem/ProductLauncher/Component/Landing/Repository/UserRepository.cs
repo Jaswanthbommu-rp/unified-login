@@ -1588,7 +1588,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     #endregion
 
                     #region Enterprise roles Delegate User
-                    if (isDelegateAdminEnabled && newProfile.IsDelegateAdmin)
+                    if (isDelegateAdminEnabled && newProfile.IsDelegateAdmin && newProfile.DelegateRoleTemplate.RoleTemplateId.Count() > 0)
                     {
                         List<int> templateRoleLists = newProfile.DelegateRoleTemplate?.RoleTemplateId?.ToList();
                         repositoryResponse = InsertUpdateDelegateAdminRole(repository, userLoginPersonaId, templateRoleLists);

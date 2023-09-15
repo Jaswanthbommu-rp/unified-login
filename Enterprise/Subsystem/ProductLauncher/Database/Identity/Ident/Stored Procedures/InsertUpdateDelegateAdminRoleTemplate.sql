@@ -6,11 +6,6 @@
 AS            
 BEGIN   
    BEGIN TRY
-     IF (SELECT COUNT(*) FROM @TargetRoleTemplateLists) = 0  
-     BEGIN  
-           SELECT 0 AS Id  ,'Target Template Role  list is empty.'; 
-           RETURN;  
-     END; 
     
          IF NOT  EXISTS( SELECT 1  FROM [Security].[DelegatedAdminRoleTemplate] WHERE UserLoginPersonaId = @UserLoginPersonaId )     
          BEGIN
