@@ -134,10 +134,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 		[JsonProperty(PropertyName = "roleId")]
         public int RoleId { get; set; }
 
-		/// <summary>
-		/// User Custom Fields
-		/// </summary>
-		[JsonProperty("CustomFields", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// User RoleId List
+        /// </summary>
+        [JsonProperty(PropertyName = "roleIdList")]
+        public List<string> RoleIdList { get; set; }
+
+        /// <summary>
+        /// User Custom Fields
+        /// </summary>
+        [JsonProperty("CustomFields", NullValueHandling = NullValueHandling.Ignore)]
 		public IList<CustomFieldValue> CustomFields { get; set; }
 
 		/// <summary>
