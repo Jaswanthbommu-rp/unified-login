@@ -1290,6 +1290,7 @@
     <Build Include="RoleRightsManagement\Stored Procedures\GetDelegateAdminRoleTemaplte.sql" />
     <Build Include="Ident\Stored Procedures\UpdateDelegateAdminStatus.sql" />
     <Build Include="Ident\Stored Procedures\InsertUpdateDelegateAdminRoleTemplate.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\October2023release.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
