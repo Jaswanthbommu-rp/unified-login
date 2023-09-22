@@ -1070,6 +1070,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                         }
                     }
 
+                    var supportPortalTileAccess = settingList.FirstOrDefault(a => a.Name == "hidesupportportaltile");
+                    if (supportPortalTileAccess == null || supportPortalTileAccess.Value == "1")
+                    {
+                        var adminSupportPortalResource = productResult.Resources.FirstOrDefault(m => m.Id == 89);
+                        productResult.Resources.Remove(adminSupportPortalResource);
+                    }
+
                     var rights = _manangeSecurityLogic.GetPersonaRightsAndActionsByRoute(_personaId, "sidemenu")?.obj?.Rights;
 
                     var navigationMenu = _userRepository.GetNavigationMenu();
