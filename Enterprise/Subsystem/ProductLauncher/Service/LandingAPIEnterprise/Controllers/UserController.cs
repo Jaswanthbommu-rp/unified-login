@@ -626,6 +626,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         /// </summary>
         /// <param name="unityRealPageUserId">Optional User EnterpriseId</param>
         /// <param name="name">Optional filter by FirstName, LastName, or UserName</param>
+        /// <param name="upfmid">Optional filter by FirstName, LastName, or UserName</param>
         /// <param name="rowsPerPage">Optional Rows Per page to return</param>
         /// <param name="pageNumber">Optional PageNumber</param>
         /// <returns>A list of User(s)</returns>
@@ -644,11 +645,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [Route("user")]
         [AuthorizeScope("enterpriseapi")]
         [HttpGet]
-        public HttpResponseMessage GetUser(Guid? unityRealPageUserId = null, string name = null, int rowsPerPage = 1, int pageNumber = 1)
+        public HttpResponseMessage GetUser(Guid? unityRealPageUserId = null, string name = null, Guid? upfmid = null, int rowsPerPage = 1, int pageNumber = 1)
         {
             IList<UsersDataDto> usersDataDtoList = new List<UsersDataDto>();
             List<string> unityRoles = new List<string>();
-
+            long OrganizationPartyId = _userClaims.OrganizationPartyId;
+            if (upfmid != null)
+            {
+                Organization baseOrg = _manageOrganization.GetOrganization(upfmid.Value);
+                OrganizationPartyId = baseOrg.PartyId;
+            }
             PagedResponse response = new PagedResponse() { Meta = new Meta() };
             ErrorResponse error = new ErrorResponse()
             {
@@ -680,7 +686,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             try
             {
                 UserManagement userManagement = new UserManagement(_userClaims);
-                IList<UsersData> usersDataList = userManagement.ListUser(_userClaims.OrganizationPartyId, unityRealPageUserId, name, rowsPerPage, pageNumber);
+                IList<UsersData> usersDataList = userManagement.ListUser(OrganizationPartyId, unityRealPageUserId, name, rowsPerPage, pageNumber);
 
                 if (usersDataList != null && usersDataList.Any())
                 {
