@@ -645,16 +645,39 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [Route("user")]
         [AuthorizeScope("enterpriseapi")]
         [HttpGet]
-        public HttpResponseMessage GetUser(Guid? unityRealPageUserId = null, string name = null, Guid? upfmid = null, int rowsPerPage = 1, int pageNumber = 1)
+        public HttpResponseMessage GetUser(Guid? unityRealPageUserId = null, string name = null, Guid? upfmId = null, int rowsPerPage = 1, int pageNumber = 1)
         {
             IList<UsersDataDto> usersDataDtoList = new List<UsersDataDto>();
             List<string> unityRoles = new List<string>();
-            long OrganizationPartyId = _userClaims.OrganizationPartyId;
-            if (upfmid != null)
+            ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
+            var errorResponse = new ErrorResponse { Errors = new List<Error>() };
+            if (currentClaimPrincipal.HasClaim("scope", "usermanagement") && _userClaims.PersonaId == 0)
             {
-                Organization baseOrg = _manageOrganization.GetOrganization(upfmid.Value);
-                OrganizationPartyId = baseOrg.PartyId;
+                if (!string.IsNullOrEmpty(upfmId.ToString()))
+                {
+                    //IManageOrganization manageOrganization = new ManageOrganization(_userClaims);
+                    Guid AdminCreatorRealPageId = _manageOrganization.GetOrganizationAdminUserRealPageId(upfmId ?? default(Guid));
+                    //recreate claims
+                    if (AdminCreatorRealPageId == Guid.Empty)
+                    {
+                        errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = "Invalid UPFMId.", StatusCode = "" });
+                        return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
+                    }
+                    RecreateClaimsForClient(AdminCreatorRealPageId);
+                    _managePersona = new ManagePersona(_userClaims);
+                    _manageProduct = new ManageProduct(_userClaims);
+                    _userManagement = new UserManagement(_userClaims);
+                    _manageUser = new ManageUser(_userClaims);
+                    _userLoginLogic = new ManageUserLogin(_userClaims);
+                }
+                else if(_userClaims.OrganizationPartyId == 0)
+                {
+                    errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = "Invalid UPFMId.", StatusCode = "" });
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
+                }
+                
             }
+             
             PagedResponse response = new PagedResponse() { Meta = new Meta() };
             ErrorResponse error = new ErrorResponse()
             {
@@ -686,7 +709,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             try
             {
                 UserManagement userManagement = new UserManagement(_userClaims);
-                IList<UsersData> usersDataList = userManagement.ListUser(OrganizationPartyId, unityRealPageUserId, name, rowsPerPage, pageNumber);
+                IList<UsersData> usersDataList = userManagement.ListUser(_userClaims.OrganizationPartyId, unityRealPageUserId, name, rowsPerPage, pageNumber);
 
                 if (usersDataList != null && usersDataList.Any())
                 {
