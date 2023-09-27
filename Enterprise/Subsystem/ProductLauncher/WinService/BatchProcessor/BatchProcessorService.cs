@@ -451,6 +451,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
                     {"EnterpriseRoleTemplateId", batch.EnterpriseRoleTemplateId},
                     {"StatusTypeId", batch.StatusTypeId},
                     {"BatchProcessTypeId",batch.BatchProcessTypeId},
+                    {"CreatedDateTime",batch.CreatedDateTime},
                     {"processEndpoint",processEndpoint }
                 };
 

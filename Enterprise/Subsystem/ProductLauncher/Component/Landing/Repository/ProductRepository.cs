@@ -2113,11 +2113,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
-        public List<int> GetEnterpriseRoleNewProductsByRoleTemplateId(int roleTemplateId)
+        public List<int> GetEnterpriseRoleNewProductsByRoleTemplateId(int roleTemplateId, DateTime createdDateTime)
         {
             object param = new
             {
-                RoleTemplateId = roleTemplateId
+                RoleTemplateId = roleTemplateId,
+                CreatedDateTime = createdDateTime
             };
             using (var repository = GetRepository())
             {
@@ -2126,11 +2127,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
-        public List<int> GetEnterpriseRoleUpdatedProductsByRoleTemplateId(int roleTemplateId)
+        public List<int> GetEnterpriseRoleUpdatedProductsByRoleTemplateId(int roleTemplateId, DateTime createdDateTime)
         {
             object param = new
             {
-                RoleTemplateId = roleTemplateId
+                RoleTemplateId = roleTemplateId,
+                CreatedDateTime = createdDateTime
             };
             using (var repository = GetRepository())
             {
@@ -2139,11 +2141,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
-        public List<int> GetEnterpriseRoleDeletedProductsByRoleTemplateId(int roleTemplateId)
+        public List<int> GetEnterpriseRoleDeletedProductsByRoleTemplateId(int roleTemplateId, DateTime createdDateTime)
         {
             object param = new
             {
-                RoleTemplateId = roleTemplateId
+                RoleTemplateId = roleTemplateId,
+                CreatedDateTime = createdDateTime
             };
             using (var repository = GetRepository())
             {

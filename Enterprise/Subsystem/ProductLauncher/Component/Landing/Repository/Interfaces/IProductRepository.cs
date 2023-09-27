@@ -291,7 +291,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// </summary>
         /// <param name="roleTemplateId"></param>       
         /// <returns></returns>
-        List<int> GetEnterpriseRoleUpdatedProductsByRoleTemplateId(int roleTemplateId);
+        List<int> GetEnterpriseRoleUpdatedProductsByRoleTemplateId(int roleTemplateId, DateTime createdDateTime);
 
         /// <summary>
         /// GetEnterpriseRoleDeletedProductsByRoleTemplateId
@@ -299,8 +299,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="roleTemplateId"></param>
        
         /// <returns></returns>
-        List<int> GetEnterpriseRoleDeletedProductsByRoleTemplateId(int roleTemplateId);
-        List<int> GetEnterpriseRoleNewProductsByRoleTemplateId(int roleTemplateId);
+        List<int> GetEnterpriseRoleDeletedProductsByRoleTemplateId(int roleTemplateId, DateTime createdDateTime);
+        List<int> GetEnterpriseRoleNewProductsByRoleTemplateId(int roleTemplateId, DateTime createdDateTime);
         /// <summary>
         /// GetPersonaHasProductError
         /// </summary>
