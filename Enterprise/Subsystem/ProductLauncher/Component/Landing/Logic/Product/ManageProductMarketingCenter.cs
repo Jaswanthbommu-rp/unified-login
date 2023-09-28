@@ -119,7 +119,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
 				string marketingCompanyId = company.CompanyInstanceSourceId;
 				
-				WriteToDiagnosticLog($"GetRoles - Found blue book company source id {marketingCompanyId}");
+                WriteToDiagnosticLog($"GetRoles - Found blue book company source id {marketingCompanyId}");
 				var url = _productUrl + $"/external/company/{marketingCompanyId}/contact/roles";
 				logData = new Dictionary<string, object>();
 				logData.Add("url", url);
@@ -1841,6 +1841,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					{
 						ID = role.RoleId.ToString(),
 						Name = role.RoleName,
+						Description = role.Description
 					});
 				}
 			}

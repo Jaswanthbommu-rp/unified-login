@@ -19,5 +19,10 @@
         /// Used to store of the role is active
         /// </summary>
         public bool IsActive { get; set; }
+
+        /// <summary>
+        /// Used to store description fo the role
+        /// </summary>
+        public string Description { get; set; }
     }
 }
