@@ -245,7 +245,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(_userClaim.ImpersonatedBy);
             }
-            
+
             IUserLoginOnly userLoginOnly = _userLoginRepository.GetUserLoginOnly(newProfile.userLogin.LoginName);
             if (newProfile.organization[0].RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId)
             {
@@ -1556,7 +1556,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     }
 
                     processTracker = "SaveProductDetails";
-                    int productCount = SaveProductDetails(repository, newProfile.productBatch, createUserResponse, CreateUserPersonaId, AssignUserPersonaId, userClaim.UserRealPageGuid, organizationRealPageId, errorStatus, newProfile.UserTypeId, true, impersonatorUserLoginOnly.UserId, aoProductsAvailableForUser, newProfile.MigratedUser, true, greenBookRole, "add", false, newProfile.RoleIdList);
+                    int productCount = SaveProductDetails(repository, newProfile.productBatch, createUserResponse, CreateUserPersonaId, AssignUserPersonaId, userClaim.UserRealPageGuid, organizationRealPageId, errorStatus, newProfile.UserTypeId, true, impersonatorUserLoginOnly.UserId, aoProductsAvailableForUser, newProfile.MigratedUser, true, greenBookRole, "add");
 
                     #endregion
                     #region create user company association
@@ -3535,15 +3535,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="unifiedPlatformRole"></param>
         /// <param name="aoProducts">Applicable if PMC has AO products</param>
         /// <returns>Number of Products</returns>
-        private int SaveProductDetails(IRepository repository, IList<ProductBatch> productList, CreateUserResponse<IErrorData> createUserResponse, long CreateUserPersonaId, long AssignUserPersonaId, Guid realPageId, Guid organizationRealPageId, Status<IErrorData> errorStatus, int userTypeId, bool userIsActive, long impersonatorUserId, IList<string> aoProducts = null, bool migratedUser = false, bool isCreateUser = false, int unifiedPlatformRole = 0, string operationType = "update", bool isRealpageAccessUser = false, IList<string> roleIdList = null)
+        private int SaveProductDetails(IRepository repository, IList<ProductBatch> productList, CreateUserResponse<IErrorData> createUserResponse, long CreateUserPersonaId, long AssignUserPersonaId, Guid realPageId, Guid organizationRealPageId, Status<IErrorData> errorStatus, int userTypeId, bool userIsActive, long impersonatorUserId, IList<string> aoProducts = null, bool migratedUser = false, bool isCreateUser = false, int unifiedPlatformRole = 0, string operationType = "update", bool isRealpageAccessUser = false)
         {
             int productCount = 0;
             int enterpriseRoleId = 0;
             int batchProcessTypeId = (int)BatchProcessType.CreateUpdateProductUser;
             string saveProductBatchError = "Save Product(s) Error: ";
             List<RoleTemplateProductRole> roleTemplateProductRole = new List<RoleTemplateProductRole>();
-            List<string> vendorRoleIdList = new List<string>();
-            
+
             if (errorStatus == null)
             {
                 errorStatus = new Status<IErrorData>();
@@ -3575,12 +3574,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 IList<ProductBatch> productListToCreate = new List<ProductBatch>();
                 IList<PersonaProductUserDetails> userProducts = repository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = AssignUserPersonaId }).ToList();
                 List<ProductUI> productsAssignedToCompany = GetOrganizationProductListForAdminUser(repository, realPageId, organizationRealPageId, aoProducts);
-                
-                if (roleIdList != null)
-                {
-                    vendorRoleIdList = (List<string>)roleIdList;
-                }
-                
+
                 foreach (ProductUI prod in productsAssignedToCompany)
                 {
                     // see if the user already has the product, or if they do if it is Deleted or Deactivated, and if so add it or turn it back on
@@ -3591,7 +3585,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         || isRealpageAccessUser
                        )
                     {
-                        
                         // don't add the product if it is already in the list
                         if (productListToCreate.All(a => a.ProductId != prod.ProductId))
                         {
@@ -3601,9 +3594,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 StatusTypeId = 5,
                                 RetryCount = 0,
                                 BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
-                                InputJson = new RolePropertyList() { PropertyRoleList = new List<PropertyRoleList>(), PropertyList = new List<string>(), RoleList = prod.ProductId == (int)ProductEnum.VendorMarketplace ? vendorRoleIdList : new List<string>(), IsVendorRoleIdOverride = prod.ProductId == (int)ProductEnum.VendorMarketplace && vendorRoleIdList?.Count > 0 , IsAssigned = true }
+                                InputJson = new RolePropertyList() { PropertyRoleList = new List<PropertyRoleList>(), PropertyList = new List<string>(), RoleList = new List<string>(), IsAssigned = true }
                             };
-                            
                             productListToCreate.Add(pb);
                         }
                     }
@@ -3620,6 +3612,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
                     }
                 }
+
                 // For System Admin if Products that are not Configured are not processed
                 IList<PersonaProductUserDetails> creatorUserProducts = repository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = CreateUserPersonaId }).ToList();
                 IList<GbProductMap> allProducts = repository.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, null).ToList();
@@ -3637,6 +3630,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                     bool isEditUserRequiresProduct = editUserRequiresProduct != null && editUserRequiresProduct != "0";
                     bool isGreenbookCaresCheckRequired = greenbookCaresCheckRequired != null && greenbookCaresCheckRequired != "0";
+
                     if (isGreenbookCaresCheckRequired)
                     {
                         var productDetails = allProducts.FirstOrDefault(x => x.ProductId == productmap.ProductId);
@@ -3835,12 +3829,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             if ((productList != null) && (productList.Count > 0))
             {
                 //Do we have the Create & Assign PersonaIds
-                if (productList.Any(a => a.ProductId == (int)ProductEnum.VendorMarketplace) && vendorRoleIdList?.Count > 0)
-                {
-                    CreateUserPersonaId = AssignUserPersonaId;
-                    var userPersona = repository.GetOne<Persona>(StoredProcNameConstants.SP_GetPersona, new { personaId = AssignUserPersonaId });
-                    realPageId = userPersona.RealPageId;
-                }
                 if ((CreateUserPersonaId > 0) && (AssignUserPersonaId > 0))
                 {
                     // if the user isn't a superuser, check to see if both Lead2Lease and OneSite are in the products to be saved. If they are, then they need to be combined into a single product call

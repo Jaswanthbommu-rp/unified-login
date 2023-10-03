@@ -104,18 +104,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             string signature = Request.Headers?.FirstOrDefault(h => h.Key == "signature").Value?.FirstOrDefault();
             Dictionary<string, object> logData = new Dictionary<string, object>() { { "signature", signature ?? "null" } };
             WriteToLog(LogEventLevel.Debug, "PostBooks : Begin", logData);
-            
+
             if (thinEvent == null)
             {
                 WriteToLog(LogEventLevel.Error, "Missing Content.");
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Missing Content.");
             }
-            
+
             if (signature == null)
             {
                 WriteToLog(LogEventLevel.Error, "Missing Signature.");
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Missing Signature.");
             }
+
             if (Request.Properties?["TibcoPostData"] is string requestBody)
             {
                 string signingSecret = GetTibcoWebHookSigningSecret();
@@ -754,8 +755,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             var adminEmail = payLoad?["user"]["email"] == null || payLoad?["user"]["email"].Type == JTokenType.Null ? "" : payLoad["user"]["email"].ToString();
             var adminFirstName = payLoad?["user"]["firstName"] == null || payLoad?["user"]["firstName"].Type == JTokenType.Null ? "" : payLoad["user"]["firstName"].ToString();
             var adminLastName = payLoad?["user"]["lastName"] == null || payLoad?["user"]["lastName"].Type == JTokenType.Null ? "" : payLoad["user"]["lastName"].ToString();
-            var roles = payLoad?["user"]["roles"] == null || payLoad?["user"]["roles"].Type == JTokenType.Null ? "" : payLoad["user"]["roles"];
-            List<string> rolesList = roles == null || roles.Type == JTokenType.Null ? new List<string>() : roles.Select(r => Convert.ToString(r)).ToList();
 
             var customerCompany = _manageBlueBook.GetCompanyCustomerInfo(companyRealPageId: Guid.Empty, domain: null, booksCompanyMasterId: customerCompanyId);
             if (customerCompany == null)
@@ -799,8 +798,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 {
                     Email = adminEmail,
                     FirstName = adminFirstName,
-                    LastName = adminLastName,
-                    RoleIds = rolesList
+                    LastName = adminLastName
                 },
                 Products = new List<string>() { productSource },
                 CompanyInstancePartner = productSource,
