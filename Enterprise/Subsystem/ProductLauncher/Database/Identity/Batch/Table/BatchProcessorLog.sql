@@ -23,3 +23,7 @@ GO
 ALTER TABLE [Batch].[BatchProcessorLog] CHECK CONSTRAINT [FK_BatchLog_BatchProcessor]
 GO
 
+CREATE NONCLUSTERED INDEX [IDX_BatchProcessorLog_BatchProcessorId]
+	ON [Batch].[BatchProcessorLog] ([BatchProcessorId])
+
+GO
