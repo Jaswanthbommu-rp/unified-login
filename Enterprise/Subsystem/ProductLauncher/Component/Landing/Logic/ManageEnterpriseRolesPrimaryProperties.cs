@@ -192,14 +192,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             productRoles = GetProductRoleList(roleTemplateProductRole, product);
                             if (productRoles != null && productRoles.Any())
                             {
-                                IList<UnifiedLoginRoleRights> allproductRolesFromProducts = rolesResponse.Records?.Cast<UnifiedLoginRoleRights>().ToList();
-                                productRoles.ToList().ForEach(m =>
+                                var roleType = rolesResponse.Records[0].GetType();
+                                if (roleType == typeof(ProductRole))
                                 {
-                                    if (!allproductRolesFromProducts.Any(l => l.RoleId.ToString() == m.ID))
+                                    IList<ProductRole> allproductRolesFromProducts = rolesResponse.Records?.Cast<ProductRole>().ToList();
+                                    productRoles.ToList().ForEach(m =>
                                     {
-                                        productRoles.Remove(m);
-                                    }
-                                });
+                                        if (!allproductRolesFromProducts.Any(l => l.ID.ToString() == m.ID))
+                                        {
+                                            productRoles.Remove(m);
+                                        }
+                                    });
+                                }
                             }
                             rolesResponse = new ListResponse()
                             {
