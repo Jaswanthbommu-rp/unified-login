@@ -7,7 +7,6 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
 {
@@ -94,38 +93,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
                     List<string> adRights = adGroupRights.Select(x => x.RightNickName).ToList();
                     userRights.AddRange(adRights);
                 }
-
+                #region remove
                 // get user roles
-                ProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository();
-                List<ProductInternalSetting> productSettingList = (List<ProductInternalSetting>)productInternalSettingRepository.GetProductInternalSettings(productId: (int)ProductEnum.UnifiedPlatform);
-                bool IsUserManagementByADGroupEnabled = false;
-                if (productSettingList.ToList().Any(s => s.Name.Equals("IsUserManagementByADGroup", StringComparison.OrdinalIgnoreCase)))
+                List<Claim> userRoles = identity.Claims.Where(p => p.Type.Equals("roleid", StringComparison.OrdinalIgnoreCase) || p.Type.Equals("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", StringComparison.OrdinalIgnoreCase)).ToList();
+                List<long> roleIds = new List<long>();
+                foreach (var item in userRoles)
                 {
-                    IsUserManagementByADGroupEnabled = productSettingList.ToList().FirstOrDefault(s => s.Name.Equals("IsUserManagementByADGroup", StringComparison.OrdinalIgnoreCase)).Value.Equals("1");
-                }
-                if (!IsUserManagementByADGroupEnabled)
-                {
-                    List<Claim> userRoles = identity.Claims.Where(p => p.Type.Equals("roleid", StringComparison.OrdinalIgnoreCase) || p.Type.Equals("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", StringComparison.OrdinalIgnoreCase)).ToList();
-                    List<long> roleIds = new List<long>();
-                    foreach (var item in userRoles)
+                    int roleId;
+                    bool converted = int.TryParse(item.Value, out roleId);
+                    if (converted)
                     {
-                        int roleId;
-                        bool converted = int.TryParse(item.Value, out roleId);
-                        if (converted)
-                        {
-                            roleIds.Add(roleId);
-                        }
-                    }
-
-                    // get company roles
-                    IList<UserRoleRights> companyRoleList = GetCompanyRoles(userClaim, userClaim.OrganizationPartyId, userClaim.OrganizationRealPageGuid);
-                    List<UserRoleRights> companyRoleRights = companyRoleList.Where(x => roleIds.Contains(x.RoleId)).ToList();
-
-                    foreach (var r in companyRoleRights)
-                    {
-                        userRights.AddRange(r.UserRights.Select(x => x.RightNickName));
+                        roleIds.Add(roleId);
                     }
                 }
+
+                // get company roles
+                IList<UserRoleRights> companyRoleList = GetCompanyRoles(userClaim, userClaim.OrganizationPartyId, userClaim.OrganizationRealPageGuid);
+                List<UserRoleRights> companyRoleRights = companyRoleList.Where(x => roleIds.Contains(x.RoleId)).ToList();
+
+                foreach (var r in companyRoleRights)
+                {
+                    userRights.AddRange(r.UserRights.Select(x => x.RightNickName));
+                }
+                #endregion
 
                 var distinctUserRights = userRights.Distinct().OrderBy(x => x).ToList();
                 identity.AddClaims(distinctUserRights.Select(a => new Claim("right", a)).ToList());

@@ -43,7 +43,6 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\1438413-propagate-access-rights.sql
 
 :r .\PostDeploymentScripts\AddingNewRightforUserManagement.sql
-:r .\PostDeploymentScripts\AddingNewSettingForPropagateRights.sql
 :r .\PostDeploymentScripts\SustainabilityAdmin.sql
 
 :r .\PostDeploymentScripts\October2023release.sql
