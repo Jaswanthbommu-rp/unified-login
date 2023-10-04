@@ -24,39 +24,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
     public class ManageUnifiedLogin : ManageProductBase, IManageUnifiedLogin
     {
         private DefaultUserClaim _userClaims;
+        private IProductRepository _productRepository;
+        private IUserRoleRightRepository _userRoleRightRepository;
 
         #region Ctor
-
-
         /// <summary>
         /// Default constructor
         /// </summary>
         /// <param name="userClaims"></param>
         public ManageUnifiedLogin(DefaultUserClaim userClaims) : base((int) ProductEnum.UnifiedPlatform, userClaims, productInternalSettingRepository: null, productRepository: null)
         {
+            _userClaims = userClaims;
             _productId = (int) ProductEnum.UnifiedPlatform;
             _editorRealPageId = userClaims.UserRealPageGuid;
             _blueBook = new ManageBlueBook(userClaims);
-            _userClaims = userClaims;
+            _productRepository = new ProductRepository(userClaims);
+            _userRoleRightRepository = new UserRoleRightRepository();
         }
 
         /// <summary>
-        /// Unit test constructor
-        /// </summary>
-        /// <param name="userClaims"></param>
-        /// <param name="productInternalSettingRepository"></param>
-        /// <param name="productRepository"></param>
-        /// <param name="manageBlueBook"></param>
-        public ManageUnifiedLogin(DefaultUserClaim userClaims, IProductInternalSettingRepository productInternalSettingRepository, ProductRepository productRepository, IManageBlueBook manageBlueBook) : base((int) ProductEnum.UnifiedPlatform, userClaims, productInternalSettingRepository, productRepository)
-        {
-            _productId = (int) ProductEnum.UnifiedPlatform;
-            _editorRealPageId = userClaims.UserRealPageGuid;
-            _blueBook = manageBlueBook;
-            _userClaims = userClaims;
-        }
-
-        /// <summary>
-        /// Unit test constructor
+        /// Unit test constructor v2
         /// </summary>
         /// <param name="userClaims"></param>
         /// <param name="repository"></param>
@@ -67,6 +54,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _editorRealPageId = userClaims.UserRealPageGuid;
             _blueBook = new ManageBlueBook(userClaims, repository, messageHandler);
             _userClaims = userClaims;
+            _productRepository = new ProductRepository(repository, userClaims);
+            _userRoleRightRepository = new UserRoleRightRepository(repository, userClaims);
         }
 
         #endregion
@@ -448,8 +437,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 var partyId = _userClaims.OrganizationPartyId;
 
                 // Get all rights to check with roles
-                ProductRepository pr = new ProductRepository();
-                IList<int> productIdList = pr.GetProductIdsByCompany(partyId);
+                //ProductRepository pr = new ProductRepository();
+                IList<int> productIdList = _productRepository.GetProductIdsByCompany(partyId);
 
                 UnifiedLoginRepository umr = new UnifiedLoginRepository();
                 //var gbAllRights = umr.ListRightWithRoles(partyId, (int)ProductEnum.UnifiedLogin, productIdList);
@@ -692,8 +681,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                 var productIds = GetProductIdsByOrg();
 
-                UnifiedLoginRepository umr = new UnifiedLoginRepository();
-                var gbAllRoles = umr.ListRolesForProductsByPartyId(partyId, productId, productIds);
+                var gbAllRoles = _unifiedLoginRepository.ListRolesForProductsByPartyId(partyId, productId, productIds);
                 gbAllRoles = gbAllRoles.OrderBy(r => r.Name).ToList();
 
                 WriteToDiagnosticLog(
@@ -918,11 +906,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     $"UnifiedLogin - Getting all GB roles from GB DB - pr.ListRolesForProductByParty with party id - {partyId}");
                 int productId = (int) ProductEnum.UnifiedPlatform;
 
-                var productIds = GetProductIdsByOrg();
-                UnifiedLoginRepository umr = new UnifiedLoginRepository();
-                ProductRepository pr = new ProductRepository();
-                IList<int> productIdList = pr.GetProductIdsByCompany(partyId);
-                var gbAllRights = umr.ListRightsByRole(partyId, productIdList, productId, roleId);
+                //var productIds = GetProductIdsByOrg();
+                IList<int> productIdList = _productRepository.GetProductIdsByCompany(partyId);
+                var gbAllRights = _unifiedLoginRepository.ListRightsByRole(partyId, productIdList, productId, roleId);
 
                // gbAllRights = GetRightsWithoutDefault(gbAllRights);
                 gbAllRights = gbAllRights.OrderBy(r => r.Description).ToList();
@@ -971,10 +957,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 var productList = _productRepository.GetAllProducts();
                 int productId = ProductEnumHelper.GetProductIdByProductCode(productCode, productList);
 
-                
-                UnifiedLoginRepository umr = new UnifiedLoginRepository();
-                
-                var gbAllRights = umr.ListRightsByRole(_userClaims.OrganizationPartyId, new List<int> {productId}, productId, roleId);
+                var gbAllRights = _unifiedLoginRepository.ListRightsByRole(_userClaims.OrganizationPartyId, new List<int> {productId}, productId, roleId);
 
                 // gbAllRights = GetRightsWithoutDefault(gbAllRights);
                 gbAllRights = gbAllRights.OrderBy(r => r.Description).ToList();
@@ -1170,7 +1153,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     //var partyId = _claimDetails.OrganizationPartyId;
                     //// Get all rights to check with roles
-                    //ProductRepository pr = new ProductRepository();
                     //IList<int> productIdList = pr.GetProductIdsByCompany(partyId);
                     //UnifiedLoginRepository umr = new UnifiedLoginRepository();
                     //var gbAllRights = umr.ListRightWithRoles(partyId, (int)ProductEnum.UnifiedLogin, productIdList);
@@ -1232,13 +1214,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 // get roles from DB for UserManagement product
                 WriteToDiagnosticLog(
                     $"UserManagement - Getting all GB roles from GB DB - pr.ListRolesForProductByParty with party id - {partyId}");
-                int productId = (int) ProductEnum.UnifiedPlatform;
+                var productId = (int) ProductEnum.UnifiedPlatform;
 
-                var productIds = GetProductIdsByOrg();
-
-                ProductRepository pr = new ProductRepository();
-                IList<int> productIdList = pr.GetProductIdsByCompany(partyId);
-                var gbAllRoles = pr.ListRolesForProductByParty(partyId, productIdList, productId);
+                var productIdList = _productRepository.GetProductIdsByCompany(partyId);
+                var gbAllRoles = _productRepository.ListRolesForProductByParty(partyId, productIdList, productId);
 
                 gbAllRoles = gbAllRoles.OrderBy(r => r.Name).ToList();
 
@@ -1317,7 +1296,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                 ProductRepository pr = new ProductRepository();
                 UserRoleRightRepository urr = new UserRoleRightRepository();
-                IList<int> productIdList = pr.GetProductIdsByCompany(partyId);
+                IList<int> productIdList = _productRepository.GetProductIdsByCompany(partyId);
                 var gbAllRoles = urr.GetPlatFormRoleRights(partyId, productIdList, productId);
 
                 gbAllRoles = gbAllRoles.OrderBy(r => r.Role).ToList();
@@ -1436,11 +1415,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             var partyId = _userClaims.OrganizationPartyId;
             // Get all rights to check with roles
-            ProductRepository pr = new ProductRepository();
-            IList<int> productIdList = pr.GetProductIdsByCompany(partyId);
+            IList<int> productIdList = _productRepository.GetProductIdsByCompany(partyId);
 
-            UnifiedLoginRepository umr = new UnifiedLoginRepository();
-            var allRights = umr.ListRightWithRoles(partyId, (int) ProductEnum.UnifiedPlatform, productIdList);
+            var allRights = _unifiedLoginRepository.ListRightWithRoles(partyId, (int) ProductEnum.UnifiedPlatform, productIdList);
 
             bool isEditorHasRight = true;
             foreach (var rt in rightToUpdated)
@@ -1762,10 +1739,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private List<Role> GetAssignedRoleForPersona(long userPersonaId, long organizationPartyId)
         {
             int productId = (int) ProductEnum.UnifiedPlatform;
-            UserRoleRightRepository urr = new UserRoleRightRepository();
             var cacheKey = $"sp_ListRolesForProductsByPersonaId_{productId}_{userPersonaId}_{organizationPartyId}";
             MemoryCache.Default.Remove(cacheKey);
-            List<UL.Role> propRole = urr.ListRoleByPersona(productId, userPersonaId, organizationPartyId);
+            List<UL.Role> propRole = _userRoleRightRepository.ListRoleByPersona(productId, userPersonaId, organizationPartyId);
             return propRole;
         }
 
@@ -1781,10 +1757,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             // get roles from DB for UnifiedLogin product
             WriteToDiagnosticLog(
                 $"UnifiedLogin - Getting assigned user roles from GB DB - GetAssignedRoleForPersona with persona id - {userPersonaId}");
-            List<Role> roleList = GetAssignedRoleForPersona(userPersonaId, partyId);
+            var roleList = GetAssignedRoleForPersona(userPersonaId, partyId);
 
+            if (roleList == null)
+                return new ListResponse()
+                {
+                    Records = allRoles.Cast<object>().ToList(),
+                    TotalRows = allRoles.Count(),
+                    RowsPerPage = 9999,
+                    ErrorReason = string.Empty,
+                    TotalPages = 1
+                };
+            
             // if a user record exists
-
             foreach (var role in roleList)
             {
                 if (allRoles.Any(a => a.ID == role.RoleID.ToString()))
@@ -1798,6 +1783,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     }
                 }
             }
+
 
             return new ListResponse()
             {
@@ -1883,14 +1869,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         private ListResponse MergeRightsWithAllRights(List<ProductRight> allRights, long roleId, long partyId)
         {
-
             // get assigned rights to role from DB for UnifiedLogin product
             WriteToDiagnosticLog(
                 $"UnifiedLogin - Getting assigned user roles from GB DB - GetAssignedRightsForRole with role id - {roleId}");
             List<ProductRight> rightList = GetAssignedRightsForRole(partyId, roleId);
 
             // if a user record exists
-
             foreach (var right in rightList)
             {
                 if (allRights.Any(a => a.ID == right.ID))
@@ -1915,7 +1899,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             };
         }
 
-        //private ListResponse MergeRolesWithAllRoles(IList<ProductRole> allRoles, long rightId, long partyId)
         private ListResponse MergeRolesWithAllRoles(IList<ProductRole> allRoles, long rightValId, long partyId, int productId)
         {
 
@@ -1956,8 +1939,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         private List<int> GetProductIdsByOrg()
         {
-            ProductRepository pr = new ProductRepository();
-            return (List<int>) pr.GetProductIdsByCompany(_userClaims.OrganizationRealPageGuid);
+            return (List<int>) _productRepository.GetProductIdsByCompany(_userClaims.OrganizationRealPageGuid);
         }
 
         private List<ProductRole> GetAssignedRolesForRight(long partyId, long rightId)
@@ -1972,10 +1954,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         {
             int productId = (int) ProductEnum.UnifiedPlatform;
             var productIds = GetProductIdsByOrg();
-            UnifiedLoginRepository umr = new UnifiedLoginRepository();
-            ProductRepository pr = new ProductRepository();
-            IList<int> productIdList = pr.GetProductIdsByCompany(partyId);
-            List<ProductRight> rights = umr.ListRightsByRole(partyId, productIdList, productId, roleId);
+            IList<int> productIdList = _productRepository.GetProductIdsByCompany(partyId);
+            List<ProductRight> rights = _unifiedLoginRepository.ListRightsByRole(partyId, productIdList, productId, roleId);
             return rights;
         }
 

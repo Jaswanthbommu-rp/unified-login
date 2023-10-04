@@ -23,6 +23,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityCo
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.Security;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSite;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ops;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.ResponseObject;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
@@ -51,12 +52,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
     public class UserController : BaseApiController
     {
         #region Private variables
-        IRepositoryResponse _repositoryResponse;
-        IManagePersona _managePersona;
-        private IManagePerson _personLogic;
-        IManageProduct _manageProduct;
-        IManageOrganization _manageOrganization;
+
+        private IRepository _repository;
+        private IOneSiteProductService _oneSiteProductService;
         private HttpMessageHandler _messageHandler;
+
+        //private IRepositoryResponse _repositoryResponse;
+        private IManagePersona _managePersona;
+        private IManagePerson _personLogic;
+        private IManageProduct _manageProduct;
+        private IManageOrganization _manageOrganization;
         private IManageUnifiedSettings _manageSettings;
         private IProductRepository _productRepository;
         private IUserRepository _userRepository;
@@ -66,6 +71,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         private UserManagement _userManagement;
         private ManageUser _manageUser;
         private IManageUserLogin _userLoginLogic;
+        private IManageProductUser _manageProductUser;
+        private SamlRepository _samlRepository;
         #endregion
 
         #region Constructor
@@ -78,25 +85,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         }
 
         /// <summary>
-        /// Unit test constructor
+        /// Unit test constructor v2
         /// </summary>
         /// <param name="repository"></param>
-        /// <param name="repositoryResponse"></param>
         /// <param name="messageHandler"></param>
         /// <param name="userClaims"></param>
-        /// <param name="manageProductOneSite"></param>
-        public UserController(IRepository repository, IRepositoryResponse repositoryResponse, HttpMessageHandler messageHandler, DefaultUserClaim userClaims, IManageProductOneSite manageProductOneSite)
+        /// <param name="oneSiteProductService"></param>
+        public UserController(IRepository repository, HttpMessageHandler messageHandler, DefaultUserClaim userClaims, IOneSiteProductService oneSiteProductService)
         {
-            ProductRepository productRepository = new ProductRepository(repository, userClaims);
-            ProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository(repository);
-            ManageUserRoleRight manageUserRoleRight = new ManageUserRoleRight(repository, userClaims);
-            ManagePartyRelationship managePartyRelationship = new ManagePartyRelationship(repository);
-            ManageBlueBook manageBlueBook = new ManageBlueBook(userClaims, repository, productInternalSettingRepository, messageHandler);
-            ManageProfile manageProfile = new ManageProfile(repository, userClaims, messageHandler);
-            PersonaRightRepository personaRightRepository = new PersonaRightRepository(repository);
-            ManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(repository, userClaims, messageHandler);
+            _repository = repository;
+            _messageHandler = messageHandler;
+            _oneSiteProductService = oneSiteProductService;
 
-            _repositoryResponse = repositoryResponse;
+            var productInternalSettingRepository = new ProductInternalSettingRepository(repository);
+            var manageBlueBook = new ManageBlueBook(userClaims, repository, productInternalSettingRepository, messageHandler);
+            var personaRightRepository = new PersonaRightRepository(repository);
+            var manageUnifiedLogin = new ManageUnifiedLogin(repository, userClaims, messageHandler);
+            var manageProductOneSite = new ManageProductOneSite(repository, userClaims, messageHandler, oneSiteProductService);
+
             _managePersona = new ManagePersona(repository, userClaims, messageHandler);
             _personLogic = new ManagePerson(repository);
             _manageOrganization = new ManageOrganization(repository, userClaims, messageHandler);
@@ -104,7 +110,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             _manageProduct = new ManageProduct(repository, userClaims, messageHandler);
             _manageProductPanel = new ManageProductPanel(userClaims, repository, manageBlueBook, messageHandler, manageProductOneSite);
             _productRepository = new ProductRepository(repository, userClaims);
-            _messageHandler = messageHandler;
             _userClaims = userClaims;
             _userRepository = new UserRepository(repository, userClaims, messageHandler);
             _manangeSecurityLogic = new ManageSecurity(userClaims, personaRightRepository);
@@ -112,6 +117,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             _userManagement = new UserManagement(userClaims);
             _manageUser = new ManageUser(repository, userClaims, messageHandler);
             _userLoginLogic = new ManageUserLogin(repository, userClaims, messageHandler);
+            
+            _manageProductUser = new ManageProductUser(repository, userClaims, messageHandler, oneSiteProductService);
+            _samlRepository = new SamlRepository(repository);
         }
 
         /// <summary>
@@ -125,7 +133,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             var manageProductOneSite = new ManageProductOneSite(_userClaims);
             var productInternalSettingRepository = new ProductInternalSettingRepository();
 
-            _repositoryResponse = new RepositoryResponse();
             _managePersona = new ManagePersona(_userClaims);
             _personLogic = new ManagePerson();
             _manageProduct = new ManageProduct(_userClaims);
@@ -139,6 +146,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             _userManagement = new UserManagement(_userClaims);
             _manageUser = new ManageUser(_userClaims);
             _userLoginLogic = new ManageUserLogin(_userClaims);
+            _manageProductUser = new ManageProductUser(_userClaims);
+            _samlRepository = new SamlRepository();
         }
 
         #endregion
@@ -157,31 +166,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         {
             try
             {
-                ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
                 var errorResponse = new ErrorResponse { Errors = new List<Error>() };
-                if (currentClaimPrincipal.HasClaim("scope", "usermanagement") && _userClaims.PersonaId == 0)
+
+                var clientCredentialLogin = AttemptClientCredentialAuthentication(upfmId);
+                if (clientCredentialLogin != null && clientCredentialLogin.Errors.Count > 0)
                 {
-                    if (!string.IsNullOrEmpty(upfmId.ToString()))
-                    {
-                        Guid AdminCreatorRealPageId = _manageOrganization.GetOrganizationAdminUserRealPageId(upfmId ?? default(Guid));
-                        //recreate clams
-                        if (AdminCreatorRealPageId == Guid.Empty)
-                        {
-                            errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = "Invalid UPFMId.", StatusCode = "" });
-                            //return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
-                        }
-                        RecreateClaimsForClient(AdminCreatorRealPageId);
-                        _managePersona = new ManagePersona(_userClaims);
-                        _manageProduct = new ManageProduct(_userClaims);
-                        _userManagement = new UserManagement(_userClaims);
-                        _manageUser = new ManageUser(_userClaims);
-                        _userLoginLogic = new ManageUserLogin(_userClaims);
-                    }
-                    else
-                    {
-                        errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = "Invalid UPFMId.", StatusCode = "" });
-                    }
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, clientCredentialLogin.Errors);
                 }
+
                 if (userProductDetailsDto == null)
                 {
                     errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = "Null request received.", StatusCode = "" });
@@ -262,7 +254,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
                 //Check if user is available in other company
                 IManageRoleType roleTypeLogic = new ManageRoleType(new RoleTypeRepository());
-                var roleTypeList = (List<RoleType>)roleTypeLogic.GetRoleType(roleTypeName: "user role", partyId: null, orgMasterId: null, loginName: userProductDetailsDto.UserProfileDetails.LoginName);
+                var roleTypeList = (List<Component.SharedObjects.IdentityConfig.RoleType>)roleTypeLogic.GetRoleType(roleTypeName: "user role", partyId: null, orgMasterId: null, loginName: userProductDetailsDto.UserProfileDetails.LoginName);
                 var userTypeId = GetGbUserType(userProductDetailsDto.UserProfileDetails.UserType);
                 if (!roleTypeList.Any(x => x.PartyRoleTypeId == userTypeId))
                 {
@@ -350,7 +342,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 return Request.CreateResponse(HttpStatusCode.InternalServerError, $"Internal system error. Please contact RealPage support with correlation Id - {_userClaims.CorrelationId}");
             }
         }
-
+        
         /// <summary>
         /// Update the user in RealPage Unified platform and if product(s) are provided .
         /// </summary>
@@ -365,32 +357,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         {
             try
             {
-                ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
                 var errorResponse = new ErrorResponse { Errors = new List<Error>() };
-                if (currentClaimPrincipal.HasClaim("scope", "usermanagement") && _userClaims.PersonaId == 0)
+
+                var clientCredentialLogin = AttemptClientCredentialAuthentication(upfmId);
+                if (clientCredentialLogin != null && clientCredentialLogin.Errors.Count > 0)
                 {
-                    if (!string.IsNullOrEmpty(upfmId.ToString()))
-                    {
-                        //IManageOrganization manageOrganization = new ManageOrganization(_userClaims);
-                        Guid AdminCreatorRealPageId = _manageOrganization.GetOrganizationAdminUserRealPageId(upfmId ?? default(Guid));
-                        //recreate clams
-                        if (AdminCreatorRealPageId == Guid.Empty)
-                        {
-                            errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = "Invalid UPFMId.", StatusCode = "" });
-                            //return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
-                        }
-                        RecreateClaimsForClient(AdminCreatorRealPageId);
-                        _managePersona = new ManagePersona(_userClaims);
-                        _manageProduct = new ManageProduct(_userClaims);
-                        _userManagement = new UserManagement(_userClaims);
-                        _manageUser = new ManageUser(_userClaims);
-                        _userLoginLogic = new ManageUserLogin(_userClaims);
-                    }
-                    else
-                    {
-                        errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = "Invalid UPFMId.", StatusCode = "" });
-                    }
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, clientCredentialLogin.Errors);
                 }
+                
                 if (userProductDetailsDto == null)
                 {
                     errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = "Null request received.", StatusCode = "" });
@@ -644,16 +618,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [Route("user")]
         [AuthorizeScope("enterpriseapi")]
         [HttpGet]
-        public HttpResponseMessage GetUser(Guid? unityRealPageUserId = null, string name = null, int rowsPerPage = 1, int pageNumber = 1)
+        public HttpResponseMessage GetUser(Guid? upfmId = null, Guid? unityRealPageUserId = null, string name = null, int rowsPerPage = 1, int pageNumber = 1)
         {
+            var response = new PagedResponse() { Meta = new Meta() };
             IList<UsersDataDto> usersDataDtoList = new List<UsersDataDto>();
-            List<string> unityRoles = new List<string>();
 
-            PagedResponse response = new PagedResponse() { Meta = new Meta() };
-            ErrorResponse error = new ErrorResponse()
+            var clientCredentialLogin = AttemptClientCredentialAuthentication(upfmId);
+            if (clientCredentialLogin != null && clientCredentialLogin.Errors.Count > 0)
             {
-                Errors = new List<Error>()
-            };
+                response.Data = usersDataDtoList.Cast<object>().ToList();
+                response.Meta.CurrentPage = pageNumber;
+                response.Meta.TotalRows = 0;
+                response.Meta.RowsPerPage = rowsPerPage;
+                response.IsError = true;
+                response.ErrorReason = "Invalid UPFMId.";
+                return Request.CreateResponse(HttpStatusCode.BadRequest, response);
+            }
 
             if (rowsPerPage <= 0)
             {
@@ -1158,9 +1138,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [HttpGet]
         public IList<SamlProductAttributes> GetSamlProductAttributes(int ProductId)
         {
-            var samlRepository = new SamlRepository();
-            return samlRepository.GetSamlProductAttributes(ProductId);
+            //var samlRepository = new SamlRepository();
+            return _samlRepository.GetSamlProductAttributes(ProductId);
         }
+
         /// <summary>
         /// Used to update details for a Realpage product (OneSite, Accounting, VendorServices) user for the given GreenBook user
         /// </summary>
@@ -1183,8 +1164,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             if (productUser.ProductId <= 0)
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "ProductName empty.");
 
-            ManageProductUser manageProduct = new ManageProductUser(_userClaims);
-            string result = manageProduct.UpdateProductUserAccountDetails(productUser, true);
+            var result = _manageProductUser.UpdateProductUserAccountDetails(productUser, true);
 
             if (string.IsNullOrEmpty(result))
                 result = "Success";
@@ -1213,8 +1193,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             if (productUser.ProductId <= 0)
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "ProductName empty.");
 
-            ManageProductUser manageProduct = new ManageProductUser(_userClaims);
-            string result = manageProduct.DeleteSamlUserProductInfoAndStatus(productUser, true);
+            var result = _manageProductUser.DeleteSamlUserProductInfoAndStatus(productUser, true);
 
             if (string.IsNullOrEmpty(result))
                 result = "Success";
@@ -1353,8 +1332,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         {
             try
             {
-                UserManagement userManagement = new UserManagement(_userClaims);
-                return Request.CreateResponse(HttpStatusCode.OK, userManagement.ListUserProductDetailsLoginByPersonaId(_userClaims.PersonaId));
+                return Request.CreateResponse(HttpStatusCode.OK, _userManagement.ListUserProductDetailsLoginByPersonaId(_userClaims.PersonaId));
             }
             catch (Exception ex)
             {
@@ -1381,8 +1359,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         {
             try
             {
-                UserManagement userManagement = new UserManagement(_userClaims);
-                return Request.CreateResponse(HttpStatusCode.OK, userManagement.ListUserProductDetailsLoginByLoginName(_userClaims.LoginName));
+                return Request.CreateResponse(HttpStatusCode.OK, _userManagement.ListUserProductDetailsLoginByLoginName(_userClaims.LoginName));
             }
             catch (Exception ex)
             {
@@ -1983,10 +1960,62 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         }
 
         /// <summary>
-        /// Used to recreate claims for client
+        /// Used for client credential calls to assign the support tool admin user when attempting to get company information
         /// </summary>
-        /// <param name="_realpageUserId">RealPage UserId</param>
-        
+        /// <param name="upfmId"></param>
+        /// <returns></returns>
+        private ErrorResponse AttemptClientCredentialAuthentication(Guid? upfmId)
+        {
+            if (string.IsNullOrEmpty(upfmId.ToString())) return null;
+            var currentClaimPrincipal = ClaimsPrincipal.Current;
+
+            if ((!currentClaimPrincipal.HasClaim("scope", "usermanagement") && !currentClaimPrincipal.HasClaim("scope", "internalapi")) || _userClaims.PersonaId != 0) return null;
+            
+
+            var adminCreatorRealPageId = _manageOrganization.GetOrganizationAdminUserRealPageId(upfmId ?? default(Guid));
+            //recreate clams
+            if (adminCreatorRealPageId == Guid.Empty)
+            {
+                return new ErrorResponse { Errors = new List<Error>() { new Error { Title = "Error", Source = "/user", Detail = "Invalid UPFMId.", StatusCode = "" } } };
+            }
+
+            RecreateClaimsForClient(adminCreatorRealPageId);
+            if (_repository == null)
+            {
+                _managePersona = new ManagePersona(_userClaims);
+                _manageProduct = new ManageProduct(_userClaims);
+                _userManagement = new UserManagement(_userClaims);
+                _manageUser = new ManageUser(_userClaims);
+                _userLoginLogic = new ManageUserLogin(_userClaims);
+            }
+            else
+            {
+                // Unit test
+                var productInternalSettingRepository = new ProductInternalSettingRepository(_repository);
+                var manageBlueBook = new ManageBlueBook(_userClaims, _repository, productInternalSettingRepository, _messageHandler);
+                var personaRightRepository = new PersonaRightRepository(_repository);
+                var manageUnifiedLogin = new ManageUnifiedLogin(_repository, _userClaims, _messageHandler);
+                var manageProductOneSite = new ManageProductOneSite(_repository, _userClaims, _messageHandler, _oneSiteProductService);
+
+                _managePersona = new ManagePersona(_repository, _userClaims, _messageHandler);
+                _manageOrganization = new ManageOrganization(_repository, _userClaims, _messageHandler);
+                _manageSettings = new ManageUnifiedSettings(_repository, _userClaims, _messageHandler);
+                _manageProduct = new ManageProduct(_repository, _userClaims, _messageHandler);
+                _manageProductPanel = new ManageProductPanel(_userClaims, _repository, manageBlueBook, _messageHandler, manageProductOneSite);
+                _productRepository = new ProductRepository(_repository, _userClaims);
+                
+                _userRepository = new UserRepository(_repository, _userClaims, _messageHandler);
+                _manangeSecurityLogic = new ManageSecurity(_userClaims, personaRightRepository);
+                _integrationTypeFactory = new IntegrationTypeFactory(_manageProduct, manageUnifiedLogin, manageProductOneSite, _productRepository, productInternalSettingRepository, _userClaims);
+                _manageUser = new ManageUser(_repository, _userClaims, _messageHandler);
+                _userLoginLogic = new ManageUserLogin(_repository, _userClaims, _messageHandler);
+
+                _manageProductUser = new ManageProductUser(_repository, _userClaims, _messageHandler, _oneSiteProductService);
+                _samlRepository = new SamlRepository(_repository);
+            }
+
+            return null;
+        }
 
 
         #endregion

@@ -27,7 +27,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 	public class ManageProduct : IManageProduct
     {
         public static readonly Guid EmployeeCompanyRealPageId = new Guid("0D018E46-C20E-477D-ADED-4E5A35FB8F99");
-        
+
+        private IRepository _repository;
         IProductRepository _productRepository;
         IProductInternalSettingRepository _productInternalSettingRepository;
         IManagePersona _managePersona;
@@ -43,10 +44,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 		#region Ctor
         /// <summary>
-        /// Repository test Constructor
+        /// Unit test Constructor v2
         /// </summary>
         public ManageProduct(IRepository repository, DefaultUserClaim userClaim, HttpMessageHandler messageHandler)
         {
+            _repository = repository;
             _productRepository = new ProductRepository(repository, userClaim);
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
             _managePersona = new ManagePersona(repository, userClaim, messageHandler);
@@ -437,7 +439,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 	    /// <returns>The list of settings</returns>
 	    public IList<ProductInternalSetting> GetProductInternalSettings(int productId)
 	    {
-		    RPObjectCache rpcache = new RPObjectCache();
+            if (_repository != null)
+            {
+                // unit test
+                return _productInternalSettingRepository.GetProductInternalSettings(productId);
+            }
+
+            var rpcache = new RPObjectCache();
 		    var cacheKey = "productInternalSetting_" + productId;
 		    var productInternalSettingList = rpcache.GetFromCache<IList<ProductInternalSetting>>(cacheKey, 60, () =>
 		    {

@@ -69,7 +69,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         }
 
         /// <summary>
-        /// Unit test constructor
+        /// Unit test constructor v2
         /// </summary>
         /// <param name="repository"></param>
         /// <param name="repositoryResponse"></param>
@@ -155,7 +155,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _repositoryResponse = new RepositoryResponse();
             _organizationProductRepository = new OrganizationProductRepository();
             _manageOrganizationProduct = new ManageOrganizationProduct(_userClaims);
-            _manageUserLogin = new ManageUserLogin();
+            _manageUserLogin = new ManageUserLogin(_userClaims);
             _managePartyRelationship = new ManagePartyRelationship();
             _manageOrganization = new ManageOrganization(_userClaims);
             _manageBlueBook = new ManageBlueBook(_userClaims);

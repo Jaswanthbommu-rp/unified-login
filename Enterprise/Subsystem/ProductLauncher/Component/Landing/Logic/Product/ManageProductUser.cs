@@ -84,7 +84,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         }
 
         /// <summary>
-        /// Unit test constructor
+        /// Unit test constructor v2
         /// </summary>
         /// <param name="repository"></param>
         /// <param name="userClaims"></param>
