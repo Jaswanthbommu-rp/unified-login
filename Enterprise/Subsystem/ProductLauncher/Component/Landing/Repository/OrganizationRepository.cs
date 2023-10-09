@@ -23,7 +23,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
     public class OrganizationRepository : BaseRepository, IOrganizationRepository
     {
         private IRepository _repository;
-        
+
         #region Constructor
         /// <summary>
         /// Base constructor
@@ -47,6 +47,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         public OrganizationRepository(IRepository repository) : base(repository)
         {
             _repository = repository;
+           
         }
 
         #endregion
@@ -173,12 +174,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 IList<Organization> organizationList = repository.GetMany<Organization>(StoredProcNameConstants.SP_GetOrganization, param);
 
                 organizationList.ToList().ForEach(o =>
-                    {
-                        var orgType = ListOrganizationType().FirstOrDefault(t => t.OrganizationTypeId == o.OrganizationTypeId);
-                        o.organizationType = orgType != null ? new OrganizationType {Name = orgType.Name, OrganizationTypeId = orgType.OrganizationTypeId, CreateDate = orgType.CreateDate} : new OrganizationType();
-                        var orgDomain = ListOrganizationDomain().FirstOrDefault(d => d.OrganizationDomainId == o.OrganizationDomainId);
-                        o.OrganizationDomain = orgDomain != null ? new OrganizationDomain {OrganizationDomainId = orgDomain.OrganizationDomainId, Name = orgDomain.Name, CreateDate = orgDomain.CreateDate} : new OrganizationDomain();                        
-                    }
+                {
+                    var orgType = ListOrganizationType().FirstOrDefault(t => t.OrganizationTypeId == o.OrganizationTypeId);
+                    o.organizationType = orgType != null ? new OrganizationType {Name = orgType.Name, OrganizationTypeId = orgType.OrganizationTypeId, CreateDate = orgType.CreateDate} : new OrganizationType();
+                    var orgDomain = ListOrganizationDomain().FirstOrDefault(d => d.OrganizationDomainId == o.OrganizationDomainId);
+                    o.OrganizationDomain = orgDomain != null ? new OrganizationDomain {OrganizationDomainId = orgDomain.OrganizationDomainId, Name = orgDomain.Name, CreateDate = orgDomain.CreateDate} : new OrganizationDomain();
+                }
                 );
 
                 return organizationList;
@@ -285,7 +286,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         public RepositoryResponse UpdateOrganizationBooksCompanyMasterId(Organization oldOrganization, Organization newOrganization)
         {
             RepositoryResponse result = new RepositoryResponse() {Id = 0, ErrorMessage = ""};
-            
+
             dynamic param = new
             {
                 @ApplicationId = BookMasterType.CustomerMasterId,
@@ -483,7 +484,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             settingValue = rpCache.GetFromCache<string>(cacheKey, 180, () =>
             {
                 using (var repository = GetRepository())
-                {                    
+                {
                     DynamicParameters param = new DynamicParameters();
                     param.Add("@PersonaId", personaId, dbType: DbType.Int32, direction: ParameterDirection.Input);
                     param.Add("@SettingName", settingName, dbType: DbType.String, direction: ParameterDirection.Input);
@@ -588,7 +589,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
         #region GetCompanyList
         public List<CompanySetup> GetCompanyList(string organizationName, int domain, int? blueId, int organizationId, RequestParameter dataFilterSort = null)
-        {            
+        {
             string sortBy = "OrganizationName";
             string sortDirection = "Asc";
             string filterByProduct = null;
@@ -649,7 +650,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             };
             using (var repository = GetRepository())
             {
-                companylst = repository.GetMany<CompanySetup>(StoredProcNameConstants.SP_ListCompanySetup, param);                
+                companylst = repository.GetMany<CompanySetup>(StoredProcNameConstants.SP_ListCompanySetup, param);
                 return companylst;
             }
         }
@@ -738,6 +739,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
-        #endregion
+        #endregion 
     }
 }

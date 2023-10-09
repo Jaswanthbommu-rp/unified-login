@@ -32,6 +32,9 @@ using System.Text;
 using System.Runtime.Caching;
 using UL = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
+using RP.Enterprise.Foundation.DataAccess.Component;
+using System.Net.Http;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSite;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -49,6 +52,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private IUserLoginRepository _userLoginRepository;
         private BatchProductBulkUpdateRepository _enterpriseRoleProductRepository;
         private IUserRoleRightRepository _userRoleRightRepository;
+        private IManageBlueBook _manageBlueBook;
         /// <summary>
         /// Default Constructor
         /// </summary>
@@ -71,6 +75,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _userLoginRepository = new UserLoginRepository();
             _enterpriseRoleProductRepository = new BatchProductBulkUpdateRepository(_userClaim);
             _userRoleRightRepository = new UserRoleRightRepository();
+        }
+
+
+        public ManageEnterpriseRolesPrimaryProperties(IRepository repository, HttpMessageHandler messageHandler, DefaultUserClaim userClaims,
+            IOneSiteProductService oneSiteProductService = null, IManageBlueBook manageBlueBook = null)
+        {
+            _userClaim = userClaims;
+            _manageProductBatch = new ManageProductBatch(repository,  messageHandler, userClaims, oneSiteProductService);
+            var manageProduct = new ManageProduct(repository, userClaims, messageHandler);
+            _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
+            var manageUnifiedLogin = new ManageUnifiedLogin(repository, userClaims, messageHandler);
+            _manageBlueBook = new ManageBlueBook(userClaims, repository, _productInternalSettingRepository, messageHandler);
+            var manageProductOneSite = new ManageProductOneSite(_userClaim, oneSiteProductService, _manageBlueBook, _productInternalSettingRepository, messageHandler, repository);
+            _productRepository = new ProductRepository(repository);
+            _integrationTypeFactory = new IntegrationTypeFactory(manageProduct, manageUnifiedLogin, manageProductOneSite, _productRepository, _productInternalSettingRepository, _userClaim);
+           _unifiedSettingsRepository = new UnifiedSettingsRepository(repository);
+            _managePersona = new ManagePersona(repository, userClaims, messageHandler);
+            _personaRepository = new PersonaRepository(repository);
+            _userLoginRepository = new UserLoginRepository(repository);
+            _enterpriseRoleProductRepository = new BatchProductBulkUpdateRepository(repository, _userClaim);
         }
 
         public string ProcessEnterpriseRolesAndPrimaryPropertiesData(long editorUserPersonaId, long subjectUserPersonaId, int? enterpriseRoleTemplateId = null, DateTime? createdDateTime = null)
@@ -147,7 +171,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 Log.Write(LogEventLevel.Debug, $"New products : {newproducts}");
                 // End.
 
-                bool isExternalUser = personaOrganization.RelationshipType.Equals("User Type", StringComparison.OrdinalIgnoreCase) && personaOrganization.RoleNameFrom.Equals("External User", StringComparison.OrdinalIgnoreCase);
+                bool isExternalUser = personaOrganization.RelationshipType != null && personaOrganization.RelationshipType.Equals("User Type", StringComparison.OrdinalIgnoreCase) && personaOrganization.RoleNameFrom.Equals("External User", StringComparison.OrdinalIgnoreCase);
                 IUserLoginOnly impersonatorUserLoginOnly = new UserLoginOnly();
                 if (_userClaim.ImpersonatedBy != Guid.Empty)
                 {
@@ -215,7 +239,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             };
                         }
                         else
-                        {                            
+                        {
                             rolesResponse = _manageProductBatch.GetProductRoles(editorPersona.PersonaId, userPersona.PersonaId, product, userPersona.OrganizationPartyId, _userClaim);
                             if (rolesResponse.Records.Count > 0)
                             {
@@ -452,7 +476,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return productRoles;
         }
 
-    
+
 
         private void GetUserRolesAndProperties(long editorPersonaId, long newUserPersonaId, int? enterpriseRoleTemplateId,
             List<RoleTemplateProductRole> roleTemplateProductRole, ListResponse rolesResponse, ManageProductBatch manageProductBatch,

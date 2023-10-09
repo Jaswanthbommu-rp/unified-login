@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Foundation.DataAccess.Component;
+using System.Net.Http;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 {
@@ -15,12 +17,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 	public class SharedDataRepository : BaseRepository, ISharedDataRepository
 	{
 		private DefaultUserClaim _userClaim;
+        private IRepository _repository;
 
-		#region Ctor
-		/// <summary>
-		/// base Constructor
-		/// </summary>
-		public SharedDataRepository() : base(DbConnectionEnum.IdpConfigurationDb)
+        #region Ctor
+        /// <summary>
+        /// base Constructor
+        /// </summary>
+        public SharedDataRepository() : base(DbConnectionEnum.IdpConfigurationDb)
 		{
 			_userClaim = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
 		}
@@ -36,16 +39,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
 			_userClaim = userClaim;
 		}
-		#endregion
 
-		#region Public Methods
-		
-		/// <summary>
-		/// Used to get a list of products ids for a company by the company guid
-		/// </summary>
-		/// <param name="organizationRealPageId"></param>
-		/// <returns></returns>
-		public IList<int> GetProductIdsByCompany(Guid organizationRealPageId)
+		public SharedDataRepository(IRepository repository, DefaultUserClaim userClaims) : base(repository)
+        {
+            _repository = repository;
+			_userClaim = userClaims;
+
+        }
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Used to get a list of products ids for a company by the company guid
+        /// </summary>
+        /// <param name="organizationRealPageId"></param>
+        /// <returns></returns>
+        public IList<int> GetProductIdsByCompany(Guid organizationRealPageId)
 		{
 			RPObjectCache rpCache = new RPObjectCache();
 			var cacheKey = $"getProductIdsByCompanyGuid_{organizationRealPageId}";

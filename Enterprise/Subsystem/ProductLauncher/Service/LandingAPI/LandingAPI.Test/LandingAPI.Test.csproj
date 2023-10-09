@@ -211,6 +211,7 @@
     <Compile Include="Logic\Enterprise\EnterpriseUserTests.cs" />
     <Compile Include="Logic\ManageBlueBookTests.cs" />
     <Compile Include="Logic\ManageCredentialTest.cs" />
+    <Compile Include="Logic\ManageEnterpriseRolesPrimaryPropertiesTest.cs" />
     <Compile Include="Logic\ManageLead2LeaseTest.cs" />
     <Compile Include="Logic\ManageOneSiteAccountingProductTests.cs" />
     <Compile Include="Logic\ManageOneSiteProductTests.cs" />

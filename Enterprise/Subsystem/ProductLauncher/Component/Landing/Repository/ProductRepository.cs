@@ -64,6 +64,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
 
         /// <summary>
+        /// Unit Test case.
+        /// </summary>
+        /// <param name="repository"></param>
+        public ProductRepository(IRepository repository) : base(repository)
+        {
+            _repository = repository;
+        }
+
+        /// <summary>
         /// Used when the user is known
         /// </summary>
         /// <param name="userClaim"></param>
@@ -88,7 +97,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         public IList<PersonaProduct> GetAllProductsByPersona(long personaId, ProductBatchStatusType statusType)
         {
             var procName = StoredProcNameConstants.SP_GetProductsByPersonaId;
-           
+
             dynamic param = new
             {
                 PersonaId = personaId,
@@ -108,9 +117,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="statusType"></param>
         /// <returns></returns>
         public IList<PersonaProductUserDetails> ListProductsByPersonaId(long personaId, int statusType)
-        {            
+        {
             var procName = StoredProcNameConstants.SP_ListProductsByPersonaId;
-            
+
             dynamic param = new
             {
                 PersonaId = personaId,
@@ -426,7 +435,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 //Remove Resource Vendor Marketplace if the user does not have the Ability to access Vendor Marketplace right
                 if (_userClaim.Rights.All(rght => rght.Equals("EmployeeAccessVendorMarketPlace", StringComparison.OrdinalIgnoreCase)))
-                                                 
+
                 {
                     if (userProducts.Any(a => a.ProductId == (int)ProductEnum.VendorMarketplace))
                     {
@@ -1242,7 +1251,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 //var result = repository.Execute<RepositoryResponse>(StoredProcNameConstants.SP_UpdateProductBatch,
                 //    new { productBatchId, statusTypeId, inputJson, errorDetails });
-                
+
                 var result = repository.Execute<int>(StoredProcNameConstants.SP_UpdateProductBatch,
                    new { productBatchId, statusTypeId, inputJson, errorDetails });
 
@@ -1586,7 +1595,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             if (productSetting != null)
                             {
                                 s.PersonaUsedPrimaryProperties = productSetting.Value.Trim() == "1" ? true : false;
-                            }                                                     
+                            }
                         }
 
                         if (aoNonMigratedUserProducts?.Count > 0 && !setIsAssigned && !string.IsNullOrWhiteSpace(s.ProductCode))
@@ -1644,8 +1653,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         adGroupsForPersona = GetAdGroupsForUser(impersonatePersonaId);
                     }
                 }
-            
-            
+
+
 
                 //allways set "Platform Services" (productId - 500) => Landing (productId - 3) => IsAssigned to True -- For GB Roles and Rights
                 productFamilyList.ToList().ForEach(p =>
@@ -1674,7 +1683,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 });
             }
-            
+
             // now remove any products which are not matching product access filter
             if (accessFilter != null)
             {
@@ -1951,11 +1960,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 // unit test
                 return ListProducts(null, null, null, null);
             }
-            
+
             var rpcache = new RPObjectCache();
             var cacheKey = "GB-BB-ProductMap";
 
-            var products = rpcache.GetFromCache(cacheKey, 300, 
+            var products = rpcache.GetFromCache(cacheKey, 300,
                 () => ListProducts(null, null, null, null));
 
             return products;
@@ -1978,7 +1987,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                                                 IList<string> roles, IList<string> rights, List<string> propertyIds = null, string companyDomain = null)
         {
 
-            dynamic param = new  
+            dynamic param = new
             {
                 CompanyId = companyId,
                 UPFMId = upfmId,
@@ -2081,11 +2090,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// Returns  persona has any product error.		
         /// </summary> 
         public bool GetPersonaHasProductError(long personaId)
-        {            
+        {
             using (var repository = GetRepository())
             {
                 return repository.GetOne<bool>(StoredProcNameConstants.SP_GetPersonaProductError, new { PersonaId = personaId });
-            }            
+            }
         }
 
         /// <summary>
@@ -2251,7 +2260,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
             }
-			logger = logger.ForContext("ProductModule", this.GetType());
+            logger = logger.ForContext("ProductModule", this.GetType());
             logger = logger.ForContext("CorrelationId", correlationId);
             logger.Write(logType, exception, message );
         }
@@ -2291,7 +2300,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 else if (!string.IsNullOrWhiteSpace(productAccessRight))
                 {
                     s.LockOnProductAccess = !editorRights.Contains(productAccessRight, StringComparer.OrdinalIgnoreCase);
-                }                
+                }
             }
         }
 
@@ -2347,9 +2356,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
         public IList<UserBatchProductDetail> GetUserBatchDetails(int batchGroupId, long editorUserPersonId, long subjectUserPersonId)
         {
-            using (var repo = GetRepository()) 
+            using (var repo = GetRepository())
             {
-                var data = repo.GetMany<UserBatchProductDetail>(StoredProcNameConstants.SP_GetUserBatchRecords, new 
+                var data = repo.GetMany<UserBatchProductDetail>(StoredProcNameConstants.SP_GetUserBatchRecords, new
                 {
                     batchProcessorGroupId = batchGroupId,
                     editorUserPersonId = editorUserPersonId,
@@ -2360,9 +2369,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
-        public void UpdateBatchGroupStatus(int groupId, bool isLogged) 
+        public void UpdateBatchGroupStatus(int groupId, bool isLogged)
         {
-            using (var repo = GetRepository()) 
+            using (var repo = GetRepository())
             {
                 repo.ExecuteNonQuery(StoredProcNameConstants.SP_UpdateProcessorGroupStatus, new
                 {
