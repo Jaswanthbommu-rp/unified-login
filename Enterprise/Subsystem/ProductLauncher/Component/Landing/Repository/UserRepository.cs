@@ -252,7 +252,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(_userClaim.ImpersonatedBy);
             }
-            
+
             IUserLoginOnly userLoginOnly = _userLoginRepository.GetUserLoginOnly(newProfile.userLogin.LoginName);
             if (newProfile.organization[0].RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId)
             {
@@ -3550,7 +3550,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             string saveProductBatchError = "Save Product(s) Error: ";
             List<RoleTemplateProductRole> roleTemplateProductRole = new List<RoleTemplateProductRole>();
             List<string> vendorRoleIdList = new List<string>();
-            
+
             if (errorStatus == null)
             {
                 errorStatus = new Status<IErrorData>();
@@ -3582,12 +3582,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 IList<ProductBatch> productListToCreate = new List<ProductBatch>();
                 IList<PersonaProductUserDetails> userProducts = repository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = AssignUserPersonaId }).ToList();
                 List<ProductUI> productsAssignedToCompany = GetOrganizationProductListForAdminUser(repository, realPageId, organizationRealPageId, aoProducts);
-                
+
                 if (roleIdList != null)
                 {
                     vendorRoleIdList = (List<string>)roleIdList;
                 }
-                
+
                 foreach (ProductUI prod in productsAssignedToCompany)
                 {
                     // see if the user already has the product, or if they do if it is Deleted or Deactivated, and if so add it or turn it back on
@@ -3598,7 +3598,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         || isRealpageAccessUser
                        )
                     {
-                        
+
                         // don't add the product if it is already in the list
                         if (productListToCreate.All(a => a.ProductId != prod.ProductId))
                         {
@@ -3610,7 +3610,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
                                 InputJson = new RolePropertyList() { PropertyRoleList = new List<PropertyRoleList>(), PropertyList = new List<string>(), RoleList = prod.ProductId == (int)ProductEnum.VendorMarketplace ? vendorRoleIdList : new List<string>(), IsVendorRoleIdOverride = prod.ProductId == (int)ProductEnum.VendorMarketplace && vendorRoleIdList?.Count > 0 , IsAssigned = true }
                             };
-                            
+
                             productListToCreate.Add(pb);
                         }
                     }
@@ -4935,11 +4935,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         private bool IsUserProfileChanged(IProfileDetail profile, IProfileDetail oldProfile)
         {
             bool isChanged = (
-                (!profile.FirstName.Equals(oldProfile.FirstName))
+                (!string.Equals(profile.FirstName, oldProfile.FirstName, StringComparison.OrdinalIgnoreCase))
                 ||
-                (!profile.MiddleName.Equals(oldProfile.MiddleName))
+                (!string.Equals(profile.MiddleName, oldProfile.MiddleName, StringComparison.OrdinalIgnoreCase))
                 ||
-                (!profile.LastName.Equals(oldProfile.LastName))
+                (!string.Equals(profile.LastName, oldProfile.LastName, StringComparison.OrdinalIgnoreCase))
             );
             return isChanged;
         }
@@ -4953,11 +4953,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         private bool IsUserProfileChanged(IProfileDetail profile, UserDetails userDetail)
         {
             bool isChanged = (
-                (!profile.FirstName.Equals(userDetail.FirstName))
+                (!string.Equals(profile.FirstName, userDetail.FirstName, StringComparison.OrdinalIgnoreCase))
                 ||
-                (!profile.MiddleName.Equals(userDetail.MiddleName))
+                (!string.Equals(profile.MiddleName, userDetail.MiddleName, StringComparison.OrdinalIgnoreCase))
                 ||
-                (!profile.LastName.Equals(userDetail.LastName))
+                (!string.Equals(profile.LastName, userDetail.LastName, StringComparison.OrdinalIgnoreCase))
             );
             return isChanged;
         }
@@ -6452,7 +6452,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             {
                                 UpdateDelegateAdminStatus(repository, userLoginPersonaList[0].UserLoginPersonaId, updateUserProfileEntity.NewProfile.IsDelegateAdmin);
                             }
-                                // make db call here...
+                            // make db call here...
                             repositoryResponse = InsertUpdateDelegateAdminRole(repository, userLoginPersonaList[0].UserLoginPersonaId,
                                                         updateUserProfileEntity.NewProfile.DelegateRoleTemplate.RoleTemplateId.ToList());
                             if (repositoryResponse.ErrorMessage.Length != 0)
@@ -6827,7 +6827,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             var userEnterpriseRoles = roleTemplates.Where(r => rolesAdded.Contains(r.RoleTemplateId));
                             string delegateRolesMessage = "User admin{2}has added " + string.Join(", ", userEnterpriseRoles.Select(s => s.RoleTemplateName)) + " enterprise roles to Delegate admin {0} {1}";
                             LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, delegateRolesMessage, "UpdateUser", updateUserProfileEntity.NewProfile);
-                        }                        
+                        }
                     }
                 }
 
@@ -7131,7 +7131,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     {
                         if (oldData.ThirdPartyCompanyRealPageId != newData.ThirdPartyCompanyRealPageId)
                         {
-                            
+
                             additionalParams.Add(new AdditionalParameters()
                             {
                                 Key = "Operator",
