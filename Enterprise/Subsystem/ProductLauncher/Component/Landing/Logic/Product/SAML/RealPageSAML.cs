@@ -236,7 +236,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			};
 			SignedXml signedXml = new SignedXml(responseXMLDocument)
 			{
-				SigningKey = _SigningCertificate.PrivateKey,
+				SigningKey = _SigningCertificate.GetRSAPrivateKey(),
 			};
 
 			signedXml.SignedInfo.CanonicalizationMethod = SignedXml.XmlDsigExcC14NTransformUrl;
