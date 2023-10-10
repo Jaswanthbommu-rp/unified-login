@@ -2236,16 +2236,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             //var groupApiUrl = $"{_apiEndPoint}user/groups/assignablepropertygroups/{_editorProductUserId.ToLower()}/{GetProductCompanyParam(selectedCompanies, productName)}";
             var groupApiUrl = $"{_apiEndPoint}user/{_editorProductUserId.ToLower()}/groups/assignable?editingUser={_editorProductUserId.ToLower()}";
             var result = GetResultFromApi<AoVisiblePropertyGroups>(groupApiUrl);
-			WriteToDiagnosticLog($"ManageProductAssetOptimization.GetAssignablePropertyGroups-Received {result.Groups.Count} groups for existing user.");
-
 			AoAssignableDivisionGroups response = new AoAssignableDivisionGroups();
 			response.Groups = new List<AssignableGroup>();
 			var finalResponse = new List<AoAssignableDivisionGroups>();
 
-            foreach (var grp in result.Groups)
+			if (result.Groups != null)
 			{
-				response.Groups.Add(new AssignableGroup() { PropertyGroupId = grp.GroupId, GroupName = grp.GroupName, Products = new List<DivisionGroupProduct>() { (new DivisionGroupProduct() { Product = productName }) } });
+                WriteToDiagnosticLog($"ManageProductAssetOptimization.GetAssignablePropertyGroups-Received {result.Groups.Count} groups for existing user.");
+                foreach (var grp in result.Groups)
+                {
+                    response.Groups.Add(new AssignableGroup() { PropertyGroupId = grp.GroupId, GroupName = grp.GroupName, Products = new List<DivisionGroupProduct>() { (new DivisionGroupProduct() { Product = productName }) } });
+                }
             }
+            
 			finalResponse.Add(response);
             return finalResponse;
 		}
