@@ -564,9 +564,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Helper
 
             foreach (object item in propertiesCollection)
             {
-                if (((ProductProperty)item).IsAssigned.Value)
+                var productPropertyType = item.GetType();
+                if (productPropertyType == typeof(ProductProperty))
                 {
-                    PropertyList.Add(((ProductProperty)item).ID);
+                    if (((ProductProperty)item).IsAssigned.Value)
+                    {
+                        PropertyList.Add(((ProductProperty)item).ID);
+                    }
+                }
+                else if (productPropertyType == typeof(ACProperty))
+                {
+                    if (((ACProperty)item).IsAssigned)
+                    {
+                        PropertyList.Add(((ACProperty)item).Id);
+                    }
                 }
             }
 

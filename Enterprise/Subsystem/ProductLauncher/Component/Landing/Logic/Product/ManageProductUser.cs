@@ -197,6 +197,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         {
                             if (data.UsePrimaryProperties == true)
                             {
+                                if (data.ProductPrimaryProperties == null || data.ProductPrimaryProperties.Count == 0)
+                                {
+                                    data.IsAssigned = false;
+                                }
                                 string jsonSecuritySettings = JsonConvert.SerializeObject(data.ProductPrimaryProperties);
                                 _productRepository.SavePersonaProductProperties(assignUserPersonaId, data.ProductId, jsonSecuritySettings);
                             }
@@ -1012,6 +1016,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                                 data.ProductPrimaryProperties = GetSelectedProperties(propertyList, productType);
                                 List<string> aoPropList = data.ProductPrimaryProperties?.Select(p => p.ProductPropertyId).ToList<string>();
                                 data.SelectedPortfolioValues = aoPropList.Select(int.Parse).ToList();
+                                if (data.ProductPrimaryProperties == null || data.ProductPrimaryProperties.Count == 0)
+                                {
+                                    data.IsAssigned = false;
+                                }
                             }
                         }
                     }
