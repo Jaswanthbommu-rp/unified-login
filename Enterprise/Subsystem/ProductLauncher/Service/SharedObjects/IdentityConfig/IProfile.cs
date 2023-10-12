@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using System.Collections.Generic;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig
 {
@@ -32,5 +33,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 		/// Impersonate Profile Edit
 		/// </summary>       
         bool IsImpersonated { get; set; }
+
+        ExternalUserRelationship ExternalUserRelationship { get; set; }
     }
 }

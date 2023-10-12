@@ -16,6 +16,8 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.ThirdParty;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -28,13 +30,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         IProfileDetail profileDetail = new ProfileDetail();
         IProfile profile = new Profile();
         IRepositoryResponse repositoryResponse = new RepositoryResponse();
-		#endregion
+        #endregion
 
-		#region Constructor
-		/// <summary>
-		/// Default constructor
-		/// </summary>
-		public ProfileController() : base() { }
+        #region Constructor
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        public ProfileController() : base() { }
         #endregion
 
         #region Public Methods
@@ -154,10 +156,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 IManageUserLogin userLoginLogic = new ManageUserLogin();
 				var userLogin = userLoginLogic.GetUserLogin(realPageId, _orgPartyId); // keep for now, used by ui, need to investigate how
                 userLogin.LoginNameType = EmailFormatValidation.IsValidEmail(userLogin.LoginName) ? "email" : "";
-
                 profile.userLogin = userLogin;
+                if (FeatureFlag.GetUserCompanyAssociationFeatureFlag())
+                {
+                    var userRepository = new UserRepository(_userClaims);
+                    IManageUserLoginPersona manageUserLoginPersona = new ManageUserLoginPersona(_userClaims);
+                    IList<UserLoginPersona> userLoginPersonaList = manageUserLoginPersona.ListUserLoginPersona(userLoginPersonaId: null, userLoginId: userLogin.UserId, organizationPartyId: _userClaims.OrganizationPartyId);
 
-				if (profile != null)
+                    var data = userRepository.GetExternalUserRelationship(userLoginPersonaList[0].UserLoginPersonaId);
+
+                    profile.ExternalUserRelationship = data == null ? new ExternalUserRelationship()
+                    {
+                        UserLoginPersonaId = userLoginPersonaList[0].UserLoginPersonaId
+                    } : data;
+                }
+
+                if (profile != null)
 				{
 					output.obj = profile;
 					output.Status = errorStatus;

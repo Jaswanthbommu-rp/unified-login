@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using System.Collections.Generic;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig
@@ -37,5 +38,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 		/// </summary>
         [JsonProperty(PropertyName = "IsImpersonated")]
         public bool IsImpersonated { get; set; } = false;
+
+        /// <summary>
+        /// ExternalUserRelationship
+        /// </summary>
+       public ExternalUserRelationship ExternalUserRelationship { get; set; }
     }
 }
