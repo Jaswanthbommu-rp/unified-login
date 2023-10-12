@@ -79,7 +79,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             productUserName = (bUserEnteredUserName == true) ? userName : _loginName;
 
 			//Get the Product Internal Setting for Product Learning Portal
-			IList<ProductInternalSetting> productInternalSettingList = productLogic.GetProductInternalSettings(productId);
+			List<ProductInternalSetting> productInternalSettingList = productLogic.GetProductInternalSettings(productId);
             if (productInternalSettingList.Count == 0)
             {
                 output.obj = productLearningPortal;

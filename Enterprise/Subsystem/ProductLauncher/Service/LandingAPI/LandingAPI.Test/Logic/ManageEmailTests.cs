@@ -185,7 +185,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				transId = "12345"
 			};
 
-			IList<ProductInternalSetting> productInternalSettingList = new List<ProductInternalSetting>()
+			List<ProductInternalSetting> productInternalSettingList = new List<ProductInternalSetting>()
 			{
 				new ProductInternalSetting()
 				{
@@ -242,7 +242,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				transId = "12345"
 			};
 
-			IList<ProductInternalSetting> productInternalSettingList = new List<ProductInternalSetting>();
+			List<ProductInternalSetting> productInternalSettingList = new List<ProductInternalSetting>();
 			productInternalSettingList = null;
 
 			_mockProductInternalSettingRepository
@@ -283,7 +283,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				transId = "12345"
 			};
 
-			IList<ProductInternalSetting> productInternalSettingList = new List<ProductInternalSetting>();
+			var productInternalSettingList = new List<ProductInternalSetting>();
 
 			_mockProductInternalSettingRepository
 				.Setup(m => m.GetProductInternalSettings(It.IsAny<int>()))

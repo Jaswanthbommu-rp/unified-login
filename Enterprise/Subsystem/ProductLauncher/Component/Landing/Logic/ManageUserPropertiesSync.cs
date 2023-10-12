@@ -6,6 +6,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductInt
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
@@ -287,19 +288,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return propertiesStagingData;
         }
 
-        private IList<ProductInternalSetting> GetProductInternalSettingList()
+        private List<ProductInternalSetting> GetProductInternalSettingList()
         {
-            IList<ProductInternalSetting> productInternalSettingList;
-            productInternalSettingList = _manageSettingCache["productInternalSetting_" + (int)ProductEnum.UnifiedPlatform] as List<ProductInternalSetting>;
-            if (productInternalSettingList == null)
-            {
-                productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
-                CacheItemPolicy policy = new CacheItemPolicy();
-                policy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(CacheTimeSeconds);
-                _manageSettingCache.Set("productInternalSetting_" + (int)ProductEnum.UnifiedPlatform, productInternalSettingList, policy);
-            }
-
-            return productInternalSettingList;
+            var rpcache = new RPObjectCache();
+            var cacheKey = $"productInternalSetting_{(int)ProductEnum.UnifiedPlatform}";
+            return rpcache.GetFromCache(cacheKey, 120, () => _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform));
         }
 
         /// <summary>

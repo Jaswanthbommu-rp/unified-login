@@ -1383,10 +1383,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         private bool IsProductEnabledForUsePrimaryProperty(int productId)
         {
-            ProductInternalSetting productInternalSetting = new ProductInternalSetting();
-            IProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository();
-            IList<ProductInternalSetting> productInternalSettingList = productInternalSettingRepository.GetProductInternalSettings(productId);
-            productInternalSetting = productInternalSettingList.FirstOrDefault(item => item.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase));
+            var productInternalSettingRepository = new ProductInternalSettingRepository();
+            var productInternalSettingList = productInternalSettingRepository.GetProductInternalSettings(productId);
+            var productInternalSetting = productInternalSettingList.FirstOrDefault(item => item.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase));
 
             if (productInternalSetting != null)
             {

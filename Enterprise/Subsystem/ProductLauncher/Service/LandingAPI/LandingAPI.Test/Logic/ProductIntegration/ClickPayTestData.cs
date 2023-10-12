@@ -27,7 +27,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.ProductI
 			UpdateInputJson = "{\"IsAssigned\":true,\"CompanyId\":0,\"OrganizationRoleList\":[{\"OrganizationId\":\"98eb8a26-c821-4601-8598-629b1caab702\",\"RoleId\":\"00000000-0000-0000-0000-000000000300\"},{\"OrganizationId\":\"59e183c4-1413-4674-8ba6-e7ed3d62b3b9\",\"RoleId\":\"00000000-0000-0000-0000-000000000400\"}]} ";
 		}
 
-		public static IList<ProductInternalSetting> Get_DEV_CPAY_ProductSettings()
+		public static List<ProductInternalSetting> Get_DEV_CPAY_ProductSettings()
 		{
 			return new List<ProductInternalSetting>
 				{

@@ -20,9 +20,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
     /// UserLogin xUnit tests
     /// </summary>
     [ExcludeFromCodeCoverage]
-	public class ManageUserLoginTests
+	public class ManageUserLoginTests : TestBase
 	{
-        private Mock<IRepository> _mockRepository = new Mock<IRepository>();
         private Mock<HttpMessageHandler> _mockHttpMessageHandler;
 
         DefaultUserClaim userClaims = new DefaultUserClaim()
@@ -184,16 +183,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             _linkToIdentityProviderResponse = new RepositoryResponse() {Id = 1234, ErrorMessage = ""};
 
-            _mockRepository.Setup(m => m.GetMany<UserOrganization> (StoredProcNameConstants.SP_ListOrganizationByLoginName, It.IsAny<object>()))
+            mockRepository.Setup(m => m.GetMany<UserOrganization> (StoredProcNameConstants.SP_ListOrganizationByLoginName, It.IsAny<object>()))
                 .Returns(_userOrganizationList);
 
-            _mockRepository.Setup(m => m.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, It.IsAny<object>()))
+            mockRepository.Setup(m => m.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, It.IsAny<object>()))
                 .Returns(_userLoginOnly);
 
-            _mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkIdentityProviderToUserLogin, It.IsAny<object>()))
+            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkIdentityProviderToUserLogin, It.IsAny<object>()))
                 .Returns(_linkToIdentityProviderResponse);
 
-            _mockRepository.Setup(m => m.GetOne<UserLogin>(StoredProcNameConstants.SP_GetUserLogin, It.IsAny<object>()))
+            mockRepository.Setup(m => m.GetOne<UserLogin>(StoredProcNameConstants.SP_GetUserLogin, It.IsAny<object>()))
                 .Returns(_userLogin);
 
             _mockHttpMessageHandler = new Mock<HttpMessageHandler>();
@@ -204,7 +203,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		public void CreateUserLogin_InvalidrealPageId_ExceptionThrown()
 		{
 			//Arrange
-			IManageUserLogin manageUserLogin = new ManageUserLogin(_mockRepository.Object, userClaims, _mockHttpMessageHandler.Object);
+			IManageUserLogin manageUserLogin = new ManageUserLogin(mockRepository.Object, userClaims, _mockHttpMessageHandler.Object);
 			Guid realPageId = new Guid();
 
 			//Act
@@ -234,11 +233,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 Password = "somepassword"
 			};
 			Guid realPageId = new Guid("13E71DE5-BAFA-469D-9F7A-E12DB3961BA9");
-            _mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateUserLogin, It.IsAny<object>()))
+            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateUserLogin, It.IsAny<object>()))
                 .Returns(new RepositoryResponse { Id = 1, ErrorMessage = "", RealPageId = Guid.Empty });
             
             //Act
-            IManageUserLogin manageUserLogin = new ManageUserLogin(_mockRepository.Object, userClaims, _mockHttpMessageHandler.Object);
+            IManageUserLogin manageUserLogin = new ManageUserLogin(mockRepository.Object, userClaims, _mockHttpMessageHandler.Object);
             IRepositoryResponse repositoryResponse = manageUserLogin.CreateUserLogin(realPageId, userLogin);
 
 			//Assert
@@ -251,7 +250,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		public void GetUserLogin_InvalidrealPageId_ExceptionThrown()
 		{
 			//Arrange
-			IManageUserLogin manageUserLogin = new ManageUserLogin(_mockRepository.Object, userClaims, _mockHttpMessageHandler.Object);
+			IManageUserLogin manageUserLogin = new ManageUserLogin(mockRepository.Object, userClaims, _mockHttpMessageHandler.Object);
 			Guid realPageId = new Guid();
 
 			//Act
@@ -268,7 +267,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             //Act
             int NumberOfProperties = type.GetProperties().Length;
-            IManageUserLogin manageUserLogin = new ManageUserLogin(_mockRepository.Object, userClaims, _mockHttpMessageHandler.Object);
+            IManageUserLogin manageUserLogin = new ManageUserLogin(mockRepository.Object, userClaims, _mockHttpMessageHandler.Object);
             var userLogin = manageUserLogin.GetUserLoginOnly(_userRealPageId);
 
 			//Assert
@@ -289,7 +288,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		public void CreateUserLogin_InvalidUserLoginOnject_ExceptionThrown()
 		{
 			//Arrange
-			IManageUserLogin manageUserLogin = new ManageUserLogin(_mockRepository.Object, userClaims, _mockHttpMessageHandler.Object);
+			IManageUserLogin manageUserLogin = new ManageUserLogin(mockRepository.Object, userClaims, _mockHttpMessageHandler.Object);
 			Guid realPageId = new Guid("13E71DE5-BAFA-469D-9F7A-E12DB3961BA9");
 
 			//Act
@@ -305,7 +304,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		public void UpdateUserLogin_InvalidRealPageId_ExceptionThrown()
 		{
 			//Arrange
-			IManageUserLogin manageUserLogin = new ManageUserLogin(_mockRepository.Object, userClaims, _mockHttpMessageHandler.Object);
+			IManageUserLogin manageUserLogin = new ManageUserLogin(mockRepository.Object, userClaims, _mockHttpMessageHandler.Object);
 			Guid realPageId = new Guid();
 
 			//Act
@@ -325,7 +324,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		public void UpdateUserLogin_InvalidUserLoginObject_ExceptionThrown()
 		{
 			//Arrange
-			IManageUserLogin manageUserLogin = new ManageUserLogin(_mockRepository.Object, userClaims, _mockHttpMessageHandler.Object);
+			IManageUserLogin manageUserLogin = new ManageUserLogin(mockRepository.Object, userClaims, _mockHttpMessageHandler.Object);
 			Guid realPageId = new Guid("13E71DE5-BAFA-469D-9F7A-E12DB3961BA9");
 
 			//Act
@@ -377,43 +376,43 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             IList<Activity> activityList = new List<Activity>() {new Activity() {ActivityCode = "1", Description = "Test Activity", ActivityTypeId = (int)ActivityType.NewUserRegistration, ActivityTokenExpirationMinutes = 60}};
 
-            _mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserLogin, It.IsAny<object>()))
+            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserLogin, It.IsAny<object>()))
                 .Returns(new RepositoryResponse { Id = 1, ErrorMessage = "", RealPageId = Guid.Empty });
 
-            _mockRepository.Setup(m => m.GetOne<string>(StoredProcNameConstants.SP_GetIdentityProviderTypeByLoginName, It.IsAny<object>()))
+            mockRepository.Setup(m => m.GetOne<string>(StoredProcNameConstants.SP_GetIdentityProviderTypeByLoginName, It.IsAny<object>()))
                 .Returns("local");
 
-            _mockRepository.Setup(m => m.GetMany<Activity>(StoredProcNameConstants.SP_ListActivity, It.IsAny<object>()))
+            mockRepository.Setup(m => m.GetMany<Activity>(StoredProcNameConstants.SP_ListActivity, It.IsAny<object>()))
                 .Returns(activityList);
 
-            _mockRepository.Setup(m => m.GetMany<OrganizationStatus>(StoredProcNameConstants.SP_ListOrganizationStatusByUserId, It.IsAny<object>()))
+            mockRepository.Setup(m => m.GetMany<OrganizationStatus>(StoredProcNameConstants.SP_ListOrganizationStatusByUserId, It.IsAny<object>()))
                 .Returns(_orgStatusList);
 
-            _mockRepository.Setup(m => m.GetMany<Persona>(StoredProcNameConstants.SP_ListPersona, It.IsAny<object>()))
+            mockRepository.Setup(m => m.GetMany<Persona>(StoredProcNameConstants.SP_ListPersona, It.IsAny<object>()))
                 .Returns(_personaList);
 
-            _mockRepository.Setup(m => m.GetOne<Persona>(StoredProcNameConstants.SP_GetPersona, It.Is<object>(data => TestSqlParameter(data, "{ personaId = "+ _superUserPersona.PersonaId+" }"))))
+            mockRepository.Setup(m => m.GetOne<Persona>(StoredProcNameConstants.SP_GetPersona, It.Is<object>(data => TestSqlParameter(data, "{ personaId = "+ _superUserPersona.PersonaId+" }"))))
                 .Returns(_superUserPersona);
 
-            _mockRepository.Setup(m => m.GetOne<Persona>(StoredProcNameConstants.SP_GetPersona, It.Is<object>(data => TestSqlParameter(data, "{ personaId = " + _regularUserPersona.PersonaId + " }"))))
+            mockRepository.Setup(m => m.GetOne<Persona>(StoredProcNameConstants.SP_GetPersona, It.Is<object>(data => TestSqlParameter(data, "{ personaId = " + _regularUserPersona.PersonaId + " }"))))
                 .Returns(_regularUserPersona);
 
-            _mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateProductBatch, It.IsAny<object>()))
+            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateProductBatch, It.IsAny<object>()))
                 .Returns(new RepositoryResponse() {Id = 322});
 
-            _mockRepository.Setup(m => m.GetOne<Person>(StoredProcNameConstants.SP_GetPerson, It.IsAny<object>()))
+            mockRepository.Setup(m => m.GetOne<Person>(StoredProcNameConstants.SP_GetPerson, It.IsAny<object>()))
                 .Returns(_person);
 
-			_mockRepository
+			mockRepository
 				.Setup(m => m.GetMany<Organization>(StoredProcNameConstants.SP_GetOrganization, It.IsAny<object>()))
 				.Returns(organizationList);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<OrganizationType>(StoredProcNameConstants.SP_ListOrganizationType, null))
                 .Returns(organizationTypeList);
 
             //Act
-            IManageUserLogin manageUserLogin = new ManageUserLogin(_mockRepository.Object, userClaims, _mockHttpMessageHandler.Object);
+            IManageUserLogin manageUserLogin = new ManageUserLogin(mockRepository.Object, userClaims, _mockHttpMessageHandler.Object);
             IRepositoryResponse repositoryResponse = manageUserLogin.UpdateUserLogin(realPageId, userLogin);
 
 			//Assert
@@ -431,7 +430,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		public void IsLoginNameExists_InvalidOrganizationRealPageId_ExceptionThrown()
 		{
 			//Arrange
-			IManageUserLogin userLoginLogic = new ManageUserLogin(_mockRepository.Object, userClaims, _mockHttpMessageHandler.Object);
+			IManageUserLogin userLoginLogic = new ManageUserLogin(mockRepository.Object, userClaims, _mockHttpMessageHandler.Object);
 
 			//Act
 			string loginName = "james@test.com";
@@ -446,7 +445,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		public void IsLoginNameExists_InvalidLoginName_ExceptionThrown()
 		{
 			//Arrange
-			IManageUserLogin userLoginLogic = new ManageUserLogin(_mockRepository.Object, userClaims, _mockHttpMessageHandler.Object);
+			IManageUserLogin userLoginLogic = new ManageUserLogin(mockRepository.Object, userClaims, _mockHttpMessageHandler.Object);
 
 			//Act
 			string loginName = string.Empty;
@@ -488,24 +487,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             Person p = new Person() {FirstName = "First", LastName = "Last", PartyId = 1234, RealPageId = _userRealPageId};
 
             //Arrange
-            _mockRepository.Setup(m => m.GetOne<Person>(StoredProcNameConstants.SP_GetPerson, It.IsAny<object>()))
+            mockRepository.Setup(m => m.GetOne<Person>(StoredProcNameConstants.SP_GetPerson, It.IsAny<object>()))
                 .Returns(p);
 
-            _mockRepository.Setup(m => m.GetMany<RoleType>(StoredProcNameConstants.SP_ListRoleType, It.IsAny<object>()))
+            mockRepository.Setup(m => m.GetMany<RoleType>(StoredProcNameConstants.SP_ListRoleType, It.IsAny<object>()))
                 .Returns(roleTypes);
 
-            _mockRepository
+            mockRepository
                .Setup(m => m.GetMany<OrganizationType>(StoredProcNameConstants.SP_ListOrganizationType, null))
                .Returns(organizationTypeList);
-            _mockRepository
+            mockRepository
                .Setup(m => m.GetMany<OrganizationDomain>(StoredProcNameConstants.SP_ListOrganizationDomain, null))
                .Returns(organizationDomainList);
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization, It.IsAny<object>()))
                 .Returns(organizationList);
 
             //Act
-            IManageUserLogin manageUserLogin = new ManageUserLogin(_mockRepository.Object, userClaims, _mockHttpMessageHandler.Object);
+            IManageUserLogin manageUserLogin = new ManageUserLogin(mockRepository.Object, userClaims, _mockHttpMessageHandler.Object);
             UserOrganizationExists userOrganizationExists = manageUserLogin.IsLoginNameExists(_loginName, _organizationRealPageId, _userRealPageId);
 
 			//Assert
@@ -530,7 +529,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 new RoleType() {PartyRoleTypeId = 404, Name = "User(No Email)", ParentPartyRoleTypeId = 400},
             };
 
-            _mockRepository.Setup(m => m.GetMany<RoleType>(StoredProcNameConstants.SP_ListRoleType, It.IsAny<object>()))
+            mockRepository.Setup(m => m.GetMany<RoleType>(StoredProcNameConstants.SP_ListRoleType, It.IsAny<object>()))
                 .Returns(roleTypes);
 
             userOrganizationExists = manageUserLogin.IsLoginNameExists(_loginName, _organizationRealPageId, _userRealPageId);
@@ -549,7 +548,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         public void LinkIdentityProviderToUserLogin_ValidAndErrors()
         {
             //Act
-            IManageUserLogin manageUserLogin = new ManageUserLogin(_mockRepository.Object, userClaims, _mockHttpMessageHandler.Object);
+            IManageUserLogin manageUserLogin = new ManageUserLogin(mockRepository.Object, userClaims, _mockHttpMessageHandler.Object);
             var response = manageUserLogin.LinkIdentityProviderToUserLogin(24, 25, 2);
 
             //Assert

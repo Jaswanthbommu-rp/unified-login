@@ -4,22 +4,16 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Factory;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model.ClickPay;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.EnterpriseRole;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSite;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ResidentPortal;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -229,8 +223,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         public ListResponse GetProductProperties(long editorPersonaId, long userPersonaId, int productId, DefaultUserClaim userClaim)
         {
-            ManageProductPanel manageProductPanel = new ManageProductPanel(_userClaims);
-            var productResult = manageProductPanel.GetProductProperties(editorPersonaId, userPersonaId, productId, null);
+            var productResult = _manageProductPanel.GetProductProperties(editorPersonaId, userPersonaId, productId, null);
             return productResult;
         }
 

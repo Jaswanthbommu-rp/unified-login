@@ -28,12 +28,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 	/// Product xUnit tests
 	/// </summary>
 	[ExcludeFromCodeCoverage]
-	public class ProductTests
+	public class ProductTests : TestBase
 	{
         private readonly ITestOutputHelper _output;
         private static Guid _realPageId = new Guid("C802694D-5553-4527-8616-3C0F434AE62D");
-		private readonly IList<ProductInternalSetting> _product5InternalSettings;
-		private readonly Mock<IRepository> _mockRepository;
+		private readonly List<ProductInternalSetting> _product5InternalSettings;
 		private readonly Mock<HttpMessageHandler> _mockHttpMessageHandler;
 		private readonly Mock<HttpMessageHandler> _mockHttpMessageHandlerError;
 
@@ -57,9 +56,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			_mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 			_mockHttpMessageHandlerError = new Mock<HttpMessageHandler>();
 
-			_mockRepository = new Mock<IRepository>();
 			// use product id not normally used
-            _mockRepository
+            mockRepository
 				.Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, 
                     It.Is<object>(d => TestProductIdTrue(d, 5))))
 				.Returns(_product5InternalSettings);
@@ -91,7 +89,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 		}
 
 		[Fact]
-		public void GetProductFamilies_MockRepository_ReturnValidRepositoryResponseObject()
+		public void GetProductFamiliesmockRepository_ReturnValidRepositoryResponseObject()
 		{
 			//Arrange
 			Guid userRealPageId = Guid.Empty;
@@ -159,8 +157,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				new ProductInternalSetting() {Name = "BooksUseUPFMId", Value = "1"},
 				new ProductInternalSetting() {Name = "ShowInUserDetails", Value = "1"},
 			};
-
-			var mockRepository = new Mock<IRepository>();
 
 			mockRepository
 				.Setup(m => m.GetMany<ProductFamily>(StoredProcNameConstants.SP_ListProductFamilies, null))
@@ -293,7 +289,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
 			new RPObjectCache().BustCache();
 
-			ProductController controller = new ProductController(userClaim, _mockRepository.Object, null, _mockHttpMessageHandler.Object)
+			ProductController controller = new ProductController(userClaim, mockRepository.Object, null, _mockHttpMessageHandler.Object)
 			{
 				Request = new HttpRequestMessage(),
 				Configuration = new HttpConfiguration()
@@ -363,7 +359,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				}
 			};
 
-			var mockRepository = new Mock<IRepository>();
 			mockRepository
 				.Setup(m => m.GetMany<ProductSettingType>(StoredProcNameConstants.SP_ListProductSettingType, null))
 				.Returns(() => productSettingTypes);
@@ -418,7 +413,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				}
 			};
 
-			var mockRepository = new Mock<IRepository>();
 			mockRepository
 				.Setup(m => m.GetMany<ProductSettingType>(StoredProcNameConstants.SP_ListProductSettingType, null))
 				.Returns(() => productSettingTypes);
@@ -447,7 +441,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
 			new RPObjectCache().BustCache();
 
-			ProductController controller = new ProductController(userClaim, _mockRepository.Object, mockProductRepository.Object, _mockHttpMessageHandler.Object)
+			ProductController controller = new ProductController(userClaim, mockRepository.Object, mockProductRepository.Object, _mockHttpMessageHandler.Object)
 			{
 				Request = new HttpRequestMessage(),
 				Configuration = new HttpConfiguration()
@@ -470,7 +464,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			DefaultUserClaim userClaim = new DefaultUserClaim() { PersonaId = 1234, OrganizationRealPageGuid = new Guid(), UserRealPageGuid = new Guid() };
 			new RPObjectCache().BustCache();
 
-			ProductController controller = new ProductController(userClaim, _mockRepository.Object, mockProductRepository.Object, _mockHttpMessageHandlerError.Object)
+			ProductController controller = new ProductController(userClaim, mockRepository.Object, mockProductRepository.Object, _mockHttpMessageHandlerError.Object)
 			{
 				Request = new HttpRequestMessage(),
 				Configuration = new HttpConfiguration()

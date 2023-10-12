@@ -13,6 +13,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base
     /// </summary>
     public class RPObjectCache
     {
+        private static ObjectCache cache = MemoryCache.Default;
+
 
         /// <summary>
         /// 
@@ -24,7 +26,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base
         /// <returns></returns>
         public T GetFromCache<T>(string key, int expirationseconds, Func<T> valueFactory) where T : class
         {
-            ObjectCache cache = MemoryCache.Default;
             var newValue = new Lazy<T>(valueFactory);
             CacheItemPolicy policy = new CacheItemPolicy { AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(expirationseconds) };
             //return newValue.Value; // enable to remove caching for testing

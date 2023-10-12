@@ -39,15 +39,14 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 {
     [ExcludeFromCodeCoverage]
-    public class OrganizationTests
+    public class OrganizationTests : TestBase
     {
         #region Private Variables
         private readonly ITestOutputHelper _output;
         public static readonly Guid EmployeeCompanyRealPageId = new Guid("0D018E46-C20E-477D-ADED-4E5A35FB8F99");
 
-        Mock<IRepository> _mockRepository = new Mock<IRepository>();
         Mock<IUnitOfWork> _mockUnitofWork = new Mock<IUnitOfWork>();
-        Mock<IRepositoryResponse> _mockRepositoryResponse = new Mock<IRepositoryResponse>();
+        Mock<IRepositoryResponse> mockRepositoryResponse = new Mock<IRepositoryResponse>();
         Mock<HttpMessageHandler> _mockHttpMessageHandler = new Mock<HttpMessageHandler>();
         Mock<ITokenHelper> _mockTokenHelper = new Mock<ITokenHelper>();
         Mock<IManageUnifiedSettings> _manageUnifiedSettings = new Mock<IManageUnifiedSettings>();
@@ -269,55 +268,55 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             HttpResponseMessage booksCompanyInstancesResponse = new HttpResponseMessage(HttpStatusCode.OK);
             booksCompanyInstancesResponse.Content = new StringContent(booksCompanyInstancesJson);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization,
                     It.Is<object>(
                         d => TestIsRealPageIdNull(d))))
                 .Returns(nullOrganization);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization,
                     It.Is<object>(
                         d => TestIsRealPageId(d, _RealPageId))))
                 .Returns(_organizationList[0]);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<Organization>(StoredProcNameConstants.SP_GetOrganization,
                     It.Is<object>(
                         d => TestIsRealPageId(d, null))))
                 .Returns(_organizationList);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization,
                     It.Is<object>(
                         d => TestIsBooksCompanyMasterId(d, _BooksCompanyMasterId))))
                 .Returns(_organizationList[0]);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization,
                     It.Is<object>(
                         d => TestIsBooksMasterId(d, _BooksMasterId))))
                 .Returns(_organizationList[0]);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.UnitOfWork)
                 .Returns(_mockUnitofWork.Object);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
                     It.IsAny<object>()))
                 .Returns(_gbProductMap);
 
             // THIS RESULT IS CACHED SO WE CANT REALLY TEST IT HAVING MULTIPLE RESULTS!
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<OrganizationType>(StoredProcNameConstants.SP_ListOrganizationType, null))
                 .Returns(organizationTypeList);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<OrganizationDomain>(StoredProcNameConstants.SP_ListOrganizationDomain, null))
                 .Returns(organizationDomainList);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
                 .Returns(_productInternalSettings);
 
@@ -442,8 +441,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             };
 
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
+                mockRepository.Object
+                , mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
             ) { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
@@ -486,8 +485,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             };
 
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
+                mockRepository.Object
+                , mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
             ) { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
@@ -508,7 +507,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void InsertOrganization_InvalidAdminUser_BadRequest()
         {
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
                     It.IsAny<object>()))
                 .Returns(_gbProductMap);
@@ -528,8 +527,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             };
 
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
+                mockRepository.Object
+                , mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
             ) { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
@@ -551,7 +550,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact(Skip = "Scenario not in use")]
         public void InsertOrganization_AdminExits_BadRequest()
         {
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
                     It.IsAny<object>()))
                 .Returns(_gbProductMap);
@@ -565,13 +564,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 PasswordHash = ""
             };
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, It.IsAny<object>()))
                 .Returns(userLoginOnly);
 
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
+                mockRepository.Object
+                , mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
             ) { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
@@ -612,7 +611,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void InsertOrganization_ErrorInsertOrganization_BadRequest()
         {
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
                     It.IsAny<object>()))
                 .Returns(_gbProductMap);
@@ -628,17 +627,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 RealPageId = Guid.Empty
             };
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, It.IsAny<object>()))
                 .Returns(userLoginOnly);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_SetupOrganization, It.IsAny<object>()))
                 .Returns(repositoryResponse);
 
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
+                mockRepository.Object
+                , mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
             ) { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
@@ -735,8 +734,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 new ProductInternalSetting() { Name = "SettingsApiEndPoint", Value = "http://localhost" }
             };
 
-            var mockRepository = new Mock<IRepository>();
-
             Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 
             mockRepository
@@ -795,7 +792,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/v2/provisioning/company", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
             OrganizationController organizationController = new OrganizationController(
                 mockRepository.Object
-                , _mockRepositoryResponse.Object
+                , mockRepositoryResponse.Object
                 , mockHttpMessageHandler.Object
                 , _defaultUserClaim
             ) { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
@@ -876,19 +873,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 RealPageId = _RealPageId
             };
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateOrganization, It.IsAny<object>()))
                 .Returns(repositoryResponse);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_CreateUsePrimaryPropertyMasterConfigurationSetting, It.IsAny<object>()))
                 .Returns(repositoryResponse);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.Execute<string>(StoredProcNameConstants.SP_GetOrganizationSettingValue, null))
                 .Returns("0");
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<CompanySetup>(StoredProcNameConstants.SP_ListCompanySetup,
                     It.IsAny<object>()))
                 .Returns(companySetupList);
@@ -896,8 +893,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             new RPObjectCache().BustCache();
 
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
+                mockRepository.Object
+                , mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
             ) { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
@@ -983,18 +980,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 RealPageId = _RealPageId
             };
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateOrganization, It.IsAny<object>()))
                 .Returns(repositoryResponse);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<CompanySetup>(StoredProcNameConstants.SP_ListCompanySetup,
                     It.IsAny<object>()))
                 .Returns(companySetupList);
 
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
+                mockRepository.Object
+                , mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
             ) { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
@@ -1175,8 +1172,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             //Arrange
 
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
+                mockRepository.Object
+                , mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
             )
@@ -1221,15 +1218,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 PrimaryOrganization = true
             };
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization,
                     It.Is<object>(
                         d => TestIsRealPageId(d, realPageId))))
                 .Returns(organization);
 
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
+                mockRepository.Object
+                , mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
             ) { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
@@ -1279,14 +1276,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 }
             };
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<Organization>(StoredProcNameConstants.SP_GetOrganization,
                     null))
                 .Returns(organizationList);
 
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
+                mockRepository.Object
+                , mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
             ) { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
@@ -1365,13 +1362,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 }
             };
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<CustomField>(StoredProcNameConstants.SP_GetFieldsByPartyId, It.IsAny<object>()))
                 .Returns(customFieldList);
 
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
+                mockRepository.Object
+                , mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
             ) { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
@@ -1442,8 +1439,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             List<OrganizationType> organizationTypeList = null;
 
-            Mock<IRepository> mockRepository = new Mock<IRepository>();
-
             mockRepository
                 .Setup(m => m.GetMany<OrganizationType>(StoredProcNameConstants.SP_ListOrganizationType, null))
                 .Returns(organizationTypeList);
@@ -1460,7 +1455,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             OrganizationController organizationController = new OrganizationController(
                 mockRepository.Object
-                , _mockRepositoryResponse.Object
+                , mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
             ) { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
@@ -1484,8 +1479,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             Status<IErrorData> errorStatus = new Status<IErrorData>();
 
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
+                mockRepository.Object
+                , mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
             ) { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
@@ -1506,8 +1501,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         public void OrganizationProductTest()
         {
             OrganizationController organizationController = new OrganizationController(
-                    _mockRepository.Object
-                    , _mockRepositoryResponse.Object
+                    mockRepository.Object
+                    , mockRepositoryResponse.Object
                     , _mockHttpMessageHandler.Object
                     , _defaultUserClaim
                 )
@@ -1556,8 +1551,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             Guid realPageId = Guid.Empty;
 
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
+                mockRepository.Object
+                , mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
             ) { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
@@ -1676,33 +1671,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 new ProductInternalSetting() { Name = "BooksUseUPFMId", Value = "1" }
             };
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<Organization>(StoredProcNameConstants.SP_ListOrganizationByRealPageId, It.IsAny<object>()))
                 .Returns(organizationList);
 
-            IUserLoginRepository userLoginRepository = new UserLoginRepository(_mockRepository.Object);
+            IUserLoginRepository userLoginRepository = new UserLoginRepository(mockRepository.Object);
             Mock<HttpMessageHandler> mockMessageHandler = new Mock<HttpMessageHandler>();
-            ManageOrganization manageOrganization = new ManageOrganization(_mockRepository.Object, _defaultUserClaim, mockMessageHandler.Object);
+            ManageOrganization manageOrganization = new ManageOrganization(mockRepository.Object, _defaultUserClaim, mockMessageHandler.Object);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetOne<PartyRelationship>(StoredProcNameConstants.SP_GetPartyRelationshipByRealPageId, It.IsAny<object>()))
                 .Returns(partyRelationship);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<RelationshipType>(StoredProcNameConstants.SP_ListRelationshipType, It.IsAny<object>()))
                 .Returns(relationshipTypeList);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<RoleType>(StoredProcNameConstants.SP_ListRoleType, It.IsAny<object>()))
                 .Returns(roleTypeList);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
                 .Returns(productInternalSettings);
 
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
+                mockRepository.Object
+                , mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
             ) { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
@@ -1748,8 +1743,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         {
             //Arrange
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
+                mockRepository.Object
+                , mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
             )
@@ -1795,18 +1790,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 new ProductInternalSetting() { Name = "BooksUseTranslatev2", Value = "0" }
             };
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
                 .Returns(productInternalSettings);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<CompanySetup>(StoredProcNameConstants.SP_ListCompanySetup,
                     It.IsAny<object>()))
                 .Returns(companySetupList);
 
             OrganizationController organizationController = new OrganizationController(
-                    _mockRepository.Object
-                    , _mockRepositoryResponse.Object
+                    mockRepository.Object
+                    , mockRepositoryResponse.Object
                     , _mockHttpMessageHandler.Object
                     , _defaultUserClaim
                 )
@@ -1857,8 +1852,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         {
             //Arrange
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
+                mockRepository.Object
+                , mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
             )
@@ -1879,8 +1874,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         {
             //Arrange
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
+                mockRepository.Object
+                , mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
             )
@@ -1906,8 +1901,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         {
             //Arrange
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
+                mockRepository.Object
+                , mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
             )
@@ -1933,8 +1928,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         {
             //Arrange
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
+                mockRepository.Object
+                , mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
             )
@@ -2001,12 +1996,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 new ProductInternalSetting() { Name = "BooksUseTranslatev2", Value = "0" }
             };
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
                 .Returns(productInternalSettings);
 
             Mock<IRepository> _mockPropertyRepository = new Mock<IRepository>();
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<PropertySetup>(StoredProcNameConstants.SP_GetPropertyInstanceListByIdWithPaging,
                     It.IsAny<object>()))
                 .Returns(propertySetupList);
@@ -2016,8 +2011,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Returns(true);
 
             OrganizationController organizationController = new OrganizationController(
-                    _mockRepository.Object
-                    , _mockRepositoryResponse.Object
+                    mockRepository.Object
+                    , mockRepositoryResponse.Object
                     , _mockHttpMessageHandler.Object
                     , mockLdClient.Object
                     ,null
@@ -2145,12 +2140,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 new ProductInternalSetting() { Name = "BooksUseTranslatev2", Value = "0" }
             };
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
                 .Returns(productInternalSettings);
 
             Mock<IRepository> _mockPropertyRepository = new Mock<IRepository>();
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<PropertySetup>(StoredProcNameConstants.SP_GetPropertyInstanceListByIdWithPaging,
                     It.IsAny<object>()))
                 .Returns(propertySetupList);
@@ -2167,8 +2162,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Returns(aoEmptyResponse);
 
             OrganizationController organizationController = new OrganizationController(
-                    _mockRepository.Object
-                    , _mockRepositoryResponse.Object
+                    mockRepository.Object
+                    , mockRepositoryResponse.Object
                     , _mockHttpMessageHandler.Object
                     , mockLdClient.Object
                     , mockProductAssetOptimization.Object
@@ -2231,7 +2226,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             responsePropertyInstance.Content = new StringContent(jsonToSave);
             _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/companypropertyinstancemap?include=propertyInstance&filter[source]=UPFM&filter[companyinstance.companyInstanceSourceId]={_defaultUserClaim.OrganizationRealPageGuid}&fields[propertyInstance]=propertyInstanceSourceId,propertyName,domain,isActive&filter[propertyInstance.isActive]=true&page[size]=9999", responsePropertyInstance);
 
-            _mockRepository.Setup(m => m.GetMany<UPFMPropertyInstance>(StoredProcNameConstants.SP_GetPropertyInstanceListById,
+            mockRepository.Setup(m => m.GetMany<UPFMPropertyInstance>(StoredProcNameConstants.SP_GetPropertyInstanceListById,
                                 It.Is<object>(data => TestSqlParameter(data, "{ InstanceList = Dapper.TableValuedParameter }"))))
                             .Returns(upfmPropertyInstances);
 
@@ -2263,8 +2258,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             //Arrange
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
+                mockRepository.Object
+                , mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , invalidDefaultUserClaim
             )
@@ -2285,8 +2280,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         {
             //Arrange
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
+                mockRepository.Object
+                , mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
             )
@@ -2454,64 +2449,64 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 new UPFMPropertyInstance() { InstanceId = new Guid("a5192995-aaaa-bbbb-8df2-f30f1b8dc752"), Name = "test property 1" }
             };
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization,
                     It.Is<object>(
                         d => TestIsRealPageId(d, org.RealPageId))))
                 .Returns(org);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization,
                     It.Is<object>(
                         d => TestIsRealPageId(d, org2.RealPageId))))
                 .Returns(org2);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<dynamic>(StoredProcNameConstants.SP_ListOrganizations,
                     It.Is<object>(
                         d => TestIsRealPageId(d, org.RealPageId))))
                 .Returns(companyList);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<dynamic>(StoredProcNameConstants.SP_ListOrganizations,
                     It.Is<object>(
                         d => TestIsRealPageId(d, org2.RealPageId))))
                 .Returns(companyList2);
 
-            _mockRepository.Setup(m => m.GetOne<UserLogin>(StoredProcNameConstants.SP_GetUserLogin,
+            mockRepository.Setup(m => m.GetOne<UserLogin>(StoredProcNameConstants.SP_GetUserLogin,
                     It.Is<object>(
                         d => TestIsRealPageId(d, userLogin.RealPageId))))
                 .Returns(userLogin);
 
-            _mockRepository.Setup(m => m.GetOne<UserLogin>(StoredProcNameConstants.SP_GetUserLogin,
+            mockRepository.Setup(m => m.GetOne<UserLogin>(StoredProcNameConstants.SP_GetUserLogin,
                     It.Is<object>(
                         d => TestIsRealPageId(d, userLogin2.RealPageId))))
                 .Returns(userLogin2);
 
-            _mockRepository.Setup(m => m.GetOne<string>(StoredProcNameConstants.SP_GetIdentityProviderTypeByLoginName, It.IsAny<object>()))
+            mockRepository.Setup(m => m.GetOne<string>(StoredProcNameConstants.SP_GetIdentityProviderTypeByLoginName, It.IsAny<object>()))
                 .Returns("local");
 
-            _mockRepository.Setup(m => m.GetMany<OrganizationStatus>(StoredProcNameConstants.SP_ListOrganizationStatusByUserId,
+            mockRepository.Setup(m => m.GetMany<OrganizationStatus>(StoredProcNameConstants.SP_ListOrganizationStatusByUserId,
                     It.Is<object>(data => TestSqlParameter(data, "{ userId = " + userLogin.UserId + " }"))))
                 .Returns(orgStatusList);
 
-            _mockRepository.Setup(m => m.GetMany<OrganizationStatus>(StoredProcNameConstants.SP_ListOrganizationStatusByUserId,
+            mockRepository.Setup(m => m.GetMany<OrganizationStatus>(StoredProcNameConstants.SP_ListOrganizationStatusByUserId,
                     It.Is<object>(data => TestSqlParameter(data, "{ userId = " + userLogin2.UserId + " }"))))
                 .Returns(org2StatusList);
 
-            _mockRepository.Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
+            mockRepository.Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
                     It.Is<object>(data => TestSqlParameter(data, "{ ProductId = , ProductGUID = , Name = , BooksProductCode =  }"))))
                 .Returns(_gbProductMap);
 
-            _mockRepository.Setup(m => m.GetMany<UserOrganization>(StoredProcNameConstants.SP_ListOrganizationByLoginName,
+            mockRepository.Setup(m => m.GetMany<UserOrganization>(StoredProcNameConstants.SP_ListOrganizationByLoginName,
                     It.Is<object>(data => TestSqlParameterContains(data, userLogin.LoginName))))
                 .Returns(userOrganizationList);
 
-            _mockRepository.Setup(m => m.GetMany<UserOrganization>(StoredProcNameConstants.SP_ListOrganizationByLoginName,
+            mockRepository.Setup(m => m.GetMany<UserOrganization>(StoredProcNameConstants.SP_ListOrganizationByLoginName,
                     It.Is<object>(data => TestSqlParameterContains(data, userLogin2.LoginName))))
                 .Returns(userOrganizationList2);
 
-            _mockRepository.Setup(m => m.GetMany<UPFMPropertyInstance>(StoredProcNameConstants.SP_GetPropertyInstanceListById,
+            mockRepository.Setup(m => m.GetMany<UPFMPropertyInstance>(StoredProcNameConstants.SP_GetPropertyInstanceListById,
                     It.Is<object>(data => TestSqlParameter(data, "{ InstanceList = Dapper.TableValuedParameter }"))))
                 .Returns(upfmPropertyInstances);
 
@@ -2536,8 +2531,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             //Arrange
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
+                mockRepository.Object
+                , mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , mockManageProductOneSite.Object
                 , defaultUserClaim
@@ -2573,8 +2568,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             };
 
             organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
+                mockRepository.Object
+                , mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , mockManageProductOneSite.Object
                 , defaultUserClaim
@@ -2614,8 +2609,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             //Arrange
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
+                mockRepository.Object
+                , mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , invalidDefaultUserClaim
             )
@@ -2636,8 +2631,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         {
             //Arrange
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
+                mockRepository.Object
+                , mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
             )
@@ -2669,8 +2664,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         {
             //Arrange
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
+                mockRepository.Object
+                , mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
             )
@@ -2691,8 +2686,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         {
             //Arrange
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
+                mockRepository.Object
+                , mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
             )
@@ -2724,8 +2719,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         {
             //Arrange
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
+                mockRepository.Object
+                , mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
             )
@@ -2759,8 +2754,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         {
             //Arrange
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
+                mockRepository.Object
+                , mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
             )
@@ -2794,8 +2789,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         {
             //Arrange
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
+                mockRepository.Object
+                , mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
             )
@@ -2841,7 +2836,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 CustomerPropertyId = "1234",
                 Domain = "Primary"
             };
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreatePropertyInstance, It.IsAny<object>()))
                 .Returns(new RepositoryResponse { Id = 12345, RealPageId = propertyGuid, ErrorMessage = "" });
 
@@ -2855,7 +2850,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 new ProductInternalSetting() { Name = "UnifiedLoginServerClientSecret", Value = "abcdefgh" }
             };
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
                 .Returns(productInternalSettings);
 
@@ -2865,8 +2860,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             _mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/v2/provisioning/property", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
 
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
+                mockRepository.Object
+                , mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
             )
@@ -2891,8 +2886,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         {
             //Arrange
             OrganizationController organizationController = new OrganizationController(
-                    _mockRepository.Object
-                    , _mockRepositoryResponse.Object
+                    mockRepository.Object
+                    , mockRepositoryResponse.Object
                     , _mockHttpMessageHandler.Object
                     , _defaultUserClaim
                 )
@@ -2910,8 +2905,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         {
             //Arrange
             OrganizationController organizationController = new OrganizationController(
-                    _mockRepository.Object
-                    , _mockRepositoryResponse.Object
+                    mockRepository.Object
+                    , mockRepositoryResponse.Object
                     , _mockHttpMessageHandler.Object
                     , _defaultUserClaim
                 )
@@ -2929,8 +2924,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         {
             //Arrange
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
+                mockRepository.Object
+                , mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
             )
@@ -2977,8 +2972,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             //Arrange           
 
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
+                mockRepository.Object
+                , mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
             )
@@ -3009,7 +3004,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 new ProductInternalSetting() { Name = "UnifiedLoginServerClientSecret", Value = "abcdefgh" }
             };
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
                 .Returns(productInternalSettings);
             Guid propertyInstance = new Guid("a1ef0ac9-2f84-4288-b369-e59b1d6c13de");
@@ -3023,7 +3018,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             Mock<ManageBlueBook> _manageBlueBook = new Mock<ManageBlueBook>();
 
             Mock<IRepository> _mockPropertyRepository = new Mock<IRepository>();
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_DeletePropertyInstance,
                     It.IsAny<object>()))
                 .Returns(repository);
@@ -3034,8 +3029,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             _mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/translate/v3/propertyinstance/UPFM/SET", booksTranslateOneSiteResponse);
             _mockHttpMessageHandler.Setup(HttpMethod.Delete, $"http://localhost/propertyinstance/a1ef0ac9-2f84-4288-b369-e59b1d6c13de/UPFM?modifiedBy=UnifiedPlatform", new HttpResponseMessage(HttpStatusCode.NoContent) { Content = new StringContent("{ \"result\" : \"success\"}") });
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
+                mockRepository.Object
+                , mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
             )
@@ -3044,7 +3039,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 Configuration = new HttpConfiguration()
             };
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization,
                     It.Is<object>(
                         d => TestIsRealPageIdNull(d))))
@@ -3073,7 +3068,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 new ProductInternalSetting() { Name = "UnifiedLoginServerClientSecret", Value = "abcdefgh" }
             };
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
                 .Returns(productInternalSettings);
             Guid propertyInstance = new Guid("a1ef0ac9-2f84-4288-b369-e59b1d6c13de");
@@ -3087,7 +3082,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             Mock<ManageBlueBook> _manageBlueBook = new Mock<ManageBlueBook>();
 
             Mock<IRepository> _mockPropertyRepository = new Mock<IRepository>();
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_DeletePropertyInstance,
                     It.IsAny<object>()))
                 .Returns(repository);
@@ -3099,15 +3094,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             HttpResponseMessage booksTranslateOneSiteResponse = new HttpResponseMessage(HttpStatusCode.OK);
             booksTranslateOneSiteResponse.Content = new StringContent(booksTranslateOneSiteJson);
 
-            _mockRepository.Setup(m => m.GetMany<UPFMPropertyInstance>(StoredProcNameConstants.SP_GetPropertyInstanceListById,
+            mockRepository.Setup(m => m.GetMany<UPFMPropertyInstance>(StoredProcNameConstants.SP_GetPropertyInstanceListById,
                     It.Is<object>(data => TestSqlParameter(data, "{ InstanceList = Dapper.TableValuedParameter }"))))
                 .Returns(upfmPropertyInstances);
             _mockHttpMessageHandler.Setup(HttpMethod.Delete, $"http://localhost/propertyinstance/a1ef0ac9-2f84-4288-b369-e59b1d6c13de/UPFM?modifiedBy=UnifiedPlatform", new HttpResponseMessage(HttpStatusCode.NoContent) { Content = new StringContent("{ \"result\" : \"success\"}") });
             _mockHttpMessageHandler.Setup(HttpMethod.Delete, $"http://localhost/v2/provisioning/property/e89233ef-6fae-4da6-8953-8a2b6814c960", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
             _mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/translate/v3/propertyinstance/UPFM/SET", booksTranslateOneSiteResponse);
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
+                mockRepository.Object
+                , mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
             )
@@ -3131,8 +3126,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         {
             //Arrange
             OrganizationController organizationController = new OrganizationController(
-                    _mockRepository.Object
-                    , _mockRepositoryResponse.Object
+                    mockRepository.Object
+                    , mockRepositoryResponse.Object
                     , _mockHttpMessageHandler.Object
                     , _defaultUserClaim
                 )
@@ -3150,8 +3145,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         {
             //Arrange
             OrganizationController organizationController = new OrganizationController(
-                    _mockRepository.Object
-                    , _mockRepositoryResponse.Object
+                    mockRepository.Object
+                    , mockRepositoryResponse.Object
                     , _mockHttpMessageHandler.Object
                     , _defaultUserClaim
                 )
@@ -3169,8 +3164,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         {
             //Arrange
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
+                mockRepository.Object
+                , mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
             )
@@ -3206,8 +3201,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         {
             //Arrange
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
+                mockRepository.Object
+                , mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
             )
@@ -3228,8 +3223,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         {
             //Arrange
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
+                mockRepository.Object
+                , mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
             )
@@ -3254,8 +3249,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         {
             //Arrange
             OrganizationController organizationController = new OrganizationController(
-                    _mockRepository.Object
-                    , _mockRepositoryResponse.Object
+                    mockRepository.Object
+                    , mockRepositoryResponse.Object
                     , _mockHttpMessageHandler.Object
                     , _defaultUserClaim
                 )
@@ -3273,8 +3268,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         {
             //Arrange
             OrganizationController organizationController = new OrganizationController(
-                    _mockRepository.Object
-                    , _mockRepositoryResponse.Object
+                    mockRepository.Object
+                    , mockRepositoryResponse.Object
                     , _mockHttpMessageHandler.Object
                     , _defaultUserClaim
                 )
@@ -3307,14 +3302,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             };
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetOne<OrganizationRemovalQueue>(StoredProcNameConstants.SP_InsertOrganizationRemovalQueue,
                     It.IsAny<object>()))
                 .Returns(organizationRemovalQueue);
 
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
+                mockRepository.Object
+                , mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
             )
@@ -3337,8 +3332,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             OrganizationDelete organizationDelete = new OrganizationDelete() { OrganizationRealPageId = Guid.Empty, RequestedBy = "Unit test" };
 
             OrganizationController organizationController = new OrganizationController(
-                _mockRepository.Object
-                , _mockRepositoryResponse.Object
+                mockRepository.Object
+                , mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
             )
@@ -3358,8 +3353,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         public void OrganizationCleanup_Success()
         {
             //Arrange
-            Mock<IRepository> mockRepository = new Mock<IRepository>();
-
             List<OrganizationRemovalQueue> organizationToDeletes =
                 new List<OrganizationRemovalQueue>() { new OrganizationRemovalQueue() { OrganizationPartyId = 123, OrganizationRealPageId = _RealPageId, OrganizationRemovalQueueId = 20, OrganizationRemoveUDMData = true, OrganizationRemovalQueueStatusId = 0, OrganizationRemovalRetryCount = 0 } };
 
@@ -3390,7 +3383,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             OrganizationController organizationController = new OrganizationController(
                 mockRepository.Object
-                , _mockRepositoryResponse.Object
+                , mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
             )
@@ -3410,8 +3403,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         public void OrganizationCleanup_Error()
         {
             //Arrange
-            Mock<IRepository> mockRepository = new Mock<IRepository>();
-
             List<OrganizationRemovalQueue> organizationToDeletes =
                 new List<OrganizationRemovalQueue>() { new OrganizationRemovalQueue() { OrganizationPartyId = 123, OrganizationRealPageId = _RealPageId, OrganizationRemovalQueueId = 20, OrganizationRemoveUDMData = true, OrganizationRemovalQueueStatusId = 0, OrganizationRemovalRetryCount = 0 } };
 
@@ -3437,7 +3428,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             OrganizationController organizationController = new OrganizationController(
                 mockRepository.Object
-                , _mockRepositoryResponse.Object
+                , mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
             )

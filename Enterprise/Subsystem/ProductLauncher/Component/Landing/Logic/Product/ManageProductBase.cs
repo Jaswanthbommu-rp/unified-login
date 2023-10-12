@@ -346,7 +346,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="productId">Product Id</param>
         /// <param name="noCache">Do not cache result. for unit tests.</param>
         /// <returns>List of Product Internal Settings</returns>
-        public IList<IC.ProductInternalSetting> GetProductSetting(int productId, bool noCache = false)
+        public List<IC.ProductInternalSetting> GetProductSetting(int productId, bool noCache = false)
         {
             if (_repository != null || noCache)
             {
@@ -356,11 +356,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             var rpcache = new RPObjectCache();
             var cacheKey = $"productInternalSetting_{productId}";
-            return rpcache.GetFromCache(cacheKey, 120, () =>
-            {
-                // load from database
-                return _productInternalSettingRepository.GetProductInternalSettings(productId);
-            });
+            return rpcache.GetFromCache(cacheKey, 120, () => _productInternalSettingRepository.GetProductInternalSettings(productId));
         }
 
         /// <summary>

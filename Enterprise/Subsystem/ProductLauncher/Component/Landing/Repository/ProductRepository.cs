@@ -149,7 +149,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             ProductType productType = new ProductType();
             ProductSettingList productSetting = new ProductSettingList();
             ProductInternalSetting productInternalSetting = new ProductInternalSetting();
-            IList<ProductInternalSetting> productInternalSettingList = new List<ProductInternalSetting>();
+            var productInternalSettingList = new List<ProductInternalSetting>();
             IList<PersonaProductUserDetails> userProducts = new List<PersonaProductUserDetails>();
 
             IList<ProductUI> listProductUI = this.GetProducts(organizationRealPageId: persona.Organization.RealPageId, allProducts: true, replaceProductCodeWithUDMIfExists: true);
@@ -209,7 +209,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 RPObjectCache rpcache = new RPObjectCache();
                 var cacheKey = "productInternalSetting_" + p.ProductId.ToString();
-                productInternalSettingList = rpcache.GetFromCache<List<ProductInternalSetting>>(cacheKey, 300, () =>
+                productInternalSettingList = rpcache.GetFromCache(cacheKey, 120, () =>
                 {
                     // load from api
                     using (var settingRepo = GetRepository())
@@ -802,8 +802,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             //IList<ProductUI> cachedProducts = new List<ProductUI>();
             RPObjectCache rpCache = new RPObjectCache();
             IList<ProductUI> products = new List<ProductUI>();
-            ProductInternalSetting productInternalSetting = new ProductInternalSetting();
-            //IList<ProductInternalSetting> productInternalSettingList = new List<ProductInternalSetting>();
+            var productInternalSetting = new ProductInternalSetting();
+            //var productInternalSettingList = new List<ProductInternalSetting>();
 
             #region Cache
 
@@ -848,8 +848,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 });
 
                 //Product Settings
-                cacheKey = $"getListGlobalSettingsForProduct_{p.ProductId}";
-                IList<ProductInternalSetting> productInternalSettingList = rpCache.GetFromCache<IList<ProductInternalSetting>>(cacheKey, 180, () =>
+                cacheKey = $"productInternalSetting_{p.ProductId}";
+                var productInternalSettingList = rpCache.GetFromCache(cacheKey, 180, () =>
                 {
                     using (var repository = GetRepository())
                     {
@@ -1212,33 +1212,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <returns></returns>
         public IList<ProductSettingType> ListProductSettingType()
         {
-            #region Cache
-
-            ObjectCache listProductSettingTypeCache = MemoryCache.Default;
-
-            List<ProductSettingType> _listProductSettingType = listProductSettingTypeCache["listProductSettingType"] as List<ProductSettingType>;
-            if (_listProductSettingType == null)
+            var cacheKey = "listProductSettingType";
+            var rpObjectCache = new RPObjectCache();
+            var productSettingTypes = rpObjectCache.GetFromCache(cacheKey, 120, () =>
             {
-                try
+                // load from database
+                using (var repository = GetRepository())
                 {
-                    using (var repository = GetRepository())
-                    {
-                        _listProductSettingType = repository.GetMany<ProductSettingType>(StoredProcNameConstants.SP_ListProductSettingType, null).ToList();
-                    }
+                    return repository.GetMany<ProductSettingType>(StoredProcNameConstants.SP_ListProductSettingType, null).ToList(); 
                 }
-                catch
-                {
-                    return null;
-                }
-
-                CacheItemPolicy policy = new CacheItemPolicy();
-                policy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(600);
-                listProductSettingTypeCache.Set("listProductSettingType", _listProductSettingType, policy);
-            }
-
-            #endregion
-
-            return _listProductSettingType;
+            });
+            return productSettingTypes;
         }
 
         /// <summary>
@@ -1513,7 +1497,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         ObjectCache productInternalSettingCache = MemoryCache.Default;
 
-                        IList<ProductInternalSetting> productInternalSettingList = productInternalSettingCache["productInternalSetting_" + s.ProductId.ToString()] as List<ProductInternalSetting>;
+                        var productInternalSettingList = productInternalSettingCache["productInternalSetting_" + s.ProductId.ToString()] as List<ProductInternalSetting>;
                         if (productInternalSettingList == null)
                         {
                             using (var repository = GetRepository())

@@ -24,7 +24,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         IManageProfile _profileLogic;
         Mock<IProfileRepository> _mockProfileRepository = new Mock<IProfileRepository>();
 		Mock<IManagePersona> _mockPersonaLogic = new Mock<IManagePersona>();
-        private Mock<IRepository> _mockRepository = new Mock<IRepository>();
 		
 		public ManageProfileTest() : base((int) ProductEnum.UnifiedPlatform)
 		{
@@ -65,27 +64,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 ThirdPartyRelationShipId = 1
             };
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetOne<long>(StoredProcNameConstants.SP_GetActivePersona,
                     It.Is<Guid>(l => l == _userRealPageId)
                 ))
                 .Returns(_userPersona.PersonaId);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<ProductUI>(StoredProcNameConstants.SP_ListProductsByOrganization,
                     It.Is<object>(
                         d => TestIs("OrganizationRealPageId".ToLower(), d, _userOrganizationRealPageId))
                 ))
                 .Returns(productUIList);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<UserLoginPersona>(StoredProcNameConstants.SP_GetUserLoginPersona,
                 It.Is<object>(
                         d => TestSqlParameter(d, "{ UserLoginId = " + _userUserId + ", OrganizationPartyId = 0 }"))
                 ))
                 .Returns(userLoginPersonaList);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetOne<ExternalUserRelationship>(StoredProcNameConstants.SP_GetExternalUserRelationship,
                     It.Is<object>(
                         d => TestSqlParameter(d, "{ UserLoginPersonaId = " + userLoginPersonaList[0].UserLoginPersonaId + " }"))
@@ -95,7 +94,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             globals.Add(BaseType.RequestParameter, datafilter);
             var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 
-            _profileLogic = new ManageProfile(_mockRepository.Object, _userUserClaim, mockHttpMessageHandler.Object);
+            _profileLogic = new ManageProfile(mockRepository.Object, _userUserClaim, mockHttpMessageHandler.Object);
 
             new RPObjectCache().BustCache();
 
@@ -137,41 +136,41 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 ThirdPartyRelationShipId = 1
             };
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetOne<long>(StoredProcNameConstants.SP_GetActivePersona,
                     It.Is<Guid>(l => l == _userRealPageId)
                 ))
                 .Returns(_userPersona.PersonaId);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<ProductUI>(StoredProcNameConstants.SP_ListProductsByOrganization,
                     It.Is<object>(
                         d => TestIs("OrganizationRealPageId".ToLower(), d, _userOrganizationRealPageId))
                 ))
                 .Returns(productUIList);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<UserLoginPersona>(StoredProcNameConstants.SP_GetUserLoginPersona,
                     It.Is<object>(
                         d => TestSqlParameter(d, "{ UserLoginId = " + _userUserId + ", OrganizationPartyId = 0 }"))
                 ))
                 .Returns(userLoginPersonaList);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetOne<ExternalUserRelationship>(StoredProcNameConstants.SP_GetExternalUserRelationship,
                     It.Is<object>(
                         d => TestSqlParameter(d, "{ UserLoginPersonaId = " + userLoginPersonaList[0].UserLoginPersonaId + " }"))
                 ))
                 .Returns(externalUserRelationship);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetOne<ExternalUserRelationship>(StoredProcNameConstants.SP_GetExternalUserRelationship,
                     It.Is<object>(
                         d => TestSqlParameter(d, "{ UserLoginPersonaId = " + userLoginPersonaList[0].UserLoginPersonaId + " }"))
                 ))
                 .Returns(externalUserRelationship);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetManyWithSpliOn(
                     StoredProcNameConstants.SP_ListPersons,
                     It.IsAny<Func<ProfileDetail, UserLogin, int, string, ProfileDetail>>(),
@@ -192,7 +191,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 
 
-            _profileLogic = new ManageProfile(_mockRepository.Object, _userUserClaim, mockHttpMessageHandler.Object);
+            _profileLogic = new ManageProfile(mockRepository.Object, _userUserClaim, mockHttpMessageHandler.Object);
 
             //Act
             profileDetailList = _profileLogic.ListProfileDetails(globals);
@@ -234,41 +233,41 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 ThirdPartyRelationShipId = 123
             };
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetOne<long>(StoredProcNameConstants.SP_GetActivePersona,
                     It.Is<Guid>(l => l == _userRealPageId)
                 ))
                 .Returns(_userPersona.PersonaId);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<ProductUI>(StoredProcNameConstants.SP_ListProductsByOrganization,
                     It.Is<object>(
                         d => TestIs("OrganizationRealPageId".ToLower(), d, _userOrganizationRealPageId))
                 ))
                 .Returns(productUIList);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<UserLoginPersona>(StoredProcNameConstants.SP_GetUserLoginPersona,
                     It.Is<object>(
                         d => TestSqlParameter(d, "{ UserLoginId = " + _userUserId + ", OrganizationPartyId = 0 }"))
                 ))
                 .Returns(userLoginPersonaList);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetOne<ExternalUserRelationship>(StoredProcNameConstants.SP_GetExternalUserRelationship,
                     It.Is<object>(
                         d => TestSqlParameter(d, "{ UserLoginPersonaId = " + userLoginPersonaList[0].UserLoginPersonaId + " }"))
                 ))
                 .Returns(externalUserRelationship);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetOne<ExternalUserRelationship>(StoredProcNameConstants.SP_GetExternalUserRelationship,
                     It.Is<object>(
                         d => TestSqlParameter(d, "{ UserLoginPersonaId = " + userLoginPersonaList[0].UserLoginPersonaId + " }"))
                 ))
                 .Returns(externalUserRelationship);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetManyWithSpliOn(
                     StoredProcNameConstants.SP_ListPersons,
                     It.IsAny<Func<ProfileDetail, UserLogin, int, string, ProfileDetail>>(),
@@ -281,7 +280,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 
-            _profileLogic = new ManageProfile(_mockRepository.Object, _userUserClaim, mockHttpMessageHandler.Object);
+            _profileLogic = new ManageProfile(mockRepository.Object, _userUserClaim, mockHttpMessageHandler.Object);
 
             //Act
             var profileDetailList = _profileLogic.ListProfileDetails(globals);
@@ -333,41 +332,41 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 ThirdPartyRelationShipId = 123
             };
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetOne<long>(StoredProcNameConstants.SP_GetActivePersona,
                     It.Is<Guid>(l => l == _userRealPageId)
                 ))
                 .Returns(_userPersona.PersonaId);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<ProductUI>(StoredProcNameConstants.SP_ListProductsByOrganization,
                     It.Is<object>(
                         d => TestIs("OrganizationRealPageId".ToLower(), d, _userOrganizationRealPageId))
                 ))
                 .Returns(productUIList);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<UserLoginPersona>(StoredProcNameConstants.SP_GetUserLoginPersona,
                     It.Is<object>(
                         d => TestSqlParameter(d, "{ UserLoginId = " + _userUserId + ", OrganizationPartyId = 0 }"))
                 ))
                 .Returns(userLoginPersonaList);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetOne<ExternalUserRelationship>(StoredProcNameConstants.SP_GetExternalUserRelationship,
                     It.Is<object>(
                         d => TestSqlParameter(d, "{ UserLoginPersonaId = " + userLoginPersonaList[0].UserLoginPersonaId + " }"))
                 ))
                 .Returns(externalUserRelationship);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetOne<ExternalUserRelationship>(StoredProcNameConstants.SP_GetExternalUserRelationship,
                     It.Is<object>(
                         d => TestSqlParameter(d, "{ UserLoginPersonaId = " + userLoginPersonaList[0].UserLoginPersonaId + " }"))
                 ))
                 .Returns(externalUserRelationship);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetManyWithSpliOn(
                     StoredProcNameConstants.SP_ListPersons,
                     It.IsAny<Func<ProfileDetail, UserLogin, int, string, ProfileDetail>>(),
@@ -388,7 +387,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 
 
-            _profileLogic = new ManageProfile(_mockRepository.Object, _userUserClaim, mockHttpMessageHandler.Object);
+            _profileLogic = new ManageProfile(mockRepository.Object, _userUserClaim, mockHttpMessageHandler.Object);
 
             //Act
             profileDetailList = _profileLogic.ListProfileDetails(globals);
@@ -438,41 +437,41 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 ThirdPartyRelationShipId = 123
             };
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetOne<long>(StoredProcNameConstants.SP_GetActivePersona,
                     It.Is<Guid>(l => l == _userRealPageId)
                 ))
                 .Returns(_userPersona.PersonaId);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<ProductUI>(StoredProcNameConstants.SP_ListProductsByOrganization,
                     It.Is<object>(
                         d => TestIs("OrganizationRealPageId".ToLower(), d, _userOrganizationRealPageId))
                 ))
                 .Returns(productUIList);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<UserLoginPersona>(StoredProcNameConstants.SP_GetUserLoginPersona,
                     It.Is<object>(
                         d => TestSqlParameter(d, "{ UserLoginId = " + _userUserId + ", OrganizationPartyId = 0 }"))
                 ))
                 .Returns(userLoginPersonaList);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetOne<ExternalUserRelationship>(StoredProcNameConstants.SP_GetExternalUserRelationship,
                     It.Is<object>(
                         d => TestSqlParameter(d, "{ UserLoginPersonaId = " + userLoginPersonaList[0].UserLoginPersonaId + " }"))
                 ))
                 .Returns(externalUserRelationship);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetOne<ExternalUserRelationship>(StoredProcNameConstants.SP_GetExternalUserRelationship,
                     It.Is<object>(
                         d => TestSqlParameter(d, "{ UserLoginPersonaId = " + userLoginPersonaList[0].UserLoginPersonaId + " }"))
                 ))
                 .Returns(externalUserRelationship);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetManyWithSpliOn(
                     StoredProcNameConstants.SP_ListPersons,
                     It.IsAny<Func<ProfileDetail, UserLogin, int, string, ProfileDetail>>(),
@@ -492,7 +491,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 
-            _profileLogic = new ManageProfile(_mockRepository.Object, _userUserClaim, mockHttpMessageHandler.Object);
+            _profileLogic = new ManageProfile(mockRepository.Object, _userUserClaim, mockHttpMessageHandler.Object);
 
             //Act
             profileDetailList = _profileLogic.ListProfileDetails(globals);

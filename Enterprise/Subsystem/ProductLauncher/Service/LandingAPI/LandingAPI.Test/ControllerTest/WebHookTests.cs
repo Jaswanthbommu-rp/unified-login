@@ -9,8 +9,6 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.EmployeeAccess;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Rum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.WebHook;
 using RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers;
@@ -26,7 +24,7 @@ using Xunit;
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 {
     [ExcludeFromCodeCoverage]
-    public class WebHookTests
+    public class WebHookTests : TestBase
     {
         private static Guid _RealPageId = new Guid("C802694D-5553-4527-8616-3C0F434AE62D");
         private static Guid _adminRealPageId = new Guid("C802694D-1111-2222-3333-3C0F434AE62D");
@@ -47,8 +45,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         private static string _organizationDomainName = "Primary";
 
         private static DefaultUserClaim _userClaim;
-
-        private string _mockTiboWebHookSigningSecret = "1234567890";
 
         private readonly string _mockJson_books_customercompany_deleted = "{\r\n\t\"id\": \"601e13a6-7360-ceda-bf0c-41c62fa694c7\",\r\n\t\"topic\": \"books.customercompany.deleted\",\r\n\t\"createdAt\": \"2020-04-21T08:25:31-05:00\",\r\n\t\"payload\": {\r\n\t\t\"link\": \"/customercompany?filter[customerCompanyId]={customerCompanyId}&filter[deletedAt]=not:null\",\r\n\t\t\"payload\": {\r\n    \t\t\"customerCompanyId\": 15862,\r\n    \t\t\"deletedAt\": \"2020-02-21 11:35:43.000000-0600\",\r\n    \t\t\"replacementCustomerCompanyId\"  : 9999\r\n\t\t}\r\n\t}\r\n}\r\n";
         private readonly string _mockJson_books_customercompany_deleted_Signature = "2c136a645e98e682babdaba914c3ff2a81ac0d9fd41e60c9cd27e7fb74aef05d";
@@ -121,7 +117,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         private List<OrganizationDomain> _organizationDomains;
 
         private Organization _organization = null;
-        private List<ProductInternalSetting> _productInternalSettings;
+        //private List<ProductInternalSetting> _productInternalSettings;
         private static List<GbProductMap> _gbProductMap;
 
         private static List<ContactMechanismUsageType> _contactMechanismUsageTypes;
@@ -131,7 +127,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             _gbProductMap = new List<GbProductMap>
             {
                 new GbProductMap() { BooksProductCode = "OS", Name = "OneSite", ProductId = 1, UDMSourceCode = null },
-                new GbProductMap() { BooksProductCode = "UI", Name = "UnifiedUI", ProductId = 2, UDMSourceCode = null },
                 new GbProductMap() { BooksProductCode = "UPFM", Name = "Unified Platform", ProductId = 3, UDMSourceCode = null },
                 new GbProductMap() { BooksProductCode = "AO", Name = "Asset Optimization", ProductId = 4, UDMSourceCode = null },
                 new GbProductMap() { BooksProductCode = "PW", Name = "Propertyware", ProductId = 5, UDMSourceCode = null },
@@ -259,23 +254,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 }
             };
 
-            _productInternalSettings = new List<ProductInternalSetting>()
-            {
-                new ProductInternalSetting() { Name = "TiboWebHookSigningSecret", Value = _mockTiboWebHookSigningSecret },
-                new ProductInternalSetting() { Name = "IsCloneUsersProcessEnabledForHOTS", Value = "1" },
-                new ProductInternalSetting() { Name = "ExcludeProductFromOrgSupportUser", Value = "3,4,8,14,28,36,56" }
-            };
+            //_productInternalSettings = new List<ProductInternalSetting>()
+            //{
+            //    new ProductInternalSetting() { Name = "TiboWebHookSigningSecret", Value = _mockTiboWebHookSigningSecret },
+            //    new ProductInternalSetting() { Name = "IsCloneUsersProcessEnabledForHOTS", Value = "1" },
+            //    new ProductInternalSetting() { Name = "ExcludeProductFromOrgSupportUser", Value = "3,4,8,14,28,36,56" }
+            //};
             _contactMechanismUsageTypes = new List<ContactMechanismUsageType>
             {
                 new ContactMechanismUsageType() { ContactMechanismUsageTypeId = 123, Name = "Email Notification" },
                 new ContactMechanismUsageType() { ContactMechanismUsageTypeId = 345, Name = "Email" },
             };
+
+            mockRepository
+                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, It.IsAny<object>()))
+                .Returns(_gbProductMap);
         }
 
         [Fact]
         public void Post_Books_NullInput()
         {
-            Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<HttpMessageHandler> mockMessageHandler = new Mock<HttpMessageHandler>();
 
             mockRepository
@@ -313,16 +311,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void Post_Books_Update_CustomerCompany_BooksMasterId_InvalidSignature()
         {
-            Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<HttpMessageHandler> mockMessageHandler = new Mock<HttpMessageHandler>();
 
             mockRepository
                 .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization, It.IsAny<object>()))
                 .Returns(() => null);
-
-            mockRepository
-                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
-                .Returns(_productInternalSettings);
 
             mockRepository
                 .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, It.IsAny<object>()))
@@ -359,7 +352,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             RPObjectCache rPObjectCache = new RPObjectCache();
             rPObjectCache.BustCache();
 
-            Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<HttpMessageHandler> mockMessageHandler = new Mock<HttpMessageHandler>();
 
             mockRepository
@@ -401,7 +393,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             RPObjectCache rPObjectCache = new RPObjectCache();
             rPObjectCache.BustCache();
 
-            Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<IUnitOfWork> mockUnitOfWork = new Mock<IUnitOfWork>();
             Mock<HttpMessageHandler> mockMessageHandler = new Mock<HttpMessageHandler>();
 
@@ -424,10 +415,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             mockRepository
                 .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_DataImportMappingUpdate, It.IsAny<object>()))
                 .Returns(new RepositoryResponse { Id = 1, ErrorMessage = "" });
-
-            mockRepository
-                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
-                .Returns(_productInternalSettings);
 
             mockRepository
                 .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
@@ -455,16 +442,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void Post_Books_Update_CustomerCompany_BooksMasterId_CompanyNotFound()
         {
-            Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<HttpMessageHandler> mockMessageHandler = new Mock<HttpMessageHandler>();
 
             mockRepository
                 .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization, It.IsAny<object>()))
                 .Returns(() => null);
-
-            mockRepository
-                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
-                .Returns(_productInternalSettings);
 
             mockRepository
                 .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, It.IsAny<object>()))
@@ -490,7 +472,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void Post_Books_Update_CustomerCompany_BooksMasterId_Failed()
         {
-            Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<IUnitOfWork> mockUnitOfWork = new Mock<IUnitOfWork>();
             Mock<HttpMessageHandler> mockMessageHandler = new Mock<HttpMessageHandler>();
 
@@ -520,10 +501,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             mockRepository
                 .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_DataImportMappingUpdate, It.IsAny<object>()))
                 .Returns(new RepositoryResponse { Id = 0, ErrorMessage = "SQL Error happened here" });
-
-            mockRepository
-                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
-                .Returns(_productInternalSettings);
 
             mockRepository
                 .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, It.IsAny<object>()))
@@ -558,16 +535,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void Post_Books_Update_CustomerCompany_BooksMasterId_CompanyIdAttributeMissing()
         {
-            Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<HttpMessageHandler> mockMessageHandler = new Mock<HttpMessageHandler>();
 
             mockRepository
                 .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization, It.IsAny<object>()))
                 .Returns(() => null);
-
-            mockRepository
-                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
-                .Returns(_productInternalSettings);
 
             mockRepository
                 .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, It.IsAny<object>()))
@@ -592,16 +564,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void Post_Books_Update_CustomerCompany_BooksMasterId_CompanyIdAttributeNull()
         {
-            Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<HttpMessageHandler> mockMessageHandler = new Mock<HttpMessageHandler>();
 
             mockRepository
                 .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization, It.IsAny<object>()))
                 .Returns(() => null);
-
-            mockRepository
-                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
-                .Returns(_productInternalSettings);
 
             mockRepository
                 .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, It.IsAny<object>()))
@@ -628,16 +595,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void Post_Books_Update_CustomerCompany_BooksMasterId_ReplacementCompanyIdAttributeNull()
         {
-            Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<HttpMessageHandler> mockMessageHandler = new Mock<HttpMessageHandler>();
 
             mockRepository
                 .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization, It.IsAny<object>()))
                 .Returns(() => null);
-
-            mockRepository
-                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
-                .Returns(_productInternalSettings);
 
             mockRepository
                 .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, It.IsAny<object>()))
@@ -667,7 +629,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             RPObjectCache rPObjectCache = new RPObjectCache();
             rPObjectCache.BustCache();
 
-            Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<IUnitOfWork> mockUnitOfWork = new Mock<IUnitOfWork>();
             Mock<HttpMessageHandler> mockMessageHandler = new Mock<HttpMessageHandler>();
 
@@ -678,10 +639,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             mockRepository
                 .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdatePropertyMappingReMap, It.IsAny<object>()))
                 .Returns(new RepositoryResponse { Id = 0, ErrorMessage = "" });
-
-            mockRepository
-                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
-                .Returns(_productInternalSettings);
 
             mockRepository
                 .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, It.IsAny<object>()))
@@ -709,12 +666,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void Post_Books_Update_CustomerProperty_CustomerPropertyIdAttributeMissing()
         {
-            Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<HttpMessageHandler> mockMessageHandler = new Mock<HttpMessageHandler>();
-
-            mockRepository
-                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
-                .Returns(_productInternalSettings);
 
             mockRepository
                 .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, It.IsAny<object>()))
@@ -741,12 +693,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void Post_Books_Update_CustomerProperty_CustomerPropertyIdNull()
         {
-            Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<HttpMessageHandler> mockMessageHandler = new Mock<HttpMessageHandler>();
-
-            mockRepository
-                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
-                .Returns(_productInternalSettings);
 
             mockRepository
                 .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, It.IsAny<object>()))
@@ -776,12 +723,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             RPObjectCache rPObjectCache = new RPObjectCache();
             rPObjectCache.BustCache();
 
-            Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<HttpMessageHandler> mockMessageHandler = new Mock<HttpMessageHandler>();
-
-            mockRepository
-                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
-                .Returns(_productInternalSettings);
 
             mockRepository
                 .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, It.IsAny<object>()))
@@ -807,7 +749,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void Post_Books_Provisioning_UPFMOrder_Create_Success()
         {
-            Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<IUnitOfWork> mockUnitOfWork = new Mock<IUnitOfWork>();
             Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 
@@ -862,10 +803,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Returns(new RepositoryResponse { Id = 1, ErrorMessage = "" });
 
             mockRepository
-                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
-                .Returns(_productInternalSettings);
-
-            mockRepository
                 .SetupSequence(m => m.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, It.IsAny<object>()))
                 .Returns(userLoginOnly);
 
@@ -913,7 +850,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void Post_Books_Provisioning_UPFMOrder_Unknown_Organization_Type_Success()
         {
-            Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<IUnitOfWork> mockUnitOfWork = new Mock<IUnitOfWork>();
             Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 
@@ -968,10 +904,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Returns(new RepositoryResponse { Id = 1, ErrorMessage = "" });
 
             mockRepository
-                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
-                .Returns(_productInternalSettings);
-
-            mockRepository
                 .SetupSequence(m => m.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, It.IsAny<object>()))
                 .Returns(userLoginOnly);
 
@@ -1019,7 +951,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void Post_Books_Provisioning_UPFMOrder_Create_Update_Success()
         {
-            Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<IUnitOfWork> mockUnitOfWork = new Mock<IUnitOfWork>();
             Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 
@@ -1081,10 +1012,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Returns(new RepositoryResponse { Id = 1, ErrorMessage = "" });
 
             mockRepository
-                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
-                .Returns(_productInternalSettings);
-
-            mockRepository
                 .SetupSequence(m => m.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, It.IsAny<object>()))
                 .Returns(userLoginOnlyNull)
                 .Returns(userLoginOnly);
@@ -1133,12 +1060,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void Post_Books_Provisioning_UPFMOrder_Create_NullDomain()
         {
-            Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-
-            mockRepository
-                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
-                .Returns(_productInternalSettings);
 
             mockRepository
                 .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
@@ -1174,7 +1096,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void Post_Books_Provisioning_UPFMOrder_Create_MissingBlueBook()
         {
-            Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 
             var responsePropertyDetail = new HttpResponseMessage(HttpStatusCode.OK);
@@ -1182,11 +1103,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             responsePropertyDetail.Content = new StringContent(jsonToSave);
 
             var responseCustomerCompanyNotFound = new HttpResponseMessage(HttpStatusCode.NotFound);
-
-            mockRepository
-                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct,
-                    It.Is<object>(d => TestIsProductId(d, (int)ProductEnum.UnifiedPlatform))))
-                .Returns(_productInternalSettings);
 
             mockRepository
                 .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, It.IsAny<object>()))
@@ -1221,7 +1137,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void Post_Books_Provisioning_UPFMOrder_Cancel_Success()
         {
-            Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<IUnitOfWork> mockUnitOfWork = new Mock<IUnitOfWork>();
             Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 
@@ -1240,10 +1155,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             mockRepository
                 .Setup(m => m.GetMany<OrganizationDomain>(StoredProcNameConstants.SP_ListOrganizationDomain, null))
                 .Returns(_organizationDomains);
-
-            mockRepository
-                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
-                .Returns(_productInternalSettings);
 
             mockRepository
                 .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_DeleteOrganizationProduct, It.IsAny<object>()))
@@ -1283,7 +1194,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void Post_Books_Provisioning_UPFMOrder_Cancel_BadRequest_For_InvalidCompanyInstance()
         {
-            Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<IUnitOfWork> mockUnitOfWork = new Mock<IUnitOfWork>();
             Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 
@@ -1302,10 +1212,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             mockRepository
                 .Setup(m => m.GetMany<OrganizationDomain>(StoredProcNameConstants.SP_ListOrganizationDomain, null))
                 .Returns(_organizationDomains);
-
-            mockRepository
-                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
-                .Returns(_productInternalSettings);
 
             mockRepository
                 .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_DeleteOrganizationProduct, It.IsAny<object>()))
@@ -1352,7 +1258,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             RPObjectCache rPObjectCache = new RPObjectCache();
             rPObjectCache.BustCache();
 
-            Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<IUnitOfWork> mockUnitOfWork = new Mock<IUnitOfWork>();
             Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 
@@ -1371,10 +1276,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             mockRepository
                 .Setup(m => m.GetMany<OrganizationDomain>(StoredProcNameConstants.SP_ListOrganizationDomain, null))
                 .Returns(_organizationDomains);
-
-            mockRepository
-                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
-                .Returns(_productInternalSettings);
 
             mockRepository
                 .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, It.IsAny<object>()))
@@ -1413,7 +1314,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void Post_Books_Provisioning_UPFMClone_Create_Success()
         {
-            Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<IUnitOfWork> mockUnitOfWork = new Mock<IUnitOfWork>();
             Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 
@@ -1474,10 +1374,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Returns(new RepositoryResponse { Id = 1, ErrorMessage = "" });
 
             mockRepository
-                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
-                .Returns(_productInternalSettings);
-
-            mockRepository
                 .SetupSequence(m => m.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, It.IsAny<object>()))
                 .Returns(userLoginOnly);
 
@@ -1533,7 +1429,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void Post_Books_Provisioning_UPFMClone_Create_CloningNotEnabled()
         {
-            Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 
             var productInternalSettings = new List<ProductInternalSetting>()
@@ -1575,7 +1470,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             Assert.Equal(expectedValue, message, ignoreCase: true);
             Assert.True(!response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.BadRequest);
 
-            mockRepository = new Mock<IRepository>();
             productInternalSettings = new List<ProductInternalSetting>()
             {
                 new ProductInternalSetting() { Name = "TiboWebHookSigningSecret", Value = _mockTiboWebHookSigningSecret },
@@ -1614,12 +1508,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void Post_Books_Provisioning_UPFMClone_Create_MissingCloneCompany()
         {
-            Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-
-            mockRepository
-                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.Is<object>(d => TestIsProductId(d, 3))))
-                .Returns(_productInternalSettings);
 
             mockRepository
                 .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
@@ -1653,12 +1542,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void Post_Books_Provisioning_UPFMClone_Create_MissingCloneProperty()
         {
-            Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-
-            mockRepository
-                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
-                .Returns(_productInternalSettings);
 
             mockRepository
                 .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization, It.IsAny<object>()))
@@ -1704,19 +1588,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void Post_Books_Provisioning_UPFMClone_Create_UnknownCloneCompany()
         {
-            Mock<IRepository> mockRepository = new Mock<IRepository>();
+            //Arrange
             Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 
             mockRepository
-                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
-                .Returns(_productInternalSettings);
-
-            mockRepository
-                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
-                    It.IsAny<object>()))
+                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, It.IsAny<object>()))
                 .Returns(_gbProductMap);
 
-            //Arrange
             WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockHttpMessageHandler.Object)
             {
                 Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"),
@@ -1744,12 +1622,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void Post_Books_Provisioning_UPFMClone_Create_InvalidCloneCompany()
         {
-            Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-
-            mockRepository
-                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
-                .Returns(_productInternalSettings);
 
             mockRepository
                 .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
@@ -1786,7 +1659,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void Post_Books_Provisioning_UPFMVendor_Create_Success()
         {
-            Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<IUnitOfWork> mockUnitOfWork = new Mock<IUnitOfWork>();
             Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 
@@ -1974,10 +1846,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Returns(new RepositoryResponse { Id = 1, ErrorMessage = "" });
 
             mockRepository
-                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
-                .Returns(_productInternalSettings);
-
-            mockRepository
                 .Setup(m => m.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, It.Is<object>(
                         d => TestIsLoginName(d, $"{_PartyId}admin@realpage.com"))))
                 .Returns(companyAdminUserLoginOnly);
@@ -2010,11 +1878,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             mockRepository
                 .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreatePerson, It.IsAny<object>()))
                 .Returns(new RepositoryResponse { Id = personPartyId, RealPageId = Guid.NewGuid(), ErrorMessage = "" });
-
-            mockRepository
-                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
-                    It.IsAny<object>()))
-                .Returns(_gbProductMap);
 
             mockRepository.Setup(m => m.GetMany<ContactMechanismUsageType>(StoredProcNameConstants.SP_ListContactMechanismUsageType, It.IsAny<object>()))
                 .Returns(() => _contactMechanismUsageTypes);
@@ -2095,6 +1958,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/companyinstance?filter[source]=UPFM&filter[customerCompanyMap.customerCompanyId]={customercompany.CustomerCompanyId}&fields[companyinstance]=companyInstanceId,source,companyInstanceSourceId,companyName,companyType,isActive,domain", responseEmptyCompanyInstances);
             mockHttpMessageHandler.Setup(HttpMethod.Put, $"http://localhost/companyinstance/{_RealPageId}/UPFM", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
             mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/v2/provisioning/company", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
+            mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/systemproductcenter", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
 
             //Arrange
             var webHookController = new WebHookController(mockRepository.Object, _userClaim, mockHttpMessageHandler.Object)
@@ -2119,14 +1983,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void Post_Books_Provisioning_UPFMVendor_Company_Not_Found()
         {
-            Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 
             CustomerCompany invalidCustomercompany = new CustomerCompany() { CustomerCompanyId = 55555, IsActive = true, CompanyName = "Invalid company", MigrationStatus = "migrated", CompanyType = "Vendor" }; //Category = "rpup"
             var responseNotFoundCustomerCompany = new HttpResponseMessage(HttpStatusCode.NotFound);
-            mockRepository
-                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
-                .Returns(_productInternalSettings);
 
             mockRepository
                 .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, It.IsAny<object>()))
@@ -2163,7 +2023,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void Post_Books_Provisioning_UPFMVendor_VendorCompany_Not_Found()
         {
-            Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 
             CustomerCompany customercompany = new CustomerCompany() { CustomerCompanyId = 1380567, IsActive = true, CompanyName = "1 AWESOME SERVICE LLC", MigrationStatus = "migrated", CompanyType = "Vendor" }; //Category = "rpup"
@@ -2184,11 +2043,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             responseEmptyCompanyInstances.Content = new StringContent(jsonToSave);
 
             var responseMissingVendorCustomerCompanyMap = new HttpResponseMessage(HttpStatusCode.NotFound);
-
-            mockRepository
-                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct,
-                    It.Is<object>(d => TestIsProductId(d, 3))))
-                .Returns(_productInternalSettings);
 
             mockRepository
                 .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, It.IsAny<object>()))
@@ -2229,7 +2083,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void Post_Books_Provisioning_UPFMVendor_UPFM_Instance_Already_Exists()
         {
-            Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<IUnitOfWork> mockUnitOfWork = new Mock<IUnitOfWork>();
             Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 
@@ -2260,10 +2113,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             var responseVendorCustomerCompanyMap = new HttpResponseMessage(HttpStatusCode.OK);
             jsonToSave = JsonConvert.SerializeObject(vendorCustomerCompanyMap, new JsonApiSerializerSettings());
             responseVendorCustomerCompanyMap.Content = new StringContent(jsonToSave);
-
-            mockRepository
-                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
-                .Returns(_productInternalSettings);
 
             mockRepository
                 .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, It.IsAny<object>()))
@@ -2304,7 +2153,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void Post_Books_Provisioning_UPFMVendor_Unknown_Organization_Type()
         {
-            Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<IUnitOfWork> mockUnitOfWork = new Mock<IUnitOfWork>();
             Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
             UserLoginOnly userLoginOnlyNull = null;
@@ -2462,11 +2310,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             mockRepository
                 .Setup(m => m.GetMany<OrganizationDomain>(StoredProcNameConstants.SP_ListOrganizationDomain, null))
                 .Returns(_organizationDomains);
-
-            mockRepository
-                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct,
-                    It.Is<object>(d => TestIsProductId(d, (int)ProductEnum.UnifiedPlatform))))
-                .Returns(_productInternalSettings);
 
             mockRepository
                 .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, It.IsAny<object>()))

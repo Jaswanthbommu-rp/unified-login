@@ -219,11 +219,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [Route("product/internalsettings")]
         [Authorize]
         [HttpGet]
-        public IList<ProductInternalSetting> GetProductInternalSettings(int ProductId, Guid Key)
+        public List<ProductInternalSetting> GetProductInternalSettings(int ProductId, Guid Key)
         {
             ObjectListOutput<ProductInternalSetting, IErrorData> output = new ObjectListOutput<ProductInternalSetting, IErrorData>();
             Status<IErrorData> errorStatus = new Status<IErrorData>();
-            IList<ProductInternalSetting> productInternalSettingsList = new List<ProductInternalSetting>();
+            var productInternalSettingsList = new List<ProductInternalSetting>();
             if (Key != new Guid(_key))
             {
                 return productInternalSettingsList;
@@ -249,7 +249,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [Route("product/{productid:int}/settings")]
         [Authorize]
         [HttpGet]
-        public IList<ProductInternalSetting> GetProductNonSensitiveSettings(int productid)
+        public List<ProductInternalSetting> GetProductNonSensitiveSettings(int productid)
         {
             return _manageProduct.GetProductInternalSettings(productid)?.Where(p => !p.SensitiveData).OrderBy(p => p.Name).ToList();
         }
@@ -433,7 +433,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             RealPageSAML rpsaml = new RealPageSAML(_userClaims);
 
-            IList<ProductInternalSetting> productInternalSettingsList = _manageProduct.GetProductInternalSettings(productId);
+            var productInternalSettingsList = _manageProduct.GetProductInternalSettings(productId);
 
             IUserLoginRepository userLoginRepository = new UserLoginRepository();
             var userLoginOnly = userLoginRepository.GetUserLoginOnly(_userClaims.UserRealPageGuid);
@@ -494,7 +494,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             return productLoginResponse;
         }
 
-        private bool DenyEmployeeAccessByADGroup(int productId, IList<ProductInternalSetting> productInternalSettingsList, out ProductLoginResponse productLoginResponseDenied)
+        private bool DenyEmployeeAccessByADGroup(int productId, List<ProductInternalSetting> productInternalSettingsList, out ProductLoginResponse productLoginResponseDenied)
         {
             productLoginResponseDenied = null;
 
@@ -730,7 +730,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             string loginUri = productSamlSettings.LoginUri; 
             if (productId == (int)ProductEnum.VendorMarketplace && _userClaims.RealPageEmployee)
             {
-                IList<ProductInternalSetting> productInternalSetting = _manageProduct.GetProductInternalSettings(productId);
+                var productInternalSetting = _manageProduct.GetProductInternalSettings(productId);
                 loginUri = productInternalSetting.First(a => a.Name.Equals("AlternateLoginURL", StringComparison.OrdinalIgnoreCase)).Value;                
             }
 
@@ -1062,7 +1062,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             /// <returns>ProductFamilyMethodExample example</returns>
             public object GetExamples()
             {
-                IList<ProductInternalSetting> productInternalSettingList = new List<ProductInternalSetting>();
+                var productInternalSettingList = new List<ProductInternalSetting>();
                 productInternalSettingList.Add(new ProductInternalSetting
                 {
                     Name = "Some setting",

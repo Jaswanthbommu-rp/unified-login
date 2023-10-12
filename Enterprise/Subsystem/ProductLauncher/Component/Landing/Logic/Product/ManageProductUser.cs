@@ -960,11 +960,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var result = Task.Run(() => notification.SendNotification(title, message, users, categoryCode)).Result;
         }
 
-        private IList<ProductInternalSetting> GetProductInternalSettings(int productId)
+        private List<ProductInternalSetting> GetProductInternalSettings(int productId)
         {
             var rpcache = new RPObjectCache();
             var cacheKey = $"productInternalSetting_{productId}";
-            IList<ProductInternalSetting> productInternalSettingList = rpcache.GetFromCache<IList<ProductInternalSetting>>(cacheKey, 600, () =>
+            var productInternalSettingList = rpcache.GetFromCache(cacheKey, 120, () =>
             {
                 return _productInternalSettingRepository.GetProductInternalSettings(productId).ToList();
             });

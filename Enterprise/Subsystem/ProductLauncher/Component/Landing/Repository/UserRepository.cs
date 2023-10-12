@@ -54,6 +54,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         private RoleTypeRepository _roleTypeRepository;
         IProductInternalSettingRepository _productInternalSettingRepository;
         private ManageBlueBook _manageBlueBook;
+        private ManageUnifiedSettings _manageUnifiedSettings;
 
         #region Ctor
 
@@ -71,6 +72,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             _contactMechanismUsageTypeRepository = new ContactMechanismUsageTypeRepository();
             _roleTypeRepository = new RoleTypeRepository();
             _manageBlueBook = new ManageBlueBook();
+            _manageUnifiedSettings = new ManageUnifiedSettings(_userClaim);
         }
 
         /// <summary>
@@ -91,6 +93,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             _contactMechanismUsageTypeRepository = new ContactMechanismUsageTypeRepository(repository);
             _roleTypeRepository = new RoleTypeRepository(repository);
             _manageBlueBook = new ManageBlueBook(userClaim, repository, messageHandler);
+            _manageUnifiedSettings = new ManageUnifiedSettings(repository, userClaim, messageHandler);
         }
 
         /// <summary>
@@ -113,6 +116,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             _contactMechanismUsageTypeRepository = new ContactMechanismUsageTypeRepository();
             _roleTypeRepository = new RoleTypeRepository();
             _manageBlueBook = new ManageBlueBook(userClaim);
+            _manageUnifiedSettings = new ManageUnifiedSettings(userClaim);
         }
 
         #endregion
@@ -3634,11 +3638,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 {
                     bool isGreenBookCaresEnabled = false;
                     dynamic param = new { ProductId = productmap.ProductId };
-                    IList<ProductInternalSetting> productInternalSettingList;
+                    List<ProductInternalSetting> productInternalSettingList;
 
                     var rpcache = new RPObjectCache();
-                    var cacheKey = $"listGlobalSettingsForProduct_{productmap.ProductId}";
-                    productInternalSettingList = rpcache.GetFromCache(cacheKey, 30, () => { return repository.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, param); });
+                    var cacheKey = $"productInternalSetting_{productmap.ProductId}";
+                    productInternalSettingList = rpcache.GetFromCache(cacheKey, 120, () => { return repository.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, param); });
                     var editUserRequiresProduct = productInternalSettingList.FirstOrDefault(s => s.Name.Equals("IsEditUserRequiresProduct", StringComparison.OrdinalIgnoreCase))?.Value;
                     var greenbookCaresCheckRequired = productInternalSettingList.FirstOrDefault(s => s.Name.Equals("IsGreenbookCaresCheckRequired", StringComparison.OrdinalIgnoreCase))?.Value;
 
@@ -4782,7 +4786,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 {
                     var cacheKey = "listProductSettingType";
 
-                    productSettingTypes = rpcache.GetFromCache<List<ProductSettingType>>(cacheKey, 600, () =>
+                    productSettingTypes = rpcache.GetFromCache(cacheKey, 120, () =>
                     {
                         // load from database
                         return repository.GetMany<ProductSettingType>(StoredProcNameConstants.SP_ListProductSettingType, null).ToList();
@@ -6987,7 +6991,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         {
             ProductInternalSetting productInternalSetting = new ProductInternalSetting();
             IProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository();
-            IList<ProductInternalSetting> productInternalSettingList = productInternalSettingRepository.GetProductInternalSettings(productId);
+            var productInternalSettingList = productInternalSettingRepository.GetProductInternalSettings(productId);
             productInternalSetting = productInternalSettingList.FirstOrDefault(item => item.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase));
 
             if (productInternalSetting != null)
@@ -7190,8 +7194,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         {
             try
             {
-                ManageUnifiedSettings manageUnifiedSettings = new ManageUnifiedSettings(_userClaim);
-                var data = manageUnifiedSettings.GetCompanyInternalSettings(_userClaim.OrganizationRealPageGuid, "UPFM", "company");
+                var data = _manageUnifiedSettings.GetCompanyInternalSettings(_userClaim.OrganizationRealPageGuid, "UPFM", "company");
                 return data?.Keys?.Where(p => p.Name == settingName)?.FirstOrDefault()?.Value == "1";
             }
             catch (Exception exp)

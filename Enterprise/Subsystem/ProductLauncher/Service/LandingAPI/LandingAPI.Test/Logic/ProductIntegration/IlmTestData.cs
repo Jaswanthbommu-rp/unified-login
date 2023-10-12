@@ -28,7 +28,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.ProductI
 			UpdateInputJson = "{\"PropertyList\":[\"PLG10P01\",\"PLG10P02\",\"PLG10P03\"],\"RoleList\":[\"13\"],\"IsAssigned\":true,\"RegionList\":[\"PLG10\",\"PLG12\"],\"CompanyId\":0}";
 		}
 
-		public static IList<ProductInternalSetting> Get_DEV_ILM_ProductSettings()
+		public static List<ProductInternalSetting> Get_DEV_ILM_ProductSettings()
 		{
 			return new List<ProductInternalSetting>
 			{

@@ -23,7 +23,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		private const string PRODUCT_SETTINGTYPE_STATUS = "ProductStatus";
 
 		#region Ctor
-		//private readonly IList<ProductInternalSetting> _productIntegrationDetails;
+		//private readonly List<ProductInternalSetting> _productIntegrationDetails;
 		public RenovationManager(ProductEnum productType, long editorPersonaId, long subjectPersonaId, DefaultUserClaim userClaims) : base((int)productType, editorPersonaId, subjectPersonaId, userClaims)
 		{ }
 

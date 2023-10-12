@@ -437,7 +437,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 	    /// </summary>
 	    /// <param name="productId">The id of the product to get the settings for</param>
 	    /// <returns>The list of settings</returns>
-	    public IList<ProductInternalSetting> GetProductInternalSettings(int productId)
+	    public List<ProductInternalSetting> GetProductInternalSettings(int productId)
 	    {
             if (_repository != null)
             {
@@ -447,7 +447,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             var rpcache = new RPObjectCache();
 		    var cacheKey = "productInternalSetting_" + productId;
-		    var productInternalSettingList = rpcache.GetFromCache<IList<ProductInternalSetting>>(cacheKey, 60, () =>
+		    var productInternalSettingList = rpcache.GetFromCache(cacheKey, 120, () =>
 		    {
 			    // load from database
 			    return _productInternalSettingRepository.GetProductInternalSettings(productId);

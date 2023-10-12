@@ -50,7 +50,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// </summary>
         /// <param name="productId">ProductId</param>
         /// <returns>list product settings</returns>
-        public IList<ProductInternalSetting> GetProductInternalSettings(int productId)
+        public List<ProductInternalSetting> GetProductInternalSettings(int productId)
         {
             using (var repo = GetRepository())
             {

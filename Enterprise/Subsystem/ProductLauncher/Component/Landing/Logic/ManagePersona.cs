@@ -378,11 +378,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         #endregion
 
         #region Private
-        private IList<ProductInternalSetting> GetProductInternalSettings(ProductEnum product)
+        private List<ProductInternalSetting> GetProductInternalSettings(ProductEnum product)
         {
             var rpcache = new RPObjectCache();
             var cacheKey = $"productInternalSetting_{(int)product}";
-            IList<ProductInternalSetting> productInternalSettingList = rpcache.GetFromCache<IList<ProductInternalSetting>>(cacheKey, 600, () =>
+            var productInternalSettingList = rpcache.GetFromCache(cacheKey, 120, () =>
             {
                 // load from database
                 

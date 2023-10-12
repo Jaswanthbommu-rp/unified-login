@@ -47,7 +47,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		private IManageProduct _manageProduct;
 		readonly ITokenHelper _tokenHelper;
 
-        private IList<ProductInternalSetting> _productInternalSettings;
+        private List<ProductInternalSetting> _productInternalSettings;
         #region Ctor
 
 		/// <summary>
@@ -613,19 +613,5 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				WriteToLog(LogEventLevel.Error, "PostToHOTS", logData);
             }
         }
-
-		private IList<ProductInternalSetting> GetProductInternalSettings(ProductEnum product)
-		{
-			var rpcache = new RPObjectCache();
-			var cacheKey = $"productInternalSetting_{(int)product}";
-			IList<ProductInternalSetting> productInternalSettingList = rpcache.GetFromCache<IList<ProductInternalSetting>>(cacheKey, 100, () =>
-			{
-				// load from database
-
-				return _productInternalSettingRepository.GetProductInternalSettings((int)product).ToList();
-			});
-
-			return productInternalSettingList;
-		}
 	}
 }
